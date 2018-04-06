@@ -26,3 +26,5 @@ kskp/static/js/all.js
 kskp/static/js/app.js
 kskp/static/css/app.css
 .idea
+
+*.egg-info
