@@ -1,0 +1,10 @@
+from setuptools import setup
+
+setup(
+    name='kskp',
+    packages=['kskp'],
+    include_package_data=True,
+    install_requires=[
+        'flask',
+    ],
+)
