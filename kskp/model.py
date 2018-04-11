@@ -47,7 +47,7 @@ def get_connection():
     return conn
 
 
-@app.teardown_appcontext
+
 def close_connection(exception):
     """
     appcontext終了時にコネクションを閉じる
@@ -55,3 +55,7 @@ def close_connection(exception):
     conn = getattr(g, '_database', None)
     if conn is not None:
         conn.close()
+
+
+# Blueprintではapp_context_teardownが使えないので、独自属性を作成する
+model.app_context_teardown = close_connection
