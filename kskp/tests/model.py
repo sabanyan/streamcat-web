@@ -92,9 +92,47 @@ class ModelTestCase(unittest.TestCase):
             res = results[0]
             self.assertEqual(res[2], project_name)
 
+    def test_add_info_for_users_x_projects(self):
+        """
+        add_info_for_users_x_projects関数のテスト
+        本当はinsertできているかだけじゃなくて、
+        ちゃんとusersとprojectsを繋げられているかのテストも必要だが、
+        それは果たしてこのメソッド内で行うべきなのか？
+
+        ひとまずは単純なテストだけを実装しておく
+        """
+
+        with app.app_context():
+            user_id = 1
+            project_id = 2
+            model.add_info_for_users_x_projects(user_id, project_id)
+
+            sql = '''
+            SELECT user_id, project_id FROM users_x_projects
+             WHERE user_id = ? AND project_id = ?
+            '''
+
+            result = model.query_db(sql, (user_id, project_id), one=True)
+
+            self.assertEqual(result[0], user_id)
+            self.assertEqual(result[1], project_id)
+
 
     def test_get_projects_by_user_id(self):
         pass
+        # with app.app_context():
+        #     user1 = 'user1'
+        #     user2 = 'user2'
+        #     user3 = 'user3'
+        #     model.create_user(user1, '', '', '')
+        #     model.create_user(user2, '', '', '')
+        #     model.create_user(user3, '', '', '')
+        #
+        #     with self.client.session_transaction() as session:
+        #         session['user_id'] = user1
+        #         model.create_project('user1_proj_1', session)
+        #         model.create_project('user2_proj_1', session)
+        #         model.create_project('user3_proj_1', session)
 
 if __name__ == '__main__':
     unittest.main()
