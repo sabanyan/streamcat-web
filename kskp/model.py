@@ -63,6 +63,17 @@ def create_project(name, session):
     user = get_current_user(session)
     query_db(sql, (generated_uuid, name, user.name, user.email))
 
+
+def add_info_for_users_x_projects(user_id, project_id):
+    """
+    ユーザと閲覧可能なプロジェクトの関係を表すレコードを追加する
+    """
+    sql = '''
+    INSERT INTO users_x_projects (user_id, project_id) VALUES (?, ?)
+    '''
+    query_db(sql, (user_id, project_id))
+
+
 def get_all_projects():
     """
     すべてのプロジェクトを取得する
