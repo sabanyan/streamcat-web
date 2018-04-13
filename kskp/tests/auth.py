@@ -5,7 +5,7 @@ from flask import template_rendered
 import kskp
 import kskp.auth as auth
 
-class Test(unittest.TestCase):
+class AuthTestCase(unittest.TestCase):
     def test_password_hash(self):
         self.assertEqual(
             auth.get_password_hash('a', 'password'),
