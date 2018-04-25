@@ -56,6 +56,7 @@ def create_project(name, session):
     """
     新しいプロジェクトを作成する
     """
+
     sql = '''
     INSERT INTO projects (uuid, name, creator_name, creator) VALUES (?, ?, ?, ?)
     '''
@@ -73,6 +74,43 @@ def add_info_for_users_x_projects(user_id, project_id):
     '''
     query_db(sql, (user_id, project_id))
 
+
+def start_project(name, session):
+    """
+    単にprojectsにINSERTするだけではなく、画面上の一つの操作に対応して複数のSQLを実行する
+    この処理全体を一つのトランザクションとみなすため、
+    既存のcreate_project/add_info_for_users_x_projectsは使えない。
+
+    TODO:
+    できればトランザクションを制御する仕組み(with系)を作って
+    この部分をcreate_project/add_info_for_users_x_projectsを使う形にリファクタしたい
+    """
+
+    # 全体の準備
+    conn = get_connection()
+    cur = conn.cursor()
+
+    # projectsに行を挿入する
+    sql_projects = '''
+    INSERT INTO projects (uuid, name, creator_name, creator) VALUES (?, ?, ?, ?)
+    '''
+    generated_uuid = str(uuid.uuid4())
+    user = get_current_user(session)
+
+    cur.execute(sql_projects, (generated_uuid, name, user.name, user.email))
+
+    # 次にユーザ別の閲覧可能なプロジェクトを表すテーブルに行を挿入する
+    # ひとまず、自分が作ったプロジェクトは自分だけが見られるような仕様にしておく
+    sql_users_x_projects = '''
+    INSERT INTO users_x_projects VALUES (?, ?)
+    '''
+    cur.execute(sql_users_x_projects, (user.email, cur.lastrowid))
+
+
+    # 後片付け
+    conn.commit()
+    cur.close()
+    
 
 def get_all_projects():
     """
@@ -107,7 +145,9 @@ def query_db(query, args=(), one=False):
     """
     指定されたSQLを実行して、その結果を返却する
     """
-    cur = get_connection().execute(query, args)
+    conn = get_connection()
+    cur = conn.execute(query, args)
+    conn.commit()
     rv = cur.fetchall()
     cur.close()
     return (rv[0] if rv else None) if one else rv

@@ -134,5 +134,31 @@ class ModelTestCase(unittest.TestCase):
         #         model.create_project('user2_proj_1', session)
         #         model.create_project('user3_proj_1', session)
 
+
+    def test_start_project(self):
+        with app.app_context():
+            email = 'dev@kskp.io'
+            creator_name = '開発者'
+
+            project_name = 'テストプロジェクト'
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = email
+                model.create_user(email, '', creator_name, '')
+                model.start_project(project_name, session)
+
+            fetch_sql = '''
+            SELECT x.user_id, p.name, p.creator_name FROM projects p
+             INNER JOIN users_x_projects x
+                ON x.project_id = p.id
+               AND x.user_id = ?
+            '''
+            res = model.query_db(fetch_sql, (email,), one=True)
+
+            self.assertEqual(res[0], email)
+            self.assertEqual(res[1], project_name)
+            self.assertEqual(res[2], creator_name)
+
+
 if __name__ == '__main__':
     unittest.main()
