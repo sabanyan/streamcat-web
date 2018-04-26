@@ -1,5 +1,6 @@
-from flask import Blueprint
-from .auth import login_required
+from flask import Blueprint, request, session, jsonify
+from .auth import login_required_api
+from .model import start_project
 import uuid
 
 api = Blueprint('api', __name__)
@@ -9,28 +10,35 @@ def api_root():
     return "I'm api root %s" % api.root_path
 
 @api.route('/projects/new', methods=['POST'])
-@login_required
+@login_required_api
 def new_project():
     """
     新しいプロジェクトを作成するAPI
     """
 
-    project_name = request.json['name']
-    # 本来、authorはIDではなく、名前を入れるべきだがα版ではサボります
-    # author = request.json['author']
-    creator_name = current_user_id
-    sql = 'INSERT INTO projects (uuid, name, creator_name, creator) VALUES (?, ?, ?, ?)'
-    values = (str(uuid.uuid4()), project_name, author, creator)
-    fetch_all(sql, values) # 更新専用の関数を作るべきでしょうけどα版ではサボります
+    if request.json is None:
+        return jsonify({'success': False, 'message': 'can not get json param'})
+    params = request.json
+    start_project(params['name'], session)
 
-    # TODO: 本当はここはトランザクション切らないとヤヴァイけどα版なのであとで！
-    sql2 = 'SELECT MAX(id) FROM projects'
-    max_project_id = fetch_all(sql2)[0][0]
-
-    # ひとまず、自分が作ったプロジェクトは自分だけが見られるような仕様にしておく
-    sql3 = 'INSERT INTO users_x_projects VALUES (?, ?)'
-    values3 = (current_user_id, max_project_id)
-    fetch_all(sql3, values3) # 更新専用の関数を作るべきでしょうけどα版ではサボります
-
-    # ひとまず現在は成功ステータスだけを返す
+    # 正常終了
     return jsonify({'success': True})
+
+# @api.route('/projects')
+# @login_required_api
+# def get_projects():
+#     """
+#     現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
+#     """
+#     return jsonify({'success': True})
+
+@api.errorhandler(400)
+def handle_bad_request(error):
+    """
+    Bad Requestが起きた時にもJSONを返却するように
+    （request bodyのJSONが不正な場合を想定している）
+    """
+
+    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
+    message = 'The browser (or proxy) sent a request that this server could not understand.'
+    return jsonify({'success': False, 'message': message})

@@ -1,5 +1,5 @@
 import hashlib
-from flask import session, render_template
+from flask import session, render_template, jsonify
 
 FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
 STRETCH_COUNT = 100
@@ -37,4 +37,17 @@ def login_required(func):
         else:
             # ログインページを返す
             return render_template('login.html')
+    return deco
+
+def login_required_api(func):
+    """
+    このデコレータがついたエンドポイントは、
+    ログインされていないとエラー用JSONを返却する
+    """
+    def deco():
+        if 'user_id' in session:
+            return func()
+        else:
+            # ログインページを返す
+            return jsonify({'success': False, 'message': 'not authorized'})
     return deco
