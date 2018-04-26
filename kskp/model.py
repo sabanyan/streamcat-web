@@ -110,7 +110,7 @@ def start_project(name, session):
     # 後片付け
     conn.commit()
     cur.close()
-    
+
 
 def get_all_projects():
     """
@@ -146,6 +146,7 @@ def query_db(query, args=(), one=False):
     指定されたSQLを実行して、その結果を返却する
     """
     conn = get_connection()
+    conn.row_factory = sqlite3.Row
     cur = conn.execute(query, args)
     conn.commit()
     rv = cur.fetchall()

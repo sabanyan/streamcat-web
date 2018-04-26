@@ -2,6 +2,8 @@ import os
 import unittest
 import tempfile
 
+from werkzeug.datastructures import Headers
+
 from kskp import app
 import kskp.model as model
 
@@ -136,6 +138,9 @@ class ModelTestCase(unittest.TestCase):
 
 
     def test_start_project(self):
+        """
+        model.start_projectをテストする
+        """
         with app.app_context():
             email = 'dev@kskp.io'
             creator_name = '開発者'
@@ -155,9 +160,48 @@ class ModelTestCase(unittest.TestCase):
             '''
             res = model.query_db(fetch_sql, (email,), one=True)
 
-            self.assertEqual(res[0], email)
-            self.assertEqual(res[1], project_name)
-            self.assertEqual(res[2], creator_name)
+            self.assertEqual(res['user_id'], email)
+            self.assertEqual(res['name'], project_name)
+            self.assertEqual(res['creator_name'], creator_name)
+
+
+    def test_new_project(self):
+        """
+        new_project APIをテストする
+        """
+        email = 'dev@kskp.io'
+        creator_name = '開発者'
+        project_name = '新しいプロジェクト'
+
+        app.testing = True
+
+        with app.app_context():
+            with self.client.session_transaction() as session:
+                session['user_id'] = email
+                model.create_user(email, '', creator_name, '')
+
+            headers = Headers()
+            headers.add('Content-Type', 'application/json')
+            data = '{"name": "%s"}' % project_name
+            resp = self.client.post('/api/v0/projects/new',
+                # charset='UTF-8',
+                content_type='application/json',
+                # content_length=len(data),
+                data=data
+            )
+            print(resp.get_data())
+
+            fetch_sql = '''
+            SELECT x.user_id, p.name, p.creator_name FROM projects p
+             INNER JOIN users_x_projects x
+                ON x.project_id = p.id
+               AND x.user_id = ?
+            '''
+            res = model.query_db(fetch_sql, (email,), one=True)
+
+            self.assertEqual(res['user_id'], email)
+            self.assertEqual(res['name'], project_name)
+            self.assertEqual(res['creator_name'], creator_name)
 
 
 if __name__ == '__main__':
