@@ -127,10 +127,11 @@ def get_projects_by_user_id(user_id, search_string=None):
     """
 
     sql = '''
-    SELECT p.uuid, p.name, p.author, p.created_at FROM projects p
+    SELECT p.uuid, p.name, p.creator, p.created_at FROM projects p
      INNER JOIN users_x_projects x
         ON x.project_id = p.id
        AND x.user_id = ?
+     ORDER BY p.id
     '''
 
     args = (user_id,)
