@@ -96,5 +96,32 @@ class ApiTestCase(unittest.TestCase):
                 test_projects_by_user_id(user1, {proj1, proj2}) # user1だとproj1とproj2が見られる
                 test_projects_by_user_id(user2, {proj2, proj3}) # user2だとproj2とproj3が見られる
 
+    def test_delete_project(self):
+        with app.app_context():
+
+            user1 = 'user1'
+            model.create_user(user1, '', '', '')
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = user1
+
+            model.create_project('proj1', session)
+
+            # 削除前のプロジェクトの数を調べる
+            projects_before = model.get_all_projects()
+            self.assertEqual(len(projects_before), 1)
+            uuid = projects_before[0]['uuid']
+
+            with app.test_client() as client:
+                with client.session_transaction() as session:
+                    session['user_id'] = user1
+                result = json.loads(client.delete('/api/v0/projects/%s' % uuid).get_data())
+                self.assertEqual(result['success'], True)
+
+            # 削除後のプロジェクトの数を調べる
+            projects_after = model.get_all_projects()
+            self.assertEqual(len(projects_after), 0)
+
+
 if __name__ == '__main__':
     unittest.main()

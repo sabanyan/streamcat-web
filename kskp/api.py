@@ -1,6 +1,6 @@
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
-from .model import start_project, get_projects_by_user_id
+from .model import start_project, get_projects_by_user_id, delete_project_by_uuid
 import uuid
 
 api = Blueprint('api', __name__)
@@ -40,6 +40,17 @@ def get_projects():
 
     return jsonify({'success': True, 'data': projects})
 
+@api.route('/projects/<uuid>', methods=['DELETE'])
+@login_required_api
+def delete_project(uuid):
+    """
+    指定したプロジェクトを削除する
+    """
+
+    delete_project_by_uuid(uuid)
+
+    return jsonify({'success': True})
+    
 
 @api.errorhandler(400)
 def handle_bad_request(error):
