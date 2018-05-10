@@ -1,6 +1,6 @@
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
-from .model import start_project
+from .model import start_project, get_projects_by_user_id
 import uuid
 
 api = Blueprint('api', __name__)
@@ -16,21 +16,30 @@ def new_project():
     新しいプロジェクトを作成するAPI
     """
 
-    if request.json is None:
-        return jsonify({'success': False, 'message': 'can not get json param'})
     params = request.json
     start_project(params['name'], session)
 
     # 正常終了
     return jsonify({'success': True})
 
-# @api.route('/projects')
-# @login_required_api
-# def get_projects():
-#     """
-#     現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
-#     """
-#     return jsonify({'success': True})
+@api.route('/projects')
+@login_required_api
+def get_projects():
+    """
+    現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
+    """
+
+    projects = []
+    for p in get_projects_by_user_id(session['user_id']):
+        proj = {}
+        proj['uuid'] = p['uuid']
+        proj['name'] = p['name']
+        proj['creator_name'] = p['creator_name']
+        proj['created_at'] = p['created_at']
+        projects.append(proj)
+
+    return jsonify({'success': True, 'data': projects})
+
 
 @api.errorhandler(400)
 def handle_bad_request(error):

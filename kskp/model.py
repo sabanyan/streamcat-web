@@ -124,13 +124,16 @@ def get_all_projects():
 def get_projects_by_user_id(user_id, search_string=None):
     """
     特定のユーザが閲覧可能なプロジェクト一覧を取得する
+    この場合の'user_id'はemailのこと
     """
 
     sql = '''
-    SELECT p.uuid, p.name, p.creator, p.created_at FROM projects p
+    SELECT p.uuid, p.name, p.creator_name, p.created_at FROM projects p
      INNER JOIN users_x_projects x
         ON x.project_id = p.id
-       AND x.user_id = ?
+     INNER JOIN users u
+        ON x.user_id = u.id
+     WHERE u.email = ?
      ORDER BY p.id
     '''
 
