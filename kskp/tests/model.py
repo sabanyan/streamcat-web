@@ -22,7 +22,7 @@ class ModelTestCase(unittest.TestCase):
     def test_schema(self):
         with app.app_context():
             conn = model.get_connection()
-            sql = "select name from sqlite_master where type='table'"
+            sql = "SELECT name FROM sqlite_master WHERE type = 'table'"
             current_tables = {t[0] for t in model.query_db(sql)}
             conn.commit()
 
