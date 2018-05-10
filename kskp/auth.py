@@ -46,9 +46,9 @@ def login_required_api(func):
     ログインされていないとエラー用JSONを返却する
     """
     @functools.wraps(func)
-    def deco():
+    def deco(**kwargs):
         if 'user_id' in session:
-            return func()
+            return func(**kwargs)
         else:
             # ログインページを返す
             return jsonify({'success': False, 'message': 'not authorized'})
