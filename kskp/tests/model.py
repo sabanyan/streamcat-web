@@ -130,55 +130,62 @@ class ModelTestCase(unittest.TestCase):
         with app.app_context():
 
             # テストデータの準備
-            user1 = 'user1'
-            user2 = 'user2'
-            model.create_user(user1, '', '', '')
-            model.create_user(user2, '', '', '')
-
-            with self.client.session_transaction() as session:
-                session['user_id'] = user1
-
-            proj1 = 'proj1'
-            proj2 = 'proj2'
-            proj3 = 'proj3'
-
-            model.create_project(proj1, session)
-            model.create_project(proj2, session)
-            model.create_project(proj3, session)
-
-            model.add_info_for_users_x_projects(1, 1) # user1 proj1
-            model.add_info_for_users_x_projects(1, 2) # user1 proj2
-            model.add_info_for_users_x_projects(2, 2) # user2 proj2
-            model.add_info_for_users_x_projects(2, 3) # user2 proj3
-
-            # ちょっと確認用
-            # fetch_users_sql = '''
-            # SELECT * FROM users
-            # '''
-            # users = model.query_db(fetch_users_sql)
-            # self.assertEqual(len(users), 2)
-            # self.assertEqual(users[0]['id'], 1)
-            # self.assertEqual(users[1]['id'], 2)
-            #
-            # fetch_projects_sql = '''
-            # SELECT COUNT(*) FROM projects
-            # '''
-            # projects_count = model.query_db(fetch_projects_sql, (), one=True)
-            # self.assertEqual(projects_count[0], 3)
-            #
-            # fetch_x_sql = '''
-            # SELECT COUNT(*) FROM users_x_projects
-            # '''
-            # x_count = model.query_db(fetch_x_sql, (), one=True)
-            # self.assertEqual(x_count[0], 4)
+            self.make_data_for_getting_projects()
 
             # テストの実行
-            projects_of_current_user = model.get_projects_by_user_id(user2)
+            projects_of_current_user = model.get_projects_by_user_id('user2')
 
             self.assertEqual(len(projects_of_current_user), 2)
-            self.assertEqual(projects_of_current_user[0]['name'], proj2)
-            self.assertEqual(projects_of_current_user[1]['name'], proj3)
+            self.assertEqual(projects_of_current_user[0]['name'], 'proj2')
+            self.assertEqual(projects_of_current_user[1]['name'], 'proj3')
 
+
+    def make_data_for_getting_projects(self):
+        """
+        test_get_projects_by_user_idから使うためのテストデータ作成用。
+        """
+
+        user1 = 'user1'
+        user2 = 'user2'
+        model.create_user(user1, '', '', '')
+        model.create_user(user2, '', '', '')
+
+        with self.client.session_transaction() as session:
+            session['user_id'] = user1
+
+        proj1 = 'proj1'
+        proj2 = 'proj2'
+        proj3 = 'proj3'
+
+        model.create_project(proj1, session)
+        model.create_project(proj2, session)
+        model.create_project(proj3, session)
+
+        model.add_info_for_users_x_projects(1, 1) # user1 proj1
+        model.add_info_for_users_x_projects(1, 2) # user1 proj2
+        model.add_info_for_users_x_projects(2, 2) # user2 proj2
+        model.add_info_for_users_x_projects(2, 3) # user2 proj3
+
+        # ちょっと確認用
+        # fetch_users_sql = '''
+        # SELECT * FROM users
+        # '''
+        # users = model.query_db(fetch_users_sql)
+        # self.assertEqual(len(users), 2)
+        # self.assertEqual(users[0]['id'], 1)
+        # self.assertEqual(users[1]['id'], 2)
+        #
+        # fetch_projects_sql = '''
+        # SELECT COUNT(*) FROM projects
+        # '''
+        # projects_count = model.query_db(fetch_projects_sql, (), one=True)
+        # self.assertEqual(projects_count[0], 3)
+        #
+        # fetch_x_sql = '''
+        # SELECT COUNT(*) FROM users_x_projects
+        # '''
+        # x_count = model.query_db(fetch_x_sql, (), one=True)
+        # self.assertEqual(x_count[0], 4)
 
     def test_start_project(self):
         """
