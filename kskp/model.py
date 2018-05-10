@@ -1,11 +1,14 @@
+import json
 import uuid
 import sqlite3
+from pathlib import Path
 
 from flask import g
 from . import app
 from .auth import get_password_hash
 
 app.config['DATABASE'] = app.root_path + '/data/kskp.db'
+app.config['FLOW_PATH'] = app.root_path + '/data/flow'
 
 def create_user(email, password, name, creator):
     """
@@ -159,6 +162,17 @@ def rename_project(project_uuid, new_name):
     """
     sql = 'UPDATE projects SET name = ? WHERE uuid = ?'
     query_db(sql, (new_name, project_uuid))
+
+
+def create_flow():
+    new_flow_uuid = str(uuid.uuid4())
+    path = Path(app.config['FLOW_PATH']) / Path(new_flow_uuid)
+
+    data = {
+        'uuid': new_flow_uuid
+    }
+
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
 
 
 def query_db(query, args=(), one=False):

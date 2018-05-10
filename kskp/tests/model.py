@@ -258,5 +258,9 @@ class ModelTestCase(unittest.TestCase):
             self.assertEqual(model.get_all_projects()[0]['name'], new_project_name)
 
 
+    def test_create_flow(self):
+        model.create_flow()
+
+
 if __name__ == '__main__':
     unittest.main()
