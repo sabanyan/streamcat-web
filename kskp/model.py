@@ -153,6 +153,14 @@ def delete_project_by_uuid(project_uuid):
     query_db(sql, (project_uuid,))
 
 
+def rename_project(project_uuid, new_name):
+    """
+    プロジェクトの名前を変更する
+    """
+    sql = 'UPDATE projects SET name = ? WHERE uuid = ?'
+    query_db(sql, (new_name, project_uuid))
+
+
 def query_db(query, args=(), one=False):
     """
     指定されたSQLを実行して、その結果を返却する
