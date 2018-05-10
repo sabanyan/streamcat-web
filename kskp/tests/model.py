@@ -215,43 +215,28 @@ class ModelTestCase(unittest.TestCase):
             self.assertEqual(res['creator_name'], creator_name)
 
 
-    def test_new_project(self):
-        """
-        new_project APIをテストする
-        """
-        email = 'dev@kskp.io'
-        creator_name = '開発者'
-        project_name = '新しいプロジェクト'
-
-        app.testing = True
-
+    def test_delete_project(self):
         with app.app_context():
+            email = 'dev@kskp.io'
+            name = '開発者'
+
+            project_name = 'テストプロジェクト'
+
             with self.client.session_transaction() as session:
                 session['user_id'] = email
-                model.create_user(email, '', creator_name, '')
+                model.create_user(email, '', name, '')
+                model.create_project(project_name, session)
 
-            headers = Headers()
-            headers.add('Content-Type', 'application/json')
-            data = '{"name": "%s"}' % project_name
-            resp = self.client.post('/api/v0/projects/new',
-                # charset='UTF-8',
-                content_type='application/json',
-                # content_length=len(data),
-                data=data
-            )
-            # print(resp.get_data())
+            # 削除前のプロジェクトの数を調べる
+            projects_before = model.get_all_projects()
+            self.assertEqual(len(projects_before), 1)
 
-            fetch_sql = '''
-            SELECT x.user_id, p.name, p.creator_name FROM projects p
-             INNER JOIN users_x_projects x
-                ON x.project_id = p.id
-               AND x.user_id = ?
-            '''
-            res = model.query_db(fetch_sql, (email,), one=True)
+            model.delete_project(1)
 
-            self.assertEqual(res['user_id'], email)
-            self.assertEqual(res['name'], project_name)
-            self.assertEqual(res['creator_name'], creator_name)
+            # 削除後のプロジェクトの数を調べる
+            projects_after = model.get_all_projects()
+            self.assertEqual(len(projects_after), 0)
+
 
 
 if __name__ == '__main__':
