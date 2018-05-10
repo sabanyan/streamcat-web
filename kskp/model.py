@@ -144,6 +144,13 @@ def get_projects_by_user_id(user_id, search_string=None):
 
     return query_db(sql, args)
 
+def delete_project(project_id):
+    """
+    プロジェクトを削除する
+    """
+    sql = 'DELETE FROM projects WHERE id = ?'
+    query_db(sql, (project_id,))
+
 
 def query_db(query, args=(), one=False):
     """
