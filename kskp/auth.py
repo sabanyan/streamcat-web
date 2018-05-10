@@ -1,4 +1,5 @@
 import hashlib
+import functools # wraps for decorator
 from flask import session, render_template, jsonify
 
 FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
@@ -44,6 +45,7 @@ def login_required_api(func):
     このデコレータがついたエンドポイントは、
     ログインされていないとエラー用JSONを返却する
     """
+    @functools.wraps(func)
     def deco():
         if 'user_id' in session:
             return func()

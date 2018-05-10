@@ -173,7 +173,7 @@ class ModelTestCase(unittest.TestCase):
             # self.assertEqual(x_count[0], 4)
 
             # テストの実行
-            projects_of_current_user = model.get_projects_by_user_id(2)
+            projects_of_current_user = model.get_projects_by_user_id(user2)
 
             self.assertEqual(len(projects_of_current_user), 2)
             self.assertEqual(projects_of_current_user[0]['name'], proj2)
