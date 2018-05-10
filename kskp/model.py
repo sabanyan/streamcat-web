@@ -152,6 +152,15 @@ def delete_project(project_id):
     query_db(sql, (project_id,))
 
 
+def delete_project_by_uuid(project_uuid):
+    """
+    プロジェクトを削除する(uuidが基準)
+    APIから呼ぶのはこちら
+    """
+    sql = 'DELETE FROM projects WHERE uuid = ?'
+    query_db(sql, (project_uuid,))
+
+
 def query_db(query, args=(), one=False):
     """
     指定されたSQLを実行して、その結果を返却する

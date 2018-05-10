@@ -235,7 +235,28 @@ class ModelTestCase(unittest.TestCase):
             projects_after = model.get_all_projects()
             self.assertEqual(len(projects_after), 0)
 
+    def test_delete_project_by_uuid(self):
+        with app.app_context():
+            email = 'dev@kskp.io'
+            name = '開発者'
 
+            project_name = 'テストプロジェクト'
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = email
+                model.create_user(email, '', name, '')
+                model.create_project(project_name, session)
+
+            # 削除前のプロジェクトの数を調べる
+            projects_before = model.get_all_projects()
+            self.assertEqual(len(projects_before), 1)
+            uuid = projects_before[0]['uuid']
+
+            model.delete_project_by_uuid(uuid)
+
+            # 削除後のプロジェクトの数を調べる
+            projects_after = model.get_all_projects()
+            self.assertEqual(len(projects_after), 0)
 
 if __name__ == '__main__':
     unittest.main()
