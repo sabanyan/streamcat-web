@@ -147,7 +147,7 @@ def get_projects_by_user_id(user_id, search_string=None):
 
 def delete_project_by_uuid(project_uuid):
     """
-    プロジェクトを削除する(uuidが基準)    
+    プロジェクトを削除する(uuidが基準)
     """
     sql = 'DELETE FROM projects WHERE uuid = ?'
     query_db(sql, (project_uuid,))
