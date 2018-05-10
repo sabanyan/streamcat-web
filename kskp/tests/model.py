@@ -2,8 +2,6 @@ import os
 import unittest
 import tempfile
 
-from werkzeug.datastructures import Headers
-
 from kskp import app
 import kskp.model as model
 
