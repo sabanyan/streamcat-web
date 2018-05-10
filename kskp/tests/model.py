@@ -236,6 +236,27 @@ class ModelTestCase(unittest.TestCase):
             projects_after = model.get_all_projects()
             self.assertEqual(len(projects_after), 0)
 
+    def test_rename_project(self):
+        with app.app_context():
+            email = 'dev@kskp.io'
+            name = '開発者'
+
+            project_name = 'テストプロジェクト'
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = email
+                model.create_user(email, '', name, '')
+                model.create_project(project_name, session)
+
+            # いま作成したプロジェクトのUUIDを取得する
+            project_uuid = model.get_all_projects()[0]['uuid']
+
+            # 名前を変更する
+            new_project_name = '新しい名前'
+            model.rename_project(project_uuid, new_project_name)
+
+            self.assertEqual(model.get_all_projects()[0]['name'], new_project_name)
+
 
 if __name__ == '__main__':
     unittest.main()
