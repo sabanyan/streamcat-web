@@ -303,10 +303,11 @@ class ModelTestCase(unittest.TestCase):
 
 
     def test_edit_flow(self):
-        flow_uuid = model.create_flow(1, '', '')
+        data_source_name = 'nvwp;rfqa'
+        flow = model.create_flow(1, '', data_source_name)
 
-        model.edit_flow(flow_uuid, {'a': 1})
-        path = model.make_flow_path(flow_uuid)
+        model.edit_flow(flow['uuid'], {'a': 1})
+        path = model.make_flow_path(data_source_name)
 
         # 改めてファイルから読み直す
         result = json.loads(path.read_text(encoding='utf-8'))
@@ -314,7 +315,7 @@ class ModelTestCase(unittest.TestCase):
         # 後片付け
         path.unlink()
 
-        self.assertEqual(result['uuid'], flow_uuid)
+        self.assertEqual(result['uuid'], flow['uuid'])
         self.assertEqual(result['a'], 1)
 
 
