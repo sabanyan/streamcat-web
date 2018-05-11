@@ -65,7 +65,7 @@ def create_project(name, session):
     '''
     generated_uuid = str(uuid.uuid4())
     user = get_current_user(session)
-    query_db(sql, (generated_uuid, name, user.name, user.email))
+    return query_db(sql, (generated_uuid, name, user.name, user.email))
 
 
 def add_info_for_users_x_projects(user_id, project_id):
@@ -164,14 +164,68 @@ def rename_project(project_uuid, new_name):
     query_db(sql, (new_name, project_uuid))
 
 
-def create_flow():
+def create_flow(project_id, flow_name, data_source_name):
+    """
+    フローを作成する
+    TODO: 詳細は変更予定
+    """
     new_flow_uuid = str(uuid.uuid4())
-    path = Path(app.config['FLOW_PATH']) / Path(new_flow_uuid)
 
     data = {
-        'uuid': new_flow_uuid
+        'uuid': new_flow_uuid,
+        'project_id': project_id,
+        'name': flow_name
     }
 
+    write_data_to_json(make_flow_path(new_flow_uuid), data)
+
+    return new_flow_uuid
+
+
+def delete_flow(flow_uuid):
+    """
+    フローを削除する
+    """
+    make_flow_path(flow_uuid).unlink()
+
+
+def edit_flow(flow_uuid, data):
+    """
+    指定したフローの内容を渡されたdataの内容と結合する
+    同じキーが含まれる場合は新しいもので上書きされる
+    """
+    path = make_flow_path(flow_uuid)
+    current = json.loads(path.read_text())
+    current.update(data)
+
+    write_data_to_json(path, current)
+
+    return current
+
+
+def make_flow_path(flow_uuid):
+    """
+    フローファイルのパス作成用ヘルパー
+    """
+    return Path(app.config['FLOW_PATH']) / Path('%s.json' % flow_uuid)
+
+
+def get_project_id_by_uuid(project_uuid):
+    """
+    指定したUUIDを持つプロジェクトを返す
+    該当プロジェクトが存在しない場合はNoneを返す
+    """
+    sql = 'SELECT id FROM projects WHERE uuid = ?'
+
+    result = query_db(sql, (project_uuid,), one=True)
+
+    return result['id'] if result is not None else None
+
+
+def write_data_to_json(path, data):
+    """
+    データをJSONとしてファイルに書き込むヘルパー
+    """
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
 
 

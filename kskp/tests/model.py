@@ -1,6 +1,8 @@
 import os
+import json
 import unittest
 import tempfile
+from pathlib import Path
 
 from kskp import app
 import kskp.model as model
@@ -259,7 +261,60 @@ class ModelTestCase(unittest.TestCase):
 
 
     def test_create_flow(self):
-        model.create_flow()
+        with app.app_context():
+            # まず親プロジェクトを作る
+            email = 'dev@kskp.io'
+            name = '開発者'
+
+            project_name = 'テストプロジェクト'
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = email
+                model.create_user(email, '', name, '')
+                model.create_project(project_name, session)
+
+            # 今作ったプロジェクトのUUIDを取得する
+            project_uuid = model.get_all_projects()[0]['uuid']
+
+            # そこからプロジェクトのIDを取得する
+            project_id = model.get_project_id_by_uuid(project_uuid)
+
+            # フロー作成
+            new_flow_name = 'ふろー'
+            new_flow_uuid = model.create_flow(project_id, new_flow_name, '')
+
+            # フローを取得
+            path = model.make_flow_path(new_flow_uuid)
+
+            created_flow = json.loads(path.read_text(encoding='utf-8'))
+
+            self.assertEqual(created_flow['uuid'], new_flow_uuid)
+            self.assertEqual(created_flow['project_id'], project_id)
+            self.assertEqual(created_flow['name'], new_flow_name)
+
+            # 後片付け
+            path.unlink()
+
+
+    def test_delete_flow(self):
+        flow_uuid = model.create_flow(1, '', '')
+        model.delete_flow(flow_uuid)
+
+
+    def test_edit_flow(self):
+        flow_uuid = model.create_flow(1, '', '')
+
+        model.edit_flow(flow_uuid, {'a': 1})
+        path = model.make_flow_path(flow_uuid)
+
+        # 改めてファイルから読み直す
+        result = json.loads(path.read_text(encoding='utf-8'))
+
+        # 後片付け
+        path.unlink()
+
+        self.assertEqual(result['uuid'], flow_uuid)
+        self.assertEqual(result['a'], 1)
 
 
 if __name__ == '__main__':
