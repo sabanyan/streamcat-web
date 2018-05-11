@@ -164,12 +164,15 @@ def rename_project(project_uuid, new_name):
     query_db(sql, (new_name, project_uuid))
 
 
-def create_flow(project_id, flow_name, data_source_name):
+def create_flow(project_id, flow_name, data_source_name=None):
     """
     フローを作成する
     TODO: 詳細は変更予定
     """
     new_flow_uuid = str(uuid.uuid4())
+
+    if data_source_name is None:
+        data_source_name = new_flow_uuid
 
     data = {
         'uuid': new_flow_uuid,
@@ -177,9 +180,9 @@ def create_flow(project_id, flow_name, data_source_name):
         'name': flow_name
     }
 
-    write_data_to_json(make_flow_path(new_flow_uuid), data)
+    write_data_to_json(make_flow_path(data_source_name), data)
 
-    return new_flow_uuid
+    return data
 
 
 def delete_flow(flow_uuid):

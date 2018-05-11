@@ -2,6 +2,7 @@ import os
 import unittest
 import tempfile
 import json
+import uuid
 
 from werkzeug.datastructures import Headers
 
@@ -121,6 +122,57 @@ class ApiTestCase(unittest.TestCase):
             # 削除後のプロジェクトの数を調べる
             projects_after = model.get_all_projects()
             self.assertEqual(len(projects_after), 0)
+
+    def test_new_flow(self):
+        """
+        new_project APIをテストする
+        """
+
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+
+            user1 = 'user1'
+            model.create_user(user1, '', '', '')
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = user1
+
+            model.create_project('proj1', session)
+            project_uuid = model.get_all_projects()[0]['uuid']
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            new_flow_name = '新しいフローです'
+            new_flow_data_source_name = 'datasource_test'
+
+            # 必要最低限の項目だけを送る
+            self.assertIsNotNone(project_uuid)
+
+            data = {
+                'project_uuid': project_uuid,
+                'name': new_flow_name,
+                'data_source_name': new_flow_data_source_name
+            }
+
+            endpoint = '/api/v0/flows/new'
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data)
+            )
+
+            result = json.loads(response.get_data())
+
+            result_project_id = model.get_project_id_by_uuid(project_uuid)
+
+            self.assertEqual(result['success'], True)
+            self.assertEqual(result['data']['project_id'], result_project_id)
+            self.assertEqual(result['data']['name'], new_flow_name)
+
+            # 後片付け
+            model.make_flow_path(new_flow_data_source_name).unlink()
 
 
 if __name__ == '__main__':
