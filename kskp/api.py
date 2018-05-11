@@ -1,6 +1,12 @@
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
-from .model import start_project, get_projects_by_user_id, delete_project_by_uuid
+from .model import (
+    start_project,
+    get_projects_by_user_id,
+    delete_project_by_uuid,
+    get_project_id_by_uuid,
+    create_flow
+)
 import uuid
 
 api = Blueprint('api', __name__)
@@ -40,6 +46,7 @@ def get_projects():
 
     return jsonify({'success': True, 'data': projects})
 
+
 @api.route('/projects/<uuid>', methods=['DELETE'])
 @login_required_api
 def delete_project(uuid):
@@ -50,7 +57,27 @@ def delete_project(uuid):
     delete_project_by_uuid(uuid)
 
     return jsonify({'success': True})
-    
+
+
+@api.route('/flows/new', methods=['POST'])
+@login_required_api
+def new_flow():
+    """
+    新しいフローを作成する
+    TODO: JSONに必要な項目があるかどうかのValidationを追加したい
+    """
+
+    j = request.json
+    project_id = get_project_id_by_uuid(j['project_uuid'])
+
+    # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
+    if project_id is None:
+        return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
+
+    new_flow = create_flow(project_id, j['name'], j['data_source_name'])
+
+    return jsonify({'success': True, 'data': new_flow})
+
 
 @api.errorhandler(400)
 def handle_bad_request(error):
