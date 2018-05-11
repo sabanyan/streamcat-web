@@ -1,3 +1,5 @@
+import uuid
+
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
 from .model import (
@@ -5,9 +7,9 @@ from .model import (
     get_projects_by_user_id,
     delete_project_by_uuid,
     get_project_id_by_uuid,
-    create_flow
+    create_flow,
+    delete_flow_by_uuid
 )
-import uuid
 
 api = Blueprint('api', __name__)
 
@@ -77,6 +79,18 @@ def new_flow():
     new_flow = create_flow(project_id, j['name'], j['data_source_name'])
 
     return jsonify({'success': True, 'data': new_flow})
+
+
+@api.route('/flows/<flow_uuid>', methods=['DELETE'])
+@login_required_api
+def delete_flow(flow_uuid):
+    """
+    指定されたフローを削除する
+    """
+
+    delete_flow_by_uuid(flow_uuid)
+
+    return jsonify({'success': True})
 
 
 @api.errorhandler(400)

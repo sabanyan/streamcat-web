@@ -185,7 +185,7 @@ def create_flow(project_id, flow_name, data_source_name=None):
     return data
 
 
-def delete_flow(flow_uuid):
+def delete_flow_by_uuid(flow_uuid):
     """
     フローを削除する
     """
@@ -216,11 +216,11 @@ def get_flow_path_by_uuid(flow_uuid):
             return flow_path
 
 
-def make_flow_path(flow_uuid):
+def make_flow_path(file_name):
     """
     フローファイルのパス作成用ヘルパー
     """
-    return Path(app.config['FLOW_PATH']) / Path('%s.json' % flow_uuid)
+    return Path(app.config['FLOW_PATH']) / Path('%s.json' % file_name)
 
 
 def get_project_id_by_uuid(project_uuid):

@@ -174,6 +174,45 @@ class ApiTestCase(unittest.TestCase):
             # 後片付け
             model.make_flow_path(new_flow_data_source_name).unlink()
 
+    def test_delete_flow(self):
+        """
+        delete_flow APIをテストする
+        """
+
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+
+            user1 = 'user1'
+            model.create_user(user1, '', '', '')
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = user1
+
+            model.create_project('proj1', session)
+            project_uuid = model.get_all_projects()[0]['uuid']
+            project_id = model.get_project_id_by_uuid(project_uuid)
+
+            # フロー作成
+            new_flow_name = 'フロー削除のテスト用'
+            data_source_name = 'delete_flow_test'
+            new_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+
+            # APIを投げる前はファイルは存在するはず
+            self.assertTrue(model.make_flow_path(data_source_name).exists())
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/api/v0/flows/%s' % new_flow['uuid']
+            response = client.delete(endpoint)
+            result = json.loads(response.get_data())
+
+        # 結果のチェック
+        self.assertEqual(result['success'], True)
+        with app.app_context():
+            self.assertFalse(model.make_flow_path(data_source_name).exists())
+
 
 if __name__ == '__main__':
     unittest.main()
