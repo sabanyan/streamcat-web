@@ -281,14 +281,15 @@ class ModelTestCase(unittest.TestCase):
 
             # フロー作成
             new_flow_name = 'ふろー'
-            new_flow_uuid = model.create_flow(project_id, new_flow_name, '')
+            data_source_name = 'abcde'
+            new_flow = model.create_flow(project_id, new_flow_name, data_source_name)
 
             # フローを取得
-            path = model.make_flow_path(new_flow_uuid)
+            path = model.make_flow_path(data_source_name)
 
             created_flow = json.loads(path.read_text(encoding='utf-8'))
 
-            self.assertEqual(created_flow['uuid'], new_flow_uuid)
+            self.assertEqual(created_flow['uuid'], new_flow['uuid'])
             self.assertEqual(created_flow['project_id'], project_id)
             self.assertEqual(created_flow['name'], new_flow_name)
 
