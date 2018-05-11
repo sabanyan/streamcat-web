@@ -297,8 +297,8 @@ class ModelTestCase(unittest.TestCase):
 
 
     def test_delete_flow(self):
-        flow_uuid = model.create_flow(1, '', '')
-        model.delete_flow(flow_uuid)
+        flow = model.create_flow(1, '', '')
+        model.delete_flow(flow['uuid'])
 
 
     def test_edit_flow(self):

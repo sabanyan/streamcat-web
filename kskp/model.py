@@ -189,7 +189,11 @@ def delete_flow(flow_uuid):
     """
     フローを削除する
     """
-    make_flow_path(flow_uuid).unlink()
+    for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        print('[%s]' % flow_path)
+        data = json.loads(flow_path.read_text(encoding='utf-8'))
+        if data['uuid'] == flow_uuid:
+            flow_path.unlink()
 
 
 def edit_flow(flow_uuid, data):
