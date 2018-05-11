@@ -47,14 +47,14 @@ def get_projects():
     return jsonify({'success': True, 'data': projects})
 
 
-@api.route('/projects/<uuid>', methods=['DELETE'])
+@api.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
-def delete_project(uuid):
+def delete_project(project_uuid):
     """
     指定したプロジェクトを削除する
     """
 
-    delete_project_by_uuid(uuid)
+    delete_project_by_uuid(project_uuid)
 
     return jsonify({'success': True})
 
