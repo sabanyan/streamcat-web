@@ -189,10 +189,7 @@ def delete_flow(flow_uuid):
     """
     フローを削除する
     """
-    for flow_path in Path(app.config['FLOW_PATH']).iterdir():
-        data = json.loads(flow_path.read_text(encoding='utf-8'))
-        if data['uuid'] == flow_uuid:
-            flow_path.unlink()
+    get_flow_path_by_uuid(flow_uuid).unlink()
 
 
 def edit_flow(flow_uuid, data):
@@ -200,13 +197,23 @@ def edit_flow(flow_uuid, data):
     指定したフローの内容を渡されたdataの内容と結合する
     同じキーが含まれる場合は新しいもので上書きされる
     """
-    path = make_flow_path(flow_uuid)
+    path = get_flow_path_by_uuid(flow_uuid)
     current = json.loads(path.read_text())
     current.update(data)
 
     write_data_to_json(path, current)
 
     return current
+
+
+def get_flow_path_by_uuid(flow_uuid):
+    """
+    指定したUUIDをもつフローファイルのパスを返すヘルパー
+    """
+    for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        data = json.loads(flow_path.read_text(encoding='utf-8'))
+        if data['uuid'] == flow_uuid:
+            return flow_path
 
 
 def make_flow_path(flow_uuid):
