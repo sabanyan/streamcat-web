@@ -5,7 +5,7 @@ import Constants from '../constants/index'
 import ModalUtil from '../utils/ModalUtil'
 import {Preview, Share, Export, Trash} from '../icons'
 import DataTable from './DataTable'
-import OperatorContainer from '../containers/OperatorContainer'
+import Operator from './Operator'
 
 class DataSourceProperty extends React.Component {
 
@@ -92,7 +92,7 @@ class DataSourceProperty extends React.Component {
         }
 
         let operators = this.props.mast.operators.map((operator, index) => {
-            return <OperatorContainer {...operator} key={index}></OperatorContainer>
+            return <Operator {...operator} {...this.props} key={index}></Operator>
             // switch (operation) {
             //     case Constants.operatorType.msortf:
             //         return <Sort key={index}/>
