@@ -6,6 +6,8 @@ let FlowEditorContainer
 export default FlowEditorContainer = connect(
   state => {
     return {
+      graph: state.graph,
+      mast: state.mast,
       flows: state.flows,
       edges: state.edges,
       steps: state.steps,
