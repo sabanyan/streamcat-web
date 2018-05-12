@@ -3,6 +3,15 @@ import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
 import DataSourceModel from '../model/DataSourceModel'
 
+const ADD_MASTER_ACTION = "add_master_action";
+const ADD_STEP_ACTION = "add_step_action";
+const UPDATE_STEP_ACTION = "update_step_action";
+const SELECT_STEPS_ACTION = "select_steps_action";
+const DELETE_STEP_ACTION = "delete_step_action";
+const REFRESH_GRAPH_ACTION = "refresh_graph_action";
+const EXECUTE_FLOW_ACTION = "execute_flow_action";
+const SORT_FLOW_ACTION = "sort_flow_action";
+
 const graph = new Graph()
 //
 // const json = {
@@ -59,15 +68,15 @@ initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(i
 initialState.selected_step_ids = []
 initialState.graph = graph.getGraphSize(initialState.steps)
 initialState.mast = {}
-const FlowReducer = (state = initialState, action) => {
+const Application = (state = initialState, action) => {
     switch (action.type) {
-        case Constants.action.ADD_MASTER_ACTION: {
+        case ADD_MASTER_ACTION: {
             let {context} = action
             let newState = StateUtil.deepCopy(state)
             newState.mast = Object.assign(newState.mast,{...context})
             return newState
         }
-        case Constants.action.ADD_STEP_ACTION: {
+        case ADD_STEP_ACTION: {
             let {add_step, from_step_id} = action
 
             let offsetX = 0
@@ -91,7 +100,7 @@ const FlowReducer = (state = initialState, action) => {
             newState.graph = graph.getGraphSize(newState.steps)
             return newState
         }
-        case Constants.action.UPDATE_STEP_ACTION: {
+        case UPDATE_STEP_ACTION: {
             //http://otiai10.hatenablog.com/entry/2016/04/20/013348
             //stateを一度ディープコピーしないとrenderされないためコピーする
             let newState = StateUtil.deepCopy(state)
@@ -101,7 +110,7 @@ const FlowReducer = (state = initialState, action) => {
             newState.graph = graph.getGraphSize(newState.steps)
             return newState
         }
-        case Constants.action.DELETE_STEP_ACTION: {
+        case DELETE_STEP_ACTION: {
             let newState = StateUtil.deepCopy(state)
             graph.removeNode(action.step.id)
             delete newState.steps[action.step.id]
@@ -113,7 +122,7 @@ const FlowReducer = (state = initialState, action) => {
             newState.selected_step_ids = []
             return newState
         }
-        case Constants.action.SELECT_STEPS_ACTION: {
+        case SELECT_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
             if (action.selected_steps) {
                 newState.selected_step_ids = action.selected_steps.map((step)=> step.id)
@@ -122,13 +131,13 @@ const FlowReducer = (state = initialState, action) => {
             }
             return newState
         }
-        case Constants.action.SORT_FLOW_ACTION: {
+        case SORT_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
             newState.steps = graph.refreshPosition(newState.steps) //ノード位置を再計算
             newState.graph = graph.getGraphSize(newState.steps)
             return newState
         }
-        case Constants.action.EXECUTE_FLOW_ACTION: {
+        case EXECUTE_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
             let newSteps = {}
             Object.keys(newState.steps).map((key)=>{
@@ -146,4 +155,84 @@ const FlowReducer = (state = initialState, action) => {
 
 }
 
-export default FlowReducer
+export default Application
+
+/**
+ * ステップの追加
+ * @param step
+ * @returns {{type: string, step: *}}
+ */
+export const addStepAction = (add_step, from_step_id) => {
+  return {
+    type: ADD_STEP_ACTION,
+    add_step: add_step,
+    from_step_id: from_step_id
+  }
+}
+
+export const addMasterAction = (context) => {
+  return {
+    type: ADD_MASTER_ACTION,
+    context: context,
+  }
+}
+
+
+
+/**
+ * ステップの更新
+ * @param step
+ * @returns {{type: string, step: *}}
+ */
+export const updateStepAction = step => {
+  return {
+    type: UPDATE_STEP_ACTION,
+    step: step
+  }
+}
+
+/**
+ * ステップの削除
+ * @param step
+ * @returns {{type: string, step: *}}
+ */
+export const deleteStepAction = step => {
+  return {
+    type: DELETE_STEP_ACTION,
+    step: step
+  }
+}
+
+/**
+ * ステップの選択
+ * @param selected_steps
+ * @returns {{type: string, selected_steps: *}}
+ */
+export const selectStepsAction = selected_steps => {
+  return {
+    type: SELECT_STEPS_ACTION,
+    selected_steps: selected_steps
+  }
+}
+
+/**
+ * フローの実行
+ * @param flowid
+ * @returns {{type: string, step: *}}
+ */
+export const executeFlowAction = flowid => {
+  return {
+    type: EXECUTE_FLOW_ACTION
+  }
+}
+
+/**
+ * ステップの選択
+ * @param selected_steps
+ * @returns {{type: string, selected_steps: *}}
+ */
+export const sortFlowAction = () => {
+  return {
+    type: SORT_FLOW_ACTION,
+  }
+}
