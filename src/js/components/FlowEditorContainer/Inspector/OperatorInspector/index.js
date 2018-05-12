@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import DataSourceModel from '../../../model/DataSourceModel'
-import Constants from '../../../constants/index'
-import ModalUtil from '../../../utils/ModalUtil'
-import DataTable from '../../shared/DataTable/index'
-import OperatorModel from '../../../model/OperatorModel'
+import DataSourceModel from '../../../../model/DataSourceModel'
+import Constants from '../../../../constants/index'
+import ModalUtil from '../../../../utils/ModalUtil'
+import DataTable from '../../../shared/DataTable/index'
+import OperatorModel from '../../../../model/OperatorModel'
 
-class OperatorProperty extends React.Component {
+class OperatorInspector extends React.Component {
 
     onClickSave(e) {
         let {selected_step_ids,steps} = this.props
@@ -118,4 +118,4 @@ class OperatorProperty extends React.Component {
 
 }
 
-export default OperatorProperty
+export default OperatorInspector

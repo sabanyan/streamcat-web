@@ -1,7 +1,7 @@
 import React from 'react'
-import DataSourceProperty from './DataSourceProperty'
+import DataSourceInspector from './DataSourceInspector'
 import DataSourceModel from '../../../model/DataSourceModel'
-import OperatorProperty from './OperatorProperty'
+import OperatorInspector from './OperatorInspector'
 import OperatorModel from '../../../model/OperatorModel'
 
 class Property extends React.Component {
@@ -13,9 +13,9 @@ class Property extends React.Component {
     const selected_step = this.props.steps[selected_step_ids[0]]
 
     if (selected_step instanceof DataSourceModel) {
-      property =  <DataSourceProperty {...this.props}></DataSourceProperty>
+      property =  <DataSourceInspector {...this.props}></DataSourceInspector>
     }else if(selected_step instanceof OperatorModel){
-      property = <OperatorProperty {...this.props}></OperatorProperty>
+      property = <OperatorInspector {...this.props}></OperatorInspector>
     }
     let slide_in = (selected_step_ids.length)?" in":""
 
