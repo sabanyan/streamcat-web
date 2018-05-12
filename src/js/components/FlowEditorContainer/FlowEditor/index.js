@@ -1,16 +1,15 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Paper from '../../Paper'
-import PaperScroller from '../../PaperScroller'
-import Property from '../../Property'
-import Step from '../../Step'
-import CanvasZoom from '../../CanvasZoom'
-import ProjectRun from '../../ProjectRun'
-import BaseComponent from '../../BaseComponent'
-import ModalManager from '../../ModalManager'
+import Paper from '../Paper'
+import PaperScroller from '../PaperScroller'
+import Property from '../Property'
+import Step from '../../shared/Step'
+import CanvasZoom from '../CanvasZoom'
+import ProjectRun from '../ProjectRun'
+import ModalManager from '../../shared/ModalManager'
 import Constants from '../../../constants/index'
 
-export default class FlowEditor extends BaseComponent{
+export default class FlowEditor extends React.Component{
 
   constructor (props){
     super(props)

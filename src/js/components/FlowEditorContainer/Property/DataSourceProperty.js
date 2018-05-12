@@ -1,11 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import DataSourceModel from '../model/DataSourceModel'
-import Constants from '../constants/index'
-import ModalUtil from '../utils/ModalUtil'
-import {Preview, Share, Export, Trash} from '../icons'
-import DataTable from './DataTable'
-import Operator from './Operator'
+import DataSourceModel from '../../../model/DataSourceModel'
+import Constants from '../../../constants/index'
+import ModalUtil from '../../../utils/ModalUtil'
+import {Preview, Share, Export, Trash} from '../../../icons/index'
+import DataTable from '../../shared/DataTable/index'
+import Operator from '../../shared/Operator'
 
 class DataSourceProperty extends React.Component {
 

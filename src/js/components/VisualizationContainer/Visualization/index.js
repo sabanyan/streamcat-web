@@ -1,11 +1,10 @@
 import React from 'react'
-import DataTable from '../../DataTable'
+import DataTable from '../../shared/DataTable'
 import { Doughnut, Pie, Line, Bar, HorizontalBar, Radar, Polar, Bubble, Scatter } from 'react-chartjs-2'
-import BaseComponent from '../../BaseComponent'
 import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
 
-export default class Visualization extends BaseComponent {
+export default class Visualization extends React.Component {
 
   constructor (props) {
     super(props)

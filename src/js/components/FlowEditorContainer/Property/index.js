@@ -1,8 +1,8 @@
 import React from 'react'
 import DataSourceProperty from './DataSourceProperty'
-import DataSourceModel from '../model/DataSourceModel'
+import DataSourceModel from '../../../model/DataSourceModel'
 import OperatorProperty from './OperatorProperty'
-import OperatorModel from '../model/OperatorModel'
+import OperatorModel from '../../../model/OperatorModel'
 
 class Property extends React.Component {
 

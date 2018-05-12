@@ -1,7 +1,7 @@
 import React from 'react'
-import Constants from '../constants'
+import Constants from '../../../constants/index'
 import PropTypes from 'prop-types'
-import ModalUtil from '../utils/ModalUtil'
+import ModalUtil from '../../../utils/ModalUtil'
 
 export default class Modal extends React.Component {
 
