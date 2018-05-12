@@ -1,7 +1,7 @@
 import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
-import FileIcon from '../Icon/FileIcon/File'
+import FileIcon from '../Icon/FileIcon'
 import OperatorModel from '../../../model/OperatorModel'
 import DataSourceModel from '../../../model/DataSourceModel'
 
