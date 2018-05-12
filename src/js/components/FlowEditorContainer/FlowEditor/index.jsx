@@ -4,8 +4,8 @@ import Paper from '../Paper'
 import PaperScroller from '../PaperScroller'
 import Property from '../Inspector'
 import Step from '../../shared/Step'
-import CanvasZoom from '../CanvasZoom'
-import ProjectRun from '../ProjectRun'
+import PaperZoom from '../PaperZoom'
+import Toolbar from '../Toolbar'
 import ModalManager from '../../shared/ModalManager'
 import Constants from '../../../constants/index'
 import Edge from '../../shared/Edge/Edge'
@@ -64,8 +64,8 @@ export default class FlowEditor extends React.Component{
 
     return <div>
       <div className="d-flex align-items-stretch">
-      <CanvasZoom {...this.props} />
-      <ProjectRun {...this.props}/>
+      <PaperZoom {...this.props} />
+      <Toolbar {...this.props}/>
       <PaperScroller {...this.props}>
         <Paper {...this.props}>
           {edges}

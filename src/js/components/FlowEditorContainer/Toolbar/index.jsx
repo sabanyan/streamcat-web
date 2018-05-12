@@ -2,7 +2,13 @@ import React from 'react'
 import ModalUtil from '../../../utils/ModalUtil'
 import Constants from '../../../constants/index'
 import DataTable from '../../shared/DataTable/index'
-export default class ProjectRun extends React.Component {
+import Save from './Save'
+import Run from './Run'
+import Sort from './Sort'
+import Suspend from './Suspend'
+import DryRun from './DryRun'
+import Download from './Download'
+export default class Toolbar extends React.Component {
   onClickSave(){
     this.save().then((json)=>{
       if(json){
@@ -105,54 +111,12 @@ export default class ProjectRun extends React.Component {
   }
   render () {
     return <div className="btn-group kskp-canvas-tool action">
-      <button type="button" className="btn btn-default btn-sm save" onClick={(e)=>this.onClickSave(e)}>
-        <div className="icon">
-          <i className="icon material-icons">&#xE2C2;</i>
-        </div>
-        <div className="text">
-          保存
-        </div>
-      </button>
-      <button type="button" className="btn btn-default btn-sm layout" onClick={(e)=>this.onClickSort(e)}>
-        <div className="icon">
-          <i className="icon material-icons">&#xE42A;</i>
-        </div>
-        <div className="text">
-          整列
-        </div>
-      </button>
-      <button type="button" className="btn btn-default btn-sm run" onClick={(e)=>this.onClickProjectRun(e)}>
-        <div className="icon">
-          <i className="icon material-icons">&#xE037;</i>
-        </div>
-        <div className="text">
-          プロジェクト実行
-        </div>
-      </button>
-      <button type="button" className="btn btn-default btn-sm abort" disabled={true}>
-        <div className="icon">
-          <i className="icon material-icons">&#xE034;</i>
-        </div>
-        <div className="text">
-          実行を中止
-        </div>
-      </button>
-      <button type="button" className="btn btn-default btn-sm dry-run" disabled={true}>
-        <div className="icon">
-          <i className="icon material-icons">&#xE044;</i>
-        </div>
-        <div className="text">
-          ドライラン
-        </div>
-      </button>
-      <button type="button" className="btn btn-default btn-sm download" disabled={true}>
-        <div className="icon">
-          <i className="icon material-icons">&#xE2C4;</i>
-        </div>
-        <div className="text">
-          ダウンロード
-        </div>
-      </button>
+      <Save onClick={(e)=>this.onClickSave(e)}/>
+      <Sort onClick={(e)=>this.onClickSort(e)}/>
+      <Run onClick={(e)=>this.onClickProjectRun(e)}/>
+      <Suspend />
+      <DryRun />
+      <Download />
     </div>
   }
 }
