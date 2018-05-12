@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Shadow from './Shadow'
-import Constants from '../constants/index'
+import Index from '../../shared/Shadow'
+import Constants from '../../../constants/index'
 
 class Paper extends React.Component {
   render () {
     return <svg className="kskp-paper" style={{width:this.props.graph.width + Constants.paper.padding.right,height:this.props.graph.height + Constants.paper.padding.bottom}}>
-      <Shadow />
+      <Index />
       {this.props.children}
     </svg>
   }

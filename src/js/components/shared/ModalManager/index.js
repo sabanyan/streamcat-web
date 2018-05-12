@@ -1,6 +1,6 @@
 import React from 'react'
-import Constants from '../constants'
-import Modal from './Modal'
+import Constants from '../../../constants/index'
+import Modal from '../Modal'
 
 /**
  *

@@ -1,9 +1,9 @@
 import React from 'react'
 import { render } from 'react-dom'
-import Constants from '../constants'
-import { FileIcon, SortIcon, McutIcon } from '../icons'
-import OperatorModel from '../model/OperatorModel'
-import DataSourceModel from '../model/DataSourceModel'
+import Constants from '../../../constants/index'
+import { FileIcon, SortIcon, McutIcon } from '../../../icons/index'
+import OperatorModel from '../../../model/OperatorModel'
+import DataSourceModel from '../../../model/DataSourceModel'
 
 let mouseMoveEvent
 let mouseUpEvent

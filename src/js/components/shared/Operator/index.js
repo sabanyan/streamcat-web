@@ -1,9 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import Constants from '../constants/index'
-import ModalUtil from '../utils/ModalUtil'
-import DataSourceModel from '../model/DataSourceModel'
-import OperatorModel from '../model/OperatorModel'
+import Constants from '../../../constants/index'
+import ModalUtil from '../../../utils/ModalUtil'
+import DataSourceModel from '../../../model/DataSourceModel'
+import OperatorModel from '../../../model/OperatorModel'
 
 export default class Operator extends React.Component{
   constructor(props) {

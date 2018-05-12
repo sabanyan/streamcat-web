@@ -1,8 +1,8 @@
 import React from 'react'
-import ModalUtil from '../utils/ModalUtil'
-import Constants from '../constants'
-import DataTable from '../components/DataTable'
-export default class CanvasZoom extends React.Component {
+import ModalUtil from '../../../utils/ModalUtil'
+import Constants from '../../../constants/index'
+import DataTable from '../../shared/DataTable/index'
+export default class ProjectRun extends React.Component {
   onClickSave(){
     this.save().then((json)=>{
       if(json){
