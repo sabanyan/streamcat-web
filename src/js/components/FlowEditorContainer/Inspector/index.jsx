@@ -4,7 +4,7 @@ import DataSourceModel from '../../../model/DataSourceModel'
 import OperatorInspector from './OperatorInspector'
 import OperatorModel from '../../../model/OperatorModel'
 
-class Property extends React.Component {
+class Inspector extends React.Component {
 
   render () {
     let {selected_step_ids} = this.props
@@ -26,4 +26,4 @@ class Property extends React.Component {
 
 }
 
-export default Property
+export default Inspector
