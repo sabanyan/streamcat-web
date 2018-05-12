@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import DataSourceModel from '../../../model/DataSourceModel'
-import Constants from '../../../constants/index'
-import ModalUtil from '../../../utils/ModalUtil'
-import DataTable from '../../shared/DataTable/index'
-import Operator from '../../shared/Operator'
+import DataSourceModel from '../../../../model/DataSourceModel'
+import Constants from '../../../../constants/index'
+import ModalUtil from '../../../../utils/ModalUtil'
+import DataTable from '../../../shared/DataTable/index'
+import Operator from '../../../shared/Operator/index'
 
-class DataSourceProperty extends React.Component {
+class DataSourceInspector extends React.Component {
 
     componentWillMount() {
         const self = this
@@ -191,4 +191,4 @@ class DataSourceProperty extends React.Component {
 
 }
 
-export default DataSourceProperty
+export default DataSourceInspector
