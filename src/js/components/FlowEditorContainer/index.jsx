@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import { addStepAction, updateStepAction, selectStepsAction, deleteStepAction,addMasterAction,sortFlowAction, executeFlowAction  } from '../../actions/index'
+import { addStepAction, updateStepAction, selectStepsAction, deleteStepAction,addMasterAction,sortFlowAction, executeFlowAction  } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 
 let FlowEditorContainer
