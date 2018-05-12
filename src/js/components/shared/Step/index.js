@@ -1,7 +1,7 @@
 import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
-import { FileIcon, SortIcon, McutIcon } from '../../../icons/index'
+import FileIcon from '../Icon/File'
 import OperatorModel from '../../../model/OperatorModel'
 import DataSourceModel from '../../../model/DataSourceModel'
 
