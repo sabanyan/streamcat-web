@@ -23,8 +23,7 @@ export default class FlowEditor extends BaseComponent{
       redirect: 'follow',
     }
 
-    //fetch("http://"+Constants.api.host+"/api/v0-1/operators", option).then(function (response) {
-    fetch("http://"+Constants.api.host+"/json/operators.json", option).then(function (response) {
+    fetch("http://"+Constants.api.host+"/api/v0-1/operators", option).then(function (response) {
       if (response.ok) {
         return response.json()
       } else {
