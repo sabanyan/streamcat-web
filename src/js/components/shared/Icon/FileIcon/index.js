@@ -1,7 +1,7 @@
 import React from 'react'
-import Icon from './index'
+import Icon from '../index'
 
-class File extends React.Component {
+class FileIcon extends React.Component {
   render () {
     return (
       <Icon {...this.props}>
@@ -12,4 +12,4 @@ class File extends React.Component {
   }
 }
 
-export default File
+export default FileIcon
