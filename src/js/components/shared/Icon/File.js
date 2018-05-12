@@ -1,5 +1,5 @@
 import React from 'react'
-import Icon from './Icon'
+import Icon from './index'
 
 class File extends React.Component {
   render () {
