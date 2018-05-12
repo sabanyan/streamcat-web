@@ -8,6 +8,7 @@ import CanvasZoom from '../CanvasZoom'
 import ProjectRun from '../ProjectRun'
 import ModalManager from '../../shared/ModalManager'
 import Constants from '../../../constants/index'
+import Edge from '../../shared/Edge/Edge'
 
 export default class FlowEditor extends React.Component{
 
@@ -56,7 +57,7 @@ export default class FlowEditor extends React.Component{
         const vy = steps[edge.v].position.y + 80 / 2
         const wx = steps[edge.w].position.x + 80 / 2
         const wy = steps[edge.w].position.y + 80 / 2
-        return <path key={"path"+index} d={"M" + vx + "," + vy + " " + "L" + wx + "," + wy} stroke="gray" strokeWidth="1" />
+        return <Edge vx={vx} vy={vy} wx={wx} wy={wy} key={index}/>
       })
     }
 
