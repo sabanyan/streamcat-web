@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
-import { addStepAction, updateStepAction, selectStepsAction, deleteStepAction,addMasterAction } from '../actions'
-import FlowEditor from '../components/FlowEditor'
+import { addStepAction, updateStepAction, selectStepsAction, deleteStepAction,addMasterAction,sortFlowAction, executeFlowAction  } from '../../actions/index'
+import FlowEditor from './FlowEditor'
 
 let FlowEditorContainer
 export default FlowEditorContainer = connect(
@@ -28,6 +28,12 @@ export default FlowEditorContainer = connect(
       },
       deleteStep(...args){
         dispatch(deleteStepAction(...args))
+      },
+      sortFlowAction(...args){
+        dispatch(sortFlowAction(...args))
+      },
+      executeFlowAction(...args){
+        dispatch(executeFlowAction(...args))
       }
     }
   }

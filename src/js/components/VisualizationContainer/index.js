@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import Visualization from '../components/Visualization'
+import Visualization from './Visualization'
 
 let VisualizationContainer
 export default VisualizationContainer = connect(

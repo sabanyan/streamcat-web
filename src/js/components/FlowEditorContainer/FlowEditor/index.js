@@ -1,14 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import PaperContainer from '../containers/PaperContainer'
-import PaperScrollerContainer from '../containers/PaperScrollerContainer'
-import PropertyContainer from '../containers/PropertyContainer'
-import Step from './Step'
-import CanvasZoom from './CanvasZoom'
-import ProjectRunContainer from '../containers/ProjectRunContainer'
-import BaseComponent from './BaseComponent'
-import ModalManager from './ModalManager'
-import Constants from '../constants'
+import PaperContainer from '../../../containers/PaperContainer'
+import PaperScrollerContainer from '../../../containers/PaperScrollerContainer'
+import PropertyContainer from '../../../containers/PropertyContainer'
+import Step from '../../Step'
+import CanvasZoom from '../../CanvasZoom'
+import ProjectRun from '../../ProjectRun'
+import BaseComponent from '../../BaseComponent'
+import ModalManager from '../../ModalManager'
+import Constants from '../../../constants/index'
 
 export default class FlowEditor extends BaseComponent{
 
@@ -64,8 +64,8 @@ export default class FlowEditor extends BaseComponent{
 
     return <div>
       <div className="d-flex align-items-stretch">
-      <CanvasZoom/>
-      <ProjectRunContainer/>
+      <CanvasZoom {...this.props} />
+      <ProjectRun {...this.props}/>
       <PaperScrollerContainer>
         <PaperContainer>
           {edges}
