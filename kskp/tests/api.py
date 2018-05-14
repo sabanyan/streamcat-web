@@ -217,6 +217,59 @@ class ApiTestCase(unittest.TestCase):
         path.unlink()
 
 
+    def test_update_flow(self):
+        """
+        update_flow APIをテストする
+        """
+
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+            user1 = 'user1'
+            model.create_user(user1, '', '', '')
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = user1
+
+            model.create_project('proj1', session)
+            project_id = model.get_all_projects()[0]['id']
+
+            # フローも作る
+            new_flow_name = 'ふろー更新APIてすと'
+            data_source_name = 'update_flow_api_test'
+
+            created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/api/v0/flows/%s' % created_flow['uuid']
+            updated_flow_name = '変更後だよ'
+            new_item = 'vjq@aer'
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                    'b': new_item,
+                    'name': updated_flow_name
+                })
+            )
+            result = json.loads(response.get_data())
+
+
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data']['uuid'], created_flow['uuid'])
+        self.assertEqual(result['data']['project_id'], project_id)
+        # 名前は正しく変更されている
+        self.assertEqual(result['data']['name'], updated_flow_name)
+        # 新しい内容も入っている
+        self.assertEqual(result['data']['b'], new_item)
+
+        # 後片付け
+        path = model.get_flow_path_by_uuid(created_flow['uuid'])
+        path.unlink()
+
+
     def test_delete_flow(self):
         """
         delete_flow APIをテストする

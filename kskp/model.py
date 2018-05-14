@@ -200,7 +200,7 @@ def delete_flow_by_uuid(flow_uuid):
     get_flow_path_by_uuid(flow_uuid).unlink()
 
 
-def edit_flow(flow_uuid, data):
+def update_flow_by_uuid(flow_uuid, data):
     """
     指定したフローの内容を渡されたdataの内容と結合する
     同じキーが含まれる場合は新しいもので上書きされる
