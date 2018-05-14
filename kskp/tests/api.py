@@ -174,6 +174,49 @@ class ApiTestCase(unittest.TestCase):
             # 後片付け
             model.make_flow_path(new_flow_data_source_name).unlink()
 
+
+    def test_fetch_flow(self):
+        """
+        fetch_flowをテストする
+        """
+
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+            user1 = 'user1'
+            model.create_user(user1, '', '', '')
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = user1
+
+            model.create_project('proj1', session)
+            project_id = model.get_all_projects()[0]['id']
+
+            # フローも作る
+            new_flow_name = 'ふろー取得APIてすと'
+            data_source_name = 'fetch_flow_api_test'
+
+            created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/api/v0/flows/%s' % created_flow['uuid']
+            response = client.get(endpoint)
+            result = json.loads(response.get_data())
+
+
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data']['uuid'], created_flow['uuid'])
+        self.assertEqual(result['data']['project_id'], project_id)
+        self.assertEqual(result['data']['name'], new_flow_name)
+
+        # 後片付け
+        path = model.get_flow_path_by_uuid(created_flow['uuid'])
+        path.unlink()
+
+
     def test_delete_flow(self):
         """
         delete_flow APIをテストする

@@ -8,7 +8,8 @@ from .model import (
     delete_project_by_uuid,
     get_project_id_by_uuid,
     create_flow,
-    delete_flow_by_uuid
+    delete_flow_by_uuid,
+    fetch_flow_by_uuid
 )
 
 api = Blueprint('api', __name__)
@@ -79,6 +80,16 @@ def new_flow():
     new_flow = create_flow(project_id, j['name'], j['data_source_name'])
 
     return jsonify({'success': True, 'data': new_flow})
+
+
+@api.route('/flows/<flow_uuid>', methods=['GET'])
+@login_required_api
+def fetch_flow(flow_uuid):
+    """
+    指定されたフローを取得する
+    """
+
+    return jsonify({'success': True, 'data': fetch_flow_by_uuid(flow_uuid)})
 
 
 @api.route('/flows/<flow_uuid>', methods=['DELETE'])
