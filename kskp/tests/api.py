@@ -3,6 +3,7 @@ import unittest
 import tempfile
 import json
 import uuid
+import pprint
 
 from werkzeug.datastructures import Headers
 
@@ -308,6 +309,24 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(result['success'], True)
         with app.app_context():
             self.assertFalse(model.make_flow_path(data_source_name).exists())
+
+
+    def test_fetch_tools(self):
+        """
+        fetch_tools APIをテストする
+        TODO: 結果の中身を確認するコードは書いていないが、そもそも書くべきか？
+        内容は増えていくし、pprintで見ればおかしくないことぐらいはわかる
+        必要になった時や必須のポイントがあれば書こう
+        （中身のスキーマだけは確認した方が良さげ）
+        """
+
+        with app.test_client() as client:
+            response = client.get('/api/v0/tools')
+            result = json.loads(response.get_data())
+
+        self.assertEqual(result['success'], True)
+        data = result['data']
+        # pprint.pprint(data)
 
 
 if __name__ == '__main__':

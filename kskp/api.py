@@ -1,4 +1,6 @@
+import json
 import uuid
+from pathlib import Path
 
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
@@ -114,6 +116,23 @@ def delete_flow(flow_uuid):
     delete_flow_by_uuid(flow_uuid)
 
     return jsonify({'success': True})
+
+
+@api.route('/tools')
+def fetch_tools():
+    """
+    ツール定義の一覧を返す
+    """
+
+    path = api.root_path / Path('data/tool')
+
+    tools = []
+    for tool_path in path.iterdir():
+        tool_json = tool_path.read_text(encoding='utf-8')
+        tool_data = json.loads(tool_json)
+        tools.append(tool_data)
+
+    return jsonify({'success': True, 'data': tools})
 
 
 @api.errorhandler(400)
