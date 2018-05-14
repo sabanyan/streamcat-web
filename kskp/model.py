@@ -185,7 +185,7 @@ def create_flow(project_id, flow_name, data_source_name=None):
     return data
 
 
-def fetch_flow(flow_uuid):
+def fetch_flow_by_uuid(flow_uuid):
     """
     指定したフローの内容を返す
     """
