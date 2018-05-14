@@ -185,6 +185,14 @@ def create_flow(project_id, flow_name, data_source_name=None):
     return data
 
 
+def fetch_flow(flow_uuid):
+    """
+    指定したフローの内容を返す
+    """
+    path = get_flow_path_by_uuid(flow_uuid)
+    return json.loads(path.read_text())
+
+
 def delete_flow_by_uuid(flow_uuid):
     """
     フローを削除する
