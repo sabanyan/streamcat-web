@@ -32,9 +32,10 @@ def login_required(func):
     このデコレータがついたエンドポイントは、
     ログインされていないとログインページを表示させる
     """
-    def deco():
+    @functools.wraps(func)
+    def deco(**kwargs):
         if 'user_id' in session:
-            return func()
+            return func(**kwargs)
         else:
             # ログインページを返す
             return render_template('login.html')
