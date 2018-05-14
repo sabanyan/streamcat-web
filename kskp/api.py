@@ -17,10 +17,6 @@ from .model import (
 
 api = Blueprint('api', __name__)
 
-@api.route('/')
-def api_root():
-    return "I'm api root %s" % api.root_path
-
 @api.route('/projects/new', methods=['POST'])
 @login_required_api
 def new_project():
