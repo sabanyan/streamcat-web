@@ -1,0 +1,35 @@
+{
+  "version": "0.1",
+  "name": "mselstr",
+  "description": "行選択(文字列)",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [
+    {
+      "name": "f",
+      "caption": "対象列名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    },
+    {
+      "name": "v",
+      "caption": "絞込条件値（文字列）",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    }
+  ],
+  "script": {
+    "type": "file",
+    "name": "mselstr.py"
+  }
+}
