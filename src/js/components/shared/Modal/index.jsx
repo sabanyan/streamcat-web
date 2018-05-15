@@ -1,14 +1,44 @@
-import React from 'react'
+// @flow
+import * as React from 'react'
 import Constants from '../../../constants/index'
-import PropTypes from 'prop-types'
-import ModalUtil from '../../../utils/ModalUtil'
 
-export default class Modal extends React.Component {
+type Props = {
+  id: string,
+  title?: string,
+  content?: React.Node,
+  dynamic?: boolean,
+  preview?: boolean,
+  footer?: boolean,
+  modal?: boolean,
+  ok?: boolean,
+  cancel?: string,
+  close?: boolean,
+  done?: string,
+  children?: React.Node
+}
 
-  constructor (props) {
-    super(props)
-    this.state = {visible: false,content:null,title: this.props.title}
+type State = {
+  visible: boolean,
+  content?: any,
+  title?: string
+}
+
+export default class Modal extends React.Component<Props,State> {
+  static defaultProps = {
+    ok: false,
+    done: "確定",
+    cancel: "キャンセル",
+    close: true,
+    preview: false,
+    footer: true,
+    modal: false,
   }
+
+  constructor (props:Props) {
+    super(props)
+    this.state= {visible: false,content:null,title: this.props.title}
+  }
+
 
   componentWillMount () {
     const self = this
@@ -153,26 +183,3 @@ export default class Modal extends React.Component {
     )
   }
 }
-
-Modal.propTypes = {
-  id: PropTypes.string.isRequired,
-  title: PropTypes.string,
-  done: PropTypes.string,
-  cancel: PropTypes.string,
-  close: PropTypes.bool,
-  ok: PropTypes.bool,
-  dynamic: PropTypes.bool,
-  preview: PropTypes.bool,
-  footer: PropTypes.bool,
-  modal: PropTypes.bool
-};
-
-Modal.defaultProps = {
-  ok: false,
-  done: "確定",
-  cancel: "キャンセル",
-  close: true,
-  preview: false,
-  footer: true,
-  modal: false,
-};

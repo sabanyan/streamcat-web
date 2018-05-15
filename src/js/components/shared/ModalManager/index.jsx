@@ -1,3 +1,4 @@
+// @flow
 import React from 'react'
 import Constants from '../../../constants/index'
 import Modal from '../Modal'
@@ -25,8 +26,11 @@ import Modal from '../Modal'
  * コールバック処理を受け取れます
  *
  */
-export default class ModalManager extends React.Component {
-  constructor (props) {
+
+type Props = {||} //空オブジェクト Exact object types
+
+export default class ModalManager extends React.Component<Props> {
+  constructor (props:Props) {
     super(props)
   }
 
@@ -35,13 +39,14 @@ export default class ModalManager extends React.Component {
   }
 
   render () {
+
     return <div>
       <Modal key={Constants.modal.ADD_OPERATOR} id={Constants.modal.ADD_OPERATOR} dynamic={true}>
       </Modal>
       <Modal key={Constants.preview.DATASOURCE} id={Constants.preview.DATASOURCE} title="プレビュー" dynamic={true} preview={true} footer={false}>
       </Modal>
       <Modal key={Constants.modal.SHOW_MESSAGE} id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true} ok={true}>
-          <div ref = {Constants.modal.property.SHOW_MESSAGE}></div>
+          <div ref = {Constants.modal.property.SHOW_MESSAGE}/>
       </Modal>
     </div>
   }
