@@ -1,6 +1,18 @@
+// @flow
 import React from 'react'
 
-export default class DataTable extends React.Component {
+
+type Props = {
+  json: {
+    data: any;//TODO resetting
+    success: boolean;
+    errormessage: string;
+    errorcode: number;
+    columns: string[]
+  }
+}
+
+export default class DataTable extends React.Component<Props> {
   render () {
 
     let {json} = this.props

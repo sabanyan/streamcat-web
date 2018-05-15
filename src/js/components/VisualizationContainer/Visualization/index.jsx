@@ -4,9 +4,21 @@ import { Doughnut, Pie, Line, Bar, HorizontalBar, Radar, Polar, Bubble, Scatter 
 import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
 
-export default class Visualization extends React.Component {
+type State = {
+  json?: any,//TODO resetting
+  type: string,
+  image_url?: string,
+  chart_instance?: any,
+  type: string
+}
 
-  constructor (props) {
+type Props = {
+
+}
+
+export default class Visualization extends React.Component<Props,State> {
+
+  constructor (props:Props) {
     super(props)
     this.state = {json: null, type: Constants.chart.bar,image_url: null}
   }
@@ -43,11 +55,11 @@ export default class Visualization extends React.Component {
 
   }
 
-  onChangeChart (e) {
+  onChangeChart (e:Event) {
     this.setState({type: e.target.value})
   }
 
-  onClickSave(e){
+  onClickSave(e:Event){
     let chart_instance = this.state.chart_instance
     let url_base64 = chart_instance.toBase64Image();
     this.setState({image_url:url_base64})
