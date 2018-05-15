@@ -1,12 +1,23 @@
+// @flow
 import React from 'react'
-import PropTypes from 'prop-types'
 import Constants from '../../../constants/index'
 import ModalUtil from '../../../utils/ModalUtil'
 import DataSourceModel from '../../../model/DataSourceModel'
 import OperatorModel from '../../../model/OperatorModel'
 
-export default class Operator extends React.Component{
-  constructor(props) {
+type Props = {
+  name: string;
+  description: string;
+  arguments: [{name:string,caption:string}];
+  selected_step_ids: string[];
+  outputs: any[];//TODO step type;
+  addStep: Function;
+  selectSteps: Function;
+}
+
+export default class Operator extends React.Component<Props>{
+  inputRefs:any[]
+  constructor(props:Props) {
     super(props)        //モーダル処理の登録
     this.inputRefs = []
   }
@@ -29,7 +40,7 @@ export default class Operator extends React.Component{
     return content
   }
 
-  onSubmitModal(e){
+  onSubmitModal(e:Event){
     e.preventDefault()
     //クリックされたときのEventEmitterを実行
     const id = Constants.modal.ADD_OPERATOR
