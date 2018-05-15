@@ -1,9 +1,14 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+// @flow
+import * as React from 'react'
 import Index from '../../shared/Shadow'
 import Constants from '../../../constants/index'
 
-class Paper extends React.Component {
+type Props ={
+  graph:{width:number,height:number},
+  children: React.Node
+}
+
+class Paper extends React.Component<Props> {
   render () {
     return <svg className="kskp-paper" style={{width:this.props.graph.width + Constants.paper.padding.right,height:this.props.graph.height + Constants.paper.padding.bottom}}>
       <Index />
@@ -11,7 +16,5 @@ class Paper extends React.Component {
     </svg>
   }
 }
-
-Paper.propTypes = {}
 
 export default Paper
