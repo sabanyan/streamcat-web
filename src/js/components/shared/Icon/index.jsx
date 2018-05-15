@@ -1,5 +1,21 @@
-import React from 'react'
-class Icon extends React.Component {
+// @flow
+import * as React from 'react'
+
+type Props = {
+  fillColor: string;
+  height: number;
+  width: number;
+  padding: number;
+  children: React.Node;
+}
+
+class Icon extends React.Component<Props> {
+  static defaultProps = {
+    fillColor: "#63B8E2",
+    height: 44,
+    width: 44,
+    padding: 16,
+  }
   render (){
     return <g transform={"translate(" + this.props.padding + "," + this.props.padding + ")"}>
       <svg fill={this.props.fillColor} height={this.props.height}
@@ -9,13 +25,6 @@ class Icon extends React.Component {
       </svg>
     </g>
   }
-}
-
-Icon.defaultProps = {
-  fillColor: "#63B8E2",
-  height: 44,
-  width: 44,
-  padding: 16,
 }
 
 export default Icon

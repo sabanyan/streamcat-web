@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import Paper from '../Paper'
 import PaperScroller from '../PaperScroller'
 import Property from '../Inspector'
