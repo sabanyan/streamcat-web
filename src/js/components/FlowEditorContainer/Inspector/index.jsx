@@ -1,10 +1,20 @@
+// @flow
 import React from 'react'
 import DataSourceInspector from './DataSourceInspector'
 import DataSourceModel from '../../../model/DataSourceModel'
 import OperatorInspector from './OperatorInspector'
 import OperatorModel from '../../../model/OperatorModel'
 
-class Inspector extends React.Component {
+type Props = {
+  selected_step_ids: any[];
+  steps:{};
+  selectSteps:function;
+  deleteStep:function;
+  updateStep:function;
+  mast: {operators:any[]};
+}
+
+class Inspector extends React.Component<Props> {
 
   render () {
     let {selected_step_ids} = this.props

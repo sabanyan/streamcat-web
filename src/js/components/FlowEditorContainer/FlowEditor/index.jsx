@@ -1,3 +1,4 @@
+// @flow
 import React from 'react'
 import Paper from '../Paper'
 import PaperScroller from '../PaperScroller'
@@ -9,9 +10,24 @@ import ModalManager from '../../shared/ModalManager'
 import Constants from '../../../constants/index'
 import Edge from '../../shared/Edge/Edge'
 
-export default class FlowEditor extends React.Component{
+type Props = {
+  mast: {operators:any[]};
+  addMaster: function;
+  selectSteps:function;
+  deleteStep:function;
+  updateStep:function;
+  edges: any[];
+  steps: {};
+  selected_step_ids: string[];
+}
 
-  constructor (props){
+type State = {
+
+}
+
+export default class FlowEditor extends React.Component<Props,State>{
+
+  constructor (props:Props){
     super(props)
 
     const self = this
@@ -28,7 +44,7 @@ export default class FlowEditor extends React.Component{
       } else {
         alert("サーバでエラーが発生しました")
       }
-    }).then(function (json) {
+    }).then(function (json:any) {
       //マスタ追加
       self.props.addMaster({operators:json.data})
     }).catch((err) => {

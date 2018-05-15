@@ -1,3 +1,4 @@
+// @flow
 import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
@@ -8,9 +9,25 @@ import DataSourceModel from '../../../model/DataSourceModel'
 let mouseMoveEvent
 let mouseUpEvent
 
-export default class Step extends React.Component {
 
-  constructor (props) {
+type Props = {
+  model: OperatorModel | DataSourceModel;
+  selectSteps: function;
+  updateStep: function;
+  position:{x:number,y:number};
+  type: string;
+  selected: boolean;
+  text: string;
+}
+
+type State = {
+  coords: ?{x:number,y:number};
+  filter:string;
+}
+
+export default class Step extends React.Component<Props,State> {
+
+  constructor (props:Props) {
     super(props)
     this.state = {
       filter: "",
@@ -22,7 +39,7 @@ export default class Step extends React.Component {
    * mouse down ステップ選択処理
    * @param e
    */
-  handleMouseDown (e) {
+  handleMouseDown (e:MouseEvent) {
 
     this.updateStep(e)
 
@@ -37,8 +54,8 @@ export default class Step extends React.Component {
     //選択イベントの呼び出し
     this.props.selectSteps([step])
     //mousemoveイベントでハンドリング
-    mouseMoveEvent = (e) => this.handleMouseMove(e)
-    mouseUpEvent = (e) => this.handleMouseUp(e)
+    mouseMoveEvent = (e:MouseEvent) => this.handleMouseMove(e)
+    mouseUpEvent = (e:MouseEvent) => this.handleMouseUp(e)
     document.addEventListener("mousemove", mouseMoveEvent, false);
     document.addEventListener("mouseup", mouseUpEvent, false);
   }
@@ -47,7 +64,7 @@ export default class Step extends React.Component {
    * mouse up
    * @param e
    */
-  handleMouseUp (e) {
+  handleMouseUp (e:MouseEvent) {
     this.updateStep(e)
 
     //一時保存された位置のクリア
@@ -62,7 +79,7 @@ export default class Step extends React.Component {
    * mouse move ステップのドラッグ処理
    * @param e
    */
-  handleMouseMove (e) {
+  handleMouseMove (e:MouseEvent) {
 
     this.updateStep(e)
 
@@ -75,7 +92,7 @@ export default class Step extends React.Component {
     })
   }
 
-  updateStep(e){
+  updateStep(e:MouseEvent){
     let coords_x = e.pageX
     let coords_y = e.pageY
 
@@ -92,7 +109,7 @@ export default class Step extends React.Component {
 
     //移動に応じてStepの位置を更新
     let step = this.props.model
-    step.setPosition(new_x, new_y)
+    step.setPosition({x:new_x,y:new_y})
     this.props.updateStep(step)
   }
 
@@ -100,7 +117,7 @@ export default class Step extends React.Component {
    * mouse over ホバー処理
    * @param e
    */
-  handleMouseOver (e) {
+  handleMouseOver (e:MouseEvent) {
     //SVGに影をつける
     this.setState({
       filter: "url(#hover-shadow)"
@@ -111,7 +128,7 @@ export default class Step extends React.Component {
    * mouse leave ホバー終了処理
    * @param e
    */
-  handleMouseLeave (e) {
+  handleMouseLeave (e:MouseEvent) {
     //SVGの影をクリア
     this.setState({
       filter: ""
