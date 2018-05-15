@@ -1,12 +1,24 @@
+// @flow
 import React from 'react'
-import PropTypes from 'prop-types'
 import DataSourceModel from '../../../../model/DataSourceModel'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../../shared/DataTable/index'
 import Operator from '../../../shared/Operator/index'
 
-class DataSourceInspector extends React.Component {
+type Props = {
+  steps: {};
+  selected_step_ids: any[];
+  selectSteps:function;
+  deleteStep:function;
+  mast: {operators:any[]};
+}
+
+type State = {
+
+}
+
+class DataSourceInspector extends React.Component<Props,State> {
 
     componentWillMount() {
         const self = this
@@ -19,7 +31,7 @@ class DataSourceInspector extends React.Component {
         })
     }
 
-    onClickPreview(e) {
+    onClickPreview(e:Event) {
 
       const self = this
       let option = {
@@ -59,7 +71,7 @@ class DataSourceInspector extends React.Component {
 
     }
 
-    onClickDelete(e) {
+    onClickDelete(e:Event) {
       if(window.confirm("このデータソースを削除しますか？")) {
         let {selected_step_ids, steps} = this.props
         const selected_step = steps[selected_step_ids[0]]

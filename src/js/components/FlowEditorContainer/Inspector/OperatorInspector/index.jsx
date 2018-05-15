@@ -1,14 +1,27 @@
+// @flow
 import React from 'react'
-import PropTypes from 'prop-types'
 import DataSourceModel from '../../../../model/DataSourceModel'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../../shared/DataTable/index'
 import OperatorModel from '../../../../model/OperatorModel'
 
-class OperatorInspector extends React.Component {
+type Props = {
+  selected_step_ids: any[];
+  steps: {};
+  selectSteps:function;
+  updateStep:function;
+  deleteStep:function;
+  mast: {operators:any[]};
+}
 
-    onClickSave(e) {
+type State = {
+
+}
+
+class OperatorInspector extends React.Component<Props,State> {
+
+    onClickSave(e:Event) {
         let {selected_step_ids,steps} = this.props
         let selected_step = steps[selected_step_ids[0]]
 
@@ -21,7 +34,7 @@ class OperatorInspector extends React.Component {
         this.props.selectSteps()
     }
 
-    onClickDelete(e) {
+    onClickDelete(e:Event) {
         if(window.confirm("このオペレーターを削除しますか？")){
           let {selected_step_ids,steps} = this.props
           let selected_step = steps[selected_step_ids[0]]
@@ -30,8 +43,8 @@ class OperatorInspector extends React.Component {
         }
     }
 
-    getOperator(operator_name){
-        let operator
+    getOperator(operator_name:string){
+        let operator = null;
         this.props.mast.operators.map((op)=>{
             if(operator_name === op.name){
                 operator = op
@@ -40,8 +53,8 @@ class OperatorInspector extends React.Component {
         return operator
     }
 
-    getOperatorArgument(argument_name,operator){
-        let argument
+    getOperatorArgument(argument_name:string,operator:?{arguments:any[]}){
+        let argument = {};
         if(operator && operator.arguments){
             operator.arguments.map((arg)=>{
                 if(arg.name == argument_name){
@@ -64,11 +77,12 @@ class OperatorInspector extends React.Component {
 
         let inputForm
 
-        inputForm = Object.keys(selected_step.parameters).map((key,index)=>{
+        inputForm = Object.keys(selected_step.parameters).map((key:string,index:number)=>{
             const parameter = selected_step.parameters[key]
-            const operator_name = selected_step.operator
+            const operator_name:string = selected_step.operator
             const operator = self.getOperator(operator_name)
-            const argument = self.getOperatorArgument(key,operator)
+            const argument:{caption?:string} = self.getOperatorArgument(key,operator)
+
             const argument_name = key
             return <div key={index}>
                 <label>{argument.caption}</label>

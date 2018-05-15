@@ -16,36 +16,40 @@ export default class OperatorModel{
 
   id: string;
   operator: ?string;
-  position: { x: number, y: number };
-  size: { width: number, height: number };
+  position: { x: number, y: number } = {x:0,y:0};
+  size: { width: number, height: number } = {width:0,height:0};
   width: number;
   height: number;
   text: string;
-  property: ?{};
-  parameters: ?{};
+  property: ?{} = {};
+  parameters: ?{} = {};
 
   constructor (props:Props) {
     this.id = (props.id)?props.id: ModelUtil.getId();
     this.operator = props.operator
-    this.position = (props.position)?props.position:{x:0,y:0}
-    this.size = (props.size)?props.size:{width:0,height:0}
+    this.setPosition(props.position)
+    this.setSize(props.size)
     this.text = props.text
     this.property = (props.property)?props.property:{}
     this.parameters = props.parameters
   }
 
-  setPosition (x:number, y:number) {
-    this.position.x = x
-    this.position.y = y
+  setPosition (position:?{x:number, y:number}) {
+    if(position){
+      this.position.x = position.x
+      this.position.y = position.y
+    }
   }
 
-  setSize (width:number, height:number) {
-    this.size.width = width
-    this.size.height = height
+  setSize (size:?{width:number, height:number}) {
+    if(size){
+      this.size.width = size.width
+      this.size.height = size.height
+    }
   }
 
-  setFrame (x:number, y:number, width:number, height:number) {
-    this.setPosition(x, y)
-    this.setSize(width, height)
+  setFrame (frame:{x:number, y:number, width:number, height:number}) {
+    this.setPosition({x:frame.x,y:frame.y})
+    this.setSize({width:frame.width, height:frame.height})
   }
 }
