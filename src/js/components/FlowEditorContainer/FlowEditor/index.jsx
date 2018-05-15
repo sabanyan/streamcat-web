@@ -11,6 +11,7 @@ import Constants from '../../../constants/index'
 import Edge from '../../shared/Edge/Edge'
 
 type Props = {
+  graph:{width:number,height:number},
   mast: {operators:any[]};
   addMaster: function;
   selectSteps:function;
@@ -79,7 +80,7 @@ export default class FlowEditor extends React.Component<Props,State>{
 
     return <div>
       <div className="d-flex align-items-stretch">
-      <PaperZoom {...this.props} />
+      <PaperZoom/>
       <Toolbar {...this.props}/>
       <PaperScroller {...this.props}>
         <Paper {...this.props}>

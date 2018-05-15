@@ -1,11 +1,16 @@
-import React from 'react'
-import PropTypes from 'prop-types'
+// @flow
+import * as React from 'react'
 
-class PaperScroller extends React.Component {
+type Props = {
+  children: React.Node;
+  selectSteps: function;
+}
+
+class PaperScroller extends React.Component<Props> {
   componentDidMount(){
   }
 
-  onMouseDown(e){
+  onMouseDown(e:{_dispatchListeners:{length:number}}){
     if(e._dispatchListeners.length == 1){
       this.props.selectSteps()
     }
@@ -18,6 +23,5 @@ class PaperScroller extends React.Component {
   }
 }
 
-PaperScroller.propTypes = {}
 
 export default PaperScroller
