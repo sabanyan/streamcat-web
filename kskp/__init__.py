@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for, redirect
 
 app = Flask('kskp')
 app.secret_key = '-jm624cqpry89e'
@@ -9,28 +9,20 @@ from .api import api
 
 app.register_blueprint(api, url_prefix='/api/v0')
 
-@app.route('/login')
-def login():
-    session['user_id'] = 'me'
-    return 'login'
-
-from flask import session
-
-@app.route('/logout')
-def logout():
-    del session['user_id']
-    return 'logout'
 
 @app.route('/')
 def top():
-    with app.open_resource('data/frame/dat1.csv') as data:
-        contents = data.read()
-        return "i'm top of the world %r" % contents
+    return redirect(url_for('projects'))
 
 @app.route('/projects')
 @login_required
 def projects():
     return render_template('projects.html')
+
+@app.route('/flows')
+# @login_required
+def flows():
+    return render_template('flows.html')
 
 
 if __name__ == '__main__':
