@@ -321,7 +321,7 @@ class ModelTestCase(unittest.TestCase):
         data_source_name = 'fetch_flow_test'
         created_flow = model.create_flow(1, new_flow_name, data_source_name)
 
-        fetched_flow = model.fetch_flow(created_flow['uuid'])
+        fetched_flow = model.fetch_flow_by_uuid(created_flow['uuid'])
 
         # ファイル名も確認しておく
         path = model.get_flow_path_by_uuid(fetched_flow['uuid'])
@@ -342,11 +342,11 @@ class ModelTestCase(unittest.TestCase):
         model.delete_flow_by_uuid(flow['uuid'])
 
 
-    def test_edit_flow(self):
+    def test_update_flow(self):
         data_source_name = 'nvwp;rfqa'
         flow = model.create_flow(1, '', data_source_name)
 
-        model.edit_flow(flow['uuid'], {'a': 1})
+        model.update_flow_by_uuid(flow['uuid'], {'a': 1})
         path = model.make_flow_path(data_source_name)
 
         # 改めてファイルから読み直す
