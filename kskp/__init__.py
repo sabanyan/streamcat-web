@@ -1,7 +1,6 @@
 from flask import Flask, render_template, url_for, redirect
 
 app = Flask('kskp')
-app.secret_key = '-jm624cqpry89e'
 
 import kskp.model
 from .auth import login_required
