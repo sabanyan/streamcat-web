@@ -1,9 +1,11 @@
 import hashlib
 import functools # wraps for decorator
 from flask import session, render_template, jsonify
+from . import app
 
 FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
 STRETCH_COUNT = 100
+app.secret_key = '-jm624cqpry89e'
 
 def get_password_hash(user_id, password):
     """
