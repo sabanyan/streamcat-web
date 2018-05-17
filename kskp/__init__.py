@@ -13,13 +13,13 @@ app.register_blueprint(api, url_prefix='/api/v0')
 def top():
     return redirect(url_for('projects'))
 
-@app.route('/projects')
+@app.route('/projects', methods=['GET', 'POST'])
 @login_required
 def projects():
     return render_template('projects.html')
 
-@app.route('/flows')
-# @login_required
+@app.route('/flows', methods=['GET', 'POST'])
+@login_required
 def flows():
     return render_template('flows.html')
 
