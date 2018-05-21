@@ -12,8 +12,8 @@ let mouseUpEvent
 
 type Props = {
   model: OperatorModel | DataSourceModel;
-  selectSteps: function;
-  updateStep: function;
+  selectSteps: Function;
+  updateStep: Function;
   position:{x:number,y:number};
   type: string;
   selected: boolean;

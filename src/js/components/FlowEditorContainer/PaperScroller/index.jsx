@@ -3,7 +3,7 @@ import * as React from 'react'
 
 type Props = {
   children: React.Node;
-  selectSteps: function;
+  selectSteps: Function;
 }
 
 class PaperScroller extends React.Component<Props> {

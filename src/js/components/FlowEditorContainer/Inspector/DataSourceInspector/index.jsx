@@ -9,8 +9,8 @@ import Operator from '../../../shared/Operator/index'
 type Props = {
   steps: {};
   selected_step_ids: any[];
-  selectSteps:function;
-  deleteStep:function;
+  selectSteps:Function;
+  deleteStep:Function;
   mast: {operators:any[]};
 }
 
