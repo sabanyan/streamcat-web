@@ -17,6 +17,8 @@ from .model import (
 
 api = Blueprint('api', __name__)
 
+DATAFRAME_DIR_PATH = api.root_path / Path('data/frame')
+
 @api.route('/projects/new', methods=['POST'])
 @login_required_api
 def new_project():
@@ -131,6 +133,17 @@ def fetch_tools():
     return jsonify({'success': True, 'data': tools})
 
 
+@api.route('/frames/<frame_uuid>')
+def fetch_frame(frame_uuid):
+    """
+    指定したframeを直接UUIDで指定して取得する
+    """
+
+    file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
+    result = load_as_data_frame(file_path.read_text(encoding='utf-8'))
+
+    return jsonify({'success': True, 'data': result})
+
 @api.errorhandler(400)
 def handle_bad_request(error):
     """
@@ -141,3 +154,20 @@ def handle_bad_request(error):
     # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
     message = 'The browser (or proxy) sent a request that this server could not understand.'
     return jsonify({'success': False, 'message': message})
+def load_as_data_frame(result_text):
+    """
+    CSVの文字列を受け取り、
+    いわゆるデータフレームの形式にして返す
+    """
+    result_list = [x for x in result_text.split('\n') if x != '']
+    result_data = {}
+    column_list = result_list[0].split(',')
+    for column_name in column_list:
+        result_data[column_name] = []
+
+    for record in result_list[1:]:
+        for idx, column_data in enumerate(record.split(',')):
+            # print(column_list[idx])
+            result_data[column_list[idx]].append(column_data)
+
+    return result_data
