@@ -4,10 +4,9 @@ import tempfile
 import json
 import uuid
 import pprint
+from pathlib import Path
 
 from werkzeug.datastructures import Headers
-
-from flask import template_rendered
 
 from kskp import app
 import kskp.model as model
@@ -31,8 +30,6 @@ class ApiTestCase(unittest.TestCase):
         email = 'dev@kskp.io'
         creator_name = '開発者'
         project_name = '新しいプロジェクト'
-
-        app.testing = True
 
         with app.app_context():
             with self.client.session_transaction() as session:
@@ -100,14 +97,7 @@ class ApiTestCase(unittest.TestCase):
 
     def test_delete_project(self):
         with app.app_context():
-
-            user1 = 'user1'
-            model.create_user(user1, '', '', '')
-
-            with self.client.session_transaction() as session:
-                session['user_id'] = user1
-
-            model.create_project('proj1', session)
+            (user1, project_id, project_uuid) = setUpProject(self)
 
             # 削除前のプロジェクトの数を調べる
             projects_before = model.get_all_projects()
@@ -131,15 +121,7 @@ class ApiTestCase(unittest.TestCase):
 
         # まずユーザとプロジェクトを作る
         with app.app_context():
-
-            user1 = 'user1'
-            model.create_user(user1, '', '', '')
-
-            with self.client.session_transaction() as session:
-                session['user_id'] = user1
-
-            model.create_project('proj1', session)
-            project_uuid = model.get_all_projects()[0]['uuid']
+            (user1, project_id, project_uuid) = setUpProject(self)
 
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
@@ -183,20 +165,9 @@ class ApiTestCase(unittest.TestCase):
 
         # まずユーザとプロジェクトを作る
         with app.app_context():
-            user1 = 'user1'
-            model.create_user(user1, '', '', '')
-
-            with self.client.session_transaction() as session:
-                session['user_id'] = user1
-
-            model.create_project('proj1', session)
-            project_id = model.get_all_projects()[0]['id']
-
-            # フローも作る
-            new_flow_name = 'ふろー取得APIてすと'
-            data_source_name = 'fetch_flow_api_test'
-
-            created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
 
 
         # 実際のAPIを投げるテストを開始する
@@ -225,20 +196,9 @@ class ApiTestCase(unittest.TestCase):
 
         # まずユーザとプロジェクトを作る
         with app.app_context():
-            user1 = 'user1'
-            model.create_user(user1, '', '', '')
-
-            with self.client.session_transaction() as session:
-                session['user_id'] = user1
-
-            model.create_project('proj1', session)
-            project_id = model.get_all_projects()[0]['id']
-
-            # フローも作る
-            new_flow_name = 'ふろー更新APIてすと'
-            data_source_name = 'update_flow_api_test'
-
-            created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
 
 
         # 実際のAPIを投げるテストを開始する
@@ -278,21 +238,9 @@ class ApiTestCase(unittest.TestCase):
 
         # まずユーザとプロジェクトを作る
         with app.app_context():
-
-            user1 = 'user1'
-            model.create_user(user1, '', '', '')
-
-            with self.client.session_transaction() as session:
-                session['user_id'] = user1
-
-            model.create_project('proj1', session)
-            project_uuid = model.get_all_projects()[0]['uuid']
-            project_id = model.get_project_id_by_uuid(project_uuid)
-
-            # フロー作成
-            new_flow_name = 'フロー削除のテスト用'
-            data_source_name = 'delete_flow_test'
-            new_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
 
             # APIを投げる前はファイルは存在するはず
             self.assertTrue(model.make_flow_path(data_source_name).exists())
@@ -301,7 +249,7 @@ class ApiTestCase(unittest.TestCase):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
-            endpoint = '/api/v0/flows/%s' % new_flow['uuid']
+            endpoint = '/api/v0/flows/%s' % created_flow['uuid']
             response = client.delete(endpoint)
             result = json.loads(response.get_data())
 
@@ -328,6 +276,122 @@ class ApiTestCase(unittest.TestCase):
         data = result['data']
         # pprint.pprint(data)
 
+
+    def test_upload_frame(self):
+        """
+        upload_frame APIをテストする
+        """
+        # アップロード用に一時ファイルを作成する
+        f, file_name = tempfile.mkstemp()
+
+        with app.test_client() as client:
+            response = client.post('/api/v0/frames/new',
+                # content_type='multipart/form-data',
+                # content_type='application/x-www-form-urlencoded',
+                data={
+                    # 'file_name': file_name
+                    # ,
+                    'file': f
+                }
+            )
+            result = json.loads(response.get_data())
+
+        # self.assertEqual(result['message'], '')
+        # self.assertEqual(result['success'], True)
+
+
+class FrameApiTestCase(unittest.TestCase):
+    def setUp(self):
+        app.testing = True
+
+        setUpDatabase(self)
+        setUpClient(self)
+
+        with app.app_context():
+            # まずユーザとプロジェクトを作る
+            setUpProject(self)
+
+        # frameを作る ファイル名はUUID
+        self.frame_uuid = str(uuid.uuid4())
+        csv_contents = 'a,b,c\n1,2,3\n0,1,2'
+        self.path = app.root_path / Path('data/frame/%s.csv' % self.frame_uuid)
+        self.path.write_text(csv_contents, encoding='utf-8')
+
+
+    def tearDown(self):
+        # 後片付け
+        self.path.unlink()
+        tearDownDatabase(self)
+
+
+    def test_fetch_frame(self):
+        """
+        fetch_frame APIをテストする
+        """
+        with app.test_client() as client:
+            response = client.get('/api/v0/frames/%s' % self.frame_uuid)
+        result = json.loads(response.get_data())
+
+        self.assertEqual(result['success'], True)
+        data = result['data']
+        self.assertEqual(data['a'], ['1', '0'])
+        self.assertEqual(data['b'], ['2', '1'])
+        self.assertEqual(data['c'], ['3', '2'])
+
+
+def setUpDatabase(self):
+    """
+    一時ファイルでsqlite DBを作成する
+    """
+    self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
+
+    with app.app_context():
+        model.init_db()
+
+
+def tearDownDatabase(self):
+    """
+    sqlite DBの削除
+    """
+    os.close(self.db_fd)
+    os.unlink(app.config['DATABASE'])
+
+
+def setUpClient(self):
+    """
+    エンドポイント テスト用の作成
+    """
+    self.client = app.test_client()
+
+
+def setUpUser(self):
+    user1 = 'user1'
+    model.create_user(user1, '', '', '')
+    return user1
+
+
+def setUpProject(self):
+    user1 = setUpUser(self)
+
+    with self.client.session_transaction() as session:
+        session['user_id'] = user1
+
+    model.create_project('proj1', session)
+    project_uuid = model.get_all_projects()[0]['uuid']
+    project_id = model.get_project_id_by_uuid(project_uuid)
+
+    return (user1, project_id, project_uuid)
+
+
+def setUpFlow(self):
+    (user1, project_id, project_uuid) = setUpProject(self)
+
+    # フロー作成
+    new_flow_name = 'フローテスト用'
+    data_source_name = 'flow_test'
+    created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+
+    return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
 
 if __name__ == '__main__':
     unittest.main()
