@@ -9,9 +9,9 @@ import OperatorModel from '../../../../model/OperatorModel'
 type Props = {
   selected_step_ids: any[];
   steps: {};
-  selectSteps:function;
-  updateStep:function;
-  deleteStep:function;
+  selectSteps:Function;
+  updateStep:Function;
+  deleteStep:Function;
   mast: {operators:any[]};
 }
 

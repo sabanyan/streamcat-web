@@ -11,24 +11,22 @@ import Constants from '../../../constants/index'
 import Edge from '../../shared/Edge/Edge'
 
 type Props = {
-  graph:{width:number,height:number},
-  mast: {operators:any[]};
-  addMaster: function;
-  selectSteps:function;
-  deleteStep:function;
-  updateStep:function;
+  graph: { width: number, height: number };
+  mast: { operators: any[] };
+  addMaster: Function;
+  selectSteps: Function;
+  deleteStep: Function;
+  updateStep: Function;
   edges: any[];
   steps: {};
   selected_step_ids: string[];
 }
 
-type State = {
+type State = {}
 
-}
+export default class FlowEditor extends React.Component<Props, State> {
 
-export default class FlowEditor extends React.Component<Props,State>{
-
-  constructor (props:Props){
+  constructor (props: Props) {
     super(props)
 
     const self = this
@@ -39,15 +37,15 @@ export default class FlowEditor extends React.Component<Props,State>{
       redirect: 'follow',
     }
 
-    fetch("http://"+Constants.api.host+"/api/v0-1/operators", option).then(function (response) {
+    fetch("http://" + Constants.api.host + "/api/v0-1/operators", option).then(function (response) {
       if (response.ok) {
         return response.json()
       } else {
         alert("サーバでエラーが発生しました")
       }
-    }).then(function (json:any) {
+    }).then(function (json: any) {
       //マスタ追加
-      self.props.addMaster({operators:json.data})
+      self.props.addMaster({operators: json.data})
     }).catch((err) => {
       console.log(err)
       alert("クライアントでエラーが発生しました")
@@ -63,34 +61,33 @@ export default class FlowEditor extends React.Component<Props,State>{
     const flows = Object.keys(steps).map((node_name) => {
       let step = steps[node_name]
       let selected = (node_name === selected_step_ids[0])
-      return <Step key={step.id} {...step} model={step} {...this.props} selected={selected}/>
+      return <Step key={step.id} {...step} model={step} {...this.props} selected={selected} />
     })
     let edges = []
 
     if (Array.isArray(this.props.edges)) {
-      edges = this.props.edges.map(function (edge,index) {
+      edges = this.props.edges.map(function (edge, index) {
         const vx = steps[edge.v].position.x + 80 / 2
         const vy = steps[edge.v].position.y + 80 / 2
         const wx = steps[edge.w].position.x + 80 / 2
         const wy = steps[edge.w].position.y + 80 / 2
-        return <Edge vx={vx} vy={vy} wx={wx} wy={wy} key={index}/>
+        return <Edge vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
       })
     }
 
-
     return <div>
       <div className="d-flex align-items-stretch">
-      <PaperZoom/>
-      <Toolbar {...this.props}/>
-      <PaperScroller {...this.props}>
-        <Paper {...this.props}>
-          {edges}
-          {flows}
-        </Paper>
-      </PaperScroller>
-      <Property {...this.props}/>
-      <ModalManager/>
-    </div>
+        <PaperZoom />
+        <Toolbar {...this.props} />
+        <PaperScroller {...this.props}>
+          <Paper {...this.props}>
+            {edges}
+            {flows}
+          </Paper>
+        </PaperScroller>
+        <Property {...this.props} />
+        <ModalManager />
+      </div>
     </div>
   }
 }
