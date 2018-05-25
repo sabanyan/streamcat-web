@@ -1,0 +1,30 @@
+FROM centos:7
+
+# import python3 from pyenv
+RUN yum install -y git gcc bzip2 bzip2-devel openssl openssl-devel readline readline-devel
+WORKDIR /usr/local/
+RUN git clone git://github.com/yyuu/pyenv.git ./pyenv
+RUN mkdir -p ./pyenv/versions ./pyenv/shims
+
+ENV LANG en_US.utf8
+ENV PYTHONIOENCODING utf-8
+
+RUN yum install -y sqlite-*
+
+ENV PYENV_ROOT /usr/local/pyenv
+ENV PATH "${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}"
+
+RUN pyenv install -v 3.6.0
+RUN pyenv global 3.6.0
+RUN pip install Flask
+
+COPY ./nysol-2.4-0.x86_64.rpm /nysol-2.4-0.x86_64.rpm
+# for Nysol
+RUN yum install -y sudo gem
+RUN rpm -ih /nysol-2.4-0.x86_64.rpm
+
+COPY ./kskp /kskp
+WORKDIR /kskp
+
+ENV FLASK_APP main.py
+CMD flask run -h 0.0.0.0 -p $PORT
