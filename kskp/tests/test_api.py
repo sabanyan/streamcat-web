@@ -39,7 +39,7 @@ class ApiTestCase(unittest.TestCase):
             headers = Headers()
             headers.add('Content-Type', 'application/json')
             data = '{"name": "%s"}' % project_name
-            resp = self.client.post('/api/v0/projects/new',
+            resp = self.client.post('/api/v0/projects',
                 # charset='UTF-8',
                 content_type='application/json',
                 # content_length=len(data),
@@ -140,7 +140,7 @@ class ApiTestCase(unittest.TestCase):
                 'data_source_name': new_flow_data_source_name
             }
 
-            endpoint = '/api/v0/flows/new'
+            endpoint = '/api/v0/flows'
             response = client.post(endpoint,
                 content_type='application/json',
                 data=json.dumps(data)
@@ -208,7 +208,7 @@ class ApiTestCase(unittest.TestCase):
             endpoint = '/api/v0/flows/%s' % created_flow['uuid']
             updated_flow_name = '変更後だよ'
             new_item = 'vjq@aer'
-            response = client.post(endpoint,
+            response = client.put(endpoint,
                 content_type='application/json',
                 data=json.dumps({
                     'b': new_item,
@@ -259,9 +259,9 @@ class ApiTestCase(unittest.TestCase):
             self.assertFalse(model.make_flow_path(data_source_name).exists())
 
 
-    def test_fetch_tools(self):
+    def test_fetch_commands(self):
         """
-        fetch_tools APIをテストする
+        fetch_commands APIをテストする
         TODO: 結果の中身を確認するコードは書いていないが、そもそも書くべきか？
         内容は増えていくし、pprintで見ればおかしくないことぐらいはわかる
         必要になった時や必須のポイントがあれば書こう
@@ -269,7 +269,7 @@ class ApiTestCase(unittest.TestCase):
         """
 
         with app.test_client() as client:
-            response = client.get('/api/v0/tools')
+            response = client.get('/api/v0/commands')
             result = json.loads(response.get_data())
 
         self.assertEqual(result['success'], True)
@@ -285,7 +285,7 @@ class ApiTestCase(unittest.TestCase):
         f, file_name = tempfile.mkstemp()
 
         with app.test_client() as client:
-            response = client.post('/api/v0/frames/new',
+            response = client.post('/api/v0/frames',
                 # content_type='multipart/form-data',
                 # content_type='application/x-www-form-urlencoded',
                 data={
@@ -314,7 +314,7 @@ class FrameApiTestCase(unittest.TestCase):
         # frameを作る ファイル名はUUID
         self.frame_uuid = str(uuid.uuid4())
         csv_contents = 'a,b,c\n1,2,3\n0,1,2'
-        self.path = app.root_path / Path('data/frame/%s.csv' % self.frame_uuid)
+        self.path = app.root_path / Path('data/frames/%s.csv' % self.frame_uuid)
         self.path.write_text(csv_contents, encoding='utf-8')
 
 
