@@ -23,6 +23,11 @@ def projects():
 def flows():
     return render_template('flows.html')
 
+@app.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
+@login_required
+def flow_designer(flow_uuid):
+    return render_template('flow_designer.html')
+
 
 if __name__ == '__main__':
     app.run()
