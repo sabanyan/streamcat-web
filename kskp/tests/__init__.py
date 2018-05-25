@@ -32,7 +32,7 @@ class HtmlTestCase(unittest.TestCase):
             template, context = templates[0]
         self.assertEqual(template.name, 'projects.html')
 
-    def test_projects(self):
+    def test_flows(self):
         """
         フロ一覧表示画面を表示するテスト
         """
@@ -42,7 +42,7 @@ class HtmlTestCase(unittest.TestCase):
             response = self.client.get('/flows')
             template, context = templates[0]
         self.assertEqual(template.name, 'flows.html')
-        
+
 
 def captured_templates(app, recorded, **extra):
     def record(sender, template, context):
