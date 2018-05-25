@@ -17,7 +17,7 @@ from .model import (
 
 api = Blueprint('api', __name__)
 
-DATAFRAME_DIR_PATH = api.root_path / Path('data/frame')
+DATAFRAME_DIR_PATH = api.root_path / Path('data/frames')
 
 @api.route('/projects', methods=['POST'])
 @login_required_api
