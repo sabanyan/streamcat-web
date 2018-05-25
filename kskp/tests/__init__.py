@@ -9,6 +9,15 @@ class HtmlTestCase(unittest.TestCase):
         with self.client.session_transaction() as session:
             session['user_id'] = 'user_id'
 
+
+    def assertRenderTemplate(self, path, file_name):
+        templates = []
+        with captured_templates(app, templates):
+            response = self.client.get(path)
+            template, context = templates[0]
+        self.assertEqual(template.name, file_name)
+
+
     def test_root(self):
         """
         ルートから正しくリダイレクトされるかどうかのテスト
@@ -21,27 +30,29 @@ class HtmlTestCase(unittest.TestCase):
         url = urlparse(result.headers['Location'])
         self.assertEqual(url.path, '/projects')
 
+
     def test_projects(self):
         """
         プロジェクト一覧表示画面を表示するテスト
         """
 
-        templates = []
-        with captured_templates(app, templates):
-            response = self.client.get('/projects')
-            template, context = templates[0]
-        self.assertEqual(template.name, 'projects.html')
+        self.assertRenderTemplate('/projects', 'projects.html')
+
 
     def test_flows(self):
         """
         フロ一覧表示画面を表示するテスト
         """
 
-        templates = []
-        with captured_templates(app, templates):
-            response = self.client.get('/flows')
-            template, context = templates[0]
-        self.assertEqual(template.name, 'flows.html')
+        self.assertRenderTemplate('/flows', 'flows.html')
+
+
+    def test_flow_designer(self):
+        """
+        フローデザイナが正しく返されるかどうかのテスト
+        """
+
+        self.assertRenderTemplate('/flows/RRRRRRRR-RRRR-4RRR-rRRR-RRRRRRRRRRRR', 'flow_designer.html')
 
 
 def captured_templates(app, recorded, **extra):
