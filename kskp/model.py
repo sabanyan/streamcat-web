@@ -8,7 +8,7 @@ from . import app
 from .auth import get_password_hash
 
 app.config['DATABASE'] = app.root_path + '/data/kskp.db'
-app.config['FLOW_PATH'] = app.root_path + '/data/flow'
+app.config['FLOW_PATH'] = app.root_path + '/data/flows'
 
 def create_user(email, password, name, creator):
     """
