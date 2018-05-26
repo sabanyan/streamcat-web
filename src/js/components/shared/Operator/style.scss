@@ -1,0 +1,31 @@
+@import "../../../../sass/common";
+
+.operator{
+  border: 2px solid $kskp-property-operator-border-color;
+  border-radius: 22px;
+  height: 44px;
+  width: 44px;
+  position: relative;
+  display: inline-block;
+  float: left;
+  margin: 0 8px 44px;
+}
+.operator_label{
+  color: $kskp-property-operator-label-color;
+  padding-top: 12px;
+  text-align: center;
+  margin-bottom: 12px;
+  font-size: 8px;
+}
+.operator_icon{
+  color: $kskp-property-operator-icon-color;
+  font-size: 28px;
+  padding: 6px;
+  &.none{
+    height: 44px;
+  }
+}
+
+.operator_no_icon{
+  padding-top: 34px;
+}
