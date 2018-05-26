@@ -5,6 +5,9 @@ import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../../shared/DataTable/index'
 import Operator from '../../../shared/Operator/index'
+import Inspector from '../Inspector'
+import style from '../style.scss'
+import classnames from 'classnames'
 
 type Props = {
   steps: {};
@@ -93,9 +96,9 @@ class DataSourceInspector extends React.Component<Props,State> {
             dataSource = selected_step
             step_text = selected_step.text
             if(dataSource.property.hasData){
-                preview = <div className="action" onClick={(e) => self.onClickPreview(e)}>
-                    <i className="icon material-icons">visibility</i>
-                    <div className="label">
+                preview = <div className={style.action} onClick={(e) => self.onClickPreview(e)}>
+                    <i className={classnames(style.action_icon,"material-icons")}>visibility</i>
+                    <div className={style.action_label}>
                       プレビュー
                     </div>
                   </div>
@@ -123,82 +126,52 @@ class DataSourceInspector extends React.Component<Props,State> {
             // }
         })
 
-        return <div className="kskp-property-container">
-            <div className="kskp-property-header">
-                {step_text}
-            </div>
-            <div className="kskp-property-body">
-                <div className="kskp-property-title">
-                    データの概要
-                </div>
-                <div className="kskp-property-overview">
-                    <div className="overviews">
-                        <div className="overview">
-                            <div className="label">
+        return <Inspector header={step_text} title={"データの概要"}>
+                <div className={style.property_overview}>
+                    <div className={style.overviews}>
+                        <div className={style.overview}>
+                            <div className={style.overview_label}>
                                 データの件数
                             </div>
-                            <div className="value">
+                            <div className={style.overview_value}>
                                 {/*{property.overview.count || 0}*/}
                             </div>
                         </div>
-                        <div className="overview">
-                            <div className="label">
+                        <div className={style.overview}>
+                            <div className={style.overview_label}>
                                 作成日
                             </div>
-                            <div className="value">
+                            <div className={style.overview_value}>
                                 {/*{property.overview.created_at || ""}*/}
                             </div>
                         </div>
-                        <div className="overview">
-                            <div className="label">
+                        <div className={style.overview}>
+                            <div className={style.overview_label}>
                                 作成者
                             </div>
-                            <div className="value">
+                            <div className={style.overview_value}>
                                 {/*{property.overview.created_user_name || ""}*/}
                             </div>
                         </div>
                     </div>
-                    <div className="actions">
+                    <div className={style.actions}>
                         {preview}
-                        {/*<div className="action">*/}
-                            {/*<i className="icon material-icons">share</i>*/}
-                            {/*<div className="label">*/}
-                                {/*シェア*/}
-                            {/*</div>*/}
-                        {/*</div>*/}
-                        {/*<div className="action">*/}
-                            {/*<i className="icon material-icons">open_in_new</i>*/}
-                            {/*<div className="label">*/}
-                                {/*エクスポート*/}
-                            {/*</div>*/}
-                        {/*</div>*/}
-                        <div className="action danger" onClick={(e) => this.onClickDelete(e)}>
-                            <i className="icon material-icons">delete</i>
-                            <div className="label">
+                        <div className={classnames(style.action,style.action_danger)} onClick={(e) => this.onClickDelete(e)}>
+                            <i className={classnames(style.action_icon,"material-icons")}>delete</i>
+                            <div className={style.action_label}>
                                 削除
                             </div>
                         </div>
                     </div>
                 </div>
-                <div className="hr"/>
-                <div className="kskp-property-title">
+                <div className={style.hr}/>
+                <div className={style.property_title}>
                     データの操作（基本）
                 </div>
-                <div className="kskp-property-basic-operators">
+                <div className={style.property_basic_operators}>
                     {operators}
                 </div>
-                {/*<div className="kskp-property-title">*/}
-                    {/*データの操作（カスタム）*/}
-                {/*</div>*/}
-                {/*<div className="kskp-property-custom-operators">*/}
-                    {/*<div className="operator">*/}
-                        {/*<i className="icon none"/>*/}
-                        {/*<div className="label">在庫から販売予測</div>*/}
-                    {/*</div>*/}
-                {/*</div>*/}
-
-            </div>
-        </div>
+        </Inspector>
     }
 
 }
