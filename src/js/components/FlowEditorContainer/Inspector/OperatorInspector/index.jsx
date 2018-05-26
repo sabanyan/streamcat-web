@@ -5,6 +5,7 @@ import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../../shared/DataTable/index'
 import OperatorModel from '../../../../model/OperatorModel'
+import Inspector from '../Inspector'
 
 type Props = {
   selected_step_ids: any[];
@@ -103,14 +104,7 @@ class OperatorInspector extends React.Component<Props,State> {
             step_text = selected_step.text
         }
 
-        return <div key={selected_step.id} className="kskp-property-container">
-            <div className="kskp-property-header">
-                {step_text}
-            </div>
-            <div className="kskp-property-body">
-                <div className="kskp-property-title">
-                    プロパティ
-                </div>
+        return <Inspector key={selected_step.id} header={step_text} title={"プロパティ"}>
                 <div className="kskp-property-body">
                     <div className="kskp-form">
                         {/*<label>f</label>*/}
@@ -126,8 +120,7 @@ class OperatorInspector extends React.Component<Props,State> {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+        </Inspector>
     }
 
 }
