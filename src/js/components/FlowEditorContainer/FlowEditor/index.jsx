@@ -10,21 +10,9 @@ import ModalManager from '../../shared/ModalManager'
 import Constants from '../../../constants/index'
 import Edge from '../../shared/Edge/Edge'
 
-type Props = {
-  graph: { width: number, height: number };
-  mast: { operators: any[] };
-  addMaster: Function;
-  selectSteps: Function;
-  deleteStep: Function;
-  updateStep: Function;
-  edges: any[];
-  steps: {};
-  selected_step_ids: string[];
-}
-
 type State = {}
 
-export default class FlowEditor extends React.Component<Props, State> {
+export default class FlowEditor extends React.Component<FlowEditorProps, State> {
 
   constructor (props: Props) {
     super(props)

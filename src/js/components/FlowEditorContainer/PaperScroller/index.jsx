@@ -1,12 +1,8 @@
 // @flow
 import * as React from 'react'
+import type { FlowEditorProps } from '../index'
 
-type Props = {
-  children: React.Node;
-  selectSteps: Function;
-}
-
-class PaperScroller extends React.Component<Props> {
+class PaperScroller extends React.Component<FlowEditorProps> {
   componentDidMount(){
   }
 

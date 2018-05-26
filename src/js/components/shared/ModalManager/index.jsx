@@ -27,9 +27,7 @@ import Modal from '../Modal'
  *
  */
 
-type Props = {||} //空オブジェクト Exact object types
-
-export default class ModalManager extends React.Component<Props> {
+export default class ModalManager extends React.Component {
   constructor (props:Props) {
     super(props)
   }

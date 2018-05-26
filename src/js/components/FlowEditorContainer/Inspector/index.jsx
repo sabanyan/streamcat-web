@@ -7,17 +7,9 @@ import OperatorModel from '../../../model/OperatorModel'
 import FlowInspector from './FlowInspector'
 import classnames from 'classnames'
 import style from './style.scss'
+import type { FlowEditorProps } from '../index'
 
-type Props = {
-  selected_step_ids: any[];
-  steps: {};
-  selectSteps: Function;
-  deleteStep: Function;
-  updateStep: Function;
-  mast: { operators: any[] };
-}
-
-class Inspector extends React.Component<Props> {
+class Inspector extends React.Component<FlowEditorProps> {
 
   render () {
     let {selected_step_ids} = this.props

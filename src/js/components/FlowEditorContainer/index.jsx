@@ -12,6 +12,22 @@ import FlowEditor from './FlowEditor';
 import { connect } from 'react-redux';
 
 let FlowEditorContainer
+export type FlowEditorProps = {
+  graph: { width: number, height: number };
+  mast: { operators: any[] };
+  addMaster: Function;
+  selectSteps: Function;
+  deleteStep: Function;
+  updateStep: Function;
+  edges: any[];
+  steps: {};
+  selected_step_ids: string[];
+  selected_tab_id: string;
+  children: React.Node;
+  dragStart: Function;
+  dragging: Function;
+  dragEnd: Function;
+}
 export default FlowEditorContainer = connect(
   state => {
     return {

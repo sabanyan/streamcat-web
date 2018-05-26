@@ -8,20 +8,10 @@ import Operator from '../../../shared/Operator/index'
 import Inspector from '../Inspector'
 import style from '../style.scss'
 import classnames from 'classnames'
+import type { FlowEditorProps } from '../../index'
 
-type Props = {
-  steps: {};
-  selected_step_ids: any[];
-  selectSteps:Function;
-  deleteStep:Function;
-  mast: {operators:any[]};
-}
 
-type State = {
-
-}
-
-class DataSourceInspector extends React.Component<Props,State> {
+class DataSourceInspector extends React.Component<FlowEditorProps> {
 
     componentWillMount() {
         const self = this
