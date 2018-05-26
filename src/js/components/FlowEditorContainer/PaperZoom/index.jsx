@@ -1,9 +1,7 @@
 // @flow
 import React from 'react'
 
-type Props = {||}
-
-export default class PaperZoom extends React.Component<Props> {
+export default class PaperZoom extends React.Component{
   render () {
     return <div className="btn-group kskp-canvas-tool zoom">
       <button type="button" className="btn btn-default btn-sm zoom-out" disabled={true}>-</button>

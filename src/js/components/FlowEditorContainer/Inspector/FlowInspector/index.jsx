@@ -7,21 +7,9 @@ import DataTable from '../../../shared/DataTable/index'
 import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../Inspector'
 import style from '../style.scss'
+import type { FlowEditorProps } from '../../index'
 
-type Props = {
-  selected_step_ids: any[];
-  steps: {};
-  selectSteps:Function;
-  updateStep:Function;
-  deleteStep:Function;
-  mast: {operators:any[]};
-}
-
-type State = {
-
-}
-
-class FlowInspector extends React.Component<Props,State> {
+class FlowInspector extends React.Component<FlowEditorProps> {
 
     render() {
 
