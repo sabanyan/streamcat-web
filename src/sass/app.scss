@@ -29,63 +29,6 @@ body {
   }
 }
 
-.kskp-property {
-  right: -400px;
-  height: 100%;
-  .kskp-property-container {
-    height: 100%;
-    overflow: scroll;
-  }
-
-  .kskp-property-body {
-    min-height: 100%;
-  }
-
-  &.in {
-    right: 0;
-  }
-
-  -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
-  -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
-  -o-transition: opacity 0.3s linear, right 0.3s ease-out;
-  transition: opacity 0.3s linear, right 0.3s ease-out;
-
-  .kskp-property-body {
-    .icon {
-      cursor: pointer;
-    }
-    .kskp-property-overview {
-      .actions {
-        .action:first-child {
-          margin-left: 0;
-        }
-        .action {
-          vertical-align: top;
-          width: 44px;
-          height: 44px;
-          margin-right: 12px;
-          .icon {
-            font-size: 32px;
-            color: #606C7A;
-            padding: 4px;
-          }
-          border: 2px solid #606C7A;
-          .label {
-            padding-top: 11px;
-            white-space: normal;
-          }
-          &.danger {
-            border-color: $danger;
-            i {
-              color: $danger;
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
 $preview-width: 60%;
 .modal.preview {
   top: 56px;

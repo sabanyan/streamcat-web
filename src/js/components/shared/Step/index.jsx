@@ -5,15 +5,15 @@ import Constants from '../../../constants/index'
 import FileIcon from '../Icon/FileIcon'
 import OperatorModel from '../../../model/OperatorModel'
 import DataSourceModel from '../../../model/DataSourceModel'
+import type { FlowEditorProps } from '../../FlowEditorContainer'
 
 let mouseMoveEvent
 let mouseUpEvent
 
 
 type Props = {
+  ...FlowEditorProps,
   model: OperatorModel | DataSourceModel;
-  selectSteps: Function;
-  updateStep: Function;
   position:{x:number,y:number};
   type: string;
   selected: boolean;
@@ -135,6 +135,36 @@ export default class Step extends React.Component<Props,State> {
     })
   }
 
+  /**
+   * 範囲選択との衝突判定
+   */
+  selectorIntersect(){
+    const operator = {
+      x: this.props.position.x,
+      y: this.props.position.y,
+      width: Constants.default.step.width,
+      height: Constants.default.step.height
+    }
+
+    const {start,end} = this.props.drag
+    if(start && end){
+      //ref:http://gyabo.sakura.ne.jp/tips/rect.html
+
+      const sx = (start.x <= end.x)?start.x:end.x
+      const sy = (start.y <= end.y)?start.y:end.y
+      const ex = (end.x >= start.x)?end.x:start.x
+      const ey = (end.y >= start.y)?end.y:start.y
+
+      if(sx <= operator.x + operator.width &&
+        operator.x <= ex &&
+        sy <= operator.y + operator.height &&
+        operator.y <= ey){
+        return true
+      }
+    }
+    return false
+  }
+
   render () {
     const {x, y} = this.props.position;
     const {type} = this.props;
@@ -146,7 +176,7 @@ export default class Step extends React.Component<Props,State> {
     /**
      * STEPの種類に応じた見た目の設定
      */
-    let filter = (this.props.selected) ? "url(#hover-shadow)" : this.state.filter
+    let filter = (this.props.selected || this.selectorIntersect()) ? "url(#selected-shadow)" : this.state.filter
 
     let step_text = this.props.text
     let step_subtext = ""
@@ -201,9 +231,9 @@ export default class Step extends React.Component<Props,State> {
          onMouseOver={(e) => this.handleMouseOver(e)}
          onMouseLeave={(e) => this.handleMouseLeave(e)}>
         {icon}
-        <text className="text" transform={"translate(" + (-50) + "," + (35 + 12 / 2) + ")"} textAnchor="middle"
+        <text className="text" transform={"translate(" + (-50) + "," + (rect_style.height / 2 - 6) + ")"} textAnchor="middle"
               fontSize={12}>{step_text}</text>
-        <text className="text" transform={"translate(" + (-50) + "," + (50 + 10 / 2) + ")"} textAnchor="middle"
+        <text className="text" transform={"translate(" + (-50) + "," + (rect_style.height / 2 + 6) + ")"} textAnchor="middle"
               fontSize={10}>{step_subtext}</text>
       </g>
     )
@@ -217,20 +247,20 @@ const rect_style = {
   ty: 0,
   fill: "#ffffff",
   stroke: "#63CFFD",
-  width: 80,
-  height: 80,
+  width: Constants.default.datasource.width,
+  height: Constants.default.datasource.height,
   rx: 0,
   ry: 0,
   strokeWidth: 2
 }
 
 const circle_style = {
-  cx: 40,
-  cy: 40,
+  cx: Constants.default.operator.cx,
+  cy: Constants.default.operator.cy,
   tx: 0,
   ty: 0,
   fill: "#ffffff",
   stroke: "#FC9E28",
-  r: 40,
+  r: Constants.default.operator.r,
   strokeWidth: 2
 }

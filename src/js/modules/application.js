@@ -11,6 +11,9 @@ const DELETE_STEP_ACTION = "delete_step_action";
 const REFRESH_GRAPH_ACTION = "refresh_graph_action";
 const EXECUTE_FLOW_ACTION = "execute_flow_action";
 const SORT_FLOW_ACTION = "sort_flow_action";
+const DRAG_START_ACTION = "drag_start_action";
+const DRAGGING_ACTION = "dragging_action";
+const DRAG_END_ACTION = "drag_end_action";
 
 const graph = new Graph()
 //
@@ -68,6 +71,7 @@ initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(i
 initialState.selected_step_ids = []
 initialState.graph = graph.getGraphSize(initialState.steps)
 initialState.mast = {}
+initialState.drag = {}
 const Application = (state = initialState, action) => {
     switch (action.type) {
         case ADD_MASTER_ACTION: {
@@ -148,6 +152,46 @@ const Application = (state = initialState, action) => {
             })
             newState.steps = newSteps
             return newState
+        }
+        case DRAG_START_ACTION:{
+          return {
+            ...state,
+            drag:{
+              start:{
+                x:action.x,
+                y:action.y,
+              },
+              end:{
+                x:action.x,
+                y:action.y,
+              }
+            },
+            graph:{
+              ...state.graph,
+              width: (action.x > state.graph.width)?action.x:state.graph.width,
+              height: (action.y > state.graph.height)?action.y:state.graph.height
+            }
+          }
+        }
+        case DRAGGING_ACTION:{
+          return {
+            ...state,
+            drag:{
+              ...state.drag,
+              end:{
+                x:action.x,
+                y:action.y,
+              }
+            },
+            graph:{
+              ...state.graph,
+              width: (action.x > state.graph.width)?action.x:state.graph.width,
+              height: (action.y > state.graph.height)?action.y:state.graph.height
+            }
+          }
+        }
+        case DRAG_END_ACTION:{
+          return {...state,drag:{}}
         }
         default:
             return state
@@ -234,5 +278,28 @@ export const executeFlowAction = flowid => {
 export const sortFlowAction = () => {
   return {
     type: SORT_FLOW_ACTION,
+  }
+}
+export const dragStartAction = (x,y) => {
+  return {
+    type : DRAG_START_ACTION,
+    x:x,
+    y:y
+  }
+}
+
+export const draggingAction = (x,y) => {
+  return {
+    type : DRAGGING_ACTION,
+    x:x,
+    y:y
+  }
+}
+
+export const dragEndAction = (x,y) => {
+  return {
+    type : DRAG_END_ACTION,
+    x:x,
+    y:y
   }
 }
