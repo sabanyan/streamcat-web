@@ -1,48 +1,75 @@
 const Constants = {
-  paperWidth: 600,
-  paperHeight: 600,
-  spacing: 20,
-  api:{
-    host: window.location.host
-  },
-  color: {
-    datasource: "#6AD0FB",
-    operator: "#F99D39"
-  },
-  paper: {
-    padding: {
-      right: 40,
-      bottom: 120,
+    default: {
+        node: {
+            width: 24,
+            height: 24,
+        },
+        graph:{
+            nodeSeparator: 44,
+            rankSeparator: 44,
+        },
+        datasource: {
+            width: 24 + 6 * 2,
+            height: 24 + 6 * 2
+        },
+        operator: {
+            cx: (24 + 6 * 2) / 2,
+            cy: (24 + 6 * 2) / 2,
+            r: (24 + 6 * 2) / 2,
+            width: 24 + 6 * 2,
+            height: 24 + 6 * 2,
+        },
+        step: {
+            width: 24 + 6 * 2,
+            height: 24 + 6 * 2,
+            icon: {
+                width: 24,
+                height: 24,
+                padding: 6,
+            }
+        }
     },
-  },
-  modal: {
-    ADD_OPERATOR: "add_operator",
-    SHOW_MESSAGE: "show_message_modal",
-    property: {
-        title: "title",
-        message: "message"
+    api: {
+        host: window.location.host
     },
-  },
-  preview: {
-    DATASOURCE: "datasource_preview"
-  },
-  event: {
-    MODAL_EVENT: "ModalEvent",
-    MODAL_ON_CLICK_OK: "ModalOnClickDone",
-    MODAL_ON_CLICK_DONE: "ModalOnClickDone",
-    MODAL_ON_CLICK_CANCEL: "ModalOnClickCancel"
-  },
-  chart: {
-    bar: "bar",
-    bubble: "bubble",
-    doughnut: "doughnut",
-    horizontalBar: "horizontalBar",
-    line: "line",
-    pie: "pie",
-    polar: "polar",
-    radar: "radar",
-    scatter: "scatter"
-  }
+    color: {
+        datasource: "#6AD0FB",
+        operator: "#F99D39"
+    },
+    paper: {
+        padding: {
+            right: 40,
+            bottom: 120,
+        },
+    },
+    modal: {
+        ADD_OPERATOR: "add_operator",
+        SHOW_MESSAGE: "show_message_modal",
+        property: {
+            title: "title",
+            message: "message"
+        },
+    },
+    preview: {
+        DATASOURCE: "datasource_preview"
+    },
+    event: {
+        MODAL_EVENT: "ModalEvent",
+        MODAL_ON_CLICK_OK: "ModalOnClickDone",
+        MODAL_ON_CLICK_DONE: "ModalOnClickDone",
+        MODAL_ON_CLICK_CANCEL: "ModalOnClickCancel"
+    },
+    chart: {
+        bar: "bar",
+        bubble: "bubble",
+        doughnut: "doughnut",
+        horizontalBar: "horizontalBar",
+        line: "line",
+        pie: "pie",
+        polar: "polar",
+        radar: "radar",
+        scatter: "scatter"
+    }
 
 }
 export default Constants

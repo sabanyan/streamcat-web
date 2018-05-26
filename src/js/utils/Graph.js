@@ -4,16 +4,16 @@ import Constants from '../constants'
 import DataSourceModel from '../model/DataSourceModel'
 
 export const defaultNodeProps = {
-    width: 80,
-    height: 80
+    width: Constants.default.node.width,
+    height: Constants.default.node.height
 }
 
 export const defaultGraphProps = {
-  nodeSeparator: 100,
-  edgeSeparator: 0,
-  marginX:80,
-  marginY:50,
-  rankSeparator: 40
+    nodeSeparator: Constants.default.graph.nodeSeparator,
+    edgeSeparator: 0,
+    marginX: 80,
+    marginY: 64,
+    rankSeparator: Constants.default.graph.rankSeparator
 }
 
 class Graph {

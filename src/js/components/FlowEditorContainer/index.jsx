@@ -6,10 +6,14 @@ import {
   deleteStepAction,
   addMasterAction,
   sortFlowAction,
-  executeFlowAction
+  executeFlowAction,
+  dragStartAction,
+  draggingAction,
+  dragEndAction
 } from '../../modules/application';
 import FlowEditor from './FlowEditor';
 import { connect } from 'react-redux';
+import * as React from 'react'
 
 let FlowEditorContainer
 export type FlowEditorProps = {
@@ -27,7 +31,19 @@ export type FlowEditorProps = {
   dragStart: Function;
   dragging: Function;
   dragEnd: Function;
+  drag?: {
+    start?:{
+      x:number,
+      y:number
+    },
+    end?:{
+      x:number,
+      y:number
+    }
+  }
 }
+
+
 export default FlowEditorContainer = connect(
   state => {
     return {
@@ -37,6 +53,7 @@ export default FlowEditorContainer = connect(
       edges: state.edges,
       steps: state.steps,
       selected_step_ids: state.selected_step_ids,
+      drag: state.drag
     }
   },
   dispatch => {
@@ -61,6 +78,15 @@ export default FlowEditorContainer = connect(
       },
       executeFlowAction (...args) {
         dispatch(executeFlowAction(...args))
+      },
+      dragStart(...args){
+        dispatch(dragStartAction(...args))
+      },
+      dragging(...args){
+        dispatch(draggingAction(...args))
+      },
+      dragEnd(...args){
+        dispatch(dragEndAction(...args))
       }
     }
   }
