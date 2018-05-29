@@ -176,49 +176,25 @@ export default class Step extends React.Component<Props,State> {
     /**
      * STEPの種類に応じた見た目の設定
      */
-    let filter = (this.props.selected || this.selectorIntersect()) ? "url(#selected-shadow)" : this.state.filter
+    let filter = (this.selectorIntersect()) ? "url(#selected-shadow)" : this.state.filter
 
     let step_text = this.props.text
     let step_subtext = ""
 
     if (step instanceof OperatorModel) {
       //ステップ
-      switch (step.operator) {
-        // case Constants.operatorType.msortf: {
-        //   icon = <g>
-        //     <circle filter={filter}  className="body" {...circle_style}>
-        //     </circle>
-        //     <SortIcon fillColor={"#FC9E28"} /></g>
-        //   break;
-        // }
-        // case Constants.operatorType.mcut: {
-        //   icon = <g>
-        //     <circle filter={filter} className="body" {...circle_style}>
-        //     </circle>
-        //     <McutIcon fillColor={"#FC9E28"} /></g>
-        //   break;
-        // }
-        default: {
-          icon = <g>
-            <circle filter={filter} className="body" {...circle_style}>
-            </circle>
-            {/*<McutIcon fillColor={"#FC9E28"} />*/}
-          </g>
-          break;
-        }
-      }
-
+      icon = <g>
+          <Rect padding={5} fillColor={"#FFF6E4"} stroke={"#FFB300"} filter={filter} style={{...rect_style,rx:12,ry:12}}>
+              <OperatorIcon fillColor={"#F4B63F"} width={16} height={17}/>
+          </Rect>
+      </g>
 
     } else if (step instanceof DataSourceModel) {
       //データソース
         const stroke = (!step.property.hasData)?{stroke:"#CCCCCC"}:{}
-        const style = {...rect_style, ...stroke}
-      icon = <g>
-        <rect filter={filter}
-              className="body" {...style}>
-        </rect>
-        <FileIcon fillColor={(step.property.hasData)?"#63CFFD":"#CCCCCC"} /></g>
-
+        icon = <Rect padding={5} fillColor={"#E8F8FF"} stroke={"#63CFFD"} filter={filter} style={rect_style}>
+                <FileIcon fillColor={(step.property.hasData)?"#7ECDF8":"#CCCCCC"}  width={16} height={20}/>
+            </Rect>
       //データソースの場合のみ
       if(step.getFileName()){
         step_subtext = step.getFileName()
@@ -245,8 +221,6 @@ const rect_style = {
   y: 0,
   tx: 0,
   ty: 0,
-  fill: "#ffffff",
-  stroke: "#63CFFD",
   width: Constants.default.datasource.width,
   height: Constants.default.datasource.height,
   rx: 0,
