@@ -7,10 +7,13 @@ const ADD_MASTER_ACTION = "add_master_action";
 const ADD_STEP_ACTION = "add_step_action";
 const UPDATE_STEP_ACTION = "update_step_action";
 const SELECT_STEPS_ACTION = "select_steps_action";
-const DELETE_STEP_ACTION = "delete_step_action";
+const ADD_SELECT_STEP_ACTION = "add_select_step_action"
+const DELETE_SELECT_STEP_ACTION = "delete_select_step_action"
+const DELETE_STEPS_ACTION = "delete_steps_action";
 const REFRESH_GRAPH_ACTION = "refresh_graph_action";
 const EXECUTE_FLOW_ACTION = "execute_flow_action";
 const SORT_FLOW_ACTION = "sort_flow_action";
+const SELECT_TAB_ACTION = "select_tab_action";
 const DRAG_START_ACTION = "drag_start_action";
 const DRAGGING_ACTION = "dragging_action";
 const DRAG_END_ACTION = "drag_end_action";
@@ -114,10 +117,12 @@ const Application = (state = initialState, action) => {
             newState.graph = graph.getGraphSize(newState.steps)
             return newState
         }
-        case DELETE_STEP_ACTION: {
+        case DELETE_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
-            graph.removeNode(action.step.id)
-            delete newState.steps[action.step.id]
+            action.step_ids.map((id)=>{
+                graph.removeNode(id)
+                delete newState.steps[id]
+            })
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
             newState.graph = graph.getGraphSize(newState.steps)
@@ -135,6 +140,31 @@ const Application = (state = initialState, action) => {
             }
             return newState
         }
+        case ADD_SELECT_STEP_ACTION: {
+            let newState = StateUtil.deepCopy(state)
+            if (action.selected_step_id) {
+                let new_selected_step_ids = newState.selected_step_ids
+                new_selected_step_ids.push(action.selected_step_id)
+                newState.selected_step_ids = [...new Set(new_selected_step_ids)]
+                return newState
+            }
+            return state
+        }
+
+        case DELETE_SELECT_STEP_ACTION: {
+            let newState = StateUtil.deepCopy(state)
+            if (action.selected_step_id) {
+                newState.selected_step_ids = newState.selected_step_ids.filter((id)=>{
+                    if(id === action.selected_step_id){
+                        return false
+                    }
+                    return true
+                })
+                return newState
+            }
+            return state
+        }
+
         case SORT_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
             newState.steps = graph.refreshPosition(newState.steps) //ノード位置を再計算
@@ -240,10 +270,10 @@ export const updateStepAction = step => {
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const deleteStepAction = step => {
+export const deleteStepsAction = step_ids => {
   return {
-    type: DELETE_STEP_ACTION,
-    step: step
+      type: DELETE_STEPS_ACTION,
+      step_ids: step_ids
   }
 }
 
@@ -257,6 +287,20 @@ export const selectStepsAction = selected_steps => {
     type: SELECT_STEPS_ACTION,
     selected_steps: selected_steps
   }
+}
+
+export const addSelectStepAction = selected_step_id => {
+    return {
+        type: ADD_SELECT_STEP_ACTION,
+        selected_step_id: selected_step_id
+    }
+}
+
+export const deleteSelectStepAction = selected_step_id => {
+    return {
+        type: DELETE_SELECT_STEP_ACTION,
+        selected_step_id: selected_step_id
+    }
 }
 
 /**
