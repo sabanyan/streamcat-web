@@ -1,0 +1,144 @@
+@import "../../../../sass/common";
+
+.kskp_property {
+  position: fixed;
+  width: 400px;
+  right: -400px;
+  top: 64px;
+  height: 100%;
+  -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+  -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+  -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+  transition: opacity 0.3s linear, right 0.3s ease-out;
+}
+
+.in {
+  right: 0;
+}
+
+
+
+.property_container {
+  height: 100%;
+  overflow: scroll;
+}
+
+
+.property_header{
+  padding: 16px;
+  font-size: 20px;
+  background-color: $kskp-property-background-color;
+  border-bottom:1px solid $kskp-property-border-color;
+}
+
+.property_title{
+  color: $kskp-text;
+  padding: 12px 0;
+  text-align: left;
+  clear: both;
+}
+
+.property_body{
+  padding: 16px;
+  background-color: $kskp-property-background-color;
+  min-height: 100%;
+}
+
+
+.icon {
+  cursor: pointer;
+}
+.hr{
+  border-bottom:1px solid $kskp-property-border-color;
+  padding: 8px 0;
+}
+.property_basic_operators,.property_custom_operators{
+  padding: 0 8px;
+  overflow: hidden;
+}
+
+.property_overview{
+  padding: 0 16px;
+}
+.overviews{
+}
+
+.overview{
+  clear: both;
+  display: block;
+  overflow: hidden;
+}
+
+.overview_label{
+  float: left;
+  width: 120px;
+  color: $kskp-property-overview-label-color;
+  margin-bottom: 8px;
+}
+
+.overview_value{
+  float: left;
+  width: calc(100% - 120px);
+  text-align: right;
+  color: $kskp-property-overview-value-color;
+}
+
+.actions{
+  padding-top: 12px;
+}
+
+.action:first-child {
+  margin-left: 0;
+}
+
+
+.action{
+  display: inline-block;
+  width: 54px;
+  height: 54px;
+  border:1px solid $kskp-property-action-border-color;
+  border-radius: 10px;
+  margin: 0 4px 44px;
+}
+.action_label{
+  color: $kskp-property-action-text-color;
+  padding-top: 20px;
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 8px;
+  white-space: nowrap;
+}
+.action_icon{
+  color: $kskp-property-action-border-color;
+  font-size: 28px;
+  padding: 6px;
+  &.none{
+    height: 44px;
+  }
+}
+
+.action {
+  vertical-align: top;
+  width: 44px;
+  height: 44px;
+  margin-right: 12px;
+  border: 2px solid #606C7A;
+}
+
+
+.action_icon {
+  font-size: 32px;
+  color: #606C7A;
+  padding: 4px;
+}
+.action_label {
+  padding-top: 11px;
+  white-space: normal;
+}
+
+.action_danger {
+  border-color: $danger;
+  i {
+    color: $danger;
+  }
+}

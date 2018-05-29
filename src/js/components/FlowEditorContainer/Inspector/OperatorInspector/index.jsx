@@ -1,26 +1,19 @@
 // @flow
-import React from 'react'
+import * as React from 'react'
 import DataSourceModel from '../../../../model/DataSourceModel'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../../shared/DataTable/index'
 import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../Inspector'
+import type {FlowEditorProps} from "../../index";
 
-type Props = {
-  selected_step_ids: any[];
-  steps: {};
-  selectSteps:Function;
-  updateStep:Function;
-  deleteStep:Function;
-  mast: {operators:any[]};
+type OperatorInspectorProps = {
+    ...FlowEditorProps,
+    children?:React.Node
 }
 
-type State = {
-
-}
-
-class OperatorInspector extends React.Component<Props,State> {
+class OperatorInspector extends React.Component<OperatorInspectorProps> {
 
     onClickSave(e:Event) {
         let {selected_step_ids,steps} = this.props
