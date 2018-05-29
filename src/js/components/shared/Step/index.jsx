@@ -52,7 +52,15 @@ export default class Step extends React.Component<Props,State> {
     })
     let step = this.props.model
     //選択イベントの呼び出し
-    this.props.selectSteps([step])
+    if(e.shiftKey){
+        if(!this.isSelected()){
+            this.props.addSelectStep(step.id)
+        }else{
+            this.props.deleteSelectStep(step.id)
+        }
+    }else{
+        this.props.selectSteps([step])
+    }
     //mousemoveイベントでハンドリング
     mouseMoveEvent = (e:MouseEvent) => this.handleMouseMove(e)
     mouseUpEvent = (e:MouseEvent) => this.handleMouseUp(e)
