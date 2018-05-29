@@ -8,6 +8,7 @@ import FlowInspector from './FlowInspector'
 import classnames from 'classnames'
 import style from './style.scss'
 import type { FlowEditorProps } from '../index'
+import MultiInspector from "./MultiInspector";
 
 class Inspector extends React.Component<FlowEditorProps> {
 
@@ -17,14 +18,17 @@ class Inspector extends React.Component<FlowEditorProps> {
     let property
     const selected_step = this.props.steps[selected_step_ids[0]]
 
-    if (selected_step instanceof DataSourceModel) {
-      property = <DataSourceInspector {...this.props}></DataSourceInspector>
-    } else if (selected_step instanceof OperatorModel) {
-      property = <OperatorInspector {...this.props}></OperatorInspector>
-    } else {
-      property = <FlowInspector>{...this.props}></FlowInspector>
-    }
-    //let slide_in = (selected_step_ids.length) ? " in" : ""
+      if(selected_step_ids.length == 1){
+          if (selected_step instanceof DataSourceModel) {
+              property = <DataSourceInspector {...this.props}></DataSourceInspector>
+          } else if (selected_step instanceof OperatorModel) {
+              property = <OperatorInspector {...this.props}></OperatorInspector>
+          }
+      }else if(!selected_step_ids.length){
+          property = <FlowInspector>{...this.props}></FlowInspector>
+      }else{
+          property = <MultiInspector>{...this.props}></MultiInspector>
+      }
 
     const property_class = classnames(style.kskp_property,{ [style.in]:true})
 

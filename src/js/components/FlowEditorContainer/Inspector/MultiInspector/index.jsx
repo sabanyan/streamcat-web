@@ -6,18 +6,15 @@ import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../../shared/DataTable/index'
 import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../Inspector'
-import style from '../style.scss'
-import type { FlowEditorProps } from '../../index'
+import type {FlowEditorProps} from "../../index";
 
-class FlowInspector extends React.Component<FlowEditorProps> {
-
+class MultiInspector extends React.Component<FlowEditorProps> {
     render() {
-        return <Inspector header={"フローの設定"} title={"プロパティ"}>
-                    <div className="kskp-form">
-                    </div>
-          </Inspector>
+        return <Inspector header={"複数選択"} title={"プロパティ"}>
+               複数選択されています
+        </Inspector>
     }
 
 }
 
-export default FlowInspector
+export default MultiInspector
