@@ -3,17 +3,24 @@ import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
 import FileIcon from '../Icon/FileIcon'
-import OperatorModel from '../../../model/OperatorModel'
+import OperatorModel  from '../../../model/OperatorModel'
+import type {OperatorModelProps} from '../../../model/OperatorModel'
 import DataSourceModel from '../../../model/DataSourceModel'
+import type {DataSourceModelProps} from '../../../model/DataSourceModel'
 import type { FlowEditorProps } from '../../FlowEditorContainer'
+import Rect from "./Rect";
+import OperatorIcon from "../Icon/OperatorIcon";
 
 let mouseMoveEvent
 let mouseUpEvent
 
+type modelProps = {
+  model: OperatorModelProps | DataSourceModelProps
+}
 
 type Props = {
   ...FlowEditorProps,
-  model: OperatorModel | DataSourceModel;
+  ...modelProps,
   position:{x:number,y:number};
   type: string;
   selected: boolean;
@@ -23,6 +30,7 @@ type Props = {
 type State = {
   coords: ?{x:number,y:number};
   filter:string;
+  hover: boolean
 }
 
 export default class Step extends React.Component<Props,State> {
@@ -30,8 +38,10 @@ export default class Step extends React.Component<Props,State> {
   constructor (props:Props) {
     super(props)
     this.state = {
-      filter: "",
-      coords: null
+      filter: "url(#default-shadow)",
+      coords: null,
+        hover:false,
+        active:false
     }
   }
 
@@ -128,7 +138,7 @@ export default class Step extends React.Component<Props,State> {
   handleMouseOver (e:MouseEvent) {
     //SVGに影をつける
     this.setState({
-      filter: "url(#hover-shadow)"
+      hover: true
     })
   }
 
@@ -139,7 +149,7 @@ export default class Step extends React.Component<Props,State> {
   handleMouseLeave (e:MouseEvent) {
     //SVGの影をクリア
     this.setState({
-      filter: ""
+      hover: false
     })
   }
 
@@ -163,17 +173,76 @@ export default class Step extends React.Component<Props,State> {
       const ex = (end.x >= start.x)?end.x:start.x
       const ey = (end.y >= start.y)?end.y:start.y
 
-      if(sx <= operator.x + operator.width &&
-        operator.x <= ex &&
-        sy <= operator.y + operator.height &&
-        operator.y <= ey){
+        /**
+          isIntersect = (
+         ((ex >= operator.x && sx <= operator.x) ||
+         (ex >= operator.x + operator.width && sx <= operator.x + operator.width)) &&
+         ((ey >= operator.y && sy <= operator.y) ||
+         (ey >= operator.y + operator.height && sy <= operator.y + operator.height))
+         )
+         */
+      const isIntersect = (sx <= operator.x + operator.width &&
+          operator.x <= ex &&
+          sy <= operator.y + operator.height &&
+          operator.y <= ey)
+
+      if(isIntersect){
+        if(!this.isSelected()){
+          this.props.addSelectStep(this.props.model.id)
+        }
         return true
+      }else{
+        if(this.isSelected()){
+          this.props.deleteSelectStep(this.props.model.id)
+        }
+        return false
       }
     }
-    return false
+
+    return this.isSelected()
   }
 
+  isSelected(){
+    let selected = false
+    this.props.selected_step_ids.map((id) => {
+      if(id === this.props.model.id){
+        selected = true
+      }
+    })
+    return selected
+  }
+
+  isOperator(model:modelProps){
+    return (model instanceof OperatorModel)
+  }
+
+  isDataSource(model:modelProps){
+    return (model instanceof DataSourceModel)
+  }
+
+  getFilter(){
+      // let filter = this.state.filter;
+      // const step = this.props.model;
+      // if (this.selectorIntersect()) {
+      //     if (this.isOperator(step)) {
+      //         filter = "url(#selected-operator-outline)"
+      //     } else if (this.isDataSource(step)) {
+      //         filter = "url(#selected-datasource-outline)"
+      //     }
+      // }else{
+      //   filter = "url(#default-shadow)"
+      // }
+      const filter = "url(#default-shadow)"
+      return filter
+  }
+
+  isActive(){
+      return this.selectorIntersect()
+  }
+
+
   render () {
+    console.log("レンダリング")
     const {x, y} = this.props.position;
     const {type} = this.props;
 
@@ -184,24 +253,28 @@ export default class Step extends React.Component<Props,State> {
     /**
      * STEPの種類に応じた見た目の設定
      */
-    let filter = (this.selectorIntersect()) ? "url(#selected-shadow)" : this.state.filter
+
+    const filter = this.getFilter()
 
     let step_text = this.props.text
     let step_subtext = ""
 
-    if (step instanceof OperatorModel) {
+    const hover = this.state.hover
+    const selected = this.selectorIntersect()
+
+    if (this.isOperator(step)) {
       //ステップ
       icon = <g>
-          <Rect padding={5} fillColor={"#FFF6E4"} stroke={"#FFB300"} filter={filter} style={{...rect_style,rx:12,ry:12}}>
+          <Rect padding={5} selectedOutlineColor={"#FFD263"} fillColor={"#FFFFFF"} hoverFillColor={"#FFF6E4"} selectedFillColor={"#FFF6E4"} hover={hover} selected={selected} stroke={"#FFB300"} filter={filter} style={{...rect_style,rx:12,ry:12}}>
               <OperatorIcon fillColor={"#F4B63F"} width={16} height={17}/>
           </Rect>
       </g>
 
-    } else if (step instanceof DataSourceModel) {
+    } else if (this.isDataSource(step)) {
       //データソース
         const stroke = (!step.property.hasData)?{stroke:"#CCCCCC"}:{}
-        icon = <Rect padding={5} fillColor={"#E8F8FF"} stroke={"#63CFFD"} filter={filter} style={rect_style}>
-                <FileIcon fillColor={(step.property.hasData)?"#7ECDF8":"#CCCCCC"}  width={16} height={20}/>
+        icon = <Rect padding={5} selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"} hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"} hover={hover} selected={selected} stroke={"#63CFFD"} filter={filter} style={rect_style}>
+                <FileIcon fillColor={(step.property.hasData)?"#63CFFD":"#CCCCCC"}  width={16} height={20}/>
             </Rect>
       //データソースの場合のみ
       if(step.getFileName()){
@@ -233,7 +306,7 @@ const rect_style = {
   height: Constants.default.datasource.height,
   rx: 0,
   ry: 0,
-  strokeWidth: 2
+  strokeWidth: 2,
 }
 
 const circle_style = {
