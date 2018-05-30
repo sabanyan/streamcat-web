@@ -12,19 +12,48 @@ export default class Shadow extends React.Component {
    */
   render () {
     return (
-      <g>
-        <filter id="hover-shadow" width="120%" height="120%">
-          <feGaussianBlur in="SourceAlpha" result="blur" stdDeviation="4" />
-          <feOffset result="offsetBlur" dx="0" dy="0" />
-          <feBlend in="SourceGraphic" in2="offsetBlur" mode="normal" />
-        </filter>
-        <filter id="selected-shadow" width="200%" height="200%">
-          <feGaussianBlur in="SourceAlpha" stdDeviation="1.7" result="blur"/>
-          <feOffset in="blur" dx="3" dy="3" result="offsetBlur"/>
-          <feFlood floodColor="#3D4574" floodOpacity="0.5" result="offsetColor"/>
-          <feComposite in="offsetColor" in2="offsetBlur" operator="in" result="offsetBlur"/>
-        </filter>
-      </g>
+      <defs>
+          <filter id="default-shadow" x="-50%" y="-50%" width="200%" height="200%">
+              <feComponentTransfer in="SourceAlpha">
+                  <feFuncR type="discrete" tableValues="0.4"/>
+                  <feFuncG type="discrete" tableValues="0.4"/>
+                  <feFuncB type="discrete" tableValues="0.4"/>
+              </feComponentTransfer>
+              <feGaussianBlur stdDeviation="3"/>
+              <feOffset dx="0" dy="1" result="shadow"/>
+              <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
+          </filter>
+        {/*<filter id="selected-datasource-shadow" x="-50%" y="-50%" width="200%" height="200%">*/}
+          {/*<feComponentTransfer in="SourceAlpha">*/}
+            {/*<feFuncR type="discrete" tableValues="0"/>*/}
+            {/*<feFuncG type="discrete" tableValues="0"/>*/}
+            {/*<feFuncB type="discrete" tableValues="0.5"/>*/}
+          {/*</feComponentTransfer>*/}
+          {/*<feGaussianBlur stdDeviation="2"/>*/}
+          {/*<feOffset dx="0" dy="0" result="shadow"/>*/}
+          {/*<feComposite in="SourceGraphic" in2="shadow" operator="over"/>*/}
+        {/*</filter>*/}
+        {/*<filter id="selected-operator-shadow" x="-50%" y="-50%" width="200%" height="200%">*/}
+            {/*<feComponentTransfer in="SourceAlpha">*/}
+                {/*<feFuncR type="discrete" tableValues="0"/>*/}
+                {/*<feFuncG type="discrete" tableValues="0.5"/>*/}
+                {/*<feFuncB type="discrete" tableValues="0"/>*/}
+            {/*</feComponentTransfer>*/}
+            {/*<feGaussianBlur stdDeviation="2"/>*/}
+            {/*<feOffset dx="0" dy="0" result="shadow"/>*/}
+            {/*<feComposite in="SourceGraphic" in2="shadow" operator="over"/>*/}
+        {/*</filter>*/}
+        {/*<filter id="selected-subflow-shadow" x="-50%" y="-50%" width="200%" height="200%">*/}
+            {/*<feComponentTransfer in="SourceAlpha">*/}
+                {/*<feFuncR type="discrete" tableValues="0.5"/>*/}
+                {/*<feFuncG type="discrete" tableValues="0"/>*/}
+                {/*<feFuncB type="discrete" tableValues="0"/>*/}
+            {/*</feComponentTransfer>*/}
+            {/*<feGaussianBlur stdDeviation="2"/>*/}
+            {/*<feOffset dx="0" dy="0" result="shadow"/>*/}
+            {/*<feComposite in="SourceGraphic" in2="shadow" operator="over"/>*/}
+        {/*</filter>*/}
+      </defs>
     )
   }
 }
