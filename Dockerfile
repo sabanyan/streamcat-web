@@ -16,15 +16,21 @@ ENV PATH "${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}"
 
 RUN pyenv install -v 3.6.0
 RUN pyenv global 3.6.0
-RUN pip install Flask
+# RUN pip install Flask
+RUN pip install --upgrade pip
 
 COPY ./nysol-2.4-0.x86_64.rpm /nysol-2.4-0.x86_64.rpm
 # for Nysol
 RUN yum install -y sudo gem
 RUN rpm -ih /nysol-2.4-0.x86_64.rpm
 
-COPY ./kskp /kskp
-WORKDIR /kskp
 
-ENV FLASK_APP main.py
-CMD flask run -h 0.0.0.0 -p $PORT
+COPY ./kskp /kskp
+
+COPY ./setup.py /setup.py
+ENV FLASK_APP kskp
+RUN pip install -e /
+
+# WORKDIR /kskp
+
+CMD flask run -h 0.0.0.0 -p ${PORT:-5000}

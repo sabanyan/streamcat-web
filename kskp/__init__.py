@@ -2,7 +2,6 @@ from flask import Flask, render_template, url_for, redirect
 
 app = Flask('kskp')
 
-import kskp.model
 from .auth import login_required
 from .api import api
 
