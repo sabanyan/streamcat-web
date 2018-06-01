@@ -5,7 +5,7 @@ from pathlib import Path
 
 from flask import g
 from . import app
-from .auth import get_password_hash
+from . import auth
 
 app.config['DATABASE'] = app.root_path + '/data/kskp.db'
 app.config['FLOW_PATH'] = app.root_path + '/data/flows'
@@ -18,7 +18,7 @@ def create_user(email, password, name, creator):
     sql = '''
     INSERT INTO users (email, password, name, creator) VALUES (?, ?, ?, ?)
     '''
-    hashed_password = get_password_hash(email, password)
+    hashed_password = auth.get_password_hash(email, password)
     query_db(sql, (email, hashed_password, name, creator))
 
 def get_user(email):
