@@ -31,6 +31,4 @@ COPY ./setup.py /setup.py
 ENV FLASK_APP kskp
 RUN pip install -e /
 
-# WORKDIR /kskp
-
 CMD flask run -h 0.0.0.0 -p ${PORT:-5000}
