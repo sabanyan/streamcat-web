@@ -37,9 +37,13 @@ def authenticate(user_id, password, session):
     """
     hashed_password = get_password_hash(user_id, password)
     sql = 'SELECT password FROM users WHERE email = ?'
-    correct_password = model.query_db(sql, user_id, one=True)['password']
 
-    if hashed_password == correct_password:
+    passwords = model.query_db(sql, (user_id,), one=True)
+    if passwords is None:
+        # そもそもユーザが存在しない場合
+        return False
+
+    if hashed_password == passwords['password']:
         # 認証成功
         session['user_id'] = model.get_user(user_id)  # ユーザID保存
         return True
