@@ -2,6 +2,9 @@ from flask import Flask, render_template, url_for, redirect, session
 
 app = Flask('kskp')
 
+# jsonify関数を使うときにUTF-8として返却できるようにするための設定
+app.config['JSON_AS_ASCII'] = False
+
 from .auth import auth_bp, login_required
 from .api import api
 from .model import *
