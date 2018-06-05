@@ -1,12 +1,113 @@
+import time
 import hashlib
 import functools # wraps for decorator
-from flask import session, render_template, jsonify, request, redirect
+
+from flask import (
+    Blueprint, session, render_template, url_for, jsonify, request, redirect, flash
+)
+from flask_mail import Mail, Message
+
 from . import app
 from . import model
+
+auth_bp = Blueprint('auth', __name__)
+
+CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
 
 FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
 STRETCH_COUNT = 100
 app.secret_key = '-jm624cqpry89e'
+
+# flask_mail用の設定
+app.config.update(
+    MAIL_SERVER='smtp.gmail.com',
+    MAIL_PORT=465,
+    MAIL_USERNAME=CONFIRM_EMAIL,
+    MAIL_PASSWORD='@passwd1234',
+    MAIL_USE_TLS=False,
+    MAIL_USE_SSL=True
+)
+
+email_sender = Mail(app)
+
+
+@auth_bp.route('/')
+def signup():
+    return render_template('signup.html')
+
+
+@auth_bp.route('/confirm', methods=['POST'])
+def confirm_email():
+    email = request.form['email']
+
+    url = make_temporal_url(email)
+
+    msg = Message(
+        '【確認】KSKP用のメールアドレスをご確認ください',
+        sender=CONFIRM_EMAIL,
+        recipients=[email]
+    )
+    msg.html = f"""
+    <p>
+      KSKPアカウントにこのメールアドレスを登録にするには
+      <br>
+      24時間以内に<a href={url}>ここから</a>登録してください。
+    </p>
+    """
+    email_sender.send(msg)
+
+    flash(f"{email}にメールを送信しました。")
+    flash(f"届いたメールを確認して、24時間以内に登録を完了してください。")
+
+    session['signup_email'] = email
+
+    return render_template('signup.html')
+
+
+@auth_bp.route('/register/<mail_hash>')
+def register_email(mail_hash):
+    """
+    メールの確認ができたので、パスワード入力画面を返す
+    """
+    return render_template('register_password.html', email=session['signup_email'])
+
+
+@auth_bp.route('/complete', methods=['POST'])
+def complete_sign_up():
+    """
+    パスワードが決定されたので、それを元にユーザー登録を行う
+    """
+    email = session['signup_email']
+    password = request.form['password']
+    user_name = request.form['user_name']
+
+    # TODO: この部分の仕様は不明確
+    creator = email
+
+    # ユーザーのDB登録
+    model.create_user(email, password, user_name, creator)
+
+    flash('ユーザー登録が完了しました。')
+
+    session['user_id'] = session['signup_email']
+    del session['signup_email']
+
+    # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
+    return redirect(url_for('projects'))
+
+
+def make_temporal_url(email):
+    """
+    ユーザー新規登録用のURLを作成する
+    """
+    hash_target = email + str(time.time())
+    temp_path = hashlib.sha256(hash_target.encode()).hexdigest()
+
+    # TODO: URL文字列作成に、url_rootを使っているのが少し気持ち悪い
+    url = f'{request.url_root}signup/register/{temp_path}'
+
+    return url
+
 
 def get_password_hash(user_id, password):
     """
@@ -23,12 +124,14 @@ def get_password_hash(user_id, password):
 
     return str(current_hash, encoding='utf-8')
 
+
 def get_salt(user_id):
     """
     固定ソルトとユーザID（現在はメールアドレス）
     """
     user_id_bytes = bytes(user_id, encoding='utf-8')
     return user_id_bytes + FIXED_SALT
+
 
 def authenticate(user_id, password, session):
     """
@@ -93,6 +196,7 @@ def login_required(func):
                 return render_template('login.html', original_url=request.base_url+'?session=on', args=request.args)
 
     return deco
+
 
 def login_required_api(func):
     """
