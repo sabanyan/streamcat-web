@@ -137,18 +137,26 @@ def authenticate(user_id, password, session):
     """
     IDとパスワードを元に認証処理を行う
     認証の成功時にはTrueを、失敗すればFalseを返す
+
+    TODO: 全体的に、今のところ、セッションに直接emailを入れているし、
+    いかにもuser_id=emailであるかのような扱いを（test_modelも含めて）行ってしまっているが、
+    実はα版ではuser_id=usersテーブルのid列となっていて、
+    そうした方がいいのかなあ、あんまりemailという個人情報を持ち回りたくないなあ、
+    という気持ちでいます。迷っている最中です。
     """
+
     hashed_password = get_password_hash(user_id, password)
     sql = 'SELECT password FROM users WHERE email = ?'
 
     passwords = model.query_db(sql, (user_id,), one=True)
+
     if passwords is None:
         # そもそもユーザが存在しない場合
         return False
 
     if hashed_password == passwords['password']:
         # 認証成功
-        session['user_id'] = model.get_user(user_id)  # ユーザID保存
+        session['user_id'] = user_id # model.get_user(user_id)  # ユーザID保存
         return True
     else:
         return False
@@ -158,6 +166,7 @@ def login_required(func):
     """
     このデコレータがついたエンドポイントは、
     ログインされていないとログインページを表示させる
+    
     TODO: 自動的にmethodsにPOSTを追加するようにしたい
     そうなるとパラメータつきデコレータになりそうだけど、やるだけといえばやるだけ
     """
