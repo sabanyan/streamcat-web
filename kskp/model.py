@@ -271,7 +271,13 @@ def get_connection():
     """
     conn = getattr(g, '_database', None)
     if conn is None:
+        is_first_use = not Path(app.config['DATABASE']).exists()
+
         conn = g._database = sqlite3.connect(app.config['DATABASE'])
+
+        if is_first_use:
+            init_db()
+
     return conn
 
 
