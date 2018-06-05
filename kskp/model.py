@@ -7,7 +7,8 @@ from flask import g
 from . import app
 from . import auth
 
-app.config['DATABASE'] = app.root_path + '/data/kskp.db'
+# app.config['DATABASE'] = app.root_path + '/data/kskp.db'
+app.config.from_pyfile(app.root_path + '/settings.cfg')
 app.config['FLOW_PATH'] = app.root_path + '/data/flows'
 
 def create_user(email, password, name, creator):
