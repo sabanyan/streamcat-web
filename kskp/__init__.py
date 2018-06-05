@@ -1,10 +1,12 @@
-from flask import Flask, render_template, url_for, redirect
+from flask import Flask, render_template, url_for, redirect, session
 
 app = Flask('kskp')
 
-from .auth import login_required
+from .auth import auth_bp, login_required
 from .api import api
+from .model import *
 
+app.register_blueprint(auth_bp, url_prefix='/signup')
 app.register_blueprint(api, url_prefix='/api/v0')
 
 
@@ -26,6 +28,7 @@ def flows():
 @login_required
 def flow_designer(flow_uuid):
     return render_template('flow_designer.html')
+
 
 
 if __name__ == '__main__':
