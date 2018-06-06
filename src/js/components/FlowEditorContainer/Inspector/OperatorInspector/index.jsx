@@ -32,7 +32,7 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
         if(window.confirm("このオペレーターを削除しますか？")){
           let {selected_step_ids,steps} = this.props
           let selected_step = steps[selected_step_ids[0]]
-          this.props.deleteStep(selected_step)
+          this.props.deleteSteps([selected_step.id])
           this.props.selectSteps()
         }
     }

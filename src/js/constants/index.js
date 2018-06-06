@@ -1,31 +1,31 @@
 const Constants = {
     default: {
         node: {
-            width: 24,
-            height: 24,
+            width: 38,
+            height: 38,
         },
         graph:{
             nodeSeparator: 44,
             rankSeparator: 44,
         },
         datasource: {
-            width: 24 + 6 * 2,
-            height: 24 + 6 * 2
+            width: 38 + 6 * 2,
+            height: 38 + 6 * 2
         },
         operator: {
-            cx: (24 + 6 * 2) / 2,
-            cy: (24 + 6 * 2) / 2,
-            r: (24 + 6 * 2) / 2,
-            width: 24 + 6 * 2,
-            height: 24 + 6 * 2,
+            cx: (38 + 6 * 2) / 2,
+            cy: (38 + 6 * 2) / 2,
+            r: (38 + 6 * 2) / 2,
+            width: 38 + 6 * 2,
+            height: 38 + 6 * 2,
         },
         step: {
-            width: 24 + 6 * 2,
-            height: 24 + 6 * 2,
+            width: 38 + 6 * 2,
+            height: 38 + 6 * 2,
             icon: {
-                width: 24,
-                height: 24,
-                padding: 6,
+                width: 38,
+                height: 38,
+                padding: 16,
             }
         }
     },
@@ -44,6 +44,7 @@ const Constants = {
     },
     modal: {
         ADD_OPERATOR: "add_operator",
+        IMPORT_DATASOURCE :"import_datasource",
         SHOW_MESSAGE: "show_message_modal",
         property: {
             title: "title",
