@@ -10,6 +10,9 @@ const SELECT_STEPS_ACTION = "select_steps_action";
 const ADD_SELECT_STEP_ACTION = "add_select_step_action"
 const DELETE_SELECT_STEP_ACTION = "delete_select_step_action"
 const DELETE_STEPS_ACTION = "delete_steps_action";
+const CUT_STEPS_ACTION = "cut_steps_action";
+const COPY_STEPS_ACTION = "copy_steps_action";
+const PASTE_STEPS_ACTION = "paste_steps_action";
 const REFRESH_GRAPH_ACTION = "refresh_graph_action";
 const EXECUTE_FLOW_ACTION = "execute_flow_action";
 const SORT_FLOW_ACTION = "sort_flow_action";
@@ -133,6 +136,38 @@ const Application = (state = initialState, action) => {
 
             //削除後は非選択状態にする
             newState.selected_step_ids = []
+            return newState
+        }
+        case CUT_STEPS_ACTION: {
+            console.log("CUT_STEPS_ACTION")
+            console.log(action.step_ids)
+
+            let newState = StateUtil.deepCopy(state)
+            const cut_data = JSON.stringify({data:action.step_ids.map((id)=>{
+                return newState.steps[id]
+            })})
+
+            console.log(cut_data)
+
+            navigator.clipboard.writeText(cut_data).then(()=> {
+
+                action.step_ids.map((id)=>{
+                    graph.removeNode(id)
+                    delete newState.steps[id]
+                })
+                newState.flows = graph.g.nodes()
+                newState.edges = graph.g.edges()
+                newState.graph = graph.getGraphSize(newState.steps)
+
+                //削除後は非選択状態にする
+                newState.selected_step_ids = []
+
+
+            }, (err)=> {
+                alert("クリップボードが利用できません")
+
+            });
+
             return newState
         }
         case SELECT_STEPS_ACTION: {
@@ -271,7 +306,7 @@ export const updateStepAction = step => {
 
 /**
  * ステップの削除
- * @param step
+ * @param step_ids
  * @returns {{type: string, step: *}}
  */
 export const deleteStepsAction = step_ids => {
@@ -280,6 +315,39 @@ export const deleteStepsAction = step_ids => {
       step_ids: step_ids
   }
 }
+
+/**
+ * ステップのカット
+ * @param step_ids
+ * @returns {{type: string, step: *}}
+ */
+export const cutStepsAction = step_ids => {
+    return {
+        type: CUT_STEPS_ACTION,
+        step_ids: step_ids
+    }
+}
+/**
+ * ステップのコピー
+ * @param step_ids
+ * @returns {{type: string, step: *}}
+ */
+export const copyStepsAction = step_ids => {
+    return {
+        type: COPY_STEPS_ACTION,
+        step_ids: step_ids
+    }
+}
+/**
+ * ステップのペースト
+ * @returns {{type: string, step: *}}
+ */
+export const pasteStepsAction = () => {
+    return {
+        type: PASTE_STEPS_ACTION
+    }
+}
+
 
 /**
  * ステップの選択

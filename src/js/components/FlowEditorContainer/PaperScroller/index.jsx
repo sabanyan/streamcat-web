@@ -10,21 +10,24 @@ class PaperScroller extends React.Component<FlowEditorProps,State> {
 
   onKeyDown(e:KeyboardEvent){
     if(DetectUtil.isMac()){
+        const {selected_step_ids} = this.props
+
+        console.log(selected_step_ids)
 
       if(e.metaKey && e.key === 'x'){
-          alert("切り取り")
+          this.props.cutSteps(selected_step_ids)
           return;
       }
       if(e.metaKey && e.key === 'c'){
-          alert("コピー")
+          this.props.copySteps(selected_step_ids)
           return;
       }
       if(e.metaKey && e.key === 'v'){
-          alert("貼り付け")
+          this.props.pasteSteps(selected_step_ids)
           return;
       }
-      if(e.key == 'Backspace'){
-          this.props.deleteSteps(this.props.selected_step_ids)
+      if(e.key === 'Backspace'){
+          this.props.deleteSteps(selected_step_ids)
           return;
       }
 
@@ -35,6 +38,18 @@ class PaperScroller extends React.Component<FlowEditorProps,State> {
         console.log(e.key)
     }
   }
+
+    onCut(selected_step_ids:[]){
+
+    }
+
+    onPast(selected_step_ids:[]){
+
+    }
+
+    onCopy(selected_step_ids:[]){
+
+    }
 
   onMouseDown(e:{_dispatchListeners:{length:number},pageX:number,pageY:number,shiftKey:boolean}){
     if(this.isOnClickPaper(e) && !e.shiftKey){

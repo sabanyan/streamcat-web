@@ -68,7 +68,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       if(window.confirm("このデータソースを削除しますか？")) {
         let {selected_step_ids, steps} = this.props
         const selected_step = steps[selected_step_ids[0]]
-        this.props.deleteStep(selected_step)
+        this.props.deleteSteps([selected_step.id])
         this.props.selectSteps()
       }
     }
