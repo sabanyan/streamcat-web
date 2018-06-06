@@ -87,19 +87,23 @@ const Application = (state = initialState, action) => {
             let {add_step, from_step_id} = action
 
             let offsetX = 0
-            let hasNode = (graph.outEdges(from_step_id).length)
+            let hasNode = (from_step_id)?(graph.outEdges(from_step_id).length):false
             if(hasNode){
                 offsetX = defaultNodeProps.width + 100
             }
             //ノードの追加
             graph.addNode(add_step.id, from_step_id)
-
-
+            
             //Stateの更新
             let newState = StateUtil.deepCopy(state)
-            const from_step = state.steps[from_step_id]
-
-            add_step.setFrame(from_step.position.x + offsetX, from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, defaultNodeProps.width, defaultNodeProps.height)
+            if(from_step_id){
+                //連結した状態での追加
+                const from_step = state.steps[from_step_id]
+                add_step.setFrame({x:from_step.position.x + offsetX, y:from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
+            }else{
+                //単体での追加
+                add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
+            }
             newState.steps[add_step.id] = add_step
 
             newState.flows = graph.g.nodes()

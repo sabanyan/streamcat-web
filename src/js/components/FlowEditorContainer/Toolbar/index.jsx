@@ -1,6 +1,6 @@
 import React from 'react'
 import ModalUtil from '../../../utils/ModalUtil'
-import Constants from '../../../constants/index'
+import Constants from '../../../constants'
 import DataTable from '../../shared/DataTable/index'
 import Save from './Save'
 import Run from './Run'
@@ -8,6 +8,12 @@ import Sort from './Sort'
 import Suspend from './Suspend'
 import DryRun from './DryRun'
 import Download from './Download'
+import style from './style.scss'
+import DataSourceImport from "./DataSourceImport";
+import DataSourceModel from "../../../model/DataSourceModel";
+import OperatorModel from "../../../model/OperatorModel";
+
+
 export default class Toolbar extends React.Component {
   onClickSave(){
     this.save().then((json)=>{
@@ -109,8 +115,68 @@ export default class Toolbar extends React.Component {
       })
     })
   }
+
+  onClickDataSourceImport(){
+
+      const self = this
+
+      ModalUtil.registerModal({
+          id: Constants.modal.IMPORT_DATASOURCE, onClickDone: () => {
+
+              let parameters = {}
+
+              //モーダルで入力されたパラメータを取得
+              // console.log(self.inputRefs)
+              // self.inputRefs.map((inputRef) => {
+              //     parameters[inputRef.argument.name] = inputRef.element.value
+              //     inputRef.element.value = "" //値をクリア
+              // })
+
+              //データソースを追加
+              const add_step = new DataSourceModel({
+                  operator: "mtee",
+                  text: "new datasource",
+                  property: {hasData: true},
+                  parameters:{
+                      o:"new_datasource"
+                  }
+              })
+              self.props.addStep(add_step,null)
+
+              //ステップの選択をキャンセル
+              self.props.selectSteps()
+
+              //モーダルを閉じる
+              ModalUtil.emitModal({id: Constants.modal.IMPORT_DATASOURCE, visible: false})
+          }
+      })
+
+
+      const content = <div>
+          追加するデータソースを選択してください
+          <input type="file"/>
+      </div>
+
+      ModalUtil.emitModal({
+          id: Constants.modal.IMPORT_DATASOURCE,
+          visible: true,
+          content: content,
+          title: "データソースの追加"
+      })
+
+
+
+
+
+
+
+
+
+  }
+
   render () {
-    return <div className="btn-group kskp-canvas-tool action">
+    return <div className={style.canvas_tool}>
+      <DataSourceImport onClick={(e)=>this.onClickDataSourceImport(e)}/>
       <Save onClick={(e)=>this.onClickSave(e)}/>
       <Sort onClick={(e)=>this.onClickSort(e)}/>
       <Run onClick={(e)=>this.onClickProjectRun(e)}/>
