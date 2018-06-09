@@ -54,6 +54,8 @@ export default FlowEditorContainer = connect(
       steps: state.steps,
       selected_step_ids: state.selected_step_ids,
       drag: state.drag
+      selected_in_edges: state.selected_in_edges,
+      selected_out_edges: state.selected_out_edges
     }
   },
   dispatch => {
