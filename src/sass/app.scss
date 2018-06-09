@@ -1,7 +1,19 @@
-@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
-
+@import "../../node_modules/bootstrap/scss/bootstrap";
+@import "./common";
+@import "./list";
+@import "./form";
+@import "./nav";
+//@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
+//
 body {
   padding-top: 64px; //navigation-header-height
+}
+
+.none-pointer-events{
+  pointer-events: none;
+  *{
+    pointer-events: none;
+  }
 }
 
 .kskp-list-link{
@@ -143,40 +155,4 @@ body, html {
 
 #content, #visualization {
   height: 100%;
-}
-
-.navbar {
-  height: 64px;
-  padding: 0 12px;
-  .nav-item{
-    height: 64px;
-    padding: 16px;
-    .nav-link{
-      color: #ddd!important;
-    }
-    border-bottom: 4px solid transparent;
-    &.active{
-      .nav-link{
-        color: #fff!important;
-      }
-      border-bottom: 4px solid #71D4FD;
-      font-weight: bold;
-    }
-  }
-  .user-profile {
-    padding: 0.5rem;
-    border-bottom: 4px solid transparent;
-    .user-name, .user-icon {
-      color: #fff !important;
-      font-size: 14px;
-      line-height: 14px;
-    }
-    .user-name{
-      margin-left: 8px;
-    }
-    .user-icon {
-      font-size: 18px;
-      margin-top: -1px;
-    }
-  }
 }
