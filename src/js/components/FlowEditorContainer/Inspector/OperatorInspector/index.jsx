@@ -7,6 +7,7 @@ import DataTable from '../../../shared/DataTable/index'
 import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
+import style from '../style.scss'
 
 type OperatorInspectorProps = {
     ...FlowEditorProps,
@@ -59,14 +60,18 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
         return argument
     }
 
+    onChangeInEdge(e){
+
+    }
+
+    onChangeOutEdge(e){
+
+    }
+
     render() {
 
         const self = this
-        let step_text
-        let property
-        let dataSource
         let {selected_step_ids,steps} = this.props
-        let f
         const selected_step = steps[selected_step_ids[0]]
 
         let inputForm
@@ -91,14 +96,31 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
         })
 
 
+        //入出力
+        let dataSourceOptions = Object.keys(steps).map((step_id,index)=>{
+          if (steps[step_id] instanceof DataSourceModel){
+              return <option key={index} value={steps[step_id].id}>{steps[step_id].text}</option>
+          }
+        })
+        dataSourceOptions.unshift(<option key={0} value={0}>選択してください</option>)
+        const {selected_in_edges,selected_out_edges} = this.props
+        let inEdgeSelect = selected_in_edges.map((edge)=>{return <select onChange={(e)=>this.onChangeInEdge(e)} className="custom-select" defaultValue={edge.v}>{dataSourceOptions}</select>})
+        if(!inEdgeSelect.length)inEdgeSelect = <select className="custom-select" defaultValue={0}>{dataSourceOptions}</select>
+        let outEdgeSelect = selected_out_edges.map((edge)=>{return <select onChange={(e)=>this.onChangeOutEdge(e)} className="custom-select" defaultValue={edge.w}>{dataSourceOptions}</select>})
+        if(!outEdgeSelect.length)outEdgeSelect = <select className="custom-select" defaultValue={0}>{dataSourceOptions}</select>
 
-        if (selected_step instanceof OperatorModel) {
-            f = selected_step.property.f
-            step_text = selected_step.text
-        }
-
-        return <Inspector key={selected_step.id} header={step_text} title={"プロパティ"}>
+        return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"}>
                 <div className="kskp-property-body">
+                  <div className="kskp-form">
+                      <div className={style.property_title}>
+                        入出力
+                      </div>
+                      <label>入力</label>
+                        {inEdgeSelect}
+                      <label>出力</label>
+                        {outEdgeSelect}
+                  </div>
+                  <div className={style.hr}/>
                     <div className="kskp-form">
                         {/*<label>f</label>*/}
                         {/*<input type="text" className="form-control mb-12px" defaultValue={f} ref="f"/>*/}

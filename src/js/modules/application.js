@@ -78,6 +78,9 @@ initialState.selected_step_ids = []
 initialState.graph = graph.getGraphSize(initialState.steps)
 initialState.mast = {}
 initialState.drag = {}
+initialState.selected_in_edges = []
+initialState.selected_out_edges = []
+
 const Application = (state = initialState, action) => {
     switch (action.type) {
         case ADD_MASTER_ACTION: {
@@ -174,8 +177,15 @@ const Application = (state = initialState, action) => {
             let newState = StateUtil.deepCopy(state)
             if (action.selected_steps) {
                 newState.selected_step_ids = action.selected_steps.map((step)=> step.id)
+                if(action.selected_steps.length === 1){
+                  const selected_id = action.selected_steps[0].id
+                  newState.selected_in_edges = graph.g.inEdges(selected_id)
+                  newState.selected_out_edges = graph.g.outEdges(selected_id)
+                }
             } else {
                 newState.selected_step_ids = []
+                newState.selected_in_edges = []
+                newState.selected_out_edges = []
             }
             return newState
         }
