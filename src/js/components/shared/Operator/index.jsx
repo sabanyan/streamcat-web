@@ -71,7 +71,7 @@ export default class Operator extends React.Component<Props> {
                     inputRef.element.value = "" //値をクリア
                 })
 
-                //オペレータを追加
+                //コマンドを追加
                 const add_step = new OperatorModel({
                     operator: self.props.name,
                     text: this.props.description,
@@ -83,7 +83,7 @@ export default class Operator extends React.Component<Props> {
 
                 //出力先を追加
                 const output_steps = self.props.outputs.map((output_step) => {
-                    //TODO 将来的にはオペレーターのoutputsを細かくみて制御する
+                    //TODO 将来的にはコマンドのoutputsを細かくみて制御する
                     return new DataSourceModel({
                         type: output_step.type,
                         operator: "mtee",

@@ -42,10 +42,13 @@ $kskp-head:#4E5967;
 $kskp-gray: #91A1B3;
 $kskp-light-gray: #aabcd1;
 $kskp-orange: #FC9E28;
-$kskp-danger: #fc303c;
+$kskp-danger: #DF635C;
 
+$kskp-button-border: #879AB1;
+$kskp-button-shadow: rgba(0,0,0,0.2);
 $kskp-toolbar-border: #879AB1;
 $kskp-toolbar-shadow: rgba(0,0,0,0.2);
+$kskp-paper-toolbar-background-color: rgba(255,255,255,0.6);
 
 $kskp-paper-background-color: #EDF1F3;
 
@@ -70,8 +73,8 @@ $kskp-form-radio-indicator-color: #43AB4C;
 
 $kskp-property-action-border-color: $kskp-text;
 $kskp-property-action-text-color: $kskp-text;
-$kskp-property-overview-label-color: $kskp-light-gray;
-$kskp-property-overview-value-color: $kskp-text;
+$kskp-property-overview-label-color: #AFC1D4;
+$kskp-property-overview-value-color: #AFC1D4;
 $kskp-property-background-color: #FFFFFF;
 $kskp-property-shadow: rgba(0,0,0,0.2);
 $kskp-property-border-color: #E8E8E8;
@@ -79,5 +82,6 @@ $kskp-property-operator-border-color: $kskp-orange;
 $kskp-property-operator-icon-color: $kskp-orange;
 $kskp-property-operator-label-color: $kskp-text;
 
-
+$kskp-nav-active-border-color: #63CFFD;
+$kskp-nav-background-color: #00469D;
 //@import '../../node_modules/boiler_strap/sass/boilerstrap/mixins/customize_mixins';

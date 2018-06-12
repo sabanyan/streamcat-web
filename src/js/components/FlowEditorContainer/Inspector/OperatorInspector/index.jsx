@@ -30,7 +30,7 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
     }
 
     onClickDelete(e:Event) {
-        if(window.confirm("このオペレーターを削除しますか？")){
+        if(window.confirm("このコマンドを削除しますか？")){
           let {selected_step_ids,steps} = this.props
           let selected_step = steps[selected_step_ids[0]]
           this.props.deleteSteps([selected_step.id])

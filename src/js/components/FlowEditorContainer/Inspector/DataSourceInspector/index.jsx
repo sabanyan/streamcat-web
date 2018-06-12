@@ -9,6 +9,7 @@ import Inspector from '../Inspector'
 import style from '../style.scss'
 import classnames from 'classnames'
 import type { FlowEditorProps } from '../../index'
+import Button from '../../../shared/Button'
 
 
 class DataSourceInspector extends React.Component<FlowEditorProps> {
@@ -86,12 +87,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
             dataSource = selected_step
             step_text = selected_step.text
             if(dataSource.property.hasData){
-                preview = <div className={style.action} onClick={(e) => self.onClickPreview(e)}>
-                    <i className={classnames(style.action_icon,"material-icons")}>visibility</i>
-                    <div className={style.action_label}>
-                      プレビュー
-                    </div>
-                  </div>
+              preview = <Button onClick={(e) => self.onClickPreview(e)} icon={"visibility"}>プレビュー</Button>
             }
         }
 
@@ -118,40 +114,35 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
 
         return <Inspector header={step_text} title={"データの概要"}>
                 <div className={style.property_overview}>
-                    <div className={style.overviews}>
-                        <div className={style.overview}>
-                            <div className={style.overview_label}>
-                                データの件数
-                            </div>
-                            <div className={style.overview_value}>
-                                {/*{property.overview.count || 0}*/}
-                            </div>
-                        </div>
-                        <div className={style.overview}>
-                            <div className={style.overview_label}>
-                                作成日
-                            </div>
-                            <div className={style.overview_value}>
-                                {/*{property.overview.created_at || ""}*/}
-                            </div>
-                        </div>
-                        <div className={style.overview}>
-                            <div className={style.overview_label}>
-                                作成者
-                            </div>
-                            <div className={style.overview_value}>
-                                {/*{property.overview.created_user_name || ""}*/}
-                            </div>
-                        </div>
-                    </div>
-                    <div className={style.actions}>
-                        {preview}
-                        <div className={classnames(style.action,style.action_danger)} onClick={(e) => this.onClickDelete(e)}>
-                            <i className={classnames(style.action_icon,"material-icons")}>delete</i>
-                            <div className={style.action_label}>
-                                削除
-                            </div>
-                        </div>
+                  <div className={style.actions}>
+                    {preview}
+                    <Button onClick={(e) => self.onClickDelete(e)} icon={"delete"} danger={true}>削除</Button>
+                  </div>
+                  <div className={style.overviews}>
+                      <div className={style.overview}>
+                          <div className={style.overview_label}>
+                              データの件数
+                          </div>
+                          <div className={style.overview_value}>
+                              {/*{property.overview.count || 0}*/}
+                          </div>
+                      </div>
+                      <div className={style.overview}>
+                          <div className={style.overview_label}>
+                              作成日
+                          </div>
+                          <div className={style.overview_value}>
+                              {/*{property.overview.created_at || ""}*/}
+                          </div>
+                      </div>
+                      <div className={style.overview}>
+                          <div className={style.overview_label}>
+                              作成者
+                          </div>
+                          <div className={style.overview_value}>
+                              {/*{property.overview.created_user_name || ""}*/}
+                          </div>
+                      </div>
                     </div>
                 </div>
                 <div className={style.hr}/>
