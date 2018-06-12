@@ -1,0 +1,57 @@
+@import "../../../../sass/common";
+
+.toolbar_btn{
+  border:1px solid $kskp-toolbar-border;
+  border-radius: 4px;
+  box-shadow: 0 1px 1px $kskp-toolbar-shadow;
+  margin: 0 4px;
+}
+
+.disabled{
+  opacity: 0.5;
+}
+
+.canvas_tool {
+  position: absolute;
+  top: 80px;
+  left: calc(50% - 768px/2);
+}
+
+//
+//.zoom {
+//  bottom: 44px;
+//  left: 20px;
+//}
+//
+//.action {
+//  bottom: 20px;
+//  left: 160px;
+//}
+//.btn {
+//  color: $kskp-text !important;
+//}
+//
+.text{
+  color: $kskp-text !important;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.icon{
+  display: inline-block;
+  color: $kskp-text !important;
+  font-size: 16px;
+  line-height: 1em;
+  padding-right: 4px;
+  position: relative;
+  top: 3px;
+}
+//
+//.action_btn {
+//  padding: 4px 24px;
+//}
+//
+//
+//.zoom_in, .zoom_out {
+//  padding: 4px 8px;
+//}

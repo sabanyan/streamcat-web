@@ -8,10 +8,9 @@ import Sort from './Sort'
 import Suspend from './Suspend'
 import DryRun from './DryRun'
 import Download from './Download'
+import DataSourceImport from "./DatasourceImport";
 import style from './style.scss'
-import DataSourceImport from "./DataSourceImport";
 import DataSourceModel from "../../../model/DataSourceModel";
-import OperatorModel from "../../../model/OperatorModel";
 
 
 export default class Toolbar extends React.Component {
@@ -164,25 +163,17 @@ export default class Toolbar extends React.Component {
           title: "データソースの追加"
       })
 
-
-
-
-
-
-
-
-
   }
 
   render () {
     return <div className={style.canvas_tool}>
-      <DataSourceImport onClick={(e)=>this.onClickDataSourceImport(e)}/>
-      <Save onClick={(e)=>this.onClickSave(e)}/>
-      <Sort onClick={(e)=>this.onClickSort(e)}/>
-      <Run onClick={(e)=>this.onClickProjectRun(e)}/>
-      <Suspend />
-      <DryRun />
-      <Download />
+      <DataSourceImport disabled={false} icon={"&#xE2C2"} onClick={(e)=>this.onClickDataSourceImport(e)}>データソースの追加</DataSourceImport>
+      <Save disabled={false} icon={"&#xE2C2"} onClick={(e)=>this.onClickSave(e)}>保存</Save>
+      <Sort disabled={false} icon={"&#xE42A"} onClick={(e)=>this.onClickSort(e)}>整列</Sort>
+      <Run disabled={false} icon={"&#xE037"} onClick={(e)=>this.onClickProjectRun(e)}>プロジェクト実行</Run>
+      <Suspend disabled={true} icon={"&#xE034"}>実行を中止</Suspend>
+      <DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>
+      <Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>
     </div>
   }
 }
