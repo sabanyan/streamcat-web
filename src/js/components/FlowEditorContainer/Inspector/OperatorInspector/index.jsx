@@ -8,6 +8,7 @@ import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
+import Button from '../../../shared/Button'
 
 type OperatorInspectorProps = {
     ...FlowEditorProps,
@@ -131,14 +132,9 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
                         {/*<label>f</label>*/}
                         {/*<input type="text" className="form-control mb-12px" defaultValue={f} ref="f"/>*/}
                         {inputForm}
-                        <div className="btn btn-primary btn-block py-8px text-14px"
-                             onClick={(e) => this.onClickSave(e)}>
-                            確定する
-                        </div>
-                        <div className="btn btn-danger btn-block py-8px text-14px"
-                             onClick={(e) => this.onClickDelete(e)}>
-                            削除する
-                        </div>
+                      <br/>
+                        <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
+                        <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
                     </div>
                 </div>
         </Inspector>
