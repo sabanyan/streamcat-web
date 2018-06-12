@@ -1,0 +1,20 @@
+.tab{
+    display: inline-block;
+    width: 100px;
+    padding: 4px;
+    margin-bottom: 4px;
+    border: 1px solid #aaa;
+    border-top: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: #E9E9E9;
+    cursor: pointer;
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+    font-size: 10px;
+    &.active{
+        background: #fff;
+    }
+}
+

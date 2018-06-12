@@ -3,10 +3,16 @@ import {
   addStepAction,
   updateStepAction,
   selectStepsAction,
-  deleteStepAction,
+  addSelectStepAction,
+  deleteSelectStepAction,
+  cutStepsAction,
+  copyStepsAction,
+  pasteStepsAction,
+  deleteStepsAction,
   addMasterAction,
   sortFlowAction,
   executeFlowAction,
+  selectTabAction,
   dragStartAction,
   draggingAction,
   dragEndAction
@@ -16,12 +22,17 @@ import { connect } from 'react-redux';
 import * as React from 'react'
 
 let FlowEditorContainer
+
 export type FlowEditorProps = {
   graph: { width: number, height: number };
   mast: { operators: any[] };
   addMaster: Function;
   selectSteps: Function;
-  deleteStep: Function;
+  addSelectStep: Function;
+  cutSteps: Function;
+  copySteps: Function;
+  pasteSteps: Function;
+  deleteSteps: Function;
   updateStep: Function;
   edges: any[];
   steps: {};
@@ -31,12 +42,12 @@ export type FlowEditorProps = {
   dragStart: Function;
   dragging: Function;
   dragEnd: Function;
-  drag?: {
-    start?:{
+  drag: {
+    start:{
       x:number,
       y:number
     },
-    end?:{
+    end:{
       x:number,
       y:number
     }
@@ -53,7 +64,8 @@ export default FlowEditorContainer = connect(
       edges: state.edges,
       steps: state.steps,
       selected_step_ids: state.selected_step_ids,
-      drag: state.drag
+      selected_tab_id: state.selected_tab_id,
+      drag: state.drag,
       selected_in_edges: state.selected_in_edges,
       selected_out_edges: state.selected_out_edges
     }
@@ -72,14 +84,32 @@ export default FlowEditorContainer = connect(
       selectSteps (...args) {
         dispatch(selectStepsAction(...args))
       },
-      deleteStep (...args) {
-        dispatch(deleteStepAction(...args))
+      addSelectStep (...args) {
+          dispatch(addSelectStepAction(...args))
+      },
+      deleteSelectStep (...args) {
+          dispatch(deleteSelectStepAction(...args))
+      },
+      deleteSteps (...args) {
+        dispatch(deleteStepsAction(...args))
+      },
+      cutSteps (...args) {
+          dispatch(cutStepsAction(...args))
+      },
+      copySteps (...args) {
+          dispatch(copyStepsAction(...args))
+      },
+      pasteSteps (...args) {
+          dispatch(pasteStepsAction(...args))
       },
       sortFlowAction (...args) {
         dispatch(sortFlowAction(...args))
       },
       executeFlowAction (...args) {
         dispatch(executeFlowAction(...args))
+      },
+      selectTabAction(...args){
+        dispatch(selectTabAction(...args))
       },
       dragStart(...args){
         dispatch(dragStartAction(...args))
