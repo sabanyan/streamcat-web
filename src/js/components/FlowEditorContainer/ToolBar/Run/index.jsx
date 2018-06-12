@@ -1,9 +1,9 @@
 import React from 'react'
 import ToolBarButton from '../ToolBarButton'
 
-const DataSourceImport = (props) => {
+const Run = (props) => {
   const {onClick,children,disabled,icon} = props;
   return <ToolBarButton onClick={onClick} disabled={disabled} icon={icon}>{children}</ToolBarButton>
 }
 
-export default DataSourceImport
+export default Run
