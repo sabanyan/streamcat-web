@@ -77,6 +77,7 @@ initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(i
 initialState.selected_step_ids = []
 initialState.graph = graph.getGraphSize(initialState.steps)
 initialState.mast = {}
+initialState.selected_tab_id = 0
 initialState.drag = {}
 initialState.selected_in_edges = []
 initialState.selected_out_edges = []
@@ -165,7 +166,6 @@ const Application = (state = initialState, action) => {
                 //削除後は非選択状態にする
                 newState.selected_step_ids = []
 
-
             }, (err)=> {
                 alert("クリップボードが利用できません")
 
@@ -231,6 +231,12 @@ const Application = (state = initialState, action) => {
             })
             newState.steps = newSteps
             return newState
+        }
+        case SELECT_TAB_ACTION:{
+          return {
+            ...state,
+            selected_tab_id:action.selected_tab_id
+          }
         }
         case DRAG_START_ACTION:{
           return {
@@ -406,6 +412,19 @@ export const sortFlowAction = () => {
     type: SORT_FLOW_ACTION,
   }
 }
+
+/**
+ * タブの選択
+ * @param
+ * @returns {{type: string, selected_steps: *}}
+ */
+export const selectTabAction = (tab_id) => {
+  return {
+    type: SELECT_TAB_ACTION,
+    selected_tab_id: tab_id
+  }
+}
+
 export const dragStartAction = (x,y) => {
   return {
     type : DRAG_START_ACTION,

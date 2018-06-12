@@ -27,7 +27,7 @@ export default class DataTable extends React.Component<Props> {
       表示できるデータがありません
     </div>
 
-    if (!json.success) {
+    if (json.errorcode) {
       return <div>
         <div className="mb-16px">サーバでエラーが発生したため結果を表示することができませんでした</div>
         <strong>エラー({json.errorcode})</strong>

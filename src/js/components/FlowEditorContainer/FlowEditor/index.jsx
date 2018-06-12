@@ -8,23 +8,19 @@ import PaperZoom from '../PaperZoom'
 import Toolbar from '../Toolbar'
 import ModalManager from '../../shared/ModalManager'
 import Constants from '../../../constants/index'
-import Tab from '../../shared/TabBar/Tab'
-import TabPanel from '../../shared/TabBar/TabPanel'
-import TabList from '../../shared/TabBar/TabList'
-import TabBar from '../../shared/TabBar'
-import DataTable from '../../shared/DataTable'
 import type {FlowEditorProps} from '../index'
 import Edge from '../../shared/Edge'
 import Selector from '../../shared/Selector'
+import style from './style.scss'
 
 type State = {}
 
 export default class FlowEditor extends React.Component<FlowEditorProps, State> {
 
-  constructor (props: Props) {
+  constructor (props: FlowEditorProps) {
     super(props)
 
-    const self = this
+    const self = this;
     let option = {
       method: 'GET',
       mode: 'same-origin',
@@ -77,7 +73,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
      selector= <Selector sx={drag.start.x} sy={drag.start.y} ex={drag.end.x} ey={drag.end.y}></Selector>
     }
 
-    return <div>
+    return <div className={style.flow_editor}>
         <PaperZoom />
         <Toolbar {...this.props} />
         <PaperScroller {...this.props}>
