@@ -9,8 +9,10 @@ import Suspend from './Suspend'
 import DryRun from './DryRun'
 import Download from './Download'
 import DataSourceImport from "./DatasourceImport";
+import Zoom from './Zoom'
 import style from './style.scss'
 import DataSourceModel from "../../../model/DataSourceModel";
+import classnames from 'classnames'
 
 
 export default class Toolbar extends React.Component {
@@ -166,14 +168,18 @@ export default class Toolbar extends React.Component {
   }
 
   render () {
-    return <div className={style.canvas_tool}>
+    return <div><div className={classnames(style.flow_toolbar)}>
       <DataSourceImport disabled={false} icon={"&#xE2C2"} onClick={(e)=>this.onClickDataSourceImport(e)}>データソースの追加</DataSourceImport>
       <Save disabled={false} icon={"&#xE2C2"} onClick={(e)=>this.onClickSave(e)}>保存</Save>
-      <Sort disabled={false} icon={"&#xE42A"} onClick={(e)=>this.onClickSort(e)}>整列</Sort>
       <Run disabled={false} icon={"&#xE037"} onClick={(e)=>this.onClickProjectRun(e)}>プロジェクト実行</Run>
       <Suspend disabled={true} icon={"&#xE034"}>実行を中止</Suspend>
       <DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>
       <Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>
+      </div>
+      <div className={classnames(style.paper_toolbar)}>
+        <Zoom></Zoom>
+        <Sort disabled={false} icon={"&#xE42A"} onClick={(e)=>this.onClickSort(e)}>整列</Sort>
+      </div>
     </div>
   }
 }

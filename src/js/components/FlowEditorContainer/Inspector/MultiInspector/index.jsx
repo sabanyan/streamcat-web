@@ -11,7 +11,7 @@ import style from '../style.scss'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
   onClickDelete (e: Event) {
-    if (window.confirm('これらオペレーターを削除しますか？')) {
+    if (window.confirm('これらコマンドを削除しますか？')) {
       let {selected_step_ids} = this.props
       this.props.deleteSteps(selected_step_ids)
       this.props.selectSteps()

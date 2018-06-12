@@ -1,20 +1,24 @@
 
 .navbar {
-  background: #02499B;
+  background: $kskp-nav-background-color;
   height: 64px;
   padding: 0 12px;
+  .navbar-brand img{
+    padding-top: 4px;
+    padding-left: 8px;
+    height: 25px;
+  }
   .breadcrumb-navbar{
     .nav-item{
-      height: 32px;
-      padding: 8px 12px;
-      background: #346BAE;
+      height: 34px;
+      padding: 6px 12px;
+      background: rgba(255,255,255,0.2);
       border-radius: 4px;
       margin-right: 8px;
       .nav-link{
         padding: 0;
         color: #fff;
-        font-weight: bold;
-        font-size: 12px;
+        font-size: 14px;
       }
       border-bottom: 4px solid transparent;
       &.active{
@@ -22,8 +26,7 @@
           color: #fff!important;
         }
         background: transparent!important;
-        border:1px solid #71D4FD;
-        font-weight: bold;
+        border:1px solid $kskp-nav-active-border-color;
       }
     }
   }
@@ -31,7 +34,7 @@
   .menu-navbar{
     .nav-item{
       height: 64px;
-      padding: 16px;
+      padding: 12px;
       .nav-link{
         color: #ddd!important;
       }
