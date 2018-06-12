@@ -2,7 +2,7 @@ import Constants from '../constants/index'
 import DataSourcePropertyModel from './DataSourcePropertyModel'
 import ModelUtil from '../utils/ModelUtil'
 
-type Props = {
+export type DataSourceModelProps = {
   id?:string;
   operator:string;
   position?:{x:number,y:number};
@@ -25,7 +25,7 @@ export default class DataSourceModel {
   property: ?{} = {};
   parameters: ?{} = {};
 
-  constructor (props:Props) {
+  constructor (props:DataSourceModelProps) {
     this.id = (props.id)?props.id: ModelUtil.getId();
     this.type = props.type;
     this.operator = props.operator //データソースには不要なはずだが APIのexecuteができないため追加
