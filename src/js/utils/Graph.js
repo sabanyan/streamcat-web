@@ -13,7 +13,7 @@ export const defaultGraphProps = {
     nodeSeparator: Constants.default.graph.nodeSeparator,
     edgeSeparator: 0,
     marginX: 80,
-    marginY: 64,
+    marginY: 100,
     rankSeparator: Constants.default.graph.rankSeparator
 }
 
