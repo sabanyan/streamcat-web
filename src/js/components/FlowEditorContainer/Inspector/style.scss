@@ -1,19 +1,19 @@
 @import "../../../../sass/common";
 
-.kskp_property {
+.property {
   position: fixed;
   width: 400px;
   right: -400px;
   top: 64px;
   height: 100%;
-  -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
-  -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
-  -o-transition: opacity 0.3s linear, right 0.3s ease-out;
-  transition: opacity 0.3s linear, right 0.3s ease-out;
+  transition: opacity 0.2s linear, right 0.2s ease-in;
+  opacity: 0;
+  box-shadow: 0 1px 3px $kskp-property-shadow;
 }
 
 .in {
   right: 0;
+  opacity: 1;
 }
 
 
@@ -26,13 +26,15 @@
 
 .property_header{
   padding: 16px;
-  font-size: 20px;
+  font-size: 18px;
+  color: $kskp-text;
   background-color: $kskp-property-background-color;
   border-bottom:1px solid $kskp-property-border-color;
 }
 
 .property_title{
   color: $kskp-text;
+  font-size: 16px;
   padding: 12px 0;
   text-align: left;
   clear: both;
@@ -42,6 +44,11 @@
   padding: 16px;
   background-color: $kskp-property-background-color;
   min-height: 100%;
+  label{
+    font-size: 14px;
+    color: $kskp-text;
+    padding-top: 8px;
+  }
 }
 
 
