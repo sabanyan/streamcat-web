@@ -25,9 +25,9 @@ class Inspector extends React.Component<FlowEditorProps> {
               property = <OperatorInspector {...this.props}></OperatorInspector>
           }
       }else if(!selected_step_ids.length){
-          property = <FlowInspector>{...this.props}></FlowInspector>
+        return null
       }else{
-          property = <MultiInspector>{...this.props}></MultiInspector>
+          property = <MultiInspector {...this.props}></MultiInspector>
       }
 
     const property_class = classnames(style.kskp_property,{ [style.in]:true})
