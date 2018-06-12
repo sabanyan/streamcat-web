@@ -99,14 +99,20 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
         //入出力
         let dataSourceOptions = Object.keys(steps).map((step_id,index)=>{
           if (steps[step_id] instanceof DataSourceModel){
-              return <option key={index} value={steps[step_id].id}>{steps[step_id].text}</option>
+              return <option key={index + 1} value={steps[step_id].id}>{steps[step_id].text}</option>
           }
         })
         dataSourceOptions.unshift(<option key={0} value={0}>選択してください</option>)
+
         const {selected_in_edges,selected_out_edges} = this.props
-        let inEdgeSelect = selected_in_edges.map((edge)=>{return <select onChange={(e)=>this.onChangeInEdge(e)} className="custom-select" defaultValue={edge.v}>{dataSourceOptions}</select>})
+        let inEdgeSelect = selected_in_edges.map((edge)=>{
+            return <select key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} className="custom-select" defaultValue={edge.v}>{dataSourceOptions}</select>
+        })
         if(!inEdgeSelect.length)inEdgeSelect = <select className="custom-select" defaultValue={0}>{dataSourceOptions}</select>
-        let outEdgeSelect = selected_out_edges.map((edge)=>{return <select onChange={(e)=>this.onChangeOutEdge(e)} className="custom-select" defaultValue={edge.w}>{dataSourceOptions}</select>})
+
+        let outEdgeSelect = selected_out_edges.map((edge)=>{
+            return <select key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} className="custom-select" defaultValue={edge.w}>{dataSourceOptions}</select>
+        })
         if(!outEdgeSelect.length)outEdgeSelect = <select className="custom-select" defaultValue={0}>{dataSourceOptions}</select>
 
         return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"}>

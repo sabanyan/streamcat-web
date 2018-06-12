@@ -153,6 +153,19 @@ export default class Step extends React.Component<Props,State> {
     })
   }
 
+  componentDidUpdate(){
+    if(this.selectorIntersect()){
+      if(!this.isSelected()){
+        this.props.addSelectStep(this.props.model.id)
+      }
+
+    }else{
+      if(this.isSelected()){
+        this.props.deleteSelectStep(this.props.model.id)
+      }
+    }
+  }
+
   /**
    * 範囲選択との衝突判定
    */
@@ -187,14 +200,8 @@ export default class Step extends React.Component<Props,State> {
           operator.y <= ey)
 
       if(isIntersect){
-        if(!this.isSelected()){
-          this.props.addSelectStep(this.props.model.id)
-        }
         return true
       }else{
-        if(this.isSelected()){
-          this.props.deleteSelectStep(this.props.model.id)
-        }
         return false
       }
     }
@@ -236,13 +243,7 @@ export default class Step extends React.Component<Props,State> {
       return filter
   }
 
-  isActive(){
-      return this.selectorIntersect()
-  }
-
-
   render () {
-    console.log("レンダリング")
     const {x, y} = this.props.position;
     const {type} = this.props;
 
