@@ -1,7 +1,7 @@
 // @flow
 import ModelUtil from '../utils/ModelUtil'
 
-type Props = {
+export type OperatorModelProps = {
   id?:string;
   operator:string;
   position?:{x:number,y:number};
@@ -24,7 +24,7 @@ export default class OperatorModel{
   property: ?{} = {};
   parameters: ?{} = {};
 
-  constructor (props:Props) {
+  constructor (props:OperatorModelProps) {
     this.id = (props.id)?props.id: ModelUtil.getId();
     this.operator = props.operator
     this.setPosition(props.position)

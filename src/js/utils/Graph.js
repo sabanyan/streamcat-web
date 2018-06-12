@@ -2,6 +2,7 @@ import dagre from "dagre";
 import OperatorModel from '../model/OperatorModel'
 import Constants from '../constants'
 import DataSourceModel from '../model/DataSourceModel'
+import ModelUtil from '../utils/ModelUtil'
 
 export const defaultNodeProps = {
     width: Constants.default.node.width,
@@ -38,8 +39,9 @@ class Graph {
      * ノードの追加
      * @param id
      * @param from_id
+     * @param node
      */
-    addNode(id, from_id) {
+    addNode(id, from_id, node) {
         const self = this
         this.g.setNode(id, {label: id, width: defaultNodeProps.width, height: defaultNodeProps.height})
         if (Array.isArray(from_id)) {
@@ -51,12 +53,14 @@ class Graph {
         }
     }
 
-    outEdges(id){
-      return this.g.outEdges(id)
+    outEdges(id) {
+        return this.g.outEdges(id)
     }
-
-    nodeEdges(id){
-      return this.g.nodeEdges(id)
+    inEdges(id) {
+        return this.g.inEdges(id)
+    }
+    nodeEdges(id) {
+        return this.g.nodeEdges(id)
     }
 
     /**
@@ -88,10 +92,10 @@ class Graph {
      * @returns {{width, height}}
      */
     getGraphSize(steps) {
-        if(steps){
-          const width = Math.max(...Object.keys(steps).map((key) => steps[key].position.x + steps[key].size.width))
-          const height = Math.max(...Object.keys(steps).map((key) => steps[key].position.y + steps[key].size.height))
-          return {width: width, height: height}
+        if (steps) {
+            const width = Math.max(...Object.keys(steps).map((key) => steps[key].position.x + steps[key].size.width))
+            const height = Math.max(...Object.keys(steps).map((key) => steps[key].position.y + steps[key].size.height))
+            return {width: width, height: height}
         }
         const graph = this.g.graph()
         return {width: graph.width, height: graph.height}
@@ -108,7 +112,7 @@ class Graph {
         this.g.nodes().forEach(function (v) {
             let graph_node = self.g.node(v)
             let step = steps[graph_node.label]
-            step.setFrame(graph_node.x, graph_node.y, graph_node.width, graph_node.height)
+            step.setFrame({x:graph_node.x, y:graph_node.y, width:graph_node.width,height:graph_node.height})
         });
         return steps
     }
@@ -124,30 +128,40 @@ class Graph {
         if (json) {
             //JSONのflowsを展開
             Object.keys(json.steps).map((node) => {
-                //graphlibのノードに追加
-                self.addNode(node)
 
                 //各stepの値を FlowEditorで利用できるように DataSourceModel or OperatorModelに変換していく
                 const step = json.steps[node]
-                if(step.position && step.size){
-                  hasPosition = true
+
+
+                //graphlibのノードに追加
+                self.addNode(node)
+
+                if (step.position && step.size) {
+                    hasPosition = true
                 }
                 //TODO データソースかオペレータの判断を将来的には明確にする
-                if (step.type === "csv") {
-                    let property = {overview:{},...step.property}
+                if (ModelUtil.isDataSouceModel(step)) {
+                    let property = {overview: {}, ...step.property}
                     property.hasData = true
                     json.steps[node] = new DataSourceModel({
                         id: step.id,
                         type: step.type,
-                      operator: step.operator,
+                        operator: step.operator,
                         text: step.text,
                         property: property,
                         parameters: step.parameters,
-                         position:step.position,
-                        size:step.size
+                        position: step.position,
+                        size: step.size
                     })
                 } else {
-                  json.steps[node] = new OperatorModel({id: step.id, operator: step.operator, text: step.text,parameters: step.parameters,position:step.position,size:step.size})
+                    json.steps[node] = new OperatorModel({
+                        id: step.id,
+                        operator: step.operator,
+                        text: step.text,
+                        parameters: step.parameters,
+                        position: step.position,
+                        size: step.size
+                    })
                 }
             })
 
@@ -165,7 +179,7 @@ class Graph {
                 this.refreshPosition(json.steps)
             }
 
-          return json
+            return json
         }
     }
 }
