@@ -1,6 +1,7 @@
 @import "../../../../sass/common";
 
 .button{
+  display: inline-block;
   border:1px solid $kskp-button-border;
   border-radius: 4px;
   box-shadow: 0 1px 1px $kskp-button-shadow;
@@ -8,6 +9,8 @@
   outline: none!important;
   cursor: pointer;
   min-width: 80px;
+  min-height: 30px;
+  padding: 1px 7px 2px;
   &:disabled{
     cursor: default;
     opacity: 0.5;

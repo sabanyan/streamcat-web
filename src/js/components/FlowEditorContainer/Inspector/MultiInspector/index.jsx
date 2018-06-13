@@ -8,6 +8,7 @@ import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../Inspector'
 import type { FlowEditorProps } from '../../index'
 import style from '../style.scss'
+import Button from '../../../shared/Button'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
   onClickDelete (e: Event) {
@@ -20,12 +21,10 @@ class MultiInspector extends React.Component<FlowEditorProps> {
 
   render () {
     return <Inspector header={this.props.selected_step_ids.length + ' files'} title="">
-      <div className={style.hr} />
       <div className="kskp-form">
-        <div className="btn btn-danger btn-block py-8px text-14px"
-             onClick={(e) => this.onClickDelete(e)}>
+        <Button onClick={(e) => this.onClickDelete(e)} danger={true}>
           削除する
-        </div>
+        </Button>
       </div>
     </Inspector>
   }

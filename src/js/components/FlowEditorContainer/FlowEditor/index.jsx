@@ -2,7 +2,7 @@
 import React from 'react'
 import Paper from '../Paper'
 import PaperScroller from '../PaperScroller'
-import Property from '../Inspector'
+import Inspector from '../Inspector'
 import Step from '../../shared/Step'
 import PaperZoom from '../PaperZoom'
 import Toolbar from '../ToolBar'
@@ -83,7 +83,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             {selector}
           </Paper>
         </PaperScroller>
-        <Property {...this.props} />
+        <Inspector {...this.props} />
         <ModalManager />
     </div>
   }

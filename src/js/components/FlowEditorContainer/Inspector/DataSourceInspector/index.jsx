@@ -3,13 +3,13 @@ import React from 'react'
 import DataSourceModel from '../../../../model/DataSourceModel'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
-import DataTable from '../../../shared/DataTable/index'
 import Operator from '../../../shared/Operator/index'
 import Inspector from '../Inspector'
 import style from '../style.scss'
 import classnames from 'classnames'
 import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
+import DataPreview from '../../../shared/DataPreview'
 
 
 class DataSourceInspector extends React.Component<FlowEditorProps> {
@@ -48,7 +48,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       }).then(function (json) {
         console.log(json)
         if(json){
-          const content = <DataTable json={json}/>
+          const content = <DataPreview json={json}/>
           ModalUtil.emitModal({
             id: Constants.preview.DATASOURCE,
             visible: true,
@@ -147,7 +147,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
                 </div>
                 <div className={style.hr}/>
                 <div className={style.property_title}>
-                    データの操作（基本）
+                    コマンド
                 </div>
                 <div className={style.property_basic_operators}>
                     {operators}
