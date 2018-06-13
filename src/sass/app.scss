@@ -3,6 +3,7 @@
 @import "./list";
 @import "./form";
 @import "./nav";
+@import "./modal";
 //@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
 //
 body {
@@ -41,70 +42,6 @@ body {
   }
 }
 
-$preview-width: 60%;
-.modal.preview {
-  top: 56px;
-  bottom: 0;
-  left: inherit;
-  width: $preview-width;
-  height: 100%;
-  .modal-dialog {
-    max-width: inherit;
-    margin: 0 !important;
-    height: 100%;
-    .modal-content {
-      height: calc(100% - 56px);
-      background: #F4F4F4 !important;
-      .modal-body{
-        overflow: scroll;
-      }
-    }
-    .modal-header {
-      background: #fff !important;
-      border-bottom: 1px solid #EEEEEE !important;
-    }
-  }
-}
-
-.modal-backdrop.preview {
-  background: rgba(0, 0, 0, 0.5);
-
-}
-
-.modal {
-  &.left {
-    &.fade {
-      .modal-dialog {
-        left: $preview-width;
-        -webkit-transition: opacity 0.3s linear, left 0.3s ease-out;
-        -moz-transition: opacity 0.3s linear, left 0.3s ease-out;
-        -o-transition: opacity 0.3s linear, left 0.3s ease-out;
-        transition: opacity 0.3s linear, left 0.3s ease-out;
-      }
-      &.in {
-        .modal-dialog {
-          left: 0;
-        }
-      }
-    }
-  }
-  &.right {
-    &.fade {
-      .modal-dialog {
-        right: $preview-width * -1;
-        -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
-        -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
-        -o-transition: opacity 0.3s linear, right 0.3s ease-out;
-        transition: opacity 0.3s linear, right 0.3s ease-out;
-      }
-      &.in {
-        .modal-dialog {
-          right: 0;
-        }
-      }
-    }
-  }
-}
 
 .kskp-visualization {
   height: 100%;

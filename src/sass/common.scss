@@ -42,6 +42,7 @@ $kskp-head:#4E5967;
 $kskp-gray: #91A1B3;
 $kskp-light-gray: #aabcd1;
 $kskp-orange: #FC9E28;
+$kskp-light-orange: #FFF6E4;
 $kskp-danger: #DF635C;
 
 $kskp-button-border: #879AB1;
@@ -79,9 +80,11 @@ $kskp-property-background-color: #FFFFFF;
 $kskp-property-shadow: rgba(0,0,0,0.2);
 $kskp-property-border-color: #E8E8E8;
 $kskp-property-operator-border-color: $kskp-orange;
+$kskp-property-operator-background-color: $kskp-light-orange;
 $kskp-property-operator-icon-color: $kskp-orange;
 $kskp-property-operator-label-color: $kskp-text;
 
 $kskp-nav-active-border-color: #63CFFD;
 $kskp-nav-background-color: #00469D;
+$kskp-preview-modal-header-background-color: #8296A8;
 //@import '../../node_modules/boiler_strap/sass/boilerstrap/mixins/customize_mixins';

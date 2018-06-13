@@ -10,6 +10,7 @@ import type {DataSourceModelProps} from '../../../model/DataSourceModel'
 import type { FlowEditorProps } from '../../FlowEditorContainer'
 import Rect from "./Rect";
 import OperatorIcon from "../Icon/OperatorIcon";
+import style from './style.scss'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -284,7 +285,7 @@ export default class Step extends React.Component<Props,State> {
     }
 
     return (
-      <g className="operator" transform={"translate(" + x + "," + y + ")"}
+      <g className={style.operator} transform={"translate(" + x + "," + y + ")"}
          onMouseDown={(e) => this.handleMouseDown(e)}
          onMouseOver={(e) => this.handleMouseOver(e)}
          onMouseLeave={(e) => this.handleMouseLeave(e)}>

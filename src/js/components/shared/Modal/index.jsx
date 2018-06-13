@@ -3,6 +3,7 @@ import * as React from 'react'
 import Constants from '../../../constants/index'
 import StandardModal from "./Standard";
 import PreviewModal from "./Preview";
+import Button from "../Button"
 
 type Props = {
     id: string,
@@ -122,10 +123,10 @@ export default class Modal extends React.Component<Props, State> {
          * OKボタン
          */
         if (ok) {
-            buttons = <button type="button" className="btn btn-link" data-dismiss="modal"
+            buttons = <Button data-dismiss="modal"
                               onClick={() => this.onClickOK()}>
                 OK
-            </button>
+            </Button>
         }
 
         /**
@@ -133,11 +134,15 @@ export default class Modal extends React.Component<Props, State> {
          */
         if (!ok) {
             buttons = <div>
-                <button type="button" className="btn btn-link" onClick={() => this.onClickCancel()}>
-                    {cancel}
-                </button>
+              <Button
+                      onClick={() => this.onClickCancel()}>
+                {cancel}
+              </Button>
                 &nbsp;
-                <button type="button" className="btn btn-link" onClick={() => this.onClickDone()}>{done}</button>
+              <Button
+                onClick={() => this.onClickDone()}>
+                {done}
+              </Button>
             </div>
         }
 
