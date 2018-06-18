@@ -1,3 +1,10 @@
+class Mcal(MCommand):
+    def __init__(self):
+        self.name = 'mcal'
+        self.description = '計算'
+        self.parameters.append(CalculateParameter('計算式'))
+        self.parameters.append(AppendingFieldParameter())
+
 """
 {
   "version": "0.1",
