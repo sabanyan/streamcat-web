@@ -1,0 +1,42 @@
+"""
+{
+  "version": "0.1",
+  "name": "mslide",
+  "description": "行ずらし",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [
+    {
+      "name": "s",
+      "caption": "ソート対象列名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    },
+    {
+      "name": "f",
+      "caption": "ずらす対象の列名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    }
+  ],
+  "script": {
+    "type": "file",
+    "name": "mslide.py"
+  }
+}
+"""
+
+import kskp.engine.util as util
+
+def execute(context={}, parameters={}):
+    return util.execute_m_command(context, 'mslide', parameters)
