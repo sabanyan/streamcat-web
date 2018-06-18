@@ -1,0 +1,42 @@
+"""
+{
+  "version": "0.1",
+  "name": "mcount",
+  "description": "行数カウント",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [
+    {
+      "name": "k",
+      "caption": "対象列名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    },
+    {
+      "name": "a",
+      "caption": "結果列名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    }
+  ],
+  "script": {
+    "type": "file",
+    "name": "mcount.py"
+  }
+}
+"""
+
+import kskp.engine.util as util
+
+def execute(context={}, parameters={}):
+    return util.execute_m_command(context, 'mcount', parameters)
