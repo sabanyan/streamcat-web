@@ -16,7 +16,7 @@
   "arguments": [
     {
       "name": "s",
-      "caption": "対象列名",
+      "caption": "ソート対象列名",
       "type": "string",
       "default": "",
       "validation" : {}

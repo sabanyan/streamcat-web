@@ -1,5 +1,6 @@
-"""
-{
+import kskp.engine.util as util
+
+info = {
   "version": "0.1",
   "name": "mcut",
   "description": "列選択",
@@ -13,7 +14,7 @@
       "type": "csv"
     }
   ],
-  "arguments": [
+  "parameters": [
     {
       "name": "f",
       "caption": "対象列名",
@@ -21,15 +22,8 @@
       "default": "",
       "validation" : {}
     }
-  ],
-  "script": {
-    "type": "file",
-    "name": "mcut.py"
-  }
+  ]
 }
-"""
-
-import kskp.engine.util as util
 
 def execute(context={}, parameters={}):
     return util.execute_m_command(context, 'mcut', parameters)
