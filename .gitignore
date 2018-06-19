@@ -28,3 +28,5 @@ kskp/static/css/app.css
 .idea
 
 *.egg-info
+
+kskp.db

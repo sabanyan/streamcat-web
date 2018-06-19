@@ -1,36 +1,37 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, url_for, redirect, session
 
 app = Flask('kskp')
-app.secret_key = '-jm624cqpry89e'
 
-import kskp.model
-from .auth import login_required
+# jsonify関数を使うときにUTF-8として返却できるようにするための設定
+app.config['JSON_AS_ASCII'] = False
+
+from .auth import auth_bp, login_required
 from .api import api
+from .model import *
 
+app.register_blueprint(auth_bp, url_prefix='/signup')
 app.register_blueprint(api, url_prefix='/api/v0')
 
-@app.route('/login')
-def login():
-    session['user_id'] = 'me'
-    return 'login'
-
-from flask import session
-
-@app.route('/logout')
-def logout():
-    del session['user_id']
-    return 'logout'
 
 @app.route('/')
 def top():
-    with app.open_resource('data/frame/dat1.csv') as data:
-        contents = data.read()
-        return "i'm top of the world %r" % contents
+    return redirect(url_for('projects'))
 
-@app.route('/projects')
+@app.route('/projects', methods=['GET', 'POST'])
 @login_required
 def projects():
     return render_template('projects.html')
+
+@app.route('/flows', methods=['GET', 'POST'])
+@login_required
+def flows():
+    return render_template('flows.html')
+
+@app.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
+@login_required
+def flow_designer(flow_uuid):
+    return render_template('flow_designer.html')
+
 
 
 if __name__ == '__main__':
