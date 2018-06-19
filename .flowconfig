@@ -3,7 +3,8 @@
 <PROJECT_ROOT>/public/.*
 <PROJECT_ROOT>/kskp/.*
 <PROJECT_ROOT>/dist/.*
-<PROJECT_ROOT>/src/lib/libdefs.js
+<PROJECT_ROOT>/src/lib/.*
+<PROJECT_ROOT>webpack.config.js
 [include]
 
 [libs]
@@ -11,6 +12,5 @@
 [lints]
 
 [options]
-all=true
 
 [strict]
