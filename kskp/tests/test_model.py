@@ -297,16 +297,56 @@ class ModelTestCase(unittest.TestCase):
             path.unlink()
 
 
+    def test_fetch_flow(self):
+        with app.app_context():
+            # まず親プロジェクトを作る
+            email = 'dev@kskp.io'
+            name = '開発者'
+
+            project_name = 'テストプロジェクト'
+
+            with self.client.session_transaction() as session:
+                session['user_id'] = email
+                model.create_user(email, '', name, '')
+                model.create_project(project_name, session)
+
+            # 今作ったプロジェクトのUUIDを取得する
+            project_uuid = model.get_all_projects()[0]['uuid']
+
+            # そこからプロジェクトのIDを取得する
+            project_id = model.get_project_id_by_uuid(project_uuid)
+
+        # フローを作成する
+        new_flow_name = 'ふろー取得てすと'
+        data_source_name = 'fetch_flow_test'
+        created_flow = model.create_flow(1, new_flow_name, data_source_name)
+
+        fetched_flow = model.fetch_flow_by_uuid(created_flow['uuid'])
+
+        # ファイル名も確認しておく
+        path = model.get_flow_path_by_uuid(fetched_flow['uuid'])
+        self.assertEqual(path.name, '%s.json' % data_source_name)
+
+        # JSONの中身も確認する
+        self.assertEqual(fetched_flow['uuid'], created_flow['uuid'])
+        self.assertEqual(fetched_flow['project_id'], project_id)
+        self.assertEqual(fetched_flow['name'], new_flow_name)
+
+        # 後片付け
+        path.unlink()
+
+
+
     def test_delete_flow(self):
         flow = model.create_flow(1, '', '')
         model.delete_flow_by_uuid(flow['uuid'])
 
 
-    def test_edit_flow(self):
+    def test_update_flow(self):
         data_source_name = 'nvwp;rfqa'
         flow = model.create_flow(1, '', data_source_name)
 
-        model.edit_flow(flow['uuid'], {'a': 1})
+        model.update_flow_by_uuid(flow['uuid'], {'a': 1})
         path = model.make_flow_path(data_source_name)
 
         # 改めてファイルから読み直す

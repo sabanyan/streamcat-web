@@ -5,10 +5,11 @@ from pathlib import Path
 
 from flask import g
 from . import app
-from .auth import get_password_hash
+from . import auth
 
-app.config['DATABASE'] = app.root_path + '/data/kskp.db'
-app.config['FLOW_PATH'] = app.root_path + '/data/flow'
+# app.config['DATABASE'] = app.root_path + '/data/kskp.db'
+app.config.from_pyfile(app.root_path + '/settings.cfg')
+app.config['FLOW_PATH'] = app.root_path + '/data/flows'
 
 def create_user(email, password, name, creator):
     """
@@ -18,7 +19,7 @@ def create_user(email, password, name, creator):
     sql = '''
     INSERT INTO users (email, password, name, creator) VALUES (?, ?, ?, ?)
     '''
-    hashed_password = get_password_hash(email, password)
+    hashed_password = auth.get_password_hash(email, password)
     query_db(sql, (email, hashed_password, name, creator))
 
 def get_user(email):
@@ -185,6 +186,14 @@ def create_flow(project_id, flow_name, data_source_name=None):
     return data
 
 
+def fetch_flow_by_uuid(flow_uuid):
+    """
+    指定したフローの内容を返す
+    """
+    path = get_flow_path_by_uuid(flow_uuid)
+    return json.loads(path.read_text())
+
+
 def delete_flow_by_uuid(flow_uuid):
     """
     フローを削除する
@@ -192,7 +201,7 @@ def delete_flow_by_uuid(flow_uuid):
     get_flow_path_by_uuid(flow_uuid).unlink()
 
 
-def edit_flow(flow_uuid, data):
+def update_flow_by_uuid(flow_uuid, data):
     """
     指定したフローの内容を渡されたdataの内容と結合する
     同じキーが含まれる場合は新しいもので上書きされる
@@ -262,7 +271,13 @@ def get_connection():
     """
     conn = getattr(g, '_database', None)
     if conn is None:
+        is_first_use = not Path(app.config['DATABASE']).exists()
+
         conn = g._database = sqlite3.connect(app.config['DATABASE'])
+
+        if is_first_use:
+            init_db()
+
     return conn
 
 

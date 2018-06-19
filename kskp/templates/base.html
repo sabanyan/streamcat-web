@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="utf-8">
     {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -9,6 +10,15 @@
 </head>
 <body>
 {# % include "common/navbar.html" % #}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul class=flashes>
+{% for message in messages %}
+  <li>{{ message }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
 <div id="content">{% block content %}{% endblock %}</div>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
