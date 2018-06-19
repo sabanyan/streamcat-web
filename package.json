@@ -4,6 +4,7 @@
   "description": "kskp-beta",
   "main": "index.js",
   "scripts": {
+    "dll": "npx webpack --config webpack.dll.config.js",
     "build": "npx webpack",
     "start": "npx webpack --watch -d  & webpack-dev-server --content-base public/",
     "production": "npx webpack --watch -d & webpack-dev-server --content-base public/",
