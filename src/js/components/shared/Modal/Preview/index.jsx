@@ -10,7 +10,7 @@ export default class PreviewModal extends React.Component{
     render(){
 
         const {id, children,close_button, visible, title, footer} = this.props
-        const modal_class = classnames("modal fade preview right", {
+        const modal_class = classnames("modal fade preview top", {
             "show in": visible,
             "none-pointer-events": !visible,
         })
