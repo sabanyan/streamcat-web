@@ -1,5 +1,7 @@
 const path = require('path');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const webpack = require('webpack');
+
 module.exports = [
   {
     // モード値を production に設定すると最適化された状態で、
@@ -30,14 +32,16 @@ module.exports = [
       modules: ['node_modules'],
       extensions: ['.js','.jsx']
     },
+    plugins: [
+      new webpack.DllReferencePlugin({
+        context: __dirname,
+        /**
+         * manifestファイルをロードして渡す
+         */
+        manifest: require(`./kskp/static/js/dist/vendor-manifest.json`)
+      })
+    ]
   },
-  // {
-  //   entry: [`${__dirname}/node_modules/jquery/dist/jquery.js`,`${__dirname}/node_modules/bootstrap/dist/js/bootstrap.js`],
-  //   output: {
-  //     path: `${__dirname}/app/static/js`,
-  //     filename: 'vendor.js'
-  //   }
-  // },
   {
     entry: "./src/sass/app.scss",
     output: {
