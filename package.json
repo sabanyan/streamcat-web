@@ -27,6 +27,8 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
     "boiler_strap": "git+https://c80fb19e1ee1f1071186b7f5224cadeb8f2596e2:x-oauth-basic@github.com/IMPATH/KSKPStrap.git#master",
+    "bootstrap": "^4.1.1",
+    "classnames": "^2.2.5",
     "css-loader": "^0.28.11",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "flow-bin": "^0.72.0",
