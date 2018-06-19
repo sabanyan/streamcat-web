@@ -9,6 +9,7 @@ import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
 import Button from '../../../shared/Button'
+import DropDownList from '../../../shared/DropDownList'
 
 type OperatorInspectorProps = {
     ...FlowEditorProps,
@@ -98,23 +99,25 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
 
 
         //入出力
-        let dataSourceOptions = Object.keys(steps).map((step_id,index)=>{
+        let dataSourceOptions = []
+        Object.keys(steps).forEach((step_id)=>{
           if (steps[step_id] instanceof DataSourceModel){
-              return <option key={index + 1} value={steps[step_id].id}>{steps[step_id].text}</option>
+            dataSourceOptions.push({value:steps[step_id].id,name:steps[step_id].text,object:steps[step_id]})
           }
         })
-        dataSourceOptions.unshift(<option key={0} value={0}>選択してください</option>)
 
         const {selected_in_edges,selected_out_edges} = this.props
         let inEdgeSelect = selected_in_edges.map((edge)=>{
-            return <select key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} className="custom-select" defaultValue={edge.v}>{dataSourceOptions}</select>
+            return <DropDownList key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} defaultValue={edge.v} list={dataSourceOptions}></DropDownList>
         })
-        if(!inEdgeSelect.length)inEdgeSelect = <select className="custom-select" defaultValue={0}>{dataSourceOptions}</select>
+
+        if(!inEdgeSelect.length)inEdgeSelect = <DropDownList key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} defaultValue={0} list={dataSourceOptions}></DropDownList>
 
         let outEdgeSelect = selected_out_edges.map((edge)=>{
-            return <select key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} className="custom-select" defaultValue={edge.w}>{dataSourceOptions}</select>
+          return <DropDownList key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} defaultValue={edge.w} list={dataSourceOptions}></DropDownList>
         })
-        if(!outEdgeSelect.length)outEdgeSelect = <select className="custom-select" defaultValue={0}>{dataSourceOptions}</select>
+
+        if(!outEdgeSelect.length)outEdgeSelect = <DropDownList key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} defaultValue={0} list={dataSourceOptions}></DropDownList>
 
         return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"}>
                 <div className="kskp-property-body">

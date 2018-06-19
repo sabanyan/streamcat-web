@@ -1,10 +1,4 @@
 .kskp-form{
-  .custom-select {
-    background:url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik03IDEwbDUgNSA1LTV6IiBmaWxsPSIjNjA2QzdBIi8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPg==") no-repeat right 2px center;
-    background-color: $kskp-form-background-color;
-    -webkit-appearance: none;
-    color: $kskp-text;
-  }
   .custom-control{
     &.custom-radio,&.custom-checkbox{
       line-height: 1.5em;

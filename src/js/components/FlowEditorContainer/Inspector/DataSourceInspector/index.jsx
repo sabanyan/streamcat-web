@@ -10,6 +10,7 @@ import classnames from 'classnames'
 import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
 import DataPreview from '../../../shared/DataPreview'
+import DropDownList from '../../../shared/DropDownList'
 
 
 class DataSourceInspector extends React.Component<FlowEditorProps> {
@@ -112,6 +113,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
             // }
         })
 
+
+
         return <Inspector header={step_text} title={"データの概要"}>
                 <div className={style.property_overview}>
                   <div className={style.actions}>
@@ -151,6 +154,13 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
                 </div>
                 <div className={style.property_basic_operators}>
                     {operators}
+                </div>
+                <div className={style.hr}/>
+                <div className={style.property_title}>
+                  作成したフロー
+                </div>
+                <div>
+                  <DropDownList list={[{name:"サブフロー1",value:1,object:{}}]}/>
                 </div>
         </Inspector>
     }

@@ -154,7 +154,6 @@ export default class Toolbar extends React.Component {
 
 
       const content = <div>
-          追加するデータソースを選択してください
           <input type="file"/>
       </div>
 
