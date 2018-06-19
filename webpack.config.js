@@ -9,13 +9,19 @@ module.exports = [
     // メインとなるJavaScriptファイル（エントリーポイント）
     entry: './src/js/index.js',
     output: {
-      filename: '../public/js/app.js'
+      path: `${__dirname}/kskp/static/js`,
+      filename: 'app.js'
     },
     module: {
       rules: [
         {
-          test: /\.js$/,
+          test: /\.jsx?$/,
           use: ['babel-loader'],
+          exclude: /node_modules/,
+        },
+        {
+          test: /\.s?css$/,
+          use: ['style-loader', 'css-loader?modules','sass-loader'],
           exclude: /node_modules/,
         }
       ]
@@ -33,10 +39,10 @@ module.exports = [
   //   }
   // },
   {
-    mode: 'development',
     entry: "./src/sass/app.scss",
     output: {
-      filename: '../public/css/app.css'
+      path: `${__dirname}/kskp/static/css`,
+      filename: 'app.css'
     },
     module: {
       rules: [{
@@ -49,7 +55,7 @@ module.exports = [
       }]
     },
     plugins: [
-      new ExtractTextPlugin('./css/app.css'),
+      new ExtractTextPlugin('app.css'),
     ],
   },
 ];
