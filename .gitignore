@@ -24,6 +24,8 @@ __pycache__
 node_modules
 kskp/static/js/all.js
 kskp/static/js/app.js
+kskp/static/js/vendor.js
+kskp/static/js/dist/vendor-manifest.json
 kskp/static/css/app.css
 .idea
 
