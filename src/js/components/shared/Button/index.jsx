@@ -12,6 +12,12 @@ type Props={
 }
 
 export default class Button extends React.Component<Props> {
+  static defaultProps= {
+    onClick:()=>{},
+    disabled: false,
+    icon: "",
+    danger: false
+  }
   render () {
     const {onClick,children,disabled,icon,danger} = this.props;
     const icon_class = classnames("material-icons",[style.icon])
