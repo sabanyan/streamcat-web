@@ -48,6 +48,8 @@ export default class ModalManager extends React.Component {
       <Modal key={Constants.modal.SHOW_MESSAGE} id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true} ok={true}>
           <div ref = {Constants.modal.property.SHOW_MESSAGE}/>
       </Modal>
+      <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT} title="新しいプロジェクトを始める" dynamic={true} done={"作成する"}>
+      </Modal>
     </div>
   }
 }
