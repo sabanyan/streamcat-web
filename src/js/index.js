@@ -6,6 +6,8 @@ import reducer from './modules/application'
 import FlowEditorContainer from './components/FlowEditorContainer'
 import VisualizationContainer from './components/VisualizationContainer'
 import EventEmitter from 'eventemitter3'
+import ProjectListContainer from './components/ProjectListContainer'
+import FlowListContainer from './components/FlowListContainer'
 
 window.emitter = new EventEmitter()
 
@@ -26,5 +28,18 @@ if(document.getElementById('visualization')){
       <VisualizationContainer />
     </Provider>,
     document.getElementById('visualization')
+  )
+}
+
+if(document.getElementById('project_list')){
+  ReactDOM.render(
+      <ProjectListContainer />,
+    document.getElementById('project_list')
+  )
+}
+if(document.getElementById('flow_list')){
+  ReactDOM.render(
+    <FlowListContainer />,
+    document.getElementById('flow_list')
   )
 }
