@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "devDependencies": {
+    "axios": "^0.18.0",
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.7.0",
     "babel-preset-flow": "^6.23.0",
