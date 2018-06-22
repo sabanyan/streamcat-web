@@ -1,3 +1,5 @@
+from . import *
+
 class Mcat(MCommand):
     def __init__(self):
         self.name = 'mcat'
