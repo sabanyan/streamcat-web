@@ -1,167 +1,89 @@
-# 以下のように、定義情報を特別にもつようにしてもいいのだが、どうもしっくり来ない。
-# やはり、一つのコマンドにつき定義情報を１つずつ持つ必要がある。めんどくさいけど、仕方ない。
-# ということは、今の状態で、定義情報だけを各モジュールに持たせて、
-# それぞれが'MCommand'クラスのインスタンスであるべき、という情報を追加する、ということでいけるのではないか
-# その分、executeなどのメソッドは省くことができるし、utilモジュールは不要になる
+import json
 
-# 問題は、そういう枠組みから外れるコマンド（自作コマンドなど）をどう扱うか、である
-# 統一感のある追加方法にならないのだ、例えばexecuteメソッドそのものを変えたい場合は。
-
-# これらを統一して扱いたい場合は、どうしてもそれぞれを継承してクラスを作るしかない。うーん。
-commands = {
-    MCommand('mcut')
-}
-
-d = {
-    'ls': 'unix.ls',
-    'grep': 'unix.grep',
-    'wc': 'unix.wc',
-    'cat': 'unix.cat',
-
-    'mcut_n': 'mcmd.col_edit.mcut_n',
-    'mcut': 'mcmd.col_edit.mcut',
-    'msel': 'mcmd.row_edit.msel',
-    'mselstr': 'mcmd.row_edit.mselstr',
-    'mjoin': 'mcmd.table_join.mjoin',
-    'msortf': 'mcmd.row_sort.msortf',
-    'mcount': 'mcmd.table_grouping.mcount',
-    'muniq': 'mcmd.row_edit.muniq',
-    'mcat': 'mcmd.table_join.mcat',
-    'mslide': 'mcmd.table_grouping.mslide',
-    'msetstr': 'mcmd.col_edit.msetstr',
-    'mnullto': 'mcmd.value_transform.mnullto',
-    'mnumber': 'mcmd.col_edit.mnumber',
-    'msum': 'mcmd.table_grouping.msum',
-    'mbest': 'mcmd.row_edit.mbest',
-    'mtra': 'mcmd.value_crossing.mtra',
-    'mdelnull': 'mcmd.row_edit.mdelnull',
-    'msed': 'mcmd.value_transform.msed',
-    'mcal': 'mcmd.mcal', # これは将来変わるかも
-
-    'mchkcsv': 'mcmd.validation.mchkcsv',
-    'mbucket': 'mcmd.table_split.mbucket',
-    'mstats': 'mcmd.table_grouping.mstats',
-    'mavg': 'mcmd.table_grouping.mavg',
-
-    'aggregate': 'util.aggregate',
-
-    'mtee': 'mcmd.data_source.mtee'
-}
+from .core import *
+from .util import command_from_name
 
 
-class Job:
+def execute(flow_uuid, flow_json, arguments={}, inputs={}):
     """
-    ジョブ
-    Stepにinputsとしてデータを値に持つdictが追加されたもの
-    また、エラー情報も持つ
+    エントリポイント
     """
 
-    def __init__(self, step):
-        self.step = step
-        self.inputs = {
-            "d1": {
-                "type": "frame",
-                "uuid": null
-            },
-            "d2": {
-                "type": "frame",
-                "uuid": null
-            }
-        }
-        self.errors = []
+    # 1. argumentsを与えてStepを作成する
+    step = Step('flow', parse(flow_uuid, flow_json), arguments)
+
+    # 2. 1のStepにinputsを与えてJobを作成して実行する
+    job = Job(step, inputs)
+
+    # 3. その結果をoutputsとして受け取り、そのまま返却する
+    return job.execute()
 
 
-class Step:
+def parse(flow_uuid, flow_json):
     """
-    ステップ
-    CommandもしくはFlowに必要な引数がセットされたもの
+    Flowファイル(JSON)をパースして返却する
     """
 
-    pass
+    new_flow = Flow(flow_uuid)
 
+    parsed_json = json.loads(flow_json, encoding='utf-8')
 
-class Flow:
-    """
-    フロー
-    Stepがグラフ状に連結されたもの
-    """
+    # 所属projectへの紐付けはナシ。engineのお仕事ではないので
 
-    pass
+    new_flow.name = parsed_json['name']
 
+    # まず、step情報を格納する
+    # labelはGUIで使うのでengineでは無視している
+    steps = parsed_json['steps']
 
-class MCommand(Command):
-    """
-    MCMD1つを表す
-    """
+    for key, val in steps.items():
+        step_type = val['type']
 
-    def __init__(self):
-        self.inputs = {
-            'input': {
-                'type': 'frame'
-            }
-        }
-        self.outputs = {
-            'output': {
-                'type': 'frame'
-            }
-        }
+        if step_type == 'command':
+            # コマンドから作られたstep
+            command = command_from_name(val['name'])
+        elif step_type == 'flow':
+            # サブフロー
+            pass
+        else:
+            # 通らないはず
+            raise Exception()
 
-    def execute(self, arguments={}, inputs={}):
-        """
-        MCMD用のコマンド文字列を作成して実行する
-        返すのはvalueにData型を持つdictである必要がある
-        """
+        s = Step(step_type, command, val['args'])
 
-        command_array = self.info.name.split()
+        new_flow.steps[key] = s
 
-        # 共通パラメータ
-        if 'i' in parameters:
-            command_array.append('i=%s' % parameters['i'])
-            del parameters['i']
+    # そして今度はdataを読み込む
+    # ここからedgesとinputsとoutputsを全部くくり出す
+    data = parsed_json['data']
 
-        # その他のパラメータを処理する
-        for key, val in parameters.items():
-            command_array.append('%s=%s' % (key, val))
+    # inputsを取り出す
+    # asFlowInフラグが立っているデータ
+    new_flow.inputs = [v for v in data.values() if v['asFlowIn'] == True]
 
-        # コマンド列から作られる結果を返す
-        f = Frame.from_command(command_array)
+    # outputsを取り出す
+    # asFlowOutフラグが立っているデータ
+    new_flow.outputs = [v for v in data.values() if v['asFlowOut'] == True]
 
-        return { 'output': f } # keyとDataを返す
+    # 残りは内包表記では書きにくいのでforで
+    for key, val in data.items():
+        data_type = val['type']
+        if data_type == 'frame':
+            # Frameの場合
+            new_data = Frame()
 
+            # UUIDは存在していれば
+            if val['uuid'] is not None:
+                new_data.uuid = val['uuid']
 
-class Command:
-    """
-    コマンド
-    """
+            # まずdataを設定しよう
+            new_flow.data[key] = new_data
 
-    def __init__():
-        self.version = '0.1.0'
-        self.name = ''
-        self.description = ''
-        self.inputs = {}
-        self.outputs = {}
-        self.parameters = []
+            # そしてedgesを取り出す
+            edge = { k: v for k, v in val.items() if k in ['srcs', 'dsts'] }
+            new_flow.edges[key] = edge
+        else:
+            # 今のところFrameだけを考えよう
+            raise Exception()
 
-    def execute(self, arguments={}, inputs={}):
-        pass
-
-
-class Frame:
-    """
-    表形式データ
-    """
-
-    def __init__(self):
-        self.command_array = []
-        self.path = ''
-        self.uuid = None
-        self.fd = None
-        # 表そのもののデータも欲しいところ
-
-    @classmethod
-    def from_command(cls, command_array):
-        """
-        UNIXコマンドの配列を渡すコンストラクタ
-        """
-        f = cls()
-        f.command_array = command_array
+    return new_flow
