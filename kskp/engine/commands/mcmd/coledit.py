@@ -5,6 +5,7 @@ class Mcut_n:
 
 class Mcut(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mcut'
         self.description = '列選択'
         self.parameters.append(FieldParameter())
@@ -14,6 +15,7 @@ class Mfldname:
 
 class Mnumber(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mnumber'
         self.description = '連番'
         self.parameters.append(SortFieldParameter())
@@ -24,6 +26,7 @@ class Mrand:
 
 class Msetstr(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'msetstr'
         self.description = '文字列追加'
         self.parameters.append(AppendingFieldParameter())

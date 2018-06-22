@@ -39,6 +39,7 @@ class Msim:
 
 class Mslide(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mslide'
         self.description = '行ずらし'
         self.parameters.append(SortFieldParameter())
@@ -51,7 +52,7 @@ class Msum(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'msum'
-        self.description = '合計'        
+        self.description = '合計'
         self.parameters.append(KeyFieldParameter('合計の基準となる列名'))
         self.parameters.append(FieldParameter('合計する列名:合計後の列名'))
 

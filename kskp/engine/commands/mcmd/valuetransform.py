@@ -11,6 +11,7 @@ class Mdformat:
 
 class Mnullto(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mnullto'
         self.description = 'NULL置換'
         self.parameters.append(FieldParameter())
@@ -18,6 +19,7 @@ class Mnullto(MCommand):
 
 class Msed(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'msed'
         self.description = '文字列置換'
         self.parameters.append(FieldParameter())

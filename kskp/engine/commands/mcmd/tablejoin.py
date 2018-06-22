@@ -2,6 +2,7 @@ from . import *
 
 class Mcat(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mcat'
         self.description = 'ファイル結合'
         self.parameters.append(InputParameter())
@@ -11,6 +12,7 @@ class Mcommon:
 
 class Mjoin(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mjoin'
         self.description = '結合'
         self.parameters.append(KeyFieldParameter('結合キー名'))

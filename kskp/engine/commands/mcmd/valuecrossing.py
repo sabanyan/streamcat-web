@@ -11,6 +11,7 @@ class Mcross:
 
 class Mtra(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mtra'
         self.description = '縦横変換'
         self.parameters.append(KeyFieldParameter('変換キー列名'))
