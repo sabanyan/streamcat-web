@@ -1,4 +1,4 @@
-from ...core import Parameter, Command, Frame
+from ...core import Parameter, Command, Frame, FRAME_DIR
 
 class FieldParameter(Parameter):
     def __init__(self, caption='対象列名'):
@@ -82,7 +82,7 @@ class MCommand(Command):
             i_uuid = inputs[list(inputs.keys())[0]].uuid
 
             # TODO: framesへのパス、engineの中からちゃんと指定できないとね
-            i_path = f'kskp/data/frames/{ i_uuid }.csv'
+            i_path = f'{ FRAME_DIR }/{ i_uuid }.csv'
 
             command_array.append(f'i={ i_path }')
 
