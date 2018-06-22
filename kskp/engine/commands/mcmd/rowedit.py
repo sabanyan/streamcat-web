@@ -2,12 +2,14 @@ from . import *
 
 class Mbest(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mbest'
         self.description = '指定行選択'
         self.parameters.append(SortFieldParameter())
 
 class Mdelnull(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mdelnull'
         self.description = 'NULL行削除'
         self.parameters.append(FieldParameter())
@@ -20,6 +22,7 @@ class Mpadding:
 
 class Msel(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'msel'
         self.description = '行絞り込み'
         self.parameters.append(CalculateParameter('絞込条件式'))
@@ -32,6 +35,7 @@ class Mselrand:
 
 class Mselstr(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mselstr'
         self.description = '行選択(文字列)'
         self.parameters.append(FieldParameter())
@@ -39,6 +43,7 @@ class Mselstr(MCommand):
 
 class Muniq(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'muniq'
         self.description = '単一化'
         self.parameters.append(KeyFieldParameter())
