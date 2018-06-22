@@ -1,3 +1,6 @@
+# TODO: 環境変数で指定できるようにする
+FRAME_DIR = 'kskp/data/frames'
+
 class Job:
     """
     ジョブ
@@ -94,7 +97,7 @@ class Flow:
         datum.uuid = str(uuid.uuid4())
 
         # TODO: framesへのパス、engineの中からちゃんと指定できないとね
-        o_path = f"kskp/data/frames/{ datum.uuid }.csv"
+        o_path = f"{ FRAME_DIR }/{ datum.uuid }.csv"
 
         # 実行を行う
         # TODO: パイプの時はpopenを受け取ってfdだけ取得して入れればいい（それを次に渡す）
@@ -106,7 +109,6 @@ class Flow:
         popen.wait()
 
         return datum
-
 
     def get_datum(self, datum_id):
         """
