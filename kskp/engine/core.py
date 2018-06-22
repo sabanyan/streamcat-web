@@ -105,6 +105,8 @@ class Flow:
         popen = subprocess.Popen(datum.command_array)
         popen.wait()
 
+        return datum
+
 
     def get_datum(self, datum_id):
         """

@@ -1,12 +1,27 @@
 import unittest
 
 class EngineTestCase(unittest.TestCase):
-    def test_first(self):
+    
+    @unittest.skip
+    def test_minimum_flow(self):
+        """
+        最小限のフローのテスト
+        stepが1つ
+        """
         from .. import engine as e
         flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
-        f = open(f'kskp/data/flows/{flow_uuid}.json', 'r')
-        e.execute(flow_uuid, f.read())
-        f.close()
+        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
+            e.execute(flow_uuid, f.read())
+
+    def test_minimum_piping_flow(self):
+        """
+        パイプを使う最小限のフローのテスト
+        stepが2つ
+        """
+        from .. import engine as e
+        flow_uuid = '70218468-417E-458B-B820-A17C55D04AF9'
+        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
+            e.execute(flow_uuid, f.read())
 
     @unittest.skip
     def test_single_frame_flow_executing(self):
