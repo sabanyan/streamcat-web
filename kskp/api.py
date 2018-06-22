@@ -12,6 +12,7 @@ from .model import (
     create_flow,
     delete_flow_by_uuid,
     fetch_flow_by_uuid,
+    fetch_flows_by_project_uuid,
     update_flow_by_uuid
 )
 
@@ -82,6 +83,14 @@ def new_flow():
 
     return jsonify({'success': True, 'data': new_flow})
 
+@api.route('/flows', methods=['GET'])
+@login_required_api
+def fecth_flows():
+    """
+    パラメータで指定されたプロジェクトが持つフローの一覧を取得する
+    """
+    return jsonify({'success': True, 'data': fetch_flows_by_project_uuid(request.args.get('project'))})
+
 
 @api.route('/flows/<flow_uuid>', methods=['GET'])
 @login_required_api
@@ -89,7 +98,6 @@ def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
     """
-
     return jsonify({'success': True, 'data': fetch_flow_by_uuid(flow_uuid)})
 
 
