@@ -1,3 +1,5 @@
+from . import *
+
 class Mbest(MCommand):
     def __init__(self):
         self.name = 'mbest'

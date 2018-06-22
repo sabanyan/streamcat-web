@@ -1,3 +1,5 @@
+from . import *
+
 class Maccum:
     pass
 
@@ -47,8 +49,9 @@ class Mstats:
 
 class Msum(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'msum'
-        self.description = '合計'
+        self.description = '合計'        
         self.parameters.append(KeyFieldParameter('合計の基準となる列名'))
         self.parameters.append(FieldParameter('合計する列名:合計後の列名'))
 

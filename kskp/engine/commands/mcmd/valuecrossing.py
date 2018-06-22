@@ -1,3 +1,5 @@
+from . import *
+
 class M2cross:
     pass
 

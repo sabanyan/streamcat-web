@@ -1,3 +1,5 @@
+from . import *
+
 class Mcal(MCommand):
     def __init__(self):
         self.name = 'mcal'
