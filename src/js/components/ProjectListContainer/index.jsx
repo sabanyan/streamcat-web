@@ -61,16 +61,19 @@ export default class ProjectListContainer extends React.Component {
   }
 
   renderProjectListHeader () {
-    return <ProjectListHeader />
+    return <ProjectListHeader/>
   }
 
   renderProjectList () {
     const {keyword} = this.state
+    const self = this
     return this.state.project_list.filter((project) => {
       if (keyword === '') return true
       return (project.name.indexOf(keyword) != -1) ? true : false
     }).map((project) => {
-      return <ProjectList project={project} />
+      return <ProjectList project={project} href={"./flows?project=" + project.uuid}>
+        <a href="#" onClick={()=>self.onClickDelete(project.uuid)}>削除</a>
+      </ProjectList>
     })
   }
 
@@ -113,9 +116,20 @@ export default class ProjectListContainer extends React.Component {
     })
   }
 
+  onClickDelete(project_uuid){
+    const self = this
+    HttpUtil.delete("projects/" + project_uuid).then((response)=>{
+      self.getProjectList()
+    })
+  }
+
   isEmptyProjectList(){
     if (!Array.isArray(this.state.project_list) || this.state.project_list.length === 0 || this.state.project_list === null) return true
     return false
+  }
+
+  renderNewProject(){
+    return <a href="#" onClick={(e)=>this.onClickNew(e)}>新しくフローを作成する</a>
   }
 
   renderAll () {
@@ -126,6 +140,7 @@ export default class ProjectListContainer extends React.Component {
       {this.renderSearchBar()}
       {this.renderProjectListHeader()}
       {this.renderProjectList()}
+      {this.renderNewProject()}
     </div>
   }
 
