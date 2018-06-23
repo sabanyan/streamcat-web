@@ -17,10 +17,10 @@ class HTTPUtil {
     return '/api/v0/' + path
   }
 
-  get (path, config) {
+  get (path, data, config) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
-    return axios.get(url, merged_config)
+    return axios.get(url, {params:data}, merged_config)
   }
 
   post (path, data, config) {
@@ -29,6 +29,17 @@ class HTTPUtil {
     return axios.post(url, data, merged_config)
   }
 
+  put (path, data, config) {
+    const merged_config = this.mergeConfig(config)
+    const url = this.apiUrl(path)
+    return axios.put(url, data, merged_config)
+  }
+
+  delete (path, data, config) {
+    const merged_config = this.mergeConfig(config)
+    const url = this.apiUrl(path)
+    return axios.delete(url, data, merged_config)
+  }
 }
 
 //Singleton
