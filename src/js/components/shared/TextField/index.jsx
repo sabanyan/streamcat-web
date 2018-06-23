@@ -22,8 +22,16 @@ export default class TextField extends React.Component<Props>{
     }
   }
 
+  hasRules(rules){
+    if(rules === {} || rules === null)return false
+    return true
+  }
+
   validateField(e,rules){
     let validation_messages = []
+    if(!this.hasRules(rules)){
+      return validation_messages
+    }
     Object.keys(rules).forEach((rule)=>{
       const value = rules[rule]
       switch (rule){
