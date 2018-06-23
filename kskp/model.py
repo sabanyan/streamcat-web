@@ -193,6 +193,15 @@ def fetch_flow_by_uuid(flow_uuid):
     path = get_flow_path_by_uuid(flow_uuid)
     return json.loads(path.read_text())
 
+def fetch_flows_by_project_uuid(project_uuid):
+    """
+    指定したプロジェクトの持つフロー一覧の内容リストを返す
+    """
+    flow_json_list = []
+    paths = get_flow_paths_by_project_uuid(project_uuid)
+    for path in paths:
+        flow_json_list.append(json.loads(path.read_text()))
+    return flow_json_list
 
 def delete_flow_by_uuid(flow_uuid):
     """
@@ -224,6 +233,17 @@ def get_flow_path_by_uuid(flow_uuid):
         if data['uuid'] == flow_uuid:
             return flow_path
 
+def get_flow_paths_by_project_uuid(project_uuid):
+    """
+    指定したプロジェクトのUUIDを持つフローファイルのパス群を返すヘルパー
+    """
+    flow_path_list = []
+    project_id = get_project_id_by_uuid(project_uuid)
+    for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        data = json.loads(flow_path.read_text(encoding='utf-8'))
+        if data['project_id'] == project_id:
+            flow_path_list.append(flow_path)
+    return flow_path_list
 
 def make_flow_path(file_name):
     """
