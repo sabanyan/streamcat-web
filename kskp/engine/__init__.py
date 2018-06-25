@@ -1,13 +1,18 @@
+import os
 import json
 
 from .core import *
 from .util import command_from_name
 
 
-def execute(flow_uuid, flow_json, arguments={}, inputs={}):
+def execute(flow_uuid, flow_json, arguments={}, inputs={}, frame_path=None):
     """
     エントリポイント
     """
+
+    #　もしframeの保存場所が明示的に指定されていれば、環境変数よりも優先される
+    if frame_path is not None:
+        os.environ['KENG_FRAME_PATH'] = frame_path
 
     # 1. argumentsを与えてStepを作成する
     step = Step('flow', parse(flow_uuid, flow_json), arguments)
