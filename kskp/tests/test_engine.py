@@ -1,7 +1,7 @@
 import unittest
 
 class EngineTestCase(unittest.TestCase):
-    
+
     @unittest.skip
     def test_minimum_flow(self):
         """
@@ -11,7 +11,7 @@ class EngineTestCase(unittest.TestCase):
         from .. import engine as e
         flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
         with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            e.execute(flow_uuid, f.read())
+            e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
     def test_minimum_piping_flow(self):
         """
@@ -21,7 +21,7 @@ class EngineTestCase(unittest.TestCase):
         from .. import engine as e
         flow_uuid = '70218468-417E-458B-B820-A17C55D04AF9'
         with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            e.execute(flow_uuid, f.read())
+            e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
     @unittest.skip
     def test_single_frame_flow_executing(self):
