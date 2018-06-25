@@ -157,6 +157,67 @@ class ApiTestCase(unittest.TestCase):
             # 後片付け
             model.make_flow_path(new_flow_data_source_name).unlink()
 
+    def test_fetch_flows(self):
+        """
+        fecth_flowsをテストする
+        """
+
+        # ユーザとプロジェクト、フローを作成する
+        with app.app_context():
+            (user1, project_id, project_uuid) = setUpProject(self)
+
+            created_flow = model.create_flow(project_id, 'フローテスト用', 'flow_test')
+            created_flow2 = model.create_flow(project_id, 'フローテスト用2', 'flow_test2')
+            created_flow3 = model.create_flow(project_id, 'フローテスト用3', 'flow_test3')
+
+         # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/api/v0/flows?project=%s' % project_uuid
+            response = client.get(endpoint)
+            results = json.loads(response.get_data())
+
+        self.assertEqual(results['success'], True)
+        self.assertEqual({r['uuid'] for r in results['data']}, {created_flow['uuid'],
+                                                                created_flow2['uuid'],
+                                                                created_flow3['uuid']})
+        self.assertEqual({r['project_id'] for r in results['data']}, {project_id, project_id, project_id})
+        self.assertEqual({r['name'] for r in results['data']}, {'フローテスト用', 'フローテスト用2', 'フローテスト用3'})
+
+        # 後片付け
+        with app.app_context():
+            paths = model.get_flow_paths_by_project_uuid(project_uuid)
+            for path in paths:
+                path.unlink()
+
+    def test_fetch_flows_project_uuid_Nothing(self):
+        """
+        fetch_flowのprojectuuidが指定されていない場合のテスト
+        """
+
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/api/v0/flows'
+            response = client.get(endpoint)
+            results = json.loads(response.get_data())
+
+        self.assertEqual(results['success'], True)
+        self.assertEqual(results['data'], [])
+
+        # 後片付け
+        with app.app_context():
+            paths = model.get_flow_paths_by_project_uuid(project_uuid)
+            for path in paths:
+                path.unlink()
 
     def test_fetch_flow(self):
         """
