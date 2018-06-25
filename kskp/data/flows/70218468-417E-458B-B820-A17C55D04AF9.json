@@ -19,6 +19,14 @@
         "k": "顧客",
         "f": "数量:数量合計,金額:金額合計"
       }
+    },
+    "s1": {
+      "type": "command",
+      "name": "mcut",
+      "label": "合計",
+      "args": {
+        "f": "顧客,金額合計"
+      }
     }
   },
 
@@ -35,6 +43,14 @@
       "type": "frame",
       "uuid": null,
       "srcs": ["s0.out"],
+      "dsts": ["s1.in"],
+      "asFlowIn": false,
+      "asFlowOut": false
+    },
+    "d2": {
+      "type": "frame",
+      "uuid": null,
+      "srcs": ["s1.out"],
       "dsts": [],
       "asFlowIn": false,
       "asFlowOut": true

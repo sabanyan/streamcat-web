@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% block title %}{% endblock %}
 {% block content %}
-<!-- <div class="container mt-40px">
+<!-- {{ projects }} -->
+<div class="container mt-40px">
     <div class="text-center">
         <div class="kskp-form">
             <div class="row no-gutters">
@@ -94,5 +95,56 @@
         </div>
     </div>
 </div>
-<script src="{{ url_for('static', filename='js/util.js') }}"></script> -->
+{% endblock %}
+
+{% block footer_scripts %}
+<script src="{{ url_for('static', filename='js/util.js') }}"></script>
+<script>
+  function refreshSubmitDisabled(){
+    var has_project_name = ($("#project_name").val())?true:false;
+    if(has_project_name){
+      $("[type=submit]").prop("disabled",false);
+    }else{
+      $("[type=submit]").prop("disabled",true);
+    }
+  }
+
+  $(function() {
+    refreshSubmitDisabled();
+    $("#project_name").on("keyup",function(){
+      refreshSubmitDisabled();
+    });
+  });
+
+  function sendProjectData() {
+    console.log('wowow');
+    let project_elem = document.getElementById('project_name');
+    let project_name = project_elem.value;
+
+    let projData = {
+      'author': {
+        'name': '{{ user_name }}'
+      },
+      'name': project_name
+    };
+    // sendJsonData('POST', "{{ url_for('api.new_project') }}", projData, function(){
+    //   window.location.href = '/projects';
+    // });
+    sendJsonData('POST', "/api/v0/projects", projData, function(){
+      window.location.href = '/projects';
+    });
+  }
+
+  function destroyProject(uuid) {
+    if(window.confirm("このプロジェクトを削除してもよろしいですか？")){
+      sendJsonData('DELETE', '/api/v0-1/projects/' + uuid, null, null);
+      window.location.href = '/projects';
+    }
+  }
+
+  function searchProject() {
+    let search_string = document.getElementById('project_search_text').value;
+    window.location.href = '/projects?search=' + search_string;
+  }
+</script>
 {% endblock %}
