@@ -210,6 +210,8 @@ class ApiTestCase(unittest.TestCase):
             response = client.get(endpoint)
             results = json.loads(response.get_data())
 
+        # Projectを指定しなかった場合、例外が発生するかしないかのテスト
+        # ここではとりあえず空のリストが返って来ることを期待している
         self.assertEqual(results['success'], True)
         self.assertEqual(results['data'], [])
 
