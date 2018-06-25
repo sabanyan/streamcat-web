@@ -193,15 +193,14 @@ def fetch_flow_by_uuid(flow_uuid):
     path = get_flow_path_by_uuid(flow_uuid)
     return json.loads(path.read_text())
 
+
 def fetch_flows_by_project_uuid(project_uuid):
     """
     指定したプロジェクトの持つフロー一覧の内容リストを返す
     """
-    flow_json_list = []
     paths = get_flow_paths_by_project_uuid(project_uuid)
-    for path in paths:
-        flow_json_list.append(json.loads(path.read_text()))
-    return flow_json_list
+    return [json.loads(path.read_text()) for path in paths]
+
 
 def delete_flow_by_uuid(flow_uuid):
     """
