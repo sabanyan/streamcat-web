@@ -1,4 +1,6 @@
-from ...core import Parameter, Command, Frame, FRAME_DIR
+import os
+
+from ...core import Parameter, Command, Frame
 
 class FieldParameter(Parameter):
     def __init__(self, caption='対象列名'):
@@ -81,8 +83,11 @@ class MCommand(Command):
             # TODO: inputを選ぶルールは変わるかもしれないが、随分後になるとは思う
             i_uuid = inputs[list(inputs.keys())[0]].uuid
 
-            # TODO: framesへのパス、engineの中からちゃんと指定できないとね
-            i_path = f'{ FRAME_DIR }/{ i_uuid }.csv'
+            # frameの保存場所の指定は必須
+            if 'KENG_FRAME_PATH' not in os.environ:
+                raise Exception()
+
+            i_path = f"{ os.environ['KENG_FRAME_PATH'] }/{ i_uuid }.csv"
 
             command_array.append(f'i={ i_path }')
 

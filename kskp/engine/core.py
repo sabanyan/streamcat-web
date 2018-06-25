@@ -1,5 +1,9 @@
-# TODO: 環境変数で指定できるようにする
-FRAME_DIR = 'kskp/data/frames'
+import os
+
+
+# frameの保存場所は環境変数か、engine.execute()で直接指定する
+# os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+
 
 class Job:
     """
@@ -96,8 +100,11 @@ class Flow:
         import uuid
         datum.uuid = str(uuid.uuid4())
 
-        # TODO: framesへのパス、engineの中からちゃんと指定できないとね
-        o_path = f"{ FRAME_DIR }/{ datum.uuid }.csv"
+        # frameの保存場所の指定は必須
+        if 'KENG_FRAME_PATH' not in os.environ:
+            raise Exception()
+
+        o_path = f"{ os.environ['KENG_FRAME_PATH'] }/{ datum.uuid }.csv"
 
         # 実行を行う
         # TODO: パイプの時はpopenを受け取ってfdだけ取得して入れればいい（それを次に渡す）
