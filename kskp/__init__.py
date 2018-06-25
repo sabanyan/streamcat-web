@@ -1,4 +1,4 @@
-from flask import Flask, render_template, url_for, redirect, session
+from flask import Flask, render_template, url_for, redirect, session, request
 
 app = Flask('kskp')
 
@@ -29,7 +29,7 @@ def projects():
 @app.route('/flows', methods=['GET', 'POST'])
 @login_required
 def flows():
-    return render_template('flows.html')
+    return render_template('flows.html', flows=fetch_flows_by_project_uuid(request.args.get('project')))
 
 @app.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
