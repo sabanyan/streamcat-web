@@ -1,0 +1,28 @@
+{
+  "version": "0.1",
+  "name": "aggregate",
+  "description": "基本統計量",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [
+    {
+      "name": "f",
+      "caption": "対象列名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    }
+  ],
+  "script": {
+    "type": "file",
+    "name": "aggregate.py"
+  }
+}
