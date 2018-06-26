@@ -1,0 +1,28 @@
+{
+  "version": "0.1",
+  "name": "mcat_multi",
+  "description": "ファイル結合(複数IN)",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [
+    {
+      "name": "f",
+      "caption": "併合項目名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    }
+  ],
+  "script": {
+    "type": "file",
+    "name": "mcat_multi.py"
+  }
+}

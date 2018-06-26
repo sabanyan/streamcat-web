@@ -1,0 +1,35 @@
+{
+  "version": "0.1",
+  "name": "mmulti",
+  "description": "複数入力",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [
+    {
+      "name": "k",
+      "caption": "結合キー名（mjoinのみ）",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    },
+    {
+      "name": "cmd",
+      "caption": "結合コマンド（mjoin, mcat）",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    }
+  ],
+  "script": {
+    "type": "file",
+    "name": "mjoin.py"
+  }
+}
