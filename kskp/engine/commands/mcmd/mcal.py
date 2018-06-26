@@ -1,5 +1,8 @@
+from . import *
+
 class Mcal(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mcal'
         self.description = '計算'
         self.parameters.append(CalculateParameter('計算式'))
