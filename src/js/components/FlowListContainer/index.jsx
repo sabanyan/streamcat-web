@@ -71,8 +71,8 @@ export default class FlowListContainer extends React.Component {
     return this.state.flow_list.filter((flow) => {
       if (keyword === '') return true
       return (flow.name.indexOf(keyword) != -1) ? true : false
-    }).map((flow) => {
-      return <FlowList flow={flow} href={"./flows/" + flow.uuid}>
+    }).map((flow,index) => {
+      return <FlowList key={index} flow={flow} href={"./flows/" + flow.uuid}>
         <a href="#" onClick={()=>self.onClickDelete(flow.uuid)}>削除</a>
       </FlowList>
     })

@@ -30,7 +30,7 @@ def flows():
 @app.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
 def flow_designer(flow_uuid):
-    return render_template('flow_designer.html')
+    return render_template('flow_designer.html',flow_uuid=flow_uuid)
 
 
 

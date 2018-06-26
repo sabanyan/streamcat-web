@@ -12,6 +12,7 @@ import type {FlowEditorProps} from '../index'
 import Edge from '../../shared/Edge'
 import Selector from '../../shared/Selector'
 import style from './style.scss'
+import HttpUtil from '../../../utils/HttpUtil'
 
 type State = {}
 
@@ -28,19 +29,29 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       redirect: 'follow',
     }
 
-    fetch("http://" + Constants.api.host + "/api/v0-1/operators", option).then(function (response) {
-      if (response.ok) {
-        return response.json()
-      } else {
-        alert("サーバでエラーが発生しました")
-      }
-    }).then(function (json: any) {
-      //マスタ追加
-      self.props.addMaster({operators: json.data})
-    }).catch((err) => {
-      console.log(err)
-      alert("クライアントでエラーが発生しました")
+    HttpUtil.get('flows/'+inject_flow_uuid).then((response)=>{
+      console.log(response.data)
     })
+
+
+    HttpUtil.get('commands').then((response)=>{
+      console.log(response)
+      self.props.addMaster({operators: response.data})
+    }).then((response)=>{console.log(response)},(error)=>{console.log(error)})
+    //
+    // fetch("http://" + Constants.api.host + "/api/v0-1/operators", option).then(function (response) {
+    //   if (response.ok) {
+    //     return response.json()
+    //   } else {
+    //     alert("サーバでエラーが発生しました")
+    //   }
+    // }).then(function (json: any) {
+    //   //マスタ追加
+    //   self.props.addMaster({operators: json.data})
+    // }).catch((err) => {
+    //   console.log(err)
+    //   alert("クライアントでエラーが発生しました")
+    // })
 
   }
 

@@ -13,12 +13,12 @@ window.emitter = new EventEmitter()
 
 const store = createStore(reducer,window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
 
-if(document.getElementById('floweditor')){
+if(document.getElementById('flow_editor')){
   ReactDOM.render(
     <Provider store={store}>
       <FlowEditorContainer />
     </Provider>,
-    document.getElementById('floweditor')
+    document.getElementById('flow_editor')
   )
 }
 

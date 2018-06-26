@@ -22,12 +22,12 @@ export default class FlowList extends React.Component<Props>{
   }
 
   render(){
-    const {icon,children} = this.props
+    const {icon,children,href} = this.props
     const {name,uuid,created_at,creator_name} = this.props.flow
 
     return <div className={style.flow_list}>
       <i className={classnames("material-icons",[style.icon])}>description</i>
-      <div className={style.name}>{name}</div>
+      <a className={style.name} href={href}>{name}</a>
       <div className={style.creator_name}>{creator_name}</div>
       <div className={style.created_at}>{created_at}</div>
       <div className={style.action}>{children}</div>
