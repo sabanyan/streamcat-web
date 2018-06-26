@@ -1,41 +1,59 @@
-"""
-ここにある関数は、
-個々のOperator.executeから呼ばれるユーティリティである
-"""
+import sys
 
-def execute_m_command(context, command, parameters):
+def command_from_name(name):
     """
-    MCMD用のコマンド文字列を作成して実行する
-    """
-    command_array = command.split()
-
-    # 共通パラメータ
-    if 'i' in parameters:
-        command_array.append('i=%s' % parameters['i'])
-        del parameters['i']
-
-    # その他のパラメータを処理する
-    for key, val in parameters.items():
-        command_array.append('%s=%s' % (key, val))
-
-    print(command_array)
-    # パイプの状態を加味して実行
-    return execute_with_context(context, command_array)
-
-
-def execute_command(context, command, options, parameters):
-    """
-    （MCMDではない）通常のコマンドを実行する
-    MCMDはオプション指定が通常のUNIXコマンド群と異なる
+    TODO: 結局この関数を作ってしまったが、この方法しかないのだろうか
     """
 
-    # まず、コマンド文字列を作る
-    command_array = make_command_array(command, options, parameters)
+    d = {
+        'ls': 'unix.ls',
+        'grep': 'unix.grep',
+        'wc': 'unix.wc',
+        'cat': 'unix.cat',
 
-    # パイプの状態を加味して実行
-    return execute_with_context(context, command_array)
+        'mcut_n': 'mcmd.coledit.Mcut_n',
+        'mcut': 'mcmd.coledit.Mcut',
+        'msel': 'mcmd.rowedit.Msel',
+        'mselstr': 'mcmd.rowedit.Mselstr',
+        'mjoin': 'mcmd.tablejoin.Mjoin',
+        'msortf': 'mcmd.rowsort.Msortf',
+        'mcount': 'mcmd.tablegrouping.Mcount',
+        'muniq': 'mcmd.rowedit.Muniq',
+        'mcat': 'mcmd.tablejoin.Mcat',
+        'mslide': 'mcmd.tablegrouping.Mslide',
+        'msetstr': 'mcmd.coledit.Msetstr',
+        'mnullto': 'mcmd.valuetransform.Mnullto',
+        'mnumber': 'mcmd.coledit.Mnumber',
+        'msum': 'mcmd.tablegrouping.Msum',
+        'mbest': 'mcmd.rowedit.Mbest',
+        'mtra': 'mcmd.valuecrossing.Mtra',
+        'mdelnull': 'mcmd.rowedit.Mdelnull',
+        'msed': 'mcmd.valuetransform.Msed',
+        'mcal': 'mcmd.Mcal', # これは将来変わるかも
+
+        'mchkcsv': 'mcmd.validation.Mchkcsv',
+        'mbucket': 'mcmd.tablesplit.Mbucket',
+        'mstats': 'mcmd.tablegrouping.Mstats',
+        'mavg': 'mcmd.tablegrouping.Mavg',
+
+        'aggregate': 'util.aggregate',
+
+        'mtee': 'mcmd.datasource.mtee'
+    }
+
+    # TODO: このモジュールパスだとengine単体で使えない
+    component_path = str(f'kskp.engine.commands.{ d[name] }').split('.')
+    package_path = component_path[:-1]
+    package_name = '.'.join(package_path)
+    class_name = component_path[-1]
+    import importlib
+    importlib.import_module(str(package_name))
+    cls = getattr(sys.modules[package_name], class_name)
+    result = cls()
+    return result
 
 
+# TODO: どこでもUNIXコマンドはまだ使えるようにしていないので、この関数はひとまず残しておく
 def make_command_array(command, options, parameters):
     '''
     パラメータ以外の（オプションなども加味した）コマンド文字列を作るメソッドが必要なはず
@@ -51,17 +69,3 @@ def make_command_array(command, options, parameters):
         res.append(param)
 
     return res
-
-
-def execute_with_context(context, command_array):
-    """
-    contextの内容を加味した上で、コマンドを実行する
-    現在はstdinとstdoutがパイプかどうかを見ている
-    パイプで繋いでいる途中だと、stdin/stdoutを使って実行後のパイプが渡されたり渡したりする
-    """
-    # stdinとstdoutが指定されていれば取得
-    stdin = context['stdin'] if 'stdin' in context else None
-    stdout = context['stdout'] if 'stdout' in context else None
-
-    # 実行
-    return subprocess.Popen(command_array, stdin=stdin, stdout=stdout)

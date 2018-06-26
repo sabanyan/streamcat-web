@@ -32,3 +32,6 @@ kskp/static/css/app.css
 *.egg-info
 
 kskp.db
+
+build/
+dist/
