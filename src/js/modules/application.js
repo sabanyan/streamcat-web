@@ -76,6 +76,7 @@ let initialState
 initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(inject_initial_flow_data)
 initialState.selected_step_ids = []
 initialState.graph = graph.getGraphSize(initialState.steps)
+initialState.steps = {}
 initialState.mast = {}
 initialState.selected_tab_id = 0
 initialState.drag = {}
