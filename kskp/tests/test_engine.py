@@ -25,13 +25,12 @@ class EngineTestCase(unittest.TestCase):
         with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
             e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
-    def test_minimum_piping_flow(self):
+    def test_minimum_nested_flow(self):
         """
-        パイプを使う最小限のフローのテスト
-        stepが3つ
+        nested flowのテスト
         """
 
-        flow_uuid = '2B14E7A0-BEDA-4EC3-B68A-3A3407C0B321'
+        flow_uuid = '3E4899CC-3296-4490-8C3F-3D9C6E857E14'
         with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
             e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
