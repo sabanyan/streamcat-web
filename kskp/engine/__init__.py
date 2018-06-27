@@ -6,7 +6,7 @@ from .data import Frame
 from .util import command_from_name
 
 
-def execute(flow_uuid, flow_json, arguments={}, inputs={}, frame_path=None):
+def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
     """
     エントリポイント
     """
@@ -47,15 +47,16 @@ def parse(flow_uuid, flow_json):
 
         if step_type == 'command':
             # コマンドから作られたstep
-            command = command_from_name(val['name'])
+            command_or_flow = command_from_name(val['name'])
         elif step_type == 'flow':
             # サブフロー
-            pass
+            with open(f"kskp/data/flows/{ val['uuid'] }.json", 'r') as f:
+                command_or_flow = Flow(parse(val['uuid'], f.read()))
         else:
             # 通らないはず
             raise Exception()
 
-        s = Step(step_type, command, val['args'])
+        s = Step(step_type, command_or_flow, val['args'])
 
         new_flow.steps[key] = s
 
@@ -65,11 +66,12 @@ def parse(flow_uuid, flow_json):
 
     # inputsを取り出す
     # asFlowInフラグが立っているデータ
-    new_flow.inputs = [v for v in data.values() if v['asFlowIn'] == True]
+    new_flow.inputs = {k: v for k, v in data.items() if v['asFlowIn'] == True}
+    print('new_flow.inputs:', new_flow.inputs)
 
     # outputsを取り出す
     # asFlowOutフラグが立っているデータ
-    new_flow.outputs = [v for v in data.values() if v['asFlowOut'] == True]
+    new_flow.outputs = {k: v for k, v in data.items() if v['asFlowOut'] == True}
 
     # 残りは内包表記では書きにくいのでforで
     for key, val in data.items():
@@ -82,7 +84,7 @@ def parse(flow_uuid, flow_json):
             if val['uuid'] is not None:
                 # まずdataを設定しよう
                 new_frame.uuid = val['uuid']
-                
+
             new_flow.data[key] = new_frame
 
             # そしてedgesを取り出す

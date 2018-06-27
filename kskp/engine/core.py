@@ -9,15 +9,22 @@ class Job:
     また、エラー情報も持つ
     """
 
-    def __init__(self, step, inputs={}):
+    def __init__(self, step, inputs=None):
         self.step = step
-        self.inputs = inputs
+        # 基本的にはinputsは元々持っているものを使う
+        # もし新しく指定されれば、それで上書きされる
+        if inputs is None:
+            self.inputs = step.command_or_flow.inputs
+        else:
+            self.inputs = inputs
         self.errors = []
+        print('self.inputs:', self.inputs)
 
     def execute(self):
         """
         返却するのはデータを値にもつdict
         """
+        print('self.inputs:', self.inputs)
         return self.step.execute(self.inputs)
 
 
@@ -109,6 +116,7 @@ class Flow:
 
         # 実行開始
         # TODO: ひとまずoutputsが1つのみである前提で取得
+        print('step.command_or_flow.outputs:', step.command_or_flow.outputs)
         port_name = list(step.command_or_flow.outputs.keys())[0]
 
         # 結果を返却する
@@ -124,6 +132,13 @@ class Flow:
         # まずは、グラフ上の終端データを見つける
         lasts = { k: v for k, v in self.edges.items() if len(v['dsts']) == 0 }
 
+        # 引数を与える
+        # TODO: まずは1つだけの前提
+        input = list(inputs.values())[0]
+        input_key = list(self.inputs.keys())[0]
+        # そっくり入れ替える
+        self.inputs[input_key] = input
+
         # それぞれについて必要ならば計算して結果を取得する
         result = {}
         for key in lasts.keys():
@@ -136,8 +151,8 @@ class Flow:
             # print('後片付け:', d)
             d.close()
 
-        # TODO: 本来であればここで返すのはoutputに合致したものだけ
-        # return { k: self.get_datum(k) for k in lasts.keys() }
+        # outputsを集め直す
+        return { k: v for k, v in self.outputs.items() }
 
 
 class Command:
