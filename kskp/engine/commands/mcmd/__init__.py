@@ -1,6 +1,7 @@
 import os
 
-from ...core import Parameter, Command, Frame
+from ...core import Parameter, Command
+from ...data import Promise
 
 class FieldParameter(Parameter):
     def __init__(self, caption='対象列名'):
@@ -69,30 +70,21 @@ class MCommand(Command):
         返すのはvalueにData型を持つdictである必要がある
         """
 
-        command_array = self.name.split()
+        # まず唯一の引数を受け取る
+        input = list(inputs.values())[0]
 
-        # コマンドライン引数を作る
+        # パイプでつなげられそうなら、つなげる
+        stdin = input.get_fd()
+
+        # UNIXコマンド用配列を作る
+        command_args = self.name.split()
+
         for key, val in arguments.items():
-            command_array.append('%s=%s' % (key, val))
-
-        # inputがpipeでないなら、i=のパラメータを作る必要がある
-        # ここでは、基本的に「全てのinput.fd is Noneだったら」パイプから来ていない、と判断する
-        if len(inputs) > 0 and all([i.fd is None for i in inputs.values()]):
-
-            # 普通はiに取れるのは一つだけなので、ひとまず最初のものを選びます
-            # TODO: inputを選ぶルールは変わるかもしれないが、随分後になるとは思う
-            i_uuid = inputs[list(inputs.keys())[0]].uuid
-
-            # frameの保存場所の指定は必須
-            if 'KENG_FRAME_PATH' not in os.environ:
-                raise Exception()
-
-            i_path = f"{ os.environ['KENG_FRAME_PATH'] }/{ i_uuid }.csv"
-
-            command_array.append(f'i={ i_path }')
+            command_args.append('%s=%s' % (key, val))
 
         # コマンド列から作られる結果を返す
-        f = Frame.from_command(command_array)
+        promise = Promise(command_args, stdin=stdin)
 
+                
         key_name = list(self.outputs.keys())[0]
-        return { key_name: f } # keyとDataを返す
+        return { key_name: promise } # keyとDataを返す

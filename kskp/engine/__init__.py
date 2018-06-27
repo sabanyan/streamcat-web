@@ -2,6 +2,7 @@ import os
 import json
 
 from .core import *
+from .data import Frame
 from .util import command_from_name
 
 
@@ -75,14 +76,14 @@ def parse(flow_uuid, flow_json):
         data_type = val['type']
         if data_type == 'frame':
             # Frameの場合
-            new_data = Frame()
+            new_frame = Frame()
 
             # UUIDは存在していれば
             if val['uuid'] is not None:
-                new_data.uuid = val['uuid']
-
-            # まずdataを設定しよう
-            new_flow.data[key] = new_data
+                # まずdataを設定しよう
+                new_frame.uuid = val['uuid']
+                
+            new_flow.data[key] = new_frame
 
             # そしてedgesを取り出す
             edge = { k: v for k, v in val.items() if k in ['srcs', 'dsts'] }
