@@ -290,7 +290,7 @@ class ModelTestCase(unittest.TestCase):
             created_flow = json.loads(path.read_text(encoding='utf-8'))
 
             self.assertEqual(created_flow['uuid'], new_flow['uuid'])
-            self.assertEqual(created_flow['project_id'], project_id)
+            self.assertEqual(created_flow['projectId'], project_id)
             self.assertEqual(created_flow['name'], new_flow_name)
 
             # 後片付け
