@@ -2,6 +2,7 @@ import os
 import json
 import unittest
 import tempfile
+import uuid
 from pathlib import Path
 
 from kskp import app
@@ -281,7 +282,7 @@ class ModelTestCase(unittest.TestCase):
 
             # フロー作成
             new_flow_name = 'ふろー'
-            data_source_name = 'abcde'
+            data_source_name = str(uuid.uuid4())
             new_flow = model.create_flow(project_id, new_flow_name, data_source_name)
 
             # フローを取得
@@ -289,7 +290,7 @@ class ModelTestCase(unittest.TestCase):
 
             created_flow = json.loads(path.read_text(encoding='utf-8'))
 
-            self.assertEqual(created_flow['uuid'], new_flow['uuid'])
+            self.assertEqual(path.stem, data_source_name)
             self.assertEqual(created_flow['projectId'], project_id)
             self.assertEqual(created_flow['name'], new_flow_name)
 
@@ -318,18 +319,17 @@ class ModelTestCase(unittest.TestCase):
 
         # フローを作成する
         new_flow_name = 'ふろー取得てすと'
-        data_source_name = 'fetch_flow_test'
+        data_source_name = str(uuid.uuid4())
         created_flow = model.create_flow(1, new_flow_name, data_source_name)
 
-        fetched_flow = model.fetch_flow_by_uuid(created_flow['uuid'])
+        fetched_flow = model.fetch_flow_by_uuid(data_source_name)
 
         # ファイル名も確認しておく
-        path = model.get_flow_path_by_uuid(fetched_flow['uuid'])
+        path = model.get_flow_path_by_uuid(data_source_name)
         self.assertEqual(path.name, '%s.json' % data_source_name)
 
         # JSONの中身も確認する
-        self.assertEqual(fetched_flow['uuid'], created_flow['uuid'])
-        self.assertEqual(fetched_flow['project_id'], project_id)
+        self.assertEqual(fetched_flow['projectId'], project_id)
         self.assertEqual(fetched_flow['name'], new_flow_name)
 
         # 後片付け
@@ -338,15 +338,16 @@ class ModelTestCase(unittest.TestCase):
 
 
     def test_delete_flow(self):
-        flow = model.create_flow(1, '', '')
-        model.delete_flow_by_uuid(flow['uuid'])
+        data_source_name = str(uuid.uuid4())
+        flow = model.create_flow(1, '', data_source_name)
+        model.delete_flow_by_uuid(data_source_name)
 
 
     def test_update_flow(self):
-        data_source_name = 'nvwp;rfqa'
+        data_source_name = str(uuid.uuid4())
         flow = model.create_flow(1, '', data_source_name)
 
-        model.update_flow_by_uuid(flow['uuid'], {'a': 1})
+        model.update_flow_by_uuid(data_source_name, {'a': 1})
         path = model.make_flow_path(data_source_name)
 
         # 改めてファイルから読み直す
@@ -355,7 +356,7 @@ class ModelTestCase(unittest.TestCase):
         # 後片付け
         path.unlink()
 
-        self.assertEqual(result['uuid'], flow['uuid'])
+        self.assertEqual(path.stem, data_source_name)
         self.assertEqual(result['a'], 1)
 
 

@@ -176,7 +176,6 @@ def create_flow(project_id, flow_name, data_source_name=None):
         data_source_name = new_flow_uuid
 
     data = {
-        'uuid': new_flow_uuid,
         'projectId': project_id,
         'name': flow_name
     }
@@ -225,11 +224,10 @@ def update_flow_by_uuid(flow_uuid, data):
 
 def get_flow_path_by_uuid(flow_uuid):
     """
-    指定したUUIDをもつフローファイルのパスを返すヘルパー
+    指定したUUIDをファイル名にもつフローファイルのパスを返すヘルパー
     """
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
-        data = json.loads(flow_path.read_text(encoding='utf-8'))
-        if data['uuid'] == flow_uuid:
+        if flow_path.stem == flow_uuid:
             return flow_path
 
 def get_flow_paths_by_project_uuid(project_uuid):
