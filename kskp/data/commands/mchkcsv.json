@@ -1,0 +1,20 @@
+{
+  "version": "0.1",
+  "name": "mchkcsv",
+  "description": "CSV検査",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [],
+  "script": {
+    "type": "file",
+    "name": "mchkcsv.py"
+  }
+}

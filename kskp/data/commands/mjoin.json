@@ -1,0 +1,42 @@
+{
+  "version": "0.1",
+  "name": "mjoin",
+  "description": "結合",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [
+    {
+      "name": "k",
+      "caption": "結合キー名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    },
+    {
+      "name": "m",
+      "caption": "参照ファイル名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    },
+    {
+      "name": "f",
+      "caption": "参照列名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    }
+  ],
+  "script": {
+    "type": "file",
+    "name": "mjoin.py"
+  }
+}

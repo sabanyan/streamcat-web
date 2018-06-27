@@ -1,0 +1,28 @@
+{
+  "version": "0.1",
+  "name": "mjoin_multi",
+  "description": "結合(複数IN)",
+  "inputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "outputs": [
+    {
+      "type": "csv"
+    }
+  ],
+  "arguments": [
+    {
+      "name": "k",
+      "caption": "結合キー名",
+      "type": "string",
+      "default": "",
+      "validation" : {}
+    }
+  ],
+  "script": {
+    "type": "file",
+    "name": "mjoin_multi.py"
+  }
+}
