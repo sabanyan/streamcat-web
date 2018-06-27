@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import {Provider} from 'react-redux'
+import { Provider } from 'react-redux'
 import { createStore } from 'redux'
 import reducer from './modules/application'
 import FlowEditorContainer from './components/FlowEditorContainer'
@@ -11,35 +11,36 @@ import FlowListContainer from './components/FlowListContainer'
 
 window.emitter = new EventEmitter()
 
-const store = createStore(reducer,window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
+const store = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ &&
+  window.__REDUX_DEVTOOLS_EXTENSION__())
 
-if(document.getElementById('flow_editor')){
+if (document.getElementById('flow_editor')) {
   ReactDOM.render(
     <Provider store={store}>
-      <FlowEditorContainer />
+      <FlowEditorContainer/>
     </Provider>,
-    document.getElementById('flow_editor')
+    document.getElementById('flow_editor'),
   )
 }
 
-if(document.getElementById('visualization')){
+if (document.getElementById('visualization')) {
   ReactDOM.render(
     <Provider store={store}>
-      <VisualizationContainer />
+      <VisualizationContainer/>
     </Provider>,
-    document.getElementById('visualization')
+    document.getElementById('visualization'),
   )
 }
 
-if(document.getElementById('project_list')){
+if (document.getElementById('project_list')) {
   ReactDOM.render(
-      <ProjectListContainer />,
-    document.getElementById('project_list')
+    <ProjectListContainer/>,
+    document.getElementById('project_list'),
   )
 }
-if(document.getElementById('flow_list')){
+if (document.getElementById('flow_list')) {
   ReactDOM.render(
-    <FlowListContainer />,
-    document.getElementById('flow_list')
+    <FlowListContainer/>,
+    document.getElementById('flow_list'),
   )
 }

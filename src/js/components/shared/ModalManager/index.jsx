@@ -28,7 +28,7 @@ import Modal from '../Modal'
  */
 
 export default class ModalManager extends React.Component {
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
 
@@ -39,18 +39,27 @@ export default class ModalManager extends React.Component {
   render () {
 
     return <div>
-      <Modal key={Constants.modal.ADD_OPERATOR} id={Constants.modal.ADD_OPERATOR} dynamic={true}>
+      <Modal key={Constants.modal.ADD_OPERATOR}
+             id={Constants.modal.ADD_OPERATOR} dynamic={true}>
       </Modal>
-      <Modal key={Constants.modal.IMPORT_DATASOURCE} id={Constants.modal.IMPORT_DATASOURCE} dynamic={true} done={"追加する"}>
+      <Modal key={Constants.modal.IMPORT_DATASOURCE}
+             id={Constants.modal.IMPORT_DATASOURCE} dynamic={true}
+             done={'追加する'}>
       </Modal>
-      <Modal key={Constants.preview.DATASOURCE} id={Constants.preview.DATASOURCE} title="プレビュー" dynamic={true} preview={true} footer={false}>
+      <Modal key={Constants.preview.DATASOURCE}
+             id={Constants.preview.DATASOURCE} title="プレビュー" dynamic={true}
+             preview={true} footer={false}>
       </Modal>
-      <Modal key={Constants.modal.SHOW_MESSAGE} id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true} ok={true}>
-          <div ref = {Constants.modal.property.SHOW_MESSAGE}/>
+      <Modal key={Constants.modal.SHOW_MESSAGE}
+             id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true}
+             ok={true}>
+        <div ref={Constants.modal.property.SHOW_MESSAGE}/>
       </Modal>
-      <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT} title="新しいプロジェクトを始める" dynamic={true} done={"作成する"}>
+      <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT}
+             title="新しいプロジェクトを始める" dynamic={true} done={'作成する'}>
       </Modal>
-      <Modal key={Constants.modal.ADD_FLOW} id={Constants.modal.ADD_FLOW} title="新しいフローを始める" dynamic={true} done={"作成する"}>
+      <Modal key={Constants.modal.ADD_FLOW} id={Constants.modal.ADD_FLOW}
+             title="新しいフローを始める" dynamic={true} done={'作成する'}>
       </Modal>
     </div>
   }

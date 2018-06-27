@@ -18,26 +18,28 @@ import TabPanel from './TabPanel'
  */
 
 export default class Tabbar extends React.Component {
-  onChangeBefore(){
+  onChangeBefore () {
 
   }
-  onChange(){
+
+  onChange () {
 
   }
-  render(){
-    let element_cnt = 0;
+
+  render () {
+    let element_cnt = 0
 
     /**
      * 自動的に子要素に対して tab_id や key を追加する処理
      */
-    const children = this.props.children.map((element)=>{
-      if(element.type ===  TabPanel){
+    const children = this.props.children.map((element) => {
+      if (element.type === TabPanel) {
         return React.cloneElement(
           element,
-          { tab_id: element_cnt++,key: element_cnt}
-        );
+          {tab_id: element_cnt++, key: element_cnt},
+        )
       }
-      return element;
+      return element
     })
     return <div>
       {children}

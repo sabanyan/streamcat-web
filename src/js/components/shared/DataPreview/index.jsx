@@ -1,6 +1,16 @@
 import React from 'react'
 import DataTable from '../../shared/DataTable'
-import { Doughnut, Pie, Line, Bar, HorizontalBar, Radar, Polar, Bubble, Scatter } from 'react-chartjs-2'
+import {
+  Doughnut,
+  Pie,
+  Line,
+  Bar,
+  HorizontalBar,
+  Radar,
+  Polar,
+  Bubble,
+  Scatter,
+} from 'react-chartjs-2'
 import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
 import DownloadButton from '../Button/DownloadButton'
@@ -14,15 +24,13 @@ type State = {
   type: string
 }
 
-type Props = {
+type Props = {}
 
-}
+export default class DataPreview extends React.Component<Props, State> {
 
-export default class DataPreview extends React.Component<Props,State> {
-
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
-    this.state = {json: props.json, type: Constants.chart.bar,image_url: null}
+    this.state = {json: props.json, type: Constants.chart.bar, image_url: null}
   }
 
   componentWillMount () {
@@ -30,9 +38,9 @@ export default class DataPreview extends React.Component<Props,State> {
 
     Chart.pluginService.register({
       afterDraw: function (chart, easing) {
-        self.setState({chart_instance:chart})
-      }
-    });
+        self.setState({chart_instance: chart})
+      },
+    })
 
   }
 
@@ -40,7 +48,9 @@ export default class DataPreview extends React.Component<Props,State> {
 
     let json = this.state.json
 
-    if (!json) return null
+    if (!json) {
+      return null
+    }
 
     let data = ChartUtil.jsonToChart(json)
 
@@ -51,13 +61,16 @@ export default class DataPreview extends React.Component<Props,State> {
         chart = <Bar data={data} ref="chart" height={100} width={100}></Bar>
         break
       case Constants.chart.bubble:
-        chart = <Bubble data={data} ref="chart" height={100} width={100}></Bubble>
+        chart =
+          <Bubble data={data} ref="chart" height={100} width={100}></Bubble>
         break
       case Constants.chart.doughnut:
-        chart = <Doughnut data={data} ref="chart" height={100} width={100}></Doughnut>
+        chart =
+          <Doughnut data={data} ref="chart" height={100} width={100}></Doughnut>
         break
       case Constants.chart.horizontalBar:
-        chart = <HorizontalBar data={data} ref="chart" height={100} width={100}></HorizontalBar>
+        chart = <HorizontalBar data={data} ref="chart" height={100}
+                               width={100}></HorizontalBar>
         break
       case Constants.chart.line:
         chart = <Line data={data} ref="chart" height={100} width={100}></Line>
@@ -72,7 +85,8 @@ export default class DataPreview extends React.Component<Props,State> {
         chart = <Radar data={data} ref="chart" height={100} width={100}></Radar>
         break
       case Constants.chart.scatter:
-        chart = <Scatter data={data} ref="chart" height={100} width={100}></Scatter>
+        chart =
+          <Scatter data={data} ref="chart" height={100} width={100}></Scatter>
         break
     }
 

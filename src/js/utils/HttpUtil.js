@@ -20,7 +20,7 @@ class HTTPUtil {
   get (path, data, config) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
-    return axios.get(url, {params:data}, merged_config)
+    return axios.get(url, {params: data}, merged_config)
   }
 
   post (path, data, config) {

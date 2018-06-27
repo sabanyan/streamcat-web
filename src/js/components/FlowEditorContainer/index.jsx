@@ -15,10 +15,10 @@ import {
   selectTabAction,
   dragStartAction,
   draggingAction,
-  dragEndAction
-} from '../../modules/application';
-import FlowEditor from './FlowEditor';
-import { connect } from 'react-redux';
+  dragEndAction,
+} from '../../modules/application'
+import FlowEditor from './FlowEditor'
+import { connect } from 'react-redux'
 import * as React from 'react'
 
 let FlowEditorContainer
@@ -43,17 +43,16 @@ export type FlowEditorProps = {
   dragging: Function;
   dragEnd: Function;
   drag: {
-    start:{
-      x:number,
-      y:number
+    start: {
+      x: number,
+      y: number
     },
-    end:{
-      x:number,
-      y:number
+    end: {
+      x: number,
+      y: number
     }
   }
 }
-
 
 export default FlowEditorContainer = connect(
   state => {
@@ -67,7 +66,7 @@ export default FlowEditorContainer = connect(
       selected_tab_id: state.selected_tab_id,
       drag: state.drag,
       selected_in_edges: state.selected_in_edges,
-      selected_out_edges: state.selected_out_edges
+      selected_out_edges: state.selected_out_edges,
     }
   },
   dispatch => {
@@ -85,22 +84,22 @@ export default FlowEditorContainer = connect(
         dispatch(selectStepsAction(...args))
       },
       addSelectStep (...args) {
-          dispatch(addSelectStepAction(...args))
+        dispatch(addSelectStepAction(...args))
       },
       deleteSelectStep (...args) {
-          dispatch(deleteSelectStepAction(...args))
+        dispatch(deleteSelectStepAction(...args))
       },
       deleteSteps (...args) {
         dispatch(deleteStepsAction(...args))
       },
       cutSteps (...args) {
-          dispatch(cutStepsAction(...args))
+        dispatch(cutStepsAction(...args))
       },
       copySteps (...args) {
-          dispatch(copyStepsAction(...args))
+        dispatch(copyStepsAction(...args))
       },
       pasteSteps (...args) {
-          dispatch(pasteStepsAction(...args))
+        dispatch(pasteStepsAction(...args))
       },
       sortFlowAction (...args) {
         dispatch(sortFlowAction(...args))
@@ -108,18 +107,18 @@ export default FlowEditorContainer = connect(
       executeFlowAction (...args) {
         dispatch(executeFlowAction(...args))
       },
-      selectTabAction(...args){
+      selectTabAction (...args) {
         dispatch(selectTabAction(...args))
       },
-      dragStart(...args){
+      dragStart (...args) {
         dispatch(dragStartAction(...args))
       },
-      dragging(...args){
+      dragging (...args) {
         dispatch(draggingAction(...args))
       },
-      dragEnd(...args){
+      dragEnd (...args) {
         dispatch(dragEndAction(...args))
-      }
+      },
     }
-  }
+  },
 )(FlowEditor)

@@ -31,7 +31,7 @@ export default class Operator extends React.Component<Props> {
         const argument_inputs = this.props.arguments.map((argument) => {
             return <div key={self.props.name + "_" + argument.name} className="mb-8px">
                 <label>
-                    {argument.caption}
+                  {argument.caption}
                 </label>
                 <input type="text" className="form-control" placeholder={argument.name} ref={(element) => {
                     if (element) (self.inputRefs.push({argument: argument, element: element}))

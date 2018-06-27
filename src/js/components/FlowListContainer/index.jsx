@@ -33,31 +33,35 @@ export default class FlowListContainer extends React.Component {
     }
   }
 
-
   componentDidMount () {
     this.getFlowList()
     this.registerModal()
   }
 
-  registerModal(){
+  registerModal () {
     //モーダル処理の登録
     const self = this
     ModalUtil.registerModal({
       id: Constants.modal.ADD_FLOW, onClickDone: () => {
-        HttpUtil.post("flows",{name:self.state.flow_name,project_uuid:inject_project_uuid,data_source_name:self.state.flow_name}).then((response)=>{
+        HttpUtil.post('flows', {
+          name: self.state.flow_name,
+          project_uuid: inject_project_uuid,
+          data_source_name: self.state.flow_name,
+        }).then((response) => {
           ModalUtil.emitModal({id: Constants.modal.ADD_FLOW, visible: false})
           self.getFlowList()
         })
-      }
+      },
     })
   }
 
-  getFlowList(){
+  getFlowList () {
     const self = this
     self.setState({is_loading: true})
-    HttpUtil.get('flows',{project:inject_project_uuid}).then((response) => {
+    HttpUtil.get('flows', {project: inject_project_uuid}).then((response) => {
       const json = response.data
-      self.setState({is_loading: false, is_finished: true,flow_list: json.data})
+      self.setState(
+        {is_loading: false, is_finished: true, flow_list: json.data})
     })
   }
 
@@ -69,11 +73,13 @@ export default class FlowListContainer extends React.Component {
     const {keyword} = this.state
     const self = this
     return this.state.flow_list.filter((flow) => {
-      if (keyword === '') return true
+      if (keyword === '') {
+        return true
+      }
       return (flow.name.indexOf(keyword) != -1) ? true : false
-    }).map((flow,index) => {
-      return <FlowList key={index} flow={flow} href={"./flows/" + flow.uuid}>
-        <a href="#" onClick={()=>self.onClickDelete(flow.uuid)}>削除</a>
+    }).map((flow, index) => {
+      return <FlowList key={index} flow={flow} href={'./flows/' + flow.uuid}>
+        <a href="#" onClick={() => self.onClickDelete(flow.uuid)}>削除</a>
       </FlowList>
     })
   }
@@ -83,13 +89,15 @@ export default class FlowListContainer extends React.Component {
       icon={'add'}
       title={'フローがありません'}
       description={'フローを作成しましょう。'}>
-      <Button onClick={(e)=>this.onClickNew(e)}>作成する</Button>
+      <Button onClick={(e) => this.onClickNew(e)}>作成する</Button>
     </EmptyState>
   }
 
-  renderSearchBar(){
+  renderSearchBar () {
     return <div className={style.search_bar}>
-      <TextFieldWithButton placeholder={'フローを検索'} onChange={(e) => this.onChangeKeyword(e)}>検索</TextFieldWithButton>
+      <TextFieldWithButton placeholder={'フローを検索'}
+                           onChange={(e) => this.onChangeKeyword(
+                             e)}>検索</TextFieldWithButton>
     </div>
   }
 
@@ -97,44 +105,50 @@ export default class FlowListContainer extends React.Component {
     this.setState({keyword: e.target.value})
   }
 
-  onChangeFlowName(e){
+  onChangeFlowName (e) {
     this.setState({
-      flow_name: e.target.value
+      flow_name: e.target.value,
     })
   }
 
-  onClickNew(e){
+  onClickNew (e) {
     ModalUtil.emitModal({
       id: Constants.modal.ADD_FLOW,
       visible: true,
-      done:"作成する",
+      done: '作成する',
       content: <div>
         <TextField rules={{
-          required:true,
-          minlength:5
-        }} placeholder={"フロー"} onChange={(e,validation)=>this.onChangeFlowName(e,validation)}/>
-      </div>
+          required: true,
+          minlength: 5,
+        }} placeholder={'フロー'}
+                   onChange={(e, validation) => this.onChangeFlowName(e,
+                     validation)}/>
+      </div>,
     })
   }
 
-  onClickDelete(flow_uuid){
+  onClickDelete (flow_uuid) {
     const self = this
-    HttpUtil.delete("flows/" + flow_uuid).then((response)=>{
+    HttpUtil.delete('flows/' + flow_uuid).then((response) => {
       self.getFlowList()
     })
 
   }
-  isEmptyFlowList(){
-    if (!Array.isArray(this.state.flow_list) || this.state.flow_list.length === 0 || this.state.flow_list === null) return true
+
+  isEmptyFlowList () {
+    if (!Array.isArray(this.state.flow_list) || this.state.flow_list.length ===
+      0 || this.state.flow_list === null) {
+      return true
+    }
     return false
   }
 
-  renderNewFlow(){
-    return <a href="#" onClick={(e)=>this.onClickNew(e)}>新しくフローを作成する</a>
+  renderNewFlow () {
+    return <a href="#" onClick={(e) => this.onClickNew(e)}>新しくフローを作成する</a>
   }
 
   renderAll () {
-    if(this.isEmptyFlowList()){
+    if (this.isEmptyFlowList()) {
       return this.renderEmptyState()
     }
     return <div>
@@ -149,7 +163,7 @@ export default class FlowListContainer extends React.Component {
     return <div className={'container'}>
       <Loader absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
-      <ModalManager />
+      <ModalManager/>
     </div>
   }
 }

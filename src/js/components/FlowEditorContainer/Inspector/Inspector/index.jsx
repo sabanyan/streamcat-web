@@ -3,16 +3,16 @@ import * as React from 'react'
 import style from '../style.scss'
 
 type Props = {
-  header?:string,
-  title?:string,
-  children?:React.Node
+  header?: string,
+  title?: string,
+  children?: React.Node
 }
 
 class Inspector extends React.Component<Props> {
 
-  render() {
+  render () {
 
-    const {header,title,children} = this.props
+    const {header, title, children} = this.props
 
     return <div className={style.property_container}>
       <div className={style.property_header}>

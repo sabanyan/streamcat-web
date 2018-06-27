@@ -1,7 +1,6 @@
 // @flow
 import React from 'react'
 
-
 type Props = {
   json: {
     data: any;//TODO resetting
@@ -21,11 +20,15 @@ export default class DataTable extends React.Component<Props> {
     let tds
     let head_ths
 
-    if (!json) return null
+    if (!json) {
+      return null
+    }
 
-    if(json.data && !Object.keys(json.data).length)return <div>
-      表示できるデータがありません
-    </div>
+    if (json.data && !Object.keys(json.data).length) {
+      return <div>
+        表示できるデータがありません
+      </div>
+    }
 
     if (json.errorcode) {
       return <div>
@@ -39,13 +42,13 @@ export default class DataTable extends React.Component<Props> {
 
     head_ths = []
 
-    if(json.columns){
+    if (json.columns) {
       /**
        * ヘッダー行の設定
        */
       json.columns.map((value, index) => {
         head_ths.push(<th key={index}>{value}</th>)
-      });
+      })
 
       /**
        * データ行の設定
@@ -53,13 +56,14 @@ export default class DataTable extends React.Component<Props> {
       body_trs = []
       json.data.map((data_row, index) => {
         tds = []
-        data_row.map(function(data,index){
+        data_row.map(function (data, index) {
           tds.push(<td key={index}>{data}</td>)
         })
         body_trs.push(<tr key={index}>{tds}</tr>)
       })
 
-    }else{
+    }
+    else {
       const first_key = Object.keys(json.data)[0]
       let data_cnt = json.data[first_key].length
       /**
@@ -67,13 +71,13 @@ export default class DataTable extends React.Component<Props> {
        */
       Object.keys(json.data).map((key, index) => {
         head_ths.push(<th key={index}>{key}</th>)
-      });
+      })
 
       /**
        * データ行の設定
        */
-      body_trs = [];
-      for(let i = 0;i < data_cnt;i++){
+      body_trs = []
+      for (let i = 0; i < data_cnt; i++) {
         tds = []
         Object.keys(json.data).map((key, index) => {
           tds.push(<td key={index}>{json.data[key][i]}</td>)
@@ -82,7 +86,8 @@ export default class DataTable extends React.Component<Props> {
       }
     }
 
-    return <table className="kskp-data-table table-bordered table table-striped">
+    return <table
+      className="kskp-data-table table-bordered table table-striped">
       <thead>
       <tr className="table-active">
         {head_ths}

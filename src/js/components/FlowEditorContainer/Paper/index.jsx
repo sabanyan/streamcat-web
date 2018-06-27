@@ -8,9 +8,10 @@ import style from './style.scss'
 class Paper extends React.Component<FlowEditorProps> {
   render () {
     const width = this.props.graph.width + Constants.paper.padding.right
-    const height = this.props.graph.height + Constants.paper.padding.bottom;
-    return <svg className={style.paper} width={width} height={height} viewBox={"0 0 " + width + " " + height}>
-      <Index />
+    const height = this.props.graph.height + Constants.paper.padding.bottom
+    return <svg className={style.paper} width={width} height={height}
+                viewBox={'0 0 ' + width + ' ' + height}>
+      <Index/>
       {this.props.children}
     </svg>
   }
