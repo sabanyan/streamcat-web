@@ -129,7 +129,7 @@ class ApiTestCase(unittest.TestCase):
                 session['user_id'] = user1
 
             new_flow_name = '新しいフローです'
-            new_flow_data_source_name = 'datasource_test'
+            new_flow_data_source_name = str(uuid.uuid4())
 
             # 必要最低限の項目だけを送る
             self.assertIsNotNone(project_uuid)
@@ -137,7 +137,7 @@ class ApiTestCase(unittest.TestCase):
             data = {
                 'project_uuid': project_uuid,
                 'name': new_flow_name,
-                'data_source_name': new_flow_data_source_name
+                'uuid': new_flow_data_source_name
             }
 
             endpoint = '/api/v0/flows'
@@ -151,45 +151,12 @@ class ApiTestCase(unittest.TestCase):
             result_project_id = model.get_project_id_by_uuid(project_uuid)
 
             self.assertEqual(result['success'], True)
-            self.assertEqual(result['data']['project_id'], result_project_id)
+            self.assertEqual(result['data']['projectId'], result_project_id)
             self.assertEqual(result['data']['name'], new_flow_name)
 
             # 後片付け
             model.make_flow_path(new_flow_data_source_name).unlink()
 
-    def test_fetch_flows(self):
-        """
-        fecth_flowsをテストする
-        """
-
-        # ユーザとプロジェクト、フローを作成する
-        with app.app_context():
-            (user1, project_id, project_uuid) = setUpProject(self)
-
-            created_flow = model.create_flow(project_id, 'フローテスト用', 'flow_test')
-            created_flow2 = model.create_flow(project_id, 'フローテスト用2', 'flow_test2')
-            created_flow3 = model.create_flow(project_id, 'フローテスト用3', 'flow_test3')
-
-         # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user1
-            endpoint = '/api/v0/flows?project=%s' % project_uuid
-            response = client.get(endpoint)
-            results = json.loads(response.get_data())
-
-        self.assertEqual(results['success'], True)
-        self.assertEqual({r['uuid'] for r in results['data']}, {created_flow['uuid'],
-                                                                created_flow2['uuid'],
-                                                                created_flow3['uuid']})
-        self.assertEqual({r['project_id'] for r in results['data']}, {project_id, project_id, project_id})
-        self.assertEqual({r['name'] for r in results['data']}, {'フローテスト用', 'フローテスト用2', 'フローテスト用3'})
-
-        # 後片付け
-        with app.app_context():
-            paths = model.get_flow_paths_by_project_uuid(project_uuid)
-            for path in paths:
-                path.unlink()
 
     def test_fetch_flows_project_uuid_Nothing(self):
         """
@@ -237,19 +204,62 @@ class ApiTestCase(unittest.TestCase):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
-            endpoint = '/api/v0/flows/%s' % created_flow['uuid']
+            endpoint = '/api/v0/flows/%s' % data_source_name
             response = client.get(endpoint)
             result = json.loads(response.get_data())
-
+            flow_path = model.get_flow_path_by_uuid(data_source_name)
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data']['uuid'], created_flow['uuid'])
-        self.assertEqual(result['data']['project_id'], project_id)
+        self.assertEqual(flow_path.stem, data_source_name)
+        self.assertEqual(result['data']['projectId'], project_id)
         self.assertEqual(result['data']['name'], new_flow_name)
 
         # 後片付け
-        path = model.get_flow_path_by_uuid(created_flow['uuid'])
+        path = model.get_flow_path_by_uuid(data_source_name)
         path.unlink()
+
+    def test_fetch_flows(self):
+        """
+        fecth_flowsをテストする
+        """
+
+        # ユーザとプロジェクト、フローを作成する
+        with app.app_context():
+            (user1, project_id, project_uuid) = setUpProject(self)
+
+            flow1_datasource_name = str(uuid.uuid4())
+            flow2_datasource_name = str(uuid.uuid4())
+            flow3_datasource_name = str(uuid.uuid4())
+            created_flow = model.create_flow(project_id, 'フローテスト用', flow1_datasource_name)
+            created_flow2 = model.create_flow(project_id, 'フローテスト用2', flow2_datasource_name)
+            created_flow3 = model.create_flow(project_id, 'フローテスト用3', flow3_datasource_name)
+
+         # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/api/v0/flows?project=%s' % project_uuid
+            response = client.get(endpoint)
+            results = json.loads(response.get_data())
+
+            flow_paths = model.get_flow_paths_by_project_uuid(project_uuid)
+
+        self.assertEqual(results['success'], True)
+        self.assertEqual({p.stem for p in flow_paths}, {flow1_datasource_name,
+                                                        flow2_datasource_name,
+                                                        flow3_datasource_name})
+        self.assertEqual({r['projectId'] for r in results['data']}, {project_id,
+                                                                     project_id,
+                                                                     project_id})
+        self.assertEqual({r['name'] for r in results['data']}, {'フローテスト用',
+                                                                'フローテスト用2',
+                                                                'フローテスト用3'})
+
+        # 後片付け
+        with app.app_context():
+            paths = model.get_flow_paths_by_project_uuid(project_uuid)
+            for path in paths:
+                path.unlink()
 
 
     def test_update_flow(self):
@@ -268,7 +278,7 @@ class ApiTestCase(unittest.TestCase):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
-            endpoint = '/api/v0/flows/%s' % created_flow['uuid']
+            endpoint = '/api/v0/flows/%s' % data_source_name
             updated_flow_name = '変更後だよ'
             new_item = 'vjq@aer'
             response = client.put(endpoint,
@@ -279,19 +289,19 @@ class ApiTestCase(unittest.TestCase):
                 })
             )
             result = json.loads(response.get_data())
+            flow_path = model.get_flow_path_by_uuid(data_source_name)
 
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data']['uuid'], created_flow['uuid'])
-        self.assertEqual(result['data']['project_id'], project_id)
+        self.assertEqual(flow_path.stem, data_source_name)
+        self.assertEqual(result['data']['projectId'], project_id)
         # 名前は正しく変更されている
         self.assertEqual(result['data']['name'], updated_flow_name)
         # 新しい内容も入っている
         self.assertEqual(result['data']['b'], new_item)
 
         # 後片付け
-        path = model.get_flow_path_by_uuid(created_flow['uuid'])
-        path.unlink()
+        flow_path.unlink()
 
 
     def test_delete_flow(self):
@@ -312,10 +322,9 @@ class ApiTestCase(unittest.TestCase):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
-            endpoint = '/api/v0/flows/%s' % created_flow['uuid']
+            endpoint = '/api/v0/flows/%s' % data_source_name
             response = client.delete(endpoint)
             result = json.loads(response.get_data())
-
         # 結果のチェック
         self.assertEqual(result['success'], True)
         with app.app_context():
@@ -451,7 +460,7 @@ def setUpFlow(self):
 
     # フロー作成
     new_flow_name = 'フローテスト用'
-    data_source_name = 'flow_test'
+    data_source_name = str(uuid.uuid4())
     created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
 
     return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
