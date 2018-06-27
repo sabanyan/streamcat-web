@@ -240,7 +240,7 @@ def get_flow_paths_by_project_uuid(project_uuid):
     project_id = get_project_id_by_uuid(project_uuid)
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
         data = json.loads(flow_path.read_text(encoding='utf-8'))
-        if data['project_id'] == project_id:
+        if data['projectId'] == project_id:
             flow_path_list.append(flow_path)
     return flow_path_list
 
