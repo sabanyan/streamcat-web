@@ -16,18 +16,22 @@ type Props = {
 }
 
 export default class TextFieldWithButton extends React.Component<Props> {
-  static defaultProps = {
-  }
+  static defaultProps = {}
 
   constructor (props) {
     super(props)
   }
 
   render () {
-    const {placeholder, onChange,onClick, children, disabled, icon, danger} = this.props
+    const {placeholder, onChange, onClick, children, disabled, icon, danger} = this.props
     return <div className={style.container}>
-      <div className={style.textfield}><TextField placeholder={placeholder} onChange={onChange}></TextField></div>
-      <div className={style.button}><Button onClick={onClick} disabled={disabled} icon={icon} danger={danger}>{children}</Button></div>
+      <div className={style.textfield}><TextField placeholder={placeholder}
+                                                  onChange={onChange}></TextField>
+      </div>
+      <div className={style.button}><Button onClick={onClick}
+                                            disabled={disabled} icon={icon}
+                                            danger={danger}>{children}</Button>
+      </div>
     </div>
   }
 

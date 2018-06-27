@@ -1,55 +1,57 @@
 // @flow
 import React from 'react'
-import classnames from 'classnames';
+import classnames from 'classnames'
 import style from './style.scss'
 
-type Props={
-  placeholder:string;
+type Props = {
+  placeholder: string;
   onChange: Function;
   rules: {}
 }
 
-export default class TextField extends React.Component<Props>{
+export default class TextField extends React.Component<Props> {
   static defaultProps = {
-    rules: null
+    rules: null,
   }
 
-  constructor(props){
+  constructor (props) {
     super(props)
     this.state = {
       validation: true,
-      validation_messages: []
+      validation_messages: [],
     }
   }
 
-  hasRules(rules){
-    if(rules === {} || rules === null)return false
+  hasRules (rules) {
+    if (rules === {} || rules === null) {
+      return false
+    }
     return true
   }
 
-  validateField(e,rules){
+  validateField (e, rules) {
     let validation_messages = []
-    if(!this.hasRules(rules)){
+    if (!this.hasRules(rules)) {
       return validation_messages
     }
-    Object.keys(rules).forEach((rule)=>{
+    Object.keys(rules).forEach((rule) => {
       const value = rules[rule]
-      switch (rule){
-        case "required":
-          if(value === true){
-            if(e.target.value === ""){
-              validation_messages.push("入力されていません")
+      switch (rule) {
+        case 'required':
+          if (value === true) {
+            if (e.target.value === '') {
+              validation_messages.push('入力されていません')
             }
           }
           break
-        case "minlength":
-          if(e.target.value.length < value){
-            validation_messages.push("最低" + value + "文字の入力が必要です")
+        case 'minlength':
+          if (e.target.value.length < value) {
+            validation_messages.push('最低' + value + '文字の入力が必要です')
           }
           break
-        case "maxlength":
-          if(e.target.value.length < value){
-            validation_messages.push("最大" + value + "文字までです")
+        case 'maxlength':
+          if (e.target.value.length < value) {
+            validation_messages.push('最大' + value + '文字までです')
           }
           break
       }
@@ -57,20 +59,20 @@ export default class TextField extends React.Component<Props>{
     return validation_messages
   }
 
-  onChange(e){
-    const {onChange,rules} = this.props
-    let validation_messages = this.validateField(e,rules)
+  onChange (e) {
+    const {onChange, rules} = this.props
+    let validation_messages = this.validateField(e, rules)
     const validation = {
       validation: (!validation_messages.length),
-      validation_messages: validation_messages
+      validation_messages: validation_messages,
     }
-    onChange(e,validation)
+    onChange(e, validation)
     this.setState(validation)
   }
 
-  renderValidationMessage(){
+  renderValidationMessage () {
     const {validation_messages} = this.state
-    const messages = validation_messages.map((message,index)=>{
+    const messages = validation_messages.map((message, index) => {
       return <li key={index} className={style.message}>{message}</li>
     })
     return <div>
@@ -81,16 +83,18 @@ export default class TextField extends React.Component<Props>{
 
   }
 
-  render(){
+  render () {
     const {placeholder} = this.props
     const {validation} = this.state
 
-    const input_class = classnames("form-control",{
-      [style.error]: !validation
+    const input_class = classnames('form-control', {
+      [style.error]: !validation,
     })
 
     return <div>
-      <input type="text" ref={"input"} className={input_class} placeholder={placeholder} onChange={(e)=>this.onChange(e)}></input>
+      <input type="text" ref={'input'} className={input_class}
+             placeholder={placeholder}
+             onChange={(e) => this.onChange(e)}></input>
       {this.renderValidationMessage()}
     </div>
   }

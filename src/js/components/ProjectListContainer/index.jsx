@@ -38,25 +38,28 @@ export default class ProjectListContainer extends React.Component {
     this.registerModal()
   }
 
-  registerModal(){
+  registerModal () {
     //モーダル処理の登録
     const self = this
     ModalUtil.registerModal({
       id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-        HttpUtil.post("projects",{name:self.state.project_name}).then((response)=>{
-          ModalUtil.emitModal({id: Constants.modal.ADD_PROJECT, visible: false})
-          self.getProjectList()
-        })
-      }
+        HttpUtil.post('projects', {name: self.state.project_name}).
+          then((response) => {
+            ModalUtil.emitModal(
+              {id: Constants.modal.ADD_PROJECT, visible: false})
+            self.getProjectList()
+          })
+      },
     })
   }
 
-  getProjectList(){
+  getProjectList () {
     const self = this
     self.setState({is_loading: true})
     HttpUtil.get('projects').then((response) => {
       const json = response.data
-      self.setState({is_loading: false, is_finished: true,project_list: json.data})
+      self.setState(
+        {is_loading: false, is_finished: true, project_list: json.data})
     })
   }
 
@@ -68,11 +71,14 @@ export default class ProjectListContainer extends React.Component {
     const {keyword} = this.state
     const self = this
     return this.state.project_list.filter((project) => {
-      if (keyword === '') return true
+      if (keyword === '') {
+        return true
+      }
       return (project.name.indexOf(keyword) != -1) ? true : false
     }).map((project) => {
-      return <ProjectList project={project} href={"./flows?project=" + project.uuid}>
-        <a href="#" onClick={()=>self.onClickDelete(project.uuid)}>削除</a>
+      return <ProjectList project={project}
+                          href={'./flows?project=' + project.uuid}>
+        <a href="#" onClick={() => self.onClickDelete(project.uuid)}>削除</a>
       </ProjectList>
     })
   }
@@ -82,13 +88,15 @@ export default class ProjectListContainer extends React.Component {
       icon={'add'}
       title={'プロジェクトがありません'}
       description={'プロジェクトを作成すると、フローを作成することができるようになります。'}>
-      <Button onClick={(e)=>this.onClickNew(e)}>作成する</Button>
+      <Button onClick={(e) => this.onClickNew(e)}>作成する</Button>
     </EmptyState>
   }
 
-  renderSearchBar(){
+  renderSearchBar () {
     return <div className={style.search_bar}>
-      <TextFieldWithButton placeholder={'プロジェクトを検索'} onChange={(e) => this.onChangeKeyword(e)}>検索</TextFieldWithButton>
+      <TextFieldWithButton placeholder={'プロジェクトを検索'}
+                           onChange={(e) => this.onChangeKeyword(
+                             e)}>検索</TextFieldWithButton>
     </div>
   }
 
@@ -96,44 +104,50 @@ export default class ProjectListContainer extends React.Component {
     this.setState({keyword: e.target.value})
   }
 
-  onChangeProjectName(e){
+  onChangeProjectName (e) {
     this.setState({
-      project_name: e.target.value
+      project_name: e.target.value,
     })
   }
 
-  onClickNew(e){
+  onClickNew (e) {
     ModalUtil.emitModal({
       id: Constants.modal.ADD_PROJECT,
       visible: true,
-      done:"作成する",
+      done: '作成する',
       content: <div>
         <TextField rules={{
-          required:true,
-          minlength:5
-        }} placeholder={"プロジェクト名"} onChange={(e,validation)=>this.onChangeProjectName(e,validation)}/>
-      </div>
+          required: true,
+          minlength: 5,
+        }} placeholder={'プロジェクト名'}
+                   onChange={(e, validation) => this.onChangeProjectName(e,
+                     validation)}/>
+      </div>,
     })
   }
 
-  onClickDelete(project_uuid){
+  onClickDelete (project_uuid) {
     const self = this
-    HttpUtil.delete("projects/" + project_uuid).then((response)=>{
+    HttpUtil.delete('projects/' + project_uuid).then((response) => {
       self.getProjectList()
     })
   }
 
-  isEmptyProjectList(){
-    if (!Array.isArray(this.state.project_list) || this.state.project_list.length === 0 || this.state.project_list === null) return true
+  isEmptyProjectList () {
+    if (!Array.isArray(this.state.project_list) ||
+      this.state.project_list.length === 0 || this.state.project_list ===
+      null) {
+      return true
+    }
     return false
   }
 
-  renderNewProject(){
-    return <a href="#" onClick={(e)=>this.onClickNew(e)}>新しくフローを作成する</a>
+  renderNewProject () {
+    return <a href="#" onClick={(e) => this.onClickNew(e)}>新しくフローを作成する</a>
   }
 
   renderAll () {
-    if(this.isEmptyProjectList()){
+    if (this.isEmptyProjectList()) {
       return this.renderEmptyState()
     }
     return <div>
@@ -148,7 +162,7 @@ export default class ProjectListContainer extends React.Component {
     return <div className={'container'}>
       <Loader absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
-      <ModalManager />
+      <ModalManager/>
     </div>
   }
 

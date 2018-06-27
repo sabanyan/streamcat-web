@@ -1,6 +1,16 @@
 import React from 'react'
 import DataTable from '../../shared/DataTable'
-import { Doughnut, Pie, Line, Bar, HorizontalBar, Radar, Polar, Bubble, Scatter } from 'react-chartjs-2'
+import {
+  Doughnut,
+  Pie,
+  Line,
+  Bar,
+  HorizontalBar,
+  Radar,
+  Polar,
+  Bubble,
+  Scatter,
+} from 'react-chartjs-2'
 import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
 
@@ -12,15 +22,13 @@ type State = {
   type: string
 }
 
-type Props = {
+type Props = {}
 
-}
+export default class Visualization extends React.Component<Props, State> {
 
-export default class Visualization extends React.Component<Props,State> {
-
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
-    this.state = {json: null, type: Constants.chart.bar,image_url: null}
+    this.state = {json: null, type: Constants.chart.bar, image_url: null}
   }
 
   componentWillMount () {
@@ -33,43 +41,46 @@ export default class Visualization extends React.Component<Props,State> {
       redirect: 'follow',
     }
 
-    fetch("http://"+Constants.api.host+"/api/v0-1/flows/"+ inject_flow_uuid +"/execute", option).then(function (response) {
+    fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
+      inject_flow_uuid + '/execute', option).then(function (response) {
       if (response.ok) {
-        return response.json();
-      } else {
-        alert("サーバでエラーが発生しました")
+        return response.json()
+      }
+      else {
+        alert('サーバでエラーが発生しました')
       }
     }).then(function (json) {
       self.setState({json: json})
     }).catch((err) => {
       console.log(err)
-      alert("クライアントでエラーが発生しました")
+      alert('クライアントでエラーが発生しました')
     })
-
 
     Chart.pluginService.register({
       afterDraw: function (chart, easing) {
-        self.setState({chart_instance:chart})
-      }
-    });
+        self.setState({chart_instance: chart})
+      },
+    })
 
   }
 
-  onChangeChart (e:Event) {
+  onChangeChart (e: Event) {
     this.setState({type: e.target.value})
   }
 
-  onClickSave(e:Event){
+  onClickSave (e: Event) {
     let chart_instance = this.state.chart_instance
-    let url_base64 = chart_instance.toBase64Image();
-    this.setState({image_url:url_base64})
+    let url_base64 = chart_instance.toBase64Image()
+    this.setState({image_url: url_base64})
   }
 
   render () {
 
     let json = this.state.json
 
-    if (!json) return null
+    if (!json) {
+      return null
+    }
 
     let data = ChartUtil.jsonToChart(json)
 
@@ -80,13 +91,16 @@ export default class Visualization extends React.Component<Props,State> {
         chart = <Bar data={data} ref="chart" height={100} width={100}></Bar>
         break
       case Constants.chart.bubble:
-        chart = <Bubble data={data} ref="chart" height={100} width={100}></Bubble>
+        chart =
+          <Bubble data={data} ref="chart" height={100} width={100}></Bubble>
         break
       case Constants.chart.doughnut:
-        chart = <Doughnut data={data} ref="chart" height={100} width={100}></Doughnut>
+        chart =
+          <Doughnut data={data} ref="chart" height={100} width={100}></Doughnut>
         break
       case Constants.chart.horizontalBar:
-        chart = <HorizontalBar data={data} ref="chart" height={100} width={100}></HorizontalBar>
+        chart = <HorizontalBar data={data} ref="chart" height={100}
+                               width={100}></HorizontalBar>
         break
       case Constants.chart.line:
         chart = <Line data={data} ref="chart" height={100} width={100}></Line>
@@ -101,7 +115,8 @@ export default class Visualization extends React.Component<Props,State> {
         chart = <Radar data={data} ref="chart" height={100} width={100}></Radar>
         break
       case Constants.chart.scatter:
-        chart = <Scatter data={data} ref="chart" height={100} width={100}></Scatter>
+        chart =
+          <Scatter data={data} ref="chart" height={100} width={100}></Scatter>
         break
     }
 
@@ -116,7 +131,9 @@ export default class Visualization extends React.Component<Props,State> {
               {/*</span>*/}
             </div>
             <div className="col-sm-8 text-right">
-              <a download="image.png" href={this.state.image_url} className="btn btn-secondary text-12px" onClick={(e)=>this.onClickSave(e)}>チャートグラフの保存</a>
+              <a download="image.png" href={this.state.image_url}
+                 className="btn btn-secondary text-12px"
+                 onClick={(e) => this.onClickSave(e)}>チャートグラフの保存</a>
             </div>
           </div>
         </div>
@@ -136,7 +153,8 @@ export default class Visualization extends React.Component<Props,State> {
           <div className="kskp-form">
             <div className="mb-16px">
               <label>グラフの種類</label>
-              <select className="form-control" onChange={(e) => this.onChangeChart(e)}
+              <select className="form-control"
+                      onChange={(e) => this.onChangeChart(e)}
                       defaultValue={Constants.chart.bar}>
                 <option value={Constants.chart.bar}>縦棒グラフ</option>
                 <option value={Constants.chart.horizontalBar}>横棒グラフ</option>

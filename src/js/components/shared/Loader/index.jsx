@@ -1,8 +1,7 @@
 // @flow
 import React from 'react'
-import classnames from 'classnames';
+import classnames from 'classnames'
 import style from './style.scss'
-
 
 type Props = {
   center: boolean;
@@ -11,21 +10,21 @@ type Props = {
   visible: boolean;
 }
 
-export default class Loader extends React.Component<Props>{
+export default class Loader extends React.Component<Props> {
 
-  constructor(props){
+  constructor (props) {
     super(props)
   }
 
-  render(){
+  render () {
 
-    const {center,absolute,fixed,visible} = this.props
+    const {center, absolute, fixed, visible} = this.props
 
-    const loader_class = classnames([style.loader],{
+    const loader_class = classnames([style.loader], {
       [style.center]: center,
       [style.absolute]: absolute,
       [style.fixed]: fixed,
-      [style.hidden]: !visible
+      [style.hidden]: !visible,
     })
 
     return <div className={loader_class}>

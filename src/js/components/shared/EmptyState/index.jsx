@@ -1,25 +1,27 @@
 // @flow
 import * as React from 'react'
-import classnames from 'classnames';
+import classnames from 'classnames'
 import style from './style.scss'
 
-type Props ={
-  children:React.Node;
-  title:string;
-  description:string;
+type Props = {
+  children: React.Node;
+  title: string;
+  description: string;
   icon: string
 }
 
-export default class EmptyState extends React.Component<Props>{
+export default class EmptyState extends React.Component<Props> {
 
-  constructor(props){
+  constructor (props) {
     super(props)
   }
 
-  render(){
-    const {children,title,description,icon} = this.props
-    const icon_class = classnames("material-icons",[style.icon])
-    const icon_container = (icon)?<div className={style.icon_container}><div className={icon_class}>{icon}</div></div>:null
+  render () {
+    const {children, title, description, icon} = this.props
+    const icon_class = classnames('material-icons', [style.icon])
+    const icon_container = (icon) ? <div className={style.icon_container}>
+      <div className={icon_class}>{icon}</div>
+    </div> : null
     return <div className={style.empty_state}>
       {icon_container}
       <div className={style.title}>
@@ -31,7 +33,7 @@ export default class EmptyState extends React.Component<Props>{
       <div className={style.children}>
         {children}
       </div>
-      </div>
+    </div>
   }
 
 }

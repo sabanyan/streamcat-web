@@ -225,7 +225,7 @@ const Application = (state = initialState, action) => {
             let newState = StateUtil.deepCopy(state)
             let newSteps = {}
             Object.keys(newState.steps).map((key)=>{
-                if(newState.steps[key] instanceof DataSourceModel) {
+              if(newState.steps[key] instanceof DataSourceModel) {
                   newState.steps[key].property.hasData = true
                 }
                 newSteps[key] = newState.steps[key]

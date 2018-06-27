@@ -8,5 +8,5 @@ export default VisualizationContainer = connect(
   },
   dispatch => {
     return {}
-  }
+  },
 )(Visualization)
