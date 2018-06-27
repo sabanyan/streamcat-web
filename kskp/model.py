@@ -177,7 +177,7 @@ def create_flow(project_id, flow_name, data_source_name=None):
 
     data = {
         'uuid': new_flow_uuid,
-        'project_id': project_id,
+        'projectId': project_id,
         'name': flow_name
     }
 
