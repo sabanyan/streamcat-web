@@ -20,6 +20,7 @@ class Promise:
         if self.fd is None:
             popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
             self.fd = popen.stdout
+            popen.wait()
 
         return self.fd
 
@@ -68,7 +69,7 @@ class Frame:
         pass
 
     def close(self):
-        if self.fd is not None:
+        if self.fd is not None:            
             self.fd.close()
 
 

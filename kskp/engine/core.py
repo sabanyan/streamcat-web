@@ -131,7 +131,9 @@ class Flow:
             datum.save()
             result.update({key: datum})
 
+        # 後片付け
         for d in self.data.values():
+            # print('後片付け:', d)
             d.close()
 
         # TODO: 本来であればここで返すのはoutputに合致したものだけ
