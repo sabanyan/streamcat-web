@@ -1,6 +1,3 @@
-import os
-
-
 # frameの保存場所は環境変数か、engine.execute()で直接指定する
 # os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
 
@@ -83,45 +80,12 @@ class Flow:
         }
         return inputs
 
-    def make_datum(self, datum):
-        """
-        指定されたデータがFrameでかつまだUUIDが生成されておらず、
-        さらに、コマンド列が与えられていれば、それを実行してuuid属性に突っ込む
-
-        TODO: そもそもこれはMCMD前提のコードなので、どこかに移すとかしないと汎用性が保てない
-        """
-
-        if datum.uuid is not None or len(datum.command_array) == 0:
-            return datum
-
-        # 本来の処理
-
-        # uuidを生成（新しいファイル名）
-        import uuid
-        datum.uuid = str(uuid.uuid4())
-
-        # frameの保存場所の指定は必須
-        if 'KENG_FRAME_PATH' not in os.environ:
-            raise Exception()
-
-        o_path = f"{ os.environ['KENG_FRAME_PATH'] }/{ datum.uuid }.csv"
-
-        # 実行を行う
-        # TODO: パイプの時はpopenを受け取ってfdだけ取得して入れればいい（それを次に渡す）
-        import subprocess
-
-        # 出力パスを追加（パイプを使っていない時）
-        datum.command_array.append(f'o={ o_path }')
-        popen = subprocess.Popen(datum.command_array)
-        popen.wait()
-
-        return datum
-
     def get_datum(self, datum_id):
         """
         指定したidのdataがすでに存在すればそれを返す
         まだ存在していなければ、それを作る
         """
+
         datum = self.data[datum_id]
 
         # dataがすでに存在すればそれを返す
@@ -146,10 +110,9 @@ class Flow:
         # 実行開始
         # TODO: ひとまずoutputsが1つのみである前提で取得
         port_name = list(step.command_or_flow.outputs.keys())[0]
-        executed_datum = job.execute()[port_name]
 
-        # さらに必要な後処理を加える
-        return self.make_datum(executed_datum)
+        # 結果を返却する
+        return job.execute()[port_name]
 
     def execute(self, arguments={}, inputs={}):
         """
@@ -162,7 +125,17 @@ class Flow:
         lasts = { k: v for k, v in self.edges.items() if len(v['dsts']) == 0 }
 
         # それぞれについて必要ならば計算して結果を取得する
-        return { k: self.get_datum(k) for k in lasts.keys() }
+        result = {}
+        for key in lasts.keys():
+            datum = self.get_datum(key)
+            datum.save()
+            result.update({key: datum})
+
+        for d in self.data.values():
+            d.close()
+
+        # TODO: 本来であればここで返すのはoutputに合致したものだけ
+        # return { k: self.get_datum(k) for k in lasts.keys() }
 
 
 class Command:
@@ -179,6 +152,10 @@ class Command:
         self.parameters = []
 
     def execute(self, arguments={}, inputs={}):
+        # TODO: 引数のvalidation
+        pass
+
+    def make_path(self):
         pass
 
 
@@ -193,27 +170,3 @@ class Parameter:
         self.type = 'string'
         self.default = None
         self.validation = None
-
-
-class Frame:
-    """
-    表形式データ
-    """
-
-    def __init__(self):
-        """
-        TODO: 表そのもののデータも必要？
-        """
-        self.command_array = []
-        self.path = ''
-        self.uuid = None
-        self.fd = None
-
-    @classmethod
-    def from_command(cls, command_array):
-        """
-        UNIXコマンドの配列を渡すコンストラクタ
-        """
-        f = cls()
-        f.command_array = command_array
-        return f
