@@ -1,6 +1,3 @@
-import os
-
-
 # frameの保存場所は環境変数か、engine.execute()で直接指定する
 # os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
 
@@ -12,15 +9,22 @@ class Job:
     また、エラー情報も持つ
     """
 
-    def __init__(self, step, inputs={}):
+    def __init__(self, step, inputs=None):
         self.step = step
-        self.inputs = inputs
+        # 基本的にはinputsは元々持っているものを使う
+        # もし新しく指定されれば、それで上書きされる
+        if inputs is None:
+            self.inputs = step.command_or_flow.inputs
+        else:
+            self.inputs = inputs
         self.errors = []
+        print('self.inputs:', self.inputs)
 
     def execute(self):
         """
         返却するのはデータを値にもつdict
         """
+        print('self.inputs:', self.inputs)
         return self.step.execute(self.inputs)
 
 
@@ -83,45 +87,12 @@ class Flow:
         }
         return inputs
 
-    def make_datum(self, datum):
-        """
-        指定されたデータがFrameでかつまだUUIDが生成されておらず、
-        さらに、コマンド列が与えられていれば、それを実行してuuid属性に突っ込む
-
-        TODO: そもそもこれはMCMD前提のコードなので、どこかに移すとかしないと汎用性が保てない
-        """
-
-        if datum.uuid is not None or len(datum.command_array) == 0:
-            return datum
-
-        # 本来の処理
-
-        # uuidを生成（新しいファイル名）
-        import uuid
-        datum.uuid = str(uuid.uuid4())
-
-        # frameの保存場所の指定は必須
-        if 'KENG_FRAME_PATH' not in os.environ:
-            raise Exception()
-
-        o_path = f"{ os.environ['KENG_FRAME_PATH'] }/{ datum.uuid }.csv"
-
-        # 実行を行う
-        # TODO: パイプの時はpopenを受け取ってfdだけ取得して入れればいい（それを次に渡す）
-        import subprocess
-
-        # 出力パスを追加（パイプを使っていない時）
-        datum.command_array.append(f'o={ o_path }')
-        popen = subprocess.Popen(datum.command_array)
-        popen.wait()
-
-        return datum
-
     def get_datum(self, datum_id):
         """
         指定したidのdataがすでに存在すればそれを返す
         まだ存在していなければ、それを作る
         """
+
         datum = self.data[datum_id]
 
         # dataがすでに存在すればそれを返す
@@ -145,11 +116,11 @@ class Flow:
 
         # 実行開始
         # TODO: ひとまずoutputsが1つのみである前提で取得
+        print('step.command_or_flow.outputs:', step.command_or_flow.outputs)
         port_name = list(step.command_or_flow.outputs.keys())[0]
-        executed_datum = job.execute()[port_name]
 
-        # さらに必要な後処理を加える
-        return self.make_datum(executed_datum)
+        # 結果を返却する
+        return job.execute()[port_name]
 
     def execute(self, arguments={}, inputs={}):
         """
@@ -161,8 +132,27 @@ class Flow:
         # まずは、グラフ上の終端データを見つける
         lasts = { k: v for k, v in self.edges.items() if len(v['dsts']) == 0 }
 
+        # 引数を与える
+        # TODO: まずは1つだけの前提
+        input = list(inputs.values())[0]
+        input_key = list(self.inputs.keys())[0]
+        # そっくり入れ替える
+        self.inputs[input_key] = input
+
         # それぞれについて必要ならば計算して結果を取得する
-        return { k: self.get_datum(k) for k in lasts.keys() }
+        result = {}
+        for key in lasts.keys():
+            datum = self.get_datum(key)
+            datum.save()
+            result.update({key: datum})
+
+        # 後片付け
+        for d in self.data.values():
+            # print('後片付け:', d)
+            d.close()
+
+        # outputsを集め直す
+        return { k: v for k, v in self.outputs.items() }
 
 
 class Command:
@@ -179,41 +169,43 @@ class Command:
         self.parameters = []
 
     def execute(self, arguments={}, inputs={}):
+        # TODO: 引数のvalidation
         pass
 
+    def make_path(self):
+        pass
+
+
+from enum import Enum, auto
 
 class Parameter:
     """
     パラメータ定義1つを表す
+
+    :param name: パラメータ名。必須
+    :param caption: このパラメータを表す短いタイトル。GUI上でのラベルとして使われる。
+                    オプショナルで、未指定だとnameと同じになる。
     """
 
-    def __init__(self):
-        self.name = ''
-        self.caption = ''
-        self.type = 'string'
+    class WidgetType(Enum):
+        """
+        パラメータ値の分類を表す。
+        type属性に使われ、
+        この値によってGUI上で使われる部品が変化することを想定している
+        """
+        TEXTBOX = auto()
+
+
+    def __init__(self, name, caption=None):
+        assert name is not None and name != '', 'nameは必須です'
+
+        self.name = name
+        if caption is None:
+            self.caption = name
+        else:
+            self.caption = caption
+
+        self.widget_type = self.WidgetType.TEXTBOX
+
         self.default = None
         self.validation = None
-
-
-class Frame:
-    """
-    表形式データ
-    """
-
-    def __init__(self):
-        """
-        TODO: 表そのもののデータも必要？
-        """
-        self.command_array = []
-        self.path = ''
-        self.uuid = None
-        self.fd = None
-
-    @classmethod
-    def from_command(cls, command_array):
-        """
-        UNIXコマンドの配列を渡すコンストラクタ
-        """
-        f = cls()
-        f.command_array = command_array
-        return f

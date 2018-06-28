@@ -23,7 +23,7 @@
     "s1": {
       "type": "command",
       "name": "mcut",
-      "label": "合計",
+      "label": "列選択",
       "args": {
         "f": "顧客,金額合計"
       }

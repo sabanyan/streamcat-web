@@ -8,4 +8,4 @@ class Msortf(Mcommand):
         super().__init__()
         self.name = 'msortf'
         self.desription = 'ソート'
-        self.parameters.append(FieldParameter())
+        self.parameters.append(Parameter('f', '対象列名'))

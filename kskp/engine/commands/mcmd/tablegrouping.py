@@ -10,8 +10,8 @@ class Mcount(MCommand):
     def __init__(self):
         self.name = 'mcount'
         self.description = '行数カウント'
-        self.parameters.append(KeyFieldParameter('対象列名'))
-        self.parameters.append(AppendingFieldParameter('結果列名'))
+        self.parameters.append(Parameter('k', '対象列名'))
+        self.parameters.append(Parameter('a', '結果列名'))
 
 class Mhashavg:
     pass
@@ -42,8 +42,8 @@ class Mslide(MCommand):
         super().__init__()
         self.name = 'mslide'
         self.description = '行ずらし'
-        self.parameters.append(SortFieldParameter())
-        self.parameters.append(FieldParameter('ずらす対象の列名'))
+        self.parameters.append(Parameter('s', 'ソート対象列名'))
+        self.parameters.append(Parameter('f', 'ずらす対象の列名'))
 
 class Mstats:
     pass
@@ -53,8 +53,8 @@ class Msum(MCommand):
         super().__init__()
         self.name = 'msum'
         self.description = '合計'
-        self.parameters.append(KeyFieldParameter('合計の基準となる列名'))
-        self.parameters.append(FieldParameter('合計する列名:合計後の列名'))
+        self.parameters.append(Parameter('k', '合計の基準となる列名'))
+        self.parameters.append(Parameter('f', '合計する列名:合計後の列名'))
 
 class Msummary:
     pass
