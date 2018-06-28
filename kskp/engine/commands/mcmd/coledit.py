@@ -8,7 +8,7 @@ class Mcut(MCommand):
         super().__init__()
         self.name = 'mcut'
         self.description = '列選択'
-        self.parameters.append(FieldParameter())
+        self.parameters.append(Parameter('f', '対象列名'))
 
 class Mfldname:
     pass
@@ -18,8 +18,8 @@ class Mnumber(MCommand):
         super().__init__()
         self.name = 'mnumber'
         self.description = '連番'
-        self.parameters.append(SortFieldParameter())
-        self.parameters.append(AppendingFieldParameter())
+        self.parameters.append(Parameter('s', 'ソート対象列名'))
+        self.parameters.append(Parameter('a', '追加列名'))
 
 class Mrand:
     pass
@@ -29,8 +29,8 @@ class Msetstr(MCommand):
         super().__init__()
         self.name = 'msetstr'
         self.description = '文字列追加'
-        self.parameters.append(AppendingFieldParameter())
-        self.parameters.append(ValueParameter())
+        self.parameters.append(Parameter('a', '追加列名'))
+        self.parameters.append(Parameter('v', '追加する値'))
 
 class Mshare:
     pass

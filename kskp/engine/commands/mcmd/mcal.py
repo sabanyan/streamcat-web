@@ -5,8 +5,8 @@ class Mcal(MCommand):
         super().__init__()
         self.name = 'mcal'
         self.description = '計算'
-        self.parameters.append(CalculateParameter('計算式'))
-        self.parameters.append(AppendingFieldParameter())
+        self.parameters.append(Parameter('c', '計算式'))
+        self.parameters.append(Parameter('a', '追加列名'))
 
 """
 {

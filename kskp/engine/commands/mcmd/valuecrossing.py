@@ -14,8 +14,8 @@ class Mtra(MCommand):
         super().__init__()
         self.name = 'mtra'
         self.description = '縦横変換'
-        self.parameters.append(KeyFieldParameter('変換キー列名'))
-        self.parameters.append(FieldParameter('連結前列名:連結後列名'))
+        self.parameters.append(Parameter('k', '変換キー列名'))
+        self.parameters.append(Parameter('f', '連結前列名:連結後列名'))
 
 class Mtrafld:
     pass

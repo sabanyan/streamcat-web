@@ -5,7 +5,7 @@ class Mcat(MCommand):
         super().__init__()
         self.name = 'mcat'
         self.description = 'ファイル結合'
-        self.parameters.append(InputParameter())
+        self.parameters.append(Parameter('i', '入力ファイル名'))
 
 class Mcommon:
     pass
@@ -15,8 +15,8 @@ class Mjoin(MCommand):
         super().__init__()
         self.name = 'mjoin'
         self.description = '結合'
-        self.parameters.append(KeyFieldParameter('結合キー名'))
-        self.parameters.append(MasterTableParameter())
+        self.parameters.append(Parameter('k', '結合キー名'))
+        self.parameters.append(Parameter('m', '参照ファイル名'))
 
 class Mnjoin:
     pass
