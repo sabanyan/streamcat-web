@@ -1,8 +1,36 @@
 import unittest
 
 from .. import engine as e
+from ..engine.core import Parameter
 
 class EngineTestCase(unittest.TestCase):
+
+    def test_parameter_required(self):
+        """
+        Parameterクラスの必須項目のテスト
+        """
+        with self.assertRaises(Exception):
+            Parameter(None)
+
+        with self.assertRaises(Exception):
+            Parameter('')
+
+    def test_parameter_basic(self):
+        """
+        基本的な使い方ができるかどうか
+        """
+
+        # captionなしだとnameと同じになる
+        param_name = 'f'
+        p1 = Parameter(param_name)
+        self.assertEqual(p1.name, param_name)
+        self.assertEqual(p1.caption, param_name)
+
+        # captionあり
+        param_caption = '項目名'
+        p2 = Parameter(param_name, param_caption)
+        self.assertEqual(p2.name, param_name)
+        self.assertEqual(p2.caption, param_caption)
 
     @unittest.skip
     def test_minimum_flow(self):
@@ -25,6 +53,7 @@ class EngineTestCase(unittest.TestCase):
         with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
             e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
+    @unittest.skip
     def test_minimum_nested_flow(self):
         """
         nested flowのテスト
