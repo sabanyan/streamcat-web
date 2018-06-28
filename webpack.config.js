@@ -1,6 +1,6 @@
-const path = require('path');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const webpack = require('webpack');
+const path = require('path')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const webpack = require('webpack')
 
 module.exports = [
   {
@@ -12,7 +12,7 @@ module.exports = [
     entry: './src/js/index.js',
     output: {
       path: `${__dirname}/kskp/static/js`,
-      filename: 'app.js'
+      filename: 'app.js',
     },
     module: {
       rules: [
@@ -23,14 +23,14 @@ module.exports = [
         },
         {
           test: /\.s?css$/,
-          use: ['style-loader', 'css-loader?modules','sass-loader'],
+          use: ['style-loader', 'css-loader?modules', 'sass-loader'],
           exclude: /node_modules/,
-        }
-      ]
+        },
+      ],
     },
     resolve: {
       modules: ['node_modules'],
-      extensions: ['.js','.jsx']
+      extensions: ['.js', '.jsx'],
     },
     plugins: [
       new webpack.DllReferencePlugin({
@@ -38,28 +38,29 @@ module.exports = [
         /**
          * manifestファイルをロードして渡す
          */
-        manifest: require(`./kskp/static/js/dist/vendor-manifest.json`)
-      })
-    ]
+        manifest: require(`./kskp/static/js/dist/vendor-manifest.json`),
+      }),
+    ],
   },
   {
-    entry: "./src/sass/app.scss",
+    entry: './src/sass/app.scss',
     output: {
       path: `${__dirname}/kskp/static/css`,
-      filename: 'app.css'
+      filename: 'app.css',
     },
     module: {
-      rules: [{
-        test: /\.scss$/,
-        loader: ExtractTextPlugin.extract({
-          fallback: 'style-loader',
-          use: ['css-loader', 'sass-loader']
-        }),
-        exclude: /node_modules/,
-      }]
+      rules: [
+        {
+          test: /\.scss$/,
+          loader: ExtractTextPlugin.extract({
+            fallback: 'style-loader',
+            use: ['css-loader', 'sass-loader'],
+          }),
+          exclude: /node_modules/,
+        }],
     },
     plugins: [
       new ExtractTextPlugin('app.css'),
     ],
   },
-];
+]

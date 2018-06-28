@@ -7,12 +7,12 @@ type Props = {}
 
 export default class Template extends React.Component<Props> {
 
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
 
   render () {
-    return <div></div>
+    return <div>&nbsp;</div>
   }
 
 }
