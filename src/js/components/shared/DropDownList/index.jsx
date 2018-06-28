@@ -1,10 +1,9 @@
 //@flow
 import * as React from 'react'
 import style from './style.scss'
-import classnames from 'classnames'
 
 type Props = {
-  onChange: Function;
+  onChange?: Function;
   list?: [
     {
       name: string,
@@ -15,13 +14,13 @@ type Props = {
 
 export default class DropDownList extends React.Component<Props> {
 
-  onChange (e) {
+  onChange (e:Event) {
     const {onChange} = this.props
     const data = this.getDataFromList(e.target.value)
     onChange(e, data)
   }
 
-  getDataFromList (value) {
+  getDataFromList (value:string) {
     const {list} = this.props
     list.forEach((data) => {
       if (data.value === value) {

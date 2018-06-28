@@ -45,8 +45,7 @@ export default class FlowListContainer extends React.Component {
       id: Constants.modal.ADD_FLOW, onClickDone: () => {
         HttpUtil.post('flows', {
           name: self.state.flow_name,
-          project_uuid: inject_project_uuid,
-          data_source_name: self.state.flow_name,
+          project_uuid: inject_project_uuid
         }).then((response) => {
           ModalUtil.emitModal({id: Constants.modal.ADD_FLOW, visible: false})
           self.getFlowList()

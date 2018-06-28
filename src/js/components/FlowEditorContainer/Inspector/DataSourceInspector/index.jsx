@@ -14,8 +14,6 @@ import DropDownList from '../../../shared/DropDownList'
 class DataSourceInspector extends React.Component<FlowEditorProps> {
 
   componentWillMount () {
-    const self = this
-
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.preview.DATASOURCE, onClickOK: () => {
@@ -25,8 +23,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
   }
 
   onClickPreview (e: Event) {
-
-    const self = this
     let option = {
       method: 'GET',
       mode: 'same-origin',
@@ -79,7 +75,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
   render () {
 
     let step_text
-    let property
     let dataSource
     let preview
     let {selected_step_ids, steps} = this.props
@@ -95,7 +90,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     }
 
     let operators = this.props.mast.operators.map((operator, index) => {
-      return <Operator {...operator} {...this.props} key={index}></Operator>
+      return <Operator {...operator} {...this.props} key={index}/>
       // switch (operation) {
       //     case Constants.operatorType.msortf:
       //         return <Sort key={index}/>
@@ -161,7 +156,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
         作成したフロー
       </div>
       <div>
-        <DropDownList list={[{name: 'サブフロー1', value: 1, object: {}}]}/>
+        <DropDownList list={[{name: 'サブフロー1', value: "1", object: {}}]}/>
       </div>
     </Inspector>
   }
