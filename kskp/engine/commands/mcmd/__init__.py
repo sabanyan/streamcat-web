@@ -38,7 +38,8 @@ class MCommand(Command):
         for key, val in arguments.items():
             command_args.append('%s=%s' % (key, val))
 
-        # コマンド列から作られる結果を返す
+
+        # コマンド列から作られる結果を返す        
         frame = PopenFrame(command_args, stdin=stdin)
 
         key_name = list(self.signature[1].keys())[0]
