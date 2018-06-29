@@ -22,7 +22,7 @@ class Frame:
         self.contents = {}
 
     def __repr__(self):
-        return f'<kskp.engine.Frame contents:{self.contents.__repr__()}>'
+        return f'<kskp.engine.Frame({ self.source }) contents:{self.contents.__repr__()}>'
 
     def row_count(self):
         """
@@ -58,6 +58,9 @@ class CsvFrame(Frame):
         ファイルへのfdを返す
         """
         return open(make_path(self.uuid), 'r')
+
+    def __repr__(self):
+        return f'<kskp.engine.Frame({ self.source }) path:{ self.path } contents:{self.contents.__repr__()}>'
 
 
 class PopenFrame(Frame):

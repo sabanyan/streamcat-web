@@ -81,17 +81,18 @@ def parse(flow_uuid, flow_json):
         data_type = val['type']
         if data_type == 'frame':
             # Frameの場合
+
             if val['dataSource'] == 'csv':
-                new_frame = CsvFrame()
+                # UUIDは存在していれば
+                if val['uuid'] is not None:
+                    new_frame = CsvFrame.from_uuid(val['uuid'])
+                else:
+                    new_frame = CsvFrame()
             else:
                 # CSV以外の場合はひとまず
                 # DBなどを想定している
                 new_frame = Frame()
 
-            # UUIDは存在していれば
-            if val['uuid'] is not None:
-                # まずdataを設定しよう
-                new_frame.uuid = val['uuid']
 
             new_flow.data[key] = new_frame
 

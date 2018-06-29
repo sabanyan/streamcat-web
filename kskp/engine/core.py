@@ -96,7 +96,6 @@ class Flow:
         指定したidのdataがすでに存在すればそれを返す
         まだ存在していなければ、それを作る
         """
-
         datum = self.data[datum_id]
 
         # dataがすでに存在すればそれを返す
@@ -135,7 +134,7 @@ class Flow:
             # if outputの定義が'csv'だったら:
             new_datum = datum.to_csv()
 
-        return datum
+        return new_datum
 
     def execute(self, arguments={}, inputs={}):
         """
