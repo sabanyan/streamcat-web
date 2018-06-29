@@ -90,7 +90,7 @@ class EngineTestCase(unittest.TestCase):
         with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
             e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
-
+    @unittest.skip
     def test_minimum_piping_flow(self):
         """
         パイプを使う最小限のフローのテスト
@@ -101,7 +101,6 @@ class EngineTestCase(unittest.TestCase):
         with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
             e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
-    @unittest.skip
     def test_minimum_nested_flow(self):
         """
         nested flowのテスト

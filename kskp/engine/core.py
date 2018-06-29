@@ -11,20 +11,18 @@ class Job:
 
     def __init__(self, step, inputs=None):
         self.step = step
-        # 基本的にはinputsは元々持っているものを使う
-        # もし新しく指定されれば、それで上書きされる
         if inputs is None:
-            self.inputs = step.command_or_flow.inputs
+            self.inputs = {}
         else:
             self.inputs = inputs
         self.errors = []
-        print('self.inputs:', self.inputs)
+        # print('self.inputs:', self.inputs)
 
     def execute(self):
         """
         返却するのはデータを値にもつdict
         """
-        print('self.inputs:', self.inputs)
+        # print('self.inputs:', self.inputs)
         return self.step.execute(self.inputs)
 
     def dtor(self):
@@ -65,8 +63,6 @@ class Flow:
         self.steps = {}
         self.data = {}
         self.edges = {}
-        self.inputs = {}
-        self.outputs = {}
         self.signature = {}
 
         self.jobs = [] # 現在のところリソース管理のため(fd削除)
@@ -125,7 +121,6 @@ class Flow:
 
         # 実行開始
         # TODO: ひとまずoutputsが1つのみである前提で取得
-        print('step.command_or_flow.outputs:', step.command_or_flow.signature)
         port_name = list(step.command_or_flow.signature[1].keys())[0]
 
         # 結果を返却する
@@ -157,15 +152,15 @@ class Flow:
         if len(inputs) > 0:
             # TODO: まずは1つだけの前提
             input = inputs[0]
-            input_key = list(self.inputs[0].keys())[0]
+            input_key = list(self.signature[0].keys())[0]
             # そっくり入れ替える
-            self.inputs[0][input_key] = input
+            self.data[input_key] = input
 
         # それぞれについて必要ならば計算して結果を取得する
         result = { k: self.check_output(self.get_datum(k)) for k in lasts.keys() }
 
         # outputsを集め直す
-        return { k: v for k, v in self.outputs.items() }
+        return { k: self.data[k] for k in self.signature[1].keys() }
 
     def dtor(self):
         # print('Flow.dtor():', self.jobs)
@@ -206,7 +201,9 @@ class Command:
         """ デストラクタ """
         pass
 
+
 from enum import Enum, auto
+
 
 class Parameter:
     """
