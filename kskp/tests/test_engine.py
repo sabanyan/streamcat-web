@@ -1,10 +1,11 @@
 import unittest
 
 from .. import engine as e
-from ..engine.core import Parameter
+from ..engine.data import Frame
+from ..engine.core import Parameter, Command
 
-class EngineTestCase(unittest.TestCase):
 
+class ParameterTestCase(unittest.TestCase):
     def test_parameter_required(self):
         """
         Parameterクラスの必須項目のテスト
@@ -32,6 +33,53 @@ class EngineTestCase(unittest.TestCase):
         self.assertEqual(p2.name, param_name)
         self.assertEqual(p2.caption, param_caption)
 
+
+class EngineTestCase(unittest.TestCase):
+
+    @unittest.skip
+    def test_making_command(self):
+        """
+        Commandクラスを定義してみる
+
+        型チェックの方法について
+        """
+
+        class TestCommand(Command):
+            """
+            テスト用に、元のframeに指定されたカラムを付け足すコマンドを作ってみる
+            """
+
+            def __init__(self):
+                super().__init__()
+                self.parameters.append(Parameter('f', '列名'))
+                self.parameters.append(Parameter('v', '値'))
+
+                self.signature = (
+                    {'in' : { 'type': 'frame' }},
+                    {'out': { 'type': 'frame' }}
+                )
+
+            def execute(self, args={}, inputs={}):
+                i = inputs['in']
+                count = i.row_count()
+                import itertools
+                values = list(itertools.repeat(args['v'], count))
+
+                i.update( {args['f']: values} )
+
+                return {'out': i}
+
+        command = TestCommand()
+
+        input = Frame()
+        input.contents = {
+            'name': ['Tom', 'Mary', 'Brian'],
+            'age': ['18', '19', '16']
+        }
+        res = command.execute({'f': 'alien', 'v': 0}, {'in': input})
+
+        print(res)
+
     @unittest.skip
     def test_minimum_flow(self):
         """
@@ -42,7 +90,7 @@ class EngineTestCase(unittest.TestCase):
         with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
             e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
-    @unittest.skip
+
     def test_minimum_piping_flow(self):
         """
         パイプを使う最小限のフローのテスト

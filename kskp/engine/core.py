@@ -27,6 +27,11 @@ class Job:
         print('self.inputs:', self.inputs)
         return self.step.execute(self.inputs)
 
+    def dtor(self):
+        """ デストラクタ """
+        # print('Job.dtor()')
+        self.step.command_or_flow.dtor()
+
 
 class Step:
     """
@@ -62,6 +67,9 @@ class Flow:
         self.edges = {}
         self.inputs = {}
         self.outputs = {}
+        self.signature = {}
+
+        self.jobs = [] # 現在のところリソース管理のため(fd削除)
 
     def get_src_ports_from_result_datum(self, datum_id):
         """
@@ -113,14 +121,26 @@ class Flow:
         # 準備ができたので結果を取得
         step = self.steps[step_id]
         job = Job(step, inputs)
+        self.jobs.append(job)
 
         # 実行開始
         # TODO: ひとまずoutputsが1つのみである前提で取得
-        print('step.command_or_flow.outputs:', step.command_or_flow.outputs)
-        port_name = list(step.command_or_flow.outputs.keys())[0]
+        print('step.command_or_flow.outputs:', step.command_or_flow.signature)
+        port_name = list(step.command_or_flow.signature[1].keys())[0]
 
         # 結果を返却する
         return job.execute()[port_name]
+
+    def check_output(self, datum):
+        """実際に生成されたデータの型をチェックする"""
+        new_datum = datum
+
+        if datum.source == 'popen':
+            # TODO: この部分は抽象化が不充分
+            # if outputの定義が'csv'だったら:
+            new_datum = datum.to_csv()
+
+        return datum
 
     def execute(self, arguments={}, inputs={}):
         """
@@ -133,48 +153,58 @@ class Flow:
         lasts = { k: v for k, v in self.edges.items() if len(v['dsts']) == 0 }
 
         # 引数を与える
-        # TODO: まずは1つだけの前提
-        input = list(inputs.values())[0]
-        input_key = list(self.inputs.keys())[0]
-        # そっくり入れ替える
-        self.inputs[input_key] = input
+        inputs = list(inputs.values())
+        if len(inputs) > 0:
+            # TODO: まずは1つだけの前提
+            input = inputs[0]
+            input_key = list(self.inputs[0].keys())[0]
+            # そっくり入れ替える
+            self.inputs[0][input_key] = input
 
         # それぞれについて必要ならば計算して結果を取得する
-        result = {}
-        for key in lasts.keys():
-            datum = self.get_datum(key)
-            datum.save()
-            result.update({key: datum})
-
-        # 後片付け
-        for d in self.data.values():
-            # print('後片付け:', d)
-            d.close()
+        result = { k: self.check_output(self.get_datum(k)) for k in lasts.keys() }
 
         # outputsを集め直す
         return { k: v for k, v in self.outputs.items() }
+
+    def dtor(self):
+        # print('Flow.dtor():', self.jobs)
+        for j in self.jobs:
+            j.dtor()
 
 
 class Command:
     """
     コマンド
+
+    :param name: コマンドにつける名称。必須。
+                 現在、フローファイルに書かれた情報をここに取り込み、
+                 それに従い、読み込むべきCommandクラスの名前を決定する。
     """
 
-    def __init__(self):
-        self.version = '0.1.0'
-        self.name = ''
-        self.description = ''
-        self.inputs = {}
-        self.outputs = {}
+    def __init__(self, name=''):
+        # assert name is not None and name != ''
+
+        self.name = name
+
+        # このコマンドに与えることができるパラメータの定義リスト
+        # 中身はParameterインスタンス
         self.parameters = []
+
+        # このコマンドに与えることができるデータの定義。
+        # dict二つのtupleで、１つ目は入力、２つ目は出力。
+        self.signature = ({}, {})
+
+        self.description = ''
+        # self.version = '0.1.0'
 
     def execute(self, arguments={}, inputs={}):
         # TODO: 引数のvalidation
-        pass
+        raise Exception()
 
-    def make_path(self):
+    def dtor(self):
+        """ デストラクタ """
         pass
-
 
 from enum import Enum, auto
 
@@ -207,5 +237,5 @@ class Parameter:
 
         self.widget_type = self.WidgetType.TEXTBOX
 
-        self.default = None
-        self.validation = None
+        # self.default = None
+        # self.validation = None

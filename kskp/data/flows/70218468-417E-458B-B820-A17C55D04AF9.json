@@ -33,6 +33,7 @@
   "data": {
     "d0": {
       "type": "frame",
+      "dataSource": "csv",
       "uuid": "16DF44FA-2D8B-430C-B1AC-2C20954C1317",
       "srcs": [],
       "dsts": ["s0.in"],
@@ -41,6 +42,7 @@
     },
     "d1": {
       "type": "frame",
+      "dataSource": null,
       "uuid": null,
       "srcs": ["s0.out"],
       "dsts": ["s1.in"],
@@ -49,6 +51,7 @@
     },
     "d2": {
       "type": "frame",
+      "dataSource": "csv",
       "uuid": null,
       "srcs": ["s1.out"],
       "dsts": [],
