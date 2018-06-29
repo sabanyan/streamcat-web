@@ -89,7 +89,7 @@ def complete_sign_up():
 
     flash('ユーザー登録が完了しました。')
 
-    session['user_id'] = session['signup_email']
+    session['user_id'] = model.get_user_id_by_email(session['signup_email'])
     del session['signup_email']
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
@@ -128,6 +128,7 @@ def get_password_hash(user_id, password):
 def get_salt(user_id):
     """
     固定ソルトとユーザID（現在はメールアドレス）
+    6/29現在、ユーザIDはユーザIDです。
     """
     user_id_bytes = bytes(user_id, encoding='utf-8')
     return user_id_bytes + FIXED_SALT
@@ -143,10 +144,12 @@ def authenticate(user_id, password, session):
     実はα版ではuser_id=usersテーブルのid列となっていて、
     そうした方がいいのかなあ、あんまりemailという個人情報を持ち回りたくないなあ、
     という気持ちでいます。迷っている最中です。
+
+    6/29現在、user_idには、user_idをemailを元に求めて持ってきています。
     """
 
     hashed_password = get_password_hash(user_id, password)
-    sql = 'SELECT password FROM users WHERE email = ?'
+    sql = 'SELECT password FROM users WHERE user_id = ?'
 
     passwords = model.query_db(sql, (user_id,), one=True)
 
@@ -166,7 +169,7 @@ def login_required(func):
     """
     このデコレータがついたエンドポイントは、
     ログインされていないとログインページを表示させる
-    
+
     TODO: 自動的にmethodsにPOSTを追加するようにしたい
     そうなるとパラメータつきデコレータになりそうだけど、やるだけといえばやるだけ
     """
@@ -177,7 +180,7 @@ def login_required(func):
                 # 認証を要求している場合
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
-                if authenticate(f['email'], f['password'], session):
+                if authenticate(model.get_user_id_by_email(f['email']), f['password'], session):
                     # 認証成功 本来のページへ遷移する
                     return redirect(request.base_url)
                 else:
