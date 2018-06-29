@@ -3,30 +3,77 @@ import uuid
 import subprocess
 
 
-class Promise:
+class Frame:
+    """
+    列指向の表形式データ
+
+    :param source: データソース。現時点では以下のどれかの文字列が入る予定
+                   'popen', 'csv', 'json', 'postgres', 'mysql'
+                   Noneの場合は直接メモリ上だけにデータを持っていることになる
+    :param uuid: 各frameを一意に識別するためのID
+                 source is Noneであればframe_uuidもNoneであるが、
+                 それ以外の場合ではuuid is not Noneのはず
+                 (但し代入の順番の都合もあるかもしれないのでチェックはしない)
+    """
+
+    def __init__(self, source=None, frame_uuid=None):
+        self.source = source
+        self.uuid = frame_uuid
+        self.contents = {}
+
+    def __repr__(self):
+        return f'<kskp.engine.Frame contents:{self.contents.__repr__()}>'
+
+    def row_count(self):
+        """
+        1つ目の列にあるリストの行数を返すようにする
+        """
+        return len(self.contents[list(self.contents.keys())[0]])
+
+    def update(self, updating_dict):
+        """
+        そのまま中身のupdateに使う
+        """
+        self.contents.update(updating_dict)
+
+
+class CsvFrame(Frame):
+    """
+    CSVから作成されるframe
+
+    :param path: 対象のファイルのパス。まだ保存されていない場合はNoneを指定する。
+    """
+
+    def __init__(self, csv_path=None, frame_uuid=None):
+        super().__init__('csv', frame_uuid)
+        self.path = csv_path
+
+    @classmethod
+    def from_uuid(cls, frame_uuid):
+        """通常KSKPで使うときはこちらから"""
+        return cls(make_path(frame_uuid), frame_uuid)
+
+    def get_fd(self):
+        """
+        ファイルへのfdを返す
+        """
+        return open(make_path(self.uuid), 'r')
+
+
+class PopenFrame(Frame):
     """
     Popenに必要なものを持っているが必要になるまで実行されない
     実行されると、Frameなどの実際のデータをもつようになる（変換される）
     """
 
     def __init__(self, args, stdin=None):
+        super().__init__('popen')
         self.args = args
         self.stdin = stdin
-        self.fd = None
 
-    def get_fd(self):
-        " パイプの出口となるfile descriptorを返す "
-
-        if self.fd is None:
-            popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
-            self.fd = popen.stdout
-            popen.wait()
-
-        return self.fd
-
-    def save(self):
+    def to_csv(self):
         """
-        コマンドを実行してDataを作って保存する 何も返却しない
+        コマンドを実行してその結果からCsvFrameを作って返す
         """
 
         # 出力用パスを作る
@@ -37,40 +84,13 @@ class Promise:
             popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=fd)
             popen.wait()
 
-    def close(self):
-        if self.fd is not None:
-            self.fd.close()
-
-
-class Frame:
-    """
-    表形式データ
-    """
-
-    def __init__(self, frame_uuid=None):
-        """
-        TODO: 表そのもののデータも取得できるように
-        """
-        self.uuid = frame_uuid
-        self.fd = None
+        return CsvFrame.from_uuid(new_uuid)
 
     def get_fd(self):
-        """
-        ファイルへのfdを返す
-        """
-        if self.fd is None:
-            self.fd = open(make_path(self.uuid), 'r')
-        return self.fd
-
-    def save(self):
-        """
-        すでにファイルはできているので何もする必要はない
-        """
-        pass
-
-    def close(self):
-        if self.fd is not None:            
-            self.fd.close()
+        " パイプの出口となるfile descriptorを返す "
+        popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
+        popen.wait()
+        return popen.stdout
 
 
 def make_path(frame_uuid):
