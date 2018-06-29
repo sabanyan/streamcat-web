@@ -56,7 +56,7 @@ def parse(flow_uuid, flow_json):
         elif step_type == 'flow':
             # サブフロー
             with open(f"kskp/data/flows/{ val['uuid'] }.json", 'r') as f:
-                command_or_flow = Flow(parse(val['uuid'], f.read()))
+                command_or_flow = parse(val['uuid'], f.read())
         else:
             # 通らないはず
             raise Exception()
@@ -72,8 +72,8 @@ def parse(flow_uuid, flow_json):
     # inputs/outputsを取り出す
     # asFlowIn/asFlowOutフラグが立っているデータ
     new_flow.signature = (
-        {k: v for k, v in data.items() if v['asFlowIn']  == True},
-        {k: v for k, v in data.items() if v['asFlowOut'] == True}
+        { k: v for k, v in data.items() if v['asFlowIn']  == True },
+        { k: v for k, v in data.items() if v['asFlowOut'] == True }
     )
 
     # 残りは内包表記では書きにくいのでforで

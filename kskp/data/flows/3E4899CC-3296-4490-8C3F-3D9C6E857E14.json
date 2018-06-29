@@ -33,7 +33,7 @@
     "d1": {
       "type": "frame",
       "uuid": null,
-      "dataSource": null,
+      "dataSource": "csv",
       "srcs": ["s0.out"],
       "dsts": [],
       "asFlowIn": false,
