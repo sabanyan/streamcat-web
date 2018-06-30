@@ -29,7 +29,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       redirect: 'follow',
     }
 
-    HttpUtil.get('flows/' + window.inject_flow_uuid).then((response) => {
+    HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
       console.log(response.data)
     })
 
