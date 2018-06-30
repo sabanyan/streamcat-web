@@ -1,10 +1,11 @@
 import unittest
 
 from .. import engine as e
-from ..engine.core import Parameter
+from ..engine.data import Frame
+from ..engine.core import Parameter, Command
 
-class EngineTestCase(unittest.TestCase):
 
+class ParameterTestCase(unittest.TestCase):
     def test_parameter_required(self):
         """
         Parameterクラスの必須項目のテスト
@@ -32,15 +33,60 @@ class EngineTestCase(unittest.TestCase):
         self.assertEqual(p2.name, param_name)
         self.assertEqual(p2.caption, param_caption)
 
+
+class EngineTestCase(unittest.TestCase):
+
+    @unittest.skip
+    def test_making_command(self):
+        """
+        Commandクラスを定義してみる
+
+        型チェックの方法について
+        """
+
+        class TestCommand(Command):
+            """
+            テスト用に、元のframeに指定されたカラムを付け足すコマンドを作ってみる
+            """
+
+            def __init__(self):
+                super().__init__()
+                self.parameters.append(Parameter('f', '列名'))
+                self.parameters.append(Parameter('v', '値'))
+
+                self.signature = (
+                    {'in' : { 'type': 'frame' }},
+                    {'out': { 'type': 'frame' }}
+                )
+
+            def execute(self, args={}, inputs={}):
+                i = inputs['in']
+                count = i.row_count()
+                import itertools
+                values = list(itertools.repeat(args['v'], count))
+
+                i.update( {args['f']: values} )
+
+                return {'out': i}
+
+        command = TestCommand()
+
+        input = Frame()
+        input.contents = {
+            'name': ['Tom', 'Mary', 'Brian'],
+            'age': ['18', '19', '16']
+        }
+        res = command.execute({'f': 'alien', 'v': 0}, {'in': input})
+
+        print(res)
+
     @unittest.skip
     def test_minimum_flow(self):
         """
         最小限のフローのテスト
         stepが1つ
         """
-        flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
-        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
+        execute_flow_by_uuid('833fdb62-2bb6-4a77-a0e1-77941ad951a3')
 
     @unittest.skip
     def test_minimum_piping_flow(self):
@@ -48,20 +94,16 @@ class EngineTestCase(unittest.TestCase):
         パイプを使う最小限のフローのテスト
         stepが2つ
         """
-
-        flow_uuid = '70218468-417E-458B-B820-A17C55D04AF9'
-        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
+        execute_flow_by_uuid('70218468-417E-458B-B820-A17C55D04AF9')
 
     @unittest.skip
     def test_minimum_nested_flow(self):
-        """
-        nested flowのテスト
-        """
+        """ nested flowのテスト """
+        execute_flow_by_uuid('3E4899CC-3296-4490-8C3F-3D9C6E857E14')
 
-        flow_uuid = '3E4899CC-3296-4490-8C3F-3D9C6E857E14'
-        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
+    def test_mjoin(self):
+        """複数INのテスト"""
+        execute_flow_by_uuid('91E36B47-197B-4768-960B-AA1DEEA94873')
 
     @unittest.skip
     def test_single_frame_flow_executing(self):
@@ -79,3 +121,8 @@ class EngineTestCase(unittest.TestCase):
 
     def make_single_frame_flow(self):
         pass
+
+
+def execute_flow_by_uuid(flow_uuid):
+    with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
+        e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')

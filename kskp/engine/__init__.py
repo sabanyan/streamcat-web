@@ -2,7 +2,7 @@ import os
 import json
 
 from .core import *
-from .data import Frame
+from .data import Frame, CsvFrame
 from .util import command_from_name
 
 
@@ -22,7 +22,12 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
     job = Job(step, inputs)
 
     # 3. その結果をoutputsとして受け取り、そのまま返却する
-    return job.execute()
+    result = job.execute()
+
+    # 4. 後始末
+    job.dtor()
+
+    return result
 
 
 def parse(flow_uuid, flow_json):
@@ -51,7 +56,7 @@ def parse(flow_uuid, flow_json):
         elif step_type == 'flow':
             # サブフロー
             with open(f"kskp/data/flows/{ val['uuid'] }.json", 'r') as f:
-                command_or_flow = Flow(parse(val['uuid'], f.read()))
+                command_or_flow = parse(val['uuid'], f.read())
         else:
             # 通らないはず
             raise Exception()
@@ -64,26 +69,30 @@ def parse(flow_uuid, flow_json):
     # ここからedgesとinputsとoutputsを全部くくり出す
     data = parsed_json['data']
 
-    # inputsを取り出す
-    # asFlowInフラグが立っているデータ
-    new_flow.inputs = {k: v for k, v in data.items() if v['asFlowIn'] == True}
-    print('new_flow.inputs:', new_flow.inputs)
-
-    # outputsを取り出す
-    # asFlowOutフラグが立っているデータ
-    new_flow.outputs = {k: v for k, v in data.items() if v['asFlowOut'] == True}
+    # inputs/outputsを取り出す
+    # asFlowIn/asFlowOutフラグが立っているデータ
+    new_flow.signature = (
+        { k: v for k, v in data.items() if v['asFlowIn']  == True },
+        { k: v for k, v in data.items() if v['asFlowOut'] == True }
+    )
 
     # 残りは内包表記では書きにくいのでforで
     for key, val in data.items():
         data_type = val['type']
         if data_type == 'frame':
             # Frameの場合
-            new_frame = Frame()
 
-            # UUIDは存在していれば
-            if val['uuid'] is not None:
-                # まずdataを設定しよう
-                new_frame.uuid = val['uuid']
+            if val['dataSource'] == 'csv':
+                # UUIDは存在していれば
+                if val['uuid'] is not None:
+                    new_frame = CsvFrame.from_uuid(val['uuid'])
+                else:
+                    new_frame = CsvFrame()
+            else:
+                # CSV以外の場合はひとまず
+                # DBなどを想定している
+                new_frame = Frame()
+
 
             new_flow.data[key] = new_frame
 

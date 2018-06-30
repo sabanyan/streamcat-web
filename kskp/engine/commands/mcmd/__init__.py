@@ -1,7 +1,7 @@
 import os
 
 from ...core import Parameter, Command
-from ...data import Promise
+from ...data import PopenFrame
 
 
 class MCommand(Command):
@@ -12,16 +12,12 @@ class MCommand(Command):
     def __init__(self):
         super().__init__()
 
-        self.inputs = {
-            'in': {
-                'type': 'frame'
-            }
-        }
-        self.outputs = {
-            'out': {
-                'type': 'frame'
-            }
-        }
+        # inもoutも一つずつ
+        self.signature = (
+            { 'in' : { 'type': 'frame' } },
+            { 'out': { 'type': 'frame' } }
+        )
+        self.fds = []
 
     def execute(self, arguments={}, inputs={}):
         """
@@ -34,6 +30,7 @@ class MCommand(Command):
 
         # パイプでつなげられそうなら、つなげる
         stdin = input.get_fd()
+        self.fds.append(stdin)
 
         # UNIXコマンド用配列を作る
         command_args = self.name.split()
@@ -41,9 +38,14 @@ class MCommand(Command):
         for key, val in arguments.items():
             command_args.append('%s=%s' % (key, val))
 
-        # コマンド列から作られる結果を返す
-        promise = Promise(command_args, stdin=stdin)
 
+        # コマンド列から作られる結果を返す        
+        frame = PopenFrame(command_args, stdin=stdin)
 
-        key_name = list(self.outputs.keys())[0]
-        return { key_name: promise } # keyとDataを返す
+        key_name = list(self.signature[1].keys())[0]
+        return { key_name: frame } # keyとDataを返す
+
+    def dtor(self):
+        # print('MCommand.dtor()', self.fds)
+        for fd in self.fds:
+            fd.close()

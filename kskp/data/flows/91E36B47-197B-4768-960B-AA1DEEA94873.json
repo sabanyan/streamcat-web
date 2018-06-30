@@ -1,23 +1,16 @@
 {
   "projectId": "2",
-  "name": "見本のFlowのJSON",
+  "name": "mjoinのJSON",
 
-  "params": {
-    "f": {
-      "caption": "列名",
-      "type": "string",
-      "value": "a"
-    }
-  },
+  "params": {},
 
   "steps": {
     "s0": {
       "type": "command",
-      "name": "msum",
-      "label": "合計",
+      "name": "mjoin",
+      "label": "結合",
       "args": {
-        "k": "顧客",
-        "f": "数量:数量合計,金額:金額合計"
+        "k": "item"
       }
     }
   },
@@ -25,14 +18,23 @@
   "data": {
     "d0": {
       "type": "frame",
-      "uuid": "16DF44FA-2D8B-430C-B1AC-2C20954C1317",
+      "uuid": "A142C00D-8F97-4E40-97DE-789D7B117E35",
       "dataSource": "csv",
       "srcs": [],
-      "dsts": ["s0.in"],
+      "dsts": ["s0.i"],
       "asFlowIn": true,
       "asFlowOut": false
     },
     "d1": {
+      "type": "frame",
+      "uuid": "754AD573-3026-41C8-9DC2-4870FC28194E",
+      "dataSource": "csv",
+      "srcs": [],
+      "dsts": ["s0.m"],
+      "asFlowIn": true,
+      "asFlowOut": false
+    },
+    "d2": {
       "type": "frame",
       "uuid": null,
       "dataSource": "csv",
