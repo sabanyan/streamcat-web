@@ -31,6 +31,23 @@ def get_user(email):
     '''
     return query_db(sql, (email,), one=True)
 
+def get_user_id_by_email(email):
+    """
+    指定したemailのユーザidを返す
+    """
+    sql = '''
+    SELECT id FROM users WHERE email = ?
+    '''
+    return query_db(sql, (email,), one=True)['id']
+
+def get_user_by_id(user_id):
+    """
+    指定したユーザIDのユーザレコードを返す
+    """
+    sql = '''
+    SELECT email, name FROM users WHERE id = ?
+    '''
+    return query_db(sql, (user_id,), one=True)
 
 def get_all_users():
     """
@@ -52,8 +69,8 @@ def get_current_user(session):
     ログイン状態のユーザ情報を返す
     """
     user_id = session['user_id']
-    user_record = get_user(user_id)
-    return User(user_id, user_record[0]) # 0にはユーザ名が入っている
+    user_record = get_user_by_id(user_id)
+    return User(user_id, user_record['email']) # 0にはユーザ名が入っている
 
 
 def create_project(name, session):
@@ -62,11 +79,11 @@ def create_project(name, session):
     """
 
     sql = '''
-    INSERT INTO projects (uuid, name, creator_name, creator) VALUES (?, ?, ?, ?)
+    INSERT INTO projects (uuid, name, creator_id, creator) VALUES (?, ?, ?, ?)
     '''
     generated_uuid = str(uuid.uuid4())
     user = get_current_user(session)
-    return query_db(sql, (generated_uuid, name, user.name, user.email))
+    return query_db(sql, (generated_uuid, name, user.id, user.email))
 
 
 def add_info_for_users_x_projects(user_id, project_id):
@@ -96,19 +113,19 @@ def start_project(name, session):
 
     # projectsに行を挿入する
     sql_projects = '''
-    INSERT INTO projects (uuid, name, creator_name, creator) VALUES (?, ?, ?, ?)
+    INSERT INTO projects (uuid, name, creator_id, creator) VALUES (?, ?, ?, ?)
     '''
     generated_uuid = str(uuid.uuid4())
     user = get_current_user(session)
 
-    cur.execute(sql_projects, (generated_uuid, name, user.name, user.email))
+    cur.execute(sql_projects, (generated_uuid, name, user.id, user.email))
 
     # 次にユーザ別の閲覧可能なプロジェクトを表すテーブルに行を挿入する
     # ひとまず、自分が作ったプロジェクトは自分だけが見られるような仕様にしておく
     sql_users_x_projects = '''
     INSERT INTO users_x_projects VALUES (?, ?)
     '''
-    cur.execute(sql_users_x_projects, (user.email, cur.lastrowid))
+    cur.execute(sql_users_x_projects, (user.id, cur.lastrowid))
 
 
     # 後片付け
@@ -121,23 +138,20 @@ def get_all_projects():
     すべてのプロジェクトを取得する
     """
     sql = '''
-    SELECT id, uuid, name, creator_name FROM projects
+    SELECT id, uuid, name, creator_id FROM projects
     '''
     return query_db(sql)
 
 def get_projects_by_user_id(user_id, search_string=None):
     """
     特定のユーザが閲覧可能なプロジェクト一覧を取得する
-    この場合の'user_id'はemailのこと
     """
 
     sql = '''
-    SELECT p.uuid, p.name, p.creator_name, p.created_at FROM projects p
+    SELECT p.uuid, p.name, p.creator_id, p.created_at FROM projects p
      INNER JOIN users_x_projects x
         ON x.project_id = p.id
-     INNER JOIN users u
-        ON x.user_id = u.id
-     WHERE u.email = ?
+     WHERE x.user_id = ?
      ORDER BY p.id
     '''
 
@@ -315,6 +329,6 @@ def close_connection(exception):
         conn.close()
 
 class User:
-    def __init__(self, email, name):
+    def __init__(self, id, email):
+        self.id = id
         self.email = email
-        self.name = name
