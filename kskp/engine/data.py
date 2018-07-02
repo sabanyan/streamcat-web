@@ -91,9 +91,9 @@ class PopenFrame(Frame):
         # new_uuid = str(uuid.uuid4())
         new_uuid = self.uuid
 
-        with open(make_path(new_uuid), 'w') as fd:
-            popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=fd)
-            popen.wait()
+        # with open(make_path(new_uuid), 'w') as fd:
+        #     popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=fd)
+        #     popen.wait()
 
         return CsvFrame.from_uuid(new_uuid)
 
