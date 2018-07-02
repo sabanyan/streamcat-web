@@ -1,6 +1,6 @@
 # frameの保存場所は環境変数か、engine.execute()で直接指定する
 # os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
-
+from .data import *
 
 class Job:
     """
@@ -81,13 +81,22 @@ class Flow:
             for src in self.edges[datum_id]['srcs']
         ]
 
+    def check_duplicate_use(self, datum):
+        """
+        同じpopenを2度は使えないので、CSVに変換する
+        """
+        if datum.source == 'popen' and datum.already_piped:
+            return CsvFrame.from_uuid(datum.uuid)
+        else:
+            return datum
+
     def get_inputs_from_step(self, step_id):
         """
         指定したstepを実行するために必要なinputのdataを集めてくる
         """
         inputs = {
-            k: self.get_datum(k) for k, v in self.edges.items()
-            if len(v['dsts']) > 0 and v['dsts'][0].split('.')[0] == step_id
+            k: self.check_duplicate_use(self.get_datum(k)) for k, v in self.edges.items()
+            if len(v['dsts']) > 0 and step_id in [dst.split('.')[0] for dst in v['dsts']]
         }
         return inputs
 
