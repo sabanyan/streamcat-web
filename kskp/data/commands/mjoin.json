@@ -2,14 +2,13 @@
   "version": "0.1",
   "name": "mjoin",
   "description": "結合",
-  "inputs": [
+  "signature": [
     {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
+      "i": { "type": "frame" },
+      "m": { "type": "frame" }
+    },
     {
-      "type": "csv"
+      "out": { "type": "frame" }
     }
   ],
   "arguments": [
