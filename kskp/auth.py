@@ -128,9 +128,8 @@ def get_password_hash(user_id, password):
 def get_salt(user_id):
     """
     固定ソルトとユーザID（現在はメールアドレス）
-    6/29現在、ユーザIDはユーザIDです。
     """
-    user_id_bytes = bytes(user_id, encoding='utf-8')
+    user_id_bytes = bytes(str(user_id), encoding='utf-8')
     return user_id_bytes + FIXED_SALT
 
 
