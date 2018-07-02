@@ -148,7 +148,7 @@ def authenticate(user_id, password, session):
     """
 
     hashed_password = get_password_hash(user_id, password)
-    sql = 'SELECT password FROM users WHERE user_id = ?'
+    sql = 'SELECT password FROM users WHERE id = ?'
 
     passwords = model.query_db(sql, (user_id,), one=True)
 
