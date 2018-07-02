@@ -18,6 +18,7 @@ class MCommand(Command):
             { 'out': { 'type': 'frame' } }
         )
         self.fds = []
+        self.inputs_for_dtor = []
 
     def execute(self, arguments={}, inputs={}):
         """
@@ -32,14 +33,22 @@ class MCommand(Command):
         stdin = input.get_fd()
         self.fds.append(stdin)
 
+        self.inputs_for_dtor.append(input)
+
         # UNIXコマンド用配列を作る
         command_args = self.name.split()
 
         for key, val in arguments.items():
-            command_args.append('%s=%s' % (key, val))
+            if key == 'x' and val == True:
+                # TODO: 場所を移すべき？ mcut用
+                command_args.append('-x')
+            elif key == 'rng' and val == True:
+                command_args.append('-rng')
+            else:
+                command_args.append('%s=%s' % (key, val))
 
 
-        # コマンド列から作られる結果を返す        
+        # コマンド列から作られる結果を返す
         frame = PopenFrame(command_args, stdin=stdin)
 
         key_name = list(self.signature[1].keys())[0]
@@ -49,3 +58,6 @@ class MCommand(Command):
         # print('MCommand.dtor()', self.fds)
         for fd in self.fds:
             fd.close()
+
+        for i in self.inputs_for_dtor:
+            i.dtor()

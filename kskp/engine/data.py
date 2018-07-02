@@ -36,6 +36,9 @@ class Frame:
         """
         self.contents.update(updating_dict)
 
+    def dtor(self):
+        pass
+
 
 class CsvFrame(Frame):
     """
@@ -70,9 +73,11 @@ class PopenFrame(Frame):
     """
 
     def __init__(self, args, stdin=None):
-        super().__init__('popen')
+        new_uuid = str(uuid.uuid4())
+        super().__init__('popen', new_uuid)
         self.args = args
         self.stdin = stdin
+        self.popen = None
 
     def to_csv(self):
         """
@@ -81,7 +86,8 @@ class PopenFrame(Frame):
 
         # 出力用パスを作る
         # uuidを生成（新しいファイル名）
-        new_uuid = str(uuid.uuid4())
+        # new_uuid = str(uuid.uuid4())
+        new_uuid = self.uuid
 
         with open(make_path(new_uuid), 'w') as fd:
             popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=fd)
@@ -91,9 +97,16 @@ class PopenFrame(Frame):
 
     def get_fd(self):
         " パイプの出口となるfile descriptorを返す "
-        popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
-        popen.wait()
-        return popen.stdout
+        self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
+        # popen.wait()
+        return self.popen.stdout
+
+    def dtor(self):
+        self.popen.wait()
+
+    def __repr__(self):
+        return f'<kskp.engine.Frame(popen) args:{ self.args } stdin:{ self.stdin } contents:{self.contents.__repr__()}>'
+
 
 
 def make_path(frame_uuid):

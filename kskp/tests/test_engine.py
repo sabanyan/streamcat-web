@@ -101,9 +101,14 @@ class EngineTestCase(unittest.TestCase):
         """ nested flowのテスト """
         execute_flow_by_uuid('3E4899CC-3296-4490-8C3F-3D9C6E857E14')
 
+    @unittest.skip
     def test_mjoin(self):
         """複数INのテスト"""
         execute_flow_by_uuid('91E36B47-197B-4768-960B-AA1DEEA94873')
+
+    def test_ni(self):
+        """日本NI様サンプルテスト"""
+        execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
 
     @unittest.skip
     def test_single_frame_flow_executing(self):
