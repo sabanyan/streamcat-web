@@ -3,11 +3,16 @@ from . import *
 class Maccum:
     pass
 
-class Mavg:
-    pass
+class Mavg(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mavg'
+        self.description = '平均'
+        self.parameters.append(Parameter('f', '対象列名'))
 
 class Mcount(MCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'mcount'
         self.description = '行数カウント'
         self.parameters.append(Parameter('k', '対象列名'))
@@ -45,8 +50,13 @@ class Mslide(MCommand):
         self.parameters.append(Parameter('s', 'ソート対象列名'))
         self.parameters.append(Parameter('f', 'ずらす対象の列名'))
 
-class Mstats:
-    pass
+class Mstats(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mstats'
+        self.description = '統計情報'
+        self.parameters.append(Parameter('c', '計算項目'))
+        self.parameters.append(Parameter('f', '対象列名'))
 
 class Msum(MCommand):
     def __init__(self):
