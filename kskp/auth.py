@@ -147,7 +147,7 @@ def authenticate(user_id, password, session):
     6/29現在、user_idには、user_idをemailを元に求めて持ってきています。
     """
 
-    hashed_password = get_password_hash(user_id, password)
+    hashed_password = get_password_hash(model.get_user_by_id(user_id)['email'], password)
     sql = 'SELECT password FROM users WHERE id = ?'
 
     passwords = model.query_db(sql, (user_id,), one=True)
@@ -155,7 +155,7 @@ def authenticate(user_id, password, session):
     if passwords is None:
         # そもそもユーザが存在しない場合
         return False
-
+        
     if hashed_password == passwords['password']:
         # 認証成功
         session['user_id'] = user_id # model.get_user(user_id)  # ユーザID保存
