@@ -38,6 +38,15 @@
       "args": {
         "f": "Time,3H_sd"
       }
+    },
+
+    "s4": {
+      "type": "command",
+      "name": "mjoin",
+      "label": "結合",
+      "args": {
+        "f": "Time"
+      }
     }
   },
 
@@ -65,7 +74,7 @@
       "uuid": null,
       "dataSource": "csv",
       "srcs": ["s1.out"],
-      "dsts": [],
+      "dsts": ["s4.i"],
       "asFlowIn": false,
       "asFlowOut": false
     },
@@ -79,11 +88,20 @@
       "asFlowIn": false,
       "asFlowOut": false
     },
-    "out": {
+    "d3": {
       "type": "frame",
       "uuid": null,
       "dataSource": "csv",
       "srcs": ["s3.out"],
+      "dsts": ["s4.m"],
+      "asFlowIn": false,
+      "asFlowOut": false
+    },
+    "out": {
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv",
+      "srcs": ["s4.out"],
       "dsts": [],
       "asFlowIn": false,
       "asFlowOut": true
