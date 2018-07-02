@@ -77,7 +77,9 @@ class PopenFrame(Frame):
         super().__init__('popen', new_uuid)
         self.args = args
         self.stdin = stdin
+        self.mtee_popen = None
         self.popen = None
+        self.already_piped = False
 
     def to_csv(self):
         """
@@ -97,12 +99,15 @@ class PopenFrame(Frame):
 
     def get_fd(self):
         " パイプの出口となるfile descriptorを返す "
-        self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
-        # popen.wait()
+        self.mtee_popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
+        # popen.wait()        
+        self.popen = subprocess.Popen(['mtee', f'o={make_path(self.uuid)}'], stdin=self.mtee_popen.stdout, stdout=subprocess.PIPE)
+        self.already_piped = True
         return self.popen.stdout
 
     def dtor(self):
         self.popen.wait()
+        self.mtee_popen.wait()
 
     def __repr__(self):
         return f'<kskp.engine.Frame(popen) args:{ self.args } stdin:{ self.stdin } contents:{self.contents.__repr__()}>'
