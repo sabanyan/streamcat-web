@@ -282,7 +282,7 @@ export default class Step extends React.Component<Props, State> {
     }
     else if (this.isDataFrame(step)) {
       //データソース
-      const stroke = (!step.hasData) ? {stroke: '#CCCCCC'} : {}
+      const stroke = (!step.uuid) ? {stroke: '#CCCCCC'} : {}
       icon =
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}

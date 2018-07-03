@@ -55,9 +55,11 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     let {selected_step_ids} = this.props
     const self = this
 
+    let merged_steps = {...this.props.steps,...this.props.data}
+
     //this.props.state.stepsを生成する
-    const steps = Object.keys(this.props.steps).map((node_name) => {
-      let step = self.props.steps[node_name]
+    const steps = Object.keys(merged_steps).map((node_name) => {
+      let step = merged_steps[node_name]
       let selected = (node_name === selected_step_ids[0])
       return <Step key={step.id} {...step} model={step} {...self.props}
                    selected={selected} />
@@ -66,13 +68,13 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
     if (Array.isArray(this.props.edges)) {
       edges = this.props.edges.map(function (edge, index) {
-        const vx = self.props.steps[edge.v].position.x +
+        const vx = merged_steps[edge.v].position.x +
           Constants.default.datasource.width / 2
-        const vy = self.props.steps[edge.v].position.y +
+        const vy = merged_steps[edge.v].position.y +
           Constants.default.datasource.height / 2
-        const wx = self.props.steps[edge.w].position.x +
+        const wx = merged_steps[edge.w].position.x +
           Constants.default.operator.width / 2
-        const wy = self.props.steps[edge.w].position.y +
+        const wy = merged_steps[edge.w].position.y +
           Constants.default.operator.height / 2
         return <Edge vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
       })

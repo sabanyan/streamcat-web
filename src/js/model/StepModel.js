@@ -11,7 +11,6 @@ export type StepModelProps = {
   args: {};
   position?: { x: number, y: number };
   size?: { width: number, height: number };
-  hasData: boolean;
 }
 
 export default class StepModel {
@@ -22,7 +21,6 @@ export default class StepModel {
   args: {}
   position: { x: number, y: number } = {x: 0, y: 0}
   size: { width: number, height: number } = {width: 0, height: 0}
-  hasData: boolean = false
 
   constructor (props: StepModelProps) {
     //TODO エディターから作るときのIDを将来的にどうするか決める
@@ -31,7 +29,6 @@ export default class StepModel {
     this.name = props.name
     this.label = props.label
     this.args = props.args
-    this.hasData = props.hasData
     this.setPosition(props.position)
     this.setSize(props.size)
   }

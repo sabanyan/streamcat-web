@@ -2,10 +2,11 @@
 import React from 'react'
 import Constants from '../../../constants/index'
 import ModalUtil from '../../../utils/ModalUtil'
-import DataSourceModel from '../../../model/DataSourceModel'
+import DataFrameModel from '../../../model/DataFrameModel'
 import OperatorModel from '../../../model/OperatorModel'
 import style from './style.scss'
 import classnames from 'classnames'
+import StepModel from '../../../model/StepModel'
 
 type Props = {
     name: string;
@@ -62,35 +63,46 @@ export default class Operator extends React.Component<Props> {
         ModalUtil.registerModal({
             id: Constants.modal.ADD_OPERATOR, onClickDone: () => {
 
-                let parameters = {}
+                let args = {}
 
                 //モーダルで入力されたパラメータを取得
                 console.log(self.inputRefs)
                 self.inputRefs.map((inputRef) => {
-                    parameters[inputRef.argument.name] = inputRef.element.value
+                    args[inputRef.argument.name] = inputRef.element.value
                     inputRef.element.value = "" //値をクリア
                 })
 
                 //コマンドを追加
-                const add_step = new OperatorModel({
-                    operator: self.props.name,
-                    text: this.props.description,
-                    parameters: parameters
+                // const add_step = new OperatorModel({
+                //     operator: self.props.name,
+                //     text: this.props.description,
+                //     partameters: parameters
+                // })
+
+
+                const add_step =  new StepModel({
+                  id: null,//TODO IDはどうやってつける？
+                  type: Constants.step.type.command,
+                  name: self.props.name,
+                  label: self.props.name,
+                  args: args
                 })
+
                 const {selected_step_ids} = this.props
                 self.props.addStep(add_step, selected_step_ids[0])
-
 
                 //出力先を追加
                 const output_steps = self.props.outputs.map((output_step) => {
                     //TODO 将来的にはコマンドのoutputsを細かくみて制御する
-                    return new DataSourceModel({
-                        type: output_step.type,
-                        operator: "mtee",
-                        text: self.props.description + "の結果",
-                        property: {hasData: false},
-                        parameters: {"o": "/kskp/data/frame/" + self.props.name + ".csv"}
-                    })
+                      return new DataFrameModel({
+                        id: null,//TODO IDはどうやってつける？
+                        type: Constants.step.type.frame,
+                        uuid: null,//TODO UUIDをどうやってつける？
+                        srcs: [],
+                        dsts: [],
+                        asFlowIn: false,
+                        asFlowOut: false
+                      })
                 })
 
                 //出力先の個数に応じてステップを追加する

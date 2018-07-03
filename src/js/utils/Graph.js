@@ -252,7 +252,7 @@ class Graph {
             self.addEdge(key, node)
           })
         }
-        json.steps[node] = new DataFrameModel({
+        json.data[node] = new DataFrameModel({
           id: node,
           type: Constants.step.type.frame,
           uuid: frame.uuid,
@@ -263,7 +263,7 @@ class Graph {
         })
       })
 
-      this.refreshPosition(json.steps)
+      this.refreshPosition({...json.steps,...json.data})
 
       // //JSONのflowsを展開
       // Object.keys(json.data).map((node) => {

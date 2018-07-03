@@ -2,6 +2,8 @@ import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
 import DataSourceModel from '../model/DataSourceModel'
+import StepModel from '../model/StepModel'
+import DataFrameModel from '../model/DataFrameModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -96,7 +98,7 @@ const Application = (state = initialState, action) => {
 
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize(newState.steps)
+            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
 
             return newState
         }
@@ -127,11 +129,15 @@ const Application = (state = initialState, action) => {
                 //単体での追加
                 add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
             }
-            newState.steps[add_step.id] = add_step
+            if(add_step instanceof StepModel){
+              newState.steps[add_step.id] = add_step
+            }else if(add_step instanceof DataFrameModel){
+              newState.data[add_step.id] = add_step
+            }
 
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize(newState.steps)
+            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
             return newState
         }
         case UPDATE_STEP_ACTION: {
@@ -152,7 +158,7 @@ const Application = (state = initialState, action) => {
             })
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize(newState.steps)
+            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
 
             //削除後は非選択状態にする
             newState.selected_step_ids = []
@@ -177,7 +183,7 @@ const Application = (state = initialState, action) => {
                 })
                 newState.flows = graph.g.nodes()
                 newState.edges = graph.g.edges()
-                newState.graph = graph.getGraphSize(newState.steps)
+                newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
 
                 //削除後は非選択状態にする
                 newState.selected_step_ids = []
@@ -233,7 +239,7 @@ const Application = (state = initialState, action) => {
         case SORT_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
             newState.steps = graph.refreshPosition(newState.steps) //ノード位置を再計算
-            newState.graph = graph.getGraphSize(newState.steps)
+            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
             return newState
         }
         case EXECUTE_FLOW_ACTION: {
