@@ -25,6 +25,8 @@ import * as React from 'react'
 let FlowEditorContainer
 
 export type FlowEditorProps = {
+  projectId: string,
+  projectName: string,
   graph: { width: number, height: number };
   mast: { operators: any[] };
   loadFlowJSON: Function;
@@ -60,6 +62,8 @@ export type FlowEditorProps = {
 export default FlowEditorContainer = connect(
   state => {
     return {
+      projectId: state.projectId,
+      projectName: state.projectName,
       graph: state.graph,
       mast: state.mast,
       flows: state.flows,

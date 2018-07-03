@@ -35,6 +35,11 @@ const Constants = {
       frame:"frame"
     }
   },
+  data:{
+    dataSource:{
+      csv:"csv"
+    }
+  },
   api: {
     host: window.location.host,
   },

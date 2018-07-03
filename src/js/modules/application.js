@@ -96,6 +96,9 @@ const Application = (state = initialState, action) => {
 
             newState = Object.assign(newState,{...loadedJson})
 
+            newState.projectId = loadedJson.projectId
+            newState.projectName = loadedJson.name
+
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
             newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
