@@ -11,17 +11,27 @@
   .breadcrumb-navbar{
     .nav-item{
       height: 34px;
-      padding: 6px 12px;
+      padding: 4px 16px;
       background: rgba(255,255,255,0.2);
       border-radius: 4px;
       margin-right: 8px;
       color: #fff;
+      .icon{
+        width: 18px;
+        height: 18px;
+        position: relative;
+        margin-right: 8px;
+      }
+      &.list .icon{
+        top: -1px;
+      }
+      &.project .icon{
+        top: -1px;
+      }
+      &.flow .icon{
+        top: -2px;
+      }
       .nav-link{
-        .material-icons{
-          font-size: 18px;
-          top:2px;
-          position: relative;
-        }
         display: inline-block;
         padding: 0;
         color: #fff;
@@ -37,25 +47,57 @@
       }
     }
   }
-
   .menu-navbar{
     .nav-item{
-      height: 64px;
-      padding: 12px;
-      .nav-link{
-        color: #ddd!important;
-      }
-      border-bottom: 4px solid transparent;
+      height: 34px;
+      padding: 4px 16px;
+      border-radius: 4px;
+      margin-right: 8px;
+      color: #fff;
       &.active{
-        .nav-link{
-          color: #fff!important;
+        &:after{
+          content: " ";
+          width: 100%;
+          display: inline-block;
+          margin-bottom: -3px;
+          border-bottom:4px solid $kskp-nav-active-border-color;
         }
-        border-bottom: 4px solid #71D4FD;
-        font-weight: bold;
+
+      }
+    }
+    .nav-link{
+      color: #fff;
+      display: inline-block;
+      padding: 0;
+      font-size: 14px;
+      min-width: 100px;
+      text-align: center;
+      .icon{
+        width: 18px;
+        height: 18px;
+        position: relative;
+        margin-right: 8px;
       }
     }
   }
-
+  //.menu-navbar{
+  //  .nav-item{
+  //    height: 64px;
+  //    padding: 12px;
+  //    color: #fff;
+  //    .nav-link{
+  //      color: #fff!important;
+  //    }
+  //    border-bottom: 4px solid transparent;
+  //    &.active{
+  //      .nav-link{
+  //        color: #fff!important;
+  //      }
+  //      border-bottom: 4px solid #71D4FD;
+  //      font-weight: bold;
+  //    }
+  //  }
+  //}
   .user-profile {
     padding: 0.5rem;
     border-bottom: 4px solid transparent;
