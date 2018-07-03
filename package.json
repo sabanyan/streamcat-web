@@ -6,8 +6,8 @@
   "scripts": {
     "dll": "npx webpack --config webpack.dll.config.js",
     "build": "npx webpack",
-    "start": "npx webpack --watch -d  & webpack-dev-server --content-base public/",
-    "production": "npx webpack --watch -d & webpack-dev-server --content-base public/",
+    "start": "npx webpack --watch -d --mode=development",
+    "production": "npx webpack --watch -d --mode=production & webpack-dev-server --content-base public/",
     "test": "echo \"Error: no test specified\" && exit 1",
     "flow": "flow"
   },
