@@ -50,6 +50,8 @@ class PathFileSource(FileSource):
     def fd(self, value):
         pass
 
+    def __repr__(self):
+        return f'PathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
 import subprocess
 
@@ -124,7 +126,7 @@ class Frame(Data):
     def contents(self):
         if self.source.type == '':
             return '(no contents)'
-            
+
         res = str(self.source.fd.read(), encoding='utf-8').rstrip('\n')
         import io
         import csv
