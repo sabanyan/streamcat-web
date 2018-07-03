@@ -3,6 +3,7 @@ import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
 import DataSourceModel from '../model/DataSourceModel'
 
+const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
 const ADD_STEP_ACTION = "add_step_action";
 const UPDATE_STEP_ACTION = "update_step_action";
@@ -85,6 +86,20 @@ initialState.selected_out_edges = []
 
 const Application = (state = initialState, action) => {
     switch (action.type) {
+        case LOAD_FLOW_JSON_ACTION: {
+            let {context} = action
+            let newState = StateUtil.deepCopy(state)
+
+            const loadedJson = graph.load(context)
+
+            newState = Object.assign(newState,{...loadedJson})
+
+            newState.flows = graph.g.nodes()
+            newState.edges = graph.g.edges()
+            newState.graph = graph.getGraphSize(newState.steps)
+
+            return newState
+        }
         case ADD_MASTER_ACTION: {
             let {context} = action
             let newState = StateUtil.deepCopy(state)
@@ -300,6 +315,23 @@ export const addStepAction = (add_step, from_step_id) => {
   }
 }
 
+/**
+ * JSONの読み込み
+ * @param context
+ * @returns {{type: string, context: *}}
+ */
+export const loadFlowJSONAction = (context) => {
+  return {
+    type: LOAD_FLOW_JSON_ACTION,
+    context: context,
+  }
+}
+
+/**
+ * コマンド一覧などマスターの読み込み
+ * @param context
+ * @returns {{type: string, context: *}}
+ */
 export const addMasterAction = (context) => {
   return {
     type: ADD_MASTER_ACTION,
