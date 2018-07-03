@@ -159,7 +159,7 @@ export default class ProjectListContainer extends React.Component {
   }
 
   render () {
-    return <div className={'container'}>
+    return <div className={'container mt-40px'}>
       <Loader absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
       <ModalManager/>
