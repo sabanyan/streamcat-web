@@ -1,13 +1,7 @@
 // @flow
 import React from 'react'
-import DataSourceModel from '../../../../model/DataSourceModel'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import DataTable from '../../../shared/DataTable/index'
-import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../Inspector'
 import type { FlowEditorProps } from '../../index'
-import style from '../style.scss'
 import Button from '../../../shared/Button'
 
 class MultiInspector extends React.Component<FlowEditorProps> {

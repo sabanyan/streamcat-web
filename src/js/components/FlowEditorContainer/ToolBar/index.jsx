@@ -11,8 +11,9 @@ import Download from './Download'
 import DataSourceImport from './DatasourceImport'
 import Zoom from './Zoom'
 import style from './style.scss'
-import DataSourceModel from '../../../model/DataSourceModel'
 import classnames from 'classnames'
+import DataFrameModel from '../../../model/DataFrameModel'
+import HttpUtil from '../../../utils/HttpUtil'
 
 export default class Toolbar extends React.Component {
   onClickSave () {
@@ -34,72 +35,77 @@ export default class Toolbar extends React.Component {
 
   save () {
     return new Promise((resolve, reject) => {
-      let {selected_step_ids, steps, edges} = this.props
+      let {selected_step_ids, steps, data} = this.props
 
       const flow_json_text = {
         flow_json_text: {
-          project_uuid: inject_project_uuid,
+          projectId: inject_project_id,
           name: inject_initial_flow_data.name,
           steps: steps,
-          edges: edges,
+          data: data,
         },
       }
 
-      let option = {
-        method: 'POST',
-        body: JSON.stringify(flow_json_text),
-        mode: 'same-origin',
-        credentials: 'include',
-        redirect: 'follow',
-        headers: {
-          'content-type': 'application/json',
-        },
-      }
+      // let option = {
+      //   method: 'POST',
+      //   body: JSON.stringify(flow_json_text),
+      //   mode: 'same-origin',
+      //   credentials: 'include',
+      //   redirect: 'follow',
+      //   headers: {
+      //     'content-type': 'application/json',
+      //   },
+      // }
 
-      fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
-        inject_flow_uuid + '/update', option).then(function (response) {
-        if (response.ok) {
-          return response.json()
-        }
-        else {
-          alert('サーバでエラーが発生しました')
-          reject()
-        }
-      }).then(function (json) {
-        resolve(json)
-      }).catch((err) => {
-        console.log(err)
-        alert('クライアントでエラーが発生しました')
-        reject(err)
+
+      HttpUtil.put("flows/" + inject_flow_uuid,flow_json_text).then((response)=>{
+
       })
+
+      // fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
+      //   inject_flow_uuid + '/update', option).then(function (response) {
+      //   if (response.ok) {
+      //     return response.json()
+      //   }
+      //   else {
+      //     alert('サーバでエラーが発生しました')
+      //     reject()
+      //   }
+      // }).then(function (json) {
+      //   resolve(json)
+      // }).catch((err) => {
+      //   console.log(err)
+      //   alert('クライアントでエラーが発生しました')
+      //   reject(err)
+      // })
     })
 
   }
 
   run () {
     return new Promise((resolve, reject) => {
-      let option = {
-        method: 'GET',
-        mode: 'same-origin',
-        credentials: 'include',
-        redirect: 'follow',
-      }
+      // let option = {
+      //   method: 'GET',
+      //   mode: 'same-origin',
+      //   credentials: 'include',
+      //   redirect: 'follow',
+      // }
 
-      fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
-        inject_flow_uuid + '/execute', option).then(function (response) {
-        if (response.ok) {
-          return response.json()
-        }
-        else {
-          alert('サーバでエラーが発生しました')
-        }
-      }).then(function (json) {
-        resolve(json)
-      }).catch((err) => {
-        console.log(err)
-        alert('クライアントでエラーが発生しました')
-        reject(err)
-      })
+      // fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
+      //   inject_flow_uuid + '/execute', option).then(function (response) {
+      //   if (response.ok) {
+      //     return response.json()
+      //   }
+      //   else {
+      //     alert('サーバでエラーが発生しました')
+      //   }
+      // }).then(function (json) {
+      //   resolve(json)
+      // }).catch((err) => {
+      //   console.log(err)
+      //   alert('クライアントでエラーが発生しました')
+      //   reject(err)
+      // })
     })
 
   }
@@ -138,14 +144,17 @@ export default class Toolbar extends React.Component {
         // })
 
         //データソースを追加
-        const add_step = new DataSourceModel({
-          operator: 'mtee',
-          text: 'new datasource',
-          property: {hasData: true},
-          parameters: {
-            o: 'new_datasource',
-          },
+
+        const add_step = new DataFrameModel({
+          id: null,//TODO IDはどうやってつける？
+          type: Constants.step.type.frame,
+          uuid: null,//TODO UUIDをどうやってつける？
+          srcs: [],
+          dsts: [],
+          asFlowIn: false,
+          asFlowOut: false
         })
+
         self.props.addStep(add_step, null)
 
         //ステップの選択をキャンセル

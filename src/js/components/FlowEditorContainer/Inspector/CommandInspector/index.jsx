@@ -1,16 +1,15 @@
 // @flow
 import * as React from 'react'
-import DataSourceModel from '../../../../model/DataSourceModel'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../../shared/DataTable/index'
-import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
 import Button from '../../../shared/Button'
 import DropDownList from '../../../shared/DropDownList'
 import StepModel from '../../../../model/StepModel'
+import DataFrameModel from '../../../../model/DataFrameModel'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -102,8 +101,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         //入出力
         let dataSourceOptions = []
         Object.keys(steps).forEach((step_id)=>{
-          if (steps[step_id] instanceof DataSourceModel){
-            dataSourceOptions.push({value:steps[step_id].id,name:steps[step_id].text,object:steps[step_id]})
+          if (steps[step_id] instanceof DataFrameModel){
+            let dataFrame:DataFrameModel = steps[step_id]
+            dataSourceOptions.push({value:dataFrame.id,name:dataFrame.uuid,object:dataFrame})
           }
         })
 

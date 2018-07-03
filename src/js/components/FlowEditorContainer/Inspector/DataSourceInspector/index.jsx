@@ -84,7 +84,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     if (selected_step instanceof DataFrameModel) {
       dataSource = selected_step
       step_text = selected_step.text
-      if (dataSource.hasData) {
+      if (dataSource.uuid) {
         preview = <Button onClick={(e) => self.onClickPreview(e)}
                           icon={'visibility'}>プレビュー</Button>
       }
