@@ -44,7 +44,7 @@ class PathFileSource(FileSource):
 
     @property
     def fd(self):
-        return open(Path(self.source_dir).joinpath(self.file_name), 'rt', encoding='utf-8')
+        return open(Path(self.source_dir).joinpath(self.file_name), 'rb')
 
     @fd.setter
     def fd(self, value):
@@ -115,7 +115,6 @@ from pathlib import Path
 class Frame(Data):
     """
     列指向の表形式データ
-
     """
 
     def __init__(self, frame_uuid=None, source=Source()):
@@ -123,6 +122,9 @@ class Frame(Data):
 
     @property
     def contents(self):
+        if self.source.type == '':
+            return '(no contents)'
+            
         res = str(self.source.fd.read(), encoding='utf-8').rstrip('\n')
         import io
         import csv

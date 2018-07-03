@@ -2,7 +2,7 @@ import unittest
 
 from .. import engine as e
 from ..engine.data import *
-from ..engine.core import Parameter, Command
+from ..engine.core import Parameter, Command, Step, Flow
 
 
 class ParameterTestCase(unittest.TestCase):
@@ -70,18 +70,60 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         with open(self.tempfile_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            original_data = [['a', 'b', 'c'], [1, 2, 3], [4, 5, 6]]
+            original_data = [['a', 'b', 'c'], ['1', '2', '3'], ['4', '5', '6']]
             writer.writerows(original_data)
 
-    def test_mcut(self):
-        """ mcutのテスト """
+        # with open(self.tempfile_path, 'r', newline='', encoding='utf-8') as f:
+        #     print(f.read())
+
         self.command = Mcut()
+
+    # @unittest.skip
+    def sample_input(self):
         frame_uuid = str(uuid.uuid4())
         path = Path(self.tempfile_path)
         source = PathFileSource('csv', path.parent.as_posix(), path.name)
         input = Frame(frame_uuid, source)
+        # print('input.contents:', input.contents)
+        return input
 
-        result = self.command.execute({'f': 'a,b'}, {'in': input})
+    @unittest.skip
+    def test_mcut(self):
+        """ mcutのテスト """
+
+        # TODO: なぜかf=a,b,cにすると動かない。意味不明。
+        result = self.command.execute({'f': 'a,b'}, {'in': self.sample_input()})
+        result_dict = result['out'].contents
+        result['out'].dtor()
+
+        self.assertEqual(result_dict['a'], ['1', '4'])
+        self.assertEqual(result_dict['b'], ['2', '5'])
+
+    @unittest.skip
+    def test_sample_step(self):
+        """ 単純なステップ実行のテスト """
+        step = Step('command', self.command, {'f': 'a,b'})
+        result = step.execute({'in': self.sample_input()})
+        result_dict = result['out'].contents
+        result['out'].dtor()
+
+        self.assertEqual(result_dict['a'], ['1', '4'])
+        self.assertEqual(result_dict['b'], ['2', '5'])
+
+    def test_sample_flow(self):
+        """ 単純なフロー実行のテスト """
+        step = Step('command', self.command, {'f': 'a,b'})
+
+        flow = Flow('uuid')
+        flow.steps['s0'] = step
+        flow.data['in'] = self.sample_input()
+        flow.data['out'] = Frame()
+        flow.edges['in'] = {'srcs': [], 'dsts': ['s0.in']}
+        flow.edges['out'] = {'srcs': ['s0.out'], 'dsts': []}
+        flow.signature = [{}, {'out': flow.data['out']}]
+
+        result = flow.execute()
+        # print('test_sample_flow:', result)
         result_dict = result['out'].contents
         result['out'].dtor()
 
