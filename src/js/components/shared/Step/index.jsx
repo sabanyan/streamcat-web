@@ -3,20 +3,20 @@ import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
 import FileIcon from '../Icon/FileIcon'
-import OperatorModel from '../../../model/OperatorModel'
-import type { OperatorModelProps } from '../../../model/OperatorModel'
-import DataSourceModel from '../../../model/DataSourceModel'
-import type { DataSourceModelProps } from '../../../model/DataSourceModel'
+import type { StepModelProps } from '../../../model/StepModel'
+import type { DataFrameModelProps } from '../../../model/DataFrameModel'
 import type { FlowEditorProps } from '../../FlowEditorContainer'
 import Rect from './Rect'
 import OperatorIcon from '../Icon/OperatorIcon'
 import style from './style.scss'
+import StepModel from '../../../model/StepModel'
+import DataFrameModel from '../../../model/DataFrameModel'
 
 let mouseMoveEvent
 let mouseUpEvent
 
 type modelProps = {
-  model: OperatorModelProps | DataSourceModelProps
+  model: StepModelProps | DataFrameModelProps
 }
 
 type Props = {
@@ -224,12 +224,12 @@ export default class Step extends React.Component<Props, State> {
     return selected
   }
 
-  isOperator (model: modelProps) {
-    return (model instanceof OperatorModel)
+  isStep (model: modelProps) {
+    return (model instanceof StepModel)
   }
 
-  isDataSource (model: modelProps) {
-    return (model instanceof DataSourceModel)
+  isDataFrame (model: modelProps) {
+    return (model instanceof DataFrameModel)
   }
 
   getFilter () {
@@ -268,7 +268,7 @@ export default class Step extends React.Component<Props, State> {
     const hover = this.state.hover
     const selected = this.selectorIntersect()
 
-    if (this.isOperator(step)) {
+    if (this.isStep(step)) {
       //ステップ
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#FFD263'} fillColor={'#FFFFFF'}
@@ -280,21 +280,17 @@ export default class Step extends React.Component<Props, State> {
       </g>
 
     }
-    else if (this.isDataSource(step)) {
+    else if (this.isDataFrame(step)) {
       //データソース
-      const stroke = (!step.property.hasData) ? {stroke: '#CCCCCC'} : {}
+      const stroke = (!step.hasData) ? {stroke: '#CCCCCC'} : {}
       icon =
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
               filter={filter} style={rect_style}>
-          <FileIcon fillColor={(step.property.hasData) ? '#63CFFD' : '#CCCCCC'}
+          <FileIcon fillColor={(step.hasData) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
-      //データソースの場合のみ
-      if (step.getFileName()) {
-        step_subtext = step.getFileName()
-      }
     }
 
     return (
@@ -303,12 +299,12 @@ export default class Step extends React.Component<Props, State> {
          onMouseOver={(e) => this.handleMouseOver(e)}
          onMouseLeave={(e) => this.handleMouseLeave(e)}>
         {icon}
-        <text className="text" transform={'translate(' + (-50) + ',' +
-        (rect_style.height / 2 - 6) + ')'} textAnchor="middle"
-              fontSize={12}>{step_text}</text>
-        <text className="text" transform={'translate(' + (-50) + ',' +
-        (rect_style.height / 2 + 6) + ')'} textAnchor="middle"
-              fontSize={10}>{step_subtext}</text>
+        <text className="text" transform={'translate(' + (-8) + ',' +
+        (rect_style.height / 2 + 6) + ')'} textAnchor="end"
+              fontSize={12} width={100} height={100}>{step.name}</text>
+        {/*<text className="text" transform={'translate(' + (-50) + ',' +*/}
+        {/*(rect_style.height / 2 + 6) + ')'} textAnchor="middle"*/}
+              {/*fontSize={10}>{step_subtext}</text>*/}
       </g>
     )
   }

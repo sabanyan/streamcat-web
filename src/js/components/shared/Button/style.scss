@@ -21,9 +21,16 @@
       color: $kskp-danger!important;
     }
   }
+  &:hover{
+    background-color: darken($kskp-button-background,5%);
+    border:1px solid lighten($kskp-button-border,5%);
+    transition: all 0.3s;
+  }
 }
 
 .text{
+  top: -2px;
+  position: relative;
   color: $kskp-text !important;
   font-size: 12px;
   display: inline-block;

@@ -29,6 +29,12 @@ const Constants = {
       },
     },
   },
+  step:{
+    type:{
+      command:"command",
+      frame:"frame"
+    }
+  },
   api: {
     host: window.location.host,
   },
