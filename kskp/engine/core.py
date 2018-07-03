@@ -81,7 +81,7 @@ class Flow:
             for src in self.edges[datum_id]['srcs']
         ]
 
-    def check_duplicate_use(self, datum):
+    def check_duplicate_use(self, datum_id, datum):
         """
         同じpopenを2度は使えないので、CSVに変換する
         """
@@ -89,13 +89,16 @@ class Flow:
             return CsvFrame.from_uuid(datum.uuid)
         else:
             return datum
+        #     self.data[datum_id] = CsvFrame.from_uuid(datum.uuid)
+        #
+        # return self.data[datum_id]
 
     def get_inputs_from_step(self, step_id):
         """
         指定したstepを実行するために必要なinputのdataを集めてくる
         """
         inputs = {
-            k: self.check_duplicate_use(self.get_datum(k)) for k, v in self.edges.items()
+            k: self.check_duplicate_use(k, self.get_datum(k)) for k, v in self.edges.items()
             if len(v['dsts']) > 0 and step_id in [dst.split('.')[0] for dst in v['dsts']]
         }
         return inputs
@@ -124,7 +127,23 @@ class Flow:
 
         # 準備ができたので結果を取得
         step = self.steps[step_id]
-        job = Job(step, inputs)
+
+        # inputsをちゃんと実行するstepのsignatureに合わせる必要がある
+        # print('get_datum inputs:', inputs)
+        # print('get_datum step signature:', step.command_or_flow.signature[0])
+        # print('get_datum edges:', self.edges)
+        # print('get_datum step_id:', step_id)
+
+        signatured_inputs = {}
+        for k, v in inputs.items():
+            for port in step.command_or_flow.signature[0].keys():
+                target_port = f'{step_id}.{port}'
+                if target_port in self.edges[k]['dsts']:
+                    signatured_inputs[port] = v
+
+        # print('get_datum signatured_inputs:', signatured_inputs)
+
+        job = Job(step, signatured_inputs)
         self.jobs.append(job)
 
         # 実行開始
