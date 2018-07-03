@@ -13,6 +13,7 @@ import Edge from '../../shared/Edge'
 import Selector from '../../shared/Selector'
 import style from './style.scss'
 import HttpUtil from '../../../utils/HttpUtil'
+import Graph from '../../../utils/Graph'
 
 type State = {}
 
@@ -29,17 +30,17 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       redirect: 'follow',
     }
 
+    const graph = new Graph()
     HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
-      console.log(response.data)
+      const json = response.data
+      self.props.loadFlowJSON(json.data)
     })
 
-    HttpUtil.get('commands').
-      then((response) => {
-        console.log(response)
-        self.props.addMaster({operators: response.data})
-      }).
-      then((response) => {console.log(response)},
-        (error) => {console.log(error)})
+    HttpUtil.get('commands').then((response) => {
+      const json = response.data
+      self.props.addMaster({commands: json.data})
+    }).then((response) => {console.log(response)},
+      (error) => {console.log(error)})
     //
     // fetch("http://" + Constants.api.host + "/api/v0-1/operators",
     // option).then(function (response) { if (response.ok) { return
@@ -59,7 +60,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       let step = self.props.steps[node_name]
       let selected = (node_name === selected_step_ids[0])
       return <Step key={step.id} {...step} model={step} {...self.props}
-                   selected={selected}/>
+                   selected={selected} />
     })
     let edges = []
 
@@ -73,7 +74,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           Constants.default.operator.width / 2
         const wy = self.props.steps[edge.w].position.y +
           Constants.default.operator.height / 2
-        return <Edge vx={vx} vy={vy} wx={wx} wy={wy} key={index}/>
+        return <Edge vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
       })
     }
 
@@ -81,11 +82,11 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const {drag} = this.props
     if (Object.keys(drag).length) {
       selector = <Selector sx={drag.start.x} sy={drag.start.y} ex={drag.end.x}
-                           ey={drag.end.y}/>
+                           ey={drag.end.y} />
     }
 
     return <div className={style.flow_editor}>
-      <PaperZoom/>
+      <PaperZoom />
       <Toolbar {...this.props} />
       <PaperScroller {...this.props}>
         <Paper {...this.props}>
@@ -95,7 +96,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
         </Paper>
       </PaperScroller>
       <Inspector {...this.props} />
-      <ModalManager/>
+      <ModalManager />
     </div>
   }
 }
