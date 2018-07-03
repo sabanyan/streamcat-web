@@ -16,6 +16,7 @@ import {
   dragStartAction,
   draggingAction,
   dragEndAction,
+  loadFlowJSONAction
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -26,6 +27,7 @@ let FlowEditorContainer
 export type FlowEditorProps = {
   graph: { width: number, height: number };
   mast: { operators: any[] };
+  loadFlowJSON: Function;
   addMaster: Function;
   selectSteps: Function;
   addSelectStep: Function;
@@ -71,6 +73,9 @@ export default FlowEditorContainer = connect(
   },
   dispatch => {
     return {
+      loadFlowJSON (...args) {
+        dispatch(loadFlowJSONAction(...args))
+      },
       addMaster (...args) {
         dispatch(addMasterAction(...args))
       },

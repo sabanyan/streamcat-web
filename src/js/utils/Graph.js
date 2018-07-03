@@ -3,6 +3,8 @@ import OperatorModel from '../model/OperatorModel'
 import Constants from '../constants'
 import DataSourceModel from '../model/DataSourceModel'
 import ModelUtil from '../utils/ModelUtil'
+import StepModel from '../model/StepModel'
+import DataFrameModel from '../model/DataFrameModel'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -100,10 +102,8 @@ class Graph {
    */
   getGraphSize (steps) {
     if (steps) {
-      const width = Math.max(...Object.keys(steps).
-        map((key) => steps[key].position.x + steps[key].size.width))
-      const height = Math.max(...Object.keys(steps).
-        map((key) => steps[key].position.y + steps[key].size.height))
+      const width = Math.max(...Object.keys(steps).map((key) => steps[key].position.x + steps[key].size.width))
+      const height = Math.max(...Object.keys(steps).map((key) => steps[key].position.y + steps[key].size.height))
       return {width: width, height: height}
     }
     const graph = this.g.graph()
@@ -136,62 +136,187 @@ class Graph {
    * @param json
    * @returns {*}
    */
+  // load (json) {
+  //   const self = this
+  //   let hasPosition = false
+  //   if (json) {
+  //     //JSONのflowsを展開
+  //     Object.keys(json.steps).map((node) => {
+  //
+  //       //各stepの値を FlowEditorで利用できるように DataSourceModel or OperatorModelに変換していく
+  //       const step = json.steps[node]
+  //
+  //       //graphlibのノードに追加
+  //       self.addNode(node)
+  //
+  //       if (step.position && step.size) {
+  //         hasPosition = true
+  //       }
+  //       //TODO データソースかオペレータの判断を将来的には明確にする
+  //       if (ModelUtil.isDataSouceModel(step)) {
+  //         let property = {overview: {}, ...step.property}
+  //         property.hasData = true
+  //         json.steps[node] = new DataSourceModel({
+  //           id: step.id,
+  //           type: step.type,
+  //           operator: step.operator,
+  //           text: step.text,
+  //           property: property,
+  //           parameters: step.parameters,
+  //           position: step.position,
+  //           size: step.size,
+  //         })
+  //       }
+  //       else {
+  //         json.steps[node] = new OperatorModel({
+  //           id: step.id,
+  //           operator: step.operator,
+  //           text: step.text,
+  //           parameters: step.parameters,
+  //           position: step.position,
+  //           size: step.size,
+  //         })
+  //       }
+  //     })
+  //
+  //     if (Array.isArray(json.edges)) {
+  //       //JSONのedgesを展開
+  //       json.edges.map((edge) => {
+  //         //graphlibのエッジに追加
+  //         self.addEdge(edge.v, edge.w)
+  //       })
+  //     }
+  //
+  //     //オペレータの位置情報がない場合はレイアウト位置を再計算する
+  //     if (!hasPosition) {
+  //       //graphlibのノードとエッジの状態からレイアウト位置を再計算する
+  //       this.refreshPosition(json.steps)
+  //     }
+  //
+  //     return json
+  //   }
+  // }
+  getConnect (connects) {
+    let result = {}
+    if (Array.isArray(connects)) {
+      connects.forEach((connect) => {
+        const connect_arrays = connect.split('.')
+        const step_name = connect_arrays[0]
+        const port_name = connect_arrays[1]
+        if (result[step_name] == null) {
+          result[step_name] = [port_name]
+        } else {
+          result[step_name].push(port_name)
+        }
+      })
+    }
+    return result
+  }
+
+  getDstsPort (dsts) {
+    return this.getConnect(dsts)
+  }
+
+  getSrcsPort (srcs) {
+    return this.getConnect(srcs)
+  }
+
   load (json) {
     const self = this
     let hasPosition = false
     if (json) {
-      //JSONのflowsを展開
+
       Object.keys(json.steps).map((node) => {
-
-        //各stepの値を FlowEditorで利用できるように DataSourceModel or OperatorModelに変換していく
-        const step = json.steps[node]
-
-        //graphlibのノードに追加
         self.addNode(node)
-
-        if (step.position && step.size) {
-          hasPosition = true
-        }
-        //TODO データソースかオペレータの判断を将来的には明確にする
-        if (ModelUtil.isDataSouceModel(step)) {
-          let property = {overview: {}, ...step.property}
-          property.hasData = true
-          json.steps[node] = new DataSourceModel({
-            id: step.id,
-            type: step.type,
-            operator: step.operator,
-            text: step.text,
-            property: property,
-            parameters: step.parameters,
-            position: step.position,
-            size: step.size,
+        const step = json.steps[node]
+        json.steps[node] = new StepModel({
+          id: node,
+          type: Constants.step.type.command,
+          name: step.name,
+          label: step.label,
+          args: step.args
+        })
+      })
+      Object.keys(json.data).map((node) => {
+        self.addNode(node)
+        const frame = json.data[node]
+        if (frame.srcs.length > 0) {
+          let srcsPort = self.getSrcsPort(frame.srcs)
+          Object.keys(srcsPort).forEach((key) => {
+            self.addEdge(key, node)
           })
         }
-        else {
-          json.steps[node] = new OperatorModel({
-            id: step.id,
-            operator: step.operator,
-            text: step.text,
-            parameters: step.parameters,
-            position: step.position,
-            size: step.size,
+        if (frame.dsts.length > 0) {
+          let dstsPort = self.getDstsPort(frame.dsts)
+          Object.keys(dstsPort).forEach((key) => {
+            self.addEdge(key, node)
           })
         }
+        json.steps[node] = new DataFrameModel({
+          id: node,
+          type: Constants.step.type.frame,
+          uuid: frame.uuid,
+          srcs: frame.srcs,
+          dsts: frame.dsts,
+          asFlowIn: frame.asFlowIn,
+          asFlowOut: frame.asFlowOut
+        })
       })
 
-      if (Array.isArray(json.edges)) {
-        //JSONのedgesを展開
-        json.edges.map((edge) => {
-          //graphlibのエッジに追加
-          self.addEdge(edge.v, edge.w)
-        })
-      }
+      this.refreshPosition(json.steps)
 
-      //オペレータの位置情報がない場合はレイアウト位置を再計算する
-      if (!hasPosition) {
-        //graphlibのノードとエッジの状態からレイアウト位置を再計算する
-        this.refreshPosition(json.steps)
-      }
+      // //JSONのflowsを展開
+      // Object.keys(json.data).map((node) => {
+      //
+      //   //各stepの値を FlowEditorで利用できるように DataSourceModel or OperatorModelに変換していく
+      //   const step = json.steps[node]
+      //
+      //   //graphlibのノードに追加
+      //   self.addNode(node)
+      //
+      //   if (step.position && step.size) {
+      //     hasPosition = true
+      //   }
+      //   //TODO データソースかオペレータの判断を将来的には明確にする
+      //   if (ModelUtil.isDataSouceModel(step)) {
+      //     let property = {overview: {}, ...step.property}
+      //     property.hasData = true
+      //     json.steps[node] = new DataSourceModel({
+      //       id: step.id,
+      //       type: step.type,
+      //       operator: step.operator,
+      //       text: step.text,
+      //       property: property,
+      //       parameters: step.parameters,
+      //       position: step.position,
+      //       size: step.size,
+      //     })
+      //   }
+      //   else {
+      //     json.steps[node] = new OperatorModel({
+      //       id: step.id,
+      //       operator: step.operator,
+      //       text: step.text,
+      //       parameters: step.parameters,
+      //       position: step.position,
+      //       size: step.size,
+      //     })
+      //   }
+      // })
+      //
+      // if (Array.isArray(json.edges)) {
+      //   //JSONのedgesを展開
+      //   json.edges.map((edge) => {
+      //     //graphlibのエッジに追加
+      //     self.addEdge(edge.v, edge.w)
+      //   })
+      // }
+      //
+      // //オペレータの位置情報がない場合はレイアウト位置を再計算する
+      // if (!hasPosition) {
+      //   //graphlibのノードとエッジの状態からレイアウト位置を再計算する
+      //   this.refreshPosition(json.steps)
+      // }
 
       return json
     }
