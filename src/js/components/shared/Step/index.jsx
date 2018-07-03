@@ -291,6 +291,7 @@ export default class Step extends React.Component<Props, State> {
           <FileIcon fillColor={(step.hasData) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
+      step.label = step.id
     }
 
     return (
@@ -301,7 +302,7 @@ export default class Step extends React.Component<Props, State> {
         {icon}
         <text className="text" transform={'translate(' + (-8) + ',' +
         (rect_style.height / 2 + 6) + ')'} textAnchor="end"
-              fontSize={12} width={100} height={100}>{step.name}</text>
+              fontSize={12} width={100} height={100}>{step.label}</text>
         {/*<text className="text" transform={'translate(' + (-50) + ',' +*/}
         {/*(rect_style.height / 2 + 6) + ')'} textAnchor="middle"*/}
               {/*fontSize={10}>{step_subtext}</text>*/}
