@@ -77,9 +77,13 @@ class PopenFrame(Frame):
         super().__init__('popen', new_uuid)
         self.args = args
         self.stdin = stdin
+
+        self.already_piped = False
+
         self.mtee_popen = None
         self.popen = None
-        self.already_piped = False
+
+        self.path = None
 
     def to_csv(self):
         """
@@ -91,23 +95,39 @@ class PopenFrame(Frame):
         # new_uuid = str(uuid.uuid4())
         new_uuid = self.uuid
 
-        # with open(make_path(new_uuid), 'w') as fd:
-        #     popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=fd)
-        #     popen.wait()
+        with open(make_path(new_uuid), 'w') as fd:
+            popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=fd)
+            popen.wait()
 
         return CsvFrame.from_uuid(new_uuid)
 
     def get_fd(self):
         " パイプの出口となるfile descriptorを返す "
+        # self.debug_popen = subprocess.Popen(['mtee', f'o=kskp/data/frames/wowow.csv'], stdin=self.stdin, stdout=subprocess.PIPE)
+        # self.mtee_popen = subprocess.Popen(self.args, stdin=self.debug_popen.stdout, stdout=subprocess.PIPE)
         self.mtee_popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
-        # popen.wait()        
-        self.popen = subprocess.Popen(['mtee', f'o={make_path(self.uuid)}'], stdin=self.mtee_popen.stdout, stdout=subprocess.PIPE)
+
+        # waitはここでしてはいけないので、dtorで行う
+        # popen.wait()
+
+        # フラグを立てる（2回目はパイプではなくファイルから読み込むように）
         self.already_piped = True
+
+        # すでにファイルが存在していれば、mteeは行わない
+        # if Path(make_path(self.uuid)).exists():
+        #     return self.mtee_popen.stdout
+
+        # mteeで中間ファイルを吐く
+        self.path = make_path(self.uuid)
+        self.popen = subprocess.Popen(['mtee', f'o={self.path}'], stdin=self.mtee_popen.stdout, stdout=subprocess.PIPE)
         return self.popen.stdout
 
     def dtor(self):
         self.popen.wait()
         self.mtee_popen.wait()
+        self.mtee_popen.stdout.close()
+
+        # self.debug_popen.wait()
 
     def __repr__(self):
         return f'<kskp.engine.Frame(popen) args:{ self.args } stdin:{ self.stdin } contents:{self.contents.__repr__()}>'

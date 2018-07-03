@@ -36,11 +36,12 @@ class Mjoin(MCommand):
 
         # print('mjoin:', inputs)
 
-        # まず唯一の引数を受け取る
-        input = list(inputs.values())[0]
+        # まずメインの入力を受け取る
+        input = inputs['i']
 
         # パイプでつなげられそうなら、つなげる
         stdin = input.get_fd()
+        # print('mjoin:', stdin)
         self.fds.append(stdin)
 
         # UNIXコマンド用配列を作る
@@ -48,8 +49,17 @@ class Mjoin(MCommand):
 
         for key, val in args.items():
             command_args.append('%s=%s' % (key, val))
+        # print('mjoin inputs:', inputs)
 
-        command_args.append(f"m={ inputs['d1'].path }")
+        # パイプなら、CSVに吐く
+        input_m = inputs['m']
+        if input_m.source == 'popen':
+            csv = input_m.to_csv()
+            command_args.append(f"m={ csv.path }")
+        else:
+            command_args.append(f"m={ input_m.path }")
+
+        # print('mjoin:', command_args)
 
         # コマンド列から作られる結果を返す
         frame = PopenFrame(command_args, stdin=stdin)
