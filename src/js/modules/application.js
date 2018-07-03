@@ -147,7 +147,7 @@ const Application = (state = initialState, action) => {
             newState.steps[action.step.id] = action.step
 
             //選択されているstepの値も更新する
-            newState.graph = graph.getGraphSize(newState.steps)
+            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
             return newState
         }
         case DELETE_STEPS_ACTION: {
