@@ -44,7 +44,7 @@ class PathFileSource(FileSource):
 
     @property
     def fd(self):
-        return open(Path(self.source_dir).joinpath(self.file_name), 'r', encoding='utf-8')
+        return open(Path(self.source_dir).joinpath(self.file_name), 'rt', encoding='utf-8')
 
     @fd.setter
     def fd(self, value):
@@ -68,8 +68,6 @@ class UnixCommandSource(FileSource):
 
     @property
     def fd(self):
-        print(self.args)
-        print(self.stdin)
         self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
         return self.popen.stdout
 
@@ -79,6 +77,7 @@ class UnixCommandSource(FileSource):
 
     def dtor(self):
         self.popen.wait()
+        self.popen.stdout.close()
 
 
 class Data:
@@ -124,7 +123,23 @@ class Frame(Data):
 
     @property
     def contents(self):
-        return self.source.fd.read()
+        res = str(self.source.fd.read(), encoding='utf-8').rstrip('\n')
+        import io
+        import csv
+        reader = csv.reader(io.StringIO(res))
+        res = {}
+        first_row = True
+        for row in reader:
+            if first_row:
+                for col in row:
+                    res[col] = []
+                cols = row
+                first_row = False
+            else:
+                for i,col in enumerate(cols):
+                    res[col].append(row[i])
+
+        return res
 
     def __repr__(self):
         return f'<Frame({ self.source }) contents:{self.contents.__repr__()}>'

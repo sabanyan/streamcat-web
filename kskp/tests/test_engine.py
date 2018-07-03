@@ -70,7 +70,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         with open(self.tempfile_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
-            original_data = [['a', 'b', 'c'], [1, 2, 3]]
+            original_data = [['a', 'b', 'c'], [1, 2, 3], [4, 5, 6]]
             writer.writerows(original_data)
 
     def test_mcut(self):
@@ -81,9 +81,12 @@ class NIJapanSampleTestCase(unittest.TestCase):
         source = PathFileSource('csv', path.parent.as_posix(), path.name)
         input = Frame(frame_uuid, source)
 
-        result = self.command.execute({'f': 'a'}, {'in': input})
-        print(result['out'].contents)
+        result = self.command.execute({'f': 'a,b'}, {'in': input})
+        result_dict = result['out'].contents
         result['out'].dtor()
+
+        self.assertEqual(result_dict['a'], ['1', '4'])
+        self.assertEqual(result_dict['b'], ['2', '5'])
 
     def tearDown(self):
         self.command.dtor()
