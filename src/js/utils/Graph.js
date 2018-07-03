@@ -234,9 +234,15 @@ class Graph {
           type: Constants.step.type.command,
           name: step.name,
           label: step.label,
-          args: step.args
+          args: step.args,
+          position: step.position,
+          size: step.size,
         })
+        if(step.position && step.size){
+          hasPosition = true
+        }
       })
+
       Object.keys(json.data).map((node) => {
         self.addNode(node)
         const frame = json.data[node]
@@ -256,14 +262,21 @@ class Graph {
           id: node,
           type: Constants.step.type.frame,
           uuid: frame.uuid,
+          dataSource: Constants.data.dataSource.csv,
           srcs: frame.srcs,
           dsts: frame.dsts,
           asFlowIn: frame.asFlowIn,
-          asFlowOut: frame.asFlowOut
+          asFlowOut: frame.asFlowOut,
+          position: frame.position,
+          size: frame.size,
         })
+        if(frame.position && frame.size){
+          hasPosition = true
+        }
       })
 
-      this.refreshPosition({...json.steps,...json.data})
+
+      if(!hasPosition)this.refreshPosition({...json.steps,...json.data})
 
       // //JSONのflowsを展開
       // Object.keys(json.data).map((node) => {

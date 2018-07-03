@@ -33,63 +33,40 @@ export default class Toolbar extends React.Component {
     this.props.sortFlowAction()
   }
 
+  getFlowJson(){
+    let {selected_step_ids, steps, data,projectId,projectName} = this.props
+
+    const flow_json = {
+      projectId: projectId,
+      name: projectName,
+      steps: steps,
+      data: data,
+    }
+
+    return flow_json
+  }
+
+
   save () {
     return new Promise((resolve, reject) => {
-      let {selected_step_ids, steps, data} = this.props
-
-      const flow_json_text = {
-        flow_json_text: {
-          projectId: inject_project_id,
-          name: inject_initial_flow_data.name,
-          steps: steps,
-          data: data,
-        },
-      }
-
-      // let option = {
-      //   method: 'POST',
-      //   body: JSON.stringify(flow_json_text),
-      //   mode: 'same-origin',
-      //   credentials: 'include',
-      //   redirect: 'follow',
-      //   headers: {
-      //     'content-type': 'application/json',
-      //   },
-      // }
-
-
-      HttpUtil.put("flows/" + inject_flow_uuid,flow_json_text).then((response)=>{
-
+      console.log("リクエストJSON")
+      console.log(this.getFlowJson())
+      HttpUtil.put("flows/" + inject_flow_uuid,this.getFlowJson()).then((response)=>{
+        console.log("保存結果")
+        console.log(response)
+        resolve(response)
       })
-
-      // fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
-      //   inject_flow_uuid + '/update', option).then(function (response) {
-      //   if (response.ok) {
-      //     return response.json()
-      //   }
-      //   else {
-      //     alert('サーバでエラーが発生しました')
-      //     reject()
-      //   }
-      // }).then(function (json) {
-      //   resolve(json)
-      // }).catch((err) => {
-      //   console.log(err)
-      //   alert('クライアントでエラーが発生しました')
-      //   reject(err)
-      // })
     })
-
   }
 
   run () {
     return new Promise((resolve, reject) => {
-      // let option = {
-      //   method: 'GET',
-      //   mode: 'same-origin',
-      //   credentials: 'include',
-      //   redirect: 'follow',
-      // }
+
+      HttpUtil.get("frames?from=" + inject_flow_uuid).then((response)=>{
+        console.log("実行結果")
+        console.log(response)
+        resolve(response)
+      })
 
       // fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
       //   inject_flow_uuid + '/execute', option).then(function (response) {
@@ -149,6 +126,7 @@ export default class Toolbar extends React.Component {
           id: null,//TODO IDはどうやってつける？
           type: Constants.step.type.frame,
           uuid: null,//TODO UUIDをどうやってつける？
+          dataSource: Constants.data.dataSource.csv,
           srcs: [],
           dsts: [],
           asFlowIn: false,

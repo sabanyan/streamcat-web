@@ -2,12 +2,13 @@ import Constants from '../constants/index'
 import ModelUtil from '../utils/ModelUtil'
 
 type stepType = "command" | "frame"
-
+type dataSourceType = "csv"
 export type DataFrameModelProps = {
   id?: string;
   type: stepType;
   name: string;
   uuid: string;
+  dataSource: dataSourceType;
   srcs: [];
   dsts: [];
   asFlowIn: boolean;
@@ -21,6 +22,7 @@ export default class DataFrameModel {
   type: stepType
   name: string
   uuid: string
+  dataSource: dataSourceType
   srcs: []
   dsts: []
   asFlowIn: boolean
@@ -34,6 +36,7 @@ export default class DataFrameModel {
     this.type = props.type
     this.name = props.name
     this.uuid = props.uuid
+    this.dataSource = props.dataSource
     this.srcs = props.srcs
     this.dsts = props.dsts
     this.asFlowIn = props.asFlowIn

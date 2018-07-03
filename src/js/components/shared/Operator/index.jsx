@@ -98,6 +98,7 @@ export default class Operator extends React.Component<Props> {
                         id: null,//TODO IDはどうやってつける？
                         type: Constants.step.type.frame,
                         uuid: null,//TODO UUIDをどうやってつける？
+                        dataSource: Constants.data.dataSource.csv,
                         srcs: [],
                         dsts: [],
                         asFlowIn: false,
