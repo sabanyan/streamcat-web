@@ -31,6 +31,7 @@ class MCommand(Command):
         input = list(inputs.values())[0]
 
         # パイプでつなげられそうなら、つなげる
+        # print('execute input:', input)
         stdin = input.source.fd
         self.fds.append(stdin)
 

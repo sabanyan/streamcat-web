@@ -186,6 +186,10 @@ class Flow:
         # それぞれについて必要ならば計算して結果を取得する
         result = { k: self.check_output(self.get_datum(k)) for k in lasts.keys() }
 
+        # resultをself.dataに移す
+        for k, v in result.items():
+            self.data[k] = v
+
         # outputsを集め直す
         return { k: self.data[k] for k in self.signature[1].keys() }
 
