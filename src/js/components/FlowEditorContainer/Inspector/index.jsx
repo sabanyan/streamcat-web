@@ -1,13 +1,13 @@
 // @flow
 import React from 'react'
 import DataSourceInspector from './DataSourceInspector'
-import DataSourceModel from '../../../model/DataSourceModel'
-import OperatorInspector from './OperatorInspector'
-import OperatorModel from '../../../model/OperatorModel'
 import classnames from 'classnames'
 import style from './style.scss'
 import type { FlowEditorProps } from '../index'
 import MultiInspector from './MultiInspector'
+import DataFrameModel from '../../../model/DataFrameModel'
+import StepModel from '../../../model/StepModel'
+import CommandInspector from './CommandInspector'
 
 class Inspector extends React.Component<FlowEditorProps> {
 
@@ -18,10 +18,10 @@ class Inspector extends React.Component<FlowEditorProps> {
     const selected_step = this.props.steps[selected_step_ids[0]]
 
     if (selected_step_ids.length == 1) {
-      if (selected_step instanceof DataSourceModel) {
+      if (selected_step instanceof DataFrameModel) {
         property = <DataSourceInspector {...this.props}></DataSourceInspector>
-      } else if (selected_step instanceof OperatorModel) {
-        property = <OperatorInspector {...this.props}></OperatorInspector>
+      } else if (selected_step instanceof StepModel) {
+        property = <CommandInspector {...this.props}></CommandInspector>
       }
       show = true
     } else if (!selected_step_ids.length) {

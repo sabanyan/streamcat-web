@@ -10,13 +10,14 @@ import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
 import Button from '../../../shared/Button'
 import DropDownList from '../../../shared/DropDownList'
+import StepModel from '../../../../model/StepModel'
 
-type OperatorInspectorProps = {
+type CommandInspectorProps = {
     ...FlowEditorProps,
     children?:React.Node
 }
 
-class OperatorInspector extends React.Component<OperatorInspectorProps> {
+class CommandInspector extends React.Component<CommandInspectorProps> {
 
     onClickSave(e:Event) {
         let {selected_step_ids,steps} = this.props
@@ -40,20 +41,20 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
         }
     }
 
-    getOperator(operator_name:string){
-        let operator = null;
-        this.props.mast.operators.map((op)=>{
-            if(operator_name === op.name){
-                operator = op
+  getCommand(command_name:string){
+        let command = null;
+        this.props.mast.commands.map((_command)=>{
+            if(command_name === _command.name){
+              command = _command
             }
         })
-        return operator
+        return command
     }
 
-    getOperatorArgument(argument_name:string,operator:?{arguments:any[]}){
+    getCommandArgument(argument_name:string,command:?{arguments:any[]}){
         let argument = {};
-        if(operator && operator.arguments){
-            operator.arguments.map((arg)=>{
+        if(command && command.arguments){
+          command.arguments.map((arg)=>{
                 if(arg.name == argument_name){
                   argument = arg
                 }
@@ -74,15 +75,15 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
 
         const self = this
         let {selected_step_ids,steps} = this.props
-        const selected_step = steps[selected_step_ids[0]]
+        const selected_step:StepModel = steps[selected_step_ids[0]]
 
         let inputForm
 
-        inputForm = Object.keys(selected_step.parameters).map((key:string,index:number)=>{
-            const parameter = selected_step.parameters[key]
-            const operator_name:string = selected_step.operator
-            const operator = self.getOperator(operator_name)
-            const argument:{caption?:string} = self.getOperatorArgument(key,operator)
+        inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
+            const parameter = selected_step.args[key]
+            const command_name:string = selected_step.args
+            const command = self.getCommand(command_name)
+            const argument:{caption?:string} = self.getCommandArgument(key,command)
 
             const argument_name = key
             return <div key={index}>
@@ -145,4 +146,4 @@ class OperatorInspector extends React.Component<OperatorInspectorProps> {
 
 }
 
-export default OperatorInspector
+export default CommandInspector
