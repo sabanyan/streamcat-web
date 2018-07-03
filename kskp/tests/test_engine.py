@@ -62,21 +62,21 @@ import tempfile
 from subprocess import Popen
 
 from ..engine.commands.mcmd.coledit import Mcut
+from ..engine.commands.mcmd.tablegrouping import Msum
 
 
 class NIJapanSampleTestCase(unittest.TestCase):
     def setUp(self):
         self.fd, self.tempfile_path = tempfile.mkstemp()
+        self.fd2, self.tempfile_path2 = tempfile.mkstemp()
 
         with open(self.tempfile_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             original_data = [['a', 'b', 'c'], ['1', '2', '3'], ['4', '5', '6']]
             writer.writerows(original_data)
 
-        # with open(self.tempfile_path, 'r', newline='', encoding='utf-8') as f:
-        #     print(f.read())
-
         self.command = Mcut()
+        self.command2 = Msum()
 
     # @unittest.skip
     def sample_input(self):
@@ -84,7 +84,31 @@ class NIJapanSampleTestCase(unittest.TestCase):
         path = Path(self.tempfile_path)
         source = PathFileSource('csv', path.parent.as_posix(), path.name)
         input = Frame(frame_uuid, source)
-        # print('input.contents:', input.contents)
+        return input
+
+    def make_sample(self):
+        """ ファイルを作ります """
+        with open(self.tempfile_path2, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.writer(f)
+            original_data = [
+                ['key', 'b', 'c'],
+                ['A', '200', '30'],
+                ['A', '50', '60'],
+                ['B', '20', '300'],
+                ['B', '500', '60'],
+            ]
+            writer.writerows(original_data)
+
+    def sample_input2(self):
+        """ Msum -> Mcut がしてみたい """
+        self.make_sample()
+
+        frame_uuid = str(uuid.uuid4())
+        path = Path(self.tempfile_path2)
+        # print('sample_input2 self.tempfile_path2:', self.tempfile_path2)
+        source = PathFileSource('csv', path.parent.as_posix(), path.name)
+        input = Frame(frame_uuid, source)
+        print('sample_input2 input.contents:', input.contents)
         return input
 
     @unittest.skip
@@ -110,6 +134,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.assertEqual(result_dict['a'], ['1', '4'])
         self.assertEqual(result_dict['b'], ['2', '5'])
 
+    @unittest.skip
     def test_sample_flow(self):
         """ 単純なフロー実行のテスト """
         step = Step('command', self.command, {'f': 'a,b'})
@@ -130,11 +155,37 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.assertEqual(result_dict['a'], ['1', '4'])
         self.assertEqual(result_dict['b'], ['2', '5'])
 
+    def test_sample_flow2(self):
+        """ 単純なフロー実行のテスト その2 """
+        flow = Flow('uuid')
+        flow.steps['s0'] = Step('command', self.command2, {'k': 'key', 'f': 'b:bsum'})
+        flow.steps['s1'] = Step('command', self.command, {'f': 'key,bsum'})
+        flow.data['in'] = self.sample_input2()
+        print('test_sample_flow2 flow.data[in]:', flow.data['in'])
+        flow.data['d0'] = Frame()
+        flow.data['out'] = Frame()
+        flow.edges['in'] = {'srcs': [], 'dsts': ['s0.in']}
+        flow.edges['d0'] = {'srcs': ['s0.out'], 'dsts': ['s1.in']}
+        flow.edges['out'] = {'srcs': ['s1.out'], 'dsts': []}
+        flow.signature = [{}, {'out': flow.data['out']}]
+
+        result = flow.execute()
+        # print('test_sample_flow:', result)
+        result_dict = result['out'].contents
+        print('test_sample_flow2 result_dict:', result_dict)
+        result['out'].dtor()
+
+        self.assertEqual(result_dict['key%0'], ['1', '4'])
+        self.assertEqual(result_dict['bsum'], ['2', '5'])
+
     def tearDown(self):
         self.command.dtor()
+        self.command2.dtor()
 
         os.close(self.fd)
         os.unlink(self.tempfile_path)
+        os.close(self.fd2)
+        os.unlink(self.tempfile_path2)
 
 
 class EngineTestCase(unittest.TestCase):
