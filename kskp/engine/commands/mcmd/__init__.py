@@ -1,7 +1,8 @@
 import os
+import uuid
 
 from ...core import Parameter, Command
-from ...data import PopenFrame
+from ...data import *
 
 
 class MCommand(Command):
@@ -30,7 +31,7 @@ class MCommand(Command):
         input = list(inputs.values())[0]
 
         # パイプでつなげられそうなら、つなげる
-        stdin = input.get_fd()
+        stdin = input.source.fd
         self.fds.append(stdin)
 
         self.inputs_for_dtor.append(input)
@@ -49,7 +50,9 @@ class MCommand(Command):
 
 
         # コマンド列から作られる結果を返す
-        frame = PopenFrame(command_args, stdin=stdin)
+        source = UnixCommandSource('csv', command_args, stdin=stdin)
+        frame_uuid = str(uuid.uuid4())
+        frame = Frame(frame_uuid, source)
 
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す
