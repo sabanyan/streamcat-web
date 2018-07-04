@@ -63,12 +63,15 @@ from subprocess import Popen
 
 from ..engine.commands.mcmd.coledit import Mcut
 from ..engine.commands.mcmd.tablegrouping import Msum
+from ..engine.commands.mcmd.tablejoin import Mjoin
 
 
 class NIJapanSampleTestCase(unittest.TestCase):
     def setUp(self):
         self.fd, self.tempfile_path = tempfile.mkstemp()
         self.fd2, self.tempfile_path2 = tempfile.mkstemp()
+        self.fd3, self.tempfile_path3 = tempfile.mkstemp()
+        self.fd4, self.tempfile_path4 = tempfile.mkstemp()
 
         with open(self.tempfile_path, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
@@ -78,7 +81,12 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.command = Mcut()
         self.command2 = Msum()
 
-    # @unittest.skip
+        self.mjoin_command = Mjoin()
+        self.mcut_command = Mcut()
+        self.mcut_command2 = Mcut()
+
+        self.make_sample_mjoin()
+
     def sample_input(self):
         frame_uuid = str(uuid.uuid4())
         path = Path(self.tempfile_path)
@@ -88,16 +96,14 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
     def make_sample(self):
         """ ファイルを作ります """
-        with open(self.tempfile_path2, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            original_data = [
-                ['key', 'b', 'c'],
-                ['A', '200', '30'],
-                ['A', '50', '60'],
-                ['B', '20', '300'],
-                ['B', '500', '60'],
-            ]
-            writer.writerows(original_data)
+        original_data = [
+            ['key', 'b', 'c'],
+            ['A', '200', '30'],
+            ['A', '50', '60'],
+            ['B', '20', '300'],
+            ['B', '500', '60'],
+        ]
+        self.write_to_csv(self.tempfile_path2, original_data)
 
     def sample_input2(self):
         """ Msum -> Mcut がしてみたい """
@@ -110,6 +116,49 @@ class NIJapanSampleTestCase(unittest.TestCase):
         input = Frame(frame_uuid, source)
         print('sample_input2 input.contents:', input.contents)
         return input
+
+    def write_to_csv(self, path, object):
+        """ 指定されたデータをファイルに書き出します """
+        with open(path, 'w') as f:
+            writer = csv.writer(f, lineterminator='\n')
+            writer.writerows(object)
+
+    def make_sample_mjoin(self):
+        """ mjoin用のサンプルを作ります """
+        main = [
+            ['item','date','price'],
+             ['A','20081201','100'],
+             ['A','20081213','98'],
+             ['B','20081002','400'],
+             ['B','20081209','450'],
+             ['C','20081201','100'],
+        ]
+        self.write_to_csv(self.tempfile_path3, main)
+
+        sub = [
+            ['item','cost'],
+            ['A','50'],
+            ['B','300'],
+            ['E','200'],
+        ]
+        self.write_to_csv(self.tempfile_path4, sub)
+
+    def input_with_path(self, csv_path):
+        frame_uuid = str(uuid.uuid4())
+        path = Path(csv_path)
+        # print('sample_input2 self.tempfile_path2:', self.tempfile_path2)
+        source = PathFileSource('csv', path.parent.as_posix(), path.name)
+        input = Frame(frame_uuid, source)
+        print('input_with_path input.contents:', input.contents)
+        return input
+
+    def mjoin_main_input(self):
+        return self.input_with_path(self.tempfile_path3)
+        # return self.input_with_path('kskp/data/frames/mjoin_i_wrong.csv')
+
+    def mjoin_sub_input(self):
+        return self.input_with_path(self.tempfile_path4)
+        # return self.input_with_path('kskp/data/frames/mjoin_m_wrong.csv')
 
     @unittest.skip
     def test_mcut(self):
@@ -155,6 +204,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.assertEqual(result_dict['a'], ['1', '4'])
         self.assertEqual(result_dict['b'], ['2', '5'])
 
+    @unittest.skip
     def test_sample_flow2(self):
         """ 単純なフロー実行のテスト その2 """
         flow = Flow('uuid')
@@ -178,14 +228,120 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.assertEqual(result_dict['key%0'], ['1', '4'])
         self.assertEqual(result_dict['bsum'], ['2', '5'])
 
+    @unittest.skip
+    def test_sample_subflow(self):
+        """ 単純なサブフロー実行のテスト """
+
+        # まずはサブフローを作る
+        step = Step('command', self.command, { 'f': 'key,bsum' })
+
+        subflow = Flow('sub')
+        subflow.steps['s0'] = step
+        subflow.data['in'] = Frame()
+        subflow.data['out'] = Frame()
+        subflow.edges['in'] = {'srcs': [], 'dsts': ['s0.in']}
+        subflow.edges['out'] = {'srcs': ['s0.out'], 'dsts': []}
+        subflow.signature = [{'in': subflow.data['in']}, {'out': subflow.data['out']}]
+
+        # それを呼び出す親フローを作る
+        flow = Flow('main')
+        flow.steps['s0'] = Step('command', self.command2, {'k': 'key', 'f': 'b:bsum'})
+        flow.steps['s1'] = Step('flow', subflow, {})
+        flow.data['in'] = self.sample_input2()
+        # print('test_sample_flow2 flow.data[in]:', flow.data['in'])
+        flow.data['d0'] = Frame()
+        flow.data['out'] = Frame()
+        flow.edges['in'] = {'srcs': [], 'dsts': ['s0.in']}
+        flow.edges['d0'] = {'srcs': ['s0.out'], 'dsts': ['s1.in']}
+        flow.edges['out'] = {'srcs': ['s1.out'], 'dsts': []}
+        flow.signature = [{}, {'out': flow.data['out']}]
+
+        result = flow.execute()
+        result_dict = result['out'].contents
+        print('test_sample_subflow result_dict:', result_dict)
+        result['out'].dtor()
+
+    @unittest.skip
+    def test_mjoin(self):
+        """ 単純な複数INのテスト """
+
+        flow = Flow('mjoin')
+        flow.steps['s0'] = Step('command', self.mjoin_command, {'k': 'item'})
+        flow.data['in1'] = self.mjoin_main_input()
+        flow.data['in2'] = self.mjoin_sub_input()
+        flow.data['out'] = Frame()
+        flow.edges['in1'] = {'srcs': [], 'dsts': ['s0.i']}
+        flow.edges['in2'] = {'srcs': [], 'dsts': ['s0.m']}
+        flow.edges['out'] = {'srcs': ['s0.out'], 'dsts': []}
+        flow.signature = [{}, {'out': flow.data['out']}]
+
+        result = flow.execute()
+        result_dict = result['out'].contents
+        print('test_mjoin result_dict:', result_dict)
+        result['out'].dtor()
+
+    def get_result(self, result, key):
+        result_dict = result[key].contents
+        print('test_mjoin result_dict:', result_dict)
+        result[key].dtor()
+
+    @unittest.skip
+    def test_file_spliting(self):
+        """ 単純な複数OUTのテスト """
+
+        flow = Flow('spliting')
+        flow.steps['s0'] = Step('command', self.command, {'f': 'a'})
+        flow.steps['s1'] = Step('command', self.mcut_command, {'f': 'b'})
+        flow.data['in'] = self.sample_input()
+        flow.data['out1'] = Frame()
+        flow.data['out2'] = Frame()
+        flow.edges['in'] = {'srcs': [], 'dsts': ['s0.in', 's1.in']}
+        flow.edges['out1'] = {'srcs': ['s0.out'], 'dsts': []}
+        flow.edges['out2'] = {'srcs': ['s1.out'], 'dsts': []}
+        flow.signature = [{}, {'out1': flow.data['out1'], 'out2': flow.data['out2']}]
+
+        result = flow.execute()
+
+        self.get_result(result, 'out1')
+        self.get_result(result, 'out2')
+
+    def test_file_spliting2(self):
+        """ 単純な複数OUTのテスト 2 バグが出そうなパターン """
+
+        flow = Flow('spliting')
+        flow.steps['s0'] = Step('command', self.command, {'f': 'a,b'})
+        flow.steps['s1'] = Step('command', self.mcut_command, {'f': 'a'})
+        flow.steps['s2'] = Step('command', self.mcut_command2, {'f': 'b'})
+        flow.data['in'] = self.sample_input()
+        flow.data['d0'] = Frame()
+        flow.data['out1'] = Frame()
+        flow.data['out2'] = Frame()
+        flow.edges['in'] = {'srcs': [], 'dsts': ['s0.in']}
+        flow.edges['d0'] = {'srcs': ['s0.out'], 'dsts': ['s1.in', 's2.in']}
+        flow.edges['out1'] = {'srcs': ['s1.out'], 'dsts': []}
+        flow.edges['out2'] = {'srcs': ['s2.out'], 'dsts': []}
+        flow.signature = [{}, {'out1': flow.data['out1'], 'out2': flow.data['out2']}]
+
+        result = flow.execute()
+
+        self.get_result(result, 'out1')
+        self.get_result(result, 'out2')
+
     def tearDown(self):
         self.command.dtor()
         self.command2.dtor()
+        self.mjoin_command.dtor()
+        self.mcut_command.dtor()
+        self.mcut_command2.dtor()
 
         os.close(self.fd)
         os.unlink(self.tempfile_path)
         os.close(self.fd2)
         os.unlink(self.tempfile_path2)
+        os.close(self.fd3)
+        os.unlink(self.tempfile_path3)
+        os.close(self.fd4)
+        os.unlink(self.tempfile_path4)
 
 
 class EngineTestCase(unittest.TestCase):
