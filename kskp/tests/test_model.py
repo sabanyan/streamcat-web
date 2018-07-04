@@ -72,11 +72,11 @@ class ModelTestCase(unittest.TestCase):
                 model.create_user(email, '', name, '')
 
                 with client.session_transaction() as session:
-                    session['user_id'] = email
+                    session['user_id'] = model.get_user_id_by_email(email)
                     user = model.get_current_user(session)
 
                 self.assertEqual(user.email, email)
-                self.assertEqual(user.name, name)
+                self.assertEqual(user.id, session['user_id'])
 
     def test_create_project(self):
         with app.app_context():
@@ -86,14 +86,15 @@ class ModelTestCase(unittest.TestCase):
             project_name = 'テストプロジェクト'
 
             with self.client.session_transaction() as session:
-                session['user_id'] = email
                 model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
                 model.create_project(project_name, session)
 
             results = model.get_all_projects()
             self.assertEqual(len(results), 1)
             res = results[0]
-            self.assertEqual(res[2], project_name)
+            self.assertEqual(res['name'], project_name)
+            self.assertEqual(res['creator_id'], session['user_id'])
 
     def test_add_info_for_users_x_projects(self):
         """
@@ -132,9 +133,9 @@ class ModelTestCase(unittest.TestCase):
 
             # テストデータの準備
             self.make_data_for_getting_projects()
-
+            user_id = model.get_user_id_by_email('user2')
             # テストの実行
-            projects_of_current_user = model.get_projects_by_user_id('user2')
+            projects_of_current_user = model.get_projects_by_user_id(user_id)
 
             self.assertEqual(len(projects_of_current_user), 2)
             self.assertEqual(projects_of_current_user[0]['name'], 'proj2')
@@ -152,7 +153,7 @@ class ModelTestCase(unittest.TestCase):
         model.create_user(user2, '', '', '')
 
         with self.client.session_transaction() as session:
-            session['user_id'] = user1
+            session['user_id'] = model.get_user_id_by_email(user1)
 
         proj1 = 'proj1'
         proj2 = 'proj2'
@@ -199,21 +200,21 @@ class ModelTestCase(unittest.TestCase):
             project_name = 'テストプロジェクト'
 
             with self.client.session_transaction() as session:
-                session['user_id'] = email
                 model.create_user(email, '', creator_name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
                 model.start_project(project_name, session)
 
             fetch_sql = '''
-            SELECT x.user_id, p.name, p.creator_name FROM projects p
+            SELECT x.user_id, p.name, p.creator_id FROM projects p
              INNER JOIN users_x_projects x
                 ON x.project_id = p.id
                AND x.user_id = ?
             '''
-            res = model.query_db(fetch_sql, (email,), one=True)
+            res = model.query_db(fetch_sql, (session['user_id'],), one=True)
 
-            self.assertEqual(res['user_id'], email)
+            self.assertEqual(res['user_id'], session['user_id'])
             self.assertEqual(res['name'], project_name)
-            self.assertEqual(res['creator_name'], creator_name)
+            self.assertEqual(res['creator_id'], session['user_id'])
 
 
     def test_delete_project_by_uuid(self):
@@ -224,8 +225,8 @@ class ModelTestCase(unittest.TestCase):
             project_name = 'テストプロジェクト'
 
             with self.client.session_transaction() as session:
-                session['user_id'] = email
                 model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
                 model.create_project(project_name, session)
 
             # 削除前のプロジェクトの数を調べる
@@ -247,8 +248,8 @@ class ModelTestCase(unittest.TestCase):
             project_name = 'テストプロジェクト'
 
             with self.client.session_transaction() as session:
-                session['user_id'] = email
                 model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
                 model.create_project(project_name, session)
 
             # いま作成したプロジェクトのUUIDを取得する
@@ -270,8 +271,8 @@ class ModelTestCase(unittest.TestCase):
             project_name = 'テストプロジェクト'
 
             with self.client.session_transaction() as session:
-                session['user_id'] = email
                 model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
                 model.create_project(project_name, session)
 
             # 今作ったプロジェクトのUUIDを取得する
@@ -307,8 +308,8 @@ class ModelTestCase(unittest.TestCase):
             project_name = 'テストプロジェクト'
 
             with self.client.session_transaction() as session:
-                session['user_id'] = email
                 model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
                 model.create_project(project_name, session)
 
             # 今作ったプロジェクトのUUIDを取得する

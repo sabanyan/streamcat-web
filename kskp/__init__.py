@@ -29,12 +29,12 @@ def projects():
 @app.route('/flows', methods=['GET', 'POST'])
 @login_required
 def flows():
-    return render_template('flows.html', flows=fetch_flows_by_project_uuid(request.args.get('project')))
+    return render_template('flows.html', flows=fetch_flows_by_project_uuid(request.args.get('project')),project_uuid=request.args.get('project'))
 
 @app.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
 def flow_designer(flow_uuid):
-    return render_template('flow_designer.html')
+    return render_template('flow_designer.html',flow_uuid=flow_uuid)
 
 
 

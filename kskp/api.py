@@ -45,7 +45,7 @@ def get_projects():
         proj = {}
         proj['uuid'] = p['uuid']
         proj['name'] = p['name']
-        proj['creator_name'] = p['creator_name']
+        proj['creator_id'] = p['creator_id']
         proj['created_at'] = p['created_at']
         projects.append(proj)
 
@@ -79,7 +79,7 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'], j['uuid'])
+    new_flow = create_flow(project_id, j['name'], j['data_source_name'])
 
     return jsonify({'success': True, 'data': new_flow})
 

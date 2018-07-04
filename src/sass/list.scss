@@ -1,0 +1,79 @@
+.kskp-list-header{
+  font-weight: bold;
+  color: $kskp-text;
+  div{
+    padding: 4px 16px;
+  }
+  &.kskp-list-icon{
+    div{
+      padding: 4px 32px;
+    }
+  }
+}
+
+.kskp-list{
+  display: block;
+  border: 1px solid $kskp-list-border-color;
+  border-radius: 0;
+  color: $kskp-text;
+  background: #fff;
+  padding: 16px;
+  &:hover{
+    color: $kskp-text;
+    text-decoration: none!important;
+    opacity: 0.8;
+  }
+  &.kskp-list-dotted{
+    border-style: dotted;
+    border-color: $kskp-list-dotted-border-color;
+    border-width: 2px;
+  }
+  &.kskp-list-icon{
+    position: relative;
+    padding-left: 48px;
+    div.icon{
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      .icon{
+        color: $kskp-list-icon-color;
+        font-size: 18px;
+      }
+    }
+    .row{
+      .icon{
+        position: inherit;
+        left: 0;
+        top: 0;
+        line-height: 1;
+        .material-icons{
+          font-size: 18px;
+        }
+      }
+    }
+  }
+  &.kskp-list-accessory{
+    position: relative;
+    padding-right: 48px;
+    div.accessory{
+      position: absolute;
+      right: 12px;
+      top: 10px;
+      .icon{
+        color: $kskp-list-accessory-color;
+        font-size: 22px;
+      }
+    }
+  }
+  &.kskp-list-link{
+    background: $kskp-list-link-background-color;
+    color: $kskp-list-link-color;
+    .icon{
+      color: $kskp-list-link-color!important;
+      display: inline-block;
+      position: relative;
+      top: 2px;
+      font-size: 18px;
+    }
+  }
+}
