@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="15px" viewBox="0 0 18 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>folder</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="kskp_beta_flow_designer" transform="translate(-374.000000, -25.000000)" fill="#FFFFFF" fill-rule="nonzero">
+            <g id="folder" transform="translate(374.000000, 25.000000)">
+                <path d="M1.8,0 C0.8085942,0 0,0.8085942 0,1.8 L0,12.6 C0,13.5914067 0.8085942,14.4 1.8,14.4 L16.2,14.4 C17.1914067,14.4 18,13.5914067 18,12.6 L18,3.6 C18,2.6085942 17.1914067,1.8 16.2,1.8 L8.1,1.8 L6.3,0 L1.8,0 Z M7.2,4.5 L9,4.5 L11.7,7.2 L11.7,10.8 C11.7,11.3414067 11.3414067,11.7 10.8,11.7 L7.2,11.7 C6.6585942,11.7 6.3,11.3414067 6.3,10.8 L6.3,5.4 C6.3,4.8585942 6.6585942,4.5 7.2,4.5 Z M9,5.4 L9,7.2 L10.8,7.2 L9,5.4 Z" id="Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>

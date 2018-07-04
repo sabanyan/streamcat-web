@@ -1,0 +1,94 @@
+@import "../../../../sass/common";
+
+.property {
+  position: fixed;
+  width: 400px;
+  right: -400px;
+  top: 64px;
+  height: 100%;
+  transition: opacity 0.2s linear, right 0.2s ease-in;
+  opacity: 0;
+  box-shadow: 0 1px 3px $kskp-property-shadow;
+}
+
+.in {
+  right: 0;
+  opacity: 1;
+}
+
+
+
+.property_container {
+  height: calc(100% - 64px);
+  overflow: scroll;
+}
+
+
+.property_header{
+  padding: 16px;
+  font-size: 18px;
+  color: $kskp-text;
+  background-color: $kskp-property-background-color;
+  border-bottom:1px solid $kskp-property-border-color;
+}
+
+.property_title{
+  color: $kskp-text;
+  font-size: 16px;
+  padding: 12px 0;
+  text-align: left;
+  clear: both;
+}
+
+.property_body{
+  padding: 16px;
+  background-color: $kskp-property-background-color;
+  min-height: calc(100% - 64px);
+  label{
+    font-size: 14px;
+    color: $kskp-text;
+    padding-top: 8px;
+  }
+}
+
+
+.icon {
+  cursor: pointer;
+}
+.hr{
+  border-bottom:1px solid $kskp-property-border-color;
+  padding: 8px 0;
+}
+.property_basic_operators,.property_custom_operators{
+  padding: 0 8px;
+  overflow: hidden;
+}
+
+.property_overview{
+}
+.overviews{
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top:1px solid $kskp-property-border-color;
+}
+
+.overview{
+  clear: both;
+  display: block;
+  overflow: hidden;
+}
+
+.overview_label{
+  float: left;
+  width: 120px;
+  color: $kskp-property-overview-label-color;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.overview_value{
+  float: left;
+  width: calc(100% - 120px);
+  text-align: right;
+  color: $kskp-property-overview-value-color;
+}

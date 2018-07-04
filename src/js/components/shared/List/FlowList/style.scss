@@ -1,0 +1,47 @@
+@import "../../../../../sass/common";
+
+
+.flow_list{
+  position: relative;
+  display: block;
+  border-top: 1px solid $kskp-list-border-color;
+  &:first-child,&:last-child{
+    border-bottom: 1px solid $kskp-list-border-color;
+  }
+  border-radius: 0;
+  color: $kskp-text;
+  background: #fff;
+  padding: 16px;
+  padding-left: 44px;
+  &:hover{
+    color: $kskp-text;
+    text-decoration: none!important;
+    opacity: 0.8;
+  }
+}
+
+.icon{
+  color: $kskp-text;
+  font-size: 18px;
+  position: absolute;
+  left: 18px;
+  top: 18px;
+  display: inline-block;
+}
+
+.name{
+  display: inline-block;
+  width: calc(100% - 20% - 160px - 80px);
+}
+.created_at{
+  display: inline-block;
+  width: 160px;
+}
+.creator_name{
+  display: inline-block;
+  width: 20%;
+}
+.action{
+  display: inline-block;
+  width: 80px
+}
