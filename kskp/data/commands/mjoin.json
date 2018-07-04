@@ -33,9 +33,5 @@
       "default": "",
       "validation" : {}
     }
-  ],
-  "script": {
-    "type": "file",
-    "name": "mjoin.py"
-  }
+  ]
 }

@@ -25,7 +25,7 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
     result = job.execute()
 
     # 4. 後始末
-    job.dtor()
+    # job.dtor()
 
     return result
 
@@ -85,9 +85,13 @@ def parse(flow_uuid, flow_json):
             if val['dataSource'] == 'csv':
                 # UUIDは存在していれば
                 if val['uuid'] is not None:
-                    new_frame = CsvFrame.from_uuid(val['uuid'])
+                    frame_uuid = val['uuid']
+                    source = PathFileSource('csv', os.environ['KENG_FRAME_PATH'], frame_uuid + '.csv')
+                    new_frame = Frame(frame_uuid, source)
+
+                    # new_frame = CsvFrame.from_uuid(val['uuid'])
                 else:
-                    new_frame = CsvFrame()
+                    new_frame = Frame()
             else:
                 # CSV以外の場合はひとまず
                 # DBなどを想定している
