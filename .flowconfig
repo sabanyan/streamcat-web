@@ -1,0 +1,16 @@
+[ignore]
+<PROJECT_ROOT>/node_modules/.*
+<PROJECT_ROOT>/public/.*
+<PROJECT_ROOT>/kskp/.*
+<PROJECT_ROOT>/dist/.*
+<PROJECT_ROOT>/src/lib/.*
+<PROJECT_ROOT>webpack.config.js
+[include]
+
+[libs]
+./src/lib/libdefs.js
+[lints]
+
+[options]
+
+[strict]
