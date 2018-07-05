@@ -111,7 +111,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       // }
     })
 
-    return <Inspector header={step_text} title={'データの概要'}>
+    return <Inspector header={step_text} title={'データの概要'} {...this.props}>
       <div className={style.property_overview}>
         <div className={style.actions}>
           {preview}

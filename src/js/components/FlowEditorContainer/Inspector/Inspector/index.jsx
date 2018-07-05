@@ -1,6 +1,7 @@
 // @flow
 import * as React from 'react'
 import style from '../style.scss'
+import InOutConnector from './InOutConnector'
 
 type Props = {
   header?: string,
@@ -22,6 +23,7 @@ class Inspector extends React.Component<Props> {
         <div className={style.property_title}>
           {title}
         </div>
+        <InOutConnector {...this.props}/>
         {children}
       </div>
     </div>

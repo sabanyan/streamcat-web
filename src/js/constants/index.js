@@ -1,4 +1,5 @@
 const Constants = {
+  debug: false,
   default: {
     node: {
       width: 38,
