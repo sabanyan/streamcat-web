@@ -20,6 +20,7 @@ from .model import (
 api = Blueprint('api', __name__)
 
 DATAFRAME_DIR_PATH = api.root_path / Path('data/frames')
+FLOW_DIR_PATH = api.root_path / Path('data/flows')
 
 @api.route('/projects', methods=['POST'])
 @login_required_api
@@ -236,13 +237,16 @@ def execute_flow_internal(flow_uuid):
 
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
-        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
+        flow_path = FLOW_DIR_PATH / Path('%s.json' % flow_uuid)
+        with open(Path.as_posix(flow_path), 'r') as f:
+            return e.execute(flow_uuid, f.read(), frame_path='/kskp/data/frames')
 
     result = execute_flow_by_uuid(flow_uuid)
 
     # 結果を縦型のdataframeっぽくパースして返す
-    return result['d1'].contents
+    keys = list(result.keys())
+    result_dict = {key:result[keys[0]].contents for key in keys}
+    return result_dict
 
 
 def load_as_data_frame(result_text):
