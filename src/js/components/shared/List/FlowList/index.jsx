@@ -1,5 +1,5 @@
 // @flow
-import React from 'react'
+import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
 
@@ -17,7 +17,7 @@ type Props = {
 
 export default class FlowList extends React.Component<Props> {
 
-  constructor (props) {
+  constructor (props:Props) {
     super(props)
   }
 
