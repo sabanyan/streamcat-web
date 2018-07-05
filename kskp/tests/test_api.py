@@ -372,6 +372,24 @@ class ApiTestCase(unittest.TestCase):
         # self.assertEqual(result['message'], '')
         # self.assertEqual(result['success'], True)
 
+    def test_execute_flow(self):
+        '''
+        execute_flow APIをテストする
+        7/4現在、エラー回避のためengineの__init__のexecuteのjob.dtor()を無効にしている
+        '''
+        flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
+
+        # 実行
+        with app.test_client() as client:
+            endpoint = '/api/v0/frames?from=%s' % flow_uuid
+            response = client.get(endpoint)
+            result = json.loads(response.get_data())
+
+        # 生成されてほしい結果
+        expected_result = {'数量合計': ['3', '5'], '金額合計': ['30', '120'], '顧客%0': ['A', 'B']}
+
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'], expected_result)
 
 class FrameApiTestCase(unittest.TestCase):
     def setUp(self):

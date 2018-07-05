@@ -1,7 +1,6 @@
 {
   "projectId": "2",
   "name": "見本のFlowのJSON",
-
   "params": {
     "f": {
       "caption": "列名",
@@ -9,18 +8,61 @@
       "value": "a"
     }
   },
-
   "steps": {
+    "d0": {
+      "position": {
+        "x": 99,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "d0",
+      "type": "command",
+      "label": "d0"
+    },
+    "d1": {
+      "position": {
+        "x": 284,
+        "y": 222
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "d1",
+      "type": "command",
+      "label": "d1"
+    },
     "s0": {
+      "position": {
+        "x": 99,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "s0",
       "type": "command",
       "name": "msum",
       "label": "合計",
       "args": {
-        "k": "顧客",
-        "f": "数量:数量合計,金額:金額合計"
+        "f": "数量:数量合計,金額:金額合計",
+        "k": "顧客"
       }
     },
     "s1": {
+      "position": {
+        "x": 463,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "s1",
       "type": "command",
       "name": "mcut",
       "label": "列選択",
@@ -29,34 +71,71 @@
       }
     }
   },
-
   "data": {
     "d0": {
+      "position": {
+        "x": 99,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "d0",
       "type": "frame",
-      "dataSource": "csv",
       "uuid": "16DF44FA-2D8B-430C-B1AC-2C20954C1317",
+      "dataSource": "csv",
       "srcs": [],
-      "dsts": ["s0.in"],
+      "dsts": [
+        "s0.in"
+      ],
       "asFlowIn": true,
-      "asFlowOut": false
+      "asFlowOut": false,
+      "label": "d0"
     },
     "d1": {
+      "position": {
+        "x": 284,
+        "y": 222
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "d1",
       "type": "frame",
-      "dataSource": null,
       "uuid": null,
-      "srcs": ["s0.out"],
-      "dsts": ["s1.in"],
+      "dataSource": "csv",
+      "srcs": [
+        "s0.out"
+      ],
+      "dsts": [
+        "s1.in"
+      ],
       "asFlowIn": false,
-      "asFlowOut": false
+      "asFlowOut": false,
+      "label": "d1"
     },
     "d2": {
+      "position": {
+        "x": 463,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "d2",
       "type": "frame",
-      "dataSource": "csv",
       "uuid": null,
-      "srcs": ["s1.out"],
+      "dataSource": "csv",
+      "srcs": [
+        "s1.out"
+      ],
       "dsts": [],
       "asFlowIn": false,
-      "asFlowOut": true
+      "asFlowOut": true,
+      "label": "d2"
     }
   }
 }

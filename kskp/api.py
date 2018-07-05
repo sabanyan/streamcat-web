@@ -13,7 +13,8 @@ from .model import (
     delete_flow_by_uuid,
     fetch_flow_by_uuid,
     fetch_flows_by_project_uuid,
-    update_flow_by_uuid
+    update_flow_by_uuid,
+    get_flow_path_by_uuid
 )
 
 api = Blueprint('api', __name__)
@@ -201,11 +202,12 @@ def upload_frame(req):
     f.close()
 
 
+@api.route('/frames?from=<flow_uuid>', methods=['GET', 'POST'])
 def execute_flow(flow_uuid):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
-    target_flow_file_path = get_flow_path(flow_uuid)
+    target_flow_file_path = get_flow_path_by_uuid(flow_uuid)
 
     if not target_flow_file_path:
         # ファイルが存在しないときはここを通る
@@ -215,7 +217,7 @@ def execute_flow(flow_uuid):
                             'message': 'flow does not exist'
                         })
     else:
-        result_data = execute_flow_internal(target_flow_file_path.as_posix())
+        result_data = execute_flow_internal(flow_uuid)
         if not result_data:
             return jsonify({
                                 'success': False,
@@ -226,27 +228,21 @@ def execute_flow(flow_uuid):
             return jsonify({'success': True, 'data': result_data})
 
 
-def execute_flow_internal(file_path):
+def execute_flow_internal(flow_uuid):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
     """
 
-    import engine
-    engine.execute(file_path)
+    def execute_flow_by_uuid(flow_uuid):
+        from . import engine as e
+        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
+            return e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
-    # 決まった場所に結果が吐かれるので、それを読む
-    result_path = Path(__file__).parent / Path('data/frames/_.csv')
-    result_text = result_path.read_text(encoding='utf-8')
-
-    # 結果のテキストの中身がカラだとパースできないのでここで終了
-    # エラーとは限らない？？
-    # エラー扱いするかどうかは未定
-    if len(result_text) == 0:
-        return False
+    result = execute_flow_by_uuid(flow_uuid)
 
     # 結果を縦型のdataframeっぽくパースして返す
-    return load_as_data_frame(result_text)
+    return result['d1'].contents
 
 
 def load_as_data_frame(result_text):
