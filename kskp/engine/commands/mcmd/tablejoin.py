@@ -40,7 +40,7 @@ class Mjoin(MCommand):
         input = inputs['i']
 
         # パイプでつなげられそうなら、つなげる
-        stdin = input.get_fd()
+        stdin = input.source.fd
         # print('mjoin:', stdin)
         self.fds.append(stdin)
 
@@ -57,12 +57,15 @@ class Mjoin(MCommand):
             csv = input_m.to_csv()
             command_args.append(f"m={ csv.path }")
         else:
-            command_args.append(f"m={ input_m.path }")
+            command_args.append(f"m={ input_m.source.fullpath }")
 
         # print('mjoin:', command_args)
 
         # コマンド列から作られる結果を返す
-        frame = PopenFrame(command_args, stdin=stdin)
+        # frame = PopenFrame(command_args, stdin=stdin)
+        source = UnixCommandSource('csv', command_args, stdin=stdin)
+        frame_uuid = str(uuid.uuid4())
+        frame = Frame(frame_uuid, source)
 
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す

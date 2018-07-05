@@ -1,0 +1,14 @@
+@import "../../../../sass/common";
+
+
+.flow_toolbar {
+  position: fixed;
+  top: 80px;
+  left: calc(50% - 466px/2);
+}
+
+.paper_toolbar {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+}

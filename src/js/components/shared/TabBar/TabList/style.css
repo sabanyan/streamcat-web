@@ -1,0 +1,11 @@
+.tab_list{
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    padding: 0 8px 8px;
+    margin-bottom: -56px;
+    background: #EEEEEE;
+    border-top: 1px solid #999;
+    height: 100px;
+}
+

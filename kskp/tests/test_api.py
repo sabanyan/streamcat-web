@@ -33,8 +33,8 @@ class ApiTestCase(unittest.TestCase):
 
         with app.app_context():
             with self.client.session_transaction() as session:
-                session['user_id'] = email
                 model.create_user(email, '', creator_name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
 
             headers = Headers()
             headers.add('Content-Type', 'application/json')
@@ -48,16 +48,17 @@ class ApiTestCase(unittest.TestCase):
             # print(resp.get_data())
 
             fetch_sql = '''
-            SELECT x.user_id, p.name, p.creator_name FROM projects p
+            SELECT x.user_id, x.project_id, p.name, p.creator_id FROM projects p
              INNER JOIN users_x_projects x
                 ON x.project_id = p.id
                AND x.user_id = ?
             '''
-            res = model.query_db(fetch_sql, (email,), one=True)
+            res = model.query_db(fetch_sql, (session['user_id'],), one=True)
 
-            self.assertEqual(res['user_id'], email)
+            self.assertEqual(res['user_id'], session['user_id'])
+            self.assertEqual(res['project_id'], 1)
             self.assertEqual(res['name'], project_name)
-            self.assertEqual(res['creator_name'], creator_name)
+            self.assertEqual(res['creator_id'], session['user_id'])
 
     def test_get_projects_api(self):
         with app.app_context():
@@ -69,7 +70,7 @@ class ApiTestCase(unittest.TestCase):
             model.create_user(user2, '', '', '')
 
             with self.client.session_transaction() as session:
-                session['user_id'] = user1
+                session['user_id'] = model.get_user_id_by_email(user1)
 
             proj1 = 'proj1'
             proj2 = 'proj2'
@@ -92,8 +93,8 @@ class ApiTestCase(unittest.TestCase):
                     self.assertEqual(result['success'], True)
                     self.assertEqual({r['name'] for r in result['data']}, projects)
 
-                test_projects_by_user_id(user1, {proj1, proj2}) # user1だとproj1とproj2が見られる
-                test_projects_by_user_id(user2, {proj2, proj3}) # user2だとproj2とproj3が見られる
+                test_projects_by_user_id(model.get_user_id_by_email(user1), {proj1, proj2}) # user1だとproj1とproj2が見られる
+                test_projects_by_user_id(model.get_user_id_by_email(user2), {proj2, proj3}) # user2だとproj2とproj3が見られる
 
     def test_delete_project(self):
         with app.app_context():
@@ -116,7 +117,7 @@ class ApiTestCase(unittest.TestCase):
 
     def test_new_flow(self):
         """
-        new_project APIをテストする
+        new_flow APIをテストする
         """
 
         # まずユーザとプロジェクトを作る
@@ -137,7 +138,7 @@ class ApiTestCase(unittest.TestCase):
             data = {
                 'project_uuid': project_uuid,
                 'name': new_flow_name,
-                'uuid': new_flow_data_source_name
+                'data_source_name': new_flow_data_source_name
             }
 
             endpoint = '/api/v0/flows'
@@ -371,6 +372,24 @@ class ApiTestCase(unittest.TestCase):
         # self.assertEqual(result['message'], '')
         # self.assertEqual(result['success'], True)
 
+    def test_execute_flow(self):
+        '''
+        execute_flow APIをテストする
+        7/4現在、エラー回避のためengineの__init__のexecuteのjob.dtor()を無効にしている
+        '''
+        flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
+
+        # 実行
+        with app.test_client() as client:
+            endpoint = '/api/v0/frames?from=%s' % flow_uuid
+            response = client.get(endpoint)
+            result = json.loads(response.get_data())
+
+        # 生成されてほしい結果
+        expected_result = {'数量合計': ['3', '5'], '金額合計': ['30', '120'], '顧客%0': ['A', 'B']}
+
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'], expected_result)
 
 class FrameApiTestCase(unittest.TestCase):
     def setUp(self):
@@ -446,7 +465,7 @@ def setUpProject(self):
     user1 = setUpUser(self)
 
     with self.client.session_transaction() as session:
-        session['user_id'] = user1
+        session['user_id'] = model.get_user_id_by_email(user1)
 
     model.create_project('proj1', session)
     project_uuid = model.get_all_projects()[0]['uuid']
