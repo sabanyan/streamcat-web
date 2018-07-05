@@ -7,9 +7,7 @@ import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
 import Button from '../../../shared/Button'
-import DropDownList from '../../../shared/DropDownList'
 import StepModel from '../../../../model/StepModel'
-import DataFrameModel from '../../../../model/DataFrameModel'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -73,21 +71,23 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     render() {
 
         const self = this
-        let {selected_step_ids,steps} = this.props
+        let {selected_step_ids,steps,data} = this.props
+
         const selected_step:StepModel = steps[selected_step_ids[0]]
 
         let inputForm
 
         inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
-            const command_name:string = selected_step.args
+            const command_name:string = selected_step.name
             const command = self.getCommand(command_name)
             const argument:{caption?:string} = self.getCommandArgument(key,command)
 
+          console.log(selected_step)
             const argument_name = key
             return <div key={index}>
                 <label>{argument.caption}</label>
-                <input type="text" className="form-control mb-12px" defaultValue={parameter} placeholder={argument_name} ref={argument_name}/>
+                <input type="text" className="form-control" defaultValue={parameter} placeholder={argument_name} ref={argument_name}/>
                 {/*<div key={self.props.name + "_" + argument.name} className="mb-8px">*/}
                     {/*<label>*/}
                       {/*{argument.caption}*/}
@@ -98,40 +98,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         })
 
 
-        //入出力
-        let dataSourceOptions = []
-        Object.keys(steps).forEach((step_id)=>{
-          if (steps[step_id] instanceof DataFrameModel){
-            let dataFrame:DataFrameModel = steps[step_id]
-            dataSourceOptions.push({value:dataFrame.id,name:dataFrame.uuid,object:dataFrame})
-          }
-        })
-
-        const {selected_in_edges,selected_out_edges} = this.props
-        let inEdgeSelect = selected_in_edges.map((edge)=>{
-            return <DropDownList key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} defaultValue={edge.v} list={dataSourceOptions}></DropDownList>
-        })
-
-        if(!inEdgeSelect.length)inEdgeSelect = <DropDownList key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} defaultValue={0} list={dataSourceOptions}></DropDownList>
-
-        let outEdgeSelect = selected_out_edges.map((edge)=>{
-          return <DropDownList key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} defaultValue={edge.w} list={dataSourceOptions}></DropDownList>
-        })
-
-        if(!outEdgeSelect.length)outEdgeSelect = <DropDownList key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} defaultValue={0} list={dataSourceOptions}></DropDownList>
-
-        return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"}>
+        return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"} {...this.props}>
                 <div className="kskp-property-body">
-                  <div className="kskp-form">
-                      <div className={style.property_title}>
-                        入出力
-                      </div>
-                      <label>入力</label>
-                        {inEdgeSelect}
-                      <label>出力</label>
-                        {outEdgeSelect}
-                  </div>
-                  <div className={style.hr}/>
                     <div className="kskp-form">
                         {/*<label>f</label>*/}
                         {/*<input type="text" className="form-control mb-12px" defaultValue={f} ref="f"/>*/}

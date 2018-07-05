@@ -204,8 +204,13 @@ const Application = (state = initialState, action) => {
                 newState.selected_step_ids = action.selected_steps.map((step)=> step.id)
                 if(action.selected_steps.length === 1){
                   const selected_id = action.selected_steps[0].id
+                  console.log(selected_id)
                   newState.selected_in_edges = graph.g.inEdges(selected_id)
+                  console.log("inedge")
+                  console.log(newState.selected_in_edges )
                   newState.selected_out_edges = graph.g.outEdges(selected_id)
+                  console.log("outedge")
+                  console.log(newState.selected_out_edges)
                 }
             } else {
                 newState.selected_step_ids = []
