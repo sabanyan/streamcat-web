@@ -156,8 +156,9 @@ const Application = (state = initialState, action) => {
         case DELETE_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
             action.step_ids.map((id)=>{
-                graph.removeNode(id)
-                delete newState.steps[id]
+              graph.removeNode(id)
+              delete newState.steps[id]
+              delete newState.data[id]
             })
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
@@ -200,18 +201,11 @@ const Application = (state = initialState, action) => {
         }
         case SELECT_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
-            if (action.selected_steps) {
+            if (action.selected_steps && action.selected_steps.length === 1) {
                 newState.selected_step_ids = action.selected_steps.map((step)=> step.id)
-                if(action.selected_steps.length === 1){
-                  const selected_id = action.selected_steps[0].id
-                  console.log(selected_id)
-                  newState.selected_in_edges = graph.g.inEdges(selected_id)
-                  console.log("inedge")
-                  console.log(newState.selected_in_edges )
-                  newState.selected_out_edges = graph.g.outEdges(selected_id)
-                  console.log("outedge")
-                  console.log(newState.selected_out_edges)
-                }
+                const selected_id = action.selected_steps[0].id
+                newState.selected_in_edges = graph.g.inEdges(selected_id)
+                newState.selected_out_edges = graph.g.outEdges(selected_id)
             } else {
                 newState.selected_step_ids = []
                 newState.selected_in_edges = []
