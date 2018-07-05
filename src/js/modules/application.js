@@ -241,7 +241,7 @@ const Application = (state = initialState, action) => {
 
         case SORT_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
-            newState.steps = graph.refreshPosition(newState.steps) //ノード位置を再計算
+            graph.refreshPosition({...newState.steps,...newState.data}) //ノード位置を再計算
             newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
             return newState
         }
