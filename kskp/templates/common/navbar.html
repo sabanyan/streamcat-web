@@ -12,23 +12,23 @@
                 </a>
             </li>
             <li class="nav-item project">
-                <a class="nav-link" href="/projects/{{ project_uuid }}/dataflows">
+                <a class="nav-link" href="/flows?project=70218468-417E-458B-B820-A17C55D04AF9">
                     <img class="icon" src="{{ url_for('static', filename='images/icon/folder.svg')}}" />
-                    プロジェクト名{{project_name}}
+                    サンプルプロジェクト
                 </a>
             </li>
             <li class="nav-item flow active">
-                <a class="nav-link" href="/projects/{{ project_uuid }}/dataflows">
+                <a class="nav-link" href="/flows/70218468-417E-458B-B820-A17C55D04AF9">
                     <img class="icon" src="{{ url_for('static', filename='images/icon/flow.svg')}}" />
-                    プロジェクト名{{project_name}}
+                    サンプルフロー
                 </a>
             </li>
         </ul>
     </div>
     <div class="collapse navbar-collapse menu-navbar">
         <ul class="navbar-nav">
-            <li class="nav-item designer">
-                <a class="nav-link" href="">
+            <li class="nav-item designer active">
+                <a class="nav-link" href="/flows/70218468-417E-458B-B820-A17C55D04AF9">
                     <img class="icon" src="{{ url_for('static', filename='images/icon/designer.svg')}}" />フローデザイナー
                 </a>
             </li>
@@ -37,7 +37,7 @@
                     <img class="icon" src="{{ url_for('static', filename='images/icon/library.svg')}}" />ライブラリ
                 </a>
             </li>
-            <li class="nav-item user active">
+            <li class="nav-item user">
                 <a class="nav-link" href="">
                     <img class="icon" src="{{ url_for('static', filename='images/icon/user.svg')}}" />山本 太郎
                 </a>
