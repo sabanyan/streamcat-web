@@ -4,16 +4,19 @@ import style from '../style.scss'
 import InOutConnector from './InOutConnector'
 
 type Props = {
-  header?: string,
-  title?: string,
-  children?: React.Node
+  header?: string;
+  title?: string;
+  children?: React.Node;
+  hiddenInOut?: boolean;
 }
 
 class Inspector extends React.Component<Props> {
 
   render () {
 
-    const {header, title, children} = this.props
+    const {header, title, children,hiddenInOut} = this.props
+
+    const inOutConnecter = (hiddenInOut)?null:<InOutConnector {...this.props}/>
 
     return <div className={style.property_container}>
       <div className={style.property_header}>
@@ -23,7 +26,7 @@ class Inspector extends React.Component<Props> {
         <div className={style.property_title}>
           {title}
         </div>
-        <InOutConnector {...this.props}/>
+        {inOutConnecter}
         {children}
       </div>
     </div>
