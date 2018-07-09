@@ -1,5 +1,9 @@
 [
   {
+    "executedAt": "2018-06-26T04:33:15+09:00",
+    "executor": {
+      "name": "ユーザー 太郎"
+    },
     "inputs": {},
     "params": {},
     "flow": {
