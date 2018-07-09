@@ -1,3 +1,5 @@
+import re
+
 # frameの保存場所は環境変数か、engine.execute()で直接指定する
 # os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
 from .data import *
@@ -93,17 +95,17 @@ class Flow:
         #
         # return self.data[datum_id]
 
-    def get_inputs_from_step(self, step_id):
+    def get_inputs_from_step(self, step_id, args):
         """
         指定したstepを実行するために必要なinputのdataを集めてくる
         """
         inputs = {
-            k: self.check_duplicate_use(k, self.get_datum(k)) for k, v in self.edges.items()
+            k: self.check_duplicate_use(k, self.get_datum(k, args)) for k, v in self.edges.items()
             if len(v['dsts']) > 0 and step_id in [dst.split('.')[0] for dst in v['dsts']]
         }
         return inputs
 
-    def get_datum(self, datum_id):
+    def get_datum(self, datum_id, args):
         """
         指定したidのdataがすでに存在すればそれを返す
         まだ存在していなければ、それを作る
@@ -123,10 +125,20 @@ class Flow:
         step_id = ports[0][0]
 
         # 次にそのstepを作るためのinputsを集める
-        inputs = self.get_inputs_from_step(step_id)
+        inputs = self.get_inputs_from_step(step_id, args)
 
         # 準備ができたので結果を取得
         step = self.steps[step_id]
+
+        # argumentsを書き換える必要がある
+        for key, val in step.arguments.items():
+
+            # もし書き換え対象のものがあれば
+            if isinstance(val, str):
+                g = re.search(r'@\[(\S*)\]', val)
+                if g is not None:
+                    for parent_key in g.groups():
+                        step.arguments[key] = val.replace(f'@[{parent_key}]', args[parent_key])
 
         # inputsをちゃんと実行するstepのsignatureに合わせる必要がある
         # print('get_datum inputs:', inputs)
@@ -184,7 +196,7 @@ class Flow:
             self.data[input_key] = input
 
         # それぞれについて必要ならば計算して結果を取得する
-        result = { k: self.check_output(self.get_datum(k)) for k in lasts.keys() }
+        result = { k: self.check_output(self.get_datum(k, arguments)) for k in lasts.keys() }
 
         # resultをself.dataに移す
         for k, v in result.items():

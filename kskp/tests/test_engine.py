@@ -34,6 +34,10 @@ class ParameterTestCase(unittest.TestCase):
         self.assertEqual(p2.caption, param_caption)
 
 
+class SourceTestCase(unittest.TestCase):
+    def test(self):
+        TempPathFileSource('csv')
+
 import uuid
 from pathlib import Path
 
@@ -66,7 +70,7 @@ from ..engine.commands.mcmd.tablegrouping import Msum
 from ..engine.commands.mcmd.tablejoin import Mjoin
 
 
-class NIJapanSampleTestCase(unittest.TestCase):
+class EngineTestCase(unittest.TestCase):
     def setUp(self):
         self.fd, self.tempfile_path = tempfile.mkstemp()
         self.fd2, self.tempfile_path2 = tempfile.mkstemp()
@@ -305,6 +309,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.get_result(result, 'out1')
         self.get_result(result, 'out2')
 
+    @unittest.skip
     def test_file_spliting2(self):
         """ 単純な複数OUTのテスト 2 バグが出そうなパターン """
 
@@ -327,24 +332,6 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.get_result(result, 'out1')
         self.get_result(result, 'out2')
 
-    def tearDown(self):
-        self.command.dtor()
-        self.command2.dtor()
-        self.mjoin_command.dtor()
-        self.mcut_command.dtor()
-        self.mcut_command2.dtor()
-
-        os.close(self.fd)
-        os.unlink(self.tempfile_path)
-        os.close(self.fd2)
-        os.unlink(self.tempfile_path2)
-        os.close(self.fd3)
-        os.unlink(self.tempfile_path3)
-        os.close(self.fd4)
-        os.unlink(self.tempfile_path4)
-
-
-class EngineTestCase(unittest.TestCase):
     @unittest.skip
     def test_making_command(self):
         """
@@ -390,42 +377,6 @@ class EngineTestCase(unittest.TestCase):
         print(res)
 
     @unittest.skip
-    def test_minimum_flow(self):
-        """
-        最小限のフローのテスト
-        stepが1つ
-        """
-        execute_flow_by_uuid('833fdb62-2bb6-4a77-a0e1-77941ad951a3')
-
-    @unittest.skip
-    def test_minimum_piping_flow(self):
-        """
-        パイプを使う最小限のフローのテスト
-        stepが2つ
-        """
-        execute_flow_by_uuid('70218468-417E-458B-B820-A17C55D04AF9')
-
-    @unittest.skip
-    def test_minimum_nested_flow(self):
-        """ nested flowのテスト """
-        execute_flow_by_uuid('3E4899CC-3296-4490-8C3F-3D9C6E857E14')
-
-    @unittest.skip
-    def test_mjoin(self):
-        """複数INのテスト"""
-        execute_flow_by_uuid('91E36B47-197B-4768-960B-AA1DEEA94873')
-
-    @unittest.skip
-    def test_ni(self):
-        """日本NI様サンプルテスト"""
-        execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
-
-    @unittest.skip
-    def test_ni2(self):
-        """日本NI様サンプルテスト"""
-        execute_flow_by_uuid('b')
-
-    @unittest.skip
     def test_single_frame_flow_executing(self):
         frame = {
             'a': [1, 2, 3],
@@ -439,8 +390,69 @@ class EngineTestCase(unittest.TestCase):
         for k in frame.keys():
             self.assertListEqual(f[k], frame[k])
 
-    def make_single_frame_flow(self):
-        pass
+    def tearDown(self):
+        self.command.dtor()
+        self.command2.dtor()
+        self.mjoin_command.dtor()
+        self.mcut_command.dtor()
+        self.mcut_command2.dtor()
+
+        os.close(self.fd)
+        os.unlink(self.tempfile_path)
+        os.close(self.fd2)
+        os.unlink(self.tempfile_path2)
+        os.close(self.fd3)
+        os.unlink(self.tempfile_path3)
+        os.close(self.fd4)
+        os.unlink(self.tempfile_path4)
+
+
+class NIJapanSampleTestCase(unittest.TestCase):
+    """ 日本NI様サンプルテスト """
+
+    def setUp(self):
+        self.commands = []
+
+    def register(self, command):
+        self.commands.append(command)
+        return command
+
+    def make_splitting_flow(self):
+        # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
+        flow = Flow('ex')
+        # args = { 'x': True, 'f': '0,1,2,3,4' }
+        args = { 'x': True, 'f': '@[f]' } # argsを使う
+        flow.steps['s0'] = Step('command', self.register(Mcut()), args)
+
+        frame_uuid = '2C72275F-2019-49AE-B36D-A29D1507F8DD'
+        source1 = PathFileSource('csv', 'kskp/data/frames', frame_uuid + '.csv')
+        flow.data['d0'] = Frame(frame_uuid, source1)
+        source2 = PathFileSource('csv', 'kskp/data/frames', 'result.csv')
+        flow.data['out'] = Frame(None, source2)
+        flow.edges['d0'] = { 'srcs': [], 'dsts': ['s0.in'] }
+        flow.edges['out'] = { 'srcs': ['s0.out'], 'dsts': [] }
+        flow.signature = [{}, {'out': flow.data['out']}]
+
+        return flow
+
+    def test(self):
+        flow = Flow('parent')
+        child_flow = self.make_splitting_flow()
+        flow.steps['s0'] = Step('flow', child_flow, {'f': '0,1,2,3'})
+        flow.data['d1'] = Frame(None, TempPathFileSource('csv'))
+        flow.edges['d1'] = { 'srcs': ['s0.out'], 'dsts': [] }
+        flow.signature = [{}, {'d1': flow.data['d1']}]
+
+        contents = flow.execute()['d1'].contents
+        # self.assertEqual(len(list(contents.keys())), 5)
+        for v in contents.values():
+            print('v:', v[0])
+
+        flow.dtor()
+
+    def tearDown(self):
+        for c in self.commands:
+            c.dtor()
 
 
 def execute_flow_by_uuid(flow_uuid):
