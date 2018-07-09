@@ -1,3 +1,8 @@
+# for TempPathFileSource
+import os
+import tempfile
+from pathlib import Path
+
 class Source:
     """
     データの取得元、もしくは書込先になる情報をもつクラス
@@ -84,6 +89,19 @@ class UnixCommandSource(FileSource):
     def dtor(self):
         self.popen.wait()
         self.popen.stdout.close()
+
+
+class TempPathFileSource(PathFileSource):
+    """
+    実行後にファイルがすぐ消されるPathFileSource
+    テスト用
+    """
+    def __init__(self, source_type):
+        self.path = Path(tempfile.mkstemp()[1])
+        super().__init__(source_type, self.path.parent.as_posix(), self.path.name)
+
+    def dtor(self):
+        os.unlink(self.path)
 
 
 class Data:
