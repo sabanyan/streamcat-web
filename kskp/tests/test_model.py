@@ -321,7 +321,7 @@ class ModelTestCase(unittest.TestCase):
         # フローを作成する
         new_flow_name = 'ふろー取得てすと'
         data_source_name = str(uuid.uuid4())
-        created_flow = model.create_flow(1, new_flow_name, data_source_name)
+        created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
 
         fetched_flow = model.fetch_flow_by_uuid(data_source_name)
 
@@ -336,7 +336,52 @@ class ModelTestCase(unittest.TestCase):
         # 後片付け
         path.unlink()
 
+    def test_fetch_flows(self):
+        with app.app_context():
+            # まず親プロジェクトを作る
+            email = 'dev@kskp.io'
+            name = '開発者'
 
+            project_name = 'テストプロジェクト'
+
+            with self.client.session_transaction() as session:
+                model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
+                model.create_project(project_name, session)
+
+            # 今作ったプロジェクトのUUIDを取得する
+            project_uuid = model.get_all_projects()[0]['uuid']
+
+            # そこからプロジェクトのIDを取得する
+            project_id = model.get_project_id_by_uuid(project_uuid)
+
+            # テスト用フローを作成する
+            new_flow_name1 = 'ふろー取得てすと1'
+            data_source_name1 = str(uuid.uuid4())
+            created_flow1 = model.create_flow(project_id, new_flow_name1, data_source_name1)
+
+            new_flow_name2 = 'ふろー取得てすと2'
+            data_source_name2 = str(uuid.uuid4())
+            created_flow2 = model.create_flow(project_id, new_flow_name2, data_source_name2)
+
+            flow_list = model.fetch_flows_by_project_uuid(project_uuid)
+
+            paths = model.get_flow_paths_by_project_uuid(project_uuid)
+
+        # ファイル名の確認
+        self.assertEqual({path.stem for path in paths}, {data_source_name1, data_source_name2})
+
+        # 中身の確認
+        self.assertEqual({flow_result['projectId'] for flow_result in flow_list}, {project_id,
+                                                                                   project_id})
+        self.assertEqual({flow_result['name'] for flow_result in flow_list}, {new_flow_name1,
+                                                                              new_flow_name2})
+        self.assertEqual({flow_result['uuid'] for flow_result in flow_list}, {data_source_name1,
+                                                                              data_source_name2})
+
+        # 後片付け
+        for path in paths:
+            path.unlink()
 
     def test_delete_flow(self):
         data_source_name = str(uuid.uuid4())

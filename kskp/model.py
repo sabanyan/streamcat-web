@@ -209,10 +209,16 @@ def fetch_flow_by_uuid(flow_uuid):
 
 def fetch_flows_by_project_uuid(project_uuid):
     """
-    指定したプロジェクトの持つフロー一覧の内容リストを返す
+    指定したプロジェクトの持つフロー一覧の内容リストをuuidを付け加えて返す
     """
     paths = get_flow_paths_by_project_uuid(project_uuid)
-    return [json.loads(path.read_text()) for path in paths]
+
+    flow_list = []
+    for path in paths:
+        dict = json.loads(path.read_text())
+        dict['uuid'] = path.stem
+        flow_list.append(dict)
+    return flow_list
 
 
 def delete_flow_by_uuid(flow_uuid):
