@@ -1,7 +1,11 @@
+import io # for StringIO
+import csv # for csv reader
+
 # for TempPathFileSource
 import os
 import tempfile
 from pathlib import Path
+
 
 class Source:
     """
@@ -49,7 +53,10 @@ class PathFileSource(FileSource):
 
     @property
     def fd(self):
-        return open(Path(self.source_dir).joinpath(self.file_name), 'rb')
+        path = Path(self.source_dir).joinpath(self.file_name)
+        print(self)
+        print(path)
+        return open(path, 'rb')
 
     @fd.setter
     def fd(self, value):
@@ -96,13 +103,17 @@ class TempPathFileSource(PathFileSource):
     実行後にファイルがすぐ消されるPathFileSource
     テスト用
     """
+
     def __init__(self, source_type):
-        self.path = Path(tempfile.mkstemp()[1])
+        _, path = tempfile.mkstemp()
+        self.path = Path(path)
         super().__init__(source_type, self.path.parent.as_posix(), self.path.name)
 
     def dtor(self):
         os.unlink(self.path)
 
+    def __repr__(self):
+        return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
 class Data:
     """
@@ -149,23 +160,21 @@ class Frame(Data):
         if self.source.type == '':
             return '(no contents)'
 
-        res = str(self.source.fd.read(), encoding='utf-8').rstrip('\n')
-        print('res:', res)
-        import io
-        import csv
-        reader = csv.reader(io.StringIO(res))
-        res = {}
-        first_row = True
+        with self.source.fd as fd:
+            text = str(fd.read(), encoding='utf-8').rstrip('\n')
+            reader = csv.reader(io.StringIO(text))
+            res = {}
+            first_row = True
 
-        for row in reader:
-            if first_row:
-                for col in row:
-                    res[col] = []
-                cols = row
-                first_row = False
-            else:
-                for i,col in enumerate(cols):
-                    res[col].append(row[i])
+            for row in reader:
+                if first_row:
+                    for col in row:
+                        res[col] = []
+                    cols = row
+                    first_row = False
+                else:
+                    for i,col in enumerate(cols):
+                        res[col].append(row[i])
 
         return res
 
