@@ -1,8 +1,9 @@
 import unittest
+import json
 
 from .. import engine as e
 from ..engine.data import *
-from ..engine.core import Parameter, Command, Step, Flow
+from ..engine.core import Parameter, Command, Step, Flow, Job
 
 
 class ParameterTestCase(unittest.TestCase):
@@ -399,6 +400,34 @@ class EngineTestCase(unittest.TestCase):
 
         for k in frame.keys():
             self.assertListEqual(f[k], frame[k])
+
+    def test_make_job_json(self):
+        # クエリパラメータのcount
+        count = 1
+
+        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+
+        # テストの準備
+        flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
+        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
+            flow_json = f.read()
+        args = ''
+        step = Step('flow', e.parse(flow_uuid, flow_json), args)
+
+        inputs = None
+        job = Job(step, inputs)
+
+        job.execute()
+
+        # flow_uuidを使ってjobsディレクトリから出力したjsonファイルを探す
+        # flowのuuidで探しているためかなり雑な判定方法、何かいい方法があれば変えたい！
+        jobs_path = Path(__file__).parent.parent.as_posix() / Path('data/jobs')
+        for job_path in jobs_path.iterdir():
+            data = json.loads(job_path.read_text(encoding='utf-8'))
+            if data[count - 1]['flow']['uuid'] == flow_uuid:
+                result = data
+
+        self.assertEqual(result[count - 1]['flow']['uuid'], flow_uuid)
 
     def tearDown(self):
         self.command.dtor()
