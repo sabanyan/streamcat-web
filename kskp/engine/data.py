@@ -93,6 +93,10 @@ class UnixCommandSource(FileSource):
     def fd(self, value):
         raise Exception()
 
+    def save(self, stdout):
+        """ engineから使う最後の保存用 """
+        subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
+
     def dtor(self):
         self.popen.wait()
         self.popen.stdout.close()

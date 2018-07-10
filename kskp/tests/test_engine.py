@@ -187,26 +187,36 @@ class EngineTestCase(unittest.TestCase):
         self.assertEqual(result_dict['a'], ['1', '4'])
         self.assertEqual(result_dict['b'], ['2', '5'])
 
-    @unittest.skip
-    def test_sample_flow(self):
-        """ 単純なフロー実行のテスト """
-        step = Step('command', self.command, {'f': 'a,b'})
-
+    def make_simple_flow(self):
         flow = Flow('uuid')
-        flow.steps['s0'] = step
+        flow.steps['s0'] = Step('command', self.command, {'f': 'a,b'})
         flow.data['in'] = self.sample_input()
         flow.data['out'] = Frame()
         flow.edges['in'] = {'srcs': [], 'dsts': ['s0.in']}
         flow.edges['out'] = {'srcs': ['s0.out'], 'dsts': []}
         flow.signature = [{}, {'out': flow.data['out']}]
 
-        result = flow.execute()
+        return flow
+
+    @unittest.skip
+    def test_sample_flow(self):
+        """ 単純なフロー実行のテスト """
+
+        result = self.make_simple_flow().execute()
         # print('test_sample_flow:', result)
         result_dict = result['out'].contents
         result['out'].dtor()
 
         self.assertEqual(result_dict['a'], ['1', '4'])
         self.assertEqual(result_dict['b'], ['2', '5'])
+
+    def test_simple_engine_executing(self):
+        """
+        単純なフロー実行をエンジンから行うテスト
+        engine.persist_to_filesをテストしたい
+        """
+        flow = self.make_simple_flow()
+        result = e.execute_internal(flow, frame_path='kskp/data/frames')
 
     @unittest.skip
     def test_sample_flow2(self):
@@ -420,7 +430,6 @@ class NIJapanSampleTestCase(unittest.TestCase):
     def make_splitting_flow(self):
         # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
         flow = Flow('ex')
-        # args = { 'x': True, 'f': '0,1,2,3,4' }
         args = { 'x': True, 'f': '@[f]' } # argsを使う
         flow.steps['s0'] = Step('command', self.register(Mcut()), args)
 
@@ -435,16 +444,16 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
+    @unittest.skip
     def test(self):
         flow = Flow('parent')
         child_flow = self.make_splitting_flow()
-        flow.steps['s0'] = Step('flow', child_flow, {'f': '0,1,2,3'})
+        flow.steps['s0'] = Step('flow', child_flow, {'f': '0,1,2,3,4'})
         flow.data['d1'] = Frame(None, TempPathFileSource('csv'))
         flow.edges['d1'] = { 'srcs': ['s0.out'], 'dsts': [] }
         flow.signature = [{}, {'d1': flow.data['d1']}]
 
         contents = flow.execute()['d1'].contents
-        # self.assertEqual(len(list(contents.keys())), 5)
         for v in contents.values():
             print('v:', v[0])
 
