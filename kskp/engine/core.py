@@ -165,16 +165,12 @@ class Flow:
         # 結果を返却する
         return job.execute()[port_name]
 
-    def check_output(self, datum):
-        """実際に生成されたデータの型をチェックする"""
-        new_datum = datum
-
-        if datum.source == 'popen':
-            # TODO: この部分は抽象化が不充分
-            # if outputの定義が'csv'だったら:
-            new_datum = datum.to_csv()
-
-        return new_datum
+    def get_lasts(self):
+        """
+        flow上の終端データをdictにして返す
+        engineからも使っている
+        """
+        return { k: v for k, v in self.edges.items() if len(v['dsts']) == 0 }
 
     def execute(self, arguments={}, inputs={}):
         """
@@ -184,7 +180,7 @@ class Flow:
         """
 
         # まずは、グラフ上の終端データを見つける
-        lasts = { k: v for k, v in self.edges.items() if len(v['dsts']) == 0 }
+        lasts = self.get_lasts()
 
         # 引数を与える
         inputs = list(inputs.values())
@@ -196,7 +192,7 @@ class Flow:
             self.data[input_key] = input
 
         # それぞれについて必要ならば計算して結果を取得する
-        result = { k: self.check_output(self.get_datum(k, arguments)) for k in lasts.keys() }
+        result = { k: self.get_datum(k, arguments) for k in lasts.keys() }
 
         # resultをself.dataに移す
         for k, v in result.items():

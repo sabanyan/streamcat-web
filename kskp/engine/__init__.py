@@ -9,6 +9,16 @@ from .util import command_from_name
 def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
     """
     エントリポイント
+    JSONをパースして、そのまま実際の処理はexecute_internalに移譲する
+    """
+
+    return execute_internal(parse(flow_uuid, flow_json), arguments, inputs, frame_path)
+
+
+def execute_internal(flow, arguments={}, inputs=None, frame_path=None):
+    """
+    JSONではなく直接flowインスタンスを渡して実行したい場合に使う
+    直接呼び出す際は、主にテストでの用途を想像している
     """
 
     #　もしframeの保存場所が明示的に指定されていれば、環境変数よりも優先される
@@ -16,7 +26,7 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
         os.environ['KENG_FRAME_PATH'] = frame_path
 
     # 1. argumentsを与えてStepを作成する
-    step = Step('flow', parse(flow_uuid, flow_json), arguments)
+    step = Step('flow', flow, arguments)
 
     # 2. 1のStepにinputsを与えてJobを作成して実行する
     job = Job(step, inputs)
@@ -24,10 +34,52 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
     # 3. その結果をoutputsとして受け取り、そのまま返却する
     result = job.execute()
 
-    # 4. 後始末
+    # 4. file descriptorのままのdataがある場合は、それらを永続化する
+    persist_to_files(job)
+
+    # 5. 後始末
+    # TODO: 思ったように処理が動いておらず、
+    #       他のバグの原因となっているのでひとまずコメント
     # job.dtor()
 
     return result
+
+
+def persist_to_files(job):
+    """
+    file descriptorのままのdataがある場合は、それらを永続化する
+
+    そもそもengine内で実行履歴(job)を保存しているので、engineの実行結果は必ず永続化する必要がある
+    また、file descriptorをengineの外で使いたい場合は極めて稀であると思われるので
+    1つのプロセス内で複数のengineを協調して動作させるというユースケースは明確に除外しておく
+    (必要になりそうであれば別途オプションで制御できるようにしたいと考えている)
+    """
+
+    # command_or_flowはここでは必ずflowであるはずなので
+    # get_lastsを持っているかどうかはチェックしない
+    flow = job.step.command_or_flow
+    for key in flow.get_lasts().keys():
+        datum = flow.data[key]
+
+        # 対象データが永続化されていない場合は永続化する
+        # TODO: 今のところsourceがUnixCommandSourceの場合だけが永続化されていないはずなので、
+        #       決め打ちで書いておく
+        if isinstance(datum.source, UnixCommandSource):
+            # ファイルの拡張子はdatum.source.typeから決定する
+            if datum.source.type == 'csv':
+                ext = '.csv'
+            else:
+                # その他の場合は今は考えない
+                raise Exception()
+
+            from pathlib import Path
+            out_fd = Path(os.environ['KENG_FRAME_PATH']).joinpath(datum.uuid + ext)
+            datum.source.save(out_fd.open(mode='w', encoding='utf-8'))
+
+            # TODO: ここではsaveしてファイルを保存はしているものの、
+            #       datum.sourceをUnixCommandSourceから（例えば）FilePathSourceにはしていない
+            #       その必要がないからと今のところ考えているが、後々変わるかもしれない
+            #       言い換えれば、sourceを変更してもそれを使う場所がないので変換は不要では、ということ
 
 
 def parse(flow_uuid, flow_json):
