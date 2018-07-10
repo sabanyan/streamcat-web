@@ -248,16 +248,21 @@ class ApiTestCase(unittest.TestCase):
 
             flow_paths = model.get_flow_paths_by_project_uuid(project_uuid)
 
-        self.assertEqual(results['success'], True)
+        # ファイル名がflow_uuidになっているのかテスト
         self.assertEqual({p.stem for p in flow_paths}, {flow1_datasource_name,
                                                         flow2_datasource_name,
                                                         flow3_datasource_name})
+
+        self.assertEqual(results['success'], True)
         self.assertEqual({r['projectId'] for r in results['data']}, {project_id,
                                                                      project_id,
                                                                      project_id})
         self.assertEqual({r['name'] for r in results['data']}, {'フローテスト用',
                                                                 'フローテスト用2',
                                                                 'フローテスト用3'})
+        self.assertEqual({r['uuid'] for r in results['data']}, {flow1_datasource_name,
+                                                                flow2_datasource_name,
+                                                                flow3_datasource_name})
 
         # 後片付け
         with app.app_context():
