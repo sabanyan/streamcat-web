@@ -50,6 +50,10 @@ class PathFileSource(FileSource):
     def fd(self, value):
         pass
 
+    @property
+    def fullpath(self):
+        return Path(self.source_dir).joinpath(self.file_name)
+
     def __repr__(self):
         return f'PathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
@@ -128,11 +132,13 @@ class Frame(Data):
             return '(no contents)'
 
         res = str(self.source.fd.read(), encoding='utf-8').rstrip('\n')
+        print('res:', res)
         import io
         import csv
         reader = csv.reader(io.StringIO(res))
         res = {}
         first_row = True
+
         for row in reader:
             if first_row:
                 for col in row:
