@@ -5,6 +5,7 @@ import Arrow from './Arrow'
 import Constants from '../../../constants'
 
 type EdgeProps = {
+  label: string;
   vx: number;
   vy: number;
   wx: number;
@@ -17,13 +18,9 @@ const getEdgeAngle = (edge: EdgeProps) => {
 }
 
 const Edge = (props: EdgeProps) => {
-  const {vx, vy, wx, wy} = props
+  const {label, vx, vy, wx, wy} = props
 
   const angle = getEdgeAngle(props)
-
-  console.log(props)
-const Edge = (props: Props) => {
-  const {label, vx, vy, wx, wy} = props
 
   let port = null
   if(Constants.debug){
