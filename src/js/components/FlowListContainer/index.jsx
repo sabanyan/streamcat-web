@@ -143,7 +143,7 @@ export default class FlowListContainer extends React.Component {
   }
 
   renderNewFlow () {
-    return <a href="#" onClick={(e) => this.onClickNew(e)}>新しくフローを作成する</a>
+    return <div className={"mt-20px"}><a href="#" onClick={(e) => this.onClickNew(e)}>新しくフローを作成する</a></div>
   }
 
   renderAll () {
@@ -159,7 +159,7 @@ export default class FlowListContainer extends React.Component {
   }
 
   render () {
-    return <div className={'container'}>
+    return <div className={'container mt-40px'}>
       <Loader absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
       <ModalManager/>

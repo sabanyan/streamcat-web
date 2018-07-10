@@ -76,7 +76,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           Constants.default.operator.width / 2
         const wy = merged_steps[edge.w].position.y +
           Constants.default.operator.height / 2
-        return <Edge vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
+        const name = edge.name
+        return <Edge label={name} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
       })
     }
 

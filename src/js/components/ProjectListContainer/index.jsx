@@ -143,7 +143,7 @@ export default class ProjectListContainer extends React.Component {
   }
 
   renderNewProject () {
-    return <a href="#" onClick={(e) => this.onClickNew(e)}>新しくフローを作成する</a>
+    return <div className={"mt-20px"}><a href="#" onClick={(e) => this.onClickNew(e)}>新しくプロジェクトを作成する</a></div>
   }
 
   renderAll () {

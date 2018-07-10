@@ -22,13 +22,13 @@ export const defaultGraphProps = {
 class Graph {
 
   constructor () {
-    this.g = new dagre.graphlib.Graph()
+    this.g = new dagre.graphlib.Graph({ multigraph: true })
     this.g.setGraph({
       marginx: defaultGraphProps.marginX,
       marginy: defaultGraphProps.marginY,
       nodesep: defaultGraphProps.nodeSeparator,
       edgesep: defaultGraphProps.edgeSeparator,
-      ranksep: defaultGraphProps.rankSeparator,
+      ranksep: defaultGraphProps.rankSeparator
     })
     this.g.setDefaultEdgeLabel(function () {
       return {
@@ -85,8 +85,8 @@ class Graph {
    * @param from_id
    * @param to_id
    */
-  addEdge (from_id, to_id) {
-    this.g.setEdge(from_id, to_id)
+  addEdge (from_id, to_id, name) {
+    this.g.setEdge({v:from_id, w:to_id,name:name})
   }
 
   /**
@@ -203,10 +203,11 @@ class Graph {
         const connect_arrays = connect.split('.')
         const step_name = connect_arrays[0]
         const port_name = connect_arrays[1]
+        const port_full_name = connect
         if (result[step_name] == null) {
-          result[step_name] = [port_name]
+          result[step_name] = [port_full_name]
         } else {
-          result[step_name].push(port_name)
+          result[step_name].push(port_full_name)
         }
       })
     }
@@ -247,15 +248,29 @@ class Graph {
         self.addNode(node)
         const frame = json.data[node]
         if (frame.srcs.length > 0) {
+          console.log("srcs")
           let srcsPort = self.getSrcsPort(frame.srcs)
           Object.keys(srcsPort).forEach((key) => {
-            self.addEdge(key, node)
+            const ports = srcsPort[key]
+            ports.forEach((name)=>{
+              console.log(key + "→" + node + "     " + name)
+              const from = key
+              const to = node
+              self.addEdge(from, to, name)
+            })
           })
         }
         if (frame.dsts.length > 0) {
+          console.log("dsts")
           let dstsPort = self.getDstsPort(frame.dsts)
           Object.keys(dstsPort).forEach((key) => {
-            self.addEdge(key, node)
+            const ports = dstsPort[key]
+            ports.forEach((name)=>{
+              console.log(node + "→" + key + "     " + name)
+              const from = node
+              const to = key
+              self.addEdge(from, to, name)
+            })
           })
         }
         json.data[node] = new DataFrameModel({

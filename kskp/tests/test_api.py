@@ -137,15 +137,18 @@ class ApiTestCase(unittest.TestCase):
 
             data = {
                 'project_uuid': project_uuid,
-                'name': new_flow_name,
-                'data_source_name': new_flow_data_source_name
+                'name': new_flow_name
             }
 
-            endpoint = '/api/v0/flows'
-            response = client.post(endpoint,
-                content_type='application/json',
-                data=json.dumps(data)
-            )
+            flow_path = app.config['FLOW_PATH']
+            with tempfile.TemporaryDirectory() as temp_dir:
+                app.config['FLOW_PATH'] = temp_dir
+
+                endpoint = '/api/v0/flows'
+                response = client.post(endpoint,
+                    content_type='application/json',
+                    data=json.dumps(data)
+                    )
 
             result = json.loads(response.get_data())
 
@@ -156,7 +159,7 @@ class ApiTestCase(unittest.TestCase):
             self.assertEqual(result['data']['name'], new_flow_name)
 
             # 後片付け
-            model.make_flow_path(new_flow_data_source_name).unlink()
+            app.config['FLOW_PATH'] = flow_path
 
 
     def test_fetch_flows_project_uuid_Nothing(self):
@@ -376,8 +379,9 @@ class ApiTestCase(unittest.TestCase):
         '''
         execute_flow APIをテストする
         7/4現在、エラー回避のためengineの__init__のexecuteのjob.dtor()を無効にしている
+        7/5現在、エラーが出る（ファイル指定に問題あり）
         '''
-        flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
+        flow_uuid = '70218468-417E-458B-B820-A17C55D04AF9'
 
         # 実行
         with app.test_client() as client:
@@ -386,10 +390,10 @@ class ApiTestCase(unittest.TestCase):
             result = json.loads(response.get_data())
 
         # 生成されてほしい結果
-        expected_result = {'数量合計': ['3', '5'], '金額合計': ['30', '120'], '顧客%0': ['A', 'B']}
+        expected_result = {'金額合計': ['30', '120'], '顧客%0': ['A', 'B']}
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'], expected_result)
+        self.assertEqual(result['data']['d2'], expected_result)
 
 class FrameApiTestCase(unittest.TestCase):
     def setUp(self):
