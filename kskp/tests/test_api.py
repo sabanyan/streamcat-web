@@ -386,12 +386,8 @@ class ApiTestCase(unittest.TestCase):
         7/4現在、エラー回避のためengineの__init__のexecuteのjob.dtor()を無効にしている
         7/5現在、エラーが出る（ファイル指定に問題あり）
         '''
-<<<<<<< HEAD
         flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
-=======
-        flow_uuid = '70218468-417E-458B-B820-A17C55D04AF9'
 
->>>>>>> e41ba05eb0a758345c9a1fcfb3d5e24437920a61
         # 実行
         with app.test_client() as client:
             endpoint = '/api/v0/frames?from=%s' % flow_uuid
@@ -402,11 +398,7 @@ class ApiTestCase(unittest.TestCase):
         expected_result = {'金額合計': ['30', '120'], '顧客%0': ['A', 'B']}
 
         self.assertEqual(result['success'], True)
-<<<<<<< HEAD
         self.assertEqual(result['data']['d1'], expected_result)
-=======
-        self.assertEqual(result['data']['d2'], expected_result)
->>>>>>> e41ba05eb0a758345c9a1fcfb3d5e24437920a61
 
 class FrameApiTestCase(unittest.TestCase):
     def setUp(self):
