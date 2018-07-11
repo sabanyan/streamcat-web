@@ -11,6 +11,9 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
     エントリポイント
     JSONをパースして、そのまま実際の処理はexecute_internalに移譲する
     """
+    #　もしframeの保存場所が明示的に指定されていれば、環境変数よりも優先される
+    if frame_path is not None:
+        os.environ['KENG_FRAME_PATH'] = frame_path
 
     return execute_internal(parse(flow_uuid, flow_json), arguments, inputs, frame_path)
 
