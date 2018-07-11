@@ -15,8 +15,7 @@ class MultiInspector extends React.Component<FlowEditorProps> {
 
   render () {
     return <Inspector header={this.props.selected_step_ids.length + ' files'}
-                      title=""
-                      hiddenInOut={true}>
+                      title="">
       <div className="kskp-form">
         <Button onClick={(e) => this.onClickDelete(e)} danger={true}>
           削除する

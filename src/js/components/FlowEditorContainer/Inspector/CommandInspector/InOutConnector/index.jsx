@@ -1,7 +1,7 @@
 import * as React from 'react'
 import style from '../../style.scss'
 import DataFrameModel from '../../../../../model/DataFrameModel'
-import DropDownList from '../../../../shared/DropDownList'
+import DropDownList from '../../../../shared/DropDownList/index'
 
 class InOutConnector extends React.Component{
 
