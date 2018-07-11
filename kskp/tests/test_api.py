@@ -493,5 +493,23 @@ def setUpFlow(self):
 
     return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
 
+class JobTestCase(unittest.TestCase):
+    def setUp(self):
+        app.testing = True
+        self.client = app.test_client()
+
+    def test_sample_json(self):
+        flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
+        endpoint = '/api/v0/jobs?flow=%s&count=1' % flow_uuid
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 1
+            response = client.get(endpoint)
+
+        result = json.loads(response.get_data())['data'][0]
+
+        self.assertEqual(result["executedAt"], "2018-06-26T04:33:15+09:00")
+
 if __name__ == '__main__':
     unittest.main()

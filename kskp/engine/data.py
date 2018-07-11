@@ -1,3 +1,12 @@
+import io # for StringIO
+import csv # for csv reader
+
+# for TempPathFileSource
+import os
+import tempfile
+from pathlib import Path
+
+
 class Source:
     """
     データの取得元、もしくは書込先になる情報をもつクラス
@@ -44,7 +53,10 @@ class PathFileSource(FileSource):
 
     @property
     def fd(self):
-        return open(Path(self.source_dir).joinpath(self.file_name), 'rb')
+        path = Path(self.source_dir).joinpath(self.file_name)
+        # print(self)
+        # print(path)
+        return open(path, 'r')
 
     @fd.setter
     def fd(self, value):
@@ -74,17 +86,40 @@ class UnixCommandSource(FileSource):
 
     @property
     def fd(self):
-        self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
+        self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE, universal_newlines=True)
         return self.popen.stdout
 
     @fd.setter
     def fd(self, value):
         raise Exception()
 
+    def save(self, stdout):
+        """ engineから使う最後の保存用 """
+        popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
+        popen.wait()
+
     def dtor(self):
+        # print('UnixCommandSource dtor:', self.args)
         self.popen.wait()
         self.popen.stdout.close()
 
+
+class TempPathFileSource(PathFileSource):
+    """
+    実行後にファイルがすぐ消されるPathFileSource
+    テスト用
+    """
+
+    def __init__(self, source_type):
+        _, path = tempfile.mkstemp()
+        self.path = Path(path)
+        super().__init__(source_type, self.path.parent.as_posix(), self.path.name)
+
+    def dtor(self):
+        os.unlink(self.path)
+
+    def __repr__(self):
+        return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
 class Data:
     """
@@ -131,28 +166,29 @@ class Frame(Data):
         if self.source.type == '':
             return '(no contents)'
 
-        res = str(self.source.fd.read(), encoding='utf-8').rstrip('\n')
-        print('res:', res)
-        import io
-        import csv
-        reader = csv.reader(io.StringIO(res))
-        res = {}
-        first_row = True
+        with self.source.fd as fd:
+            # text = str(fd.read(), encoding='utf-8').rstrip('\n')
+            # print('text:', text)
+            # reader = csv.reader(io.StringIO(text))
+            reader = csv.reader(fd)
+            res = {}
+            first_row = True
 
-        for row in reader:
-            if first_row:
-                for col in row:
-                    res[col] = []
-                cols = row
-                first_row = False
-            else:
-                for i,col in enumerate(cols):
-                    res[col].append(row[i])
+            for row in reader:
+                if first_row:
+                    for col in row:
+                        res[col] = []
+                    cols = row
+                    first_row = False
+                else:
+                    for i, col in enumerate(cols):
+                        res[col].append(row[i])
 
         return res
 
     def __repr__(self):
-        return f'<Frame({ self.source }) contents:{self.contents.__repr__()}>'
+        # return f'<Frame({ self.source }) contents:{self.contents.__repr__()}>'
+        return f'<Frame({ self.source })>'
 
     def row_count(self):
         """

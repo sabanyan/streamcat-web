@@ -20,7 +20,11 @@ from .model import (
 api = Blueprint('api', __name__)
 
 DATAFRAME_DIR_PATH = api.root_path / Path('data/frames')
+<<<<<<< HEAD
 FLOW_DIR_PATH = api.root_path / Path('data/flows')
+=======
+JOBS_DIR_PATH = api.root_path / Path('data/jobs')
+>>>>>>> backend
 
 @api.route('/projects', methods=['POST'])
 @login_required_api
@@ -203,7 +207,6 @@ def upload_frame(req):
     f.close()
 
 
-@api.route('/frames?from=<flow_uuid>', methods=['GET', 'POST'])
 def execute_flow(flow_uuid):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
@@ -227,6 +230,17 @@ def execute_flow(flow_uuid):
                             })
         else:
             return jsonify({'success': True, 'data': result_data})
+
+
+@api.route('/jobs', methods=['GET'])
+def jobs():
+    """
+    指定されたフローの実行結果を返す
+    TODO: モックです
+    """
+
+    path = Path(JOBS_DIR_PATH).joinpath('sample.json')
+    return jsonify({'success': True, 'data': json.loads(path.read_text())})
 
 
 def execute_flow_internal(flow_uuid):

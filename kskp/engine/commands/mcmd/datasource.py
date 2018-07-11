@@ -1,3 +1,5 @@
+from . import *
+
 class Mdata:
     pass
 
@@ -10,5 +12,9 @@ class Mnewrand:
 class Mnewstr:
     pass
 
-class Mtee:
-    pass
+class Mtee(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtee'
+        self.description = '出力'
+        self.parameters.append(Parameter('o', '出力先'))
