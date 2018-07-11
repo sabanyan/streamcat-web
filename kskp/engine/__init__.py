@@ -74,7 +74,10 @@ def persist_to_files(job):
 
             from pathlib import Path
             out_fd = Path(os.environ['KENG_FRAME_PATH']).joinpath(datum.uuid + ext)
-            datum.source.save(out_fd.open(mode='w', encoding='utf-8'))
+            fd = out_fd.open(mode='w', encoding='utf-8')
+            datum.source.save(fd)
+            fd.close()
+
 
             # TODO: ここではsaveしてファイルを保存はしているものの、
             #       datum.sourceをUnixCommandSourceから（例えば）FilePathSourceにはしていない
