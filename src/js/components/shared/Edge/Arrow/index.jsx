@@ -13,7 +13,6 @@ type ArrowProps = {
 
 const Arrow = (props: ArrowProps) => {
   const {x, y, width, height, angle, className} = props
-console.log(props)
   return <polygon
     points={x + ',' + y + ' ' + (x - width / 2) + ',' + (y - height) + ' ' + (x + width / 2) + ',' + (y - height)}
     className={className}
