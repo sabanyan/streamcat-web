@@ -81,7 +81,7 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'], j['data_source_name'])
+    new_flow = create_flow(project_id, j['name'])
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -252,8 +252,8 @@ def execute_flow_internal(flow_uuid):
 
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
-        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
+        with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
+            return e.execute(flow_uuid, f.read(), frame_path='/kskp/data/frames')
 
     result = execute_flow_by_uuid(flow_uuid)
 
