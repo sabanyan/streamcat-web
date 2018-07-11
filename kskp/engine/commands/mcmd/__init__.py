@@ -44,6 +44,8 @@ class MCommand(Command):
             if key == 'x' and val == True:
                 # TODO: 場所を移すべき？ mcut用
                 command_args.append('-x')
+            elif key == 'n' and val == True:
+                command_args.append('-n')
             elif key == 'rng' and val == True:
                 command_args.append('-rng')
             else:
