@@ -57,6 +57,8 @@ class MCommand(Command):
         frame_uuid = str(uuid.uuid4())
         frame = Frame(frame_uuid, source)
 
+        self.inputs_for_dtor.append(frame)
+
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す
 

@@ -98,7 +98,8 @@ class Flow:
                 raise Exception()
 
             path = Path(os.environ['KENG_FRAME_PATH']).joinpath(datum.uuid + ext)
-            datum.source.save(path.open(mode='w', encoding='utf-8'))
+            with path.open(mode='w', encoding='utf-8') as fd:
+                datum.source.save(fd)
             datum.source = PathFileSource('csv', path.parent, path.name)
         return datum
 
@@ -227,6 +228,9 @@ class Flow:
         # print('Flow.dtor():', self.jobs)
         for j in self.jobs:
             j.dtor()
+
+        # for d in self.data.values():
+        #     d.dtor()
 
 
 class Command:

@@ -121,7 +121,7 @@ class EngineTestCase(unittest.TestCase):
         # print('sample_input2 self.tempfile_path2:', self.tempfile_path2)
         source = PathFileSource('csv', path.parent.as_posix(), path.name)
         input = Frame(frame_uuid, source)
-        print('sample_input2 input.contents:', input.contents)
+        # print('sample_input2 input.contents:', input.contents)
         return input
 
     def write_to_csv(self, path, object):
@@ -156,7 +156,7 @@ class EngineTestCase(unittest.TestCase):
         # print('sample_input2 self.tempfile_path2:', self.tempfile_path2)
         source = PathFileSource('csv', path.parent.as_posix(), path.name)
         input = Frame(frame_uuid, source)
-        print('input_with_path input.contents:', input.contents)
+        # print('input_with_path input.contents:', input.contents)
         return input
 
     def mjoin_main_input(self):
@@ -213,7 +213,7 @@ class EngineTestCase(unittest.TestCase):
         self.assertEqual(result_dict['a'], ['1', '4'])
         self.assertEqual(result_dict['b'], ['2', '5'])
 
-    # @unittest.skip
+    @unittest.skip
     def test_simple_engine_executing(self):
         """
         単純なフロー実行をエンジンから行うテスト
@@ -229,7 +229,7 @@ class EngineTestCase(unittest.TestCase):
         flow.steps['s0'] = Step('command', self.command2, {'k': 'key', 'f': 'b:bsum'})
         flow.steps['s1'] = Step('command', self.command, {'f': 'key,bsum'})
         flow.data['in'] = self.sample_input2()
-        print('test_sample_flow2 flow.data[in]:', flow.data['in'])
+        # print('test_sample_flow2 flow.data[in]:', flow.data['in'])
         flow.data['d0'] = Frame()
         flow.data['out'] = Frame()
         flow.edges['in'] = {'srcs': [], 'dsts': ['s0.in']}
@@ -240,11 +240,11 @@ class EngineTestCase(unittest.TestCase):
         result = flow.execute()
         # print('test_sample_flow:', result)
         result_dict = result['out'].contents
-        print('test_sample_flow2 result_dict:', result_dict)
+        # print('test_sample_flow2 result_dict:', result_dict)
         result['out'].dtor()
 
-        self.assertEqual(result_dict['key%0'], ['1', '4'])
-        self.assertEqual(result_dict['bsum'], ['2', '5'])
+        self.assertEqual(result_dict['key%0'], ['A', 'B'])
+        self.assertEqual(result_dict['bsum'], ['250', '520'])
 
     @unittest.skip
     def test_sample_subflow(self):
@@ -276,7 +276,7 @@ class EngineTestCase(unittest.TestCase):
 
         result = flow.execute()
         result_dict = result['out'].contents
-        print('test_sample_subflow result_dict:', result_dict)
+        # print('test_sample_subflow result_dict:', result_dict)
         result['out'].dtor()
 
     @unittest.skip
@@ -295,12 +295,12 @@ class EngineTestCase(unittest.TestCase):
 
         result = flow.execute()
         result_dict = result['out'].contents
-        print('test_mjoin result_dict:', result_dict)
+        # print('test_mjoin result_dict:', result_dict)
         result['out'].dtor()
 
     def get_result(self, result, key):
         result_dict = result[key].contents
-        print('test_mjoin result_dict:', result_dict)
+        # print('test_mjoin result_dict:', result_dict)
         result[key].dtor()
 
     @unittest.skip
@@ -326,6 +326,8 @@ class EngineTestCase(unittest.TestCase):
     @unittest.skip
     def test_file_spliting2(self):
         """ 単純な複数OUTのテスト 2 バグが出そうなパターン """
+
+        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
 
         flow = Flow('spliting')
         flow.steps['s0'] = Step('command', self.command, {'f': 'a,b'})
@@ -491,12 +493,12 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_command_step(flow, 's4', Mstats(), {'c': 'max', 'f': '@[sensor_name]:@[sensor_name]_max'})
         self.set_command_step(flow, 's5', Mcut(), {'f': 'Time,@[sensor_name]_max'})
 
-        self.set_command_step(flow, 's6', Mstats(), {'c': 'min', 'f': '@[sensor_name]:@[sensor_name]_min'})
-        self.set_command_step(flow, 's7', Mcut(), {'f': 'Time,@[sensor_name]_min'})
+        # self.set_command_step(flow, 's6', Mstats(), {'c': 'min', 'f': '@[sensor_name]:@[sensor_name]_min'})
+        # self.set_command_step(flow, 's7', Mcut(), {'f': 'Time,@[sensor_name]_min'})
 
         self.set_command_step(flow, 'sjoin0', Mjoin(), {'k': 'Time'})
         self.set_command_step(flow, 'sjoin1', Mjoin(), {'k': 'Time'})
-        self.set_command_step(flow, 'sjoin2', Mjoin(), {'k': 'Time'})
+        # self.set_command_step(flow, 'sjoin2', Mjoin(), {'k': 'Time'})
 
         self.set_empty_data(flow, 'in', [], ['s0.in', 's2.in', 's4.in', 's6.in'])
         self.set_empty_data(flow, 'd0', ['s0.out'], ['s1.in'])
@@ -510,16 +512,35 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_empty_data(flow, 'd5', ['s4.out'], ['s5.in'])
         self.set_empty_data(flow, 'd6', ['s5.out'], ['sjoin1.m'])
 
-        self.set_empty_data(flow, 'd7', ['sjoin1.out'], ['sjoin2.i'])
+        # self.set_empty_data(flow, 'd7', ['sjoin1.out'], ['sjoin2.i'])
 
-        self.set_empty_data(flow, 'd8', ['s6.out'], ['s7.in'])
-        self.set_empty_data(flow, 'd9', ['s7.out'], ['sjoin2.m'])
+        # self.set_empty_data(flow, 'd8', ['s6.out'], ['s7.in'])
+        # self.set_empty_data(flow, 'd9', ['s7.out'], ['sjoin2.m'])
 
-        self.set_empty_data(flow, 'out', ['sjoin2.out'], [])
+        # self.set_empty_data(flow, 'out', ['sjoin2.out'], [])
+        self.set_empty_data(flow, 'out', ['sjoin1.out'], [])
 
         self.set_signature(flow, ['in'], ['out'])
 
         return flow
+
+    @unittest.skip
+    def test_stats_flow(self):
+        flow = Flow('stats_flow')
+        self.set_flow_step(flow, 'sstatsall', self.make_stats_all_flow(), {'sensor_name': '3H'})
+
+        source1 = PathFileSource('csv', 'kskp/data/frames', 'wowow.csv')
+        self.set_data(flow, 'd0', Frame('wowow', source1), [], ['sstatsall.in'])
+        self.set_empty_data(flow, 'out', ['sstatsall.out'], [])
+        self.set_signature(flow, [], ['out'])
+
+        results = flow.execute()
+
+        for res in results.values():
+            for k, v in res.contents.items():
+                print(f'{k}:', v[0])
+
+        # flow.dtor()
 
     def stats_by_4_sensors(self):
         """
@@ -563,18 +584,17 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_flow_step(flow, 's6', self.make_section_flow(), {'v': '5', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's7', self.make_section_flow(), {'v': '6', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's8', self.make_section_flow(), {'v': '7', 'pattern': '@[pattern]'})
-        # self.set_flow_step(flow, 's9', self.make_section_flow(), {'v': '8', 'pattern': '@[pattern]'})
-        # self.set_flow_step(flow, 's10', self.make_section_flow(), {'v': '9', 'pattern': '@[pattern]'})
-        # self.set_flow_step(flow, 's11', self.make_section_flow(), {'v': '10', 'pattern': '@[pattern]'})
+        self.set_flow_step(flow, 's9', self.make_section_flow(), {'v': '8', 'pattern': '@[pattern]'})
+        self.set_flow_step(flow, 's10', self.make_section_flow(), {'v': '9', 'pattern': '@[pattern]'})
+        self.set_flow_step(flow, 's11', self.make_section_flow(), {'v': '10', 'pattern': '@[pattern]'})
 
         self.set_flow_step(flow, 'sstatsall', self.stats_by_4_sensors(), {})
 
         self.set_command_step(flow, 's_mcat', Mcat(), {})
 
         self.set_empty_data(flow, 'in', [], ['s0.in']) # 置き換えられる
-        self.set_empty_data(flow, 'd0', ['s0.out'], ['s1.in', 'sstatsall.in'])
-        # self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in', 's9.in', 's10.in', 's11.in'])
-        self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in'])
+        self.set_empty_data(flow, 'd0', ['s0.out'], ['s1.in', 'sstatsall.in'])        
+        self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in', 's9.in', 's10.in', 's11.in'])
         self.set_empty_data(flow, 'd_mcat1', ['s2.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat2', ['s3.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat3', ['s4.out'], ['s_mcat.*'])
@@ -582,9 +602,9 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_empty_data(flow, 'd_mcat5', ['s6.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat6', ['s7.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat7', ['s8.out'], ['s_mcat.*'])
-        # self.set_empty_data(flow, 'd_mcat8', ['s9.out'], ['s_mcat.*'])
-        # self.set_empty_data(flow, 'd_mcat9', ['s10.out'], ['s_mcat.in'])
-        # self.set_empty_data(flow, 'd_mcat10', ['s11.out',], ['s_mcat.in'])
+        self.set_empty_data(flow, 'd_mcat8', ['s9.out'], ['s_mcat.*'])
+        self.set_empty_data(flow, 'd_mcat9', ['s10.out'], ['s_mcat.in'])
+        self.set_empty_data(flow, 'd_mcat10', ['s11.out',], ['s_mcat.in'])
 
         # self.set_empty_data(flow, 'out', ['sstatsall.out'], [])
         self.set_empty_data(flow, 'out', ['s_mcat.out'], [])
@@ -593,7 +613,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-    @unittest.skip
+    # @unittest.skip
     def test(self):
         flow = Flow('parent')
 
