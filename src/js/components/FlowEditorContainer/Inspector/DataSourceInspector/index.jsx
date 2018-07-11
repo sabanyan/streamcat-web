@@ -11,6 +11,7 @@ import Button from '../../../shared/Button'
 import DataPreview from '../../../shared/DataPreview'
 import DropDownList from '../../../shared/DropDownList'
 import DataFrameModel from '../../../../model/DataFrameModel'
+import CommandSelector from '../CommandSelector'
 
 class DataSourceInspector extends React.Component<FlowEditorProps> {
 
@@ -90,27 +91,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       }
     }
 
-    let operators = this.props.mast.commands.map((command, index) => {
-      return <Operator {...command} {...this.props} key={index}/>
-      // switch (operation) {
-      //     case Constants.operatorType.msortf:
-      //         return <Sort key={index}/>
-      //         break;
-      //     case Constants.operatorType.mcal:
-      //         return null
-      //         break;
-      //     case Constants.operatorType.mcut:
-      //         return <Mcut key={index}/>
-      //         break;
-      //     case Constants.operatorType.mtra2g:
-      //         return null
-      //         break;
-      //     case Constants.operatorType.mitemset:
-      //         return null
-      //         break;
-      // }
-    })
-
     return <Inspector header={step_text} title={'データの概要'} {...this.props}>
       <div className={style.property_overview}>
         <div className={style.actions}>
@@ -146,12 +126,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
         </div>
       </div>
       <div className={style.hr}/>
-      <div className={style.property_title}>
-        コマンド
-      </div>
-      <div className={style.property_basic_operators}>
-        {operators}
-      </div>
+      <CommandSelector numberOfInput={1} {...this.props}/>
       <div className={style.hr}/>
       <div className={style.property_title}>
         作成したフロー
