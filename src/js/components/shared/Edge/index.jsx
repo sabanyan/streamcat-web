@@ -13,16 +13,21 @@ type EdgeProps = {
 }
 
 // ref:https://www.s-projects.net/point-to-angle.html
-const getEdgeAngle = (edge: EdgeProps) => {
-  return Math.round(Math.atan((edge.wx - edge.vx) / (edge.wy - edge.vy)) / Math.PI * 180 * 1000) / 1000
+const getArrowAngle = (edge: EdgeProps) => {
+  return Math.round(Math.atan2(edge.wy - edge.vy,edge.wx - edge.vx) / Math.PI * 180) - 90
+}
+
+const getAngle = (edge: EdgeProps) => {
+  return Math.round(Math.atan2(edge.wy - edge.vy,edge.wx - edge.vx) / Math.PI * 180) - 90
 }
 
 const Edge = (props: EdgeProps) => {
   const {label, vx, vy, wx, wy} = props
 
-  const angle = getEdgeAngle(props)
+  const angle = getAngle(props)
 
   let port = null
+  const arrowAngle = getArrowAngle(props)
   if(Constants.debug){
 
     // const offset_x = ((vx - wx) >= 0) ? -1 * Constants.default.step.width / 2 - 10 : 1 * Constants.default.step.width / 2 + 10
@@ -38,13 +43,15 @@ const Edge = (props: EdgeProps) => {
             width={100}>{label}</text>
   }
 
+
+
   return <g>
     <path className={style.edge}
           d={'M' + vx + ',' + vy + ' ' + 'L' + wx + ',' + wy} />
     <path className={style.base}
           d={'M' + vx + ',' + vy + ' ' + 'L' + wx + ',' + wy}/>
-    <Arrow x={wx} y={wy} width={8} height={8} angle={angle}/>
-          d={'M' + vx + ',' + vy + ' ' + 'L' + wx + ',' + wy} />
+    <Arrow x={wx} y={wy} width={6} height={6} angle={arrowAngle} className={style.edge} />
+    <Arrow x={wx} y={wy} width={6} height={6} angle={arrowAngle} className={style.base} />
     {port}
   </g>
 }
