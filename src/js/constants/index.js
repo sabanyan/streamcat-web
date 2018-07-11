@@ -1,4 +1,5 @@
 const Constants = {
+  debug: false,
   default: {
     node: {
       width: 38,
@@ -22,6 +23,7 @@ const Constants = {
     step: {
       width: 38 + 6 * 2,
       height: 38 + 6 * 2,
+      tilt: (38 + 6 * 2) / 2 / Math.cos(45),// tilt * cos(45) = width / 2
       icon: {
         width: 38,
         height: 38,
