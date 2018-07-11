@@ -8,6 +8,7 @@ import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
 import Button from '../../../shared/Button'
 import StepModel from '../../../../model/StepModel'
+import InOutConnector from './InOutConnector'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -99,7 +100,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
 
         return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"} {...this.props}>
-                <div className="kskp-property-body">
+          <InOutConnector {...this.props}/>
+          <div className="kskp-property-body">
                     <div className="kskp-form">
                         {/*<label>f</label>*/}
                         {/*<input type="text" className="form-control mb-12px" defaultValue={f} ref="f"/>*/}
