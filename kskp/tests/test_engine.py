@@ -574,7 +574,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_empty_data(flow, 'in', [], ['s0.in']) # 置き換えられる
         self.set_empty_data(flow, 'd0', ['s0.out'], ['s1.in', 'sstatsall.in'])
         # self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in', 's9.in', 's10.in', 's11.in'])
-        self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in'])
+        self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in'])
         self.set_empty_data(flow, 'd_mcat1', ['s2.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat2', ['s3.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat3', ['s4.out'], ['s_mcat.*'])
@@ -582,7 +582,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_empty_data(flow, 'd_mcat5', ['s6.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat6', ['s7.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat7', ['s8.out'], ['s_mcat.*'])
-        # self.set_empty_data(flow, 'd_mcat8', ['s9.out'], ['s_mcat.in'])
+        # self.set_empty_data(flow, 'd_mcat8', ['s9.out'], ['s_mcat.*'])
         # self.set_empty_data(flow, 'd_mcat9', ['s10.out'], ['s_mcat.in'])
         # self.set_empty_data(flow, 'd_mcat10', ['s11.out',], ['s_mcat.in'])
 
