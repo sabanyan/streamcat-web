@@ -87,6 +87,9 @@ class UnixCommandSource(FileSource):
     @property
     def fd(self):
         self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE, universal_newlines=True)
+        if self.stdin is not None:
+            self.stdin.close()
+        # print(f'pid: {self.popen.pid} args: {self.args}')
         return self.popen.stdout
 
     @fd.setter
@@ -96,13 +99,15 @@ class UnixCommandSource(FileSource):
     def save(self, stdout):
         """ engineから使う最後の保存用 """
         popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
+        self.stdin.close()
         popen.wait()
 
     def dtor(self):
         # print('UnixCommandSource dtor:', self.args)
-        self.popen.wait()
-        self.popen.stdout.close()
-
+        if self.popen is not None:
+            self.popen.stdout.close()
+            # print(f'close pid: {self.popen.pid} args: {self.args}')
+            self.popen.wait()
 
 class TempPathFileSource(PathFileSource):
     """
