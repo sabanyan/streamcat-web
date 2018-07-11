@@ -44,6 +44,8 @@ class MCommand(Command):
             if key == 'x' and val == True:
                 # TODO: 場所を移すべき？ mcut用
                 command_args.append('-x')
+            elif key == 'n' and val == True:
+                command_args.append('-n')
             elif key == 'rng' and val == True:
                 command_args.append('-rng')
             else:
@@ -54,6 +56,8 @@ class MCommand(Command):
         source = UnixCommandSource('csv', command_args, stdin=stdin)
         frame_uuid = str(uuid.uuid4())
         frame = Frame(frame_uuid, source)
+
+        self.inputs_for_dtor.append(frame)
 
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す

@@ -54,9 +54,9 @@ class PathFileSource(FileSource):
     @property
     def fd(self):
         path = Path(self.source_dir).joinpath(self.file_name)
-        print(self)
-        print(path)
-        return open(path, 'rb')
+        # print(self)
+        # print(path)
+        return open(path, 'r')
 
     @fd.setter
     def fd(self, value):
@@ -86,7 +86,10 @@ class UnixCommandSource(FileSource):
 
     @property
     def fd(self):
-        self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
+        self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE, universal_newlines=True)
+        if self.stdin is not None:
+            self.stdin.close()
+        # print(f'pid: {self.popen.pid} args: {self.args}')
         return self.popen.stdout
 
     @fd.setter
@@ -95,12 +98,16 @@ class UnixCommandSource(FileSource):
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
-        subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
+        popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
+        self.stdin.close()
+        popen.wait()
 
     def dtor(self):
-        self.popen.wait()
-        self.popen.stdout.close()
-
+        # print('UnixCommandSource dtor:', self.args)
+        if self.popen is not None:
+            self.popen.stdout.close()
+            # print(f'close pid: {self.popen.pid} args: {self.args}')
+            self.popen.wait()
 
 class TempPathFileSource(PathFileSource):
     """
@@ -165,8 +172,10 @@ class Frame(Data):
             return '(no contents)'
 
         with self.source.fd as fd:
-            text = str(fd.read(), encoding='utf-8').rstrip('\n')
-            reader = csv.reader(io.StringIO(text))
+            # text = str(fd.read(), encoding='utf-8').rstrip('\n')
+            # print('text:', text)
+            # reader = csv.reader(io.StringIO(text))
+            reader = csv.reader(fd)
             res = {}
             first_row = True
 
@@ -177,13 +186,14 @@ class Frame(Data):
                     cols = row
                     first_row = False
                 else:
-                    for i,col in enumerate(cols):
+                    for i, col in enumerate(cols):
                         res[col].append(row[i])
 
         return res
 
     def __repr__(self):
-        return f'<Frame({ self.source }) contents:{self.contents.__repr__()}>'
+        # return f'<Frame({ self.source }) contents:{self.contents.__repr__()}>'
+        return f'<Frame({ self.source })>'
 
     def row_count(self):
         """
