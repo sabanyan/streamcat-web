@@ -17,7 +17,7 @@ class Mcat(MCommand):
         返すのはvalueにData型を持つdictである必要がある
         """
 
-        print('mcat:', list(inputs.values()))
+        # print('mcat:', list(inputs.values()))
         # UNIXコマンド用配列を作る
         command_args = self.name.split()
 
@@ -33,7 +33,8 @@ class Mcat(MCommand):
                     raise Exception()
 
                 path = Path(os.environ['KENG_FRAME_PATH']).joinpath(input.uuid + ext)
-                input.source.save(path.open(mode='w', encoding='utf-8'))
+                with path.open(mode='w', encoding='utf-8') as fd:
+                    input.source.save(fd)
                 input.source = PathFileSource('csv', path.parent, path.name)
 
             inputs_for_arg_i.append(input.source.fullpath.as_posix())
@@ -46,6 +47,8 @@ class Mcat(MCommand):
         # コマンド列から作られる結果を返す
         source = UnixCommandSource('csv', command_args, stdin=None)
         frame = Frame(str(uuid.uuid4()), source)
+
+        self.inputs_for_dtor.append(frame)
 
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す
@@ -107,7 +110,8 @@ class Mjoin(MCommand):
                 raise Exception()
 
             path = Path(os.environ['KENG_FRAME_PATH']).joinpath(input_m.uuid + ext)
-            input_m.source.save(path.open(mode='w', encoding='utf-8'))
+            with path.open(mode='w', encoding='utf-8') as fd:
+                input_m.source.save(fd)
             input_m.source = PathFileSource('csv', path.parent, path.name)
 
         command_args.append(f"m={ input_m.source.fullpath }")
@@ -115,10 +119,11 @@ class Mjoin(MCommand):
         # print('mjoin:', command_args)
 
         # コマンド列から作られる結果を返す
-        # frame = PopenFrame(command_args, stdin=stdin)
         source = UnixCommandSource('csv', command_args, stdin=stdin)
         frame_uuid = str(uuid.uuid4())
         frame = Frame(frame_uuid, source)
+
+        self.inputs_for_dtor.append(frame)
 
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す
