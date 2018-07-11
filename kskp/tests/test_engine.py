@@ -213,7 +213,7 @@ class EngineTestCase(unittest.TestCase):
         self.assertEqual(result_dict['a'], ['1', '4'])
         self.assertEqual(result_dict['b'], ['2', '5'])
 
-    @unittest.skip
+    # @unittest.skip
     def test_simple_engine_executing(self):
         """
         単純なフロー実行をエンジンから行うテスト
@@ -593,7 +593,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-    # @unittest.skip
+    @unittest.skip
     def test(self):
         flow = Flow('parent')
 
