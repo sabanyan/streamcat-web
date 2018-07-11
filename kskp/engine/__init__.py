@@ -40,7 +40,7 @@ def execute_internal(flow, arguments={}, inputs=None, frame_path=None):
     # 5. 後始末
     # TODO: 思ったように処理が動いておらず、
     #       他のバグの原因となっているのでひとまずコメント
-    # job.dtor()
+    job.dtor()
 
     return result
 
