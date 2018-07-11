@@ -1,5 +1,5 @@
 import re
-
+from pathlib import Path
 # frameの保存場所は環境変数か、engine.execute()で直接指定する
 # os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
 from .data import *
@@ -65,7 +65,7 @@ class Flow:
         self.steps = {}
         self.data = {}
         self.edges = {}
-        self.signature = {}
+        self.signature = [{}, {}]
 
         self.jobs = [] # 現在のところリソース管理のため(fd削除)
 
@@ -83,24 +83,31 @@ class Flow:
             for src in self.edges[datum_id]['srcs']
         ]
 
-    def check_duplicate_use(self, datum_id, datum):
+    def check_multi_use(self, datum_id, datum):
         """
-        同じpopenを2度は使えないので、CSVに変換する
+        同じpopenを複数のstepへ投げることはできないので、
+        その場合はファイルに保存する
         """
-        if datum.source == 'popen' and datum.already_piped:
-            return CsvFrame.from_uuid(datum.uuid)
-        else:
-            return datum
-        #     self.data[datum_id] = CsvFrame.from_uuid(datum.uuid)
-        #
-        # return self.data[datum_id]
+        if len(self.edges[datum_id]['dsts']) >= 2 \
+        and isinstance(datum.source, UnixCommandSource):
+            # ファイルの拡張子はdatum.source.typeから決定する
+            if datum.source.type == 'csv':
+                ext = '.csv'
+            else:
+                # その他の場合は今は考えない
+                raise Exception()
+
+            path = Path(os.environ['KENG_FRAME_PATH']).joinpath(datum.uuid + ext)
+            datum.source.save(path.open(mode='w', encoding='utf-8'))
+            datum.source = PathFileSource('csv', path.parent, path.name)
+        return datum
 
     def get_inputs_from_step(self, step_id, args):
         """
         指定したstepを実行するために必要なinputのdataを集めてくる
         """
         inputs = {
-            k: self.check_duplicate_use(k, self.get_datum(k, args)) for k, v in self.edges.items()
+            k: self.check_multi_use(k, self.get_datum(k, args)) for k, v in self.edges.items()
             if len(v['dsts']) > 0 and step_id in [dst.split('.')[0] for dst in v['dsts']]
         }
         return inputs
@@ -122,6 +129,7 @@ class Flow:
         ports = self.get_src_ports_from_result_datum(datum_id)
 
         # 普通はsrcになるのは一つだけのstepなので、ひとまずはそれを取得する
+        # print(f'{self.uuid} {datum_id} ports:', ports)
         step_id = ports[0][0]
 
         # 次にそのstepを作るためのinputsを集める
@@ -135,25 +143,34 @@ class Flow:
 
             # もし書き換え対象のものがあれば
             if isinstance(val, str):
-                g = re.search(r'@\[(\S*)\]', val)
+                g = re.search(r'@\[(\S*?)\]', val)
                 if g is not None:
                     for parent_key in g.groups():
                         step.arguments[key] = val.replace(f'@[{parent_key}]', args[parent_key])
 
         # inputsをちゃんと実行するstepのsignatureに合わせる必要がある
-        # print('get_datum inputs:', inputs)
+        # print(f'{self.uuid} get_datum inputs:', inputs)
         # print('get_datum step signature:', step.command_or_flow.signature[0])
         # print('get_datum edges:', self.edges)
         # print('get_datum step_id:', step_id)
 
         signatured_inputs = {}
         for k, v in inputs.items():
-            for port in step.command_or_flow.signature[0].keys():
-                target_port = f'{step_id}.{port}'
-                if target_port in self.edges[k]['dsts']:
-                    signatured_inputs[port] = v
+            # print(f'{self.uuid} get_datum signature[0]:', step.command_or_flow.signature[0])
 
-        # print('get_datum signatured_inputs:', signatured_inputs)
+            # mcatなど、任意の数の引数を取れる場合はそのままスルー
+            signature_in = step.command_or_flow.signature[0]
+            if '*' in list(signature_in.keys()):
+                signatured_inputs = inputs
+                break
+            else:
+                for port in signature_in.keys():
+                    target_port = f'{step_id}.{port}'
+                    # print(f'{self.uuid} get_datum {datum_id} target_port', target_port)
+                    if target_port in self.edges[k]['dsts']:
+                        signatured_inputs[port] = v
+
+        # print(f'{self.uuid} get_datum signatured_inputs:', signatured_inputs)
 
         job = Job(step, signatured_inputs)
         self.jobs.append(job)
@@ -183,13 +200,18 @@ class Flow:
         lasts = self.get_lasts()
 
         # 引数を与える
-        inputs = list(inputs.values())
-        if len(inputs) > 0:
-            # TODO: まずは1つだけの前提
-            input = inputs[0]
-            input_key = list(self.signature[0].keys())[0]
+        for key in self.signature[0].keys():
             # そっくり入れ替える
-            self.data[input_key] = input
+            # print(f'{self.uuid} execute {key} inputs:', inputs)
+            self.data[key] = inputs[key]
+
+        # inputs = list(inputs.values())
+        # if len(inputs) > 0:
+        #     # TODO: まずは1つだけの前提
+        #     input = inputs[0]
+        #     input_key = list(self.signature[0].keys())[0]
+        #     # そっくり入れ替える
+        #     self.data[input_key] = input
 
         # それぞれについて必要ならば計算して結果を取得する
         result = { k: self.get_datum(k, arguments) for k in lasts.keys() }
