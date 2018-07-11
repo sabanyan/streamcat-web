@@ -1,21 +1,58 @@
 // @flow
 import React from 'react'
 import style from './style.scss'
+import Arrow from './Arrow'
+import Constants from '../../../constants'
 
-type Props = {
+type EdgeProps = {
+  label: string;
   vx: number;
   vy: number;
   wx: number;
   wy: number;
 }
 
-const Edge = (props: Props) => {
-  const {vx, vy, wx, wy} = props
+// ref:https://www.s-projects.net/point-to-angle.html
+const getArrowAngle = (edge: EdgeProps) => {
+  return Math.round(Math.atan2(edge.wy - edge.vy,edge.wx - edge.vx) / Math.PI * 180) - 90
+}
+
+const getAngle = (edge: EdgeProps) => {
+  return Math.round(Math.atan2(edge.wy - edge.vy,edge.wx - edge.vx) / Math.PI * 180) - 90
+}
+
+const Edge = (props: EdgeProps) => {
+  const {label, vx, vy, wx, wy} = props
+
+  const angle = getAngle(props)
+
+  let port = null
+  const arrowAngle = getArrowAngle(props)
+  if(Constants.debug){
+
+    // const offset_x = ((vx - wx) >= 0) ? -1 * Constants.default.step.width / 2 - 10 : 1 * Constants.default.step.width / 2 + 10
+    // const offset_y = ((vy - wy) >= 0) ? -1 * Constants.default.step.height / 2 - 10 : 1 * Constants.default.step.height / 2 + 10
+    // const text_x = vx + offset_x //(wx-vx)/2 + vx + offset_x
+    // const text_y = vy + offset_y //(wy-vy)/2 + vy + offset_y
+
+    //center
+    const text_x = (wx-vx)/2 + vx
+    const text_y = (wy-vy)/2 + vy
+
+    port = <text className="text" transform={'translate(' + text_x + ',' + text_y + ')'} fontSize={12} textAnchor={'middle'}
+            width={100}>{label}</text>
+  }
+
+
+
   return <g>
     <path className={style.edge}
-          d={'M' + vx + ',' + vy + ' ' + 'L' + wx + ',' + wy}/>
+          d={'M' + vx + ',' + vy + ' ' + 'L' + wx + ',' + wy} />
     <path className={style.base}
           d={'M' + vx + ',' + vy + ' ' + 'L' + wx + ',' + wy}/>
+    <Arrow x={wx} y={wy} width={6} height={6} angle={arrowAngle} className={style.edge} />
+    <Arrow x={wx} y={wy} width={6} height={6} angle={arrowAngle} className={style.base} />
+    {port}
   </g>
 }
 
