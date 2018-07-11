@@ -232,11 +232,16 @@ def execute_flow(flow_uuid):
 def jobs():
     """
     指定されたフローの実行結果を返す
-    TODO: モックです
     """
+    flow_uuid = request.args['flow']
+    count = int(request.args['count'])
 
-    path = Path(JOBS_DIR_PATH).joinpath('sample.json')
-    return jsonify({'success': True, 'data': json.loads(path.read_text())})
+    for job_path in Path(JOBS_DIR_PATH).iterdir():
+        data = json.loads(job_path.read_text(encoding='utf-8'))
+        if data[count - 1]['flow']['uuid'] == flow_uuid:
+            result = data
+
+    return jsonify({'success': True, 'data': result})
 
 
 def execute_flow_internal(flow_uuid):
@@ -253,7 +258,9 @@ def execute_flow_internal(flow_uuid):
     result = execute_flow_by_uuid(flow_uuid)
 
     # 結果を縦型のdataframeっぽくパースして返す
-    return result['d1'].contents
+    keys = list(result.keys())
+    result_dict = {key:result[keys[0]].contents for key in keys}
+    return result_dict
 
 
 def load_as_data_frame(result_text):

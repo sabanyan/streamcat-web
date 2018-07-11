@@ -378,7 +378,6 @@ class ApiTestCase(unittest.TestCase):
         7/4現在、エラー回避のためengineの__init__のexecuteのjob.dtor()を無効にしている
         '''
         flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
-
         # 実行
         with app.test_client() as client:
             endpoint = '/api/v0/frames?from=%s' % flow_uuid
@@ -389,7 +388,7 @@ class ApiTestCase(unittest.TestCase):
         expected_result = {'数量合計': ['3', '5'], '金額合計': ['30', '120'], '顧客%0': ['A', 'B']}
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'], expected_result)
+        self.assertEqual(result['data']['d1'], expected_result)
 
 class FrameApiTestCase(unittest.TestCase):
     def setUp(self):
@@ -489,18 +488,21 @@ class JobTestCase(unittest.TestCase):
         app.testing = True
         self.client = app.test_client()
 
-    def test_sample_json(self):
-        flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
-        endpoint = '/api/v0/jobs?flow=%s&count=1' % flow_uuid
-
+    def test_jobs(self):
+        # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = 1
+
+            flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
+            count = 1
+
+            endpoint = '/api/v0/jobs?flow=%s&count=%s' % (flow_uuid, count)
             response = client.get(endpoint)
+            result = json.loads(response.get_data())
 
-        result = json.loads(response.get_data())['data'][0]
-
-        self.assertEqual(result["executedAt"], "2018-06-26T04:33:15+09:00")
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
 
 if __name__ == '__main__':
     unittest.main()
