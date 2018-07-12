@@ -2,8 +2,8 @@ import unittest
 
 from .. import engine as e
 from ..engine.data import *
-from ..engine.command import Parameter, Command
-from ..engine.core import Step, Flow
+from ..engine.util import Parameter
+from ..engine.core import Command, Step, Flow
 
 class ParameterTestCase(unittest.TestCase):
     def test_parameter_required(self):
