@@ -36,10 +36,15 @@ class Job:
         for input in self.inputs.values():
             input.dtor()
 
-        # 一時ファイルを消してみる
         step = self.step
         if step.step_type == 'flow':
             flow = self.step.command_or_flow
+
+            # 子供のジョブも掃除をする
+            # for job in flow.jobs:
+            #     job.dtor()
+
+            # 一時ファイルを消してみる
             for key, val in flow.data.items():
                 if val is not None and len(flow.edges[key]['dsts']) > 0:
                     if isinstance(val.source, PathFileSource):
@@ -80,6 +85,8 @@ class Flow:
         self.data = {}
         self.edges = {}
         self.signature = [{}, {}]
+
+        # self.jobs = [] # リソース管理用
 
     def get_src_ports_from_result_datum(self, datum_id):
         """
@@ -187,9 +194,11 @@ class Flow:
         # print(f'{self.uuid} get_datum signatured_inputs:', signatured_inputs)
 
         job = Job(step, signatured_inputs)
+        # self.jobs.append(job)
 
         # 実行して、結果を返却する
-        return job.execute()[port_name]
+        result = job.execute()[port_name]
+        return result
 
     def get_lasts(self):
         """
@@ -223,69 +232,3 @@ class Flow:
 
         # outputsを集め直す
         return { k: self.data[k] for k in self.signature[1].keys() }
-
-
-class Command:
-    """
-    コマンド
-
-    :param name: コマンドにつける名称。必須。
-                 現在、フローファイルに書かれた情報をここに取り込み、
-                 それに従い、読み込むべきCommandクラスの名前を決定する。
-    """
-
-    def __init__(self, name=''):
-        # assert name is not None and name != ''
-
-        self.name = name
-
-        # このコマンドに与えることができるパラメータの定義リスト
-        # 中身はParameterインスタンス
-        self.parameters = []
-
-        # このコマンドに与えることができるデータの定義。
-        # dict二つのtupleで、１つ目は入力、２つ目は出力。
-        self.signature = ({}, {})
-
-        self.description = ''
-        # self.version = '0.1.0'
-
-    def execute(self, arguments={}, inputs={}):
-        # TODO: 引数のvalidation
-        raise Exception()
-
-
-from enum import Enum, auto
-
-
-class Parameter:
-    """
-    パラメータ定義1つを表す
-
-    :param name: パラメータ名。必須
-    :param caption: このパラメータを表す短いタイトル。GUI上でのラベルとして使われる。
-                    オプショナルで、未指定だとnameと同じになる。
-    """
-
-    class WidgetType(Enum):
-        """
-        パラメータ値の分類を表す。
-        type属性に使われ、
-        この値によってGUI上で使われる部品が変化することを想定している
-        """
-        TEXTBOX = auto()
-
-
-    def __init__(self, name, caption=None):
-        assert name is not None and name != '', 'nameは必須です'
-
-        self.name = name
-        if caption is None:
-            self.caption = name
-        else:
-            self.caption = caption
-
-        self.widget_type = self.WidgetType.TEXTBOX
-
-        # self.default = None
-        # self.validation = None
