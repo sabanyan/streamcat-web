@@ -26,6 +26,7 @@ class Job:
         """
         # print('self.inputs:', self.inputs)
         result = self.step.execute(self.inputs)
+
         return result
 
     def dtor(self):
@@ -34,6 +35,16 @@ class Job:
         # inputsはもう使い切ったのでdtorしてみる
         for input in self.inputs.values():
             input.dtor()
+
+        # 一時ファイルを消してみる
+        step = self.step
+        if step.step_type == 'flow':
+            flow = self.step.command_or_flow
+            for key, val in flow.data.items():
+                if val is not None and len(flow.edges[key]['dsts']) > 0:
+                    if isinstance(val.source, PathFileSource):
+                        if val.source.fullpath.exists():
+                            os.unlink(val.source.fullpath)
 
 
 class Step:
@@ -114,7 +125,7 @@ class Flow:
         }
         return inputs
 
-    @profile
+    # @profile
     def get_datum(self, datum_id, args):
         """
         指定したidのdataがすでに存在すればそれを返す
@@ -123,7 +134,7 @@ class Flow:
         datum = self.data[datum_id]
 
         # dataがすでに存在すればそれを返す
-        if datum.uuid is not None:
+        if datum is not None and datum.uuid is not None:
             return datum
 
         # なければ作る
@@ -133,7 +144,7 @@ class Flow:
 
         # 普通はsrcになるのは一つだけのstepなので、ひとまずはそれを取得する
         # print(f'{self.uuid} {datum_id} ports:', ports)
-        step_id = ports[0][0]
+        step_id, port_name = ports[0]
 
         # 次にそのstepを作るためのinputsを集める
         inputs = self.get_inputs_from_step(step_id, args)
@@ -177,11 +188,7 @@ class Flow:
 
         job = Job(step, signatured_inputs)
 
-        # 実行開始
-        # TODO: ひとまずoutputsが1つのみである前提で取得
-        port_name = list(step.command_or_flow.signature[1].keys())[0]
-
-        # 結果を返却する
+        # 実行して、結果を返却する
         return job.execute()[port_name]
 
     def get_lasts(self):

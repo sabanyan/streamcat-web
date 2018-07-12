@@ -90,10 +90,11 @@ class UnixCommandSource(FileSource):
 
     @property
     def fd(self):
+        # if self.popen is not None and self.popen.stdin is not None and self.popen.stdin.closed:
+        #     print(f'pid: {self.popen.pid} args: {self.args}')
         self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE, universal_newlines=True)
         if self.stdin is not None:
             self.stdin.close()
-        # print(f'pid: {self.popen.pid} args: {self.args}')
         return self.popen.stdout
 
     @fd.setter
@@ -103,7 +104,8 @@ class UnixCommandSource(FileSource):
     def save(self, stdout):
         """ engineから使う最後の保存用 """
         popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
-        self.stdin.close()
+        if self.stdin is not None:
+            self.stdin.close()
         popen.wait()
 
     def dtor(self):
