@@ -43,6 +43,7 @@ class Flow:
         self.edges = {} # { 's1': ({'in': 'd0'}, {'out': 'd1'}) }
 
     def execute(self, args={}, inputs={}):
+        print(self.data)
         self.prepare_inputs(inputs)
 
         self.data.update({ k: self.get_datum(k, args) for k in self.last_keys })
@@ -58,7 +59,8 @@ class Flow:
 
         self.expand_args(job, args)
         job.inputs = self.check_inputs(self.inputs_of_job(job_id, args), job_id)
-        return job.execute()[port]
+        self.data[datum_id] = job.execute()[port]
+        return self.data[datum_id]
 
     def src_job_from(self, datum_id):
         for k, v in self.edges.items():
@@ -86,7 +88,9 @@ class Flow:
         res = inputs
         i_ports = self.jobs[job_id].step.command_or_flow.i_ports
         if '*' not in list(i_ports.keys()):
-            res = {k: v for k, v in inputs.items() if k in self.edges[job_id][0].values()}
+            res = {src_key: v for k, v in inputs.items()
+                              for src_key, src_datum_id in self.edges[job_id][0].items()
+                              if src_datum_id == k}
         return res
 
     def expand_args(self, job, args):
@@ -104,6 +108,7 @@ class Flow:
 
     def prepare_inputs(self, inputs):
         for key in self.i_ports.keys():
+            print(inputs, key)
             self.data[key] = inputs[key]
 
     @property
@@ -140,11 +145,11 @@ class MCommand(Command):
         self.o_ports = {'out': {'type': 'frame'}}
 
     def execute(self, args={}, inputs={}):
-        source = UnixCommandSource('csv', self.command_args(args), stdin=self.stdin(inputs))
+        source = UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
         frame = Frame(str(uuid.uuid4()), source)
         return { self.out_key: frame }
 
-    def command_args(self, args):
+    def command_args(self, args, inputs):
         res = self.name.split()
         for k, v in args.items():
             if k == 'x' and v == True:
@@ -162,9 +167,116 @@ class MCommand(Command):
     def out_key(self):
         return list(self.o_ports.keys())[0]
 
+    def save(self, input):
+        # パイプなら、CSVに吐く
+        if isinstance(input.source, UnixCommandSource):
+            path = Path(os.environ['KENG_FRAME_PATH']).joinpath(input.uuid + input.source.ext)
+            with path.open(mode='w', encoding='utf-8') as fd:
+                input.source.save(fd)
+            input.source = PathFileSource('csv', path.parent, path.name)
+
 class Mcut(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mcut'
         self.description = '列選択'
         self.params.append(Parameter('f', '対象列名'))
+
+class Msetstr(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msetstr'
+        self.description = '文字列追加'
+        self.params.append(Parameter('a', '追加列名'))
+        self.params.append(Parameter('v', '追加する値'))
+
+class Msum(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msum'
+        self.description = '合計'
+        self.params.append(Parameter('k', '合計の基準となる列名'))
+        self.params.append(Parameter('f', '合計する列名:合計後の列名'))
+
+class Mstats(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mstats'
+        self.description = '統計情報'
+        self.params.append(Parameter('c', '計算項目'))
+        self.params.append(Parameter('f', '対象列名'))
+
+class Mavg(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mavg'
+        self.description = '平均'
+        self.params.append(Parameter('f', '対象列名'))
+
+class Mbucket(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mbucket'
+        self.description = '行分割'
+        self.params.append(Parameter('n', '行数'))
+        self.params.append(Parameter('f', '対象列名'))
+
+class Mtee(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtee'
+        self.description = '出力'
+        self.params.append(Parameter('o', '出力先'))
+
+class Mselstr(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mselstr'
+        self.description = '行選択(文字列)'
+        self.params.append(Parameter('f', '対象列名'))
+        self.params.append(Parameter('v', '絞込条件値（文字列）'))
+
+class Mcat(MCommand):
+    def __init__(self):
+        super().__init__()
+
+        self.name = 'mcat'
+        self.description = 'ファイル結合'
+        self.i_ports = {'*': {'type': 'frame'}} # 何個でも取れる
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        # 引数をそれぞれパスにしていく
+        inputs_for_arg_i = []
+        for key, input in inputs.items():
+            self.save(input)
+            inputs_for_arg_i.append(input.source.fullpath.as_posix())
+        res.append(f"i={','.join(inputs_for_arg_i)}")
+        return res
+
+    def stdin(self, inputs):
+        return None
+
+class Mjoin(MCommand):
+    def __init__(self):
+        super().__init__()
+
+        self.name = 'mjoin'
+        self.description = '結合'
+        self.i_ports = {'i' : {'type': 'frame'}, 'm' : {'type': 'frame'}}
+        self.params.append(Parameter('k', '結合キー名'))
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        self.save(input_m)
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
