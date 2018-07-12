@@ -2,7 +2,8 @@ import unittest
 
 from .. import engine as e
 from ..engine.data import *
-from ..engine.core import Parameter, Command, Step, Flow
+from ..engine.command import Parameter, Command
+from ..engine.core import Step, Flow
 
 class ParameterTestCase(unittest.TestCase):
     def test_parameter_required(self):
@@ -200,7 +201,7 @@ class EngineTestCase(unittest.TestCase):
 
         return flow
 
-    @unittest.skip
+    # @unittest.skip
     def test_sample_flow(self):
         """ 単純なフロー実行のテスト """
 
@@ -622,7 +623,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-    # @unittest.skip
+    @unittest.skip
     def test(self):
         flow = Flow('parent')
 
