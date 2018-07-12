@@ -50,13 +50,13 @@ class PathFileSource(FileSource):
         super().__init__(source_type)
         self.source_dir = source_dir
         self.file_name = file_name
+        self._fd = None
 
     @property
     def fd(self):
         path = Path(self.source_dir).joinpath(self.file_name)
-        # print(self)
-        # print(path)
-        return open(path, 'r')
+        self._fd = open(path, 'r')
+        return self._fd
 
     @fd.setter
     def fd(self, value):
@@ -68,6 +68,10 @@ class PathFileSource(FileSource):
 
     def __repr__(self):
         return f'PathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
+
+    def dtor(self):
+        if self._fd is not None:
+            self._fd.close()
 
 import subprocess
 

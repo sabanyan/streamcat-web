@@ -25,12 +25,15 @@ class Job:
         返却するのはデータを値にもつdict
         """
         # print('self.inputs:', self.inputs)
-        return self.step.execute(self.inputs)
+        result = self.step.execute(self.inputs)
+        return result
 
     def dtor(self):
         """ デストラクタ """
         # print('Job.dtor()')
-        self.step.command_or_flow.dtor()
+        # inputsはもう使い切ったのでdtorしてみる
+        for input in self.inputs.values():
+            input.dtor()
 
 
 class Step:
@@ -66,8 +69,6 @@ class Flow:
         self.data = {}
         self.edges = {}
         self.signature = [{}, {}]
-
-        self.jobs = [] # 現在のところリソース管理のため(fd削除)
 
     def get_src_ports_from_result_datum(self, datum_id):
         """
@@ -113,6 +114,7 @@ class Flow:
         }
         return inputs
 
+    @profile
     def get_datum(self, datum_id, args):
         """
         指定したidのdataがすでに存在すればそれを返す
@@ -174,7 +176,6 @@ class Flow:
         # print(f'{self.uuid} get_datum signatured_inputs:', signatured_inputs)
 
         job = Job(step, signatured_inputs)
-        self.jobs.append(job)
 
         # 実行開始
         # TODO: ひとまずoutputsが1つのみである前提で取得
@@ -206,14 +207,6 @@ class Flow:
             # print(f'{self.uuid} execute {key} inputs:', inputs)
             self.data[key] = inputs[key]
 
-        # inputs = list(inputs.values())
-        # if len(inputs) > 0:
-        #     # TODO: まずは1つだけの前提
-        #     input = inputs[0]
-        #     input_key = list(self.signature[0].keys())[0]
-        #     # そっくり入れ替える
-        #     self.data[input_key] = input
-
         # それぞれについて必要ならば計算して結果を取得する
         result = { k: self.get_datum(k, arguments) for k in lasts.keys() }
 
@@ -223,14 +216,6 @@ class Flow:
 
         # outputsを集め直す
         return { k: self.data[k] for k in self.signature[1].keys() }
-
-    def dtor(self):
-        # print('Flow.dtor():', self.jobs)
-        for j in self.jobs:
-            j.dtor()
-
-        # for d in self.data.values():
-        #     d.dtor()
 
 
 class Command:
@@ -261,10 +246,6 @@ class Command:
     def execute(self, arguments={}, inputs={}):
         # TODO: 引数のvalidation
         raise Exception()
-
-    def dtor(self):
-        """ デストラクタ """
-        pass
 
 
 from enum import Enum, auto
