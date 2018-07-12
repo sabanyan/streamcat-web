@@ -1,19 +1,9 @@
 import unittest
 import json
 
-<<<<<<< HEAD
 from .. import engine as e
 from ..engine.data import *
 from ..engine.core import Parameter, Command, Step, Flow, Job
-=======
-# from .. import engine as e
-# from ..engine.data import *
-# from ..engine.core import Parameter, Command, Step, Flow
->>>>>>> 2e73e29071b2f3f20f082e707712a656a2c7d73d
-
-from kskp import engine as e
-from kskp.engine.data import *
-from kskp.engine.core import Parameter, Command, Step, Flow
 
 class ParameterTestCase(unittest.TestCase):
     def test_parameter_required(self):
@@ -502,7 +492,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
     def set_flow_step(self, flow, key, subflow, args):
         flow.steps[key] = Step('flow', self.register(subflow), args)
 
-    @profile
+
     def make_section_flow(self):
         flow = Flow('section')
         self.set_command_step(flow, 's0', Mselstr(), {'f': 'Section', 'v': '@[v]'})
@@ -520,7 +510,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-    @profile
+
     def make_stats_all_flow(self):
         """ 各列全体についての統計量を求める """
         flow = Flow('stats_all')
@@ -585,7 +575,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         # flow.dtor()
 
-    @profile
+
     def stats_by_4_sensors(self):
         """
         入力されたファイルの3H 3V 4H 4Vそれぞれについて、統計量を求めて返すサブフロー
@@ -616,7 +606,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-    @profile
+
     def make_splitting_flow(self):
         # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
         flow = Flow('ex')
@@ -660,7 +650,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         return flow
 
     # @unittest.skip
-    @profile
+    
     def test(self):
         flow = Flow('parent')
 
