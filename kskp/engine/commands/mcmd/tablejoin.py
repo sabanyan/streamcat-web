@@ -39,16 +39,11 @@ class Mcat(MCommand):
 
             inputs_for_arg_i.append(input.source.fullpath.as_posix())
 
-            # 後処理の対象に追加する
-            self.inputs_for_dtor.append(input)
-
         command_args.append(f"i={','.join(inputs_for_arg_i)}")
 
         # コマンド列から作られる結果を返す
         source = UnixCommandSource('csv', command_args, stdin=None)
         frame = Frame(str(uuid.uuid4()), source)
-
-        self.inputs_for_dtor.append(frame)
 
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す
@@ -89,7 +84,6 @@ class Mjoin(MCommand):
         # パイプでつなげられそうなら、つなげる
         stdin = input.source.fd
         # print('mjoin:', stdin)
-        self.fds.append(stdin)
 
         # UNIXコマンド用配列を作る
         command_args = self.name.split()
@@ -122,8 +116,6 @@ class Mjoin(MCommand):
         source = UnixCommandSource('csv', command_args, stdin=stdin)
         frame_uuid = str(uuid.uuid4())
         frame = Frame(frame_uuid, source)
-
-        self.inputs_for_dtor.append(frame)
 
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す

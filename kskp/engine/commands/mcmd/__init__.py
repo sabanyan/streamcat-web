@@ -18,8 +18,6 @@ class MCommand(Command):
             { 'in' : { 'type': 'frame' } },
             { 'out': { 'type': 'frame' } }
         )
-        self.fds = []
-        self.inputs_for_dtor = []
 
     def execute(self, arguments={}, inputs={}):
         """
@@ -33,9 +31,6 @@ class MCommand(Command):
         # パイプでつなげられそうなら、つなげる
         # print('execute input:', input)
         stdin = input.source.fd
-        self.fds.append(stdin)
-
-        self.inputs_for_dtor.append(input)
 
         # UNIXコマンド用配列を作る
         command_args = self.name.split()
@@ -57,15 +52,5 @@ class MCommand(Command):
         frame_uuid = str(uuid.uuid4())
         frame = Frame(frame_uuid, source)
 
-        self.inputs_for_dtor.append(frame)
-
         key_name = list(self.signature[1].keys())[0]
         return { key_name: frame } # keyとDataを返す
-
-    def dtor(self):
-        # print('MCommand.dtor()', self.fds)
-        for fd in self.fds:
-            fd.close()
-
-        for i in self.inputs_for_dtor:
-            i.dtor()

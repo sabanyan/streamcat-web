@@ -1,4 +1,4 @@
-from . import *
+from kskp.engine.commands.mcmd import *
 
 class Mcut_n:
     pass
