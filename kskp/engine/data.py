@@ -16,6 +16,15 @@ class Source:
     def __init__(self, source_type=''):
         self.type = source_type
 
+    @property
+    def ext(self):
+        # ファイルの拡張子はdatum.source.typeから決定する
+        if self.type == 'csv':
+            return '.csv'
+        else:
+            # その他の場合は今は考えない
+            raise Exception()
+
     def dtor(self):
         pass
 
