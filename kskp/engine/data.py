@@ -118,7 +118,7 @@ class UnixCommandSource(FileSource):
         popen.wait()
 
     def dtor(self):
-        # print('UnixCommandSource dtor:', self.args)
+        print(f'UnixCommandSource pid: {self.popen.pid} args:', self.args)
         if self.popen is not None:
             self.popen.stdout.close()
             # print(f'close pid: {self.popen.pid} args: {self.args}')
