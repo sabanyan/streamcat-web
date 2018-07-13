@@ -93,8 +93,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       <Toolbar {...this.props} />
       <PaperScroller {...this.props}>
         <Paper {...this.props}>
-          {steps}
           {edges}
+          {steps}
           {selector}
         </Paper>
       </PaperScroller>

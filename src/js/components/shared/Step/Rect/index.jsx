@@ -43,10 +43,10 @@ export default class Rect extends React.Component<Props> {
 
     const outline_style = {
       ...this.props.style,
-      x: this.props.style.x - 2,
-      y: this.props.style.y - 2,
-      width: this.props.style.width + 4,
-      height: this.props.style.height + 4,
+      x: this.props.style.x - Constants.default.step.borderWidth,
+      y: this.props.style.y - Constants.default.step.borderWidth,
+      width: this.props.style.width + Constants.default.step.borderWidth * 2,
+      height: this.props.style.height + Constants.default.step.borderWidth * 2,
       rx: this.props.style.rx,
       ry: this.props.style.ry,
     }
@@ -57,7 +57,7 @@ export default class Rect extends React.Component<Props> {
                       stroke={this.props.selectedOutlineColor}
                       {...outline_style}
                       fill={'none'}
-                      strokeWidth={4}
+                      strokeWidth={Constants.default.step.borderWidth * 2}
       >
       </rect>
     }
