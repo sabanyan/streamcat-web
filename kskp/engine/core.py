@@ -27,7 +27,13 @@ class Job:
         返却するのはデータを値にもつdict
         """
         # print('self.inputs:', self.inputs)
+<<<<<<< HEAD
         jobs_result = self.step.execute(self.inputs)
+=======
+        result = self.step.execute(self.inputs)
+
+        return result
+>>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
 
         # 実行履歴の作成
         # job.executeは再帰処理で何度も呼び出され、Commandのexecute時は避けたいので
@@ -79,6 +85,21 @@ def dtor(self):
         for input in self.inputs.values():
             input.dtor()
 
+        step = self.step
+        if step.step_type == 'flow':
+            flow = self.step.command_or_flow
+
+            # 子供のジョブも掃除をする
+            # for job in flow.jobs:
+            #     job.dtor()
+
+            # 一時ファイルを消してみる
+            for key, val in flow.data.items():
+                if val is not None and len(flow.edges[key]['dsts']) > 0:
+                    if isinstance(val.source, PathFileSource):
+                        if val.source.fullpath.exists():
+                            os.unlink(val.source.fullpath)
+
 
 class Step:
     """
@@ -113,6 +134,8 @@ class Flow:
         self.data = {}
         self.edges = {}
         self.signature = [{}, {}]
+
+        # self.jobs = [] # リソース管理用
 
     def get_src_ports_from_result_datum(self, datum_id):
         """
@@ -158,7 +181,11 @@ class Flow:
         }
         return inputs
 
+<<<<<<< HEAD
     
+=======
+    # @profile
+>>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def get_datum(self, datum_id, args):
         """
         指定したidのdataがすでに存在すればそれを返す
@@ -167,7 +194,7 @@ class Flow:
         datum = self.data[datum_id]
 
         # dataがすでに存在すればそれを返す
-        if datum.uuid is not None:
+        if datum is not None and datum.uuid is not None:
             return datum
 
         # なければ作る
@@ -177,7 +204,7 @@ class Flow:
 
         # 普通はsrcになるのは一つだけのstepなので、ひとまずはそれを取得する
         # print(f'{self.uuid} {datum_id} ports:', ports)
-        step_id = ports[0][0]
+        step_id, port_name = ports[0]
 
         # 次にそのstepを作るためのinputsを集める
         inputs = self.get_inputs_from_step(step_id, args)
@@ -220,13 +247,11 @@ class Flow:
         # print(f'{self.uuid} get_datum signatured_inputs:', signatured_inputs)
 
         job = Job(step, signatured_inputs)
+        # self.jobs.append(job)
 
-        # 実行開始
-        # TODO: ひとまずoutputsが1つのみである前提で取得
-        port_name = list(step.command_or_flow.signature[1].keys())[0]
-
-        # 結果を返却する
-        return job.execute()[port_name]
+        # 実行して、結果を返却する
+        result = job.execute()[port_name]
+        return result
 
     def get_lasts(self):
         """
@@ -261,7 +286,6 @@ class Flow:
         # outputsを集め直す
         return { k: self.data[k] for k in self.signature[1].keys() }
 
-
 class Command:
     """
     コマンド
@@ -290,39 +314,3 @@ class Command:
     def execute(self, arguments={}, inputs={}):
         # TODO: 引数のvalidation
         raise Exception()
-
-
-from enum import Enum, auto
-
-
-class Parameter:
-    """
-    パラメータ定義1つを表す
-
-    :param name: パラメータ名。必須
-    :param caption: このパラメータを表す短いタイトル。GUI上でのラベルとして使われる。
-                    オプショナルで、未指定だとnameと同じになる。
-    """
-
-    class WidgetType(Enum):
-        """
-        パラメータ値の分類を表す。
-        type属性に使われ、
-        この値によってGUI上で使われる部品が変化することを想定している
-        """
-        TEXTBOX = auto()
-
-
-    def __init__(self, name, caption=None):
-        assert name is not None and name != '', 'nameは必須です'
-
-        self.name = name
-        if caption is None:
-            self.caption = name
-        else:
-            self.caption = caption
-
-        self.widget_type = self.WidgetType.TEXTBOX
-
-        # self.default = None
-        # self.validation = None

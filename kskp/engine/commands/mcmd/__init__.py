@@ -1,7 +1,8 @@
 import os
 import uuid
 
-from ...core import Parameter, Command
+from ...util import Parameter
+from ...core import Command
 from ...data import *
 
 
