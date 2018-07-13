@@ -3,12 +3,7 @@ import json
 
 from .. import engine as e
 from ..engine.data import *
-<<<<<<< HEAD
 from ..engine.core import Parameter, Command, Step, Flow, Job
-=======
-from ..engine.util import Parameter
-from ..engine.core import Command, Step, Flow
->>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
 
 class ParameterTestCase(unittest.TestCase):
     def test_parameter_required(self):
@@ -507,10 +502,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
     def set_flow_step(self, flow, key, subflow, args):
         flow.steps[key] = Step('flow', self.register(subflow), args)
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def make_section_flow(self):
         flow = Flow('section')
         self.set_command_step(flow, 's0', self.mselstr, {'f': 'Section', 'v': '@[v]'})
@@ -528,10 +520,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def make_stats_all_flow(self):
         """ 各列全体についての統計量を求める """
         flow = Flow('stats_all')
@@ -592,10 +581,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         # flow.dtor()
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def stats_by_4_sensors(self):
         """
         入力されたファイルの3H 3V 4H 4Vそれぞれについて、統計量を求めて返すサブフロー
@@ -626,10 +612,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def make_splitting_flow(self):
         # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
         flow = Flow('ex')
@@ -672,12 +655,8 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-<<<<<<< HEAD
     # @unittest.skip
-    
-=======
-    @unittest.skip
->>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
+
     def test(self):
         flow = Flow('parent')
 

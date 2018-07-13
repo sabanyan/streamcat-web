@@ -27,13 +27,7 @@ class Job:
         返却するのはデータを値にもつdict
         """
         # print('self.inputs:', self.inputs)
-<<<<<<< HEAD
         jobs_result = self.step.execute(self.inputs)
-=======
-        result = self.step.execute(self.inputs)
-
-        return result
->>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
 
         # 実行履歴の作成
         # job.executeは再帰処理で何度も呼び出され、Commandのexecute時は避けたいので
@@ -181,11 +175,7 @@ class Flow:
         }
         return inputs
 
-<<<<<<< HEAD
-    
-=======
     # @profile
->>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def get_datum(self, datum_id, args):
         """
         指定したidのdataがすでに存在すればそれを返す
