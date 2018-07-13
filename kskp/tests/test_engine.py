@@ -3,7 +3,12 @@ import json
 
 from .. import engine as e
 from ..engine.data import *
+<<<<<<< HEAD
 from ..engine.core import Parameter, Command, Step, Flow, Job
+=======
+from ..engine.util import Parameter
+from ..engine.core import Command, Step, Flow
+>>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
 
 class ParameterTestCase(unittest.TestCase):
     def test_parameter_required(self):
@@ -65,13 +70,13 @@ import csv
 import tempfile
 from subprocess import Popen
 
-from kskp.engine.commands.mcmd.coledit import Mcut, Msetstr
-from kskp.engine.commands.mcmd.tablegrouping import Msum, Mavg, Mstats
-from kskp.engine.commands.mcmd.tablejoin import Mjoin, Mcat
-from kskp.engine.commands.mcmd.tablesplit import Mbucket
-from kskp.engine.commands.mcmd.datasource import Mtee
+from ..engine.commands.mcmd.coledit import Mcut, Msetstr
+from ..engine.commands.mcmd.tablegrouping import Msum, Mavg, Mstats
+from ..engine.commands.mcmd.tablejoin import Mjoin, Mcat
+from ..engine.commands.mcmd.tablesplit import Mbucket
+from ..engine.commands.mcmd.datasource import Mtee
 
-from kskp.engine.commands.mcmd.rowedit import Mselstr
+from ..engine.commands.mcmd.rowedit import Mselstr
 
 class EngineTestCase(unittest.TestCase):
     def setUp(self):
@@ -201,7 +206,7 @@ class EngineTestCase(unittest.TestCase):
 
         return flow
 
-    @unittest.skip
+    # @unittest.skip
     def test_sample_flow(self):
         """ 単純なフロー実行のテスト """
 
@@ -435,11 +440,11 @@ class EngineTestCase(unittest.TestCase):
         self.assertEqual(result[count - 1]['flow']['uuid'], flow_uuid)
 
     def tearDown(self):
-        self.command.dtor()
-        self.command2.dtor()
-        self.mjoin_command.dtor()
-        self.mcut_command.dtor()
-        self.mcut_command2.dtor()
+        # self.command.dtor()
+        # self.command2.dtor()
+        # self.mjoin_command.dtor()
+        # self.mcut_command.dtor()
+        # self.mcut_command2.dtor()
 
         os.close(self.fd)
         os.unlink(self.tempfile_path)
@@ -455,11 +460,20 @@ class NIJapanSampleTestCase(unittest.TestCase):
     """ 日本NI様サンプルテスト """
 
     def setUp(self):
-        self.commands = []
+        # self.commands = []
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
 
+        self.mcut = Mcut()
+        self.mjoin = Mjoin()
+        self.mstats = Mstats()
+        self.mavg = Mavg()
+        self.mselstr = Mselstr()
+        self.msetstr = Msetstr()
+        self.mbucket = Mbucket()
+        self.mcat = Mcat()
+
     def register(self, command):
-        self.commands.append(command)
+        # self.commands.append(command)
         return command
 
     def set_data(self, flow, key, data, srcs, dsts):
@@ -469,7 +483,8 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
     def set_empty_data(self, flow, key, srcs, dsts):
         """ syntax sugar、中間ファイル用 """
-        self.set_data(flow, key, Frame(), srcs, dsts)
+        # self.set_data(flow, key, Frame(), srcs, dsts)
+        self.set_data(flow, key, None, srcs, dsts)
 
     def set_temp_data(self, flow, key, srcs, dsts):
         """ syntax sugar、中間ファイルを消す用 """
@@ -492,13 +507,16 @@ class NIJapanSampleTestCase(unittest.TestCase):
     def set_flow_step(self, flow, key, subflow, args):
         flow.steps[key] = Step('flow', self.register(subflow), args)
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def make_section_flow(self):
         flow = Flow('section')
-        self.set_command_step(flow, 's0', Mselstr(), {'f': 'Section', 'v': '@[v]'})
+        self.set_command_step(flow, 's0', self.mselstr, {'f': 'Section', 'v': '@[v]'})
         self.set_flow_step(flow, 'sstatsall', self.stats_by_4_sensors(), {})
-        self.set_command_step(flow, 's_msetstr1',  Msetstr(), {'v': '@[v]', 'a': 'section'})
-        self.set_command_step(flow, 's_msetstr2',  Msetstr(), {'v': '@[pattern]', 'a': 'pattern'})
+        self.set_command_step(flow, 's_msetstr1',  self.msetstr, {'v': '@[v]', 'a': 'section'})
+        self.set_command_step(flow, 's_msetstr2',  self.msetstr, {'v': '@[pattern]', 'a': 'pattern'})
 
         self.set_empty_data(flow, 'in', [], ['s0.in'])
         self.set_empty_data(flow, 'd0', ['s0.out'], ['sstatsall.in'])
@@ -510,28 +528,28 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def make_stats_all_flow(self):
         """ 各列全体についての統計量を求める """
         flow = Flow('stats_all')
-        mcut = Mcut()
-        mjoin = Mjoin()
-        mstats = Mstats()
-        self.set_command_step(flow, 's0', Mavg(), {'f': '@[sensor_name]:@[sensor_name]_avg'})
-        self.set_command_step(flow, 's1', mcut, {'f': 'Time,@[sensor_name]_avg'})
+        self.set_command_step(flow, 's0', self.mavg, {'f': '@[sensor_name]:@[sensor_name]_avg'})
+        self.set_command_step(flow, 's1', self.mcut, {'f': 'Time,@[sensor_name]_avg'})
 
-        self.set_command_step(flow, 's2', mstats, {'c': 'sd', 'f': '@[sensor_name]:@[sensor_name]_sd'})
-        self.set_command_step(flow, 's3', mcut, {'f': 'Time,@[sensor_name]_sd'})
+        self.set_command_step(flow, 's2', self.mstats, {'c': 'sd', 'f': '@[sensor_name]:@[sensor_name]_sd'})
+        self.set_command_step(flow, 's3', self.mcut, {'f': 'Time,@[sensor_name]_sd'})
 
-        self.set_command_step(flow, 's4', mstats, {'c': 'max', 'f': '@[sensor_name]:@[sensor_name]_max'})
-        self.set_command_step(flow, 's5', mcut, {'f': 'Time,@[sensor_name]_max'})
+        self.set_command_step(flow, 's4', self.mstats, {'c': 'max', 'f': '@[sensor_name]:@[sensor_name]_max'})
+        self.set_command_step(flow, 's5', self.mcut, {'f': 'Time,@[sensor_name]_max'})
 
-        # self.set_command_step(flow, 's6', Mstats(), {'c': 'min', 'f': '@[sensor_name]:@[sensor_name]_min'})
-        # self.set_command_step(flow, 's7', Mcut(), {'f': 'Time,@[sensor_name]_min'})
+        self.set_command_step(flow, 's6', self.mstats, {'c': 'min', 'f': '@[sensor_name]:@[sensor_name]_min'})
+        self.set_command_step(flow, 's7', self.mcut, {'f': 'Time,@[sensor_name]_min'})
 
-        self.set_command_step(flow, 'sjoin0', mjoin, {'k': 'Time'})
-        self.set_command_step(flow, 'sjoin1', mjoin, {'k': 'Time'})
-        # self.set_command_step(flow, 'sjoin2', Mjoin(), {'k': 'Time'})
+        self.set_command_step(flow, 'sjoin0', self.mjoin, {'k': 'Time'})
+        self.set_command_step(flow, 'sjoin1', self.mjoin, {'k': 'Time'})
+        self.set_command_step(flow, 'sjoin2', self.mjoin, {'k': 'Time'})
 
         self.set_empty_data(flow, 'in', [], ['s0.in', 's2.in', 's4.in', 's6.in'])
         self.set_empty_data(flow, 'd0', ['s0.out'], ['s1.in'])
@@ -545,13 +563,12 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_empty_data(flow, 'd5', ['s4.out'], ['s5.in'])
         self.set_empty_data(flow, 'd6', ['s5.out'], ['sjoin1.m'])
 
-        # self.set_empty_data(flow, 'd7', ['sjoin1.out'], ['sjoin2.i'])
+        self.set_empty_data(flow, 'd7', ['sjoin1.out'], ['sjoin2.i'])
 
-        # self.set_empty_data(flow, 'd8', ['s6.out'], ['s7.in'])
-        # self.set_empty_data(flow, 'd9', ['s7.out'], ['sjoin2.m'])
+        self.set_empty_data(flow, 'd8', ['s6.out'], ['s7.in'])
+        self.set_empty_data(flow, 'd9', ['s7.out'], ['sjoin2.m'])
 
-        # self.set_empty_data(flow, 'out', ['sjoin2.out'], [])
-        self.set_empty_data(flow, 'out', ['sjoin1.out'], [])
+        self.set_empty_data(flow, 'out', ['sjoin2.out'], [])
 
         self.set_signature(flow, ['in'], ['out'])
 
@@ -575,21 +592,24 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         # flow.dtor()
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def stats_by_4_sensors(self):
         """
         入力されたファイルの3H 3V 4H 4Vそれぞれについて、統計量を求めて返すサブフロー
         """
         flow = Flow('stats_by_4_sensors')
-
+        make_stats_all_flow = self.make_stats_all_flow()
         self.set_flow_step(flow, 's3H', self.make_stats_all_flow(), {'sensor_name': '3H'})
         self.set_flow_step(flow, 's3V', self.make_stats_all_flow(), {'sensor_name': '3V'})
         self.set_flow_step(flow, 's4H', self.make_stats_all_flow(), {'sensor_name': '4H'})
         self.set_flow_step(flow, 's4V', self.make_stats_all_flow(), {'sensor_name': '4V'})
 
-        self.set_command_step(flow, 'sjoin0', Mjoin(), {'k': 'Time'})
-        self.set_command_step(flow, 'sjoin1', Mjoin(), {'k': 'Time'})
-        self.set_command_step(flow, 'sjoin2', Mjoin(), {'k': 'Time'})
+        self.set_command_step(flow, 'sjoin0', self.mjoin, {'k': 'Time'})
+        self.set_command_step(flow, 'sjoin1', self.mjoin, {'k': 'Time'})
+        self.set_command_step(flow, 'sjoin2', self.mjoin, {'k': 'Time'})
 
         self.set_empty_data(flow, 'in', [], ['s3H.in', 's3V.in', 's4H.in', 's4V.in'])
 
@@ -606,51 +626,58 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def make_splitting_flow(self):
         # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
         flow = Flow('ex')
-        self.set_command_step(flow, 's0', Mcut(), { 'x': True, 'f': '@[f]' })
-        self.set_command_step(flow, 's1', Mbucket(), {'rng': True, 'n': 10, 'f': 'Time:Section'})
+        self.set_command_step(flow, 's0', self.mcut, { 'x': True, 'f': '@[f]' })
+        self.set_command_step(flow, 's1', self.mbucket, {'rng': True, 'n': 10, 'f': 'Time:Section'})
         self.set_flow_step(flow, 's2', self.make_section_flow(), {'v': '1', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's3', self.make_section_flow(), {'v': '2', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's4', self.make_section_flow(), {'v': '3', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's5', self.make_section_flow(), {'v': '4', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's6', self.make_section_flow(), {'v': '5', 'pattern': '@[pattern]'})
-        # self.set_flow_step(flow, 's7', self.make_section_flow(), {'v': '6', 'pattern': '@[pattern]'})
-        # self.set_flow_step(flow, 's8', self.make_section_flow(), {'v': '7', 'pattern': '@[pattern]'})
-        # self.set_flow_step(flow, 's9', self.make_section_flow(), {'v': '8', 'pattern': '@[pattern]'})
-        # self.set_flow_step(flow, 's10', self.make_section_flow(), {'v': '9', 'pattern': '@[pattern]'})
-        # self.set_flow_step(flow, 's11', self.make_section_flow(), {'v': '10', 'pattern': '@[pattern]'})
+        self.set_flow_step(flow, 's7', self.make_section_flow(), {'v': '6', 'pattern': '@[pattern]'})
+        self.set_flow_step(flow, 's8', self.make_section_flow(), {'v': '7', 'pattern': '@[pattern]'})
+        self.set_flow_step(flow, 's9', self.make_section_flow(), {'v': '8', 'pattern': '@[pattern]'})
+        self.set_flow_step(flow, 's10', self.make_section_flow(), {'v': '9', 'pattern': '@[pattern]'})
+        self.set_flow_step(flow, 's11', self.make_section_flow(), {'v': '10', 'pattern': '@[pattern]'})
 
         self.set_flow_step(flow, 'sstatsall', self.stats_by_4_sensors(), {})
 
-        self.set_command_step(flow, 's_mcat', Mcat(), {})
+        self.set_command_step(flow, 's_mcat', self.mcat, {})
 
         self.set_empty_data(flow, 'in', [], ['s0.in']) # 置き換えられる
         self.set_empty_data(flow, 'd0', ['s0.out'], ['s1.in', 'sstatsall.in'])
-        # self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in', 's9.in', 's10.in', 's11.in'])
-        self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in'])
+        self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in', 's9.in', 's10.in', 's11.in'])
+
         self.set_empty_data(flow, 'd_mcat1', ['s2.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat2', ['s3.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat3', ['s4.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat4', ['s5.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat5', ['s6.out'], ['s_mcat.*'])
-        # self.set_empty_data(flow, 'd_mcat6', ['s7.out'], ['s_mcat.*'])
-        # self.set_empty_data(flow, 'd_mcat7', ['s8.out'], ['s_mcat.*'])
-        # self.set_empty_data(flow, 'd_mcat8', ['s9.out'], ['s_mcat.*'])
-        # self.set_empty_data(flow, 'd_mcat9', ['s10.out'], ['s_mcat.in'])
-        # self.set_empty_data(flow, 'd_mcat10', ['s11.out',], ['s_mcat.in'])
+        self.set_empty_data(flow, 'd_mcat6', ['s7.out'], ['s_mcat.*'])
+        self.set_empty_data(flow, 'd_mcat7', ['s8.out'], ['s_mcat.*'])
+        self.set_empty_data(flow, 'd_mcat8', ['s9.out'], ['s_mcat.*'])
+        self.set_empty_data(flow, 'd_mcat9', ['s10.out'], ['s_mcat.in'])
+        self.set_empty_data(flow, 'd_mcat10', ['s11.out',], ['s_mcat.in'])
 
-        # self.set_empty_data(flow, 'out', ['sstatsall.out'], [])
-        self.set_empty_data(flow, 'out', ['s_mcat.out'], [])
+        self.set_empty_data(flow, 'out1', ['sstatsall.out'], [])
+        self.set_empty_data(flow, 'out2', ['s_mcat.out'], [])
 
-        self.set_signature(flow, ['in'], ['out'])
+        self.set_signature(flow, ['in'], ['out1', 'out2'])
 
         return flow
 
+<<<<<<< HEAD
     # @unittest.skip
     
+=======
+    @unittest.skip
+>>>>>>> 2834d8dd2671d6d8fdf96f5341c161396cc64c23
     def test(self):
         flow = Flow('parent')
 
@@ -665,22 +692,37 @@ class NIJapanSampleTestCase(unittest.TestCase):
         flow.data['d0'] = Frame(frame_uuid, source1)
         flow.edges['d0'] = { 'srcs': [], 'dsts': ['s0.in', 's1.in', 's2.in', 's3.in', 's4.in'] }
 
-        self.set_empty_data(flow, 'd1', ['s0.out'], ['mtee.in'])
-        self.set_empty_data(flow, 'd2', ['s1.out'], [])
-        self.set_empty_data(flow, 'd3', ['s2.out'], [])
-        self.set_empty_data(flow, 'd4', ['s3.out'], [])
-        self.set_empty_data(flow, 'd5', ['s4.out'], [])
+        self.set_command_step(flow, 's_mcat_all', self.mcat, {})
+        self.set_command_step(flow, 's_mcat_section', self.mcat, {})
 
-        self.set_command_step(flow, 'mtee', Mtee(), {'o': 'kskp/data/frames/mtee.csv'})
-        self.set_empty_data(flow, 'out', ['mtee.out'], [])
+        self.set_empty_data(flow, 'd1-1', ['s0.out1'], ['s_mcat_all.*'])
+        self.set_empty_data(flow, 'd2-1', ['s1.out1'], ['s_mcat_all.*'])
+        self.set_empty_data(flow, 'd3-1', ['s2.out1'], ['s_mcat_all.*'])
+        self.set_empty_data(flow, 'd4-1', ['s3.out1'], ['s_mcat_all.*'])
+        self.set_empty_data(flow, 'd5-1', ['s4.out1'], ['s_mcat_all.*'])
 
-        self.set_signature(flow, [], ['out'])
+        self.set_empty_data(flow, 'd1-2', ['s0.out2'], ['s_mcat_section.*'])
+        self.set_empty_data(flow, 'd2-2', ['s1.out2'], ['s_mcat_section.*'])
+        self.set_empty_data(flow, 'd3-2', ['s2.out2'], ['s_mcat_section.*'])
+        self.set_empty_data(flow, 'd4-2', ['s3.out2'], ['s_mcat_section.*'])
+        self.set_empty_data(flow, 'd5-2', ['s4.out2'], ['s_mcat_section.*'])
+
+        self.set_empty_data(flow, 'all', ['s_mcat_all.out'], ['mtee_all.in'])
+        self.set_empty_data(flow, 'section', ['s_mcat_section.out'], ['mtee_section.in'])
+
+        self.set_command_step(flow, 'mtee_all', Mtee(), {'o': 'kskp/data/stats_all.csv'})
+        self.set_command_step(flow, 'mtee_section', Mtee(), {'o': 'kskp/data/stats_section.csv'})
+        self.set_empty_data(flow, 'out_all', ['mtee_all.out'], [])
+        self.set_empty_data(flow, 'out_section', ['mtee_section.out'], [])
+
+        self.set_signature(flow, [], ['out_all', 'out_section'])
 
         results = flow.execute()
 
         for res in results.values():
-            for k, v in res.contents.items():
-                print(f'{k}:', v[0])
+            if res is not None:
+                for k, v in res.contents.items():
+                    print(f'{k}:', v[0])
 
 
 def execute_flow_by_uuid(flow_uuid):
@@ -688,9 +730,8 @@ def execute_flow_by_uuid(flow_uuid):
         e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
 if __name__ == '__main__':
-    # NIJapanSampleTestCase().run('test')
+    # パフォーマンステスト時に使ったコード
     runner = unittest.TextTestRunner()
     suite = unittest.TestSuite()
     suite.addTest(NIJapanSampleTestCase('test'))
     runner.run(suite)
-    # unittest.main()

@@ -16,6 +16,15 @@ class Source:
     def __init__(self, source_type=''):
         self.type = source_type
 
+    @property
+    def ext(self):
+        # ファイルの拡張子はdatum.source.typeから決定する
+        if self.type == 'csv':
+            return '.csv'
+        else:
+            # その他の場合は今は考えない
+            raise Exception()
+
     def dtor(self):
         pass
 
@@ -90,10 +99,11 @@ class UnixCommandSource(FileSource):
 
     @property
     def fd(self):
+        # if self.popen is not None and self.popen.stdin is not None and self.popen.stdin.closed:
+        #     print(f'pid: {self.popen.pid} args: {self.args}')
         self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE, universal_newlines=True)
         if self.stdin is not None:
             self.stdin.close()
-        # print(f'pid: {self.popen.pid} args: {self.args}')
         return self.popen.stdout
 
     @fd.setter
@@ -103,11 +113,12 @@ class UnixCommandSource(FileSource):
     def save(self, stdout):
         """ engineから使う最後の保存用 """
         popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
-        self.stdin.close()
+        if self.stdin is not None:
+            self.stdin.close()
         popen.wait()
 
     def dtor(self):
-        # print('UnixCommandSource dtor:', self.args)
+        print(f'UnixCommandSource pid: {self.popen.pid} args:', self.args)
         if self.popen is not None:
             self.popen.stdout.close()
             # print(f'close pid: {self.popen.pid} args: {self.args}')
