@@ -6,6 +6,7 @@ import os
 import tempfile
 from pathlib import Path
 
+ref_counts = {}
 
 class Source:
     """
@@ -15,6 +16,23 @@ class Source:
 
     def __init__(self, source_type=''):
         self.type = source_type
+        self.deletable_uuids = []
+
+    def incr_ref_count(self, flow_uuid):
+        if flow_uuid in ref_counts:
+            ref_counts[flow_uuid] += 1
+        else:
+            ref_counts[flow_uuid] = 1
+        # print('incr:', flow_uuid, ref_counts[flow_uuid])
+
+    def decr_ref_count(self, flow_uuid):
+        if flow_uuid in ref_counts:
+            ref_counts[flow_uuid] -= 1
+            # print('decr:', flow_uuid, ref_counts[flow_uuid])
+            if ref_counts[flow_uuid] == 0:
+                del ref_counts[flow_uuid]
+                # print('del:', flow_uuid)
+                self.dtor()
 
     def dtor(self):
         pass
@@ -205,8 +223,23 @@ class Frame(Datum):
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAME_PATH'], file_name)
             with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
                 self.source.save(fd)
+            for flow_uuid in self.source.deletable_uuids:
+                self.source.decr_ref_count(flow_uuid)
             self.source.dtor()
             self.source = new_source
+            self.source.incr_ref_count(self.uuid)
+        return self
+
+    def command_to_tempfile(self):
+        if isinstance(self.source, UnixCommandSource):
+            new_source = TempPathFileSource(self.source.type)
+            with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
+                self.source.save(fd)
+            for flow_uuid in self.source.deletable_uuids:
+                self.source.decr_ref_count(flow_uuid)
+            self.source.dtor()
+            self.source = new_source
+            self.source.incr_ref_count(self.uuid)
         return self
 
     @property

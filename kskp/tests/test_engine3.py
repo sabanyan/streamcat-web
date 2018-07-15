@@ -2,7 +2,7 @@ import os
 import unittest
 import json
 
-from ..engine.core3 import parse
+from kskp.engine.core3 import parse
 
 class EngineTestCase(unittest.TestCase):
     def execute(self, flow_uuid):
@@ -24,7 +24,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
     def setUp(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
-
+    
     def execute(self, flow_uuid):
         job = parse(flow_uuid)
         try:
