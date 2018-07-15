@@ -215,7 +215,6 @@ class Job:
             datum.dtor()
 
         for datum in self.lasts.values():
-            print(datum)
             datum.command_to_file().dtor()
 
         for job in self.jobs:
@@ -411,7 +410,7 @@ class Mcat(MCommand):
         # 引数をそれぞれパスにしていく
         inputs_for_arg_i = []
         for key, input in inputs.items():
-            self.save(input)
+            input.command_to_file()
             inputs_for_arg_i.append(input.source.fullpath.as_posix())
         res.append(f"i={','.join(inputs_for_arg_i)}")
         return res
@@ -436,7 +435,7 @@ class Mjoin(MCommand):
         input_m = inputs['m']
 
         # パイプなら、CSVに吐く
-        self.save(input_m)
+        input_m.command_to_file()
         res.append(f"m={ input_m.source.fullpath }")
 
         return res
@@ -444,14 +443,20 @@ class Mjoin(MCommand):
     def stdin(self, inputs):
         return inputs['i'].source.fd
 
-# 'mcut' = Mcut()
-# 'mjoin' = Mjoin()
-# 'mstats' = Mstats()
-# 'mavg' = Mavg()
-# self.mselstr = Mselstr()
-# 'msetstr' = Msetstr()
-# 'mbucket' = Mbucket()
-# 'mcat' = Mcat()
+class Msortf(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msortf'
+        self.desription = 'ソート'
+        self.params.append(Parameter('f', '対象列名'))
+
+class Mcal(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcal'
+        self.description = '計算'
+        self.params.append(Parameter('c', '計算式'))
+        self.params.append(Parameter('a', '追加列名'))
 
 commands = {
     'mcut': Mcut(),
@@ -464,5 +469,7 @@ commands = {
     'msetstr' : Msetstr(),
     'mbucket' : Mbucket(),
     'mcat': Mcat(),
-    'mtee': Mtee()
+    'mtee': Mtee(),
+    'msortf': Msortf(),
+    'mcal': Mcal()
 }

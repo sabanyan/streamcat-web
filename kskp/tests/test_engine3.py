@@ -25,18 +25,21 @@ class NIJapanSampleTestCase(unittest.TestCase):
     def setUp(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
 
-        # 'mcut' = Mcut()
-        # 'mjoin' = Mjoin()
-        # 'mstats' = Mstats()
-        # 'mavg' = Mavg()
-        # self.mselstr = Mselstr()
-        # 'msetstr' = Msetstr()
-        # 'mbucket' = Mbucket()
-        # 'mcat' = Mcat()
+    def execute(self, flow_uuid):
+        job = parse(flow_uuid)
+        try:
+            job.execute()
+        except Exception as e:
+            job.dtor()
+            raise
 
+        # print(list(job.lasts.values())[0].contents)
+        job.dtor()
+
+    # @unittest.skip
     def test(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
-        flow_uuid = '76220b9b-2b12-41a5-8d9a-a4ae16f40054'
+        flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
         self.execute(flow_uuid)
 
     # @profile
@@ -112,24 +115,19 @@ class NIJapanSampleTestCase(unittest.TestCase):
             'nodes': {}
         }
 
-    # @profile
-    def make_section_flow(self):
-        'a611f26b-d71c-4638-9516-05db2b622849'
-        flow = self.make_obj('section')
-        self.set_command_step(flow, 's0', 'mselstr', {'f': 'Section', 'v': '@[v]'})
-        self.set_flow_step(flow, 'sstatsall', 'd3b0f49f-f01b-4a73-981b-7b2c06667966', {})
-        self.set_command_step(flow, 's_msetstr1',  'msetstr', {'v': '@[v]', 'a': 'section'})
-        self.set_command_step(flow, 's_msetstr2',  'msetstr', {'v': '@[pattern]', 'a': 'pattern'})
+    def support_datetime_default(self, o):
+        raise TypeError(repr(o) + " is not JSON serializable")
 
-        self.set_empty_data(flow, 'in', [], ['s0.in'])
-        self.set_empty_data(flow, 'd0', ['s0.out'], ['sstatsall.in'])
-        self.set_empty_data(flow, 'd1', ['sstatsall.out'], ['s_msetstr1.in'])
-        self.set_empty_data(flow, 'd2', ['s_msetstr1.out'], ['s_msetstr2.in'])
-        self.set_empty_data(flow, 'out', ['s_msetstr2.out'], [])
-
-        self.set_signature(flow, ['in'], ['out'])
-
-        return flow
+    def make_json(self, flow_uuid):
+        import json
+        import uuid
+        # flow_uuid = uuid.uuid4()
+        obj = self.make_splitting_flow()
+        import pprint
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(obj)
+        with open(f'kskp/data/flows/{flow_uuid}.json', 'w', encoding='utf-8') as fd:
+            json.dump(obj, fd, indent=4, default=self.support_datetime_default)
 
     # @profile
     def make_stats_all_flow(self):
@@ -175,38 +173,6 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-    def support_datetime_default(self, o):
-        raise TypeError(repr(o) + " is not JSON serializable")
-
-    def test_make_json(self):
-        import json
-        import uuid
-        flow_uuid = uuid.uuid4()
-        obj = self.test()
-        import pprint
-        pp = pprint.PrettyPrinter(indent=4)
-        pp.pprint(obj)
-        with open(f'kskp/data/flows/{flow_uuid}.json', 'w', encoding='utf-8') as fd:
-            json.dump(obj, fd, indent=4, default=self.support_datetime_default)
-
-    @unittest.skip
-    def test_stats_flow(self):
-        flow = self.make_obj('stats_flow')
-        self.set_flow_step(flow, 'sstatsall', 'f0717ac2-e98a-4864-98ee-34903d49e6fe', {'sensor_name': '3H'})
-
-        source1 = PathFileSource('csv', 'kskp/data/frames', 'wowow.csv')
-        self.set_data(flow, 'd0', Frame('wowow', source1), [], ['sstatsall.in'])
-        self.set_empty_data(flow, 'out', ['sstatsall.out'], [])
-        self.set_signature(flow, [], ['out'])
-
-        results = flow.execute()
-
-        for res in results.values():
-            for k, v in res.contents.items():
-                print(f'{k}:', v[0])
-
-        # flow.dtor()
-
     # @profile
     def stats_by_4_sensors(self):
         """
@@ -240,6 +206,25 @@ class NIJapanSampleTestCase(unittest.TestCase):
         return flow
 
     # @profile
+    def make_section_flow(self):
+        'a611f26b-d71c-4638-9516-05db2b622849'
+        flow = self.make_obj('section')
+        self.set_command_step(flow, 's0', 'mselstr', {'f': 'Section', 'v': '@[v]'})
+        self.set_flow_step(flow, 'sstatsall', 'd3b0f49f-f01b-4a73-981b-7b2c06667966', {})
+        self.set_command_step(flow, 's_msetstr1',  'msetstr', {'v': '@[v]', 'a': 'section'})
+        self.set_command_step(flow, 's_msetstr2',  'msetstr', {'v': '@[pattern]', 'a': 'pattern'})
+
+        self.set_empty_data(flow, 'in', [], ['s0.in'])
+        self.set_empty_data(flow, 'd0', ['s0.out'], ['sstatsall.in'])
+        self.set_empty_data(flow, 'd1', ['sstatsall.out'], ['s_msetstr1.in'])
+        self.set_empty_data(flow, 'd2', ['s_msetstr1.out'], ['s_msetstr2.in'])
+        self.set_empty_data(flow, 'out', ['s_msetstr2.out'], [])
+
+        self.set_signature(flow, ['in'], ['out'])
+
+        return flow
+
+    # @profile
     def make_splitting_flow(self):
         'cb5585dc-230a-4e5a-a1ed-717bea416fa1'
         # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
@@ -252,11 +237,11 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_flow_step(flow, 's4', section_flow, {'v': '3', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's5', section_flow, {'v': '4', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's6', section_flow, {'v': '5', 'pattern': '@[pattern]'})
-        self.set_flow_step(flow, 's7', section_flow, {'v': '6', 'pattern': '@[pattern]'})
-        self.set_flow_step(flow, 's8', section_flow, {'v': '7', 'pattern': '@[pattern]'})
-        self.set_flow_step(flow, 's9', section_flow, {'v': '8', 'pattern': '@[pattern]'})
-        self.set_flow_step(flow, 's10', section_flow, {'v': '9', 'pattern': '@[pattern]'})
-        self.set_flow_step(flow, 's11', section_flow, {'v': '10', 'pattern': '@[pattern]'})
+        # self.set_flow_step(flow, 's7', section_flow, {'v': '6', 'pattern': '@[pattern]'})
+        # self.set_flow_step(flow, 's8', section_flow, {'v': '7', 'pattern': '@[pattern]'})
+        # self.set_flow_step(flow, 's9', section_flow, {'v': '8', 'pattern': '@[pattern]'})
+        # self.set_flow_step(flow, 's10', section_flow, {'v': '9', 'pattern': '@[pattern]'})
+        # self.set_flow_step(flow, 's11', section_flow, {'v': '10', 'pattern': '@[pattern]'})
 
         self.set_flow_step(flow, 'sstatsall', 'd3b0f49f-f01b-4a73-981b-7b2c06667966', {})
 
@@ -264,18 +249,19 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         self.set_empty_data(flow, 'in', [], ['s0.in']) # 置き換えられる
         self.set_empty_data(flow, 'd0', ['s0.out'], ['s1.in', 'sstatsall.in'])
-        self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in', 's9.in', 's10.in', 's11.in'])
+        # self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in', 's7.in', 's8.in', 's9.in', 's10.in', 's11.in'])
+        self.set_empty_data(flow, 'd8', ['s1.out'], ['s2.in', 's3.in', 's4.in', 's5.in', 's6.in'])
 
         self.set_empty_data(flow, 'd_mcat1', ['s2.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat2', ['s3.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat3', ['s4.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat4', ['s5.out'], ['s_mcat.*'])
         self.set_empty_data(flow, 'd_mcat5', ['s6.out'], ['s_mcat.*'])
-        self.set_empty_data(flow, 'd_mcat6', ['s7.out'], ['s_mcat.*'])
-        self.set_empty_data(flow, 'd_mcat7', ['s8.out'], ['s_mcat.*'])
-        self.set_empty_data(flow, 'd_mcat8', ['s9.out'], ['s_mcat.*'])
-        self.set_empty_data(flow, 'd_mcat9', ['s10.out'], ['s_mcat.in'])
-        self.set_empty_data(flow, 'd_mcat10', ['s11.out',], ['s_mcat.in'])
+        # self.set_empty_data(flow, 'd_mcat6', ['s7.out'], ['s_mcat.*'])
+        # self.set_empty_data(flow, 'd_mcat7', ['s8.out'], ['s_mcat.*'])
+        # self.set_empty_data(flow, 'd_mcat8', ['s9.out'], ['s_mcat.*'])
+        # self.set_empty_data(flow, 'd_mcat9', ['s10.out'], ['s_mcat.in'])
+        # self.set_empty_data(flow, 'd_mcat10', ['s11.out',], ['s_mcat.in'])
 
         self.set_empty_data(flow, 'out1', ['sstatsall.out'], [])
         self.set_empty_data(flow, 'out2', ['s_mcat.out'], [])
