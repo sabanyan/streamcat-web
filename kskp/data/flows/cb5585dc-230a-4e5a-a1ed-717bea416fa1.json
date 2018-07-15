@@ -1,5 +1,5 @@
 {
-    "name": "ex",
+    "name": "10分割した後、それぞれに処理をしてから結合する",
     "params": [],
     "ports": [
         {
@@ -116,76 +116,6 @@
                 "out": "d_mcat5"
             }
         },
-        "s7": {
-            "type": "flow",
-            "uuid": "a611f26b-d71c-4638-9516-05db2b622849",
-            "args": {
-                "v": "6",
-                "pattern": "@[pattern]"
-            },
-            "srcs": {
-                "in": "d8"
-            },
-            "dsts": {
-                "out": "d_mcat6"
-            }
-        },
-        "s8": {
-            "type": "flow",
-            "uuid": "a611f26b-d71c-4638-9516-05db2b622849",
-            "args": {
-                "v": "7",
-                "pattern": "@[pattern]"
-            },
-            "srcs": {
-                "in": "d8"
-            },
-            "dsts": {
-                "out": "d_mcat7"
-            }
-        },
-        "s9": {
-            "type": "flow",
-            "uuid": "a611f26b-d71c-4638-9516-05db2b622849",
-            "args": {
-                "v": "8",
-                "pattern": "@[pattern]"
-            },
-            "srcs": {
-                "in": "d8"
-            },
-            "dsts": {
-                "out": "d_mcat8"
-            }
-        },
-        "s10": {
-            "type": "flow",
-            "uuid": "a611f26b-d71c-4638-9516-05db2b622849",
-            "args": {
-                "v": "9",
-                "pattern": "@[pattern]"
-            },
-            "srcs": {
-                "in": "d8"
-            },
-            "dsts": {
-                "out": "d_mcat9"
-            }
-        },
-        "s11": {
-            "type": "flow",
-            "uuid": "a611f26b-d71c-4638-9516-05db2b622849",
-            "args": {
-                "v": "10",
-                "pattern": "@[pattern]"
-            },
-            "srcs": {
-                "in": "d8"
-            },
-            "dsts": {
-                "out": "d_mcat10"
-            }
-        },
         "sstatsall": {
             "type": "flow",
             "uuid": "d3b0f49f-f01b-4a73-981b-7b2c06667966",
@@ -202,8 +132,7 @@
             "name": "mcat",
             "args": {},
             "srcs": {
-                "*": "d_mcat8",
-                "in": "d_mcat10"
+                "*": "d_mcat5"
             },
             "dsts": {
                 "out": "out2"
@@ -245,31 +174,6 @@
             "uuid": null
         },
         "d_mcat5": {
-            "type": "frame",
-            "dataSource": "csv",
-            "uuid": null
-        },
-        "d_mcat6": {
-            "type": "frame",
-            "dataSource": "csv",
-            "uuid": null
-        },
-        "d_mcat7": {
-            "type": "frame",
-            "dataSource": "csv",
-            "uuid": null
-        },
-        "d_mcat8": {
-            "type": "frame",
-            "dataSource": "csv",
-            "uuid": null
-        },
-        "d_mcat9": {
-            "type": "frame",
-            "dataSource": "csv",
-            "uuid": null
-        },
-        "d_mcat10": {
             "type": "frame",
             "dataSource": "csv",
             "uuid": null

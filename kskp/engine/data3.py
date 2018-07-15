@@ -113,8 +113,8 @@ class UnixCommandSource(FileSource):
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
-        if self.stdin.closed:
-            print('closed:', self.args)
+        if self.stdin is not None and self.stdin.closed:
+            # print('closed:', self.args)
             return
         popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
         if self.stdin is not None:
@@ -177,10 +177,12 @@ class Datum:
         raise Exception()
 
     def dtor(self):
-        if self.source is not None:
-            self.source.dtor()
-        if self.is_temp and self.source.fullpath.exists():
-            self.source.fullpath.unlink()
+        s = self.source
+        if s is not None:
+            s.dtor()
+            if isinstance(s, PathFileSource):
+                if self.is_temp and s.fullpath.exists():
+                    s.fullpath.unlink()
 
 
 
