@@ -70,6 +70,7 @@ def parse_datum(node_obj):
         file_name = f'{frame_uuid}.{data_source}'
         source = PathFileSource(data_source, frames_path, file_name)
         datum = Frame(frame_uuid, source)
+        datum.is_temp = False
     else:
         datum = Frame()
     return datum
@@ -113,17 +114,21 @@ class Job:
 
     def execute(self):
         # TODO: 削除フラグを立てる
-
         self.replace_inputs()
 
         s = self.step
         cf = s.command_or_flow
-        print('execute begin:', cf, s.args)
+        # print('execute begin:', cf, s.args)
         if s.is_flow:
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
+            self.lasts = output
+
+            if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
+                for last in self.lasts.values():
+                    last.is_temp = False
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
-        print('execute output:', output)
+        # print('execute output:', output)
 
         return self.replace_outputs(output)
 
@@ -206,11 +211,12 @@ class Job:
         return res
 
     def dtor(self):
-        for input in self.inputs.values():
-            input.dtor()
+        for datum in self.inputs.values():
+            datum.dtor()
 
-        for input in self.lasts.values():
-            input.dtor()
+        for datum in self.lasts.values():
+            print(datum)
+            datum.command_to_file().dtor()
 
         for job in self.jobs:
             job.dtor()

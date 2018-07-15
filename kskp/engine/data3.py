@@ -82,8 +82,6 @@ class PathFileSource(FileSource):
     def dtor(self):
         if self._fd is not None:
             self._fd.close()
-        # if self.fullpath.exists():
-        #     self.fullpath.unlink()
 
 import subprocess
 
@@ -115,6 +113,9 @@ class UnixCommandSource(FileSource):
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
+        if self.stdin.closed:
+            print('closed:', self.args)
+            return
         popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
         if self.stdin is not None:
             self.stdin.close()
@@ -178,6 +179,9 @@ class Datum:
     def dtor(self):
         if self.source is not None:
             self.source.dtor()
+        if self.is_temp and self.source.fullpath.exists():
+            self.source.fullpath.unlink()
+
 
 
 import os
@@ -199,6 +203,7 @@ class Frame(Datum):
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAME_PATH'], file_name)
             with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
                 self.source.save(fd)
+            self.source.dtor()
             self.source = new_source
         return self
 
