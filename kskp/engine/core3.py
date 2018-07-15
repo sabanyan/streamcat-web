@@ -272,8 +272,6 @@ class Command:
         return f'<Command name:{self.name}>'
 
 
-from .data import *
-
 class Split(Command):
     def __init__(self):
         super().__init__()
