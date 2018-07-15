@@ -1,0 +1,227 @@
+{
+    "name": "stats_all",
+    "params": [],
+    "ports": [
+        {
+            "in": {
+                "type": "frame"
+            }
+        },
+        {
+            "out": {
+                "type": "frame"
+            }
+        }
+    ],
+    "nodes": {
+        "s0": {
+            "type": "command",
+            "name": "mavg",
+            "args": {
+                "f": "@[sensor_name]:@[sensor_name]_avg"
+            },
+            "srcs": {
+                "in": "in"
+            },
+            "dsts": {
+                "out": "d0"
+            }
+        },
+        "s1": {
+            "type": "command",
+            "name": "mcut",
+            "args": {
+                "f": "Time,@[sensor_name]_avg"
+            },
+            "srcs": {
+                "in": "d0"
+            },
+            "dsts": {
+                "out": "d1"
+            }
+        },
+        "s2": {
+            "type": "command",
+            "name": "mstats",
+            "args": {
+                "c": "sd",
+                "f": "@[sensor_name]:@[sensor_name]_sd"
+            },
+            "srcs": {
+                "in": "in"
+            },
+            "dsts": {
+                "out": "d2"
+            }
+        },
+        "s3": {
+            "type": "command",
+            "name": "mcut",
+            "args": {
+                "f": "Time,@[sensor_name]_sd"
+            },
+            "srcs": {
+                "in": "d2"
+            },
+            "dsts": {
+                "out": "d3"
+            }
+        },
+        "s4": {
+            "type": "command",
+            "name": "mstats",
+            "args": {
+                "c": "max",
+                "f": "@[sensor_name]:@[sensor_name]_max"
+            },
+            "srcs": {
+                "in": "in"
+            },
+            "dsts": {
+                "out": "d5"
+            }
+        },
+        "s5": {
+            "type": "command",
+            "name": "mcut",
+            "args": {
+                "f": "Time,@[sensor_name]_max"
+            },
+            "srcs": {
+                "in": "d5"
+            },
+            "dsts": {
+                "out": "d6"
+            }
+        },
+        "s6": {
+            "type": "command",
+            "name": "mstats",
+            "args": {
+                "c": "min",
+                "f": "@[sensor_name]:@[sensor_name]_min"
+            },
+            "srcs": {
+                "in": "in"
+            },
+            "dsts": {
+                "out": "d8"
+            }
+        },
+        "s7": {
+            "type": "command",
+            "name": "mcut",
+            "args": {
+                "f": "Time,@[sensor_name]_min"
+            },
+            "srcs": {
+                "in": "d8"
+            },
+            "dsts": {
+                "out": "d9"
+            }
+        },
+        "sjoin0": {
+            "type": "command",
+            "name": "mjoin",
+            "args": {
+                "k": "Time"
+            },
+            "srcs": {
+                "i": "d1",
+                "m": "d3"
+            },
+            "dsts": {
+                "out": "d4"
+            }
+        },
+        "sjoin1": {
+            "type": "command",
+            "name": "mjoin",
+            "args": {
+                "k": "Time"
+            },
+            "srcs": {
+                "i": "d4",
+                "m": "d6"
+            },
+            "dsts": {
+                "out": "d7"
+            }
+        },
+        "sjoin2": {
+            "type": "command",
+            "name": "mjoin",
+            "args": {
+                "k": "Time"
+            },
+            "srcs": {
+                "i": "d7",
+                "m": "d9"
+            },
+            "dsts": {
+                "out": "out"
+            }
+        },
+        "in": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d0": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d1": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d2": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d3": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d4": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d5": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d6": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d7": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d8": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d9": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "out": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        }
+    }
+}

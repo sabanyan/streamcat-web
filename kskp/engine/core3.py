@@ -343,109 +343,126 @@ class Mcut(MCommand):
         self.description = '列選択'
         self.params.append(Parameter('f', '対象列名'))
 
-# class Msetstr(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'msetstr'
-#         self.description = '文字列追加'
-#         self.params.append(Parameter('a', '追加列名'))
-#         self.params.append(Parameter('v', '追加する値'))
-#
-# class Msum(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'msum'
-#         self.description = '合計'
-#         self.params.append(Parameter('k', '合計の基準となる列名'))
-#         self.params.append(Parameter('f', '合計する列名:合計後の列名'))
-#
-# class Mstats(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'mstats'
-#         self.description = '統計情報'
-#         self.params.append(Parameter('c', '計算項目'))
-#         self.params.append(Parameter('f', '対象列名'))
-#
-# class Mavg(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'mavg'
-#         self.description = '平均'
-#         self.params.append(Parameter('f', '対象列名'))
-#
-# class Mbucket(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'mbucket'
-#         self.description = '行分割'
-#         self.params.append(Parameter('n', '行数'))
-#         self.params.append(Parameter('f', '対象列名'))
-#
-# class Mtee(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'mtee'
-#         self.description = '出力'
-#         self.params.append(Parameter('o', '出力先'))
-#
-# class Mselstr(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#         self.name = 'mselstr'
-#         self.description = '行選択(文字列)'
-#         self.params.append(Parameter('f', '対象列名'))
-#         self.params.append(Parameter('v', '絞込条件値（文字列）'))
-#
-# class Mcat(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#
-#         self.name = 'mcat'
-#         self.description = 'ファイル結合'
-#         self.i_ports = {'*': {'type': 'frame'}} # 何個でも取れる
-#
-#     def command_args(self, args, inputs):
-#         res = self.name.split()
-#
-#         # 引数をそれぞれパスにしていく
-#         inputs_for_arg_i = []
-#         for key, input in inputs.items():
-#             self.save(input)
-#             inputs_for_arg_i.append(input.source.fullpath.as_posix())
-#         res.append(f"i={','.join(inputs_for_arg_i)}")
-#         return res
-#
-#     def stdin(self, inputs):
-#         return None
-#
-# class Mjoin(MCommand):
-#     def __init__(self):
-#         super().__init__()
-#
-#         self.name = 'mjoin'
-#         self.description = '結合'
-#         self.i_ports = {'i' : {'type': 'frame'}, 'm' : {'type': 'frame'}}
-#         self.params.append(Parameter('k', '結合キー名'))
-#
-#     def command_args(self, args, inputs):
-#         res = self.name.split()
-#
-#         res.append(f"k={args['k']}")
-#
-#         input_m = inputs['m']
-#
-#         # パイプなら、CSVに吐く
-#         self.save(input_m)
-#         res.append(f"m={ input_m.source.fullpath }")
-#
-#         return res
-#
-#     def stdin(self, inputs):
-#         return inputs['i'].source.fd
+class Msetstr(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msetstr'
+        self.description = '文字列追加'
+        self.params.append(Parameter('a', '追加列名'))
+        self.params.append(Parameter('v', '追加する値'))
+
+class Msum(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msum'
+        self.description = '合計'
+        self.params.append(Parameter('k', '合計の基準となる列名'))
+        self.params.append(Parameter('f', '合計する列名:合計後の列名'))
+
+class Mstats(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mstats'
+        self.description = '統計情報'
+        self.params.append(Parameter('c', '計算項目'))
+        self.params.append(Parameter('f', '対象列名'))
+
+class Mavg(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mavg'
+        self.description = '平均'
+        self.params.append(Parameter('f', '対象列名'))
+
+class Mbucket(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mbucket'
+        self.description = '行分割'
+        self.params.append(Parameter('n', '行数'))
+        self.params.append(Parameter('f', '対象列名'))
+
+class Mtee(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtee'
+        self.description = '出力'
+        self.params.append(Parameter('o', '出力先'))
+
+class Mselstr(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mselstr'
+        self.description = '行選択(文字列)'
+        self.params.append(Parameter('f', '対象列名'))
+        self.params.append(Parameter('v', '絞込条件値（文字列）'))
+
+class Mcat(MCommand):
+    def __init__(self):
+        super().__init__()
+
+        self.name = 'mcat'
+        self.description = 'ファイル結合'
+        self.i_ports = {'*': {'type': 'frame'}} # 何個でも取れる
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        # 引数をそれぞれパスにしていく
+        inputs_for_arg_i = []
+        for key, input in inputs.items():
+            self.save(input)
+            inputs_for_arg_i.append(input.source.fullpath.as_posix())
+        res.append(f"i={','.join(inputs_for_arg_i)}")
+        return res
+
+    def stdin(self, inputs):
+        return None
+
+class Mjoin(MCommand):
+    def __init__(self):
+        super().__init__()
+
+        self.name = 'mjoin'
+        self.description = '結合'
+        self.i_ports = {'i' : {'type': 'frame'}, 'm' : {'type': 'frame'}}
+        self.params.append(Parameter('k', '結合キー名'))
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"k={args['k']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        self.save(input_m)
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+# 'mcut' = Mcut()
+# 'mjoin' = Mjoin()
+# 'mstats' = Mstats()
+# 'mavg' = Mavg()
+# self.mselstr = Mselstr()
+# 'msetstr' = Msetstr()
+# 'mbucket' = Mbucket()
+# 'mcat' = Mcat()
 
 commands = {
     'mcut': Mcut(),
     'msel': Msel(),
-    'split': Split()
+    'split': Split(),
+    'mjoin': Mjoin(),
+    'mstats': Mstats(),
+    'mavg': Mavg(),
+    'mselstr' : Mselstr(),
+    'msetstr' : Msetstr(),
+    'mbucket' : Mbucket(),
+    'mcat': Mcat(),
+    'mtee': Mtee()
 }
