@@ -1,7 +1,9 @@
 {
   "name": "日本NI様サンプル(親)",
   "params": [],
-  "ports": [{}, {}],
+  "ports": [{}, {
+    "o_section": { "type": "frame" }
+  }],
   "nodes": {
     "i": {
       "type": "frame",

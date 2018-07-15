@@ -162,44 +162,6 @@
       "dataSource": "csv",
       "uuid": null
     },
-
-    "cat": {
-      "type": "command",
-      "name": "mcat",
-      "args": {},
-      "srcs*": {
-        "*1": "o2-1", "*2": "o2-2", "*3": "o2-3", "*4": "o2-4", "*5": "o2-5",
-        "*6": "o2-6", "*7": "o2-7", "*8": "o2-8", "*9": "o2-9", "*10": "o2-10"
-      },
-      "srcs": {
-        "*1": "o2-1", "*2": "o2-2", "*3": "o2-3", "*4": "o2-4", "*5": "o2-5",
-        "*6": "o2-6"
-      },
-      "dsts": { "o": "catted" }
-    },
-    "catted": {
-      "type": "frame",
-      "dataSource": "csv",
-      "uuid": null
-    },
-    "s4": {
-      "type": "command",
-      "name": "msetstr",
-      "args": {
-        "a": "Pattern",
-        "v": "@[v]"
-      },
-      "srcs": { "i": "catted" },
-      "dsts": { "o": "o2" }
-    },
-
-    "o2": {
-      "type": "frame",
-      "dataSource": "csv",
-      "uuid": null
-    }
-  },
-  "nodes*": {
     "s3-7": {
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
@@ -252,6 +214,38 @@
       "dsts": { "o": "o2-10" }
     },
     "o2-10": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+
+    "cat": {
+      "type": "command",
+      "name": "mcat",
+      "args": {},
+      "srcs": {
+        "*1": "o2-1", "*2": "o2-2", "*3": "o2-3", "*4": "o2-4", "*5": "o2-5",
+        "*6": "o2-6", "*7": "o2-7", "*8": "o2-8", "*9": "o2-9", "*10": "o2-10"
+      },
+      "dsts": { "o": "catted" }
+    },
+    "catted": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "s4": {
+      "type": "command",
+      "name": "msetstr",
+      "args": {
+        "a": "Pattern",
+        "v": "@[v]"
+      },
+      "srcs": { "i": "catted" },
+      "dsts": { "o": "o2" }
+    },
+
+    "o2": {
       "type": "frame",
       "dataSource": "csv",
       "uuid": null

@@ -8,13 +8,17 @@ flow_obj_cache = {} # uuid: Jsonオブジェクト
 flows_cache = {} # uuid: Flowインスタンス
 
 def parse(flow_uuid):
+    global flow_obj_cache
+    global flows_cache
+    flow_obj_cache = {}
+    flows_cache = {}
     return parse_job(load_flow(flow_uuid), flow_uuid, {}, {}, {}, {})
 
 def load_flow(flow_uuid):
     if flow_uuid in flow_obj_cache:
         return flow_obj_cache[flow_uuid]
 
-    flows_path = f'kskp/data/flows/{flow_uuid}.json'
+    flows_path = f'/kskp/data/flows/{flow_uuid}.json'
     with open(flows_path, 'r', encoding='utf-8') as fd:
         obj = json.loads(fd.read(), encoding='utf-8')
         flow_obj_cache[flow_uuid] = obj
@@ -112,6 +116,7 @@ class Job:
         self.jobs = []
         # self.errors = []
 
+    # @profile
     def execute(self):
         # TODO: 削除フラグを立てる
         self.replace_inputs()
@@ -126,11 +131,28 @@ class Job:
             if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
                 for last in self.lasts.values():
                     last.is_temp = False
+
+            # if len(self.step.dsts) == 1 and \
+            # list(self.step.dsts.values()) == list(self.step.flow.o_ports.keys()):
+            #     print('del')
+            #     self.delete_files()
+
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
         # print('execute output:', output)
 
         return self.replace_outputs(output)
+
+    def delete_files(self):
+        for job in self.jobs:
+            for key, input in job.inputs.items():
+                job_ports = self.dst_job_ids(key)
+                if len(job_ports) < 2:
+                    if isinstance(input.source, PathFileSource):
+                        if input.source.fullpath.exists():
+                            # print('del!')
+                            if input.is_temp:
+                                input.source.fullpath.unlink()
 
     def replace_inputs(self):
         for p_k, p_v in self.inputs.items():
@@ -307,6 +329,12 @@ class MCommand(Command):
 
     def execute(self, args, inputs):
         source = UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
         frame = Frame(str(uuid.uuid4()), source)
         return { self.out_key: frame }
 
