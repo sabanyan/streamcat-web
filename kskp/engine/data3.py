@@ -1,0 +1,242 @@
+import io # for StringIO
+import csv # for csv reader
+
+# for TempPathFileSource
+import os
+import tempfile
+from pathlib import Path
+
+
+class Source:
+    """
+    データの取得元、もしくは書込先になる情報をもつクラス
+    基本的にはDataクラスのsource属性を介して使用される
+    """
+
+    def __init__(self, source_type=''):
+        self.type = source_type
+
+    def dtor(self):
+        pass
+
+
+class FileSource(Source):
+    """
+    一つのファイルを表すSource。読み書き共に可能
+    """
+
+    def __init__(self, source_type):
+        super().__init__(source_type)
+
+    @property
+    def ext(self):
+        # ファイルの拡張子はdatum.source.typeから決定する
+        if self.type == 'csv':
+            return '.csv'
+        elif self.type == '':
+            return ''
+        else:
+            # その他の場合は今は考えない
+            raise Exception()
+
+    @property
+    def fd(self):
+        pass
+
+    @fd.setter
+    def fd(self, value):
+        pass
+
+
+from pathlib import Path
+
+
+class PathFileSource(FileSource):
+    """
+    パスでファイルを表すFileSource。
+    読み書き共に可能
+    """
+
+    def __init__(self, source_type, source_dir, file_name):
+        super().__init__(source_type)
+        self.source_dir = source_dir
+        self.file_name = file_name
+        self._fd = None
+
+    @property
+    def fd(self):
+        self._fd = open(self.fullpath, 'r')
+        return self._fd
+
+    @fd.setter
+    def fd(self, value):
+        pass
+
+    @property
+    def fullpath(self):
+        return Path(self.source_dir).joinpath(f'{self.file_name}')
+
+    def __repr__(self):
+        return f'path: {self.file_name}'
+
+    def dtor(self):
+        if self._fd is not None:
+            self._fd.close()
+        # if self.fullpath.exists():
+        #     self.fullpath.unlink()
+
+import subprocess
+
+
+class UnixCommandSource(FileSource):
+    """
+    UNIXコマンド実行列を持つFileSource。
+    読み取りのみが可能
+    """
+
+    def __init__(self, source_type, args, stdin=None):
+        super().__init__(source_type)
+        self.args = args
+        self.stdin = stdin
+        self.popen = None
+
+    @property
+    def fd(self):
+        # if self.popen is not None and self.popen.stdin is not None and self.popen.stdin.closed:
+        #     print(f'pid: {self.popen.pid} args: {self.args}')
+        self.popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE, universal_newlines=True)
+        if self.stdin is not None:
+            self.stdin.close()
+        return self.popen.stdout
+
+    @fd.setter
+    def fd(self, value):
+        raise Exception()
+
+    def save(self, stdout):
+        """ engineから使う最後の保存用 """
+        popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
+        if self.stdin is not None:
+            self.stdin.close()
+        popen.wait()
+
+    def __repr__(self):
+        # return f'UnixCommandSource args: {self.args} {self.stdin}'
+        return f'args: {self.args}'
+
+    def dtor(self):
+        # if self.popen is not None:
+        #     print(f'UnixCommandSource pid: {self.popen.pid} args:', self.args)
+        # else:
+        #     print(f'UnixCommandSource self.popen: None args:', self.args)
+        if self.popen is not None:
+            self.popen.stdout.close()
+            # print(f'close pid: {self.popen.pid} args: {self.args}')
+            self.popen.wait()
+
+class TempPathFileSource(PathFileSource):
+    """
+    実行後にファイルがすぐ消されるPathFileSource
+    テスト用
+    """
+
+    def __init__(self, source_type):
+        _, path = tempfile.mkstemp()
+        self.path = Path(path)
+        super().__init__(source_type, self.path.parent.as_posix(), self.path.name)
+
+    def dtor(self):
+        os.unlink(self.path)
+
+    def __repr__(self):
+        return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
+
+class Datum:
+    """
+    データ全般を表すクラス
+
+    :param source: データソース。現時点では以下のどれかの文字列が入る予定
+                   'popen', 'csv', 'json', 'postgres', 'mysql'
+                   Noneの場合は直接メモリ上だけにデータを持っていることになる
+    :param uuid: 各frameを一意に識別するためのID
+                 source is Noneであればframe_uuidもNoneであるが、
+                 それ以外の場合ではuuid is not Noneのはず
+                 (但し代入の順番の都合もあるかもしれないのでチェックはしない)
+    """
+
+    def __init__(self, uuid=None, source=None):
+        self.uuid = uuid
+        self.source = source
+        self.is_temp = True
+
+    def read(self):
+        raise Exception()
+
+    def write(self):
+        raise Exception()
+
+    def dtor(self):
+        if self.source is not None:
+            self.source.dtor()
+
+
+import os
+import uuid
+
+from pathlib import Path
+
+class Frame(Datum):
+    """
+    列指向の表形式データ
+    """
+
+    def __init__(self, frame_uuid=None, source=None):
+        super().__init__(frame_uuid, source)
+
+    def command_to_file(self):
+        if isinstance(self.source, UnixCommandSource):
+            file_name = self.uuid + self.source.ext
+            new_source = PathFileSource(self.source.type, os.environ['KENG_FRAME_PATH'], file_name)
+            with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
+                self.source.save(fd)
+            self.source = new_source
+        return self
+
+    @property
+    def contents(self):
+        if self.source is None:
+            return '(no contents)'
+
+        with self.source.fd as fd:
+            reader = csv.reader(fd)
+            res = {}
+            first_row = True
+
+            for row in reader:
+                if first_row:
+                    for col in row:
+                        res[col] = []
+                    cols = row
+                    first_row = False
+                else:
+                    for i, col in enumerate(cols):
+                        res[col].append(row[i])
+
+        return res
+
+    def __repr__(self):
+        # return f'<Frame({ self.source }) contents:{self.contents.__repr__()}>'
+        return f'<Frame({ self.source })>'
+
+
+def make_path(frame_uuid):
+    """
+    uuidからデータのパスを作って返す
+    内部使用目的
+    """
+
+    # frameの保存場所の指定は必須
+    if 'KENG_FRAME_PATH' not in os.environ:
+        raise Exception()
+
+    return f"{ os.environ['KENG_FRAME_PATH'] }/{ frame_uuid }.csv"

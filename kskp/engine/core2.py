@@ -12,11 +12,16 @@ class Job:
         return self.step.execute(self.inputs)
 
     def dtor(self):
+        for input in self.inputs.values():
+            if input is not None:
+                input.dtor()
+
         flow = self.step.command_or_flow
 
         if self.step.kind == 'flow':
-            for datum in flow.data.values():
-                datum.dtor()
+            # for datum in flow.data.values():
+            #     if datum is not None:
+            #         datum.dtor()
 
             for job in flow.jobs.values():
                 job.dtor()
@@ -40,10 +45,10 @@ class Flow:
 
         self.jobs = {}
         self.data = {}
-        self.edges = {} # { 's1': ({'in': 'd0'}, {'out': 'd1'}) }
+        self.src_edges = {} # { 's1': {'in': 'd0'} }
+        self.dst_edges = {} # { 's1': {'out': 'd1'} }
 
     def execute(self, args={}, inputs={}):
-        print(self.data)
         self.prepare_inputs(inputs)
 
         self.data.update({ k: self.get_datum(k, args) for k in self.last_keys })
@@ -59,18 +64,18 @@ class Flow:
 
         self.expand_args(job, args)
         job.inputs = self.check_inputs(self.inputs_of_job(job_id, args), job_id)
-        self.data[datum_id] = job.execute()[port]
-        return self.data[datum_id]
+        result = job.execute()[port]
+        # self.data[datum_id] = result
+        return result
 
     def src_job_from(self, datum_id):
-        for k, v in self.edges.items():
-            for p, dst_datum_id in v[1].items():
-                if dst_datum_id == datum_id:
-                    return k, p
+        for k, v in self.dst_edges.items():
+            if v == datum_id:
+                return tuple(k.split('.'))
 
     def inputs_of_job(self, job_id, args):
         return {d: self.check_multi_use(d, self.get_datum(d, args))
-                    for d in self.edges[job_id][0].values()}
+                    for k, d in self.src_edges.items() if f'{job_id}.' in k}
 
     def check_multi_use(self, datum_id, datum):
         if len(self.dst_job_ids(datum_id)) >= 2 \
@@ -82,15 +87,15 @@ class Flow:
         return datum
 
     def dst_job_ids(self, datum_id):
-        return [k for k, v in self.edges.items() if datum_id in v[0].values()]
+        return [k for k, v in self.src_edges.items() if datum_id == v]
 
     def check_inputs(self, inputs, job_id):
         res = inputs
         i_ports = self.jobs[job_id].step.command_or_flow.i_ports
         if '*' not in list(i_ports.keys()):
-            res = {src_key: v for k, v in inputs.items()
-                              for src_key, src_datum_id in self.edges[job_id][0].items()
-                              if src_datum_id == k}
+            res = {src_key.split('.')[1]: v for k, v in inputs.items()
+                              for src_key, src_datum_id in self.src_edges.items()
+                              if f'{job_id}.' in src_key and src_datum_id == k}
         return res
 
     def expand_args(self, job, args):
@@ -108,7 +113,6 @@ class Flow:
 
     def prepare_inputs(self, inputs):
         for key in self.i_ports.keys():
-            print(inputs, key)
             self.data[key] = inputs[key]
 
     @property
@@ -122,7 +126,7 @@ class Flow:
 
     @property
     def src_datum_ids(self):
-        return { v for edge in self.edges.values() for v in edge[0].values() }
+        return { v for v in self.src_edges.values() }
 
 class Command:
     def __init__(self, name=''):
@@ -137,6 +141,11 @@ class Command:
 
 
 from .data import *
+
+class Port:
+    def __init__(self, job_id, name):
+        self.job_id = job_id
+        self.name = name
 
 class MCommand(Command):
     def __init__(self):
@@ -269,6 +278,8 @@ class Mjoin(MCommand):
 
     def command_args(self, args, inputs):
         res = self.name.split()
+
+        res.append(f"k={args['k']}")
 
         input_m = inputs['m']
 
