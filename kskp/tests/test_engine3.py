@@ -8,7 +8,8 @@ class EngineTestCase(unittest.TestCase):
     def execute(self, flow_uuid):
         job = parse(flow_uuid)
         job.execute()
-        print(list(job.lasts.values())[0].contents)
+
+        # print(list(job.lasts.values())[0].contents)
         job.dtor()
 
     def test(self):
