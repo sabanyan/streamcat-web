@@ -118,7 +118,6 @@ class Job:
 
     # @profile
     def execute(self):
-        # TODO: 削除フラグを立てる
         self.replace_inputs()
 
         s = self.step
@@ -132,27 +131,11 @@ class Job:
                 for last in self.lasts.values():
                     last.is_temp = False
 
-            # if len(self.step.dsts) == 1 and \
-            # list(self.step.dsts.values()) == list(self.step.flow.o_ports.keys()):
-            #     print('del')
-            #     self.delete_files()
-
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
-        # print('execute output:', output)
+        # print('execute end:', output)
 
         return self.replace_outputs(output)
-
-    def delete_files(self):
-        for job in self.jobs:
-            for key, input in job.inputs.items():
-                job_ports = self.dst_job_ids(key)
-                if len(job_ports) < 2:
-                    if isinstance(input.source, PathFileSource):
-                        if input.source.fullpath.exists():
-                            # print('del!')
-                            if input.is_temp:
-                                input.source.fullpath.unlink()
 
     def replace_inputs(self):
         for p_k, p_v in self.inputs.items():
