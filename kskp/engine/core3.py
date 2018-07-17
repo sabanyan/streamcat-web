@@ -141,6 +141,7 @@ class Job:
         if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
             now = datetime.now()
 
+            # ユーザ名を取ってくる方法を確立するまでの暫定的な処理
             history = self.create_result_history(now, 'ユーザー 太郎')
 
             # ファイルに書き込み
@@ -163,7 +164,7 @@ class Job:
         # nowはミリ秒まで入るのでnowを使ってdatetimeを作り直してからisoformat()を行っている
         history_json['executedAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
                                               tzinfo=timezone(timedelta(hours=+9))).isoformat()
-        # ユーザ名を取ってくる方法を確立するまでの暫定的な処理
+
         history_json['executor']['name'] = user_name
         history_json['flow']['uuid'] = self.step.command_or_flow.uuid
         for key in self.lasts.keys():
