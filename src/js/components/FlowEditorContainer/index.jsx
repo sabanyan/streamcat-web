@@ -2,6 +2,7 @@
 import {
   addStepAction,
   updateStepAction,
+  updateFlowAction,
   selectStepsAction,
   addSelectStepAction,
   deleteSelectStepAction,
@@ -39,6 +40,7 @@ export type FlowEditorProps = {
   pasteSteps: Function;
   deleteSteps: Function;
   updateStep: Function;
+  updateFlow: Function;
   sortFlow: Function;
   executeFlow: Function;
   nodes: {};
@@ -94,6 +96,9 @@ export default FlowEditorContainer = connect(
       },
       updateStep (...args) {
         dispatch(updateStepAction(...args))
+      },
+      updateFlow (...args) {
+        dispatch(updateFlowAction(...args))
       },
       selectSteps (...args) {
         dispatch(selectStepsAction(...args))

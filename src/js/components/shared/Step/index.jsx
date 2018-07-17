@@ -316,8 +316,8 @@ export default class Step extends React.Component<Props, State> {
         </Rect>
     }
 
-    const flowIn = (ports[0][step.id])?<circle r={8} fill={"#4a96f0"} stroke={"#4a7ed9"} strokeWidth={3}></circle>:null
-    const flowOut = (ports[1][step.id])?<circle r={8} fill={"#f06179"} stroke={"#e94893"} strokeWidth={3}/>:null
+    const flowIn = (ports[0][step.id])?<circle r={8} cx={rect_style.width/2} cy={0} fill={"#4a96f0"} stroke={"#4a7ed9"} strokeWidth={3}></circle>:null
+    const flowOut = (ports[1][step.id])?<circle r={8} cx={rect_style.width/2} cy={rect_style.height} fill={"#f06179"} stroke={"#e94893"} strokeWidth={3}/>:null
 
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}

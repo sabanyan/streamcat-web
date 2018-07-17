@@ -14,9 +14,13 @@ type CommandInspectorProps = {
 
 class CommandInspector extends React.Component<CommandInspectorProps> {
 
+    getSelectedStep(){
+      let {selected_step_ids, nodes} = this.props
+      return nodes[selected_step_ids[0]]
+    }
+
     onClickSave(e:Event) {
-        let {selected_step_ids,nodes} = this.props
-        let selected_step = nodes[selected_step_ids[0]]
+        let selected_step = this.getSelectedStep()
 
         //パラメーターを更新
         Object.keys(this.refs).map((key)=>{
@@ -29,8 +33,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     onClickDelete(e:Event) {
         if(window.confirm("このコマンドを削除しますか？")){
-          let {selected_step_ids,nodes} = this.props
-          let selected_step = nodes[selected_step_ids[0]]
+          let selected_step = this.getSelectedStep()
           this.props.deleteSteps([selected_step.id])
           this.props.selectSteps()
         }
@@ -69,9 +72,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     render() {
 
         const self = this
-        let {selected_step_ids,nodes} = this.props
-
-        const selected_step:CommandStepModel = nodes[selected_step_ids[0]]
+        let selected_step = this.getSelectedStep()
 
         let inputForm
 
@@ -81,7 +82,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             const command = self.getCommand(command_name)
             const argument:{caption?:string} = self.getCommandArgument(key,command)
 
-          console.log(selected_step)
             const argument_name = key
             return <div key={index}>
                 <label>{argument.caption}</label>
@@ -95,19 +95,21 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             </div>
         })
 
-
         return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"} {...this.props}>
           <InOutConnector {...this.props}/>
-          <div className="kskp-property-body">
-                    <div className="kskp-form">
-                        {/*<label>f</label>*/}
-                        {/*<input type="text" className="form-control mb-12px" defaultValue={f} ref="f"/>*/}
-                        {inputForm}
-                      <br/>
-                        <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
-                        <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
-                    </div>
-                </div>
+          <div className={style.hr}/>
+          <div className={style.property_title}>
+            パラメータ
+          </div>
+          <div>
+              <div className="kskp-form">
+                  {inputForm}
+              </div>
+          </div>
+          <br/>
+          <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
+          <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
+
         </Inspector>
     }
 
