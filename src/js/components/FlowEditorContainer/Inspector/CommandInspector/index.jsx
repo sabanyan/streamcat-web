@@ -1,13 +1,10 @@
 // @flow
 import * as React from 'react'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import DataTable from '../../../shared/DataTable/index'
 import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
 import Button from '../../../shared/Button'
-import StepModel from '../../../../model/StepModel'
+import CommandStepModel from '../../../../model/CommandStepModel'
 import InOutConnector from './InOutConnector'
 
 type CommandInspectorProps = {
@@ -74,7 +71,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         const self = this
         let {selected_step_ids,nodes} = this.props
 
-        const selected_step:StepModel = nodes[selected_step_ids[0]]
+        const selected_step:CommandStepModel = nodes[selected_step_ids[0]]
 
         let inputForm
 

@@ -1,8 +1,6 @@
 import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
-import StepModel from '../model/StepModel'
-import DataFrameModel from '../model/DataFrameModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";

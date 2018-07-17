@@ -9,7 +9,7 @@ import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
 import DataPreview from '../../../shared/DataPreview'
 import DropDownList from '../../../shared/DropDownList'
-import DataFrameModel from '../../../../model/DataFrameModel'
+import DataFrameStepModel from '../../../../model/DataFrameStepModel'
 import CommandSelector from '../CommandSelector'
 
 class DataSourceInspector extends React.Component<FlowEditorProps> {
@@ -81,7 +81,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     let {selected_step_ids, nodes} = this.props
     const self = this
     const selected_step = nodes[selected_step_ids[0]]
-    if (selected_step instanceof DataFrameModel) {
+    if (selected_step instanceof DataFrameStepModel) {
       dataSource = selected_step
       step_text = selected_step.text
       if (dataSource.uuid) {

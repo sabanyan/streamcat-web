@@ -1,13 +1,10 @@
-import Constants from '../constants/index'
-import ModelUtil from '../utils/ModelUtil'
-import StepModel from './StepModel'
 import type { BaseModelProps } from './BaseModel'
 import BaseModel from './BaseModel'
 
 type stepType = "command" | "frame"
 type dataSourceType = "csv"
 
-export type DataFrameModelProps = {
+export type DataFrameStepModelProps = {
   ...BaseModelProps,
   uuid: string;
   dataSource: dataSourceType;
@@ -15,13 +12,13 @@ export type DataFrameModelProps = {
   asFlowOut: boolean;
 }
 
-export default class DataFrameModel extends BaseModel{
+export default class DataFrameStepModel extends BaseModel{
   uuid: string
   dataSource: dataSourceType
   asFlowIn: boolean
   asFlowOut: boolean
 
-  constructor (props: DataFrameModelProps) {
+  constructor (props: DataFrameStepModelProps) {
     super(props)
     this.uuid = props.uuid
     this.dataSource = props.dataSource

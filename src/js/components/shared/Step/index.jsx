@@ -3,22 +3,23 @@ import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
 import FileIcon from '../Icon/FileIcon'
-import type { StepModelProps } from '../../../model/StepModel'
-import type { DataFrameModelProps } from '../../../model/DataFrameModel'
+import type { CommandStepModelProps } from '../../../model/CommandStepModel'
+import type { DataFrameStepModelProps } from '../../../model/DataFrameStepModel'
 import type { FlowEditorProps } from '../../FlowEditorContainer'
 import Rect from './Rect'
 import OperatorIcon from '../Icon/OperatorIcon'
 import SubFlowIcon from '../Icon/SubFlowIcon'
 import style from './style.scss'
-import StepModel from '../../../model/StepModel'
-import DataFrameModel from '../../../model/DataFrameModel'
-import SubFlowModel from '../../../model/SubFlowModel'
+import CommandStepModel from '../../../model/CommandStepModel'
+import DataFrameStepModel from '../../../model/DataFrameStepModel'
+import SubFlowStepModel from '../../../model/SubFlowStepModel'
+import type { SubFlowStepModelProps } from '../../../model/SubFlowStepModel'
 
 let mouseMoveEvent
 let mouseUpEvent
 
 type modelProps = {
-  model: StepModelProps | DataFrameModelProps
+  model: CommandStepModelProps | DataFrameStepModelProps | SubFlowStepModelProps
 }
 
 type Props = {
@@ -227,15 +228,15 @@ export default class Step extends React.Component<Props, State> {
   }
 
   isStep (model: modelProps) {
-    return (model instanceof StepModel)
+    return (model instanceof CommandStepModel)
   }
 
   isDataFrame (model: modelProps) {
-    return (model instanceof DataFrameModel)
+    return (model instanceof DataFrameStepModel)
   }
 
   isSubFlow (model: modelProps) {
-    return (model instanceof SubFlowModel)
+    return (model instanceof SubFlowStepModel)
   }
 
   getFilter () {

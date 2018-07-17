@@ -12,7 +12,7 @@ import DataSourceImport from './DatasourceImport'
 import Zoom from './Zoom'
 import style from './style.scss'
 import classnames from 'classnames'
-import DataFrameModel from '../../../model/DataFrameModel'
+import DataFrameStepModel from '../../../model/DataFrameStepModel'
 import HttpUtil from '../../../utils/HttpUtil'
 
 export default class Toolbar extends React.Component {
@@ -121,7 +121,7 @@ export default class Toolbar extends React.Component {
 
         //データソースを追加
 
-        const add_step = new DataFrameModel({
+        const add_step = new DataFrameStepModel({
           id: null,//TODO IDはどうやってつける？
           type: Constants.step.type.frame,
           uuid: null,//TODO UUIDをどうやってつける？
