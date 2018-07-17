@@ -265,7 +265,7 @@ export default class Step extends React.Component<Props, State> {
   render () {
     const {x, y} = this.props.position
     const {type} = this.props
-
+    const {ports} = this.props.flow
     let icon
 
     let step = this.props.model
@@ -316,6 +316,8 @@ export default class Step extends React.Component<Props, State> {
         </Rect>
     }
 
+    const flowIn = (ports[0][step.id])?<circle r={8} fill={"#4a96f0"} stroke={"#4a7ed9"} strokeWidth={3}></circle>:null
+    const flowOut = (ports[1][step.id])?<circle r={8} fill={"#f06179"} stroke={"#e94893"} strokeWidth={3}/>:null
 
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}
@@ -326,6 +328,8 @@ export default class Step extends React.Component<Props, State> {
         <text className="text" transform={'translate(' + (-8) + ',' +
         (rect_style.height / 2 + 6) + ')'} textAnchor="end"
               fontSize={12} width={100} height={100}>{step.label}</text>
+        {flowIn}
+        {flowOut}
         {/*<text className="text" transform={'translate(' + (-50) + ',' +*/}
         {/*(rect_style.height / 2 + 6) + ')'} textAnchor="middle"*/}
               {/*fontSize={10}>{step_subtext}</text>*/}

@@ -95,10 +95,9 @@ const Application = (state = initialState, action) => {
 
             const loadedJson = graph.load(context)
 
-            newState = Object.assign(newState,{...loadedJson})
-
-            newState.projectId = loadedJson.projectId
-            newState.projectName = loadedJson.name
+            newState.flow = {...loadedJson}
+            newState.nodes = loadedJson.nodes
+            newState.project = {id:loadedJson.projectId}
 
             newState.graph = graph.getGraph(newState)
 
