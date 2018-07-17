@@ -27,7 +27,7 @@ let FlowEditorContainer
 export type FlowEditorProps = {
   projectId: string,
   projectName: string,
-  graph: { width: number, height: number };
+  graph: { width: number, height: number,edges:any[],nodes:any[] };
   mast: { operators: any[] };
   loadFlowJSON: Function;
   addMaster: Function;
@@ -38,7 +38,6 @@ export type FlowEditorProps = {
   pasteSteps: Function;
   deleteSteps: Function;
   updateStep: Function;
-  edges: any[];
   nodes: {};
   selected_step_ids: string[];
   selected_tab_id: string;
@@ -65,7 +64,6 @@ export default FlowEditorContainer = connect(
       projectName: state.projectName,
       graph: state.graph,
       mast: state.mast,
-      flows: state.flows,
       edges: state.edges,
       nodes: state.nodes,
       selected_step_ids: state.selected_step_ids,

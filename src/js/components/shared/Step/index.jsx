@@ -254,7 +254,7 @@ export default class Step extends React.Component<Props, State> {
 
     let icon
 
-    const step = this.props.model
+    let step = this.props.model
 
     /**
      * STEPの種類に応じた見た目の設定
@@ -268,6 +268,8 @@ export default class Step extends React.Component<Props, State> {
     const hover = this.state.hover
     const selected = this.selectorIntersect()
 
+    step.label = (!step.label)?step.id:step.id
+
     if (this.isStep(step)) {
       //ステップ
       icon = <g>
@@ -278,7 +280,6 @@ export default class Step extends React.Component<Props, State> {
           <OperatorIcon fillColor={'#F4B63F'} width={16} height={17}/>
         </Rect>
       </g>
-
     }
     else if (this.isDataFrame(step)) {
       //データソース
@@ -291,7 +292,6 @@ export default class Step extends React.Component<Props, State> {
           <FileIcon fillColor={(step.hasData) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
-      step.label = step.id
     }
 
     return (
