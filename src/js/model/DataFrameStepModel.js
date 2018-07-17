@@ -1,3 +1,4 @@
+// @flow
 import type { BaseModelProps } from './BaseModel'
 import BaseModel from './BaseModel'
 
@@ -22,7 +23,7 @@ export default class DataFrameStepModel extends BaseModel{
     super(props)
     this.uuid = props.uuid
     this.dataSource = props.dataSource
-    this.asFlowIn = props.asFlowIn
-    this.asFlowOut = props.asFlowOut
+    this.asFlowIn = (props.asFlowIn)?props.asFlowIn:this.asFlowIn
+    this.asFlowOut = (props.asFlowOut)?props.asFlowOut:this.asFlowOut
   }
 }

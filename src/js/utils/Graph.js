@@ -3,6 +3,7 @@ import Constants from '../constants'
 import CommandStepModel from '../model/CommandStepModel'
 import DataFrameStepModel from '../model/DataFrameStepModel'
 import SubFlowStepModel from '../model/SubFlowStepModel'
+import ZoomUtil from './ZoomUtil'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -98,7 +99,7 @@ class Graph {
    * グラフサイズの取得
    * @returns {{width, height}}
    */
-  getGraph (nodes) {
+  getGraph ({nodes,zoom}) {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
@@ -106,10 +107,10 @@ class Graph {
     if (nodes) {
       const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
       const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))
-      return {width: width, height: height,nodes:graph_nodes, edges: edges}
+      return {width: ZoomUtil.zoom(width,zoom), height: ZoomUtil.zoom(height,zoom),nodes:graph_nodes, edges: edges}
     }
 
-    return {width: graph.width, height: graph.height,nodes:graph_nodes, edges: edges}
+    return {width: ZoomUtil.zoom(graph.width,zoom), height: ZoomUtil.zoom(graph.height,zoom),nodes:graph_nodes, edges: edges}
   }
 
   /**
@@ -123,10 +124,9 @@ class Graph {
     console.log("refreshPosition")
     console.log(this.g.nodes())
     this.g.nodes().forEach(function (v) {
-      console.log(v)
       let graph_node = self.g.node(v)
-      console.log(nodes)
       let step = nodes[graph_node.label]
+      console.log(step)
       step.setFrame({
         x: graph_node.x,
         y: graph_node.y,
