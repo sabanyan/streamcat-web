@@ -4,9 +4,12 @@ import os
 import csv
 import tempfile
 
-from ..engine.data import *
-from ..engine.core2 import Command, Flow, Step, Job
-from ..engine.core2 import Mcut
+# from ..engine.data import *
+# from ..engine.core2 import Command, Flow, Step, Job
+# from ..engine.core2 import Mcut
+from kskp.engine.data import *
+from kskp.engine.core2 import Command, Flow, Step, Job, Port
+from kskp.engine.core2 import Mcut, Msetstr, Msum, Mavg, Mstats, Mbucket, Mtee, Mjoin, Mcat, Mselstr
 
 class EngineTestCase(unittest.TestCase):
     def setUp(self):
@@ -57,8 +60,6 @@ class EngineTestCase(unittest.TestCase):
         os.close(self.fd)
         os.unlink(self.tempfile_path)
 
-from ..engine.core2 import Msetstr, Msum, Mavg, Mstats, Mbucket, Mtee, Mjoin, Mcat, Mselstr
-
 class NIJapanSampleTestCase(unittest.TestCase):
     """ 日本NI様サンプルテスト """
 
@@ -74,22 +75,21 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.mbucket = Mbucket()
         self.mcat = Mcat()
 
+    @profile
     def set_data(self, flow, key, data, srcs, dsts):
         """ syntax sugar用 """
         # print(dsts)
         flow.data[key] = data
         for src in srcs:
             # srcはjobから見るとdst
-            job_id, port = tuple(src.split('.'))
-            if job_id not in flow.edges:
-                flow.edges[job_id] = ({}, {})
-            flow.edges[job_id][1][port] = key
+            # job_id, port = tuple(src.split('.'))
+            flow.dst_edges[src] = key
+
         for dst in dsts:
             # dstはjobから見るとsrc
-            job_id, port = tuple(dst.split('.'))
-            if job_id not in flow.edges:
-                flow.edges[job_id] = ({}, {})
-            flow.edges[job_id][0][port] = key
+            # job_id, port = tuple(dst.split('.'))
+            flow.src_edges[dst] = key
+
         # flow.edges[key] = { 'srcs': srcs, 'dsts': dsts }
 
     def set_empty_data(self, flow, key, srcs, dsts):
@@ -111,9 +111,11 @@ class NIJapanSampleTestCase(unittest.TestCase):
     def set_command_step(self, flow, key, command, args):
         flow.jobs[key] = Job(Step('command', command, args))
 
+    @profile
     def set_flow_step(self, flow, key, subflow, args):
         flow.jobs[key] = Job(Step('flow', subflow, args))
 
+    @profile
     def make_section_flow(self):
         flow = Flow('section')
         self.set_command_step(flow, 's0', self.mselstr, {'f': 'Section', 'v': '@[v]'})
@@ -131,6 +133,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
+    @profile
     def make_stats_all_flow(self):
         """ 各列全体についての統計量を求める """
         flow = Flow('stats_all')
@@ -191,12 +194,13 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         # flow.dtor()
 
+    @profile
     def stats_by_4_sensors(self):
         """
         入力されたファイルの3H 3V 4H 4Vそれぞれについて、統計量を求めて返すサブフロー
         """
         flow = Flow('stats_by_4_sensors')
-        make_stats_all_flow = self.make_stats_all_flow()
+        stats_all_flow = self.make_stats_all_flow()
         self.set_flow_step(flow, 's3H', self.make_stats_all_flow(), {'sensor_name': '3H'})
         self.set_flow_step(flow, 's3V', self.make_stats_all_flow(), {'sensor_name': '3V'})
         self.set_flow_step(flow, 's4H', self.make_stats_all_flow(), {'sensor_name': '4H'})
@@ -221,11 +225,13 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
+    @profile
     def make_splitting_flow(self):
         # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
         flow = Flow('ex')
         self.set_command_step(flow, 's0', self.mcut, { 'x': True, 'f': '@[f]' })
         self.set_command_step(flow, 's1', self.mbucket, {'rng': True, 'n': 10, 'f': 'Time:Section'})
+        section_flow = self.make_section_flow()
         self.set_flow_step(flow, 's2', self.make_section_flow(), {'v': '1', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's3', self.make_section_flow(), {'v': '2', 'pattern': '@[pattern]'})
         self.set_flow_step(flow, 's4', self.make_section_flow(), {'v': '3', 'pattern': '@[pattern]'})
@@ -264,9 +270,10 @@ class NIJapanSampleTestCase(unittest.TestCase):
         return flow
 
     # @unittest.skip
+    @profile
     def test(self):
         flow = Flow('parent')
-
+        splitting_flow = self.make_splitting_flow()
         self.set_flow_step(flow, 's0', self.make_splitting_flow(), {'f': '0,1,2,3,4', 'pattern': '1'})
         self.set_flow_step(flow, 's1', self.make_splitting_flow(), {'f': '0,5,6,7,8', 'pattern': '2'})
         self.set_flow_step(flow, 's2', self.make_splitting_flow(), {'f': '0,9,10,11,12', 'pattern': '3'})
@@ -283,20 +290,21 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_empty_data(flow, 'd1-1', ['s0.out1'], ['s_mcat_all.*'])
         self.set_empty_data(flow, 'd2-1', ['s1.out1'], ['s_mcat_all.*'])
         self.set_empty_data(flow, 'd3-1', ['s2.out1'], ['s_mcat_all.*'])
-        self.set_empty_data(flow, 'd4-1', ['s3.out1'], ['s_mcat_all.*'])
-        self.set_empty_data(flow, 'd5-1', ['s4.out1'], ['s_mcat_all.*'])
+        # self.set_empty_data(flow, 'd4-1', ['s3.out1'], ['s_mcat_all.*'])
+        # self.set_empty_data(flow, 'd5-1', ['s4.out1'], ['s_mcat_all.*'])
 
         self.set_empty_data(flow, 'd1-2', ['s0.out2'], ['s_mcat_section.*'])
         self.set_empty_data(flow, 'd2-2', ['s1.out2'], ['s_mcat_section.*'])
         self.set_empty_data(flow, 'd3-2', ['s2.out2'], ['s_mcat_section.*'])
-        self.set_empty_data(flow, 'd4-2', ['s3.out2'], ['s_mcat_section.*'])
-        self.set_empty_data(flow, 'd5-2', ['s4.out2'], ['s_mcat_section.*'])
+        # self.set_empty_data(flow, 'd4-2', ['s3.out2'], ['s_mcat_section.*'])
+        # self.set_empty_data(flow, 'd5-2', ['s4.out2'], ['s_mcat_section.*'])
 
         self.set_empty_data(flow, 'all', ['s_mcat_all.out'], ['mtee_all.in'])
         self.set_empty_data(flow, 'section', ['s_mcat_section.out'], ['mtee_section.in'])
 
-        self.set_command_step(flow, 'mtee_all', Mtee(), {'o': 'kskp/data/stats_all.csv'})
-        self.set_command_step(flow, 'mtee_section', Mtee(), {'o': 'kskp/data/stats_section.csv'})
+        mtee = Mtee()
+        self.set_command_step(flow, 'mtee_all', mtee, {'o': 'kskp/data/stats_all.csv'})
+        self.set_command_step(flow, 'mtee_section', mtee, {'o': 'kskp/data/stats_section.csv'})
         self.set_empty_data(flow, 'out_all', ['mtee_all.out'], [])
         self.set_empty_data(flow, 'out_section', ['mtee_section.out'], [])
 
