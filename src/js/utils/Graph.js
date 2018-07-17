@@ -172,9 +172,8 @@ class Graph {
             //コマンド
             const step = json.nodes[node]
 
-            const model = {
+            let model = {
               id: node,
-              type: Constants.step.type.command,
               name: step.name,
               label: step.label,
               srcs: step.srcs,
@@ -184,7 +183,14 @@ class Graph {
               size: step.size,
             }
 
-            json.nodes[node] = (type === Constants.step.type.command)?new CommandStepModel(model):new SubFlowStepModel(model)
+            if(type === Constants.step.type.command){
+              model.type = Constants.step.type.command
+              json.nodes[node] = new CommandStepModel(model)
+            }else if(type === Constants.step.type.subflow){
+              model.type = Constants.step.type.subflow
+              model.uuid = step.uuid
+              json.nodes[node] = new SubFlowStepModel(model)
+            }
 
             const hasSrcs = (Object.keys(step.srcs).length)
             const hasDsts = (Object.keys(step.dsts).length)
