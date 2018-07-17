@@ -14,6 +14,7 @@ import Selector from '../../shared/Selector'
 import style from './style.scss'
 import HttpUtil from '../../../utils/HttpUtil'
 import Graph from '../../../utils/Graph'
+import ZoomUtil from '../../../utils/ZoomUtil'
 
 type State = {}
 
@@ -52,7 +53,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
   render () {
 
-    let {selected_step_ids,nodes} = this.props
+    let {selected_step_ids,nodes,zoom} = this.props
     const self = this
     //this.props.state.stepsを生成する
     const steps = Object.keys(nodes).map((node_name) => {
@@ -81,8 +82,10 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     let selector = null
     const {drag} = this.props
     if (Object.keys(drag).length) {
-      selector = <Selector sx={drag.start.x} sy={drag.start.y} ex={drag.end.x}
-                           ey={drag.end.y} />
+      selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x,zoom)}
+                           sy={ZoomUtil.zoomReverse(drag.start.y,zoom)}
+                           ex={ZoomUtil.zoomReverse(drag.end.x,zoom)}
+                           ey={ZoomUtil.zoomReverse(drag.end.y,zoom)} />
     }
 
     return <div className={style.flow_editor}>

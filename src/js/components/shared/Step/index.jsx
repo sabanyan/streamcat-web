@@ -14,6 +14,7 @@ import CommandStepModel from '../../../model/CommandStepModel'
 import DataFrameStepModel from '../../../model/DataFrameStepModel'
 import SubFlowStepModel from '../../../model/SubFlowStepModel'
 import type { SubFlowStepModelProps } from '../../../model/SubFlowStepModel'
+import ZoomUtil from '../../../utils/ZoomUtil'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -177,6 +178,7 @@ export default class Step extends React.Component<Props, State> {
    * 範囲選択との衝突判定
    */
   selectorIntersect () {
+    const {zoom} = this.props
     const operator = {
       x: this.props.position.x,
       y: this.props.position.y,
@@ -188,10 +190,15 @@ export default class Step extends React.Component<Props, State> {
     if (start && end) {
       //ref:http://gyabo.sakura.ne.jp/tips/rect.html
 
-      const sx = (start.x <= end.x) ? start.x : end.x
-      const sy = (start.y <= end.y) ? start.y : end.y
-      const ex = (end.x >= start.x) ? end.x : start.x
-      const ey = (end.y >= start.y) ? end.y : start.y
+      let sx = (start.x <= end.x) ? start.x : end.x
+      let sy = (start.y <= end.y) ? start.y : end.y
+      let ex = (end.x >= start.x) ? end.x : start.x
+      let ey = (end.y >= start.y) ? end.y : start.y
+
+      sx = ZoomUtil.zoomReverse(sx,zoom)
+      sy = ZoomUtil.zoomReverse(sy,zoom)
+      ex = ZoomUtil.zoomReverse(ex,zoom)
+      ey = ZoomUtil.zoomReverse(ey,zoom)
 
       /**
        isIntersect = (
