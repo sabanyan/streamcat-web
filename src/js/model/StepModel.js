@@ -21,7 +21,6 @@ export default class StepModel extends BaseModel{
 
   constructor (props: StepModelProps) {
     super(props)
-    //TODO エディターから作るときのIDを将来的にどうするか決める
     this.srcs = props.srcs
     this.dsts = props.dsts
     this.args = props.args
