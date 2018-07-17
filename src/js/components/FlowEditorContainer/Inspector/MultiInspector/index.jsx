@@ -17,13 +17,13 @@ class MultiInspector extends React.Component<FlowEditorProps> {
   }
 
   getNumberOfSelectedDataSources(){
-    const {steps,data,selected_step_ids} = this.props
+    const {nodes,selected_step_ids} = this.props
     let cnt = 0
     let hasMixedCommand = false //コマンドが混ざって選択されている場合
     selected_step_ids.forEach((id)=>{
-      if(data[id] instanceof DataFrameModel){
+      if(nodes[id] instanceof DataFrameModel){
         cnt++
-      }else if(steps[id] instanceof StepModel){
+      }else if(nodes[id] instanceof StepModel){
         hasMixedCommand = true
       }
     })

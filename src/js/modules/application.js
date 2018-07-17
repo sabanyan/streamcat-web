@@ -75,16 +75,18 @@ const graph = new Graph()
 //     }
 // }
 
-let initialState
-initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(inject_initial_flow_data)
-initialState.selected_step_ids = []
-initialState.graph = graph.getGraphSize(initialState.steps)
-initialState.steps = {}
-initialState.mast = {}
-initialState.selected_tab_id = 0
-initialState.drag = {}
-initialState.selected_in_edges = []
-initialState.selected_out_edges = []
+// initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(inject_initial_flow_data)
+let initialState = {
+  selected_step_ids:[],
+  graph:graph.getGraphSize(null),
+  nodes:{},
+  mast:{},
+  selected_tab_id:0,
+  drag:{},
+  selected_in_edges:[],
+  selected_out_edges:[]
+}
+
 
 const Application = (state = initialState, action) => {
     switch (action.type) {
@@ -101,7 +103,7 @@ const Application = (state = initialState, action) => {
 
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            newState.graph = graph.getGraphSize(newState.nodes)
 
             return newState
         }
@@ -126,43 +128,40 @@ const Application = (state = initialState, action) => {
             let newState = StateUtil.deepCopy(state)
             if(from_step_id){
                 //連結した状態での追加
-                const from_step = state.steps[from_step_id]
+                const from_step = state.nodes[from_step_id]
                 add_step.setFrame({x:from_step.position.x + offsetX, y:from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
             }else{
                 //単体での追加
                 add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
             }
-            if(add_step instanceof StepModel){
-              newState.steps[add_step.id] = add_step
-            }else if(add_step instanceof DataFrameModel){
-              newState.data[add_step.id] = add_step
-            }
+
+
+            newState.nodes[add_step.id] = add_step
 
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            newState.graph = graph.getGraphSize(newState.nodes)
             return newState
         }
         case UPDATE_STEP_ACTION: {
             //http://otiai10.hatenablog.com/entry/2016/04/20/013348
             //stateを一度ディープコピーしないとrenderされないためコピーする
             let newState = StateUtil.deepCopy(state)
-            newState.steps[action.step.id] = action.step
+            newState.nodes[action.step.id] = action.step
 
             //選択されているstepの値も更新する
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            newState.graph = graph.getGraphSize(newState.nodes)
             return newState
         }
         case DELETE_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
             action.step_ids.map((id)=>{
               graph.removeNode(id)
-              delete newState.steps[id]
-              delete newState.data[id]
+              delete newState.nodes[id]
             })
             newState.flows = graph.g.nodes()
             newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            newState.graph = graph.getGraphSize(newState.nodes)
 
             //削除後は非選択状態にする
             newState.selected_step_ids = []
@@ -174,7 +173,7 @@ const Application = (state = initialState, action) => {
 
             let newState = StateUtil.deepCopy(state)
             const cut_data = JSON.stringify({data:action.step_ids.map((id)=>{
-                return newState.steps[id]
+                return newState.nodes[id]
             })})
 
             console.log(cut_data)
@@ -183,11 +182,11 @@ const Application = (state = initialState, action) => {
 
                 action.step_ids.map((id)=>{
                     graph.removeNode(id)
-                    delete newState.steps[id]
+                    delete newState.nodes[id]
                 })
                 newState.flows = graph.g.nodes()
                 newState.edges = graph.g.edges()
-                newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+                newState.graph = graph.getGraphSize(newState.nodes)
 
                 //削除後は非選択状態にする
                 newState.selected_step_ids = []
@@ -240,20 +239,20 @@ const Application = (state = initialState, action) => {
 
         case SORT_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
-            graph.refreshPosition({...newState.steps,...newState.data}) //ノード位置を再計算
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            graph.refreshPosition(newState.nodes) //ノード位置を再計算
+            newState.graph = graph.getGraphSize(newState.nodes)
             return newState
         }
         case EXECUTE_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
             let newSteps = {}
-            Object.keys(newState.steps).map((key)=>{
-              if(newState.steps[key] instanceof DataSourceModel) {
-                  newState.steps[key].property.hasData = true
+            Object.keys(newState.nodes).map((key)=>{
+              if(newState.nodes[key] instanceof DataSourceModel) {
+                  newState.nodes[key].property.hasData = true
                 }
-                newSteps[key] = newState.steps[key]
+                newSteps[key] = newState.nodes[key]
             })
-            newState.steps = newSteps
+            newState.nodes = newSteps
             return newState
         }
         case SELECT_TAB_ACTION:{

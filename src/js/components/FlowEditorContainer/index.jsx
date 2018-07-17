@@ -39,8 +39,7 @@ export type FlowEditorProps = {
   deleteSteps: Function;
   updateStep: Function;
   edges: any[];
-  steps: {};
-  data: {};
+  nodes: {};
   selected_step_ids: string[];
   selected_tab_id: string;
   children: React.Node;
@@ -68,8 +67,7 @@ export default FlowEditorContainer = connect(
       mast: state.mast,
       flows: state.flows,
       edges: state.edges,
-      steps: state.steps,
-      data: state.data,
+      nodes: state.nodes,
       selected_step_ids: state.selected_step_ids,
       selected_tab_id: state.selected_tab_id,
       drag: state.drag,

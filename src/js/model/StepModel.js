@@ -8,6 +8,8 @@ export type StepModelProps = {
   type: stepType;
   name: string;
   label: string;
+  srcs: [];
+  dsts: [];
   args: {};
   position?: { x: number, y: number };
   size?: { width: number, height: number };
@@ -18,6 +20,8 @@ export default class StepModel {
   type: stepType
   name: string
   label: string
+  srcs: [] = []
+  dsts: [] = []
   args: {}
   position: { x: number, y: number } = {x: 0, y: 0}
   size: { width: number, height: number } = {width: 0, height: 0}
@@ -28,6 +32,8 @@ export default class StepModel {
     this.type = props.type
     this.name = props.name
     this.label = props.label
+    this.srcs = props.srcs
+    this.dsts = props.dsts
     this.args = props.args
     this.setPosition(props.position)
     this.setSize(props.size)

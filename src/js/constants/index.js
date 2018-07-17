@@ -6,7 +6,7 @@ const Constants = {
       height: 38,
     },
     graph: {
-      nodeSeparator: 144,
+      nodeSeparator: 88,
       rankSeparator: 44,
     },
     datasource: {

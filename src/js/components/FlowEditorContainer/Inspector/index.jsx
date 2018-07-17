@@ -15,7 +15,7 @@ class Inspector extends React.Component<FlowEditorProps> {
     let {selected_step_ids} = this.props
 
     let property,show
-    const selected_step = this.props.steps[selected_step_ids[0]]
+    const selected_step = this.props.nodes[selected_step_ids[0]]
 
     if (selected_step_ids.length == 1) {
       if (selected_step instanceof DataFrameModel) {

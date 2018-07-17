@@ -9,8 +9,6 @@ export type DataFrameModelProps = {
   name: string;
   uuid: string;
   dataSource: dataSourceType;
-  srcs: [];
-  dsts: [];
   asFlowIn: boolean;
   asFlowOut: boolean;
   position?: { x: number, y: number };
@@ -23,8 +21,6 @@ export default class DataFrameModel {
   name: string
   uuid: string
   dataSource: dataSourceType
-  srcs: []
-  dsts: []
   asFlowIn: boolean
   asFlowOut: boolean
   position: { x: number, y: number } = {x: 0, y: 0}
@@ -37,8 +33,6 @@ export default class DataFrameModel {
     this.name = props.name
     this.uuid = props.uuid
     this.dataSource = props.dataSource
-    this.srcs = props.srcs
-    this.dsts = props.dsts
     this.asFlowIn = props.asFlowIn
     this.asFlowOut = props.asFlowOut
     this.setPosition(props.position)
