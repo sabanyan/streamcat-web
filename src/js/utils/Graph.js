@@ -100,14 +100,18 @@ class Graph {
    * グラフサイズの取得
    * @returns {{width, height}}
    */
-  getGraphSize (nodes) {
+  getGraph (nodes) {
+    const graph = this.g.graph()
+    const graph_nodes = this.g.nodes()
+    const edges = this.g.edges()
+
     if (nodes) {
       const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
       const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))
-      return {width: width, height: height}
+      return {width: width, height: height,nodes:graph_nodes, edges: edges}
     }
-    const graph = this.g.graph()
-    return {width: graph.width, height: graph.height}
+
+    return {width: graph.width, height: graph.height,nodes:graph_nodes, edges: edges}
   }
 
   /**
@@ -144,13 +148,8 @@ class Graph {
     const self = this
     let hasPosition = false
     if (json) {
-      console.log(json.nodes)
-      console.log("aaa")
-      console.log(this.g.nodes())
       Object.keys(json.nodes).map((node) => {
-        console.log(node)
         self.addNode(node)
-        console.log(this.g.nodes())
         const type = json.nodes[node].type
         if(type === Constants.step.type.frame){
           //データフレーム
@@ -183,7 +182,6 @@ class Graph {
             size: step.size,
           })
 
-          console.log(step)
           const hasSrcs = (Object.keys(step.srcs).length)
           const hasDsts = (Object.keys(step.dsts).length)
 
@@ -193,7 +191,7 @@ class Graph {
               console.log(step.srcs)
               const src = step.srcs[key]
               console.log(src)
-              const label = key + "→" + node
+              const label = src + "→" + node
               console.log(label)
               const from = src
               const to = node
@@ -204,7 +202,7 @@ class Graph {
             console.log("dsts")
             Object.keys(step.dsts).forEach((key) => {
               const dst = step.dsts[key]
-              const label = node + "→" + key
+              const label = node + "→" + dst
               console.log(label)
               const from = node
               const to = dst

@@ -78,7 +78,7 @@ const graph = new Graph()
 // initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(inject_initial_flow_data)
 let initialState = {
   selected_step_ids:[],
-  graph:graph.getGraphSize(null),
+  graph:graph.getGraph(null),
   nodes:{},
   mast:{},
   selected_tab_id:0,
@@ -101,9 +101,7 @@ const Application = (state = initialState, action) => {
             newState.projectId = loadedJson.projectId
             newState.projectName = loadedJson.name
 
-            newState.flows = graph.g.nodes()
-            newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize(newState.nodes)
+            newState.graph = graph.getGraph(newState.nodes)
 
             return newState
         }
@@ -138,9 +136,7 @@ const Application = (state = initialState, action) => {
 
             newState.nodes[add_step.id] = add_step
 
-            newState.flows = graph.g.nodes()
-            newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize(newState.nodes)
+            newState.graph = graph.getGraph(newState.nodes)
             return newState
         }
         case UPDATE_STEP_ACTION: {
@@ -150,7 +146,7 @@ const Application = (state = initialState, action) => {
             newState.nodes[action.step.id] = action.step
 
             //選択されているstepの値も更新する
-            newState.graph = graph.getGraphSize(newState.nodes)
+            newState.graph = graph.getGraph(newState.nodes)
             return newState
         }
         case DELETE_STEPS_ACTION: {
@@ -159,9 +155,7 @@ const Application = (state = initialState, action) => {
               graph.removeNode(id)
               delete newState.nodes[id]
             })
-            newState.flows = graph.g.nodes()
-            newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize(newState.nodes)
+            newState.graph = graph.getGraph(newState.nodes)
 
             //削除後は非選択状態にする
             newState.selected_step_ids = []
@@ -184,9 +178,7 @@ const Application = (state = initialState, action) => {
                     graph.removeNode(id)
                     delete newState.nodes[id]
                 })
-                newState.flows = graph.g.nodes()
-                newState.edges = graph.g.edges()
-                newState.graph = graph.getGraphSize(newState.nodes)
+                newState.graph = graph.getGraph(newState.nodes)
 
                 //削除後は非選択状態にする
                 newState.selected_step_ids = []
@@ -240,7 +232,7 @@ const Application = (state = initialState, action) => {
         case SORT_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
             graph.refreshPosition(newState.nodes) //ノード位置を再計算
-            newState.graph = graph.getGraphSize(newState.nodes)
+            newState.graph = graph.getGraph(newState.nodes)
             return newState
         }
         case EXECUTE_FLOW_ACTION: {
