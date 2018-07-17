@@ -1,0 +1,44 @@
+{
+  "name": "新エンジンの親",
+  "params": {},
+  "ports": [{}, {}],
+  "nodes": {
+    "Bi": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "4C545611-4569-4CD5-800E-55BE69CF8BA8"
+    },
+    "B1": {
+      "type": "flow",
+      "uuid": "1D01BA67-789B-41D5-95A9-CC84D2E4EFA7",
+      "args": {
+        "c": "${A}>2",
+        "f1": "B,C",
+        "f2": "A"
+      },
+      "srcs": { "Ci": "Bi" },
+      "dsts": { "Co1": "Bt" }
+    },
+    "Bt": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "B2": {
+      "type": "flow",
+      "uuid": "1D01BA67-789B-41D5-95A9-CC84D2E4EFA7",
+      "args": {
+        "c": "${B}>30",
+        "f1": "B",
+        "f2": "C"
+      },
+      "srcs": { "Ci": "Bt" },
+      "dsts": { "Co2": "Bo" }
+    },
+    "Bo": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    }
+  }
+}
