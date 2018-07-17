@@ -16,8 +16,6 @@ export default class CommandStepModel extends BaseModel{
   srcs: [] = []
   dsts: [] = []
   args: {}
-  position: { x: number, y: number } = {x: 0, y: 0}
-  size: { width: number, height: number } = {width: 0, height: 0}
 
   constructor (props: CommandStepModelProps) {
     super(props)
