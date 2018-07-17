@@ -34,7 +34,8 @@ const Constants = {
   step:{
     type:{
       command:"command",
-      frame:"frame"
+      frame:"frame",
+      subflow:"flow"
     }
   },
   data:{
