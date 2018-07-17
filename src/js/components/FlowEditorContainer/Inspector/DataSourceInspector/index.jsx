@@ -1,6 +1,5 @@
 // @flow
 import React from 'react'
-import DataSourceModel from '../../../../model/DataSourceModel'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import Operator from '../../../shared/Operator/index'

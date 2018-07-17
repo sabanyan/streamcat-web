@@ -1,7 +1,6 @@
 import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
-import DataSourceModel from '../model/DataSourceModel'
 import StepModel from '../model/StepModel'
 import DataFrameModel from '../model/DataFrameModel'
 

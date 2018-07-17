@@ -1,7 +1,5 @@
 import dagre from 'dagre'
-import OperatorModel from '../model/OperatorModel'
 import Constants from '../constants'
-import DataSourceModel from '../model/DataSourceModel'
 import ModelUtil from '../utils/ModelUtil'
 import StepModel from '../model/StepModel'
 import DataFrameModel from '../model/DataFrameModel'
@@ -191,7 +189,7 @@ class Graph {
               console.log(step.srcs)
               const src = step.srcs[key]
               console.log(src)
-              const label = src + "→" + node
+              const label = src + " => " + node
               console.log(label)
               const from = src
               const to = node
@@ -202,7 +200,7 @@ class Graph {
             console.log("dsts")
             Object.keys(step.dsts).forEach((key) => {
               const dst = step.dsts[key]
-              const label = node + "→" + dst
+              const label = node + " => " + dst
               console.log(label)
               const from = node
               const to = dst
