@@ -1,8 +1,7 @@
 import * as React from 'react'
 import style from '../../style.scss'
-import DataFrameModel from '../../../../../model/DataFrameModel'
 import DropDownList from '../../../../shared/DropDownList/index'
-import StepModel from '../../../../../model/StepModel'
+import CommandStepModel from '../../../../../model/CommandStepModel'
 
 class InOutConnector extends React.Component{
 
@@ -14,8 +13,8 @@ class InOutConnector extends React.Component{
     //すべてのデータフレーム先をリスト化
     let dataSourceOptions = []
     Object.keys(nodes).forEach((step_id)=>{
-      if (nodes[step_id] instanceof StepModel){
-        let step:StepModel = nodes[step_id]
+      if (nodes[step_id] instanceof CommandStepModel){
+        let step:CommandStepModel = nodes[step_id]
 
         Object.keys(step.dsts).forEach((to)=>{
           dataSourceOptions.push({value:to,label:to,object:step})

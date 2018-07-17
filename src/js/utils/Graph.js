@@ -1,9 +1,8 @@
 import dagre from 'dagre'
 import Constants from '../constants'
-import ModelUtil from '../utils/ModelUtil'
-import StepModel from '../model/StepModel'
-import DataFrameModel from '../model/DataFrameModel'
-import SubFlowModel from '../model/SubFlowModel'
+import CommandStepModel from '../model/CommandStepModel'
+import DataFrameStepModel from '../model/DataFrameStepModel'
+import SubFlowStepModel from '../model/SubFlowStepModel'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -154,7 +153,7 @@ class Graph {
           //データフレーム
           case Constants.step.type.frame:
             const frame = json.nodes[node]
-            json.nodes[node] = new DataFrameModel({
+            json.nodes[node] = new DataFrameStepModel({
               id: node,
               type: Constants.step.type.frame,
               uuid: frame.uuid,
@@ -185,7 +184,7 @@ class Graph {
               size: step.size,
             }
 
-            json.nodes[node] = (type === Constants.step.type.command)?new StepModel(model):new SubFlowModel(model)
+            json.nodes[node] = (type === Constants.step.type.command)?new CommandStepModel(model):new SubFlowStepModel(model)
 
             const hasSrcs = (Object.keys(step.srcs).length)
             const hasDsts = (Object.keys(step.dsts).length)
