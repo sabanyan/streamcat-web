@@ -50,6 +50,7 @@ export type FlowEditorProps = {
   dragEnd: Function;
   setZoom: Function;
   zoom: number;
+  flow:{name:string,ports:{},params:{},nodes:{}};
   drag: {
     start: {
       x: number,
@@ -76,7 +77,8 @@ export default FlowEditorContainer = connect(
       drag: state.drag,
       selected_in_edges: state.selected_in_edges,
       selected_out_edges: state.selected_out_edges,
-      zoom: state.zoom
+      zoom: state.zoom,
+      flow: state.flow,
     }
   },
   dispatch => {
