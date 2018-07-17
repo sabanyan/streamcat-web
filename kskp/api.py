@@ -249,8 +249,8 @@ def jobs():
             execute_historys.append(data)
 
     results = sorted(execute_historys, key = lambda x:x['executedAt'])
-    
-    if 0 < count and count <= len(results) :
+
+    if 0 < count and count <= len(results):
         result = []
         result.append(results[count - 1])
         return jsonify({'success': True, 'data': result})
