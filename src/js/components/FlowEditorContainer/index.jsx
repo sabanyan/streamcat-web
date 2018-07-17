@@ -28,7 +28,7 @@ export type FlowEditorProps = {
   projectId: string,
   projectName: string,
   graph: { width: number, height: number,edges:any[],nodes:any[] };
-  mast: { operators: any[] };
+  mast: { commands: any[] };
   loadFlowJSON: Function;
   addMaster: Function;
   selectSteps: Function;

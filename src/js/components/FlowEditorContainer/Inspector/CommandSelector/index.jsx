@@ -6,9 +6,14 @@ import Operator from '../../../shared/Operator'
 
 import type { FlowEditorProps } from '../../index'
 
-export default class CommandSelector extends React.Component<FlowEditorProps> {
+type CommandSelectorProps = {
+  ...FlowEditorProps,
+  numberOfInput:number
+}
 
-  constructor (props: FlowEditorProps) {
+export default class CommandSelector extends React.Component<CommandSelectorProps> {
+
+  constructor (props: CommandSelectorProps) {
     super(props)
   }
 

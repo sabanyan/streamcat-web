@@ -3,6 +3,7 @@ import Constants from '../constants'
 import ModelUtil from '../utils/ModelUtil'
 import StepModel from '../model/StepModel'
 import DataFrameModel from '../model/DataFrameModel'
+import SubFlowModel from '../model/SubFlowModel'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -149,67 +150,73 @@ class Graph {
       Object.keys(json.nodes).map((node) => {
         self.addNode(node)
         const type = json.nodes[node].type
-        if(type === Constants.step.type.frame){
+        switch(type){
           //データフレーム
-          const frame = json.nodes[node]
-          json.nodes[node] = new DataFrameModel({
-            id: node,
-            type: Constants.step.type.frame,
-            uuid: frame.uuid,
-            dataSource: Constants.data.dataSource.csv,
-            asFlowIn: frame.asFlowIn,
-            asFlowOut: frame.asFlowOut,
-            position: frame.position,
-            size: frame.size,
-          })
-          if(frame.position && frame.size){
-            hasPosition = true
-          }
-        }else{
-          //コマンド
-          const step = json.nodes[node]
-          json.nodes[node] = new StepModel({
-            id: node,
-            type: Constants.step.type.command,
-            name: step.name,
-            label: step.label,
-            srcs: step.srcs,
-            dsts: step.dsts,
-            args: step.args,
-            position: step.position,
-            size: step.size,
-          })
-
-          const hasSrcs = (Object.keys(step.srcs).length)
-          const hasDsts = (Object.keys(step.dsts).length)
-
-          if (hasSrcs) {
-            console.log("srcs")
-            Object.keys(step.srcs).forEach((key) => {
-              console.log(step.srcs)
-              const src = step.srcs[key]
-              console.log(src)
-              const label = src + " => " + node
-              console.log(label)
-              const from = src
-              const to = node
-              self.addEdge(from, to, label)
+          case Constants.step.type.frame:
+            const frame = json.nodes[node]
+            json.nodes[node] = new DataFrameModel({
+              id: node,
+              type: Constants.step.type.frame,
+              uuid: frame.uuid,
+              dataSource: Constants.data.dataSource.csv,
+              asFlowIn: frame.asFlowIn,
+              asFlowOut: frame.asFlowOut,
+              position: frame.position,
+              size: frame.size,
             })
-          }
-          if (hasDsts) {
-            console.log("dsts")
-            Object.keys(step.dsts).forEach((key) => {
-              const dst = step.dsts[key]
-              const label = node + " => " + dst
-              console.log(label)
-              const from = node
-              const to = dst
-              self.addEdge(from, to, label)
-            })
-          }
-          if(step.position && step.size){
-            hasPosition = true
-          }
+            if(frame.position && frame.size){
+              hasPosition = true
+            }
+            break;
+          case Constants.step.type.command:
+          case Constants.step.type.subflow:
+            //コマンド
+            const step = json.nodes[node]
+
+            const model = {
+              id: node,
+              type: Constants.step.type.command,
+              name: step.name,
+              label: step.label,
+              srcs: step.srcs,
+              dsts: step.dsts,
+              args: step.args,
+              position: step.position,
+              size: step.size,
+            }
+
+            json.nodes[node] = (type === Constants.step.type.command)?new StepModel(model):new SubFlowModel(model)
+
+            const hasSrcs = (Object.keys(step.srcs).length)
+            const hasDsts = (Object.keys(step.dsts).length)
+
+            if (hasSrcs) {
+              console.log("srcs")
+              Object.keys(step.srcs).forEach((key) => {
+                console.log(step.srcs)
+                const src = step.srcs[key]
+                console.log(src)
+                const label = src + " => " + node
+                console.log(label)
+                const from = src
+                const to = node
+                self.addEdge(from, to, label)
+              })
+            }
+            if (hasDsts) {
+              console.log("dsts")
+              Object.keys(step.dsts).forEach((key) => {
+                const dst = step.dsts[key]
+                const label = node + " => " + dst
+                console.log(label)
+                const from = node
+                const to = dst
+                self.addEdge(from, to, label)
+              })
+            }
+            if(step.position && step.size){
+              hasPosition = true
+            }
         }
       })
 

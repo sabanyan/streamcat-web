@@ -12,6 +12,7 @@ import SubFlowIcon from '../Icon/SubFlowIcon'
 import style from './style.scss'
 import StepModel from '../../../model/StepModel'
 import DataFrameModel from '../../../model/DataFrameModel'
+import SubFlowModel from '../../../model/SubFlowModel'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -233,6 +234,10 @@ export default class Step extends React.Component<Props, State> {
     return (model instanceof DataFrameModel)
   }
 
+  isSubFlow (model: modelProps) {
+    return (model instanceof SubFlowModel)
+  }
+
   getFilter () {
     // let filter = this.state.filter;
     // const step = this.props.model;
@@ -271,7 +276,16 @@ export default class Step extends React.Component<Props, State> {
 
     step.label = (!step.label)?step.id:step.id
 
-    if (this.isStep(step)) {
+    if(this.isSubFlow(step)){
+      icon =
+        <Rect padding={5} selectedOutlineColor={'#B0E273'} fillColor={'#FFFFFF'}
+              hoverFillColor={'#F3FEE8'} selectedFillColor={'#F3FEE8'}
+              hover={hover} selected={selected} stroke={'#7ED321'}
+              filter={filter} style={rect_style}>
+          <SubFlowIcon fillColor={'#8BCD42'}
+                       width={16} height={20}/>
+        </Rect>
+    }else if (this.isStep(step)) {
       //ステップ
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#FFD263'} fillColor={'#FFFFFF'}
@@ -281,8 +295,7 @@ export default class Step extends React.Component<Props, State> {
           <OperatorIcon fillColor={'#F4B63F'} width={16} height={17}/>
         </Rect>
       </g>
-    }
-    else if (this.isDataFrame(step)) {
+    }else if (this.isDataFrame(step)) {
       //データソース
       const stroke = (!step.uuid) ? {stroke: '#CCCCCC'} : {}
       icon =
