@@ -73,14 +73,41 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     }
   }
 
+  onChangeFlowInOut(e:Event){
+    let {flow} = this.props
+    const flowInChecked = this.refs.flowIn.checked
+    const flowOutChecked = this.refs.flowOut.checked
+
+    let selected_step = this.getSelectedStep()
+
+    //パラメーターを更新
+    if(flowInChecked){
+      flow.ports[0][selected_step.id] = {type:selected_step.type}
+    }else{
+      delete flow.ports[0][selected_step.id]
+    }
+
+    if(flowOutChecked){
+      flow.ports[1][selected_step.id] = {type:selected_step.type}
+    }else{
+      delete flow.ports[1][selected_step.id]
+    }
+
+    this.props.updateFlow(flow)
+  }
+
+  getSelectedStep(){
+    let {selected_step_ids, nodes} = this.props
+    return nodes[selected_step_ids[0]]
+  }
+
   render () {
 
     let step_text
     let dataSource
     let preview
-    let {selected_step_ids, nodes} = this.props
     const self = this
-    const selected_step = nodes[selected_step_ids[0]]
+    const selected_step = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
       dataSource = selected_step
       step_text = selected_step.text
@@ -89,6 +116,19 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
                           icon={'visibility'}>プレビュー</Button>
       }
     }
+
+
+    const {ports} = this.props.flow
+    const flowInOutForm = <div className="form-inline">
+      <label>フロー入力
+      <input type="checkbox" className="form-control" defaultChecked={(ports[0][selected_step.id])} ref={"flowIn"} onChange={(e)=>this.onChangeFlowInOut(e)}/>
+      </label>
+      <label>フロー出力
+      <input type="checkbox" className="form-control" defaultChecked={(ports[1][selected_step.id])} ref={"flowOut"} onChange={(e)=>this.onChangeFlowInOut(e)}/>
+      </label>
+    </div>
+
+
 
     return <Inspector header={step_text} title={'データの概要'} {...this.props}>
       <div className={style.property_overview}>
@@ -122,10 +162,19 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
               {/*{property.overview.created_user_name || ""}*/}
             </div>
           </div>
+          <div className={style.overview}>
+            <div className={style.overview_label}>
+              フロー入出力
+            </div>
+            <div className={style.overview_value}>
+              {flowInOutForm}
+            </div>
+          </div>
         </div>
       </div>
       <div className={style.hr}/>
       <CommandSelector numberOfInput={1} {...this.props}/>
+
       <div className={style.hr}/>
       <div className={style.property_title}>
         作成したフロー

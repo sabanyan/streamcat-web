@@ -6,6 +6,7 @@ const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
 const ADD_STEP_ACTION = "add_step_action";
 const UPDATE_STEP_ACTION = "update_step_action";
+const UPDATE_FLOW_ACTION = "update_flow_action";
 const SELECT_STEPS_ACTION = "select_steps_action";
 const ADD_SELECT_STEP_ACTION = "add_select_step_action"
 const DELETE_SELECT_STEP_ACTION = "delete_select_step_action"
@@ -147,6 +148,11 @@ const Application = (state = initialState, action) => {
             newState.graph = graph.getGraph(newState)
             return newState
         }
+        case UPDATE_FLOW_ACTION:{
+          let newState = StateUtil.deepCopy(state)
+          return {...newState,...action.flow}
+        }
+
         case DELETE_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
             action.step_ids.map((id)=>{
@@ -362,6 +368,18 @@ export const updateStepAction = step => {
   return {
     type: UPDATE_STEP_ACTION,
     step: step
+  }
+}
+
+/**
+ * フローの更新
+ * @param step
+ * @returns {{type: string, step: *}}
+ */
+export const updateFlowAction = flow => {
+  return {
+    type: UPDATE_FLOW_ACTION,
+    flow: flow
   }
 }
 
