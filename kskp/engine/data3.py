@@ -6,6 +6,7 @@ import os
 import tempfile
 from pathlib import Path
 
+ref_counts = {}
 
 class Source:
     """
@@ -15,15 +16,23 @@ class Source:
 
     def __init__(self, source_type=''):
         self.type = source_type
+        self.deletable_uuids = []
 
-    @property
-    def ext(self):
-        # ファイルの拡張子はdatum.source.typeから決定する
-        if self.type == 'csv':
-            return '.csv'
+    def incr_ref_count(self, flow_uuid):
+        if flow_uuid in ref_counts:
+            ref_counts[flow_uuid] += 1
         else:
-            # その他の場合は今は考えない
-            raise Exception()
+            ref_counts[flow_uuid] = 1
+        # print('incr:', flow_uuid, ref_counts[flow_uuid])
+
+    def decr_ref_count(self, flow_uuid):
+        if flow_uuid in ref_counts:
+            ref_counts[flow_uuid] -= 1
+            # print('decr:', flow_uuid, ref_counts[flow_uuid])
+            if ref_counts[flow_uuid] == 0:
+                del ref_counts[flow_uuid]
+                # print('del:', flow_uuid)
+                self.dtor()
 
     def dtor(self):
         pass
@@ -36,6 +45,17 @@ class FileSource(Source):
 
     def __init__(self, source_type):
         super().__init__(source_type)
+
+    @property
+    def ext(self):
+        # ファイルの拡張子はdatum.source.typeから決定する
+        if self.type == 'csv':
+            return '.csv'
+        elif self.type == '':
+            return ''
+        else:
+            # その他の場合は今は考えない
+            raise Exception()
 
     @property
     def fd(self):
@@ -63,8 +83,7 @@ class PathFileSource(FileSource):
 
     @property
     def fd(self):
-        path = Path(self.source_dir).joinpath(self.file_name)
-        self._fd = open(path, 'r')
+        self._fd = open(self.fullpath, 'r')
         return self._fd
 
     @fd.setter
@@ -73,10 +92,10 @@ class PathFileSource(FileSource):
 
     @property
     def fullpath(self):
-        return Path(self.source_dir).joinpath(self.file_name)
+        return Path(self.source_dir).joinpath(f'{self.file_name}')
 
     def __repr__(self):
-        return f'PathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
+        return f'path: {self.file_name}'
 
     def dtor(self):
         if self._fd is not None:
@@ -112,13 +131,23 @@ class UnixCommandSource(FileSource):
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
+        if self.stdin is not None and self.stdin.closed:
+            # print('closed:', self.args)
+            return
         popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
         if self.stdin is not None:
             self.stdin.close()
         popen.wait()
 
+    def __repr__(self):
+        # return f'UnixCommandSource args: {self.args} {self.stdin}'
+        return f'args: {self.args}'
+
     def dtor(self):
-        print(f'UnixCommandSource pid: {self.popen.pid} args:', self.args)
+        # if self.popen is not None:
+        #     print(f'UnixCommandSource pid: {self.popen.pid} args:', self.args)
+        # else:
+        #     print(f'UnixCommandSource self.popen: None args:', self.args)
         if self.popen is not None:
             self.popen.stdout.close()
             # print(f'close pid: {self.popen.pid} args: {self.args}')
@@ -141,7 +170,7 @@ class TempPathFileSource(PathFileSource):
     def __repr__(self):
         return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
-class Data:
+class Datum:
     """
     データ全般を表すクラス
 
@@ -154,9 +183,10 @@ class Data:
                  (但し代入の順番の都合もあるかもしれないのでチェックはしない)
     """
 
-    def __init__(self, uuid=None, source=Source()):
+    def __init__(self, uuid=None, source=None):
         self.uuid = uuid
         self.source = source
+        self.is_temp = True
 
     def read(self):
         raise Exception()
@@ -165,7 +195,13 @@ class Data:
         raise Exception()
 
     def dtor(self):
-        self.source.dtor()
+        s = self.source
+        if s is not None:
+            s.dtor()
+            if isinstance(s, PathFileSource):
+                if self.is_temp and s.fullpath.exists():
+                    s.fullpath.unlink()
+
 
 
 import os
@@ -173,23 +209,45 @@ import uuid
 
 from pathlib import Path
 
-class Frame(Data):
+class Frame(Datum):
     """
     列指向の表形式データ
     """
 
-    def __init__(self, frame_uuid=None, source=Source()):
+    def __init__(self, frame_uuid=None, source=None):
         super().__init__(frame_uuid, source)
+
+    def command_to_file(self):
+        if isinstance(self.source, UnixCommandSource):
+            file_name = self.uuid + self.source.ext
+            new_source = PathFileSource(self.source.type, os.environ['KENG_FRAME_PATH'], file_name)
+            with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
+                self.source.save(fd)
+            for flow_uuid in self.source.deletable_uuids:
+                self.source.decr_ref_count(flow_uuid)
+            self.source.dtor()
+            self.source = new_source
+            self.source.incr_ref_count(self.uuid)
+        return self
+
+    def command_to_tempfile(self):
+        if isinstance(self.source, UnixCommandSource):
+            new_source = TempPathFileSource(self.source.type)
+            with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
+                self.source.save(fd)
+            for flow_uuid in self.source.deletable_uuids:
+                self.source.decr_ref_count(flow_uuid)
+            self.source.dtor()
+            self.source = new_source
+            self.source.incr_ref_count(self.uuid)
+        return self
 
     @property
     def contents(self):
-        if self.source.type == '':
+        if self.source is None:
             return '(no contents)'
 
         with self.source.fd as fd:
-            # text = str(fd.read(), encoding='utf-8').rstrip('\n')
-            # print('text:', text)
-            # reader = csv.reader(io.StringIO(text))
             reader = csv.reader(fd)
             res = {}
             first_row = True
@@ -209,120 +267,6 @@ class Frame(Data):
     def __repr__(self):
         # return f'<Frame({ self.source }) contents:{self.contents.__repr__()}>'
         return f'<Frame({ self.source })>'
-
-    def row_count(self):
-        """
-        1つ目の列にあるリストの行数を返すようにする
-        """
-        return len(self.contents[list(self.contents.keys())[0]])
-
-    def update(self, updating_dict):
-        """
-        そのまま中身のupdateに使う
-        """
-        self.contents.update(updating_dict)
-
-
-# class CsvFrame(Frame):
-#     """
-#     CSVから作成されるframe
-#
-#     :param path: 対象のファイルのパス。まだ保存されていない場合はNoneを指定する。
-#     """
-#
-#     def __init__(self, csv_path=None, frame_uuid=None):
-#         super().__init__('csv', frame_uuid)
-#         self.path = csv_path
-#
-#     @classmethod
-#     def from_uuid(cls, frame_uuid):
-#         """通常KSKPで使うときはこちらから"""
-#         return cls(make_path(frame_uuid), frame_uuid)
-#
-#     def get_fd(self):
-#         """
-#         ファイルへのfdを返す
-#         """
-#         return open(self.path, 'r')
-#
-#     def get_contents(self):
-#         """ ファイルの中身を読んでself.contentsに入れる """
-#         import csv
-#         with open(self.path, 'r', encoding='utf-8') as f:
-#             reader = csv.reader(f)
-#             for row in reader:
-#                 print(row)
-#
-#     def __repr__(self):
-#         return f'<kskp.engine.Frame({ self.source }) path:{ self.path } contents:{self.contents.__repr__()}>'
-
-
-# class PopenFrame(Frame):
-#     """
-#     Popenに必要なものを持っているが必要になるまで実行されない
-#     実行されると、Frameなどの実際のデータをもつようになる（変換される）
-#     """
-#
-#     def __init__(self, args, stdin=None):
-#         new_uuid = str(uuid.uuid4())
-#         super().__init__('popen', new_uuid)
-#         self.args = args
-#         self.stdin = stdin
-#
-#         self.already_piped = False
-#
-#         self.mtee_popen = None
-#         self.popen = None
-#
-#         self.path = None
-#
-#     def to_csv(self):
-#         """
-#         コマンドを実行してその結果からCsvFrameを作って返す
-#         """
-#
-#         # 出力用パスを作る
-#         # uuidを生成（新しいファイル名）
-#         # new_uuid = str(uuid.uuid4())
-#         new_uuid = self.uuid
-#
-#         with open(make_path(new_uuid), 'w') as fd:
-#             popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=fd)
-#             popen.wait()
-#
-#         return CsvFrame.from_uuid(new_uuid)
-#
-#     def get_fd(self):
-#         " パイプの出口となるfile descriptorを返す "
-#         # self.debug_popen = subprocess.Popen(['mtee', f'o=kskp/data/frames/wowow.csv'], stdin=self.stdin, stdout=subprocess.PIPE)
-#         # self.mtee_popen = subprocess.Popen(self.args, stdin=self.debug_popen.stdout, stdout=subprocess.PIPE)
-#         self.mtee_popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=subprocess.PIPE)
-#
-#         # waitはここでしてはいけないので、dtorで行う
-#         # popen.wait()
-#
-#         # フラグを立てる（2回目はパイプではなくファイルから読み込むように）
-#         self.already_piped = True
-#
-#         # すでにファイルが存在していれば、mteeは行わない
-#         # if Path(make_path(self.uuid)).exists():
-#         #     return self.mtee_popen.stdout
-#
-#         # mteeで中間ファイルを吐く
-#         self.path = make_path(self.uuid)
-#         self.popen = subprocess.Popen(['mtee', f'o={self.path}'], stdin=self.mtee_popen.stdout, stdout=subprocess.PIPE)
-#         return self.popen.stdout
-#
-#     def dtor(self):
-#         self.popen.wait()
-#         self.mtee_popen.wait()
-#         self.mtee_popen.stdout.close()
-#
-#         # self.debug_popen.wait()
-#
-#     def __repr__(self):
-#         return f'<kskp.engine.Frame(popen) args:{ self.args } stdin:{ self.stdin } contents:{self.contents.__repr__()}>'
-
 
 
 def make_path(frame_uuid):

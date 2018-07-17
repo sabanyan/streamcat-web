@@ -1,4 +1,39 @@
 import sys
+from enum import Enum, auto
+
+
+class Parameter:
+    """
+    パラメータ定義1つを表す
+
+    :param name: パラメータ名。必須
+    :param caption: このパラメータを表す短いタイトル。GUI上でのラベルとして使われる。
+                    オプショナルで、未指定だとnameと同じになる。
+    """
+
+    class WidgetType(Enum):
+        """
+        パラメータ値の分類を表す。
+        type属性に使われ、
+        この値によってGUI上で使われる部品が変化することを想定している
+        """
+        TEXTBOX = auto()
+
+
+    def __init__(self, name, caption=None):
+        assert name is not None and name != '', 'nameは必須です'
+
+        self.name = name
+        if caption is None:
+            self.caption = name
+        else:
+            self.caption = caption
+
+        self.widget_type = self.WidgetType.TEXTBOX
+
+        # self.default = None
+        # self.validation = None
+
 
 def command_from_name(name):
     """
