@@ -20,6 +20,7 @@ const SELECT_TAB_ACTION = "select_tab_action";
 const DRAG_START_ACTION = "drag_start_action";
 const DRAGGING_ACTION = "dragging_action";
 const DRAG_END_ACTION = "drag_end_action";
+const SET_ZOOM_ACTION = "set_zoom_action";
 
 const graph = new Graph()
 //
@@ -75,7 +76,8 @@ const graph = new Graph()
 // initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(inject_initial_flow_data)
 let initialState = {
   selected_step_ids:[],
-  graph:graph.getGraph(null),
+  graph:graph.getGraph({}),
+  zoom: 100,
   nodes:{},
   mast:{},
   selected_tab_id:0,
@@ -98,7 +100,7 @@ const Application = (state = initialState, action) => {
             newState.projectId = loadedJson.projectId
             newState.projectName = loadedJson.name
 
-            newState.graph = graph.getGraph(newState.nodes)
+            newState.graph = graph.getGraph(newState)
 
             return newState
         }
@@ -133,7 +135,7 @@ const Application = (state = initialState, action) => {
 
             newState.nodes[add_step.id] = add_step
 
-            newState.graph = graph.getGraph(newState.nodes)
+            newState.graph = graph.getGraph(newState)
             return newState
         }
         case UPDATE_STEP_ACTION: {
@@ -143,7 +145,7 @@ const Application = (state = initialState, action) => {
             newState.nodes[action.step.id] = action.step
 
             //選択されているstepの値も更新する
-            newState.graph = graph.getGraph(newState.nodes)
+            newState.graph = graph.getGraph(newState)
             return newState
         }
         case DELETE_STEPS_ACTION: {
@@ -152,7 +154,7 @@ const Application = (state = initialState, action) => {
               graph.removeNode(id)
               delete newState.nodes[id]
             })
-            newState.graph = graph.getGraph(newState.nodes)
+            newState.graph = graph.getGraph(newState)
 
             //削除後は非選択状態にする
             newState.selected_step_ids = []
@@ -175,7 +177,7 @@ const Application = (state = initialState, action) => {
                     graph.removeNode(id)
                     delete newState.nodes[id]
                 })
-                newState.graph = graph.getGraph(newState.nodes)
+                newState.graph = graph.getGraph(newState)
 
                 //削除後は非選択状態にする
                 newState.selected_step_ids = []
@@ -229,7 +231,7 @@ const Application = (state = initialState, action) => {
         case SORT_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
             graph.refreshPosition(newState.nodes) //ノード位置を再計算
-            newState.graph = graph.getGraph(newState.nodes)
+            newState.graph = graph.getGraph(newState)
             return newState
         }
         case EXECUTE_FLOW_ACTION: {
@@ -290,7 +292,22 @@ const Application = (state = initialState, action) => {
         case DRAG_END_ACTION:{
           return {...state,drag:{}}
         }
-        default:
+
+        case SET_ZOOM_ACTION:{
+          const {offset,value} = action
+          let newState = state
+          if(offset === undefined){
+            //絶対値
+            newState = {...state,zoom:value}
+          }else if(state.zoom + offset > 70 && state.zoom + offset < 150){
+            //差分
+            newState = {...state,zoom:state.zoom + offset}
+          }
+          newState.graph = graph.getGraph(newState)
+          return newState
+        }
+
+      default:
             return state
     }
 
@@ -475,5 +492,20 @@ export const dragEndAction = (x,y) => {
     type : DRAG_END_ACTION,
     x:x,
     y:y
+  }
+}
+
+/**
+ * ズーム設定
+ * @param offset 差分
+ * @param value 固定値
+ * @returns {{type: string, offset: *, value: *}}
+ * @constructor
+ */
+export const setZoomAction = ({offset,value}) => {
+  return {
+    type : SET_ZOOM_ACTION,
+    offset: offset,
+    value: value
   }
 }
