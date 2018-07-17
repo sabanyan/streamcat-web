@@ -25,7 +25,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
         //パラメーターを更新
         Object.keys(this.refs).map((key)=>{
-              selected_step.parameters[key] = this.refs[key].value
+              selected_step.args[key] = this.refs[key].value
         })
 
         this.props.updateStep(selected_step)

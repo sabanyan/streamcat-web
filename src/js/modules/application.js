@@ -127,6 +127,9 @@ const Application = (state = initialState, action) => {
                 //連結した状態での追加
                 const from_step = state.nodes[from_step_id]
                 add_step.setFrame({x:from_step.position.x + offsetX, y:from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
+                //TODO 複数OUTするコマンドがあった場合は問題になる
+                add_step.srcs = [from_step_id]
+                add_step.dsts = [add_step.id]
             }else{
                 //単体での追加
                 add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
