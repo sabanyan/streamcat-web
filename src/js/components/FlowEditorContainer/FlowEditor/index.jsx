@@ -63,8 +63,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     })
     let edges = []
 
-    if (Array.isArray(this.props.edges)) {
-      edges = this.props.edges.map(function (edge, index) {
+    if (Array.isArray(this.props.graph.edges)) {
+      edges = this.props.graph.edges.map(function (edge, index) {
         const vx = nodes[edge.v].position.x +
           Constants.default.datasource.width / 2
         const vy = nodes[edge.v].position.y +
