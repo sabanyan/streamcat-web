@@ -18,8 +18,8 @@ type CommandInspectorProps = {
 class CommandInspector extends React.Component<CommandInspectorProps> {
 
     onClickSave(e:Event) {
-        let {selected_step_ids,steps} = this.props
-        let selected_step = steps[selected_step_ids[0]]
+        let {selected_step_ids,nodes} = this.props
+        let selected_step = nodes[selected_step_ids[0]]
 
         //パラメーターを更新
         Object.keys(this.refs).map((key)=>{
@@ -32,8 +32,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     onClickDelete(e:Event) {
         if(window.confirm("このコマンドを削除しますか？")){
-          let {selected_step_ids,steps} = this.props
-          let selected_step = steps[selected_step_ids[0]]
+          let {selected_step_ids,nodes} = this.props
+          let selected_step = nodes[selected_step_ids[0]]
           this.props.deleteSteps([selected_step.id])
           this.props.selectSteps()
         }
@@ -72,9 +72,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     render() {
 
         const self = this
-        let {selected_step_ids,steps,data} = this.props
+        let {selected_step_ids,nodes} = this.props
 
-        const selected_step:StepModel = steps[selected_step_ids[0]]
+        const selected_step:StepModel = nodes[selected_step_ids[0]]
 
         let inputForm
 

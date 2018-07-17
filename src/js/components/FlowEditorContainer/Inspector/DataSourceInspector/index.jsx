@@ -33,7 +33,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     }
 
     //ファイル名を steps の パラメータから取得する
-    const filename = this.props.steps[this.props.selected_step_ids[0]].getFileName()
+    const filename = this.props.nodes[this.props.selected_step_ids[0]].getFileName()
 
     fetch('http://' + Constants.api.host + '/api/v0-1/dataframe/' + filename,
       option).then(function (response) {
@@ -79,9 +79,9 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     let step_text
     let dataSource
     let preview
-    let {selected_step_ids, steps} = this.props
+    let {selected_step_ids, nodes} = this.props
     const self = this
-    const selected_step = steps[selected_step_ids[0]]
+    const selected_step = nodes[selected_step_ids[0]]
     if (selected_step instanceof DataFrameModel) {
       dataSource = selected_step
       step_text = selected_step.text

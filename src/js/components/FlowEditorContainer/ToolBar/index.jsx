@@ -34,13 +34,12 @@ export default class Toolbar extends React.Component {
   }
 
   getFlowJson(){
-    let {selected_step_ids, steps, data,projectId,projectName} = this.props
+    let {selected_step_ids, nodes,projectId,projectName} = this.props
 
     const flow_json = {
       projectId: projectId,
       name: projectName,
-      steps: steps,
-      data: data,
+      nodes: nodes,
     }
 
     return flow_json
