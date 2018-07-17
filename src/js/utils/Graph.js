@@ -195,7 +195,7 @@ class Graph {
                 console.log(step.srcs)
                 const src = step.srcs[key]
                 console.log(src)
-                const label = src + " => " + node
+                const label = src
                 console.log(label)
                 const from = src
                 const to = node
@@ -206,7 +206,7 @@ class Graph {
               console.log("dsts")
               Object.keys(step.dsts).forEach((key) => {
                 const dst = step.dsts[key]
-                const label = node + " => " + dst
+                const label = dst
                 console.log(label)
                 const from = node
                 const to = dst

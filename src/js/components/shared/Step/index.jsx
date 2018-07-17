@@ -275,7 +275,7 @@ export default class Step extends React.Component<Props, State> {
     const hover = this.state.hover
     const selected = this.selectorIntersect()
 
-    step.label = (!step.label)?step.id:step.id
+    step.label = (step.label)?step.label:step.id
 
     if(this.isSubFlow(step)){
       icon =
@@ -308,6 +308,7 @@ export default class Step extends React.Component<Props, State> {
                     width={16} height={20}/>
         </Rect>
     }
+
 
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}
