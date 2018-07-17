@@ -258,13 +258,7 @@ def execute_flow_internal(flow_uuid):
     result = execute_flow_by_uuid(flow_uuid)
 
     # 結果を縦型のdataframeっぽくパースして返す
-<<<<<<< HEAD
-    keys = list(result.keys())
-    result_dict = {key:result[keys[0]].contents for key in keys}
-    return result_dict
-=======
     return result['o_section'].contents
->>>>>>> 59ec4617a8ad8faba9d98e7ac07141a67375c368
 
 
 def load_as_data_frame(result_text):
