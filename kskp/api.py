@@ -81,7 +81,7 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'], j['data_source_name'])
+    new_flow = create_flow(project_id, j['name'])
 
     return jsonify({'success': True, 'data': new_flow})
 
