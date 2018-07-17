@@ -33,9 +33,17 @@ export default class DropDownList extends React.Component<Props> {
 
   render () {
     const {list, defaultValue, disabled} = this.props
-    let options = list.map((data, index) => {
-      return <option key={index + 1} value={data.value}>{data.label}</option>
-    })
+
+    console.log(list)
+
+    let options = []
+    let index = 0
+    for(const data of list.values()){
+      console.log(data)
+      options.push(<option key={index + 1} value={data.value}>{data.label}</option>)
+      index++
+    }
+
     options.unshift(<option key={0}>選択してください</option>)
     let select = <select disabled={disabled} defaultValue={defaultValue}
                          onChange={(e) => this.onChange(e)}
