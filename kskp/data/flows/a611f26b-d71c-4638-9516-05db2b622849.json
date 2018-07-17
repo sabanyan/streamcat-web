@@ -1,0 +1,96 @@
+{
+    "name": "section",
+    "params": [],
+    "ports": [
+        {
+            "in": {
+                "type": "frame"
+            }
+        },
+        {
+            "out": {
+                "type": "frame"
+            }
+        }
+    ],
+    "nodes": {
+        "s0": {
+            "type": "command",
+            "name": "mselstr",
+            "args": {
+                "f": "Section",
+                "v": "@[v]"
+            },
+            "srcs": {
+                "in": "in"
+            },
+            "dsts": {
+                "out": "d0"
+            }
+        },
+        "sstatsall": {
+            "type": "flow",
+            "uuid": "d3b0f49f-f01b-4a73-981b-7b2c06667966",
+            "args": {},
+            "srcs": {
+                "in": "d0"
+            },
+            "dsts": {
+                "out": "d1"
+            }
+        },
+        "s_msetstr1": {
+            "type": "command",
+            "name": "msetstr",
+            "args": {
+                "v": "@[v]",
+                "a": "section"
+            },
+            "srcs": {
+                "in": "d1"
+            },
+            "dsts": {
+                "out": "d2"
+            }
+        },
+        "s_msetstr2": {
+            "type": "command",
+            "name": "msetstr",
+            "args": {
+                "v": "@[pattern]",
+                "a": "pattern"
+            },
+            "srcs": {
+                "in": "d2"
+            },
+            "dsts": {
+                "out": "out"
+            }
+        },
+        "in": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d0": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d1": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "d2": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        },
+        "out": {
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": null
+        }
+    }
+}

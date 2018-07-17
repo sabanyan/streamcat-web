@@ -81,7 +81,7 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'])
+    new_flow = create_flow(project_id, j['name'], j['data_source_name'])
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -232,16 +232,11 @@ def execute_flow(flow_uuid):
 def jobs():
     """
     指定されたフローの実行結果を返す
+    TODO: モックです
     """
-    flow_uuid = request.args['flow']
-    count = int(request.args['count'])
 
-    for job_path in Path(JOBS_DIR_PATH).iterdir():
-        data = json.loads(job_path.read_text(encoding='utf-8'))
-        if data[count - 1]['flow']['uuid'] == flow_uuid:
-            result = data
-
-    return jsonify({'success': True, 'data': result})
+    path = Path(JOBS_DIR_PATH).joinpath('sample.json')
+    return jsonify({'success': True, 'data': json.loads(path.read_text())})
 
 
 def execute_flow_internal(flow_uuid):
@@ -258,9 +253,7 @@ def execute_flow_internal(flow_uuid):
     result = execute_flow_by_uuid(flow_uuid)
 
     # 結果を縦型のdataframeっぽくパースして返す
-    keys = list(result.keys())
-    result_dict = {key:result[keys[0]].contents for key in keys}
-    return result_dict
+    return result['o_section'].contents
 
 
 def load_as_data_frame(result_text):
