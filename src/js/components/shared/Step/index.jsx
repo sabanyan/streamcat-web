@@ -294,7 +294,7 @@ export default class Step extends React.Component<Props, State> {
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
               filter={filter} style={rect_style}>
-          <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#63CFFD"} fill={"#63CFFD"}/>
+          <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#ccc"} fill={"#ccc"}/>
         </Rect>
       </g>
     }else if(this.isSubFlow(step)){
@@ -324,7 +324,7 @@ export default class Step extends React.Component<Props, State> {
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
               filter={filter} style={rect_style}>
-          <FileIcon fillColor={(step.hasData) ? '#63CFFD' : '#CCCCCC'}
+          <FileIcon fillColor={(step.uuid) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
     }

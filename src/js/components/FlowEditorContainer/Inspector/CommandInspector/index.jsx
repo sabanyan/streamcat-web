@@ -97,11 +97,11 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         })
 
       console.log(selected_step.uuid)
-      const subFlowLink = (selected_step.type === Constants.step.type.subflow)?<a href={"http://localhost:5000/flows/"+selected_step.uuid} target={"_blank"}>{selected_step.uuid}</a>:null
+      const subFlowLink = (selected_step.type === Constants.step.type.subflow)?<a href={"http://localhost:5000/flows/"+selected_step.uuid} target={"_blank"}>フローを開く</a>:null
 
         return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"} {...this.props}>
-          <InOutConnector {...this.props}/>
           {subFlowLink}
+          <InOutConnector {...this.props}/>
           <div className={style.hr}/>
           <div className={style.property_title}>
             パラメータ

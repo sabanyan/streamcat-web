@@ -243,16 +243,17 @@ const Application = (state = initialState, action) => {
             return newState
         }
         case EXECUTE_FLOW_ACTION: {
-            let newState = StateUtil.deepCopy(state)
-            let newSteps = {}
-            Object.keys(newState.nodes).map((key)=>{
-              if(newState.nodes[key] instanceof DataSourceModel) {
-                  newState.nodes[key].property.hasData = true
-                }
-                newSteps[key] = newState.nodes[key]
-            })
-            newState.nodes = newSteps
-            return newState
+            // let newState = StateUtil.deepCopy(state)
+            // let newSteps = {}
+            // Object.keys(newState.nodes).map((key)=>{
+            //   if(newState.nodes[key] instanceof DataSourceModel) {
+            //       newState.nodes[key].property.hasData = true
+            //     }
+            //     newSteps[key] = newState.nodes[key]
+            // })
+            // newState.nodes = newSteps
+            // return newState
+            return state
         }
         case SELECT_TAB_ACTION:{
           return {
