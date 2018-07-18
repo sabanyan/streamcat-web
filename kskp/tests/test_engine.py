@@ -1,9 +1,9 @@
 import unittest
+import json
 
 from .. import engine as e
 from ..engine.data import *
-from ..engine.util import Parameter
-from ..engine.core import Command, Step, Flow
+from ..engine.core import Parameter, Command, Step, Flow, Job
 
 class ParameterTestCase(unittest.TestCase):
     def test_parameter_required(self):
@@ -406,6 +406,34 @@ class EngineTestCase(unittest.TestCase):
         for k in frame.keys():
             self.assertListEqual(f[k], frame[k])
 
+    def test_make_job_json(self):
+        # クエリパラメータのcount
+        count = 1
+
+        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+
+        # テストの準備
+        flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
+        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
+            flow_json = f.read()
+        args = ''
+        step = Step('flow', e.parse(flow_uuid, flow_json), args)
+
+        inputs = None
+        job = Job(step, inputs)
+
+        job.execute()
+
+        # flow_uuidを使ってjobsディレクトリから出力したjsonファイルを探す
+        # flowのuuidで探しているためかなり雑な判定方法、何かいい方法があれば変えたい！
+        jobs_path = Path(__file__).parent.parent.as_posix() / Path('data/jobs')
+        for job_path in jobs_path.iterdir():
+            data = json.loads(job_path.read_text(encoding='utf-8'))
+            if data[count - 1]['flow']['uuid'] == flow_uuid:
+                result = data
+
+        self.assertEqual(result[count - 1]['flow']['uuid'], flow_uuid)
+
     def tearDown(self):
         # self.command.dtor()
         # self.command2.dtor()
@@ -474,6 +502,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
     def set_flow_step(self, flow, key, subflow, args):
         flow.steps[key] = Step('flow', self.register(subflow), args)
 
+
     def make_section_flow(self):
         flow = Flow('section')
         self.set_command_step(flow, 's0', self.mselstr, {'f': 'Section', 'v': '@[v]'})
@@ -490,6 +519,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_signature(flow, ['in'], ['out'])
 
         return flow
+
 
     def make_stats_all_flow(self):
         """ 各列全体についての統計量を求める """
@@ -551,6 +581,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         # flow.dtor()
 
+
     def stats_by_4_sensors(self):
         """
         入力されたファイルの3H 3V 4H 4Vそれぞれについて、統計量を求めて返すサブフロー
@@ -580,6 +611,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_signature(flow, ['in'], ['out'])
 
         return flow
+
 
     def make_splitting_flow(self):
         # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
@@ -623,7 +655,8 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-    @unittest.skip
+    # @unittest.skip
+
     def test(self):
         flow = Flow('parent')
 
