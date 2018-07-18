@@ -15,6 +15,7 @@ import DataFrameStepModel from '../../../model/DataFrameStepModel'
 import SubFlowStepModel from '../../../model/SubFlowStepModel'
 import type { SubFlowStepModelProps } from '../../../model/SubFlowStepModel'
 import ZoomUtil from '../../../utils/ZoomUtil'
+import InOutIcon from '../Icon/InOutIcon'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -284,7 +285,19 @@ export default class Step extends React.Component<Props, State> {
 
     step.label = (step.label)?step.label:step.id
 
-    if(this.isSubFlow(step)){
+    const flowIn = (ports[0][step.id])
+    const flowOut = (ports[1][step.id])
+
+    if(flowIn || flowOut){
+      icon = <g>
+        <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
+              hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
+              hover={hover} selected={selected} stroke={'#63CFFD'}
+              filter={filter} style={rect_style}>
+          <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#63CFFD"} fill={"#63CFFD"}/>
+        </Rect>
+      </g>
+    }else if(this.isSubFlow(step)){
       icon =
         <Rect padding={5} selectedOutlineColor={'#B0E273'} fillColor={'#FFFFFF'}
               hoverFillColor={'#F3FEE8'} selectedFillColor={'#F3FEE8'}
@@ -316,9 +329,6 @@ export default class Step extends React.Component<Props, State> {
         </Rect>
     }
 
-    const flowIn = (ports[0][step.id])?<circle r={8} cx={rect_style.width/2} cy={0} fill={"#4a96f0"} stroke={"#4a7ed9"} strokeWidth={3}></circle>:null
-    const flowOut = (ports[1][step.id])?<circle r={8} cx={rect_style.width/2} cy={rect_style.height} fill={"#f06179"} stroke={"#e94893"} strokeWidth={3}/>:null
-
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}
          onMouseDown={(e) => this.handleMouseDown(e)}
@@ -328,8 +338,6 @@ export default class Step extends React.Component<Props, State> {
         <text className="text" transform={'translate(' + (-8) + ',' +
         (rect_style.height / 2 + 6) + ')'} textAnchor="end"
               fontSize={12} width={100} height={100}>{step.label}</text>
-        {flowIn}
-        {flowOut}
         {/*<text className="text" transform={'translate(' + (-50) + ',' +*/}
         {/*(rect_style.height / 2 + 6) + ')'} textAnchor="middle"*/}
               {/*fontSize={10}>{step_subtext}</text>*/}
