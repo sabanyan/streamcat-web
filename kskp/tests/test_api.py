@@ -494,6 +494,11 @@ class JobTestCase(unittest.TestCase):
         self.client = app.test_client()
 
     def test_jobs(self):
+        '''
+        実行履歴を取得するAPIのテスト
+        count指定あり
+        テストがsample.jsonありきなので、書き直し予定
+        '''
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
@@ -508,6 +513,31 @@ class JobTestCase(unittest.TestCase):
 
         self.assertEqual(result['success'], True)
         self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
+
+    def test_jobs_count(self):
+        '''
+        実行履歴を取得するAPIのテスト
+        count指定なし
+        テストがsample.json、sample2.jsonありきなので、書き直し予定
+        '''
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 1
+
+            flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
+
+            endpoint = '/api/v0/jobs?flow=%s' % flow_uuid
+            response = client.get(endpoint)
+            result = json.loads(response.get_data())
+
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'][0]['flow']['uuid'], flow_uuid)
+        self.assertEqual(result['data'][0]['data']['d1']['uuid'], '860538F5-CD5B-47B5-A88A-6D2107601F89')
+        self.assertEqual(result['data'][0]['data']['d2']['uuid'], 'A142C00D-8F97-4E40-97DE-789D7B117E35')
+        self.assertEqual(result['data'][1]['flow']['uuid'], flow_uuid)
+        self.assertEqual(result['data'][1]['data']['d1']['uuid'], '16DF44FA-2D8B-430C-B1AC-2C20954C1317')
+        self.assertEqual(result['data'][1]['data']['d2']['uuid'], '754AD573-3026-41C8-9DC2-4870FC28194E')
 
 if __name__ == '__main__':
     unittest.main()
