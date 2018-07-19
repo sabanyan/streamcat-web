@@ -1,129 +1,188 @@
 {
   "name": "日本NI様サンプル(4つのセンサーで統計量)",
   "params": [],
-  "ports": [{
-    "i": { "type": "frame" }
-  }, {
-    "o": { "type": "frame" }
-  }],
-  "nodes": {
-    "i": {
+  "ports": [
+    {
+      "i": {
+        "type": "frame"
+      }
+    },
+    {
+      "o": {
+        "type": "frame"
+      }
+    }
+  ],
+  "nodes": [
+    {
+      "id": "i",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-    "s0": {
+    {
+      "id": "s0",
       "type": "command",
       "name": "mcut",
       "args": {
         "x": true,
         "f": "0,1,2,3,4"
       },
-      "srcs": { "i": "i" },
-      "dsts": { "o": "t" }
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t"
+      }
     },
-    "t": {
+    {
+      "id": "t",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-
-    "s1": {
+    {
+      "id": "s1",
       "type": "flow",
       "uuid": "6C21E7C3-8060-42D3-9C8E-E05592AE1979",
       "args": {
         "sensor": "3H"
       },
-      "srcs": { "i": "t" },
-      "dsts": { "o": "o1" }
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o1"
+      }
     },
-    "o1": {
+    {
+      "id": "o1",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-
-    "s2": {
+    {
+      "id": "s2",
       "type": "flow",
       "uuid": "6C21E7C3-8060-42D3-9C8E-E05592AE1979",
       "args": {
         "sensor": "3V"
       },
-      "srcs": { "i": "t" },
-      "dsts": { "o": "o2" }
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o2"
+      }
     },
-    "o2": {
+    {
+      "id": "o2",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-
-    "s3": {
+    {
+      "id": "s3",
       "type": "flow",
       "uuid": "6C21E7C3-8060-42D3-9C8E-E05592AE1979",
       "args": {
         "sensor": "4H"
       },
-      "srcs": { "i": "t" },
-      "dsts": { "o": "o3" }
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o3"
+      }
     },
-    "o3": {
+    {
+      "id": "o3",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-
-    "s4": {
+    {
+      "id": "s4",
       "type": "flow",
       "uuid": "6C21E7C3-8060-42D3-9C8E-E05592AE1979",
       "args": {
         "sensor": "4V"
       },
-      "srcs": { "i": "t" },
-      "dsts": { "o": "o4" }
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o4"
+      }
     },
-    "o4": {
+    {
+      "id": "o4",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-
-    "s_mjoin0": {
+    {
+      "id": "s_mjoin0",
       "type": "command",
       "name": "mjoin",
-      "args": { "k": "Time" },
-      "srcs": { "i": "o1", "m": "o2" },
-      "dsts": { "o": "join0-1" }
+      "args": {
+        "k": "Time"
+      },
+      "srcs": {
+        "i": "o1",
+        "m": "o2"
+      },
+      "dsts": {
+        "o": "join0-1"
+      }
     },
-    "join0-1": {
+    {
+      "id": "join0-1",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-    "s_mjoin1": {
+    {
+      "id": "s_mjoin1",
       "type": "command",
       "name": "mjoin",
-      "args": { "k": "Time" },
-      "srcs": { "i": "join0-1", "m": "o3" },
-      "dsts": { "o": "join1-2" }
+      "args": {
+        "k": "Time"
+      },
+      "srcs": {
+        "i": "join0-1",
+        "m": "o3"
+      },
+      "dsts": {
+        "o": "join1-2"
+      }
     },
-    "join1-2": {
+    {
+      "id": "join1-2",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-    "s_mjoin2": {
+    {
+      "id": "s_mjoin2",
       "type": "command",
       "name": "mjoin",
-      "args": { "k": "Time" },
-      "srcs": { "i": "join1-2", "m": "o4" },
-      "dsts": { "o": "o" }
+      "args": {
+        "k": "Time"
+      },
+      "srcs": {
+        "i": "join1-2",
+        "m": "o4"
+      },
+      "dsts": {
+        "o": "o"
+      }
     },
-
-    "o": {
+    {
+      "id": "o",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     }
-  }
+  ]
 }

@@ -18,13 +18,39 @@ class EngineTestCase(unittest.TestCase):
         flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
         self.execute(flow_uuid)
 
+class TranslateJsonTestCase(unittest.TestCase):
+    def updated_dict(self, a, b):
+        b.update(a)
+        return b
+
+    def test(self):
+        from pathlib import Path
+        flow_uuids = [
+            '2C096E39-28BD-491B-B0E2-7ECFFD113304',
+            'F0F2DCC5-6F17-4B58-9D54-B66C1CF05B89',
+            'FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155',
+            'E3EB7A3B-D015-4DA3-BF56-1784023D8FCD',
+            '6C21E7C3-8060-42D3-9C8E-E05592AE1979'
+        ]
+        for flow_uuid in flow_uuids:
+            FLOWS_PATH = Path('kskp/data/flows')
+            FLOW_PATH = FLOWS_PATH.joinpath(flow_uuid + '.json')
+            with FLOW_PATH.open('r', encoding='utf-8') as fd:
+                obj = json.load(fd, encoding='utf-8')
+
+            new_nodes = [self.updated_dict(node, {'id': key}) for key, node in obj['nodes'].items()]
+            obj['nodes'] = new_nodes
+
+            with FLOW_PATH.open('w', encoding='utf-8') as wfd:
+                json.dump(obj, wfd, indent=2, ensure_ascii=False)
+
 
 class NIJapanSampleTestCase(unittest.TestCase):
     """ 日本NI様サンプルテスト """
 
     def setUp(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
-    
+
     def execute(self, flow_uuid):
         job = parse(flow_uuid)
         try:
@@ -36,7 +62,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         # print(list(job.lasts.values())[0].contents)
         job.dtor()
 
-    # @unittest.skip
+    @unittest.skip
     def test(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
         flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
