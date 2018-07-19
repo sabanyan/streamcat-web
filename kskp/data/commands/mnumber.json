@@ -1,35 +1,31 @@
 {
-  "version": "0.1",
-  "name": "mnumber",
-  "description": "連番",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mnumber",
+  "params": [
     {
       "name": "s",
-      "caption": "ソート対象列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "ソート対象列名"
     },
     {
       "name": "a",
-      "caption": "追加列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "追加列名"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mnumber.py"
-  }
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "連番"
 }
