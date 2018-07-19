@@ -136,45 +136,7 @@ class Job:
             output = cf.execute(self.step.args, self.inputs)
         # print('execute end:', output)
 
-        # 実行履歴作成
-        # 一番外側のjobのexecuteの終了時に、一番外側のjobの実行履歴を作成する
-        if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
-            now = datetime.now()
-
-            # ユーザ名を取ってくる方法を確立するまでの暫定的な処理
-            history = self.create_result_history(now, 'ユーザー 太郎')
-
-            # ファイルに書き込み
-            # TODO pathは環境変数にする！
-            file_name = '{0:%Y%m%d%H%M%S%f}'.format(now)
-            path = Path(__file__).parent.parent.as_posix() / Path('data/jobs/%s.json' % file_name)
-            with open(path.as_posix(), 'w') as f:
-                json.dump(history, f, indent = '\t', ensure_ascii=False)
-
         return self.replace_outputs(output)
-
-    def create_result_history(self, now, user_name):
-        """
-        libraryで閲覧できる実行履歴jsonを作成する
-        指定した時間とユーザ名を実行時情報とする
-        """
-        # 直書き…とりあえずの実装
-        history_json = {'executedAt':'', 'executor':{'name':''}, 'inputs':{}, 'params':{}, 'flow':{'uuid':''}, 'data':{}, 'errors':{}}
-
-        # nowはミリ秒まで入るのでnowを使ってdatetimeを作り直してからisoformat()を行っている
-        history_json['executedAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
-                                              tzinfo=timezone(timedelta(hours=+9))).isoformat()
-
-        history_json['executor']['name'] = user_name
-        history_json['flow']['uuid'] = self.step.command_or_flow.uuid
-        for key in self.lasts.keys():
-            # 現在はデータのクラスの型を'type'に入れているので
-            # クラスの型と'type'に入れたい型が一致しているのが前提になっている
-            data_type = type(self.lasts[key]).__name__
-            history_json['data'][key] = {'type':data_type.lower(),
-                                         'uuid':self.lasts[key].uuid}
-
-        return history_json
 
     def replace_inputs(self):
         for p_k, p_v in self.inputs.items():
