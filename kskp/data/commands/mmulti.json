@@ -1,6 +1,5 @@
 {
   "id": "mmulti",
-  "name": "複数入力",
   "params": [
     {
       "name": "k",
@@ -13,10 +12,20 @@
       "label": "結合コマンド（mjoin, mcat）"
     }
   ],
-  "ports": [{
-      "*": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "*",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "複数入力"
 }

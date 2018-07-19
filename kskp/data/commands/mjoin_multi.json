@@ -1,6 +1,5 @@
 {
   "id": "mjoin_multi",
-  "name": "結合(複数IN)",
   "params": [
     {
       "name": "k",
@@ -8,10 +7,20 @@
       "label": "結合キー名"
     }
   ],
-  "ports": [{
-      "*": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "*",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "結合(複数IN)"
 }

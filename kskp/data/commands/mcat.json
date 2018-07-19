@@ -1,10 +1,19 @@
 {
   "id": "mcat",
-  "name": "ファイル結合",
-  "ports": [{
-      "*": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "*",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "ファイル結合"
 }

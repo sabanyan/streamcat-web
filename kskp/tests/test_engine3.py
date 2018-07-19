@@ -25,6 +25,7 @@ class TranslateCommandsTestCase(unittest.TestCase):
             target_dict[to_key] = [val for val in target_dict[from_key]]
             del target_dict[from_key]
 
+    @unittest.skip
     def test_translate_commands(self):
         path = Path('kskp/data/commands')
         for command in path.iterdir():
@@ -65,6 +66,21 @@ class TranslateCommandsTestCase(unittest.TestCase):
 
             with command.open('w', encoding='utf-8') as wfd:
                 json.dump(obj, wfd, ensure_ascii=False, indent=2)
+
+    def test_translate_commands(self):
+        path = Path('kskp/data/commands')
+        for command in path.iterdir():
+            with Path(command).open('r', encoding='utf-8') as rfd:
+                obj = json.load(rfd, encoding='utf-8')
+
+            obj['ports'][0] = [{'name': key, 'type': port['type']} for key, port in obj['ports'][0].items()]
+            obj['ports'][1] = [{'name': key, 'type': port['type']} for key, port in obj['ports'][1].items()]
+
+            obj['label'] = obj['name']
+            del obj['name']
+            with command.open('w', encoding='utf-8') as wfd:
+                json.dump(obj, wfd, ensure_ascii=False, indent=2)
+
 
 class NIJapanSampleTestCase(unittest.TestCase):
     """ 日本NI様サンプルテスト """
