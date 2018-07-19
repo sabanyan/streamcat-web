@@ -1,6 +1,5 @@
 {
   "id": "msed",
-  "name": "文字列置換",
   "params": [
     {
       "name": "f",
@@ -18,10 +17,20 @@
       "label": "変換後文字列"
     }
   ],
-  "ports": [{
-      "i": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "文字列置換"
 }

@@ -1,6 +1,5 @@
 {
   "id": "msel",
-  "name": "行絞り込み",
   "params": [
     {
       "name": "c",
@@ -8,10 +7,20 @@
       "label": "絞込条件式"
     }
   ],
-  "ports": [{
-      "i": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "行絞り込み"
 }

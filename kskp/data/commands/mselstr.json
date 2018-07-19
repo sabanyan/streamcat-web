@@ -1,6 +1,5 @@
 {
   "id": "mselstr",
-  "name": "行選択(文字列)",
   "params": [
     {
       "name": "f",
@@ -13,10 +12,20 @@
       "label": "絞込条件値（文字列）"
     }
   ],
-  "ports": [{
-      "i": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "行選択(文字列)"
 }

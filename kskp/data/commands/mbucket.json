@@ -1,6 +1,5 @@
 {
   "id": "mbucket",
-  "name": "行分割",
   "params": [
     {
       "name": "f",
@@ -13,10 +12,20 @@
       "label": "分割数"
     }
   ],
-  "ports": [{
-      "i": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "行分割"
 }

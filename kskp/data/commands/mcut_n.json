@@ -1,6 +1,5 @@
 {
   "id": "mcut_n",
-  "name": "列選択(列番号指定)",
   "params": [
     {
       "name": "f",
@@ -8,10 +7,20 @@
       "label": "対象列番号"
     }
   ],
-  "ports": [{
-      "i": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "列選択(列番号指定)"
 }

@@ -1,6 +1,5 @@
 {
   "id": "mcal",
-  "name": "計算",
   "params": [
     {
       "name": "c",
@@ -13,10 +12,20 @@
       "label": "結果列名"
     }
   ],
-  "ports": [{
-      "i": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "計算"
 }

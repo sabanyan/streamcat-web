@@ -1,6 +1,5 @@
 {
   "id": "msetstr",
-  "name": "文字列追加",
   "params": [
     {
       "name": "a",
@@ -13,10 +12,20 @@
       "label": "追加する値"
     }
   ],
-  "ports": [{
-      "i": { "type": "frame" }
-    },{
-      "o": { "type": "frame" }}
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
   ],
-  "version": "0.7.0"
+  "version": "0.7.0",
+  "label": "文字列追加"
 }
