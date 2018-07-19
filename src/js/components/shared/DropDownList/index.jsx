@@ -6,10 +6,12 @@ type Props = {
   onChange?: Function;
   list?: [
     {
-      name: string,
+      label: string,
       value: string,
       object: {}
     }];
+  defaultValue: string;
+  disabled: boolean;
 }
 
 export default class DropDownList extends React.Component<Props> {
@@ -30,12 +32,20 @@ export default class DropDownList extends React.Component<Props> {
   }
 
   render () {
-    const {list, defaultValue} = this.props
-    let options = list.map((data, index) => {
-      return <option key={index + 1} value={data.value}>{data.name}</option>
-    })
+    const {list, defaultValue, disabled} = this.props
+
+    console.log(list)
+
+    let options = []
+    let index = 0
+    for(const data of list.values()){
+      console.log(data)
+      options.push(<option key={index + 1} value={data.value}>{data.label}</option>)
+      index++
+    }
+
     options.unshift(<option key={0}>選択してください</option>)
-    let select = <select defaultValue={defaultValue}
+    let select = <select disabled={disabled} defaultValue={defaultValue}
                          onChange={(e) => this.onChange(e)}
                          className={style.dropdownlist}>{options}</select>
     return select

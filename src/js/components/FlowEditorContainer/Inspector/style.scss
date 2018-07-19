@@ -25,7 +25,6 @@
 
 
 .property_header{
-  padding: 16px;
   font-size: 18px;
   color: $kskp-text;
   background-color: $kskp-property-background-color;
@@ -89,6 +88,14 @@
 .overview_value{
   float: left;
   width: calc(100% - 120px);
-  text-align: right;
+  text-align: left;
   color: $kskp-property-overview-value-color;
+}
+
+.flowInOut{
+  text-align: left;
+  label{
+    margin: 0;
+    padding: 0;
+  }
 }
