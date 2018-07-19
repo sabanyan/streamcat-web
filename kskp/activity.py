@@ -37,8 +37,9 @@ def make_finished_histroy(flow_uuid, file_path, result):
     json_data = json.loads(file_path.read_text(encoding='utf-8'))
     if json_data['flow']['uuid'] == flow_uuid:
         for key, val in result.items():
-            json_data['data'][key] = {'type':'frame', 'uuid':val.uuid}
-
+            # 現在はresultから結果データを取ってきており、データのクラス名を'type'に入れているので
+            # クラス名と'type'に入れたい型が一致しているのが前提になっている（例・frame）
+            json_data['data'][key] = {'type':type(val).__name__.lower(), 'uuid':val.uuid}
         json_data['state'] = '実行完了'
         with open(file_path.as_posix(), 'w') as f:
             json.dump(json_data, f, indent = '\t', ensure_ascii=False)
