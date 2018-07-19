@@ -247,13 +247,13 @@ def execute_flow_internal(flow_uuid):
 
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
-        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
+        with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
+            return e.execute(flow_uuid, f.read(), frame_path='/kskp/data/frames')
 
     result = execute_flow_by_uuid(flow_uuid)
 
     # 結果を縦型のdataframeっぽくパースして返す
-    return result['d1'].contents
+    return result['o_section'].contents
 
 
 def load_as_data_frame(result_text):

@@ -1,0 +1,61 @@
+{
+  "name": "日本NI様サンプル(セクションごとの処理)",
+  "params": [
+    { "name": "section", "type": "string" }
+  ],
+  "ports": [{
+    "i": { "type": "frame" }
+  }, {
+    "o": { "type": "frame" }
+  }],
+  "nodes": {
+    "i": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "s1": {
+      "type": "command",
+      "name": "mselstr",
+      "args": {
+        "f": "Section",
+        "v": "@[section]"
+      },
+      "srcs": { "i": "i" },
+      "dsts": { "o": "t1~2" }
+    },
+    "t1~2": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "s2": {
+      "type": "flow",
+      "uuid": "E3EB7A3B-D015-4DA3-BF56-1784023D8FCD",
+      "args": {},
+      "srcs": { "i": "t1~2" },
+      "dsts": { "o": "t2~3" }
+    },
+    "t2~3": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "s3": {
+      "type": "command",
+      "name": "msetstr",
+      "args": {
+        "a": "Section",
+        "v": "@[section]"
+      },
+      "srcs": { "i": "t2~3" },
+      "dsts": { "o": "o" }
+    },
+
+    "o": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    }
+  }
+}
