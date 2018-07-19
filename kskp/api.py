@@ -255,6 +255,7 @@ def jobs():
 
     results = sorted(execute_historys, key = lambda x:x['executedAt'])
 
+    # 条件分岐が雑なので修正予定
     if 0 < count and count <= len(results):
         result = []
         result.append(results[count - 1])
