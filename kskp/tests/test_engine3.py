@@ -1,6 +1,7 @@
 import os
 import unittest
 import json
+from pathlib import Path
 
 from kskp.engine.core3 import parse
 
@@ -17,6 +18,7 @@ class EngineTestCase(unittest.TestCase):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
         flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
         self.execute(flow_uuid)
+
 
 class TranslateJsonTestCase(unittest.TestCase):
     def updated_dict(self, a, b):
@@ -91,6 +93,68 @@ class TranslateJsonTestCase(unittest.TestCase):
             del obj['name']
             with FLOW_PATH.open('w', encoding='utf-8') as wfd:
                 json.dump(obj, wfd, indent=2, ensure_ascii=False)
+
+class TranslateCommandsTestCase(unittest.TestCase):
+    def change_dict_key(self, target_dict, from_key, to_key):
+        if from_key in target_dict:
+            target_dict[to_key] = [val for val in target_dict[from_key]]
+            del target_dict[from_key]
+
+    @unittest.skip
+    def test_translate_commands(self):
+        path = Path('kskp/data/commands')
+        for command in path.iterdir():
+            print(command)
+            with Path(command).open('r', encoding='utf-8') as rfd:
+                obj = json.load(rfd, encoding='utf-8')
+            if 'ports' not in obj:
+                if 'signature' in obj:
+                    self.change_dict_key(obj, 'signature', 'ports')
+                else:
+                    obj['ports'] = [{}, {}]
+            if 'inputs' in obj:
+                obj['ports'][0] = {'i': {'type': 'frame'} for key in obj['inputs']}
+                del obj['inputs']
+            if 'outputs' in obj:
+                obj['ports'][1] = {'o': {'type': 'frame'} for key in obj['outputs']}
+                del obj['outputs']
+            if 'script' in obj:
+                del obj['script']
+            self.change_dict_key(obj, 'arguments', 'params')
+            if 'params' in obj:
+                for param in obj['params']:
+                    if 'caption' in param:
+                        param['label'] = param['caption']
+                        del param['caption']
+                    if 'default' in param:
+                        del param['default']
+                    if 'validation' in param:
+                        del param['validation']
+
+            if 'name' in obj:
+                obj['id'] = obj['name']
+            if 'description' in obj:
+                obj['name'] = obj['description']
+                del obj['description']
+            if 'version' in obj:
+                obj['version'] = '0.7.0'
+
+            with command.open('w', encoding='utf-8') as wfd:
+                json.dump(obj, wfd, ensure_ascii=False, indent=2)
+
+    def test_translate_commands(self):
+        path = Path('kskp/data/commands')
+        for command in path.iterdir():
+            with Path(command).open('r', encoding='utf-8') as rfd:
+                obj = json.load(rfd, encoding='utf-8')
+
+            obj['ports'][0] = [{'name': key, 'type': port['type']} for key, port in obj['ports'][0].items()]
+            obj['ports'][1] = [{'name': key, 'type': port['type']} for key, port in obj['ports'][1].items()]
+
+            obj['label'] = obj['name']
+            del obj['name']
+            with command.open('w', encoding='utf-8') as wfd:
+                json.dump(obj, wfd, ensure_ascii=False, indent=2)
 
 
 class NIJapanSampleTestCase(unittest.TestCase):

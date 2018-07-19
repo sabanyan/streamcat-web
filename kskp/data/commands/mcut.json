@@ -1,28 +1,26 @@
 {
-  "version": "0.1",
-  "name": "mcut",
-  "description": "列選択",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mcut",
+  "params": [
     {
       "name": "f",
-      "caption": "対象列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "対象列名"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mcut.py"
-  }
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "列選択"
 }
