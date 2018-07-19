@@ -23,6 +23,7 @@ class TranslateJsonTestCase(unittest.TestCase):
         b.update(a)
         return b
 
+    @unittest.skip
     def test(self):
         from pathlib import Path
         flow_uuids = [
@@ -41,6 +42,33 @@ class TranslateJsonTestCase(unittest.TestCase):
             new_nodes = [self.updated_dict(node, {'id': key}) for key, node in obj['nodes'].items()]
             obj['nodes'] = new_nodes
 
+            with FLOW_PATH.open('w', encoding='utf-8') as wfd:
+                json.dump(obj, wfd, indent=2, ensure_ascii=False)
+
+    def translate2(self, node):
+        if node['type'] == 'command':
+            node['commandId'] = node['name']
+            del node['name']
+        node['label'] = None
+        return node
+
+    def test_translate2(self):
+        from pathlib import Path
+        flow_uuids = [
+            '2C096E39-28BD-491B-B0E2-7ECFFD113304',
+            'F0F2DCC5-6F17-4B58-9D54-B66C1CF05B89',
+            'FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155',
+            'E3EB7A3B-D015-4DA3-BF56-1784023D8FCD',
+            '6C21E7C3-8060-42D3-9C8E-E05592AE1979'
+        ]
+        for flow_uuid in flow_uuids:
+            FLOWS_PATH = Path('kskp/data/flows')
+            FLOW_PATH = FLOWS_PATH.joinpath(flow_uuid + '.json')
+            with FLOW_PATH.open('r', encoding='utf-8') as fd:
+                obj = json.load(fd, encoding='utf-8')
+            obj['ports'][0] = [{'name': key, 'type': port['type']} for key, port in obj['ports'][0].items()]
+            obj['ports'][1] = [{'name': key, 'type': port['type']} for key, port in obj['ports'][1].items()]
+            obj['nodes'] = [self.translate2(node) for node in obj['nodes']]
             with FLOW_PATH.open('w', encoding='utf-8') as wfd:
                 json.dump(obj, wfd, indent=2, ensure_ascii=False)
 
