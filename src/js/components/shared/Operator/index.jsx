@@ -2,11 +2,10 @@
 import React from 'react'
 import Constants from '../../../constants/index'
 import ModalUtil from '../../../utils/ModalUtil'
-import DataFrameModel from '../../../model/DataFrameModel'
-import OperatorModel from '../../../model/OperatorModel'
+import DataFrameStepModel from '../../../model/DataFrameStepModel'
 import style from './style.scss'
 import classnames from 'classnames'
-import StepModel from '../../../model/StepModel'
+import CommandStepModel from '../../../model/CommandStepModel'
 
 type Props = {
     name: string;
@@ -80,7 +79,7 @@ export default class Operator extends React.Component<Props> {
                 // })
 
 
-                const add_step =  new StepModel({
+                const add_step =  new CommandStepModel({
                   id: null,//TODO IDはどうやってつける？
                   type: Constants.step.type.command,
                   name: self.props.name,
@@ -94,7 +93,7 @@ export default class Operator extends React.Component<Props> {
                 //出力先を追加
                 const output_steps = self.props.outputs.map((output_step) => {
                     //TODO 将来的にはコマンドのoutputsを細かくみて制御する
-                      return new DataFrameModel({
+                      return new DataFrameStepModel({
                         id: null,//TODO IDはどうやってつける？
                         type: Constants.step.type.frame,
                         uuid: null,//TODO UUIDをどうやってつける？

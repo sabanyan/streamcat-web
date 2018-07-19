@@ -1,6 +1,5 @@
 // @flow
 import React from 'react'
-import DataSourceModel from '../../../../model/DataSourceModel'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import Operator from '../../../shared/Operator/index'
@@ -10,7 +9,8 @@ import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
 import DataPreview from '../../../shared/DataPreview'
 import DropDownList from '../../../shared/DropDownList'
-import DataFrameModel from '../../../../model/DataFrameModel'
+import DataFrameStepModel from '../../../../model/DataFrameStepModel'
+import CommandSelector from '../CommandSelector'
 
 class DataSourceInspector extends React.Component<FlowEditorProps> {
 
@@ -32,7 +32,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     }
 
     //ファイル名を steps の パラメータから取得する
-    const filename = this.props.steps[this.props.selected_step_ids[0]].getFileName()
+    const filename = this.props.nodes[this.props.selected_step_ids[0]].getFileName()
 
     fetch('http://' + Constants.api.host + '/api/v0-1/dataframe/' + filename,
       option).then(function (response) {
@@ -46,7 +46,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     }).then(function (json) {
       console.log(json)
       if (json) {
-        const content = <DataPreview json={json}/>
+        const content = <DataPreview json={json} />
         ModalUtil.emitModal({
           id: Constants.preview.DATASOURCE,
           visible: true,
@@ -73,15 +73,42 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     }
   }
 
+  onChangeFlowInOut (e: Event) {
+    let {flow} = this.props
+    const flowInChecked = this.refs.flowIn.checked
+    const flowOutChecked = this.refs.flowOut.checked
+
+    let selected_step = this.getSelectedStep()
+
+    //パラメーターを更新
+    if (flowInChecked) {
+      flow.ports[0][selected_step.id] = {type: selected_step.type}
+    } else {
+      delete flow.ports[0][selected_step.id]
+    }
+
+    if (flowOutChecked) {
+      flow.ports[1][selected_step.id] = {type: selected_step.type}
+    } else {
+      delete flow.ports[1][selected_step.id]
+    }
+
+    this.props.updateFlow(flow)
+  }
+
+  getSelectedStep () {
+    let {selected_step_ids, nodes} = this.props
+    return nodes[selected_step_ids[0]]
+  }
+
   render () {
 
     let step_text
     let dataSource
     let preview
-    let {selected_step_ids, steps} = this.props
     const self = this
-    const selected_step = steps[selected_step_ids[0]]
-    if (selected_step instanceof DataFrameModel) {
+    const selected_step = this.getSelectedStep()
+    if (selected_step instanceof DataFrameStepModel) {
       dataSource = selected_step
       step_text = selected_step.text
       if (dataSource.uuid) {
@@ -90,28 +117,24 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       }
     }
 
-    let operators = this.props.mast.commands.map((command, index) => {
-      return <Operator {...command} {...this.props} key={index}/>
-      // switch (operation) {
-      //     case Constants.operatorType.msortf:
-      //         return <Sort key={index}/>
-      //         break;
-      //     case Constants.operatorType.mcal:
-      //         return null
-      //         break;
-      //     case Constants.operatorType.mcut:
-      //         return <Mcut key={index}/>
-      //         break;
-      //     case Constants.operatorType.mtra2g:
-      //         return null
-      //         break;
-      //     case Constants.operatorType.mitemset:
-      //         return null
-      //         break;
-      // }
-    })
+    const {ports} = this.props.flow
+    const flowInOutForm = <div className={style.flowInOut}>
+      <div>
+        <label><input type="checkbox" defaultChecked={(ports[0][selected_step.id])} ref={'flowIn'}
+               onChange={(e) => this.onChangeFlowInOut(e)} />
+        &nbsp;入力
+        </label>
+      </div>
+      <div>
+        <label><input type="checkbox" defaultChecked={(ports[1][selected_step.id])}
+               ref={'flowOut'}
+               onChange={(e) => this.onChangeFlowInOut(e)} />
+        &nbsp;出力
+        </label>
+      </div>
+    </div>
 
-    return <Inspector header={step_text} title={'データの概要'}>
+    return <Inspector header={step_text} title={'データの概要'} {...this.props}>
       <div className={style.property_overview}>
         <div className={style.actions}>
           {preview}
@@ -124,7 +147,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
               データの件数
             </div>
             <div className={style.overview_value}>
-              {/*{property.overview.count || 0}*/}
+              - {/*{property.overview.count || 0}*/}
             </div>
           </div>
           <div className={style.overview}>
@@ -132,7 +155,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
               作成日
             </div>
             <div className={style.overview_value}>
-              {/*{property.overview.created_at || ""}*/}
+              - {/*{property.overview.created_at || ""}*/}
             </div>
           </div>
           <div className={style.overview}>
@@ -140,24 +163,28 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
               作成者
             </div>
             <div className={style.overview_value}>
-              {/*{property.overview.created_user_name || ""}*/}
+              - {/*{property.overview.created_user_name || ""}*/}
+            </div>
+          </div>
+          <div className={style.overview}>
+            <div className={style.overview_label}>
+              フロー入出力
+            </div>
+            <div className={style.overview_value}>
+              {flowInOutForm}
             </div>
           </div>
         </div>
       </div>
-      <div className={style.hr}/>
-      <div className={style.property_title}>
-        コマンド
-      </div>
-      <div className={style.property_basic_operators}>
-        {operators}
-      </div>
-      <div className={style.hr}/>
+      <div className={style.hr} />
+      <CommandSelector numberOfInput={1} {...this.props} />
+
+      <div className={style.hr} />
       <div className={style.property_title}>
         作成したフロー
       </div>
       <div>
-        <DropDownList list={[{name: 'サブフロー1', value: "1", object: {}}]}/>
+        <DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />
       </div>
     </Inspector>
   }

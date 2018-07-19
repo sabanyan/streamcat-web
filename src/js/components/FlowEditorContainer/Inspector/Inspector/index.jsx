@@ -1,11 +1,12 @@
 // @flow
 import * as React from 'react'
 import style from '../style.scss'
+import InOutConnector from '../CommandInspector/InOutConnector'
 
 type Props = {
-  header?: string,
-  title?: string,
-  children?: React.Node
+  header?: string;
+  title?: string;
+  children?: React.Node;
 }
 
 class Inspector extends React.Component<Props> {

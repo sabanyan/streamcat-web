@@ -137,15 +137,18 @@ class ApiTestCase(unittest.TestCase):
 
             data = {
                 'project_uuid': project_uuid,
-                'name': new_flow_name,
-                'data_source_name': new_flow_data_source_name
+                'name': new_flow_name
             }
 
-            endpoint = '/api/v0/flows'
-            response = client.post(endpoint,
-                content_type='application/json',
-                data=json.dumps(data)
-            )
+            flow_path = app.config['FLOW_PATH']
+            with tempfile.TemporaryDirectory() as temp_dir:
+                app.config['FLOW_PATH'] = temp_dir
+
+                endpoint = '/api/v0/flows'
+                response = client.post(endpoint,
+                    content_type='application/json',
+                    data=json.dumps(data)
+                    )
 
             result = json.loads(response.get_data())
 
@@ -156,7 +159,7 @@ class ApiTestCase(unittest.TestCase):
             self.assertEqual(result['data']['name'], new_flow_name)
 
             # 後片付け
-            model.make_flow_path(new_flow_data_source_name).unlink()
+            app.config['FLOW_PATH'] = flow_path
 
 
     def test_fetch_flows_project_uuid_Nothing(self):
@@ -245,16 +248,21 @@ class ApiTestCase(unittest.TestCase):
 
             flow_paths = model.get_flow_paths_by_project_uuid(project_uuid)
 
-        self.assertEqual(results['success'], True)
+        # ファイル名がflow_uuidになっているのかテスト
         self.assertEqual({p.stem for p in flow_paths}, {flow1_datasource_name,
                                                         flow2_datasource_name,
                                                         flow3_datasource_name})
+
+        self.assertEqual(results['success'], True)
         self.assertEqual({r['projectId'] for r in results['data']}, {project_id,
                                                                      project_id,
                                                                      project_id})
         self.assertEqual({r['name'] for r in results['data']}, {'フローテスト用',
                                                                 'フローテスト用2',
                                                                 'フローテスト用3'})
+        self.assertEqual({r['uuid'] for r in results['data']}, {flow1_datasource_name,
+                                                                flow2_datasource_name,
+                                                                flow3_datasource_name})
 
         # 後片付け
         with app.app_context():
@@ -376,6 +384,7 @@ class ApiTestCase(unittest.TestCase):
         '''
         execute_flow APIをテストする
         7/4現在、エラー回避のためengineの__init__のexecuteのjob.dtor()を無効にしている
+        7/5現在、エラーが出る（ファイル指定に問題あり）
         '''
         flow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
 
@@ -386,10 +395,10 @@ class ApiTestCase(unittest.TestCase):
             result = json.loads(response.get_data())
 
         # 生成されてほしい結果
-        expected_result = {'数量合計': ['3', '5'], '金額合計': ['30', '120'], '顧客%0': ['A', 'B']}
+        expected_result = {'金額合計': ['30', '120'], '顧客%0': ['A', 'B']}
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'], expected_result)
+        self.assertEqual(result['data']['d1'], expected_result)
 
 class FrameApiTestCase(unittest.TestCase):
     def setUp(self):
@@ -489,18 +498,21 @@ class JobTestCase(unittest.TestCase):
         app.testing = True
         self.client = app.test_client()
 
-    def test_sample_json(self):
-        flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
-        endpoint = '/api/v0/jobs?flow=%s&count=1' % flow_uuid
-
+    def test_jobs(self):
+        # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = 1
+
+            flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
+            count = 1
+
+            endpoint = '/api/v0/jobs?flow=%s&count=%s' % (flow_uuid, count)
             response = client.get(endpoint)
+            result = json.loads(response.get_data())
 
-        result = json.loads(response.get_data())['data'][0]
-
-        self.assertEqual(result["executedAt"], "2018-06-26T04:33:15+09:00")
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
 
 if __name__ == '__main__':
     unittest.main()

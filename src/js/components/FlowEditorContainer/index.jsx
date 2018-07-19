@@ -2,6 +2,7 @@
 import {
   addStepAction,
   updateStepAction,
+  updateFlowAction,
   selectStepsAction,
   addSelectStepAction,
   deleteSelectStepAction,
@@ -16,7 +17,8 @@ import {
   dragStartAction,
   draggingAction,
   dragEndAction,
-  loadFlowJSONAction
+  loadFlowJSONAction,
+  setZoomAction
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -27,8 +29,8 @@ let FlowEditorContainer
 export type FlowEditorProps = {
   projectId: string,
   projectName: string,
-  graph: { width: number, height: number };
-  mast: { operators: any[] };
+  graph: { width: number, height: number,edges:any[],nodes:any[] };
+  mast: { commands: any[] };
   loadFlowJSON: Function;
   addMaster: Function;
   selectSteps: Function;
@@ -38,15 +40,19 @@ export type FlowEditorProps = {
   pasteSteps: Function;
   deleteSteps: Function;
   updateStep: Function;
-  edges: any[];
-  steps: {};
-  data: {};
+  updateFlow: Function;
+  sortFlow: Function;
+  executeFlow: Function;
+  nodes: {};
   selected_step_ids: string[];
   selected_tab_id: string;
   children: React.Node;
   dragStart: Function;
   dragging: Function;
   dragEnd: Function;
+  setZoom: Function;
+  zoom: number;
+  flow:{name:string,ports:{},params:{},nodes:{}};
   drag: {
     start: {
       x: number,
@@ -66,15 +72,15 @@ export default FlowEditorContainer = connect(
       projectName: state.projectName,
       graph: state.graph,
       mast: state.mast,
-      flows: state.flows,
       edges: state.edges,
-      steps: state.steps,
-      data: state.data,
+      nodes: state.nodes,
       selected_step_ids: state.selected_step_ids,
       selected_tab_id: state.selected_tab_id,
       drag: state.drag,
       selected_in_edges: state.selected_in_edges,
       selected_out_edges: state.selected_out_edges,
+      zoom: state.zoom,
+      flow: state.flow,
     }
   },
   dispatch => {
@@ -90,6 +96,9 @@ export default FlowEditorContainer = connect(
       },
       updateStep (...args) {
         dispatch(updateStepAction(...args))
+      },
+      updateFlow (...args) {
+        dispatch(updateFlowAction(...args))
       },
       selectSteps (...args) {
         dispatch(selectStepsAction(...args))
@@ -112,13 +121,13 @@ export default FlowEditorContainer = connect(
       pasteSteps (...args) {
         dispatch(pasteStepsAction(...args))
       },
-      sortFlowAction (...args) {
+      sortFlow (...args) {
         dispatch(sortFlowAction(...args))
       },
-      executeFlowAction (...args) {
+      executeFlow (...args) {
         dispatch(executeFlowAction(...args))
       },
-      selectTabAction (...args) {
+      selectTab (...args) {
         dispatch(selectTabAction(...args))
       },
       dragStart (...args) {
@@ -129,6 +138,9 @@ export default FlowEditorContainer = connect(
       },
       dragEnd (...args) {
         dispatch(dragEndAction(...args))
+      },
+      setZoom (...args) {
+        dispatch(setZoomAction(...args))
       },
     }
   },
