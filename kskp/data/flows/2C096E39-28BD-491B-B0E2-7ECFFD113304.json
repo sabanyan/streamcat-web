@@ -1,0 +1,232 @@
+{
+  "name": "日本NI様サンプル(親)",
+  "params": [],
+  "ports": [{}, {
+    "o_section": { "type": "frame" }
+  }],
+  "nodes": {
+    "i": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "2C72275F-2019-49AE-B36D-A29D1507F8DD"
+    },
+
+    "s1": {
+      "type": "flow",
+      "uuid": "F0F2DCC5-6F17-4B58-9D54-B66C1CF05B89",
+      "args": {
+        "f": "0,1,2,3,4",
+        "v": "1"
+      },
+      "srcs": { "i": "i" },
+      "dsts": { "o1": "o1-1", "o2": "o1-2" }
+    },
+    "o1-1": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "o1-2": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "s2": {
+      "type": "flow",
+      "uuid": "F0F2DCC5-6F17-4B58-9D54-B66C1CF05B89",
+      "args": {
+        "f": "0,5,6,7,8",
+        "v": "2"
+      },
+      "srcs": { "i": "i" },
+      "dsts": { "o1": "o2-1", "o2": "o2-2" }
+    },
+    "o2-1": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "o2-2": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "s3": {
+      "type": "flow",
+      "uuid": "F0F2DCC5-6F17-4B58-9D54-B66C1CF05B89",
+      "args": {
+        "f": "0,9,10,11,12",
+        "v": "3"
+      },
+      "srcs": { "i": "i" },
+      "dsts": { "o1": "o3-1", "o2": "o3-2" }
+    },
+    "o3-1": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "o3-2": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "s4": {
+      "type": "flow",
+      "uuid": "F0F2DCC5-6F17-4B58-9D54-B66C1CF05B89",
+      "args": {
+        "f": "0,13,14,15,16",
+        "v": "4"
+      },
+      "srcs": { "i": "i" },
+      "dsts": { "o1": "o4-1", "o2": "o4-2" }
+    },
+    "o4-1": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "o4-2": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "s5": {
+      "type": "flow",
+      "uuid": "F0F2DCC5-6F17-4B58-9D54-B66C1CF05B89",
+      "args": {
+        "f": "0,17,18,19,20",
+        "v": "5"
+      },
+      "srcs": { "i": "i" },
+      "dsts": { "o1": "o5-1", "o2": "o5-2" }
+    },
+    "o5-1": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "o5-2": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+
+    "cat_all": {
+      "type": "command",
+      "name": "mcat",
+      "args": {},
+      "srcs": { "*1": "o1-1", "*2": "o2-1", "*3": "o3-1", "*4": "o4-1", "*5": "o5-1" },
+      "dsts": { "o": "o_all" }
+    },
+    "o_all": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+
+    "cat_section": {
+      "type": "command",
+      "name": "mcat",
+      "args": {},
+      "srcs": { "*1": "o1-2", "*2": "o2-2", "*3": "o3-2", "*4": "o4-2", "*5": "o5-2" },
+      "dsts": { "o": "dA0~1" }
+    },
+    "dA0~1": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "sA1": {
+      "type": "command",
+      "name": "msortf",
+      "args": {
+        "f": "Pattern,Section%n"
+      },
+      "srcs": { "i": "dA0~1" },
+      "dsts": { "o": "dA1~2" }
+    },
+    "dA1~2": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+
+    "sA2": {
+      "type": "command",
+      "name": "mcal",
+      "args": {
+        "a": "3H_range",
+        "c": "${3H_max}-${3H_min}"
+      },
+      "srcs": { "i": "dA1~2" },
+      "dsts": { "o": "dA2~3" }
+    },
+    "dA2~3": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "sA3": {
+      "type": "command",
+      "name": "mcal",
+      "args": {
+        "a": "3V_range",
+        "c": "${3V_max}-${3V_min}"
+      },
+      "srcs": { "i": "dA2~3" },
+      "dsts": { "o": "dA3~4" }
+    },
+    "dA3~4": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "sA4": {
+      "type": "command",
+      "name": "mcal",
+      "args": {
+        "a": "4H_range",
+        "c": "${4H_max}-${4H_min}"
+      },
+      "srcs": { "i": "dA3~4" },
+      "dsts": { "o": "dA4~5" }
+    },
+    "dA4~5": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "sA5": {
+      "type": "command",
+      "name": "mcal",
+      "args": {
+        "a": "4V_range",
+        "c": "${4V_max}-${4V_min}"
+      },
+      "srcs": { "i": "dA4~5" },
+      "dsts": { "o": "dA5~6" }
+    },
+    "dA5~6": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    },
+    "sA6": {
+      "type": "command",
+      "name": "mcal",
+      "args": {
+        "a": "label",
+        "c": "if(${Pattern}==1,\"OK\",\"NG\")"
+      },
+      "srcs": { "i": "dA5~6" },
+      "dsts": { "o": "o_section" }
+    },
+
+    "o_section": {
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null
+    }
+  }
+}
