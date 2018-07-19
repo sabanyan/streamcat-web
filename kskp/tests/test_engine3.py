@@ -42,9 +42,26 @@ class TranslateCommandsTestCase(unittest.TestCase):
             if 'outputs' in obj:
                 obj['ports'][1] = {'o': {'type': 'frame'} for key in obj['outputs']}
                 del obj['outputs']
-            if 'script'in obj:
+            if 'script' in obj:
                 del obj['script']
             self.change_dict_key(obj, 'arguments', 'params')
+            if 'params' in obj:
+                for param in obj['params']:
+                    if 'caption' in param:
+                        param['label'] = param['caption']
+                        del param['caption']
+                    if 'default' in param:
+                        del param['default']
+                    if 'validation' in param:
+                        del param['validation']
+
+            if 'name' in obj:
+                obj['id'] = obj['name']
+            if 'description' in obj:
+                obj['name'] = obj['description']
+                del obj['description']
+            if 'version' in obj:
+                obj['version'] = '0.7.0'
 
             with command.open('w', encoding='utf-8') as wfd:
                 json.dump(obj, wfd, ensure_ascii=False, indent=2)

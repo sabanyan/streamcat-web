@@ -1,35 +1,22 @@
 {
-  "version": "0.1",
-  "name": "msetstr",
-  "description": "文字列追加",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "msetstr",
+  "name": "文字列追加",
+  "params": [
     {
       "name": "a",
-      "caption": "追加列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "追加列名"
     },
     {
       "name": "v",
-      "caption": "追加する値",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "追加する値"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "msetstr.py"
-  }
+  "ports": [{
+      "i": { "type": "frame" }
+    },{
+      "o": { "type": "frame" }}
+  ],
+  "version": "0.7.0"
 }

@@ -1,35 +1,22 @@
 {
-  "version": "0.1",
-  "name": "mnullto",
-  "description": "NULL置換",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mnullto",
+  "name": "NULL置換",
+  "params": [
     {
       "name": "f",
-      "caption": "対象列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "対象列名"
     },
     {
       "name": "v",
-      "caption": "変換後文字列",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "変換後文字列"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mnullto.py"
-  }
+  "ports": [{
+      "i": { "type": "frame" }
+    },{
+      "o": { "type": "frame" }}
+  ],
+  "version": "0.7.0"
 }

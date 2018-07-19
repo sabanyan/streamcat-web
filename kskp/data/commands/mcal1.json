@@ -1,35 +1,22 @@
 {
-  "version": "0.1",
-  "name": "mcal",
-  "description": "計算",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mcal",
+  "name": "計算",
+  "params": [
     {
       "name": "c",
-      "caption": "計算式",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "計算式"
     },
     {
       "name": "a",
-      "caption": "結果列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "結果列名"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mcal.py"
-  }
+  "ports": [{
+      "i": { "type": "frame" }
+    },{
+      "o": { "type": "frame" }}
+  ],
+  "version": "0.7.0"
 }

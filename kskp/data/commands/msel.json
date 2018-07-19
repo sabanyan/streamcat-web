@@ -1,28 +1,17 @@
 {
-  "version": "0.1",
-  "name": "msel",
-  "description": "行絞り込み",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "msel",
+  "name": "行絞り込み",
+  "params": [
     {
       "name": "c",
-      "caption": "絞込条件式",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "絞込条件式"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "msel.py"
-  }
+  "ports": [{
+      "i": { "type": "frame" }
+    },{
+      "o": { "type": "frame" }}
+  ],
+  "version": "0.7.0"
 }

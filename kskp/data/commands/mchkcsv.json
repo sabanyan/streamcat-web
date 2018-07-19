@@ -1,20 +1,11 @@
 {
-  "version": "0.1",
-  "name": "mchkcsv",
-  "description": "CSV検査",
-  "inputs": [
-    {
-      "type": "csv"
-    }
+  "id": "mchkcsv",
+  "name": "CSV検査",
+  "params": [],
+  "ports": [{
+      "i": { "type": "frame" }
+    },{
+      "o": { "type": "frame" }}
   ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [],
-  "script": {
-    "type": "file",
-    "name": "mchkcsv.py"
-  }
+  "version": "0.7.0"
 }
