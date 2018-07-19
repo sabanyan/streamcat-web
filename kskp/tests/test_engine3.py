@@ -1,6 +1,7 @@
 import os
 import unittest
 import json
+from pathlib import Path
 
 from kskp.engine.core3 import parse
 
@@ -18,13 +19,42 @@ class EngineTestCase(unittest.TestCase):
         flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
         self.execute(flow_uuid)
 
+class TranslateCommandsTestCase(unittest.TestCase):
+    def change_dict_key(self, target_dict, from_key, to_key):
+        if from_key in target_dict:
+            target_dict[to_key] = [val for val in target_dict[from_key]]
+            del target_dict[from_key]
+
+    def test_translate_commands(self):
+        path = Path('kskp/data/commands')
+        for command in path.iterdir():
+            print(command)
+            with Path(command).open('r', encoding='utf-8') as rfd:
+                obj = json.load(rfd, encoding='utf-8')
+            if 'ports' not in obj:
+                if 'signature' in obj:
+                    self.change_dict_key(obj, 'signature', 'ports')
+                else:
+                    obj['ports'] = [{}, {}]
+            if 'inputs' in obj:
+                obj['ports'][0] = {'i': {'type': 'frame'} for key in obj['inputs']}
+                del obj['inputs']
+            if 'outputs' in obj:
+                obj['ports'][1] = {'o': {'type': 'frame'} for key in obj['outputs']}
+                del obj['outputs']
+            if 'script'in obj:
+                del obj['script']
+            self.change_dict_key(obj, 'arguments', 'params')
+
+            with command.open('w', encoding='utf-8') as wfd:
+                json.dump(obj, wfd, ensure_ascii=False, indent=2)
 
 class NIJapanSampleTestCase(unittest.TestCase):
     """ 日本NI様サンプルテスト """
 
     def setUp(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
-    
+
     def execute(self, flow_uuid):
         job = parse(flow_uuid)
         try:
@@ -36,7 +66,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         # print(list(job.lasts.values())[0].contents)
         job.dtor()
 
-    # @unittest.skip
+    @unittest.skip
     def test(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
         flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
