@@ -18,7 +18,7 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
     job = parse(flow_uuid)
     result = job.execute()
     job.dtor()
-    return result
+    return job.lasts
     # '2C096E39-28BD-491B-B0E2-7ECFFD113304'
 
     # return execute_internal(parse(flow_uuid, flow_json), arguments, inputs, frame_path)
