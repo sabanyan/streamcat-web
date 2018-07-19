@@ -2,28 +2,30 @@
   "name": "日本NI様サンプル(4つのセンサーで統計量)",
   "params": [],
   "ports": [
-    {
-      "i": {
+    [
+      {
+        "name": "i",
         "type": "frame"
       }
-    },
-    {
-      "o": {
+    ],
+    [
+      {
+        "name": "o",
         "type": "frame"
       }
-    }
+    ]
   ],
   "nodes": [
     {
       "id": "i",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s0",
       "type": "command",
-      "name": "mcut",
       "args": {
         "x": true,
         "f": "0,1,2,3,4"
@@ -33,13 +35,16 @@
       },
       "dsts": {
         "o": "t"
-      }
+      },
+      "commandId": "mcut",
+      "label": null
     },
     {
       "id": "t",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s1",
@@ -53,13 +58,15 @@
       },
       "dsts": {
         "o": "o1"
-      }
+      },
+      "label": null
     },
     {
       "id": "o1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s2",
@@ -73,13 +80,15 @@
       },
       "dsts": {
         "o": "o2"
-      }
+      },
+      "label": null
     },
     {
       "id": "o2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s3",
@@ -93,13 +102,15 @@
       },
       "dsts": {
         "o": "o3"
-      }
+      },
+      "label": null
     },
     {
       "id": "o3",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s4",
@@ -113,18 +124,19 @@
       },
       "dsts": {
         "o": "o4"
-      }
+      },
+      "label": null
     },
     {
       "id": "o4",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s_mjoin0",
       "type": "command",
-      "name": "mjoin",
       "args": {
         "k": "Time"
       },
@@ -134,18 +146,20 @@
       },
       "dsts": {
         "o": "join0-1"
-      }
+      },
+      "commandId": "mjoin",
+      "label": null
     },
     {
       "id": "join0-1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s_mjoin1",
       "type": "command",
-      "name": "mjoin",
       "args": {
         "k": "Time"
       },
@@ -155,18 +169,20 @@
       },
       "dsts": {
         "o": "join1-2"
-      }
+      },
+      "commandId": "mjoin",
+      "label": null
     },
     {
       "id": "join1-2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s_mjoin2",
       "type": "command",
-      "name": "mjoin",
       "args": {
         "k": "Time"
       },
@@ -176,13 +192,16 @@
       },
       "dsts": {
         "o": "o"
-      }
+      },
+      "commandId": "mjoin",
+      "label": null
     },
     {
       "id": "o",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     }
   ]
 }

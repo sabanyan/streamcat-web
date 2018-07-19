@@ -2,19 +2,21 @@
   "name": "日本NI様サンプル(親)",
   "params": [],
   "ports": [
-    {},
-    {
-      "o_section": {
+    [],
+    [
+      {
+        "name": "o_section",
         "type": "frame"
       }
-    }
+    ]
   ],
   "nodes": [
     {
       "id": "i",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": "2C72275F-2019-49AE-B36D-A29D1507F8DD"
+      "uuid": "2C72275F-2019-49AE-B36D-A29D1507F8DD",
+      "label": null
     },
     {
       "id": "s1",
@@ -30,19 +32,22 @@
       "dsts": {
         "o1": "o1-1",
         "o2": "o1-2"
-      }
+      },
+      "label": null
     },
     {
       "id": "o1-1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "o1-2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s2",
@@ -58,19 +63,22 @@
       "dsts": {
         "o1": "o2-1",
         "o2": "o2-2"
-      }
+      },
+      "label": null
     },
     {
       "id": "o2-1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "o2-2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s3",
@@ -86,19 +94,22 @@
       "dsts": {
         "o1": "o3-1",
         "o2": "o3-2"
-      }
+      },
+      "label": null
     },
     {
       "id": "o3-1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "o3-2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s4",
@@ -114,19 +125,22 @@
       "dsts": {
         "o1": "o4-1",
         "o2": "o4-2"
-      }
+      },
+      "label": null
     },
     {
       "id": "o4-1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "o4-2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s5",
@@ -142,24 +156,26 @@
       "dsts": {
         "o1": "o5-1",
         "o2": "o5-2"
-      }
+      },
+      "label": null
     },
     {
       "id": "o5-1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "o5-2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "cat_all",
       "type": "command",
-      "name": "mcat",
       "args": {},
       "srcs": {
         "*1": "o1-1",
@@ -170,18 +186,20 @@
       },
       "dsts": {
         "o": "o_all"
-      }
+      },
+      "commandId": "mcat",
+      "label": null
     },
     {
       "id": "o_all",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "cat_section",
       "type": "command",
-      "name": "mcat",
       "args": {},
       "srcs": {
         "*1": "o1-2",
@@ -192,18 +210,20 @@
       },
       "dsts": {
         "o": "dA0~1"
-      }
+      },
+      "commandId": "mcat",
+      "label": null
     },
     {
       "id": "dA0~1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "sA1",
       "type": "command",
-      "name": "msortf",
       "args": {
         "f": "Pattern,Section%n"
       },
@@ -212,18 +232,20 @@
       },
       "dsts": {
         "o": "dA1~2"
-      }
+      },
+      "commandId": "msortf",
+      "label": null
     },
     {
       "id": "dA1~2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "sA2",
       "type": "command",
-      "name": "mcal",
       "args": {
         "a": "3H_range",
         "c": "${3H_max}-${3H_min}"
@@ -233,18 +255,20 @@
       },
       "dsts": {
         "o": "dA2~3"
-      }
+      },
+      "commandId": "mcal",
+      "label": null
     },
     {
       "id": "dA2~3",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "sA3",
       "type": "command",
-      "name": "mcal",
       "args": {
         "a": "3V_range",
         "c": "${3V_max}-${3V_min}"
@@ -254,18 +278,20 @@
       },
       "dsts": {
         "o": "dA3~4"
-      }
+      },
+      "commandId": "mcal",
+      "label": null
     },
     {
       "id": "dA3~4",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "sA4",
       "type": "command",
-      "name": "mcal",
       "args": {
         "a": "4H_range",
         "c": "${4H_max}-${4H_min}"
@@ -275,18 +301,20 @@
       },
       "dsts": {
         "o": "dA4~5"
-      }
+      },
+      "commandId": "mcal",
+      "label": null
     },
     {
       "id": "dA4~5",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "sA5",
       "type": "command",
-      "name": "mcal",
       "args": {
         "a": "4V_range",
         "c": "${4V_max}-${4V_min}"
@@ -296,18 +324,20 @@
       },
       "dsts": {
         "o": "dA5~6"
-      }
+      },
+      "commandId": "mcal",
+      "label": null
     },
     {
       "id": "dA5~6",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "sA6",
       "type": "command",
-      "name": "mcal",
       "args": {
         "a": "label",
         "c": "if(${Pattern}==1,\"OK\",\"NG\")"
@@ -317,13 +347,16 @@
       },
       "dsts": {
         "o": "o_section"
-      }
+      },
+      "commandId": "mcal",
+      "label": null
     },
     {
       "id": "o_section",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     }
   ]
 }

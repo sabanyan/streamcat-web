@@ -7,28 +7,30 @@
     }
   ],
   "ports": [
-    {
-      "i": {
+    [
+      {
+        "name": "i",
         "type": "frame"
       }
-    },
-    {
-      "o": {
+    ],
+    [
+      {
+        "name": "o",
         "type": "frame"
       }
-    }
+    ]
   ],
   "nodes": [
     {
       "id": "i",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s1-1",
       "type": "command",
-      "name": "mavg",
       "args": {
         "f": "@[sensor]:@[sensor]_avg"
       },
@@ -37,18 +39,20 @@
       },
       "dsts": {
         "o": "t1"
-      }
+      },
+      "commandId": "mavg",
+      "label": null
     },
     {
       "id": "t1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s1-2",
       "type": "command",
-      "name": "mcut",
       "args": {
         "f": "Time,@[sensor]_avg"
       },
@@ -57,18 +61,20 @@
       },
       "dsts": {
         "o": "o1"
-      }
+      },
+      "commandId": "mcut",
+      "label": null
     },
     {
       "id": "o1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s2-1",
       "type": "command",
-      "name": "mstats",
       "args": {
         "c": "sd",
         "f": "@[sensor]:@[sensor]_sd"
@@ -78,18 +84,20 @@
       },
       "dsts": {
         "o": "t2"
-      }
+      },
+      "commandId": "mstats",
+      "label": null
     },
     {
       "id": "t2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s2-2",
       "type": "command",
-      "name": "mcut",
       "args": {
         "f": "Time,@[sensor]_sd"
       },
@@ -98,18 +106,20 @@
       },
       "dsts": {
         "o": "o2"
-      }
+      },
+      "commandId": "mcut",
+      "label": null
     },
     {
       "id": "o2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s3-1",
       "type": "command",
-      "name": "mstats",
       "args": {
         "c": "max",
         "f": "@[sensor]:@[sensor]_max"
@@ -119,18 +129,20 @@
       },
       "dsts": {
         "o": "t3"
-      }
+      },
+      "commandId": "mstats",
+      "label": null
     },
     {
       "id": "t3",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s3-2",
       "type": "command",
-      "name": "mcut",
       "args": {
         "f": "Time,@[sensor]_max"
       },
@@ -139,18 +151,20 @@
       },
       "dsts": {
         "o": "o3"
-      }
+      },
+      "commandId": "mcut",
+      "label": null
     },
     {
       "id": "o3",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s4-1",
       "type": "command",
-      "name": "mstats",
       "args": {
         "c": "min",
         "f": "@[sensor]:@[sensor]_min"
@@ -160,18 +174,20 @@
       },
       "dsts": {
         "o": "t4"
-      }
+      },
+      "commandId": "mstats",
+      "label": null
     },
     {
       "id": "t4",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s4-2",
       "type": "command",
-      "name": "mcut",
       "args": {
         "f": "Time,@[sensor]_min"
       },
@@ -180,18 +196,20 @@
       },
       "dsts": {
         "o": "o4"
-      }
+      },
+      "commandId": "mcut",
+      "label": null
     },
     {
       "id": "o4",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s_mjoin0",
       "type": "command",
-      "name": "mjoin",
       "args": {
         "k": "Time"
       },
@@ -201,18 +219,20 @@
       },
       "dsts": {
         "o": "join0-1"
-      }
+      },
+      "commandId": "mjoin",
+      "label": null
     },
     {
       "id": "join0-1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s_mjoin1",
       "type": "command",
-      "name": "mjoin",
       "args": {
         "k": "Time"
       },
@@ -222,18 +242,20 @@
       },
       "dsts": {
         "o": "join1-2"
-      }
+      },
+      "commandId": "mjoin",
+      "label": null
     },
     {
       "id": "join1-2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
     {
       "id": "s_mjoin2",
       "type": "command",
-      "name": "mjoin",
       "args": {
         "k": "Time"
       },
@@ -243,13 +265,16 @@
       },
       "dsts": {
         "o": "o"
-      }
+      },
+      "commandId": "mjoin",
+      "label": null
     },
     {
       "id": "o",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     }
   ]
 }
