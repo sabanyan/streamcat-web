@@ -14,7 +14,12 @@ from .model import (
     fetch_flow_by_uuid,
     fetch_flows_by_project_uuid,
     update_flow_by_uuid,
-    get_flow_path_by_uuid
+    get_flow_path_by_uuid,
+    get_user_by_id
+)
+from .activity import (
+    make_unfinished_histroy,
+    make_finished_histroy
 )
 
 api = Blueprint('api', __name__)
@@ -225,7 +230,7 @@ def execute_flow(flow_uuid):
                                 'message': 'result is empty.'
                             })
         else:
-            return jsonify({'success': True, 'data': result_data})
+            return jsonify({'success': True, 'name': result_data})
 
 
 @api.route('/jobs', methods=['GET'])
@@ -266,15 +271,27 @@ def execute_flow_internal(flow_uuid):
     その結果をパースしてDataFrameの形にして返す
     """
 
+    # 実行履歴（実行中状態）の作成
+    user_id = session['user_id']
+    user_name = get_user_by_id(user_id)['name']
+    history_file_path = make_unfinished_histroy(flow_uuid,  user_name)
+
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
         with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
             return e.execute(flow_uuid, f.read(), frame_path='/kskp/data/frames')
 
-    result = execute_flow_by_uuid(flow_uuid)
+    try:
+        result = execute_flow_by_uuid(flow_uuid)
+    except Exception as e:
+        # とりあえずの例外処理
+        # 何か例外が起こった時、実行中状態の履歴ファイルが無意味に残るのが嫌なので
+        history_file_path.unlink()
 
-    # 結果を縦型のdataframeっぽくパースして返す
-    return result['o_section'].contents
+    # 実行履歴（実行完了状態）の作成
+    make_finished_histroy(flow_uuid, history_file_path, result)
+
+    return list(result.keys())
 
 
 def load_as_data_frame(result_text):
