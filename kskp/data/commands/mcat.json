@@ -1,28 +1,10 @@
 {
-  "version": "0.1",
-  "name": "mcat",
-  "description": "ファイル結合",
-  "inputs": [
-    {
-      "type": "csv"
-    }
+  "id": "mcat",
+  "name": "ファイル結合",
+  "ports": [{
+      "*": { "type": "frame" }
+    },{
+      "o": { "type": "frame" }}
   ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
-    {
-      "name": "i",
-      "caption": "入力ファイル名",
-      "type": "string",
-      "default": "",
-      "validation" : {}
-    }
-  ],
-  "script": {
-    "type": "file",
-    "name": "mcat.py"
-  }
+  "version": "0.7.0"
 }

@@ -1,35 +1,22 @@
 {
-  "version": "0.1",
-  "name": "mtra",
-  "description": "縦横変換",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mtra",
+  "name": "縦横変換",
+  "params": [
     {
       "name": "k",
-      "caption": "変換キー列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "変換キー列名"
     },
     {
       "name": "f",
-      "caption": "連結前列名:連結後列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "連結前列名:連結後列名"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mtra.py"
-  }
+  "ports": [{
+      "i": { "type": "frame" }
+    },{
+      "o": { "type": "frame" }}
+  ],
+  "version": "0.7.0"
 }

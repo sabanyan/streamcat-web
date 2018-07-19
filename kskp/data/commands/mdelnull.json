@@ -1,28 +1,17 @@
 {
-  "version": "0.1",
-  "name": "mdelnull",
-  "description": "NULL行削除",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mdelnull",
+  "name": "NULL行削除",
+  "params": [
     {
       "name": "f",
-      "caption": "対象列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "対象列名"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mdelnull.py"
-  }
+  "ports": [{
+      "i": { "type": "frame" }
+    },{
+      "o": { "type": "frame" }}
+  ],
+  "version": "0.7.0"
 }
