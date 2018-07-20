@@ -3,6 +3,9 @@ import React from 'react'
 import Inspector from '../Inspector'
 import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
+import CommandSelector from '../CommandSelector'
+import DataFrameStepModel from '../../../../model/DataFrameStepModel'
+import CommandStepModel from '../../../../model/CommandStepModel'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
   onClickDelete (e: Event) {
@@ -13,7 +16,28 @@ class MultiInspector extends React.Component<FlowEditorProps> {
     }
   }
 
+  getNumberOfSelectedDataSources(){
+    const {nodes,selected_step_ids} = this.props
+    let cnt = 0
+    let hasMixedCommand = false //コマンドが混ざって選択されている場合
+    selected_step_ids.forEach((id)=>{
+      if(nodes[id] instanceof DataFrameStepModel){
+        cnt++
+      }else if(nodes[id] instanceof CommandStepModel){
+        hasMixedCommand = true
+      }
+    })
+
+    if(hasMixedCommand)return 0
+    return cnt
+  }
+
+
   render () {
+    const numberOfSelectedDataSources = this.getNumberOfSelectedDataSources()
+
+    console.log(numberOfSelectedDataSources)
+
     return <Inspector header={this.props.selected_step_ids.length + ' files'}
                       title="">
       <div className="kskp-form">
@@ -21,6 +45,8 @@ class MultiInspector extends React.Component<FlowEditorProps> {
           削除する
         </Button>
       </div>
+      <hr/>
+      <CommandSelector numberOfInput={numberOfSelectedDataSources} {...this.props}/>
     </Inspector>
   }
 

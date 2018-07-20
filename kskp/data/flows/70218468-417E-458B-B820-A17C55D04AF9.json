@@ -9,32 +9,6 @@
     }
   },
   "steps": {
-    "d0": {
-      "position": {
-        "x": 99,
-        "y": 201
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "id": "d0",
-      "type": "command",
-      "label": "d0"
-    },
-    "d1": {
-      "position": {
-        "x": 284,
-        "y": 222
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "id": "d1",
-      "type": "command",
-      "label": "d1"
-    },
     "s0": {
       "position": {
         "x": 99,

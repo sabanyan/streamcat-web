@@ -14,6 +14,7 @@ import Selector from '../../shared/Selector'
 import style from './style.scss'
 import HttpUtil from '../../../utils/HttpUtil'
 import Graph from '../../../utils/Graph'
+import ZoomUtil from '../../../utils/ZoomUtil'
 
 type State = {}
 
@@ -52,39 +53,39 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
   render () {
 
-    let {selected_step_ids} = this.props
+    let {selected_step_ids,nodes,zoom} = this.props
     const self = this
-
-    let merged_steps = {...this.props.steps,...this.props.data}
-
     //this.props.state.stepsを生成する
-    const steps = Object.keys(merged_steps).map((node_name) => {
-      let step = merged_steps[node_name]
+    const steps = Object.keys(nodes).map((node_name) => {
+      let step = nodes[node_name]
       let selected = (node_name === selected_step_ids[0])
       return <Step key={step.id} {...step} model={step} {...self.props}
                    selected={selected} />
     })
     let edges = []
 
-    if (Array.isArray(this.props.edges)) {
-      edges = this.props.edges.map(function (edge, index) {
-        const vx = merged_steps[edge.v].position.x +
+    if (Array.isArray(this.props.graph.edges)) {
+      edges = this.props.graph.edges.map(function (edge, index) {
+        const vx = nodes[edge.v].position.x +
           Constants.default.datasource.width / 2
-        const vy = merged_steps[edge.v].position.y +
+        const vy = nodes[edge.v].position.y +
           Constants.default.datasource.height / 2
-        const wx = merged_steps[edge.w].position.x +
+        const wx = nodes[edge.w].position.x +
           Constants.default.operator.width / 2
-        const wy = merged_steps[edge.w].position.y +
+        const wy = nodes[edge.w].position.y +
           Constants.default.operator.height / 2
-        return <Edge vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
+        const name = edge.name
+        return <Edge label={name} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
       })
     }
 
     let selector = null
     const {drag} = this.props
     if (Object.keys(drag).length) {
-      selector = <Selector sx={drag.start.x} sy={drag.start.y} ex={drag.end.x}
-                           ey={drag.end.y} />
+      selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x,zoom)}
+                           sy={ZoomUtil.zoomReverse(drag.start.y,zoom)}
+                           ex={ZoomUtil.zoomReverse(drag.end.x,zoom)}
+                           ey={ZoomUtil.zoomReverse(drag.end.y,zoom)} />
     }
 
     return <div className={style.flow_editor}>
