@@ -1,8 +1,8 @@
 import unittest
 import json
 from ..activity import (
-    make_unfinished_histroy,
-    make_finished_histroy
+    make_unfinished_history,
+    make_finished_history
 )
 from datetime import datetime, timedelta, timezone
 from unittest import mock
@@ -19,7 +19,7 @@ class ActivityTest(unittest.TestCase):
         flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
         user_name = 'ユーザ太郎'
 
-        file_path = make_unfinished_histroy(flow_uuid, user_name)
+        file_path = make_unfinished_history(flow_uuid, user_name)
         data = json.loads(file_path.read_text(encoding='utf-8'))
 
         self.assertEqual(data['flow']['uuid'], flow_uuid)
@@ -34,7 +34,7 @@ class ActivityTest(unittest.TestCase):
         # 実行完了前ファイルの作成
         flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
         user_name = 'ユーザ太郎'
-        file_path = make_unfinished_histroy(flow_uuid, user_name)
+        file_path = make_unfinished_history(flow_uuid, user_name)
 
         # jobの実行結果モックの作成
         frame_o_section = mock.MagicMock(uuid = 'section')
@@ -46,7 +46,7 @@ class ActivityTest(unittest.TestCase):
         self.assertEqual([data for data in before_execute_data['data'].keys()], [])
 
         # 実行履歴ファイルの更新
-        make_finished_histroy(flow_uuid, file_path, job_lasts)
+        make_finished_history(flow_uuid, file_path, job_lasts)
 
         # 更新後の中身をテスト
         executed_data = json.loads(file_path.read_text(encoding='utf-8'))

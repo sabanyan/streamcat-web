@@ -18,8 +18,8 @@ from .model import (
     get_user_by_id
 )
 from .activity import (
-    make_unfinished_histroy,
-    make_finished_histroy
+    make_unfinished_history,
+    make_finished_history
 )
 
 api = Blueprint('api', __name__)
@@ -247,13 +247,13 @@ def jobs():
     if 'count' in request.args:
         count = int(request.args['count'])
 
-    execute_historys = []
+    execute_histories = []
     for job_path in Path(JOBS_DIR_PATH).iterdir():
         data = json.loads(job_path.read_text(encoding='utf-8'))
         if data['flow']['uuid'] == flow_uuid:
-            execute_historys.append(data)
+            execute_histories.append(data)
 
-    results = sorted(execute_historys, key = lambda x:x['executedAt'])
+    results = sorted(execute_histories, key = lambda x:x['executedAt'])
 
     # 条件分岐が雑なので修正予定
     if 0 < count and count <= len(results):
@@ -275,7 +275,7 @@ def execute_flow_internal(flow_uuid):
     # 実行履歴（実行中状態）の作成
     user_id = session['user_id']
     user_name = get_user_by_id(user_id)['name']
-    history_file_path = make_unfinished_histroy(flow_uuid,  user_name)
+    history_file_path = make_unfinished_history(flow_uuid,  user_name)
 
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
@@ -290,7 +290,7 @@ def execute_flow_internal(flow_uuid):
         history_file_path.unlink()
 
     # 実行履歴（実行完了状態）の作成
-    make_finished_histroy(flow_uuid, history_file_path, result)
+    make_finished_history(flow_uuid, history_file_path, result)
 
     return list(result.keys())
 
