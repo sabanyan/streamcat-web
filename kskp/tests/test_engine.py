@@ -474,6 +474,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
     def set_flow_step(self, flow, key, subflow, args):
         flow.steps[key] = Step('flow', self.register(subflow), args)
 
+
     def make_section_flow(self):
         flow = Flow('section')
         self.set_command_step(flow, 's0', self.mselstr, {'f': 'Section', 'v': '@[v]'})
@@ -490,6 +491,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_signature(flow, ['in'], ['out'])
 
         return flow
+
 
     def make_stats_all_flow(self):
         """ 各列全体についての統計量を求める """
@@ -551,6 +553,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         # flow.dtor()
 
+
     def stats_by_4_sensors(self):
         """
         入力されたファイルの3H 3V 4H 4Vそれぞれについて、統計量を求めて返すサブフロー
@@ -580,6 +583,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         self.set_signature(flow, ['in'], ['out'])
 
         return flow
+
 
     def make_splitting_flow(self):
         # execute_flow_by_uuid('A71D793C-AEFD-42DE-9BA4-56532EA47975')
@@ -623,7 +627,8 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
         return flow
 
-    @unittest.skip
+    # @unittest.skip
+
     def test(self):
         flow = Flow('parent')
 
