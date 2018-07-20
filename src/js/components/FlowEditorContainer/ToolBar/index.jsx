@@ -1,3 +1,4 @@
+// @flow
 import React from 'react'
 import ModalUtil from '../../../utils/ModalUtil'
 import Constants from '../../../constants'
@@ -12,10 +13,20 @@ import DataSourceImport from './DatasourceImport'
 import Zoom from './Zoom'
 import style from './style.scss'
 import classnames from 'classnames'
-import DataFrameModel from '../../../model/DataFrameModel'
+import DataFrameStepModel from '../../../model/DataFrameStepModel'
 import HttpUtil from '../../../utils/HttpUtil'
+import type { FlowEditorProps } from '../index'
 
-export default class Toolbar extends React.Component {
+type ToolbarProps = {
+  ...FlowEditorProps
+}
+
+export default class Toolbar extends React.Component<ToolbarProps> {
+
+  constructor (props:ToolbarProps){
+    super(props)
+  }
+
   onClickSave () {
     this.save().then((json) => {
       if (json) {
@@ -30,17 +41,16 @@ export default class Toolbar extends React.Component {
   }
 
   onClickSort () {
-    this.props.sortFlowAction()
+    this.props.sortFlow()
   }
 
   getFlowJson(){
-    let {selected_step_ids, steps, data,projectId,projectName} = this.props
+    let {nodes,projectId,projectName} = this.props
 
     const flow_json = {
       projectId: projectId,
       name: projectName,
-      steps: steps,
-      data: data,
+      nodes: nodes,
     }
 
     return flow_json
@@ -99,7 +109,7 @@ export default class Toolbar extends React.Component {
           title: inject_initial_flow_data.name,
         })
         //TODO 将来的に修正する（executeFlowAction は hasData = true に変更するためだけの処理になっています）
-        self.props.executeFlowAction()
+        self.props.executeFlow()
       })
     })
   }
@@ -122,7 +132,7 @@ export default class Toolbar extends React.Component {
 
         //データソースを追加
 
-        const add_step = new DataFrameModel({
+        const add_step = new DataFrameStepModel({
           id: null,//TODO IDはどうやってつける？
           type: Constants.step.type.frame,
           uuid: null,//TODO UUIDをどうやってつける？
@@ -157,7 +167,18 @@ export default class Toolbar extends React.Component {
 
   }
 
+  onClickZoomIn(e:Event){
+      this.props.setZoom({offset:10})
+  }
+  onClickZoomOut(e:Event){
+    this.props.setZoom({offset:-10})
+  }
+  onClickDefaultZoom(e:Event){
+    this.props.setZoom({value:100})
+  }
+
   render () {
+    const {zoom} = this.props
     return <div>
       <div className={classnames(style.flow_toolbar)}>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
@@ -172,7 +193,10 @@ export default class Toolbar extends React.Component {
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
       </div>
       <div className={classnames(style.paper_toolbar)}>
-        <Zoom></Zoom>
+        <Zoom onClickZoomIn={(e)=>this.onClickZoomIn(e)}
+              onClickZoomOut={(e)=>this.onClickZoomOut(e)}
+              onClickDefaultZoom={(e)=>this.onClickDefaultZoom(e)}
+              zoom={zoom}/>
         <Sort disabled={false} icon={'&#xE42A'}
               onClick={(e) => this.onClickSort(e)}>整列</Sort>
       </div>

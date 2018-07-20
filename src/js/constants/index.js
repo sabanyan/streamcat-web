@@ -1,11 +1,12 @@
 const Constants = {
+  debug: false,
   default: {
     node: {
       width: 38,
       height: 38,
     },
     graph: {
-      nodeSeparator: 144,
+      nodeSeparator: 88,
       rankSeparator: 44,
     },
     datasource: {
@@ -22,6 +23,7 @@ const Constants = {
     step: {
       width: 38 + 6 * 2,
       height: 38 + 6 * 2,
+      borderWidth: 2,
       icon: {
         width: 38,
         height: 38,
@@ -32,7 +34,8 @@ const Constants = {
   step:{
     type:{
       command:"command",
-      frame:"frame"
+      frame:"frame",
+      subflow:"flow"
     }
   },
   data:{

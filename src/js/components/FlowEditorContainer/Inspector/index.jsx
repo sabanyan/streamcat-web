@@ -5,8 +5,8 @@ import classnames from 'classnames'
 import style from './style.scss'
 import type { FlowEditorProps } from '../index'
 import MultiInspector from './MultiInspector'
-import DataFrameModel from '../../../model/DataFrameModel'
-import StepModel from '../../../model/StepModel'
+import DataFrameStepModel from '../../../model/DataFrameStepModel'
+import CommandStepModel from '../../../model/CommandStepModel'
 import CommandInspector from './CommandInspector'
 
 class Inspector extends React.Component<FlowEditorProps> {
@@ -15,12 +15,12 @@ class Inspector extends React.Component<FlowEditorProps> {
     let {selected_step_ids} = this.props
 
     let property,show
-    const selected_step = this.props.steps[selected_step_ids[0]]
+    const selected_step = this.props.nodes[selected_step_ids[0]]
 
     if (selected_step_ids.length == 1) {
-      if (selected_step instanceof DataFrameModel) {
+      if (selected_step instanceof DataFrameStepModel) {
         property = <DataSourceInspector {...this.props}></DataSourceInspector>
-      } else if (selected_step instanceof StepModel) {
+      } else if (selected_step instanceof CommandStepModel) {
         property = <CommandInspector {...this.props}></CommandInspector>
       }
       show = true

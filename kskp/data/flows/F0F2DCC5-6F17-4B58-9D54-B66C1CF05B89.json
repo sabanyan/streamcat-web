@@ -1,255 +1,402 @@
 {
-  "projectId": "2",
-  "name": "日本NI様サンプル(故障原因ごとの処理)",
+  "label": "日本NI様サンプル(故障原因ごとの処理)",
   "params": [
-    { "name": "f", "type": "string" },
-    { "name": "v", "type": "string" }
+    {
+      "name": "f",
+      "type": "string"
+    },
+    {
+      "name": "v",
+      "type": "string"
+    }
   ],
-  "ports": [{
-    "i": { "type": "frame" }
-  }, {
-    "o1": { "type": "frame" },
-    "o2": { "type": "frame" }
-  }],
-  "nodes": {
-    "i": {
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o1",
+        "type": "frame"
+      },
+      {
+        "name": "o2",
+        "type": "frame"
+      }
+    ]
+  ],
+  "nodes": [
+    {
+      "id": "i",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s0": {
+    {
+      "id": "s0",
       "type": "command",
-      "name": "mcut",
       "args": {
         "x": true,
         "f": "@[f]"
       },
-      "srcs": { "i": "i" },
-      "dsts": { "o": "section" }
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "section"
+      },
+      "commandId": "mcut",
+      "label": null
     },
-    "section": {
+    {
+      "id": "section",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-
-    "s1-1": {
+    {
+      "id": "s1-1",
       "type": "flow",
       "uuid": "E3EB7A3B-D015-4DA3-BF56-1784023D8FCD",
       "args": {},
-      "srcs": { "i": "section" },
-      "dsts": { "o": "t1-1~2" }
+      "srcs": {
+        "i": "section"
+      },
+      "dsts": {
+        "o": "t1-1~2"
+      },
+      "label": null
     },
-    "t1-1~2": {
+    {
+      "id": "t1-1~2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s1-2": {
+    {
+      "id": "s1-2",
       "type": "command",
-      "name": "msetstr",
       "args": {
         "a": "Pattern",
         "v": "@[v]"
       },
-      "srcs": { "i": "t1-1~2" },
-      "dsts": { "o": "o1" }
+      "srcs": {
+        "i": "t1-1~2"
+      },
+      "dsts": {
+        "o": "o1"
+      },
+      "commandId": "msetstr",
+      "label": null
     },
-
-    "o1": {
+    {
+      "id": "o1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-
-    "s2": {
+    {
+      "id": "s2",
       "type": "command",
-      "name": "mbucket",
       "args": {
         "rng": true,
         "n": "10",
         "f": "Time:Section"
       },
-      "srcs": { "i": "section" },
-      "dsts": { "o": "bucket" }
+      "srcs": {
+        "i": "section"
+      },
+      "dsts": {
+        "o": "bucket"
+      },
+      "commandId": "mbucket",
+      "label": null
     },
-    "bucket": {
+    {
+      "id": "bucket",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-
-    "s3-1": {
+    {
+      "id": "s3-1",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "1"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-1" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-1"
+      },
+      "label": null
     },
-    "o2-1": {
+    {
+      "id": "o2-1",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-2": {
+    {
+      "id": "s3-2",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "2"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-2" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-2"
+      },
+      "label": null
     },
-    "o2-2": {
+    {
+      "id": "o2-2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-3": {
+    {
+      "id": "s3-3",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "3"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-3" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-3"
+      },
+      "label": null
     },
-    "o2-3": {
+    {
+      "id": "o2-3",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-4": {
+    {
+      "id": "s3-4",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "4"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-4" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-4"
+      },
+      "label": null
     },
-    "o2-4": {
+    {
+      "id": "o2-4",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-5": {
+    {
+      "id": "s3-5",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "5"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-5" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-5"
+      },
+      "label": null
     },
-    "o2-5": {
+    {
+      "id": "o2-5",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-6": {
+    {
+      "id": "s3-6",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "6"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-6" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-6"
+      },
+      "label": null
     },
-    "o2-6": {
+    {
+      "id": "o2-6",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-7": {
+    {
+      "id": "s3-7",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "7"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-7" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-7"
+      },
+      "label": null
     },
-    "o2-7": {
+    {
+      "id": "o2-7",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-8": {
+    {
+      "id": "s3-8",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "4"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-8" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-8"
+      },
+      "label": null
     },
-    "o2-8": {
+    {
+      "id": "o2-8",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-9": {
+    {
+      "id": "s3-9",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "9"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-9" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-9"
+      },
+      "label": null
     },
-    "o2-9": {
+    {
+      "id": "o2-9",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3-10": {
+    {
+      "id": "s3-10",
       "type": "flow",
       "uuid": "FE9D0AD2-E9BC-4E42-8455-3AF3B2C33155",
       "args": {
         "section": "10"
       },
-      "srcs": { "i": "bucket" },
-      "dsts": { "o": "o2-10" }
+      "srcs": {
+        "i": "bucket"
+      },
+      "dsts": {
+        "o": "o2-10"
+      },
+      "label": null
     },
-    "o2-10": {
+    {
+      "id": "o2-10",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-
-    "cat": {
+    {
+      "id": "cat",
       "type": "command",
-      "name": "mcat",
       "args": {},
       "srcs": {
-        "*1": "o2-1", "*2": "o2-2", "*3": "o2-3", "*4": "o2-4", "*5": "o2-5",
-        "*6": "o2-6", "*7": "o2-7", "*8": "o2-8", "*9": "o2-9", "*10": "o2-10"
+        "*1": "o2-1",
+        "*2": "o2-2",
+        "*3": "o2-3",
+        "*4": "o2-4",
+        "*5": "o2-5",
+        "*6": "o2-6",
+        "*7": "o2-7",
+        "*8": "o2-8",
+        "*9": "o2-9",
+        "*10": "o2-10"
       },
-      "dsts": { "o": "catted" }
+      "dsts": {
+        "o": "catted"
+      },
+      "commandId": "mcat",
+      "label": null
     },
-    "catted": {
+    {
+      "id": "catted",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s4": {
+    {
+      "id": "s4",
       "type": "command",
-      "name": "msetstr",
       "args": {
         "a": "Pattern",
         "v": "@[v]"
       },
-      "srcs": { "i": "catted" },
-      "dsts": { "o": "o2" }
+      "srcs": {
+        "i": "catted"
+      },
+      "dsts": {
+        "o": "o2"
+      },
+      "commandId": "msetstr",
+      "label": null
     },
-
-    "o2": {
+    {
+      "id": "o2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     }
-  }
+  ]
 }
