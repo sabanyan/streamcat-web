@@ -1,28 +1,26 @@
 {
-  "version": "0.1",
-  "name": "mcat_multi",
-  "description": "ファイル結合(複数IN)",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mcat_multi",
+  "params": [
     {
       "name": "f",
-      "caption": "併合項目名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "併合項目名"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mcat_multi.py"
-  }
+  "ports": [
+    [
+      {
+        "name": "*",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ファイル結合(複数IN)"
 }

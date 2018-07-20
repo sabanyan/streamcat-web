@@ -64,7 +64,7 @@ def parse_lasts(data, subjobs):
     return {key: data[key] for key in last_keys}
 
 def parse_data(obj):
-    return {k: parse_datum(node) for k, node in obj['nodes'].items()
+    return {node['id']: parse_datum(node) for node in obj['nodes']
                                  if node['type'] == 'frame'}
 
 def parse_datum(node_obj):
@@ -81,7 +81,7 @@ def parse_datum(node_obj):
     return datum
 
 def parse_nodes(obj):
-    return [node for node in obj['nodes'].values()
+    return [node for node in obj['nodes']
                  if node['type'] in ['command', 'flow']]
 
 def parse_subjobs(nodes, data):

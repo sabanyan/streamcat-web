@@ -321,7 +321,7 @@ class ModelTestCase(unittest.TestCase):
         # フローを作成する
         new_flow_name = 'ふろー取得てすと'
         data_source_name = str(uuid.uuid4())
-        created_flow = model.create_flow(1, new_flow_name, data_source_name)
+        created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
 
         fetched_flow = model.fetch_flow_by_uuid(data_source_name)
 
@@ -378,7 +378,6 @@ class ModelTestCase(unittest.TestCase):
             # まず親プロジェクトを作る
             email = 'dev@kskp.io'
             name = '開発者'
-
             project_name = 'テストプロジェクト'
 
             with self.client.session_transaction() as session:

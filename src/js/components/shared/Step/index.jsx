@@ -3,20 +3,25 @@ import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
 import FileIcon from '../Icon/FileIcon'
-import type { StepModelProps } from '../../../model/StepModel'
-import type { DataFrameModelProps } from '../../../model/DataFrameModel'
+import type { CommandStepModelProps } from '../../../model/CommandStepModel'
+import type { DataFrameStepModelProps } from '../../../model/DataFrameStepModel'
 import type { FlowEditorProps } from '../../FlowEditorContainer'
 import Rect from './Rect'
 import OperatorIcon from '../Icon/OperatorIcon'
+import SubFlowIcon from '../Icon/SubFlowIcon'
 import style from './style.scss'
-import StepModel from '../../../model/StepModel'
-import DataFrameModel from '../../../model/DataFrameModel'
+import CommandStepModel from '../../../model/CommandStepModel'
+import DataFrameStepModel from '../../../model/DataFrameStepModel'
+import SubFlowStepModel from '../../../model/SubFlowStepModel'
+import type { SubFlowStepModelProps } from '../../../model/SubFlowStepModel'
+import ZoomUtil from '../../../utils/ZoomUtil'
+import InOutIcon from '../Icon/InOutIcon'
 
 let mouseMoveEvent
 let mouseUpEvent
 
 type modelProps = {
-  model: StepModelProps | DataFrameModelProps
+  model: CommandStepModelProps | DataFrameStepModelProps | SubFlowStepModelProps
 }
 
 type Props = {
@@ -174,6 +179,7 @@ export default class Step extends React.Component<Props, State> {
    * 範囲選択との衝突判定
    */
   selectorIntersect () {
+    const {zoom} = this.props
     const operator = {
       x: this.props.position.x,
       y: this.props.position.y,
@@ -185,10 +191,15 @@ export default class Step extends React.Component<Props, State> {
     if (start && end) {
       //ref:http://gyabo.sakura.ne.jp/tips/rect.html
 
-      const sx = (start.x <= end.x) ? start.x : end.x
-      const sy = (start.y <= end.y) ? start.y : end.y
-      const ex = (end.x >= start.x) ? end.x : start.x
-      const ey = (end.y >= start.y) ? end.y : start.y
+      let sx = (start.x <= end.x) ? start.x : end.x
+      let sy = (start.y <= end.y) ? start.y : end.y
+      let ex = (end.x >= start.x) ? end.x : start.x
+      let ey = (end.y >= start.y) ? end.y : start.y
+
+      sx = ZoomUtil.zoomReverse(sx,zoom)
+      sy = ZoomUtil.zoomReverse(sy,zoom)
+      ex = ZoomUtil.zoomReverse(ex,zoom)
+      ey = ZoomUtil.zoomReverse(ey,zoom)
 
       /**
        isIntersect = (
@@ -225,11 +236,15 @@ export default class Step extends React.Component<Props, State> {
   }
 
   isStep (model: modelProps) {
-    return (model instanceof StepModel)
+    return (model instanceof CommandStepModel)
   }
 
   isDataFrame (model: modelProps) {
-    return (model instanceof DataFrameModel)
+    return (model instanceof DataFrameStepModel)
+  }
+
+  isSubFlow (model: modelProps) {
+    return (model instanceof SubFlowStepModel)
   }
 
   getFilter () {
@@ -251,10 +266,10 @@ export default class Step extends React.Component<Props, State> {
   render () {
     const {x, y} = this.props.position
     const {type} = this.props
-
+    const {ports} = this.props.flow
     let icon
 
-    const step = this.props.model
+    let step = this.props.model
 
     /**
      * STEPの種類に応じた見た目の設定
@@ -268,7 +283,30 @@ export default class Step extends React.Component<Props, State> {
     const hover = this.state.hover
     const selected = this.selectorIntersect()
 
-    if (this.isStep(step)) {
+    step.label = (step.label)?step.label:step.id
+
+    const flowIn = (ports[0][step.id])
+    const flowOut = (ports[1][step.id])
+
+    if(flowIn || flowOut){
+      icon = <g>
+        <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
+              hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
+              hover={hover} selected={selected} stroke={'#63CFFD'}
+              filter={filter} style={rect_style}>
+          <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#ccc"} fill={"#ccc"}/>
+        </Rect>
+      </g>
+    }else if(this.isSubFlow(step)){
+      icon =
+        <Rect padding={5} selectedOutlineColor={'#B0E273'} fillColor={'#FFFFFF'}
+              hoverFillColor={'#F3FEE8'} selectedFillColor={'#F3FEE8'}
+              hover={hover} selected={selected} stroke={'#7ED321'}
+              filter={filter} style={rect_style}>
+          <SubFlowIcon fillColor={'#8BCD42'}
+                       width={16} height={20}/>
+        </Rect>
+    }else if (this.isStep(step)) {
       //ステップ
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#FFD263'} fillColor={'#FFFFFF'}
@@ -278,9 +316,7 @@ export default class Step extends React.Component<Props, State> {
           <OperatorIcon fillColor={'#F4B63F'} width={16} height={17}/>
         </Rect>
       </g>
-
-    }
-    else if (this.isDataFrame(step)) {
+    }else if (this.isDataFrame(step)) {
       //データソース
       const stroke = (!step.uuid) ? {stroke: '#CCCCCC'} : {}
       icon =
@@ -288,10 +324,9 @@ export default class Step extends React.Component<Props, State> {
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
               filter={filter} style={rect_style}>
-          <FileIcon fillColor={(step.hasData) ? '#63CFFD' : '#CCCCCC'}
+          <FileIcon fillColor={(step.uuid) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
-      step.label = step.id
     }
 
     return (

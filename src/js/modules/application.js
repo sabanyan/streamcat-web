@@ -1,14 +1,12 @@
 import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
-import DataSourceModel from '../model/DataSourceModel'
-import StepModel from '../model/StepModel'
-import DataFrameModel from '../model/DataFrameModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
 const ADD_STEP_ACTION = "add_step_action";
 const UPDATE_STEP_ACTION = "update_step_action";
+const UPDATE_FLOW_ACTION = "update_flow_action";
 const SELECT_STEPS_ACTION = "select_steps_action";
 const ADD_SELECT_STEP_ACTION = "add_select_step_action"
 const DELETE_SELECT_STEP_ACTION = "delete_select_step_action"
@@ -23,6 +21,7 @@ const SELECT_TAB_ACTION = "select_tab_action";
 const DRAG_START_ACTION = "drag_start_action";
 const DRAGGING_ACTION = "dragging_action";
 const DRAG_END_ACTION = "drag_end_action";
+const SET_ZOOM_ACTION = "set_zoom_action";
 
 const graph = new Graph()
 //
@@ -75,16 +74,19 @@ const graph = new Graph()
 //     }
 // }
 
-let initialState
-initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(inject_initial_flow_data)
-initialState.selected_step_ids = []
-initialState.graph = graph.getGraphSize(initialState.steps)
-initialState.steps = {}
-initialState.mast = {}
-initialState.selected_tab_id = 0
-initialState.drag = {}
-initialState.selected_in_edges = []
-initialState.selected_out_edges = []
+// initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(inject_initial_flow_data)
+let initialState = {
+  selected_step_ids:[],
+  graph:graph.getGraph({}),
+  zoom: 100,
+  nodes:{},
+  mast:{},
+  selected_tab_id:0,
+  drag:{},
+  selected_in_edges:[],
+  selected_out_edges:[]
+}
+
 
 const Application = (state = initialState, action) => {
     switch (action.type) {
@@ -94,14 +96,11 @@ const Application = (state = initialState, action) => {
 
             const loadedJson = graph.load(context)
 
-            newState = Object.assign(newState,{...loadedJson})
+            newState.flow = {...loadedJson}
+            newState.nodes = loadedJson.nodes
+            newState.project = {id:loadedJson.projectId}
 
-            newState.projectId = loadedJson.projectId
-            newState.projectName = loadedJson.name
-
-            newState.flows = graph.g.nodes()
-            newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            newState.graph = graph.getGraph(newState)
 
             return newState
         }
@@ -126,42 +125,44 @@ const Application = (state = initialState, action) => {
             let newState = StateUtil.deepCopy(state)
             if(from_step_id){
                 //連結した状態での追加
-                const from_step = state.steps[from_step_id]
+                const from_step = state.nodes[from_step_id]
                 add_step.setFrame({x:from_step.position.x + offsetX, y:from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
+                //TODO 複数OUTするコマンドがあった場合は問題になる
+                add_step.srcs = [from_step_id]
+                add_step.dsts = [add_step.id]
             }else{
                 //単体での追加
                 add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
             }
-            if(add_step instanceof StepModel){
-              newState.steps[add_step.id] = add_step
-            }else if(add_step instanceof DataFrameModel){
-              newState.data[add_step.id] = add_step
-            }
 
-            newState.flows = graph.g.nodes()
-            newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+
+            newState.nodes[add_step.id] = add_step
+
+            newState.graph = graph.getGraph(newState)
             return newState
         }
         case UPDATE_STEP_ACTION: {
             //http://otiai10.hatenablog.com/entry/2016/04/20/013348
             //stateを一度ディープコピーしないとrenderされないためコピーする
             let newState = StateUtil.deepCopy(state)
-            newState.steps[action.step.id] = action.step
+            newState.nodes[action.step.id] = action.step
 
             //選択されているstepの値も更新する
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            newState.graph = graph.getGraph(newState)
             return newState
         }
+        case UPDATE_FLOW_ACTION:{
+          let newState = StateUtil.deepCopy(state)
+          return {...newState,...action.flow}
+        }
+
         case DELETE_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
             action.step_ids.map((id)=>{
-                graph.removeNode(id)
-                delete newState.steps[id]
+              graph.removeNode(id)
+              delete newState.nodes[id]
             })
-            newState.flows = graph.g.nodes()
-            newState.edges = graph.g.edges()
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            newState.graph = graph.getGraph(newState)
 
             //削除後は非選択状態にする
             newState.selected_step_ids = []
@@ -173,7 +174,7 @@ const Application = (state = initialState, action) => {
 
             let newState = StateUtil.deepCopy(state)
             const cut_data = JSON.stringify({data:action.step_ids.map((id)=>{
-                return newState.steps[id]
+                return newState.nodes[id]
             })})
 
             console.log(cut_data)
@@ -182,11 +183,9 @@ const Application = (state = initialState, action) => {
 
                 action.step_ids.map((id)=>{
                     graph.removeNode(id)
-                    delete newState.steps[id]
+                    delete newState.nodes[id]
                 })
-                newState.flows = graph.g.nodes()
-                newState.edges = graph.g.edges()
-                newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+                newState.graph = graph.getGraph(newState)
 
                 //削除後は非選択状態にする
                 newState.selected_step_ids = []
@@ -200,13 +199,11 @@ const Application = (state = initialState, action) => {
         }
         case SELECT_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
-            if (action.selected_steps) {
+            if (action.selected_steps && action.selected_steps.length === 1) {
                 newState.selected_step_ids = action.selected_steps.map((step)=> step.id)
-                if(action.selected_steps.length === 1){
-                  const selected_id = action.selected_steps[0].id
-                  newState.selected_in_edges = graph.g.inEdges(selected_id)
-                  newState.selected_out_edges = graph.g.outEdges(selected_id)
-                }
+                const selected_id = action.selected_steps[0].id
+                newState.selected_in_edges = graph.g.inEdges(selected_id)
+                newState.selected_out_edges = graph.g.outEdges(selected_id)
             } else {
                 newState.selected_step_ids = []
                 newState.selected_in_edges = []
@@ -241,21 +238,22 @@ const Application = (state = initialState, action) => {
 
         case SORT_FLOW_ACTION: {
             let newState = StateUtil.deepCopy(state)
-            newState.steps = graph.refreshPosition(newState.steps) //ノード位置を再計算
-            newState.graph = graph.getGraphSize({...newState.steps,...newState.data})
+            graph.refreshPosition(newState.nodes) //ノード位置を再計算
+            newState.graph = graph.getGraph(newState)
             return newState
         }
         case EXECUTE_FLOW_ACTION: {
-            let newState = StateUtil.deepCopy(state)
-            let newSteps = {}
-            Object.keys(newState.steps).map((key)=>{
-              if(newState.steps[key] instanceof DataSourceModel) {
-                  newState.steps[key].property.hasData = true
-                }
-                newSteps[key] = newState.steps[key]
-            })
-            newState.steps = newSteps
-            return newState
+            // let newState = StateUtil.deepCopy(state)
+            // let newSteps = {}
+            // Object.keys(newState.nodes).map((key)=>{
+            //   if(newState.nodes[key] instanceof DataSourceModel) {
+            //       newState.nodes[key].property.hasData = true
+            //     }
+            //     newSteps[key] = newState.nodes[key]
+            // })
+            // newState.nodes = newSteps
+            // return newState
+            return state
         }
         case SELECT_TAB_ACTION:{
           return {
@@ -303,7 +301,22 @@ const Application = (state = initialState, action) => {
         case DRAG_END_ACTION:{
           return {...state,drag:{}}
         }
-        default:
+
+        case SET_ZOOM_ACTION:{
+          const {offset,value} = action
+          let newState = state
+          if(offset === undefined){
+            //絶対値
+            newState = {...state,zoom:value}
+          }else if(state.zoom + offset > 70 && state.zoom + offset < 150){
+            //差分
+            newState = {...state,zoom:state.zoom + offset}
+          }
+          newState.graph = graph.getGraph(newState)
+          return newState
+        }
+
+      default:
             return state
     }
 
@@ -359,6 +372,18 @@ export const updateStepAction = step => {
   return {
     type: UPDATE_STEP_ACTION,
     step: step
+  }
+}
+
+/**
+ * フローの更新
+ * @param step
+ * @returns {{type: string, step: *}}
+ */
+export const updateFlowAction = flow => {
+  return {
+    type: UPDATE_FLOW_ACTION,
+    flow: flow
   }
 }
 
@@ -488,5 +513,20 @@ export const dragEndAction = (x,y) => {
     type : DRAG_END_ACTION,
     x:x,
     y:y
+  }
+}
+
+/**
+ * ズーム設定
+ * @param offset 差分
+ * @param value 固定値
+ * @returns {{type: string, offset: *, value: *}}
+ * @constructor
+ */
+export const setZoomAction = ({offset,value}) => {
+  return {
+    type : SET_ZOOM_ACTION,
+    offset: offset,
+    value: value
   }
 }
