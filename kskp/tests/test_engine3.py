@@ -75,6 +75,7 @@ class TranslateJsonTestCase(unittest.TestCase):
             with FLOW_PATH.open('w', encoding='utf-8') as wfd:
                 json.dump(obj, wfd, indent=2, ensure_ascii=False)
 
+    @unittest.skip
     def test_translate3(self):
         from pathlib import Path
         flow_uuids = [
@@ -142,6 +143,7 @@ class TranslateCommandsTestCase(unittest.TestCase):
             with command.open('w', encoding='utf-8') as wfd:
                 json.dump(obj, wfd, ensure_ascii=False, indent=2)
 
+    @unittest.skip
     def test_translate_commands(self):
         path = Path('kskp/data/commands')
         for command in path.iterdir():

@@ -106,7 +106,7 @@ def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values()}
 
 def parse_command_step(node_obj, args, srcs, dsts):
-    return Step(commands[node_obj['name']], args, srcs, dsts)
+    return Step(commands[node_obj['commandId']], args, srcs, dsts)
 
 
 class Job:
@@ -160,14 +160,14 @@ class Job:
 
     def replace_outputs(self, output):
         result = {}
-        for key in self.step.command_or_flow.o_ports.keys():
+        for o_port in self.step.command_or_flow.o_ports:
             for o_k, o_v in output.items():
-                if o_k == key:
+                if o_k == o_port['name']:
                     result[o_k] = o_v
 
             for job in self.jobs:
                 for c_k, c_v in job.inputs.items():
-                    if c_k == key:
+                    if c_k == o_port['name']:
                         result[c_k] = c_v
         return result
 
@@ -223,7 +223,7 @@ class Job:
         res = inputs
         step = self.step
         i_ports = step.command_or_flow.i_ports
-        if '*' not in list(i_ports.keys()):
+        if '*' not in i_ports:
             res = {port: v for k, v in inputs.items()
                            for port, datum_id in step.srcs.items()
                            if datum_id == k}
@@ -273,8 +273,8 @@ class Flow:
     def __init__(self, flow_uuid):
         self.uuid = flow_uuid
         self.params = []
-        self.i_ports = {}
-        self.o_ports = {}
+        self.i_ports = []
+        self.o_ports = []
         self.description = ''
 
     def __repr__(self):
@@ -285,8 +285,8 @@ class Command:
     def __init__(self, name=''):
         self.name = name
         self.params = []
-        self.i_ports = {}
-        self.o_ports = {}
+        self.i_ports = []
+        self.o_ports = []
         self.description = ''
 
     def execute(self, args, inputs):
@@ -300,8 +300,8 @@ class Split(Command):
     def __init__(self):
         super().__init__()
         self.name = 'split'
-        self.i_ports = {'i': {'type': 'frame'}}
-        self.o_ports = {'o1': {'type': 'frame'}, 'o2': {'type': 'frame'}}
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o1', 'type': 'frame'}, {'name': 'o2', 'type': 'frame'}]
         self.params.append(Parameter('l'))
 
     def execute(self, args, inputs):
@@ -321,8 +321,8 @@ class Split(Command):
 class MCommand(Command):
     def __init__(self):
         super().__init__()
-        self.i_ports = {'i': {'type': 'frame'}}
-        self.o_ports = {'o': {'type': 'frame'}}
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}]
 
     def execute(self, args, inputs):
         source = UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
@@ -351,7 +351,7 @@ class MCommand(Command):
 
     @property
     def out_key(self):
-        return list(self.o_ports.keys())[0]
+        return self.o_ports[0]['name']
 
 class Msel(MCommand):
     def __init__(self):
@@ -427,7 +427,7 @@ class Mcat(MCommand):
 
         self.name = 'mcat'
         self.description = 'ファイル結合'
-        self.i_ports = {'*': {'type': 'frame'}} # 何個でも取れる
+        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -449,7 +449,7 @@ class Mjoin(MCommand):
 
         self.name = 'mjoin'
         self.description = '結合'
-        self.i_ports = {'i' : {'type': 'frame'}, 'm' : {'type': 'frame'}}
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
         self.params.append(Parameter('k', '結合キー名'))
 
     def command_args(self, args, inputs):
