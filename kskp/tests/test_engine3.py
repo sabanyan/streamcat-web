@@ -12,7 +12,7 @@ class EngineTestCase(unittest.TestCase):
         # print(list(job.lasts.values())[0].contents)
         job.dtor()
 
-    @unittest.skip
+    # @unittest.skip
     def test(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
         flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
@@ -24,7 +24,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
     def setUp(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
-    
+
     def execute(self, flow_uuid):
         job = parse(flow_uuid)
         try:
@@ -36,7 +36,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
         # print(list(job.lasts.values())[0].contents)
         job.dtor()
 
-    # @unittest.skip
+    @unittest.skip
     def test(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
         flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
