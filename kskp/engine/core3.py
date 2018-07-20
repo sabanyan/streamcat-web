@@ -19,7 +19,7 @@ def load_flow(flow_uuid):
     if flow_uuid in flow_obj_cache:
         return flow_obj_cache[flow_uuid]
 
-    flows_path = f'/kskp/data/flows/{flow_uuid}.json'
+    flows_path = f'kskp/data/flows/{flow_uuid}.json'
     with open(flows_path, 'r', encoding='utf-8') as fd:
         obj = json.loads(fd.read(), encoding='utf-8')
         flow_obj_cache[flow_uuid] = obj
@@ -118,13 +118,15 @@ class Job:
         # self.errors = []
 
     # @profile
-    def execute(self):
+    def execute(self, step_paths=None):
         self.replace_inputs()
 
         s = self.step
         cf = s.command_or_flow
         # print('execute begin:', cf, s.args)
         if s.is_flow:
+            if step_paths is not None:
+                self.lasts = self.get_lasts_from(step_paths)
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
             self.lasts = output
 
@@ -137,6 +139,17 @@ class Job:
         # print('execute end:', output)
 
         return self.replace_outputs(output)
+
+    def get_lasts_from(self, step_paths):
+        result = {}
+        for k, v in self.lasts.items():
+            if step_path == k:
+                result[k] == v
+        for job in self.jobs:
+            for k, v in job.inputs.items():
+                if step_path == k:
+                    result[k] = v
+        return result
 
     def replace_inputs(self):
         for p_k, p_v in self.inputs.items():
