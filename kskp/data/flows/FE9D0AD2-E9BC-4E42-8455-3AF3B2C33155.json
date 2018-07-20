@@ -1,4 +1,5 @@
 {
+  "projectId": "2",
   "name": "日本NI様サンプル(セクションごとの処理)",
   "params": [
     { "name": "section", "type": "string" }
