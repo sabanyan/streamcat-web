@@ -26,6 +26,7 @@ api = Blueprint('api', __name__)
 
 DATAFRAME_DIR_PATH = api.root_path / Path('data/frames')
 JOBS_DIR_PATH = api.root_path / Path('data/jobs')
+FLOWS_DIR_PATH = api.root_path / Path('data/flows')
 
 @api.route('/projects', methods=['POST'])
 @login_required_api
@@ -160,8 +161,16 @@ def make_new_frame():
         upload_frame(request)
         return jsonify({'success': True})
     elif 'from' in request.args:
-        flow_uuid = request.args['from']
-        return execute_flow(flow_uuid)
+        if '.' in request.args['from']:
+            # ドットで区切って、具体的に一つだけstepを指定することができる
+            # TODO: 後々この部分は文法を拡張していく予定
+            froms = request.args['from'].split('.')
+            flow_uuid = froms[0]
+            step_id = froms[1]
+        else:
+            flow_uuid = request.args['from']
+            step_id = None
+        return execute_flow(flow_uuid, step_paths=step_id)
     else:
         return jsonify({
                             'success': False,
@@ -208,7 +217,7 @@ def upload_frame(req):
     f.close()
 
 
-def execute_flow(flow_uuid):
+def execute_flow(flow_uuid, step_paths=None):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
@@ -222,7 +231,7 @@ def execute_flow(flow_uuid):
                             'message': 'flow does not exist'
                         })
     else:
-        result_data = execute_flow_internal(flow_uuid)
+        result_data = execute_flow_internal(flow_uuid, step_paths)
         if not result_data:
             return jsonify({
                                 'success': False,
@@ -267,7 +276,7 @@ def jobs():
     return jsonify({'success': True, 'data': results})
 
 
-def execute_flow_internal(flow_uuid):
+def execute_flow_internal(flow_uuid, step_paths=None):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
@@ -281,7 +290,7 @@ def execute_flow_internal(flow_uuid):
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
         with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), frame_path='/kskp/data/frames')
+            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
 
     try:
         result = execute_flow_by_uuid(flow_uuid)
@@ -289,6 +298,8 @@ def execute_flow_internal(flow_uuid):
         # とりあえずの例外処理
         # 何か例外が起こった時、実行中状態の履歴ファイルが無意味に残るのが嫌なので
         history_file_path.unlink()
+        print(e)
+        result = {}
 
     # 実行履歴（実行完了状態）の作成
     make_finished_history(flow_uuid, history_file_path, result)

@@ -19,7 +19,7 @@ def load_flow(flow_uuid):
     if flow_uuid in flow_obj_cache:
         return flow_obj_cache[flow_uuid]
 
-    flows_path = f'kskp/data/flows/{flow_uuid}.json'
+    flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{flow_uuid}.json')
     with open(flows_path, 'r', encoding='utf-8') as fd:
         obj = json.loads(fd.read(), encoding='utf-8')
         flow_obj_cache[flow_uuid] = obj
@@ -70,7 +70,7 @@ def parse_data(obj):
 def parse_datum(node_obj):
     frame_uuid = node_obj['uuid']
     if frame_uuid is not None:
-        frames_path = os.environ['KENG_FRAME_PATH']
+        frames_path = os.environ['KENG_FRAMES_PATH']
         data_source = node_obj['dataSource']
         file_name = f'{frame_uuid}.{data_source}'
         source = PathFileSource(data_source, frames_path, file_name)

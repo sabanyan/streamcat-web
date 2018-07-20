@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 # frameの保存場所は環境変数か、engine.execute()で直接指定する
-# os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+# os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
 from .data import *
 
 class Job:
@@ -116,7 +116,7 @@ class Flow:
                 # その他の場合は今は考えない
                 raise Exception()
 
-            path = Path(os.environ['KENG_FRAME_PATH']).joinpath(datum.uuid + ext)
+            path = Path(os.environ['KENG_FRAMES_PATH']).joinpath(datum.uuid + ext)
             with path.open(mode='w', encoding='utf-8') as fd:
                 datum.source.save(fd)
             datum.source = PathFileSource('csv', path.parent, path.name)
