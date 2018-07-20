@@ -1,10 +1,9 @@
 import dagre from 'dagre'
-import OperatorModel from '../model/OperatorModel'
 import Constants from '../constants'
-import DataSourceModel from '../model/DataSourceModel'
-import ModelUtil from '../utils/ModelUtil'
-import StepModel from '../model/StepModel'
-import DataFrameModel from '../model/DataFrameModel'
+import CommandStepModel from '../model/CommandStepModel'
+import DataFrameStepModel from '../model/DataFrameStepModel'
+import SubFlowStepModel from '../model/SubFlowStepModel'
+import ZoomUtil from './ZoomUtil'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -22,13 +21,13 @@ export const defaultGraphProps = {
 class Graph {
 
   constructor () {
-    this.g = new dagre.graphlib.Graph()
+    this.g = new dagre.graphlib.Graph({ multigraph: true })
     this.g.setGraph({
       marginx: defaultGraphProps.marginX,
       marginy: defaultGraphProps.marginY,
       nodesep: defaultGraphProps.nodeSeparator,
       edgesep: defaultGraphProps.edgeSeparator,
-      ranksep: defaultGraphProps.rankSeparator,
+      ranksep: defaultGraphProps.rankSeparator
     })
     this.g.setDefaultEdgeLabel(function () {
       return {
@@ -85,8 +84,8 @@ class Graph {
    * @param from_id
    * @param to_id
    */
-  addEdge (from_id, to_id) {
-    this.g.setEdge(from_id, to_id)
+  addEdge (from_id, to_id, name) {
+    this.g.setEdge({v:from_id, w:to_id,name:name})
   }
 
   /**
@@ -100,27 +99,34 @@ class Graph {
    * グラフサイズの取得
    * @returns {{width, height}}
    */
-  getGraphSize (steps) {
-    if (steps) {
-      const width = Math.max(...Object.keys(steps).map((key) => steps[key].position.x + steps[key].size.width))
-      const height = Math.max(...Object.keys(steps).map((key) => steps[key].position.y + steps[key].size.height))
-      return {width: width, height: height}
-    }
+  getGraph ({nodes,zoom}) {
     const graph = this.g.graph()
-    return {width: graph.width, height: graph.height}
+    const graph_nodes = this.g.nodes()
+    const edges = this.g.edges()
+
+    if (nodes) {
+      const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
+      const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))
+      return {width: ZoomUtil.zoom(width,zoom), height: ZoomUtil.zoom(height,zoom),nodes:graph_nodes, edges: edges}
+    }
+
+    return {width: ZoomUtil.zoom(graph.width,zoom), height: ZoomUtil.zoom(graph.height,zoom),nodes:graph_nodes, edges: edges}
   }
 
   /**
    * 各ノードとエッジの関係から計算された位置をstepに設定する
-   * @param steps
+   * @param nodes
    * @returns {*}
    */
-  refreshPosition (steps) {
+  refreshPosition (nodes) {
     const self = this
     this.layout()
+    console.log("refreshPosition")
+    console.log(this.g.nodes())
     this.g.nodes().forEach(function (v) {
       let graph_node = self.g.node(v)
-      let step = steps[graph_node.label]
+      let step = nodes[graph_node.label]
+      console.log(step)
       step.setFrame({
         x: graph_node.x,
         y: graph_node.y,
@@ -128,7 +134,7 @@ class Graph {
         height: graph_node.height,
       })
     })
-    return steps
+    return nodes
   }
 
   /**
@@ -136,200 +142,90 @@ class Graph {
    * @param json
    * @returns {*}
    */
-  // load (json) {
-  //   const self = this
-  //   let hasPosition = false
-  //   if (json) {
-  //     //JSONのflowsを展開
-  //     Object.keys(json.steps).map((node) => {
-  //
-  //       //各stepの値を FlowEditorで利用できるように DataSourceModel or OperatorModelに変換していく
-  //       const step = json.steps[node]
-  //
-  //       //graphlibのノードに追加
-  //       self.addNode(node)
-  //
-  //       if (step.position && step.size) {
-  //         hasPosition = true
-  //       }
-  //       //TODO データソースかオペレータの判断を将来的には明確にする
-  //       if (ModelUtil.isDataSouceModel(step)) {
-  //         let property = {overview: {}, ...step.property}
-  //         property.hasData = true
-  //         json.steps[node] = new DataSourceModel({
-  //           id: step.id,
-  //           type: step.type,
-  //           operator: step.operator,
-  //           text: step.text,
-  //           property: property,
-  //           parameters: step.parameters,
-  //           position: step.position,
-  //           size: step.size,
-  //         })
-  //       }
-  //       else {
-  //         json.steps[node] = new OperatorModel({
-  //           id: step.id,
-  //           operator: step.operator,
-  //           text: step.text,
-  //           parameters: step.parameters,
-  //           position: step.position,
-  //           size: step.size,
-  //         })
-  //       }
-  //     })
-  //
-  //     if (Array.isArray(json.edges)) {
-  //       //JSONのedgesを展開
-  //       json.edges.map((edge) => {
-  //         //graphlibのエッジに追加
-  //         self.addEdge(edge.v, edge.w)
-  //       })
-  //     }
-  //
-  //     //オペレータの位置情報がない場合はレイアウト位置を再計算する
-  //     if (!hasPosition) {
-  //       //graphlibのノードとエッジの状態からレイアウト位置を再計算する
-  //       this.refreshPosition(json.steps)
-  //     }
-  //
-  //     return json
-  //   }
-  // }
-  getConnect (connects) {
-    let result = {}
-    if (Array.isArray(connects)) {
-      connects.forEach((connect) => {
-        const connect_arrays = connect.split('.')
-        const step_name = connect_arrays[0]
-        const port_name = connect_arrays[1]
-        if (result[step_name] == null) {
-          result[step_name] = [port_name]
-        } else {
-          result[step_name].push(port_name)
-        }
-      })
-    }
-    return result
-  }
-
-  getDstsPort (dsts) {
-    return this.getConnect(dsts)
-  }
-
-  getSrcsPort (srcs) {
-    return this.getConnect(srcs)
-  }
-
   load (json) {
     const self = this
     let hasPosition = false
     if (json) {
-
-      Object.keys(json.steps).map((node) => {
+      Object.keys(json.nodes).map((node) => {
         self.addNode(node)
-        const step = json.steps[node]
-        json.steps[node] = new StepModel({
-          id: node,
-          type: Constants.step.type.command,
-          name: step.name,
-          label: step.label,
-          args: step.args,
-          position: step.position,
-          size: step.size,
-        })
-        if(step.position && step.size){
-          hasPosition = true
+        const type = json.nodes[node].type
+        switch(type){
+          //データフレーム
+          case Constants.step.type.frame:
+            const frame = json.nodes[node]
+            json.nodes[node] = new DataFrameStepModel({
+              id: node,
+              type: Constants.step.type.frame,
+              uuid: frame.uuid,
+              dataSource: Constants.data.dataSource.csv,
+              asFlowIn: frame.asFlowIn,
+              asFlowOut: frame.asFlowOut,
+              position: frame.position,
+              size: frame.size,
+            })
+            if(frame.position && frame.size){
+              hasPosition = true
+            }
+            break;
+          case Constants.step.type.command:
+          case Constants.step.type.subflow:
+            //コマンド
+            const step = json.nodes[node]
+
+            let model = {
+              id: node,
+              name: step.name,
+              label: step.label,
+              srcs: step.srcs,
+              dsts: step.dsts,
+              args: step.args,
+              position: step.position,
+              size: step.size,
+            }
+
+            if(type === Constants.step.type.command){
+              model.type = Constants.step.type.command
+              json.nodes[node] = new CommandStepModel(model)
+            }else if(type === Constants.step.type.subflow){
+              model.type = Constants.step.type.subflow
+              model.uuid = step.uuid
+              json.nodes[node] = new SubFlowStepModel(model)
+            }
+
+            const hasSrcs = (Object.keys(step.srcs).length)
+            const hasDsts = (Object.keys(step.dsts).length)
+
+            if (hasSrcs) {
+              console.log("srcs")
+              Object.keys(step.srcs).forEach((key) => {
+                console.log(step.srcs)
+                const src = step.srcs[key]
+                console.log(src)
+                const label = src
+                console.log(label)
+                const from = src
+                const to = node
+                self.addEdge(from, to, label)
+              })
+            }
+            if (hasDsts) {
+              console.log("dsts")
+              Object.keys(step.dsts).forEach((key) => {
+                const dst = step.dsts[key]
+                const label = dst
+                console.log(label)
+                const from = node
+                const to = dst
+                self.addEdge(from, to, label)
+              })
+            }
+            if(step.position && step.size){
+              hasPosition = true
+            }
         }
       })
 
-      Object.keys(json.data).map((node) => {
-        self.addNode(node)
-        const frame = json.data[node]
-        if (frame.srcs.length > 0) {
-          let srcsPort = self.getSrcsPort(frame.srcs)
-          Object.keys(srcsPort).forEach((key) => {
-            self.addEdge(key, node)
-          })
-        }
-        if (frame.dsts.length > 0) {
-          let dstsPort = self.getDstsPort(frame.dsts)
-          Object.keys(dstsPort).forEach((key) => {
-            self.addEdge(key, node)
-          })
-        }
-        json.data[node] = new DataFrameModel({
-          id: node,
-          type: Constants.step.type.frame,
-          uuid: frame.uuid,
-          dataSource: Constants.data.dataSource.csv,
-          srcs: frame.srcs,
-          dsts: frame.dsts,
-          asFlowIn: frame.asFlowIn,
-          asFlowOut: frame.asFlowOut,
-          position: frame.position,
-          size: frame.size,
-        })
-        if(frame.position && frame.size){
-          hasPosition = true
-        }
-      })
-
-
-      if(!hasPosition)this.refreshPosition({...json.steps,...json.data})
-
-      // //JSONのflowsを展開
-      // Object.keys(json.data).map((node) => {
-      //
-      //   //各stepの値を FlowEditorで利用できるように DataSourceModel or OperatorModelに変換していく
-      //   const step = json.steps[node]
-      //
-      //   //graphlibのノードに追加
-      //   self.addNode(node)
-      //
-      //   if (step.position && step.size) {
-      //     hasPosition = true
-      //   }
-      //   //TODO データソースかオペレータの判断を将来的には明確にする
-      //   if (ModelUtil.isDataSouceModel(step)) {
-      //     let property = {overview: {}, ...step.property}
-      //     property.hasData = true
-      //     json.steps[node] = new DataSourceModel({
-      //       id: step.id,
-      //       type: step.type,
-      //       operator: step.operator,
-      //       text: step.text,
-      //       property: property,
-      //       parameters: step.parameters,
-      //       position: step.position,
-      //       size: step.size,
-      //     })
-      //   }
-      //   else {
-      //     json.steps[node] = new OperatorModel({
-      //       id: step.id,
-      //       operator: step.operator,
-      //       text: step.text,
-      //       parameters: step.parameters,
-      //       position: step.position,
-      //       size: step.size,
-      //     })
-      //   }
-      // })
-      //
-      // if (Array.isArray(json.edges)) {
-      //   //JSONのedgesを展開
-      //   json.edges.map((edge) => {
-      //     //graphlibのエッジに追加
-      //     self.addEdge(edge.v, edge.w)
-      //   })
-      // }
-      //
-      // //オペレータの位置情報がない場合はレイアウト位置を再計算する
-      // if (!hasPosition) {
-      //   //graphlibのノードとエッジの状態からレイアウト位置を再計算する
-      //   this.refreshPosition(json.steps)
-      // }
+      if(!hasPosition)this.refreshPosition({...json.nodes})
 
       return json
     }

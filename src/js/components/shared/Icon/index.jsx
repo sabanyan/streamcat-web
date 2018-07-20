@@ -2,7 +2,7 @@
 import * as React from 'react'
 import Constants from "../../../constants";
 
-type Props = {
+export type IconProps = {
     fillColor: string;
     height: number;
     width: number;
@@ -10,7 +10,7 @@ type Props = {
     children: React.Node;
 }
 
-class Icon extends React.Component<Props> {
+class Icon extends React.Component<IconProps> {
     static defaultProps = {
         fillColor: "#63B8E2",
         width: Constants.default.step.icon.width,

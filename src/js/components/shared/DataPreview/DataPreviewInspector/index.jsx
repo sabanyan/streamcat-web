@@ -1,10 +1,8 @@
 // @flow
 import React from 'react'
-import DataSourceModel from '../../../../model/DataSourceModel'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../DataTable/index'
-import OperatorModel from '../../../../model/OperatorModel'
 import Inspector from '../../../FlowEditorContainer/Inspector/Inspector/index'
 import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import style from '../../../FlowEditorContainer/Inspector/style.scss'
