@@ -9,7 +9,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
     """ 日本NI様サンプルテスト """
 
     def setUp(self):
-        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
 
     def execute(self, flow_uuid):
         job = parse(flow_uuid)
@@ -24,7 +24,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
     # @unittest.skip
     def test(self):
-        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
         flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
         self.execute(flow_uuid)
 

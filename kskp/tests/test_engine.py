@@ -327,7 +327,7 @@ class EngineTestCase(unittest.TestCase):
     def test_file_spliting2(self):
         """ 単純な複数OUTのテスト 2 バグが出そうなパターン """
 
-        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
 
         flow = Flow('spliting')
         flow.steps['s0'] = Step('command', self.command, {'f': 'a,b'})
@@ -428,7 +428,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
 
     def setUp(self):
         # self.commands = []
-        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
 
         self.mcut = Mcut()
         self.mjoin = Mjoin()

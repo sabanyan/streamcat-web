@@ -15,18 +15,18 @@ class EngineTestCase(unittest.TestCase):
 
     # @unittest.skip
     def test_simple(self):
-        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
         flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
         self.execute(flow_uuid)
 
     def test_step_paths(self):
-        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
         flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
         self.execute(flow_uuid, 'Bi')
 
     @unittest.skip
     def test_ni(self):
-        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
         flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
         self.execute(flow_uuid)
 
