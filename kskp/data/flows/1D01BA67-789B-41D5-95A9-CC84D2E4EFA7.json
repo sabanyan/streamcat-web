@@ -16,7 +16,7 @@
     {
       "id": "C1",
       "type": "command",
-      "name": "msel",
+      "commandId": "msel",
       "args": {
         "c": "@[c]"
       },
@@ -32,7 +32,7 @@
     {
       "id": "C2",
       "type": "command",
-      "name": "mcut",
+      "commandId": "mcut",
       "args": {
         "f": "@[f1]"
       },
@@ -48,7 +48,7 @@
     {
       "id": "C3",
       "type": "command",
-      "name": "mcut",
+      "commandId": "mcut",
       "args": {
         "f": "@[f2]"
       },
