@@ -17,6 +17,9 @@ def update_navigation(func):
             'flow_uuid': '',
             'flow_name': ''
         }
-        print(navigation)
-        return func(**kwargs)
+
+        json_data = func(**kwargs).data.decode()
+        data = json.loads(json_data)
+        data['navigation'] = navigation
+        return jsonify(data)
     return deco
