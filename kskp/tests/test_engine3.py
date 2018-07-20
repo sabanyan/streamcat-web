@@ -6,18 +6,23 @@ from pathlib import Path
 from kskp.engine.core3 import parse
 
 class EngineTestCase(unittest.TestCase):
-    def execute(self, flow_uuid):
+    def execute(self, flow_uuid, step_paths=None):
         job = parse(flow_uuid)
-        job.execute()
+        job.execute(step_paths=step_paths)
 
         # print(list(job.lasts.values())[0].contents)
         job.dtor()
 
-    @unittest.skip
+    # @unittest.skip
     def test_simple(self):
         os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
         flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
         self.execute(flow_uuid)
+
+    def test_step_paths(self):
+        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
+        self.execute(flow_uuid, 'Bi')
 
     @unittest.skip
     def test_ni(self):
