@@ -15,14 +15,10 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
     if frame_path is not None:
         os.environ['KENG_FRAME_PATH'] = frame_path
 
-    #　もしframeの保存場所が明示的に指定されていれば、環境変数よりも優先される
-    if frame_path is not None:
-        os.environ['KENG_FRAME_PATH'] = frame_path
-
     job = parse(flow_uuid)
     result = job.execute()
     job.dtor()
-    return result
+    return job.lasts
     # '2C096E39-28BD-491B-B0E2-7ECFFD113304'
 
     # return execute_internal(parse(flow_uuid, flow_json), arguments, inputs, frame_path)

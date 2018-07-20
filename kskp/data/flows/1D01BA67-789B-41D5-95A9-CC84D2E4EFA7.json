@@ -1,57 +1,65 @@
 {
+  "projectId": "2",
   "name": "新エンジンの子",
   "params": [{"name": "c"}, {"name": "f1"}, {"name": "f2"}],
   "ports": [
-    {"Ci": {"type": "frame"}},
-    {"Co1": {"type": "frame"}, "Co2": {"type": "frame"}}
+    [{"name": "Ci", "type": "frame"}],
+    [{"name": "Co1", "type": "frame"}, {"name": "Co2", "type": "frame"}]
   ],
-  "nodes": {
-    "Ci": {
+  "nodes": [
+    {
+      "id": "Ci",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-    "C1": {
+    {
+      "id": "C1",
       "type": "command",
-      "name": "msel",
+      "commandId": "msel",
       "args": {
         "c": "@[c]"
       },
       "srcs": { "i": "Ci" },
       "dsts": { "o": "Ct" }
     },
-    "Ct": {
+    {
+      "id": "Ct",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-    "C2": {
+    {
+      "id": "C2",
       "type": "command",
-      "name": "mcut",
+      "commandId": "mcut",
       "args": {
         "f": "@[f1]"
       },
       "srcs": { "i": "Ct" },
       "dsts": { "o": "Co1" }
     },
-    "Co1": {
+    {
+      "id": "Co1",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     },
-    "C3": {
+    {
+      "id": "C3",
       "type": "command",
-      "name": "mcut",
+      "commandId": "mcut",
       "args": {
         "f": "@[f2]"
       },
       "srcs": { "i": "Ct" },
       "dsts": { "o": "Co2" }
     },
-    "Co2": {
+    {
+      "id": "Co2",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null
     }
-  }
+  ]
 }

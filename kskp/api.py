@@ -14,7 +14,12 @@ from .model import (
     fetch_flow_by_uuid,
     fetch_flows_by_project_uuid,
     update_flow_by_uuid,
-    get_flow_path_by_uuid
+    get_flow_path_by_uuid,
+    get_user_by_id
+)
+from .activity import (
+    make_unfinished_history,
+    make_finished_history
 )
 
 api = Blueprint('api', __name__)
@@ -81,7 +86,7 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'], j['data_source_name'])
+    new_flow = create_flow(project_id, j['name'])
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -225,7 +230,7 @@ def execute_flow(flow_uuid):
                                 'message': 'result is empty.'
                             })
         else:
-            return jsonify({'success': True, 'data': result_data})
+            return jsonify({'success': True, 'name': result_data})
 
 
 @api.route('/jobs', methods=['GET'])
@@ -234,9 +239,32 @@ def jobs():
     指定されたフローの実行結果を返す
     TODO: モックです
     """
+    flow_uuid = ''
+    count = 0
 
-    path = Path(JOBS_DIR_PATH).joinpath('sample.json')
-    return jsonify({'success': True, 'data': json.loads(path.read_text())})
+    if 'flow' in request.args:
+        flow_uuid = request.args['flow']
+
+    if 'count' in request.args:
+        count = int(request.args['count'])
+
+    execute_histories = []
+    for job_path in Path(JOBS_DIR_PATH).iterdir():
+        data = json.loads(job_path.read_text(encoding='utf-8'))
+        if data['flow']['uuid'] == flow_uuid:
+            execute_histories.append(data)
+
+    results = sorted(execute_histories, key = lambda x:x['executedAt'])
+
+    # 条件分岐が雑なので修正予定
+    if 0 < count and count <= len(results):
+        result = []
+        result.append(results[count - 1])
+        return jsonify({'success': True, 'data': result})
+    elif len(results) < count:
+        return jsonify({'success': False})
+
+    return jsonify({'success': True, 'data': results})
 
 
 def execute_flow_internal(flow_uuid):
@@ -245,15 +273,27 @@ def execute_flow_internal(flow_uuid):
     その結果をパースしてDataFrameの形にして返す
     """
 
+    # 実行履歴（実行中状態）の作成
+    user_id = session['user_id']
+    user_name = get_user_by_id(user_id)['name']
+    history_file_path = make_unfinished_history(flow_uuid,  user_name)
+
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
         with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
             return e.execute(flow_uuid, f.read(), frame_path='/kskp/data/frames')
 
-    result = execute_flow_by_uuid(flow_uuid)
+    try:
+        result = execute_flow_by_uuid(flow_uuid)
+    except Exception as e:
+        # とりあえずの例外処理
+        # 何か例外が起こった時、実行中状態の履歴ファイルが無意味に残るのが嫌なので
+        history_file_path.unlink()
 
-    # 結果を縦型のdataframeっぽくパースして返す
-    return result['o_section'].contents
+    # 実行履歴（実行完了状態）の作成
+    make_finished_history(flow_uuid, history_file_path, result)
+
+    return list(result.keys())
 
 
 def load_as_data_frame(result_text):
