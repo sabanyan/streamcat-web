@@ -280,6 +280,17 @@ def get_project_id_by_uuid(project_uuid):
 
     return result['id'] if result is not None else None
 
+def get_project_name_by_uuid(project_uuid):
+    """
+    指定したUUIDを持つプロジェクト名を返す
+    該当プロジェクトが存在しない場合はNoneを返す
+    get_project_id_by_uuidと纏められるが、後で。
+    """
+    sql = 'SELECT name FROM projects WHERE uuid = ?'
+
+    result = query_db(sql, (project_uuid,), one=True)
+
+    return result['name'] if result is not None else None
 
 def write_data_to_json(path, data):
     """

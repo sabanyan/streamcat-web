@@ -466,8 +466,8 @@ def setUpClient(self):
 
 
 def setUpUser(self):
-    user1 = 'user1'
-    model.create_user(user1, '', '', '')
+    user1 = 1
+    model.create_user(user1, '', 'user1', '')
     return user1
 
 
