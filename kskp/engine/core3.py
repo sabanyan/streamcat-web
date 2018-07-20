@@ -143,11 +143,11 @@ class Job:
     def get_lasts_from(self, step_paths):
         result = {}
         for k, v in self.lasts.items():
-            if step_path == k:
+            if step_paths == k:
                 result[k] == v
         for job in self.jobs:
             for k, v in job.inputs.items():
-                if step_path == k:
+                if step_paths == k:
                     result[k] = v
         return result
 
