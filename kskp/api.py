@@ -4,6 +4,7 @@ from pathlib import Path
 
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
+from .navigation import update_navigation
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -87,6 +88,7 @@ def new_flow():
 
 @api.route('/flows', methods=['GET'])
 @login_required_api
+@update_navigation
 def fecth_flows():
     """
     パラメータで指定されたプロジェクトが持つフローの一覧を取得する
@@ -163,7 +165,6 @@ def make_new_frame():
                             'code': -1,
                             'message': 'invalid json'
                         })
-
 
 @api.route('/frames/<frame_uuid>')
 def fetch_frame(frame_uuid):
@@ -269,8 +270,8 @@ def execute_flow_internal(flow_uuid):
 
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
-        with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), frame_path='/kskp/data/frames')
+        with open(f'kskp/data/flows/{flow_uuid}.json', 'r') as f:
+            return e.execute(flow_uuid, f.read(), frame_path='kskp/data/frames')
 
     result = execute_flow_by_uuid(flow_uuid)
 
