@@ -169,6 +169,8 @@ def make_new_frame():
                             'message': 'invalid json'
                         })
 
+import os
+import time
 
 @api.route('/frames/<frame_uuid>')
 def fetch_frame(frame_uuid):
@@ -177,22 +179,29 @@ def fetch_frame(frame_uuid):
     """
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
-    result = load_as_data_frame(file_path.read_text(encoding='utf-8'))
+    return jsonify({'success': True, 'data': csv_to_frame(file_path)})
 
-    return jsonify({'success': True, 'data': result})
-
-
-@api.errorhandler(400)
-def handle_bad_request(error):
+def csv_to_frame(file_path, no_contents=False):
     """
-    Bad Requestが起きた時にもJSONを返却するように
-    （request bodyのJSONが不正な場合を想定している）
+    指定されたCSVファイルを読み込んで、
+    詳細情報なども含んだframeを表すdictを返す
     """
+    result = {}
+    contents, number_of_lines = load_as_data_frame(file_path.read_text(encoding='utf-8'))
+    if not no_contents:
+        result['contents'] = contents
+    result['numberOfLines'] = number_of_lines
+    result['fileSize'] = os.path.getsize(file_path)
+    result['lastModifiedAt'] = format_time(file_path)
 
-    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
-    message = 'The browser (or proxy) sent a request that this server could not understand.'
-    return jsonify({'success': False, 'message': str(error)})
+    return result
 
+def format_time(file_path):
+    """
+    指定されたファイルの最終更新時間をyyyy/MM/dd HH:MMで返却する
+    """
+    wk = time.localtime(os.path.getmtime(file_path))
+    return time.strftime('%Y/%m/%d %H:%M', wk)
 
 def upload_frame(req):
     """
@@ -311,4 +320,16 @@ def load_as_data_frame(result_text):
             # print(column_list[idx])
             result_data[column_list[idx]].append(column_data)
 
-    return result_data
+    # 行数も返すように変更
+    return result_data, len(result_list) - 1
+
+@api.errorhandler(400)
+def handle_bad_request(error):
+    """
+    Bad Requestが起きた時にもJSONを返却するように
+    （request bodyのJSONが不正な場合を想定している）
+    """
+
+    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
+    message = 'The browser (or proxy) sent a request that this server could not understand.'
+    return jsonify({'success': False, 'message': str(error)})
