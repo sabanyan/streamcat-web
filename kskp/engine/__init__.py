@@ -6,52 +6,24 @@ from .data3 import *
 from .util import command_from_name
 
 
-def execute(flow_uuid, flow_json, arguments={}, inputs=None, frame_path=None):
+def execute(flow_uuid, flow_json, arguments={}, inputs=None, step_paths=None, frames_path=None, flows_path=None):
     """
     エントリポイント
     JSONをパースして、そのまま実際の処理はexecute_internalに移譲する
     """
     #　もしframeの保存場所が明示的に指定されていれば、環境変数よりも優先される
-    if frame_path is not None:
-        os.environ['KENG_FRAME_PATH'] = frame_path
+    if frames_path is not None:
+        os.environ['KENG_FRAMES_PATH'] = frames_path
+
+    # flowも同様
+    if flows_path is not None:
+        os.environ['KENG_FLOWS_PATH'] = flows_path
 
     job = parse(flow_uuid)
-    result = job.execute()
+    result = job.execute(step_paths=step_paths)
     job.dtor()
-    return result
-    # '2C096E39-28BD-491B-B0E2-7ECFFD113304'
 
-    # return execute_internal(parse(flow_uuid, flow_json), arguments, inputs, frame_path)
-
-
-def execute_internal(flow, arguments={}, inputs=None, frame_path=None):
-    """
-    JSONではなく直接flowインスタンスを渡して実行したい場合に使う
-    直接呼び出す際は、主にテストでの用途を想像している
-    """
-
-    #　もしframeの保存場所が明示的に指定されていれば、環境変数よりも優先される
-    if frame_path is not None:
-        os.environ['KENG_FRAME_PATH'] = frame_path
-
-
-    # # 1. argumentsを与えてStepを作成する
-    # step = Step('flow', flow, arguments)
-    #
-    # # 2. 1のStepにinputsを与えてJobを作成して実行する
-    # job = Job(step, inputs)
-    #
-    # # 3. その結果をoutputsとして受け取り、そのまま返却する
-    # result = job.execute()
-    #
-    # # 4. file descriptorのままのdataがある場合は、それらを永続化する
-    # persist_to_files(job)
-    #
-    # # 5. 後始末
-    # # TODO: 思ったように処理が動いておらず、
-    # #       他のバグの原因となっているのでひとまずコメント
-    # job.dtor()
-    return result
+    return job.lasts
 
 
 def persist_to_files(job):
@@ -82,7 +54,7 @@ def persist_to_files(job):
                 raise Exception()
 
             from pathlib import Path
-            out_fd = Path(os.environ['KENG_FRAME_PATH']).joinpath(datum.uuid + ext)
+            out_fd = Path(os.environ['KENG_FRAMES_PATH']).joinpath(datum.uuid + ext)
             fd = out_fd.open(mode='w', encoding='utf-8')
             datum.source.save(fd)
             fd.close()
@@ -150,7 +122,7 @@ def persist_to_files(job):
 #                 # UUIDは存在していれば
 #                 if val['uuid'] is not None:
 #                     frame_uuid = val['uuid']
-#                     source = PathFileSource('csv', os.environ['KENG_FRAME_PATH'], frame_uuid + '.csv')
+#                     source = PathFileSource('csv', os.environ['KENG_FRAMES_PATH'], frame_uuid + '.csv')
 #                     new_frame = Frame(frame_uuid, source)
 #
 #                     # new_frame = CsvFrame.from_uuid(val['uuid'])

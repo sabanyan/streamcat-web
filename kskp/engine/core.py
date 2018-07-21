@@ -1,10 +1,8 @@
 import re
 from pathlib import Path
 # frameの保存場所は環境変数か、engine.execute()で直接指定する
-# os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+# os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
 from .data import *
-from datetime import datetime, timedelta, timezone
-import json
 
 class Job:
     """
@@ -27,52 +25,11 @@ class Job:
         返却するのはデータを値にもつdict
         """
         # print('self.inputs:', self.inputs)
-        jobs_result = self.step.execute(self.inputs)
+        result = self.step.execute(self.inputs)
 
-        # 実行履歴の作成
-        # job.executeは再帰処理で何度も呼び出され、Commandのexecute時は避けたいので
-        # ひとまずFlowの場合のみ処理を行うようにしている
-        # サブフローの場合は今は考えていない
-        if isinstance(self.step.command_or_flow, Flow):
-            now = datetime.now()
+        return result
 
-            history_list = []
-            history = self.create_result_history(now, 'ユーザー 太郎')
-            history_list.append(history)
-
-            # ファイルに書き込み
-            # TODO pathは環境変数にする！
-            file_name = '{0:%Y%m%d%H%M%S%f}'.format(now)
-            path = Path(__file__).parent.parent.as_posix() / Path('data/jobs/%s.json' % file_name)
-            with open(path.as_posix(), 'w') as f:
-                json.dump(history_list, f, indent = '\t', ensure_ascii=False)
-
-        return jobs_result
-
-    def create_result_history(self, now, user_name):
-        """
-        libraryで閲覧できる実行履歴jsonを作成する
-        指定した時間とユーザ名を実行時情報とする
-        """
-        # 直書き…とりあえずの実装
-        history_json = {'executedAt':'', 'executor':{'name':''}, 'inputs':{}, 'params':{}, 'flow':{'uuid':''}, 'data':{}, 'errors':{}}
-
-        # nowはミリ秒まで入るのでnowを使ってdatetimeを作り直してからisoformat()を行っている
-        history_json['executedAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
-                                              tzinfo=timezone(timedelta(hours=+9))).isoformat()
-        # ユーザ名を取ってくる方法を確立するまでの暫定的な処理
-        history_json['executor']['name'] = user_name
-        history_json['flow']['uuid'] = self.step.command_or_flow.uuid
-        for key in self.step.command_or_flow.data.keys():
-            # 現在はデータのクラスの型を'type'に入れているので
-            # クラスの型と'type'に入れたい型が一致しているのが前提になっている
-            data_type = type(self.step.command_or_flow.data[key]).__name__
-            history_json['data'][key] = {'type':data_type.lower(),
-                                         'uuid':self.step.command_or_flow.data[key].uuid}
-
-        return history_json
-
-def dtor(self):
+    def dtor(self):
         """ デストラクタ """
         # print('Job.dtor()')
         # inputsはもう使い切ったのでdtorしてみる
@@ -159,7 +116,7 @@ class Flow:
                 # その他の場合は今は考えない
                 raise Exception()
 
-            path = Path(os.environ['KENG_FRAME_PATH']).joinpath(datum.uuid + ext)
+            path = Path(os.environ['KENG_FRAMES_PATH']).joinpath(datum.uuid + ext)
             with path.open(mode='w', encoding='utf-8') as fd:
                 datum.source.save(fd)
             datum.source = PathFileSource('csv', path.parent, path.name)

@@ -1,35 +1,31 @@
 {
-  "version": "0.1",
-  "name": "mbucket",
-  "description": "行分割",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mbucket",
+  "params": [
     {
       "name": "f",
-      "caption": "対象列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "対象列名"
     },
     {
       "name": "n",
-      "caption": "分割数",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "分割数"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mbucket.py"
-  }
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "行分割"
 }

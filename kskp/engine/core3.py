@@ -19,7 +19,7 @@ def load_flow(flow_uuid):
     if flow_uuid in flow_obj_cache:
         return flow_obj_cache[flow_uuid]
 
-    flows_path = f'/kskp/data/flows/{flow_uuid}.json'
+    flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{flow_uuid}.json')
     with open(flows_path, 'r', encoding='utf-8') as fd:
         obj = json.loads(fd.read(), encoding='utf-8')
         flow_obj_cache[flow_uuid] = obj
@@ -64,13 +64,13 @@ def parse_lasts(data, subjobs):
     return {key: data[key] for key in last_keys}
 
 def parse_data(obj):
-    return {k: parse_datum(node) for k, node in obj['nodes'].items()
+    return {node['id']: parse_datum(node) for node in obj['nodes']
                                  if node['type'] == 'frame'}
 
 def parse_datum(node_obj):
     frame_uuid = node_obj['uuid']
     if frame_uuid is not None:
-        frames_path = os.environ['KENG_FRAME_PATH']
+        frames_path = os.environ['KENG_FRAMES_PATH']
         data_source = node_obj['dataSource']
         file_name = f'{frame_uuid}.{data_source}'
         source = PathFileSource(data_source, frames_path, file_name)
@@ -81,7 +81,7 @@ def parse_datum(node_obj):
     return datum
 
 def parse_nodes(obj):
-    return [node for node in obj['nodes'].values()
+    return [node for node in obj['nodes']
                  if node['type'] in ['command', 'flow']]
 
 def parse_subjobs(nodes, data):
@@ -106,7 +106,7 @@ def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values()}
 
 def parse_command_step(node_obj, args, srcs, dsts):
-    return Step(commands[node_obj['name']], args, srcs, dsts)
+    return Step(commands[node_obj['commandId']], args, srcs, dsts)
 
 
 class Job:
@@ -118,13 +118,15 @@ class Job:
         # self.errors = []
 
     # @profile
-    def execute(self):
+    def execute(self, step_paths=None):
         self.replace_inputs()
 
         s = self.step
         cf = s.command_or_flow
         # print('execute begin:', cf, s.args)
         if s.is_flow:
+            if step_paths is not None:
+                self.lasts = self.get_lasts_from(step_paths)
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
             self.lasts = output
 
@@ -136,45 +138,18 @@ class Job:
             output = cf.execute(self.step.args, self.inputs)
         # print('execute end:', output)
 
-        # 実行履歴作成
-        # 一番外側のjobのexecuteの終了時に、一番外側のjobの実行履歴を作成する
-        if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
-            now = datetime.now()
-
-            # ユーザ名を取ってくる方法を確立するまでの暫定的な処理
-            history = self.create_result_history(now, 'ユーザー 太郎')
-
-            # ファイルに書き込み
-            # TODO pathは環境変数にする！
-            file_name = '{0:%Y%m%d%H%M%S%f}'.format(now)
-            path = Path(__file__).parent.parent.as_posix() / Path('data/jobs/%s.json' % file_name)
-            with open(path.as_posix(), 'w') as f:
-                json.dump(history, f, indent = '\t', ensure_ascii=False)
-
         return self.replace_outputs(output)
 
-    def create_result_history(self, now, user_name):
-        """
-        libraryで閲覧できる実行履歴jsonを作成する
-        指定した時間とユーザ名を実行時情報とする
-        """
-        # 直書き…とりあえずの実装
-        history_json = {'executedAt':'', 'executor':{'name':''}, 'inputs':{}, 'params':{}, 'flow':{'uuid':''}, 'data':{}, 'errors':{}}
-
-        # nowはミリ秒まで入るのでnowを使ってdatetimeを作り直してからisoformat()を行っている
-        history_json['executedAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
-                                              tzinfo=timezone(timedelta(hours=+9))).isoformat()
-
-        history_json['executor']['name'] = user_name
-        history_json['flow']['uuid'] = self.step.command_or_flow.uuid
-        for key in self.lasts.keys():
-            # 現在はデータのクラスの型を'type'に入れているので
-            # クラスの型と'type'に入れたい型が一致しているのが前提になっている
-            data_type = type(self.lasts[key]).__name__
-            history_json['data'][key] = {'type':data_type.lower(),
-                                         'uuid':self.lasts[key].uuid}
-
-        return history_json
+    def get_lasts_from(self, step_paths):
+        result = {}
+        for k, v in self.lasts.items():
+            if step_paths == k:
+                result[k] == v
+        for job in self.jobs:
+            for k, v in job.inputs.items():
+                if step_paths == k:
+                    result[k] = v
+        return result
 
     def replace_inputs(self):
         for p_k, p_v in self.inputs.items():
@@ -185,14 +160,14 @@ class Job:
 
     def replace_outputs(self, output):
         result = {}
-        for key in self.step.command_or_flow.o_ports.keys():
+        for o_port in self.step.command_or_flow.o_ports:
             for o_k, o_v in output.items():
-                if o_k == key:
+                if o_k == o_port['name']:
                     result[o_k] = o_v
 
             for job in self.jobs:
                 for c_k, c_v in job.inputs.items():
-                    if c_k == key:
+                    if c_k == o_port['name']:
                         result[c_k] = c_v
         return result
 
@@ -248,7 +223,7 @@ class Job:
         res = inputs
         step = self.step
         i_ports = step.command_or_flow.i_ports
-        if '*' not in list(i_ports.keys()):
+        if '*' not in i_ports:
             res = {port: v for k, v in inputs.items()
                            for port, datum_id in step.srcs.items()
                            if datum_id == k}
@@ -298,8 +273,8 @@ class Flow:
     def __init__(self, flow_uuid):
         self.uuid = flow_uuid
         self.params = []
-        self.i_ports = {}
-        self.o_ports = {}
+        self.i_ports = []
+        self.o_ports = []
         self.description = ''
 
     def __repr__(self):
@@ -310,8 +285,8 @@ class Command:
     def __init__(self, name=''):
         self.name = name
         self.params = []
-        self.i_ports = {}
-        self.o_ports = {}
+        self.i_ports = []
+        self.o_ports = []
         self.description = ''
 
     def execute(self, args, inputs):
@@ -325,8 +300,8 @@ class Split(Command):
     def __init__(self):
         super().__init__()
         self.name = 'split'
-        self.i_ports = {'i': {'type': 'frame'}}
-        self.o_ports = {'o1': {'type': 'frame'}, 'o2': {'type': 'frame'}}
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o1', 'type': 'frame'}, {'name': 'o2', 'type': 'frame'}]
         self.params.append(Parameter('l'))
 
     def execute(self, args, inputs):
@@ -346,8 +321,8 @@ class Split(Command):
 class MCommand(Command):
     def __init__(self):
         super().__init__()
-        self.i_ports = {'i': {'type': 'frame'}}
-        self.o_ports = {'o': {'type': 'frame'}}
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}]
 
     def execute(self, args, inputs):
         source = UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
@@ -376,7 +351,7 @@ class MCommand(Command):
 
     @property
     def out_key(self):
-        return list(self.o_ports.keys())[0]
+        return self.o_ports[0]['name']
 
 class Msel(MCommand):
     def __init__(self):
@@ -452,7 +427,7 @@ class Mcat(MCommand):
 
         self.name = 'mcat'
         self.description = 'ファイル結合'
-        self.i_ports = {'*': {'type': 'frame'}} # 何個でも取れる
+        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -474,7 +449,7 @@ class Mjoin(MCommand):
 
         self.name = 'mjoin'
         self.description = '結合'
-        self.i_ports = {'i' : {'type': 'frame'}, 'm' : {'type': 'frame'}}
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
         self.params.append(Parameter('k', '結合キー名'))
 
     def command_args(self, args, inputs):

@@ -220,7 +220,7 @@ class Frame(Datum):
     def command_to_file(self):
         if isinstance(self.source, UnixCommandSource):
             file_name = self.uuid + self.source.ext
-            new_source = PathFileSource(self.source.type, os.environ['KENG_FRAME_PATH'], file_name)
+            new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
             with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
                 self.source.save(fd)
             for flow_uuid in self.source.deletable_uuids:
@@ -276,7 +276,7 @@ def make_path(frame_uuid):
     """
 
     # frameの保存場所の指定は必須
-    if 'KENG_FRAME_PATH' not in os.environ:
+    if 'KENG_FRAMES_PATH' not in os.environ:
         raise Exception()
 
-    return f"{ os.environ['KENG_FRAME_PATH'] }/{ frame_uuid }.csv"
+    return f"{ os.environ['KENG_FRAMES_PATH'] }/{ frame_uuid }.csv"
