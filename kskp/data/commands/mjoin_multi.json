@@ -1,28 +1,26 @@
 {
-  "version": "0.1",
-  "name": "mjoin_multi",
-  "description": "結合(複数IN)",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "mjoin_multi",
+  "params": [
     {
       "name": "k",
-      "caption": "結合キー名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "結合キー名"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "mjoin_multi.py"
-  }
+  "ports": [
+    [
+      {
+        "name": "*",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "結合(複数IN)"
 }

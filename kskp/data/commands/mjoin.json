@@ -1,37 +1,40 @@
 {
-  "version": "0.1",
-  "name": "mjoin",
-  "description": "結合",
-  "signature": [
-    {
-      "i": { "type": "frame" },
-      "m": { "type": "frame" }
-    },
-    {
-      "out": { "type": "frame" }
-    }
-  ],
-  "arguments": [
+  "id": "mjoin",
+  "params": [
     {
       "name": "k",
-      "caption": "結合キー名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "結合キー名"
     },
     {
       "name": "m",
-      "caption": "参照ファイル名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "参照ファイル名"
     },
     {
       "name": "f",
-      "caption": "参照列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "参照列名"
     }
-  ]
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "結合"
 }

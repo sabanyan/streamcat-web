@@ -64,7 +64,7 @@ class NIJapanSampleTestCase(unittest.TestCase):
     """ 日本NI様サンプルテスト """
 
     def setUp(self):
-        os.environ['KENG_FRAME_PATH'] = 'kskp/data/frames'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
 
         self.mcut = Mcut()
         self.mjoin = Mjoin()

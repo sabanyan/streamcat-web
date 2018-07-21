@@ -1,28 +1,26 @@
 {
-  "version": "0.1",
-  "name": "muniq",
-  "description": "単一化",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "muniq",
+  "params": [
     {
       "name": "k",
-      "caption": "キー列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "キー列名"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "muniq.py"
-  }
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "単一化"
 }
