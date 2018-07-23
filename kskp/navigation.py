@@ -3,9 +3,37 @@ from flask import (
 )
 from . import model
 import json
+import functools
 
-def update_navigation(func):
+def update_navigation_user(func):
+    @functools.wraps(func)
     def deco(**kwargs):
+        json_data = func(**kwargs).data.decode()
+        data = json.loads(json_data)
+
+        user_id = session['user_id']
+        project_uuid = request.args.get('project')
+
+        navigation = {
+            'user_id': user_id,
+            'user_name': model.get_user_by_id(user_id)['name'],
+            'project_uuid': '',
+            'project_name': '',
+            'flow_uuid': '',
+            'flow_name': ''
+        }
+
+        data['navigation'] = navigation
+        return jsonify(data)
+    return deco
+
+
+def update_navigation_project(func):
+    @functools.wraps(func)
+    def deco(**kwargs):
+        json_data = func(**kwargs).data.decode()
+        data = json.loads(json_data)
+
         user_id = session['user_id']
         project_uuid = request.args.get('project')
 
@@ -18,8 +46,31 @@ def update_navigation(func):
             'flow_name': ''
         }
 
+        data['navigation'] = navigation
+        return jsonify(data)
+    return deco
+
+
+def update_navigation_flow(func):
+    @functools.wraps(func)
+    def deco(**kwargs):
         json_data = func(**kwargs).data.decode()
         data = json.loads(json_data)
+
+        user_id = session['user_id']
+        flow_uuid = kwargs['flow_uuid']
+        flow = model.fetch_flow_by_uuid(flow_uuid)
+        project = model.fecth_project(flow['projectId'])[0]
+
+        navigation = {
+            'user_id': user_id,
+            'user_name': model.get_user_by_id(user_id)['name'],
+            'project_uuid': project['uuid'],
+            'project_name': project['name'],
+            'flow_uuid': flow_uuid,
+            'flow_name': flow['name']
+        }
+
         data['navigation'] = navigation
         return jsonify(data)
     return deco
