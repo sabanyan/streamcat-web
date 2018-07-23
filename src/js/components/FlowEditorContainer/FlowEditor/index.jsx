@@ -23,7 +23,6 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   constructor (props: FlowEditorProps) {
     super(props)
 
-    const self = this
     let option = {
       method: 'GET',
       mode: 'same-origin',
@@ -34,12 +33,12 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const graph = new Graph()
     HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
-      self.props.loadFlowJSON(json.data)
+      this.props.loadFlowJSON(json.data)
     })
 
     HttpUtil.get('commands').then((response) => {
       const json = response.data
-      self.props.addMaster({commands: json.data})
+      this.props.addMaster({commands: json.data})
     }).then((response) => {console.log(response)},
       (error) => {console.log(error)})
     //
@@ -51,51 +50,63 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
   }
 
-  render () {
+  renderSteps(){
+    let {nodes,selected_step_ids} = this.props
+    let steps = []
+    if (Array.isArray(nodes)) {
+      steps = nodes.map((step) => {
+        let selected = (step.id === selected_step_ids[0])
+        return <Step key={step.id} {...step} model={step} {...this.props}
+                     selected={selected} />
+      })
+    }
+    return steps
+  }
 
-    let {selected_step_ids,nodes,zoom} = this.props
-    const self = this
-    //this.props.state.stepsを生成する
-    const steps = Object.keys(nodes).map((node_name) => {
-      let step = nodes[node_name]
-      let selected = (node_name === selected_step_ids[0])
-      return <Step key={step.id} {...step} model={step} {...self.props}
-                   selected={selected} />
-    })
+  renderEdges(){
+    let {nodes,graph} = this.props
     let edges = []
 
-    if (Array.isArray(this.props.graph.edges)) {
-      edges = this.props.graph.edges.map(function (edge, index) {
-        const vx = nodes[edge.v].position.x +
+    if (Array.isArray(graph.edges)) {
+      edges = graph.edges.map((edge, index)=> {
+        const v_node = Graph.getNode(nodes,edge.v)
+        const w_node = Graph.getNode(nodes,edge.w)
+        const vx = v_node.position.x +
           Constants.default.datasource.width / 2
-        const vy = nodes[edge.v].position.y +
+        const vy = v_node.position.y +
           Constants.default.datasource.height / 2
-        const wx = nodes[edge.w].position.x +
+        const wx = w_node.position.x +
           Constants.default.operator.width / 2
-        const wy = nodes[edge.w].position.y +
+        const wy = w_node.position.y +
           Constants.default.operator.height / 2
         const name = edge.name
         return <Edge label={name} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
       })
     }
+    return edges
+  }
 
+  renderSelector(){
     let selector = null
-    const {drag} = this.props
+    const {drag,zoom} = this.props
     if (Object.keys(drag).length) {
       selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x,zoom)}
                            sy={ZoomUtil.zoomReverse(drag.start.y,zoom)}
                            ex={ZoomUtil.zoomReverse(drag.end.x,zoom)}
                            ey={ZoomUtil.zoomReverse(drag.end.y,zoom)} />
     }
+    return selector
+  }
 
+  render () {
     return <div className={style.flow_editor}>
       <PaperZoom />
       <Toolbar {...this.props} />
       <PaperScroller {...this.props}>
         <Paper {...this.props}>
-          {edges}
-          {steps}
-          {selector}
+          {this.renderEdges()}
+          {this.renderSteps()}
+          {this.renderSelector()}
         </Paper>
       </PaperScroller>
       <Inspector {...this.props} />

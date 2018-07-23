@@ -79,7 +79,7 @@ let initialState = {
   selected_step_ids:[],
   graph:graph.getGraph({}),
   zoom: 100,
-  nodes:{},
+  nodes:[],
   mast:{},
   selected_tab_id:0,
   drag:{},
