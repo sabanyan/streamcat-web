@@ -22,13 +22,9 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
 
     let operators = mast.commands.filter((command) => {
       
-      if(command["signature"]){
-        if(Object.keys(command.signature[0]).length === numberOfInput)return true
+      if(command["ports"]){
+        if(Object.keys(command.ports[0]).length === numberOfInput)return true
       }
-
-      //以下2行はコマンド一覧が最新化されるまでの暫定処置
-      if(!command["inputs"])return false
-      if(command.inputs.length === numberOfInput)return true
 
       return false
     }).map((command,index)=>{
