@@ -54,6 +54,7 @@ def get_projects():
         proj['uuid'] = p['uuid']
         proj['name'] = p['name']
         proj['creator_id'] = p['creator_id']
+        proj['creator_name'] = p['creator_name']
         proj['created_at'] = p['created_at']
         projects.append(proj)
 
