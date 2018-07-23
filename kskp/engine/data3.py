@@ -6,6 +6,8 @@ import os
 import tempfile
 from pathlib import Path
 
+import sys # sys.stdout
+
 ref_counts = {}
 
 class Source:
@@ -65,8 +67,23 @@ class FileSource(Source):
     def fd(self, value):
         pass
 
+    def save(self, stdout):
+        """ for override """
+        pass
 
-from pathlib import Path
+class PandasSource(FileSource):
+    def __init__(self, source_type, dataframe):
+        super().__init__(source_type)
+        self.dataframe = dataframe
+
+    @property
+    def fd(self):
+        dataframe.to_csv(sys.stdout, index=False)
+        return sys.stdout
+
+    def save(self, stdout):
+        """ engineから使う最後の保存用 """
+        self.dataframe.to_csv(stdout, index=False)
 
 
 class PathFileSource(FileSource):
@@ -218,7 +235,7 @@ class Frame(Datum):
         super().__init__(frame_uuid, source)
 
     def command_to_file(self):
-        if isinstance(self.source, UnixCommandSource):
+        if not isinstance(self.source, PathFileSource):
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
             with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
@@ -231,7 +248,7 @@ class Frame(Datum):
         return self
 
     def command_to_tempfile(self):
-        if isinstance(self.source, UnixCommandSource):
+        if not isinstance(self.source, PathFileSource):
             new_source = TempPathFileSource(self.source.type)
             with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
                 self.source.save(fd)

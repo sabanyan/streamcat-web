@@ -1,0 +1,32 @@
+{
+  "label": "kcmdサンプル",
+  "params": [],
+  "ports": [[], []],
+  "nodes": [
+    {
+      "id": "i",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "B9709397-7ABF-490A-A983-264FE88DF2C5",
+      "label": null
+    },
+    {
+      "id": "c",
+      "type": "command",
+      "commandId": "select_target_column",
+      "args": {
+        "t": "target"
+      },
+      "srcs": { "i": "i" },
+      "dsts": { "o": "o" },
+      "label": null
+    },
+    {
+      "id": "o",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    }
+  ]
+}

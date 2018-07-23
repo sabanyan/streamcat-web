@@ -296,6 +296,36 @@ class Command:
         return f'<Command name:{self.name}>'
 
 
+class UnixCommand(Command):
+    def __init__(self):
+        super().__init__()
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}]
+
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
+
+    def source(self, args, inputs):
+        """ for override """
+        raise Exception()
+
+    def command_args(self, args, inputs):
+        """ for override """
+        raise Exception()
+
+    def stdin(self, inputs):
+        return list(inputs.values())[0].source.fd
+
+
 class Split(Command):
     def __init__(self):
         super().__init__()
@@ -318,22 +348,8 @@ class Split(Command):
         frame2 = Frame(str(uuid.uuid4()), source2)
         return {'o1': frame1, 'o2': frame2}
 
-class MCommand(Command):
-    def __init__(self):
-        super().__init__()
-        self.i_ports = [{'name': 'i', 'type': 'frame'}]
-        self.o_ports = [{'name': 'o', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
-        source = UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
-        for input in inputs.values():
-            if isinstance(input.source, PathFileSource):
-                source.deletable_uuids.append(input.uuid)
-            elif isinstance(input.source, UnixCommandSource):
-                source.deletable_uuids = input.source.deletable_uuids
-                source.deletable_uuids.append(input.uuid)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+class MCommand(Command):
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -346,8 +362,9 @@ class MCommand(Command):
                 res.append('%s=%s' % (k, v))
         return res
 
-    def stdin(self, inputs):
-        return list(inputs.values())[0].source.fd
+    @property
+    def source(self):
+        return UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
 
     @property
     def out_key(self):
@@ -483,6 +500,23 @@ class Mcal(MCommand):
         self.params.append(Parameter('c', '計算式'))
         self.params.append(Parameter('a', '追加列名'))
 
+class SelectTargetColumn(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.params.append(Parameter('t', '目的変数'))
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        from .commands.kcmd.selecttargetcolumn import SelectTargetColumn as Base
+        command = Base()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-t', args['t']])
+
+        return PandasSource('csv', dataframe)
+
+
 commands = {
     'mcut': Mcut(),
     'msel': Msel(),
@@ -496,5 +530,7 @@ commands = {
     'mcat': Mcat(),
     'mtee': Mtee(),
     'msortf': Msortf(),
-    'mcal': Mcal()
+    'mcal': Mcal(),
+
+    'select_target_column': SelectTargetColumn()
 }
