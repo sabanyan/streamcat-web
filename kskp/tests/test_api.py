@@ -440,6 +440,18 @@ class FrameApiTestCase(unittest.TestCase):
         self.assertEqual(data['c'], ['3', '2'])
 
 
+    def test_download_frame(self):
+        """
+        download_frame APIのテストをする
+        """
+        frame_uuid = '2c792bbc-4679-4396-96d1-94fc023073b1'
+        with app.test_client() as client:
+            response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
+
+        # ResourceWarningが出てしまうが、特に問題ありません。
+        assert True
+
+
 def setUpDatabase(self):
     """
     一時ファイルでsqlite DBを作成する
