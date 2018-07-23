@@ -527,11 +527,13 @@ class Standardize(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
+        print('StandardizeStandardizeStandardizeStandardize')
         frames_path = 'kskp/data/frames'
         from .commands.kcmd.standardize import Standardize as Base
         command = Base()
-        command.input = inputs['i'].source.fd
-        dataframe = command.main(['-c', args['c']])
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
 
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 

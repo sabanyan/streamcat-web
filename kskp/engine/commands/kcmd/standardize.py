@@ -88,7 +88,7 @@ class Standardize(Preprocess):
         standardized = self.standardize(data)
 
         #変換規則のファイル出力
-        with open(self.temp_files_path + 'standardize.pickle', 'wb') as f:
+        with open(self.temp_files_path.joinpath('standardize.pickle'), 'wb') as f:
             pickle.dump(self.std_dict, f)
 
         #前処理の順番を保存

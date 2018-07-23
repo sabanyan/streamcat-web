@@ -81,7 +81,8 @@ class PandasSource(FileSource):
 
     @property
     def fd(self):
-        self.dataframe.to_csv(self.fullpath, index=False)
+        if not self.fullpath.exists():
+            self.dataframe.to_csv(self.fullpath, index=False)
         self._fd = open(self.fullpath, 'r')
         return self._fd
 

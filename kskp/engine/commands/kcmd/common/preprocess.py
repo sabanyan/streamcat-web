@@ -61,12 +61,13 @@ class Preprocess():
 		"""
 
 		# 二番目以降の処理なら追加書き込み
-		if os.path.isfile(self.temp_files_path + 'preprocess_order.txt'):
-			with open(self.temp_files_path + 'preprocess_order.txt', 'a') as f:
+		path = self.temp_files_path.joinpath('preprocess_order.txt')
+		if os.path.isfile(path):
+			with open(path, 'a') as f:
 				f.write(',' + self.name)
 		# 最初の処理なら.txtを作成して書き込み
 		else:
-			with open(self.temp_files_path + 'preprocess_order.txt', 'w') as f:
+			with open(path, 'w') as f:
 				f.write(self.name)
 
 	def remove_temp_files(self):
