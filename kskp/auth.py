@@ -155,7 +155,7 @@ def authenticate(user_id, password, session):
     if passwords is None:
         # そもそもユーザが存在しない場合
         return False
-        
+
     if hashed_password == passwords['password']:
         # 認証成功
         session['user_id'] = user_id # model.get_user(user_id)  # ユーザID保存
@@ -190,7 +190,7 @@ def login_required(func):
                     return render_template('login.html', email=f['email'])
             elif request.args['session'] == 'off':
                 # ログアウト処理
-                # TODO: 未実装
+                # TODO: セッションを消すだけで良いか要検討
                 del session['user_id']
                 # 再度やり直し
                 return redirect(request.base_url)

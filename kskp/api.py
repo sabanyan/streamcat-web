@@ -81,7 +81,7 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'], j['data_source_name'])
+    new_flow = create_flow(project_id, j['name'])
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -234,9 +234,31 @@ def jobs():
     指定されたフローの実行結果を返す
     TODO: モックです
     """
+    flow_uuid = ''
+    count = 0
 
-    path = Path(JOBS_DIR_PATH).joinpath('sample.json')
-    return jsonify({'success': True, 'data': json.loads(path.read_text())})
+    if 'flow' in request.args:
+        flow_uuid = request.args['flow']
+
+    if 'count' in request.args:
+        count = int(request.args['count'])
+
+    execute_historys = []
+    for job_path in Path(JOBS_DIR_PATH).iterdir():
+        data = json.loads(job_path.read_text(encoding='utf-8'))
+        if data['flow']['uuid'] == flow_uuid:
+            execute_historys.append(data)
+
+    results = sorted(execute_historys, key = lambda x:x['executedAt'])
+
+    if 0 < count and count <= len(results):
+        result = []
+        result.append(results[count - 1])
+        return jsonify({'success': True, 'data': result})
+    elif len(results) < count:
+        return jsonify({'success': False})
+
+    return jsonify({'success': True, 'data': results})
 
 
 def execute_flow_internal(flow_uuid):
