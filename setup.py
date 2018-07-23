@@ -8,6 +8,8 @@ setup(
         'flask',
         'flask_mail',
         'numpy',
-        'pandas'
+        'scipy',
+        'pandas',
+        'sklearn'
     ],
 )

@@ -510,12 +510,30 @@ class SelectTargetColumn(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
         from .commands.kcmd.selecttargetcolumn import SelectTargetColumn as Base
         command = Base()
         dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-t', args['t']])
 
-        return PandasSource('csv', dataframe)
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
+class Standardize(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.params.append(Parameter('c', '対象列名'))
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.standardize import Standardize as Base
+        command = Base()
+        command.input = inputs['i'].source.fd
+        dataframe = command.main(['-c', args['c']])
+
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 commands = {
     'mcut': Mcut(),
@@ -532,5 +550,6 @@ commands = {
     'msortf': Msortf(),
     'mcal': Mcal(),
 
-    'select_target_column': SelectTargetColumn()
+    'select_target_column': SelectTargetColumn(),
+    'standardize': Standardize()
 }
