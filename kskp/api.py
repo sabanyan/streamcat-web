@@ -2,7 +2,7 @@ import json
 import uuid
 from pathlib import Path
 
-from flask import Blueprint, request, session, jsonify
+from flask import Blueprint, request, session, jsonify, send_from_directory
 from .auth import login_required_api
 from .model import (
     start_project,
@@ -16,6 +16,7 @@ from .model import (
     update_flow_by_uuid,
     get_flow_path_by_uuid
 )
+from datetime import datetime, timezone, timedelta
 
 api = Blueprint('api', __name__)
 
@@ -202,6 +203,24 @@ def upload_frame(req):
     f.save(file_path.as_posix())
     f.close()
 
+
+@api.route('/files')
+def download_frame():
+    type = request.args.get('type')
+    frame_uuid = request.args.get('uuid')
+    ext = request.args.get('ext')
+
+    # タイムゾーンの設定
+    JST = timezone(timedelta(hours=+9), 'JST')
+    date = datetime.now(JST)
+
+    # ダウンロードファイルの名前
+    downloadFileName = 'KSKP' + date.strftime("%Y%m%d%H%M") + '.' + ext
+    # ダウンロード対象のファイルの名前
+    downloadFile = frame_uuid + '.' + ext
+
+    return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
+                               attachment_filename = downloadFileName, mimetype = 'text/csv')
 
 def execute_flow(flow_uuid):
 
