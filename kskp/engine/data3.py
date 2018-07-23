@@ -72,18 +72,30 @@ class FileSource(Source):
         pass
 
 class PandasSource(FileSource):
-    def __init__(self, source_type, dataframe):
+    def __init__(self, source_type, source_dir, file_name, dataframe):
         super().__init__(source_type)
         self.dataframe = dataframe
+        self.source_dir = source_dir
+        self.file_name = file_name
+        self._fd = None
 
     @property
     def fd(self):
-        dataframe.to_csv(sys.stdout, index=False)
-        return sys.stdout
+        self.dataframe.to_csv(self.fullpath, index=False)
+        self._fd = open(self.fullpath, 'r')
+        return self._fd
+
+    @property
+    def fullpath(self):
+        return Path(self.source_dir).joinpath(self.file_name)
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
         self.dataframe.to_csv(stdout, index=False)
+
+    def dtor(self):
+        if self._fd is not None:
+            self._fd.close()
 
 
 class PathFileSource(FileSource):
