@@ -4,7 +4,11 @@ from pathlib import Path
 
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
-from .navigation import update_navigation
+from .navigation import (
+    update_navigation_user,
+    update_navigation_project,
+    update_navigation_flow
+)
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -38,6 +42,7 @@ def new_project():
 
 @api.route('/projects')
 @login_required_api
+@update_navigation_user
 def get_projects():
     """
     現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
@@ -88,7 +93,7 @@ def new_flow():
 
 @api.route('/flows', methods=['GET'])
 @login_required_api
-@update_navigation
+@update_navigation_project
 def fecth_flows():
     """
     パラメータで指定されたプロジェクトが持つフローの一覧を取得する
@@ -98,6 +103,7 @@ def fecth_flows():
 
 @api.route('/flows/<flow_uuid>', methods=['GET'])
 @login_required_api
+@update_navigation_flow
 def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
@@ -111,7 +117,6 @@ def update_flow(flow_uuid):
     """
     指定されたフローを更新する
     """
-
     result = update_flow_by_uuid(flow_uuid, request.json)
     return jsonify({'success': True, 'data': result})
 

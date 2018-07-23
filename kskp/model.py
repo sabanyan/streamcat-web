@@ -178,6 +178,12 @@ def rename_project(project_uuid, new_name):
     sql = 'UPDATE projects SET name = ? WHERE uuid = ?'
     query_db(sql, (new_name, project_uuid))
 
+def fecth_project(project_id):
+    """
+    プロジェクトを取得する（project_idが基準）
+    """
+    sql = 'SELECT uuid, name FROM projects WHERE id = ?'
+    return query_db(sql, (project_id,))
 
 def create_flow(project_id, flow_name, data_source_name=None):
     """
