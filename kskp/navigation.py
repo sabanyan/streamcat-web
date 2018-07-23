@@ -60,7 +60,7 @@ def update_navigation_flow(func):
         user_id = session['user_id']
         flow_uuid = kwargs['flow_uuid']
         flow = model.fetch_flow_by_uuid(flow_uuid)
-        project = model.fecth_project(flow['projectId'])[0]
+        project = model.fecth_project(flow['projectId'])
 
         navigation = {
             'user_id': user_id,
