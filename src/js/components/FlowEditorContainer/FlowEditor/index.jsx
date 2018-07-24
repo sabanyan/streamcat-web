@@ -15,6 +15,7 @@ import style from './style.scss'
 import HttpUtil from '../../../utils/HttpUtil'
 import Graph from '../../../utils/Graph'
 import ZoomUtil from '../../../utils/ZoomUtil'
+import CommandModel from '../../../model/Command/CommandModel'
 
 type State = {}
 
@@ -38,7 +39,12 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
     HttpUtil.get('commands').then((response) => {
       const json = response.data
-      this.props.addMaster({commands: json.data})
+
+      const commands = json.data.map((command)=>{
+        return new CommandModel(command)
+      })
+
+      this.props.addMaster({commands: commands})
     }).then((response) => {console.log(response)},
       (error) => {console.log(error)})
     //

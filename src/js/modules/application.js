@@ -127,7 +127,7 @@ const Application = (state = initialState, action) => {
             let newState = StateUtil.deepCopy(state)
             if(from_step_id){
                 //連結した状態での追加
-                const from_step = state.nodes[from_step_id]
+                const from_step = Graph.getNode(state.nodes,from_step_id)
                 add_step.setFrame({x:from_step.position.x + offsetX, y:from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
                 //TODO 複数OUTするコマンドがあった場合は問題になる
                 add_step.srcs = [from_step_id]
@@ -137,9 +137,7 @@ const Application = (state = initialState, action) => {
                 add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
             }
 
-
-            newState.nodes[add_step.id] = add_step
-
+            newState.nodes.push(add_step)
             newState.graph = graph.getGraph(newState)
             return newState
         }

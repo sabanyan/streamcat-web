@@ -57,7 +57,7 @@ const Constants = {
     },
   },
   modal: {
-    ADD_OPERATOR: 'add_operator',
+    ADD_COMMAND: 'add_command',
     ADD_PROJECT: 'add_project',
     ADD_FLOW: 'add_flow',
     IMPORT_DATASOURCE: 'import_datasource',

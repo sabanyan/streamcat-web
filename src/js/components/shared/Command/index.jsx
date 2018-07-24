@@ -6,18 +6,16 @@ import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import style from './style.scss'
 import classnames from 'classnames'
 import CommandStepModel from '../../../model/Step/CommandStepModel'
+import CommandModel from '../../../model/Command/CommandModel'
 
 type Props = {
-    name: string;
-    description: string;
-    arguments: [{ name: string, caption: string }];
+    command: CommandModel;
     selected_step_ids: string[];
-    outputs: any[];//TODO step type;
     addStep: Function;
     selectSteps: Function;
 }
 
-export default class Operator extends React.Component<Props> {
+export default class Command extends React.Component<Props> {
     inputRefs: any[]
 
     constructor(props: Props) {
@@ -26,15 +24,15 @@ export default class Operator extends React.Component<Props> {
     }
 
     buildArgumentsContent() {
-        const self = this
+        const {command} = this.props
         this.inputRefs = [] //クリア
-        const argument_inputs = this.props.arguments.map((argument) => {
-            return <div key={self.props.name + "_" + argument.name} className="mb-8px">
+        const argument_inputs = command.params.map((param) => {
+            return <div key={command.id + "_" + param.name} className="mb-8px">
                 <label>
-                  {argument.caption}
+                  {param.label}
                 </label>
-                <input type="text" className="form-control" placeholder={argument.name} ref={(element) => {
-                    if (element) (self.inputRefs.push({argument: argument, element: element}))
+                <input type="text" className="form-control" placeholder={param.name} ref={(element) => {
+                    if (element) (this.inputRefs.push({params: command.params, element: element}))
                 }} defaultValue={""}></input>
             </div>
         })
@@ -49,25 +47,25 @@ export default class Operator extends React.Component<Props> {
     onSubmitModal(e: Event) {
         e.preventDefault()
         //クリックされたときのEventEmitterを実行
-        const id = Constants.modal.ADD_OPERATOR
+        const id = Constants.modal.ADD_COMMAND
         window.emitter.emit(Constants.event.MODAL_ON_CLICK_DONE + id, {id: id})
     }
 
 
-    onClickOperator() {
+    onClickCommand(command:CommandModel) {
 
         const self = this
         let content = this.buildArgumentsContent()
 
         ModalUtil.registerModal({
-            id: Constants.modal.ADD_OPERATOR, onClickDone: () => {
+            id: Constants.modal.ADD_COMMAND, onClickDone: () => {
 
                 let args = {}
 
                 //モーダルで入力されたパラメータを取得
                 console.log(self.inputRefs)
                 self.inputRefs.map((inputRef) => {
-                    args[inputRef.argument.name] = inputRef.element.value
+                    args[inputRef.params.name] = inputRef.element.value
                     inputRef.element.value = "" //値をクリア
                 })
 
@@ -82,8 +80,8 @@ export default class Operator extends React.Component<Props> {
                 const add_step =  new CommandStepModel({
                   id: null,//TODO IDはどうやってつける？
                   type: Constants.step.type.command,
-                  name: self.props.name,
-                  label: self.props.name,
+                  name: command.name,
+                  label: command.name,
                   args: args
                 })
 
@@ -91,10 +89,12 @@ export default class Operator extends React.Component<Props> {
                 self.props.addStep(add_step, selected_step_ids[0])
 
                 //出力先を追加
-                const output_steps = self.props.outputs.map((output_step) => {
+
+                const output_steps = command.getOutPorts().map((port) => {
                     //TODO 将来的にはコマンドのoutputsを細かくみて制御する
                       return new DataFrameStepModel({
                         id: null,//TODO IDはどうやってつける？
+                        label:port.name,
                         type: Constants.step.type.frame,
                         uuid: null,//TODO UUIDをどうやってつける？
                         dataSource: Constants.data.dataSource.csv,
@@ -114,27 +114,28 @@ export default class Operator extends React.Component<Props> {
                 self.props.selectSteps()
 
                 //モーダルを閉じる
-                ModalUtil.emitModal({id: Constants.modal.ADD_OPERATOR, visible: false})
+                ModalUtil.emitModal({id: Constants.modal.ADD_COMMAND, visible: false})
             }
         })
 
         ModalUtil.emitModal({
-            id: Constants.modal.ADD_OPERATOR,
+            id: Constants.modal.ADD_COMMAND,
             visible: true,
             content: content,
-            title: this.props.description
+            title: command.label
         })
 
     }
 
     render() {
 
-        const operatorClass = classnames(style.operator,style.operator_no_icon)
+        const {command} = this.props
+        const commandClass = classnames(style.command,style.command_no_icon)
 
         return <div>
-            <div className={operatorClass} onClick={() => this.onClickOperator()}>
+            <div className={commandClass} onClick={() => this.onClickCommand(command)}>
                 {/*<i className="icon material-icons">check_box_outline_blank</i>*/}
-                <div className={style.operator_label}>{this.props.description}</div>
+                <div className={style.command_label}>{command.label}</div>
             </div>
         </div>
     }

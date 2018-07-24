@@ -2,7 +2,7 @@
 import React from 'react'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
-import Operator from '../../../shared/Operator/index'
+import Operator from '../../../shared/Command/index'
 import Inspector from '../Inspector'
 import style from '../style.scss'
 import type { FlowEditorProps } from '../../index'
