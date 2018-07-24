@@ -34,18 +34,10 @@ export default class JobList extends React.Component<Props> {
     const {icon, children, href,job} = this.props
     const {uuid} = job
 
-
-    console.log(job)
     const jobFrameList = Object.keys(job.data).map((data_key)=>{
       const dataframe = job.data[data_key]
-      return <JobFrameList {...dataframe} />
+      return <JobFrameList {...dataframe} job={job}/>
     })
-
-    return <div className={style.job_list}>
-      <i className={classnames('material-icons', [style.icon])}>description</i>
-      <a className={style.name} href={href}>{jobFrameList}</a>
-      <div className={style.creator_name}>{job.executor.name}</div>
-      <div className={style.created_at}>{job.executedAt}</div>
-    </div>
+    return jobFrameList
   }
 }
