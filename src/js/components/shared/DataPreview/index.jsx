@@ -92,16 +92,6 @@ export default class DataPreview extends React.Component<Props, State> {
 
     return <div className="kskp-visualization">
       <div className="kskp-visualization-container">
-        <div className="kskp-visualization-header">
-          <div className="row">
-            <div className="col-sm-4">
-              {/*<i className="icon material-icons">arrow_back</i>*/}
-              {/*<span className="title">*/}
-              {/*sorted-test-data*/}
-              {/*</span>*/}
-            </div>
-          </div>
-        </div>
         <div className="kskp-visualization-body">
           <div className="row">
             <div className="col-sm-6">

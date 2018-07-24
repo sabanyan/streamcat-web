@@ -6,6 +6,8 @@ import Constants from '../../../../../constants'
 import ModalUtil from '../../../../../utils/ModalUtil'
 import DataTable from '../../../DataTable'
 import moment from 'moment'
+import HttpUtil from '../../../../../utils/HttpUtil'
+import DataPreview from '../../../DataPreview'
 
 type JobFrameProps = {
   type:string;
@@ -19,12 +21,14 @@ export default class JobFrameList extends React.Component<JobFrameProps> {
     super(props)
   }
   onClickName(e:Event,uuid){
-    const content = <DataTable/>
-    ModalUtil.emitModal({
-      id: Constants.preview.DATASOURCE,
-      visible: true,
-      content: content,
-      title: uuid,
+    HttpUtil.get("frames/"+uuid).then((response)=>{
+      let content = <DataPreview key={uuid} json={response.data} />
+      ModalUtil.emitModal({
+        id: Constants.preview.DATASOURCE,
+        visible: true,
+        content: content,
+        title: uuid,
+      })
     })
     e.preventDefault()
   }
