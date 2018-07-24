@@ -1,8 +1,8 @@
 import dagre from 'dagre'
 import Constants from '../constants'
-import CommandStepModel from '../model/CommandStepModel'
-import DataFrameStepModel from '../model/DataFrameStepModel'
-import SubFlowStepModel from '../model/SubFlowStepModel'
+import CommandStepModel from '../model/Step/CommandStepModel'
+import DataFrameStepModel from '../model/Step/DataFrameStepModel'
+import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
 
 export const defaultNodeProps = {
@@ -144,6 +144,32 @@ class Graph {
   static getNode(nodes,key){
     let node = nodes.find((node)=>{
       return node.id === key
+    })
+    return node
+  }
+
+  /**
+   * ノードの取得
+   * @param nodes
+   * @param key
+   * @returns {*}
+   */
+  static getNewNodesWithIncludeKeys(nodes,keySet){
+    let node = nodes.filter((node)=>{
+      return (key_set.has(node.id))
+    })
+    return node
+  }
+
+  /**
+   * ノードの取得
+   * @param nodes
+   * @param key
+   * @returns {*}
+   */
+  static getNewNodesWithExculudeKeys(nodes,keySet){
+    let node = nodes.filter((node)=>{
+      return !(keySet.has(node.id))
     })
     return node
   }

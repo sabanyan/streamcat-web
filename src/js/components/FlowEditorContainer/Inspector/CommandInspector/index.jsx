@@ -4,9 +4,10 @@ import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
 import Button from '../../../shared/Button'
-import CommandStepModel from '../../../../model/CommandStepModel'
+import CommandStepModel from '../../../../model/Step/CommandStepModel'
 import InOutConnector from './InOutConnector'
 import Constants from '../../../../constants'
+import Graph from '../../../../utils/Graph'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -17,7 +18,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     getSelectedStep(){
       let {selected_step_ids, nodes} = this.props
-      return nodes[selected_step_ids[0]]
+      return Graph.getNode(nodes,selected_step_ids[0])
     }
 
     onClickSave(e:Event) {

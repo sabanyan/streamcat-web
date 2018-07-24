@@ -4,8 +4,8 @@ import Inspector from '../Inspector'
 import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
 import CommandSelector from '../CommandSelector'
-import DataFrameStepModel from '../../../../model/DataFrameStepModel'
-import CommandStepModel from '../../../../model/CommandStepModel'
+import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
+import CommandStepModel from '../../../../model/Step/CommandStepModel'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
   onClickDelete (e: Event) {

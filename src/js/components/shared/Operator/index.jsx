@@ -2,10 +2,10 @@
 import React from 'react'
 import Constants from '../../../constants/index'
 import ModalUtil from '../../../utils/ModalUtil'
-import DataFrameStepModel from '../../../model/DataFrameStepModel'
+import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import style from './style.scss'
 import classnames from 'classnames'
-import CommandStepModel from '../../../model/CommandStepModel'
+import CommandStepModel from '../../../model/Step/CommandStepModel'
 
 type Props = {
     name: string;

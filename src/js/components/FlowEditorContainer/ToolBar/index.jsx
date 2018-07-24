@@ -13,7 +13,7 @@ import DataSourceImport from './DatasourceImport'
 import Zoom from './Zoom'
 import style from './style.scss'
 import classnames from 'classnames'
-import DataFrameStepModel from '../../../model/DataFrameStepModel'
+import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import HttpUtil from '../../../utils/HttpUtil'
 import type { FlowEditorProps } from '../index'
 
