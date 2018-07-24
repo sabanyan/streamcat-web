@@ -28,6 +28,11 @@ class Job:
         result = self.step.execute(self.inputs)
 
         return result
+=======
+        result = self.step.execute(self.inputs)
+
+        return result
+>>>>>>> backend-new-json-format
 
     def dtor(self):
         """ デストラクタ """

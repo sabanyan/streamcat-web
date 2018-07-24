@@ -2,8 +2,13 @@ import json
 import uuid
 from pathlib import Path
 
-from flask import Blueprint, request, session, jsonify
+from flask import Blueprint, request, session, jsonify, send_from_directory
 from .auth import login_required_api
+from .navigation import (
+    update_navigation_user,
+    update_navigation_project,
+    update_navigation_flow
+)
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -21,6 +26,7 @@ from .activity import (
     make_unfinished_history,
     make_finished_history
 )
+from datetime import datetime, timezone, timedelta
 
 api = Blueprint('api', __name__)
 
@@ -43,6 +49,7 @@ def new_project():
 
 @api.route('/projects')
 @login_required_api
+@update_navigation_user
 def get_projects():
     """
     現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
@@ -54,6 +61,7 @@ def get_projects():
         proj['uuid'] = p['uuid']
         proj['name'] = p['name']
         proj['creator_id'] = p['creator_id']
+        proj['creator_name'] = p['creator_name']
         proj['created_at'] = p['created_at']
         projects.append(proj)
 
@@ -93,6 +101,7 @@ def new_flow():
 
 @api.route('/flows', methods=['GET'])
 @login_required_api
+@update_navigation_project
 def fecth_flows():
     """
     パラメータで指定されたプロジェクトが持つフローの一覧を取得する
@@ -102,6 +111,7 @@ def fecth_flows():
 
 @api.route('/flows/<flow_uuid>', methods=['GET'])
 @login_required_api
+@update_navigation_flow
 def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
@@ -115,7 +125,6 @@ def update_flow(flow_uuid):
     """
     指定されたフローを更新する
     """
-
     result = update_flow_by_uuid(flow_uuid, request.json)
     return jsonify({'success': True, 'data': result})
 
@@ -178,7 +187,6 @@ def make_new_frame():
                             'message': 'invalid json'
                         })
 
-
 @api.route('/frames/<frame_uuid>')
 def fetch_frame(frame_uuid):
     """
@@ -217,7 +225,25 @@ def upload_frame(req):
     f.close()
 
 
-def execute_flow(flow_uuid, step_paths=None):
+@api.route('/files')
+def download_frame():
+    type = request.args.get('type')
+    frame_uuid = request.args.get('uuid')
+    ext = request.args.get('ext')
+
+    # タイムゾーンの設定
+    JST = timezone(timedelta(hours=+9), 'JST')
+    date = datetime.now(JST)
+
+    # ダウンロードファイルの名前
+    downloadFileName = 'KSKP' + date.strftime("%Y%m%d%H%M") + '.' + ext
+    # ダウンロード対象のファイルの名前
+    downloadFile = frame_uuid + '.' + ext
+
+    return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
+                               attachment_filename = downloadFileName, mimetype = 'text/csv')
+
+def execute_flow(flow_uuid):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
