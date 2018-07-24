@@ -92,6 +92,8 @@ class ApiTestCase(unittest.TestCase):
                     result = json.loads(client.get('/api/v0/projects').get_data())
                     self.assertEqual(result['success'], True)
                     self.assertEqual({r['name'] for r in result['data']}, projects)
+                    self.assertEqual(result['navigation']['user_id'], user_id)
+                    self.assertEqual(result['navigation']['user_name'], model.get_user_by_id(user_id)['name'])
 
                 test_projects_by_user_id(model.get_user_id_by_email(user1), {proj1, proj2}) # user1だとproj1とproj2が見られる
                 test_projects_by_user_id(model.get_user_id_by_email(user2), {proj2, proj3}) # user2だとproj2とproj3が見られる
@@ -203,7 +205,6 @@ class ApiTestCase(unittest.TestCase):
              project_id, project_uuid,
              new_flow_name, data_source_name, created_flow) = setUpFlow(self)
 
-
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
@@ -217,6 +218,12 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(flow_path.stem, data_source_name)
         self.assertEqual(result['data']['projectId'], project_id)
         self.assertEqual(result['data']['name'], new_flow_name)
+        self.assertEqual(result['navigation']['user_id'], user1)
+        self.assertEqual(result['navigation']['user_name'], 'user1')
+        self.assertEqual(result['navigation']['project_uuid'], project_uuid)
+        self.assertEqual(result['navigation']['project_name'], 'proj1')
+        self.assertEqual(result['navigation']['flow_name'], new_flow_name)
+        self.assertEqual(result['navigation']['flow_uuid'], data_source_name)
 
         # 後片付け
         path = model.get_flow_path_by_uuid(data_source_name)
@@ -263,6 +270,10 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual({r['uuid'] for r in results['data']}, {flow1_datasource_name,
                                                                 flow2_datasource_name,
                                                                 flow3_datasource_name})
+        self.assertEqual(results['navigation']['user_id'], user1)
+        self.assertEqual(results['navigation']['user_name'], 'user1')
+        self.assertEqual(results['navigation']['project_uuid'], project_uuid)
+        self.assertEqual(results['navigation']['project_name'], 'proj1')
 
         # 後片付け
         with app.app_context():
@@ -478,8 +489,8 @@ def setUpClient(self):
 
 
 def setUpUser(self):
-    user1 = 'user1'
-    model.create_user(user1, '', '', '')
+    user1 = 1
+    model.create_user(user1, '', 'user1', '')
     return user1
 
 
