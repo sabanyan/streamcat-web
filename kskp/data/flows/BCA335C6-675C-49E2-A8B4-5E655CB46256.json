@@ -45,6 +45,41 @@
       "dataSource": "csv",
       "uuid": null,
       "label": null
+    },
+    {
+      "id": "c3",
+      "type": "command",
+      "commandId": "klinreg",
+      "args": {
+      },
+      "srcs": { "i": "o" },
+      "dsts": { "o": "o2" },
+      "label": null
+    },
+    {
+      "id": "o2",
+      "type": "frame",
+      "dataSource": "pickle",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "c4",
+      "type": "command",
+      "commandId": "predict",
+      "args": {
+        "d": "b97ee374-5b84-48ab-b971-046858937ccb.csv"
+      },
+      "srcs": { "i": "o2" },
+      "dsts": { "o": "o3" },
+      "label": null
+    },
+    {
+      "id": "o3",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
     }
   ]
 }
