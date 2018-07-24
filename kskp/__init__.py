@@ -36,7 +36,10 @@ def flows():
 def flow_designer(flow_uuid):
     return render_template('flow_designer.html',flow_uuid=flow_uuid)
 
-
+@app.route('/library', methods=['GET'])
+@login_required
+def library():
+    return render_template('library.html')
 
 if __name__ == '__main__':
     app.run()
