@@ -67,6 +67,10 @@ const Constants = {
       message: 'message',
     },
   },
+  format:{
+    date: "YYYY-MM-DD",
+    dateTime: "YYYY-MM-DD HH:mm:ss"
+  },
   preview: {
     DATASOURCE: 'datasource_preview',
   },
