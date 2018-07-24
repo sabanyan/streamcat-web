@@ -16,6 +16,7 @@ $preview-height: 100%;
       background: #F4F4F4 !important;
       .modal-body{
         overflow: scroll;
+        padding:0;
       }
     }
     .close{
@@ -40,13 +41,24 @@ $preview-height: 100%;
     border: none;
   }
   .modal-header{
+    display: block;
+    max-height: 64px;
+    padding: 16px!important;
     .modal-title{
+      line-height: 100%;
       font-weight: bold!important;
       font-size: 16px;
     }
   }
   .modal-header,.modal-footer{
     border: none;
+  }
+  .close{
+    position: absolute;
+    right: 16px;
+    top: 8px;
+    margin: 0;
+    padding: 0;
   }
 }
 
