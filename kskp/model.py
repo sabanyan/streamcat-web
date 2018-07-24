@@ -148,9 +148,11 @@ def get_projects_by_user_id(user_id, search_string=None):
     """
 
     sql = '''
-    SELECT p.uuid, p.name, p.creator_id, p.created_at FROM projects p
+    SELECT p.uuid, p.name, p.creator_id, y.name as creator_name, p.created_at FROM projects p
      INNER JOIN users_x_projects x
         ON x.project_id = p.id
+     INNER JOIN users y
+        ON p.creator_id = y.id
      WHERE x.user_id = ?
      ORDER BY p.id
     '''
@@ -178,6 +180,12 @@ def rename_project(project_uuid, new_name):
     sql = 'UPDATE projects SET name = ? WHERE uuid = ?'
     query_db(sql, (new_name, project_uuid))
 
+def fecth_project(project_id):
+    """
+    プロジェクトを取得する（project_idが基準）
+    """
+    sql = 'SELECT uuid, name FROM projects WHERE id = ?'
+    return query_db(sql, (project_id,), one=True)
 
 def create_flow(project_id, flow_name, data_source_name=None):
     """
@@ -280,6 +288,17 @@ def get_project_id_by_uuid(project_uuid):
 
     return result['id'] if result is not None else None
 
+def get_project_name_by_uuid(project_uuid):
+    """
+    指定したUUIDを持つプロジェクト名を返す
+    該当プロジェクトが存在しない場合はNoneを返す
+    get_project_id_by_uuidと纏められるが、後で。
+    """
+    sql = 'SELECT name FROM projects WHERE uuid = ?'
+
+    result = query_db(sql, (project_uuid,), one=True)
+
+    return result['name'] if result is not None else None
 
 def write_data_to_json(path, data):
     """
