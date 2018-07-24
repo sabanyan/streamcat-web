@@ -1,6 +1,7 @@
 import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
+import FlowModel from '../model/Flow/FlowModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -84,7 +85,7 @@ let initialState = {
   selected_tab_id:0,
   drag:{},
   selected_in_edges:[],
-  selected_out_edges:[]
+  selected_out_edges:[],
 }
 
 
@@ -96,7 +97,8 @@ const Application = (state = initialState, action) => {
 
             const loadedJson = graph.load(context)
 
-            newState.flow = {...loadedJson}
+            newState.originalFlow = {...loadedJson}
+            newState.flow = new FlowModel(loadedJson)
             newState.nodes = loadedJson.nodes
             newState.project = {id:loadedJson.projectId}
 
@@ -158,10 +160,13 @@ const Application = (state = initialState, action) => {
 
         case DELETE_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
+            let deleteKeySet = new Set()
             action.step_ids.map((id)=>{
               graph.removeNode(id)
-              delete newState.nodes[id]
+              deleteKeySet.add(id)
             })
+
+            newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
             newState.graph = graph.getGraph(newState)
 
             //削除後は非選択状態にする
@@ -177,14 +182,14 @@ const Application = (state = initialState, action) => {
                 return newState.nodes[id]
             })})
 
-            console.log(cut_data)
-
             navigator.clipboard.writeText(cut_data).then(()=> {
 
+                let deleteKeySet = new Set()
                 action.step_ids.map((id)=>{
                     graph.removeNode(id)
-                    delete newState.nodes[id]
+                    deleteKeySet.add(id)
                 })
+                newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
                 newState.graph = graph.getGraph(newState)
 
                 //削除後は非選択状態にする

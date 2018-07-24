@@ -1,5 +1,5 @@
-import Constants from '../constants/index'
-import ModelUtil from '../utils/ModelUtil'
+import Constants from '../../constants/index'
+import ModelUtil from '../../utils/ModelUtil'
 
 type stepType = "command" | "frame"
 

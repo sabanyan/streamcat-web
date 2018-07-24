@@ -23,6 +23,7 @@ import {
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
+import { FlowModelProps } from '../../model/Flow/FlowModel'
 
 let FlowEditorContainer
 
@@ -52,7 +53,7 @@ export type FlowEditorProps = {
   dragEnd: Function;
   setZoom: Function;
   zoom: number;
-  flow:{name:string,ports:{},params:{},nodes:{}};
+  flow: FlowModelProps;
   drag: {
     start: {
       x: number,
@@ -81,6 +82,7 @@ export default FlowEditorContainer = connect(
       selected_out_edges: state.selected_out_edges,
       zoom: state.zoom,
       flow: state.flow,
+      originalFlow: state.originalFlow
     }
   },
   dispatch => {
