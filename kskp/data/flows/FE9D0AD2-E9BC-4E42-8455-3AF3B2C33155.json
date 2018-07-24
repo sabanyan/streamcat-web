@@ -1,61 +1,99 @@
 {
-  "name": "日本NI様サンプル(セクションごとの処理)",
+  "projectId": "2",
+  "label": "日本NI様サンプル(セクションごとの処理)",
   "params": [
-    { "name": "section", "type": "string" }
+    {
+      "name": "section",
+      "type": "string"
+    }
   ],
-  "ports": [{
-    "i": { "type": "frame" }
-  }, {
-    "o": { "type": "frame" }
-  }],
-  "nodes": {
-    "i": {
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "nodes": [
+    {
+      "id": "i",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s1": {
+    {
+      "id": "s1",
       "type": "command",
-      "name": "mselstr",
       "args": {
         "f": "Section",
         "v": "@[section]"
       },
-      "srcs": { "i": "i" },
-      "dsts": { "o": "t1~2" }
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t1~2"
+      },
+      "commandId": "mselstr",
+      "label": null
     },
-    "t1~2": {
+    {
+      "id": "t1~2",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s2": {
+    {
+      "id": "s2",
       "type": "flow",
       "uuid": "E3EB7A3B-D015-4DA3-BF56-1784023D8FCD",
       "args": {},
-      "srcs": { "i": "t1~2" },
-      "dsts": { "o": "t2~3" }
+      "srcs": {
+        "i": "t1~2"
+      },
+      "dsts": {
+        "o": "t2~3"
+      },
+      "label": null
     },
-    "t2~3": {
+    {
+      "id": "t2~3",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     },
-    "s3": {
+    {
+      "id": "s3",
       "type": "command",
-      "name": "msetstr",
       "args": {
         "a": "Section",
         "v": "@[section]"
       },
-      "srcs": { "i": "t2~3" },
-      "dsts": { "o": "o" }
+      "srcs": {
+        "i": "t2~3"
+      },
+      "dsts": {
+        "o": "o"
+      },
+      "commandId": "msetstr",
+      "label": null
     },
-
-    "o": {
+    {
+      "id": "o",
       "type": "frame",
       "dataSource": "csv",
-      "uuid": null
+      "uuid": null,
+      "label": null
     }
-  }
+  ]
 }

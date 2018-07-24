@@ -1,42 +1,36 @@
 {
-  "version": "0.1",
-  "name": "msed",
-  "description": "文字列置換",
-  "inputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "outputs": [
-    {
-      "type": "csv"
-    }
-  ],
-  "arguments": [
+  "id": "msed",
+  "params": [
     {
       "name": "f",
-      "caption": "対象列名",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "対象列名"
     },
     {
       "name": "c",
-      "caption": "変換パターン",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "変換パターン"
     },
     {
       "name": "v",
-      "caption": "変換後文字列",
       "type": "string",
-      "default": "",
-      "validation" : {}
+      "label": "変換後文字列"
     }
   ],
-  "script": {
-    "type": "file",
-    "name": "msed.py"
-  }
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "文字列置換"
 }
