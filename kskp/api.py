@@ -2,7 +2,7 @@ import json
 import uuid
 from pathlib import Path
 
-from flask import Blueprint, request, session, jsonify
+from flask import Blueprint, request, session, jsonify, send_from_directory
 from .auth import login_required_api
 from .model import (
     start_project,
@@ -21,6 +21,7 @@ from .activity import (
     make_unfinished_history,
     make_finished_history
 )
+from datetime import datetime, timezone, timedelta
 
 api = Blueprint('api', __name__)
 
@@ -217,7 +218,25 @@ def upload_frame(req):
     f.close()
 
 
-def execute_flow(flow_uuid, step_paths=None):
+@api.route('/files')
+def download_frame():
+    type = request.args.get('type')
+    frame_uuid = request.args.get('uuid')
+    ext = request.args.get('ext')
+
+    # タイムゾーンの設定
+    JST = timezone(timedelta(hours=+9), 'JST')
+    date = datetime.now(JST)
+
+    # ダウンロードファイルの名前
+    downloadFileName = 'KSKP' + date.strftime("%Y%m%d%H%M") + '.' + ext
+    # ダウンロード対象のファイルの名前
+    downloadFile = frame_uuid + '.' + ext
+
+    return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
+                               attachment_filename = downloadFileName, mimetype = 'text/csv')
+
+def execute_flow(flow_uuid):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
