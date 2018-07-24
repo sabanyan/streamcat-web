@@ -80,7 +80,7 @@ class Flow:
     def check_multi_use(self, datum_id, datum):
         if len(self.dst_job_ids(datum_id)) >= 2 \
         and isinstance(datum.source, UnixCommandSource):
-            path = Path(os.environ['KENG_FRAME_PATH']).joinpath(datum.uuid + datum.source.ext)
+            path = Path(os.environ['KENG_FRAMES_PATH']).joinpath(datum.uuid + datum.source.ext)
             with path.open(mode='w', encoding='utf-8') as fd:
                 datum.source.save(fd)
             datum.source = PathFileSource('csv', path.parent, path.name)
@@ -179,7 +179,7 @@ class MCommand(Command):
     def save(self, input):
         # パイプなら、CSVに吐く
         if isinstance(input.source, UnixCommandSource):
-            path = Path(os.environ['KENG_FRAME_PATH']).joinpath(input.uuid + input.source.ext)
+            path = Path(os.environ['KENG_FRAMES_PATH']).joinpath(input.uuid + input.source.ext)
             with path.open(mode='w', encoding='utf-8') as fd:
                 input.source.save(fd)
             input.source = PathFileSource('csv', path.parent, path.name)

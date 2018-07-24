@@ -32,7 +32,7 @@ class Mcat(MCommand):
                     # その他の場合は今は考えない
                     raise Exception()
 
-                path = Path(os.environ['KENG_FRAME_PATH']).joinpath(input.uuid + ext)
+                path = Path(os.environ['KENG_FRAMES_PATH']).joinpath(input.uuid + ext)
                 with path.open(mode='w', encoding='utf-8') as fd:
                     input.source.save(fd)
                 input.source = PathFileSource('csv', path.parent, path.name)
@@ -103,7 +103,7 @@ class Mjoin(MCommand):
                 # その他の場合は今は考えない
                 raise Exception()
 
-            path = Path(os.environ['KENG_FRAME_PATH']).joinpath(input_m.uuid + ext)
+            path = Path(os.environ['KENG_FRAMES_PATH']).joinpath(input_m.uuid + ext)
             with path.open(mode='w', encoding='utf-8') as fd:
                 input_m.source.save(fd)
             input_m.source = PathFileSource('csv', path.parent, path.name)
