@@ -4,7 +4,7 @@ import classnames from 'classnames'
 
 export default class Tab extends React.Component {
   onClickTab () {
-    this.props.selectTabAction(this.props.tab_id)
+    this.props.selectTab(this.props.tab_id)
   }
 
   render () {

@@ -44,7 +44,13 @@ export default class DataPreview extends React.Component<Props, State> {
 
   }
 
+  onChangePreviewInspector(type){
+    this.setState({type:type})
+  }
+
   render () {
+    console.log("render")
+    console.log(this.state)
 
     let json = this.state.json
 
@@ -104,7 +110,7 @@ export default class DataPreview extends React.Component<Props, State> {
         </div>
       </div>
 
-      <DataPreviewInspector image_url={this.state.image_url}/>
+      <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
 
     </div>
   }

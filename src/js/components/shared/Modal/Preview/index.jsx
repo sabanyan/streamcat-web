@@ -1,5 +1,9 @@
 import React from 'react'
 import classnames from 'classnames'
+import TabBar from '../../TabBar'
+import TabList from '../../TabBar/TabList'
+import Tab from '../../TabBar/Tab'
+import TabPanel from '../../TabBar/TabPanel'
 
 export default class PreviewModal extends React.Component {
 
@@ -19,7 +23,21 @@ export default class PreviewModal extends React.Component {
       <div className="modal-dialog">
         <div className="modal-content">
           <div className="modal-header">
-            <h5 className="modal-title">{title}</h5>
+            <div className="modal-title">
+              <span>{title}</span>
+              {/*<TabBar>*/}
+                {/*<TabList>*/}
+                  {/*<Tab>フローエディター</Tab>*/}
+                  {/*<Tab>結果</Tab>*/}
+                  {/*<Tab>結果</Tab>*/}
+                {/*</TabList>*/}
+                {/*<TabPanel>*/}
+                {/*</TabPanel>*/}
+                {/*<TabPanel>*/}
+                {/*</TabPanel>*/}
+              {/*</TabBar>*/}
+            </div>
+
             {close_button}
           </div>
           <div className="modal-body">
