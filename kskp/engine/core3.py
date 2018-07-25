@@ -349,7 +349,9 @@ class Split(Command):
         return {'o1': frame1, 'o2': frame2}
 
 
-class MCommand(Command):
+class MCommand(UnixCommand):
+    # def __init__(self):
+    #     super().__init__()
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -362,8 +364,8 @@ class MCommand(Command):
                 res.append('%s=%s' % (k, v))
         return res
 
-    @property
-    def source(self):
+    # @property
+    def source(self, args, inputs):
         return UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
 
     @property
