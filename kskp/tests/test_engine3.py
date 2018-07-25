@@ -13,13 +13,13 @@ class EngineTestCase(unittest.TestCase):
         job.execute(step_paths=step_paths)
         job.dtor()
 
-    @unittest.skip
+    # @unittest.skip
     def test_simple(self):
         self.execute('27C35909-504E-43F2-A115-DADB6F57D38C')
 
-    @unittest.skip
+    # @unittest.skip
     def test_step_paths(self):
-        self.execute('27C35909-504E-43F2-A115-DADB6F57D38C', 'Bi')
+        self.execute('27C35909-504E-43F2-A115-DADB6F57D38C', 'Bt')
 
     @unittest.skip
     def test_ni(self):
