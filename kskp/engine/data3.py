@@ -250,7 +250,7 @@ class Frame(Datum):
         super().__init__(frame_uuid, source)
 
     def command_to_file(self):
-        if not isinstance(self.source, PathFileSource):
+        if self.source is not None and not isinstance(self.source, PathFileSource):
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
             with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
