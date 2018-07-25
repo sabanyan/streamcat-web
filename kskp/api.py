@@ -317,14 +317,16 @@ def execute_flow_internal(flow_uuid, step_paths=None):
         with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
 
-    try:
-        result = execute_flow_by_uuid(flow_uuid)
-    except Exception as e:
-        # とりあえずの例外処理
-        # 何か例外が起こった時、実行中状態の履歴ファイルが無意味に残るのが嫌なので
-        history_file_path.unlink()
-        print(e)
-        result = {}
+    # try:
+    #     result = execute_flow_by_uuid(flow_uuid)
+    # except Exception as e:
+    #     # とりあえずの例外処理
+    #     # 何か例外が起こった時、実行中状態の履歴ファイルが無意味に残るのが嫌なので
+    #     # history_file_path.unlink()
+    #     print(e)
+    #     result = {}
+
+    result = execute_flow_by_uuid(flow_uuid)
 
     # 実行履歴（実行完了状態）の作成
     make_finished_history(flow_uuid, history_file_path, result)
