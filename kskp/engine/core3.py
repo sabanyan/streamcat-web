@@ -513,7 +513,7 @@ class SelectTargetColumn(UnixCommand):
 
     def source(self, args, inputs):
         frames_path = 'kskp/data/frames'
-        from .commands.kcmd.selecttargetcolumn import SelectTargetColumn as Base
+        from .commands.kcmd.preprocess.selecttargetcolumn import SelectTargetColumn as Base
         command = Base()
         dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-t', args['t']])
 
@@ -531,7 +531,7 @@ class Standardize(UnixCommand):
     def source(self, args, inputs):
         print('StandardizeStandardizeStandardizeStandardize')
         frames_path = 'kskp/data/frames'
-        from .commands.kcmd.standardize import Standardize as Base
+        from .commands.kcmd.preprocess.standardize import Standardize as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
@@ -550,7 +550,7 @@ class Klinreg(UnixCommand):
     def source(self, args, inputs):
         print('KlinregKlinregKlinregKlinregKlinregKlinreg')
         frames_path = 'kskp/data/frames'
-        from .commands.kcmd.klinreg import Klinreg as Base
+        from .commands.kcmd.modeling.regression.klinreg import Klinreg as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
@@ -571,7 +571,7 @@ class Predict(UnixCommand):
     def source(self, args, inputs):
         print('PredictPredictPredictPredictPredictPredict')
         frames_path = 'kskp/data/frames'
-        from .commands.kcmd.predict import Predict as Base
+        from .commands.kcmd.postprocess.predict import Predict as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
 
