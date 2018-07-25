@@ -7,7 +7,7 @@ module.exports = [
     mode: 'development',
     //ref:https://qiita.com/pirosikick/items/c77db84dbed4c447a6fe
     entry: {
-      vendor: ['react','react-dom','react-redux','classnames','dagre','react-chartjs-2','eventemitter3']
+      vendor: ['react','react-dom','react-redux','classnames','dagre','react-chartjs-2','eventemitter3','moment']
     },
     output: {
       path: `${__dirname}/kskp/static/js`,

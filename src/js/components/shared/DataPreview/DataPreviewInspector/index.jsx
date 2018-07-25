@@ -13,7 +13,9 @@ class DataPreviewInspector extends React.Component<FlowEditorProps> {
 
 
   onChangeChart (e:Event) {
-    this.setState({type: e.target.value})
+    const type = e.target.value
+    this.setState({type: type})
+    this.props.onChange(type)
   }
 
   onClickSave(e:Event){

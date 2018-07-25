@@ -44,7 +44,13 @@ export default class DataPreview extends React.Component<Props, State> {
 
   }
 
+  onChangePreviewInspector(type){
+    this.setState({type:type})
+  }
+
   render () {
+    console.log("render")
+    console.log(this.state)
 
     let json = this.state.json
 
@@ -92,16 +98,6 @@ export default class DataPreview extends React.Component<Props, State> {
 
     return <div className="kskp-visualization">
       <div className="kskp-visualization-container">
-        <div className="kskp-visualization-header">
-          <div className="row">
-            <div className="col-sm-4">
-              {/*<i className="icon material-icons">arrow_back</i>*/}
-              {/*<span className="title">*/}
-              {/*sorted-test-data*/}
-              {/*</span>*/}
-            </div>
-          </div>
-        </div>
         <div className="kskp-visualization-body">
           <div className="row">
             <div className="col-sm-6">
@@ -114,7 +110,7 @@ export default class DataPreview extends React.Component<Props, State> {
         </div>
       </div>
 
-      <DataPreviewInspector image_url={this.state.image_url}/>
+      <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
 
     </div>
   }

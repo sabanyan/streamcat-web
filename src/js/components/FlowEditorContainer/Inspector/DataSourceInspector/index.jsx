@@ -2,15 +2,17 @@
 import React from 'react'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
-import Operator from '../../../shared/Operator/index'
+import Operator from '../../../shared/Command/index'
 import Inspector from '../Inspector'
 import style from '../style.scss'
 import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
 import DataPreview from '../../../shared/DataPreview'
 import DropDownList from '../../../shared/DropDownList'
-import DataFrameStepModel from '../../../../model/DataFrameStepModel'
+import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
 import CommandSelector from '../CommandSelector'
+import FlowModel from '../../../../model/Flow/FlowModel'
+import Graph from '../../../../utils/Graph'
 
 class DataSourceInspector extends React.Component<FlowEditorProps> {
 
@@ -66,31 +68,33 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
 
   onClickDelete (e: Event) {
     if (window.confirm('このデータソースを削除しますか？')) {
-      let {selected_step_ids, steps} = this.props
-      const selected_step = steps[selected_step_ids[0]]
+      let {selected_step_ids, nodes} = this.props
+      const selected_step = Graph.getNode(nodes,selected_step_ids[0])
       this.props.deleteSteps([selected_step.id])
       this.props.selectSteps()
     }
   }
 
   onChangeFlowInOut (e: Event) {
-    let {flow} = this.props
+    let flow:FlowModel = this.props.flow
     const flowInChecked = this.refs.flowIn.checked
     const flowOutChecked = this.refs.flowOut.checked
 
     let selected_step = this.getSelectedStep()
 
     //パラメーターを更新
+    const port = {name:selected_step.id,type: selected_step.type}
+
     if (flowInChecked) {
-      flow.ports[0][selected_step.id] = {type: selected_step.type}
+      flow.setInPort(port)
     } else {
-      delete flow.ports[0][selected_step.id]
+      flow.deleteInPortWithId(selected_step.id)
     }
 
     if (flowOutChecked) {
-      flow.ports[1][selected_step.id] = {type: selected_step.type}
+      flow.setOutPort(port)
     } else {
-      delete flow.ports[1][selected_step.id]
+      flow.deleteOutPortWithId(selected_step.id)
     }
 
     this.props.updateFlow(flow)
@@ -98,7 +102,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
 
   getSelectedStep () {
     let {selected_step_ids, nodes} = this.props
-    return nodes[selected_step_ids[0]]
+    return Graph.getNode(nodes,selected_step_ids[0])
   }
 
   render () {
@@ -117,16 +121,18 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       }
     }
 
-    const {ports} = this.props.flow
+    const flow:FlowModel  = this.props.flow
+    console.log("CHECKED")
+    console.log(flow.hasInPortWithId(selected_step.id))
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
-        <label><input type="checkbox" defaultChecked={(ports[0][selected_step.id])} ref={'flowIn'}
+        <label><input type="checkbox" checked={flow.hasInPortWithId(selected_step.id)} ref={'flowIn'}
                onChange={(e) => this.onChangeFlowInOut(e)} />
         &nbsp;入力
         </label>
       </div>
       <div>
-        <label><input type="checkbox" defaultChecked={(ports[1][selected_step.id])}
+        <label><input type="checkbox" checked={flow.hasOutPortWithId(selected_step.id)}
                ref={'flowOut'}
                onChange={(e) => this.onChangeFlowInOut(e)} />
         &nbsp;出力

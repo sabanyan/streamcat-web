@@ -1,6 +1,6 @@
 @import "../../../../sass/common";
 
-.operator{
+.command{
   border: 2px solid $kskp-property-operator-border-color;
   background: $kskp-property-operator-background-color;
   border-radius: 12px;
@@ -13,7 +13,7 @@
   cursor: pointer;
 }
 
-.operator_label{
+.command_label{
   color: $kskp-property-operator-label-color;
   padding-top: 12px;
   text-align: center;
@@ -21,7 +21,7 @@
   font-size: 8px;
 }
 
-.operator_icon{
+.command_icon{
   color: $kskp-property-operator-icon-color;
   font-size: 28px;
   padding: 6px;
@@ -30,6 +30,6 @@
   }
 }
 
-.operator_no_icon{
+.command_no_icon{
   padding-top: 34px;
 }

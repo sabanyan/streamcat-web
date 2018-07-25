@@ -8,6 +8,7 @@ import VisualizationContainer from './components/VisualizationContainer'
 import EventEmitter from 'eventemitter3'
 import ProjectListContainer from './components/ProjectListContainer'
 import FlowListContainer from './components/FlowListContainer'
+import LibraryListContainer from './components/LibraryListContainer'
 
 window.emitter = new EventEmitter()
 
@@ -42,5 +43,12 @@ if (document.getElementById('flow_list')) {
   ReactDOM.render(
     <FlowListContainer/>,
     document.getElementById('flow_list'),
+  )
+}
+
+if (document.getElementById('library_list')) {
+  ReactDOM.render(
+    <LibraryListContainer/>,
+    document.getElementById('library_list'),
   )
 }
