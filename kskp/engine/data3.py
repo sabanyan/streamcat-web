@@ -6,6 +6,8 @@ import os
 import tempfile
 from pathlib import Path
 
+import sys # sys.stdout
+
 ref_counts = {}
 
 class Source:
@@ -53,6 +55,8 @@ class FileSource(Source):
             return '.csv'
         elif self.type == '':
             return ''
+        elif self.type == 'pickle':
+            return '.pickle'
         else:
             # その他の場合は今は考えない
             raise Exception()
@@ -65,8 +69,36 @@ class FileSource(Source):
     def fd(self, value):
         pass
 
+    def save(self, stdout):
+        """ for override """
+        pass
 
-from pathlib import Path
+class PandasSource(FileSource):
+    def __init__(self, source_type, source_dir, file_name, dataframe):
+        super().__init__(source_type)
+        self.dataframe = dataframe
+        self.source_dir = source_dir
+        self.file_name = file_name
+        self._fd = None
+
+    @property
+    def fd(self):
+        if not self.fullpath.exists():
+            self.dataframe.to_csv(self.fullpath, index=False)
+        self._fd = open(self.fullpath, 'r')
+        return self._fd
+
+    @property
+    def fullpath(self):
+        return Path(self.source_dir).joinpath(self.file_name)
+
+    def save(self, stdout):
+        """ engineから使う最後の保存用 """
+        self.dataframe.to_csv(stdout, index=False)
+
+    def dtor(self):
+        if self._fd is not None:
+            self._fd.close()
 
 
 class PathFileSource(FileSource):
@@ -218,7 +250,7 @@ class Frame(Datum):
         super().__init__(frame_uuid, source)
 
     def command_to_file(self):
-        if isinstance(self.source, UnixCommandSource):
+        if self.source is not None and not isinstance(self.source, PathFileSource):
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
             with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
@@ -231,7 +263,7 @@ class Frame(Datum):
         return self
 
     def command_to_tempfile(self):
-        if isinstance(self.source, UnixCommandSource):
+        if not isinstance(self.source, PathFileSource):
             new_source = TempPathFileSource(self.source.type)
             with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
                 self.source.save(fd)
