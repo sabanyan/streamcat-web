@@ -1062,14 +1062,16 @@ class Evaluate(UnixCommand):
         # command.input = inputs['i'].source.fullpath
 
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-d', Path(frames_path).joinpath(args['d']).as_posix()])
-
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(),
+                                  '-d', Path(frames_path).joinpath(args['d']).as_posix(),
+                                  '-m', args['m']])
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class Predict(UnixCommand):
     def __init__(self):
         super().__init__()
         self.params.append(Parameter('d', 'データのパス'))
+        self.params.append(Parameter('m', 'メトリクス'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
