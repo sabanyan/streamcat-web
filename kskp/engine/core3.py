@@ -523,13 +523,13 @@ class Standardize(UnixCommand):
     def __init__(self):
         super().__init__()
         self.params.append(Parameter('c', '対象列名'))
+        self.params.append(Parameter('a', '列名'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        print('StandardizeStandardizeStandardizeStandardize')
         frames_path = 'kskp/data/frames'
         from .commands.kcmd.preprocess.standardize import Standardize as Base
         command = Base()
@@ -538,6 +538,423 @@ class Standardize(UnixCommand):
         dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
 
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+
+class Kkmeans(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.clustering.kkmeans import Kkmeans as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix()])
+
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+
+class CKab(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.kab import Kab as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class CKbag(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.kbag import Kbag as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class CKdt(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.kdt import Kdt as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class CKgb(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.kgb import Kgb as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class CKnearestNeighbors(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.knearest_neighbors import Knearest_neighbors as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class CKneuralnet(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.kneuralnet import Kneural_network as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class CKrf(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.krf import Krf as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class CKsvm(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.ksvm import Ksvm as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class KgaussianNb(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.kgaussian_nb import Kgaussian_nb as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class Klogreg(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.classification.klogreg import Klogreg as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class RKab(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.kab import Kab as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class RKbag(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.kbag import Kbag as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class RKdt(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.kdt import Kdt as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class RKgb(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.kgb import Kgb as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class RKnearestNeighbors(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.knearest_neighbors import Knearest_neighbors as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class RKneuralnet(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.kneuralnet import Kneural_network as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class RKrf(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.krf import Krf as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class RKsvm(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.ksvm import Ksvm as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class Kelastic(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.kelastic import Kelastic as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class Kridge(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.kridge import Kridge as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class Klasso(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.modeling.regression.klasso import Klasso as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
 
 class Klinreg(UnixCommand):
     def __init__(self):
@@ -548,7 +965,6 @@ class Klinreg(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        print('KlinregKlinregKlinregKlinregKlinregKlinreg')
         frames_path = 'kskp/data/frames'
         from .commands.kcmd.modeling.regression.klinreg import Klinreg as Base
         command = Base()
@@ -597,6 +1013,32 @@ commands = {
 
     'select_target_column': SelectTargetColumn(),
     'standardize': Standardize(),
+
+    'kkmeans': Kkmeans(),
+
+    'ckab': CKab(),
+    'ckbag': CKbag(),
+    'ckdt': CKdt(),
+    'ckgb': CKgb(),
+    'cknearest_neighbors': CKnearestNeighbors(),
+    'ckneuralnet': CKneuralnet(),
+    'ckrf': CKrf(),
+    'cksvm': CKsvm(),
+    'kgaussian_nb': KgaussianNb(),
+    'klogreg': Klogreg(),
+
+    'rkab': RKab(),
+    'rkbag': RKbag(),
+    'rkdt': RKdt(),
+    'rkgb': RKgb(),
+    'rknearest_neighbors': RKnearestNeighbors(),
+    'rkneuralnet': RKneuralnet(),
+    'rkrf': RKrf(),
+    'rksvm': RKsvm(),
+    'kelastic': Kelastic(),
+    'kridge': Kridge(),
+    'klasso': Klasso(),
     'klinreg': Klinreg(),
+
     'predict': Predict()
 }
