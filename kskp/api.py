@@ -272,7 +272,6 @@ def execute_flow(flow_uuid):
 def jobs():
     """
     指定されたフローの実行結果を返す
-    TODO: モックです
     """
     flow_uuid = ''
     count = 0

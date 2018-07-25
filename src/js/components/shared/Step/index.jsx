@@ -3,17 +3,17 @@ import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
 import FileIcon from '../Icon/FileIcon'
-import type { CommandStepModelProps } from '../../../model/CommandStepModel'
-import type { DataFrameStepModelProps } from '../../../model/DataFrameStepModel'
+import type { CommandStepModelProps } from '../../../model/Step/CommandStepModel'
+import type { DataFrameStepModelProps } from '../../../model/Step/DataFrameStepModel'
 import type { FlowEditorProps } from '../../FlowEditorContainer'
 import Rect from './Rect'
 import OperatorIcon from '../Icon/OperatorIcon'
 import SubFlowIcon from '../Icon/SubFlowIcon'
 import style from './style.scss'
-import CommandStepModel from '../../../model/CommandStepModel'
-import DataFrameStepModel from '../../../model/DataFrameStepModel'
-import SubFlowStepModel from '../../../model/SubFlowStepModel'
-import type { SubFlowStepModelProps } from '../../../model/SubFlowStepModel'
+import CommandStepModel from '../../../model/Step/CommandStepModel'
+import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
+import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
+import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
 
@@ -265,7 +265,7 @@ export default class Step extends React.Component<Props, State> {
 
   render () {
     const {x, y} = this.props.position
-    const {type} = this.props
+    const {type,flow} = this.props
     const {ports} = this.props.flow
     let icon
 
@@ -285,9 +285,12 @@ export default class Step extends React.Component<Props, State> {
 
     step.label = (step.label)?step.label:step.id
 
-    const flowIn = (ports[0][step.id])
-    const flowOut = (ports[1][step.id])
+    console.log(step.id)
+    const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
+    const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
 
+    console.log(flowIn)
+    console.log(flowOut)
     if(flowIn || flowOut){
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}

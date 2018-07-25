@@ -39,8 +39,8 @@ export default class ModalManager extends React.Component {
   render () {
 
     return <div>
-      <Modal key={Constants.modal.ADD_OPERATOR}
-             id={Constants.modal.ADD_OPERATOR} dynamic={true}>
+      <Modal key={Constants.modal.ADD_COMMAND}
+             id={Constants.modal.ADD_COMMAND} dynamic={true}>
       </Modal>
       <Modal key={Constants.modal.IMPORT_DATASOURCE}
              id={Constants.modal.IMPORT_DATASOURCE} dynamic={true}

@@ -57,7 +57,7 @@ const Constants = {
     },
   },
   modal: {
-    ADD_OPERATOR: 'add_operator',
+    ADD_COMMAND: 'add_command',
     ADD_PROJECT: 'add_project',
     ADD_FLOW: 'add_flow',
     IMPORT_DATASOURCE: 'import_datasource',
@@ -66,6 +66,10 @@ const Constants = {
       title: 'title',
       message: 'message',
     },
+  },
+  format:{
+    date: "YYYY-MM-DD",
+    dateTime: "YYYY-MM-DD HH:mm:ss"
   },
   preview: {
     DATASOURCE: 'datasource_preview',

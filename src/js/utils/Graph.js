@@ -1,8 +1,8 @@
 import dagre from 'dagre'
 import Constants from '../constants'
-import CommandStepModel from '../model/CommandStepModel'
-import DataFrameStepModel from '../model/DataFrameStepModel'
-import SubFlowStepModel from '../model/SubFlowStepModel'
+import CommandStepModel from '../model/Step/CommandStepModel'
+import DataFrameStepModel from '../model/Step/DataFrameStepModel'
+import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
 
 export const defaultNodeProps = {
@@ -50,7 +50,7 @@ class Graph {
       height: defaultNodeProps.height,
     })
     if (Array.isArray(from_id)) {
-      from_id.map((fid) => {
+      from_id.forEach((fid) => {
         self.addEdge(fid, id)
       })
     }
@@ -121,13 +121,11 @@ class Graph {
   refreshPosition (nodes) {
     const self = this
     this.layout()
-    console.log("refreshPosition")
-    console.log(this.g.nodes())
-    this.g.nodes().forEach(function (v) {
+    this.g.nodes().forEach((v)=> {
       let graph_node = self.g.node(v)
-      let step = nodes[graph_node.label]
-      console.log(step)
-      step.setFrame({
+      const key = graph_node.label //グラフ構造のlabelにidを設定しています
+      let node = Graph.getNode(nodes,key)
+      node.setFrame({
         x: graph_node.x,
         y: graph_node.y,
         width: graph_node.width,
@@ -135,6 +133,45 @@ class Graph {
       })
     })
     return nodes
+  }
+
+  /**
+   * ノードの取得
+   * @param nodes
+   * @param key
+   * @returns {*}
+   */
+  static getNode(nodes,key){
+    let node = nodes.find((node)=>{
+      return node.id === key
+    })
+    return node
+  }
+
+  /**
+   * ノードの取得
+   * @param nodes
+   * @param key
+   * @returns {*}
+   */
+  static getNewNodesWithIncludeKeys(nodes,keySet){
+    let node = nodes.filter((node)=>{
+      return (key_set.has(node.id))
+    })
+    return node
+  }
+
+  /**
+   * ノードの取得
+   * @param nodes
+   * @param key
+   * @returns {*}
+   */
+  static getNewNodesWithExculudeKeys(nodes,keySet){
+    let node = nodes.filter((node)=>{
+      return !(keySet.has(node.id))
+    })
+    return node
   }
 
   /**
@@ -146,15 +183,16 @@ class Graph {
     const self = this
     let hasPosition = false
     if (json) {
-      Object.keys(json.nodes).map((node) => {
-        self.addNode(node)
-        const type = json.nodes[node].type
+      let newNodes = []
+      json.nodes.forEach((node)=>{
+        self.addNode(node.id)
+        const type = node.type
         switch(type){
           //データフレーム
           case Constants.step.type.frame:
-            const frame = json.nodes[node]
-            json.nodes[node] = new DataFrameStepModel({
-              id: node,
+            const frame = node
+            newNodes.push(new DataFrameStepModel({
+              id: frame.id,
               type: Constants.step.type.frame,
               uuid: frame.uuid,
               dataSource: Constants.data.dataSource.csv,
@@ -162,7 +200,7 @@ class Graph {
               asFlowOut: frame.asFlowOut,
               position: frame.position,
               size: frame.size,
-            })
+            }))
             if(frame.position && frame.size){
               hasPosition = true
             }
@@ -170,10 +208,10 @@ class Graph {
           case Constants.step.type.command:
           case Constants.step.type.subflow:
             //コマンド
-            const step = json.nodes[node]
+            const step = node
 
             let model = {
-              id: node,
+              id: step.id,
               name: step.name,
               label: step.label,
               srcs: step.srcs,
@@ -185,36 +223,32 @@ class Graph {
 
             if(type === Constants.step.type.command){
               model.type = Constants.step.type.command
-              json.nodes[node] = new CommandStepModel(model)
+              node = new CommandStepModel(model)
             }else if(type === Constants.step.type.subflow){
               model.type = Constants.step.type.subflow
               model.uuid = step.uuid
-              json.nodes[node] = new SubFlowStepModel(model)
+              node = new SubFlowStepModel(model)
             }
+
+            newNodes.push(node)
 
             const hasSrcs = (Object.keys(step.srcs).length)
             const hasDsts = (Object.keys(step.dsts).length)
 
             if (hasSrcs) {
-              console.log("srcs")
               Object.keys(step.srcs).forEach((key) => {
-                console.log(step.srcs)
                 const src = step.srcs[key]
-                console.log(src)
                 const label = src
-                console.log(label)
                 const from = src
-                const to = node
+                const to = node.id
                 self.addEdge(from, to, label)
               })
             }
             if (hasDsts) {
-              console.log("dsts")
               Object.keys(step.dsts).forEach((key) => {
                 const dst = step.dsts[key]
                 const label = dst
-                console.log(label)
-                const from = node
+                const from = node.id
                 const to = dst
                 self.addEdge(from, to, label)
               })
@@ -225,7 +259,8 @@ class Graph {
         }
       })
 
-      if(!hasPosition)this.refreshPosition({...json.nodes})
+      json.nodes = newNodes
+      if(!hasPosition)this.refreshPosition(json.nodes)
 
       return json
     }

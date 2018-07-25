@@ -1,5 +1,5 @@
 import React from 'react'
-import style from './style.css'
+import style from './style.scss'
 import TabPanel from './TabPanel'
 
 /*
@@ -17,7 +17,7 @@ import TabPanel from './TabPanel'
 
  */
 
-export default class Tabbar extends React.Component {
+export default class TabBar extends React.Component {
   onChangeBefore () {
 
   }
@@ -41,7 +41,7 @@ export default class Tabbar extends React.Component {
       }
       return element
     })
-    return <div>
+    return <div className={style.tabbar}>
       {children}
     </div>
   }

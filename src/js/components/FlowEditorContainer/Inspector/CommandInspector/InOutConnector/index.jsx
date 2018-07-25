@@ -1,8 +1,8 @@
 import * as React from 'react'
 import style from '../../style.scss'
 import DropDownList from '../../../../shared/DropDownList/index'
-import CommandStepModel from '../../../../../model/CommandStepModel'
-import SubFlowStepModel from '../../../../../model/SubFlowStepModel'
+import CommandStepModel from '../../../../../model/Step/CommandStepModel'
+import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
 
 class InOutConnector extends React.Component{
 

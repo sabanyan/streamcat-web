@@ -1,6 +1,7 @@
 import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
+import FlowModel from '../model/Flow/FlowModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -79,12 +80,12 @@ let initialState = {
   selected_step_ids:[],
   graph:graph.getGraph({}),
   zoom: 100,
-  nodes:{},
+  nodes:[],
   mast:{},
   selected_tab_id:0,
   drag:{},
   selected_in_edges:[],
-  selected_out_edges:[]
+  selected_out_edges:[],
 }
 
 
@@ -96,7 +97,8 @@ const Application = (state = initialState, action) => {
 
             const loadedJson = graph.load(context)
 
-            newState.flow = {...loadedJson}
+            newState.originalFlow = {...loadedJson}
+            newState.flow = new FlowModel(loadedJson)
             newState.nodes = loadedJson.nodes
             newState.project = {id:loadedJson.projectId}
 
@@ -125,7 +127,7 @@ const Application = (state = initialState, action) => {
             let newState = StateUtil.deepCopy(state)
             if(from_step_id){
                 //連結した状態での追加
-                const from_step = state.nodes[from_step_id]
+                const from_step = Graph.getNode(state.nodes,from_step_id)
                 add_step.setFrame({x:from_step.position.x + offsetX, y:from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
                 //TODO 複数OUTするコマンドがあった場合は問題になる
                 add_step.srcs = [from_step_id]
@@ -135,9 +137,7 @@ const Application = (state = initialState, action) => {
                 add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
             }
 
-
-            newState.nodes[add_step.id] = add_step
-
+            newState.nodes.push(add_step)
             newState.graph = graph.getGraph(newState)
             return newState
         }
@@ -158,10 +158,13 @@ const Application = (state = initialState, action) => {
 
         case DELETE_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
+            let deleteKeySet = new Set()
             action.step_ids.map((id)=>{
               graph.removeNode(id)
-              delete newState.nodes[id]
+              deleteKeySet.add(id)
             })
+
+            newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
             newState.graph = graph.getGraph(newState)
 
             //削除後は非選択状態にする
@@ -177,14 +180,14 @@ const Application = (state = initialState, action) => {
                 return newState.nodes[id]
             })})
 
-            console.log(cut_data)
-
             navigator.clipboard.writeText(cut_data).then(()=> {
 
+                let deleteKeySet = new Set()
                 action.step_ids.map((id)=>{
                     graph.removeNode(id)
-                    delete newState.nodes[id]
+                    deleteKeySet.add(id)
                 })
+                newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
                 newState.graph = graph.getGraph(newState)
 
                 //削除後は非選択状態にする
