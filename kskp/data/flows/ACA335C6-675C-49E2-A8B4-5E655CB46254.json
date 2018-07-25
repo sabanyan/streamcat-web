@@ -32,7 +32,7 @@
     {
       "id": "c2",
       "type": "command",
-      "commandId": "standardize",
+      "commandId": "label_encode",
       "args": {
         "c": "DIS"
       },
@@ -42,23 +42,6 @@
     },
     {
       "id": "o",
-      "type": "frame",
-      "dataSource": "csv",
-      "uuid": null,
-      "label": null
-    },
-    {
-      "id": "c3",
-      "type": "command",
-      "commandId": "kkmeans",
-      "args": {
-      },
-      "srcs": { "i": "o" },
-      "dsts": { "o": "o2" },
-      "label": null
-    },
-    {
-      "id": "o2",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null,

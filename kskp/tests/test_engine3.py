@@ -29,7 +29,7 @@ class EngineTestCase(unittest.TestCase):
     def test_pandas(self):
         self.execute('BCA335C6-675C-49E2-A8B4-5E655CB46256')
 
-
+    # @unittest.skip
     def test_kcmd(self):
         self.execute('ACA335C6-675C-49E2-A8B4-5E655CB46254')
 

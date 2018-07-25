@@ -539,6 +539,77 @@ class Standardize(UnixCommand):
 
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
+class Label_encode(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.params.append(Parameter('c', '対象列名'))
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.preprocess.label_encode import Label_encode as Base
+        command = Base()
+        inputs['i'].command_to_file()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
+
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+
+class Normalize(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.params.append(Parameter('c', '対象列名'))
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.preprocess.normalize import Normalize as Base
+        command = Base()
+        inputs['i'].command_to_file()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
+
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+
+class One_hot_encode(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.params.append(Parameter('c', '対象列名'))
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.preprocess.one_hot_encode import One_hot_encode as Base
+        command = Base()
+        inputs['i'].command_to_file()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
+
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+
+class Pca(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.preprocess.pca import Pca as Base
+        command = Base()
+        inputs['i'].command_to_file()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix()])
+
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+
 class Kkmeans(UnixCommand):
     def __init__(self):
         super().__init__()
@@ -975,17 +1046,36 @@ class Klinreg(UnixCommand):
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
-class Predict(UnixCommand):
+class Evaluate(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('d', '試験データのパス'))
+        self.params.append(Parameter('d', 'データのパス'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        print('PredictPredictPredictPredictPredictPredict')
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.postprocess.evaluate import Evaluate as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+
+        inputs['i'].command_to_file()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-d', Path(frames_path).joinpath(args['d']).as_posix()])
+
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+
+class Predict(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.params.append(Parameter('d', 'データのパス'))
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
         frames_path = 'kskp/data/frames'
         from .commands.kcmd.postprocess.predict import Predict as Base
         command = Base()
@@ -1013,6 +1103,10 @@ commands = {
 
     'select_target_column': SelectTargetColumn(),
     'standardize': Standardize(),
+    'label_encode': Label_encode(),
+    'normalize': Normalize(),
+    'one_hot_encode': One_hot_encode(),
+    'pca': Pca(),
 
     'kkmeans': Kkmeans(),
 
@@ -1040,5 +1134,6 @@ commands = {
     'klasso': Klasso(),
     'klinreg': Klinreg(),
 
+    'evaluate': Evaluate(),
     'predict': Predict()
 }
