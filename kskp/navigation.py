@@ -68,7 +68,7 @@ def update_navigation_flow(func):
             'project_uuid': project['uuid'],
             'project_name': project['name'],
             'flow_uuid': flow_uuid,
-            'flow_name': flow['name']
+            'flow_name': flow['label']
         }
 
         data['navigation'] = navigation
