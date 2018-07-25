@@ -10,17 +10,19 @@ export type CommandStepModelProps = {
   srcs: [];
   dsts: [];
   args: {};
+  commandId: string;
 }
 
 export default class CommandStepModel extends BaseModel{
   srcs: [] = []
   dsts: [] = []
   args: {}
-
+  commandId: string
   constructor (props: CommandStepModelProps) {
     super(props)
     this.srcs = props.srcs
     this.dsts = props.dsts
     this.args = props.args
+    this.commandId = props.commandId
   }
 }
