@@ -7,29 +7,26 @@ from kskp.engine.core3 import parse
 
 class EngineTestCase(unittest.TestCase):
     def execute(self, flow_uuid, step_paths=None):
+        os.environ['KENG_FLOWS_PATH'] = 'kskp/data/flows'
+        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
         job = parse(flow_uuid)
         job.execute(step_paths=step_paths)
-
-        # print(list(job.lasts.values())[0].contents)
         job.dtor()
 
     # @unittest.skip
     def test_simple(self):
-        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
-        flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
-        self.execute(flow_uuid)
+        self.execute('27C35909-504E-43F2-A115-DADB6F57D38C')
 
+    # @unittest.skip
     def test_step_paths(self):
-        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
-        flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
-        self.execute(flow_uuid, 'Bi')
+        self.execute('27C35909-504E-43F2-A115-DADB6F57D38C', 'Bt')
 
     @unittest.skip
     def test_ni(self):
-        os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
-        flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
-        self.execute(flow_uuid)
+        self.execute('2C096E39-28BD-491B-B0E2-7ECFFD113304')
 
+    def test_pandas(self):
+        self.execute('BCA335C6-675C-49E2-A8B4-5E655CB46256')
 
 if __name__ == '__main__':
     # パフォーマンステスト時に使ったコード
