@@ -67,9 +67,10 @@
     {
       "id": "c4",
       "type": "command",
-      "commandId": "predict",
+      "commandId": "evaluate",
       "args": {
-        "d": "b97ee374-5b84-48ab-b971-046858937ccb.csv"
+        "d": "B9709397-7ABF-490A-A983-264FE88DF2C5.csv",
+        "m": "mae"
       },
       "srcs": { "i": "o2" },
       "dsts": { "o": "o3" },
