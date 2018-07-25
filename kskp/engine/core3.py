@@ -539,6 +539,47 @@ class Standardize(UnixCommand):
 
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
+class Klinreg(UnixCommand):
+    def __init__(self):
+        super().__init__()
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        print('KlinregKlinregKlinregKlinregKlinregKlinreg')
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.klinreg import Klinreg as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+        inputs['i'].command_to_file()
+        file_name = str(uuid.uuid4()) + '.pickle'
+        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        command.write()
+        return PathFileSource('pickle', frames_path, file_name)
+
+class Predict(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.params.append(Parameter('d', '試験データのパス'))
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        print('PredictPredictPredictPredictPredictPredict')
+        frames_path = 'kskp/data/frames'
+        from .commands.kcmd.predict import Predict as Base
+        command = Base()
+        # command.input = inputs['i'].source.fullpath
+
+        inputs['i'].command_to_file()
+        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-d', Path(frames_path).joinpath(args['d']).as_posix()])
+
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+
 commands = {
     'mcut': Mcut(),
     'msel': Msel(),
@@ -555,5 +596,7 @@ commands = {
     'mcal': Mcal(),
 
     'select_target_column': SelectTargetColumn(),
-    'standardize': Standardize()
+    'standardize': Standardize(),
+    'klinreg': Klinreg(),
+    'predict': Predict()
 }

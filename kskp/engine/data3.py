@@ -55,6 +55,8 @@ class FileSource(Source):
             return '.csv'
         elif self.type == '':
             return ''
+        elif self.type == 'pickle':
+            return '.pickle'
         else:
             # その他の場合は今は考えない
             raise Exception()
