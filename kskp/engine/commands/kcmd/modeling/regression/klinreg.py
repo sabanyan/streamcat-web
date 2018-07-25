@@ -2,7 +2,7 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from .common.Model import Regression
+from ..common.Model import Regression
 from sklearn.linear_model import LinearRegression
 import pickle
 
