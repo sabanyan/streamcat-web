@@ -499,8 +499,8 @@ class Mcal(MCommand):
         super().__init__()
         self.name = 'mcal'
         self.description = '計算'
-        self.params.append(Parameter('c', '計算式'))
-        self.params.append(Parameter('a', '追加列名'))
+        self.params.append(Parameter('c', '計算式(必須)'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
 
 class Mfldname(MCommand):#new
     def __init__(self):
@@ -599,6 +599,98 @@ class Mxml2csv(MCommand):#new
         self.params.append(Parameter('k', '１行の単位となる要素のパス名(必須)'))
         self.params.append(Parameter('f', '要素もしくは属性の指定(必須)'))
         self.params.append(Parameter('i', 'xmlデータファイル'))
+
+class Mbest(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mbest'
+        self.description = '指定行選択'
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('s', 'ソート対象列名(必須)'))
+        self.params.append(Parameter('from', '選択する開始行番号'))
+        self.params.append(Parameter('to', '選択する終了行番号'))
+        self.params.append(Parameter('size', '選択する行数'))
+        self.params.append(Parameter('k', '指定列が同じ値の行ごとにfrom=,to=,sizeで指定した行番号の行を選択'))#???
+        # self.params.append(Parameter('u', '条件に合わないデータ出力ファイル名'))
+
+class Mdelnull(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mdelnull'
+        self.description = 'NULL行削除'
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('k', '削除する単位となるキー列名'))
+        # self.params.append(Parameter('u', '条件に合わないデータ出力ファイル名'))
+
+class Mduprec(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mduprec'
+        self.description = 'レコードの複写'
+        self.params.append(Parameter('f', '指定列の値の回数分の複写を実行(選択必須)'))
+        self.params.append(Parameter('n', '各行の複写回数(選択必須)'))
+
+class Mpadding(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mpadding'
+        self.description = '行補完コマンド'
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('f', '連続パディング対象列名(必須)'))
+        self.params.append(Parameter('v', 'パディング用文字列'))
+        self.params.append(Parameter('S', '開始値'))
+        self.params.append(Parameter('E', '終了値'))
+
+class Msel(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msel'
+        self.description = '行絞り込み'
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('c', '絞込条件式(必須)'))
+        # self.params.append(Parameter('u', '指定条件に合わない行を出力するファイル名'))
+
+class Mselnum(MCommand):#editing(o, u)の扱いがわからない
+    def __init__(self):
+        super().__init__()
+        self.name = 'mselnum'
+        self.description = '数値範囲による行選択'
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('f', '検索列名(必須)'))
+        self.params.append(Parameter('c', '検索文字列(必須)'))
+        self.params.append(Parameter('k', '選択単位となるキー列名'))
+        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
+
+class Mselrand(MCommand):#editing(u)の扱いがわからない
+    def __init__(self):
+        super().__init__()
+        self.name = 'mselrand'
+        self.description = 'ランダムな行選択'
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('c', '各キーの値毎に選択する行数(選択必須)'))
+        self.params.append(Parameter('p', '各キーを選択する割合をパーセンテージで指定(選択必須)'))
+        self.params.append(Parameter('k', '選択単位となるキー列'))
+        self.params.append(Parameter('S', '乱数の種'))
+        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
+
+class Mselstr(MCommand):###ここから修正再開
+    def __init__(self):
+        super().__init__()
+        self.name = 'mselstr'
+        self.description = '行選択(文字列)'
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('f', '対象列名'))
+        self.params.append(Parameter('v', '絞込条件値（文字列）'))
+        self.params.append(Parameter('k', '選択単位となるキー列名'))
+        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
+
+class Muniq(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'muniq'
+        self.description = '単一化'
+        self.params.append(Parameter('k', 'キー列名'))
 
 # KCMD
 class SelectTargetColumn(UnixCommand):
