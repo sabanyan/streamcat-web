@@ -1292,6 +1292,13 @@ class Mvuniq(MCommand):#new
         self.description = 'ベクトル要素の単一化'
         self.params.append(Parameter('vf', '対象列名(必須)'))
 
+class Mchkcsv(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mchkcsv'
+        self.description = 'csvデータのチェック・修復'
+        self.params.append(Parameter('i', '入力ファイル名'))
+        self.params.append(Parameter('a', '入力データ列を無視する、新しい列名'))
 # KCMD
 class SelectTargetColumn(UnixCommand):
     def __init__(self):
@@ -1897,6 +1904,70 @@ class Predict(UnixCommand):
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 commands = {
+    # MCDM
+    'csv2marff': Mcsv2arff(),
+    'm2cross': M2cross(),
+    'maccum': Maccum(),
+    'marff2csv': Marff2csv(),
+    'mbest': Mbest(),
+    'mchgnum': Mchgnum(),
+    'mcombi': Mcombi(),
+    'mchkcsv' Mchkcsv(),
+    'mcommon': Mcommon(),
+    'mcount': Mcount(),
+    'mcross': Mcross(),
+    'mdelnull': Mdelnull(),
+    'mdformat': Mdformat(),
+    'mduprec': Mduprec(),
+    'mfldname': Mfldname(),
+    'mfsortf': Mfsort(),
+    'mhashavg': Mhashavg(),
+    'mhashsum': Mhashsum(),
+    'mkeybreak': Mkeybreak(),
+    'mmbucket': Mmbucket(),
+    'mmvavg': Mmvavg(),
+    'mmvsim': Mmvsim(),
+    'mmvstats': Mmvstats(),
+    'mnjoin': Mnjoin(),
+    'mnormalize': Mnormalize(),
+    'mnrcommon': Mnrcommon(),
+    'mnrjoin': Mnrjoin(),
+    'mnullto': Mnullto(),
+    'mnumber': Mnumber(),
+    'mpadding': Mpadding(),
+    'mpaste': Mpaste(),
+    'mproduct': Mproduct(),
+    'mrand': Mrand(),
+    'mrjoin': Mrjoin(),
+    'msed': Msed(),
+    'mselnum': Mselnum(),
+    'mselrand': Mselrand(),
+    'msep': Msep(),
+    'msep2': Msep2(),
+    'mshare': Mshare(),
+    'mshuffle': Mshuffle(),
+    'mslide': Mslide(),
+    'msplit': Msplit(),
+    'msum': Msum(),
+    'msummary': Msummary(),
+    'mtab2csv': Mtab2csv(),
+    'mtonull': Mtonull(),
+    'mtra': Mtra(),
+    'mtrafld': Mtrafld(),
+    'mtraflg': Mtraflg(),
+    'muniq': Muniq(),
+    'mvcat': Mvcat(),
+    'mvcommon': Mvcommon(),
+    'mvcount': Mvcount(),
+    'mvdelim': Mvdelim(),
+    'mvdelnull': Mvdelnull(),
+    'mvjoin': Mvjoin(),
+    'mvnullto': Mvnullto(),
+    'mvreplace': Mvreplace(),
+    'mvsort': Mvsort(),
+    'mvuniq': Mvuniq(),
+    'mwinddow': Mwindow(),
+    'mxml2csv': Mxml2csv(),
     'mcut': Mcut(),
     'msel': Msel(),
     'split': Split(),
@@ -1911,6 +1982,7 @@ commands = {
     'msortf': Msortf(),
     'mcal': Mcal(),
 
+    # KCMD
     'select_target_column': SelectTargetColumn(),
     'standardize': Standardize(),
     'label_encode': Label_encode(),
