@@ -1,19 +1,19 @@
 {
-  "id": "mstats",
+  "id": "msummary",
   "params": [
     {
-      "name": "c",
-      "label": "計算列名(必須)",
-      "type": "string"
-    },
-    {
       "name": "f",
-      "label": "対象列名(必須)",
+      "label": "集計列名(必須)",
       "type": "string"
     },
     {
       "name": "k",
-      "label": "単位として集計する列名",
+      "label": "単位とする列名",
+      "type": "string"
+    },
+    {
+      "name": "c",
+      "label": "統計量を指定",
       "type": "string"
     }
   ],
@@ -32,5 +32,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "統計量"
+  "label": "1変数の統計量の計算"
 }

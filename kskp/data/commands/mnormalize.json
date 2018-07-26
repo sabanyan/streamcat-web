@@ -1,19 +1,19 @@
 {
-  "id": "mstats",
+  "id": "normalize",
   "params": [
     {
-      "name": "c",
-      "label": "計算列名(必須)",
+      "name": "f",
+      "label": "基準化列名(必須)",
       "type": "string"
     },
     {
-      "name": "f",
-      "label": "対象列名(必須)",
+      "name": "c",
+      "label": "基準化方法を指定(必須)",
       "type": "string"
     },
     {
       "name": "k",
-      "label": "単位として集計する列名",
+      "label": "単位とする列名",
       "type": "string"
     }
   ],
@@ -32,5 +32,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "統計量"
+  "label": "基準化"
 }

@@ -1,19 +1,19 @@
 {
-  "id": "mstats",
+  "id": "mkeybreak",
   "params": [
     {
-      "name": "c",
-      "label": "計算列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "f",
-      "label": "対象列名(必須)",
-      "type": "string"
-    },
-    {
       "name": "k",
-      "label": "単位として集計する列名",
+      "label": "集計キー列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "s",
+      "label": "並べ替えの後、先端、終端に印をつける列名",
+      "type": "string"
+    },
+    {
+      "name": "a",
+      "label": "先端と終端の印を出力する列名",
       "type": "string"
     }
   ],
@@ -32,5 +32,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "統計量"
+  "label": "キーブレイク箇所"
 }

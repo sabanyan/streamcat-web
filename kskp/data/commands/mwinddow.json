@@ -1,19 +1,19 @@
 {
-  "id": "mstats",
+  "id": "mwinddow",
   "params": [
     {
-      "name": "c",
-      "label": "計算列名(必須)",
+      "name": "wk",
+      "label": "出力データにおける、窓を識別する値となる入力データの列名(必須)",
       "type": "string"
     },
     {
-      "name": "f",
-      "label": "対象列名(必須)",
+      "name": "t",
+      "label": "窓の行数指定(必須)",
       "type": "string"
     },
     {
       "name": "k",
-      "label": "単位として集計する列名",
+      "label": "窓を生成する単位となる列名",
       "type": "string"
     }
   ],
@@ -32,5 +32,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "統計量"
+  "label": "スライド窓の生成"
 }

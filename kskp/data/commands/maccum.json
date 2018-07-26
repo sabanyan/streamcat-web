@@ -1,19 +1,19 @@
 {
-  "id": "mstats",
+  "id": "maccum",
   "params": [
     {
-      "name": "c",
-      "label": "計算列名(必須)",
+      "name": "f",
+      "label": "累積列名(必須)",
       "type": "string"
     },
     {
-      "name": "f",
-      "label": "対象列名(必須)",
+      "name": "s",
+      "label": "並び替えの後、累積計算を行う列名(必須)",
       "type": "string"
     },
     {
       "name": "k",
-      "label": "単位として集計する列名",
+      "label": "累積単位となる列名",
       "type": "string"
     }
   ],
@@ -32,5 +32,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "統計量"
+  "label": "累積計算"
 }
