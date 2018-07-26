@@ -492,7 +492,14 @@ class Msortf(MCommand):
         super().__init__()
         self.name = 'msortf'
         self.desription = 'ソート'
-        self.params.append(Parameter('f', '対象列名'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+
+class Mfsort(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mfsortf'
+        self.desription = '項目ソート'
+        self.params.append(Parameter('f', '対象列名(必須)'))
 
 class Mcal(MCommand):
     def __init__(self):
