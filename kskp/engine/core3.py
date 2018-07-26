@@ -1050,7 +1050,8 @@ class Evaluate(UnixCommand):
     def __init__(self):
         super().__init__()
         self.params.append(Parameter('d', 'データのパス'))
-
+        self.params.append(Parameter('m', 'メトリクス'))
+        
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
         return { self.o_ports[0]['name']: frame }
@@ -1071,7 +1072,6 @@ class Predict(UnixCommand):
     def __init__(self):
         super().__init__()
         self.params.append(Parameter('d', 'データのパス'))
-        self.params.append(Parameter('m', 'メトリクス'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
