@@ -3,12 +3,12 @@
   "params": [
     {
       "name": "vf",
-      "caption": "併合するベクトル列名",
+      "label": "併合するベクトル列名",
       "type": "string"
     },
     {
       "name": "a",
-      "caption": "併合後の列名",
+      "label": "併合後の列名",
       "type": "string"
     }
   ],

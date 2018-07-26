@@ -212,7 +212,9 @@
       "id": "s_mjoin0",
       "type": "command",
       "args": {
-        "k": "Time"
+        "k": "Time",
+        "f": "",
+        "K": ""
       },
       "srcs": {
         "i": "o1",
@@ -235,7 +237,9 @@
       "id": "s_mjoin1",
       "type": "command",
       "args": {
-        "k": "Time"
+        "k": "Time",
+        "f": "",
+        "K": ""
       },
       "srcs": {
         "i": "join0-1",
@@ -258,7 +262,9 @@
       "id": "s_mjoin2",
       "type": "command",
       "args": {
-        "k": "Time"
+        "k": "Time",
+        "f": "",
+        "K": ""
       },
       "srcs": {
         "i": "join1-2",

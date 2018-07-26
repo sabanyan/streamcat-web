@@ -1,0 +1,50 @@
+{
+  "id": "mvreplace",
+  "params": [
+    {
+      "name": "vf",
+      "label": "置換キーとなるベクトル列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照ファイル上の置換キーとなるベクトル要素の列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "結合ベクトル列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "m",
+      "label": "参照ファイル名",
+      "type": "string"
+    },
+    {
+      "name": "n",
+      "label": "vf=とk=がマッチしなかった場合に置換する文字列",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトル要素の参照置換"
+}

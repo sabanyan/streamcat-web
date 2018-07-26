@@ -3,17 +3,17 @@
   "params": [
     {
       "name": "k",
-      "caption": "１行の単位となる要素のパス名(必須)",
+      "label": "１行の単位となる要素のパス名(必須)",
       "type": "string"
     },
     {
       "name": "f",
-      "caption": "要素もしくは属性の指定(必須)",
+      "label": "要素もしくは属性の指定(必須)",
       "type": "string"
     },
     {
       "name": "i",
-      "caption": "xmlデータファイル",
+      "label": "xmlデータファイル",
       "type": "string"
     }
   ],
