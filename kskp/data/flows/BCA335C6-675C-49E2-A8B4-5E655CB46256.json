@@ -65,12 +65,11 @@
       "label": null
     },
     {
-      "id": "evaluate",
+      "id": "predict",
       "type": "command",
-      "commandId": "evaluate",
+      "commandId": "predict",
       "args": {
-        "d": "B9709397-7ABF-490A-A983-264FE88DF2C5.csv",
-        "m": "mae"
+        "d": "B9709397-7ABF-490A-A983-264FE88DF2C5.csv"
       },
       "srcs": { "i": "o2" },
       "dsts": { "o": "o3" },
