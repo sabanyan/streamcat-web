@@ -1,5 +1,5 @@
 {
-  "id": "mbucket",
+  "id": "mmbucket",
   "params": [
     {
       "name": "n",
@@ -18,12 +18,7 @@
     },
     {
       "name": "k",
-      "label": "バケット分割を行う単位となる列名",
-      "type": "string"
-    },
-    {
-      "name": "O",
-      "label": "バケット範囲出力ファイル",
+      "label": "各項目の各バケットの数値範囲を出力するファイル名",
       "type": "string"
     }
   ],
@@ -42,5 +37,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行分割"
+  "label": "多次元行分割"
 }
