@@ -1,20 +1,10 @@
 {
-  "id": "mjoin",
+  "id": "mproduct",
   "params": [
     {
       "name": "f",
       "type": "string",
-      "label": "参照列名(必須)"
-    },
-    {
-      "name": "k",
-      "type": "string",
-      "label": "結合キー名"
-    },
-    {
-      "name": "K",
-      "type": "string",
-      "label": "参照ファイル上の結合キー名"
+      "label": "参照データの結合列名"
     },
     {
       "name": "m",
@@ -41,5 +31,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "結合"
+  "label": "参照ファイルの直積結合"
 }

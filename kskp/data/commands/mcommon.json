@@ -1,19 +1,19 @@
 {
-  "id": "mselstr",
+  "id": "mcommon",
   "params": [
     {
-      "name": "f",
-      "label": "対象列名",
-      "type": "string"
-    },
-    {
-      "name": "v",
-      "label": "絞込条件値（文字列）",
-      "type": "string"
-    },
-    {
       "name": "k",
-      "label": "選択単位となるキー列名",
+      "label": "結合キー名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "m",
+      "label": "参照ファイル名",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照列名",
       "type": "string"
     }
   ],
@@ -21,6 +21,10 @@
     [
       {
         "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
         "type": "frame"
       }
     ],
@@ -36,5 +40,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行選択(文字列)"
+  "label": "行選択"
 }

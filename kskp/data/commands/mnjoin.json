@@ -1,5 +1,5 @@
 {
-  "id": "mjoin",
+  "id": "mnjoin",
   "params": [
     {
       "name": "f",
@@ -8,18 +8,18 @@
     },
     {
       "name": "k",
-      "type": "string",
-      "label": "結合キー名"
-    },
-    {
-      "name": "K",
-      "type": "string",
-      "label": "参照ファイル上の結合キー名"
+      "label": "入力データの結合キー名",
+      "type": "string"
     },
     {
       "name": "m",
-      "type": "string",
-      "label": "参照ファイル名"
+      "label": "参照ファイル名",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照データの結合キー名",
+      "type": "string"
     }
   ],
   "ports": [
@@ -41,5 +41,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "結合"
+  "label": "参照ファイル列の結合"
 }

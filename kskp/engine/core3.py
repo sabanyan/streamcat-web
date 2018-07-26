@@ -449,6 +449,7 @@ class Mcat(MCommand):
         self.name = 'mcat'
         self.description = 'ファイル結合'
         self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる
+        self.params.append(Parameter('j', '結合する列名'))
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -471,12 +472,267 @@ class Mjoin(MCommand):
         self.name = 'mjoin'
         self.description = '結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
-        self.params.append(Parameter('k', '結合キー名'))
 
     def command_args(self, args, inputs):
         res = self.name.split()
 
         res.append(f"k={args['k']}")
+        res.append(f"f={args['f']}")
+        res.append(f"K={args['K']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mnjoin(MCommand):
+    def __init__(self):
+        super().__init__()
+
+        self.name = 'mnjoin'
+        self.description = '参照ファイル列の結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"k={args['k']}")
+        res.append(f"f={args['f']}")
+        res.append(f"K={args['K']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mrjoin(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mrjoin'
+        self.description = '参照ファイルの範囲条件結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"k={args['k']}")
+        res.append(f"f={args['f']}")
+        res.append(f"K={args['K']}")
+        res.append(f"f={args['r']}")
+        res.append(f"K={args['R']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mnrjoin(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnrjoin'
+        self.description = '参照ファイルのの複数範囲条件結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"k={args['k']}")
+        res.append(f"f={args['f']}")
+        res.append(f"K={args['K']}")
+        res.append(f"f={args['r']}")
+        res.append(f"K={args['R']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mvjoin(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvjoin'
+        self.description = 'ベクトル要素の参照結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"K={args['K']}")
+        res.append(f"f={args['f']}")
+        res.append(f"f={args['vf']}")
+        res.append(f"K={args['n']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mvreplace(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvreplace'
+        self.description = 'ベクトル要素の参照置換'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"K={args['K']}")
+        res.append(f"f={args['f']}")
+        res.append(f"f={args['vf']}")
+        res.append(f"K={args['n']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mpaste(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mpaste'
+        self.description = '参照ファイル列の行番号マッチング結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"f={args['f']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mproduct(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mproduct'
+        self.description = '参照ファイルの直積結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"f={args['f']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mcommon(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcommon'
+        self.description = '行選択'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"k={args['k']}")
+        res.append(f"K={args['K']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mnrcommon(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnrcommon'
+        self.description = '参照ファイルの複数範囲条件による行選択'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"k={args['k']}")
+        res.append(f"K={args['K']}")
+        res.append(f"k={args['r']}")
+        res.append(f"K={args['R']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mvcommon(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvcommon'
+        self.description = 'ベクトル要素の参照選択'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"k={args['vf']}")
+        res.append(f"K={args['K']}")
 
         input_m = inputs['m']
 
