@@ -1,14 +1,14 @@
 {
-  "id": "mdelnull",
+  "id": "mduprec",
   "params": [
     {
       "name": "f",
-      "label": "対象列名(必須)",
+      "label": "指定列の値の回数分の複写を実行(nとどちらか必須)",
       "type": "string"
     },
     {
-      "name": "k",
-      "label": "削除する単位となるキー列名",
+      "name": "n",
+      "label": "各行の複写回数(fとどちらか必須)",
       "type": "string"
     }
   ],
@@ -23,13 +23,9 @@
       {
         "name": "o",
         "type": "frame"
-      },
-      {
-        "name": "u",
-        "type": "frame"
       }
     ]
   ],
   "version": "0.7.0",
-  "label": "NULL行削除"
+  "label": "レコードの複写"
 }

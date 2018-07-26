@@ -1,9 +1,19 @@
 {
-  "id": "msel",
+  "id": "mselnum",
   "params": [
     {
+      "name": "f",
+      "label": "検索列名(必須)",
+      "type": "string"
+    },
+    {
       "name": "c",
-      "label": "絞込条件式(必須)",
+      "label": "検索文字列(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "選択単位となるキー列名",
       "type": "string"
     }
   ],
@@ -26,5 +36,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行絞り込み"
+  "label": "数値範囲による行選択"
 }

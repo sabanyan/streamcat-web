@@ -3,8 +3,28 @@
   "params": [
     {
       "name": "s",
-      "type": "string",
-      "label": "対象列名"
+      "label": "ソート対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "from",
+      "label": "選択する開始行番号",
+      "type": "string"
+    },
+    {
+      "name": "to",
+      "label": "選択する終了行番号",
+      "type": "string"
+    },
+    {
+      "name": "size",
+      "label": "選択する行数",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "指定列が同じ値の行ごとにfrom=,to=,sizeで指定した行番号の行を選択",
+      "type": "string"
     }
   ],
   "ports": [
@@ -17,6 +37,10 @@
     [
       {
         "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
         "type": "frame"
       }
     ]

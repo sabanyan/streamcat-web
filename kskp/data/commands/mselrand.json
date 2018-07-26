@@ -1,0 +1,45 @@
+{
+  "id": "mselrand",
+  "params": [
+    {
+      "name": "c",
+      "label": "各キーの値毎に選択する行数(pとどちらか必須)",
+      "type": "string"
+    },
+    {
+      "name": "p",
+      "label": "各キーを選択する割合をパーセンテージで指定(cとどちらか必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "選択単位となるキー列",
+      "type": "string"
+    },
+    {
+      "name": "S",
+      "label": "乱数の種",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ランダムな行選択"
+}
