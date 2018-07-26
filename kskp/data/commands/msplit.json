@@ -1,0 +1,36 @@
+{
+  "id": "msplit",
+  "params": [
+    {
+      "name": "f",
+      "label": "対象列名",
+      "type": "string"
+    },
+    {
+      "name": "a",
+      "label": "新項目名",
+      "type": "string"
+    },
+    {
+      "name": "delim",
+      "label": "新しい区切り文字",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "区切り文字による項目分割"
+}

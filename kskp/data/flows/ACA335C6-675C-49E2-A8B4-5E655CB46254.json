@@ -12,7 +12,7 @@
       "label": null
     },
     {
-      "id": "c1",
+      "id": "select_target_column",
       "type": "command",
       "commandId": "select_target_column",
       "args": {
@@ -30,9 +30,9 @@
       "label": null
     },
     {
-      "id": "c2",
+      "id": "standardize",
       "type": "command",
-      "commandId": "label_encode",
+      "commandId": "standardize",
       "args": {
         "c": "DIS"
       },
@@ -42,6 +42,42 @@
     },
     {
       "id": "o",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "klinreg",
+      "type": "command",
+      "commandId": "klinreg",
+      "args": {
+      },
+      "srcs": { "i": "o" },
+      "dsts": { "o": "o2" },
+      "label": null
+    },
+    {
+      "id": "o2",
+      "type": "frame",
+      "dataSource": "pickle",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "evaluate",
+      "type": "command",
+      "commandId": "evaluate",
+      "args": {
+        "d": "B9709397-7ABF-490A-A983-264FE88DF2C5.csv",
+        "m": "mae"
+      },
+      "srcs": { "i": "o2" },
+      "dsts": { "o": "o3" },
+      "label": null
+    },
+    {
+      "id": "o3",
       "type": "frame",
       "dataSource": "csv",
       "uuid": null,

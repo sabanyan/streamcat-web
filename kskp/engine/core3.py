@@ -384,15 +384,15 @@ class Mcut(MCommand):
         super().__init__()
         self.name = 'mcut'
         self.description = '列選択'
-        self.params.append(Parameter('f', '対象列名'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
 
 class Msetstr(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'msetstr'
         self.description = '文字列追加'
-        self.params.append(Parameter('a', '追加列名'))
-        self.params.append(Parameter('v', '追加する値'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('v', '追加する値(必須)'))
 
 class Msum(MCommand):
     def __init__(self):
@@ -502,6 +502,70 @@ class Mcal(MCommand):
         self.params.append(Parameter('c', '計算式'))
         self.params.append(Parameter('a', '追加列名'))
 
+class Mfldname(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mfldname'
+        self.description = '列名の変更'
+        self.params.append(Parameter('f', '旧列名(必須)'))
+        self.params.append(Parameter('n', '新列名'))
+
+
+class Mnumber(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnumber'
+        self.description = '連番'
+        self.params.append(Parameter('s', 'ソート対象列名'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('e', '同一キー同一ソートの処理方法の指定'))
+        self.params.append(Parameter('l', '連番の間隔'))
+        self.params.append(Parameter('k', '連番もしくは連文字を振る単位となる列'))
+        self.params.append(Parameter('S', '開始No'))
+
+class Mrand(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mrand'
+        self.description = '擬似乱数'
+        self.params.append(Parameter('k', '指定キーと同名のキー値に同じラン数値'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('max', '乱数の最大値、この値の指定時には-intも設定することが必須'))
+        self.params.append(Parameter('min', '乱数の最小値、この値の指定時には-intも設定することが必須'))
+        self.params.append(Parameter('S', '乱数の種'))#update 2018 july 12
+
+class Mshare(MCommand):#edit
+    def __init__(self):
+        super().__init__()
+        self.name = 'mshare'
+        self.description = '構成費の計算'
+        self.params.append(Parameter('f', '指定列の構成比計算(必須)'))
+        self.params.append(Parameter('k', '構成比計算の単位となる列名'))
+
+class Msplit(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msplit'
+        self.desription = '区切り文字による列分割'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('a', '新項目名(必須)'))
+        self.params.append(Parameter('delim', '新しい区切り文字'))
+
+class Mvcat(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvcat'
+        self.description = 'ベクトルの併合'
+        self.params.append(Parameter('vf', '併合するベクトル列名(必須)'))
+        self.params.append(Parameter('a', '併合後の列名(必須)'))
+
+class Mvcount(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvcount'
+        self.description = 'ベクトルサイズの計算'
+        self.params.append(Parameter('vf', '要素数をカウントするベクトルの列名(必須)'))
+
 class SelectTargetColumn(UnixCommand):
     def __init__(self):
         super().__init__()
@@ -523,7 +587,7 @@ class Standardize(UnixCommand):
     def __init__(self):
         super().__init__()
         self.params.append(Parameter('c', '対象列名'))
-        self.params.append(Parameter('a', '列名'))
+        self.params.append(Parameter('a', '全ての列'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -561,6 +625,7 @@ class Normalize(UnixCommand):
     def __init__(self):
         super().__init__()
         self.params.append(Parameter('c', '対象列名'))
+        self.params.append(Parameter('a', '全ての列'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -596,6 +661,7 @@ class One_hot_encode(UnixCommand):
 class Pca(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('--n_components', ''))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -613,6 +679,11 @@ class Pca(UnixCommand):
 class Kkmeans(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('--n_clusters', ''))
+        self.params.append(Parameter('--n_init', ''))
+        self.params.append(Parameter('--max_iter', ''))
+        self.params.append(Parameter('--precompute_distances', ''))
+        self.params.append(Parameter('--tol', ''))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -631,6 +702,10 @@ class Kkmeans(UnixCommand):
 class CKab(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('-l', ''))
+        self.params.append(Parameter('-r', ''))
+        self.params.append(Parameter('-a', ''))
+        self.params.append(Parameter('--n_estimators', ''))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -650,6 +725,12 @@ class CKab(UnixCommand):
 class CKbag(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('-r', ''))
+        self.params.append(Parameter('--n_estimators', ''))
+        self.params.append(Parameter('--max_samples', ''))
+        self.params.append(Parameter('--unuse_bootstrap', ''))
+        self.params.append(Parameter('--max_features', ''))
+        self.params.append(Parameter('--unuse_bootstrap_features', ''))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1051,7 +1132,7 @@ class Evaluate(UnixCommand):
         super().__init__()
         self.params.append(Parameter('d', 'データのパス'))
         self.params.append(Parameter('m', 'メトリクス'))
-        
+
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
         return { self.o_ports[0]['name']: frame }

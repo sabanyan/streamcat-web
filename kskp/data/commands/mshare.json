@@ -1,10 +1,15 @@
 {
-  "id": "mcut_n",
+  "id": "mshare",
   "params": [
     {
       "name": "f",
-      "type": "string",
-      "label": "対象列番号"
+      "label": "指定列の構成比計算",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "構成比計算の単位となる列名",
+      "type": "string"
     }
   ],
   "ports": [
@@ -22,5 +27,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "列選択(列番号指定)"
+  "label": "構成費の計算"
 }
