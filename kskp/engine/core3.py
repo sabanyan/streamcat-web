@@ -407,15 +407,17 @@ class Mstats(MCommand):
         super().__init__()
         self.name = 'mstats'
         self.description = '統計情報'
-        self.params.append(Parameter('c', '計算項目'))
-        self.params.append(Parameter('f', '対象列名'))
+        self.params.append(Parameter('k', '単位として集計する列名'))
+        self.params.append(Parameter('c', '計算列名(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
 
 class Mavg(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mavg'
         self.description = '平均'
-        self.params.append(Parameter('f', '対象列名'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('k', '集計の単位となる列名'))
 
 class Mbucket(MCommand):
     def __init__(self):
@@ -573,7 +575,6 @@ class Mvcount(MCommand):#new
         self.description = 'ベクトルサイズの計算'
         self.params.append(Parameter('vf', '要素数をカウントするベクトルの列名(必須)'))
 
-
 class Marff2csv(MCommand):#new
     def __init__(self):
         super().__init__()
@@ -698,6 +699,149 @@ class Muniq(MCommand):
         self.name = 'muniq'
         self.description = '単一化'
         self.params.append(Parameter('k', 'キー列名'))
+
+class Maccum(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'maccum'
+        self.description = '累積計算'
+        self.params.append(Parameter('f', '累積列名(必須)'))
+        self.params.append(Parameter('s', '並び替えの後、累積計算を行う列名(必須)'))
+        self.params.append(Parameter('k', '累積単位となる列名'))
+
+class Mcount(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcount'
+        self.description = '行数カウント'
+        self.params.append(Parameter('k', '対象列名'))
+        self.params.append(Parameter('a', '結果列名(必須)'))
+
+class Mhashavg(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mhashavg'
+        self.description = 'ハッシュ法による列値の平均'
+        self.params.append(Parameter('f', '平均を求める列名(必須)'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('hs', 'ハッシュサイズ'))
+
+class Mhashsum(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mhashsum'
+        self.description = 'ハッシュ法による列の値の合計'
+        self.params.append(Parameter('f', '合計を求める列名(必須)'))
+        self.params.append(Parameter('k', 'キーとする列名'))
+        self.params.append(Parameter('hs', 'ハッシュサイズ'))
+
+class Mkeybreak(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mkeybreak'
+        self.description = 'キーブレイク箇所'
+        self.params.append(Parameter('k', '集計キー列名(必須)'))
+        self.params.append(Parameter('s', '並べ替えの後、先端、終端に印をつける列名'))
+        self.params.append(Parameter('a', '先端と終端の印を出力する列名'))
+
+class Mmvavg(MCommand):#editting(判断を仰ぐ、多分大丈夫やと思うけどね)
+    def __init__(self):
+        super().__init__()
+        self.name = 'mmvavg'
+        self.description = '移動平均の算出'
+        self.params.append(Parameter('s', '並べ替えの後、移動平均を計算する列名'))
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '移動平均を求める列名(必須)'))
+        self.params.append(Parameter('t', '期間数の指定、alpha=指定時には設定できない'))
+        self.params.append(Parameter('alpha', '平滑化係数、-exp指定時のみ'))
+        self.params.append(Parameter('skip', '出力を抑制する最初の行数'))
+
+class Mmvsim(MCommand):#editting
+    def __init__(self):
+        super().__init__()
+        self.name = 'mmvsim'
+        self.description = '移動窓の類似度計算'
+        self.params.append(Parameter('s', '並べ替えの後、各種類似度を計算する列名'))
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '集計列名(必須)'))
+        self.params.append(Parameter('t', '期間数の指定'))
+        self.params.append(Parameter('c', '類似度名を指定(必須)'))#コマンド指定
+        self.params.append(Parameter('a', '新規に作成する項目名(必須)'))
+        #類似度名はあらかじめ決められている。
+        #類似度=covar|ucovar|pearson|spearman|kendall|euclid|cosine|
+        #cityblock|hamming|chi|phi|jaccard|supportr|lift|confMax|
+        #confMin|yuleQ|yuleY|kappa|oddsRatio|convMax|convMin
+        self.params.append(Parameter('skip', '出力抑制を行う最初の行数指定'))
+
+class Mmvstats(MCommand):#editting
+    def __init__(self):
+        super().__init__()
+        self.name = 'mmvstats'
+        self.description = '移動窓の統計量の計算'
+        self.params.append(Parameter('s', '並べ替えの後、各種統計量を計算する列名'))
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '集計列名(必須)'))
+        self.params.append(Parameter('t', '期関数の指定'))
+        self.params.append(Parameter('c', '統計量を指定(必須)'))#コマンド指定
+        #統計量はあらかじめ決められている
+        # 統計量リスト:sum/mean/count/ucount/devsq/var/uvar/sd/usd/cv/min/qtile1/median/qtile3/max/
+        # range/qrange/mode/skew/uskew/kurt/ukurt
+        self.params.append(Parameter('skip', '出力抑制を行う最初の行数指定'))
+
+class Mnormalize(MCommand):#editting
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnormalize'
+        self.description = '基準化'
+        self.params.append(Parameter('c', '基準化方法を指定(必須)'))#二者択一
+        self.params.append(Parameter('f', '基準化列名(必須)'))
+        self.params.append(Parameter('k', '単位とする列名'))
+
+
+class Msim(MCommand):#editting
+    def __init__(self):
+        super().__init__()
+        self.name = 'msim'
+        self.description = '二変数間の類似度の計算'
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '二列間の類似度を求める列名(必須)'))
+        self.params.append(Parameter('c', '類似度名を指定(必須)'))
+        #類似度名はあらかじめ決められている。
+        #類似度=covar|ucovar|pearson|spearman|kendall|euclid|cosine|
+        #cityblock|hamming|chi|phi|jaccard|supportr|lift|confMax|
+        #confMin|yuleQ|yuleY|kappa|oddsRatio|convMax|convMin
+        self.params.append(Parameter('a', '二変数の名前の指定'))
+
+class Mslide(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mslide'
+        self.description = '行ずらし'
+        self.params.append(Parameter('s', 'ソート対象列名'))
+        self.params.append(Parameter('f', 'ずらす対象の列名(必須)'))
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('t', 'ずらす回数'))
+
+class Msummary(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'msummary'
+        self.description = '1変数の統計量の計算'
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '集計列名(必須)'))
+        self.params.append(Parameter('c', '統計量を指定'))
+        #統計量はあらかじめ決められている
+        # 統計量リスト:sum/mean/count/ucount/devsq/var/uvar/sd/usd/cv/min/qtile1/median/qtile3/max/
+        # range/qrange/mode/skew/uskew/kurt/ukurt
+
+class Mwindow(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mwinddow'
+        self.description = 'スライド窓の生成'
+        self.params.append(Parameter('wk', '出力データにおける、窓を識別する値となる入力データの列名(必須)'))
+        self.params.append(Parameter('t', '窓の行数指定(必須)'))
+        self.params.append(Parameter('k', '窓を生成する単位となる列名'))
 
 # KCMD
 class SelectTargetColumn(UnixCommand):
