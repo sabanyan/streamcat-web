@@ -2,6 +2,7 @@ import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
 import FlowModel from '../model/Flow/FlowModel'
+import NavigationModel from '../model/Navigation/NavigationModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -95,8 +96,7 @@ const Application = (state = initialState, action) => {
             let {context} = action
             let newState = StateUtil.deepCopy(state)
 
-            const loadedJson = graph.load(context)
-
+            const loadedJson = graph.load(context.data)
             newState.originalFlow = {...loadedJson}
             newState.flow = new FlowModel(loadedJson)
             newState.nodes = loadedJson.nodes

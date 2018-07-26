@@ -34,7 +34,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const graph = new Graph()
     HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
-      this.props.loadFlowJSON(json.data)
+      this.props.loadFlowJSON(json)
     })
 
     HttpUtil.get('commands').then((response) => {

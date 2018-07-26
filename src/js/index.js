@@ -9,6 +9,7 @@ import EventEmitter from 'eventemitter3'
 import ProjectListContainer from './components/ProjectListContainer'
 import FlowListContainer from './components/FlowListContainer'
 import LibraryListContainer from './components/LibraryListContainer'
+import NavigationBar from './components/shared/NavigationBar'
 
 window.emitter = new EventEmitter()
 
@@ -50,5 +51,12 @@ if (document.getElementById('library_list')) {
   ReactDOM.render(
     <LibraryListContainer/>,
     document.getElementById('library_list'),
+  )
+}
+
+if (document.getElementById('navigation')) {
+  ReactDOM.render(
+    <NavigationBar baseUrl={inject_static_url} navigation={this}/>,
+    document.getElementById('navigation'),
   )
 }

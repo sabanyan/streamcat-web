@@ -24,6 +24,7 @@ import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
 import { FlowModelProps } from '../../model/Flow/FlowModel'
+import NavigationModel from '../../model/Navigation/NavigationModel'
 
 let FlowEditorContainer
 
@@ -54,6 +55,7 @@ export type FlowEditorProps = {
   setZoom: Function;
   zoom: number;
   flow: FlowModelProps;
+  navigation: NavigationModel;
   drag: {
     start: {
       x: number,
@@ -82,7 +84,8 @@ export default FlowEditorContainer = connect(
       selected_out_edges: state.selected_out_edges,
       zoom: state.zoom,
       flow: state.flow,
-      originalFlow: state.originalFlow
+      originalFlow: state.originalFlow,
+      navigation: state.navigation
     }
   },
   dispatch => {

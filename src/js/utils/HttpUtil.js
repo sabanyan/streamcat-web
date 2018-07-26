@@ -1,10 +1,22 @@
 import axios from 'axios'
 import Constants from '../constants'
+import NavigationModel from '../model/Navigation/NavigationModel'
 
 class HTTPUtil {
   constructor () {
     //default config
     this.config = {}
+
+    axios.interceptors.response.use((response) => {
+      this.setWindowNavigation(response)
+      return response
+    });
+  }
+
+  setWindowNavigation(response){
+    if(response.data.navigation){
+      new NavigationModel(response.data.navigation)
+    }
   }
 
   mergeConfig (config) {
