@@ -1139,6 +1139,67 @@ class Mwindow(MCommand):#new
         self.params.append(Parameter('t', '窓の行数指定(必須)'))
         self.params.append(Parameter('k', '窓を生成する単位となる列名'))
 
+class M2cross(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'm2cross'
+        self.description = '1対Nのクロス集計'
+        self.params.append(Parameter('f', '組み合わせ列名(必須)'))
+        self.params.append(Parameter('s', '列項目名に展開する列(選択必須)'))
+        self.params.append(Parameter('a', '２項目指定(選択必須)'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL血置換文字列'))
+
+class Mcombi(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcombi'
+        self.description = '組合せ計算'
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('f', '組み合わせ列名(必須)'))
+        self.params.append(Parameter('n', '組み合わせ数(必須)'))
+        self.params.append(Parameter('s', '並び替えの後、f=で指定の列の組み合わせを求める列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+
+class Mcross(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcross'
+        self.description = 'クロス集計'
+        self.params.append(Parameter('f', '指定列の値(必須)'))
+        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
+        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL値置換文字列'))
+
+class Mtra(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtra'
+        self.description = '縦横変換'
+        self.params.append(Parameter('k', '変換キー列名'))
+        self.params.append(Parameter('s', '並び替えの後、変換を行う列名'))
+        self.params.append(Parameter('f', '連結前列名:連結後列名(必須)'))
+
+class Mtrafld(MCommand):#mtraflgと名前がダブる
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtrafld'
+        self.description = 'クロス表をトランザクション項目に変換'
+        self.params.append(Parameter('a', 'トランザクション列名(必須)'))
+        self.params.append(Parameter('f', '列名リスト'))
+        self.params.append(Parameter('delim', 'トランザクション項目アイテムを区切る文字列'))
+        self.params.append(Parameter('delim2', '項目名と値ペアを区切る文字列'))
+
+class Mtraflg(MCommand):#mtrafldと名前がダブる
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtraflg'
+        self.description = 'クロス表をトランザクション項目に変換'
+        self.params.append(Parameter('a', 'トランザクション列名(必須)'))
+        self.params.append(Parameter('f', '列名リスト(必須)'))
+        self.params.append(Parameter('delim', 'トランザクション項目アイテムを区切る文字'))
+
 # KCMD
 class SelectTargetColumn(UnixCommand):
     def __init__(self):
