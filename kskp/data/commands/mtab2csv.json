@@ -1,9 +1,9 @@
 {
-  "id": "mvcount",
+  "id": "mtab2csv",
   "params": [
     {
-      "name": "vf",
-      "label": "要素数をカウントするベクトルの列名",
+      "name": "d",
+      "label": "区切り文字",
       "type": "string"
     }
   ],
@@ -22,5 +22,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ベクトルサイズの計算"
+  "label": "TSVからCSVデータへの変換"
 }

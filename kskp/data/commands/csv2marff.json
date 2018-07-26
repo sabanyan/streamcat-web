@@ -1,0 +1,46 @@
+{
+  "id": "csv2marff",
+  "params": [
+    {
+      "name": "n",
+      "caption": "数値列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "d",
+      "caption": "カテゴリ列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "D",
+      "caption": "日付列名リスト(必須)",
+      "type": "string"
+    },
+    {
+      "name": "s",
+      "caption": "文字列列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "T",
+      "caption": "タイトル名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "csvからarff形式への変換"
+}

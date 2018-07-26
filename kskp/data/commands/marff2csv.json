@@ -1,11 +1,6 @@
 {
-  "id": "mvcount",
+  "id": "marff2csv",
   "params": [
-    {
-      "name": "vf",
-      "label": "要素数をカウントするベクトルの列名",
-      "type": "string"
-    }
   ],
   "ports": [
     [
@@ -22,5 +17,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ベクトルサイズの計算"
+  "label": "arffからcsv形式への変換"
 }
