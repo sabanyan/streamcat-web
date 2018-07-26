@@ -424,8 +424,48 @@ class Mbucket(MCommand):
         super().__init__()
         self.name = 'mbucket'
         self.description = '行分割'
-        self.params.append(Parameter('n', '行数'))
-        self.params.append(Parameter('f', '対象列名'))
+        self.params.append(Parameter('n', '行数(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('F', '出力形式'))
+        self.params.append(Parameter('k', 'バケット分割を行う単位となる列名'))
+        self.params.append(Parameter('O', 'バケット範囲出力ファイル'))
+
+class Mmbucket(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mmbucket'
+        self.description = '多次元行分割'
+        self.params.append(Parameter('n', '行数(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('F', '出力形式'))
+        self.params.append(Parameter('k', '各項目の各バケットの数値範囲を出力するファイル名'))
+
+class Msep(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'msep'
+        self.description = 'レコードの分割'
+        self.params.append(Parameter('d', '異なるデータファイルに分割する列名(必須)'))
+
+class Msep2(MCommand):#mnew
+    def __init__(self):
+        super().__init__()
+        self.name = 'msep2'
+        self.description = '連番、項目値表の出力を伴った行分割'
+        self.params.append(Parameter('k', '分割単位となる項目(必須)'))
+        self.params.append(Parameter('O', '連番ファイルを作成するディレクトリ名(必須)'))
+        self.params.append(Parameter('o', 'kでの指定項目値に対する連番ファイル名の対応表名'))
+        self.params.append(Parameter('a', 'o=にて出力するファイル名の項目名(必須)'))
+
+class Mshuffle(MCommand):#ない？
+    def __init__(self):
+        super().__init__()
+        self.name = 'mshuffle'
+        self.description = 'レコード分割'
+        self.params.append(Parameter('d', '出力ファイル名の接頭辞(必須)'))
+        self.params.append(Parameter('f', 'キー指定'))
+        self.params.append(Parameter('n', '分割ファイル数(選択必須)'))
+        self.params.append(Parameter('v', '分割するファイルごとのデータ量の重み(選択必須)'))
 
 class Mtee(MCommand):
     def __init__(self):
