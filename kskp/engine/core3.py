@@ -566,6 +566,41 @@ class Mvcount(MCommand):#new
         self.description = 'ベクトルサイズの計算'
         self.params.append(Parameter('vf', '要素数をカウントするベクトルの列名(必須)'))
 
+
+class Marff2csv(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'marff2csv'
+        self.description = 'arffからcsv形式への変換'
+
+class Mcsv2arff(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'csv2marff'
+        self.description = 'csvからarff形式への変換'
+        self.params.append(Parameter('n', '数値列名(必須)'))
+        self.params.append(Parameter('d', 'カテゴリ列名(必須)'))
+        self.params.append(Parameter('D', '日付列名リスト(必須)'))
+        self.params.append(Parameter('s', '文字列列名(必須)'))
+        self.params.append(Parameter('T', 'タイトル名'))
+
+class Mtab2csv(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtab2csv'
+        self.desription = 'TSVからCSVデータへの変換'
+        self.params.append(Parameter('d', '区切り文字'))
+
+class Mxml2csv(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mxml2csv'
+        self.description = 'xmlからcsv形式への変換'
+        self.params.append(Parameter('k', '１行の単位となる要素のパス名(必須)'))
+        self.params.append(Parameter('f', '要素もしくは属性の指定(必須)'))
+        self.params.append(Parameter('i', 'xmlデータファイル'))
+
+# KCMD
 class SelectTargetColumn(UnixCommand):
     def __init__(self):
         super().__init__()
