@@ -1,5 +1,5 @@
 {
-  "projectId": "2",
+  "projectId": 1,
   "label": "kcmdサンプル",
   "params": [],
   "ports": [[], []],
@@ -12,7 +12,7 @@
       "label": null
     },
     {
-      "id": "c1",
+      "id": "select_target_column",
       "type": "command",
       "commandId": "select_target_column",
       "args": {
@@ -30,7 +30,7 @@
       "label": null
     },
     {
-      "id": "c2",
+      "id": "standardize",
       "type": "command",
       "commandId": "standardize",
       "args": {
@@ -48,7 +48,7 @@
       "label": null
     },
     {
-      "id": "c3",
+      "id": "klinreg",
       "type": "command",
       "commandId": "klinreg",
       "args": {
@@ -65,7 +65,7 @@
       "label": null
     },
     {
-      "id": "c4",
+      "id": "evaluate",
       "type": "command",
       "commandId": "evaluate",
       "args": {
