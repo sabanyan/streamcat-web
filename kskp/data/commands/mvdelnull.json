@@ -1,0 +1,26 @@
+{
+  "id": "mvdelnull",
+  "params": [
+    {
+      "name": "vf",
+      "label": "対象列名(必須)",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトル要素のNULL要素削除"
+}

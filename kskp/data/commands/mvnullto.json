@@ -1,0 +1,36 @@
+{
+  "id": "mvnullto",
+  "params": [
+    {
+      "name": "vf",
+      "label": "対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "v",
+      "label": "置換文字列",
+      "type": "string"
+    },
+    {
+      "name": "O",
+      "label": "NULL以外の全要素を置換する文字列",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトル要素のNULL置換"
+}

@@ -1200,6 +1200,98 @@ class Mtraflg(MCommand):#mtrafldと名前がダブる
         self.params.append(Parameter('f', '列名リスト(必須)'))
         self.params.append(Parameter('delim', 'トランザクション項目アイテムを区切る文字'))
 
+class Mchgnum(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mchgnum'
+        self.description = '数値範囲による置換'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('R', '置換対象となる数値範囲(必須)'))
+        self.params.append(Parameter('O', '範囲外文字列'))
+        self.params.append(Parameter('v', 'R=に対応する置換文字列'))
+
+
+class Mchgstr(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mchgnum'
+        self.description = '文字列の置換'
+        self.params.append(Parameter('c', '置換対象となる文字列と対応する置換文字列(必須)'))
+        self.params.append(Parameter('f', '置換対象列(必須)'))
+        self.params.append(Parameter('O', 'c=に無い文字列を置換する場合の文字列'))
+
+class Mdformat(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mdformat'
+        self.description = '日付時刻抽出'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('c', '文字列のフォーマット(必須)'))
+
+class Mnullto(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnullto'
+        self.description = 'NULL置換'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('v', '置換後の文字列'))
+        self.params.append(Parameter('O', 'NULL値以外を置換する文字列'))
+
+class Msed(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msed'
+        self.description = '文字列置換'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('c', '変換パターン(必須)'))
+        self.params.append(Parameter('v', '変換後文字列(必須)'))
+
+class Mtonull(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtonull'
+        self.description = 'NULL値へ置換'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('v', '変換前文字列(必須)'))
+
+class Mvdelim(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvdelim'
+        self.description = 'ベクトル要素の区切り文字変更'
+        self.params.append(Parameter('vf', '対象列名(必須)'))
+        self.params.append(Parameter('v', '新しい区切り文字(必須)'))
+
+class Mvdelnull(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvdelnull'
+        self.description = 'ベクトル要素のNULL要素削除'
+        self.params.append(Parameter('vf', '対象列名(必須)'))
+
+class Mvnullto(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvnullto'
+        self.description = 'ベクトル要素のNULL置換'
+        self.params.append(Parameter('vf', '対象列名(必須)'))
+        self.params.append(Parameter('v', '置換文字列'))
+        self.params.append(Parameter('O', 'NULL以外の全要素を置換する文字列'))
+
+class Mvsort(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvsort'
+        self.description = 'ベクトル要素のソート'
+        self.params.append(Parameter('vf', '対象列名(必須)'))
+
+class Mvuniq(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mvuniq'
+        self.description = 'ベクトル要素の単一化'
+        self.params.append(Parameter('vf', '対象列名(必須)'))
+
 # KCMD
 class SelectTargetColumn(UnixCommand):
     def __init__(self):

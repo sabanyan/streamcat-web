@@ -1,0 +1,31 @@
+{
+  "id": "mtonull",
+  "params": [
+    {
+      "name": "f",
+      "label": "対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "v",
+      "label": "変換前文字列(必須)",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "NULL値へ置換"
+}
