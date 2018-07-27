@@ -33,7 +33,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     lastModifiedAt: "-"
   }
 
-  loaded:boolean = false
+  loading:boolean = false
 
   componentWillMount () {
     //モーダル処理の登録
@@ -48,28 +48,50 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     const selected_step:StepModelType = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
       if(selected_step.hasData()){
-        HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
+        this.loading = true
+        HttpUtil.get("frames/"+selected_step.id).then((response)=>{
           this.dataFrameDetail = response.data
-          this.loaded = true
+          this.loading = false
           this.forceUpdate()
         })
       }else{
-        this.loaded = true
       }
     }
   }
 
   onClickPreview(e:Event){
     const selected_step = this.getSelectedStep()
-    HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
-      let content = <DataPreview key={selected_step.uuid} json={response.data} />
-      ModalUtil.emitModal({
-        id: Constants.preview.DATASOURCE,
-        visible: true,
-        content: content,
-        title: selected_step.label,
+
+    //すでにデータが存在している場合
+    if(selected_step.hasData()){
+      this.loading = true
+      this.forceUpdate()
+      HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
+        let content = <DataPreview key={selected_step.uuid} json={response.data} />
+        ModalUtil.emitModal({
+          id: Constants.preview.DATASOURCE,
+          visible: true,
+          content: content,
+          title: selected_step.label,
+        })
+        this.loading = false
+        this.forceUpdate()
       })
-    })
+    }else{
+      this.loading = true
+      this.forceUpdate()
+      HttpUtil.get("frames?from="+inject_flow_uuid+"."+selected_step.id).then((response)=>{
+        let content = <DataPreview key={selected_step.uuid} json={response.data} />
+        ModalUtil.emitModal({
+          id: Constants.preview.DATASOURCE,
+          visible: true,
+          content: content,
+          title: selected_step.label,
+        })
+        this.loading = false
+        this.forceUpdate()
+      })
+    }
     e.preventDefault()
   }
 
@@ -136,10 +158,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     let download
     const selected_step = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
-      if(selected_step.hasData()){
-        preview = <Button onClick={(e) => this.onClickPreview(e)}
-                          icon={'visibility'}>プレビュー</Button>
-      }
+      preview = <Button onClick={(e) => this.onClickPreview(e)}
+                        icon={'visibility'}>プレビュー</Button>
       if (selected_step.hasData()) {
         download = <Button onClick={(e) => this.onClickCSVDownload(e)}
                           icon={'visibility'}>CSVダウンロード</Button>
@@ -167,7 +187,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
 
     let content
 
-    if(!this.loaded){
+    if(this.loading){
       content = <Loader center={true} absolute={true} fixed={false} visible={true}/>
     }else {
       content = <div>
