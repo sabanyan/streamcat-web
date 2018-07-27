@@ -38,6 +38,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             this.loaded = true
             this.forceUpdate()
           })
+        }else{
+          //サブフロー以外の場合は読み込み完了
+          this.loaded = true
         }
       }
     }
