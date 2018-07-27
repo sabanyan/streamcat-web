@@ -17,6 +17,8 @@ import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import HttpUtil from '../../../utils/HttpUtil'
 import type { FlowEditorProps } from '../index'
 import type { DataFrameStepModelProps } from '../../../model/Step/DataFrameStepModel'
+import Loader from '../../shared/Loader'
+import { RunResponseType } from '../../../types'
 
 type ToolbarProps = {
   ...FlowEditorProps
@@ -24,11 +26,16 @@ type ToolbarProps = {
 
 export default class Toolbar extends React.Component<ToolbarProps> {
 
+  loading:boolean  = false
+  loadingMessage:string
+
   constructor (props:ToolbarProps){
     super(props)
   }
 
   onClickSave () {
+    this.loading = true
+    this.loadingMessage = "フローを保存中です"
     this.save().then((json) => {
       if (json) {
         ModalUtil.emitModal({
@@ -38,6 +45,8 @@ export default class Toolbar extends React.Component<ToolbarProps> {
           content: <div>フローを保存しました</div>,
         })
       }
+      this.loading = false
+      this.forceUpdate()
     })
   }
 
@@ -68,7 +77,6 @@ export default class Toolbar extends React.Component<ToolbarProps> {
 
   run () {
     return new Promise((resolve, reject) => {
-
       HttpUtil.get("frames?from=" + inject_flow_uuid).then((response)=>{
         resolve(response)
       })
@@ -93,18 +101,35 @@ export default class Toolbar extends React.Component<ToolbarProps> {
   }
 
   onClickProjectRun () {
-    const self = this
+    this.loading = true
+    this.loadingMessage = "フローを実行中です"
+    this.forceUpdate()
     this.save().then(() => {
-      self.run().then((json) => {
-        const content = <DataTable json={json}/>
+      this.run().then((json) => {
+        const resultData:RunResponseType = json.data
+console.log(resultData)
+        const result = resultData.name.map((result)=>{
+          return <li>{result}</li>
+        })
+        const content = <div>
+          <div>フローの実行が完了し、以下のデータがライブラリに追加されました</div>
+          <ul>{result}</ul>
+        </div>
+
         ModalUtil.emitModal({
-          id: Constants.preview.DATASOURCE,
+          id: Constants.modal.SHOW_RUN_RESULT,
           visible: true,
-          content: content,
-          title: inject_initial_flow_data.name,
+          content: content
+        })
+        ModalUtil.registerModal({
+          id: Constants.modal.SHOW_RUN_RESULT, onClickDone: () => {
+            window.open( "/library", "_blank");
+          }
         })
         //TODO 将来的に修正する（executeFlowAction は hasData = true に変更するためだけの処理になっています）
-        self.props.executeFlow()
+        this.props.executeFlow()
+        this.loading  = false
+        this.forceUpdate()
       })
     })
   }
@@ -190,6 +215,7 @@ export default class Toolbar extends React.Component<ToolbarProps> {
         <Sort disabled={false} icon={'&#xE42A'}
               onClick={(e) => this.onClickSort(e)}>整列</Sort>
       </div>
+      <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={this.loading} message={this.loadingMessage}/>
     </div>
   }
 }

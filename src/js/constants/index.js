@@ -65,6 +65,7 @@ const Constants = {
     ADD_FLOW: 'add_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
+    SHOW_RUN_RESULT: 'show_run_result',
     property: {
       title: 'title',
       message: 'message',

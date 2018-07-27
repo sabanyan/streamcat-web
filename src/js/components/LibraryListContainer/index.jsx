@@ -51,6 +51,9 @@ export default class LibraryListContainer extends React.Component<Props,State> {
       const json = response.data
       self.setState(
         {is_loading: false, is_finished: true, job_list: json.data})
+    }).catch((error)=>{
+      self.setState(
+        {is_loading: false, is_finished: true, job_list: []})
     })
   }
 
@@ -67,10 +70,9 @@ export default class LibraryListContainer extends React.Component<Props,State> {
 
   renderEmptyState () {
     return <EmptyState
-      icon={'add'}
+      icon={'inbox'}
       title={'ライブラリが空です'}
       description={'フローを実行することでデータができます'}>
-      <Button onClick={(e) => this.onClickNew(e)}>フローを作成する</Button>
     </EmptyState>
   }
 
