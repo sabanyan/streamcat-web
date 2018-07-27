@@ -33,7 +33,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       if (selected_step instanceof CommandStepModel) {
         if(selected_step.type === Constants.step.type.subflow){
           //サブフローの場合のみ詳細を取得
-          HttpUtil.get("flows/"+selected_step.uuid).then((response)=>{
+          HttpUtil.get("flows/"+selected_step.uuid+"?navigation=off").then((response)=>{
             this.selectedSubFlow = response.data.data
             this.loaded = true
             this.forceUpdate()
