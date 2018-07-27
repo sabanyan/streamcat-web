@@ -37,7 +37,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       this.props.loadFlowJSON(json)
     })
 
-    HttpUtil.get('flows').then((response) => {
+    HttpUtil.get('flows?navigation=off').then((response) => {
       const json = response.data
       // const commands = json.data.map((command)=>{
       //   return new CommandModel(command)
