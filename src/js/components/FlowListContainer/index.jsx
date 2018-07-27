@@ -36,7 +36,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
   constructor (props:Props) {
     super(props)
     this.state = {
-      flow_list: inject_flow_list,
+      flow_list: [],
       keyword: '',
       is_loading: false,
       is_finished: false,
