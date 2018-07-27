@@ -23,10 +23,10 @@ export default class Command extends React.Component<Props> {
         this.inputRefs = []
     }
 
-    buildArgumentsContent() {
+    buildParamsContent() {
         const {command} = this.props
         this.inputRefs = [] //クリア
-        const argument_inputs = command.params.map((param) => {
+        const paramsInputs = command.params.map((param) => {
             return <div key={command.id + "_" + param.name} className="mb-8px">
                 <label>
                   {param.label}
@@ -38,7 +38,7 @@ export default class Command extends React.Component<Props> {
         })
 
         const content = <form onSubmit={this.onSubmitModal}>
-            {argument_inputs}
+            {paramsInputs}
         </form>
 
         return content
@@ -55,7 +55,7 @@ export default class Command extends React.Component<Props> {
     onClickCommand(command:CommandModel) {
 
         const self = this
-        let content = this.buildArgumentsContent()
+        let content = this.buildParamsContent()
 
         ModalUtil.registerModal({
             id: Constants.modal.ADD_COMMAND, onClickDone: () => {
@@ -63,7 +63,6 @@ export default class Command extends React.Component<Props> {
                 let args = {}
 
                 //モーダルで入力されたパラメータを取得
-                console.log(self.inputRefs)
                 self.inputRefs.map((inputRef) => {
                     args[inputRef.params.name] = inputRef.element.value
                     inputRef.element.value = "" //値をクリア
