@@ -446,9 +446,11 @@ class FrameApiTestCase(unittest.TestCase):
 
         self.assertEqual(result['success'], True)
         data = result['data']
-        self.assertEqual(data['a'], ['1', '0'])
-        self.assertEqual(data['b'], ['2', '1'])
-        self.assertEqual(data['c'], ['3', '2'])
+        self.assertEqual(data['numberOfLines'], 2)
+        self.assertEqual(data['fileSize'], 17)
+        self.assertEqual(data['contents']['a'], ['1', '0'])
+        self.assertEqual(data['contents']['b'], ['2', '1'])
+        self.assertEqual(data['contents']['c'], ['3', '2'])
 
 
     def test_download_frame(self):
