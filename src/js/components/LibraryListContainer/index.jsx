@@ -22,9 +22,16 @@ import JobListHeader from '../shared/List/JobList/JobListHeader'
  * ======================================================
  */
 
-export default class LibraryListContainer extends React.Component {
 
-  constructor (props) {
+type State = {
+  job_list: [];
+  is_loading: boolean;
+  is_finished: boolean;
+}
+
+export default class LibraryListContainer extends React.Component<Props,State> {
+
+  constructor (props:Props) {
     super(props)
     this.state = {
       job_list: [],
@@ -54,8 +61,7 @@ export default class LibraryListContainer extends React.Component {
   renderJobList () {
     const self = this
     return this.state.job_list.map((job, index) => {
-      return <JobList key={index} job={job}>
-      </JobList>
+      return <JobList key={index} job={job}/>
     })
   }
 

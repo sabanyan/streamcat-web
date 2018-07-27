@@ -12,7 +12,14 @@ type Props = {
 
 export default class Loader extends React.Component<Props> {
 
-  constructor (props) {
+  static defaultProps = {
+    center: true,
+    absolute: true,
+    fixed: false,
+    visible: false,
+  }
+
+  constructor (props:Props) {
     super(props)
   }
 
