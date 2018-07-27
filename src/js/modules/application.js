@@ -3,6 +3,7 @@ import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
 import FlowModel from '../model/Flow/FlowModel'
 import NavigationModel from '../model/Navigation/NavigationModel'
+import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -24,6 +25,7 @@ const DRAG_START_ACTION = "drag_start_action";
 const DRAGGING_ACTION = "dragging_action";
 const DRAG_END_ACTION = "drag_end_action";
 const SET_ZOOM_ACTION = "set_zoom_action";
+const UPDATE_DATAFRAME_DETAIL_ACTION = "update_dataframe_detail_action";
 
 const graph = new Graph()
 //
@@ -145,7 +147,13 @@ const Application = (state = initialState, action) => {
             //http://otiai10.hatenablog.com/entry/2016/04/20/013348
             //stateを一度ディープコピーしないとrenderされないためコピーする
             let newState = StateUtil.deepCopy(state)
-            newState.nodes[action.step.id] = action.step
+
+            newState.nodes.map((node,index)=>{
+              if(node.id == action.step.id){
+                return action.step
+              }
+              return node
+            })
 
             //選択されているstepの値も更新する
             newState.graph = graph.getGraph(newState)
@@ -528,5 +536,17 @@ export const setZoomAction = ({offset,value}) => {
     type : SET_ZOOM_ACTION,
     offset: offset,
     value: value
+  }
+}
+
+/**
+ * データフレームの詳細更新
+ * @param dataFrame
+ * @returns {{dataFrame: DataFrameStepModel, type: string}}
+ */
+export const updateDataFrameDetailAction = (dataFrame:DataFrameStepModel) => {
+  return {
+    dataFrame: dataFrame,
+    type: UPDATE_DATAFRAME_DETAIL_ACTION
   }
 }

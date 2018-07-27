@@ -18,7 +18,8 @@ import {
   draggingAction,
   dragEndAction,
   loadFlowJSONAction,
-  setZoomAction
+  setZoomAction,
+  updateDataFrameDetailAction
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -147,6 +148,9 @@ export default FlowEditorContainer = connect(
       setZoom (...args) {
         dispatch(setZoomAction(...args))
       },
+      updateDataFrameDetail(...args){
+        dispatch(updateDataFrameDetailAction(...args))
+      }
     }
   },
 )(FlowEditor)
