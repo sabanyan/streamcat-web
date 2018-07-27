@@ -1299,11 +1299,12 @@ class Mchkcsv(MCommand):#new
         self.description = 'csvデータのチェック・修復'
         self.params.append(Parameter('i', '入力ファイル名'))
         self.params.append(Parameter('a', '入力データ列を無視する、新しい列名'))
+
 # KCMD
 class SelectTargetColumn(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('t', '目的変数'))
+        self.params.append(Parameter('t', 'set target_colname'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1313,15 +1314,23 @@ class SelectTargetColumn(UnixCommand):
         frames_path = 'kskp/data/frames'
         from .commands.kcmd.preprocess.selecttargetcolumn import SelectTargetColumn as Base
         command = Base()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-t', args['t']])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        # command.main()では空の引数
+        for key, value in args.items():
+            if not len(value) == 0:
+                # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
+        dataframe = command.main(cl_args)
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class Standardize(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', '対象列名'))
-        self.params.append(Parameter('a', '全ての列'))
+        self.params.append(Parameter('c', 'select columns you wish to normalize'))
+        self.params.append(Parameter('a', 'all columns'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1333,14 +1342,20 @@ class Standardize(UnixCommand):
         command = Base()
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
+        dataframe = command.main(cl_args)
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class Label_encode(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', '対象列名'))
+        self.params.append(Parameter('c', 'select columns you wish to normalize'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1351,15 +1366,21 @@ class Label_encode(UnixCommand):
         from .commands.kcmd.preprocess.label_encode import Label_encode as Base
         command = Base()
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
+        dataframe = command.main(cl_args)
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class Normalize(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', '対象列名'))
-        self.params.append(Parameter('a', '全ての列'))
+        self.params.append(Parameter('c', 'select columns you wish to normalize'))
+        self.params.append(Parameter('a', 'all columns'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1370,14 +1391,20 @@ class Normalize(UnixCommand):
         from .commands.kcmd.preprocess.normalize import Normalize as Base
         command = Base()
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
+        dataframe = command.main(cl_args)
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class One_hot_encode(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', '対象列名'))
+        self.params.append(Parameter('c', 'select columns you wish to normalize'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1388,14 +1415,20 @@ class One_hot_encode(UnixCommand):
         from .commands.kcmd.preprocess.one_hot_encode import One_hot_encode as Base
         command = Base()
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-c', args['c']])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
+        dataframe = command.main(cl_args)
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class Pca(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('--n_components', ''))
+        self.params.append(Parameter('n_components', 'components'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1406,18 +1439,24 @@ class Pca(UnixCommand):
         from .commands.kcmd.preprocess.pca import Pca as Base
         command = Base()
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
+        dataframe = command.main(cl_args)
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class Kkmeans(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('--n_clusters', ''))
-        self.params.append(Parameter('--n_init', ''))
-        self.params.append(Parameter('--max_iter', ''))
-        self.params.append(Parameter('--precompute_distances', ''))
-        self.params.append(Parameter('--tol', ''))
+        self.params.append(Parameter('n_clusters', 'set the number of clusters'))
+        self.params.append(Parameter('n_init', 'select penalty term'))
+        self.params.append(Parameter('max_iter', 'set the maximum number of iteration'))
+        self.params.append(Parameter('precompute_distances', 'whether precompute distances'))
+        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1429,17 +1468,23 @@ class Kkmeans(UnixCommand):
         command = Base()
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
+        dataframe = command.main(cl_args)
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class CKab(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('-l', ''))
-        self.params.append(Parameter('-r', ''))
-        self.params.append(Parameter('-a', ''))
-        self.params.append(Parameter('--n_estimators', ''))
+        self.params.append(Parameter('l', 'set learning_rate'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('a', 'set algorithm'))
+        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1452,19 +1497,27 @@ class CKab(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class CKbag(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('-r', ''))
-        self.params.append(Parameter('--n_estimators', ''))
-        self.params.append(Parameter('--max_samples', ''))
-        self.params.append(Parameter('--unuse_bootstrap', ''))
-        self.params.append(Parameter('--max_features', ''))
-        self.params.append(Parameter('--unuse_bootstrap_features', ''))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
+        self.params.append(Parameter('max_samples', 'The number of samples to draw from X to train each base estimator'))
+        self.params.append(Parameter('unuse_bootstrap', 'whether use bootstrap sampling'))
+        self.params.append(Parameter('max_features', 'The number of features to draw from X to train each base estimator'))
+        self.params.append(Parameter('unuse_bootstrap_features', 'whether features are drawn with replacement'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1477,13 +1530,26 @@ class CKbag(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class CKdt(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('l', 'setting min_samples_leaf'))
+        self.params.append(Parameter('min_samples_split', 'setting min samples splits'))
+        self.params.append(Parameter('d', 'setting max_depth'))
+        self.params.append(Parameter('c', 'The function to measure the quality of a split'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1496,13 +1562,28 @@ class CKdt(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class CKgb(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('l', 'setting min_samples_leaf'))
+        self.params.append(Parameter('min_samples_split', 'setting min samples splits'))
+        self.params.append(Parameter('d', 'setting max_depth'))
+        self.params.append(Parameter('c', 'set criterion'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
+        self.params.append(Parameter('loss', 'set loss function'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1515,13 +1596,26 @@ class CKgb(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class CKnearestNeighbors(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('n_neighbors', 'set the number of neighbors'))
+        self.params.append(Parameter('weights', 'weight function used on prediction'))
+        self.params.append(Parameter('a', 'select algorithm'))
+        self.params.append(Parameter('leaf_size', 'set leaf size passed to BallTree or KDTree'))
+        self.params.append(Parameter('p', 'set power param for the Minkowski loss'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1534,13 +1628,30 @@ class CKnearestNeighbors(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class CKneuralnet(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('hidden_layer_sizes', 'set the number of neurons in its hidden layer sizes'))
+        self.params.append(Parameter('a', 'select activation'))
+        self.params.append(Parameter('solver', 'select optimizer'))
+        self.params.append(Parameter('alpha', 'set weight of L2 penalty term'))
+        self.params.append(Parameter('tol', 'set tolerance for the optimization'))
+        self.params.append(Parameter('learning_rate_init', 'set initial learning rate'))
+        self.params.append(Parameter('early_stopping', 'whether to use early_stopping'))
+        self.params.append(Parameter('momentum', 'set momentum for gradient descent update.Only used when optimizer=sgd'))
+        self.params.append(Parameter('epsilon', 'set value for numerical stability in adam.Only used when optimizer=adam'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1553,13 +1664,25 @@ class CKneuralnet(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class CKrf(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('l', 'setting min_samples_leaf'))
+        self.params.append(Parameter('d', 'setting max_depth'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('b', 'set whether bootstrap samples are used'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1572,13 +1695,24 @@ class CKrf(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class CKsvm(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('c', 'setting penalty parameter C of the error term'))
+        self.params.append(Parameter('k', 'setting kernel function'))
+        self.params.append(Parameter('g', 'setting kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1591,13 +1725,22 @@ class CKsvm(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class KgaussianNb(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('priors', 'set prior probabilities of the classes'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1610,13 +1753,27 @@ class KgaussianNb(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class Klogreg(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('C', 'Inverse of regularization strength'))
+        self.params.append(Parameter('p', 'select penalty term'))
+        self.params.append(Parameter('b', 'whether use bias term'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
+        self.params.append(Parameter('c', 'set class weight by dict'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1629,13 +1786,26 @@ class Klogreg(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class RKab(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('l', 'set learning_rate'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('a', 'set algorithm'))
+        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
+        self.params.append(Parameter('loss', 'set loss function'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1648,13 +1818,27 @@ class RKab(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class RKbag(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
+        self.params.append(Parameter('max_samples', 'The number of samples to draw from X to train each base estimator'))
+        self.params.append(Parameter('unuse_bootstrap', 'whether use bootstrap sampling'))
+        self.params.append(Parameter('max_features', 'The number of features to draw from X to train each base estimator'))
+        self.params.append(Parameter('unuse_bootstrap_features', 'whether features are drawn with replacement'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1667,13 +1851,26 @@ class RKbag(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class RKdt(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('l', 'setting min_samples_leaf'))
+        self.params.append(Parameter('min_samples_split', 'setting min samples splits'))
+        self.params.append(Parameter('d', 'setting max_depth'))
+        self.params.append(Parameter('c', 'The function to measure the quality of a split'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1686,13 +1883,28 @@ class RKdt(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class RKgb(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('l', 'setting min_samples_leaf'))
+        self.params.append(Parameter('min_samples_split', 'setting min samples splits'))
+        self.params.append(Parameter('d', 'setting max_depth'))
+        self.params.append(Parameter('c', 'set criterion'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
+        self.params.append(Parameter('loss', 'set loss function'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1705,13 +1917,26 @@ class RKgb(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class RKnearestNeighbors(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('radius', 'set the range of parameter space'))
+        self.params.append(Parameter('weights', 'weight function used on prediction'))
+        self.params.append(Parameter('a', 'select algorithm'))
+        self.params.append(Parameter('leaf_size', 'set leaf size passed to BallTree or KDTree'))
+        self.params.append(Parameter('p', 'set power param for the Minkowski loss'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1724,13 +1949,30 @@ class RKnearestNeighbors(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class RKneuralnet(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('hidden_layer_sizes', 'set the number of neurons in its hidden layer sizes'))
+        self.params.append(Parameter('a', 'select activation'))
+        self.params.append(Parameter('solver', 'select optimizer'))
+        self.params.append(Parameter('alpha', 'set weight of L2 penalty term'))
+        self.params.append(Parameter('tol', 'set tolerance for the optimization'))
+        self.params.append(Parameter('learning_rate_init', 'set initial learning rate'))
+        self.params.append(Parameter('early_stopping', 'whether to use early_stopping'))
+        self.params.append(Parameter('momentum', 'set momentum for gradient descent update.Only used when optimizer=sgd'))
+        self.params.append(Parameter('epsilon', 'set value for numerical stability in adam.Only used when optimizer=adam'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1743,13 +1985,25 @@ class RKneuralnet(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class RKrf(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('l', 'setting min_samples_leaf'))
+        self.params.append(Parameter('d', 'setting max_depth'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('b', 'set whether bootstrap samples are used'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1762,13 +2016,24 @@ class RKrf(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class RKsvm(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('c', 'setting penalty parameter C of the error term'))
+        self.params.append(Parameter('k', 'setting kernel function'))
+        self.params.append(Parameter('g', 'setting kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1781,13 +2046,27 @@ class RKsvm(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class Kelastic(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('a', 'weight of L1 term'))
+        self.params.append(Parameter('normalize', 'whether use normalize'))
+        self.params.append(Parameter('b', 'whether use bias term'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
+        self.params.append(Parameter('l1_ratio', 'set l1 ratio against l2'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1800,13 +2079,26 @@ class Kelastic(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class Kridge(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('a', 'weight of L1 term'))
+        self.params.append(Parameter('normalize', 'whether use normalize'))
+        self.params.append(Parameter('b', 'whether use bias term'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1819,13 +2111,26 @@ class Kridge(UnixCommand):
         # command.input = inputs['i'].source.fullpath
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
         return PathFileSource('pickle', frames_path, file_name)
 
 class Klasso(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('a', 'weight of L1 term'))
+        self.params.append(Parameter('normalize', 'whether use normalize'))
+        self.params.append(Parameter('b', 'whether use bias term'))
+        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1836,15 +2141,27 @@ class Klasso(UnixCommand):
         from .commands.kcmd.modeling.regression.klasso import Klasso as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
+
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
+
         return PathFileSource('pickle', frames_path, file_name)
 
 class Klinreg(UnixCommand):
     def __init__(self):
         super().__init__()
+        self.params.append(Parameter('normalize', 'whether use normalize'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1855,17 +2172,30 @@ class Klinreg(UnixCommand):
         from .commands.kcmd.modeling.regression.klinreg import Klinreg as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
+
         inputs['i'].command_to_file()
         file_name = str(uuid.uuid4()) + '.pickle'
-        command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-o', Path(frames_path).joinpath(file_name).as_posix()])
+
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        command.main(cl_args)
         command.write()
+
         return PathFileSource('pickle', frames_path, file_name)
 
 class Evaluate(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('d', 'データのパス'))
-        self.params.append(Parameter('m', 'メトリクス'))
+        self.params.append(Parameter('d', 'test_data'))
+        self.params.append(Parameter('m', 'select metrics appling model'))
+        self.params.append(Parameter('p', 'set probability on'))
+        self.params.append(Parameter('metrics_file_name', 'metrics_file_name'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1878,15 +2208,22 @@ class Evaluate(UnixCommand):
         # command.input = inputs['i'].source.fullpath
 
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(),
-                                  '-d', Path(frames_path).joinpath(args['d']).as_posix(),
-                                  '-m', args['m']])
+
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        dataframe = command.main(cl_args)
+
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class Predict(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('d', 'データのパス'))
+        self.params.append(Parameter('d', 'test_data'))
+        self.params.append(Parameter('p', 'set probability on'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1899,7 +2236,15 @@ class Predict(UnixCommand):
         # command.input = inputs['i'].source.fullpath
 
         inputs['i'].command_to_file()
-        dataframe = command.main(['-i', inputs['i'].source.fullpath.as_posix(), '-d', Path(frames_path).joinpath(args['d']).as_posix()])
+
+        # 引数の設定
+        cl_args = []
+        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        for key, value in args.items():
+            if not len(value) == 0:
+                cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
+
+        dataframe = command.main(cl_args)
 
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
@@ -1912,7 +2257,7 @@ commands = {
     'mbest': Mbest(),
     'mchgnum': Mchgnum(),
     'mcombi': Mcombi(),
-    'mchkcsv' Mchkcsv(),
+    'mchkcsv': Mchkcsv(),
     'mcommon': Mcommon(),
     'mcount': Mcount(),
     'mcross': Mcross(),
