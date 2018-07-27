@@ -13,17 +13,17 @@ def update_navigation_user(func):
 
         user_id = session['user_id']
         project_uuid = request.args.get('project')
-
-        navigation = {
-            'user_id': user_id,
-            'user_name': model.get_user_by_id(user_id)['name'],
-            'project_uuid': '',
-            'project_name': '',
-            'flow_uuid': '',
-            'flow_name': ''
-        }
-
-        data['navigation'] = navigation
+        navigation = request.args.get('navigation')
+        if navigation != 'off':
+            navigation = {
+                'user_id': user_id,
+                'user_name': model.get_user_by_id(user_id)['name'],
+                'project_uuid': '',
+                'project_name': '',
+                'flow_uuid': '',
+                'flow_name': ''
+            }
+            data['navigation'] = navigation
         return jsonify(data)
     return deco
 
@@ -36,17 +36,17 @@ def update_navigation_project(func):
 
         user_id = session['user_id']
         project_uuid = request.args.get('project')
-
-        navigation = {
-            'user_id': user_id,
-            'user_name': model.get_user_by_id(user_id)['name'],
-            'project_uuid': project_uuid ,
-            'project_name': model.get_project_name_by_uuid(project_uuid),
-            'flow_uuid': '',
-            'flow_name': ''
-        }
-
-        data['navigation'] = navigation
+        navigation = request.args.get('navigation')
+        if navigation != 'off':
+            navigation = {
+                'user_id': user_id,
+                'user_name': model.get_user_by_id(user_id)['name'],
+                'project_uuid': project_uuid ,
+                'project_name': model.get_project_name_by_uuid(project_uuid),
+                'flow_uuid': '',
+                'flow_name': ''
+            }
+            data['navigation'] = navigation
         return jsonify(data)
     return deco
 
@@ -62,15 +62,17 @@ def update_navigation_flow(func):
         flow = model.fetch_flow_by_uuid(flow_uuid)
         project = model.fecth_project(flow['projectId'])
 
-        navigation = {
-            'user_id': user_id,
-            'user_name': model.get_user_by_id(user_id)['name'],
-            'project_uuid': project['uuid'],
-            'project_name': project['name'],
-            'flow_uuid': flow_uuid,
-            'flow_name': flow['label']
-        }
+        navigation = request.args.get('navigation')
+        if navigation != 'off':
+            navigation = {
+                'user_id': user_id,
+                'user_name': model.get_user_by_id(user_id)['name'],
+                'project_uuid': project['uuid'],
+                'project_name': project['name'],
+                'flow_uuid': flow_uuid,
+                'flow_name': flow['label']
+            }
+            data['navigation'] = navigation
 
-        data['navigation'] = navigation
         return jsonify(data)
     return deco
