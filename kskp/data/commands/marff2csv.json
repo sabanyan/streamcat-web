@@ -1,0 +1,21 @@
+{
+  "id": "marff2csv",
+  "params": [
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "arffからcsv形式への変換"
+}

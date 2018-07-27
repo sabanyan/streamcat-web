@@ -199,7 +199,7 @@ def create_flow(project_id, flow_name, data_source_name=None):
 
     data = {
         'projectId': project_id,
-        'name': flow_name
+        'label': flow_name
     }
 
     write_data_to_json(make_flow_path(data_source_name), data)

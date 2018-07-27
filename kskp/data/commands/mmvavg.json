@@ -1,0 +1,51 @@
+{
+  "id": "mmvavg",
+  "params": [
+    {
+      "name": "f",
+      "label": "移動平均を求める列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "s",
+      "label": "並べ替えの後、移動平均を計算する列名",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "単位とする列名",
+      "type": "string"
+    },
+    {
+      "name": "t",
+      "label": "期間数の指定、alpha=指定時には設定できない",
+      "type": "string"
+    },
+    {
+      "name": "alpha",
+      "label": "平滑化係数、-exp指定時のみ",
+      "type": "string"
+    },
+    {
+      "name": "skip",
+      "label": "出力を抑制する最初の行数",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "移動平均の算出"
+}

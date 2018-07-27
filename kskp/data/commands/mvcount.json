@@ -1,0 +1,26 @@
+{
+  "id": "mvcount",
+  "params": [
+    {
+      "name": "vf",
+      "label": "要素数をカウントするベクトルの列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトルサイズの計算"
+}

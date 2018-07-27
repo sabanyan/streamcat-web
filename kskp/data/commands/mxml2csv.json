@@ -1,0 +1,36 @@
+{
+  "id": "mxml2csv",
+  "params": [
+    {
+      "name": "k",
+      "label": "１行の単位となる要素のパス名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "要素もしくは属性の指定(必須)",
+      "type": "string"
+    },
+    {
+      "name": "i",
+      "label": "xmlデータファイル",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "xmlからcsv形式への変換"
+}

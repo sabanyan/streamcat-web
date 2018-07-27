@@ -1,16 +1,16 @@
 {
-  "id": "mcat_multi",
+  "id": "mvdelnull",
   "params": [
     {
-      "name": "f",
-      "type": "string",
-      "label": "併合項目名"
+      "name": "vf",
+      "label": "対象列名(必須)",
+      "type": "string"
     }
   ],
   "ports": [
     [
       {
-        "name": "*",
+        "name": "i",
         "type": "frame"
       }
     ],
@@ -22,5 +22,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ファイル結合(複数IN)"
+  "label": "ベクトル要素のNULL要素削除"
 }

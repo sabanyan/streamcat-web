@@ -4,17 +4,17 @@
     {
       "name": "f",
       "type": "string",
-      "label": "対象列名"
+      "label": "対象列名(必須)"
     },
     {
       "name": "c",
       "type": "string",
-      "label": "変換パターン"
+      "label": "変換パターン(必須)"
     },
     {
       "name": "v",
       "type": "string",
-      "label": "変換後文字列"
+      "label": "変換後文字列(必須)"
     }
   ],
   "ports": [
@@ -32,5 +32,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "文字列置換"
+  "label": "正規表現による文字列置換"
 }

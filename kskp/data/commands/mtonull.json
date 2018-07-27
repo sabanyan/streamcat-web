@@ -1,10 +1,15 @@
 {
-  "id": "mcut_n",
+  "id": "mtonull",
   "params": [
     {
       "name": "f",
-      "type": "string",
-      "label": "対象列番号"
+      "label": "対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "v",
+      "label": "変換前文字列(必須)",
+      "type": "string"
     }
   ],
   "ports": [
@@ -22,5 +27,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "列選択(列番号指定)"
+  "label": "NULL値へ置換"
 }

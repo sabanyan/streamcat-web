@@ -1,6 +1,6 @@
 {
-  "projectId": "2",
-  "name": "新エンジンの子",
+  "projectId": 1,
+  "label": "新エンジンの子",
   "params": [{"name": "c"}, {"name": "f1"}, {"name": "f2"}],
   "ports": [
     [{"name": "Ci", "type": "frame"}],

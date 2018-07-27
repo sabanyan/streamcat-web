@@ -1,0 +1,46 @@
+{
+  "id": "mcombi",
+  "params": [
+    {
+        "name": "a",
+        "label": "追加列名(必須)",
+        "type": "string"
+      },
+      {
+        "name": "f",
+        "label": "組み合わせ列名(必須)",
+        "type": "string"
+      },
+      {
+        "name": "n",
+        "label": "組み合わせ数(必須)",
+        "type": "string"
+      },
+      {
+        "name": "s",
+        "label": "並び替えの後、f=で指定の列の組み合わせを求める列名",
+        "type": "string"
+      },
+      {
+        "name": "k",
+        "label": "キー列名",
+        "type": "string"
+      }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "組合せ計算"
+}

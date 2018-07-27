@@ -1,0 +1,51 @@
+{
+  "id": "mmvstats",
+  "params": [
+    {
+      "name": "f",
+      "label": "集計列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "s",
+      "label": "並べ替えの後、各種統計量を計算する列名",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "単位とする列名",
+      "type": "string"
+    },
+    {
+      "name": "t",
+      "label": "期関数の指定",
+      "type": "string"
+    },
+    {
+      "name": "c",
+      "label": "統計量を指定(必須)",
+      "type": "string"
+    },
+    {
+      "name": "skip",
+      "label": "出力抑制を行う最初の行数指定",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "移動窓の統計量の計算"
+}

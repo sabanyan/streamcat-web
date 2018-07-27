@@ -3,8 +3,8 @@
   "params": [
     {
       "name": "c",
-      "type": "string",
-      "label": "絞込条件式"
+      "label": "絞込条件式(必須)",
+      "type": "string"
     }
   ],
   "ports": [
@@ -17,6 +17,10 @@
     [
       {
         "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
         "type": "frame"
       }
     ]
