@@ -95,7 +95,10 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'])
+    # create_flow()内でjsonの作成及びjsonファイルに書き出す作業を行なっているので
+    # 引数をひとつ増やしてuser_idを渡している。
+    # new_flow = create_flow(project_id, j['name'])
+    new_flow = create_flow(project_id, j['name'], session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
 
