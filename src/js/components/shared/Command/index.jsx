@@ -129,12 +129,17 @@ export default class Command extends React.Component<Props> {
     render() {
 
         const {command} = this.props
-        const commandClass = classnames(style.command,style.command_no_icon)
+        const iconClass = classnames(style.command_icon)
 
-        return <div>
-            <div className={commandClass} onClick={() => this.onClickCommand(command)}>
-                {/*<i className="icon material-icons">check_box_outline_blank</i>*/}
-                <div className={style.command_label}>{command.label}</div>
+        return <div className={style.command} onClick={() => this.onClickCommand(command)}>
+            <div className={iconClass}>
+            </div>
+            {/*<i className="icon material-icons">check_box_outline_blank</i>*/}
+            <div className={style.command_label_container}>
+              <div className={style.command_label}>{command.label}</div>
+                <div className={style.command_description}>
+                  {/*{command.description}*/}
+                </div>
             </div>
         </div>
     }

@@ -16,6 +16,7 @@ import classnames from 'classnames'
 import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import HttpUtil from '../../../utils/HttpUtil'
 import type { FlowEditorProps } from '../index'
+import type { DataFrameStepModelProps } from '../../../model/Step/DataFrameStepModel'
 
 type ToolbarProps = {
   ...FlowEditorProps
@@ -119,16 +120,18 @@ export default class Toolbar extends React.Component<ToolbarProps> {
 
         //データソースを追加
 
-        const add_step = new DataFrameStepModel({
-          id: null,//TODO IDはどうやってつける？
+        const props:DataFrameStepModelProps = {
+          id: null,
           type: Constants.step.type.frame,
-          uuid: null,//TODO UUIDをどうやってつける？
+          uuid: null,
           dataSource: Constants.data.dataSource.csv,
           srcs: [],
           dsts: [],
           asFlowIn: false,
           asFlowOut: false
-        })
+        }
+
+        const add_step = new DataFrameStepModel(props)
 
         self.props.addStep(add_step, null)
 
