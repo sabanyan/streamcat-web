@@ -133,7 +133,7 @@ export default class LibraryListContainer extends React.Component<Props,State> {
 
   render () {
     return <div className={'container mt-40px'}>
-      <Loader absolute={true} visible={this.state.is_loading}/>
+      <Loader center={true} absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
       <ModalManager/>
     </div>
