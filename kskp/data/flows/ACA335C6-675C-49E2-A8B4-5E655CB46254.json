@@ -34,7 +34,8 @@
       "type": "command",
       "commandId": "standardize",
       "args": {
-        "c": "DIS"
+        "c": "DIS",
+        "a": ""
       },
       "srcs": { "i": "t" },
       "dsts": { "o": "o" },
@@ -52,6 +53,7 @@
       "type": "command",
       "commandId": "klinreg",
       "args": {
+        "normalize": ""
       },
       "srcs": { "i": "o" },
       "dsts": { "o": "o2" },
@@ -69,8 +71,10 @@
       "type": "command",
       "commandId": "evaluate",
       "args": {
-        "d": "B9709397-7ABF-490A-A983-264FE88DF2C5.csv",
-        "m": "mae"
+        "d": "kskp/data/frames/B9709397-7ABF-490A-A983-264FE88DF2C5.csv",
+        "m": "mae",
+        "p": "",
+        "metrics_file_name": "metrics_file_name"
       },
       "srcs": { "i": "o2" },
       "dsts": { "o": "o3" },
