@@ -13,8 +13,24 @@ import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
 import CommandSelector from '../CommandSelector'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Graph from '../../../../utils/Graph'
+import HttpUtil from '../../../../utils/HttpUtil'
+import type { StepModelType } from '../../../../types'
+import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
+import CSVModel from '../../../../model/CSV/CSVModel'
+
+type DataFrameDetailType = {
+  contents: {};
+  numberOfLines: string;
+  lastModifiedAt: string
+}
 
 class DataSourceInspector extends React.Component<FlowEditorProps> {
+
+  dataFrameDetail:DataFrameDetailType = {
+    contents: {},
+    numberOfLines: "-",
+    lastModifiedAt: "-"
+  }
 
   componentWillMount () {
     //モーダル処理の登録
@@ -23,48 +39,82 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
         ModalUtil.emitModal({id: Constants.preview.DATASOURCE, visible: false})
       },
     })
-  }
 
-  onClickPreview (e: Event) {
-    let option = {
-      method: 'GET',
-      mode: 'same-origin',
-      credentials: 'include',
-      redirect: 'follow',
-    }
-
-    //ファイル名を steps の パラメータから取得する
-    const filename = this.props.nodes[this.props.selected_step_ids[0]].getFileName()
-
-    fetch('http://' + Constants.api.host + '/api/v0-1/dataframe/' + filename,
-      option).then(function (response) {
-      console.log(response)
-      if (response.ok) {
-        return response.json()
-      }
-      else {
-        alert('サーバでエラーが発生しました')
-      }
-    }).then(function (json) {
-      console.log(json)
-      if (json) {
-        const content = <DataPreview json={json} />
-        ModalUtil.emitModal({
-          id: Constants.preview.DATASOURCE,
-          visible: true,
-          content: content,
-          title: filename,
+    //データフレームの詳細を取得する
+    const {updateStep} = this.props
+    const selected_step:StepModelType = this.getSelectedStep()
+    if (selected_step instanceof DataFrameStepModel) {
+      if(selected_step.uuid){
+        HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
+          this.dataFrameDetail = response.data
+          this.forceUpdate()
         })
       }
-      else {
-        alert('サーバからの応答結果がありません')
-      }
-    }).catch((err) => {
-      console.log(err)
-      alert('クライアントでエラーが発生しました')
-    })
+    }
 
   }
+
+  onClickPreview(e:Event){
+
+  }
+
+  onClickCSVDownload(e:Event){
+    const selected_step = this.getSelectedStep()
+    const param = {
+        type:"frame",
+        uuid: selected_step.uuid,
+        ext:"csv"
+    }
+    HttpUtil.get("files",param).then((response)=>{
+      let props:CSVModelProps = {
+        uuid: selected_step.uuid,
+        data: response.data,
+      }
+      const csv:CSVModel = new CSVModel(props)
+      csv.handleDownload()
+    })
+  }
+
+  // onClickPreview (e: Event) {
+  //   let option = {
+  //     method: 'GET',
+  //     mode: 'same-origin',
+  //     credentials: 'include',
+  //     redirect: 'follow',
+  //   }
+  //
+  //   //ファイル名を steps の パラメータから取得する
+  //   const filename = this.props.nodes[this.props.selected_step_ids[0]].getFileName()
+  //
+  //   fetch('http://' + Constants.api.host + '/api/v0-1/dataframe/' + filename,
+  //     option).then(function (response) {
+  //     console.log(response)
+  //     if (response.ok) {
+  //       return response.json()
+  //     }
+  //     else {
+  //       alert('サーバでエラーが発生しました')
+  //     }
+  //   }).then(function (json) {
+  //     console.log(json)
+  //     if (json) {
+  //       const content = <DataPreview json={json} />
+  //       ModalUtil.emitModal({
+  //         id: Constants.preview.DATASOURCE,
+  //         visible: true,
+  //         content: content,
+  //         title: filename,
+  //       })
+  //     }
+  //     else {
+  //       alert('サーバからの応答結果がありません')
+  //     }
+  //   }).catch((err) => {
+  //     console.log(err)
+  //     alert('クライアントでエラーが発生しました')
+  //   })
+  //
+  // }
 
   onClickDelete (e: Event) {
     if (window.confirm('このデータソースを削除しますか？')) {
@@ -100,7 +150,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     this.props.updateFlow(flow)
   }
 
-  getSelectedStep () {
+  getSelectedStep ():StepModelType {
     let {selected_step_ids, nodes} = this.props
     return Graph.getNode(nodes,selected_step_ids[0])
   }
@@ -110,14 +160,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     let step_text
     let dataSource
     let preview
-    const self = this
+    let download
     const selected_step = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
-      dataSource = selected_step
-      step_text = selected_step.text
-      if (dataSource.uuid) {
-        preview = <Button onClick={(e) => self.onClickPreview(e)}
-                          icon={'visibility'}>プレビュー</Button>
+      preview = <Button onClick={(e) => this.onClickPreview(e)}
+                        icon={'visibility'}>プレビュー</Button>
+      if (selected_step.hasData()) {
+        download = <Button onClick={(e) => this.onClickCSVDownload(e)}
+                          icon={'visibility'}>CSVダウンロード</Button>
       }
     }
 
@@ -140,11 +190,12 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       </div>
     </div>
 
-    return <Inspector header={step_text} title={'データの概要'} {...this.props}>
+    return <Inspector header={""} title={'データの概要'} {...this.props}>
       <div className={style.property_overview}>
         <div className={style.actions}>
           {preview}
-          <Button onClick={(e) => self.onClickDelete(e)} icon={'delete'}
+          {download}
+          <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
                   danger={true}>削除</Button>
         </div>
         <div className={style.overviews}>
@@ -153,7 +204,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
               データの件数
             </div>
             <div className={style.overview_value}>
-              - {/*{property.overview.count || 0}*/}
+              {this.dataFrameDetail.numberOfLines} {/*{property.overview.count || 0}*/}
             </div>
           </div>
           <div className={style.overview}>
@@ -161,7 +212,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
               作成日
             </div>
             <div className={style.overview_value}>
-              - {/*{property.overview.created_at || ""}*/}
+              {this.dataFrameDetail.lastModifiedAt} {/*{property.overview.created_at || ""}*/}
             </div>
           </div>
           <div className={style.overview}>
@@ -184,7 +235,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       </div>
       <div className={style.hr} />
       <CommandSelector numberOfInput={1} {...this.props} />
-
       <div className={style.hr} />
       <div className={style.property_title}>
         作成したフロー
