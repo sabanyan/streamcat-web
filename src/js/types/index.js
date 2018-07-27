@@ -9,6 +9,10 @@ export type CommandParamType = {
   type: string;
 }
 
+export type SubFlowParamType = {
+  name: string;
+}
+
 export type CommandPortType = {
   name: string;
   type: string;
