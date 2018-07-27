@@ -2,7 +2,6 @@
 import type { BaseModelProps } from './BaseModel'
 import BaseModel from './BaseModel'
 
-type stepType = "command" | "frame"
 type dataSourceType = "csv"
 
 export type DataFrameStepModelProps = {

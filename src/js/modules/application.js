@@ -172,9 +172,6 @@ const Application = (state = initialState, action) => {
             return newState
         }
         case CUT_STEPS_ACTION: {
-            console.log("CUT_STEPS_ACTION")
-            console.log(action.step_ids)
-
             let newState = StateUtil.deepCopy(state)
             const cut_data = JSON.stringify({data:action.step_ids.map((id)=>{
                 return newState.nodes[id]

@@ -59,11 +59,7 @@ export default class Toolbar extends React.Component<ToolbarProps> {
 
   save () {
     return new Promise((resolve, reject) => {
-      console.log("リクエストJSON")
-      console.log(this.getFlowJson())
       HttpUtil.put("flows/" + inject_flow_uuid,this.getFlowJson()).then((response)=>{
-        console.log("保存結果")
-        console.log(response)
         resolve(response)
       })
     })
@@ -73,8 +69,6 @@ export default class Toolbar extends React.Component<ToolbarProps> {
     return new Promise((resolve, reject) => {
 
       HttpUtil.get("frames?from=" + inject_flow_uuid).then((response)=>{
-        console.log("実行結果")
-        console.log(response)
         resolve(response)
       })
 
@@ -122,13 +116,6 @@ export default class Toolbar extends React.Component<ToolbarProps> {
       id: Constants.modal.IMPORT_DATASOURCE, onClickDone: () => {
 
         let parameters = {}
-
-        //モーダルで入力されたパラメータを取得
-        // console.log(self.inputRefs)
-        // self.inputRefs.map((inputRef) => {
-        //     parameters[inputRef.argument.name] = inputRef.element.value
-        //     inputRef.element.value = "" //値をクリア
-        // })
 
         //データソースを追加
 
