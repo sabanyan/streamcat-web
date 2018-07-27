@@ -1,24 +1,32 @@
 // @flow
-import React from 'react'
+import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
 import Button from '../Button'
 import TextField from '../TextField'
 
 type Props = {
-  placeholder: string;
-  onChange: Function;
-  onClick: Function;
-  children: React.Children;
-  disabled: boolean;
-  icon: string;
-  danger: boolean;
+  placeholder?: string;
+  onChange?: Function;
+  onClick?: Function;
+  children?: React.Children;
+  disabled?: boolean;
+  icon?: string;
+  danger?: boolean;
 }
 
 export default class TextFieldWithButton extends React.Component<Props> {
-  static defaultProps = {}
+  static defaultProps = {
+    placeHolder: "",
+    onChange:{},
+    onClick:{},
+    children: null,
+    disabled: false,
+    icon: "",
+    danger: false
+  }
 
-  constructor (props) {
+  constructor (props:Props) {
     super(props)
   }
 
