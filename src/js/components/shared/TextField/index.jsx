@@ -83,8 +83,11 @@ export default class TextField extends React.Component<Props,State> {
     const messages = validation_messages.map((message, index) => {
       return <li key={index} className={style.message}>{message}</li>
     })
+
+    const messageClass = classnames({[style.validation_messages]:(messages.length)})
+
     return <div>
-      <ul className={style.validation_messages}>
+      <ul className={messageClass}>
         {messages}
       </ul>
     </div>
