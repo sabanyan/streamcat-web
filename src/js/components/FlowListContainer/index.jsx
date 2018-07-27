@@ -14,6 +14,7 @@ import EmptyState from '../shared/EmptyState'
 import Button from '../shared/Button'
 import TextField from '../shared/TextField'
 import FileUploader from '../shared/FileUploader'
+import { FlowListDataType } from '../../types'
 
 /**
  * ======================================================
@@ -23,7 +24,7 @@ import FileUploader from '../shared/FileUploader'
 
 type Props = {}
 type State = {
-  flow_list: [];
+  flow_list: [FlowListDataType];
   keyword: string;
   is_loading: boolean;
   is_finished: boolean;
@@ -83,11 +84,11 @@ export default class FlowListContainer extends React.Component<Props,State> {
   renderFlowList () {
     const {keyword} = this.state
     const self = this
-    return this.state.flow_list.filter((flow) => {
+    return this.state.flow_list.filter((flow:FlowListDataType) => {
       if (keyword === '') {
         return true
       }
-      return (flow.name.indexOf(keyword) != -1) ? true : false
+      return (flow.label.indexOf(keyword) != -1) ? true : false
     }).map((flow, index) => {
       return <FlowList key={index} flow={flow} href={'./flows/' + flow.uuid}>
         <a href="#" onClick={() => self.onClickDelete(flow.uuid)}>削除</a>
