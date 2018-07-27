@@ -63,19 +63,6 @@ export default class Step extends React.Component<Props, State> {
         y: e.pageY,
       },
     })
-    let step = this.props.model
-    //選択イベントの呼び出し
-    if (e.shiftKey) {
-      if (!this.isSelected()) {
-        this.props.addSelectStep(step.id)
-      }
-      else {
-        this.props.deleteSelectStep(step.id)
-      }
-    }
-    else {
-      this.props.selectSteps([step])
-    }
     //mousemoveイベントでハンドリング
     mouseMoveEvent = (e: MouseEvent) => this.handleMouseMove(e)
     mouseUpEvent = (e: MouseEvent) => this.handleMouseUp(e)
@@ -94,6 +81,23 @@ export default class Step extends React.Component<Props, State> {
     this.setState({
       coords: null,
     })
+
+
+    let step = this.props.model
+    //選択イベントの呼び出し
+    if (e.shiftKey) {
+      if (!this.isSelected()) {
+        this.props.addSelectStep(step.id)
+      }
+      else {
+        this.props.deleteSelectStep(step.id)
+      }
+    }
+    else {
+      this.props.selectSteps([step])
+    }
+
+
     document.removeEventListener('mousemove', mouseMoveEvent)
     document.removeEventListener('mouseup', mouseUpEvent)
   }
