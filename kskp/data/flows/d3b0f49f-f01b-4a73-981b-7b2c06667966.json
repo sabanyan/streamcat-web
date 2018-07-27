@@ -1,5 +1,5 @@
 {
-    "projectId": 1,
+    "projectId": "1",
     "name": "stats_by_4_sensors",
     "params": [],
     "ports": [
