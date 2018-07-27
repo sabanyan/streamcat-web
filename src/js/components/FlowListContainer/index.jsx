@@ -13,6 +13,7 @@ import Loader from '../shared/Loader'
 import EmptyState from '../shared/EmptyState'
 import Button from '../shared/Button'
 import TextField from '../shared/TextField'
+import FileUploader from '../shared/FileUploader'
 
 /**
  * ======================================================
@@ -20,9 +21,19 @@ import TextField from '../shared/TextField'
  * ======================================================
  */
 
-export default class FlowListContainer extends React.Component {
+type Props = {}
+type State = {
+  flow_list: [];
+  keyword: string;
+  is_loading: boolean;
+  is_finished: boolean;
+  flow_name: ?string;
+  files: ?FileList;
+}
 
-  constructor (props) {
+export default class FlowListContainer extends React.Component<Props,State> {
+
+  constructor (props:Props) {
     super(props)
     this.state = {
       flow_list: inject_flow_list,
@@ -30,6 +41,7 @@ export default class FlowListContainer extends React.Component {
       is_loading: false,
       is_finished: false,
       flow_name: null,
+      files: null
     }
   }
 
@@ -94,23 +106,44 @@ export default class FlowListContainer extends React.Component {
 
   renderSearchBar () {
     return <div className={style.search_bar}>
-      <TextFieldWithButton placeholder={'フローを検索'}
-                           onChange={(e) => this.onChangeKeyword(
-                             e)}>検索</TextFieldWithButton>
+      <TextField placeholder={'フローを検索'} onChange={(e) => this.onChangeKeyword(e)}/>
     </div>
   }
 
-  onChangeKeyword (e) {
+  onChangeKeyword (e:SyntheticInputEvent<EventTarget>) {
     this.setState({keyword: e.target.value})
   }
 
-  onChangeFlowName (e) {
+  onChangeFlowName (e:SyntheticInputEvent<EventTarget>) {
     this.setState({
       flow_name: e.target.value,
     })
   }
 
-  onClickNew (e) {
+  onChangeFile(e:SyntheticInputEvent<EventTarget>){
+    const selectedFiles:FileList =  e.target.files
+    if(selectedFiles){
+      this.setState({
+        files: e.target.files,
+      })
+
+      const uploadFile:File = selectedFiles[0]
+      const options = {
+        headers: { 'enctype': 'multipart/form-data' }
+      }
+
+      let formData:FormData = new FormData();
+      formData.append('file', uploadFile)
+      formData.append('file_name', uploadFile.name)
+
+      console.log(uploadFile)
+      HttpUtil.post('frames', formData,options).then((response) => {
+        console.log(response)
+      })
+    }
+  }
+
+  onClickNew (e:SyntheticInputEvent<EventTarget>) {
     ModalUtil.emitModal({
       id: Constants.modal.ADD_FLOW,
       visible: true,
@@ -121,12 +154,14 @@ export default class FlowListContainer extends React.Component {
           minlength: 5,
         }} placeholder={'フロー'}
                    onChange={(e, validation) => this.onChangeFlowName(e,
-                     validation)}/>
+                     validation)} />
+        <FileUploader accept={['text/csv']} defaultLabel={'ファイルを選択してください'}
+                      onChangeFile={(e) => this.onChangeFile(e)} />
       </div>,
     })
   }
 
-  onClickDelete (flow_uuid) {
+  onClickDelete (flow_uuid:string) {
     const self = this
     HttpUtil.delete('flows/' + flow_uuid).then((response) => {
       self.getFlowList()
