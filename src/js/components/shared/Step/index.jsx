@@ -284,13 +284,8 @@ export default class Step extends React.Component<Props, State> {
     const selected = this.selectorIntersect()
 
     step.label = (step.label)?step.label:step.id
-
-    console.log(step.id)
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
-
-    console.log(flowIn)
-    console.log(flowOut)
     if(flowIn || flowOut){
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
