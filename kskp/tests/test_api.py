@@ -241,9 +241,9 @@ class ApiTestCase(unittest.TestCase):
             flow1_datasource_name = str(uuid.uuid4())
             flow2_datasource_name = str(uuid.uuid4())
             flow3_datasource_name = str(uuid.uuid4())
-            created_flow = model.create_flow(project_id, 'フローテスト用', flow1_datasource_name)
-            created_flow2 = model.create_flow(project_id, 'フローテスト用2', flow2_datasource_name)
-            created_flow3 = model.create_flow(project_id, 'フローテスト用3', flow3_datasource_name)
+            created_flow = model.create_flow(project_id, 'フローテスト用', user1, flow1_datasource_name)
+            created_flow2 = model.create_flow(project_id, 'フローテスト用2', user1, flow2_datasource_name)
+            created_flow3 = model.create_flow(project_id, 'フローテスト用3', user1, flow3_datasource_name)
 
          # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
@@ -515,7 +515,7 @@ def setUpFlow(self):
     # フロー作成
     new_flow_name = 'フローテスト用'
     data_source_name = str(uuid.uuid4())
-    created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+    created_flow = model.create_flow(project_id, new_flow_name, user1, data_source_name)
 
     return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
 
@@ -547,6 +547,32 @@ class JobTestCase(unittest.TestCase):
             with client.session_transaction() as session:
                 session['user_id'] = 1
 
+            count = 1
+
+            endpoint = '/api/v0/jobs?count=%s' % (count)
+            response = client.get(endpoint)
+            result = json.loads(response.get_data())
+
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['navigation']['user_id'], user1)
+        self.assertEqual(result['navigation']['user_name'], 'user1')
+
+    def test_jobs_flow(self):
+        '''
+        実行履歴を取得するAPIのテスト
+        count指定あり
+        テストがsample.jsonありきなので、書き直し予定
+        '''
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 1
+
             flow_uuid = '91E36B47-197B-4768-960B-AA1DEEA94873'
             count = 1
 
@@ -556,6 +582,34 @@ class JobTestCase(unittest.TestCase):
 
         self.assertEqual(result['success'], True)
         self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
+        self.assertEqual(result['navigation']['user_id'], user1)
+        self.assertEqual(result['navigation']['user_name'], 'user1')
+        self.assertEqual(result['navigation']['project_uuid'], project_uuid)
+        self.assertEqual(result['navigation']['project_name'], 'proj1')
+
+    def test_jobs_project(self):
+        '''
+        実行履歴を取得するAPIのテスト
+        count指定あり
+        テストがsample.jsonありきなので、書き直し予定
+        '''
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 1
+
+            count = 1
+
+            endpoint = '/api/v0/jobs?project=%s&count=%s' % (project_uuid, count)
+            response = client.get(endpoint)
+            result = json.loads(response.get_data())
+
+        self.assertEqual(result['success'], True)
         self.assertEqual(result['navigation']['user_id'], user1)
         self.assertEqual(result['navigation']['user_name'], 'user1')
         self.assertEqual(result['navigation']['project_uuid'], project_uuid)
