@@ -17,6 +17,7 @@ import HttpUtil from '../../../../utils/HttpUtil'
 import type { StepModelType } from '../../../../types'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
+import Loader from '../../../shared/Loader'
 
 type DataFrameDetailType = {
   contents: {};
@@ -32,6 +33,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     lastModifiedAt: "-"
   }
 
+  loaded:boolean = false
+
   componentWillMount () {
     //モーダル処理の登録
     ModalUtil.registerModal({
@@ -44,14 +47,16 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     const {updateStep} = this.props
     const selected_step:StepModelType = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
-      if(selected_step.uuid){
+      if(selected_step.hasData()){
         HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
           this.dataFrameDetail = response.data
+          this.loaded = true
           this.forceUpdate()
         })
+      }else{
+        this.loaded = true
       }
     }
-
   }
 
   onClickPreview(e:Event){
@@ -160,58 +165,68 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       </div>
     </div>
 
+    let content
+
+    if(!this.loaded){
+      content = <Loader center={true} absolute={true} fixed={false} visible={true}/>
+    }else {
+      content = <div>
+        <div className={style.property_overview}>
+          <div className={style.actions}>
+            {preview}
+            {download}
+            <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
+                    danger={true}>削除</Button>
+          </div>
+          <div className={style.overviews}>
+            <div className={style.overview}>
+              <div className={style.overview_label}>
+                データの件数
+              </div>
+              <div className={style.overview_value}>
+                {this.dataFrameDetail.numberOfLines} {/*{property.overview.count || 0}*/}
+              </div>
+            </div>
+            <div className={style.overview}>
+              <div className={style.overview_label}>
+                作成日
+              </div>
+              <div className={style.overview_value}>
+                {this.dataFrameDetail.lastModifiedAt} {/*{property.overview.created_at || ""}*/}
+              </div>
+            </div>
+            <div className={style.overview}>
+              <div className={style.overview_label}>
+                作成者
+              </div>
+              <div className={style.overview_value}>
+                - {/*{property.overview.created_user_name || ""}*/}
+              </div>
+            </div>
+            <div className={style.overview}>
+              <div className={style.overview_label}>
+                フロー入出力
+              </div>
+              <div className={style.overview_value}>
+                {flowInOutForm}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className={style.hr} />
+        <CommandSelector numberOfInput={1} {...this.props} />
+        <div className={style.hr} />
+        <div className={style.property_title}>
+          作成したフロー
+        </div>
+        <div>
+          <DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />
+        </div>
+      </div>
+    }
+
     return <Inspector header={""} title={'データの概要'} {...this.props}>
-      <div className={style.property_overview}>
-        <div className={style.actions}>
-          {preview}
-          {download}
-          <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
-                  danger={true}>削除</Button>
-        </div>
-        <div className={style.overviews}>
-          <div className={style.overview}>
-            <div className={style.overview_label}>
-              データの件数
-            </div>
-            <div className={style.overview_value}>
-              {this.dataFrameDetail.numberOfLines} {/*{property.overview.count || 0}*/}
-            </div>
-          </div>
-          <div className={style.overview}>
-            <div className={style.overview_label}>
-              作成日
-            </div>
-            <div className={style.overview_value}>
-              {this.dataFrameDetail.lastModifiedAt} {/*{property.overview.created_at || ""}*/}
-            </div>
-          </div>
-          <div className={style.overview}>
-            <div className={style.overview_label}>
-              作成者
-            </div>
-            <div className={style.overview_value}>
-              - {/*{property.overview.created_user_name || ""}*/}
-            </div>
-          </div>
-          <div className={style.overview}>
-            <div className={style.overview_label}>
-              フロー入出力
-            </div>
-            <div className={style.overview_value}>
-              {flowInOutForm}
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className={style.hr} />
-      <CommandSelector numberOfInput={1} {...this.props} />
-      <div className={style.hr} />
-      <div className={style.property_title}>
-        作成したフロー
-      </div>
-      <div>
-        <DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />
-      </div>
+      {content}
     </Inspector>
   }
 
