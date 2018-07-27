@@ -1,0 +1,40 @@
+{
+  "id": "mvcommon",
+  "params": [
+    {
+      "name": "vf",
+      "label": "結合キーとなるアイテム集合の列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照ファイル上の結合キーとなるアイテム列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "m",
+      "label": "参照ファイル名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトル要素の参照選択"
+}

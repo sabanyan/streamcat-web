@@ -1,0 +1,41 @@
+{
+  "id": "mtrafld",
+  "params": [
+    {
+      "name": "a",
+      "label": "トランザクション列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "列名リスト",
+      "type": "string"
+    },
+    {
+      "name": "delim",
+      "label": "トランザクション項目アイテムを区切る文字列",
+      "type": "string"
+    },
+    {
+      "name": "delim2",
+      "label": "項目名と値ペアを区切る文字列",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "クロス表をトランザクション項目に変換"
+}

@@ -2,19 +2,24 @@
   "id": "mjoin",
   "params": [
     {
+      "name": "f",
+      "type": "string",
+      "label": "参照列名(必須)"
+    },
+    {
       "name": "k",
       "type": "string",
       "label": "結合キー名"
     },
     {
+      "name": "K",
+      "type": "string",
+      "label": "参照ファイル上の結合キー名"
+    },
+    {
       "name": "m",
       "type": "string",
       "label": "参照ファイル名"
-    },
-    {
-      "name": "f",
-      "type": "string",
-      "label": "参照列名"
     }
   ],
   "ports": [

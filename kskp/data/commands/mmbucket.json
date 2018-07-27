@@ -1,0 +1,41 @@
+{
+  "id": "mmbucket",
+  "params": [
+    {
+      "name": "n",
+      "label": "行数(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "F",
+      "label": "出力形式",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "各項目の各バケットの数値範囲を出力するファイル名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "多次元行分割"
+}

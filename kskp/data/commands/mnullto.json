@@ -4,12 +4,17 @@
     {
       "name": "f",
       "type": "string",
-      "label": "対象列名"
+      "label": "対象列名(必須)"
     },
     {
       "name": "v",
       "type": "string",
       "label": "変換後文字列"
+    },
+    {
+      "name": "O",
+      "type": "string",
+      "label": "NULL値以外を置換する文字列"
     }
   ],
   "ports": [

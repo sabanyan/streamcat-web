@@ -2,14 +2,24 @@
   "id": "mslide",
   "params": [
     {
-      "name": "s",
-      "type": "string",
-      "label": "ソート対象列名"
+      "name": "f",
+      "label": "ずらす対象の列名(必須)",
+      "type": "string"
     },
     {
-      "name": "f",
-      "type": "string",
-      "label": "ずらす対象の列名"
+      "name": "s",
+      "label": "ソート対象列名",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "単位とする列名",
+      "type": "string"
+    },
+    {
+      "name": "t",
+      "label": "ずらす回数",
+      "type": "string"
     }
   ],
   "ports": [

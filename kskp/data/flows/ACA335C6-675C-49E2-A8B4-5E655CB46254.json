@@ -1,0 +1,87 @@
+{
+  "projectId": 1,
+  "label": "kcmdサンプル",
+  "params": [],
+  "ports": [[], []],
+  "nodes": [
+    {
+      "id": "i",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "B9709397-7ABF-490A-A983-264FE88DF2C5",
+      "label": null
+    },
+    {
+      "id": "select_target_column",
+      "type": "command",
+      "commandId": "select_target_column",
+      "args": {
+        "t": "target"
+      },
+      "srcs": { "i": "i" },
+      "dsts": { "o": "t" },
+      "label": null
+    },
+    {
+      "id": "t",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "standardize",
+      "type": "command",
+      "commandId": "standardize",
+      "args": {
+        "c": "DIS"
+      },
+      "srcs": { "i": "t" },
+      "dsts": { "o": "o" },
+      "label": null
+    },
+    {
+      "id": "o",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "klinreg",
+      "type": "command",
+      "commandId": "klinreg",
+      "args": {
+      },
+      "srcs": { "i": "o" },
+      "dsts": { "o": "o2" },
+      "label": null
+    },
+    {
+      "id": "o2",
+      "type": "frame",
+      "dataSource": "pickle",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "evaluate",
+      "type": "command",
+      "commandId": "evaluate",
+      "args": {
+        "d": "B9709397-7ABF-490A-A983-264FE88DF2C5.csv",
+        "m": "mae"
+      },
+      "srcs": { "i": "o2" },
+      "dsts": { "o": "o3" },
+      "label": null
+    },
+    {
+      "id": "o3",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    }
+  ]
+}

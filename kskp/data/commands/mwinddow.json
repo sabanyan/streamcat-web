@@ -1,0 +1,36 @@
+{
+  "id": "mwinddow",
+  "params": [
+    {
+      "name": "wk",
+      "label": "出力データにおける、窓を識別する値となる入力データの列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "t",
+      "label": "窓の行数指定(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "窓を生成する単位となる列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "スライド窓の生成"
+}

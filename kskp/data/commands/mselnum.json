@@ -1,0 +1,40 @@
+{
+  "id": "mselnum",
+  "params": [
+    {
+      "name": "f",
+      "label": "検索列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "c",
+      "label": "検索文字列(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "選択単位となるキー列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "数値範囲による行選択"
+}

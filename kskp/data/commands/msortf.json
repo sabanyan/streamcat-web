@@ -4,7 +4,7 @@
     {
       "name": "f",
       "type": "string",
-      "label": "対象列名"
+      "label": "対象列名(必須)"
     }
   ],
   "ports": [
