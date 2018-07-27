@@ -4,11 +4,7 @@ from pathlib import Path
 
 from flask import Blueprint, request, session, jsonify, send_from_directory
 from .auth import login_required_api
-from .navigation import (
-    update_navigation_user,
-    update_navigation_project,
-    update_navigation_flow
-)
+from .navigation import update_navigation
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -49,7 +45,7 @@ def new_project():
 
 @api.route('/projects')
 @login_required_api
-@update_navigation_user
+@update_navigation
 def get_projects():
     """
     現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
@@ -104,7 +100,7 @@ def new_flow():
 
 @api.route('/flows', methods=['GET'])
 @login_required_api
-@update_navigation_project
+@update_navigation
 def fecth_flows():
     """
     パラメータで指定されたプロジェクトが持つフローの一覧を取得する
@@ -114,7 +110,7 @@ def fecth_flows():
 
 @api.route('/flows/<flow_uuid>', methods=['GET'])
 @login_required_api
-@update_navigation_flow
+@update_navigation
 def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
@@ -282,7 +278,7 @@ def execute_flow(flow_uuid, step_paths):
 
 
 @api.route('/jobs', methods=['GET'])
-@update_navigation_flow
+@update_navigation
 def jobs():
     """
     指定されたフローの実行結果を返す
@@ -290,27 +286,38 @@ def jobs():
     flow_uuid = ''
     count = 0
 
+    execute_histories = []
+
     if 'flow' in request.args:
         flow_uuid = request.args['flow']
+        for job_path in Path(JOBS_DIR_PATH).iterdir():
+            data = json.loads(job_path.read_text(encoding='utf-8'))
+            if data['flow']['uuid'] == flow_uuid:
+                execute_histories.append(data)
 
-    if 'count' in request.args:
-        count = int(request.args['count'])
+    elif 'project' in request.args:
+        project_id = get_project_id_by_uuid(request.args['project'])
+        for job_path in Path(JOBS_DIR_PATH).iterdir():
+            data = json.loads(job_path.read_text(encoding='utf-8'))
+            if data['projectId'] == project_id:
+                execute_histories.append(data)
 
-    execute_histories = []
-    for job_path in Path(JOBS_DIR_PATH).iterdir():
-        data = json.loads(job_path.read_text(encoding='utf-8'))
-        if data['flow']['uuid'] == flow_uuid:
+    else:
+        for job_path in Path(JOBS_DIR_PATH).iterdir():
+            data = json.loads(job_path.read_text(encoding='utf-8'))
             execute_histories.append(data)
 
     results = sorted(execute_histories, key = lambda x:x['executedAt'])
 
     # 条件分岐が雑なので修正予定
-    if 0 < count and count <= len(results):
-        result = []
-        result.append(results[count - 1])
-        return jsonify({'success': True, 'data': result})
-    elif len(results) < count:
-        return jsonify({'success': False})
+    if 'count' in request.args:
+        count = int(request.args['count'])
+        if 0 < count and count <= len(results):
+            result = []
+            result.append(results[count - 1])
+            return jsonify({'success': True, 'data': result})
+        elif len(results) < count:
+            return jsonify({'success': False})
 
     return jsonify({'success': True, 'data': results})
 
