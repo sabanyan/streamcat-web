@@ -24,7 +24,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     selectedSubFlow:FlowModel
     loaded:boolean = false
 
-    componentDidMount () {
+    componentWillMount () {
       //データフレームの詳細を取得する
       const {updateStep} = this.props
       const selected_step:StepModelType = this.getSelectedStep()
