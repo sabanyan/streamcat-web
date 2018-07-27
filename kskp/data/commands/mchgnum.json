@@ -1,0 +1,36 @@
+{
+  "id": "mchgnum",
+  "params": [
+    {
+      "name": "c",
+      "label": "置換対象となる文字列と対応する置換文字列(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "置換対象列(必須)",
+      "type": "string"
+    },
+    {
+      "name": "O",
+      "label": "c=に無い文字列を置換する場合の文字列",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "文字列の置換"
+}

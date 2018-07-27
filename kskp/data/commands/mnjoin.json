@@ -1,0 +1,45 @@
+{
+  "id": "mnjoin",
+  "params": [
+    {
+      "name": "f",
+      "type": "string",
+      "label": "参照列名(必須)"
+    },
+    {
+      "name": "k",
+      "label": "入力データの結合キー名",
+      "type": "string"
+    },
+    {
+      "name": "m",
+      "label": "参照ファイル名",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照データの結合キー名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "参照ファイル列の結合"
+}

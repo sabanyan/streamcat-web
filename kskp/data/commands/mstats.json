@@ -3,13 +3,18 @@
   "params": [
     {
       "name": "c",
-      "type": "string",
-      "label": "式"
+      "label": "計算列名(必須)",
+      "type": "string"
     },
     {
       "name": "f",
-      "type": "string",
-      "label": "対象列名"
+      "label": "対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "単位として集計する列名",
+      "type": "string"
     }
   ],
   "ports": [

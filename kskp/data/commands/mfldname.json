@@ -1,21 +1,21 @@
 {
-  "id": "mmulti",
+  "id": "mfldname",
   "params": [
     {
-      "name": "k",
+      "name": "f",
       "type": "string",
-      "label": "結合キー名（mjoinのみ）"
+      "label": "旧列名"
     },
     {
-      "name": "cmd",
+      "name": "n",
       "type": "string",
-      "label": "結合コマンド（mjoin, mcat）"
+      "label": "新列名"
     }
   ],
   "ports": [
     [
       {
-        "name": "*",
+        "name": "i",
         "type": "frame"
       }
     ],
@@ -27,5 +27,5 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "複数入力"
+  "label": "列名の変更"
 }

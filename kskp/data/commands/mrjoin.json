@@ -1,0 +1,55 @@
+{
+  "id": "mrjoin",
+  "params": [
+    {
+      "name": "r",
+      "label": "範囲比較を行う入力ファイル上の列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "参照ファイルの結合列",
+      "type": "string"
+    },
+    {
+      "name": "m",
+      "label": "参照ファイル名",
+      "type": "string"
+    },
+    {
+      "name": "R",
+      "label": "参照ファイルの範囲列名",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "入力データの結合キー名",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照データの結合キー名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "参照ファイルのの範囲条件結合"
+}

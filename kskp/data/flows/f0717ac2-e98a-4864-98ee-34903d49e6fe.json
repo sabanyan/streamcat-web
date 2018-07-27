@@ -1,5 +1,5 @@
 {
-    "projectId": "2",
+    "projectId": 1,
     "name": "各列全体についての統計量を求める",
     "params": [],
     "ports": [
@@ -126,7 +126,9 @@
             "type": "command",
             "name": "mjoin",
             "args": {
-                "k": "Time"
+                "k": "Time",
+                "f": "",
+                "K": ""
             },
             "srcs": {
                 "i": "d1",
@@ -140,7 +142,9 @@
             "type": "command",
             "name": "mjoin",
             "args": {
-                "k": "Time"
+                "k": "Time",
+                "f": "",
+                "K": ""
             },
             "srcs": {
                 "i": "d4",
@@ -154,7 +158,9 @@
             "type": "command",
             "name": "mjoin",
             "args": {
-                "k": "Time"
+                "k": "Time",
+                "f": "",
+                "K": ""
             },
             "srcs": {
                 "i": "d7",

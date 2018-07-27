@@ -3,13 +3,18 @@
   "params": [
     {
       "name": "f",
-      "type": "string",
-      "label": "対象列名"
+      "label": "対象列名",
+      "type": "string"
     },
     {
       "name": "v",
-      "type": "string",
-      "label": "絞込条件値（文字列）"
+      "label": "絞込条件値（文字列）",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "選択単位となるキー列名",
+      "type": "string"
     }
   ],
   "ports": [
@@ -22,6 +27,10 @@
     [
       {
         "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
         "type": "frame"
       }
     ]

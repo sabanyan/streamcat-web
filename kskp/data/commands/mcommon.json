@@ -1,0 +1,44 @@
+{
+  "id": "mcommon",
+  "params": [
+    {
+      "name": "k",
+      "label": "結合キー名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "m",
+      "label": "参照ファイル名",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "行選択"
+}

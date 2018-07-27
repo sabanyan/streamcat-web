@@ -2,14 +2,29 @@
   "id": "mbucket",
   "params": [
     {
-      "name": "f",
-      "type": "string",
-      "label": "対象列名"
+      "name": "n",
+      "label": "行数(必須)",
+      "type": "string"
     },
     {
-      "name": "n",
-      "type": "string",
-      "label": "分割数"
+      "name": "f",
+      "label": "対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "F",
+      "label": "出力形式",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "バケット分割を行う単位となる列名",
+      "type": "string"
+    },
+    {
+      "name": "O",
+      "label": "バケット範囲出力ファイル",
+      "type": "string"
     }
   ],
   "ports": [

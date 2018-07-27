@@ -1,0 +1,36 @@
+{
+  "id": "mhashavg",
+  "params": [
+    {
+      "name": "f",
+      "label": "平均を求める列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "キー列名",
+      "type": "string"
+    },
+    {
+      "name": "hs",
+      "label": "ハッシュサイズ",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ハッシュ法による列値の平均"
+}

@@ -1,0 +1,31 @@
+{
+  "id": "mvcat",
+  "params": [
+    {
+      "name": "vf",
+      "label": "併合するベクトル列名",
+      "type": "string"
+    },
+    {
+      "name": "a",
+      "label": "併合後の列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトルの併合"
+}
