@@ -25,4 +25,8 @@ export default class DataFrameStepModel extends BaseModel{
     this.asFlowIn = (props.asFlowIn)?props.asFlowIn:this.asFlowIn
     this.asFlowOut = (props.asFlowOut)?props.asFlowOut:this.asFlowOut
   }
+
+  hasData():boolean{
+    return (this.uuid)
+  }
 }
