@@ -25,3 +25,7 @@ export type FlowListDataType = {
   projectId: number;
   uuid: string;
 }
+export type RunResponseType =  {
+  name:[string];
+  success: boolean;
+}

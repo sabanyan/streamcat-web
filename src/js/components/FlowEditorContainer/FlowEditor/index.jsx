@@ -16,10 +16,13 @@ import HttpUtil from '../../../utils/HttpUtil'
 import Graph from '../../../utils/Graph'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import CommandModel from '../../../model/Command/CommandModel'
+import Loader from '../../shared/Loader'
 
 type State = {}
 
 export default class FlowEditor extends React.Component<FlowEditorProps, State> {
+
+  loaded:boolean = false
 
   constructor (props: FlowEditorProps) {
     super(props)
@@ -32,28 +35,40 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     }
 
     const graph = new Graph()
-    HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
+
+    let networkRequests = []
+
+    networkRequests.push(HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
       this.props.loadFlowJSON(json)
-    })
+    }))
 
-    HttpUtil.get('flows?navigation=off').then((response) => {
+    networkRequests.push(HttpUtil.get('flows?navigation=off').then((response) => {
       const json = response.data
       // const commands = json.data.map((command)=>{
       //   return new CommandModel(command)
       // })
       // this.props.addMaster({commands: commands})
     }).then((response) => {console.log(response)},
-      (error) => {console.log(error)})
+      (error) => {console.log(error)}))
 
-    HttpUtil.get('commands').then((response) => {
+    networkRequests.push(HttpUtil.get('commands').then((response) => {
       const json = response.data
       const commands = json.data.map((command)=>{
         return new CommandModel(command)
       })
       this.props.addMaster({commands: commands})
     }).then((response) => {console.log(response)},
-      (error) => {console.log(error)})
+      (error) => {console.log(error)}))
+
+
+    Promise.all(networkRequests).then(()=>{
+      this.loaded = true
+      this.forceUpdate()
+    }).catch((error)=>{
+      console.log(error)
+    })
+
     //
     // fetch("http://" + Constants.api.host + "/api/v0-1/operators",
     // option).then(function (response) { if (response.ok) { return
@@ -115,9 +130,10 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     return <div className={style.flow_editor}>
       <PaperZoom />
       <Toolbar {...this.props} />
+      <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)} message={"フローを構築中です"}/>
       <PaperScroller {...this.props}>
         <Paper {...this.props}>
-          {this.renderEdges()}
+          {this.renderEdges()}f
           {this.renderSteps()}
           {this.renderSelector()}
         </Paper>
