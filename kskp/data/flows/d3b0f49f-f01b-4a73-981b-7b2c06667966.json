@@ -1,5 +1,5 @@
 {
-    "projectId": "2",
+    "projectId": "1",
     "name": "stats_by_4_sensors",
     "params": [],
     "ports": [
@@ -71,7 +71,9 @@
             "type": "command",
             "name": "mjoin",
             "args": {
-                "k": "Time"
+                "k": "Time",
+                "f": "",
+                "K": ""
             },
             "srcs": {
                 "i": "d1",
@@ -85,7 +87,9 @@
             "type": "command",
             "name": "mjoin",
             "args": {
-                "k": "Time"
+                "k": "Time",
+                "f": "",
+                "K": ""
             },
             "srcs": {
                 "i": "d3",
@@ -99,7 +103,9 @@
             "type": "command",
             "name": "mjoin",
             "args": {
-                "k": "Time"
+                "k": "Time",
+                "f": "",
+                "K": ""
             },
             "srcs": {
                 "i": "d5",

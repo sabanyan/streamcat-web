@@ -1,0 +1,31 @@
+{
+  "id": "mshare",
+  "params": [
+    {
+      "name": "f",
+      "label": "指定列の構成比計算",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "構成比計算の単位となる列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "構成費の計算"
+}

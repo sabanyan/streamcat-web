@@ -2,17 +2,16 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from .common.Model import Regression
-from sklearn.linear_model import LinearRegression
+from ..common.Model import Regression
+from sklearn import svm
 import pickle
 
-class Klinreg(Regression):
+class Ksvm(Regression):
     """
-    線形回帰クラスです。
+    サポートベクターマシン(回帰)クラスです。
     """
     def __init__(self):
         super().__init__()
-
 
     def make_parser(self):
         """
@@ -21,7 +20,13 @@ class Klinreg(Regression):
         """
         # 固有部分
         parser=super().make_parser()
-        parser.add_argument("--normalize",dest="normalize",help="whether use normalize",action='store_const',const=True,default=False)
+        parser.add_argument("-c", "--C", dest="C",help="setting penalty parameter C of the error term", default=1.0, type=float)
+        parser.add_argument(
+            "-k", "--kernel", dest="kernel", default="rbf", type=str,
+            help="setting kernel function", choices=['linear', 'poly', 'rbf', 'sigmoid', 'precomputed']
+        )
+        parser.add_argument("-g", "--gamma", dest="gamma", default=0.1, type=float,  # choiceを明確にする！
+                            help="setting kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’. If gamma is ‘auto’ then 1/n_features will be used instead.")
 
         return parser
 
@@ -31,7 +36,9 @@ class Klinreg(Regression):
 
         :param parsed:　コマンドライン引数をパースしたもの
         """
-        self.normalize=parsed.normalize
+        self.kernel = parsed.kernel
+        self.C = parsed.C
+        self.gamma =parsed.gamma
 
     def main(self,args):
         """
@@ -41,8 +48,6 @@ class Klinreg(Regression):
         ・クロスバリデーション
         ・モデルの学習
         を行います。
-
-        :param args: コマンドライン引数
         """
 
         #コマンドライン引数をパース
@@ -52,7 +57,7 @@ class Klinreg(Regression):
         # 固有オプション
         self.set_parsed_args_unique(parsed)
         # モデル生成
-        self.model=LinearRegression(normalize=self.normalize)
+        self.model=svm.SVR(C=self.C, kernel=self.kernel, gamma=self.gamma)
         # cv
         self.cross_validation(self.x_train,self.y_train,self.n_splits,self.scoring)
         # モデルの学習
@@ -61,6 +66,6 @@ class Klinreg(Regression):
         return
 
 if __name__=="__main__":
-    klinreg=Klinreg()
-    klinreg.main(sys.argv[1:])
-    klinreg.write()
+    ksvm=Ksvm()
+    ksvm.main(sys.argv[1:])
+    ksvm.write()

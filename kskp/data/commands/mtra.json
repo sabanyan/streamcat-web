@@ -2,6 +2,11 @@
   "id": "mtra",
   "params": [
     {
+      "name": "f",
+      "type": "string",
+      "label": "連結前列名:連結後列名(必須)"
+    },
+    {
       "name": "k",
       "type": "string",
       "label": "変換キー列名"
@@ -9,7 +14,7 @@
     {
       "name": "f",
       "type": "string",
-      "label": "連結前列名:連結後列名"
+      "label": "並び替えの後、変換を行う列名"
     }
   ],
   "ports": [

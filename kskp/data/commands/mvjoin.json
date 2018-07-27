@@ -1,0 +1,50 @@
+{
+  "id": "mvjoin",
+  "params": [
+    {
+      "name": "f",
+      "label": "結合ベクトル列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "vf",
+      "label": "結合キーとなるベクトル列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照ファイル上の結合キーとなるベクトル要素の列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "m",
+      "label": "参照ファイル名",
+      "type": "string"
+    },
+    {
+      "name": "n",
+      "label": "vf=とk=がマッチしなかった場合に結合する文字列",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトル要素の参照結合"
+}

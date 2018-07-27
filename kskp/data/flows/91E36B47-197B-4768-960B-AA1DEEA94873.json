@@ -1,6 +1,6 @@
 {
-  "projectId": "2",
-  "name": "mjoinのJSON",
+  "projectId": "1",
+  "label": "mjoinのJSON",
 
   "params": {},
 
@@ -10,7 +10,9 @@
       "name": "mjoin",
       "label": "結合",
       "args": {
-        "k": "item"
+        "k": "item",
+        "f": "",
+        "K": ""
       }
     }
   },
