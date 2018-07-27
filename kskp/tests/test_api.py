@@ -158,7 +158,7 @@ class ApiTestCase(unittest.TestCase):
 
             self.assertEqual(result['success'], True)
             self.assertEqual(result['data']['projectId'], result_project_id)
-            self.assertEqual(result['data']['name'], new_flow_name)
+            self.assertEqual(result['data']['label'], new_flow_name)
 
             # 後片付け
             app.config['FLOW_PATH'] = flow_path
@@ -217,7 +217,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(result['success'], True)
         self.assertEqual(flow_path.stem, data_source_name)
         self.assertEqual(result['data']['projectId'], project_id)
-        self.assertEqual(result['data']['name'], new_flow_name)
+        self.assertEqual(result['data']['label'], new_flow_name)
         self.assertEqual(result['navigation']['user_id'], user1)
         self.assertEqual(result['navigation']['user_name'], 'user1')
         self.assertEqual(result['navigation']['project_uuid'], project_uuid)
@@ -264,7 +264,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual({r['projectId'] for r in results['data']}, {project_id,
                                                                      project_id,
                                                                      project_id})
-        self.assertEqual({r['name'] for r in results['data']}, {'フローテスト用',
+        self.assertEqual({r['label'] for r in results['data']}, {'フローテスト用',
                                                                 'フローテスト用2',
                                                                 'フローテスト用3'})
         self.assertEqual({r['uuid'] for r in results['data']}, {flow1_datasource_name,
@@ -519,8 +519,15 @@ def setUpFlow(self):
 
 class JobTestCase(unittest.TestCase):
     def setUp(self):
+        self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
         app.testing = True
         self.client = app.test_client()
+        with app.app_context():
+            model.init_db()
+
+    def tearDown(self):
+        os.close(self.db_fd)
+        os.unlink(app.config['DATABASE'])
 
     def test_jobs(self):
         '''
@@ -528,6 +535,11 @@ class JobTestCase(unittest.TestCase):
         count指定あり
         テストがsample.jsonありきなので、書き直し予定
         '''
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
@@ -542,6 +554,10 @@ class JobTestCase(unittest.TestCase):
 
         self.assertEqual(result['success'], True)
         self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
+        self.assertEqual(result['navigation']['user_id'], user1)
+        self.assertEqual(result['navigation']['user_name'], 'user1')
+        self.assertEqual(result['navigation']['project_uuid'], project_uuid)
+        self.assertEqual(result['navigation']['project_name'], 'proj1')
 
     def test_jobs_count(self):
         '''
@@ -549,6 +565,11 @@ class JobTestCase(unittest.TestCase):
         count指定なし
         テストがsample.json、sample2.jsonありきなので、書き直し予定
         '''
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
@@ -567,6 +588,10 @@ class JobTestCase(unittest.TestCase):
         self.assertEqual(result['data'][1]['flow']['uuid'], flow_uuid)
         self.assertEqual(result['data'][1]['data']['d1']['uuid'], '16DF44FA-2D8B-430C-B1AC-2C20954C1317')
         self.assertEqual(result['data'][1]['data']['d2']['uuid'], '754AD573-3026-41C8-9DC2-4870FC28194E')
+        self.assertEqual(result['navigation']['user_id'], user1)
+        self.assertEqual(result['navigation']['user_name'], 'user1')
+        self.assertEqual(result['navigation']['project_uuid'], project_uuid)
+        self.assertEqual(result['navigation']['project_name'], 'proj1')
 
 if __name__ == '__main__':
     unittest.main()

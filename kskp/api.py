@@ -269,6 +269,7 @@ def execute_flow(flow_uuid, step_paths):
 
 
 @api.route('/jobs', methods=['GET'])
+@update_navigation_flow
 def jobs():
     """
     指定されたフローの実行結果を返す

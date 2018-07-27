@@ -58,7 +58,7 @@ def update_navigation_flow(func):
         data = json.loads(json_data)
 
         user_id = session['user_id']
-        flow_uuid = kwargs['flow_uuid']
+        flow_uuid = request.args['flow'] if 'flow' in request.args else kwargs['flow_uuid']
         flow = model.fetch_flow_by_uuid(flow_uuid)
         project = model.fecth_project(flow['projectId'])
 
