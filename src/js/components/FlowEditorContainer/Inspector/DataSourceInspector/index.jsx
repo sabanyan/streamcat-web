@@ -55,7 +55,17 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
   }
 
   onClickPreview(e:Event){
-
+    const selected_step = this.getSelectedStep()
+    HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
+      let content = <DataPreview key={selected_step.uuid} json={response.data} />
+      ModalUtil.emitModal({
+        id: Constants.preview.DATASOURCE,
+        visible: true,
+        content: content,
+        title: selected_step.label,
+      })
+    })
+    e.preventDefault()
   }
 
   onClickCSVDownload(e:Event){
@@ -74,48 +84,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       csv.handleDownload()
     })
   }
-
-  // onClickPreview (e: Event) {
-  //   let option = {
-  //     method: 'GET',
-  //     mode: 'same-origin',
-  //     credentials: 'include',
-  //     redirect: 'follow',
-  //   }
-  //
-  //   //ファイル名を steps の パラメータから取得する
-  //   const filename = this.props.nodes[this.props.selected_step_ids[0]].getFileName()
-  //
-  //   fetch('http://' + Constants.api.host + '/api/v0-1/dataframe/' + filename,
-  //     option).then(function (response) {
-  //     console.log(response)
-  //     if (response.ok) {
-  //       return response.json()
-  //     }
-  //     else {
-  //       alert('サーバでエラーが発生しました')
-  //     }
-  //   }).then(function (json) {
-  //     console.log(json)
-  //     if (json) {
-  //       const content = <DataPreview json={json} />
-  //       ModalUtil.emitModal({
-  //         id: Constants.preview.DATASOURCE,
-  //         visible: true,
-  //         content: content,
-  //         title: filename,
-  //       })
-  //     }
-  //     else {
-  //       alert('サーバからの応答結果がありません')
-  //     }
-  //   }).catch((err) => {
-  //     console.log(err)
-  //     alert('クライアントでエラーが発生しました')
-  //   })
-  //
-  // }
-
   onClickDelete (e: Event) {
     if (window.confirm('このデータソースを削除しますか？')) {
       let {selected_step_ids, nodes} = this.props
@@ -163,8 +131,10 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     let download
     const selected_step = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
-      preview = <Button onClick={(e) => this.onClickPreview(e)}
-                        icon={'visibility'}>プレビュー</Button>
+      if(selected_step.hasData()){
+        preview = <Button onClick={(e) => this.onClickPreview(e)}
+                          icon={'visibility'}>プレビュー</Button>
+      }
       if (selected_step.hasData()) {
         download = <Button onClick={(e) => this.onClickCSVDownload(e)}
                           icon={'visibility'}>CSVダウンロード</Button>
