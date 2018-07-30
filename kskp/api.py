@@ -4,11 +4,7 @@ from pathlib import Path
 
 from flask import Blueprint, request, session, jsonify, send_from_directory
 from .auth import login_required_api
-from .navigation import (
-    update_navigation_user,
-    update_navigation_project,
-    update_navigation_flow
-)
+from .navigation import update_navigation
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -49,7 +45,7 @@ def new_project():
 
 @api.route('/projects')
 @login_required_api
-@update_navigation_user
+@update_navigation
 def get_projects():
     """
     現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
@@ -95,13 +91,16 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'])
+    # create_flow()内でjsonの作成及びjsonファイルに書き出す作業を行なっているので
+    # 引数をひとつ増やしてuser_idを渡している。
+    # new_flow = create_flow(project_id, j['name'])
+    new_flow = create_flow(project_id, j['name'], session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
 
 @api.route('/flows', methods=['GET'])
 @login_required_api
-@update_navigation_project
+@update_navigation
 def fecth_flows():
     """
     パラメータで指定されたプロジェクトが持つフローの一覧を取得する
@@ -111,7 +110,7 @@ def fecth_flows():
 
 @api.route('/flows/<flow_uuid>', methods=['GET'])
 @login_required_api
-@update_navigation_flow
+@update_navigation
 def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
@@ -187,6 +186,9 @@ def make_new_frame():
                             'message': 'invalid json'
                         })
 
+import os
+import time
+
 @api.route('/frames/<frame_uuid>')
 def fetch_frame(frame_uuid):
     """
@@ -194,22 +196,29 @@ def fetch_frame(frame_uuid):
     """
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
-    result = load_as_data_frame(file_path.read_text(encoding='utf-8'))
+    return jsonify({'success': True, 'data': csv_to_frame(file_path)})
 
-    return jsonify({'success': True, 'data': result})
-
-
-@api.errorhandler(400)
-def handle_bad_request(error):
+def csv_to_frame(file_path, no_contents=False):
     """
-    Bad Requestが起きた時にもJSONを返却するように
-    （request bodyのJSONが不正な場合を想定している）
+    指定されたCSVファイルを読み込んで、
+    詳細情報なども含んだframeを表すdictを返す
     """
+    result = {}
+    contents, number_of_lines = load_as_data_frame(file_path.read_text(encoding='utf-8'))
+    if not no_contents:
+        result['contents'] = contents
+    result['numberOfLines'] = number_of_lines
+    result['fileSize'] = os.path.getsize(file_path)
+    result['lastModifiedAt'] = format_time(file_path)
 
-    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
-    message = 'The browser (or proxy) sent a request that this server could not understand.'
-    return jsonify({'success': False, 'message': str(error)})
+    return result
 
+def format_time(file_path):
+    """
+    指定されたファイルの最終更新時間をyyyy/MM/dd HH:MMで返却する
+    """
+    wk = time.localtime(os.path.getmtime(file_path))
+    return time.strftime('%Y/%m/%d %H:%M', wk)
 
 def upload_frame(req):
     """
@@ -269,7 +278,7 @@ def execute_flow(flow_uuid, step_paths):
 
 
 @api.route('/jobs', methods=['GET'])
-@update_navigation_flow
+@update_navigation
 def jobs():
     """
     指定されたフローの実行結果を返す
@@ -277,27 +286,38 @@ def jobs():
     flow_uuid = ''
     count = 0
 
+    execute_histories = []
+
     if 'flow' in request.args:
         flow_uuid = request.args['flow']
+        for job_path in Path(JOBS_DIR_PATH).iterdir():
+            data = json.loads(job_path.read_text(encoding='utf-8'))
+            if data['flow']['uuid'] == flow_uuid:
+                execute_histories.append(data)
 
-    if 'count' in request.args:
-        count = int(request.args['count'])
+    elif 'project' in request.args:
+        project_id = get_project_id_by_uuid(request.args['project'])
+        for job_path in Path(JOBS_DIR_PATH).iterdir():
+            data = json.loads(job_path.read_text(encoding='utf-8'))
+            if data['projectId'] == project_id:
+                execute_histories.append(data)
 
-    execute_histories = []
-    for job_path in Path(JOBS_DIR_PATH).iterdir():
-        data = json.loads(job_path.read_text(encoding='utf-8'))
-        if data['flow']['uuid'] == flow_uuid:
+    else:
+        for job_path in Path(JOBS_DIR_PATH).iterdir():
+            data = json.loads(job_path.read_text(encoding='utf-8'))
             execute_histories.append(data)
 
     results = sorted(execute_histories, key = lambda x:x['executedAt'])
 
     # 条件分岐が雑なので修正予定
-    if 0 < count and count <= len(results):
-        result = []
-        result.append(results[count - 1])
-        return jsonify({'success': True, 'data': result})
-    elif len(results) < count:
-        return jsonify({'success': False})
+    if 'count' in request.args:
+        count = int(request.args['count'])
+        if 0 < count and count <= len(results):
+            result = []
+            result.append(results[count - 1])
+            return jsonify({'success': True, 'data': result})
+        elif len(results) < count:
+            return jsonify({'success': False})
 
     return jsonify({'success': True, 'data': results})
 
@@ -351,4 +371,16 @@ def load_as_data_frame(result_text):
             # print(column_list[idx])
             result_data[column_list[idx]].append(column_data)
 
-    return result_data
+    # 行数も返すように変更
+    return result_data, len(result_list) - 1
+
+@api.errorhandler(400)
+def handle_bad_request(error):
+    """
+    Bad Requestが起きた時にもJSONを返却するように
+    （request bodyのJSONが不正な場合を想定している）
+    """
+
+    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
+    message = 'The browser (or proxy) sent a request that this server could not understand.'
+    return jsonify({'success': False, 'message': str(error)})
