@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "列選択"
+  "label": "列選択",
+  "classification": "col_edit",
+  "description": ""
 }

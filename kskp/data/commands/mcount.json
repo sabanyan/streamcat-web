@@ -27,5 +27,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行数カウント"
+  "label": "行数カウント",
+  "classification": "table_grouping",
+  "description": ""
 }

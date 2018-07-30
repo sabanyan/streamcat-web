@@ -27,5 +27,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ベクトルの併合"
+  "label": "ベクトルの併合",
+  "classification": "col_edit",
+  "description": ""
 }

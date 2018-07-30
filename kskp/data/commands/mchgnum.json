@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "文字列の置換"
+  "label": "文字列の置換",
+  "classification": "value_transform",
+  "description": ""
 }

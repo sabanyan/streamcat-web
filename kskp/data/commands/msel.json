@@ -26,5 +26,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行絞り込み"
+  "label": "行絞り込み",
+  "classification": "row_edit",
+  "description": ""
 }

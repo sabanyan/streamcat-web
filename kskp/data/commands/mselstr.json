@@ -36,5 +36,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行選択(文字列)"
+  "label": "行選択(文字列)",
+  "classification": "row_edit",
+  "description": ""
 }

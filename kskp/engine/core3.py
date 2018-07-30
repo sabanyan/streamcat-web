@@ -1118,7 +1118,7 @@ class Msummary(MCommand):#new
 class Mwindow(MCommand):#new
     def __init__(self):
         super().__init__()
-        self.name = 'mwinddow'
+        self.name = 'mwindow'
         self.description = 'スライド窓の生成'
         self.params.append(Parameter('wk', '出力データにおける、窓を識別する値となる入力データの列名(必須)'))
         self.params.append(Parameter('t', '窓の行数指定(必須)'))
@@ -2235,7 +2235,7 @@ class Predict(UnixCommand):
 
 commands = {
     # MCDM
-    'mcsv2marff': Mcsv2arff(),
+    'mcsv2arff': Mcsv2arff(),
     'm2cross': M2cross(),
     'maccum': Maccum(),
     'marff2csv': Marff2csv(),
@@ -2296,7 +2296,7 @@ commands = {
     'mvreplace': Mvreplace(),
     'mvsort': Mvsort(),
     'mvuniq': Mvuniq(),
-    'mwinddow': Mwindow(),
+    'mwindow': Mwindow(),
     'mxml2csv': Mxml2csv(),
     'mcut': Mcut(),
     'msel': Msel(),
