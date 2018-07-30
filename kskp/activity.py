@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from .model import get_flow_path_by_uuid
 
 def make_unfinished_history(flow_uuid, user_name):
     """
@@ -20,6 +21,7 @@ def make_unfinished_history(flow_uuid, user_name):
         'flow': {
             'uuid': ''
         },
+        'projectId': '',
         'data': {},
         'errors': {}
     }
@@ -30,6 +32,8 @@ def make_unfinished_history(flow_uuid, user_name):
     history_json['executor']['name'] = user_name
     history_json['flow']['uuid'] = flow_uuid
     history_json['state'] = '実行中'
+    data = json.loads(get_flow_path_by_uuid(flow_uuid).read_text(encoding='utf-8'))
+    history_json['projectId'] = data['projectId']
 
     # ファイル書き込み
     file_name = '{0:%Y%m%d%H%M%S%f}'.format(now)
