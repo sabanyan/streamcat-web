@@ -6,6 +6,7 @@ from pathlib import Path
 from flask import g
 from . import app
 from . import auth
+from datetime import datetime, timedelta, timezone
 
 # app.config['DATABASE'] = app.root_path + '/data/kskp.db'
 app.config.from_pyfile(app.root_path + '/settings.cfg')
@@ -187,19 +188,23 @@ def fecth_project(project_id):
     sql = 'SELECT uuid, name FROM projects WHERE id = ?'
     return query_db(sql, (project_id,), one=True)
 
-def create_flow(project_id, flow_name, data_source_name=None):
+def create_flow(project_id, flow_name, user_id, data_source_name=None):
     """
     フローを作成する
     TODO: 詳細は変更予定
     """
     new_flow_uuid = str(uuid.uuid4())
+    now = datetime.now()
 
     if data_source_name is None:
         data_source_name = new_flow_uuid
 
     data = {
         'projectId': project_id,
-        'label': flow_name
+        'label': flow_name,
+        'creator': get_user_by_id(user_id)['name'],
+        'createdAt': datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
+                                tzinfo=timezone(timedelta(hours=+9))).isoformat()
     }
 
     write_data_to_json(make_flow_path(data_source_name), data)

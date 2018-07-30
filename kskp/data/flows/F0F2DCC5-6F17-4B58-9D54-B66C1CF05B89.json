@@ -1,6 +1,8 @@
 {
   "projectId": 1,
   "label": "日本NI様サンプル(故障原因ごとの処理)",
+  "creator": "開発用",
+  "createdAt": "2018-07-27T08:25:19+09:00",
   "params": [
     {
       "name": "f",
