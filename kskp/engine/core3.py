@@ -295,6 +295,9 @@ class Command:
     def __repr__(self):
         return f'<Command name:{self.name}>'
 
+    @property
+    def out_key(self):
+        return self.o_ports[0]['name']
 
 class UnixCommand(Command):
     def __init__(self):
@@ -350,8 +353,6 @@ class Split(Command):
 
 
 class MCommand(UnixCommand):
-    # def __init__(self):
-    #     super().__init__()
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -368,27 +369,57 @@ class MCommand(UnixCommand):
     def source(self, args, inputs):
         return UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
 
-    @property
-    def out_key(self):
-        return self.o_ports[0]['name']
-
-class Msel(MCommand):
-    def __init__(self):
+class MCommandNew(Command):
+    def __init__(self, nysol_mod):
         super().__init__()
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}]
+        self.nysol_mod = nysol_mod
+
+    def execute(self, args, inputs):
+        args_for_nysol = args
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+            # print('PathFileSource args_for_nysol:', args_for_nysol)
+        elif isinstance(input_i.source, NysolPythonSource):
+            args_for_nysol.update({'i': input_i.source.nysol_module})
+            # print('NysolPythonSource args_for_nysol:', args_for_nysol)
+
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
+
+import nysol.mcmd as nm
+
+class Msel(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msel)
         self.name = 'msel'
         self.description = '行絞り込み'
         self.params.append(Parameter('c', '絞込条件式'))
 
-class Mcut(MCommand):
+class Mcut(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.mcut)
         self.name = 'mcut'
         self.description = '列選択'
         self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Msetstr(MCommand):
+class Msetstr(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.msetstr)
         self.name = 'msetstr'
         self.description = '文字列追加'
         self.params.append(Parameter('a', '追加列名(必須)'))
@@ -402,26 +433,26 @@ class Msum(MCommand):
         self.params.append(Parameter('k', '合計の基準となる列名'))
         self.params.append(Parameter('f', '合計する列名:合計後の列名'))
 
-class Mstats(MCommand):
+class Mstats(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.mstats)
         self.name = 'mstats'
         self.description = '統計情報'
         self.params.append(Parameter('k', '単位として集計する列名'))
         self.params.append(Parameter('c', '計算列名(必須)'))
         self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Mavg(MCommand):
+class Mavg(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.mavg)
         self.name = 'mavg'
         self.description = '平均'
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('k', '集計の単位となる列名'))
 
-class Mbucket(MCommand):
+class Mbucket(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.mbucket)
         self.name = 'mbucket'
         self.description = '行分割'
         self.params.append(Parameter('n', '行数(必須)'))
@@ -474,62 +505,96 @@ class Mtee(MCommand):
         self.description = '出力'
         self.params.append(Parameter('o', '出力先'))
 
-class Mselstr(MCommand):
+class Mselstr(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.mselstr)
         self.name = 'mselstr'
         self.description = '行選択(文字列)'
         self.params.append(Parameter('f', '対象列名'))
         self.params.append(Parameter('v', '絞込条件値（文字列）'))
 
-class Mcat(MCommand):
+class Mcat(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.mcat)
 
         self.name = 'mcat'
         self.description = 'ファイル結合'
         self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる
-        self.params.append(Parameter('j', '結合する列名'))
+        self.params.append(Parameter('k', '結合する列名'))
 
-    def command_args(self, args, inputs):
-        res = self.name.split()
-
-        # 引数をそれぞれパスにしていく
+    def execute(self, args, inputs):
+        args_for_nysol = args
         inputs_for_arg_i = []
         for key, input in inputs.items():
             input.command_to_file()
             inputs_for_arg_i.append(input.source.fullpath.as_posix())
-        res.append(f"i={','.join(inputs_for_arg_i)}")
-        return res
+        args_for_nysol.update({'i': ','.join(inputs_for_arg_i)})
 
-    def stdin(self, inputs):
-        return None
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
 
-class Mjoin(MCommand):
+    # def command_args(self, args, inputs):
+    #     res = self.name.split()
+    #
+    #     # 引数をそれぞれパスにしていく
+    #     inputs_for_arg_i = []
+    #     for key, input in inputs.items():
+    #         input.command_to_file()
+    #         inputs_for_arg_i.append(input.source.fullpath.as_posix())
+    #     res.append(f"i={','.join(inputs_for_arg_i)}")
+    #     return res
+
+    # def stdin(self, inputs):
+    #     return None
+
+class Mjoin(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.mjoin)
 
         self.name = 'mjoin'
         self.description = '結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def command_args(self, args, inputs):
-        res = self.name.split()
+    def execute(self, args, inputs):
+        args_for_nysol = args
 
-        res.append(f"k={args['k']}")
-        res.append(f"f={args['f']}")
-        res.append(f"K={args['K']}")
+        if isinstance(inputs['i'].source, PathFileSource):
+            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
+        elif isinstance(inputs['i'].source, NysolPythonSource):
+            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
 
         input_m = inputs['m']
 
-        # パイプなら、CSVに吐く
-        input_m.command_to_file()
-        res.append(f"m={ input_m.source.fullpath }")
+        if isinstance(inputs['i'].source, NysolPythonSource):
+            args_for_nysol.update({'m': input_m.source.nysol_module})
+        else:
+            # パイプなら、CSVに吐く
+            input_m.command_to_file()
+            args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        return res
+        # print('Mjoin execute:', args_for_nysol)
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
 
-    def stdin(self, inputs):
-        return inputs['i'].source.fd
+    # def command_args(self, args, inputs):
+    #     res = self.name.split()
+    #
+    #     res.append(f"k={args['k']}")
+    #     res.append(f"f={args['f']}")
+    #     res.append(f"K={args['K']}")
+    #
+    #     input_m = inputs['m']
+    #
+    #     # パイプなら、CSVに吐く
+    #     input_m.command_to_file()
+    #     res.append(f"m={ input_m.source.fullpath }")
+    #
+    #     return res
+    #
+    # def stdin(self, inputs):
+    #     return inputs['i'].source.fd
 
 class Mnjoin(MCommand):
     def __init__(self):
@@ -785,9 +850,9 @@ class Mvcommon(MCommand):#new
     def stdin(self, inputs):
         return inputs['i'].source.fd
 
-class Msortf(MCommand):
+class Msortf(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.msortf)
         self.name = 'msortf'
         self.desription = 'ソート'
         self.params.append(Parameter('f', '対象列名(必須)'))
@@ -799,9 +864,9 @@ class Mfsort(MCommand):
         self.desription = '項目ソート'
         self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Mcal(MCommand):
+class Mcal(MCommandNew):
     def __init__(self):
-        super().__init__()
+        super().__init__(nm.mcal)
         self.name = 'mcal'
         self.description = '計算'
         self.params.append(Parameter('c', '計算式(必須)'))
@@ -878,15 +943,16 @@ class Marff2csv(MCommand):#new
         self.description = 'arffからcsv形式への変換'
 
 class Mcsv2arff(MCommand):#new
-    def __init__(self):
-        super().__init__()
-        self.name = 'csv2marff'
-        self.description = 'csvからarff形式への変換'
-        self.params.append(Parameter('n', '数値列名(必須)'))
-        self.params.append(Parameter('d', 'カテゴリ列名(必須)'))
-        self.params.append(Parameter('D', '日付列名リスト(必須)'))
-        self.params.append(Parameter('s', '文字列列名(必須)'))
-        self.params.append(Parameter('T', 'タイトル名'))
+    pass
+#     def __init__(self):
+#         super().__init__(nm.mcsv2arff)
+#         self.name = 'csv2marff'
+#         self.description = 'csvからarff形式への変換'
+#         self.params.append(Parameter('n', '数値列名(必須)'))
+#         self.params.append(Parameter('d', 'カテゴリ列名(必須)'))
+#         self.params.append(Parameter('D', '日付列名リスト(必須)'))
+#         self.params.append(Parameter('s', '文字列列名(必須)'))
+#         self.params.append(Parameter('T', 'タイトル名'))
 
 class Mtab2csv(MCommand):
     def __init__(self):
@@ -946,14 +1012,14 @@ class Mpadding(MCommand):#new
         self.params.append(Parameter('S', '開始値'))
         self.params.append(Parameter('E', '終了値'))
 
-class Msel(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'msel'
-        self.description = '行絞り込み'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
-        self.params.append(Parameter('c', '絞込条件式(必須)'))
-        # self.params.append(Parameter('u', '指定条件に合わない行を出力するファイル名'))
+# class Msel(MCommand):
+#     def __init__(self):
+#         super().__init__()
+#         self.name = 'msel'
+#         self.description = '行絞り込み'
+#         self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+#         self.params.append(Parameter('c', '絞込条件式(必須)'))
+#         # self.params.append(Parameter('u', '指定条件に合わない行を出力するファイル名'))
 
 class Mselnum(MCommand):#editing(o, u)の扱いがわからない
     def __init__(self):
@@ -978,16 +1044,16 @@ class Mselrand(MCommand):#editing(u)の扱いがわからない
         self.params.append(Parameter('S', '乱数の種'))
         # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
 
-class Mselstr(MCommand):###ここから修正再開
-    def __init__(self):
-        super().__init__()
-        self.name = 'mselstr'
-        self.description = '行選択(文字列)'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
-        self.params.append(Parameter('f', '対象列名'))
-        self.params.append(Parameter('v', '絞込条件値（文字列）'))
-        self.params.append(Parameter('k', '選択単位となるキー列名'))
-        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
+# class Mselstr(MCommand):###ここから修正再開
+#     def __init__(self):
+#         super().__init__()
+#         self.name = 'mselstr'
+#         self.description = '行選択(文字列)'
+#         self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+#         self.params.append(Parameter('f', '対象列名'))
+#         self.params.append(Parameter('v', '絞込条件値（文字列）'))
+#         self.params.append(Parameter('k', '選択単位となるキー列名'))
+#         # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
 
 class Muniq(MCommand):
     def __init__(self):
@@ -1912,7 +1978,7 @@ commands = {
     'mbest': Mbest(),
     'mchgnum': Mchgnum(),
     'mcombi': Mcombi(),
-    'mchkcsv' Mchkcsv(),
+    'mchkcsv': Mchkcsv(),
     'mcommon': Mcommon(),
     'mcount': Mcount(),
     'mcross': Mcross(),
