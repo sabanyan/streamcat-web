@@ -284,7 +284,7 @@ class ModelTestCase(unittest.TestCase):
             # フロー作成
             new_flow_name = 'ふろー'
             data_source_name = str(uuid.uuid4())
-            new_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+            new_flow = model.create_flow(project_id, new_flow_name, session['user_id'], data_source_name)
 
             # フローを取得
             path = model.make_flow_path(data_source_name)
@@ -293,7 +293,7 @@ class ModelTestCase(unittest.TestCase):
 
             self.assertEqual(path.stem, data_source_name)
             self.assertEqual(created_flow['projectId'], project_id)
-            self.assertEqual(created_flow['name'], new_flow_name)
+            self.assertEqual(created_flow['label'], new_flow_name)
 
             # 後片付け
             path.unlink()
@@ -355,12 +355,12 @@ class ModelTestCase(unittest.TestCase):
             # そこからプロジェクトのIDを取得する
             project_id = model.get_project_id_by_uuid(project_uuid)
 
-        # フローを作成する
-        new_flow_name = 'ふろー取得てすと'
-        data_source_name = str(uuid.uuid4())
-        created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+            # フローを作成する
+            new_flow_name = 'ふろー取得てすと'
+            data_source_name = str(uuid.uuid4())
+            created_flow = model.create_flow(project_id, new_flow_name, session['user_id'], data_source_name)
 
-        fetched_flow = model.fetch_flow_by_uuid(data_source_name)
+            fetched_flow = model.fetch_flow_by_uuid(data_source_name)
 
         # ファイル名も確認しておく
         path = model.get_flow_path_by_uuid(data_source_name)
@@ -368,7 +368,7 @@ class ModelTestCase(unittest.TestCase):
 
         # JSONの中身も確認する
         self.assertEqual(fetched_flow['projectId'], project_id)
-        self.assertEqual(fetched_flow['name'], new_flow_name)
+        self.assertEqual(fetched_flow['label'], new_flow_name)
 
         # 後片付け
         path.unlink()
@@ -394,26 +394,19 @@ class ModelTestCase(unittest.TestCase):
             # テスト用フローを作成する
             new_flow_name1 = 'ふろー取得てすと1'
             data_source_name1 = str(uuid.uuid4())
-            created_flow1 = model.create_flow(project_id, new_flow_name1, data_source_name1)
+            created_flow1 = model.create_flow(project_id, new_flow_name1, session['user_id'], data_source_name1)
 
             new_flow_name2 = 'ふろー取得てすと2'
             data_source_name2 = str(uuid.uuid4())
-            created_flow2 = model.create_flow(project_id, new_flow_name2, data_source_name2)
+            created_flow2 = model.create_flow(project_id, new_flow_name2, session['user_id'], data_source_name2)
 
-            flow_list = model.fetch_flows_by_project_uuid(project_uuid)
-
+            flow1 = model.fetch_flow_by_uuid(data_source_name1)
+            flow2 = model.fetch_flow_by_uuid(data_source_name2)
             paths = model.get_flow_paths_by_project_uuid(project_uuid)
 
-        # ファイル名の確認
-        self.assertEqual({path.stem for path in paths}, {data_source_name1, data_source_name2})
-
         # 中身の確認
-        self.assertEqual({flow_result['projectId'] for flow_result in flow_list}, {project_id,
-                                                                                   project_id})
-        self.assertEqual({flow_result['name'] for flow_result in flow_list}, {new_flow_name1,
-                                                                              new_flow_name2})
-        self.assertEqual({flow_result['uuid'] for flow_result in flow_list}, {data_source_name1,
-                                                                              data_source_name2})
+        self.assertEqual({flow1['projectId'], flow2['projectId']}, {project_id, project_id})
+        self.assertEqual({flow1['label'], flow2['label']}, {new_flow_name1, new_flow_name2})
 
         # 後片付け
         for path in paths:
@@ -421,26 +414,44 @@ class ModelTestCase(unittest.TestCase):
 
 
     def test_delete_flow(self):
-        data_source_name = str(uuid.uuid4())
-        flow = model.create_flow(1, '', data_source_name)
-        model.delete_flow_by_uuid(data_source_name)
+        with app.app_context():
+            # まず親プロジェクトを作る
+            email = 'dev@kskp.io'
+            name = '開発者'
+
+            with self.client.session_transaction() as session:
+                model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
+
+            data_source_name = str(uuid.uuid4())
+            flow = model.create_flow(1, '', session['user_id'], data_source_name)
+            model.delete_flow_by_uuid(data_source_name)
 
 
     def test_update_flow(self):
-        data_source_name = str(uuid.uuid4())
-        flow = model.create_flow(1, '', data_source_name)
+        with app.app_context():
+            # まず親プロジェクトを作る
+            email = 'dev@kskp.io'
+            name = '開発者'
 
-        model.update_flow_by_uuid(data_source_name, {'a': 1})
-        path = model.make_flow_path(data_source_name)
+            with self.client.session_transaction() as session:
+                model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)
 
-        # 改めてファイルから読み直す
-        result = json.loads(path.read_text(encoding='utf-8'))
+            data_source_name = str(uuid.uuid4())
+            flow = model.create_flow(1, '', session['user_id'], data_source_name)
 
-        # 後片付け
-        path.unlink()
+            model.update_flow_by_uuid(data_source_name, {'a': 1})
+            path = model.make_flow_path(data_source_name)
 
-        self.assertEqual(path.stem, data_source_name)
-        self.assertEqual(result['a'], 1)
+            # 改めてファイルから読み直す
+            result = json.loads(path.read_text(encoding='utf-8'))
+
+            # 後片付け
+            path.unlink()
+
+            self.assertEqual(path.stem, data_source_name)
+            self.assertEqual(result['a'], 1)
 
 
 if __name__ == '__main__':
