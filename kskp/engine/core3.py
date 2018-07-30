@@ -372,13 +372,6 @@ class MCommand(UnixCommand):
     def out_key(self):
         return self.o_ports[0]['name']
 
-class Msel(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'msel'
-        self.description = '行絞り込み'
-        self.params.append(Parameter('c', '絞込条件式'))
-
 class Mcut(MCommand):
     def __init__(self):
         super().__init__()
@@ -400,7 +393,7 @@ class Msum(MCommand):
         self.name = 'msum'
         self.description = '合計'
         self.params.append(Parameter('k', '合計の基準となる列名'))
-        self.params.append(Parameter('f', '合計する列名:合計後の列名'))
+        self.params.append(Parameter('f', '合計する列名:合計後の列名(必須)'))
 
 class Mstats(MCommand):
     def __init__(self):
@@ -473,14 +466,6 @@ class Mtee(MCommand):
         self.name = 'mtee'
         self.description = '出力'
         self.params.append(Parameter('o', '出力先'))
-
-class Mselstr(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'mselstr'
-        self.description = '行選択(文字列)'
-        self.params.append(Parameter('f', '対象列名'))
-        self.params.append(Parameter('v', '絞込条件値（文字列）'))
 
 class Mcat(MCommand):
     def __init__(self):
@@ -984,8 +969,8 @@ class Mselstr(MCommand):###ここから修正再開
         self.name = 'mselstr'
         self.description = '行選択(文字列)'
         self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
-        self.params.append(Parameter('f', '対象列名'))
-        self.params.append(Parameter('v', '絞込条件値（文字列）'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列名'))
         # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
 
@@ -2250,7 +2235,7 @@ class Predict(UnixCommand):
 
 commands = {
     # MCDM
-    'csv2marff': Mcsv2arff(),
+    'mcsv2marff': Mcsv2arff(),
     'm2cross': M2cross(),
     'maccum': Maccum(),
     'marff2csv': Marff2csv(),
@@ -2319,9 +2304,9 @@ commands = {
     'mjoin': Mjoin(),
     'mstats': Mstats(),
     'mavg': Mavg(),
-    'mselstr' : Mselstr(),
-    'msetstr' : Msetstr(),
-    'mbucket' : Mbucket(),
+    'mselstr': Mselstr(),
+    'msetstr': Msetstr(),
+    'mbucket': Mbucket(),
     'mcat': Mcat(),
     'mtee': Mtee(),
     'msortf': Msortf(),
