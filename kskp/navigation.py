@@ -12,6 +12,11 @@ def update_navigation(func):
         data = json.loads(json_data)
 
         user_id = session['user_id']
+        navigation = request.args.get('navigation')
+
+        # ブロック句
+        if navigation == 'off':
+            return jsonify(data)
 
         navigation = {
             'user_id': user_id,
