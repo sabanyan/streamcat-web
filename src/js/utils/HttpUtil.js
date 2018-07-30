@@ -52,7 +52,15 @@ class HTTPUtil {
     const url = this.apiUrl(path)
     return axios.delete(url, data, merged_config)
   }
+
+  getURLParam(paramName){
+    var url_string = window.location.href
+    var url = new URL(url_string);
+    return url.searchParams.get(paramName);
+  }
 }
+
+
 
 //Singleton
 //ref:https://qiita.com/hkusu/items/d9ac2bd135e9e579e018

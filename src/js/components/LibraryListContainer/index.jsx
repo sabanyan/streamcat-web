@@ -47,13 +47,15 @@ export default class LibraryListContainer extends React.Component<Props,State> {
   getJobList () {
     const self = this
     self.setState({is_loading: true})
-    HttpUtil.get('jobs', {project: inject_project_uuid}).then((response) => {
-      const json = response.data
-      self.setState(
-        {is_loading: false, is_finished: true, job_list: json.data})
-    }).catch((error)=>{
-      self.setState(
-        {is_loading: false, is_finished: true, job_list: []})
+
+
+    HttpUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
+        const json = response.data
+        self.setState(
+          {is_loading: false, is_finished: true, job_list: json.data})
+      }).catch((error)=>{
+        self.setState(
+          {is_loading: false, is_finished: true, job_list: []})
     })
   }
 
