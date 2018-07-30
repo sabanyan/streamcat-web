@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "正規表現による文字列置換"
+  "label": "正規表現による文字列置換",
+  "classification": "value_transform",
+  "description": ""
 }

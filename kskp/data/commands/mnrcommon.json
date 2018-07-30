@@ -2,14 +2,14 @@
   "id": "mnrcommon",
   "params": [
     {
-        "name": "R",
-        "label": "参照ファイルの範囲列名(必須)",
-        "type": "string"
+      "name": "R",
+      "label": "参照ファイルの範囲列名(必須)",
+      "type": "string"
     },
     {
-        "name": "r",
-        "label": "範囲比較を行う入力ファイル上の列名(必須)",
-        "type": "string"
+      "name": "r",
+      "label": "範囲比較を行う入力ファイル上の列名(必須)",
+      "type": "string"
     },
     {
       "name": "k",
@@ -50,5 +50,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "参照ファイルの複数範囲条件による行選択"
+  "label": "参照ファイルの複数範囲条件による行選択",
+  "classification": "table_join",
+  "description": ""
 }

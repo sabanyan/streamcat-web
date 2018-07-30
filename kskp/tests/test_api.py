@@ -715,6 +715,5 @@ class JobTestCase(unittest.TestCase):
         self.assertEqual(result['navigation']['project_uuid'], project_uuid)
         self.assertEqual(result['navigation']['project_name'], 'proj1')
 
-
 if __name__ == '__main__':
     unittest.main()

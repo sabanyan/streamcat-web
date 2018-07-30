@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ソート"
+  "label": "ソート",
+  "classification": "row_sort",
+  "description": ""
 }

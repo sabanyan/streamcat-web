@@ -42,5 +42,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "クロス集計"
+  "label": "クロス集計",
+  "classification": "value_crossing",
+  "description": ""
 }
