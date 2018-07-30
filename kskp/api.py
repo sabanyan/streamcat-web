@@ -307,7 +307,7 @@ def jobs():
             data = json.loads(job_path.read_text(encoding='utf-8'))
             execute_histories.append(data)
 
-    results = sorted(execute_histories, key = lambda x:x['executedAt'])
+    results = sorted(execute_histories, key = lambda x:x['executedAt'], reverse=True)
 
     # 条件分岐が雑なので修正予定
     if 'count' in request.args:
