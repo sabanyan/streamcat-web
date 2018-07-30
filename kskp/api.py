@@ -301,6 +301,75 @@ def jobs():
     return jsonify({'success': True, 'data': results})
 
 
+import nysol.mcmd as nm
+
+frames_path = Path('kskp/data/frames')
+
+def execute_by_sensor(sensor, i, f):
+    temp = frames_path.joinpath(str(uuid.uuid4()) + '.csv')
+    state = nm.mcut(i=i, x=True, f=f, o=temp.as_posix())
+    state.run()
+
+    state1 = nm.mavg(i=temp.as_posix(), f=f'{sensor}:{sensor}_avg')
+    state1 <<= nm.mcut(f=f'Time,{sensor}_avg')
+
+    state2 = nm.mstats(i=temp.as_posix(), c='sd', f=f'{sensor}:{sensor}_sd')
+    state2 <<= nm.mcut(f=f'Time,{sensor}_sd')
+
+    state3 = nm.mstats(i=temp.as_posix(), c='max', f=f'{sensor}:{sensor}_max')
+    state3 <<= nm.mcut(f=f'Time,{sensor}_max')
+
+    state4 = nm.mstats(i=temp.as_posix(), c='min', f=f'{sensor}:{sensor}_min')
+    state4 <<= nm.mcut(f=f'Time,{sensor}_min')
+
+    last = nm.mjoin(k='Time', i=state1, m=state2)
+    last <<= nm.mjoin(k='Time', m=state3)
+    last <<= nm.mjoin(k='Time', m=state4)
+    # last.run()
+    return last
+
+    # temp.unlink()
+
+def execute_by_state(i, f, o):
+    """ 状態ごとの処理 """
+    s1 = execute_by_sensor('3H', i, f)
+    s2 = execute_by_sensor('3V', i, f)
+    s3 = execute_by_sensor('4H', i, f)
+    s4 = execute_by_sensor('4V', i, f)
+
+    last = nm.mjoin(k='Time', i=s1, m=s2)
+    last <<= nm.mjoin(k='Time', m=s3)
+    last <<= nm.mjoin(k='Time', m=s4, o=o)
+    last.run()
+
+
+@api.route('/execute-direct')
+def execute_direct():
+    i = frames_path.joinpath('2C72275F-2019-49AE-B36D-A29D1507F8DD.csv').as_posix()
+
+    o1 = frames_path.joinpath('result1.csv')
+    o2 = frames_path.joinpath('result2.csv')
+    o3 = frames_path.joinpath('result3.csv')
+    o4 = frames_path.joinpath('result4.csv')
+    o5 = frames_path.joinpath('result5.csv')
+
+    execute_by_state(i, '0,1,2,3,4', o1.as_posix())
+    execute_by_state(i, '0,5,6,7,8', o2.as_posix())
+    execute_by_state(i, '0,9,10,11,12', o3.as_posix())
+    execute_by_state(i, '0,13,14,15,16', o4.as_posix())
+    execute_by_state(i, '0,17,18,19,20', o5.as_posix())
+
+    o = frames_path.joinpath('last.csv').as_posix()
+    i_s = ','.join([o1.as_posix(), o2.as_posix(), o3.as_posix(), o4.as_posix(), o5.as_posix()])
+    last = nm.mcat(i=i_s, o=o)
+    last.run()
+
+    for o in [o1, o2, o3, o4, o5]:
+        o.unlink()
+
+    return jsonify({'success': True, 'data': 'result'})
+
+
 def execute_flow_internal(flow_uuid, step_paths=None):
     """
     指定されたファイル名を元にフローファイルを取得して、
