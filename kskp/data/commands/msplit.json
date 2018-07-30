@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "区切り文字による項目分割"
+  "label": "区切り文字による項目分割",
+  "classification": "col_edit",
+  "description": ""
 }

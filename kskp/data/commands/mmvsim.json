@@ -2,9 +2,9 @@
   "id": "mmvsim",
   "params": [
     {
-    "name": "f",
-    "label": "集計列名(必須)",
-    "type": "string"
+      "name": "f",
+      "label": "集計列名(必須)",
+      "type": "string"
     },
     {
       "name": "c",
@@ -52,5 +52,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "移動窓の類似度計算"
+  "label": "移動窓の類似度計算",
+  "classification": "table_grouping",
+  "description": ""
 }

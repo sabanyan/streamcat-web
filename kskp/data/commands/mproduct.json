@@ -31,5 +31,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "参照ファイルの直積結合"
+  "label": "参照ファイルの直積結合",
+  "classification": "table_join",
+  "description": ""
 }

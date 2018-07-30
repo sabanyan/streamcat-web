@@ -27,5 +27,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ベクトル要素の区切り文字変更"
+  "label": "ベクトル要素の区切り文字変更",
+  "classification": "value_transform",
+  "description": ""
 }

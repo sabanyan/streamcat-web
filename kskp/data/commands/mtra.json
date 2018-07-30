@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "縦横変換"
+  "label": "縦横変換",
+  "classification": "value_crossing",
+  "description": ""
 }

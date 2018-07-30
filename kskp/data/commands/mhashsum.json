@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ハッシュ法による列の値の合計"
+  "label": "ハッシュ法による列の値の合計",
+  "classification": "table_grouping",
+  "description": ""
 }
