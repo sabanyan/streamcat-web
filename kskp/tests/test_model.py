@@ -400,17 +400,13 @@ class ModelTestCase(unittest.TestCase):
             data_source_name2 = str(uuid.uuid4())
             created_flow2 = model.create_flow(project_id, new_flow_name2, session['user_id'], data_source_name2)
 
-            flow_list = model.fetch_flows_by_project_uuid(project_uuid)
-
+            flow1 = model.fetch_flow_by_uuid(data_source_name1)
+            flow2 = model.fetch_flow_by_uuid(data_source_name2)
             paths = model.get_flow_paths_by_project_uuid(project_uuid)
 
         # 中身の確認
-        self.assertEqual({flow_result['projectId'] for flow_result in flow_list}, {project_id,
-                                                                                   project_id})
-        self.assertEqual({flow_result['label'] for flow_result in flow_list}, {new_flow_name1,
-                                                                              new_flow_name2})
-        self.assertEqual({flow_result['uuid'] for flow_result in flow_list}, {data_source_name1,
-                                                                              data_source_name2})
+        self.assertEqual({flow1['projectId'], flow2['projectId']}, {project_id, project_id})
+        self.assertEqual({flow1['label'], flow2['label']}, {new_flow_name1, new_flow_name2})
 
         # 後片付け
         for path in paths:
