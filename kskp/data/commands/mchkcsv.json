@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "CSV検査"
+  "label": "CSV検査",
+  "classification": "validation",
+  "description": ""
 }

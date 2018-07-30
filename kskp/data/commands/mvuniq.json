@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ベクトル要素の単一化"
+  "label": "ベクトル要素の単一化",
+  "classification": "value_transform",
+  "description": ""
 }

@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ベクトル要素のNULL要素削除"
+  "label": "ベクトル要素のNULL要素削除",
+  "classification": "value_transform",
+  "description": ""
 }

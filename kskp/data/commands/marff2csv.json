@@ -1,7 +1,6 @@
 {
   "id": "marff2csv",
-  "params": [
-  ],
+  "params": [],
   "ports": [
     [
       {
@@ -17,5 +16,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "arffからcsv形式への変換"
+  "label": "arffからcsv形式への変換",
+  "classification": "data_format",
+  "description": ""
 }

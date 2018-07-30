@@ -27,5 +27,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "合計"
+  "label": "合計",
+  "classification": "table_grouping",
+  "description": ""
 }

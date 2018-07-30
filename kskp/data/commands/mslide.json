@@ -37,5 +37,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行ずらし"
+  "label": "行ずらし",
+  "classification": "table_grouping",
+  "description": ""
 }
