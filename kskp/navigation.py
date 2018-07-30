@@ -23,9 +23,10 @@ def update_navigation(func):
         }
 
         # 条件分岐がちょっと不安
-        # フローとプロジェクトが同時に指定されたときはひとまずフローを優先させるため
+        # flowとprojectが同時に指定されたときはひとまずフローを優先させるため
         # 一番上に書いている（フローの方がnavigationの値が細かいため優先した）
-        
+        # 実際にはflowとprojectが同時に指定されることはない想定
+
         # フローが指定された場合
         if 'flow' in request.args or 'flow_uuid' in kwargs:
             flow_uuid = request.args['flow'] if 'flow' in request.args else kwargs['flow_uuid']
