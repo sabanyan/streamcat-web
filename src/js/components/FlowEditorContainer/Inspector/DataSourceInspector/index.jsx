@@ -49,7 +49,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     if (selected_step instanceof DataFrameStepModel) {
       if(selected_step.hasData()){
         this.loading = true
-        HttpUtil.get("frames/"+selected_step.id).then((response)=>{
+        HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
           this.dataFrameDetail = response.data
           this.loading = false
           this.forceUpdate()
