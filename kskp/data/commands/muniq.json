@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "単一化"
+  "label": "単一化",
+  "classification": "row_edit",
+  "description": ""
 }

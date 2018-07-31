@@ -41,5 +41,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ランダムな行選択"
+  "label": "ランダムな行選択",
+  "classification": "row_edit",
+  "description": ""
 }

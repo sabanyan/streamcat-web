@@ -51,5 +51,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "参照ファイルのの範囲条件結合"
+  "label": "参照ファイルのの範囲条件結合",
+  "classification": "table_join",
+  "description": ""
 }

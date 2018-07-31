@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "1変数の統計量の計算"
+  "label": "1変数の統計量の計算",
+  "classification": "table_grouping",
+  "description": ""
 }

@@ -42,5 +42,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行補完コマンド"
+  "label": "行補完コマンド",
+  "classification": "row_edit",
+  "description": ""
 }

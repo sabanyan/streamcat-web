@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "項目ソート"
+  "label": "項目ソート",
+  "classification": "row_sort",
+  "description": ""
 }

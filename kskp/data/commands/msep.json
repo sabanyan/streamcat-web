@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "レコードの分割(msep)"
+  "label": "レコードの分割(msep)",
+  "classification": "table_split",
+  "description": ""
 }
