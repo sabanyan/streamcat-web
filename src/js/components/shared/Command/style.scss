@@ -11,7 +11,7 @@
   border-bottom: 1px dotted #ccc;
 }
 .command_label_container{
-  padding: 0 4px;
+  padding: 8px 4px;
   float: left;
   display: inline-block;
   width: calc(100% - 60px);
@@ -25,6 +25,7 @@
 }
 
 .command_description{
+  color: $kskp-property-operator-label-color;
   padding-top:4px;
   text-overflow: ellipsis;
   font-size: 8px;
