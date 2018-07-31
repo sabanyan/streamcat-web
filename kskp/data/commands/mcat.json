@@ -16,5 +16,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ファイル結合"
+  "label": "ファイル結合",
+  "classification": "table_join",
+  "description": ""
 }

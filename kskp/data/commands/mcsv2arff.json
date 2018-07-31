@@ -1,5 +1,5 @@
 {
-  "id": "csv2marff",
+  "id": "mcsv2arff",
   "params": [
     {
       "name": "n",
@@ -42,5 +42,8 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "csvからarff形式への変換"
+  "label": "csvからarff形式への変換",
+  "classification": "data_format",
+  "description": "http://www.nysol.sakura.ne.jp/mcmd2/jp/sect-mcsv2arff.html"
+
 }

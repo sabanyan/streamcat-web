@@ -42,5 +42,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行分割"
+  "label": "行分割",
+  "classification": "table_split",
+  "description": ""
 }

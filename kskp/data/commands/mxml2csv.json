@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "xmlからcsv形式への変換"
+  "label": "xmlからcsv形式への変換",
+  "classification": "data_format",
+  "description": ""
 }

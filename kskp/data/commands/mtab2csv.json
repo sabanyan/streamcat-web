@@ -22,5 +22,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "TSVからCSVデータへの変換"
+  "label": "TSVからCSVデータへの変換",
+  "classification": "data_format",
+  "description": ""
 }

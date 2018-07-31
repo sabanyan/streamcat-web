@@ -27,5 +27,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "構成費の計算"
+  "label": "構成費の計算",
+  "classification": "col_edit",
+  "description": ""
 }

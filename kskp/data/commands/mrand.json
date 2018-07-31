@@ -42,5 +42,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "擬似乱数"
+  "label": "擬似乱数",
+  "classification": "col_edit",
+  "description": ""
 }

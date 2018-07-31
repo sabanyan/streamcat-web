@@ -40,5 +40,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行選択"
+  "label": "行選択",
+  "classification": "table_join",
+  "description": ""
 }

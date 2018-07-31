@@ -27,5 +27,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "平均"
+  "label": "平均",
+  "classification": "table_grouping",
+  "description": ""
 }

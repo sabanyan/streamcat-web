@@ -31,5 +31,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "NULL行削除"
+  "label": "NULL行削除",
+  "classification": "row_edit",
+  "description": ""
 }

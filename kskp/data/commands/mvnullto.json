@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "ベクトル要素のNULL置換"
+  "label": "ベクトル要素のNULL置換",
+  "classification": "value_transform",
+  "description": ""
 }

@@ -37,5 +37,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "レコード分割(mshuffle)"
+  "label": "レコード分割(mshuffle)",
+  "classification": "table_split",
+  "description": ""
 }
