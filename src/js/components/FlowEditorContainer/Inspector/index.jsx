@@ -19,8 +19,6 @@ class Inspector extends React.Component<FlowEditorProps> {
 
     if (selected_step_ids.length == 1) {
       const selected_step = Graph.getNode(nodes,selected_step_ids[0])
-      console.log("Inspector selected_step_ids")
-      console.log(selected_step)
       if (selected_step instanceof DataFrameStepModel) {
         property = <DataSourceInspector {...this.props}></DataSourceInspector>
       } else if (selected_step instanceof CommandStepModel) {

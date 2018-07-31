@@ -16,17 +16,14 @@ import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
 import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
+import type { StepModelType } from '../../../types'
 
 let mouseMoveEvent
 let mouseUpEvent
 
-type modelProps = {
-  model: CommandStepModelProps | DataFrameStepModelProps | SubFlowStepModelProps
-}
-
 type Props = {
   ...FlowEditorProps,
-  ...modelProps,
+  model: StepModelType;
   position: { x: number, y: number };
   type: string;
   selected: boolean;
@@ -66,19 +63,6 @@ export default class Step extends React.Component<Props, State> {
         y: e.pageY,
       },
     })
-    let step = this.props.model
-    //選択イベントの呼び出し
-    if (e.shiftKey) {
-      if (!this.isSelected()) {
-        this.props.addSelectStep(step.id)
-      }
-      else {
-        this.props.deleteSelectStep(step.id)
-      }
-    }
-    else {
-      this.props.selectSteps([step])
-    }
     //mousemoveイベントでハンドリング
     mouseMoveEvent = (e: MouseEvent) => this.handleMouseMove(e)
     mouseUpEvent = (e: MouseEvent) => this.handleMouseUp(e)
@@ -97,6 +81,23 @@ export default class Step extends React.Component<Props, State> {
     this.setState({
       coords: null,
     })
+
+
+    let step = this.props.model
+    //選択イベントの呼び出し
+    if (e.shiftKey) {
+      if (!this.isSelected()) {
+        this.props.addSelectStep(step.id)
+      }
+      else {
+        this.props.deleteSelectStep(step.id)
+      }
+    }
+    else {
+      this.props.selectSteps([step])
+    }
+
+
     document.removeEventListener('mousemove', mouseMoveEvent)
     document.removeEventListener('mouseup', mouseUpEvent)
   }
@@ -225,7 +226,7 @@ export default class Step extends React.Component<Props, State> {
     return this.isSelected()
   }
 
-  isSelected () {
+  isSelected ():boolean {
     let selected = false
     this.props.selected_step_ids.map((id) => {
       if (id === this.props.model.id) {
@@ -235,15 +236,15 @@ export default class Step extends React.Component<Props, State> {
     return selected
   }
 
-  isStep (model: modelProps) {
+  isStep (model: modelProps):boolean {
     return (model instanceof CommandStepModel)
   }
 
-  isDataFrame (model: modelProps) {
+  isDataFrame (model: modelProps):boolean {
     return (model instanceof DataFrameStepModel)
   }
 
-  isSubFlow (model: modelProps) {
+  isSubFlow (model: modelProps):boolean {
     return (model instanceof SubFlowStepModel)
   }
 
@@ -269,7 +270,7 @@ export default class Step extends React.Component<Props, State> {
     const {ports} = this.props.flow
     let icon
 
-    let step = this.props.model
+    let step:StepModelType = this.props.model
 
     /**
      * STEPの種類に応じた見た目の設定
@@ -284,13 +285,8 @@ export default class Step extends React.Component<Props, State> {
     const selected = this.selectorIntersect()
 
     step.label = (step.label)?step.label:step.id
-
-    console.log(step.id)
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
-
-    console.log(flowIn)
-    console.log(flowOut)
     if(flowIn || flowOut){
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
@@ -321,13 +317,13 @@ export default class Step extends React.Component<Props, State> {
       </g>
     }else if (this.isDataFrame(step)) {
       //データソース
-      const stroke = (!step.uuid) ? {stroke: '#CCCCCC'} : {}
+      const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
       icon =
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
               filter={filter} style={rect_style}>
-          <FileIcon fillColor={(step.uuid) ? '#63CFFD' : '#CCCCCC'}
+          <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
     }

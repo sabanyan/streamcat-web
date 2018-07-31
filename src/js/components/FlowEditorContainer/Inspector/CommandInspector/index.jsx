@@ -8,6 +8,11 @@ import CommandStepModel from '../../../../model/Step/CommandStepModel'
 import InOutConnector from './InOutConnector'
 import Constants from '../../../../constants'
 import Graph from '../../../../utils/Graph'
+import type { CommandParamType, CommandPortType, StepModelType, SubFlowParamType } from '../../../../types'
+import CommandModel from '../../../../model/Command/CommandModel'
+import HttpUtil from '../../../../utils/HttpUtil'
+import FlowModel from '../../../../model/Flow/FlowModel'
+import Loader from '../../../shared/Loader'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -15,6 +20,30 @@ type CommandInspectorProps = {
 }
 
 class CommandInspector extends React.Component<CommandInspectorProps> {
+
+    selectedSubFlow:FlowModel
+    loaded:boolean = false
+
+    componentWillMount () {
+      //データフレームの詳細を取得する
+      const {updateStep} = this.props
+      const selected_step:StepModelType = this.getSelectedStep()
+      console.log(selected_step)
+      this.selectedSubFlow = null
+      if (selected_step instanceof CommandStepModel) {
+        if(selected_step.type === Constants.step.type.subflow){
+          //サブフローの場合のみ詳細を取得
+          HttpUtil.get("flows/"+selected_step.uuid+"?navigation=off").then((response)=>{
+            this.selectedSubFlow = response.data.data
+            this.loaded = true
+            this.forceUpdate()
+          })
+        }else{
+          //サブフロー以外の場合は読み込み完了
+          this.loaded = true
+        }
+      }
+    }
 
     getSelectedStep(){
       let {selected_step_ids, nodes} = this.props
@@ -41,26 +70,39 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         }
     }
 
-  getCommand(command_name:string){
+    getCommand(commandId:string):CommandModel{
         let command = null;
         this.props.mast.commands.map((_command)=>{
-            if(command_name === _command.name){
+            if(commandId === _command.id){
               command = _command
             }
         })
         return command
     }
 
-    getCommandArgument(argument_name:string,command:?{arguments:any[]}){
-        let argument = {};
-        if(command && command.arguments){
-          command.arguments.map((arg)=>{
-                if(arg.name == argument_name){
-                  argument = arg
+    getCommandParam(paramName:string,command:CommandModel):CommandParamType{
+        let param = {};
+        if(command && command.getParams()){
+          command.getParams().map((_param)=>{
+                if(_param.name == paramName){
+                  param = _param
                 }
             })
         }
-        return argument
+        return param
+    }
+
+    getSubFlowParam(paramName:string):SubFlowParamType{
+      let result
+      if(this.selectedSubFlow && paramName){
+        this.selectedSubFlow.params.forEach((param)=>{
+          if(param.name === paramName){
+            result = param
+            return
+          }
+        })
+      }
+      return result
     }
 
     onChangeInEdge(e){
@@ -72,50 +114,59 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     }
 
     render() {
+      console.log("render")
+        let selected_step:StepModelType = this.getSelectedStep()
+        let inputForm,subFlowLink,content
 
-        const self = this
-        let selected_step = this.getSelectedStep()
-
-        let inputForm
-
-        inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
+        if(selected_step.type === Constants.step.type.command){
+          inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
-            const command_name:string = selected_step.name
-            const command = self.getCommand(command_name)
-            const argument:{caption?:string} = self.getCommandArgument(key,command)
-
-            const argument_name = key
+            const command:CommandModel = this.getCommand(selected_step.commandId)
+            const param:CommandParamType = this.getCommandParam(key,command)
+            console.log(param)
             return <div key={index}>
-                <label>{argument.caption}</label>
-                <input type="text" className="form-control" defaultValue={parameter} placeholder={argument_name} ref={argument_name}/>
-                {/*<div key={self.props.name + "_" + argument.name} className="mb-8px">*/}
-                    {/*<label>*/}
-                      {/*{argument.caption}*/}
-                    {/*</label>*/}
-                    {/*<input type="text" className="form-control" placeholder={argument.name} ref={(element)=>{self.inputRefs.push({argument:argument,element:element})}} defaultValue={""}></input>*/}
-                {/*</div>*/}
+              <label>{param.label}</label>
+              <label className="float-right">{param.name}</label>
+              <input type="text" className="form-control" defaultValue={parameter} placeholder={param.name} ref={param.name}/>
             </div>
-        })
+          })
+        }else if(selected_step.type === Constants.step.type.subflow){
+          inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
+            const parameter = selected_step.args[key]
+            const hasSubFlowParam = (this.getSubFlowParam(key))
+            const param:SubFlowParamType = (hasSubFlowParam)?this.getSubFlowParam(key):key
+            return <div key={index}>
+              <label>{param.name}</label>
+              <label className="float-right text-danger">{(hasSubFlowParam)?"":"不明なパラメーター"}</label>
+              <input type="text" className="form-control" defaultValue={parameter} placeholder={param.name} ref={param.name}/>
+            </div>
+          })
+          subFlowLink = <a href={"/flows/"+selected_step.uuid} target={"_blank"}>フローを開く</a>
+        }
 
-      console.log(selected_step.uuid)
-      const subFlowLink = (selected_step.type === Constants.step.type.subflow)?<a href={"http://localhost:5000/flows/"+selected_step.uuid} target={"_blank"}>フローを開く</a>:null
+        if(!this.loaded){
+          content = <Loader center={true} absolute={false} fixed={false} visible={true}/>
+        }else {
+          content = <div>
+            {subFlowLink}
+            <InOutConnector {...this.props} />
+            <div className={style.hr} />
+            <div className={style.property_title}>
+              パラメータ
+            </div>
+            <div>
+              <div className="kskp-form">
+                {inputForm}
+              </div>
+            </div>
+            <br />
+            <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
+            <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
+          </div>
+        }
 
         return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"} {...this.props}>
-          {subFlowLink}
-          <InOutConnector {...this.props}/>
-          <div className={style.hr}/>
-          <div className={style.property_title}>
-            パラメータ
-          </div>
-          <div>
-              <div className="kskp-form">
-                  {inputForm}
-              </div>
-          </div>
-          <br/>
-          <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
-          <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
-
+          {content}
         </Inspector>
     }
 

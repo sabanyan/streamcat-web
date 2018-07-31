@@ -3,6 +3,7 @@ import ModelUtil from '../../utils/ModelUtil'
 
 type stepType = "command" | "frame"
 
+
 export type BaseModelProps = {
   id?: string;
   type: stepType;
@@ -22,7 +23,7 @@ export default class BaseModel {
 
   constructor (props: BaseModelProps) {
     //TODO エディターから作るときのIDを将来的にどうするか決める
-    this.id = (props.id) ? props.id : ModelUtil.getId()
+    this.id = (props.id) ? props.id : ModelUtil.getNewId()
     this.type = props.type
     this.name = props.name
     this.label = props.label

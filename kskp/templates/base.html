@@ -20,6 +20,8 @@
 {% endif %}
 {% endwith %}
 {% block content %}{% endblock %}
+{% include "common/script.html" %}
+<a id="csv_download" download="download"></a>
 <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
