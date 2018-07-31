@@ -7,6 +7,8 @@ import style from './style.scss'
 import classnames from 'classnames'
 import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandModel from '../../../model/Command/CommandModel'
+import CommandIcon from '../Icon/CommandIcon'
+import type { CommandStepModelProps } from '../../../model/Step/CommandStepModel'
 
 type Props = {
     command: CommandModel;
@@ -75,13 +77,14 @@ export default class Command extends React.Component<Props> {
                 //     partameters: parameters
                 // })
 
-
-                const add_step =  new CommandStepModel({
+                const add_step:CommandStepModelProps =  new CommandStepModel({
                   id: null,//TODO IDはどうやってつける？
                   type: Constants.step.type.command,
-                  name: command.name,
-                  label: command.name,
-                  args: args
+                  name: command.label,
+                  label: command.label,
+                  args: args,
+                  type : Constants.step.type.command,
+            commandId : command.id
                 })
 
                 const {selected_step_ids} = this.props
@@ -132,13 +135,15 @@ export default class Command extends React.Component<Props> {
         const iconClass = classnames(style.command_icon)
 
         return <div className={style.command} onClick={() => this.onClickCommand(command)}>
-            <div className={iconClass}>
-            </div>
-            {/*<i className="icon material-icons">check_box_outline_blank</i>*/}
+            <svg className={iconClass}>
+            <CommandIcon command={command}/>
+            </svg>
             <div className={style.command_label_container}>
-              <div className={style.command_label}>{command.label}</div>
+              <div className={style.command_label}>
+                {command.label}
+                </div>
                 <div className={style.command_description}>
-                  {/*{command.description}*/}
+                  {command.description}
                 </div>
             </div>
         </div>

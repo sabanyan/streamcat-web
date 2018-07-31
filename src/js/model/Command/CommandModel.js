@@ -5,6 +5,8 @@ import type { CommandParamType, CommandPortType } from '../../types'
 type stepType = "command" | "frame"
 
 export type CommandModelProps = {
+  classification: string;
+  description: string;
   id: string;
   label: string;
   params: [CommandParamType];
@@ -13,6 +15,8 @@ export type CommandModelProps = {
 }
 
 export default class CommandModel {
+  classification: string
+  description: string
   id: string
   label: string
   params: [CommandParamType]
@@ -20,6 +24,8 @@ export default class CommandModel {
   version: string
 
   constructor (props: CommandModelProps) {
+    this.classification = props.classification
+    this.description = props.description
     this.id = props.id
     this.label = props.label
     this.params = props.params
