@@ -27,10 +27,7 @@ export default class NavigationModel {
     this.user_id = props.user_id
     this.user_name = props.user_name
     this.renderNavigation()
-    //this.applyDocument()
-    // document.querySelector(".set-project-name").textContent = props.project_name
-    // document.querySelector(".set-flow-name").textContent = props.flow_name
-    // document.querySelector(".set-user-name").textContent = props.user_name
+    window.navigationModel = this
   }
   renderNavigation(){
     if (document.getElementById('navigation')) {
@@ -43,31 +40,5 @@ export default class NavigationModel {
       )
     }
   }
-
-
-  // applyDocument(){
-  //   Object.keys(this).map((key)=>{
-  //     const classKey = key.replace("_","-")
-  //     if(this[key]){
-  //       //値が設定されている場合
-  //       document.querySelectorAll(".hide-when-has-"+classKey).forEach((elem)=>elem.style.display = "none")
-  //       document.querySelectorAll(".show-when-no-"+classKey).forEach((elem)=>elem.style.display = "none")
-  //       document.querySelectorAll(".set-text-"+classKey).forEach((elem)=>{elem.textContent = this[key]})
-  //     }else{
-  //       document.querySelectorAll(".hide-when-no-"+classKey).forEach((elem)=>elem.style.display = "none")
-  //     }
-  //     setTimeout(()=>{
-  //       if(this[key]) {
-  //         document.querySelectorAll(".hide-when-no-"+classKey).forEach((elem)=>elem.style.display = "block")
-  //         document.querySelectorAll(".show-when-has-"+classKey).forEach((elem)=>elem.style.display = "block")
-  //       }else{
-  //         document.querySelectorAll(".show-when-no-"+classKey).forEach((elem)=>elem.style.display = "block")
-  //       }
-  //     },600)
-  //     setTimeout(()=>{
-  //       document.querySelectorAll(".after-set").forEach((elem)=>{elem.classList.remove('after-set')})
-  //     },1000)
-  //   })
-  // }
 
 }

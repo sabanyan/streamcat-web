@@ -123,7 +123,7 @@ console.log(resultData)
         })
         ModalUtil.registerModal({
           id: Constants.modal.SHOW_RUN_RESULT, onClickDone: () => {
-            window.open( "/library", "_blank");
+            window.open( "/library?project="+window.navigationModel.project_uuid, "_blank");
           }
         })
         //TODO 将来的に修正する（executeFlowAction は hasData = true に変更するためだけの処理になっています）
