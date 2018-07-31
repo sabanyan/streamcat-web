@@ -22,7 +22,7 @@ export default class JobFrameList extends React.Component<JobFrameProps> {
   }
   onClickName(e:Event,uuid){
     HttpUtil.get("frames/"+uuid).then((response)=>{
-      let content = <DataPreview key={uuid} json={response.data} />
+      let content = <DataPreview key={uuid} json={response.data.data} />
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
