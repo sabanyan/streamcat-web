@@ -4,17 +4,24 @@ import classnames from 'classnames'
 import style from './style.scss'
 
 type Props = {
-  placeholder: string;
-  onChange: Function;
-  rules: {}
+  placeholder?: string;
+  onChange?: Function;
+  rules?: {}
 }
 
-export default class TextField extends React.Component<Props> {
+type State = {
+  validation: boolean;
+  validation_messages: [];
+}
+
+export default class TextField extends React.Component<Props,State> {
   static defaultProps = {
+    placeholder: "",
+    onChange: {},
     rules: null,
   }
 
-  constructor (props) {
+  constructor (props:Props) {
     super(props)
     this.state = {
       validation: true,
@@ -22,19 +29,20 @@ export default class TextField extends React.Component<Props> {
     }
   }
 
-  hasRules (rules) {
+  hasRules (rules:?{}) {
     if (rules === {} || rules === null) {
       return false
     }
     return true
   }
 
-  validateField (e, rules) {
+  validateField (e:SyntheticInputEvent<EventTarget>, rules:?{}) {
     let validation_messages = []
     if (!this.hasRules(rules)) {
       return validation_messages
     }
-    Object.keys(rules).forEach((rule) => {
+    if(!rules)return null
+    Object.keys(rules).forEach((rule:string) => {
       const value = rules[rule]
       switch (rule) {
         case 'required':
@@ -59,14 +67,14 @@ export default class TextField extends React.Component<Props> {
     return validation_messages
   }
 
-  onChange (e) {
+  onChange (e:SyntheticInputEvent<EventTarget>) {
     const {onChange, rules} = this.props
     let validation_messages = this.validateField(e, rules)
     const validation = {
       validation: (!validation_messages.length),
       validation_messages: validation_messages,
     }
-    onChange(e, validation)
+    if(onChange)onChange(e, validation)
     this.setState(validation)
   }
 
@@ -75,8 +83,11 @@ export default class TextField extends React.Component<Props> {
     const messages = validation_messages.map((message, index) => {
       return <li key={index} className={style.message}>{message}</li>
     })
+
+    const messageClass = classnames({[style.validation_messages]:(messages.length)})
+
     return <div>
-      <ul className={style.validation_messages}>
+      <ul className={messageClass}>
         {messages}
       </ul>
     </div>

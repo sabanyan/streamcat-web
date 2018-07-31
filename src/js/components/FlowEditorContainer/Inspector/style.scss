@@ -19,7 +19,7 @@
 
 
 .property_container {
-  height: calc(100% - 64px);
+  height: 100%;
   overflow: scroll;
 }
 
@@ -57,10 +57,6 @@
 .hr{
   border-bottom:1px solid $kskp-property-border-color;
   padding: 8px 0;
-}
-.property_basic_operators,.property_custom_operators{
-  padding: 0 8px;
-  overflow: hidden;
 }
 
 .property_overview{

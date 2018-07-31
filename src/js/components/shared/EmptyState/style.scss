@@ -1,8 +1,14 @@
 @import "../../../../sass/common";
 
 .empty_state{
-  padding: 64px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -180px;
+  margin-top: -120px;
   animation: fadeIn 1s;
+  height: 240px;
+  width: 320px;
 }
 
 .title{

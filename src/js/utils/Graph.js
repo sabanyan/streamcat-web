@@ -223,6 +223,7 @@ class Graph {
 
             if(type === Constants.step.type.command){
               model.type = Constants.step.type.command
+              model.commandId = step.commandId
               node = new CommandStepModel(model)
             }else if(type === Constants.step.type.subflow){
               model.type = Constants.step.type.subflow

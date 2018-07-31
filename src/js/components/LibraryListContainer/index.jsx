@@ -22,9 +22,16 @@ import JobListHeader from '../shared/List/JobList/JobListHeader'
  * ======================================================
  */
 
-export default class LibraryListContainer extends React.Component {
 
-  constructor (props) {
+type State = {
+  job_list: [];
+  is_loading: boolean;
+  is_finished: boolean;
+}
+
+export default class LibraryListContainer extends React.Component<Props,State> {
+
+  constructor (props:Props) {
     super(props)
     this.state = {
       job_list: [],
@@ -40,10 +47,15 @@ export default class LibraryListContainer extends React.Component {
   getJobList () {
     const self = this
     self.setState({is_loading: true})
-    HttpUtil.get('jobs', {flow: inject_flow_uuid}).then((response) => {
-      const json = response.data
-      self.setState(
-        {is_loading: false, is_finished: true, job_list: json.data})
+
+
+    HttpUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
+        const json = response.data
+        self.setState(
+          {is_loading: false, is_finished: true, job_list: json.data})
+      }).catch((error)=>{
+        self.setState(
+          {is_loading: false, is_finished: true, job_list: []})
     })
   }
 
@@ -54,17 +66,15 @@ export default class LibraryListContainer extends React.Component {
   renderJobList () {
     const self = this
     return this.state.job_list.map((job, index) => {
-      return <JobList key={index} job={job}>
-      </JobList>
+      return <JobList key={index} job={job}/>
     })
   }
 
   renderEmptyState () {
     return <EmptyState
-      icon={'add'}
+      icon={'inbox'}
       title={'ライブラリが空です'}
       description={'フローを実行することでデータができます'}>
-      <Button onClick={(e) => this.onClickNew(e)}>フローを作成する</Button>
     </EmptyState>
   }
 
@@ -125,7 +135,7 @@ export default class LibraryListContainer extends React.Component {
 
   render () {
     return <div className={'container mt-40px'}>
-      <Loader absolute={true} visible={this.state.is_loading}/>
+      <Loader center={true} absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
       <ModalManager/>
     </div>

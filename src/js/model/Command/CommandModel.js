@@ -1,32 +1,22 @@
 import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
+import type { CommandParamType, CommandPortType } from '../../types'
 
 type stepType = "command" | "frame"
-
-type paramType = {
-  label: string;
-  name: string;
-  type: string;
-}
-
-type portType = {
-  name: string;
-  type: string;
-}
 
 export type CommandModelProps = {
   id: string;
   label: string;
-  params: [paramType];
-  ports: [portType];
+  params: [CommandParamType];
+  ports: [CommandPortType];
   version: string;
 }
 
 export default class CommandModel {
   id: string
   label: string
-  params: [paramType]
-  ports: [portType]
+  params: [CommandParamType]
+  ports: [CommandPortType]
   version: string
 
   constructor (props: CommandModelProps) {
@@ -37,11 +27,15 @@ export default class CommandModel {
     this.version = props.version
   }
 
-  getInPorts(){
+  getInPorts():[CommandPortType]{
     return this.ports[0]
   }
 
-  getOutPorts(){
+  getOutPorts():[CommandPortType]{
     return this.ports[1]
+  }
+
+  getParams():[CommandParamType]{
+    return this.params
   }
 }

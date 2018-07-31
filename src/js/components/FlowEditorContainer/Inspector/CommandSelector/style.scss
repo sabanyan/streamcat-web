@@ -1,0 +1,17 @@
+@import "../../../../../sass/common";
+
+.property_title{
+  color: $kskp-text;
+  font-size: 16px;
+  padding: 12px 0;
+  text-align: left;
+  clear: both;
+}
+
+
+.property_basic_operators,.property_custom_operators{
+  padding: 8px;
+  height: 480px;
+  overflow: scroll;
+  border:1px solid #ccc;
+}

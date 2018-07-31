@@ -2,7 +2,6 @@
 import type { BaseModelProps } from './BaseModel'
 import BaseModel from './BaseModel'
 
-type stepType = "command" | "frame"
 type dataSourceType = "csv"
 
 export type DataFrameStepModelProps = {
@@ -25,5 +24,9 @@ export default class DataFrameStepModel extends BaseModel{
     this.dataSource = props.dataSource
     this.asFlowIn = (props.asFlowIn)?props.asFlowIn:this.asFlowIn
     this.asFlowOut = (props.asFlowOut)?props.asFlowOut:this.asFlowOut
+  }
+
+  hasData():boolean{
+    return (this.uuid)
   }
 }

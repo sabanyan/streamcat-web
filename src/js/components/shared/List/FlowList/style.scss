@@ -4,10 +4,6 @@
 .flow_list{
   position: relative;
   display: block;
-  border-top: 1px solid $kskp-list-border-color;
-  &:first-child,&:last-child{
-    border-bottom: 1px solid $kskp-list-border-color;
-  }
   border-radius: 0;
   color: $kskp-text;
   background: #fff;
@@ -29,6 +25,13 @@
   display: inline-block;
 }
 
+.flow{
+  display: block;
+  border-top: 1px solid $kskp-list-border-color;
+  &:first-child,&:last-child{
+    border-bottom: 1px solid $kskp-list-border-color;
+  }
+}
 .name{
   display: inline-block;
   width: calc(100% - 20% - 200px - 80px);

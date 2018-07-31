@@ -33,13 +33,9 @@ export default class DropDownList extends React.Component<Props> {
 
   render () {
     const {list, defaultValue, disabled} = this.props
-
-    console.log(list)
-
     let options = []
     let index = 0
     for(const data of list.values()){
-      console.log(data)
       options.push(<option key={index + 1} value={data.value}>{data.label}</option>)
       index++
     }
