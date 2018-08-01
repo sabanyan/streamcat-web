@@ -277,7 +277,7 @@ def get_flow_paths_by_project_uuid(project_uuid):
 
     def validate_flow_json(data):
         """
-        flowのjsonが正しい形式かを確かめる
+        flowのjsonが正しい形式かを確かめるメソッド
         """
         required_key_list = ['label', 'creator', 'createdAt', 'projectId']
         additional_key_list = ['params', 'ports', 'nodes']
@@ -329,7 +329,7 @@ def get_flow_paths_by_project_uuid(project_uuid):
         try:
             data = json.loads(flow_path.read_text(encoding='utf-8'))
         except json.JSONDecodeError as e:
-            # JSONのフォーマットに則していない場合
+            # JSONのフォーマットに則していない場合は飛ばす
             continue
 
         if validate_flow_json(data):

@@ -91,9 +91,6 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    # create_flow()内でjsonの作成及びjsonファイルに書き出す作業を行なっているので
-    # 引数をひとつ増やしてuser_idを渡している。
-    # new_flow = create_flow(project_id, j['name'])
     new_flow = create_flow(project_id, j['name'], session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
@@ -328,11 +325,10 @@ def execute_flow_internal(flow_uuid, step_paths=None):
     その結果をパースしてDataFrameの形にして返す
     """
 
-    # 実行履歴（実行中状態）の作成
-    user_id = session['user_id']
-    user_name = get_user_by_id(user_id)['name']
-    history_file_path = make_unfinished_history(flow_uuid,  user_name)
+    now = datetime.now()
 
+    @make_unfinished_history(now)
+    @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
         with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
@@ -348,9 +344,6 @@ def execute_flow_internal(flow_uuid, step_paths=None):
     #     result = {}
 
     result = execute_flow_by_uuid(flow_uuid)
-
-    # 実行履歴（実行完了状態）の作成
-    make_finished_history(flow_uuid, history_file_path, result)
 
     return list(result.keys())
 
