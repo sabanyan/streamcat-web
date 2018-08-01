@@ -11,10 +11,10 @@
   border-bottom: 1px dotted #ccc;
 }
 .command_label_container{
-  padding: 0 4px;
+  padding: 8px 4px;
   float: left;
   display: inline-block;
-  width: calc(100% - 44px);
+  width: calc(100% - 60px);
 }
 
 .command_label{
@@ -25,6 +25,7 @@
 }
 
 .command_description{
+  color: $kskp-property-operator-label-color;
   padding-top:4px;
   text-overflow: ellipsis;
   font-size: 8px;
@@ -32,13 +33,14 @@
 
 .command_icon{
   display: inline-block;
-  width: 44px;
-  height: 44px;
-  border: 1px solid $kskp-property-operator-border-color;
-  background: $kskp-property-operator-background-color;
-  color: $kskp-property-operator-icon-color;
-  border-radius: 6px;
-  font-size: 28px;
-  padding: 6px;
+  width: 60px;
+  height: 60px;
+  padding: 4px;
+  //border: 1px solid $kskp-property-operator-border-color;
+  //background: $kskp-property-operator-background-color;
+  //color: $kskp-property-operator-icon-color;
+  //border-radius: 6px;
+  //font-size: 28px;
+  //padding: 6px;
   float: left;
 }

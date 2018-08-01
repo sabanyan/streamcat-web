@@ -7,6 +7,8 @@ import style from './style.scss'
 import classnames from 'classnames'
 import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandModel from '../../../model/Command/CommandModel'
+import CommandIcon from '../Icon/CommandIcon'
+import type { CommandStepModelProps } from '../../../model/Step/CommandStepModel'
 
 type Props = {
     command: CommandModel;
@@ -32,7 +34,7 @@ export default class Command extends React.Component<Props> {
                   {param.label}
                 </label>
                 <input type="text" className="form-control" placeholder={param.name} ref={(element) => {
-                    if (element) (this.inputRefs.push({params: command.params, element: element}))
+                    if (element) (this.inputRefs.push({param: param, element: element}))
                 }} defaultValue={""}></input>
             </div>
         })
@@ -64,24 +66,20 @@ export default class Command extends React.Component<Props> {
 
                 //モーダルで入力されたパラメータを取得
                 self.inputRefs.map((inputRef) => {
-                    args[inputRef.params.name] = inputRef.element.value
+                  console.log( inputRef.param.name)
+                  console.log( inputRef.element.value)
+                    args[inputRef.param.name] = inputRef.element.value
                     inputRef.element.value = "" //値をクリア
                 })
 
-                //コマンドを追加
-                // const add_step = new OperatorModel({
-                //     operator: self.props.name,
-                //     text: this.props.description,
-                //     partameters: parameters
-                // })
-
-
-                const add_step =  new CommandStepModel({
-                  id: null,//TODO IDはどうやってつける？
+                const add_step: CommandStepModelProps = new CommandStepModel({
+                  id: null,
                   type: Constants.step.type.command,
-                  name: command.name,
-                  label: command.name,
-                  args: args
+                  name: command.label,
+                  label: command.label,
+                  args: args,
+                  type: Constants.step.type.command,
+                  commandId: command.id
                 })
 
                 const {selected_step_ids} = this.props
@@ -92,15 +90,11 @@ export default class Command extends React.Component<Props> {
                 const output_steps = command.getOutPorts().map((port) => {
                     //TODO 将来的にはコマンドのoutputsを細かくみて制御する
                       return new DataFrameStepModel({
-                        id: null,//TODO IDはどうやってつける？
+                        id: null,
                         label:port.name,
                         type: Constants.step.type.frame,
-                        uuid: null,//TODO UUIDをどうやってつける？
+                        uuid: null,
                         dataSource: Constants.data.dataSource.csv,
-                        srcs: [],
-                        dsts: [],
-                        asFlowIn: false,
-                        asFlowOut: false
                       })
                 })
 
@@ -132,13 +126,15 @@ export default class Command extends React.Component<Props> {
         const iconClass = classnames(style.command_icon)
 
         return <div className={style.command} onClick={() => this.onClickCommand(command)}>
-            <div className={iconClass}>
-            </div>
-            {/*<i className="icon material-icons">check_box_outline_blank</i>*/}
+            <svg className={iconClass}>
+                <CommandIcon command={command}/>
+            </svg>
             <div className={style.command_label_container}>
-              <div className={style.command_label}>{command.label}</div>
+              <div className={style.command_label}>
+                {command.label}
+                </div>
                 <div className={style.command_description}>
-                  {/*{command.description}*/}
+                  {command.description}
                 </div>
             </div>
         </div>

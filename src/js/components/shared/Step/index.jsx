@@ -17,6 +17,8 @@ import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
+import CommandInspector from '../../FlowEditorContainer/Inspector/CommandInspector'
+import CommandIcon from '../Icon/CommandIcon'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -284,6 +286,7 @@ export default class Step extends React.Component<Props, State> {
     const hover = this.state.hover
     const selected = this.selectorIntersect()
 
+
     step.label = (step.label)?step.label:step.id
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
@@ -307,14 +310,20 @@ export default class Step extends React.Component<Props, State> {
         </Rect>
     }else if (this.isStep(step)) {
       //ステップ
-      icon = <g>
-        <Rect padding={5} selectedOutlineColor={'#FFD263'} fillColor={'#FFFFFF'}
-              hoverFillColor={'#FFF6E4'} selectedFillColor={'#FFF6E4'}
-              hover={hover} selected={selected} stroke={'#FFB300'}
-              filter={filter} style={{...rect_style, rx: 12, ry: 12}}>
-          <OperatorIcon fillColor={'#F4B63F'} width={16} height={17}/>
-        </Rect>
-      </g>
+      let command
+      console.log(this.props.mast)
+      if(this.props.mast.commands){
+        this.props.mast.commands.forEach(c=>{if(c.id === step.commandId)command = c})
+        icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter}/>
+      }
+      // icon = <g>
+      //   <Rect padding={5} selectedOutlineColor={'#FFD263'} fillColor={'#FFFFFF'}
+      //         hoverFillColor={'#FFF6E4'} selectedFillColor={'#FFF6E4'}
+      //         hover={hover} selected={selected} stroke={'#FFB300'}
+      //         filter={filter} style={{...rect_style, rx: 12, ry: 12}}>
+      //     <OperatorIcon fillColor={'#F4B63F'} width={16} height={17}/>
+      //   </Rect>
+      // </g>
     }else if (this.isDataFrame(step)) {
       //データソース
       const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
@@ -345,7 +354,7 @@ export default class Step extends React.Component<Props, State> {
   }
 }
 
-const rect_style = {
+export const rect_style = {
   x: 0,
   y: 0,
   tx: 0,
@@ -357,7 +366,7 @@ const rect_style = {
   strokeWidth: 2,
 }
 
-const circle_style = {
+export  const circle_style = {
   cx: Constants.default.operator.cx,
   cy: Constants.default.operator.cy,
   tx: 0,

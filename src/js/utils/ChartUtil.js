@@ -21,7 +21,7 @@ export default class ChartUtil {
 
   static jsonToChart (json: {}) {
 
-    let data = json.data
+    let data = json
 
     let labels = []
     let datasets = []
