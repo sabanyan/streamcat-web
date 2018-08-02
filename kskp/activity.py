@@ -1,3 +1,4 @@
+# 主に履歴に関わる処理を行うモジュール
 import json
 import functools
 from . import model
@@ -10,7 +11,7 @@ from flask import (
 
 def make_unfinished_history(now):
     """
-    libraryで閲覧できる実行履歴jsonを作成する
+    libraryで閲覧できる実行履歴(jobs)を作成する
     指定した時間とユーザ名を実行時情報とする
     """
     def _deco(func):
@@ -75,5 +76,27 @@ def make_finished_history(now):
 
                 # 使うかわからないけどとりあえずBoolean返してる
             return result
+        return deco
+    return _deco
+
+def add_activity_for_flow(id):
+    '''
+    フローに作成時に作成履歴をつけるためのデコレータ
+    '''
+    def _deco(func):
+        @functools.wraps(func)
+        def deco():
+            data = func()
+            now = datetime.now()
+
+            # 一回別の変数に入れなければいけないみたい・・・
+            user_id = id
+            if user_id is None:
+                user_id = session['user_id']
+
+            data['creator'] = model.get_user_by_id(user_id)['name']
+            data['createdAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
+                                        tzinfo=timezone(timedelta(hours=+9))).isoformat()
+            return data
         return deco
     return _deco
