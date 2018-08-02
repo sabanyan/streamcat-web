@@ -1,9 +1,9 @@
+import json
+import functools
 from flask import (
     Blueprint, session, render_template, url_for, jsonify, request, redirect, flash
 )
 from . import model
-import json
-import functools
 
 def update_navigation(func):
     @functools.wraps(func)

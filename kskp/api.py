@@ -91,7 +91,7 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'], session['user_id'])
+    new_flow = create_flow(project_id, j['name'])
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -280,44 +280,32 @@ def jobs():
     """
     指定されたフローの実行結果を返す
     """
-    flow_uuid = ''
     count = 0
-
     execute_histories = []
 
-    if 'flow' in request.args:
-        flow_uuid = request.args['flow']
-        for job_path in Path(JOBS_DIR_PATH).iterdir():
-            data = json.loads(job_path.read_text(encoding='utf-8'))
-            if data['flow']['uuid'] == flow_uuid:
+    for job_path in Path(JOBS_DIR_PATH).iterdir():
+        data = json.loads(job_path.read_text(encoding='utf-8'))
+        if 'flow' in request.args:
+            if data['flow']['uuid'] == request.args['flow']:
                 execute_histories.append(data)
-
-    elif 'project' in request.args:
-        project_id = get_project_id_by_uuid(request.args['project'])
-        for job_path in Path(JOBS_DIR_PATH).iterdir():
-            data = json.loads(job_path.read_text(encoding='utf-8'))
-            if data['projectId'] == project_id:
+        elif 'project' in request.args:
+            if data['projectId'] == get_project_id_by_uuid(request.args['project']):
                 execute_histories.append(data)
-
-    else:
-        for job_path in Path(JOBS_DIR_PATH).iterdir():
-            data = json.loads(job_path.read_text(encoding='utf-8'))
+        else:
             execute_histories.append(data)
 
     results = sorted(execute_histories, key = lambda x:x['executedAt'], reverse=True)
 
-    # 条件分岐が雑なので修正予定
-    # TODO
     if 'count' in request.args:
         count = int(request.args['count'])
-        if 0 < count and count <= len(results):
-            result = []
-            result.append(results[count - 1])
-            return jsonify({'success': True, 'data': result})
-        elif len(results) < count:
+        # countの値がおかしい場合、falseを返す
+        if len(results) < count or count <= 0:
             return jsonify({'success': False})
 
-    return jsonify({'success': True, 'data': results})
+        return jsonify({'success': True, 'data': results[count - 1 : count]})
+    # countがある場合でもない場合でも、等しく正しい結果を返すのでそれを強調する為else句を使っている
+    else:
+        return jsonify({'success': True, 'data': results})
 
 
 def execute_flow_internal(flow_uuid, step_paths=None):
