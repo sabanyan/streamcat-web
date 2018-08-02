@@ -307,6 +307,7 @@ def jobs():
     results = sorted(execute_histories, key = lambda x:x['executedAt'], reverse=True)
 
     # 条件分岐が雑なので修正予定
+    # TODO
     if 'count' in request.args:
         count = int(request.args['count'])
         if 0 < count and count <= len(results):
@@ -355,6 +356,10 @@ def load_as_data_frame(result_text):
     """
     result_list = [x for x in result_text.split('\n') if x != '']
     result_data = {}
+
+    if not result_list:
+        return result_data, 0
+
     column_list = result_list[0].split(',')
     for column_name in column_list:
         result_data[column_name] = []
