@@ -229,7 +229,8 @@ class TempPathFileSource(PathFileSource):
         super().__init__(source_type, self.path.parent.as_posix(), self.path.name)
 
     def dtor(self):
-        os.unlink(self.path)
+        pass
+        # os.unlink(self.path)
 
     def __repr__(self):
         return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
@@ -264,7 +265,8 @@ class Datum:
             s.dtor()
             if isinstance(s, PathFileSource):
                 if self.is_temp and s.fullpath.exists():
-                    s.fullpath.unlink()
+                    pass
+                    # s.fullpath.unlink()
 
 
 
@@ -292,7 +294,7 @@ class Frame(Datum):
                     self.source.save(fd)
             for flow_uuid in self.source.deletable_uuids:
                 self.source.decr_ref_count(flow_uuid)
-            self.source.dtor()
+            # self.source.dtor()
             self.source = new_source
             self.source.incr_ref_count(self.uuid)
         return self

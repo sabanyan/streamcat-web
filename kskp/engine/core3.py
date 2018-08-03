@@ -123,7 +123,7 @@ class Job:
 
         s = self.step
         cf = s.command_or_flow
-        # print('execute begin:', cf, s.args)
+        # print('execute stt:', cf, s.args)
         if s.is_flow:
             if step_paths is not None:
                 self.lasts = self.get_lasts_from(step_paths)
@@ -136,7 +136,7 @@ class Job:
 
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
-        # print('execute end:', output)
+        # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
 
@@ -230,6 +230,9 @@ class Job:
         return res
 
     def dtor(self):
+        if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
+            print('いちばん親のdtorだ！')
+
         for datum in self.inputs.values():
             datum.dtor()
 
@@ -519,7 +522,7 @@ class Mcat(MCommandNew):
 
         self.name = 'mcat'
         self.description = 'ファイル結合'
-        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる
+        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
         self.params.append(Parameter('k', '結合する列名'))
 
     def execute(self, args, inputs):
