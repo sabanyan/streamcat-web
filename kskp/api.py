@@ -305,70 +305,164 @@ import nysol.mcmd as nm
 
 frames_path = Path('kskp/data/frames')
 
-def execute_by_sensor(sensor, i, f):
-    temp = frames_path.joinpath(str(uuid.uuid4()) + '.csv')
-    state = nm.mcut(i=i, x=True, f=f, o=temp.as_posix())
-    state.run()
-
-    state1 = nm.mavg(i=temp.as_posix(), f=f'{sensor}:{sensor}_avg')
+def execute_by_sensor(sensor, i):
+    state1 = nm.mavg(i=i, f=f'{sensor}:{sensor}_avg')
     state1 <<= nm.mcut(f=f'Time,{sensor}_avg')
 
-    state2 = nm.mstats(i=temp.as_posix(), c='sd', f=f'{sensor}:{sensor}_sd')
+    state2 = nm.mstats(i=i, c='sd', f=f'{sensor}:{sensor}_sd')
     state2 <<= nm.mcut(f=f'Time,{sensor}_sd')
 
-    state3 = nm.mstats(i=temp.as_posix(), c='max', f=f'{sensor}:{sensor}_max')
+    state3 = nm.mstats(i=i, c='max', f=f'{sensor}:{sensor}_max')
     state3 <<= nm.mcut(f=f'Time,{sensor}_max')
 
-    state4 = nm.mstats(i=temp.as_posix(), c='min', f=f'{sensor}:{sensor}_min')
+    state4 = nm.mstats(i=i, c='min', f=f'{sensor}:{sensor}_min')
     state4 <<= nm.mcut(f=f'Time,{sensor}_min')
 
     last = nm.mjoin(k='Time', i=state1, m=state2)
     last <<= nm.mjoin(k='Time', m=state3)
     last <<= nm.mjoin(k='Time', m=state4)
-    # last.run()
+
     return last
 
-    # temp.unlink()
-
-def execute_by_state(i, f, o):
+def execute_by_state(i, o=None):
     """ 状態ごとの処理 """
-    s1 = execute_by_sensor('3H', i, f)
-    s2 = execute_by_sensor('3V', i, f)
-    s3 = execute_by_sensor('4H', i, f)
-    s4 = execute_by_sensor('4V', i, f)
+
+    # 全体の統計量
+    s1 = execute_by_sensor('3H', i)
+    s2 = execute_by_sensor('3V', i)
+    s3 = execute_by_sensor('4H', i)
+    s4 = execute_by_sensor('4V', i)
 
     last = nm.mjoin(k='Time', i=s1, m=s2)
     last <<= nm.mjoin(k='Time', m=s3)
-    last <<= nm.mjoin(k='Time', m=s4, o=o)
-    last.run()
+    if o is None:
+        last <<= nm.mjoin(k='Time', m=s4)
+    else:
+        last <<= nm.mjoin(k='Time', m=s4, o=o)
 
+    return last
+
+def execute_all_and_section(i, f, o1, o2):
+    temp = frames_path.joinpath(str(uuid.uuid4()) + '.csv')
+    state = nm.mcut(i=i, x=True, f=f, o=temp.as_posix())
+    state.run()
+
+    new_i = temp.as_posix()
+
+    temp2 = frames_path.joinpath(str(uuid.uuid4()) + '.csv')
+    sections = nm.mbucket(i=new_i, f='Time:Section', n=10, rng=True, o=temp2.as_posix())
+    sections.run()
+    temp_secs = []
+    secs = []
+    for x in range(10):
+        temp_sec = frames_path.joinpath(str(uuid.uuid4()) + '.csv')
+        sec1 = nm.mselstr(i=temp2.as_posix(), f='Section', v=x+1, o=temp_sec.as_posix())
+        sec1.run()
+
+        sec2 = execute_by_state(temp_sec.as_posix())
+        temp_sec2 = frames_path.joinpath(str(uuid.uuid4()) + '.csv')
+        sec2 <<= nm.msetstr(a='Section', v=x+1, o=temp_sec2.as_posix())
+        temp_secs.append(temp_sec2.as_posix())
+        secs.append(sec2)
+        sec2.run()
+
+    return execute_by_state(new_i, o1), nm.mcat(i=','.join(temp_secs), o=o2), temp
+
+import time
 
 @api.route('/execute-direct')
 def execute_direct():
+    t1 = time.time()
     i = frames_path.joinpath('2C72275F-2019-49AE-B36D-A29D1507F8DD.csv').as_posix()
 
-    o1 = frames_path.joinpath('result1.csv')
-    o2 = frames_path.joinpath('result2.csv')
-    o3 = frames_path.joinpath('result3.csv')
-    o4 = frames_path.joinpath('result4.csv')
-    o5 = frames_path.joinpath('result5.csv')
+    o1 = frames_path.joinpath('result_all1.csv')
+    o2 = frames_path.joinpath('result_all2.csv')
+    o3 = frames_path.joinpath('result_all3.csv')
+    o4 = frames_path.joinpath('result_all4.csv')
+    o5 = frames_path.joinpath('result_all5.csv')
+    o1_sec = frames_path.joinpath('result_sec1.csv')
+    o2_sec = frames_path.joinpath('result_sec2.csv')
+    o3_sec = frames_path.joinpath('result_sec3.csv')
+    o4_sec = frames_path.joinpath('result_sec4.csv')
+    o5_sec = frames_path.joinpath('result_sec5.csv')
 
-    execute_by_state(i, '0,1,2,3,4', o1.as_posix())
-    execute_by_state(i, '0,5,6,7,8', o2.as_posix())
-    execute_by_state(i, '0,9,10,11,12', o3.as_posix())
-    execute_by_state(i, '0,13,14,15,16', o4.as_posix())
-    execute_by_state(i, '0,17,18,19,20', o5.as_posix())
+    state1, state_sec1, temp1 = execute_all_and_section(i, '0,1,2,3,4', o1.as_posix(), o1_sec.as_posix())
+    state2, state_sec2, temp2 = execute_all_and_section(i, '0,5,6,7,8', o2.as_posix(), o2_sec.as_posix())
+    state3, state_sec3, temp3 = execute_all_and_section(i, '0,9,10,11,12', o3.as_posix(), o3_sec.as_posix())
+    state4, state_sec4, temp4 = execute_all_and_section(i, '0,13,14,15,16', o4.as_posix(), o4_sec.as_posix())
+    state5, state_sec5, temp5 = execute_all_and_section(i, '0,17,18,19,20', o5.as_posix(), o5_sec.as_posix())
 
-    o = frames_path.joinpath('last.csv').as_posix()
-    i_s = ','.join([o1.as_posix(), o2.as_posix(), o3.as_posix(), o4.as_posix(), o5.as_posix()])
-    last = nm.mcat(i=i_s, o=o)
-    last.run()
+    o_all = frames_path.joinpath('last_all.csv').as_posix()
+    i_s = [state1, state2, state3, state4, state5]
+    last_all = nm.mcat(i=i_s, o=o_all)
+    last_all.run()
+
+    o_section = frames_path.joinpath('last_section.csv').as_posix()
+    # i_s_sec = [state_sec1, state_sec2, state_sec3, state_sec4, state_sec5]
+    for state_sec in [state_sec1, state_sec2, state_sec3, state_sec4, state_sec5]:
+        state_sec.run()
+    i_s_sec = ','.join([o1_sec.as_posix(), o2_sec.as_posix(), o3_sec.as_posix(), o4_sec.as_posix(), o5_sec.as_posix()])
+    last_section = nm.mcat(i=i_s_sec, o=o_section)
+    last_section.run()
 
     for o in [o1, o2, o3, o4, o5]:
         o.unlink()
+    for o in [o1_sec, o2_sec, o3_sec, o4_sec, o5_sec]:
+        o.unlink()
 
-    return jsonify({'success': True, 'data': 'result'})
+    for o in [temp1, temp2, temp3, temp4, temp5]:
+        o.unlink()
 
+    t2 = time.time()
+
+    return jsonify({'success': True, 'speed': repr(t2 - t1)})
+
+@api.route('/execute-direct2')
+def execute_direct2():
+    i = frames_path.joinpath('2C72275F-2019-49AE-B36D-A29D1507F8DD.csv').as_posix()
+    state = nm.mcut(i=i, x=True, f='0,1,2,3,4')
+    allsection = frames_path.joinpath('allsection.csv').as_posix()
+    state <<= nm.mbucket(rng=True, f='Time:Section', n=10, o=allsection)
+    state.run()
+
+    po1 = frames_path.joinpath('po1.csv').as_posix()
+    state1 = nm.mselstr(i=allsection, f='Section', v=1, o=po1)
+    state1.run()
+
+    po2 = frames_path.joinpath('po2.csv').as_posix()
+    state2 = nm.mselstr(i=allsection, f='Section', v=2, o=po2)
+    state2.run()
+
+
+    # 一回一回中間ファイルを吐くバージョン
+    aq1 = frames_path.joinpath('aq1.csv').as_posix()
+    new_state1 = execute_by_state(po1, o=aq1)
+    new_state1.run()
+
+    aq2 = frames_path.joinpath('aq2.csv').as_posix()
+    new_state2 = execute_by_state(po2, o=aq2)
+    new_state2.run()
+
+    nm.mcat(i=f'{aq1},{aq2}', o=frames_path.joinpath('result.csv').as_posix()).run()
+
+    # # できるだけ繋げるバージョン
+    # new_state1 = execute_by_state(po1)
+    # new_state2 = execute_by_state(po2)
+
+    # nm.mcat(stdin=True, i=[new_state1, new_state2], o=frames_path.joinpath('result.csv').as_posix()).run()
+
+    return jsonify({'success': True, 'data': 'execute-direct2'})
+
+@api.route('/execute-direct3')
+def execute_direct3():
+    i = frames_path.joinpath('2C72275F-2019-49AE-B36D-A29D1507F8DD.csv').as_posix()
+    o = frames_path.joinpath(str(uuid.uuid4()) + '.csv').as_posix()
+    state = nm.mcut(i=i, x=True, f='0,1,2,3,4')
+    state <<= nm.mbucket(rng=True, f='Time:Section', n=10)
+    state <<= nm.mselstr(f='Section', v=1, o=o)
+    state.run()
+
+    return jsonify({'success': True, 'data': 'execute-direct3'})
 
 def execute_flow_internal(flow_uuid, step_paths=None):
     """
