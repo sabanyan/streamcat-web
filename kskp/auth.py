@@ -181,7 +181,11 @@ def login_required(func):
                 f = request.form
                 if authenticate(model.get_user_id_by_email(f['email']), f['password'], session):
                     # 認証成功 本来のページへ遷移する
-                    return redirect(request.base_url)
+                    if 'logout_URL' in session:
+                        return redirect(session['last_URL'])
+                    else:
+                        return redirect(request.base_url)
+
                 else:
                     # 認証失敗
                     # メールアドレスは残してパスワードだけにする
@@ -193,7 +197,19 @@ def login_required(func):
                 # TODO: セッションを消すだけで良いか要検討
                 del session['user_id']
                 # 再度やり直し
-                return redirect(request.base_url)
+
+                # 'session=off'だけを消し去ったURLを作りたいがための記述・・・
+                # もっと簡単な方法あるでしょ・・・と思いながら調べても見つからない
+                query = ''
+                for key, arg in request.args.items():
+                    if not key == 'session':
+                        if query == '':
+                            query += '?'
+                        else:
+                            query += '&'
+                        query += key + '=' + arg
+                session['last_URL'] = request.base_url + query
+                return redirect(session['last_URL'])
             else:
                 # 無効なクエリパラメータの値
                 # ひとまずログインページを返しておく
