@@ -124,23 +124,8 @@ export default class FlowListContainer extends React.Component<Props,State> {
   onChangeFile(e:SyntheticInputEvent<EventTarget>){
     const selectedFiles:FileList =  e.target.files
     if(selectedFiles){
-      this.setState({
-        files: e.target.files,
-      })
-
       const uploadFile:File = selectedFiles[0]
-      const options = {
-        headers: { 'enctype': 'multipart/form-data' }
-      }
-
-      let formData:FormData = new FormData();
-      formData.append('file', uploadFile)
-      formData.append('file_name', uploadFile.name)
-
-      console.log(uploadFile)
-      HttpUtil.post('frames', formData,options).then((response) => {
-        console.log(response)
-      })
+      HttpUtil.fileupload(uploadFile,uploadFile.name)
     }
   }
 

@@ -19,6 +19,7 @@ import type { FlowEditorProps } from '../index'
 import type { DataFrameStepModelProps } from '../../../model/Step/DataFrameStepModel'
 import Loader from '../../shared/Loader'
 import { RunResponseType } from '../../../types'
+import FileUploader from '../../shared/FileUploader'
 
 type ToolbarProps = {
   ...FlowEditorProps
@@ -28,6 +29,7 @@ export default class Toolbar extends React.Component<ToolbarProps> {
 
   loading:boolean  = false
   loadingMessage:string
+  uploadedFile:File = null
 
   constructor (props:ToolbarProps){
     super(props)
@@ -138,8 +140,16 @@ console.log(resultData)
 
     const self = this
 
+    this.uploadedFile = null
+    this.forceUpdate()
+
     ModalUtil.registerModal({
       id: Constants.modal.IMPORT_DATASOURCE, onClickDone: () => {
+
+        if(!this.uploadedFile){
+          alert("ファイルを選択してください")
+          return
+        }
 
         let parameters = {}
 
@@ -149,16 +159,15 @@ console.log(resultData)
           id: null,
           type: Constants.step.type.frame,
           uuid: null,
+          label: this.uploadedFile.name,
           dataSource: Constants.data.dataSource.csv,
           srcs: [],
           dsts: [],
-          asFlowIn: false,
-          asFlowOut: false
         }
 
         const add_step = new DataFrameStepModel(props)
 
-        self.props.addStep(add_step, null)
+        self.props.addStep(add_step)
 
         //ステップの選択をキャンセル
         self.props.selectSteps()
@@ -169,9 +178,8 @@ console.log(resultData)
       },
     })
 
-    const content = <div>
-      <input type="file"/>
-    </div>
+    const content = <FileUploader accept={['text/csv']} defaultLabel={'ファイルを選択してください'}
+                                          onChangeFile={(e) => this.onChangeFile(e)} />
 
     ModalUtil.emitModal({
       id: Constants.modal.IMPORT_DATASOURCE,
@@ -180,6 +188,20 @@ console.log(resultData)
       title: 'データソースの追加',
     })
 
+  }
+
+  onChangeFile(e:SyntheticInputEvent<EventTarget>){
+    const selectedFiles:FileList =  e.target.files
+    if(selectedFiles){
+      const uploadFile:File = selectedFiles[0]
+      HttpUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
+        const {success} = response.data
+        if(success){
+          this.uploadedFile = uploadFile
+          this.forceUpdate()
+        }
+      })
+    }
   }
 
   onClickZoomIn(e:Event){
