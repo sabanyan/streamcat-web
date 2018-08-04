@@ -4,6 +4,8 @@ import StateUtil from '../utils/State'
 import FlowModel from '../model/Flow/FlowModel'
 import NavigationModel from '../model/Navigation/NavigationModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
+import CommandStepModel from '../model/Step/CommandStepModel'
+import type { CommandPortType } from '../types'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -114,29 +116,89 @@ const Application = (state = initialState, action) => {
             newState.mast = Object.assign(newState.mast,{...context})
             return newState
         }
+
         case ADD_STEP_ACTION: {
-            let {add_step, from_step_id} = action
+            let {add_step, src_step_ids,dst_step_ids} = action
 
             let offsetX = 0
-            let hasNode = (from_step_id)?(graph.outEdges(from_step_id).length):false
-            if(hasNode){
-                offsetX = defaultNodeProps.width + 100
-            }
+            // let hasNode = (from_step_ids)?(graph.outEdges(from_step_ids[0]).length):false
+            // if(hasNode){
+            //     offsetX = defaultNodeProps.width + 100
+            // }
+
             //ノードの追加
-            graph.addNode(add_step.id, from_step_id)
-            
+            graph.addNode(add_step.id)
             //Stateの更新
             let newState = StateUtil.deepCopy(state)
-            if(from_step_id){
-                //連結した状態での追加
-                const from_step = Graph.getNode(state.nodes,from_step_id)
-                add_step.setFrame({x:from_step.position.x + offsetX, y:from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
-                //TODO 複数OUTするコマンドがあった場合は問題になる
-                add_step.srcs = [from_step_id]
-                add_step.dsts = [add_step.id]
-            }else{
-                //単体での追加
-                add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
+
+            if(add_step instanceof CommandStepModel){
+              //srcs
+              let totalSX = 0
+              let totalSY = 0
+              src_step_ids.forEach(id=>{
+                const from = id
+                const to = add_step.id
+
+                const target = Graph.getNode(state.nodes,id)
+                totalSX = totalSX + target.position.x
+                totalSY = totalSY + target.position.y
+                graph.addEdge(from,to)
+              })
+
+              //dsts
+              let totalDX = 0
+              dst_step_ids.forEach(id=>{
+                const from = add_step.id
+                const to = id
+                //ノードの数に応じて
+                totalDX = totalDX + defaultGraphProps.nodeSeparator
+                graph.addEdge(from,to)
+              })
+
+              //
+              //   ○[     ]○[     ]○
+              //   ↑ノード↑nodeSeparator という配置になるため、
+              //   末尾のnodeSeparatorを引いておく
+              //
+              if(totalDX)totalDX = totalDX - defaultGraphProps.nodeSeparator
+
+              if(src_step_ids || dst_step_ids){
+                  //追加したステップの位置調整
+                  const average = {
+                    sx: totalSX / src_step_ids.length,
+                    sy: totalSY / src_step_ids.length,
+                    dx: totalDX / 2
+                  }
+
+                  const newPosition = {
+                    x: average.sx,
+                    y: average.sy + Constants.default.step.height + defaultGraphProps.rankSeparator
+                  }
+
+                  //追加されたノードの位置調整
+                  add_step.setFrame({x:newPosition.x,y:newPosition.y, width:defaultNodeProps.width, height:defaultNodeProps.height})
+
+                  //先行して設置されている接続先のノードの位置調整
+                  dst_step_ids.map((id,index)=>{
+                    let new_node = Graph.getNode(state.nodes,id)
+                    new_node.setFrame({
+                      x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator),
+                      y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator,
+                      width: defaultNodeProps.width,
+                      height: defaultNodeProps.height
+                    })
+                    newState.nodes = Graph.updateNode(state.nodes,id,new_node)
+                    console.log(newState.nodes)
+                  })
+                  //出力先ステップの位置調整
+
+                  add_step.srcs = [src_step_ids]
+                  add_step.dsts = [dst_step_ids]
+              }else{
+                add_step.srcs = []
+                add_step.dsts = []
+                add_step.setFrame({x:0,y:0, width:defaultNodeProps.width, height:defaultNodeProps.height})
+              }
             }
 
             newState.nodes.push(add_step)
@@ -337,11 +399,12 @@ export default Application
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const addStepAction = (add_step, from_step_id) => {
+export const addStepAction = (add_step, src_step_ids = [],dst_step_ids = []) => {
   return {
     type: ADD_STEP_ACTION,
     add_step: add_step,
-    from_step_id: from_step_id
+    src_step_ids: src_step_ids,
+    dst_step_ids: dst_step_ids
   }
 }
 
