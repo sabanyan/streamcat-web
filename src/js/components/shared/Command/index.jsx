@@ -9,6 +9,7 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandModel from '../../../model/Command/CommandModel'
 import CommandIcon from '../Icon/CommandIcon'
 import type { CommandStepModelProps } from '../../../model/Step/CommandStepModel'
+import type { CommandPortType } from '../../../types'
 
 type Props = {
     command: CommandModel;
@@ -72,7 +73,7 @@ export default class Command extends React.Component<Props> {
                     inputRef.element.value = "" //値をクリア
                 })
 
-                const add_step: CommandStepModelProps = new CommandStepModel({
+                const added_command_step: CommandStepModelProps = new CommandStepModel({
                   id: null,
                   type: Constants.step.type.command,
                   name: command.label,
@@ -83,11 +84,8 @@ export default class Command extends React.Component<Props> {
                 })
 
                 const {selected_step_ids} = this.props
-                self.props.addStep(add_step, selected_step_ids[0])
 
-                //出力先を追加
-
-                const output_steps = command.getOutPorts().map((port) => {
+                const output_steps = command.getOutPorts().map((port:CommandPortType) => {
                     //TODO 将来的にはコマンドのoutputsを細かくみて制御する
                       return new DataFrameStepModel({
                         id: null,
@@ -100,8 +98,12 @@ export default class Command extends React.Component<Props> {
 
                 //出力先の個数に応じてステップを追加する
                 output_steps.map((output_step) => {
-                    self.props.addStep(output_step, add_step.id)
+                    self.props.addStep(output_step)
                 })
+
+                const output_step_ids = output_steps.map(step=>step.id)
+
+                self.props.addStep(added_command_step,selected_step_ids,output_step_ids)
 
                 //ステップの選択をキャンセル
                 self.props.selectSteps()
