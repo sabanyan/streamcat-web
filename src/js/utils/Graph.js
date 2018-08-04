@@ -149,6 +149,23 @@ class Graph {
   }
 
   /**
+   * ノードの置き換え
+   * @param nodes
+   * @param key
+   * @returns {*}
+   */
+  static updateNode(nodes,key,new_node){
+    let new_nodes = nodes.map((node)=>{
+      if(node.id === key){
+        return new_node
+      }else{
+        return node
+      }
+    })
+    return new_nodes
+  }
+
+  /**
    * ノードの取得
    * @param nodes
    * @param key
@@ -196,8 +213,6 @@ class Graph {
               type: Constants.step.type.frame,
               uuid: frame.uuid,
               dataSource: Constants.data.dataSource.csv,
-              asFlowIn: frame.asFlowIn,
-              asFlowOut: frame.asFlowOut,
               position: frame.position,
               size: frame.size,
             }))
