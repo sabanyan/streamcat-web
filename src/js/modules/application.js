@@ -200,6 +200,10 @@ const Application = (state = initialState, action) => {
               }
             }
 
+            if(add_step instanceof DataFrameStepModel){
+              add_step.setFrame({x:window.innerWidth / 2 - defaultNodeProps.width/2,y:window.innerHeight / 2 -defaultNodeProps.height/2,width:defaultNodeProps.width,height:defaultNodeProps.height})
+          }
+
             newState.nodes.push(add_step)
             newState.graph = graph.getGraph(newState)
             return newState
