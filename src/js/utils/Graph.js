@@ -4,6 +4,7 @@ import CommandStepModel from '../model/Step/CommandStepModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
+import FlowModel from '../model/Flow/FlowModel'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -199,87 +200,89 @@ class Graph {
   load (json) {
     const self = this
     let hasPosition = false
-    if (json) {
-      let newNodes = []
-      json.nodes.forEach((node)=>{
-        self.addNode(node.id)
-        const type = node.type
-        switch(type){
-          //データフレーム
-          case Constants.step.type.frame:
-            const frame = node
-            newNodes.push(new DataFrameStepModel({
-              id: frame.id,
-              type: Constants.step.type.frame,
-              uuid: frame.uuid,
-              dataSource: Constants.data.dataSource.csv,
-              position: frame.position,
-              size: frame.size,
-            }))
-            if(frame.position && frame.size){
-              hasPosition = true
-            }
-            break;
-          case Constants.step.type.command:
-          case Constants.step.type.subflow:
-            //コマンド
-            const step = node
 
-            let model = {
-              id: step.id,
-              name: step.name,
-              label: step.label,
-              srcs: step.srcs,
-              dsts: step.dsts,
-              args: step.args,
-              position: step.position,
-              size: step.size,
-            }
+    if (!json.nodes) return new FlowModel()
 
-            if(type === Constants.step.type.command){
-              model.type = Constants.step.type.command
-              model.commandId = step.commandId
-              node = new CommandStepModel(model)
-            }else if(type === Constants.step.type.subflow){
-              model.type = Constants.step.type.subflow
-              model.uuid = step.uuid
-              node = new SubFlowStepModel(model)
-            }
+    let newNodes = []
+    json.nodes.forEach((node)=>{
+      self.addNode(node.id)
+      const type = node.type
+      switch(type){
+        //データフレーム
+        case Constants.step.type.frame:
+          const frame = node
+          newNodes.push(new DataFrameStepModel({
+            id: frame.id,
+            type: Constants.step.type.frame,
+            uuid: frame.uuid,
+            dataSource: Constants.data.dataSource.csv,
+            position: frame.position,
+            size: frame.size,
+          }))
+          if(frame.position && frame.size){
+            hasPosition = true
+          }
+          break;
+        case Constants.step.type.command:
+        case Constants.step.type.subflow:
+          //コマンド
+          const step = node
 
-            newNodes.push(node)
+          let model = {
+            id: step.id,
+            name: step.name,
+            label: step.label,
+            srcs: step.srcs,
+            dsts: step.dsts,
+            args: step.args,
+            position: step.position,
+            size: step.size,
+          }
 
-            const hasSrcs = (Object.keys(step.srcs).length)
-            const hasDsts = (Object.keys(step.dsts).length)
+          if(type === Constants.step.type.command){
+            model.type = Constants.step.type.command
+            model.commandId = step.commandId
+            node = new CommandStepModel(model)
+          }else if(type === Constants.step.type.subflow){
+            model.type = Constants.step.type.subflow
+            model.uuid = step.uuid
+            node = new SubFlowStepModel(model)
+          }
 
-            if (hasSrcs) {
-              Object.keys(step.srcs).forEach((key) => {
-                const src = step.srcs[key]
-                const label = src
-                const from = src
-                const to = node.id
-                self.addEdge(from, to, label)
-              })
-            }
-            if (hasDsts) {
-              Object.keys(step.dsts).forEach((key) => {
-                const dst = step.dsts[key]
-                const label = dst
-                const from = node.id
-                const to = dst
-                self.addEdge(from, to, label)
-              })
-            }
-            if(step.position && step.size){
-              hasPosition = true
-            }
-        }
-      })
+          newNodes.push(node)
 
-      json.nodes = newNodes
-      if(!hasPosition)this.refreshPosition(json.nodes)
+          const hasSrcs = (Object.keys(step.srcs).length)
+          const hasDsts = (Object.keys(step.dsts).length)
 
-      return json
-    }
+          if (hasSrcs) {
+            Object.keys(step.srcs).forEach((key) => {
+              const src = step.srcs[key]
+              const label = src
+              const from = src
+              const to = node.id
+              self.addEdge(from, to, label)
+            })
+          }
+          if (hasDsts) {
+            Object.keys(step.dsts).forEach((key) => {
+              const dst = step.dsts[key]
+              const label = dst
+              const from = node.id
+              const to = dst
+              self.addEdge(from, to, label)
+            })
+          }
+          if(step.position && step.size){
+            hasPosition = true
+          }
+      }
+    })
+
+    json.nodes = newNodes
+    if(!hasPosition)this.refreshPosition(json.nodes)
+
+    return json
+
   }
 }
 
