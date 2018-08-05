@@ -142,7 +142,7 @@ const Application = (state = initialState, action) => {
                 const target = Graph.getNode(state.nodes,id)
                 totalSX = totalSX + target.position.x
                 totalSY = totalSY + target.position.y
-                graph.addEdge(from,to)
+                graph.addEdge(from,to,from)
               })
 
               //dsts
@@ -152,7 +152,7 @@ const Application = (state = initialState, action) => {
                 const to = id
                 //ノードの数に応じて
                 totalDX = totalDX + defaultGraphProps.nodeSeparator
-                graph.addEdge(from,to)
+                graph.addEdge(from,to,to)
               })
 
               //
@@ -191,12 +191,11 @@ const Application = (state = initialState, action) => {
                     console.log(newState.nodes)
                   })
                   //出力先ステップの位置調整
-
-                  add_step.srcs = [src_step_ids]
-                  add_step.dsts = [dst_step_ids]
+                  src_step_ids.forEach((id,index)=>{add_step.srcs["*"+index]=id})
+                  dst_step_ids.forEach((id,index)=>{add_step.dsts["*"+index]=id})
               }else{
-                add_step.srcs = []
-                add_step.dsts = []
+                add_step.srcs = {}
+                add_step.dsts = {}
                 add_step.setFrame({x:0,y:0, width:defaultNodeProps.width, height:defaultNodeProps.height})
               }
             }
