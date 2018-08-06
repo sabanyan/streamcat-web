@@ -13,6 +13,7 @@ import CommandModel from '../../../../model/Command/CommandModel'
 import HttpUtil from '../../../../utils/HttpUtil'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Loader from '../../../shared/Loader'
+import ModalUtil from '../../../../utils/ModalUtil'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -63,11 +64,23 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     }
 
     onClickDelete(e:Event) {
-        if(window.confirm("このコマンドを削除しますか？")){
+      ModalUtil.registerModal({
+        id: Constants.modal.CONFIRM, onClickDone: () => {
           let selected_step = this.getSelectedStep()
           this.props.deleteSteps([selected_step.id])
           this.props.selectSteps()
-        }
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        },
+      })
+      ModalUtil.emitModal({
+        id: Constants.modal.CONFIRM,
+        visible: true,
+        done: '削除する',
+        danger: true,
+        content: <div>
+          選択されたステップを削除しますか？
+        </div>,
+      })
     }
 
     getCommand(commandId:string):CommandModel{

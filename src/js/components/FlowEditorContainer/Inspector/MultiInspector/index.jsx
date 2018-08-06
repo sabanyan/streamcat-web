@@ -7,14 +7,30 @@ import CommandSelector from '../CommandSelector'
 import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
 import CommandStepModel from '../../../../model/Step/CommandStepModel'
 import Graph from '../../../../utils/Graph'
+import ModalUtil from '../../../../utils/ModalUtil'
+import Constants from '../../../../constants'
+import HttpUtil from '../../../../utils/HttpUtil'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
   onClickDelete (e: Event) {
-    if (window.confirm('これらコマンドを削除しますか？')) {
-      let {selected_step_ids} = this.props
-      this.props.deleteSteps(selected_step_ids)
-      this.props.selectSteps()
-    }
+
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        let {selected_step_ids} = this.props
+        this.props.deleteSteps(selected_step_ids)
+        this.props.selectSteps()
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        選択されたステップを削除しますか？
+      </div>,
+    })
   }
 
   getNumberOfSelectedDataSources(){

@@ -116,12 +116,25 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     })
   }
   onClickDelete (e: Event) {
-    if (window.confirm('このデータソースを削除しますか？')) {
-      let {selected_step_ids, nodes} = this.props
-      const selected_step = Graph.getNode(nodes,selected_step_ids[0])
-      this.props.deleteSteps([selected_step.id])
-      this.props.selectSteps()
-    }
+
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        let {selected_step_ids, nodes} = this.props
+        const selected_step = Graph.getNode(nodes,selected_step_ids[0])
+        this.props.deleteSteps([selected_step.id])
+        this.props.selectSteps()
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        選択されたデータソースを削除しますか？
+      </div>,
+    })
   }
 
   onChangeFlowInOut (e: Event) {

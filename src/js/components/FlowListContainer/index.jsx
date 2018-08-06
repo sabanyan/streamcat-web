@@ -148,11 +148,10 @@ export default class FlowListContainer extends React.Component<Props,State> {
   }
 
   onClickDelete (flow_uuid:string) {
-    const self = this
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         HttpUtil.delete('flows/' + flow_uuid).then((response) => {
-          self.getFlowList()
+          this.getFlowList()
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         })
       },
@@ -161,6 +160,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
       id: Constants.modal.CONFIRM,
       visible: true,
       done: '削除する',
+      danger: true,
       content: <div>
         選択されたフローを削除しますか？
       </div>,

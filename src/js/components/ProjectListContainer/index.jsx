@@ -139,6 +139,7 @@ export default class ProjectListContainer extends React.Component {
       id: Constants.modal.CONFIRM,
       visible: true,
       done: '削除する',
+      danger: true,
       content: <div>
         選択されたプロジェクトを削除しますか？
       </div>,
