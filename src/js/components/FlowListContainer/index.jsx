@@ -2,10 +2,10 @@
 import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
+import flowListStyle from '../shared/List/FlowList/style.scss'
 import HttpUtil from '../../utils/HttpUtil'
 import FlowList from '../shared/List/FlowList'
 import FlowListHeader from '../shared/List/FlowList/FlowListHeader'
-import TextFieldWithButton from '../shared/TextFieldWithButton'
 import ModalManager from '../shared/ModalManager'
 import Constants from '../../constants'
 import ModalUtil from '../../utils/ModalUtil'
@@ -60,7 +60,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
           name: self.state.flow_name,
           project_uuid: inject_project_uuid
         }).then((response) => {
-          ModalUtil.emitModal({id: Constants.modal.ADD_FLOW, visible: false})
+          ModalUtil.closeModal(Constants.modal.ADD_FLOW)
           self.getFlowList()
         })
       },
@@ -149,10 +149,22 @@ export default class FlowListContainer extends React.Component<Props,State> {
 
   onClickDelete (flow_uuid:string) {
     const self = this
-    HttpUtil.delete('flows/' + flow_uuid).then((response) => {
-      self.getFlowList()
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        HttpUtil.delete('flows/' + flow_uuid).then((response) => {
+          self.getFlowList()
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        })
+      },
     })
-
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      content: <div>
+        選択されたフローを削除しますか？
+      </div>,
+    })
   }
 
   isEmptyFlowList () {
@@ -164,7 +176,14 @@ export default class FlowListContainer extends React.Component<Props,State> {
   }
 
   renderNewFlow () {
-    return <div className={"mt-20px"}><a href="#" onClick={(e) => this.onClickNew(e)}>新しくフローを作成する</a></div>
+    return <a className={classnames(flowListStyle.flow,flowListStyle.new)} href="#" onClick={(e) => this.onClickNew(e)}>
+      <div className={flowListStyle.flow_list}>
+        <div className={flowListStyle.name}>
+          <i className={classnames('material-icons', [flowListStyle.icon])}>add_circle_outline</i>
+          新しくフローを作成する
+        </div>
+    </div>
+    </a>
   }
 
   renderAll () {

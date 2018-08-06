@@ -35,5 +35,9 @@ export default class ModalUtil {
   static emitModal (context) {
     window.emitter.emit(Constants.event.MODAL_EVENT + context.id, context)
   }
+
+  static closeModal (modalId:string) {
+    ModalUtil.emitModal({id: modalId, visible: false})
+  }
 }
 

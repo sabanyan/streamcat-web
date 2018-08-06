@@ -15,11 +15,32 @@ type JobFrameProps = {
   job: {};
 }
 
-export default class JobFrameList extends React.Component<JobFrameProps> {
+type JobFrameState = {
+  flowNames: {}
+}
+
+export default class JobFrameList extends React.Component<JobFrameProps,JobFrameState> {
 
   constructor (props:JobFrameProps) {
     super(props)
+    this.state = {
+      flowNames: {}
+    }
   }
+
+  getFlowName(uuid:string){
+    let {flowNames} = this.state
+
+    let flowName = flowNames[uuid]
+    if(flowName) return flowName
+    HttpUtil.get('flows/' + uuid + "?navigation=off").then((response) => {
+      const json = response.data
+      const label = json.data.label
+      flowNames[uuid] = label
+      this.setState({flowNames:flowNames})
+    })
+  }
+
   onClickName(e:Event,uuid){
     HttpUtil.get("frames/"+uuid).then((response)=>{
       let content = <DataPreview key={uuid} json={response.data.data} />
@@ -48,6 +69,7 @@ export default class JobFrameList extends React.Component<JobFrameProps> {
         <i className={classnames('material-icons', [style.icon])}>description</i>
         {dataframe}
       </div>
+      <div className={style.flow_name}>{this.getFlowName(job.flow.uuid)}</div>
       <div className={style.executor_name}>{job.executor.name}</div>
       <div className={style.executed_at}>{moment(job.executedAt).format(Constants.format.dateTime)}</div>
       <div className={style.status}>{job.state}</div>

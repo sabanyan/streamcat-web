@@ -39,7 +39,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.preview.DATASOURCE, onClickOK: () => {
-        ModalUtil.emitModal({id: Constants.preview.DATASOURCE, visible: false})
+        ModalUtil.closeModal(Constants.preview.DATASOURCE)
       },
     })
 
@@ -88,6 +88,10 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
           content: content,
           title: selected_step.label,
         })
+        this.loading = false
+        this.forceUpdate()
+      },(error)=>{
+        console.log(error)
         this.loading = false
         this.forceUpdate()
       })

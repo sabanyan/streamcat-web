@@ -109,7 +109,7 @@ export default class Command extends React.Component<Props> {
                 self.props.selectSteps()
 
                 //モーダルを閉じる
-                ModalUtil.emitModal({id: Constants.modal.ADD_COMMAND, visible: false})
+                ModalUtil.closeModal(Constants.modal.ADD_COMMAND)
             }
         })
 

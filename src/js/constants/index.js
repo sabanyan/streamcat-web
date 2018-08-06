@@ -65,6 +65,7 @@ const Constants = {
     ADD_FLOW: 'add_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
+    CONFIRM: 'confirm',
     SHOW_RUN_RESULT: 'show_run_result',
     property: {
       title: 'title',
@@ -79,6 +80,7 @@ const Constants = {
     DATASOURCE: 'datasource_preview',
   },
   event: {
+    ON_LOAD_NAVIGATION: 'onLoadNavigation',
     MODAL_EVENT: 'ModalEvent',
     MODAL_ON_CLICK_OK: 'ModalOnClickDone',
     MODAL_ON_CLICK_DONE: 'ModalOnClickDone',

@@ -65,6 +65,11 @@ export default class Modal extends React.Component<Props, State> {
             title: context.title,
           })
         }
+        if (context.done !== undefined) {
+          self.setState({
+            done: context.done,
+          })
+        }
       })
 
   }
@@ -110,8 +115,9 @@ export default class Modal extends React.Component<Props, State> {
 
   render () {
 
+    const done = (this.state.done)?this.state.done:this.props.done
     const {visible, title, content} = this.state
-    const {preview, ok, close, footer, done, cancel, children} = this.props
+    const {preview, ok, close, footer, cancel, children} = this.props
 
     /**
      * 背景
