@@ -8,7 +8,7 @@ class InOutConnector extends React.Component{
 
   render () {
 
-    const {nodes} = this.props
+    const {nodes,onChangeInEdge,onChangeOutEdge} = this.props
     const {selected_in_edges,selected_out_edges} = this.props
 
     //すべてのデータフレーム先をリスト化
@@ -29,16 +29,14 @@ class InOutConnector extends React.Component{
     })
 
     let inEdgeSelect = selected_in_edges.map((edge)=>{
-      return <DropDownList disabled={false} key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} defaultValue={edge.name} list={dataSourceOptions}></DropDownList>
+      return <DropDownList disabled={false} key={"in_edge"} onChange={onChangeInEdge} defaultValue={edge.name} list={dataSourceOptions}></DropDownList>
     })
 
-    if(!inEdgeSelect.length)inEdgeSelect = <DropDownList key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} defaultValue={0} list={dataSourceOptions}></DropDownList>
+    if(!inEdgeSelect.length)inEdgeSelect = <DropDownList key={"in_edge"} onChange={onChangeInEdge} defaultValue={0} list={dataSourceOptions}></DropDownList>
 
-    let outEdgeSelect = selected_out_edges.map((edge)=>{
-      return <DropDownList disabled={false} key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} defaultValue={edge.name} list={dataSourceOptions}></DropDownList>
+    let output = selected_out_edges.map((edge)=>{
+      return <div className={style.output}>{edge.name}</div>
     })
-
-    if(!outEdgeSelect.length)outEdgeSelect = <DropDownList key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} defaultValue={0} list={dataSourceOptions}></DropDownList>
 
     return  <div className="kskp-form mb-20px">
           <div className={style.property_title}>
@@ -47,7 +45,7 @@ class InOutConnector extends React.Component{
           <label>入力</label>
           {inEdgeSelect}
           <label>出力</label>
-          {outEdgeSelect}
+          {output}
         </div>
   }
 
