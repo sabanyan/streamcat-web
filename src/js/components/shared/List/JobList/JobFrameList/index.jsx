@@ -35,11 +35,22 @@ export default class JobFrameList extends React.Component<JobFrameProps> {
 
   render () {
     const {uuid,job} = this.props
+
+    const dataframe = Object.keys(job.data).map(d=>{
+      return <div>
+        <a href={"#"} onClick={(e)=>this.onClickName(e,job.data[d].uuid)}>{d}</a>
+        <div className={style.uuid}><small>{job.data[d].uuid}</small></div>
+      </div>
+    })
+
     return <div className={style.job_list}>
-      <i className={classnames('material-icons', [style.icon])}>description</i>
-      <a className={style.name} href={"#"} onClick={(e)=>this.onClickName(e,uuid)}>{uuid}</a>
+      <div className={style.name}>
+        <i className={classnames('material-icons', [style.icon])}>description</i>
+        {dataframe}
+      </div>
       <div className={style.executor_name}>{job.executor.name}</div>
       <div className={style.executed_at}>{moment(job.executedAt).format(Constants.format.dateTime)}</div>
+      <div className={style.status}>{job.state}</div>
     </div>
   }
 }

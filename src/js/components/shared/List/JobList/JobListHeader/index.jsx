@@ -14,6 +14,7 @@ export default class JobListHeader extends React.Component {
       <div className={style.name}>名前</div>
       <div className={style.executor_name}>実行ユーザー</div>
       <div className={style.executed_at}>実行日時</div>
+      <div className={style.status}>実行状態</div>
     </div>
   }
 
