@@ -204,7 +204,9 @@ def create_flow(project_id, flow_name, user_id, data_source_name=None):
         'label': flow_name,
         'creator': get_user_by_id(user_id)['name'],
         'createdAt': datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
-                                tzinfo=timezone(timedelta(hours=+9))).isoformat()
+                                tzinfo=timezone(timedelta(hours=+9))).isoformat(),
+        'params' : [],
+        'ports' : [[],[]]
     }
 
     write_data_to_json(make_flow_path(data_source_name), data)
