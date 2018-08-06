@@ -6,6 +6,8 @@ import NavigationModel from '../model/Navigation/NavigationModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import CommandStepModel from '../model/Step/CommandStepModel'
 import type { CommandPortType } from '../types'
+import CommandModel from '../model/Command/CommandModel'
+import FlowUtil from '../utils/FlowUtil'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -191,8 +193,19 @@ const Application = (state = initialState, action) => {
                     console.log(newState.nodes)
                   })
                   //出力先ステップの位置調整
-                  src_step_ids.forEach((id,index)=>{add_step.srcs["*"+index]=id})
-                  dst_step_ids.forEach((id,index)=>{add_step.dsts["*"+index]=id})
+
+                  //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
+                  const command:CommandModel = FlowUtil.getCommand(newState.mast.commands,add_step.commandId)
+                  const inPorts:[CommandPortType] = command.getInPorts()
+                  const outPorts:[CommandPortType] = command.getOutPorts()
+                  src_step_ids.forEach((id,index)=>{
+                    const newPortName = inPorts[index]
+                    add_step.srcs[newPortName.name]=id
+                  })
+                  dst_step_ids.forEach((id,index)=>{
+                    const newPortName = outPorts[index]
+                    add_step.dsts[newPortName.name]=id
+                  })
               }else{
                 add_step.srcs = {}
                 add_step.dsts = {}

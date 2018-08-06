@@ -78,10 +78,7 @@ export default class Toolbar extends React.Component<ToolbarProps> {
   }
 
   run () {
-    return new Promise((resolve, reject) => {
-      HttpUtil.get("frames?from=" + inject_flow_uuid).then((response)=>{
-        resolve(response)
-      })
+    return HttpUtil.get("frames?from=" + inject_flow_uuid)
 
       // fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
       //   inject_flow_uuid + '/execute', option).then(function (response) {
@@ -98,7 +95,6 @@ export default class Toolbar extends React.Component<ToolbarProps> {
       //   alert('クライアントでエラーが発生しました')
       //   reject(err)
       // })
-    })
 
   }
 
@@ -109,7 +105,6 @@ export default class Toolbar extends React.Component<ToolbarProps> {
     this.save().then(() => {
       this.run().then((json) => {
         const resultData:RunResponseType = json.data
-console.log(resultData)
         const result = resultData.name.map((result)=>{
           return <li>{result}</li>
         })
@@ -130,6 +125,10 @@ console.log(resultData)
         })
         //TODO 将来的に修正する（executeFlowAction は hasData = true に変更するためだけの処理になっています）
         this.props.executeFlow()
+        this.loading  = false
+        this.forceUpdate()
+      },(error)=>{
+        console.log(error)
         this.loading  = false
         this.forceUpdate()
       })
@@ -155,10 +154,12 @@ console.log(resultData)
 
         //データソースを追加
 
+        const fileName = this.uploadedFile.name.split(".")
+        const uuid = (fileName.length)?fileName[0]:fileName
         const props:DataFrameStepModelProps = {
           id: null,
           type: Constants.step.type.frame,
-          uuid: null,
+          uuid: uuid,//TODO 将来的にはサーバからUUIDをもらうなどするべき
           label: this.uploadedFile.name,
           dataSource: Constants.data.dataSource.csv,
           srcs: [],

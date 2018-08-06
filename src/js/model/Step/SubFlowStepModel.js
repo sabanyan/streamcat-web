@@ -7,10 +7,10 @@ export type SubFlowStepModelProps = {
 }
 
 export default class SubFlowStepModel extends CommandStepModel{
-  uuid: string
+  uuid: string = null
   constructor (props: SubFlowStepModelProps) {
     super(props)
-    this.uuid = props.uuid
+    this.initialize(props,"uuid")
   }
 
 }
