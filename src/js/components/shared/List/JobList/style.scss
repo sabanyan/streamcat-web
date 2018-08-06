@@ -27,7 +27,6 @@
     text-decoration: none!important;
     opacity: 0.8;
   }
-  margin-bottom: 4px;
 }
 
 .icon{
@@ -41,13 +40,18 @@
 
 .name{
   display: inline-block!important;
-  width: calc(100% - 20% - 200px - 120px);
+  width: calc(100% - 20% - 200px - 200px - 120px);
   vertical-align: top;
 }
 .executed_at{
   display: inline-block;
   width: 200px;
   vertical-align: top;
+}
+.flow_name{
+  display: inline-block;
+  vertical-align: top;
+  width: 200px;
 }
 .executor_name{
   display: inline-block;
