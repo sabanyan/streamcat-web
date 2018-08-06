@@ -174,8 +174,7 @@ export default class Toolbar extends React.Component<ToolbarProps> {
         self.props.selectSteps()
 
         //モーダルを閉じる
-        ModalUtil.emitModal(
-          {id: Constants.modal.IMPORT_DATASOURCE, visible: false})
+        ModalUtil.closeModal(Constants.modal.IMPORT_DATASOURCE)
       },
     })
 
