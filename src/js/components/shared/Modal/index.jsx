@@ -23,7 +23,9 @@ type Props = {
 type State = {
   visible: boolean,
   content?: any,
-  title?: string
+  title?: string,
+  done?: string,
+  danger?: boolean
 }
 
 export default class Modal extends React.Component<Props, State> {
@@ -68,6 +70,11 @@ export default class Modal extends React.Component<Props, State> {
         if (context.done !== undefined) {
           self.setState({
             done: context.done,
+          })
+        }
+        if (context.danger !== undefined) {
+          self.setState({
+            danger: context.danger,
           })
         }
       })
@@ -116,7 +123,7 @@ export default class Modal extends React.Component<Props, State> {
   render () {
 
     const done = (this.state.done)?this.state.done:this.props.done
-    const {visible, title, content} = this.state
+    const {visible, title, content, danger} = this.state
     const {preview, ok, close, footer, cancel, children} = this.props
 
     /**
@@ -149,7 +156,7 @@ export default class Modal extends React.Component<Props, State> {
           {cancel}
         </Button>
         &nbsp;
-        <Button
+        <Button danger={danger}
           onClick={() => this.onClickDone()}>
           {done}
         </Button>
