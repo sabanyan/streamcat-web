@@ -1,3 +1,4 @@
+import Model from '../index'
 
 export type FlowModelProps = {
   label: string,
@@ -6,16 +7,18 @@ export type FlowModelProps = {
   ports: []
 }
 
-export default class FlowModel {
-  label:string
-  params:[]
-  nodes:[]
-  ports:[]
+export default class FlowModel<FlowModelProps> extends Model {
+  label:string = ""
+  params:[] = []
+  nodes:[] = []
+  ports:[] = [[],[]]
+
   constructor (props: FlowModelProps) {
-    this.label = props.label
-    this.params = props.params
-    this.nodes = props.nodes
-    this.ports = props.ports
+    super(props)
+    this.initialize(props,"label")
+    this.initialize(props,"params")
+    this.initialize(props,"nodes")
+    this.initialize(props,"ports")
   }
 
   getInPorts(){

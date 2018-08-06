@@ -1,5 +1,6 @@
 import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
+import Model from '../index'
 
 type stepType = "command" | "frame"
 
@@ -7,26 +8,23 @@ type stepType = "command" | "frame"
 export type BaseModelProps = {
   id?: string;
   type: stepType;
-  name: string;
   label: string;
   position?: { x: number, y: number };
   size?: { width: number, height: number };
 }
 
-export default class BaseModel {
-  id: string
+export default class BaseModel extends Model {
+  id: string = ModelUtil.getNewId()
   type: stepType
-  name: string
   label: string
   position: { x: number, y: number } = {x: 0, y: 0}
   size: { width: number, height: number } = {width: 0, height: 0}
 
   constructor (props: BaseModelProps) {
-    //TODO エディターから作るときのIDを将来的にどうするか決める
-    this.id = (props.id) ? props.id : ModelUtil.getNewId()
-    this.type = props.type
-    this.name = props.name
-    this.label = props.label
+    super(props)
+    this.initialize(props,"id")
+    this.initialize(props,"type")
+    this.initialize(props,"label")
     this.setPosition(props.position)
     this.setSize(props.size)
   }

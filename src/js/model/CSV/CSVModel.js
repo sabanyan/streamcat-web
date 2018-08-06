@@ -1,13 +1,15 @@
+import Model from '../index'
 
 export type CSVModelProps = {
   data: string;
   uuid: string
 }
 
-export default class CSVModel {
+export default class CSVModel extends Model {
   constructor (props: CSVModelProps) {
-    this.data = props.data
-    this.uuid = props.uuid
+    super(props)
+    this.initialize(props,"data")
+    this.initialize(props,"uuid")
   }
 
   getCSVFileName(){

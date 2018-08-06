@@ -11,12 +11,12 @@ export type DataFrameStepModelProps = {
 }
 
 export default class DataFrameStepModel extends BaseModel{
-  uuid: string
+  uuid: string = null
   dataSource: dataSourceType
   constructor (props: DataFrameStepModelProps) {
     super(props)
-    this.uuid = props.uuid
-    this.dataSource = props.dataSource
+    this.initialize(props,"uuid")
+    this.initialize(props,"dataSource")
   }
 
   hasData():boolean{
