@@ -29,14 +29,16 @@ export default class FlowUtil {
 
   static getSubFlowParam(subflow:SubFlowStepModel,paramName:string):SubFlowParamType{
     let result
-    if(subflow && paramName){
-      subflow.params.forEach((param)=>{
-        if(param.name === paramName){
-          result = param
-          return
-        }
-      })
-    }
+    console.log(subflow)
+    if(!subflow || !paramName)return null
+    if(!subflow.params)return null
+
+    subflow.params.forEach((param)=>{
+      if(param.name === paramName){
+        result = param
+        return
+      }
+    })
     return result
   }
 }
