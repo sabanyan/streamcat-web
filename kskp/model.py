@@ -203,6 +203,8 @@ def create_flow(project_id, flow_name, user_id=None, data_source_name=None):
         data = {
             'projectId': project_id,
             'label': flow_name,
+            'ports': [[],[]],
+            'params': []
         }
         return data
 

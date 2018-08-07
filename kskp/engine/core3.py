@@ -356,7 +356,8 @@ class MCommand(UnixCommand):
     def command_args(self, args, inputs):
         res = self.name.split()
         for k, v in args.items():
-            if k == 'x' and v == True:
+            # booleanに対応していないのでひとまず
+            if k == 'x' and (v == True or v == "true"):
                 res.append('-x')
             elif k == 'rng' and v == True:
                 res.append('-rng')
