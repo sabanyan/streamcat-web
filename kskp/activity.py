@@ -79,7 +79,7 @@ def make_finished_history(now):
         return deco
     return _deco
 
-def add_activity_for_flow(id):
+def add_activity_to_flow(id):
     '''
     フローに作成時に作成履歴をつけるためのデコレータ
     '''
@@ -97,6 +97,31 @@ def add_activity_for_flow(id):
             data['creator'] = model.get_user_by_id(user_id)['name']
             data['createdAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
                                         tzinfo=timezone(timedelta(hours=+9))).isoformat()
+            return data
+        return deco
+    return _deco
+
+def add_data_source_to_flow(source):
+    '''
+    フローに作成時にデータソースをつけるためのデコレータ
+    '''
+    def _deco(func):
+        @functools.wraps(func)
+        def deco():
+            if source is None:
+                return func()
+
+            data = func()
+            data_source = {
+                "id": "i",
+                "type": source['type'],
+                "dataSource": "csv",
+                "uuid": source['uuid'],
+                "label": source['label']
+            }
+
+            data['nodes'] = []
+            data['nodes'].append(data_source)
             return data
         return deco
     return _deco

@@ -284,7 +284,14 @@ class ModelTestCase(unittest.TestCase):
             # フロー作成
             new_flow_name = 'ふろー'
             data_source_name = str(uuid.uuid4())
-            new_flow = model.create_flow(project_id, new_flow_name, session['user_id'], data_source_name)
+            data_source = {
+                "id": "i",
+                "type": "frame",
+                "dataSource": "csv",
+                "uuid": "2C72275F-2019-49AE-B36D-A29D1507F8DD",
+                "label": "test"
+            }
+            new_flow = model.create_flow(project_id, new_flow_name, data_source, session['user_id'], data_source_name)
 
             # フローを取得
             path = model.make_flow_path(data_source_name)
@@ -294,6 +301,8 @@ class ModelTestCase(unittest.TestCase):
             self.assertEqual(path.stem, data_source_name)
             self.assertEqual(created_flow['projectId'], project_id)
             self.assertEqual(created_flow['label'], new_flow_name)
+            self.assertEqual(created_flow['node'][0]['uuid'], "2C72275F-2019-49AE-B36D-A29D1507F8DD")
+            self.assertEqual(created_flow['node'][0]['label'], "test")
 
             # 後片付け
             path.unlink()
@@ -321,7 +330,7 @@ class ModelTestCase(unittest.TestCase):
         # フローを作成する
         new_flow_name = 'ふろー取得てすと'
         data_source_name = str(uuid.uuid4())
-        created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+        created_flow = model.create_flow(project_id, new_flow_name, None, None, data_source_name)
 
         fetched_flow = model.fetch_flow_by_uuid(data_source_name)
 
@@ -358,7 +367,7 @@ class ModelTestCase(unittest.TestCase):
             # フローを作成する
             new_flow_name = 'ふろー取得てすと'
             data_source_name = str(uuid.uuid4())
-            created_flow = model.create_flow(project_id, new_flow_name, session['user_id'], data_source_name)
+            created_flow = model.create_flow(project_id, new_flow_name, None, session['user_id'], data_source_name)
 
             fetched_flow = model.fetch_flow_by_uuid(data_source_name)
 
@@ -394,11 +403,11 @@ class ModelTestCase(unittest.TestCase):
             # テスト用フローを作成する
             new_flow_name1 = 'ふろー取得てすと1'
             data_source_name1 = str(uuid.uuid4())
-            created_flow1 = model.create_flow(project_id, new_flow_name1, session['user_id'], data_source_name1)
+            created_flow1 = model.create_flow(project_id, new_flow_name1, None, session['user_id'], data_source_name1)
 
             new_flow_name2 = 'ふろー取得てすと2'
             data_source_name2 = str(uuid.uuid4())
-            created_flow2 = model.create_flow(project_id, new_flow_name2, session['user_id'], data_source_name2)
+            created_flow2 = model.create_flow(project_id, new_flow_name2, None, session['user_id'], data_source_name2)
 
             flow1 = model.fetch_flow_by_uuid(data_source_name1)
             flow2 = model.fetch_flow_by_uuid(data_source_name2)
@@ -424,7 +433,7 @@ class ModelTestCase(unittest.TestCase):
                 session['user_id'] = model.get_user_id_by_email(email)
 
             data_source_name = str(uuid.uuid4())
-            flow = model.create_flow(1, '', session['user_id'], data_source_name)
+            flow = model.create_flow(1, '', None, session['user_id'], data_source_name)
             model.delete_flow_by_uuid(data_source_name)
 
 
@@ -439,7 +448,7 @@ class ModelTestCase(unittest.TestCase):
                 session['user_id'] = model.get_user_id_by_email(email)
 
             data_source_name = str(uuid.uuid4())
-            flow = model.create_flow(1, '', session['user_id'], data_source_name)
+            flow = model.create_flow(1, '', None, session['user_id'], data_source_name)
 
             model.update_flow_by_uuid(data_source_name, {'a': 1})
             path = model.make_flow_path(data_source_name)

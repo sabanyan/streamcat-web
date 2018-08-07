@@ -136,6 +136,62 @@ class ApiTestCase(unittest.TestCase):
 
             # 必要最低限の項目だけを送る
             self.assertIsNotNone(project_uuid)
+            data_source = {
+                "id": "i",
+                "type": "frame",
+                "dataSource": "csv",
+                "uuid": "2C72275F-2019-49AE-B36D-A29D1507F8DD",
+                "label": "test"
+            }
+
+            data = {
+                'project_uuid': project_uuid,
+                'name': new_flow_name,
+                'datasource': data_source
+            }
+
+            flow_path = app.config['FLOW_PATH']
+            with tempfile.TemporaryDirectory() as temp_dir:
+                app.config['FLOW_PATH'] = temp_dir
+
+                endpoint = '/api/v0/flows'
+                response = client.post(endpoint,
+                    content_type='application/json',
+                    data=json.dumps(data)
+                    )
+
+            result = json.loads(response.get_data())
+
+            result_project_id = model.get_project_id_by_uuid(project_uuid)
+
+            self.assertEqual(result['success'], True)
+            self.assertEqual(result['data']['projectId'], result_project_id)
+            self.assertEqual(result['data']['label'], new_flow_name)
+            self.assertEqual(result['data']['node'][0]['uuid'], "2C72275F-2019-49AE-B36D-A29D1507F8DD")
+            self.assertEqual(result['data']['node'][0]['label'], "test")
+
+            # 後片付け
+            app.config['FLOW_PATH'] = flow_path
+
+    def test_new_flow_nothing_datasource(self):
+        """
+        new_flow APIをテストする
+        """
+
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+            (user1, project_id, project_uuid) = setUpProject(self)
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            new_flow_name = '新しいフローです'
+            new_flow_data_source_name = str(uuid.uuid4())
+
+            # 必要最低限の項目だけを送る
+            self.assertIsNotNone(project_uuid)
 
             data = {
                 'project_uuid': project_uuid,
@@ -241,9 +297,9 @@ class ApiTestCase(unittest.TestCase):
             flow1_datasource_name = str(uuid.uuid4())
             flow2_datasource_name = str(uuid.uuid4())
             flow3_datasource_name = str(uuid.uuid4())
-            created_flow = model.create_flow(project_id, 'フローテスト用', user1, flow1_datasource_name)
-            created_flow2 = model.create_flow(project_id, 'フローテスト用2', user1, flow2_datasource_name)
-            created_flow3 = model.create_flow(project_id, 'フローテスト用3', user1, flow3_datasource_name)
+            created_flow = model.create_flow(project_id, 'フローテスト用', None, user1, flow1_datasource_name)
+            created_flow2 = model.create_flow(project_id, 'フローテスト用2', None, user1, flow2_datasource_name)
+            created_flow3 = model.create_flow(project_id, 'フローテスト用3', None, user1, flow3_datasource_name)
 
          # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
@@ -515,7 +571,7 @@ def setUpFlow(self):
     # フロー作成
     new_flow_name = 'フローテスト用'
     data_source_name = str(uuid.uuid4())
-    created_flow = model.create_flow(project_id, new_flow_name, user1, data_source_name)
+    created_flow = model.create_flow(project_id, new_flow_name, None, user1, data_source_name)
 
     return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
 
