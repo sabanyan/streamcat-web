@@ -13,6 +13,7 @@ import CommandModel from '../../../../model/Command/CommandModel'
 import HttpUtil from '../../../../utils/HttpUtil'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Loader from '../../../shared/Loader'
+import FlowUtil from '../../../../utils/FlowUtil'
 import ModalUtil from '../../../../utils/ModalUtil'
 
 type CommandInspectorProps = {
@@ -83,59 +84,27 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       })
     }
 
-    getCommand(commandId:string):CommandModel{
-        let command = null;
-        this.props.mast.commands.map((_command)=>{
-            if(commandId === _command.id){
-              command = _command
-            }
-        })
-        return command
+    onChangeInEdge(e,data){
+      console.log(e)
+      console.log(data)
     }
 
-    getCommandParam(paramName:string,command:CommandModel):CommandParamType{
-        let param = {};
-        if(command && command.getParams()){
-          command.getParams().map((_param)=>{
-                if(_param.name == paramName){
-                  param = _param
-                }
-            })
-        }
-        return param
-    }
-
-    getSubFlowParam(paramName:string):SubFlowParamType{
-      let result
-      if(this.selectedSubFlow && paramName){
-        this.selectedSubFlow.params.forEach((param)=>{
-          if(param.name === paramName){
-            result = param
-            return
-          }
-        })
-      }
-      return result
-    }
-
-    onChangeInEdge(e){
-
-    }
-
-    onChangeOutEdge(e){
-
+    onChangeOutEdge(e,data){
+      console.log(e)
+      console.log(data)
     }
 
     render() {
       console.log("render")
+        const {commands} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
         let inputForm,subFlowLink,content
 
         if(selected_step.type === Constants.step.type.command){
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
-            const command:CommandModel = this.getCommand(selected_step.commandId)
-            const param:CommandParamType = this.getCommandParam(key,command)
+            const command:CommandModel = selected_step.getCommand(commands)
+            const param:CommandParamType = FlowUtil.getCommandParam(key,command)
             console.log(param)
             return <div key={index}>
               <label>{param.label}</label>
@@ -146,8 +115,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         }else if(selected_step.type === Constants.step.type.subflow){
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
-            const hasSubFlowParam = (this.getSubFlowParam(key))
-            const param:SubFlowParamType = (hasSubFlowParam)?this.getSubFlowParam(key):key
+            const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,key))
+            const param:SubFlowParamType = (hasSubFlowParam)?FlowUtil.getSubFlowParam(this.selectedSubFlow,key):key
             return <div key={index}>
               <label>{param.name}</label>
               <label className="float-right text-danger">{(hasSubFlowParam)?"":"不明なパラメーター"}</label>
@@ -162,7 +131,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         }else {
           content = <div>
             {subFlowLink}
-            <InOutConnector {...this.props} />
+            <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step}/>
             <div className={style.hr} />
             <div className={style.property_title}>
               パラメータ

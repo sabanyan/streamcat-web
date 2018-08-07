@@ -1,6 +1,10 @@
 @import "../../../../sass/common";
 
-.dropdownlist{
+.dropdownListContainer{
+  position: relative;
+}
+
+.dropdownList{
   margin-bottom: 8px;
   padding: 0.375rem 24px 0.375rem 0.75rem;
   border-radius: 4px;
@@ -10,4 +14,20 @@
   -webkit-appearance: none;
   color: $kskp-text;
   border-color: #CED4DA;
+}
+
+.hasLabel{
+  padding-left: 70px;
+}
+
+.label{
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: $kskp-dropdown-list-label-background-color;
+  border-radius: 4px;
+  padding: 0 6px;
+  color: #fff;
+  min-width: 44px;
+  text-align: center;
 }

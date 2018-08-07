@@ -3,39 +3,49 @@ import style from '../../style.scss'
 import DropDownList from '../../../../shared/DropDownList/index'
 import CommandStepModel from '../../../../../model/Step/CommandStepModel'
 import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
+import CommandModel from '../../../../../model/Command/CommandModel'
+import FlowUtil from '../../../../../utils/FlowUtil'
+import type { CommandPortType } from '../../../../../types'
+import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
 
 class InOutConnector extends React.Component{
 
   render () {
 
-    const {nodes,onChangeInEdge,onChangeOutEdge} = this.props
+    const {nodes,onChangeInEdge,onChangeOutEdge,selectedStep,mast} = this.props
     const {selected_in_edges,selected_out_edges} = this.props
 
     //すべてのデータフレーム先をリスト化
-    let dataSourceOptions = new Set()
-    Object.keys(nodes).forEach((key)=>{
-      if (nodes[key] instanceof CommandStepModel){
-        let step:CommandStepModel = nodes[key]
 
-        Object.keys(step.dsts).forEach((key)=>{
-          const dst = step.dsts[key]
-          dataSourceOptions.add({value: dst, label: dst, object: step})
-        })
-        Object.keys(step.srcs).forEach((key) => {
-          const src = step.srcs[key]
-          dataSourceOptions.add({value: src, label: src, object: step})
-        })
-      }
+    let dataFrameOnlyNodes:[DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
+
+    let dataSourceOptions = new Set()
+
+    dataFrameOnlyNodes.forEach((dataFrame)=>{
+      dataSourceOptions.add({value: dataFrame.id, label: dataFrame.label, object: dataFrame})
     })
 
-    let inEdgeSelect = selected_in_edges.map((edge)=>{
-      return <DropDownList disabled={false} key={"in_edge"} onChange={onChangeInEdge} defaultValue={edge.name} list={dataSourceOptions}></DropDownList>
+    let command:CommandModel
+    if(selectedStep instanceof CommandStepModel){
+      command = selectedStep.getCommand(mast.commands)
+    }
+
+    console.log(selectedStep.getSrcsSteps(this.props.nodes))
+
+
+    let inEdgeSelect = selected_in_edges.map((edge,index)=>{
+      const inPorts = command.getInPorts()
+      const port:CommandPortType = inPorts[index]
+      return <div>
+        <DropDownList disabled={false} key={"in_edge"} onChange={onChangeInEdge} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
+      </div>
     })
 
     if(!inEdgeSelect.length)inEdgeSelect = <DropDownList key={"in_edge"} onChange={onChangeInEdge} defaultValue={0} list={dataSourceOptions}></DropDownList>
 
     let output = selected_out_edges.map((edge)=>{
-      return <div className={style.output}>{edge.name}</div>
+      const node = FlowUtil.getNodeFromID(nodes,edge.name)
+      return <div className={style.output}>{node.label}</div>
     })
 
     return  <div className="kskp-form mb-20px">
