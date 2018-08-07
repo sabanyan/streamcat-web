@@ -1,26 +1,23 @@
+import json
+import functools
 from flask import (
     Blueprint, session, render_template, url_for, jsonify, request, redirect, flash
 )
 from . import model
-import json
-import functools
 
 def update_navigation(func):
     @functools.wraps(func)
     def deco(**kwargs):
-        json_data = func(**kwargs).data.decode()
-        data = json.loads(json_data)
-
-        user_id = session['user_id']
-        navigation = request.args.get('navigation')
 
         # ブロック句
-        if navigation == 'off':
-            return jsonify(data)
+        if request.args.get('navigation') == 'off':
+            return func(**kwargs)
+
+        data = json.loads(func(**kwargs).data.decode())
 
         navigation = {
-            'user_id': user_id,
-            'user_name': model.get_user_by_id(user_id)['name'],
+            'user_id': session['user_id'],
+            'user_name': model.get_user_by_id(session['user_id'])['name'],
             'project_uuid': '',
             'project_name': '',
             'flow_uuid': '',

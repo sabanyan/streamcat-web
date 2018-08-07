@@ -356,7 +356,8 @@ class MCommand(UnixCommand):
     def command_args(self, args, inputs):
         res = self.name.split()
         for k, v in args.items():
-            if k == 'x' and v == True:
+            # booleanに対応していないのでひとまず
+            if k == 'x' and (v == True or v == "true"):
                 res.append('-x')
             elif k == 'rng' and v == True:
                 res.append('-rng')
@@ -1170,7 +1171,7 @@ class Mtrafld(MCommand):#mtraflgと名前がダブる
     def __init__(self):
         super().__init__()
         self.name = 'mtrafld'
-        self.description = 'クロス表をトランザクション項目に変換'
+        self.description = 'クロス表をトランザクション項目に変換(Mtrafld)'
         self.params.append(Parameter('a', 'トランザクション列名(必須)'))
         self.params.append(Parameter('f', '列名リスト'))
         self.params.append(Parameter('delim', 'トランザクション項目アイテムを区切る文字列'))
@@ -1180,7 +1181,7 @@ class Mtraflg(MCommand):#mtrafldと名前がダブる
     def __init__(self):
         super().__init__()
         self.name = 'mtraflg'
-        self.description = 'クロス表をトランザクション項目に変換'
+        self.description = 'クロス表をトランザクション項目に変換(Mtraflg)'
         self.params.append(Parameter('a', 'トランザクション列名(必須)'))
         self.params.append(Parameter('f', '列名リスト(必須)'))
         self.params.append(Parameter('delim', 'トランザクション項目アイテムを区切る文字'))
