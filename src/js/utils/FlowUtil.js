@@ -1,18 +1,28 @@
 //@flow
 import Constants from '../constants'
-import type { CommandParamType, SubFlowParamType } from '../types'
+import type { CommandParamType, StepModelType, SubFlowParamType } from '../types'
 import CommandModel from '../model/Command/CommandModel'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
+import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 
 export default class FlowUtil {
-  static getCommand(commands:[],commandId:string):CommandModel{
-    let command = null;
-    commands.map((_command)=>{
-      if(commandId === _command.id){
-        command = _command
+
+  static getAllDataFrame(nodes:[StepModelType]){
+    return nodes.filter((node)=>{
+      if(node instanceof DataFrameStepModel){
+        return true
       }
+      return false
     })
-    return command
+  }
+
+  static getNodeFromID(nodes:[StepModelType],id:string){
+    return nodes.find((node)=>{
+      if(node instanceof DataFrameStepModel){
+        return (node.id === id)
+      }
+      return false
+    })
   }
 
   static getCommandParam(paramName:string,command:CommandModel):CommandParamType{

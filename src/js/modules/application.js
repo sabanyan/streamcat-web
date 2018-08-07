@@ -195,7 +195,7 @@ const Application = (state = initialState, action) => {
                   //出力先ステップの位置調整
 
                   //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
-                  const command:CommandModel = FlowUtil.getCommand(newState.mast.commands,add_step.commandId)
+                  const command:CommandModel = add_step.getCommand(newState.mast.commands)
                   const inPorts:[CommandPortType] = command.getInPorts()
                   const outPorts:[CommandPortType] = command.getOutPorts()
                   src_step_ids.forEach((id,index)=>{
