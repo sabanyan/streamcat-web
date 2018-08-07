@@ -6,7 +6,6 @@ from pathlib import Path
 from flask import g
 from . import app
 from . import auth
-from datetime import datetime, timedelta, timezone
 
 # app.config['DATABASE'] = app.root_path + '/data/kskp.db'
 app.config.from_pyfile(app.root_path + '/settings.cfg')
@@ -188,26 +187,28 @@ def fecth_project(project_id):
     sql = 'SELECT uuid, name FROM projects WHERE id = ?'
     return query_db(sql, (project_id,), one=True)
 
-def create_flow(project_id, flow_name, user_id, data_source_name=None):
+def create_flow(project_id, flow_name, user_id=None, data_source_name=None):
     """
     フローを作成する
     TODO: 詳細は変更予定
     """
     new_flow_uuid = str(uuid.uuid4())
-    now = datetime.now()
 
     if data_source_name is None:
         data_source_name = new_flow_uuid
 
-    data = {
-        'projectId': project_id,
-        'label': flow_name,
-        'creator': get_user_by_id(user_id)['name'],
-        'createdAt': datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
-                                tzinfo=timezone(timedelta(hours=+9))).isoformat(),
-        'params' : [],
-        'ports' : [[],[]]
-    }
+    from .activity import add_activity_for_flow
+    @add_activity_for_flow(user_id)
+    def make_flow_json():
+        data = {
+            'projectId': project_id,
+            'label': flow_name,
+            'ports': [[],[]],
+            'params': []
+        }
+        return data
+
+    data = make_flow_json()
 
     write_data_to_json(make_flow_path(data_source_name), data)
 
@@ -230,7 +231,12 @@ def fetch_flows_by_project_uuid(project_uuid):
 
     flow_list = []
     for path in paths:
-        dict = json.loads(path.read_text())
+        try:
+            dict = json.loads(path.read_text())
+        except json.JSONDecodeError as e:
+            # JSONのフォーマットに則していない場合
+            continue
+
         dict['uuid'] = path.stem
         flow_list.append(dict)
     return flow_list
@@ -271,11 +277,68 @@ def get_flow_paths_by_project_uuid(project_uuid):
     """
     flow_path_list = []
     project_id = get_project_id_by_uuid(project_uuid)
+
+    def validate_flow_json(data):
+        """
+        flowのjsonが正しい形式かを確かめるメソッド
+        """
+        required_key_list = ['label', 'creator', 'createdAt', 'projectId']
+        additional_key_list = ['params', 'ports', 'nodes']
+
+        # flowチェック（flow一覧表示時）
+        # 1. flowがprojectに所属しているか（projectIdがついているか）
+        # 2. flowのプロジェクトが指定したプロジェクトと同じかどうか
+        if data.get('projectId') == project_id:
+            # 3. flowのキーチェック
+            # 中身のチェックについて、2つのチェックが必要だと考えている。
+            # 最低限必要なものが存在しているか、必要でないものが存在していないかの2つである
+
+            # 最低限必要なものはフロー作成時に生成されるキーのことだと考えて問題なさそう。
+            # 必要でないものは、上記のフロー作成時に生成されるものに
+            # 3つのキー（params, ports, nodes)を加えたもの以外のキー
+
+            # ひとまず中身のチェックとしてはその2つについて考慮すればいいとする
+
+            def contain_require_keys(json_data, requires_key_list):
+                """
+                最低限必要なものが存在しているかのチェック
+                """
+                def has_arribute(data, attribute):
+                    return attribute in data and data[attribute] is not None
+
+                for json_key in required_key_list:
+                    if not has_arribute(json_data, json_key):
+                        return False
+                return True
+
+            def has_disallow_key_in_json(json_data, list):
+                """
+                必要でないものが存在していないかのチェック
+                """
+                for data_key in json_data.keys():
+                    if not data_key in list:
+                        return True
+                return False
+
+            # 2つのメソッドの形が似ているので、もう少し綺麗になりそうかもと思いながら
+            # 思い浮かんでいないので、綺麗にできる方いたらして下さいm(_ _)m
+            if contain_require_keys(data, required_key_list):
+                if not has_disallow_key_in_json(data, required_key_list + additional_key_list):
+                    return True
+            return False
+
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
-        data = json.loads(flow_path.read_text(encoding='utf-8'))
-        if data['projectId'] == project_id:
+        try:
+            data = json.loads(flow_path.read_text(encoding='utf-8'))
+        except json.JSONDecodeError as e:
+            # JSONのフォーマットに則していない場合は飛ばす
+            continue
+
+        if validate_flow_json(data):
             flow_path_list.append(flow_path)
+
     return flow_path_list
+
 
 def make_flow_path(file_name):
     """

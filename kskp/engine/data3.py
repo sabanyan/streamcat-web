@@ -161,7 +161,6 @@ class UnixCommandSource(FileSource):
     def fd(self, value):
         raise Exception()
 
-    # ここ！
     def save(self, stdout):
         """ engineから使う最後の保存用 """
         if self.stdin is not None and self.stdin.closed:

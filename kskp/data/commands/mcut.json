@@ -5,6 +5,11 @@
       "name": "f",
       "type": "string",
       "label": "対象列名"
+    },
+    {
+      "name": "x",
+      "type": "boolean",
+      "label": "項目番号による指定（true or false)"
     }
   ],
   "ports": [
