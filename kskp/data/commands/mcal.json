@@ -4,12 +4,12 @@
     {
       "name": "c",
       "type": "string",
-      "label": "計算式"
+      "label": "計算式(必須)"
     },
     {
       "name": "a",
       "type": "string",
-      "label": "結果列名"
+      "label": "結果列名(必須)"
     }
   ],
   "ports": [
