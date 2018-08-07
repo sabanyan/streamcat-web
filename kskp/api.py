@@ -163,8 +163,8 @@ def make_new_frame():
 
     if 'file' in request.files:
         # ファイルがPOSTで送信されてきたらアップロードだとみなす
-        upload_frame(request)
-        return jsonify({'success': True})
+        frame = upload_frame(request)
+        return jsonify({'success': True, "data": frame})
     elif 'from' in request.args:
         if '.' in request.args['from']:
             # ドットで区切って、具体的に一つだけstepを指定することができる
@@ -224,12 +224,14 @@ def upload_frame(req):
     """
     f = req.files['file']
     file_name = req.form['file_name']
+    frame_uuid = str(uuid.uuid4())
 
     from werkzeug.utils import secure_filename
-    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(file_name))
+    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid))
     f.save(file_path.as_posix())
     f.close()
 
+    return {"uuid": frame_uuid, "label": file_name}
 
 @api.route('/files')
 def download_frame():
