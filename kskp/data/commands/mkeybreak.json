@@ -1,36 +1,38 @@
 {
-    "version": "0.7.0",
-    "id": "mkeybreak",
-    "label": "キーブレイク箇所",
-    "classification": "tablegrouping_new",
-    "description": "./static/pdf/mcmd/tablegrouping_new/mkeybreak.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mkeybreak",
+  "params": [
+    {
+      "name": "k",
+      "label": "集計キー列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "s",
+      "label": "並べ替えの後、先端、終端に印をつける列名",
+      "type": "string"
+    },
+    {
+      "name": "a",
+      "label": "先端と終端の印を出力する列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "k",
-            "type": "string",
-            "label": "集計キー列名(必須)"
-        },
-        {
-            "name": "s",
-            "type": "string",
-            "label": "並べ替えの後、先端、終端に印をつける列名"
-        },
-        {
-            "name": "a",
-            "type": "string",
-            "label": "先端と終端の印を出力する列名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "キーブレイク箇所",
+  "classification": "table_grouping",
+  "description": "./static/pdf/mcmd/table_grouping/mkeybreak.pdf"
 }

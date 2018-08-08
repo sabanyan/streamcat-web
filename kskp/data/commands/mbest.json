@@ -1,51 +1,52 @@
 {
-    "version": "0.7.0",
-    "id": "mbest",
-    "label": "指定行選択",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/mbest.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mbest",
+  "params": [
+    {
+      "name": "s",
+      "label": "ソート対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "from",
+      "label": "選択する開始行番号",
+      "type": "string"
+    },
+    {
+      "name": "to",
+      "label": "選択する終了行番号",
+      "type": "string"
+    },
+    {
+      "name": "size",
+      "label": "選択する行数",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "指定列が同じ値の行ごとにfrom=,to=,sizeで指定した行番号の行を選択",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "s",
-            "type": "string",
-            "label": "ソート対象列名(必須)"
-        },
-        {
-            "name": "from",
-            "type": "string",
-            "label": "選択する開始行番号"
-        },
-        {
-            "name": "to",
-            "type": "string",
-            "label": "選択する終了行番号"
-        },
-        {
-            "name": "size",
-            "type": "string",
-            "label": "選択する行数"
-        },
-        {
-            "name": "k",
-            "type": "string",
-            "label": "指定列が同じ値の行ごとにfrom=,to=,sizeで指定した行番号の行を選択"
-        },
-        {
-            "name": "u",
-            "type": "string",
-            "label": "条件に合わないデータ出力ファイル名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "指定行選択",
+  "classification": "row_edit",
+  "description": "./static/pdf/mcmd/row_edit/mbest.pdf"
 }

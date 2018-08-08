@@ -1,36 +1,38 @@
 {
-    "version": "0.7.0",
-    "id": "msummary",
-    "label": "1変数の統計量の計算",
-    "classification": "tablegrouping_new",
-    "description": "./static/pdf/mcmd/tablegrouping_new/msummary.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "msummary",
+  "params": [
+    {
+      "name": "f",
+      "label": "集計列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "単位とする列名",
+      "type": "string"
+    },
+    {
+      "name": "c",
+      "label": "統計量を指定",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "k",
-            "type": "string",
-            "label": "単位とする列名"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "集計列名(必須)"
-        },
-        {
-            "name": "c",
-            "type": "string",
-            "label": "統計量を指定"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "1変数の統計量の計算",
+  "classification": "table_grouping",
+  "description": "./static/pdf/mcmd/table_grouping/msummary.pdf"
 }

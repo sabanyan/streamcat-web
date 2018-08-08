@@ -1,31 +1,33 @@
 {
-    "version": "0.7.0",
-    "id": "mcal",
-    "label": "計算",
-    "classification": "mcal_new",
-    "description": "./static/pdf/mcmd/mcal_new/mcal.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mcal",
+  "params": [
+    {
+      "name": "c",
+      "type": "string",
+      "label": "計算式(必須)"
+    },
+    {
+      "name": "a",
+      "type": "string",
+      "label": "結果列名(必須)"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "c",
-            "type": "string",
-            "label": "計算式(必須)"
-        },
-        {
-            "name": "a",
-            "type": "string",
-            "label": "追加列名(必須)"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "計算",
+  "classification": "calculation",
+  "description": "./static/pdf/mcmd/calculation/mcal.pdf"
 }

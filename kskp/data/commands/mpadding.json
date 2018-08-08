@@ -1,46 +1,48 @@
 {
-    "version": "0.7.0",
-    "id": "mpadding",
-    "label": "行補完コマンド",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/mpadding.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mpadding",
+  "params": [
+    {
+      "name": "k",
+      "label": "キー列名",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "連続パディング対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "v",
+      "label": "パディング用文字列",
+      "type": "string"
+    },
+    {
+      "name": "S",
+      "label": "開始値",
+      "type": "string"
+    },
+    {
+      "name": "E",
+      "label": "終了値",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "k",
-            "type": "string",
-            "label": "キー列名"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "連続パディング対象列名(必須)"
-        },
-        {
-            "name": "v",
-            "type": "string",
-            "label": "パディング用文字列"
-        },
-        {
-            "name": "S",
-            "type": "string",
-            "label": "開始値"
-        },
-        {
-            "name": "E",
-            "type": "string",
-            "label": "終了値"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "行補完コマンド",
+  "classification": "row_edit",
+  "description": "./static/pdf/mcmd/row_edit/mpadding.pdf"
 }

@@ -1,31 +1,33 @@
 {
-    "version": "0.7.0",
-    "id": "msum",
-    "label": "合計",
-    "classification": "tablegrouping_new",
-    "description": "./static/pdf/mcmd/tablegrouping_new/msum.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "msum",
+  "params": [
+    {
+      "name": "k",
+      "type": "string",
+      "label": "合計の基準となる列名"
+    },
+    {
+      "name": "f",
+      "type": "string",
+      "label": "合計する列名:合計後の列名"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "k",
-            "type": "string",
-            "label": "合計の基準となる列名"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "合計する列名:合計後の列名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "合計",
+  "classification": "table_grouping",
+  "description": "./static/pdf/mcmd/table_grouping/msum.pdf"
 }

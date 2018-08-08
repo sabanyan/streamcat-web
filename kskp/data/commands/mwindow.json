@@ -1,41 +1,38 @@
 {
-    "version": "0.7.0",
-    "id": "mwindow",
-    "label": "スライド窓の生成",
-    "classification": "tablegrouping_new",
-    "description": "./static/pdf/mcmd/tablegrouping_new/mwindow.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mwindow",
+  "params": [
+    {
+      "name": "wk",
+      "label": "出力データにおける、窓を識別する値となる入力データの列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "t",
+      "label": "窓の行数指定(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "窓を生成する単位となる列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "wk",
-            "type": "string",
-            "label": "出力データにおける、窓を識別する値となる入力データの列名(必須)"
-        },
-        {
-            "name": "t",
-            "type": "string",
-            "label": "窓の行数指定(必須)"
-        },
-        {
-            "name": "k",
-            "type": "string",
-            "label": "窓を生成する単位となる列名"
-        },
-        {
-            "name": "i",
-            "type": "string",
-            "label": "入力ファイル名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "スライド窓の生成",
+  "classification": "table_grouping",
+  "description": "./static/pdf/mcmd/table_grouping/mwindow.pdf"
 }

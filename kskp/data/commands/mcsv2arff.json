@@ -1,46 +1,49 @@
 {
-    "version": "0.7.0",
-    "id": "mcsv2arff",
-    "label": "csvからarff形式への変換",
-    "classification": "dataformat_new",
-    "description": "./static/pdf/mcmd/dataformat_new/mcsv2arff.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mcsv2arff",
+  "params": [
+    {
+      "name": "n",
+      "label": "数値列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "d",
+      "label": "カテゴリ列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "D",
+      "label": "日付列名リスト(必須)",
+      "type": "string"
+    },
+    {
+      "name": "s",
+      "label": "文字列列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "T",
+      "label": "タイトル名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "n",
-            "type": "string",
-            "label": "数値列名(必須)"
-        },
-        {
-            "name": "d",
-            "type": "string",
-            "label": "カテゴリ列名(必須)"
-        },
-        {
-            "name": "D",
-            "type": "string",
-            "label": "日付列名リスト(必須)"
-        },
-        {
-            "name": "s",
-            "type": "string",
-            "label": "文字列列名(必須)"
-        },
-        {
-            "name": "T",
-            "type": "string",
-            "label": "タイトル名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "csvからarff形式への変換",
+  "classification": "data_format",
+  "description": "./static/pdf/mcmd/data_format/mcsv2arff.pdf"
+
 }

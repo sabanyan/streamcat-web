@@ -1,31 +1,33 @@
 {
-    "version": "0.7.0",
-    "id": "mduprec",
-    "label": "レコードの複写",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/mduprec.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mduprec",
+  "params": [
+    {
+      "name": "f",
+      "label": "指定列の値の回数分の複写を実行(nとどちらか必須)",
+      "type": "string"
+    },
+    {
+      "name": "n",
+      "label": "各行の複写回数(fとどちらか必須)",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "f",
-            "type": "string",
-            "label": "指定列の値の回数分の複写を実行(選択必須)"
-        },
-        {
-            "name": "n",
-            "type": "string",
-            "label": "各行の複写回数(選択必須)"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "レコードの複写",
+  "classification": "row_edit",
+  "description": "./static/pdf/mcmd/row_edit/mduprec.pdf"
 }

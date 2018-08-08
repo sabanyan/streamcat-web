@@ -1,36 +1,38 @@
 {
-    "version": "0.7.0",
-    "id": "mxml2csv",
-    "label": "xmlからcsv形式への変換",
-    "classification": "dataformat_new",
-    "description": "./static/pdf/mcmd/dataformat_new/mxml2csv.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mxml2csv",
+  "params": [
+    {
+      "name": "k",
+      "label": "１行の単位となる要素のパス名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "要素もしくは属性の指定(必須)",
+      "type": "string"
+    },
+    {
+      "name": "i",
+      "label": "xmlデータファイル",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "k",
-            "type": "string",
-            "label": "１行の単位となる要素のパス名(必須)"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "要素もしくは属性の指定(必須)"
-        },
-        {
-            "name": "i",
-            "type": "string",
-            "label": "xmlデータファイル"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "xmlからcsv形式への変換",
+  "classification": "data_format",
+  "description": "./static/pdf/mcmd/data_format/mxml2csv.pdf"
 }

@@ -1,26 +1,28 @@
 {
-    "version": "0.7.0",
-    "id": "msep",
-    "label": "レコードの分割",
-    "classification": "tablesplit_new",
-    "description": "./static/pdf/mcmd/tablesplit_new/msep.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "msep",
+  "params": [
+    {
+      "name": "d",
+      "label": "異なるデータファイルに分割する列名(必須)",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "d",
-            "type": "string",
-            "label": "異なるデータファイルに分割する列名(必須)"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "レコードの分割(msep)",
+  "classification": "table_split",
+  "description": "./static/pdf/mcmd/table_split/msep.pdf"
 }

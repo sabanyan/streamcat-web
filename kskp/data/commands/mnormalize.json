@@ -1,36 +1,38 @@
 {
-    "version": "0.7.0",
-    "id": "mnormalize",
-    "label": "基準化",
-    "classification": "tablegrouping_new",
-    "description": "./static/pdf/mcmd/tablegrouping_new/mnormalize.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "normalize",
+  "params": [
+    {
+      "name": "f",
+      "label": "基準化列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "c",
+      "label": "基準化方法を指定(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "単位とする列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "c",
-            "type": "string",
-            "label": "基準化方法を指定(必須)"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "基準化列名(必須)"
-        },
-        {
-            "name": "k",
-            "type": "string",
-            "label": "単位とする列名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "基準化",
+  "classification": "table_grouping",
+  "description": "./static/pdf/mcmd/table_grouping/table_grouping.pdf"
 }

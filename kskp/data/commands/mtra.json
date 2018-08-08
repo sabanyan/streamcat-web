@@ -1,36 +1,38 @@
 {
-    "version": "0.7.0",
-    "id": "mtra",
-    "label": "縦横変換",
-    "classification": "valuecrossing_new",
-    "description": "./static/pdf/mcmd/valuecrossing_new/mtra.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mtra",
+  "params": [
+    {
+      "name": "f",
+      "type": "string",
+      "label": "連結前列名:連結後列名(必須)"
+    },
+    {
+      "name": "k",
+      "type": "string",
+      "label": "変換キー列名"
+    },
+    {
+      "name": "f",
+      "type": "string",
+      "label": "並び替えの後、変換を行う列名"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "k",
-            "type": "string",
-            "label": "変換キー列名"
-        },
-        {
-            "name": "s",
-            "type": "string",
-            "label": "並び替えの後、変換を行う列名"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "連結前列名:連結後列名(必須)"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "縦横変換",
+  "classification": "value_crossing",
+  "description": "./static/pdf/mcmd/value_crossing/mtra.pdf"
 }

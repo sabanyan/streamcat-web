@@ -1,36 +1,37 @@
 {
-    "version": "0.7.0",
-    "id": "mdelnull",
-    "label": "NULL行削除",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/mdelnull.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mdelnull",
+  "params": [
+    {
+      "name": "f",
+      "label": "対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "削除する単位となるキー列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "f",
-            "type": "string",
-            "label": "対象列名(必須)"
-        },
-        {
-            "name": "k",
-            "type": "string",
-            "label": "削除する単位となるキー列名"
-        },
-        {
-            "name": "u",
-            "type": "string",
-            "label": "条件に合わないデータ出力ファイル名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "NULL行削除",
+  "classification": "row_edit",
+  "description": "./static/pdf/mcmd/row_edit/mdelnull.pdf"
 }
