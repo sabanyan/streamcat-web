@@ -20,6 +20,7 @@ import type { DataFrameStepModelProps } from '../../../model/Step/DataFrameStepM
 import Loader from '../../shared/Loader'
 import { RunResponseType } from '../../../types'
 import FileUploader from '../../shared/FileUploader'
+import type { UploadedFileType } from '../../../types'
 
 type ToolbarProps = {
   ...FlowEditorProps
@@ -29,7 +30,7 @@ export default class Toolbar extends React.Component<ToolbarProps> {
 
   loading:boolean  = false
   loadingMessage:string
-  uploadedFile:File = null
+  uploadedFile:UploadedFileType = null
 
   constructor (props:ToolbarProps){
     super(props)
@@ -154,17 +155,19 @@ export default class Toolbar extends React.Component<ToolbarProps> {
 
         //データソースを追加
 
-        const fileName = this.uploadedFile.name.split(".")
-        const uuid = (fileName.length)?fileName[0]:fileName
+        const label = this.uploadedFile.label
+        const uuid = this.uploadedFile.uuid
         const props:DataFrameStepModelProps = {
-          id: null,
+          id: label,
           type: Constants.step.type.frame,
-          uuid: uuid,//TODO 将来的にはサーバからUUIDをもらうなどするべき
-          label: this.uploadedFile.name,
+          uuid: uuid,
+          label: label,
           dataSource: Constants.data.dataSource.csv,
           srcs: [],
           dsts: [],
         }
+
+        console.log(props)
 
         const add_step = new DataFrameStepModel(props)
 
@@ -196,8 +199,13 @@ export default class Toolbar extends React.Component<ToolbarProps> {
       const uploadFile:File = selectedFiles[0]
       HttpUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
         const {success} = response.data
+        const json = response.data
         if(success){
-          this.uploadedFile = uploadFile
+          this.uploadedFile = {
+            label: json.data.label,
+            uuid: json.data.uuid,
+            file: uploadFile
+          }
           this.forceUpdate()
         }
       })

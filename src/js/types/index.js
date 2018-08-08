@@ -29,3 +29,9 @@ export type RunResponseType =  {
   name:[string];
   success: boolean;
 }
+
+export type UploadedFileType = {
+  file: File,
+  uuid: string,
+  label: string
+}
