@@ -39,5 +39,5 @@
   "version": "0.7.0",
   "label": "連番、項目値表の出力を伴った行分割",
   "classification": "table_split",
-  "description": ""
+  "description": "./static/pdf/mcmd/table_split/msep2.pdf"
 }

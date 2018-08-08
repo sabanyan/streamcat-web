@@ -29,5 +29,5 @@
   "version": "0.7.0",
   "label": "日付時刻抽出",
   "classification": "value_transform",
-  "description": ""
+  "description": "./static/pdf/mcmd/value_transform/mdformat.pdf"
 }

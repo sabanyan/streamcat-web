@@ -52,5 +52,5 @@
   "version": "0.7.0",
   "label": "参照ファイルの複数範囲条件による行選択",
   "classification": "table_join",
-  "description": ""
+  "description": "./static/pdf/mcmd/table_join/mnrcommon.pdf"
 }
