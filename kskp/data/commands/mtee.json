@@ -1,0 +1,23 @@
+{
+  "id": "mtee",
+  "params": [
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "複数ファイルへのコピー",
+  "classification": "data_source",
+  "description": ""
+}
