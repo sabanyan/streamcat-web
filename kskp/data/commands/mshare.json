@@ -1,33 +1,31 @@
 {
-  "id": "mshare",
-  "params": [
-    {
-      "name": "f",
-      "label": "指定列の構成比計算",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "構成比計算の単位となる列名",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mshare",
+    "label": "構成費の計算",
+    "classification": "coledit_new",
+    "description": "./static/pdf/mcmd/coledit_new/mshare.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "指定列の構成比計算(必須)"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "構成比計算の単位となる列名"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "構成費の計算",
-  "classification": "col_edit",
-  "description": ""
 }

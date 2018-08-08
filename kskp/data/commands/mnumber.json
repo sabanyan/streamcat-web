@@ -1,33 +1,51 @@
 {
-  "id": "mnumber",
-  "params": [
-    {
-      "name": "s",
-      "type": "string",
-      "label": "ソート対象列名"
-    },
-    {
-      "name": "a",
-      "type": "string",
-      "label": "追加列名"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mnumber",
+    "label": "連番",
+    "classification": "coledit_new",
+    "description": "./static/pdf/mcmd/coledit_new/mnumber.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "s",
+            "type": "string",
+            "label": "ソート対象列名"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "追加列名(必須)"
+        },
+        {
+            "name": "e",
+            "type": "string",
+            "label": "同一キー同一ソートの処理方法の指定"
+        },
+        {
+            "name": "l",
+            "type": "string",
+            "label": "連番の間隔"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "連番もしくは連文字を振る単位となる列"
+        },
+        {
+            "name": "S",
+            "type": "string",
+            "label": "開始No"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "連番",
-  "classification": "col_edit",
-  "description": ""
 }

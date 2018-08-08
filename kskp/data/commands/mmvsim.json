@@ -1,58 +1,56 @@
 {
-  "id": "mmvsim",
-  "params": [
-    {
-      "name": "f",
-      "label": "集計列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "c",
-      "label": "類似度名を指定(必須)",
-      "type": "string"
-    },
-    {
-      "name": "a",
-      "label": "新規に作成する項目名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "s",
-      "label": "並べ替えの後、各種類似度を計算する列名",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "単位とする列名",
-      "type": "string"
-    },
-    {
-      "name": "t",
-      "label": "期間数の指定",
-      "type": "string"
-    },
-    {
-      "name": "skip",
-      "label": "出力抑制を行う最初の行数指定",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mmvsim",
+    "label": "移動窓の類似度計算",
+    "classification": "tablegrouping_new",
+    "description": "./static/pdf/mcmd/tablegrouping_new/mmvsim.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "s",
+            "type": "string",
+            "label": "並べ替えの後、各種類似度を計算する列名"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "単位とする列名"
+        },
+        {
+            "name": "f",
+            "type": "string",
+            "label": "集計列名(必須)"
+        },
+        {
+            "name": "t",
+            "type": "string",
+            "label": "期間数の指定"
+        },
+        {
+            "name": "c",
+            "type": "string",
+            "label": "類似度名を指定(必須)"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "新規に作成する項目名(必須)"
+        },
+        {
+            "name": "skip",
+            "type": "string",
+            "label": "出力抑制を行う最初の行数指定"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "移動窓の類似度計算",
-  "classification": "table_grouping",
-  "description": ""
 }

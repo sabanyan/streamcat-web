@@ -1,44 +1,46 @@
 {
-  "id": "mnewrand",
-  "params": [
-    {
-      "name": "a",
-      "label": "新規作成する連番行の項目名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "max",
-      "label": "乱数の最大値",
-      "type": "string"
-    },
-    {
-      "name": "min",
-      "label": "乱数の最小値",
-      "type": "string"
-    },
-    {
-      "name": "S",
-      "label": "乱数の種を指定する",
-      "type": "string"
-    },
-    {
-      "name": "l",
-      "label": "作成するデータ行数",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
+    "version": "0.7.0",
+    "id": "mnewrand",
+    "label": "乱数データの新規生成",
+    "classification": "datasource_new",
+    "description": "./static/pdf/mcmd/datasource_new/mnewrand.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "a",
+            "type": "string",
+            "label": "新規作成するデータの列名(必須)"
+        },
+        {
+            "name": "max",
+            "type": "string",
+            "label": "乱数の最大値、この値の指定時には-intも設定することが必須"
+        },
+        {
+            "name": "min",
+            "type": "string",
+            "label": "乱数の最小値、この値の指定時には-intも設定することが必須"
+        },
+        {
+            "name": "S",
+            "type": "string",
+            "label": "乱数の種"
+        },
+        {
+            "name": "l",
+            "type": "string",
+            "label": "新規作成する乱数データの行数"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "乱数データの新規作成",
-  "classification": "data_source",
-  "description": ""
 }

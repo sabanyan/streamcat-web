@@ -1,38 +1,36 @@
 {
-  "id": "mtraflg",
-  "params": [
-    {
-      "name": "a",
-      "label": "トランザクション列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "f",
-      "label": "列名リスト(必須)",
-      "type": "string"
-    },
-    {
-      "name": "delim",
-      "label": "トランザクション項目アイテムを区切る文字",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mtraflg",
+    "label": "クロス表をトランザクション項目に変換",
+    "classification": "valuecrossing_new",
+    "description": "./static/pdf/mcmd/valuecrossing_new/mtraflg.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "a",
+            "type": "string",
+            "label": "トランザクション列名(必須)"
+        },
+        {
+            "name": "f",
+            "type": "string",
+            "label": "列名リスト(必須)"
+        },
+        {
+            "name": "delim",
+            "type": "string",
+            "label": "トランザクション項目アイテムを区切る文字"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "クロス表をトランザクション項目に変換(Mtraflg)",
-  "classification": "value_crossing",
-  "description": ""
 }

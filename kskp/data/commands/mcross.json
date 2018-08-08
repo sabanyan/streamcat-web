@@ -1,48 +1,46 @@
 {
-  "id": "mcross",
-  "params": [
-    {
-      "name": "f",
-      "label": "指定列の値(必須)",
-      "type": "string"
-    },
-    {
-      "name": "s",
-      "label": "列名となる元のデータ列(必須)",
-      "type": "string"
-    },
-    {
-      "name": "a",
-      "label": "f=で指定した列名がデータとして展開する列名",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "キー列名",
-      "type": "string"
-    },
-    {
-      "name": "v",
-      "label": "NULL値置換文字列",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mcross",
+    "label": "クロス集計",
+    "classification": "valuecrossing_new",
+    "description": "./static/pdf/mcmd/valuecrossing_new/mcross.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "指定列の値(必須)"
+        },
+        {
+            "name": "s",
+            "type": "string",
+            "label": "列名となる元のデータ列(必須)"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "f=で指定した列名がデータとして展開する列名"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "キー列名"
+        },
+        {
+            "name": "v",
+            "type": "string",
+            "label": "NULL値置換文字列"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "クロス集計",
-  "classification": "value_crossing",
-  "description": ""
 }

@@ -1,47 +1,51 @@
 {
-  "id": "mnjoin",
-  "params": [
-    {
-      "name": "f",
-      "type": "string",
-      "label": "参照列名(必須)"
-    },
-    {
-      "name": "k",
-      "label": "入力データの結合キー名",
-      "type": "string"
-    },
-    {
-      "name": "m",
-      "label": "参照ファイル名",
-      "type": "string"
-    },
-    {
-      "name": "K",
-      "label": "参照データの結合キー名",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      },
-      {
-        "name": "m",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mnjoin",
+    "label": "参照ファイル列の結合",
+    "classification": "tablejoin_new",
+    "description": "./static/pdf/mcmd/tablejoin_new/mnjoin.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "k",
+            "type": "string",
+            "label": "入力データの結合キー名"
+        },
+        {
+            "name": "m",
+            "type": "string",
+            "label": "参照ファイル名"
+        },
+        {
+            "name": "R",
+            "type": "string",
+            "label": "参照ファイルの範囲列名(必須)"
+        },
+        {
+            "name": "r",
+            "type": "string",
+            "label": "範囲比較を行う入力ファイル上の列名(必須)"
+        },
+        {
+            "name": "K",
+            "type": "string",
+            "label": "参照データの結合キー名"
+        },
+        {
+            "name": "u",
+            "type": "string",
+            "label": "指定条件に合わない行の出力ファイル名"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "参照ファイル列の結合",
-  "classification": "table_join",
-  "description": ""
 }

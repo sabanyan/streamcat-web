@@ -1,47 +1,46 @@
 {
-  "id": "mselrand",
-  "params": [
-    {
-      "name": "c",
-      "label": "各キーの値毎に選択する行数(pとどちらか必須)",
-      "type": "string"
-    },
-    {
-      "name": "p",
-      "label": "各キーを選択する割合をパーセンテージで指定(cとどちらか必須)",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "選択単位となるキー列",
-      "type": "string"
-    },
-    {
-      "name": "S",
-      "label": "乱数の種",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mselrand",
+    "label": "ランダムな行選択",
+    "classification": "valuetransform_new",
+    "description": "./static/pdf/mcmd/valuetransform_new/mselrand.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      },
-      {
-        "name": "u",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "c",
+            "type": "string",
+            "label": "各キーの値毎に選択する行数(選択必須)"
+        },
+        {
+            "name": "p",
+            "type": "string",
+            "label": "各キーを選択する割合をパーセンテージで指定(選択必須)"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "選択単位となるキー列"
+        },
+        {
+            "name": "S",
+            "type": "string",
+            "label": "乱数の種"
+        },
+        {
+            "name": "u",
+            "type": "string",
+            "label": "指定条件に合わない行の出力ファイル名"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "ランダムな行選択",
-  "classification": "row_edit",
-  "description": ""
 }

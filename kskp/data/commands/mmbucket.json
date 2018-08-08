@@ -1,43 +1,41 @@
 {
-  "id": "mmbucket",
-  "params": [
-    {
-      "name": "n",
-      "label": "行数(必須)",
-      "type": "string"
-    },
-    {
-      "name": "f",
-      "label": "対象列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "F",
-      "label": "出力形式",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "各項目の各バケットの数値範囲を出力するファイル名",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mmbucket",
+    "label": "多次元行分割",
+    "classification": "tablesplit_new",
+    "description": "./static/pdf/mcmd/tablesplit_new/mmbucket.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "n",
+            "type": "string",
+            "label": "行数(必須)"
+        },
+        {
+            "name": "f",
+            "type": "string",
+            "label": "対象列名(必須)"
+        },
+        {
+            "name": "F",
+            "type": "string",
+            "label": "出力形式"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "各項目の各バケットの数値範囲を出力するファイル名"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "多次元行分割",
-  "classification": "table_split",
-  "description": ""
 }

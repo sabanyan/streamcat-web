@@ -1,23 +1,26 @@
 {
-  "id": "mtee",
-  "params": [
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mtee",
+    "label": "複数ファイルへのコピー",
+    "classification": "datasource_new",
+    "description": "./static/pdf/mcmd/datasource_new/mtee.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "o",
+            "type": "string",
+            "label": "標準入力を出力するファイルパス"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "複数ファイルへのコピー",
-  "classification": "data_source",
-  "description": ""
 }

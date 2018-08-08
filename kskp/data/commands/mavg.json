@@ -1,33 +1,31 @@
 {
-  "id": "mavg",
-  "params": [
-    {
-      "name": "f",
-      "label": "対象列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "集計の単位となる列名",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mavg",
+    "label": "平均",
+    "classification": "tablegrouping_new",
+    "description": "./static/pdf/mcmd/tablegrouping_new/mavg.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "対象列名(必須)"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "集計の単位となる列名"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "平均",
-  "classification": "table_grouping",
-  "description": ""
 }
