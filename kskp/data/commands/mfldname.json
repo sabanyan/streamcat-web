@@ -1,31 +1,33 @@
 {
-    "version": "0.7.0",
-    "id": "mfldname",
-    "label": "列名の変更",
-    "classification": "coledit_new",
-    "description": "./static/pdf/mcmd/coledit_new/mfldname.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mfldname",
+  "params": [
+    {
+      "name": "f",
+      "type": "string",
+      "label": "旧列名"
+    },
+    {
+      "name": "n",
+      "type": "string",
+      "label": "新列名"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "f",
-            "type": "string",
-            "label": "旧列名(必須)"
-        },
-        {
-            "name": "n",
-            "type": "string",
-            "label": "新列名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "列名の変更",
+  "classification": "col_edit",
+  "description": "./static/pdf/mcmd/col_edit/mfldname.pdf"
 }

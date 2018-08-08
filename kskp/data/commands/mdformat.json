@@ -1,31 +1,33 @@
 {
-    "version": "0.7.0",
-    "id": "mdformat",
-    "label": "日付時刻抽出",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/mdformat.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mdformat",
+  "params": [
+    {
+      "name": "f",
+      "label": "対象列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "c",
+      "label": "文字列のフォーマット(必須)",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "f",
-            "type": "string",
-            "label": "対象列名(必須)"
-        },
-        {
-            "name": "c",
-            "type": "string",
-            "label": "文字列のフォーマット(必須)"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "日付時刻抽出",
+  "classification": "value_transform",
+  "description": "./static/pdf/mcmd/value_transform/mdformat.pdf"
 }

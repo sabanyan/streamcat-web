@@ -1,31 +1,22 @@
 {
-    "version": "0.7.0",
-    "id": "mcat",
-    "label": "ファイル結合",
-    "classification": "tablejoin_new",
-    "description": "./static/pdf/mcmd/tablejoin_new/mcat.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mcat",
+  "params": [],
+  "ports": [
+    [
+      {
+        "name": "*",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "i",
-            "type": "string",
-            "label": "入力ファイル名"
-        },
-        {
-            "name": "j",
-            "type": "string",
-            "label": "結合する列名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "ファイル結合",
+  "classification": "table_join",
+  "description": "./static/pdf/mcmd/table_join/mcat.pdf"
 }

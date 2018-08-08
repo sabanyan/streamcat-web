@@ -1,41 +1,47 @@
 {
-    "version": "0.7.0",
-    "id": "mjoin",
-    "label": "結合",
-    "classification": "tablejoin_new",
-    "description": "./static/pdf/mcmd/tablejoin_new/mjoin.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mjoin",
+  "params": [
+    {
+      "name": "f",
+      "type": "string",
+      "label": "参照列名(必須)"
+    },
+    {
+      "name": "k",
+      "type": "string",
+      "label": "結合キー名"
+    },
+    {
+      "name": "K",
+      "type": "string",
+      "label": "参照ファイル上の結合キー名"
+    },
+    {
+      "name": "m",
+      "type": "string",
+      "label": "参照ファイル名"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "k",
-            "type": "string",
-            "label": "結合キー名(必須)"
-        },
-        {
-            "name": "m",
-            "type": "string",
-            "label": "参照ファイル名"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "参照列名"
-        },
-        {
-            "name": "K",
-            "type": "string",
-            "label": "参照ファイル上の結合キー名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "結合",
+  "classification": "table_join",
+  "description": "./static/pdf/mcmd/table_join/mjoin.pdf"
 }

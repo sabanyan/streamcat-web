@@ -1,46 +1,52 @@
 {
-    "version": "0.7.0",
-    "id": "mvreplace",
-    "label": "ベクトル要素の参照置換",
-    "classification": "tablejoin_new",
-    "description": "./static/pdf/mcmd/tablejoin_new/mvreplace.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mvreplace",
+  "params": [
+    {
+      "name": "vf",
+      "label": "置換キーとなるベクトル列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "K",
+      "label": "参照ファイル上の置換キーとなるベクトル要素の列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "結合ベクトル列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "m",
+      "label": "参照ファイル名",
+      "type": "string"
+    },
+    {
+      "name": "n",
+      "label": "vf=とk=がマッチしなかった場合に置換する文字列",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      },
+      {
+        "name": "m",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "vf",
-            "type": "string",
-            "label": "置換キーとなるベクトル列名(必須)"
-        },
-        {
-            "name": "m",
-            "type": "string",
-            "label": "参照ファイル名"
-        },
-        {
-            "name": "K",
-            "type": "string",
-            "label": "参照ファイル上の置換キーとなるベクトル要素の列名(必須)"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "結合ベクトル列名(必須)"
-        },
-        {
-            "name": "n",
-            "type": "string",
-            "label": "vf=とk=がマッチしなかった場合に置換する文字列"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトル要素の参照置換",
+  "classification": "table_join",
+  "description": "./static/pdf/mcmd/table_join/mvreplace.pdf"
 }

@@ -1,26 +1,28 @@
 {
-    "version": "0.7.0",
-    "id": "msortf",
-    "label": "",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/msortf.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "msortf",
+  "params": [
+    {
+      "name": "f",
+      "type": "string",
+      "label": "対象列名(必須)"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "f",
-            "type": "string",
-            "label": "対象列名(必須)"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "ソート",
+  "classification": "row_sort",
+  "description": "./static/pdf/mcmd/row_sort/msortf.pdf"
 }

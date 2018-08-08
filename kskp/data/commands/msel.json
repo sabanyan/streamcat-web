@@ -1,36 +1,32 @@
 {
-    "version": "0.7.0",
-    "id": "msel",
-    "label": "行絞り込み",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/msel.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "msel",
+  "params": [
+    {
+      "name": "c",
+      "label": "絞込条件式(必須)",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "c",
-            "type": "string",
-            "label": "絞込条件式(必須)"
-        },
-        {
-            "name": "o",
-            "type": "string",
-            "label": "指定条件に一致する行を出力するファイル名"
-        },
-        {
-            "name": "u",
-            "type": "string",
-            "label": "指定条件に合わない行を出力するファイル名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "行絞り込み",
+  "classification": "row_edit",
+  "description": "./static/pdf/mcmd/row_edit/msel.pdf"
 }

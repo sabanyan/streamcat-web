@@ -1,26 +1,28 @@
 {
-    "version": "0.7.0",
-    "id": "muniq",
-    "label": "単一化",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/muniq.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "muniq",
+  "params": [
+    {
+      "name": "k",
+      "type": "string",
+      "label": "キー列名"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "k",
-            "type": "string",
-            "label": "キー列名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "単一化",
+  "classification": "row_edit",
+  "description": "./static/pdf/mcmd/row_edit/muniq.pdf"
 }

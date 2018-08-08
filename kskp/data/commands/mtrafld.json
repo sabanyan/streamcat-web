@@ -1,41 +1,43 @@
 {
-    "version": "0.7.0",
-    "id": "mtrafld",
-    "label": "クロス表をトランザクション項目に変換",
-    "classification": "valuecrossing_new",
-    "description": "./static/pdf/mcmd/valuecrossing_new/mtrafld.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mtrafld",
+  "params": [
+    {
+      "name": "a",
+      "label": "トランザクション列名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "f",
+      "label": "列名リスト",
+      "type": "string"
+    },
+    {
+      "name": "delim",
+      "label": "トランザクション項目アイテムを区切る文字列",
+      "type": "string"
+    },
+    {
+      "name": "delim2",
+      "label": "項目名と値ペアを区切る文字列",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "a",
-            "type": "string",
-            "label": "トランザクション列名(必須)"
-        },
-        {
-            "name": "f",
-            "type": "string",
-            "label": "列名リスト"
-        },
-        {
-            "name": "delim",
-            "type": "string",
-            "label": "トランザクション項目アイテムを区切る文字列"
-        },
-        {
-            "name": "delim2",
-            "type": "string",
-            "label": "項目名と値ペアを区切る文字列"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "クロス表をトランザクション項目に変換(Mtrafld)",
+  "classification": "value_crossing",
+  "description": "./static/pdf/mcmd/value_crossing/mtrafld.pdf"
 }

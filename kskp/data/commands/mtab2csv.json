@@ -1,26 +1,28 @@
 {
-    "version": "0.7.0",
-    "id": "mtab2csv",
-    "label": "",
-    "classification": "dataformat_new",
-    "description": "./static/pdf/mcmd/dataformat_new/mtab2csv.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mtab2csv",
+  "params": [
+    {
+      "name": "d",
+      "label": "区切り文字",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "d",
-            "type": "string",
-            "label": "区切り文字"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "TSVからCSVデータへの変換",
+  "classification": "data_format",
+  "description": "./static/pdf/mcmd/data_format/mtab2csv.pdf"
 }

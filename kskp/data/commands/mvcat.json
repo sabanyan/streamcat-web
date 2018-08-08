@@ -1,31 +1,33 @@
 {
-    "version": "0.7.0",
-    "id": "mvcat",
-    "label": "ベクトルの併合",
-    "classification": "coledit_new",
-    "description": "./static/pdf/mcmd/coledit_new/mvcat.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mvcat",
+  "params": [
+    {
+      "name": "vf",
+      "label": "併合するベクトル列名",
+      "type": "string"
+    },
+    {
+      "name": "a",
+      "label": "併合後の列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "vf",
-            "type": "string",
-            "label": "併合するベクトル列名(必須)"
-        },
-        {
-            "name": "a",
-            "type": "string",
-            "label": "併合後の列名(必須)"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "ベクトルの併合",
+  "classification": "col_edit",
+  "description": "./static/pdf/mcmd/col_edit/mvcat.pdf"
 }

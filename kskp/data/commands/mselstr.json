@@ -1,46 +1,42 @@
 {
-    "version": "0.7.0",
-    "id": "mselstr",
-    "label": "行選択(文字列)",
-    "classification": "valuetransform_new",
-    "description": "./static/pdf/mcmd/valuetransform_new/mselstr.pdf",
-    "ports": [
-        [
-            {
-                "name": "i",
-                "type": "frame"
-            },
-            {
-                "name": "o",
-                "type": "frame"
-            }
-        ]
+  "id": "mselstr",
+  "params": [
+    {
+      "name": "f",
+      "label": "対象列名",
+      "type": "string"
+    },
+    {
+      "name": "v",
+      "label": "絞込条件値（文字列）",
+      "type": "string"
+    },
+    {
+      "name": "k",
+      "label": "選択単位となるキー列名",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
     ],
-    "params": [
-        {
-            "name": "f",
-            "type": "string",
-            "label": "対象列名"
-        },
-        {
-            "name": "v",
-            "type": "string",
-            "label": "絞込条件値（文字列）"
-        },
-        {
-            "name": "k",
-            "type": "string",
-            "label": "選択単位となるキー列名"
-        },
-        {
-            "name": "o",
-            "type": "string",
-            "label": "指定条件に合う行の出力ファイル名"
-        },
-        {
-            "name": "u",
-            "type": "string",
-            "label": "指定条件に合わない行の出力ファイル名"
-        }
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      },
+      {
+        "name": "u",
+        "type": "frame"
+      }
     ]
+  ],
+  "version": "0.7.0",
+  "label": "行選択(文字列)",
+  "classification": "row_edit",
+  "description": "./static/pdf/mcmd/row_edit/mselstr.pdf"
 }
