@@ -1,0 +1,44 @@
+{
+  "id": "mnewrand",
+  "params": [
+    {
+      "name": "a",
+      "label": "新規作成する連番行の項目名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "max",
+      "label": "乱数の最大値",
+      "type": "string"
+    },
+    {
+      "name": "min",
+      "label": "乱数の最小値",
+      "type": "string"
+    },
+    {
+      "name": "S",
+      "label": "乱数の種を指定する",
+      "type": "string"
+    },
+    {
+      "name": "l",
+      "label": "作成するデータ行数",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "乱数データの新規作成",
+  "classification": "data_source",
+  "description": ""
+}
