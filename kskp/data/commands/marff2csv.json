@@ -18,5 +18,5 @@
   "version": "0.7.0",
   "label": "arffからcsv形式への変換",
   "classification": "data_format",
-  "description": ""
+  "description": "./static/pdf/mcmd/data_format/marff2csv.pdf"
 }

@@ -43,5 +43,5 @@
   "version": "0.7.0",
   "label": "参照ファイル列の結合",
   "classification": "table_join",
-  "description": ""
+  "description": "./static/pdf/mcmd/table_join/mnjoin.pdf"
 }

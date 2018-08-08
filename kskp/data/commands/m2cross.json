@@ -44,5 +44,5 @@
   "version": "0.7.0",
   "label": "1対Nのクロス集計",
   "classification": "value_crossing",
-  "description": ""
+  "description": "./static/pdf/mcmd/value_crossing/m2cross.pdf"
 }
