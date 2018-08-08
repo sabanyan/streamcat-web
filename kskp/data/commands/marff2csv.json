@@ -1,22 +1,20 @@
 {
-  "id": "marff2csv",
-  "params": [],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "marff2csv",
+    "label": "arffからcsv形式への変換",
+    "classification": "dataformat_new",
+    "description": "./static/pdf/mcmd/dataformat_new/marff2csv.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
-    ]
-  ],
-  "version": "0.7.0",
-  "label": "arffからcsv形式への変換",
-  "classification": "data_format",
-  "description": ""
+    "params": []
 }

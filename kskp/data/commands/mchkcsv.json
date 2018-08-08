@@ -1,28 +1,31 @@
 {
-  "id": "mchkcsv",
-  "params": [],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "label": "入力ファイル",
-        "type": "frame"
-      },
-      {
-        "name": "a",
-        "label": "入力データの項目名を無視し、ここで指定した項目名を出力",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mchkcsv",
+    "label": "csvデータのチェック・修復",
+    "classification": "validation_new",
+    "description": "./static/pdf/mcmd/validation_new/mchkcsv.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "i",
+            "type": "string",
+            "label": "入力ファイル名"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "入力データ列を無視する、新しい列名"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "CSV検査",
-  "classification": "validation",
-  "description": ""
 }

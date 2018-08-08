@@ -1,43 +1,41 @@
 {
-  "id": "msep2",
-  "params": [
-    {
-      "name": "k",
-      "label": "分割単位となる項目(必須)",
-      "type": "string"
-    },
-    {
-      "name": "O",
-      "label": "連番ファイルを作成するディレクトリ名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "a",
-      "label": "o=にて出力するファイル名の項目名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "o",
-      "label": "kでの指定項目値に対する連番ファイル名の対応表名",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "msep2",
+    "label": "連番、項目値表の出力を伴った行分割",
+    "classification": "tablesplit_new",
+    "description": "./static/pdf/mcmd/tablesplit_new/msep2.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "k",
+            "type": "string",
+            "label": "分割単位となる項目(必須)"
+        },
+        {
+            "name": "O",
+            "type": "string",
+            "label": "連番ファイルを作成するディレクトリ名(必須)"
+        },
+        {
+            "name": "o",
+            "type": "string",
+            "label": "kでの指定項目値に対する連番ファイル名の対応表名"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "o=にて出力するファイル名の項目名(必須)"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "連番、項目値表の出力を伴った行分割",
-  "classification": "table_split",
-  "description": ""
 }

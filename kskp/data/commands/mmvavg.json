@@ -1,53 +1,51 @@
 {
-  "id": "mmvavg",
-  "params": [
-    {
-      "name": "f",
-      "label": "移動平均を求める列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "s",
-      "label": "並べ替えの後、移動平均を計算する列名(-q 無しの場合必須)",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "単位とする列名",
-      "type": "string"
-    },
-    {
-      "name": "t",
-      "label": "期間数を1以上の整数で指定する(必須) alpha=指定時には設定できない",
-      "type": "string"
-    },
-    {
-      "name": "alpha",
-      "label": "平滑化係数、-exp指定時のみ",
-      "type": "string"
-    },
-    {
-      "name": "skip",
-      "label": "出力を抑制する最初の行数",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mmvavg",
+    "label": "移動平均の算出",
+    "classification": "tablegrouping_new",
+    "description": "./static/pdf/mcmd/tablegrouping_new/mmvavg.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "s",
+            "type": "string",
+            "label": "並べ替えの後、移動平均を計算する列名"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "単位とする列名"
+        },
+        {
+            "name": "f",
+            "type": "string",
+            "label": "移動平均を求める列名(必須)"
+        },
+        {
+            "name": "t",
+            "type": "string",
+            "label": "期間数の指定、alpha=指定時には設定できない"
+        },
+        {
+            "name": "alpha",
+            "type": "string",
+            "label": "平滑化係数、-exp指定時のみ"
+        },
+        {
+            "name": "skip",
+            "type": "string",
+            "label": "出力を抑制する最初の行数"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "移動平均の算出",
-  "classification": "table_grouping",
-  "description": ""
 }

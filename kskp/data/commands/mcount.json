@@ -1,33 +1,31 @@
 {
-  "id": "mcount",
-  "params": [
-    {
-      "name": "k",
-      "type": "string",
-      "label": "対象列名(必須)"
-    },
-    {
-      "name": "a",
-      "type": "string",
-      "label": "結果列名(必須)"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mcount",
+    "label": "行数カウント",
+    "classification": "tablegrouping_new",
+    "description": "./static/pdf/mcmd/tablegrouping_new/mcount.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "k",
+            "type": "string",
+            "label": "対象列名"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "結果列名(必須)"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "行数カウント",
-  "classification": "table_grouping",
-  "description": ""
 }

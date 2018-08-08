@@ -1,38 +1,36 @@
 {
-  "id": "mhashsum",
-  "params": [
-    {
-      "name": "f",
-      "label": "合計を求める列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "キーとする列名",
-      "type": "string"
-    },
-    {
-      "name": "hs",
-      "label": "ハッシュサイズ",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mhashsum",
+    "label": "ハッシュ法による列の値の合計",
+    "classification": "tablegrouping_new",
+    "description": "./static/pdf/mcmd/tablegrouping_new/mhashsum.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "合計を求める列名(必須)"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "キーとする列名"
+        },
+        {
+            "name": "hs",
+            "type": "string",
+            "label": "ハッシュサイズ"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "ハッシュ法による列の値の合計",
-  "classification": "table_grouping",
-  "description": ""
 }

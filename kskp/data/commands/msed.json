@@ -1,38 +1,36 @@
 {
-  "id": "msed",
-  "params": [
-    {
-      "name": "f",
-      "type": "string",
-      "label": "対象列名(必須)"
-    },
-    {
-      "name": "c",
-      "type": "string",
-      "label": "変換パターン(必須)"
-    },
-    {
-      "name": "v",
-      "type": "string",
-      "label": "変換後文字列(必須)"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "msed",
+    "label": "文字列置換",
+    "classification": "valuetransform_new",
+    "description": "./static/pdf/mcmd/valuetransform_new/msed.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "対象列名(必須)"
+        },
+        {
+            "name": "c",
+            "type": "string",
+            "label": "変換パターン(必須)"
+        },
+        {
+            "name": "v",
+            "type": "string",
+            "label": "変換後文字列(必須)"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "正規表現による文字列置換",
-  "classification": "value_transform",
-  "description": ""
 }

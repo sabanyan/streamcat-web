@@ -1,48 +1,46 @@
 {
-  "id": "mbucket",
-  "params": [
-    {
-      "name": "n",
-      "label": "行数(必須)",
-      "type": "string"
-    },
-    {
-      "name": "f",
-      "label": "対象列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "F",
-      "label": "出力形式",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "バケット分割を行う単位となる列名",
-      "type": "string"
-    },
-    {
-      "name": "O",
-      "label": "バケット範囲出力ファイル",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mbucket",
+    "label": "行分割",
+    "classification": "tablesplit_new",
+    "description": "./static/pdf/mcmd/tablesplit_new/mbucket.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "n",
+            "type": "string",
+            "label": "行数(必須)"
+        },
+        {
+            "name": "f",
+            "type": "string",
+            "label": "対象列名(必須)"
+        },
+        {
+            "name": "F",
+            "type": "string",
+            "label": "出力形式"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "バケット分割を行う単位となる列名"
+        },
+        {
+            "name": "O",
+            "type": "string",
+            "label": "バケット範囲出力ファイル"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "行分割",
-  "classification": "table_split",
-  "description": ""
 }

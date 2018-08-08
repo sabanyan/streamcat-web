@@ -1,38 +1,36 @@
 {
-  "id": "mvnullto",
-  "params": [
-    {
-      "name": "vf",
-      "label": "対象列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "v",
-      "label": "置換文字列",
-      "type": "string"
-    },
-    {
-      "name": "O",
-      "label": "NULL以外の全要素を置換する文字列",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mvnullto",
+    "label": "ベクトル要素のNULL置換",
+    "classification": "valuetransform_new",
+    "description": "./static/pdf/mcmd/valuetransform_new/mvnullto.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "vf",
+            "type": "string",
+            "label": "対象列名(必須)"
+        },
+        {
+            "name": "v",
+            "type": "string",
+            "label": "置換文字列"
+        },
+        {
+            "name": "O",
+            "type": "string",
+            "label": "NULL以外の全要素を置換する文字列"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "ベクトル要素のNULL置換",
-  "classification": "value_transform",
-  "description": ""
 }

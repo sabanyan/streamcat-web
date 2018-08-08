@@ -1,28 +1,26 @@
 {
-  "id": "mvcount",
-  "params": [
-    {
-      "name": "vf",
-      "label": "要素数をカウントするベクトルの列名",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mvcount",
+    "label": "ベクトルサイズの計算",
+    "classification": "coledit_new",
+    "description": "./static/pdf/mcmd/coledit_new/mvcount.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "vf",
+            "type": "string",
+            "label": "要素数をカウントするベクトルの列名(必須)"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "ベクトルサイズの計算",
-  "classification": "col_edit",
-  "description": ""
 }

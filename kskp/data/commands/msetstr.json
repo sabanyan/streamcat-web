@@ -1,33 +1,31 @@
 {
-  "id": "msetstr",
-  "params": [
-    {
-      "name": "a",
-      "type": "string",
-      "label": "追加列名"
-    },
-    {
-      "name": "v",
-      "type": "string",
-      "label": "追加する値"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "msetstr",
+    "label": "文字列追加",
+    "classification": "coledit_new",
+    "description": "./static/pdf/mcmd/coledit_new/msetstr.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "a",
+            "type": "string",
+            "label": "追加列名(必須)"
+        },
+        {
+            "name": "v",
+            "type": "string",
+            "label": "追加する値(必須)"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "文字列追加",
-  "classification": "col_edit",
-  "description": ""
 }

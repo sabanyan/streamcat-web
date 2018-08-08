@@ -1,48 +1,46 @@
 {
-  "id": "m2cross",
-  "params": [
-    {
-      "name": "f",
-      "label": "組み合わせ列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "s",
-      "label": "列項目名に展開する列(aとどちらか必須)",
-      "type": "string"
-    },
-    {
-      "name": "a",
-      "label": "２項目指定(sとどちらか必須)",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "キー列名",
-      "type": "string"
-    },
-    {
-      "name": "v",
-      "label": "NULL血置換文字列",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "m2cross",
+    "label": "1対Nのクロス集計",
+    "classification": "valuecrossing_new",
+    "description": "./static/pdf/mcmd/valuecrossing_new/m2cross.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "組み合わせ列名(必須)"
+        },
+        {
+            "name": "s",
+            "type": "string",
+            "label": "列項目名に展開する列(選択必須)"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "２項目指定(選択必須)"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "キー列名"
+        },
+        {
+            "name": "v",
+            "type": "string",
+            "label": "NULL血置換文字列"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "1対Nのクロス集計",
-  "classification": "value_crossing",
-  "description": ""
 }

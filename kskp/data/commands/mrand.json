@@ -1,48 +1,46 @@
 {
-  "id": "mrand",
-  "params": [
-    {
-      "name": "k",
-      "label": "指定キーと同名のキー値に同じラン数値",
-      "type": "string"
-    },
-    {
-      "name": "a",
-      "label": "追加列名",
-      "type": "string"
-    },
-    {
-      "name": "max",
-      "label": "乱数の最大値、この値の指定時には-intも設定することが必須",
-      "type": "string"
-    },
-    {
-      "name": "min",
-      "label": "乱数の最小値、この値の指定時には-intも設定することが必須",
-      "type": "string"
-    },
-    {
-      "name": "S",
-      "label": "乱数の種",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mrand",
+    "label": "擬似乱数",
+    "classification": "coledit_new",
+    "description": "./static/pdf/mcmd/coledit_new/mrand.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "k",
+            "type": "string",
+            "label": "指定キーと同名のキー値に同じラン数値"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "追加列名(必須)"
+        },
+        {
+            "name": "max",
+            "type": "string",
+            "label": "乱数の最大値、この値の指定時には-intも設定することが必須"
+        },
+        {
+            "name": "min",
+            "type": "string",
+            "label": "乱数の最小値、この値の指定時には-intも設定することが必須"
+        },
+        {
+            "name": "S",
+            "type": "string",
+            "label": "乱数の種"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "擬似乱数",
-  "classification": "col_edit",
-  "description": ""
 }

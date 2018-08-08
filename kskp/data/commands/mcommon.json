@@ -1,46 +1,41 @@
 {
-  "id": "mcommon",
-  "params": [
-    {
-      "name": "k",
-      "label": "結合キー名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "m",
-      "label": "参照ファイル名",
-      "type": "string"
-    },
-    {
-      "name": "K",
-      "label": "参照列名",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      },
-      {
-        "name": "m",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mcommon",
+    "label": "行選択",
+    "classification": "tablejoin_new",
+    "description": "./static/pdf/mcmd/tablejoin_new/mcommon.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      },
-      {
-        "name": "u",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "k",
+            "type": "string",
+            "label": "結合キー名(必須)"
+        },
+        {
+            "name": "m",
+            "type": "string",
+            "label": "参照ファイル名"
+        },
+        {
+            "name": "K",
+            "type": "string",
+            "label": "参照列名"
+        },
+        {
+            "name": "u",
+            "type": "string",
+            "label": "指定条件に合わない行の出力ファイル名"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "行選択",
-  "classification": "table_join",
-  "description": ""
 }

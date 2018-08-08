@@ -1,38 +1,36 @@
 {
-  "id": "mnullto",
-  "params": [
-    {
-      "name": "f",
-      "type": "string",
-      "label": "対象列名(必須)"
-    },
-    {
-      "name": "v",
-      "type": "string",
-      "label": "変換後文字列"
-    },
-    {
-      "name": "O",
-      "type": "string",
-      "label": "NULL値以外を置換する文字列"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mnullto",
+    "label": "NULL置換",
+    "classification": "valuetransform_new",
+    "description": "./static/pdf/mcmd/valuetransform_new/mnullto.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "対象列名(必須)"
+        },
+        {
+            "name": "v",
+            "type": "string",
+            "label": "置換後の文字列"
+        },
+        {
+            "name": "O",
+            "type": "string",
+            "label": "NULL値以外を置換する文字列"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "NULL置換",
-  "classification": "value_transform",
-  "description": ""
 }

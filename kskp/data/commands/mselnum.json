@@ -1,42 +1,46 @@
 {
-  "id": "mselnum",
-  "params": [
-    {
-      "name": "f",
-      "label": "検索列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "c",
-      "label": "検索文字列(必須)",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "選択単位となるキー列名",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mselnum",
+    "label": "数値範囲による行選択",
+    "classification": "valuetransform_new",
+    "description": "./static/pdf/mcmd/valuetransform_new/mselnum.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      },
-      {
-        "name": "u",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "検索列名(必須)"
+        },
+        {
+            "name": "c",
+            "type": "string",
+            "label": "検索文字列(必須)"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "選択単位となるキー列名"
+        },
+        {
+            "name": "o",
+            "type": "string",
+            "label": "指定条件に合う行の出力ファイル名"
+        },
+        {
+            "name": "u",
+            "type": "string",
+            "label": "指定条件に合わない行の出力ファイル名"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "数値範囲による行選択",
-  "classification": "row_edit",
-  "description": ""
 }

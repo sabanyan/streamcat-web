@@ -1,33 +1,26 @@
 {
-  "id": "mcut",
-  "params": [
-    {
-      "name": "f",
-      "type": "string",
-      "label": "対象列名"
-    },
-    {
-      "name": "x",
-      "type": "boolean",
-      "label": "項目番号による指定（true or false)"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mcut",
+    "label": "列選択",
+    "classification": "coledit_new",
+    "description": "./static/pdf/mcmd/coledit_new/mcut.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "対象列名(必須)"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "列選択",
-  "classification": "col_edit",
-  "description": ""
 }

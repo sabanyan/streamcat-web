@@ -1,38 +1,36 @@
 {
-  "id": "mhashavg",
-  "params": [
-    {
-      "name": "f",
-      "label": "平均を求める列名(必須)",
-      "type": "string"
-    },
-    {
-      "name": "k",
-      "label": "キー列名",
-      "type": "string"
-    },
-    {
-      "name": "hs",
-      "label": "ハッシュサイズ",
-      "type": "string"
-    }
-  ],
-  "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
+    "version": "0.7.0",
+    "id": "mhashavg",
+    "label": "ハッシュ法による列値の平均",
+    "classification": "tablegrouping_new",
+    "description": "./static/pdf/mcmd/tablegrouping_new/mhashavg.pdf",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
     ],
-    [
-      {
-        "name": "o",
-        "type": "frame"
-      }
+    "params": [
+        {
+            "name": "f",
+            "type": "string",
+            "label": "平均を求める列名(必須)"
+        },
+        {
+            "name": "k",
+            "type": "string",
+            "label": "キー列名"
+        },
+        {
+            "name": "hs",
+            "type": "string",
+            "label": "ハッシュサイズ"
+        }
     ]
-  ],
-  "version": "0.7.0",
-  "label": "ハッシュ法による列値の平均",
-  "classification": "table_grouping",
-  "description": ""
 }
