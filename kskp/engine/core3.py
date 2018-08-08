@@ -468,6 +468,36 @@ class Mtee(MCommand):
         self.description = '出力'
         self.params.append(Parameter('o', '出力先'))
 
+class Mnewnumber(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnewnumber'
+        self.description = '連番データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('I', '連番を振る間隔'))
+        self.params.append(Parameter('S', '開始数値/アルファベット(大文字)'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
+
+class Mnewrand(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnewrand'
+        self.description = '乱数データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('max', '乱数の最大値'))
+        self.params.append(Parameter('min', '乱数の最小値'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
+        self.params.append(Parameter('S', '乱数の種を指定する'))
+
+class Mnewstr(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnewstr'
+        self.description = '固定文字列データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('v', '新しく作成する文字列'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
+
 class Mcat(MCommand):
     def __init__(self):
         super().__init__()
@@ -2310,6 +2340,9 @@ commands = {
     'mbucket': Mbucket(),
     'mcat': Mcat(),
     'mtee': Mtee(),
+    'mnewrand': Mnewrand(),
+    'mnewstr': Mnewstr(),
+    'mnewnumber': Mnewnumber(),
     'msortf': Msortf(),
     'mcal': Mcal(),
 

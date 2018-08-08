@@ -1,0 +1,34 @@
+{
+  "id": "mnewstr",
+  "params": [
+    {
+      "name": "a",
+      "label": "新規作成する連番行の項目名(必須)",
+      "type": "string"
+    },
+    {
+      "name": "v",
+      "label": "新しく作成する文字列",
+      "type": "string"
+    },
+    {
+      "name": "l",
+      "label": "作成するデータ行数",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.7.0",
+  "label": "固定文字列データの新規作成",
+  "classification": "data_source",
+  "description": ""
+}

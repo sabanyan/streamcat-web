@@ -32,5 +32,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "スライド窓の生成"
+  "label": "スライド窓の生成",
+  "classification": "table_grouping",
+  "description": ""
 }
