@@ -227,7 +227,7 @@ def upload_frame(req):
     frame_uuid = str(uuid.uuid4())
 
     from werkzeug.utils import secure_filename
-    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid))
+    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
     f.save(file_path.as_posix())
     f.close()
 
