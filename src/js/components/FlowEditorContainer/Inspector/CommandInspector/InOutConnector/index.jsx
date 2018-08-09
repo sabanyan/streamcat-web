@@ -28,14 +28,18 @@ class InOutConnector extends React.Component{
     let command:CommandModel
     if(selectedStep instanceof CommandStepModel){
       command = selectedStep.getCommand(mast.commands)
-    }
+    }else if(selectedStep instanceof SubFlowStepModel){
 
-    console.log(selectedStep.getSrcsSteps(this.props.nodes))
+    }
 
 
     let inEdgeSelect = selected_in_edges.map((edge,index)=>{
-      const inPorts = command.getInPorts()
-      const port:CommandPortType = inPorts[index]
+      let inPorts:[CommandPortType]
+      let port:CommandPortType
+      if(command){
+        inPorts = command.getInPorts()
+        port = inPorts[index]
+      }
       return <div>
         <DropDownList disabled={false} key={"in_edge"} onChange={onChangeInEdge} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
       </div>
