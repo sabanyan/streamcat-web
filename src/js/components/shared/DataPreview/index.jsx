@@ -50,15 +50,15 @@ export default class DataPreview extends React.Component<Props, State> {
 
   render () {
     console.log("render")
-    console.log(this.state)
 
     let json = this.state.json
 
     if (!json) {
       return null
     }
+    console.log(json)
 
-    let data = ChartUtil.jsonToChart(json.contents)
+    let data = ChartUtil.jsonToChart(json.data.contents)
     let type = this.state.type
     let chart
     switch (type) {

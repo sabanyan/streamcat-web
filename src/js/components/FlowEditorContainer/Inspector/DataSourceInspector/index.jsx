@@ -67,7 +67,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       this.loading = true
       this.forceUpdate()
       HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
-        let content = <DataPreview key={selected_step.uuid} json={response.data} />
+        const json = response.data
+        let content = <DataPreview key={selected_step.uuid} json={json} />
         ModalUtil.emitModal({
           id: Constants.preview.DATASOURCE,
           visible: true,
