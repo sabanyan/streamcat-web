@@ -105,6 +105,7 @@ def add_activity_to_flow(id):
 def add_data_source_to_flow(source):
     '''
     フローに作成時にデータソースをつけるためのデコレータ
+    activityに入れるものどうかと思ったが、他に置き場所がなかった…
     '''
     def _deco(func):
         @functools.wraps(func)
@@ -112,13 +113,16 @@ def add_data_source_to_flow(source):
             if source is None:
                 return func()
 
+            if not source.get('uuid'):
+                return func()
+
             data = func()
             data_source = {
                 "id": "i",
-                "type": source['type'],
+                "type": source.get('type'),
                 "dataSource": "csv",
-                "uuid": source['uuid'],
-                "label": source['label']
+                "uuid": source.get('uuid'),
+                "label": source.get('label')
             }
 
             data['nodes'] = []
