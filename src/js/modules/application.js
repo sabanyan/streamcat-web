@@ -226,10 +226,30 @@ const Application = (state = initialState, action) => {
             //stateを一度ディープコピーしないとrenderされないためコピーする
             let newState = StateUtil.deepCopy(state)
 
-            newState.nodes.map((node,index)=>{
-              if(node.id == action.step.id){
-                return action.step
-              }
+            newState.nodes = newState.nodes.map((node,index)=>{
+
+                //データに応じたノード間の繋がりの更新
+                if(node.id === action.step.id){
+                  if(node instanceof CommandStepModel){
+                    if(node.srcs !== action.step.srcs){
+                      //ノードのつながりをすべて削除
+                      Object.keys(node.srcs).forEach(portName=>{
+                        const id = node.srcs[portName]
+                        const from = id
+                        const to = node.id
+                        graph.removeEdge(from,to,from)
+                      })
+                      //ノードのつながりを再構築
+                      Object.keys(action.step.srcs).forEach(portName=>{
+                        const id = action.step.srcs[portName]
+                        const from = id
+                        const to = action.step.id
+                        graph.addEdge(from,to,from)
+                      })
+                    }
+                  }
+                  return action.step
+                }
               return node
             })
 

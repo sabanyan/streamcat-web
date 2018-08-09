@@ -7,8 +7,23 @@ import CommandModel from '../../../../../model/Command/CommandModel'
 import FlowUtil from '../../../../../utils/FlowUtil'
 import type { CommandPortType } from '../../../../../types'
 import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
+import StateUtil from '../../../../../utils/State'
 
 class InOutConnector extends React.Component{
+
+  onChangeInEdge(e,data,label){
+    const {selectedStep} = this.props
+    let newSelectedStep = StateUtil.deepCopy(selectedStep)
+    //labelにポート名
+    //data.objectにデータフレームが格納されいてる
+    console.log(newSelectedStep.srcs)
+    console.log(data)
+    const dataSource:DataFrameStepModel = data.object
+    newSelectedStep.srcs[label] = dataSource.id
+    console.log(newSelectedStep.srcs)
+    this.props.updateStep(newSelectedStep)
+  }
+
 
   render () {
 
@@ -19,10 +34,10 @@ class InOutConnector extends React.Component{
 
     let dataFrameOnlyNodes:[DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
 
-    let dataSourceOptions = new Set()
+    let dataSourceOptions = []
 
     dataFrameOnlyNodes.forEach((dataFrame)=>{
-      dataSourceOptions.add({value: dataFrame.id, label: dataFrame.label, object: dataFrame})
+      dataSourceOptions.push({value: dataFrame.id, label: dataFrame.label, object: dataFrame})
     })
 
     let command:CommandModel
@@ -41,7 +56,7 @@ class InOutConnector extends React.Component{
         port = inPorts[index]
       }
       return <div>
-        <DropDownList disabled={false} key={"in_edge"} onChange={onChangeInEdge} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
+        <DropDownList disabled={false} key={"in_edge"} onChange={(e,data,label)=>this.onChangeInEdge(e,data,label)} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
       </div>
     })
 

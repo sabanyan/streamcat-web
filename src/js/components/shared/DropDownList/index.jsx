@@ -19,21 +19,15 @@ type Props = {
 export default class DropDownList extends React.Component<Props> {
 
   onChange (e:Event) {
-    const {onChange} = this.props
-    console.log(e.target.value)
+    const {onChange,label} = this.props
     const data = this.getDataFromList(e.target.value)
-    console.log(data)
-    onChange(e, data)
+    onChange(e, data, label)
   }
 
   getDataFromList (value:string) {
     const {list} = this.props
-    list.forEach((data) => {
-      console.log(value)
-      console.log(data.value)
-      if (data.value === value) {
-        return data
-      }
+    return list.find((data) => {
+      return (data.value === value)
     })
   }
 
