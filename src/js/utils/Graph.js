@@ -90,6 +90,15 @@ class Graph {
   }
 
   /**
+   * エッジの削除
+   * @param from_id
+   * @param to_id
+   */
+  removeEdge (from_id, to_id, name) {
+    this.g.removeEdge({v:from_id, w:to_id,name:name})
+  }
+
+  /**
    * dagreによるレイアウト
    */
   layout () {
