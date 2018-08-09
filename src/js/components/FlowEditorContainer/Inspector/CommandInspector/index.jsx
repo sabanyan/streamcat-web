@@ -36,7 +36,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         if(selected_step.type === Constants.step.type.subflow){
           //サブフローの場合のみ詳細を取得
           HttpUtil.get("flows/"+selected_step.uuid+"?navigation=off").then((response)=>{
-            this.selectedSubFlow = response.data.data
+            this.selectedSubFlow = new FlowModel(response.data.data)
             this.loaded = true
             this.forceUpdate()
           })
@@ -131,7 +131,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         }else {
           content = <div>
             {subFlowLink}
-            <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step}/>
+            <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step} selectedSubFlow={this.selectedSubFlow}/>
             <div className={style.hr} />
             <div className={style.property_title}>
               パラメータ

@@ -8,6 +8,7 @@ import CommandStepModel from '../model/Step/CommandStepModel'
 import type { CommandPortType } from '../types'
 import CommandModel from '../model/Command/CommandModel'
 import FlowUtil from '../utils/FlowUtil'
+import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -133,7 +134,8 @@ const Application = (state = initialState, action) => {
             //Stateの更新
             let newState = StateUtil.deepCopy(state)
 
-            if(add_step instanceof CommandStepModel){
+            if(add_step instanceof CommandStepModel ||
+              add_step instanceof SubFlowStepModel){
               //srcs
               let totalSX = 0
               let totalSY = 0
@@ -230,7 +232,8 @@ const Application = (state = initialState, action) => {
 
                 //データに応じたノード間の繋がりの更新
                 if(node.id === action.step.id){
-                  if(node instanceof CommandStepModel){
+                  if(node instanceof CommandStepModel ||
+                    node instanceof SubFlowStepModel){
                     if(node.srcs !== action.step.srcs){
                       //ノードのつながりをすべて削除
                       Object.keys(node.srcs).forEach(portName=>{

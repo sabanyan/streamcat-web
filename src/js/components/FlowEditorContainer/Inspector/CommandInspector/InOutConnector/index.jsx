@@ -5,9 +5,10 @@ import CommandStepModel from '../../../../../model/Step/CommandStepModel'
 import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
 import CommandModel from '../../../../../model/Command/CommandModel'
 import FlowUtil from '../../../../../utils/FlowUtil'
-import type { CommandPortType } from '../../../../../types'
+import type { CommandPortType, SubFlowParamType } from '../../../../../types'
 import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
 import StateUtil from '../../../../../utils/State'
+import FlowModel from '../../../../../model/Flow/FlowModel'
 
 class InOutConnector extends React.Component{
 
@@ -16,11 +17,10 @@ class InOutConnector extends React.Component{
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     //labelにポート名
     //data.objectにデータフレームが格納されいてる
-    console.log(newSelectedStep.srcs)
-    console.log(data)
     const dataSource:DataFrameStepModel = data.object
+    console.log("onChangeInEdge")
+    console.log(label)
     newSelectedStep.srcs[label] = dataSource.id
-    console.log(newSelectedStep.srcs)
     this.props.updateStep(newSelectedStep)
   }
 
@@ -29,7 +29,6 @@ class InOutConnector extends React.Component{
 
     const {nodes,onChangeInEdge,onChangeOutEdge,selectedStep,mast} = this.props
     const {selected_in_edges,selected_out_edges} = this.props
-
     //すべてのデータフレーム先をリスト化
 
     let dataFrameOnlyNodes:[DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
@@ -41,26 +40,36 @@ class InOutConnector extends React.Component{
     })
 
     let command:CommandModel
-    if(selectedStep instanceof CommandStepModel){
-      command = selectedStep.getCommand(mast.commands)
-    }else if(selectedStep instanceof SubFlowStepModel){
-
-    }
-
-
-    let inEdgeSelect = selected_in_edges.map((edge,index)=>{
-      let inPorts:[CommandPortType]
-      let port:CommandPortType
-      if(command){
-        inPorts = command.getInPorts()
-        port = inPorts[index]
+    let inEdgeSelect = []
+    if(selectedStep instanceof SubFlowStepModel){
+      if(this.props.selectedSubFlow){
+        const subFlow:FlowModel = this.props.selectedSubFlow
+        inEdgeSelect = selected_in_edges.map((edge,index)=>{
+          let inPorts:[CommandPortType]
+          let port:CommandPortType
+          if(subFlow){
+            inPorts = subFlow.getInPorts()
+            port = inPorts[index]
+          }
+          return <div>
+            <DropDownList disabled={false} key={"in_edge"} onChange={(e,data,label)=>this.onChangeInEdge(e,data,label)} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
+          </div>
+        })
       }
-      return <div>
-        <DropDownList disabled={false} key={"in_edge"} onChange={(e,data,label)=>this.onChangeInEdge(e,data,label)} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
-      </div>
-    })
-
-    if(!inEdgeSelect.length)inEdgeSelect = <DropDownList key={"in_edge"} onChange={onChangeInEdge} defaultValue={0} list={dataSourceOptions}></DropDownList>
+    }else if(selectedStep instanceof CommandStepModel){
+      command = selectedStep.getCommand(mast.commands)
+      inEdgeSelect = selected_in_edges.map((edge,index)=>{
+        let inPorts:[CommandPortType]
+        let port:CommandPortType
+        if(command){
+          inPorts = command.getInPorts()
+          port = inPorts[index]
+        }
+        return <div>
+          <DropDownList disabled={false} key={"in_edge"} onChange={(e,data,label)=>this.onChangeInEdge(e,data,label)} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
+        </div>
+      })
+    }
 
     let output = selected_out_edges.map((edge)=>{
       const node = FlowUtil.getNodeFromID(nodes,edge.name)
