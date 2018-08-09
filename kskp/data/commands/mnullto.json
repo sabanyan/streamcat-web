@@ -34,5 +34,5 @@
   "version": "0.7.0",
   "label": "NULL置換",
   "classification": "value_transform",
-  "description": ""
+  "description": "./static/pdf/mcmd/value_transform/mnullto.pdf"
 }

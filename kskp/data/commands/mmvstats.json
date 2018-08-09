@@ -49,5 +49,5 @@
   "version": "0.7.0",
   "label": "移動窓の統計量の計算",
   "classification": "table_grouping",
-  "description": ""
+  "description": "./static/pdf/mcmd/table_grouping/mmvstats.pdf"
 }

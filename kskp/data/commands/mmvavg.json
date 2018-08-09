@@ -49,5 +49,5 @@
   "version": "0.7.0",
   "label": "移動平均の算出",
   "classification": "table_grouping",
-  "description": ""
+  "description": "./static/pdf/mcmd/table_grouping/mmvavg.pdf"
 }

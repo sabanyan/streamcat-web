@@ -34,5 +34,5 @@
   "version": "0.7.0",
   "label": "xmlからcsv形式への変換",
   "classification": "data_format",
-  "description": ""
+  "description": "./static/pdf/mcmd/data_format/mxml2csv.pdf"
 }

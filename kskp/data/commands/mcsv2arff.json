@@ -44,6 +44,6 @@
   "version": "0.7.0",
   "label": "csvからarff形式への変換",
   "classification": "data_format",
-  "description": "http://www.nysol.sakura.ne.jp/mcmd2/jp/sect-mcsv2arff.html"
+  "description": "./static/pdf/mcmd/data_format/mcsv2arff.pdf"
 
 }

@@ -24,5 +24,5 @@
   "version": "0.7.0",
   "label": "CSV検査",
   "classification": "validation",
-  "description": ""
+  "description": "./static/pdf/mcmd/validation/mchkcsv.pdf"
 }

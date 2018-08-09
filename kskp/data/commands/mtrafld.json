@@ -39,5 +39,5 @@
   "version": "0.7.0",
   "label": "クロス表をトランザクション項目に変換(Mtrafld)",
   "classification": "value_crossing",
-  "description": ""
+  "description": "./static/pdf/mcmd/value_crossing/mtrafld.pdf"
 }
