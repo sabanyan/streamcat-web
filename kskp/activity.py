@@ -1,15 +1,15 @@
 # 主に履歴に関わる処理を行うモジュール
 import json
 import functools
-from . import model
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from .model import get_flow_path_by_uuid
-from flask import (
-    Blueprint, session, render_template, url_for, jsonify, request, redirect, flash
-)
+from flask import session
+from .model import (
+    get_flow_path_by_uuid,
+    get_user_by_id
+    )
 
-def make_unfinished_history(now):
+def make_unfinished_history(now, session):
     """
     libraryで閲覧できる実行履歴(jobs)を作成する
     指定した時間とユーザ名を実行時情報とする
@@ -37,7 +37,7 @@ def make_unfinished_history(now):
             # nowはミリ秒まで入るのでnowを使ってdatetimeを作り直してからisoformat()を行っている
             history_json['executedAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
                                                   tzinfo=timezone(timedelta(hours=+9))).isoformat()
-            history_json['executor']['name'] = model.get_user_by_id(session['user_id'])['name']
+            history_json['executor']['name'] = get_user_by_id(session['user_id'])['name']
             history_json['flow']['uuid'] = args[0]
             history_json['state'] = '実行中'
             data = json.loads(get_flow_path_by_uuid(args[0]).read_text(encoding='utf-8'))
@@ -79,7 +79,7 @@ def make_finished_history(now):
         return deco
     return _deco
 
-def add_activity_to_flow(id):
+def add_activity_to_flow(user_id):
     '''
     フローに作成時に作成履歴をつけるためのデコレータ
     '''
@@ -89,12 +89,7 @@ def add_activity_to_flow(id):
             data = func()
             now = datetime.now()
 
-            # 一回別の変数に入れなければいけないみたい・・・
-            user_id = id
-            if user_id is None:
-                user_id = session['user_id']
-
-            data['creator'] = model.get_user_by_id(user_id)['name']
+            data['creator'] = get_user_by_id(user_id)['name']
             data['createdAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
                                         tzinfo=timezone(timedelta(hours=+9))).isoformat()
             return data
@@ -104,6 +99,7 @@ def add_activity_to_flow(id):
 def add_data_source_to_flow(source):
     '''
     フローに作成時にデータソースをつけるためのデコレータ
+    activityに入れるものどうかと思ったが、他に置き場所がなかった…
     '''
     def _deco(func):
         @functools.wraps(func)
@@ -111,13 +107,16 @@ def add_data_source_to_flow(source):
             if source is None:
                 return func()
 
+            if not source.get('uuid'):
+                return func()
+
             data = func()
             data_source = {
                 "id": "i",
-                "type": source['type'],
+                "type": source.get('type'),
                 "dataSource": "csv",
-                "uuid": source['uuid'],
-                "label": source['label']
+                "uuid": source.get('uuid'),
+                "label": source.get('label')
             }
 
             data['nodes'] = []
