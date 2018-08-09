@@ -194,13 +194,13 @@ export default class Modal extends React.Component<Props, State> {
     if (preview) {
       modal = <PreviewModal id={id} title={title} footer={modal_footer}
                             close_button={close_button} visible={visible}>
-        {modal_body}
+        {(visible)?modal_body:null}
       </PreviewModal>
     }
     else {
       modal = <StandardModal id={id} title={title} footer={modal_footer}
                              close_button={close_button} visible={visible}>
-        {modal_body}
+        {(visible)?modal_body:null}
       </StandardModal>
     }
 
