@@ -1,13 +1,14 @@
 # 主に履歴に関わる処理を行うモジュール
 import json
 import functools
-from . import model
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from .model import get_flow_path_by_uuid
-from flask import (
-    Blueprint, session, render_template, url_for, jsonify, request, redirect, flash
-)
+from flask import session
+from .model import (
+    get_flow_path_by_uuid,
+    get_user_by_id
+    )
+
 
 def make_unfinished_history(now):
     """
@@ -37,7 +38,7 @@ def make_unfinished_history(now):
             # nowはミリ秒まで入るのでnowを使ってdatetimeを作り直してからisoformat()を行っている
             history_json['executedAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
                                                   tzinfo=timezone(timedelta(hours=+9))).isoformat()
-            history_json['executor']['name'] = model.get_user_by_id(session['user_id'])['name']
+            history_json['executor']['name'] = get_user_by_id(session['user_id'])['name']
             history_json['flow']['uuid'] = args[0]
             history_json['state'] = '実行中'
             data = json.loads(get_flow_path_by_uuid(args[0]).read_text(encoding='utf-8'))
@@ -94,7 +95,7 @@ def add_activity_to_flow(id):
             if user_id is None:
                 user_id = session['user_id']
 
-            data['creator'] = model.get_user_by_id(user_id)['name']
+            data['creator'] = get_user_by_id(user_id)['name']
             data['createdAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
                                         tzinfo=timezone(timedelta(hours=+9))).isoformat()
             return data

@@ -85,13 +85,16 @@ def new_flow():
     """
 
     j = request.json
-    project_id = get_project_id_by_uuid(j['project_uuid'])
+    # getで取ってくるとキーが存在しないときはNoneが返ってきて、project_idがNoneになるので
+    # これでvalidationできていると言える？
+    project_id = get_project_id_by_uuid(j.get('project_uuid'))
 
     # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j.get('name'), j.get('datasource'))
+    # frontよりcreate_flowに渡すものが増えてきたので、requestを直接渡すようにした。
+    new_flow = create_flow(j, session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
 

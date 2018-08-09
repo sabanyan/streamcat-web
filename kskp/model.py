@@ -187,26 +187,21 @@ def fecth_project(project_id):
     sql = 'SELECT uuid, name FROM projects WHERE id = ?'
     return query_db(sql, (project_id,), one=True)
 
-def create_flow(project_id, flow_name, data_source=None, user_id=None, data_source_name=None):
+def create_flow(request_json, user_id, data_source_name=None):
     """
     フローを作成する
     TODO: 詳細は変更予定
     """
-    new_flow_uuid = str(uuid.uuid4())
-
     if data_source_name is None:
-        data_source_name = new_flow_uuid
+        data_source_name = str(uuid.uuid4())
 
-    from .activity import (
-        add_activity_to_flow,
-        add_data_source_to_flow
-        )
-    @add_data_source_to_flow(data_source)
+    from .activity import add_activity_to_flow, add_data_source_to_flow
+    @add_data_source_to_flow(request_json.get('datasource'))
     @add_activity_to_flow(user_id)
     def make_flow_json():
         data = {
-            'projectId': project_id,
-            'label': flow_name,
+            'projectId': get_project_id_by_uuid(request_json.get('project_uuid')),
+            'label': request_json.get('name'),
             'ports': [[],[]],
             'params': []
         }
