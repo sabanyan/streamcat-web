@@ -9,8 +9,7 @@ from .model import (
     get_user_by_id
     )
 
-
-def make_unfinished_history(now):
+def make_unfinished_history(now, session):
     """
     libraryで閲覧できる実行履歴(jobs)を作成する
     指定した時間とユーザ名を実行時情報とする
@@ -80,7 +79,7 @@ def make_finished_history(now):
         return deco
     return _deco
 
-def add_activity_to_flow(id):
+def add_activity_to_flow(user_id):
     '''
     フローに作成時に作成履歴をつけるためのデコレータ
     '''
@@ -89,11 +88,6 @@ def add_activity_to_flow(id):
         def deco():
             data = func()
             now = datetime.now()
-
-            # 一回別の変数に入れなければいけないみたい・・・
-            user_id = id
-            if user_id is None:
-                user_id = session['user_id']
 
             data['creator'] = get_user_by_id(user_id)['name']
             data['createdAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,

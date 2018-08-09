@@ -321,7 +321,7 @@ def execute_flow_internal(flow_uuid, step_paths=None):
 
     now = datetime.now()
 
-    @make_unfinished_history(now)
+    @make_unfinished_history(now, session)
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
