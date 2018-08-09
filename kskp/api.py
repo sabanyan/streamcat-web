@@ -91,7 +91,7 @@ def new_flow():
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j['name'])
+    new_flow = create_flow(project_id, j.get('name'), j.get('datasource'))
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -227,7 +227,7 @@ def upload_frame(req):
     frame_uuid = str(uuid.uuid4())
 
     from werkzeug.utils import secure_filename
-    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid))
+    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
     f.save(file_path.as_posix())
     f.close()
 

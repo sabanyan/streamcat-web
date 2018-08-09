@@ -54,5 +54,5 @@
   "version": "0.7.0",
   "label": "移動窓の類似度計算",
   "classification": "table_grouping",
-  "description": ""
+  "description": "./static/pdf/mcmd/table_grouping/mmvsim.pdf"
 }
