@@ -22,12 +22,12 @@
 
 .label{
   position: absolute;
-  top: 8px;
-  left: 8px;
-  background: $kskp-dropdown-list-label-background-color;
+  top: 6px;
+  left: 6px;
+  border: 1px solid $kskp-dropdown-list-label-border-color;
   border-radius: 4px;
   padding: 0 6px;
-  color: #fff;
+  color: $kskp-dropdown-list-label-color;
   min-width: 44px;
   text-align: center;
 }
