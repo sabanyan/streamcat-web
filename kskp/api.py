@@ -150,6 +150,10 @@ def fetch_commands():
 
     commands = []
     for command_path in path.iterdir():
+
+        if command_path.stem == '.DS_Store':
+            continue
+
         command_json = command_path.read_text(encoding='utf-8')
         command_data = json.loads(command_json)
         commands.append(command_data)
@@ -338,8 +342,6 @@ def execute_flow_internal(flow_uuid, step_paths=None):
     #     result = {}
 
     result = execute_flow_by_uuid(flow_uuid)
-    for i in result.values():
-        print(i.uuid)
     return [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
 
 
