@@ -342,8 +342,6 @@ def execute_flow_internal(flow_uuid, step_paths=None):
     #     result = {}
 
     result = execute_flow_by_uuid(flow_uuid)
-    for i in result.values():
-        print(i.uuid)
     return [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
 
 
