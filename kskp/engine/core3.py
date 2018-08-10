@@ -144,7 +144,7 @@ class Job:
         result = {}
         for k, v in self.lasts.items():
             if step_paths == k:
-                result[k] == v
+                result[k] = v
         for job in self.jobs:
             for k, v in job.inputs.items():
                 if step_paths == k:
@@ -731,7 +731,7 @@ class Mcommon(MCommand):#new
         self.name = 'mcommon'
         self.description = '行選択'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -756,7 +756,7 @@ class Mnrcommon(MCommand):#new
         self.name = 'mnrcommon'
         self.description = '参照ファイルの複数範囲条件による行選択'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -925,7 +925,7 @@ class Mbest(MCommand):
         super().__init__()
         self.name = 'mbest'
         self.description = '指定行選択'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('s', 'ソート対象列名(必須)'))
         self.params.append(Parameter('from', '選択する開始行番号'))
         self.params.append(Parameter('to', '選択する終了行番号'))
@@ -938,7 +938,7 @@ class Mdelnull(MCommand):
         super().__init__()
         self.name = 'mdelnull'
         self.description = 'NULL行削除'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('k', '削除する単位となるキー列名'))
         # self.params.append(Parameter('u', '条件に合わないデータ出力ファイル名'))
@@ -967,7 +967,7 @@ class Msel(MCommand):
         super().__init__()
         self.name = 'msel'
         self.description = '行絞り込み'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('c', '絞込条件式(必須)'))
         # self.params.append(Parameter('u', '指定条件に合わない行を出力するファイル名'))
 
@@ -976,7 +976,7 @@ class Mselnum(MCommand):#editing(o, u)の扱いがわからない
         super().__init__()
         self.name = 'mselnum'
         self.description = '数値範囲による行選択'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '検索列名(必須)'))
         self.params.append(Parameter('c', '検索文字列(必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列名'))
@@ -987,7 +987,7 @@ class Mselrand(MCommand):#editing(u)の扱いがわからない
         super().__init__()
         self.name = 'mselrand'
         self.description = 'ランダムな行選択'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('c', '各キーの値毎に選択する行数(選択必須)'))
         self.params.append(Parameter('p', '各キーを選択する割合をパーセンテージで指定(選択必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列'))
@@ -999,7 +999,7 @@ class Mselstr(MCommand):###ここから修正再開
         super().__init__()
         self.name = 'mselstr'
         self.description = '行選択(文字列)'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列名'))
@@ -1320,7 +1320,9 @@ class Mchkcsv(MCommand):#new
 class SelectTargetColumn(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('t', 'set target_colname'))
+        self.name = 'SelectTargetColumn'
+        self.description = ''
+        self.params.append(Parameter('t', '対象の列を選択'))# todo 何が言いたいのかが分からない
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1345,8 +1347,10 @@ class SelectTargetColumn(UnixCommand):
 class Standardize(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', 'select columns you wish to normalize'))
-        self.params.append(Parameter('a', 'all columns'))
+        self.name = 'Standardize'
+        self.description = ''
+        self.params.append(Parameter('c', '標準化を行う行を選択'))
+        self.params.append(Parameter('a', '全列に適用させるかどうか'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1371,7 +1375,9 @@ class Standardize(UnixCommand):
 class Label_encode(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', 'select columns you wish to normalize'))
+        self.name = 'Label_encode'
+        self.description = ''
+        self.params.append(Parameter('c', '標準化を行う行を選択'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1395,8 +1401,10 @@ class Label_encode(UnixCommand):
 class Normalize(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', 'select columns you wish to normalize'))
-        self.params.append(Parameter('a', 'all columns'))
+        self.name = 'Normalize'
+        self.description = ''
+        self.params.append(Parameter('c', '標準化を行う列を選択'))
+        self.params.append(Parameter('a', '全列に適用させるかどうか'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1420,7 +1428,9 @@ class Normalize(UnixCommand):
 class One_hot_encode(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', 'select columns you wish to normalize'))
+        self.name = 'One_hot_encode'
+        self.description = ''
+        self.params.append(Parameter('c', '標準化を行う行を選択'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1444,7 +1454,9 @@ class One_hot_encode(UnixCommand):
 class Pca(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('n_components', 'components'))
+        self.name = 'Pca'
+        self.description = ''
+        self.params.append(Parameter('n_components', '保持するコンポーネント数（デフォルト：2）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1468,11 +1480,13 @@ class Pca(UnixCommand):
 class Kkmeans(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('n_clusters', 'set the number of clusters'))
-        self.params.append(Parameter('n_init', 'select penalty term'))
-        self.params.append(Parameter('max_iter', 'set the maximum number of iteration'))
-        self.params.append(Parameter('precompute_distances', 'whether precompute distances'))
-        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
+        self.name = 'Kkmeans'
+        self.description = 'k-means法によるクラスタ分析'
+        self.params.append(Parameter('n_clusters', 'クラスタ数（デフォルト：8）'))
+        self.params.append(Parameter('n_init', '初期値選択において、初期の重心を異なる乱数シードを用いて選ぶ回数（デフォルト：10）'))
+        self.params.append(Parameter('max_iter', 'アルゴリズムの繰り返しの最大回数（デフォルト：300）'))
+        self.params.append(Parameter('precompute_distances', '距離をあらかじめ計算する（高速ですが、メモリを大量に使用します）（デフォルト：auto）'))
+        self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1497,11 +1511,13 @@ class Kkmeans(UnixCommand):
 class CKab(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('l', 'set learning_rate'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('a', 'set algorithm'))
-        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
-
+        self.name = 'CKab'
+        self.description = 'アダブーストによる分類'
+        self.params.append(Parameter('l', '学習率'))
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('a', 'アルゴリズム（デフォルト：SAMME.R）'))#ここ２択、SAMMEとSAMME.R
+        self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト値：50）'))
+        
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
         return { self.o_ports[0]['name']: frame }
@@ -1528,12 +1544,15 @@ class CKab(UnixCommand):
 class CKbag(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
-        self.params.append(Parameter('max_samples', 'The number of samples to draw from X to train each base estimator'))
-        self.params.append(Parameter('unuse_bootstrap', 'whether use bootstrap sampling'))
-        self.params.append(Parameter('max_features', 'The number of features to draw from X to train each base estimator'))
-        self.params.append(Parameter('unuse_bootstrap_features', 'whether features are drawn with replacement'))
+        self.name = 'CKbag'
+        self.description = 'バギングによる分類'
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('n_estimators', '決定木の数（デフォルト値：50）'))
+        self.params.append(Parameter('max_samples', 'それぞれの決定木を訓練するために使用するサンプルの数'))
+        self.params.append(Parameter('unuse_bootstrap', 'ブートストラップサンプルを使用するかどうか（デフォルト：True）'))#怪しい
+        self.params.append(Parameter('max_features', 'それぞれの決定木を訓練するために使用するサンプルから抽出する特徴量の数（デフォルト：1.0）'))
+        self.params.append(Parameter('unuse_bootstrap_features', 'ブートストラップサンプルの特徴量を使用するかどうか（デフォルト：False）'))
+
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1561,11 +1580,13 @@ class CKbag(UnixCommand):
 class CKdt(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('l', 'setting min_samples_leaf'))
-        self.params.append(Parameter('min_samples_split', 'setting min samples splits'))
-        self.params.append(Parameter('d', 'setting max_depth'))
-        self.params.append(Parameter('c', 'The function to measure the quality of a split'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.name = 'CKdt'
+        self.description = '決定木による分類'
+        self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
+        self.params.append(Parameter('min_samples_split', '一定数以上のサンプルを持つノードを分割する、その基準値（デフォルト：2）'))
+        self.params.append(Parameter('d', '木の深さの最大値'))
+        self.params.append(Parameter('c', 'データの分割基準（デフォルト：gini）'))
+        self.params.append(Parameter('r', '乱数のシード値'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1593,13 +1614,15 @@ class CKdt(UnixCommand):
 class CKgb(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('l', 'setting min_samples_leaf'))
-        self.params.append(Parameter('min_samples_split', 'setting min samples splits'))
-        self.params.append(Parameter('d', 'setting max_depth'))
-        self.params.append(Parameter('c', 'set criterion'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
-        self.params.append(Parameter('loss', 'set loss function'))
+        self.name = 'CKgb'
+        self.description = '勾配ブースティングによる分類'
+        self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
+        self.params.append(Parameter('min_samples_split', '一定数以上のサンプルを持つノードを分割する、その基準値（デフォルト：2）'))
+        self.params.append(Parameter('d', '木の深さの最大値（デフォルト：3）'))
+        self.params.append(Parameter('c', 'データの分割基準（デフォルト：friedman_mse）'))
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト：100）'))
+        self.params.append(Parameter('loss', '損失関数（デフォルト：deviance）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1627,11 +1650,13 @@ class CKgb(UnixCommand):
 class CKnearestNeighbors(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('n_neighbors', 'set the number of neighbors'))
-        self.params.append(Parameter('weights', 'weight function used on prediction'))
-        self.params.append(Parameter('a', 'select algorithm'))
-        self.params.append(Parameter('leaf_size', 'set leaf size passed to BallTree or KDTree'))
-        self.params.append(Parameter('p', 'set power param for the Minkowski loss'))
+        self.name = 'CKnearestNeighbors'
+        self.description = '最近傍法による分類'
+        self.params.append(Parameter('n_neighbors', '未知のデータを与えた際に、近い順に取得するデータの数、いわゆるkの値（デフォルト：5）'))
+        self.params.append(Parameter('weights', '重み付けを行うかどうか（デフォルト：uniform）'))
+        self.params.append(Parameter('a', 'アルゴリズム（デフォルト：auto)'))
+        self.params.append(Parameter('leaf_size', 'BallTreeまたはKDTreeに渡される葉の大きさ（デフォルト：30）'))
+        self.params.append(Parameter('p', 'ミンコフスキー距離を用いた距離計算でのパラメータの値（デフォルト：2）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1659,15 +1684,17 @@ class CKnearestNeighbors(UnixCommand):
 class CKneuralnet(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('hidden_layer_sizes', 'set the number of neurons in its hidden layer sizes'))
-        self.params.append(Parameter('a', 'select activation'))
-        self.params.append(Parameter('solver', 'select optimizer'))
-        self.params.append(Parameter('alpha', 'set weight of L2 penalty term'))
-        self.params.append(Parameter('tol', 'set tolerance for the optimization'))
-        self.params.append(Parameter('learning_rate_init', 'set initial learning rate'))
-        self.params.append(Parameter('early_stopping', 'whether to use early_stopping'))
-        self.params.append(Parameter('momentum', 'set momentum for gradient descent update.Only used when optimizer=sgd'))
-        self.params.append(Parameter('epsilon', 'set value for numerical stability in adam.Only used when optimizer=adam'))
+        self.name = 'CKneuralnet'
+        self.description = 'ニューラルネットワークによる分類'
+        self.params.append(Parameter('hidden_layer_sizes', '隠れ層の層の数と各層に配置するニューロンの数（デフォルト：100,）'))
+        self.params.append(Parameter('a', '活性化関数（デフォルト：relu）'))
+        self.params.append(Parameter('solver', '最適化手法（デフォルト：adam）'))
+        self.params.append(Parameter('alpha', 'L2正則化の係数（デフォルト：1e-4）'))
+        self.params.append(Parameter('tol', '学習の収束と判断するための、損失もしくはスコアの変動値の基準値（デフォルト：1e-4）'))
+        self.params.append(Parameter('learning_rate_init', '重みの学習値の初期値（デフォルト：1e-3）'))
+        self.params.append(Parameter('early_stopping', 'トレーニングデータの内、10％をテストデータとして使用、スコアが２連続でtolより低いと学習を停止する。（デフォルト：False）'))#? validation_fractionが変数として設定できないため、それの初期値（0.1）はそのまま数字で記述する。
+        self.params.append(Parameter('momentum', 'SGDの収束性能を向上するための学習係数(デフォルト：0.9)'))# 怪しい
+        self.params.append(Parameter('epsilon', 'solverがadamの際の、数式εの値（デフォルト：1e-8）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1695,10 +1722,12 @@ class CKneuralnet(UnixCommand):
 class CKrf(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('l', 'setting min_samples_leaf'))
-        self.params.append(Parameter('d', 'setting max_depth'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('b', 'set whether bootstrap samples are used'))
+        self.name = 'CKrf'
+        self.description = 'ランダムフォレストによる分類'
+        self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
+        self.params.append(Parameter('d', '木の深さの最大値'))
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('b', 'ブートストラップサンプルを使用するかどうか（デフォルト：True）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1726,9 +1755,11 @@ class CKrf(UnixCommand):
 class CKsvm(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', 'setting penalty parameter C of the error term'))
-        self.params.append(Parameter('k', 'setting kernel function'))
-        self.params.append(Parameter('g', 'setting kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’'))
+        self.name = 'CKsvm'
+        self.description = 'サポートベクターマシンによる分類'
+        self.params.append(Parameter('c', 'マージンの大きさ（デフォルト：1.0）'))
+        self.params.append(Parameter('k', 'アルゴリズムで使用するカーネルの種類（デフォルト：rbf）'))
+        self.params.append(Parameter('g', 'カーネル係数（デフォルト：-1）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1756,7 +1787,9 @@ class CKsvm(UnixCommand):
 class KgaussianNb(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('priors', 'set prior probabilities of the classes'))
+        self.name = 'KgaussianNb'
+        self.description = 'ナイーブベイズによる分類'
+        self.params.append(Parameter('priors', '事前確率'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1784,12 +1817,14 @@ class KgaussianNb(UnixCommand):
 class Klogreg(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('C', 'Inverse of regularization strength'))
-        self.params.append(Parameter('p', 'select penalty term'))
-        self.params.append(Parameter('b', 'whether use bias term'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
-        self.params.append(Parameter('c', 'set class weight by dict'))
+        self.name = 'Klogreg'
+        self.description = 'ロジスティック回帰'
+        self.params.append(Parameter('C', '正則化強度の逆数（デフォルト：1）'))
+        self.params.append(Parameter('p', '正則化を行う地点（デフォルト：l2）'))
+        self.params.append(Parameter('b', 'バイアスをかけるかどうか（デフォルト：True）'))
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
+        self.params.append(Parameter('c', 'クラスに対する重み'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1817,11 +1852,13 @@ class Klogreg(UnixCommand):
 class RKab(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('l', 'set learning_rate'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('a', 'set algorithm'))
-        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
-        self.params.append(Parameter('loss', 'set loss function'))
+        self.name = 'RKab'
+        self.description = 'アダブーストによる回帰'
+        self.params.append(Parameter('l', '学習率'))
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('a', 'アルゴリズム（デフォルト：SAMME.R）'))
+        self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト値：50）'))
+        self.params.append(Parameter('loss', '損失関数（デフォルト：linear）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1849,12 +1886,14 @@ class RKab(UnixCommand):
 class RKbag(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
-        self.params.append(Parameter('max_samples', 'The number of samples to draw from X to train each base estimator'))
-        self.params.append(Parameter('unuse_bootstrap', 'whether use bootstrap sampling'))
-        self.params.append(Parameter('max_features', 'The number of features to draw from X to train each base estimator'))
-        self.params.append(Parameter('unuse_bootstrap_features', 'whether features are drawn with replacement'))
+        self.name = 'RKbag'
+        self.description = 'バギングによる回帰'
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('n_estimators', '決定木の数（デフォルト値：50）'))
+        self.params.append(Parameter('max_samples', 'それぞれの決定木を訓練するために使用するサンプルの数'))
+        self.params.append(Parameter('unuse_bootstrap', 'ブートストラップサンプルを使用するかどうか（デフォルト：True）'))
+        self.params.append(Parameter('max_features', 'それぞれの決定木を訓練するために使用するサンプルから抽出する特徴量の数（デフォルト：1.0）'))
+        self.params.append(Parameter('unuse_bootstrap_features', 'ブートストラップサンプルの特徴量を使用するかどうか（デフォルト：False）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1882,11 +1921,13 @@ class RKbag(UnixCommand):
 class RKdt(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('l', 'setting min_samples_leaf'))
-        self.params.append(Parameter('min_samples_split', 'setting min samples splits'))
-        self.params.append(Parameter('d', 'setting max_depth'))
-        self.params.append(Parameter('c', 'The function to measure the quality of a split'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
+        self.name = 'RKdt'
+        self.description = '決定木による回帰'
+        self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
+        self.params.append(Parameter('min_samples_split', '一定数以上のサンプルを持つノードを分割する、その基準値（デフォルト：2）'))
+        self.params.append(Parameter('d', '木の深さの最大値'))
+        self.params.append(Parameter('c', 'データの分割基準（デフォルト：gini）'))
+        self.params.append(Parameter('r', '乱数のシード値'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1914,13 +1955,15 @@ class RKdt(UnixCommand):
 class RKgb(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('l', 'setting min_samples_leaf'))
-        self.params.append(Parameter('min_samples_split', 'setting min samples splits'))
-        self.params.append(Parameter('d', 'setting max_depth'))
-        self.params.append(Parameter('c', 'set criterion'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('n_estimators', 'set the number of estimators'))
-        self.params.append(Parameter('loss', 'set loss function'))
+        self.name = 'RKgb'
+        self.description = '勾配ブースティングによる回帰'
+        self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
+        self.params.append(Parameter('min_samples_split', '一定数以上のサンプルを持つノードを分割する、その基準値（デフォルト：2）'))
+        self.params.append(Parameter('d', '木の深さの最大値（デフォルト：3）'))
+        self.params.append(Parameter('c', 'データの分割基準（デフォルト：friedman_mse）'))
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト：100）'))
+        self.params.append(Parameter('loss', '損失関数（デフォルト：deviance）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1948,11 +1991,13 @@ class RKgb(UnixCommand):
 class RKnearestNeighbors(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('radius', 'set the range of parameter space'))
-        self.params.append(Parameter('weights', 'weight function used on prediction'))
-        self.params.append(Parameter('a', 'select algorithm'))
-        self.params.append(Parameter('leaf_size', 'set leaf size passed to BallTree or KDTree'))
-        self.params.append(Parameter('p', 'set power param for the Minkowski loss'))
+        self.name = 'RKnearestNeighbors'
+        self.description = '最近傍法による回帰'
+        self.params.append(Parameter('radius', 'set the range of parameter space'))#todo この引数はないのでは？
+        self.params.append(Parameter('weights', '重み付けを行うかどうか（デフォルト：uniform）'))
+        self.params.append(Parameter('a', 'アルゴリズム（デフォルト：auto)'))
+        self.params.append(Parameter('leaf_size', 'BallTreeまたはKDTreeに渡される葉の大きさ（デフォルト：30）'))
+        self.params.append(Parameter('p', 'ミンコフスキー距離を用いた距離計算でのパラメータの値（デフォルト：2）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -1980,15 +2025,17 @@ class RKnearestNeighbors(UnixCommand):
 class RKneuralnet(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('hidden_layer_sizes', 'set the number of neurons in its hidden layer sizes'))
-        self.params.append(Parameter('a', 'select activation'))
-        self.params.append(Parameter('solver', 'select optimizer'))
-        self.params.append(Parameter('alpha', 'set weight of L2 penalty term'))
-        self.params.append(Parameter('tol', 'set tolerance for the optimization'))
-        self.params.append(Parameter('learning_rate_init', 'set initial learning rate'))
-        self.params.append(Parameter('early_stopping', 'whether to use early_stopping'))
-        self.params.append(Parameter('momentum', 'set momentum for gradient descent update.Only used when optimizer=sgd'))
-        self.params.append(Parameter('epsilon', 'set value for numerical stability in adam.Only used when optimizer=adam'))
+        self.name = 'RKneuralnet'
+        self.description = 'ニューラルネットワークによる回帰'
+        self.params.append(Parameter('hidden_layer_sizes', '隠れ層の層の数と各層に配置するニューロンの数（デフォルト：100,）'))
+        self.params.append(Parameter('a', '活性化関数（デフォルト：relu）'))
+        self.params.append(Parameter('solver', '最適化手法（デフォルト：adam）'))
+        self.params.append(Parameter('alpha', 'L2正則化の係数（デフォルト：1e-4）'))
+        self.params.append(Parameter('tol', '学習の収束と判断するための、損失もしくはスコアの変動値の基準値（デフォルト：1e-4）'))
+        self.params.append(Parameter('learning_rate_init', '重みの学習値の初期値（デフォルト：1e-3）'))
+        self.params.append(Parameter('early_stopping', 'トレーニングデータの内、10％をテストデータとして使用、スコアが２連続でtolより低いと学習を停止する。（デフォルト：False）'))
+        self.params.append(Parameter('momentum', 'SGDの収束性能を向上するための学習係数(デフォルト：0.9)'))
+        self.params.append(Parameter('epsilon', 'solverがadamの際の、数式εの値（デフォルト：1e-8）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -2016,10 +2063,12 @@ class RKneuralnet(UnixCommand):
 class RKrf(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('l', 'setting min_samples_leaf'))
-        self.params.append(Parameter('d', 'setting max_depth'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('b', 'set whether bootstrap samples are used'))
+        self.name = 'RKrf'
+        self.description = 'ランダムフォレストによる回帰'
+        self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
+        self.params.append(Parameter('d', '木の深さの最大値'))
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('b', 'ブートストラップサンプルを使用するかどうか（デフォルト：True）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -2047,9 +2096,11 @@ class RKrf(UnixCommand):
 class RKsvm(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('c', 'setting penalty parameter C of the error term'))
-        self.params.append(Parameter('k', 'setting kernel function'))
-        self.params.append(Parameter('g', 'setting kernel coefficient for ‘rbf’, ‘poly’ and ‘sigmoid’'))
+        self.name = 'RKsvm'
+        self.description = 'サポートベクターマシンによる回帰'
+        self.params.append(Parameter('c', 'マージンの大きさ（デフォルト：1.0）'))
+        self.params.append(Parameter('k', 'アルゴリズムで使用するカーネルの種類（デフォルト：rbf）'))
+        self.params.append(Parameter('g', 'カーネル係数（デフォルト：-1）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -2077,12 +2128,14 @@ class RKsvm(UnixCommand):
 class Kelastic(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('a', 'weight of L1 term'))
-        self.params.append(Parameter('normalize', 'whether use normalize'))
-        self.params.append(Parameter('b', 'whether use bias term'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
-        self.params.append(Parameter('l1_ratio', 'set l1 ratio against l2'))
+        self.name = 'Kelastic'
+        self.description = 'elastic net回帰'
+        self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
+        self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
+        self.params.append(Parameter('b', 'バイアスをかけるかどうか'))#todo ここにデフォルト値が設定されていなかったが、必要なのでは？
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
+        self.params.append(Parameter('l1_ratio', 'L1、L2に与えるペナルティのうち、L1の比率'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -2110,11 +2163,13 @@ class Kelastic(UnixCommand):
 class Kridge(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('a', 'weight of L1 term'))
-        self.params.append(Parameter('normalize', 'whether use normalize'))
-        self.params.append(Parameter('b', 'whether use bias term'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
+        self.name = 'Kridge'
+        self.description = 'ridge回帰'
+        self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
+        self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
+        self.params.append(Parameter('b', 'バイアスをかけるかどうか'))#todo ここにデフォルト値が設定されていなかったが、必要なのでは？
+        self.params.append(Parameter('r', '乱数のシード値'))
+        self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -2142,11 +2197,13 @@ class Kridge(UnixCommand):
 class Klasso(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('a', 'weight of L1 term'))
-        self.params.append(Parameter('normalize', 'whether use normalize'))
-        self.params.append(Parameter('b', 'whether use bias term'))
-        self.params.append(Parameter('r', 'set random_state(which is the seed used by the random number generator)'))
-        self.params.append(Parameter('tol', 'set tolerance for stopping criteria'))
+        self.name = 'Klasso'
+        self.description = 'lasso回帰'
+        self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
+        self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
+        self.params.append(Parameter('b', 'バイアスをかけるかどうか（デフォルト：False）'))
+        self.params.append(Parameter('r', 's乱数のシード値'))
+        self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
@@ -2177,7 +2234,9 @@ class Klasso(UnixCommand):
 class Klinreg(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('normalize', 'whether use normalize'))
+        self.name = 'Klinreg'
+        self.description = '線形回帰'
+        self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
