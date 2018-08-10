@@ -144,7 +144,7 @@ class Job:
         result = {}
         for k, v in self.lasts.items():
             if step_paths == k:
-                result[k] == v
+                result[k] = v
         for job in self.jobs:
             for k, v in job.inputs.items():
                 if step_paths == k:
