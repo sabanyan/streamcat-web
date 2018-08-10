@@ -104,11 +104,13 @@ export default class Toolbar extends React.Component<ToolbarProps> {
     this.loadingMessage = "フローを実行中です"
     this.forceUpdate()
     this.save().then(() => {
-      this.run().then((json) => {
-        const resultData:RunResponseType = json.data
-        const result = resultData.name.map((result)=>{
-          return <li>{result}</li>
+      this.run().then((response) => {
+        const json:RunResponseType = response.data
+
+        const result = json.name.map((n)=>{
+          return <li>{n.id}</li>
         })
+
         const content = <div>
           <div>フローの実行が完了し、以下のデータがライブラリに追加されました</div>
           <ul>{result}</ul>
