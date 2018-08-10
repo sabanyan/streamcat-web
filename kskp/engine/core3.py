@@ -731,7 +731,7 @@ class Mcommon(MCommand):#new
         self.name = 'mcommon'
         self.description = '行選択'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -756,7 +756,7 @@ class Mnrcommon(MCommand):#new
         self.name = 'mnrcommon'
         self.description = '参照ファイルの複数範囲条件による行選択'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -925,7 +925,7 @@ class Mbest(MCommand):
         super().__init__()
         self.name = 'mbest'
         self.description = '指定行選択'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('s', 'ソート対象列名(必須)'))
         self.params.append(Parameter('from', '選択する開始行番号'))
         self.params.append(Parameter('to', '選択する終了行番号'))
@@ -938,7 +938,7 @@ class Mdelnull(MCommand):
         super().__init__()
         self.name = 'mdelnull'
         self.description = 'NULL行削除'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('k', '削除する単位となるキー列名'))
         # self.params.append(Parameter('u', '条件に合わないデータ出力ファイル名'))
@@ -967,7 +967,7 @@ class Msel(MCommand):
         super().__init__()
         self.name = 'msel'
         self.description = '行絞り込み'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('c', '絞込条件式(必須)'))
         # self.params.append(Parameter('u', '指定条件に合わない行を出力するファイル名'))
 
@@ -976,7 +976,7 @@ class Mselnum(MCommand):#editing(o, u)の扱いがわからない
         super().__init__()
         self.name = 'mselnum'
         self.description = '数値範囲による行選択'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '検索列名(必須)'))
         self.params.append(Parameter('c', '検索文字列(必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列名'))
@@ -987,7 +987,7 @@ class Mselrand(MCommand):#editing(u)の扱いがわからない
         super().__init__()
         self.name = 'mselrand'
         self.description = 'ランダムな行選択'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('c', '各キーの値毎に選択する行数(選択必須)'))
         self.params.append(Parameter('p', '各キーを選択する割合をパーセンテージで指定(選択必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列'))
@@ -999,7 +999,7 @@ class Mselstr(MCommand):###ここから修正再開
         super().__init__()
         self.name = 'mselstr'
         self.description = '行選択(文字列)'
-        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列名'))
