@@ -1319,6 +1319,7 @@ class Mchkcsv(MCommand):#new
 # KCMD
 class SelectTargetColumn(UnixCommand):
     def __init__(self):
+        super().__init__()
         self.name = 'SelectTargetColumn'
         self.description = ''
         self.params.append(Parameter('t', '対象の列を選択'))# todo 何が言いたいのかが分からない
@@ -1478,7 +1479,6 @@ class Pca(UnixCommand):
 
 class Kkmeans(UnixCommand):
     def __init__(self):
-    def __init__(self):
         super().__init__()
         self.name = 'Kkmeans'
         self.description = 'k-means法によるクラスタ分析'
@@ -1517,6 +1517,7 @@ class CKab(UnixCommand):
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('a', 'アルゴリズム（デフォルト：SAMME.R）'))#ここ２択、SAMMEとSAMME.R
         self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト値：50）'))
+        
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
         return { self.o_ports[0]['name']: frame }
