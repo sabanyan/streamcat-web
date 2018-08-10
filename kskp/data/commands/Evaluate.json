@@ -1,0 +1,43 @@
+{
+    "version": "0.7.0",
+    "id": "Evaluate",
+    "label": "Evaluate",
+    "classification": "postprocess",
+    "description": "Evaluate",
+    "ports": [
+        [
+            {
+                "name": "i",
+                "type": "frame"
+            }
+        ],
+        [
+            {
+                "name": "o",
+                "type": "frame"
+            }
+        ]
+    ],
+    "params": [
+        {
+            "name": "d",
+            "type": "string",
+            "label": "test_data"
+        },
+        {
+            "name": "m",
+            "type": "string",
+            "label": "select metrics appling model"
+        },
+        {
+            "name": "p",
+            "type": "string",
+            "label": "set probability on"
+        },
+        {
+            "name": "metrics_file_name",
+            "type": "string",
+            "label": "metrics_file_name"
+        }
+    ]
+}
