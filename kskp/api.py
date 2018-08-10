@@ -150,6 +150,10 @@ def fetch_commands():
 
     commands = []
     for command_path in path.iterdir():
+
+        if command_path.stem == '.DS_Store':
+            continue
+
         command_json = command_path.read_text(encoding='utf-8')
         command_data = json.loads(command_json)
         commands.append(command_data)
