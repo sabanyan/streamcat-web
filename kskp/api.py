@@ -85,13 +85,16 @@ def new_flow():
     """
 
     j = request.json
-    project_id = get_project_id_by_uuid(j['project_uuid'])
+    # getで取ってくるとキーが存在しないときはNoneが返ってきて、project_idがNoneになるので
+    # これでvalidationできていると言える？
+    project_id = get_project_id_by_uuid(j.get('project_uuid'))
 
     # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    new_flow = create_flow(project_id, j.get('name'), j.get('datasource'))
+    # frontよりcreate_flowに渡すものが増えてきたので、requestを直接渡すようにした。
+    new_flow = create_flow(j, session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -318,7 +321,7 @@ def execute_flow_internal(flow_uuid, step_paths=None):
 
     now = datetime.now()
 
-    @make_unfinished_history(now)
+    @make_unfinished_history(now, session)
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
@@ -335,8 +338,9 @@ def execute_flow_internal(flow_uuid, step_paths=None):
     #     result = {}
 
     result = execute_flow_by_uuid(flow_uuid)
-
-    return list(result.keys())
+    for i in result.values():
+        print(i.uuid)
+    return [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
 
 
 def load_as_data_frame(result_text):

@@ -167,8 +167,8 @@ class ApiTestCase(unittest.TestCase):
             self.assertEqual(result['success'], True)
             self.assertEqual(result['data']['projectId'], result_project_id)
             self.assertEqual(result['data']['label'], new_flow_name)
-            self.assertEqual(result['data']['node'][0]['uuid'], "2C72275F-2019-49AE-B36D-A29D1507F8DD")
-            self.assertEqual(result['data']['node'][0]['label'], "test")
+            self.assertEqual(result['data']['nodes'][0]['uuid'], "2C72275F-2019-49AE-B36D-A29D1507F8DD")
+            self.assertEqual(result['data']['nodes'][0]['label'], "test")
 
             # 後片付け
             app.config['FLOW_PATH'] = flow_path
@@ -297,9 +297,13 @@ class ApiTestCase(unittest.TestCase):
             flow1_datasource_name = str(uuid.uuid4())
             flow2_datasource_name = str(uuid.uuid4())
             flow3_datasource_name = str(uuid.uuid4())
-            created_flow = model.create_flow(project_id, 'フローテスト用', None, user1, flow1_datasource_name)
-            created_flow2 = model.create_flow(project_id, 'フローテスト用2', None, user1, flow2_datasource_name)
-            created_flow3 = model.create_flow(project_id, 'フローテスト用3', None, user1, flow3_datasource_name)
+
+            data1 = {'project_uuid': project_uuid, 'name': 'フローテスト用', 'datasource': None}
+            data2 = {'project_uuid': project_uuid, 'name': 'フローテスト用2', 'datasource': None}
+            data3 = {'project_uuid': project_uuid, 'name': 'フローテスト用3', 'datasource': None}
+            created_flow = model.create_flow(data1, user1, flow1_datasource_name)
+            created_flow2 = model.create_flow(data2, user1, flow2_datasource_name)
+            created_flow3 = model.create_flow(data3, user1, flow3_datasource_name)
 
          # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
@@ -571,21 +575,24 @@ def setUpFlow(self):
     # フロー作成
     new_flow_name = 'フローテスト用'
     data_source_name = str(uuid.uuid4())
-    created_flow = model.create_flow(project_id, new_flow_name, None, user1, data_source_name)
+
+    data = {
+        'project_uuid': project_uuid,
+        'name': new_flow_name,
+        'datasouce': None
+    }
+
+    created_flow = model.create_flow(data, user1, data_source_name)
 
     return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
 
 class JobTestCase(unittest.TestCase):
     def setUp(self):
-        self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
         app.testing = True
         self.client = app.test_client()
-        with app.app_context():
-            model.init_db()
 
     def tearDown(self):
-        os.close(self.db_fd)
-        os.unlink(app.config['DATABASE'])
+        pass
 
     def test_jobs(self):
         '''
@@ -650,7 +657,7 @@ class JobTestCase(unittest.TestCase):
     def test_jobs_flow(self):
         '''
         実行履歴を取得するAPIのテスト
-        count指定あり
+        count指定無し
         テストがsample.jsonありきなので、書き直し予定
         '''
         with app.app_context():
@@ -713,7 +720,7 @@ class JobTestCase(unittest.TestCase):
     def test_jobs_project(self):
         '''
         実行履歴を取得するAPIのテスト
-        count指定あり
+        count指定無し
         テストがsample.jsonありきなので、書き直し予定
         '''
         with app.app_context():
