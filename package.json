@@ -8,9 +8,16 @@
     "build": "npx webpack",
     "start": "npx webpack --watch -d --mode=development",
     "production": "npx webpack --watch -d --mode=production & webpack-dev-server --content-base public/",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "flow": "flow"
+    "test": "jest",
+    "testwatch": "jest --watchAll",
+    "testcoverage": "jest --coverage",
+    "flow": "flow",
     "flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(css|scss)$": "identity-obj-proxy"
+    }
   },
   "repository": {
     "type": "git",
@@ -35,7 +42,10 @@
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
     "flow-bin": "^0.72.0",
     "flow-coverage-report": "^0.5.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^23.5.0",
     "node-sass": "^4.9.0",
+    "react-test-renderer": "^16.4.2",
     "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
     "webpack": "^4.6.0",

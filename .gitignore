@@ -28,6 +28,7 @@ kskp/static/js/vendor.js
 kskp/static/js/dist/vendor-manifest.json
 kskp/static/css/app.css
 .idea
+coverage
 flow-coverage
 
 *.egg-info
