@@ -87,13 +87,14 @@ def new_flow():
     j = request.json
     # getで取ってくるとキーが存在しないときはNoneが返ってきて、project_idがNoneになるので
     # これでvalidationできていると言える？
+    # 今の所project_uuid以外は必須ではない
     project_id = get_project_id_by_uuid(j.get('project_uuid'))
 
     # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
     if project_id is None:
         return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
 
-    # frontよりcreate_flowに渡すものが増えてきたので、requestを直接渡すようにした。
+    # frontendからcreate_flowに渡すものが増えてきたので、request.jsonを直接渡す。
     new_flow = create_flow(j, session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
@@ -150,6 +151,8 @@ def fetch_commands():
 
     commands = []
     for command_path in path.iterdir():
+        if not command_path.suffix == '.json':
+            continue
         command_json = command_path.read_text(encoding='utf-8')
         command_data = json.loads(command_json)
         commands.append(command_data)
@@ -238,6 +241,7 @@ def upload_frame(req):
 
 @api.route('/files')
 def download_frame():
+    # 現在typeは未使用
     type = request.args.get('type')
     frame_uuid = request.args.get('uuid')
     ext = request.args.get('ext')
@@ -288,6 +292,7 @@ def jobs():
     count = 0
     execute_histories = []
 
+    # jobsリストの作成
     for job_path in Path(JOBS_DIR_PATH).iterdir():
         data = json.loads(job_path.read_text(encoding='utf-8'))
         if 'flow' in request.args:
@@ -299,8 +304,10 @@ def jobs():
         else:
             execute_histories.append(data)
 
+    # 並び順変更
     results = sorted(execute_histories, key = lambda x:x['executedAt'], reverse=True)
 
+    # count処理
     if 'count' in request.args:
         count = int(request.args['count'])
         # countの値がおかしい場合、falseを返す
@@ -308,7 +315,6 @@ def jobs():
             return jsonify({'success': False})
 
         return jsonify({'success': True, 'data': results[count - 1 : count]})
-    # countがある場合でもない場合でも、等しく正しい結果を返すのでそれを強調する為else句を使っている
     else:
         return jsonify({'success': True, 'data': results})
 
@@ -328,18 +334,7 @@ def execute_flow_internal(flow_uuid, step_paths=None):
         with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
 
-    # try:
-    #     result = execute_flow_by_uuid(flow_uuid)
-    # except Exception as e:
-    #     # とりあえずの例外処理
-    #     # 何か例外が起こった時、実行中状態の履歴ファイルが無意味に残るのが嫌なので
-    #     # history_file_path.unlink()
-    #     print(e)
-    #     result = {}
-
     result = execute_flow_by_uuid(flow_uuid)
-    for i in result.values():
-        print(i.uuid)
     return [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
 
 
