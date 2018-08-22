@@ -3,6 +3,7 @@ import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
 import type { NavigationModelProps } from '../../../model/Navigation/NavigationModel'
+import WebUtil from '../../../utils/WebUtil'
 
 type Props = {
   baseUrl: string,
@@ -82,6 +83,16 @@ export default class NavigationBar extends React.Component<Props> {
     </li>
   }
 
+  onClickLogout(e:Event){
+    let logoutParam = "?session=off"
+    if(location.href.indexOf("?") !== -1){
+      logoutParam = logoutParam.replace("?","&")
+    }
+    const url = location.href + logoutParam
+    WebUtil.navigateURL(url)
+    e.preventDefault()
+  }
+
   renderUserNavigationItem(){
     const {baseUrl, navigation} = this.props
     if (!this.isLogin) return null
@@ -92,7 +103,7 @@ export default class NavigationBar extends React.Component<Props> {
         {navigation.user_name}
       </a>
       <div className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-        <a className="dropdown-item" href="?session=off">ログアウト</a>
+        <a href="#" className="dropdown-item" onClick={this.onClickLogout}>ログアウト</a>
       </div>
     </li>
 
