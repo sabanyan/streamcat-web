@@ -98,9 +98,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       console.log("render")
         const {commands} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
-        let inputForm,subFlowLink,content
+        let inputForm,subFlowLink,content,title
 
         if(selected_step.type === Constants.step.type.command){
+          title = selected_step.getCommand(commands).label
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
             const command:CommandModel = selected_step.getCommand(commands)
@@ -133,9 +134,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             {subFlowLink}
             <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step} selectedSubFlow={this.selectedSubFlow}/>
             <div className={style.hr} />
-            <div className={style.property_title}>
-              パラメータ
-            </div>
             <div>
               <div className="kskp-form">
                 {inputForm}
@@ -147,7 +145,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           </div>
         }
 
-        return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"} {...this.props}>
+
+        return <Inspector key={selected_step.id} header={selected_step.text} title={title} {...this.props}>
           {content}
         </Inspector>
     }
