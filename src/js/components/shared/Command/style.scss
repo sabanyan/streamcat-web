@@ -2,16 +2,20 @@
 
 .command{
   display: block;
-  height: 64px;
+  height: auto;
   width: 100%;
   position: relative;
   cursor: pointer;
-  margin-bottom: 8px;
   overflow: hidden;
   border-bottom: 1px dotted #ccc;
+  padding: 4px 8px;
+  &:hover{
+    transition: all 0.3s;
+    background: $kskp-property-command-hover-background-color;
+  }
 }
 .command_label_container{
-  padding: 8px 4px;
+  padding: 6px 4px;
   float: left;
   display: inline-block;
   width: calc(100% - 60px);
@@ -35,7 +39,7 @@
   display: inline-block;
   width: 60px;
   height: 60px;
-  padding: 4px;
+  padding: 5px;
   //border: 1px solid $kskp-property-operator-border-color;
   //background: $kskp-property-operator-background-color;
   //color: $kskp-property-operator-icon-color;
