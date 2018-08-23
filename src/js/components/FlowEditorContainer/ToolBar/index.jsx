@@ -235,7 +235,7 @@ export default class Toolbar extends React.Component<ToolbarProps> {
               onClick={(e) => this.onClickSave(e)}>保存</Save>
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
-        <Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>
+        {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}
         {/*<DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>*/}
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
       </div>
