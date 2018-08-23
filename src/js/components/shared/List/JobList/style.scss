@@ -32,9 +32,9 @@
 .icon{
   color: $kskp-text;
   font-size: 18px;
-  position: absolute;
-  left: 18px;
-  top: 18px;
+  position: relative;
+  top: 2px;
+  padding-right:4px;
   display: inline-block;
 }
 
