@@ -36,27 +36,47 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
   render () {
     const {mast,numberOfInput} = this.props
     const {keyword} = this.state
-    let operators = mast.commands.filter((command:CommandModel) => {
+
+    const sortedCommands = mast.commands.sort((commandA,commandB)=>{
+      const a = commandA.classification.toUpperCase()
+      const b = commandB.classification.toUpperCase()
+
+      let comparison = 0
+      if(a > b){
+        comparison = 1
+      }else if(a < b){
+        comparison = -1
+      }
+      return comparison
+    })
+
+    let operators = sortedCommands.filter((command:CommandModel) => {
       if(command.ports){
         if(Object.keys(command.ports[0]).length === numberOfInput)return true
       }
       return false
     }).filter((command:CommandModel)=>{
-      console.log(command.label.indexOf(keyword))
       if (keyword === '') {
         return true
       }
       return (command.label.indexOf(keyword) != -1) ? true : false
-    }).map((command:CommandModel,index)=>{
-      return <Command command={command} {...this.props} key={index}/>
     })
 
-    return <div><div className={style.property_title}>
-      コマンド
-    </div>
+    let operatorsContainer = []
+    let beforeCommand:CommandModel = null
+    operators.map((command:CommandModel,index)=>{
+      if(!beforeCommand || beforeCommand.classification != command.classification){
+        //区切りを表示
+        operatorsContainer.push(<div className={style.command_separator}>{command.classification}</div>)
+      }
+      operatorsContainer.push(<Command command={command} {...this.props} key={index}/>)
+      beforeCommand = command
+    })
+
+    return <div>
     <TextField onChange={(e)=>this.onChangeKeyword(e)} placeholder={"キーワード"}/>
     <div className={style.property_basic_operators}>
-    {operators}
+    {operatorsContainer}
     </div>
     </div>
   }
