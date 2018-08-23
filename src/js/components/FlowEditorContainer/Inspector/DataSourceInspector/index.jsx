@@ -185,8 +185,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     }
 
     const flow:FlowModel  = this.props.flow
-    console.log("CHECKED")
-    console.log(flow.hasInPortWithId(selected_step.id))
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
         <label><input type="checkbox" checked={flow.hasInPortWithId(selected_step.id)} ref={'flowIn'}
@@ -263,7 +261,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       </div>
     }
 
-    return <Inspector header={""} title={'データの概要'} {...this.props}>
+    return <Inspector header={""} title={selected_step.label} {...this.props}>
       {content}
     </Inspector>
   }
