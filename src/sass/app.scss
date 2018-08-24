@@ -11,6 +11,10 @@ body {
   padding-top: 64px; //navigation-header-height
 }
 
+.container{
+  min-width: 1024px;
+}
+
 .none-pointer-events{
   pointer-events: none;
   *{
