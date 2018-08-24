@@ -106,7 +106,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
     return <EmptyState
       icon={'add'}
       title={'フローがありません'}
-      description={'フローを作成しましょう。'}>
+      description={'フローを作成しましょう'}>
       <Button onClick={(e) => this.onClickNew(e)}>作成する</Button>
     </EmptyState>
   }

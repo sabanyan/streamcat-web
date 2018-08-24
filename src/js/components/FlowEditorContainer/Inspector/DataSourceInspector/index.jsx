@@ -66,29 +66,23 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     if(selected_step.hasData()){
       this.loading = true
       this.forceUpdate()
-      HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
-        const json = response.data
-        let content = <DataPreview key={selected_step.uuid} json={json} />
-        ModalUtil.emitModal({
-          id: Constants.preview.DATASOURCE,
-          visible: true,
-          content: content,
-          title: selected_step.label,
-        })
-        this.loading = false
-        this.forceUpdate()
-      })
+      this.previewFromUUID(selected_step.uuid,selected_step.label)
     }else{
       this.loading = true
       this.forceUpdate()
       HttpUtil.get("frames?from="+inject_flow_uuid+"."+selected_step.id).then((response)=>{
-        let content = <DataPreview key={selected_step.uuid} json={response.data} />
-        ModalUtil.emitModal({
-          id: Constants.preview.DATASOURCE,
-          visible: true,
-          content: content,
-          title: selected_step.label,
-        })
+
+        const uuid = response.data.name[0].uuid
+        const label = response.data.name[0].id
+        this.previewFromUUID(uuid,label)
+
+        // let content = <DataPreview key={selected_step.uuid} json={response.data} />
+        //         // ModalUtil.emitModal({
+        //         //   id: Constants.preview.DATASOURCE,
+        //         //   visible: true,
+        //         //   content: content,
+        //         //   title: selected_step.label,
+        //         // })
         this.loading = false
         this.forceUpdate()
       },(error)=>{
@@ -98,6 +92,21 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       })
     }
     e.preventDefault()
+  }
+
+  previewFromUUID(uuid:string,label:string){
+    HttpUtil.get("frames/"+uuid).then((response)=>{
+      const json = response.data
+      let content = <DataPreview key={uuid} json={json} />
+      ModalUtil.emitModal({
+        id: Constants.preview.DATASOURCE,
+        visible: true,
+        content: content,
+        title: label
+      })
+      this.loading = false
+      this.forceUpdate()
+    })
   }
 
   onClickCSVDownload(e:Event){

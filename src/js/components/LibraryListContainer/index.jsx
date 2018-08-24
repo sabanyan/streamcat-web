@@ -74,7 +74,7 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     return <EmptyState
       icon={'inbox'}
       title={'ライブラリが空です'}
-      description={'フローを実行することでデータができます'}>
+      description={'フローを実行することでデータが作成されます'}>
     </EmptyState>
   }
 
