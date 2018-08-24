@@ -9,7 +9,7 @@ import Sort from './Sort'
 import Suspend from './Suspend'
 import DryRun from './DryRun'
 import Download from './Download'
-import DataSourceImport from './DatasourceImport'
+import DataSourceImport from './DataSourceImport'
 import Zoom from './Zoom'
 import style from './style.scss'
 import classnames from 'classnames'
@@ -22,17 +22,17 @@ import { RunResponseType } from '../../../types'
 import FileUploader from '../../shared/FileUploader'
 import type { UploadedFileType } from '../../../types'
 
-type ToolbarProps = {
+type ToolBarProps = {
   ...FlowEditorProps
 }
 
-export default class Toolbar extends React.Component<ToolbarProps> {
+export default class ToolBar extends React.Component<ToolBarProps> {
 
   loading:boolean  = false
   loadingMessage:string
   uploadedFile:UploadedFileType = null
 
-  constructor (props:ToolbarProps){
+  constructor (props:ToolBarProps){
     super(props)
   }
 

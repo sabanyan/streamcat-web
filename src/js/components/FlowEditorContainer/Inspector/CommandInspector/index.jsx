@@ -95,7 +95,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     }
 
     render() {
-      console.log("render")
         const {commands} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
         let inputForm,subFlowLink,content,title
@@ -130,6 +129,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         if(!this.loaded){
           content = <Loader center={true} absolute={false} fixed={false} visible={true}/>
         }else {
+          title = selected_step.label
           content = <div>
             {subFlowLink}
             <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step} selectedSubFlow={this.selectedSubFlow}/>

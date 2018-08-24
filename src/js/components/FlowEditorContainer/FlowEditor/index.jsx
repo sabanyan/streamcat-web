@@ -5,7 +5,7 @@ import PaperScroller from '../PaperScroller'
 import Inspector from '../Inspector'
 import Step from '../../shared/Step'
 import PaperZoom from '../PaperZoom'
-import Toolbar from '../ToolBar'
+import ToolBar from '../ToolBar'
 import ModalManager from '../../shared/ModalManager'
 import Constants from '../../../constants/index'
 import type { FlowEditorProps } from '../index'
@@ -133,7 +133,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   render () {
     return <div className={style.flow_editor}>
       <PaperZoom />
-      <Toolbar {...this.props} />
+      <ToolBar {...this.props} />
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)} message={"フローを構築中です"}/>
       <PaperScroller {...this.props}>
         <Paper {...this.props}>
