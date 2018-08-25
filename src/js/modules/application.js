@@ -418,7 +418,7 @@ const Application = (state = initialState, action:{}) => {
           if(offset === undefined){
             //絶対値
             newState = {...state,zoom:value}
-          }else if(state.zoom + offset > 70 && state.zoom + offset < 150){
+          }else if(state.zoom + offset >= 80 && state.zoom + offset <= 180){
             //差分
             newState = {...state,zoom:state.zoom + offset}
           }

@@ -122,6 +122,7 @@ export default class Step extends React.Component<Props, State> {
   }
 
   updateStep (e: MouseEvent) {
+    const {zoom} = this.props
     let coords_x = e.pageX
     let coords_y = e.pageY
 
@@ -133,8 +134,8 @@ export default class Step extends React.Component<Props, State> {
     //移動量から現在位置を割り出す
     const xDiff = coords_x - e.pageX
     const yDiff = coords_y - e.pageY
-    const new_x = this.props.position.x - xDiff
-    const new_y = this.props.position.y - yDiff
+    const new_x = this.props.position.x - ZoomUtil.zoomReverse(xDiff,zoom)
+    const new_y = this.props.position.y - ZoomUtil.zoomReverse(yDiff,zoom)
 
     //移動に応じてStepの位置を更新
     let step = this.props.model
