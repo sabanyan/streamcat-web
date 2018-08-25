@@ -10,6 +10,7 @@ import CommandModel from '../../../model/Command/CommandModel'
 import CommandIcon from '../Icon/CommandIcon'
 import type { CommandStepModelProps } from '../../../model/Step/CommandStepModel'
 import type { CommandPortType } from '../../../types'
+import WebUtil from '../../../utils/WebUtil'
 
 type Props = {
     command: CommandModel;
@@ -55,7 +56,7 @@ export default class Command extends React.Component<Props> {
     }
 
 
-    onClickCommand(command:CommandModel) {
+    onClickCommand(e:Event,command:CommandModel) {
 
         const self = this
         let content = this.buildParamsContent()
@@ -122,12 +123,33 @@ export default class Command extends React.Component<Props> {
 
     }
 
+    onClickPdf(e:Event,url:string){
+      window.open(url)
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
     render() {
 
         const {command} = this.props
         const iconClass = classnames(style.command_icon)
 
-        return <div className={style.command} onClick={() => this.onClickCommand(command)}>
+        let hasPdfLink = false
+
+        if(command.description){
+          hasPdfLink = (command.description.indexOf(".pdf") !== -1)
+        }
+
+        let description
+        if(hasPdfLink) {
+          console.log("pdflink")
+          const url = WebUtil.webURL(command.description)
+          description = <a href="#" onClick={(e)=>this.onClickPdf(e,url)} onMouseDown={e => e.stopPropagation()}>PDF</a>
+        }else{
+          description = command.description
+        }
+
+        return <div className={style.command} onClick={(e) => this.onClickCommand(e,command)}>
             <svg className={iconClass}>
                 <CommandIcon command={command}/>
             </svg>
@@ -136,7 +158,7 @@ export default class Command extends React.Component<Props> {
                 {command.label}
                 </div>
                 <div className={style.command_description}>
-                  {command.description}
+                  {description}
                 </div>
             </div>
         </div>
