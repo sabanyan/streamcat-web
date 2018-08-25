@@ -1,3 +1,4 @@
+//@flow
 import React from 'react'
 import Icon from '../index'
 import Rect from '../../Step/Rect'

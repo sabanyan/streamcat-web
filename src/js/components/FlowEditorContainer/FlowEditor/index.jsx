@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from 'react'
 import Paper from '../Paper'
 import PaperScroller from '../PaperScroller'
@@ -17,6 +17,7 @@ import Graph from '../../../utils/Graph'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import CommandModel from '../../../model/Command/CommandModel'
 import Loader from '../../shared/Loader'
+import { DragType } from '../../../types'
 
 type State = {}
 
@@ -34,7 +35,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       redirect: 'follow',
     }
 
-    const graph = new Graph()
+    const graph:Graph = new Graph()
 
     let networkRequests = []
 

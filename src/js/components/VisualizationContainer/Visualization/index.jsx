@@ -1,3 +1,4 @@
+//@flow
 import React from 'react'
 import DataTable from '../../shared/DataTable'
 import {

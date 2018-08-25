@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import type { FlowEditorProps } from '../index'
 import style from './style.scss'

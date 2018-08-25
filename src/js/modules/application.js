@@ -1,3 +1,4 @@
+//@flow
 import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
@@ -5,7 +6,7 @@ import FlowModel from '../model/Flow/FlowModel'
 import NavigationModel from '../model/Navigation/NavigationModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import CommandStepModel from '../model/Step/CommandStepModel'
-import type { CommandPortType } from '../types'
+import type { CommandPortType, StepModelType } from '../types'
 import CommandModel from '../model/Command/CommandModel'
 import FlowUtil from '../utils/FlowUtil'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
@@ -32,7 +33,7 @@ const DRAG_END_ACTION = "drag_end_action";
 const SET_ZOOM_ACTION = "set_zoom_action";
 const UPDATE_DATAFRAME_DETAIL_ACTION = "update_dataframe_detail_action";
 
-const graph = new Graph()
+const graph:Graph = new Graph()
 //
 // const json = {
 //     "flows": [
@@ -97,7 +98,7 @@ let initialState = {
 }
 
 
-const Application = (state = initialState, action) => {
+const Application = (state = initialState, action:{}) => {
     switch (action.type) {
         case LOAD_FLOW_JSON_ACTION: {
             let {context} = action
@@ -139,11 +140,11 @@ const Application = (state = initialState, action) => {
               //srcs
               let totalSX = 0
               let totalSY = 0
-              src_step_ids.forEach(id=>{
-                const from = id
-                const to = add_step.id
+              src_step_ids.forEach((id:string)=>{
+                const from:string = id
+                const to:string = add_step.id
 
-                const target = Graph.getNode(state.nodes,id)
+                const target:StepModelType = Graph.getNode(state.nodes,id)
                 totalSX = totalSX + target.position.x
                 totalSY = totalSY + target.position.y
                 graph.addEdge(from,to,from)
@@ -151,9 +152,9 @@ const Application = (state = initialState, action) => {
 
               //dsts
               let totalDX = 0
-              dst_step_ids.forEach(id=>{
-                const from = add_step.id
-                const to = id
+              dst_step_ids.forEach((id:string)=>{
+                const from:string = add_step.id
+                const to:string = id
                 //ノードの数に応じて
                 totalDX = totalDX + defaultGraphProps.nodeSeparator
                 graph.addEdge(from,to,to)
@@ -191,7 +192,7 @@ const Application = (state = initialState, action) => {
                       width: defaultNodeProps.width,
                       height: defaultNodeProps.height
                     })
-                    newState.nodes = Graph.updateNode(state.nodes,id,new_node)
+                    newState.nodes = Graph.updateNode({nodes: state.nodes, key: id, new_node: new_node})
                     console.log(newState.nodes)
                   })
                   //出力先ステップの位置調整
@@ -289,7 +290,7 @@ const Application = (state = initialState, action) => {
             navigator.clipboard.writeText(cut_data).then(()=> {
 
                 let deleteKeySet = new Set()
-                action.step_ids.map((id)=>{
+                action.step_ids.map((id:string)=>{
                     graph.removeNode(id)
                     deleteKeySet.add(id)
                 })
@@ -438,7 +439,7 @@ export default Application
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const addStepAction = (add_step, src_step_ids = [],dst_step_ids = []) => {
+export const addStepAction = (add_step:StepModelType, src_step_ids:[] = [],dst_step_ids:[] = []) => {
   return {
     type: ADD_STEP_ACTION,
     add_step: add_step,
@@ -452,7 +453,7 @@ export const addStepAction = (add_step, src_step_ids = [],dst_step_ids = []) => 
  * @param context
  * @returns {{type: string, context: *}}
  */
-export const loadFlowJSONAction = (context) => {
+export const loadFlowJSONAction = (context:{}) => {
   return {
     type: LOAD_FLOW_JSON_ACTION,
     context: context,
@@ -464,7 +465,7 @@ export const loadFlowJSONAction = (context) => {
  * @param context
  * @returns {{type: string, context: *}}
  */
-export const addMasterAction = (context) => {
+export const addMasterAction = (context:{}) => {
   return {
     type: ADD_MASTER_ACTION,
     context: context,
@@ -478,7 +479,7 @@ export const addMasterAction = (context) => {
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const updateStepAction = step => {
+export const updateStepAction = (step:StepModelType) => {
   return {
     type: UPDATE_STEP_ACTION,
     step: step
@@ -502,7 +503,7 @@ export const updateFlowAction = flow => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const deleteStepsAction = step_ids => {
+export const deleteStepsAction = (step_ids:[]) => {
   return {
       type: DELETE_STEPS_ACTION,
       step_ids: step_ids
@@ -514,7 +515,7 @@ export const deleteStepsAction = step_ids => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const cutStepsAction = step_ids => {
+export const cutStepsAction = (step_ids:[])=> {
     return {
         type: CUT_STEPS_ACTION,
         step_ids: step_ids
@@ -525,7 +526,7 @@ export const cutStepsAction = step_ids => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const copyStepsAction = step_ids => {
+export const copyStepsAction = (step_ids:[])=> {
     return {
         type: COPY_STEPS_ACTION,
         step_ids: step_ids
@@ -547,21 +548,21 @@ export const pasteStepsAction = () => {
  * @param selected_steps
  * @returns {{type: string, selected_steps: *}}
  */
-export const selectStepsAction = selected_steps => {
+export const selectStepsAction = (selected_steps:[]) => {
   return {
     type: SELECT_STEPS_ACTION,
     selected_steps: selected_steps
   }
 }
 
-export const addSelectStepAction = selected_step_id => {
+export const addSelectStepAction = (selected_step_id:string) => {
     return {
         type: ADD_SELECT_STEP_ACTION,
         selected_step_id: selected_step_id
     }
 }
 
-export const deleteSelectStepAction = selected_step_id => {
+export const deleteSelectStepAction = (selected_step_id:string) => {
     return {
         type: DELETE_SELECT_STEP_ACTION,
         selected_step_id: selected_step_id
@@ -573,7 +574,7 @@ export const deleteSelectStepAction = selected_step_id => {
  * @param flowid
  * @returns {{type: string, step: *}}
  */
-export const executeFlowAction = flowid => {
+export const executeFlowAction = (flowid:string) => {
   return {
     type: EXECUTE_FLOW_ACTION
   }
@@ -595,14 +596,14 @@ export const sortFlowAction = () => {
  * @param
  * @returns {{type: string, selected_steps: *}}
  */
-export const selectTabAction = (tab_id) => {
+export const selectTabAction = (tab_id:string) => {
   return {
     type: SELECT_TAB_ACTION,
     selected_tab_id: tab_id
   }
 }
 
-export const dragStartAction = (x,y) => {
+export const dragStartAction = (x:number,y:number) => {
   return {
     type : DRAG_START_ACTION,
     x:x,
@@ -610,7 +611,7 @@ export const dragStartAction = (x,y) => {
   }
 }
 
-export const draggingAction = (x,y) => {
+export const draggingAction = (x:number,y:number) => {
   return {
     type : DRAGGING_ACTION,
     x:x,
@@ -618,7 +619,7 @@ export const draggingAction = (x,y) => {
   }
 }
 
-export const dragEndAction = (x,y) => {
+export const dragEndAction = (x:number,y:number) => {
   return {
     type : DRAG_END_ACTION,
     x:x,

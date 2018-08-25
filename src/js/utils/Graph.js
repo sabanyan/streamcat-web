@@ -1,3 +1,4 @@
+//@flow
 import dagre from 'dagre'
 import Constants from '../constants'
 import CommandStepModel from '../model/Step/CommandStepModel'
@@ -17,6 +18,11 @@ export const defaultGraphProps = {
   marginX: 80,
   marginY: 100,
   rankSeparator: Constants.default.graph.rankSeparator,
+}
+
+type GraphType = {
+  nodes:{};
+  zoom:number;
 }
 
 class Graph {
@@ -41,9 +47,8 @@ class Graph {
    * ノードの追加
    * @param id
    * @param from_id
-   * @param node
    */
-  addNode (id, from_id, node) {
+  addNode (id:string, from_id:([]|string)) {
     const self = this
     this.g.setNode(id, {
       label: id,
@@ -60,15 +65,15 @@ class Graph {
     }
   }
 
-  outEdges (id) {
+  outEdges (id:string) {
     return this.g.outEdges(id)
   }
 
-  inEdges (id) {
+  inEdges (id:string) {
     return this.g.inEdges(id)
   }
 
-  nodeEdges (id) {
+  nodeEdges (id:string) {
     return this.g.nodeEdges(id)
   }
 
@@ -76,7 +81,7 @@ class Graph {
    * ノードの削除
    * @param id
    */
-  removeNode (id) {
+  removeNode (id:string) {
     this.g.removeNode(id)
   }
 
@@ -85,7 +90,7 @@ class Graph {
    * @param from_id
    * @param to_id
    */
-  addEdge (from_id, to_id, name) {
+  addEdge (from_id:string, to_id:string, name:string) {
     this.g.setEdge({v:from_id, w:to_id,name:name})
   }
 
@@ -94,14 +99,14 @@ class Graph {
    * @param from_id
    * @param to_id
    */
-  removeEdge (from_id, to_id, name) {
+  removeEdge (from_id:string, to_id:string, name:string) {
     this.g.removeEdge({v:from_id, w:to_id,name:name})
   }
 
   /**
    * dagreによるレイアウト
    */
-  layout () {
+  layout(){
     dagre.layout(this.g)
   }
 
@@ -109,7 +114,9 @@ class Graph {
    * グラフサイズの取得
    * @returns {{width, height}}
    */
-  getGraph ({nodes,zoom}) {
+
+  getGraph (GraphType) {
+    const {nodes,zoom} = GraphType
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
@@ -128,7 +135,7 @@ class Graph {
    * @param nodes
    * @returns {*}
    */
-  refreshPosition (nodes) {
+  refreshPosition (nodes:[]) {
     const self = this
     this.layout()
     this.g.nodes().forEach((v)=> {
@@ -151,7 +158,7 @@ class Graph {
    * @param key
    * @returns {*}
    */
-  static getNode(nodes,key){
+  static getNode(nodes:[],key:string){
     let node = nodes.find((node)=>{
       return node.id === key
     })
@@ -160,12 +167,12 @@ class Graph {
 
   /**
    * ノードの置き換え
-   * @param nodes
-   * @param key
-   * @returns {*}
+   * @returns {any[]}
+   * @param parameters
    */
-  static updateNode(nodes,key,new_node){
-    let new_nodes = nodes.map((node)=>{
+  static updateNode(parameters:{nodes:[],key:string,new_node:any}){
+    let {nodes, key, new_node} = parameters
+    let new_nodes = nodes.map((node:any)=>{
       if(node.id === key){
         return new_node
       }else{
@@ -178,10 +185,10 @@ class Graph {
   /**
    * ノードの取得
    * @param nodes
-   * @param key
+   * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithIncludeKeys(nodes,keySet){
+  static getNewNodesWithIncludeKeys(nodes:[],keySet:any){
     let node = nodes.filter((node)=>{
       return (key_set.has(node.id))
     })
@@ -191,10 +198,10 @@ class Graph {
   /**
    * ノードの取得
    * @param nodes
-   * @param key
+   * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithExculudeKeys(nodes,keySet){
+  static getNewNodesWithExculudeKeys(nodes:[],keySet:Set){
     let node = nodes.filter((node)=>{
       return !(keySet.has(node.id))
     })
@@ -206,7 +213,7 @@ class Graph {
    * @param json
    * @returns {*}
    */
-  load (json) {
+  load (json:{}) {
     const self = this
     let hasPosition = false
 

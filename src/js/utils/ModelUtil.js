@@ -7,7 +7,7 @@ export default class ModelUtil {
    * "new RRRRRRRR-RRRR-4RRR-rRRR-RRRRRRRRRRRR" というフォーマットで発行される
    * @returns {string}
    */
-  static getNewId () {
+  static getNewId ():string {
     return 'new ' +this.generateUUID()
   }
 
@@ -15,7 +15,7 @@ export default class ModelUtil {
    * 乱数による UUID バージョン4
    * @returns {string}
    */
-  static generateUUID(){
+  static generateUUID():string{
     // ref:https://github.com/GoogleChrome/chrome-platform-analytics/blob/master/src/internal/identifier.js
     // 乱数によるUUID。16進表記ではRRRRRRRR-RRRR-4RRR-rRRR-RRRRRRRRRRRRとなり、バリアント(10)とバージョン(0100)を除くすべてのビットを乱数（R:122ビット）で生成する。
     let chars = Constants.default.uuid.v4Format.split("");

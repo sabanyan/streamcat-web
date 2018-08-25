@@ -1,8 +1,10 @@
+//@flow
 import React from 'react'
 import style from './style.scss'
 import classnames from 'classnames'
+import type { ToolBarButtonType } from '../../../../types'
 
-const ToolBarButton = (props) => {
+const ToolBarButton = (props:ToolBarButtonType) => {
 
   const {onClick, children, disabled, icon, is_paper_toolbar_button} = props
   const icon_class = classnames('material-icons', [style.icon])

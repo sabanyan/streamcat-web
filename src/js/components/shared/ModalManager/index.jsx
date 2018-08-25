@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from 'react'
 import Constants from '../../../constants/index'
 import Modal from '../Modal'

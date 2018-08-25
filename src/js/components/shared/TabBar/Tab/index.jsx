@@ -1,3 +1,4 @@
+//@flow
 import React from 'react'
 import style from './style.scss'
 import classnames from 'classnames'
