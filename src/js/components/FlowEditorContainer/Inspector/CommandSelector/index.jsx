@@ -33,14 +33,10 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     this.setState({keyword: e.target.value})
   }
 
-  render () {
-    const {mast,numberOfInput} = this.props
-    const {keyword} = this.state
-
-    const sortedCommands = mast.commands.sort((commandA,commandB)=>{
-      const a = commandA.classification.toUpperCase()
-      const b = commandB.classification.toUpperCase()
-
+  sortArray(array:[],key:string):[]{
+    return array.sort((objectA,objectB)=>{
+      const a = objectA[key]
+      const b = objectB[key]
       let comparison = 0
       if(a > b){
         comparison = 1
@@ -49,6 +45,15 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
       }
       return comparison
     })
+  }
+
+  render () {
+    const {mast,numberOfInput} = this.props
+    const {keyword} = this.state
+
+    let sortedCommands:[]
+    sortedCommands = this.sortArray(mast.commands,"id")
+    sortedCommands = this.sortArray(sortedCommands,"classification")
 
     let operators = sortedCommands.filter((command:CommandModel) => {
       if(command.ports){
@@ -67,7 +72,9 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     operators.map((command:CommandModel,index)=>{
       if(!beforeCommand || beforeCommand.classification != command.classification){
         //区切りを表示
-        operatorsContainer.push(<div key={command.id} className={style.command_separator}>{command.classification}</div>)
+        let label = Constants.lang.classification[command.classification]
+        if(!label)label = command.classification
+        operatorsContainer.push(<div key={command.id} className={style.command_separator}>{label}</div>)
       }
       operatorsContainer.push(<Command command={command} {...this.props} key={index}/>)
       beforeCommand = command
