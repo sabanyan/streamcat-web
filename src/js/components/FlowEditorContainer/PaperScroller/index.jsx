@@ -30,9 +30,6 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
         this.props.deleteSteps(selected_step_ids)
         return
       }
-
-      console.log(e.metaKey)
-      console.log(e.key)
     }
     else {
       console.log(e.ctrlKey)
