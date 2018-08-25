@@ -51,7 +51,7 @@ class InOutConnector extends React.Component{
             inPorts = subFlow.getInPorts()
             port = inPorts[index]
           }
-          return <div>
+          return <div key={index}>
             <DropDownList disabled={false} key={"in_edge"} onChange={(e,data,label)=>this.onChangeInEdge(e,data,label)} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
           </div>
         })
@@ -65,15 +65,15 @@ class InOutConnector extends React.Component{
           inPorts = command.getInPorts()
           port = inPorts[index]
         }
-        return <div>
+        return <div key={index}>
           <DropDownList disabled={false} key={"in_edge"} onChange={(e,data,label)=>this.onChangeInEdge(e,data,label)} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
         </div>
       })
     }
 
-    let output = selected_out_edges.map((edge)=>{
+    let output = selected_out_edges.map((edge,index)=>{
       const node = FlowUtil.getNodeFromID(nodes,edge.name)
-      return <div className={style.output}>{node.label}</div>
+      return <div key={index} className={style.output}>{node.label}</div>
     })
 
     return  <div className="kskp-form mb-20px">

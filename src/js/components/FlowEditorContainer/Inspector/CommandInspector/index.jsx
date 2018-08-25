@@ -113,6 +113,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             </div>
           })
         }else if(selected_step.type === Constants.step.type.subflow){
+          title = selected_step.label
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
             const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,key))
@@ -129,7 +130,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         if(!this.loaded){
           content = <Loader center={true} absolute={false} fixed={false} visible={true}/>
         }else {
-          title = selected_step.label
           content = <div>
             {subFlowLink}
             <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step} selectedSubFlow={this.selectedSubFlow}/>
@@ -140,7 +140,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
               </div>
             </div>
             <br />
-            <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
+            <Button onClick={(e) => this.oInOutConnectornClickSave(e)}>適用</Button>
             <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
           </div>
         }
