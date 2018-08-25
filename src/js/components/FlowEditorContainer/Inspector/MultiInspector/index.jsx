@@ -53,8 +53,6 @@ class MultiInspector extends React.Component<FlowEditorProps> {
   render () {
     const numberOfSelectedDataSources = this.getNumberOfSelectedDataSources()
 
-    console.log(numberOfSelectedDataSources)
-
     return <Inspector header={""}
                       title={this.props.selected_step_ids.length + ' files'}>
       <div className="kskp-form">

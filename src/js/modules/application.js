@@ -257,6 +257,10 @@ const Application = (state = initialState, action:{}) => {
               return node
             })
 
+            //選択されているEdgeも更新する
+            newState.selected_in_edges = graph.g.inEdges(state.selected_step_ids[0])
+            newState.selected_out_edges = graph.g.outEdges(state.selected_step_ids[0])
+
             //選択されているstepの値も更新する
             newState.graph = graph.getGraph(newState)
             return newState
