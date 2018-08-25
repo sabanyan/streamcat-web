@@ -67,7 +67,7 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     operators.map((command:CommandModel,index)=>{
       if(!beforeCommand || beforeCommand.classification != command.classification){
         //区切りを表示
-        operatorsContainer.push(<div className={style.command_separator}>{command.classification}</div>)
+        operatorsContainer.push(<div key={command.id} className={style.command_separator}>{command.classification}</div>)
       }
       operatorsContainer.push(<Command command={command} {...this.props} key={index}/>)
       beforeCommand = command
