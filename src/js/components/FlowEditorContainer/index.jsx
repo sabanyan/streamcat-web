@@ -26,7 +26,7 @@ import { connect } from 'react-redux'
 import * as React from 'react'
 import { FlowModelProps } from '../../model/Flow/FlowModel'
 import NavigationModel from '../../model/Navigation/NavigationModel'
-import type { dragType } from '../../types'
+import type { DragType } from '../../types'
 
 let FlowEditorContainer
 
@@ -58,7 +58,7 @@ export type FlowEditorProps = {
   zoom: number;
   flow: FlowModelProps;
   navigation: NavigationModel;
-  drag: dragType;
+  drag: DragType;
 }
 
 export default FlowEditorContainer = connect(

@@ -20,7 +20,7 @@ class HTTPUtil {
     }
   }
 
-  mergeConfig (config:{}) {
+  mergeConfig (config?:{}) {
     if (config) {
       return Object.assign(this.config, config)
     }
@@ -30,19 +30,19 @@ class HTTPUtil {
     return '/api/v0/' + path
   }
 
-  get (path:string, data:{}, config:{}) {
+  get (path:string, data?:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.get(url, {params: data}, merged_config)
   }
 
-  post (path:string, data:{}, config:{}) {
+  post (path:string, data:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.post(url, data, merged_config)
   }
 
-  put (path:string, data:{}, config:{}) {
+  put (path:string, data:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.put(url, data, merged_config)
