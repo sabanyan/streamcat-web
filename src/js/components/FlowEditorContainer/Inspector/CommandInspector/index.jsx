@@ -100,7 +100,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         let inputForm,subFlowLink,content,title
 
         if(selected_step.type === Constants.step.type.command){
-          title = selected_step.getCommand(commands).label
+          const command:CommandModel = selected_step.getCommand(commands)
+          title = (command)?command.label:selected_step.commandId
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
             const command:CommandModel = selected_step.getCommand(commands)

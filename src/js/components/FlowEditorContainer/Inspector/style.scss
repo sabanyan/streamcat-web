@@ -34,7 +34,7 @@
 .property_title{
   color: $kskp-text;
   font-size: 16px;
-  padding: 12px 0;
+  padding: 0 0 8px;
   text-align: left;
   clear: both;
 }
@@ -103,4 +103,11 @@
 .output{
   color: $kskp-text;
   padding-left: 12px;
+}
+
+.param{
+  padding-bottom: 8px;
+  &:last-of-type{
+    padding-bottom: 0;
+  }
 }

@@ -19,15 +19,12 @@ class InOutConnector extends React.Component{
     //labelにポート名
     //data.objectにデータフレームが格納されいてる
     const dataSource:DataFrameStepModel = data.object
-    console.log("onChangeInEdge")
-    console.log(label)
     newSelectedStep.srcs[label] = dataSource.id
     this.props.updateStep(newSelectedStep)
   }
 
 
   render () {
-
     const {nodes,onChangeInEdge,onChangeOutEdge,selectedStep,mast} = this.props
     const {selected_in_edges,selected_out_edges} = this.props
     //すべてのデータフレーム先をリスト化
@@ -42,32 +39,19 @@ class InOutConnector extends React.Component{
 
     let command:CommandModel
     let inEdgeSelect = []
-    if(selectedStep instanceof SubFlowStepModel){
-      if(this.props.selectedSubFlow){
-        const subFlow:FlowModel = this.props.selectedSubFlow
-        inEdgeSelect = selected_in_edges.map((edge,index)=>{
-          let inPorts:[CommandPortType]
-          let port:CommandPortType
-          if(subFlow){
-            inPorts = subFlow.getInPorts()
-            port = inPorts[index]
-          }
-          return <div key={index}>
-            <DropDownList disabled={false} key={"in_edge"} onChange={(e,data,label)=>this.onChangeInEdge(e,data,label)} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
-          </div>
-        })
-      }
-    }else if(selectedStep instanceof CommandStepModel){
-      command = selectedStep.getCommand(mast.commands)
-      inEdgeSelect = selected_in_edges.map((edge,index)=>{
-        let inPorts:[CommandPortType]
-        let port:CommandPortType
-        if(command){
-          inPorts = command.getInPorts()
-          port = inPorts[index]
+    if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
+      inEdgeSelect = selected_in_edges.map((edge, index) => {
+        let label: string
+        let dataFrameId: string
+        dataFrameId = edge.name
+        let src = selectedStep.getSrcsSteps(nodes)[dataFrameId]
+        if (src) {
+          label = src.portName
         }
-        return <div key={index}>
-          <DropDownList disabled={false} key={"in_edge"} onChange={(e,data,label)=>this.onChangeInEdge(e,data,label)} defaultValue={edge.name} list={dataSourceOptions} label={(port)?port.name:""}></DropDownList>
+        return <div key={index} className={style.param}>
+          <DropDownList disabled={false} key={"in_edge"}
+                        onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={edge.name}
+                        list={dataSourceOptions} label={label}></DropDownList>
         </div>
       })
     }

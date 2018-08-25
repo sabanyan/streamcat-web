@@ -30,7 +30,7 @@ export default class FlowUtil {
     let param = {};
     if(command && command.getParams()){
       command.getParams().map((_param)=>{
-        if(_param.name == paramName){
+        if(_param.name === paramName){
           param = _param
         }
       })
@@ -46,7 +46,6 @@ export default class FlowUtil {
     subflow.params.forEach((param)=>{
       if(param.name === paramName){
         result = param
-        return
       }
     })
     return result
