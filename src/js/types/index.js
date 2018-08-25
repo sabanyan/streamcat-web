@@ -1,6 +1,8 @@
+//@flow
 import CommandStepModel from '../model/Step/CommandStepModel'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
+import * as React from 'react'
 
 export type StepModelType = CommandStepModel|SubFlowStepModel|DataFrameStepModel
 export type CommandParamType = {
@@ -40,4 +42,43 @@ export type UploadedFileType = {
   file: File,
   uuid: string,
   label: string
+}
+
+export type DragType = {
+  start: {
+    x: number,
+    y: number
+  },
+  end: {
+    x: number,
+    y: number
+  }
+}
+
+export type ToolBarButtonType={
+  onClick: Function;
+  children: React.Node;
+  disabled: boolean;
+  icon: string;
+  is_paper_toolbar_button: boolean;
+}
+
+export type ZoomToolBarButtonType = {
+  onClickZoomIn:Function;
+  onClickZoomOut:Function;
+  onClickDefaultZoom:Function;
+  disabled:boolean;
+  zoom:number;
+}
+
+
+
+export type DownloadButtonType = {
+  onClick: Function;
+  children: React.Children;
+  disabled: boolean;
+  icon: string;
+  danger: boolean;
+  href: string;
+  download: string;
 }

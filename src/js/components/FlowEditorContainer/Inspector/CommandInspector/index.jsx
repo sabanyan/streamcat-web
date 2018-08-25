@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
@@ -140,7 +140,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
               </div>
             </div>
             <br />
-            <Button onClick={(e) => this.oInOutConnectornClickSave(e)}>適用</Button>
+            <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
             <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
           </div>
         }

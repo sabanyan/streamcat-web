@@ -1,3 +1,4 @@
+//@flow
 import type { CommandStepModelProps } from './CommandStepModel'
 import CommandStepModel from './CommandStepModel'
 

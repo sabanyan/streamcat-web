@@ -1,3 +1,4 @@
+//@flow
 import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
 import BaseModel from './BaseModel'

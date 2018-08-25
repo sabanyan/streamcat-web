@@ -3,17 +3,7 @@ import * as React from 'react'
 import style from '../style.scss'
 import classnames from 'classnames'
 
-type Props = {
-  onClick: Function;
-  children: React.Children;
-  disabled: boolean;
-  icon: string;
-  danger: boolean;
-  href: string;
-  download: string;
-}
-
-export default class DownloadButton extends React.Component<Props> {
+export default class DownloadButton extends React.Component<DownloadButtonType> {
   render () {
     const {onClick, children, disabled, icon, danger, href, download} = this.props
     const icon_class = classnames('material-icons', [style.icon])

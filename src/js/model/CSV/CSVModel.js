@@ -1,3 +1,4 @@
+//@flow
 import Model from '../index'
 
 export type CSVModelProps = {

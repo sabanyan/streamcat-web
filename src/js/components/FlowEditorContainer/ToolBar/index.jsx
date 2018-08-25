@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from 'react'
 import ModalUtil from '../../../utils/ModalUtil'
 import Constants from '../../../constants'
@@ -57,7 +57,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.props.sortFlow()
   }
 
-  getFlowJson(){
+  getFlowJson():{}{
     let {nodes,projectId,projectName} = this.props
 
     const flow_json = {
@@ -70,7 +70,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
 
-  save () {
+  save ():Promise {
     return new Promise((resolve, reject) => {
       HttpUtil.put("flows/" + inject_flow_uuid,this.getFlowJson()).then((response)=>{
         resolve(response)

@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import style from '../style.scss'
 import InOutConnector from '../CommandInspector/InOutConnector'

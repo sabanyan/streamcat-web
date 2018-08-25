@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import Constants from '../../../constants/index'
 import StandardModal from './Standard'

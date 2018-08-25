@@ -1,3 +1,4 @@
+//@flow
 export default class Model {
   initialize(props,key){
     if(props){
