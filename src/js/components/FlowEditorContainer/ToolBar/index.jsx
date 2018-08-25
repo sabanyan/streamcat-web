@@ -21,6 +21,7 @@ import Loader from '../../shared/Loader'
 import { RunResponseType } from '../../../types'
 import FileUploader from '../../shared/FileUploader'
 import type { UploadedFileType } from '../../../types'
+import FlowUtil from '../../../utils/FlowUtil'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -36,46 +37,30 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     super(props)
   }
 
-  onClickSave () {
-    this.loading = true
-    this.loadingMessage = "フローを保存中です"
-    this.save().then((json) => {
-      if (json) {
-        ModalUtil.emitModal({
-          id: Constants.modal.SHOW_MESSAGE,
-          visible: true,
-          title: '保存完了',
-          content: <div>フローを保存しました</div>,
-        })
-      }
-      this.loading = false
-      this.forceUpdate()
-    })
-  }
+  // onClickSave () {
+  //   this.loading = true
+  //   this.loadingMessage = "フローを保存中です"
+  //   this.save().then((json) => {
+  //     if (json) {
+  //       ModalUtil.emitModal({
+  //         id: Constants.modal.SHOW_MESSAGE,
+  //         visible: true,
+  //         title: '保存完了',
+  //         content: <div>フローを保存しました</div>,
+  //       })
+  //     }
+  //     this.loading = false
+  //     this.forceUpdate()
+  //   })
+  // }
 
   onClickSort () {
     this.props.sortFlow()
   }
 
-  getFlowJson():{}{
+  save (): Promise {
     let {nodes,projectId,projectName} = this.props
-
-    const flow_json = {
-      projectId: projectId,
-      name: projectName,
-      nodes: nodes,
-    }
-
-    return flow_json
-  }
-
-
-  save ():Promise {
-    return new Promise((resolve, reject) => {
-      HttpUtil.put("flows/" + inject_flow_uuid,this.getFlowJson()).then((response)=>{
-        resolve(response)
-      })
-    })
+    return FlowUtil.save(inject_flow_uuid,nodes,projectId,projectName)
   }
 
   run () {
@@ -231,8 +216,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(
                             e)}>データソースの追加</DataSourceImport>
-        <Save disabled={false} icon={'&#xE2C2'}
-              onClick={(e) => this.onClickSave(e)}>保存</Save>
+        {/*<Save disabled={false} icon={'&#xE2C2'}*/}
+              {/*onClick={(e) => this.onClickSave(e)}>保存</Save>*/}
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
         {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}

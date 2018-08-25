@@ -18,6 +18,7 @@ import type { StepModelType } from '../../../../types'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
 import Loader from '../../../shared/Loader'
+import FlowUtil from '../../../../utils/FlowUtil'
 
 type DataFrameDetailType = {
   contents: {};
@@ -62,35 +63,40 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
   onClickPreview(e:Event){
     const selected_step = this.getSelectedStep()
 
-    //すでにデータが存在している場合
-    if(selected_step.hasData()){
-      this.loading = true
-      this.forceUpdate()
-      this.previewFromUUID(selected_step.uuid,selected_step.label)
-    }else{
-      this.loading = true
-      this.forceUpdate()
-      HttpUtil.get("frames?from="+inject_flow_uuid+"."+selected_step.id).then((response)=>{
-
-        const uuid = response.data.name[0].uuid
-        const label = response.data.name[0].id
-        this.previewFromUUID(uuid,label)
-
-        // let content = <DataPreview key={selected_step.uuid} json={response.data} />
-        //         // ModalUtil.emitModal({
-        //         //   id: Constants.preview.DATASOURCE,
-        //         //   visible: true,
-        //         //   content: content,
-        //         //   title: selected_step.label,
-        //         // })
-        this.loading = false
+    let {nodes,projectId,projectName} = this.props
+    FlowUtil.save(inject_flow_uuid,nodes,projectId,projectName).then(()=>{
+      //すでにデータが存在している場合
+      if(selected_step.hasData()){
+        this.loading = true
         this.forceUpdate()
-      },(error)=>{
-        console.log(error)
-        this.loading = false
+        this.previewFromUUID(selected_step.uuid,selected_step.label)
+      }else{
+        this.loading = true
         this.forceUpdate()
-      })
-    }
+        HttpUtil.get("frames?from="+inject_flow_uuid+"."+selected_step.id).then((response)=>{
+
+          const uuid = response.data.name[0].uuid
+          const label = response.data.name[0].id
+          this.previewFromUUID(uuid,label)
+
+          // let content = <DataPreview key={selected_step.uuid} json={response.data} />
+          //         // ModalUtil.emitModal({
+          //         //   id: Constants.preview.DATASOURCE,
+          //         //   visible: true,
+          //         //   content: content,
+          //         //   title: selected_step.label,
+          //         // })
+          this.loading = false
+          this.forceUpdate()
+        },(error)=>{
+          console.log(error)
+          this.loading = false
+          this.forceUpdate()
+        })
+
+      }
+    })
+
     e.preventDefault()
   }
 
