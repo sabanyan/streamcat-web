@@ -46,7 +46,8 @@
   label{
     font-size: 14px;
     color: $kskp-text;
-    padding-top: 8px;
+    padding: 8px 0 4px;
+    margin: 0;
   }
 }
 
@@ -54,17 +55,20 @@
 .icon {
   cursor: pointer;
 }
+
 .hr{
-  border-bottom:1px solid $kskp-property-border-color;
-  margin: 8px 0;
+  border-top:1px solid $kskp-property-border-color;
+  margin: 8px -8px 8px -8px;
+  height: 8px;
+}
+
+.full_hr{
+  border-top:1px solid $kskp-property-border-color;
+  margin: 16px -16px 8px -16px;
+  height: 8px;
 }
 
 .property_overview{
-}
-.overviews{
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top:1px solid $kskp-property-border-color;
 }
 
 .overview{

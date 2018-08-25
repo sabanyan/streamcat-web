@@ -77,7 +77,7 @@ class InOutConnector extends React.Component{
       return <div key={index} className={style.output}>{node.label}</div>
     })
 
-    return  <div className="kskp-form mb-20px">
+    return  <div className="kskp-form">
           <label>入力</label>
           {inEdgeSelect}
           <label>出力</label>
