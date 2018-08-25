@@ -229,6 +229,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
             <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
                     danger={true}>削除</Button>
           </div>
+          <div className={style.full_hr}/>
           <div className={style.overviews}>
             <div className={style.overview}>
               <div className={style.overview_label}>
@@ -264,9 +265,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
             </div>
           </div>
         </div>
-        <div className={style.hr} />
+        <div className={style.full_hr}/>
         <CommandSelector numberOfInput={1} {...this.props} />
-        <div className={style.hr} />
         <div className={style.property_title}>
           作成したフロー
         </div>

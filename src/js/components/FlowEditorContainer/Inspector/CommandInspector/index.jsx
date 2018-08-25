@@ -105,7 +105,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             const parameter = selected_step.args[key]
             const command:CommandModel = selected_step.getCommand(commands)
             const param:CommandParamType = FlowUtil.getCommandParam(key,command)
-            console.log(param)
             return <div key={index}>
               <label>{param.label}</label>
               <label className="float-right">{param.name}</label>
@@ -132,8 +131,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         }else {
           content = <div>
             {subFlowLink}
+            <div className={style.full_hr} />
             <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step} selectedSubFlow={this.selectedSubFlow}/>
-            <div className={style.hr} />
+            <div className={style.full_hr} />
             <div>
               <div className="kskp-form">
                 {inputForm}
