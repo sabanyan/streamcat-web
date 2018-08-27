@@ -50,7 +50,6 @@ export default class DataPreview extends React.Component<Props, State> {
   }
 
   render () {
-    console.log("render")
 
     let json = this.state.json
 

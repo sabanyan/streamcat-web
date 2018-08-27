@@ -53,7 +53,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           //   return new CommandModel(command)
           // })
           // this.props.addMaster({commands: commands})
-        }).then((response) => {console.log(response)},
+        }).then((response) => {},
           (error) => {console.log(error)}))
       })
 
@@ -63,7 +63,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
         return new CommandModel(command)
       })
       this.props.addMaster({commands: commands})
-    }).then((response) => {console.log(response)},
+    }).then((response) => {},
       (error) => {console.log(error)}))
 
 

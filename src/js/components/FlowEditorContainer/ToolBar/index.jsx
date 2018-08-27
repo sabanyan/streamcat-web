@@ -154,8 +154,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
           dsts: [],
         }
 
-        console.log(props)
-
         const add_step = new DataFrameStepModel(props)
 
         self.props.addStep(add_step)
