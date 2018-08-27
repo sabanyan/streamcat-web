@@ -147,6 +147,7 @@ export default class ProjectListContainer extends React.Component {
   }
 
   isEmptyProjectList () {
+    if(!this.state.is_finished)return false
     if (!Array.isArray(this.state.project_list) ||
       this.state.project_list.length === 0 || this.state.project_list ===
       null) {

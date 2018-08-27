@@ -186,6 +186,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
   }
 
   isEmptyFlowList () {
+    if(!this.state.is_finished)return false
     if (!Array.isArray(this.state.flow_list) || this.state.flow_list.length ===
       0 || this.state.flow_list === null) {
       return true

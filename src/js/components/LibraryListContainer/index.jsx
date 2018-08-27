@@ -110,6 +110,7 @@ export default class LibraryListContainer extends React.Component<Props,State> {
   // }
   //
   isEmptyFlowList () {
+    if(!this.state.is_finished)return false
     if (!Array.isArray(this.state.job_list) || this.state.job_list.length ===
       0 || this.state.job_list === null) {
       return true
