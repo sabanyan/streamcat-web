@@ -17,6 +17,10 @@ $preview-height: 100%;
       .modal-body{
         overflow: scroll;
         padding:0;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
       }
     }
     .close{
