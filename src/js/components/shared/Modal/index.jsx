@@ -9,6 +9,7 @@ type Props = {
   id: string,
   title?: string,
   content?: React.Node,
+  contents?: [React.Node],
   dynamic?: boolean,
   preview?: boolean,
   footer?: boolean,
@@ -23,6 +24,7 @@ type Props = {
 type State = {
   visible: boolean,
   content?: any,
+  contents?: [React.Node],
   title?: string,
   done?: string,
   danger?: boolean
@@ -41,7 +43,7 @@ export default class Modal extends React.Component<Props, State> {
 
   constructor (props: Props) {
     super(props)
-    this.state = {visible: false, content: null, title: this.props.title}
+    this.state = {visible: false, content: null,contents:null, title: this.props.title}
   }
 
   componentWillMount () {
@@ -60,6 +62,11 @@ export default class Modal extends React.Component<Props, State> {
         if (context.content !== undefined) {
           self.setState({
             content: context.content,
+          })
+        }
+        if (context.contents !== undefined) {
+          self.setState({
+            contents: context.contents,
           })
         }
         if (context.title !== undefined) {
@@ -123,7 +130,7 @@ export default class Modal extends React.Component<Props, State> {
   render () {
 
     const done = (this.state.done)?this.state.done:this.props.done
-    const {visible, title, content, danger} = this.state
+    const {visible, title, content, contents, danger} = this.state
     const {preview, ok, close, footer, cancel, children} = this.props
 
     /**
@@ -193,8 +200,7 @@ export default class Modal extends React.Component<Props, State> {
     let modal_body = (dynamic) ? content : children
     if (preview) {
       modal = <PreviewModal id={id} title={title} footer={modal_footer}
-                            close_button={close_button} visible={visible}>
-        {(visible)?modal_body:null}
+                            close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
       </PreviewModal>
     }
     else {

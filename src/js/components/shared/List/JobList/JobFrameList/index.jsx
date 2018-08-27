@@ -8,6 +8,7 @@ import DataTable from '../../../DataTable'
 import moment from 'moment'
 import HttpUtil from '../../../../../utils/HttpUtil'
 import DataPreview from '../../../DataPreview'
+import ChartUtil from '../../../../../utils/ChartUtil'
 
 type JobFrameProps = {
   type:string;
@@ -41,15 +42,18 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
     })
   }
 
-  onClickName(e:Event,uuid){
+  onClickName(e:Event,uuid:string,name:string){
     HttpUtil.get("frames/"+uuid).then((response)=>{
       const json = response.data
-      let content = <DataPreview key={uuid} json={json} />
+      let contentGraph = <DataPreview key={uuid} json={json} />
+      let contentTable = <div className="table-responsive">
+        <DataTable json={ChartUtil.jsonToChart(json.data.contents)}></DataTable>
+      </div>
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
-        content: content,
-        title: uuid,
+        contents: [{title:"データの表示",content:contentTable},{title:"グラフの表示",content:contentGraph}],
+        title: name,
       })
     })
     e.preventDefault()
@@ -61,7 +65,7 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
     const dataframe = Object.keys(job.data).map(d=>{
       return <div>
         <i className={classnames('material-icons', [style.icon])}>description</i>
-        <a href={"#"} onClick={(e)=>this.onClickName(e,job.data[d].uuid)}>{d}</a>
+        <a href={"#"} onClick={(e)=>this.onClickName(e,job.data[d].uuid,d)}>{d}</a>
         {/*<div className={style.uuid}><small>{job.data[d].uuid}</small></div>*/}
       </div>
     })

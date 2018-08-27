@@ -31,23 +31,6 @@ body {
   position: fixed;
 }
 
-.kskp-property-basic-operators{
-  padding-bottom: 44px!important;
-  .operator{
-    cursor: pointer;
-    .label{
-      color: $kskp-list-link-color!important;
-      &:hover{
-        text-decoration: underline;
-      }
-    }
-    &.no-icon{
-      padding-top:34px;
-    }
-  }
-}
-
-
 .kskp-visualization {
   height: 100%;
   .kskp-visualization-container {
