@@ -78,37 +78,6 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     </EmptyState>
   }
 
-  // renderSearchBar () {
-  //   return <div className={style.search_bar}>
-  //     <TextFieldWithButton placeholder={'フローを検索'}
-  //                          onChange={(e) => this.onChangeKeyword(
-  //                            e)}>検索</TextFieldWithButton>
-  //   </div>
-  // }
-  //
-  // onChangeKeyword (e) {
-  //   this.setState({keyword: e.target.value})
-  // }
-  //
-  // onChangeFlowName (e) {
-  //   this.setState({
-  //     flow_name: e.target.value,
-  //   })
-  // }
-  //
-  onClickNew (e) {
-
-    console.log("onclick new")
-  }
-  //
-  // onClickDelete (flow_uuid) {
-  //   const self = this
-  //   HttpUtil.delete('flows/' + flow_uuid).then((response) => {
-  //     self.getFlowList()
-  //   })
-  //
-  // }
-  //
   isEmptyFlowList () {
     if(!this.state.is_finished)return false
     if (!Array.isArray(this.state.job_list) || this.state.job_list.length ===
@@ -117,20 +86,15 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     }
     return false
   }
-  //
-  // renderNewFlow () {
-  //   return <div className={"mt-20px"}><a href="#" onClick={(e) => this.onClickNew(e)}>新しくフローを作成する</a></div>
-  // }
-  //
+
   renderAll () {
     if (this.isEmptyFlowList()) {
       return this.renderEmptyState()
     }
+    if (!this.state.is_finished)return null
     return <div>
-      {/*{this.renderSearchBar()}*/}
       {this.renderJobListHeader()}
       {this.renderJobList()}
-      {/*{this.renderNewFlow()}*/}
     </div>
   }
 
