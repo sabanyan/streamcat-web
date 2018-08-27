@@ -193,7 +193,6 @@ const Application = (state = initialState, action:{}) => {
                       height: defaultNodeProps.height
                     })
                     newState.nodes = Graph.updateNode({nodes: state.nodes, key: id, new_node: new_node})
-                    console.log(newState.nodes)
                   })
                   //出力先ステップの位置調整
 

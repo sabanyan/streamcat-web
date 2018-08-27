@@ -312,7 +312,6 @@ export default class Step extends React.Component<Props, State> {
     }else if (this.isStep(step)) {
       //ステップ
       let command
-      console.log(this.props.mast)
       if(this.props.mast.commands){
         this.props.mast.commands.forEach(c=>{if(c.id === step.commandId)command = c})
         icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter}/>

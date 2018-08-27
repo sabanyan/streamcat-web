@@ -78,7 +78,7 @@ const Constants = {
     dateTime: "YYYY-MM-DD HH:mm:ss"
   },
   preview: {
-    DATASOURCE: 'datasource_preview',
+    DATASOURCE: 'preview_datasource',
   },
   event: {
     ON_LOAD_NAVIGATION: 'onLoadNavigation',
@@ -117,8 +117,8 @@ const Constants = {
       graphviz:"グラフ構造の画像への変換",
       classification:"分類",
       clustering:"クラスタリング",
-      postprocess:"後処理",
-      preprocess:"前処理",
+      postprocess:"機械学習 後処理",
+      preprocess:"機械学習 前処理",
       regression:"回帰",
     }
   },
