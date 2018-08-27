@@ -19,6 +19,8 @@ import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
 import Loader from '../../../shared/Loader'
 import FlowUtil from '../../../../utils/FlowUtil'
+import ChartUtil from '../../../../utils/ChartUtil'
+import DataTable from '../../../shared/DataTable'
 
 type DataFrameDetailType = {
   contents: {};
@@ -103,11 +105,15 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
   previewFromUUID(uuid:string,label:string){
     HttpUtil.get("frames/"+uuid).then((response)=>{
       const json = response.data
-      let content = <DataPreview key={uuid} json={json} />
+      let contentGraph = <DataPreview key={uuid} json={json} />
+      let contentTable = <div className="table-responsive">
+        <DataTable json={ChartUtil.jsonToChart(json.data.contents)}></DataTable>
+      </div>
+
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
-        content: content,
+        contents: [{title:"データの表示",content:contentTable},{title:"グラフの表示",content:contentGraph}],
         title: label
       })
       this.loading = false
@@ -267,12 +273,12 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
         </div>
         <div className={style.full_hr}/>
         <CommandSelector numberOfInput={1} {...this.props} />
-        <div className={style.property_title}>
-          作成したフロー
-        </div>
-        <div>
-          <DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />
-        </div>
+        {/*<div className={style.property_title}>*/}
+          {/*作成したフロー*/}
+        {/*</div>*/}
+        {/*<div>*/}
+          {/*<DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />*/}
+        {/*</div>*/}
       </div>
     }
 
