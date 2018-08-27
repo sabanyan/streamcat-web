@@ -1,0 +1,45 @@
+.kskp_visualization {
+  height: 100%;
+}
+
+.kskp_visualization_container {
+  height: 100%;
+  float: left;
+  width: calc(100% - 400px);
+}
+
+.kskp-visualization-property {
+  height: 100%;
+  width: 400px;
+  float: right;
+  background: #FFFFFF;
+  .kskp-visualization-property-header {
+    padding: 16px;
+  }
+  .kskp-visualization-property-body {
+    padding: 16px;
+  }
+}
+
+.kskp-visualization-header {
+  padding: 18px;
+  width: 100%;
+  height: 66px;
+  background: #fff;
+  .icon {
+
+  }
+  .title {
+    font-size: 18px;
+    font-weight: bold;
+    position: relative;
+    top: -6px;
+    padding-left: 16px;
+  }
+}
+.kskp-visualization-body {
+  padding: 16px;
+  width: 100%;
+  height: calc(100% - 66px);
+  background: #F4F4F4;
+}

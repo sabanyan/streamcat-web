@@ -57,7 +57,6 @@ export default class DataPreview extends React.Component<Props, State> {
     if (!json) {
       return null
     }
-    console.log(json)
 
     let data = ChartUtil.jsonToChart(json.data.contents)
     let type = this.state.type
@@ -99,19 +98,10 @@ export default class DataPreview extends React.Component<Props, State> {
     return <div className="kskp-visualization">
       <div className="kskp-visualization-container">
         <div className="kskp-visualization-body">
-          <div>
-            <div className="table-responsive">
-              <DataTable json={data}></DataTable>
-            </div>
-            <div>
-              {chart}
-            </div>
-          </div>
+          {chart}
         </div>
       </div>
-
       <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
-
     </div>
   }
 }
