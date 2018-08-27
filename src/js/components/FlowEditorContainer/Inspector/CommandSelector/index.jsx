@@ -64,7 +64,12 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
       if (keyword === '') {
         return true
       }
-      return (command.label.indexOf(keyword) != -1) ? true : false
+      console.log(command)
+      const foundLabelWithKeyword = (command.label && command.label.indexOf(keyword) != -1) ? true : false
+      const foundDescriptionWithKeyword = (command.description && command.description.indexOf(keyword) != -1) ? true : false
+      const foundCommandIdWithKeyword = (command.id && command.id.indexOf(keyword) != -1) ? true : false
+
+      return (foundLabelWithKeyword | foundDescriptionWithKeyword | foundCommandIdWithKeyword)
     })
 
     let operatorsContainer = []
@@ -82,9 +87,9 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
 
     return <div>
     <TextField onChange={(e)=>this.onChangeKeyword(e)} placeholder={"キーワード"}/>
-    <div className={style.property_basic_operators}>
-    {operatorsContainer}
-    </div>
+      <div className={style.command_selector_container}>
+        {operatorsContainer}
+      </div>
     </div>
   }
 
