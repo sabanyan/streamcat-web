@@ -171,6 +171,7 @@ export default class ProjectListContainer extends React.Component {
     if (this.isEmptyProjectList()) {
       return this.renderEmptyState()
     }
+    if (!this.state.is_finished)return null
     return <div>
       {this.renderSearchBar()}
       {this.renderProjectListHeader()}

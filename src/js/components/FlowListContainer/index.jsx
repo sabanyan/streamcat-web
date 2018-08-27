@@ -209,6 +209,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
     if (this.isEmptyFlowList()) {
       return this.renderEmptyState()
     }
+    if (!this.state.is_finished)return null
     return <div>
       {this.renderSearchBar()}
       {this.renderFlowListHeader()}
