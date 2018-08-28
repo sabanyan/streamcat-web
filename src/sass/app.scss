@@ -11,6 +11,10 @@ body {
   padding-top: 64px; //navigation-header-height
 }
 
+.container{
+  min-width: 1024px;
+}
+
 .none-pointer-events{
   pointer-events: none;
   *{
@@ -26,23 +30,6 @@ body {
 .kskp-canvas-tool, .kskp-property {
   position: fixed;
 }
-
-.kskp-property-basic-operators{
-  padding-bottom: 44px!important;
-  .operator{
-    cursor: pointer;
-    .label{
-      color: $kskp-list-link-color!important;
-      &:hover{
-        text-decoration: underline;
-      }
-    }
-    &.no-icon{
-      padding-top:34px;
-    }
-  }
-}
-
 
 .kskp-visualization {
   height: 100%;

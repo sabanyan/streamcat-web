@@ -5,7 +5,7 @@
   display: block;
   color: $kskp-text;
   font-size: 16px;
-  padding: 8px;
+  padding: 16px;
   padding-left: 44px;
 }
 
@@ -32,21 +32,40 @@
 .icon{
   color: $kskp-text;
   font-size: 18px;
-  position: absolute;
-  left: 18px;
-  top: 18px;
+  position: relative;
+  top: 2px;
+  padding-right:4px;
   display: inline-block;
 }
 
 .name{
   display: inline-block!important;
-  width: calc(100% - 20% - 200px - 80px);
+  width: calc(100% - 20% - 200px - 200px - 120px);
+  vertical-align: top;
 }
 .executed_at{
   display: inline-block;
   width: 200px;
+  vertical-align: top;
+}
+.flow_name{
+  display: inline-block;
+  vertical-align: top;
+  width: 200px;
 }
 .executor_name{
   display: inline-block;
+  vertical-align: top;
   width: 20%;
+}
+
+.status{
+  display: inline-block;
+  vertical-align: top;
+  width: 120px;
+}
+
+.uuid{
+  color: #dadada;
+  line-height: 1em;
 }

@@ -1,21 +1,34 @@
+//@flow
+import Model from '../index'
 
 export type FlowModelProps = {
+  createdAt : ?string,
+  creator: ?string,
   label: string,
-  params: [],
   nodes: [],
-  ports: []
+  params: [],
+  ports: [],
+  projectId: ?number
 }
 
-export default class FlowModel {
-  label:string
-  params:[]
-  nodes:[]
-  ports:[]
+export default class FlowModel<FlowModelProps> extends Model {
+  createdAt = null
+  creator = null
+  label:string = ""
+  params:[] = []
+  ports:[] = [[],[]]
+  nodes:[] = []
+  projectId = null
+
   constructor (props: FlowModelProps) {
-    this.label = props.label
-    this.params = props.params
-    this.nodes = props.nodes
-    this.ports = props.ports
+    super(props)
+    this.initialize(props,"createdAt")
+    this.initialize(props,"creator")
+    this.initialize(props,"label")
+    this.initialize(props,"params")
+    this.initialize(props,"ports")
+    this.initialize(props,"nodes")
+    this.initialize(props,"projectId")
   }
 
   getInPorts(){

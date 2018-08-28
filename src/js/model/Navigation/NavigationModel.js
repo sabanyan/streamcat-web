@@ -1,6 +1,9 @@
+//@flow
 import React from 'react'
 import ReactDOM from 'react-dom'
 import NavigationBar from '../../components/shared/NavigationBar'
+import Model from '../index'
+import Constants from '../../constants'
 
 export type NavigationModelProps = {
   flow_name: string;
@@ -11,7 +14,7 @@ export type NavigationModelProps = {
   user_name: string;
 }
 
-export default class NavigationModel {
+export default class NavigationModel extends Model{
   flow_name: string
   flow_uuid: string
   project_name: string
@@ -20,14 +23,16 @@ export default class NavigationModel {
   user_name: string
 
   constructor (props: NavigationModelProps) {
-    this.flow_name = props.flow_name
-    this.flow_uuid = props.flow_uuid
-    this.project_name = props.project_name
-    this.project_uuid = props.project_uuid
-    this.user_id = props.user_id
-    this.user_name = props.user_name
+    super(props)
+    this.initialize(props,"flow_name")
+    this.initialize(props,"flow_uuid")
+    this.initialize(props,"project_name")
+    this.initialize(props,"project_uuid")
+    this.initialize(props,"user_id")
+    this.initialize(props,"user_name")
     this.renderNavigation()
     window.navigationModel = this
+    window.emitter.emit(Constants.event.ON_LOAD_NAVIGATION,this)
   }
   renderNavigation(){
     if (document.getElementById('navigation')) {

@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import Index from '../../shared/Shadow'
 import Constants from '../../../constants/index'

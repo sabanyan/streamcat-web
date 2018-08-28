@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from 'react'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
@@ -18,6 +18,9 @@ import type { StepModelType } from '../../../../types'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
 import Loader from '../../../shared/Loader'
+import FlowUtil from '../../../../utils/FlowUtil'
+import ChartUtil from '../../../../utils/ChartUtil'
+import DataTable from '../../../shared/DataTable'
 
 type DataFrameDetailType = {
   contents: {};
@@ -39,7 +42,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.preview.DATASOURCE, onClickOK: () => {
-        ModalUtil.emitModal({id: Constants.preview.DATASOURCE, visible: false})
+        ModalUtil.closeModal(Constants.preview.DATASOURCE)
       },
     })
 
@@ -62,37 +65,60 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
   onClickPreview(e:Event){
     const selected_step = this.getSelectedStep()
 
-    //すでにデータが存在している場合
-    if(selected_step.hasData()){
-      this.loading = true
-      this.forceUpdate()
-      HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
-        let content = <DataPreview key={selected_step.uuid} json={response.data} />
-        ModalUtil.emitModal({
-          id: Constants.preview.DATASOURCE,
-          visible: true,
-          content: content,
-          title: selected_step.label,
-        })
-        this.loading = false
+    let {nodes,projectId,projectName} = this.props
+    FlowUtil.save(inject_flow_uuid,nodes,projectId,projectName).then(()=>{
+      //すでにデータが存在している場合
+      if(selected_step.hasData()){
+        this.loading = true
         this.forceUpdate()
-      })
-    }else{
-      this.loading = true
-      this.forceUpdate()
-      HttpUtil.get("frames?from="+inject_flow_uuid+"."+selected_step.id).then((response)=>{
-        let content = <DataPreview key={selected_step.uuid} json={response.data} />
-        ModalUtil.emitModal({
-          id: Constants.preview.DATASOURCE,
-          visible: true,
-          content: content,
-          title: selected_step.label,
-        })
-        this.loading = false
+        this.previewFromUUID(selected_step.uuid,selected_step.label)
+      }else{
+        this.loading = true
         this.forceUpdate()
-      })
-    }
+        HttpUtil.get("frames?from="+inject_flow_uuid+"."+selected_step.id).then((response)=>{
+
+          const uuid = response.data.name[0].uuid
+          const label = response.data.name[0].id
+          this.previewFromUUID(uuid,label)
+
+          // let content = <DataPreview key={selected_step.uuid} json={response.data} />
+          //         // ModalUtil.emitModal({
+          //         //   id: Constants.preview.DATASOURCE,
+          //         //   visible: true,
+          //         //   content: content,
+          //         //   title: selected_step.label,
+          //         // })
+          this.loading = false
+          this.forceUpdate()
+        },(error)=>{
+          console.log(error)
+          this.loading = false
+          this.forceUpdate()
+        })
+
+      }
+    })
+
     e.preventDefault()
+  }
+
+  previewFromUUID(uuid:string,label:string){
+    HttpUtil.get("frames/"+uuid).then((response)=>{
+      const json = response.data
+      let contentGraph = <DataPreview key={uuid} json={json} />
+      let contentTable = <div className="table-responsive">
+        <DataTable json={ChartUtil.jsonToChart(json.data.contents)}></DataTable>
+      </div>
+
+      ModalUtil.emitModal({
+        id: Constants.preview.DATASOURCE,
+        visible: true,
+        contents: [{title:"データの表示",content:contentTable},{title:"グラフの表示",content:contentGraph}],
+        title: label
+      })
+      this.loading = false
+      this.forceUpdate()
+    })
   }
 
   onClickCSVDownload(e:Event){
@@ -112,12 +138,25 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     })
   }
   onClickDelete (e: Event) {
-    if (window.confirm('このデータソースを削除しますか？')) {
-      let {selected_step_ids, nodes} = this.props
-      const selected_step = Graph.getNode(nodes,selected_step_ids[0])
-      this.props.deleteSteps([selected_step.id])
-      this.props.selectSteps()
-    }
+
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        let {selected_step_ids, nodes} = this.props
+        const selected_step = Graph.getNode(nodes,selected_step_ids[0])
+        this.props.deleteSteps([selected_step.id])
+        this.props.selectSteps()
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        選択されたデータソースを削除しますか？
+      </div>,
+    })
   }
 
   onChangeFlowInOut (e: Event) {
@@ -167,8 +206,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     }
 
     const flow:FlowModel  = this.props.flow
-    console.log("CHECKED")
-    console.log(flow.hasInPortWithId(selected_step.id))
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
         <label><input type="checkbox" checked={flow.hasInPortWithId(selected_step.id)} ref={'flowIn'}
@@ -198,6 +235,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
             <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
                     danger={true}>削除</Button>
           </div>
+          <div className={style.full_hr}/>
           <div className={style.overviews}>
             <div className={style.overview}>
               <div className={style.overview_label}>
@@ -233,19 +271,18 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
             </div>
           </div>
         </div>
-        <div className={style.hr} />
+        <div className={style.full_hr}/>
         <CommandSelector numberOfInput={1} {...this.props} />
-        <div className={style.hr} />
-        <div className={style.property_title}>
-          作成したフロー
-        </div>
-        <div>
-          <DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />
-        </div>
+        {/*<div className={style.property_title}>*/}
+          {/*作成したフロー*/}
+        {/*</div>*/}
+        {/*<div>*/}
+          {/*<DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />*/}
+        {/*</div>*/}
       </div>
     }
 
-    return <Inspector header={""} title={'データの概要'} {...this.props}>
+    return <Inspector header={""} title={selected_step.label} {...this.props}>
       {content}
     </Inspector>
   }

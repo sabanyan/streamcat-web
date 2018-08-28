@@ -1,3 +1,4 @@
+//@flow
 const Constants = {
   debug: false,
   default: {
@@ -65,6 +66,7 @@ const Constants = {
     ADD_FLOW: 'add_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
+    CONFIRM: 'confirm',
     SHOW_RUN_RESULT: 'show_run_result',
     property: {
       title: 'title',
@@ -76,9 +78,10 @@ const Constants = {
     dateTime: "YYYY-MM-DD HH:mm:ss"
   },
   preview: {
-    DATASOURCE: 'datasource_preview',
+    DATASOURCE: 'preview_datasource',
   },
   event: {
+    ON_LOAD_NAVIGATION: 'onLoadNavigation',
     MODAL_EVENT: 'ModalEvent',
     MODAL_ON_CLICK_OK: 'ModalOnClickDone',
     MODAL_ON_CLICK_DONE: 'ModalOnClickDone',
@@ -94,6 +97,30 @@ const Constants = {
     polar: 'polar',
     radar: 'radar',
     scatter: 'scatter',
+  },
+  lang:{
+    classification:{
+      calculation:"項目間の計算",
+      col_edit:"列に対する選択・加工",
+      data_format:"フォーマットの整形",
+      data_source:"データソース出力",
+      row_edit:"行に対する選択・加工",
+      row_sort:"行のソート",
+      table_grouping:"テーブルの集計",
+      table_join:"テーブルの結合",
+      table_split:"テーブルの分割",
+      validation:"データの整合性チェック",
+      value_crossing:"行と列に対する加工",
+      value_transform:"セルの値の変換",
+      data_mining:"データマイニング",
+      views:"グラフ描画",
+      graphviz:"グラフ構造の画像への変換",
+      classification:"分類",
+      clustering:"クラスタリング",
+      postprocess:"機械学習 後処理",
+      preprocess:"機械学習 前処理",
+      regression:"回帰",
+    }
   },
 
 }

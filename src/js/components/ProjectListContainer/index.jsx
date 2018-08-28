@@ -1,7 +1,8 @@
-// @flow
+//@flow
 import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
+import projectListStyle from '../shared/List/ProjectList/style.scss'
 import HttpUtil from '../../utils/HttpUtil'
 import ProjectList from '../shared/List/ProjectList'
 import TextFieldWithButton from '../shared/TextFieldWithButton'
@@ -94,9 +95,7 @@ export default class ProjectListContainer extends React.Component {
 
   renderSearchBar () {
     return <div className={style.search_bar}>
-      <TextFieldWithButton placeholder={'プロジェクトを検索'}
-                           onChange={(e) => this.onChangeKeyword(
-                             e)}>検索</TextFieldWithButton>
+      <TextField placeholder={'プロジェクトを検索'} onChange={(e) => this.onChangeKeyword(e)}/>
     </div>
   }
 
@@ -128,12 +127,27 @@ export default class ProjectListContainer extends React.Component {
 
   onClickDelete (project_uuid) {
     const self = this
-    HttpUtil.delete('projects/' + project_uuid).then((response) => {
-      self.getProjectList()
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        HttpUtil.delete('projects/' + project_uuid).then((response) => {
+          self.getProjectList()
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        })
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        選択されたプロジェクトを削除しますか？
+      </div>,
     })
   }
 
   isEmptyProjectList () {
+    if(!this.state.is_finished)return false
     if (!Array.isArray(this.state.project_list) ||
       this.state.project_list.length === 0 || this.state.project_list ===
       null) {
@@ -143,13 +157,21 @@ export default class ProjectListContainer extends React.Component {
   }
 
   renderNewProject () {
-    return <div className={"mt-20px"}><a href="#" onClick={(e) => this.onClickNew(e)}>新しくプロジェクトを作成する</a></div>
+    return <a className={classnames(projectListStyle.project,projectListStyle.new)} href="#" onClick={(e) => this.onClickNew(e)}>
+      <div className={projectListStyle.project_list}>
+        <div className={projectListStyle.name}>
+          <i className={classnames('material-icons', [projectListStyle.icon])}>add_circle_outline</i>
+          新しくプロジェクトを作成する
+        </div>
+      </div>
+    </a>
   }
 
   renderAll () {
     if (this.isEmptyProjectList()) {
       return this.renderEmptyState()
     }
+    if (!this.state.is_finished)return null
     return <div>
       {this.renderSearchBar()}
       {this.renderProjectListHeader()}

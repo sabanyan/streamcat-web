@@ -1,53 +1,71 @@
+//@flow
 import * as React from 'react'
 import style from '../../style.scss'
 import DropDownList from '../../../../shared/DropDownList/index'
 import CommandStepModel from '../../../../../model/Step/CommandStepModel'
 import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
+import CommandModel from '../../../../../model/Command/CommandModel'
+import FlowUtil from '../../../../../utils/FlowUtil'
+import type { CommandPortType, SubFlowParamType } from '../../../../../types'
+import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
+import StateUtil from '../../../../../utils/State'
+import FlowModel from '../../../../../model/Flow/FlowModel'
 
 class InOutConnector extends React.Component{
 
+  onChangeInEdge(e,data,label){
+    const {selectedStep} = this.props
+    let newSelectedStep = StateUtil.deepCopy(selectedStep)
+    //labelにポート名
+    //data.objectにデータフレームが格納されいてる
+    const dataSource:DataFrameStepModel = data.object
+    newSelectedStep.srcs[label] = dataSource.id
+    this.props.updateStep(newSelectedStep)
+  }
+
+
   render () {
-
-    const {nodes} = this.props
+    const {nodes,onChangeInEdge,onChangeOutEdge,selectedStep,mast} = this.props
     const {selected_in_edges,selected_out_edges} = this.props
-
     //すべてのデータフレーム先をリスト化
-    let dataSourceOptions = new Set()
-    Object.keys(nodes).forEach((key)=>{
-      if (nodes[key] instanceof CommandStepModel){
-        let step:CommandStepModel = nodes[key]
 
-        Object.keys(step.dsts).forEach((key)=>{
-          const dst = step.dsts[key]
-          dataSourceOptions.add({value: dst, label: dst, object: step})
-        })
-        Object.keys(step.srcs).forEach((key) => {
-          const src = step.srcs[key]
-          dataSourceOptions.add({value: src, label: src, object: step})
-        })
-      }
+    let dataFrameOnlyNodes:[DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
+
+    let dataSourceOptions = []
+
+    dataFrameOnlyNodes.forEach((dataFrame)=>{
+      dataSourceOptions.push({value: dataFrame.id, label: dataFrame.label, object: dataFrame})
     })
 
-    let inEdgeSelect = selected_in_edges.map((edge)=>{
-      return <DropDownList disabled={false} key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} defaultValue={edge.name} list={dataSourceOptions}></DropDownList>
+    let command:CommandModel
+    let inEdgeSelect = []
+    if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
+      inEdgeSelect = selected_in_edges.map((edge, index) => {
+        let label: string
+        let dataFrameId: string
+        dataFrameId = edge.name
+        let src = selectedStep.getSrcsSteps(nodes)[dataFrameId]
+        if (src) {
+          label = src.portName
+        }
+        return <div key={index} className={style.param}>
+          <DropDownList disabled={false} key={"in_edge"}
+                        onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={edge.name}
+                        list={dataSourceOptions} label={label}></DropDownList>
+        </div>
+      })
+    }
+
+    let output = selected_out_edges.map((edge,index)=>{
+      const node = FlowUtil.getNodeFromID(nodes,edge.name)
+      return <div key={index} className={style.output}>{node.label}</div>
     })
 
-    if(!inEdgeSelect.length)inEdgeSelect = <DropDownList key={"in_edge"} onChange={(e)=>this.onChangeInEdge(e)} defaultValue={0} list={dataSourceOptions}></DropDownList>
-
-    let outEdgeSelect = selected_out_edges.map((edge)=>{
-      return <DropDownList disabled={false} key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} defaultValue={edge.name} list={dataSourceOptions}></DropDownList>
-    })
-
-    if(!outEdgeSelect.length)outEdgeSelect = <DropDownList key={"out_edge"} onChange={(e)=>this.onChangeOutEdge(e)} defaultValue={0} list={dataSourceOptions}></DropDownList>
-
-    return  <div className="kskp-form mb-20px">
-          <div className={style.property_title}>
-            入出力
-          </div>
+    return  <div className="kskp-form">
           <label>入力</label>
           {inEdgeSelect}
           <label>出力</label>
-          {outEdgeSelect}
+          {output}
         </div>
   }
 

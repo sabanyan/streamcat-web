@@ -1,3 +1,4 @@
+//@flow
 import React from 'react'
 import DataTable from '../../shared/DataTable'
 import {
@@ -49,8 +50,6 @@ export default class DataPreview extends React.Component<Props, State> {
   }
 
   render () {
-    console.log("render")
-    console.log(this.state)
 
     let json = this.state.json
 
@@ -58,7 +57,7 @@ export default class DataPreview extends React.Component<Props, State> {
       return null
     }
 
-    let data = ChartUtil.jsonToChart(json.contents)
+    let data = ChartUtil.jsonToChart(json.data.contents)
     let type = this.state.type
     let chart
     switch (type) {
@@ -98,19 +97,10 @@ export default class DataPreview extends React.Component<Props, State> {
     return <div className="kskp-visualization">
       <div className="kskp-visualization-container">
         <div className="kskp-visualization-body">
-          <div>
-            <div className="table-responsive">
-              <DataTable json={data}></DataTable>
-            </div>
-            <div>
-              {chart}
-            </div>
-          </div>
+          {chart}
         </div>
       </div>
-
       <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
-
     </div>
   }
 }

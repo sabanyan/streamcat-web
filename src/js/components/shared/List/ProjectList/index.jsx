@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
@@ -25,13 +25,16 @@ export default class ProjectList extends React.Component<Props> {
     const {icon, href, children} = this.props
     const {name, uuid, created_at, creator_name} = this.props.project
 
-    return <div className={style.project_list}>
+    return <a className={style.project}  href={href}><div className={style.project_list}>
+      <div className={style.name}>
       <i className={classnames('material-icons', [style.icon])}>description</i>
-      <a className={style.name} href={href}>{name}</a>
+      {name}
+      </div>
       <div className={style.creator_name}>{creator_name}</div>
       <div className={style.created_at}>{created_at}</div>
       <div className={style.action}>{children}</div>
     </div>
+    </a>
   }
 
 }

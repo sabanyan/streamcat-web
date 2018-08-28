@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import Constants from '../../../constants/index'
 import StandardModal from './Standard'
@@ -9,6 +9,7 @@ type Props = {
   id: string,
   title?: string,
   content?: React.Node,
+  contents?: [React.Node],
   dynamic?: boolean,
   preview?: boolean,
   footer?: boolean,
@@ -23,7 +24,10 @@ type Props = {
 type State = {
   visible: boolean,
   content?: any,
-  title?: string
+  contents?: [React.Node],
+  title?: string,
+  done?: string,
+  danger?: boolean
 }
 
 export default class Modal extends React.Component<Props, State> {
@@ -39,7 +43,7 @@ export default class Modal extends React.Component<Props, State> {
 
   constructor (props: Props) {
     super(props)
-    this.state = {visible: false, content: null, title: this.props.title}
+    this.state = {visible: false, content: null,contents:null, title: this.props.title}
   }
 
   componentWillMount () {
@@ -60,9 +64,24 @@ export default class Modal extends React.Component<Props, State> {
             content: context.content,
           })
         }
+        if (context.contents !== undefined) {
+          self.setState({
+            contents: context.contents,
+          })
+        }
         if (context.title !== undefined) {
           self.setState({
             title: context.title,
+          })
+        }
+        if (context.done !== undefined) {
+          self.setState({
+            done: context.done,
+          })
+        }
+        if (context.danger !== undefined) {
+          self.setState({
+            danger: context.danger,
           })
         }
       })
@@ -110,8 +129,9 @@ export default class Modal extends React.Component<Props, State> {
 
   render () {
 
-    const {visible, title, content} = this.state
-    const {preview, ok, close, footer, done, cancel, children} = this.props
+    const done = (this.state.done)?this.state.done:this.props.done
+    const {visible, title, content, contents, danger} = this.state
+    const {preview, ok, close, footer, cancel, children} = this.props
 
     /**
      * 背景
@@ -143,7 +163,7 @@ export default class Modal extends React.Component<Props, State> {
           {cancel}
         </Button>
         &nbsp;
-        <Button
+        <Button danger={danger}
           onClick={() => this.onClickDone()}>
           {done}
         </Button>
@@ -180,14 +200,13 @@ export default class Modal extends React.Component<Props, State> {
     let modal_body = (dynamic) ? content : children
     if (preview) {
       modal = <PreviewModal id={id} title={title} footer={modal_footer}
-                            close_button={close_button} visible={visible}>
-        {modal_body}
+                            close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
       </PreviewModal>
     }
     else {
       modal = <StandardModal id={id} title={title} footer={modal_footer}
                              close_button={close_button} visible={visible}>
-        {modal_body}
+        {(visible)?modal_body:null}
       </StandardModal>
     }
 

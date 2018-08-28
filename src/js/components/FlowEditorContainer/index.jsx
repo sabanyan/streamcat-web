@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import {
   addStepAction,
   updateStepAction,
@@ -26,6 +26,7 @@ import { connect } from 'react-redux'
 import * as React from 'react'
 import { FlowModelProps } from '../../model/Flow/FlowModel'
 import NavigationModel from '../../model/Navigation/NavigationModel'
+import type { DragType } from '../../types'
 
 let FlowEditorContainer
 
@@ -57,16 +58,7 @@ export type FlowEditorProps = {
   zoom: number;
   flow: FlowModelProps;
   navigation: NavigationModel;
-  drag: {
-    start: {
-      x: number,
-      y: number
-    },
-    end: {
-      x: number,
-      y: number
-    }
-  }
+  drag: DragType;
 }
 
 export default FlowEditorContainer = connect(
