@@ -1,10 +1,11 @@
+//@flow
 import React from 'react'
 import style from './style.scss'
 import classnames from 'classnames'
 
 export default class Tab extends React.Component {
-  onClickTab () {
-    this.props.selectTab(this.props.tab_id)
+  onClickTab (e) {
+    this.props.onClickTab(e,this.props.tab_id)
   }
 
   render () {
@@ -14,7 +15,7 @@ export default class Tab extends React.Component {
         [style.active]: active,
       },
     )
-    return <div className={tabClass} onClick={() => this.onClickTab()}>
+    return <div className={tabClass} onClick={(e) => this.onClickTab(e)}>
       {this.props.children}
     </div>
   }

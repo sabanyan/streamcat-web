@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import Inspector from '../Inspector'
 import type {FlowEditorProps} from "../../index";
@@ -13,6 +13,8 @@ import CommandModel from '../../../../model/Command/CommandModel'
 import HttpUtil from '../../../../utils/HttpUtil'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Loader from '../../../shared/Loader'
+import FlowUtil from '../../../../utils/FlowUtil'
+import ModalUtil from '../../../../utils/ModalUtil'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -34,7 +36,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         if(selected_step.type === Constants.step.type.subflow){
           //サブフローの場合のみ詳細を取得
           HttpUtil.get("flows/"+selected_step.uuid+"?navigation=off").then((response)=>{
-            this.selectedSubFlow = response.data.data
+            this.selectedSubFlow = new FlowModel(response.data.data)
             this.loaded = true
             this.forceUpdate()
           })
@@ -63,67 +65,47 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     }
 
     onClickDelete(e:Event) {
-        if(window.confirm("このコマンドを削除しますか？")){
+      ModalUtil.registerModal({
+        id: Constants.modal.CONFIRM, onClickDone: () => {
           let selected_step = this.getSelectedStep()
           this.props.deleteSteps([selected_step.id])
           this.props.selectSteps()
-        }
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        },
+      })
+      ModalUtil.emitModal({
+        id: Constants.modal.CONFIRM,
+        visible: true,
+        done: '削除する',
+        danger: true,
+        content: <div>
+          選択されたステップを削除しますか？
+        </div>,
+      })
     }
 
-    getCommand(commandId:string):CommandModel{
-        let command = null;
-        this.props.mast.commands.map((_command)=>{
-            if(commandId === _command.id){
-              command = _command
-            }
-        })
-        return command
+    onChangeInEdge(e,data){
+      console.log(e)
+      console.log(data)
     }
 
-    getCommandParam(paramName:string,command:CommandModel):CommandParamType{
-        let param = {};
-        if(command && command.getParams()){
-          command.getParams().map((_param)=>{
-                if(_param.name == paramName){
-                  param = _param
-                }
-            })
-        }
-        return param
-    }
-
-    getSubFlowParam(paramName:string):SubFlowParamType{
-      let result
-      if(this.selectedSubFlow && paramName){
-        this.selectedSubFlow.params.forEach((param)=>{
-          if(param.name === paramName){
-            result = param
-            return
-          }
-        })
-      }
-      return result
-    }
-
-    onChangeInEdge(e){
-
-    }
-
-    onChangeOutEdge(e){
-
+    onChangeOutEdge(e,data){
+      console.log(e)
+      console.log(data)
     }
 
     render() {
-      console.log("render")
+        const {commands} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
-        let inputForm,subFlowLink,content
+        let inputForm,subFlowLink,content,title
 
         if(selected_step.type === Constants.step.type.command){
+          const command:CommandModel = selected_step.getCommand(commands)
+          title = (command)?command.label:selected_step.commandId
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
-            const command:CommandModel = this.getCommand(selected_step.commandId)
-            const param:CommandParamType = this.getCommandParam(key,command)
-            console.log(param)
+            const command:CommandModel = selected_step.getCommand(commands)
+            const param:CommandParamType = FlowUtil.getCommandParam(key,command)
             return <div key={index}>
               <label>{param.label}</label>
               <label className="float-right">{param.name}</label>
@@ -131,10 +113,11 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             </div>
           })
         }else if(selected_step.type === Constants.step.type.subflow){
+          title = selected_step.label
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
-            const hasSubFlowParam = (this.getSubFlowParam(key))
-            const param:SubFlowParamType = (hasSubFlowParam)?this.getSubFlowParam(key):key
+            const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,key))
+            const param:SubFlowParamType = (hasSubFlowParam)?FlowUtil.getSubFlowParam(this.selectedSubFlow,key):key
             return <div key={index}>
               <label>{param.name}</label>
               <label className="float-right text-danger">{(hasSubFlowParam)?"":"不明なパラメーター"}</label>
@@ -149,11 +132,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         }else {
           content = <div>
             {subFlowLink}
-            <InOutConnector {...this.props} />
-            <div className={style.hr} />
-            <div className={style.property_title}>
-              パラメータ
-            </div>
+            <div className={style.full_hr} />
+            <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step} selectedSubFlow={this.selectedSubFlow}/>
+            <div className={style.full_hr} />
             <div>
               <div className="kskp-form">
                 {inputForm}
@@ -165,7 +146,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           </div>
         }
 
-        return <Inspector key={selected_step.id} header={selected_step.text} title={"プロパティ"} {...this.props}>
+
+        return <Inspector key={selected_step.id} header={selected_step.text} title={title} {...this.props}>
           {content}
         </Inspector>
     }

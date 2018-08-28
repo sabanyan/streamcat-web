@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from 'react'
 import Constants from '../../../constants/index'
 import ModalUtil from '../../../utils/ModalUtil'
@@ -9,6 +9,8 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandModel from '../../../model/Command/CommandModel'
 import CommandIcon from '../Icon/CommandIcon'
 import type { CommandStepModelProps } from '../../../model/Step/CommandStepModel'
+import type { CommandPortType } from '../../../types'
+import WebUtil from '../../../utils/WebUtil'
 
 type Props = {
     command: CommandModel;
@@ -54,7 +56,7 @@ export default class Command extends React.Component<Props> {
     }
 
 
-    onClickCommand(command:CommandModel) {
+    onClickCommand(e:Event,command:CommandModel) {
 
         const self = this
         let content = this.buildParamsContent()
@@ -72,7 +74,7 @@ export default class Command extends React.Component<Props> {
                     inputRef.element.value = "" //値をクリア
                 })
 
-                const add_step: CommandStepModelProps = new CommandStepModel({
+                const added_command_step: CommandStepModelProps = new CommandStepModel({
                   id: null,
                   type: Constants.step.type.command,
                   name: command.label,
@@ -83,11 +85,8 @@ export default class Command extends React.Component<Props> {
                 })
 
                 const {selected_step_ids} = this.props
-                self.props.addStep(add_step, selected_step_ids[0])
 
-                //出力先を追加
-
-                const output_steps = command.getOutPorts().map((port) => {
+                const output_steps = command.getOutPorts().map((port:CommandPortType) => {
                     //TODO 将来的にはコマンドのoutputsを細かくみて制御する
                       return new DataFrameStepModel({
                         id: null,
@@ -100,14 +99,18 @@ export default class Command extends React.Component<Props> {
 
                 //出力先の個数に応じてステップを追加する
                 output_steps.map((output_step) => {
-                    self.props.addStep(output_step, add_step.id)
+                    self.props.addStep(output_step)
                 })
+
+                const output_step_ids = output_steps.map(step=>step.id)
+
+                self.props.addStep(added_command_step,selected_step_ids,output_step_ids)
 
                 //ステップの選択をキャンセル
                 self.props.selectSteps()
 
                 //モーダルを閉じる
-                ModalUtil.emitModal({id: Constants.modal.ADD_COMMAND, visible: false})
+                ModalUtil.closeModal(Constants.modal.ADD_COMMAND)
             }
         })
 
@@ -120,12 +123,32 @@ export default class Command extends React.Component<Props> {
 
     }
 
+    onClickPdf(e:Event,url:string){
+      window.open(url)
+      e.preventDefault()
+      e.stopPropagation()
+    }
+
     render() {
 
         const {command} = this.props
         const iconClass = classnames(style.command_icon)
 
-        return <div className={style.command} onClick={() => this.onClickCommand(command)}>
+        let hasPdfLink = false
+
+        if(command.description){
+          hasPdfLink = (command.description.indexOf(".pdf") !== -1)
+        }
+
+        let description
+        if(hasPdfLink) {
+          const url = WebUtil.webURL(command.description)
+          description = <a href="#" onClick={(e)=>this.onClickPdf(e,url)} onMouseDown={e => e.stopPropagation()}>PDF</a>
+        }else{
+          description = command.description
+        }
+
+        return <div className={style.command} onClick={(e) => this.onClickCommand(e,command)}>
             <svg className={iconClass}>
                 <CommandIcon command={command}/>
             </svg>
@@ -134,7 +157,7 @@ export default class Command extends React.Component<Props> {
                 {command.label}
                 </div>
                 <div className={style.command_description}>
-                  {command.description}
+                  {description}
                 </div>
             </div>
         </div>

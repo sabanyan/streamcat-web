@@ -1,9 +1,15 @@
+//@flow
 import Constants from '../constants'
 import Graph,{defaultNodeProps,defaultGraphProps} from '../utils/Graph'
 import StateUtil from '../utils/State'
 import FlowModel from '../model/Flow/FlowModel'
 import NavigationModel from '../model/Navigation/NavigationModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
+import CommandStepModel from '../model/Step/CommandStepModel'
+import type { CommandPortType, StepModelType } from '../types'
+import CommandModel from '../model/Command/CommandModel'
+import FlowUtil from '../utils/FlowUtil'
+import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -27,7 +33,7 @@ const DRAG_END_ACTION = "drag_end_action";
 const SET_ZOOM_ACTION = "set_zoom_action";
 const UPDATE_DATAFRAME_DETAIL_ACTION = "update_dataframe_detail_action";
 
-const graph = new Graph()
+const graph:Graph = new Graph()
 //
 // const json = {
 //     "flows": [
@@ -92,7 +98,7 @@ let initialState = {
 }
 
 
-const Application = (state = initialState, action) => {
+const Application = (state = initialState, action:{}) => {
     switch (action.type) {
         case LOAD_FLOW_JSON_ACTION: {
             let {context} = action
@@ -114,30 +120,104 @@ const Application = (state = initialState, action) => {
             newState.mast = Object.assign(newState.mast,{...context})
             return newState
         }
+
         case ADD_STEP_ACTION: {
-            let {add_step, from_step_id} = action
+            let {add_step, src_step_ids,dst_step_ids} = action
 
             let offsetX = 0
-            let hasNode = (from_step_id)?(graph.outEdges(from_step_id).length):false
-            if(hasNode){
-                offsetX = defaultNodeProps.width + 100
-            }
+            // let hasNode = (from_step_ids)?(graph.outEdges(from_step_ids[0]).length):false
+            // if(hasNode){
+            //     offsetX = defaultNodeProps.width + 100
+            // }
+
             //ノードの追加
-            graph.addNode(add_step.id, from_step_id)
-            
+            graph.addNode(add_step.id)
             //Stateの更新
             let newState = StateUtil.deepCopy(state)
-            if(from_step_id){
-                //連結した状態での追加
-                const from_step = Graph.getNode(state.nodes,from_step_id)
-                add_step.setFrame({x:from_step.position.x + offsetX, y:from_step.position.y + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
-                //TODO 複数OUTするコマンドがあった場合は問題になる
-                add_step.srcs = [from_step_id]
-                add_step.dsts = [add_step.id]
-            }else{
-                //単体での追加
-                add_step.setFrame({x:100, y:100 + defaultGraphProps.rankSeparator + defaultNodeProps.height, width:defaultNodeProps.width, height:defaultNodeProps.height})
+
+            if(add_step instanceof CommandStepModel ||
+              add_step instanceof SubFlowStepModel){
+              //srcs
+              let totalSX = 0
+              let totalSY = 0
+              src_step_ids.forEach((id:string)=>{
+                const from:string = id
+                const to:string = add_step.id
+
+                const target:StepModelType = Graph.getNode(state.nodes,id)
+                totalSX = totalSX + target.position.x
+                totalSY = totalSY + target.position.y
+                graph.addEdge(from,to,from)
+              })
+
+              //dsts
+              let totalDX = 0
+              dst_step_ids.forEach((id:string)=>{
+                const from:string = add_step.id
+                const to:string = id
+                //ノードの数に応じて
+                totalDX = totalDX + defaultGraphProps.nodeSeparator
+                graph.addEdge(from,to,to)
+              })
+
+              //
+              //   ○[     ]○[     ]○
+              //   ↑ノード↑nodeSeparator という配置になるため、
+              //   末尾のnodeSeparatorを引いておく
+              //
+              if(totalDX)totalDX = totalDX - defaultGraphProps.nodeSeparator
+
+              if(src_step_ids || dst_step_ids){
+                  //追加したステップの位置調整
+                  const average = {
+                    sx: totalSX / src_step_ids.length,
+                    sy: totalSY / src_step_ids.length,
+                    dx: totalDX / 2
+                  }
+
+                  const newPosition = {
+                    x: average.sx,
+                    y: average.sy + Constants.default.step.height + defaultGraphProps.rankSeparator
+                  }
+
+                  //追加されたノードの位置調整
+                  add_step.setFrame({x:newPosition.x,y:newPosition.y, width:defaultNodeProps.width, height:defaultNodeProps.height})
+
+                  //先行して設置されている接続先のノードの位置調整
+                  dst_step_ids.map((id,index)=>{
+                    let new_node = Graph.getNode(state.nodes,id)
+                    new_node.setFrame({
+                      x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator),
+                      y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator,
+                      width: defaultNodeProps.width,
+                      height: defaultNodeProps.height
+                    })
+                    newState.nodes = Graph.updateNode({nodes: state.nodes, key: id, new_node: new_node})
+                  })
+                  //出力先ステップの位置調整
+
+                  //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
+                  const command:CommandModel = add_step.getCommand(newState.mast.commands)
+                  const inPorts:[CommandPortType] = command.getInPorts()
+                  const outPorts:[CommandPortType] = command.getOutPorts()
+                  src_step_ids.forEach((id,index)=>{
+                    const newPortName = inPorts[index]
+                    add_step.srcs[newPortName.name]=id
+                  })
+                  dst_step_ids.forEach((id,index)=>{
+                    const newPortName = outPorts[index]
+                    add_step.dsts[newPortName.name]=id
+                  })
+              }else{
+                add_step.srcs = {}
+                add_step.dsts = {}
+                add_step.setFrame({x:0,y:0, width:defaultNodeProps.width, height:defaultNodeProps.height})
+              }
             }
+
+            if(add_step instanceof DataFrameStepModel){
+              add_step.setFrame({x:window.innerWidth / 2 - defaultNodeProps.width/2,y:window.innerHeight / 2 -defaultNodeProps.height/2,width:defaultNodeProps.width,height:defaultNodeProps.height})
+          }
 
             newState.nodes.push(add_step)
             newState.graph = graph.getGraph(newState)
@@ -148,12 +228,37 @@ const Application = (state = initialState, action) => {
             //stateを一度ディープコピーしないとrenderされないためコピーする
             let newState = StateUtil.deepCopy(state)
 
-            newState.nodes.map((node,index)=>{
-              if(node.id == action.step.id){
-                return action.step
-              }
+            newState.nodes = newState.nodes.map((node,index)=>{
+
+                //データに応じたノード間の繋がりの更新
+                if(node.id === action.step.id){
+                  if(node instanceof CommandStepModel ||
+                    node instanceof SubFlowStepModel){
+                    if(node.srcs !== action.step.srcs){
+                      //ノードのつながりをすべて削除
+                      Object.keys(node.srcs).forEach(portName=>{
+                        const id = node.srcs[portName]
+                        const from = id
+                        const to = node.id
+                        graph.removeEdge(from,to,from)
+                      })
+                      //ノードのつながりを再構築
+                      Object.keys(action.step.srcs).forEach(portName=>{
+                        const id = action.step.srcs[portName]
+                        const from = id
+                        const to = action.step.id
+                        graph.addEdge(from,to,from)
+                      })
+                    }
+                  }
+                  return action.step
+                }
               return node
             })
+
+            //選択されているEdgeも更新する
+            newState.selected_in_edges = graph.g.inEdges(state.selected_step_ids[0])
+            newState.selected_out_edges = graph.g.outEdges(state.selected_step_ids[0])
 
             //選択されているstepの値も更新する
             newState.graph = graph.getGraph(newState)
@@ -188,7 +293,7 @@ const Application = (state = initialState, action) => {
             navigator.clipboard.writeText(cut_data).then(()=> {
 
                 let deleteKeySet = new Set()
-                action.step_ids.map((id)=>{
+                action.step_ids.map((id:string)=>{
                     graph.removeNode(id)
                     deleteKeySet.add(id)
                 })
@@ -316,7 +421,7 @@ const Application = (state = initialState, action) => {
           if(offset === undefined){
             //絶対値
             newState = {...state,zoom:value}
-          }else if(state.zoom + offset > 70 && state.zoom + offset < 150){
+          }else if(state.zoom + offset >= 80 && state.zoom + offset <= 180){
             //差分
             newState = {...state,zoom:state.zoom + offset}
           }
@@ -337,11 +442,12 @@ export default Application
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const addStepAction = (add_step, from_step_id) => {
+export const addStepAction = (add_step:StepModelType, src_step_ids:[] = [],dst_step_ids:[] = []) => {
   return {
     type: ADD_STEP_ACTION,
     add_step: add_step,
-    from_step_id: from_step_id
+    src_step_ids: src_step_ids,
+    dst_step_ids: dst_step_ids
   }
 }
 
@@ -350,7 +456,7 @@ export const addStepAction = (add_step, from_step_id) => {
  * @param context
  * @returns {{type: string, context: *}}
  */
-export const loadFlowJSONAction = (context) => {
+export const loadFlowJSONAction = (context:{}) => {
   return {
     type: LOAD_FLOW_JSON_ACTION,
     context: context,
@@ -362,7 +468,7 @@ export const loadFlowJSONAction = (context) => {
  * @param context
  * @returns {{type: string, context: *}}
  */
-export const addMasterAction = (context) => {
+export const addMasterAction = (context:{}) => {
   return {
     type: ADD_MASTER_ACTION,
     context: context,
@@ -376,7 +482,7 @@ export const addMasterAction = (context) => {
  * @param step
  * @returns {{type: string, step: *}}
  */
-export const updateStepAction = step => {
+export const updateStepAction = (step:StepModelType) => {
   return {
     type: UPDATE_STEP_ACTION,
     step: step
@@ -400,7 +506,7 @@ export const updateFlowAction = flow => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const deleteStepsAction = step_ids => {
+export const deleteStepsAction = (step_ids:[]) => {
   return {
       type: DELETE_STEPS_ACTION,
       step_ids: step_ids
@@ -412,7 +518,7 @@ export const deleteStepsAction = step_ids => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const cutStepsAction = step_ids => {
+export const cutStepsAction = (step_ids:[])=> {
     return {
         type: CUT_STEPS_ACTION,
         step_ids: step_ids
@@ -423,7 +529,7 @@ export const cutStepsAction = step_ids => {
  * @param step_ids
  * @returns {{type: string, step: *}}
  */
-export const copyStepsAction = step_ids => {
+export const copyStepsAction = (step_ids:[])=> {
     return {
         type: COPY_STEPS_ACTION,
         step_ids: step_ids
@@ -445,21 +551,21 @@ export const pasteStepsAction = () => {
  * @param selected_steps
  * @returns {{type: string, selected_steps: *}}
  */
-export const selectStepsAction = selected_steps => {
+export const selectStepsAction = (selected_steps:[]) => {
   return {
     type: SELECT_STEPS_ACTION,
     selected_steps: selected_steps
   }
 }
 
-export const addSelectStepAction = selected_step_id => {
+export const addSelectStepAction = (selected_step_id:string) => {
     return {
         type: ADD_SELECT_STEP_ACTION,
         selected_step_id: selected_step_id
     }
 }
 
-export const deleteSelectStepAction = selected_step_id => {
+export const deleteSelectStepAction = (selected_step_id:string) => {
     return {
         type: DELETE_SELECT_STEP_ACTION,
         selected_step_id: selected_step_id
@@ -471,7 +577,7 @@ export const deleteSelectStepAction = selected_step_id => {
  * @param flowid
  * @returns {{type: string, step: *}}
  */
-export const executeFlowAction = flowid => {
+export const executeFlowAction = (flowid:string) => {
   return {
     type: EXECUTE_FLOW_ACTION
   }
@@ -493,14 +599,14 @@ export const sortFlowAction = () => {
  * @param
  * @returns {{type: string, selected_steps: *}}
  */
-export const selectTabAction = (tab_id) => {
+export const selectTabAction = (tab_id:string) => {
   return {
     type: SELECT_TAB_ACTION,
     selected_tab_id: tab_id
   }
 }
 
-export const dragStartAction = (x,y) => {
+export const dragStartAction = (x:number,y:number) => {
   return {
     type : DRAG_START_ACTION,
     x:x,
@@ -508,7 +614,7 @@ export const dragStartAction = (x,y) => {
   }
 }
 
-export const draggingAction = (x,y) => {
+export const draggingAction = (x:number,y:number) => {
   return {
     type : DRAGGING_ACTION,
     x:x,
@@ -516,7 +622,7 @@ export const draggingAction = (x,y) => {
   }
 }
 
-export const dragEndAction = (x,y) => {
+export const dragEndAction = (x:number,y:number) => {
   return {
     type : DRAG_END_ACTION,
     x:x,

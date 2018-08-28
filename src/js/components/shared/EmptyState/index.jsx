@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
@@ -18,7 +18,7 @@ export default class EmptyState extends React.Component<Props> {
 
   render () {
     const {children, title, description, icon} = this.props
-    const icon_class = classnames('material-icons', [style.icon])
+    const icon_class:string = classnames('material-icons', [style.icon])
     const icon_container = (icon) ? <div className={style.icon_container}>
       <div className={icon_class}>{icon}</div>
     </div> : null

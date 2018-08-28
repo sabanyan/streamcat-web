@@ -1,3 +1,4 @@
+//@flow
 import axios from 'axios'
 import Constants from '../constants'
 import NavigationModel from '../model/Navigation/NavigationModel'
@@ -13,47 +14,59 @@ class HTTPUtil {
     });
   }
 
-  setWindowNavigation(response){
+  setWindowNavigation(response:any){
     if(response.data.navigation){
       new NavigationModel(response.data.navigation)
     }
   }
 
-  mergeConfig (config) {
+  mergeConfig (config?:{}) {
     if (config) {
       return Object.assign(this.config, config)
     }
   }
 
-  apiUrl (path) {
+  apiUrl (path:string) {
     return '/api/v0/' + path
   }
 
-  get (path, data, config) {
+  get (path:string, data?:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.get(url, {params: data}, merged_config)
   }
 
-  post (path, data, config) {
+  post (path:string, data:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.post(url, data, merged_config)
   }
 
-  put (path, data, config) {
+  put (path:string, data:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.put(url, data, merged_config)
   }
 
-  delete (path, data, config) {
+  fileupload(file:File,fileName:string){
+    const options = {
+      headers: { 'enctype': 'multipart/form-data' }
+    }
+
+    let formData:FormData = new FormData();
+    formData.append('file', file)
+    formData.append('file_name', fileName)
+
+    return this.post('frames', formData,options)
+  }
+
+  delete (path:string, data:{}, config:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.delete(url, data, merged_config)
   }
 
-  getURLParam(paramName){
+  getURLParam(paramName:string){
     var url_string = window.location.href
     var url = new URL(url_string);
     return url.searchParams.get(paramName);

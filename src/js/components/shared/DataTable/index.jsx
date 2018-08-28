@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from 'react'
 
 type Props = {
@@ -23,8 +23,6 @@ export default class DataTable extends React.Component<Props> {
     if (!json) {
       return null
     }
-
-    console.log(json)
 
     // if (json.data && !Object.keys(json.data).length) {
     //   return <div>
@@ -58,11 +56,11 @@ export default class DataTable extends React.Component<Props> {
         /**
          * ヘッダー行の設定
          */
-        tds.push(<th key={index}>{json.labels[index]}</th>)
+        tds.push(<th key={"th_"+index}>{json.labels[index]}</th>)
         dataset.data.map(function (data, index) {
-          tds.push(<td key={index}>{data}</td>)
+          tds.push(<td key={"td_"+index}>{data}</td>)
         })
-        body_trs.push(<tr key={index}>{tds}</tr>)
+        body_trs.push(<tr key={"tr_"+index}>{tds}</tr>)
       })
 
     // }

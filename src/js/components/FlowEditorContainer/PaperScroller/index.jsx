@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import type { FlowEditorProps } from '../index'
 import style from './style.scss'
@@ -30,9 +30,6 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
         this.props.deleteSteps(selected_step_ids)
         return
       }
-
-      console.log(e.metaKey)
-      console.log(e.key)
     }
     else {
       console.log(e.ctrlKey)
