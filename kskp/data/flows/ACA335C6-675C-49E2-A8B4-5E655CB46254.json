@@ -69,16 +69,22 @@
       "label": null
     },
     {
+      "id": "o4",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "B9709397-7ABF-490A-A983-264FE88DF2C5",
+      "label": null
+    },
+    {
       "id": "evaluate",
       "type": "command",
       "commandId": "evaluate",
       "args": {
-        "d": "kskp/data/frames/B9709397-7ABF-490A-A983-264FE88DF2C5.csv",
         "m": "mae",
         "p": "",
         "metrics_file_name": "metrics_file_name"
       },
-      "srcs": { "i": "o2" },
+      "srcs": { "i": "o2", "d": "o4" },
       "dsts": { "o": "o3" },
       "label": null
     },
