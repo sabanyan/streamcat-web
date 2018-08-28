@@ -9,6 +9,10 @@
             {
                 "name": "i",
                 "type": "frame"
+            },
+            {
+                "name": "d",
+                "type": "frame"
             }
         ],
         [
@@ -19,11 +23,6 @@
         ]
     ],
     "params": [
-        {
-            "name": "d",
-            "type": "string",
-            "label": "test_data"
-        },
         {
             "name": "m",
             "type": "string",
