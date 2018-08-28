@@ -357,10 +357,12 @@ class MCommand(UnixCommand):
         res = self.name.split()
         for k, v in args.items():
             # booleanに対応していないのでひとまず
-            if k == 'x' and (v == True or v == "true"):
-                res.append('-x')
-            elif k == 'rng' and v == True:
-                res.append('-rng')
+            if k == 'x':
+                if v == True or v == "true":
+                    res.append('-x')
+            elif k == 'rng':
+                if v == True:
+                    res.append('-rng')
             else:
                 res.append('%s=%s' % (k, v))
         return res
