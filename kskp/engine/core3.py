@@ -2267,7 +2267,6 @@ class Klinreg(UnixCommand):
 class Evaluate(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('d', 'test_data'))
         self.params.append(Parameter('m', 'select metrics appling model'))
         self.params.append(Parameter('p', 'set probability on'))
         self.params.append(Parameter('metrics_file_name', 'metrics_file_name'))
@@ -2283,9 +2282,11 @@ class Evaluate(UnixCommand):
         # command.input = inputs['i'].source.fullpath
 
         inputs['i'].command_to_file()
+        inputs['d'].command_to_file()
 
         cl_args = []
         cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-d', inputs['d'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
