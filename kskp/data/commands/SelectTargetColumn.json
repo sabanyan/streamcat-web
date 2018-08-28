@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "SelectTargetColumn",
+    "id": "select_target_column",
     "label": "列選択",
     "classification": "preprocess",
     "description": "対象の列を選択",

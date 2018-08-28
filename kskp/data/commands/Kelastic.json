@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "Kelastic",
+    "id": "kelastic",
     "label": "elastic net回帰",
     "classification": "regression",
     "description": "コスト関数に、L1、L2正則化項を加えたものを使用して回帰分析を行うもの。",

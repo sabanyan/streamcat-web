@@ -335,7 +335,7 @@ class Split(Command):
         self.params.append(Parameter('l'))
 
     def execute(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         command_args = ['split']
         command_args.append(f"-l {args['l']}")
         command_args.append(inputs['i'].command_to_file().source.file_name)
@@ -1329,7 +1329,7 @@ class SelectTargetColumn(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.selecttargetcolumn import SelectTargetColumn as Base
         command = Base()
         # 引数の設定
@@ -1357,7 +1357,7 @@ class Standardize(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.standardize import Standardize as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1384,7 +1384,7 @@ class Label_encode(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.label_encode import Label_encode as Base
         command = Base()
         inputs['i'].command_to_file()
@@ -1411,7 +1411,7 @@ class Normalize(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.normalize import Normalize as Base
         command = Base()
         inputs['i'].command_to_file()
@@ -1437,7 +1437,7 @@ class One_hot_encode(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.one_hot_encode import One_hot_encode as Base
         command = Base()
         inputs['i'].command_to_file()
@@ -1463,7 +1463,7 @@ class Pca(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.pca import Pca as Base
         command = Base()
         inputs['i'].command_to_file()
@@ -1493,7 +1493,7 @@ class Kkmeans(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.clustering.kkmeans import Kkmeans as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1517,13 +1517,13 @@ class CKab(UnixCommand):
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('a', 'アルゴリズム（デフォルト：SAMME.R）'))#ここ２択、SAMMEとSAMME.R
         self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト値：50）'))
-        
+
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kab import Kab as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1559,7 +1559,7 @@ class CKbag(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kbag import Kbag as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1593,7 +1593,7 @@ class CKdt(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kdt import Kdt as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1629,7 +1629,7 @@ class CKgb(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kgb import Kgb as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1663,7 +1663,7 @@ class CKnearestNeighbors(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.knearest_neighbors import Knearest_neighbors as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1701,7 +1701,7 @@ class CKneuralnet(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kneuralnet import Kneural_network as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1734,7 +1734,7 @@ class CKrf(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.krf import Krf as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1766,7 +1766,7 @@ class CKsvm(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.ksvm import Ksvm as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1796,7 +1796,7 @@ class KgaussianNb(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kgaussian_nb import Kgaussian_nb as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1831,7 +1831,7 @@ class Klogreg(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.klogreg import Klogreg as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1865,7 +1865,7 @@ class RKab(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kab import Kab as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1900,7 +1900,7 @@ class RKbag(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kbag import Kbag as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1934,7 +1934,7 @@ class RKdt(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kdt import Kdt as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1970,7 +1970,7 @@ class RKgb(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kgb import Kgb as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2004,7 +2004,7 @@ class RKnearestNeighbors(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.knearest_neighbors import Knearest_neighbors as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2042,7 +2042,7 @@ class RKneuralnet(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kneuralnet import Kneural_network as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2075,7 +2075,7 @@ class RKrf(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.krf import Krf as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2107,7 +2107,7 @@ class RKsvm(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.ksvm import Ksvm as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2142,7 +2142,7 @@ class Kelastic(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kelastic import Kelastic as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2176,7 +2176,7 @@ class Kridge(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kridge import Kridge as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2210,7 +2210,7 @@ class Klasso(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.klasso import Klasso as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2243,7 +2243,7 @@ class Klinreg(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.klinreg import Klinreg as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2277,7 +2277,7 @@ class Evaluate(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.postprocess.evaluate import Evaluate as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2305,16 +2305,18 @@ class Predict(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.postprocess.predict import Predict as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
 
         inputs['i'].command_to_file()
+        inputs['d'].command_to_file()
 
         # 引数の設定
         cl_args = []
         cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-d', inputs['d'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])

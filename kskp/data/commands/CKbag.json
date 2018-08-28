@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "CKbag",
+    "id": "cKbag",
     "label": "バギングによる分類",
     "classification": "classification",
     "description": "ブートストラップサンプリングで得られた学習データを用いて、分類器を複数作り、それらの分類器の多数決を取って、性能の高いモデルを作り,分類を行う。",

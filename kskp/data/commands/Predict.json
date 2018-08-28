@@ -1,14 +1,19 @@
 {
     "version": "0.7.0",
-    "id": "label_encode",
-    "label": "Label_encode",
-    "classification": "preprocess",
-    "description": "文字データを離散数値に変換する。",
+    "id": "predict",
+    "label": "Predict",
+    "classification": "postprocess",
+    "description": "Predict",
     "ports": [
         [
             {
                 "name": "i",
                 "type": "frame"
+            },
+            {
+                "name": "d",
+                "type": "string",
+                "label": "test_data"
             }
         ],
         [
@@ -20,9 +25,9 @@
     ],
     "params": [
         {
-            "name": "c",
+            "name": "p",
             "type": "string",
-            "label": "標準化を行う行を選択"
+            "label": "set probability on"
         }
     ]
 }
