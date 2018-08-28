@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "Klogreg",
+    "id": "klogreg",
     "label": "ロジスティック回帰",
     "classification": "classification",
     "description": "複数の因子の組み合わせ、その度合いからロジスティック関数を作成、ある現象について発生確率を出す。",

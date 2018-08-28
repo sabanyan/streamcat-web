@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "Normalize",
+    "id": "normalize",
     "label": "標準化",
     "classification": "preprocess",
     "description": "データセットの標準化を行う。",

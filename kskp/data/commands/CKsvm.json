@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "CKsvm",
+    "id": "cKsvm",
     "label": "サポートベクターマシンによる分類",
     "classification": "classification",
     "description": "与えられたデータからサポートベクトル、マージンを作り出し、それらを用いて未知のデータを分類する。",

@@ -69,14 +69,20 @@
       "label": null
     },
     {
+      "id": "o4",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "b97ee374-5b84-48ab-b971-046858937ccb",
+      "label": null
+    },
+    {
       "id": "predict",
       "type": "command",
       "commandId": "predict",
       "args": {
-        "d": "kskp/data/frames/b97ee374-5b84-48ab-b971-046858937ccb.csv",
         "p": ""
       },
-      "srcs": { "i": "o2" },
+      "srcs": { "i": "o2", "d": "o4"},
       "dsts": { "o": "o3" },
       "label": null
     },

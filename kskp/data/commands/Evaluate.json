@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "Evaluate",
+    "id": "evaluate",
     "label": "Evaluate",
     "classification": "postprocess",
     "description": "Evaluate",

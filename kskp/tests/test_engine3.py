@@ -25,11 +25,11 @@ class EngineTestCase(unittest.TestCase):
     def test_ni(self):
         self.execute('2C096E39-28BD-491B-B0E2-7ECFFD113304')
 
-    @unittest.skip
+    # @unittest.skip
     def test_pandas(self):
         self.execute('BCA335C6-675C-49E2-A8B4-5E655CB46256')
 
-    # @unittest.skip
+    @unittest.skip
     def test_kcmd(self):
         self.execute('ACA335C6-675C-49E2-A8B4-5E655CB46254')
 
