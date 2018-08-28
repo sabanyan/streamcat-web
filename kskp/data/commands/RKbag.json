@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "RKbag",
+    "id": "rKbag",
     "label": "バギングによる回帰",
     "classification": "regression",
     "description": "ブートストラップサンプリングで得られた学習データを用いて、分類器を複数作り、それらの分類器の多数決を取って、回帰を行う。",

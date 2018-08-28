@@ -38,14 +38,14 @@ class Evaluate():
         self.temp_files_path = Path(__file__).parent.parent.joinpath('preprocess/temp_files/')
 
     def parse_args(self, parser):
-        # #parser = argparse.ArgumentParser()
-        # parser.add_argument("-i", "--input", dest="input",
-        #                     help="setting input file", metavar="FILE", default=sys.stdin)
-        # parser.add_argument("-o", "--output", dest="output",
-        #                     help="setting output file", metavar="FILE", default=sys.stdout)
-        # parser.add_argument("-d", "--data", dest="test_data",
-        #                     metavar="FILE", type=open, help="set test data")
-        # parser.add_argument("-p","--probability",dest="probability",help="set probability on",action="store_const",const=True,default=False)
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-i", "--input", dest="input",
+                            help="setting input file", metavar="FILE", default=sys.stdin)
+        parser.add_argument("-o", "--output", dest="output",
+                            help="setting output file", metavar="FILE", default=sys.stdout)
+        parser.add_argument("-d", "--data", dest="test_data",
+                            metavar="FILE", type=open, help="set test data")
+        parser.add_argument("-p","--probability",dest="probability",help="set probability on",action="store_const",const=True,default=False)
         parser.add_argument("-m","--metrics",dest="metrics",help="select metrics appling model",choices=self.all_metrics.keys())
         parser.add_argument("--metrics_file_name",dest="metrics_file_name",default="metrics.csv",type=str)
         return parser#.parse_args(args)

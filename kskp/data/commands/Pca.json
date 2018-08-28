@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "Pca",
+    "id": "pca",
     "label": "主成分分析",
     "classification": "preprocess",
     "description": "データの要約を行う。（データの次元削減）",
