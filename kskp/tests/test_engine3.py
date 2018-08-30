@@ -21,9 +21,13 @@ class EngineTestCase(unittest.TestCase):
     def test_step_paths(self):
         self.execute('27C35909-504E-43F2-A115-DADB6F57D38C', 'Bt')
 
-    # @unittest.skip
+    @unittest.skip
     def test_ni(self):
         self.execute('2C096E39-28BD-491B-B0E2-7ECFFD113304')
+
+    # @unittest.skip
+    def test_ni(self):
+        self.execute('japan_ni_improvement')
 
     @unittest.skip
     def test_pandas(self):

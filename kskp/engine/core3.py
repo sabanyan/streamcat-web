@@ -389,7 +389,7 @@ class MCommandNew(Command):
         elif isinstance(input_i.source, NysolPythonSource):
             args_for_nysol.update({'i': input_i.source.nysol_module})
             # print('NysolPythonSource args_for_nysol:', args_for_nysol)
-
+            
         source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
 
         for input in inputs.values():
@@ -664,6 +664,9 @@ class Mnumber(MCommandNew):
         self.params.append(Parameter('k', '連番もしくは連文字を振る単位となる列'))
         self.params.append(Parameter('S', '開始No'))
 
+class Msummary(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msummary)
 
 class M2cross(MCommandNew):#new
     def __init__(self):
@@ -723,7 +726,8 @@ commands = {
     # # MCDM
     'm2cross': M2cross(),
     'mcross': Mcross(),
-    'mnumber': Mnumber()
+    'mnumber': Mnumber(),
+    'msummary':Msummary()
     #
     # # KCMD
     # 'select_target_column': SelectTargetColumn(),
