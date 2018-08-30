@@ -1,7 +1,7 @@
 {
     "version": "0.7.0",
     "id": "predict",
-    "label": "Predict",
+    "label": "推定",
     "classification": "postprocess",
     "description": "Predict",
     "ports": [

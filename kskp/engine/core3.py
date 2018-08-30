@@ -363,6 +363,9 @@ class MCommand(UnixCommand):
             elif k == 'rng':
                 if v == True:
                     res.append('-rng')
+            elif k == 'r':
+                if v == True or v == "true":
+                    res.append('-r')
             else:
                 res.append('%s=%s' % (k, v))
         return res

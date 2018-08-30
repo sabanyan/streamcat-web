@@ -10,6 +10,11 @@
       "name": "x",
       "type": "boolean",
       "label": "項目番号による指定（true or false)"
+    },
+    {
+      "name": "r",
+      "type": "boolean",
+      "label": "項目削除スイッチ（true or false)"
     }
   ],
   "ports": [

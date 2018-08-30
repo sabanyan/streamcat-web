@@ -15,6 +15,11 @@
       "name": "c",
       "label": "統計量を指定",
       "type": "string"
+    },
+    {
+      "name": "a",
+      "label": "新項目名",
+      "type": "string"
     }
   ],
   "ports": [
