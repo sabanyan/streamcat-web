@@ -59,7 +59,7 @@
       },
       "args": {
         "f": "0,1,2,3,4",
-        "x": "true"
+        "x": true
       },
       "commandId": "mcut"
     },
@@ -91,14 +91,14 @@
       "type": "command",
       "label": "列選択",
       "srcs": {
-        "i": "new 52556ec5-0b62-4c00-818b-4ac3803a02cc"
+        "i": "i"
       },
       "dsts": {
         "o": "new 44433744-4496-488a-80c0-809d0440b41b"
       },
       "args": {
         "f": "0,5,6,7,8",
-        "x": "true"
+        "x": true
       },
       "commandId": "mcut"
     },
@@ -130,14 +130,14 @@
       "type": "command",
       "label": "列選択",
       "srcs": {
-        "i": "new 52556ec5-0b62-4c00-818b-4ac3803a02cc"
+        "i": "i"
       },
       "dsts": {
         "o": "new a959daef-e8e3-4c2f-96e0-8f51faf58a91"
       },
       "args": {
         "f": "0,9-12",
-        "x": "true"
+        "x": true
       },
       "commandId": "mcut"
     },
@@ -169,14 +169,14 @@
       "type": "command",
       "label": "列選択",
       "srcs": {
-        "i": "new 52556ec5-0b62-4c00-818b-4ac3803a02cc"
+        "i": "i"
       },
       "dsts": {
         "o": "new df167b23-7e56-40db-b058-f23a7c801a31"
       },
       "args": {
         "f": "0,13-16",
-        "x": "true"
+        "x": true
       },
       "commandId": "mcut"
     },
@@ -208,14 +208,14 @@
       "type": "command",
       "label": "列選択",
       "srcs": {
-        "i": "new 52556ec5-0b62-4c00-818b-4ac3803a02cc"
+        "i": "i"
       },
       "dsts": {
         "o": "new a14c125f-4565-4ec2-a483-a130104b3392"
       },
       "args": {
         "f": "0,17-20",
-        "x": "true"
+        "x": true
       },
       "commandId": "mcut"
     },
@@ -644,7 +644,7 @@
       },
       "args": {
         "f": "TIME_NO",
-        "r": "true",
+        "r": true,
         "x": "false"
       },
       "commandId": "mcut"
@@ -1199,7 +1199,7 @@
       },
       "args": {
         "f": "fld",
-        "r": "true",
+        "r": true,
         "x": "false"
       },
       "commandId": "mcut"
