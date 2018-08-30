@@ -1,7 +1,7 @@
 {
     "version": "0.7.0",
     "id": "evaluate",
-    "label": "Evaluate",
+    "label": "評価",
     "classification": "postprocess",
     "description": "Evaluate",
     "ports": [
