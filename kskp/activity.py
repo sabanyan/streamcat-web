@@ -34,9 +34,8 @@ def make_unfinished_history(now, session):
                 'errors': {}
             }
 
-            # nowはミリ秒まで入るのでnowを使ってdatetimeを作り直してからisoformat()を行っている
-            history_json['executedAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
-                                                  tzinfo=timezone(timedelta(hours=+9))).isoformat()
+            JST = timezone(timedelta(hours=+9), 'JST')
+            history_json['executedAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
             history_json['executor']['name'] = get_user_by_id(session['user_id'])['name']
             history_json['flow']['uuid'] = args[0]
             history_json['state'] = '実行中'
@@ -90,8 +89,8 @@ def add_activity_to_flow(user_id):
             now = datetime.now()
 
             data['creator'] = get_user_by_id(user_id)['name']
-            data['createdAt'] = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
-                                        tzinfo=timezone(timedelta(hours=+9))).isoformat()
+            JST = timezone(timedelta(hours=+9), 'JST')
+            data['executedAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
             return data
         return deco
     return _deco
