@@ -27,6 +27,7 @@ import * as React from 'react'
 import { FlowModelProps } from '../../model/Flow/FlowModel'
 import NavigationModel from '../../model/Navigation/NavigationModel'
 import type { DragType } from '../../types'
+import { DataFrameDetailType } from '../../types'
 
 let FlowEditorContainer
 
@@ -47,6 +48,7 @@ export type FlowEditorProps = {
   updateFlow: Function;
   sortFlow: Function;
   executeFlow: Function;
+  updateDataFrameDetail: Function;
   nodes: {};
   selected_step_ids: string[];
   selected_tab_id: string;
@@ -72,13 +74,14 @@ export default FlowEditorContainer = connect(
       nodes: state.nodes,
       selected_step_ids: state.selected_step_ids,
       selected_tab_id: state.selected_tab_id,
+      selected_data_source_detail: state.selected_data_source_detail,
       drag: state.drag,
       selected_in_edges: state.selected_in_edges,
       selected_out_edges: state.selected_out_edges,
       zoom: state.zoom,
       flow: state.flow,
       originalFlow: state.originalFlow,
-      navigation: state.navigation
+      navigation: state.navigation,
     }
   },
   dispatch => {

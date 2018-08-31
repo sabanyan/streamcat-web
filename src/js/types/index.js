@@ -71,8 +71,6 @@ export type ZoomToolBarButtonType = {
   zoom:number;
 }
 
-
-
 export type DownloadButtonType = {
   onClick: Function;
   children: React.Children;
@@ -81,4 +79,10 @@ export type DownloadButtonType = {
   danger: boolean;
   href: string;
   download: string;
+}
+
+export type DataFrameDetailType = {
+  contents: {};
+  numberOfLines: string;
+  lastModifiedAt: string;
 }

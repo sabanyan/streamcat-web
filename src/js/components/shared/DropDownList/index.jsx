@@ -14,6 +14,7 @@ type Props = {
     }];
   defaultValue: string;
   disabled: boolean;
+  hiddenNoSelect?: boolean;
 }
 
 export default class DropDownList extends React.Component<Props> {
@@ -33,7 +34,7 @@ export default class DropDownList extends React.Component<Props> {
 
   render () {
     let {label} = this.props
-    const {list, defaultValue, disabled} = this.props
+    const {list, defaultValue, disabled,hiddenNoSelect} = this.props
     let options = []
     let index = 0
     for(const data of list.values()){
@@ -46,7 +47,9 @@ export default class DropDownList extends React.Component<Props> {
       labelElement = <span className={style.label}>{label}</span>
     }
 
-    options.unshift(<option key={0}>選択してください</option>)
+    if(!hiddenNoSelect){
+      options.unshift(<option key={0}>選択してください</option>)
+    }
     let select = <div className={style.dropdownListContainer}>{labelElement}<select disabled={disabled} defaultValue={defaultValue}
                          onChange={(e) => this.onChange(e)}
                          className={classnames(style.dropdownList,{[style.hasLabel]:(label)})}>{options}</select></div>

@@ -1,6 +1,6 @@
 //@flow
 import * as React from 'react'
-import Inspector from '../Inspector'
+import BaseInspector from '../BaseInspector'
 import type {FlowEditorProps} from "../../index";
 import style from '../style.scss'
 import Button from '../../../shared/Button'
@@ -147,9 +147,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         }
 
 
-        return <Inspector key={selected_step.id} header={selected_step.text} title={title} {...this.props}>
+        return <BaseInspector key={selected_step.id} header={selected_step.text} title={title} {...this.props}>
           {content}
-        </Inspector>
+        </BaseInspector>
     }
 
 }
