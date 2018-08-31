@@ -94,7 +94,7 @@ export default class DataPreview extends React.Component<Props, State> {
         break
     }
 
-    return <div className="kskp-visualization">
+    return <div className={style.kskp_visualization">
       <div className="kskp-visualization-container">
         <div className="kskp-visualization-body">
           {chart}

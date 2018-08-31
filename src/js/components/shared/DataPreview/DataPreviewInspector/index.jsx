@@ -25,8 +25,8 @@ class DataPreviewInspector extends React.Component<FlowEditorProps> {
   }
 
   render () {
-    return  <div className="kskp-visualization-property">
-      <div className="kskp-visualization-property-body">
+    return  <div className={style.visualization_property}>
+      <div className={style.visualization_property_body}>
         <div className="kskp-form">
           <div className="mb-16px">
             <label>グラフの種類</label>
