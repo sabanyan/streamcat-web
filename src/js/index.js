@@ -26,15 +26,6 @@ if (document.getElementById('flow_editor')) {
   )
 }
 
-if (document.getElementById('visualization')) {
-  ReactDOM.render(
-    <Provider store={store}>
-      <VisualizationContainer/>
-    </Provider>,
-    document.getElementById('visualization'),
-  )
-}
-
 if (document.getElementById('project_list')) {
   ReactDOM.render(
     <ProjectListContainer/>,
