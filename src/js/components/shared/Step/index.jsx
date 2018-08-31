@@ -19,6 +19,7 @@ import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
 import CommandInspector from '../../FlowEditorContainer/Inspector/CommandInspector'
 import CommandIcon from '../Icon/CommandIcon'
+import HttpUtil from '../../../utils/HttpUtil'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -97,6 +98,22 @@ export default class Step extends React.Component<Props, State> {
     }
     else {
       this.props.selectSteps([step])
+
+
+      //データフレームの詳細を取得する
+      const selected_step:StepModelType = step//this.getSelectedStep()
+      if (selected_step instanceof DataFrameStepModel) {
+        if(selected_step.hasData()){
+          HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
+            const json = response.data
+            this.props.updateDataFrameDetail(json.data)
+          })
+        }else{
+          this.props.updateDataFrameDetail({})
+        }
+      }else{
+        this.props.updateDataFrameDetail({})
+      }
     }
 
 

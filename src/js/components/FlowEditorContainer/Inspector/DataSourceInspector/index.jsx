@@ -3,7 +3,7 @@ import React from 'react'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import Operator from '../../../shared/Command/index'
-import Inspector from '../Inspector'
+import BaseInspector from '../BaseInspector'
 import style from '../style.scss'
 import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
@@ -14,29 +14,33 @@ import CommandSelector from '../CommandSelector'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Graph from '../../../../utils/Graph'
 import HttpUtil from '../../../../utils/HttpUtil'
-import type { StepModelType } from '../../../../types'
+import type { DataFrameDetailType, StepModelType } from '../../../../types'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
 import Loader from '../../../shared/Loader'
 import FlowUtil from '../../../../utils/FlowUtil'
 import ChartUtil from '../../../../utils/ChartUtil'
 import DataTable from '../../../shared/DataTable'
+import StateUtil from '../../../../utils/State'
+import StringUtil from '../../../../utils/StringUtil'
 
-type DataFrameDetailType = {
-  contents: {};
-  numberOfLines: string;
-  lastModifiedAt: string
+
+type State = {
+  dataFrameDetail:DataFrameDetailType;
+  loading: boolean;
 }
 
-class DataSourceInspector extends React.Component<FlowEditorProps> {
+class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
-  dataFrameDetail:DataFrameDetailType = {
-    contents: {},
-    numberOfLines: "-",
-    lastModifiedAt: "-"
-  }
 
   loading:boolean = false
+
+  constructor (props:FlowEditorProps){
+    super(props)
+    this.state = {
+      loading: false
+    }
+  }
 
   componentWillMount () {
     //モーダル処理の登録
@@ -45,21 +49,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
         ModalUtil.closeModal(Constants.preview.DATASOURCE)
       },
     })
-
-    //データフレームの詳細を取得する
-    const {updateStep} = this.props
-    const selected_step:StepModelType = this.getSelectedStep()
-    if (selected_step instanceof DataFrameStepModel) {
-      if(selected_step.hasData()){
-        this.loading = true
-        HttpUtil.get("frames/"+selected_step.uuid).then((response)=>{
-          this.dataFrameDetail = response.data
-          this.loading = false
-          this.forceUpdate()
-        })
-      }else{
-      }
-    }
   }
 
   onClickPreview(e:Event){
@@ -69,31 +58,27 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
     FlowUtil.save(inject_flow_uuid,nodes,projectId,projectName).then(()=>{
       //すでにデータが存在している場合
       if(selected_step.hasData()){
-        this.loading = true
-        this.forceUpdate()
+        this.setState({
+          loading: true
+        })
         this.previewFromUUID(selected_step.uuid,selected_step.label)
       }else{
-        this.loading = true
-        this.forceUpdate()
+        this.setState({
+          loading: true
+        })
         HttpUtil.get("frames?from="+inject_flow_uuid+"."+selected_step.id).then((response)=>{
 
           const uuid = response.data.name[0].uuid
           const label = response.data.name[0].id
           this.previewFromUUID(uuid,label)
-
-          // let content = <DataPreview key={selected_step.uuid} json={response.data} />
-          //         // ModalUtil.emitModal({
-          //         //   id: Constants.preview.DATASOURCE,
-          //         //   visible: true,
-          //         //   content: content,
-          //         //   title: selected_step.label,
-          //         // })
-          this.loading = false
-          this.forceUpdate()
+          this.setState({
+            loading: false
+          })
         },(error)=>{
           console.log(error)
-          this.loading = false
-          this.forceUpdate()
+          this.setState({
+            loading: false
+          })
         })
 
       }
@@ -116,8 +101,9 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
         contents: [{title:"データの表示",content:contentTable},{title:"グラフの表示",content:contentGraph}],
         title: label
       })
-      this.loading = false
-      this.forceUpdate()
+      this.setState({
+        loading: false
+      })
     })
   }
 
@@ -190,6 +176,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
   }
 
   render () {
+    console.log("レンダー")
 
     let step_text
     let dataSource
@@ -224,9 +211,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
 
     let content
 
-    if(this.loading){
+    if(this.state.loading){
       content = <Loader center={true} absolute={true} fixed={false} visible={true}/>
     }else {
+
+      const numberOfLines = StringUtil.separate(this.props.selected_data_source_detail.numberOfLines)
+      const fileSize = StringUtil.convertToFileSize(this.props.selected_data_source_detail.fileSize)
+      const lastModifiedAt = StringUtil.separate(this.props.selected_data_source_detail.lastModifiedAt)
+
       content = <div>
         <div className={style.property_overview}>
           <div className={style.actions}>
@@ -242,7 +234,15 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
                 データの件数
               </div>
               <div className={style.overview_value}>
-                {this.dataFrameDetail.numberOfLines} {/*{property.overview.count || 0}*/}
+                {numberOfLines} {/*{property.overview.count || 0}*/}
+              </div>
+            </div>
+            <div className={style.overview}>
+              <div className={style.overview_label}>
+                ファイルサイズ
+              </div>
+              <div className={style.overview_value}>
+                {fileSize}
               </div>
             </div>
             <div className={style.overview}>
@@ -250,7 +250,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
                 作成日
               </div>
               <div className={style.overview_value}>
-                {this.dataFrameDetail.lastModifiedAt} {/*{property.overview.created_at || ""}*/}
+                {lastModifiedAt} {/*{property.overview.created_at || ""}*/}
               </div>
             </div>
             <div className={style.overview}>
@@ -258,7 +258,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
                 作成者
               </div>
               <div className={style.overview_value}>
-                - {/*{property.overview.created_user_name || ""}*/}
+                 {/*{property.overview.created_user_name || ""}*/}
               </div>
             </div>
             <div className={style.overview}>
@@ -282,9 +282,22 @@ class DataSourceInspector extends React.Component<FlowEditorProps> {
       </div>
     }
 
-    return <Inspector header={""} title={selected_step.label} {...this.props}>
+
+    return <BaseInspector header={""} title={selected_step.label} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)}>
       {content}
-    </Inspector>
+    </BaseInspector>
+  }
+
+  onClickTitle(){
+
+  }
+
+  onBlurTitle(e:SyntheticInputEvent<EventTarget>){
+    const selectedStep = this.getSelectedStep()
+    let newSelectedStep = StateUtil.deepCopy(selectedStep)
+    newSelectedStep.label = e.target.value
+    this.props.updateStep(newSelectedStep)
+    console.log(e.target.value)
   }
 
 }

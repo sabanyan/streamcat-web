@@ -51,7 +51,7 @@ class InOutConnector extends React.Component{
         return <div key={index} className={style.param}>
           <DropDownList disabled={false} key={"in_edge"}
                         onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={edge.name}
-                        list={dataSourceOptions} label={label}></DropDownList>
+                        list={dataSourceOptions} label={label} hiddenNoSelect={true}></DropDownList>
         </div>
       })
     }

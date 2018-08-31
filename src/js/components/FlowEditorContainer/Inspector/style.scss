@@ -111,3 +111,23 @@
     padding-bottom: 0;
   }
 }
+
+.title{
+  border: none;
+  width: 100%;
+  padding: 4px 8px;
+  position: relative;
+  &::before{
+    content: "編集";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+  &:hover{
+    border-bottom: 2px dotted $kskp-text;
+    cursor: pointer;
+  }
+  &:active,&:focus{
+    border: inherit;
+  }
+}

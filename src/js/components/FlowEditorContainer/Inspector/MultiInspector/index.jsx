@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import Inspector from '../Inspector'
+import BaseInspector from '../BaseInspector'
 import type { FlowEditorProps } from '../../index'
 import Button from '../../../shared/Button'
 import CommandSelector from '../CommandSelector'
@@ -53,7 +53,7 @@ class MultiInspector extends React.Component<FlowEditorProps> {
   render () {
     const numberOfSelectedDataSources = this.getNumberOfSelectedDataSources()
 
-    return <Inspector header={""}
+    return <BaseInspector header={""}
                       title={this.props.selected_step_ids.length + ' files'}>
       <div className="kskp-form">
         <Button onClick={(e) => this.onClickDelete(e)} danger={true}>
@@ -62,7 +62,7 @@ class MultiInspector extends React.Component<FlowEditorProps> {
       </div>
       <hr/>
       <CommandSelector numberOfInput={numberOfSelectedDataSources} {...this.props}/>
-    </Inspector>
+    </BaseInspector>
   }
 
 }

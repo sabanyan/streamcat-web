@@ -10,6 +10,7 @@ import type { CommandPortType, StepModelType } from '../types'
 import CommandModel from '../model/Command/CommandModel'
 import FlowUtil from '../utils/FlowUtil'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
+import { DataFrameDetailType } from '../types'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -31,7 +32,7 @@ const DRAG_START_ACTION = "drag_start_action";
 const DRAGGING_ACTION = "dragging_action";
 const DRAG_END_ACTION = "drag_end_action";
 const SET_ZOOM_ACTION = "set_zoom_action";
-const UPDATE_DATAFRAME_DETAIL_ACTION = "update_dataframe_detail_action";
+const UPDATE_DATA_SOURCE_DETAIL_ACTION = "update_data_source_detail_action";
 
 const graph:Graph = new Graph()
 //
@@ -95,6 +96,7 @@ let initialState = {
   drag:{},
   selected_in_edges:[],
   selected_out_edges:[],
+  selected_data_source_detail: {}
 }
 
 
@@ -429,6 +431,12 @@ const Application = (state = initialState, action:{}) => {
           return newState
         }
 
+      case UPDATE_DATA_SOURCE_DETAIL_ACTION:{
+        let newState = StateUtil.deepCopy(state)
+        newState.selected_data_source_detail = action.detail
+        return newState
+      }
+
       default:
             return state
     }
@@ -650,9 +658,9 @@ export const setZoomAction = ({offset,value}) => {
  * @param dataFrame
  * @returns {{dataFrame: DataFrameStepModel, type: string}}
  */
-export const updateDataFrameDetailAction = (dataFrame:DataFrameStepModel) => {
+export const updateDataFrameDetailAction = (detail:DataFrameDetailType) => {
   return {
-    dataFrame: dataFrame,
-    type: UPDATE_DATAFRAME_DETAIL_ACTION
+    detail: detail,
+    type: UPDATE_DATA_SOURCE_DETAIL_ACTION
   }
 }
