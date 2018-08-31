@@ -3,6 +3,7 @@ import * as React from 'react'
 import type { FlowEditorProps } from '../index'
 import style from './style.scss'
 import DetectUtil from '../../../utils/DetectUtil'
+import Graph from '../../../utils/Graph'
 
 class PaperScroller extends React.Component<FlowEditorProps, State> {
   componentDidMount () {
@@ -10,12 +11,24 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
 
   onKeyDown (e: KeyboardEvent) {
     if (DetectUtil.isMac()) {
-      const {selected_step_ids} = this.props
+      const {selected_step_ids,nodes} = this.props
 
       console.log(selected_step_ids)
 
       if (e.metaKey && e.key === 'x') {
-        this.props.cutSteps(selected_step_ids)
+
+        const cut_data = JSON.stringify({data:selected_step_ids.map((id)=>{
+            return Graph.getNode(nodes,id)
+        })})
+        
+        navigator.clipboard.writeText(cut_data).then(()=> {
+          this.props.cutSteps(selected_step_ids)
+        }, (err)=> {
+          alert("クリップボードが利用できません")
+
+        });
+
+
         return
       }
       if (e.metaKey && e.key === 'c') {
