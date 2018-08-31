@@ -287,30 +287,21 @@ const Application = (state = initialState, action:{}) => {
             return newState
         }
         case CUT_STEPS_ACTION: {
-            let newState = StateUtil.deepCopy(state)
-            const cut_data = JSON.stringify({data:action.step_ids.map((id)=>{
-                return newState.nodes[id]
-            })})
+          let newState = StateUtil.deepCopy(state)
 
-            navigator.clipboard.writeText(cut_data).then(()=> {
+          let deleteKeySet = new Set()
+          action.step_ids.map((id:string)=>{
+            graph.removeNode(id)
+            deleteKeySet.add(id)
+          })
+          newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
+          newState.graph = graph.getGraph(newState)
 
-                let deleteKeySet = new Set()
-                action.step_ids.map((id:string)=>{
-                    graph.removeNode(id)
-                    deleteKeySet.add(id)
-                })
-                newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
-                newState.graph = graph.getGraph(newState)
+          //削除後は非選択状態にする
+          newState.selected_step_ids = []
 
-                //削除後は非選択状態にする
-                newState.selected_step_ids = []
 
-            }, (err)=> {
-                alert("クリップボードが利用できません")
-
-            });
-
-            return newState
+          return newState
         }
         case SELECT_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
