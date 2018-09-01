@@ -1,10 +1,10 @@
 //@flow
 import Constants from '../constants'
 import type { CommandParamType, StepModelType, SubFlowParamType } from '../types'
-import CommandModel from '../model/Command/CommandModel'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import HttpUtil from './HttpUtil'
+import CommandStepModel from '../model/Step/CommandStepModel'
 
 export default class FlowUtil {
 
@@ -60,6 +60,72 @@ export default class FlowUtil {
     return flow_json
   }
 
+  // /**
+  //  * ノードのdsts,srcsのNodeIdをすべて書き換える
+  //  * @param replaceKeyPairs
+  //  * @param nodes
+  //  */
+  // static replaceNodeIds(replaceKeyPairs:{},nodes:[]){
+  //   nodes.map((node)=>{
+  //     if(node.dsts){
+  //       let newDsts = {}
+  //       Object.keys(node.dsts).forEach((from)=>{
+  //         const newFromId = this.replaceNodeId(replaceKeyPairs,from)
+  //         const to = node.dsts[from]
+  //         const newToId = this.replaceNodeId(replaceKeyPairs,to)
+  //         newDsts[newFromId] = newToId
+  //       })
+  //       node.dsts = newDsts
+  //     }
+  //
+  //     if(node.srcs){
+  //       let newSrcs = {}
+  //       Object.keys(node.srcs).forEach((from)=>{
+  //         const newFromId = this.replaceNodeId(replaceKeyPairs,from)
+  //         const to = node.srcs[from]
+  //         const newToId = this.replaceNodeId(replaceKeyPairs,to)
+  //         newSrcs[newFromId] = newToId
+  //       })
+  //       node.srcs = newSrcs
+  //     }
+  //     return node
+  //   })
+  //   return nodes
+  // }
+  //
+  static removeNodeId(nodes:[],node_ids:[]){
+    node_ids.forEach((removeId)=>{
+      nodes.forEach((node)=>{
+        if(node.dsts){
+          Object.keys(node.dsts).forEach((from)=>{
+            const to = node.dsts[from]
+            if(from === removeId || to === removeId)
+              delete node.dsts[from]
+            })
+        }
+        if(node.srcs){
+          Object.keys(node.srcs).forEach((from)=>{
+            const to = node.srcs[from]
+            if(from === removeId || to === removeId)
+              delete node.srcs[from]
+          })
+        }
+      })
+    })
+    return nodes
+  }
+  //
+  // static replaceNodeId(replaceKeyPairs:{},nodeId:string):string{
+  //   let newNodeId = nodeId
+  //   Object.keys(replaceKeyPairs).forEach((key)=>{
+  //     if(nodeId === key){
+  //       newNodeId = replaceKeyPairs[key]
+  //     }
+  //   })
+  //   return newNodeId
+  // }
+
+
   /**
    * フローの保存
    * @param flowUUID
@@ -74,6 +140,13 @@ export default class FlowUtil {
         resolve(response)
       })
     })
+  }
+
+  static setModelType(json:{}):StepModelType {
+    if (json["srcs"] !== undefined && json["dsts"] !== undefined && json["uuid"] !== undefined) return new SubFlowStepModel(json)
+    if (json["srcs"] !== undefined && json["dsts"] !== undefined) return new CommandStepModel(json)
+    if (json["uuid"] !== undefined && json["dataSource"] !== undefined) return new DataFrameStepModel(json)
+    return json
   }
 
 }

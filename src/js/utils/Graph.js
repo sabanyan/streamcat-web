@@ -6,6 +6,7 @@ import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
 import FlowModel from '../model/Flow/FlowModel'
+import FlowUtil from './FlowUtil'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -81,8 +82,12 @@ class Graph {
    * ノードの削除
    * @param id
    */
-  removeNode (id:string) {
+  removeNode (nodes:[],id:string):[] {
+    this.g.nodeEdges(id).forEach((edge)=>{
+      this.g.removeEdge(edge)
+    })
     this.g.removeNode(id)
+    return FlowUtil.removeNodeId(nodes,[id])
   }
 
   /**
@@ -120,7 +125,7 @@ class Graph {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
-
+    console.log(edges)
     if (nodes) {
       const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
       const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))

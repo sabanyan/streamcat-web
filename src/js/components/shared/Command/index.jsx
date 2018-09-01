@@ -19,7 +19,7 @@ type Props = {
     selectSteps: Function;
 }
 
-export default class Command extends React.Component<Props> {
+export default class OCommand extends React.Component<Props> {
     inputRefs: any[]
 
     constructor(props: Props) {

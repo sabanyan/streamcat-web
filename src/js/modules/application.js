@@ -11,6 +11,8 @@ import CommandModel from '../model/Command/CommandModel'
 import FlowUtil from '../utils/FlowUtil'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import { DataFrameDetailType } from '../types'
+import Command from '../components/shared/Command'
+import ModelUtil from '../utils/ModelUtil'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -232,7 +234,7 @@ const Application = (state = initialState, action:{}) => {
 
             newState.nodes = newState.nodes.map((node,index)=>{
 
-                //データに応じたノード間の繋がりの更新
+                //入出力機能によって再度 結びつきが変更された場合の対応
                 if(node.id === action.step.id){
                   if(node instanceof CommandStepModel ||
                     node instanceof SubFlowStepModel){
@@ -242,14 +244,18 @@ const Application = (state = initialState, action:{}) => {
                         const id = node.srcs[portName]
                         const from = id
                         const to = node.id
-                        graph.removeEdge(from,to,from)
+                        if(Graph.getNode(newState.nodes,id)){
+                          graph.removeEdge(from,to,from)
+                        }
                       })
                       //ノードのつながりを再構築
                       Object.keys(action.step.srcs).forEach(portName=>{
                         const id = action.step.srcs[portName]
                         const from = id
                         const to = action.step.id
-                        graph.addEdge(from,to,from)
+                        if(Graph.getNode(newState.nodes,id)) {
+                          graph.addEdge(from, to, from)
+                        }
                       })
                     }
                   }
@@ -274,8 +280,30 @@ const Application = (state = initialState, action:{}) => {
         case DELETE_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
             let deleteKeySet = new Set()
-            action.step_ids.map((id)=>{
-              graph.removeNode(id)
+
+            //削除対象がデータフレームの場合、srcも削除対象とする
+            //ただしsrcが別のデータフレームを複数出力している場合があるので、
+            //一つでもデータフレームが残っていると削除は行わない
+            action.step_ids.forEach((id)=>{
+              if(Graph.getNode(newState.nodes,id) instanceof DataFrameStepModel){
+                //削除対象のノードの親がある場合、親を調べる
+                if(graph.g.inEdges(id).length > 0){
+                  const deleteTargetStepId = graph.g.inEdges(id)[0].v
+                  const deleteTargetStep = Graph.getNode(newState.nodes,deleteTargetStepId)
+                  if(deleteTargetStep instanceof CommandStepModel ||
+                    deleteTargetStep instanceof SubFlowStepModel){
+                    //親のコマンドの出力先が対象のデータフレームだけの場合親を削除
+                    const isSingleDsts = (Object.keys(deleteTargetStep.dsts).length === 1 && deleteTargetStep.dsts[Object.keys(deleteTargetStep.dsts)[0]] === id)
+                    if(isSingleDsts){
+                      //親を削除
+                      newState.nodes = graph.removeNode(newState.nodes,deleteTargetStepId)
+                      deleteKeySet.add(deleteTargetStepId)
+                    }
+                  }
+                }
+              }
+              //選択されたノードを削除
+              newState.nodes = graph.removeNode(newState.nodes,id)
               deleteKeySet.add(id)
             })
 
@@ -286,23 +314,46 @@ const Application = (state = initialState, action:{}) => {
             newState.selected_step_ids = []
             return newState
         }
-        case CUT_STEPS_ACTION: {
-          let newState = StateUtil.deepCopy(state)
-
-          let deleteKeySet = new Set()
-          action.step_ids.map((id:string)=>{
-            graph.removeNode(id)
-            deleteKeySet.add(id)
-          })
-          newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
-          newState.graph = graph.getGraph(newState)
-
-          //削除後は非選択状態にする
-          newState.selected_step_ids = []
-
-
-          return newState
-        }
+        // case CUT_STEPS_ACTION: {
+        //   let newState = StateUtil.deepCopy(state)
+        //   let deleteKeySet = new Set()
+        //   action.step_ids.forEach((id:string)=>{
+        //     newState.nodes = graph.removeNode(newState.nodes,[id])
+        //     deleteKeySet.add(id)
+        //   })
+        //   newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
+        //   newState.graph = graph.getGraph(newState)
+        //
+        //   //削除後は非選択状態にする
+        //   newState.selected_step_ids = []
+        //
+        //   return newState
+        // }
+        // case PASTE_STEPS_ACTION:
+        // {
+        //   let newState = StateUtil.deepCopy(state)
+        //
+        //   const add_nodes = JSON.parse(action.paste_nodes)
+        //
+        //   //ペースト時に
+        //   //IDが新規に振られるので、旧のIDを新規のIDに置き換え
+        //   //コマンドのノード間の関連(srcs,dsts)を維持する
+        //
+        //   let convertMap = {}
+        //   add_nodes.forEach((json)=>{
+        //     const cacheId = json.id
+        //     json.id = null
+        //     json.label = "コピー " + json.label
+        //     const newNode = FlowUtil.setModelType(json)
+        //     graph.addNode(newNode.id)
+        //     newState.nodes.push(newNode)
+        //     convertMap[cacheId] = newNode.id
+        //   })
+        //   newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
+        //
+        //   newState.graph = graph.getGraph(newState)
+        //   return newState
+        // }
         case SELECT_STEPS_ACTION: {
             let newState = StateUtil.deepCopy(state)
             if (action.selected_steps && action.selected_steps.length === 1) {
@@ -538,9 +589,10 @@ export const copyStepsAction = (step_ids:[])=> {
  * ステップのペースト
  * @returns {{type: string, step: *}}
  */
-export const pasteStepsAction = () => {
+export const pasteStepsAction = (paste_nodes:[]) => {
     return {
-        type: PASTE_STEPS_ACTION
+        type: PASTE_STEPS_ACTION,
+      paste_nodes: paste_nodes
     }
 }
 
