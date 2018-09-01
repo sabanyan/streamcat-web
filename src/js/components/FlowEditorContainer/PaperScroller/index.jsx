@@ -9,57 +9,73 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
   componentDidMount () {
   }
 
+  // cutSteps(){
+  //   const {selected_step_ids} = this.props
+  //   const cutData = this.getCopyNodes()
+  //   navigator.clipboard.writeText(cutData).then(()=> {
+  //     this.props.cutSteps(selected_step_ids)
+  //   }, (err)=> {
+  //     alert("クリップボードが利用できません")
+  //
+  //   });
+  // }
+  //
+  // pasteSteps(){
+  //   navigator.clipboard.readText().then((data)=>{
+  //     console.log(data)
+  //     this.props.pasteSteps(data)
+  //   }, (err)=> {
+  //     alert("クリップボードが利用できません")
+  //   });
+  // }
+  //
+  // getCopyNodes():string{
+  //   const {selected_step_ids,nodes} = this.props
+  //   return JSON.stringify(selected_step_ids.map((id)=>{
+  //     return Graph.getNode(nodes,id)
+  //   }))
+  // }
+  //
+  // copySteps(){
+  //   const {selected_step_ids} = this.props
+  //   const copyData = this.getCopyNodes()
+  //   navigator.clipboard.writeText(copyData).then(()=> {
+  //     this.props.copySteps(selected_step_ids)
+  //   }, (err)=> {
+  //     alert("クリップボードが利用できません")
+  //   });
+  // }
+
+  deleteSteps(){
+    const {selected_step_ids} = this.props
+    this.props.deleteSteps(selected_step_ids)
+  }
+
   onKeyDown (e: KeyboardEvent) {
     if (DetectUtil.isMac()) {
-      const {selected_step_ids,nodes} = this.props
-
-      console.log(selected_step_ids)
-
-      if (e.metaKey && e.key === 'x') {
-
-        const cut_data = JSON.stringify({data:selected_step_ids.map((id)=>{
-            return Graph.getNode(nodes,id)
-        })})
-        
-        navigator.clipboard.writeText(cut_data).then(()=> {
-          this.props.cutSteps(selected_step_ids)
-        }, (err)=> {
-          alert("クリップボードが利用できません")
-
-        });
-
-
-        return
-      }
-      if (e.metaKey && e.key === 'c') {
-        this.props.copySteps(selected_step_ids)
-        return
-      }
-      if (e.metaKey && e.key === 'v') {
-        this.props.pasteSteps(selected_step_ids)
-        return
-      }
-      if (e.key === 'Backspace') {
-        this.props.deleteSteps(selected_step_ids)
-        return
-      }
+      // if (e.metaKey && e.key === 'x') {
+      //   this.cutSteps()
+      //   return
+      // }
+      // if (e.metaKey && e.key === 'c') {
+      //   this.copySteps()
+      //   return
+      // }
+      // if (e.metaKey && e.key === 'v') {
+      //   this.pasteSteps()
+      //   return
+      // }
+      console.log(e.ctrlKey)
+      console.log(e.key)
     }
     else {
       console.log(e.ctrlKey)
       console.log(e.key)
     }
-  }
 
-  onCut (selected_step_ids: []) {
-
-  }
-
-  onPast (selected_step_ids: []) {
-
-  }
-
-  onCopy (selected_step_ids: []) {
-
+    if (e.key === 'Backspace' || e.key === 'Delete') {
+      this.deleteSteps()
+    }
   }
 
   onMouseDown (e: { _dispatchListeners: { length: number }, pageX: number, pageY: number, shiftKey: boolean }) {

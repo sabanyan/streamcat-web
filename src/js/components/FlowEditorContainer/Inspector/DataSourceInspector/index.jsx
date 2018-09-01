@@ -176,8 +176,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   render () {
-    console.log("レンダー")
-
     let step_text
     let dataSource
     let preview
