@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "rKdt",
+    "id": "rkdt",
     "label": "決定木による回帰",
     "classification": "regression",
     "description": "データに対して、次々と条件を定義し、それらの条件から回帰を行う",

@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "rKrf",
+    "id": "rkrf",
     "label": "ランダムフォレストによる回帰",
     "classification": "regression",
     "description": "複数の決定木を作り、それらにアンサンブル学習を適用してより良い決定木を作り、それを用いて回帰を行う。",

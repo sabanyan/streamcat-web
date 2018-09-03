@@ -35,12 +35,12 @@ class Pca(Preprocess):
         return transformed
 
 
-    def main(self,args):
+    def main(self,args, stdin=None):
         parsed=self.parse_args(args)
         self.set_parsed_args_common(parsed)
         self.set_parsed_args_unique(parsed)
 
-        data=pd.read_csv(self.input)
+        data=pd.read_csv(self.input) if stdin is None else pd.read_csv(stdin)
 
         #教師あり学習ならtarget列を分離しておく
         if "target" in data.columns:
@@ -54,8 +54,8 @@ class Pca(Preprocess):
         output_df=self.pca(data)
 
         #変換規則のファイル出力
-        with open(self.temp_files_path.joinpath("pca.pickle"), "wb") as f:
-            pickle.dump(self.model,f)
+        # with open(self.temp_files_path.joinpath("pca.pickle"), "wb") as f:
+        #     pickle.dump(self.model,f)
 
         #教師あり学習ならtarget列を結合
         if isSupervised:

@@ -74,12 +74,13 @@ class FileSource(Source):
         pass
 
 class PandasSource(FileSource):
-    def __init__(self, source_type, source_dir, file_name, dataframe):
+    def __init__(self, source_type, source_dir, file_name, dataframe, stdin=None):
         super().__init__(source_type)
         self.dataframe = dataframe
         self.source_dir = source_dir
         self.file_name = file_name
         self._fd = None
+        self.stdin = stdin
 
     @property
     def fd(self):
@@ -87,6 +88,7 @@ class PandasSource(FileSource):
             self.dataframe.to_csv(self.fullpath, index=False)
         self._fd = open(self.fullpath, 'r')
         return self._fd
+
 
     @property
     def fullpath(self):
@@ -107,11 +109,12 @@ class PathFileSource(FileSource):
     読み書き共に可能
     """
 
-    def __init__(self, source_type, source_dir, file_name):
+    def __init__(self, source_type, source_dir, file_name, stdin=None):
         super().__init__(source_type)
         self.source_dir = source_dir
         self.file_name = file_name
         self._fd = None
+        self.stdin = stdin
 
     @property
     def fd(self):
@@ -249,12 +252,12 @@ class Frame(Datum):
     def __init__(self, frame_uuid=None, source=None):
         super().__init__(frame_uuid, source)
 
-    def command_to_file(self):
+    def command_to_file(self):#todo ファイル書き込みの効果を失わせてる
         if self.source is not None and not isinstance(self.source, PathFileSource):
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
-            with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
-                self.source.save(fd)
+            # with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
+            #     self.source.save(fd)
             for flow_uuid in self.source.deletable_uuids:
                 self.source.decr_ref_count(flow_uuid)
             self.source.dtor()

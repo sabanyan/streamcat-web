@@ -4,96 +4,196 @@
   "creator": "開発用",
   "createdAt": "2018-07-27T08:25:19+09:00",
   "params": [],
-  "ports": [[], []],
+  "ports": [
+    [],
+    []
+  ],
   "nodes": [
     {
       "id": "i",
+      "position": {
+        "x": 225,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
-      "dataSource": "csv",
       "uuid": "B9709397-7ABF-490A-A983-264FE88DF2C5",
-      "label": null
+      "dataSource": "csv",
+      "label": "i"
     },
     {
       "id": "select_target_column",
+      "position": {
+        "x": 225,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "command",
-      "commandId": "select_target_column",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t"
+      },
       "args": {
         "t": "target"
       },
-      "srcs": { "i": "i" },
-      "dsts": { "o": "t" },
-      "label": null
+      "commandId": "select_target_column",
+      "label": "select_target_column"
     },
     {
       "id": "t",
+      "position": {
+        "x": 225,
+        "y": 283
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
-      "dataSource": "csv",
       "uuid": null,
-      "label": null
+      "dataSource": "csv",
+      "label": "t"
     },
     {
       "id": "standardize",
-      "type": "command",
-      "commandId": "standardize",
-      "args": {
-        "c": "DIS",
-        "a": ""
+      "position": {
+        "x": 225,
+        "y": 365
       },
-      "srcs": { "i": "t" },
-      "dsts": { "o": "o" },
-      "label": null
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "command",
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o"
+      },
+      "args": {
+        "a": "",
+        "c": "DIS"
+      },
+      "commandId": "standardize",
+      "label": "standardize"
     },
     {
       "id": "o",
+      "position": {
+        "x": 225,
+        "y": 447
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
-      "dataSource": "csv",
       "uuid": null,
-      "label": null
+      "dataSource": "csv",
+      "label": "o"
     },
     {
       "id": "klinreg",
+      "position": {
+        "x": 225,
+        "y": 529
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "command",
-      "commandId": "klinreg",
+      "srcs": {
+        "i": "o"
+      },
+      "dsts": {
+        "o": "o2"
+      },
       "args": {
         "normalize": ""
       },
-      "srcs": { "i": "o" },
-      "dsts": { "o": "o2" },
-      "label": null
+      "commandId": "klinreg",
+      "label": "klinreg"
     },
     {
       "id": "o2",
+      "position": {
+        "x": 225,
+        "y": 611
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
-      "dataSource": "pickle",
       "uuid": null,
-      "label": null
+      "dataSource": "csv",
+      "label": "o2"
     },
     {
       "id": "o4",
+      "position": {
+        "x": 99,
+        "y": 611
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
-      "dataSource": "csv",
       "uuid": "B9709397-7ABF-490A-A983-264FE88DF2C5",
-      "label": null
+      "dataSource": "csv",
+      "label": "o4"
     },
     {
       "id": "evaluate",
+      "position": {
+        "x": 162,
+        "y": 693
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "command",
-      "commandId": "evaluate",
+      "srcs": {
+        "d": "o4",
+        "i": "o2"
+      },
+      "dsts": {
+        "o": "o3"
+      },
       "args": {
         "m": "mae",
-        "p": "",
-        "metrics_file_name": "metrics_file_name"
+        "metrics_file_name": "metrics_file_name",
+        "p": ""
       },
-      "srcs": { "i": "o2", "d": "o4" },
-      "dsts": { "o": "o3" },
-      "label": null
+      "commandId": "evaluate",
+      "label": "evaluate"
     },
     {
       "id": "o3",
+      "position": {
+        "x": 162,
+        "y": 775
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
-      "dataSource": "csv",
       "uuid": null,
-      "label": null
+      "dataSource": "csv",
+      "label": "o3"
     }
   ]
 }

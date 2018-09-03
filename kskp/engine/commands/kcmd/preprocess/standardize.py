@@ -70,7 +70,7 @@ class Standardize(Preprocess):
         parser = self.make_parser()
         return parser.parse_args(args)
 
-    def main(self, args):
+    def main(self, args, stdin=None):
         """
         メイン関数です
         受けたcsv形式のデータフレームに対して、指定された列の標準化を行います
@@ -82,7 +82,7 @@ class Standardize(Preprocess):
         self.set_parsed_args_unique(parsed)
 
         #入力ファイル読み込み
-        data = pd.read_csv(self.input)
+        data = pd.read_csv(self.input) if stdin is None else pd.read_csv(stdin)
 
         #標準化
         standardized = self.standardize(data)
