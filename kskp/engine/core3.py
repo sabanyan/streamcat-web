@@ -135,6 +135,7 @@ class Job:
                     last.is_temp = False
 
         elif s.is_command:
+            print(cf.name)
             output = cf.execute(self.step.args, self.inputs)
         # print('execute end:', cf, output)
 
@@ -387,6 +388,14 @@ class MCommandNew(Command):
 
     def execute(self, args, inputs):
         args_for_nysol = args
+
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
