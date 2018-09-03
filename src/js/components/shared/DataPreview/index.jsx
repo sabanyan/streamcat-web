@@ -101,7 +101,7 @@ export default class DataPreview extends React.Component<Props, State> {
           {chart}
         </div>
       </div>
-      <DataPreviewIn spector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
+      <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
     </div>
   }
 }
