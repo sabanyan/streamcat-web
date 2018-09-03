@@ -136,7 +136,7 @@ class Job:
 
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
-        # print('execute end:', output)
+        print('execute end:', output)
 
         return self.replace_outputs(output)
 
@@ -304,7 +304,9 @@ class UnixCommand(Command):
 
     def execute(self, args, inputs):
         source = self.source(args, inputs)
+        # print(inputs)
         for input in inputs.values():
+            # print(input)
             if isinstance(input.source, PathFileSource):
                 source.deletable_uuids.append(input.uuid)
             elif isinstance(input.source, UnixCommandSource) or \
@@ -312,6 +314,7 @@ class UnixCommand(Command):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
         frame = Frame(str(uuid.uuid4()), source)
+        # print({ self.out_key: frame })
         return { self.out_key: frame }
 
     def source(self, args, inputs):
@@ -1331,6 +1334,7 @@ class SelectTargetColumn(UnixCommand):
 
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        # print({ self.o_ports[0]['name']: frame })
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
@@ -1339,15 +1343,16 @@ class SelectTargetColumn(UnixCommand):
         command = Base()
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         # command.main()では空の引数
         for key, value in args.items():
             if not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
-        dataframe = command.main(cl_args)
-        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+        dataframe = command.main(cl_args, stdin)
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe, stdin)
 
 class Standardize(UnixCommand):
     def __init__(self):
@@ -1365,17 +1370,17 @@ class Standardize(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.standardize import Standardize as Base
         command = Base()
-        # command.input = inputs['i'].source.fullpath
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        # cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
-        dataframe = command.main(cl_args)
-        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+        dataframe = command.main(cl_args, stdin)
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe, stdin)
 
 class Label_encode(UnixCommand):
     def __init__(self):
@@ -1392,16 +1397,16 @@ class Label_encode(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.label_encode import Label_encode as Base
         command = Base()
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
-        dataframe = command.main(cl_args)
-        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+        dataframe = command.main(cl_args, stdin)
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe, stdin)
 
 class Normalize(UnixCommand):
     def __init__(self):
@@ -1419,16 +1424,16 @@ class Normalize(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.normalize import Normalize as Base
         command = Base()
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
-        dataframe = command.main(cl_args)
-        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+        dataframe = command.main(cl_args, stdin)
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe, stdin)
 
 class One_hot_encode(UnixCommand):
     def __init__(self):
@@ -1445,16 +1450,16 @@ class One_hot_encode(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.one_hot_encode import One_hot_encode as Base
         command = Base()
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
-        dataframe = command.main(cl_args)
-        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+        dataframe = command.main(cl_args, stdin)
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe, stdin)
 
 class Pca(UnixCommand):
     def __init__(self):
@@ -1471,16 +1476,16 @@ class Pca(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.pca import Pca as Base
         command = Base()
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
-        dataframe = command.main(cl_args)
-        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+        dataframe = command.main(cl_args, stdin)
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe, stdin)
 
 class Kkmeans(UnixCommand):
     def __init__(self):
@@ -1501,17 +1506,16 @@ class Kkmeans(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.clustering.kkmeans import Kkmeans as Base
         command = Base()
-        # command.input = inputs['i'].source.fullpath
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
-        dataframe = command.main(cl_args)
-        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+        dataframe = command.main(cl_args, stdin)
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe, stdin)
 
 class CKab(UnixCommand):
     def __init__(self):
@@ -1531,20 +1535,19 @@ class CKab(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kab import Kab as Base
         command = Base()
-        # command.input = inputs['i'].source.fullpath
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
+        print(stdin)
         file_name = str(uuid.uuid4()) + '.pickle'
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
-        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
-        command.main(cl_args)
-        command.write()
-        return PathFileSource('pickle', frames_path, file_name)
+        command.main(cl_args, stdin)
+        # command.write()
+        return PathFileSource('pickle', frames_path, file_name, stdin)
 
 class CKbag(UnixCommand):
     def __init__(self):
@@ -1567,20 +1570,18 @@ class CKbag(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kbag import Kbag as Base
         command = Base()
-        # command.input = inputs['i'].source.fullpath
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         file_name = str(uuid.uuid4()) + '.pickle'
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
-        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
         command.main(cl_args)
         command.write()
-        return PathFileSource('pickle', frames_path, file_name)
+        return PathFileSource('pickle', frames_path, file_name, stdin)
 
 class CKdt(UnixCommand):
     def __init__(self):
@@ -1601,20 +1602,18 @@ class CKdt(UnixCommand):
         frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kdt import Kdt as Base
         command = Base()
-        # command.input = inputs['i'].source.fullpath
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        stdin = input.source.fd
         file_name = str(uuid.uuid4()) + '.pickle'
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
-        cl_args.extend(['-o', Path(frames_path).joinpath(file_name).as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
 
         command.main(cl_args)
         command.write()
-        return PathFileSource('pickle', frames_path, file_name)
+        return PathFileSource('pickle', frames_path, file_name, stdin)
 
 class CKgb(UnixCommand):
     def __init__(self):
@@ -2300,7 +2299,7 @@ class Evaluate(UnixCommand):
 
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
-class Predict(UnixCommand):
+class Predict(UnixCommand):#todo 後回し
     def __init__(self):
         super().__init__()
         self.params.append(Parameter('d', 'test_data'))
@@ -2316,20 +2315,21 @@ class Predict(UnixCommand):
         command = Base()
         # command.input = inputs['i'].source.fullpath
 
-        inputs['i'].command_to_file()
+        input = list(inputs.values())[0]
+        print(list(inputs.values()))
+        stdin = input.source.fd
         inputs['d'].command_to_file()
 
         # 引数の設定
         cl_args = []
-        cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
         cl_args.extend(['-d', inputs['d'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
-
-        dataframe = command.main(cl_args)
-
-        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
+        print(cl_args)
+        dataframe = command.main(cl_args, stdin)
+        print("hellolo\n")
+        return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe, stdin)
 
 commands = {
     # MCDM

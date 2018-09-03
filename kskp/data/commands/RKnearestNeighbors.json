@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "rKnearestNeighbors",
+    "id": "rknearestNeighbors",
     "label": "最近傍法による回帰",
     "classification": "regression",
     "description": "学習データを蓄積、未知のデータを与えた道のデータを与えた際に、そのデータから距離が近い学習データを用いて、回帰を行う。",

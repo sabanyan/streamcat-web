@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "cKgb",
+    "id": "ckgb",
     "label": "勾配ブースティングによる分類",
     "classification": "classification",
     "description": "複数の弱い分類器を生成、残渣誤差にフィットするように修正することを繰り返して強い分類器を作り、その分類器を用いて分類を行う。",

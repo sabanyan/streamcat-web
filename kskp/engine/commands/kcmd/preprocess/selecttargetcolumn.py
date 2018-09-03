@@ -10,6 +10,8 @@ from .common.preprocess import Preprocess
 class SelectTargetColumn(Preprocess):
 
     def rename_target_column(self, data):
+        print(data)
+        print(type(data))
         renamed = data.rename(columns={ self.target_colname: 'target' })
         return renamed
 
@@ -32,7 +34,7 @@ class SelectTargetColumn(Preprocess):
         parser = self.make_parser()
         return parser.parse_args(args)
 
-    def main(self, args):
+    def main(self, args, stdin=None):
         parsed = self.parse_args(args)
 
         self.set_parsed_args_common(parsed)
@@ -42,7 +44,8 @@ class SelectTargetColumn(Preprocess):
         self.remove_temp_files()
 
         # 入力ファイル読み込み
-        data = pd.read_csv(self.input)
+        data = pd.read_csv(self.input) if stdin is None else pd.read_csv(stdin)
+        # data = args['-i']
 
         # ターゲット列の列名を変更
         renamed = self.rename_target_column(data)

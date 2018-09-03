@@ -86,7 +86,7 @@ class One_hot_encode(Preprocess):
 		parser=self.make_parser()
 		return parser.parse_args(args)
 
-	def main(self,args):
+	def main(self,args, stdin=None):
 		"""
 		メイン関数です
 		受けたcsv形式のデータフレームに対して、指定された列のone-hot encodeを行います
@@ -100,7 +100,7 @@ class One_hot_encode(Preprocess):
 		self.set_parsed_args_unique(parsed)
 
 		#入力ファイル読み込み
-		data=pd.read_csv(self.input)
+		data=pd.read_csv(self.input) if stdin is None else pd.read_csv(stdin)
 
 		#one-hotエンコード
 		encoded=self.one_hot_encode(data)
