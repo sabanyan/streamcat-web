@@ -34,19 +34,7 @@ class Source:
             if ref_counts[flow_uuid] == 0:
                 del ref_counts[flow_uuid]
                 # print('del:', flow_uuid)
-                self.dtor()
-
-    def dtor(self):
-        pass
-
-
-class FileSource(Source):
-    """
-    一つのファイルを表すSource。読み書き共に可能
-    """
-
-    def __init__(self, source_type):
-        super().__init__(source_type)
+                # self.dtor()
 
     @property
     def ext(self):
@@ -61,6 +49,47 @@ class FileSource(Source):
             # その他の場合は今は考えない
             raise Exception()
 
+    def dtor(self):
+        pass
+
+
+class NysolPythonSource(Source):
+
+    def __init__(self, source_type, mod, args):
+        """ argsいらんかもな、そのままmodに全部持っておけるので """
+        super().__init__(source_type)
+        self.mod = mod # クラスをそのまま
+        self.args = args # dict
+
+    @property
+    def nysol_module(self):
+        args = self.args
+        return self.mod(**args)
+
+    def save(self, stdout):
+        """ engineから使う最後の保存用 """
+        # self.mod.runしてその結果をstdoutに書くだけ
+        self.args.update({'o': stdout})
+        args = self.args
+        # print('NysolPythonSource save: ', self.mod, args)
+        mod = self.mod(**args)
+        mod.run()
+
+    def __repr__(self):
+        return f'args: {self.args}'
+
+    def dtor(self):
+        pass
+
+
+class FileSource(Source):
+    """
+    一つのファイルを表すSource。読み書き共に可能
+    """
+
+    def __init__(self, source_type):
+        super().__init__(source_type)
+
     @property
     def fd(self):
         pass
@@ -72,6 +101,7 @@ class FileSource(Source):
     def save(self, stdout):
         """ for override """
         pass
+
 
 class PandasSource(FileSource):
     def __init__(self, source_type, source_dir, file_name, dataframe):
@@ -185,6 +215,7 @@ class UnixCommandSource(FileSource):
             # print(f'close pid: {self.popen.pid} args: {self.args}')
             self.popen.wait()
 
+
 class TempPathFileSource(PathFileSource):
     """
     実行後にファイルがすぐ消されるPathFileSource
@@ -197,7 +228,8 @@ class TempPathFileSource(PathFileSource):
         super().__init__(source_type, self.path.parent.as_posix(), self.path.name)
 
     def dtor(self):
-        os.unlink(self.path)
+        pass
+        # os.unlink(self.path)
 
     def __repr__(self):
         return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
@@ -232,7 +264,8 @@ class Datum:
             s.dtor()
             if isinstance(s, PathFileSource):
                 if self.is_temp and s.fullpath.exists():
-                    s.fullpath.unlink()
+                    pass
+                    # s.fullpath.unlink()
 
 
 
@@ -253,11 +286,14 @@ class Frame(Datum):
         if self.source is not None and not isinstance(self.source, PathFileSource):
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
-            with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
-                self.source.save(fd)
+            if isinstance(self.source, NysolPythonSource):
+                self.source.save(new_source.fullpath.as_posix())
+            else:
+                with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
+                    self.source.save(fd)
             for flow_uuid in self.source.deletable_uuids:
                 self.source.decr_ref_count(flow_uuid)
-            self.source.dtor()
+            # self.source.dtor()
             self.source = new_source
             self.source.incr_ref_count(self.uuid)
         return self

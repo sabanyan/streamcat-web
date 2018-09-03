@@ -123,7 +123,7 @@ class Job:
 
         s = self.step
         cf = s.command_or_flow
-        # print('execute begin:', cf, s.args)
+        # print('execute stt:', cf, s.args)
         if s.is_flow:
             if step_paths is not None:
                 self.lasts = self.get_lasts_from(step_paths)
@@ -136,7 +136,7 @@ class Job:
 
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
-        # print('execute end:', output)
+        # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
 
@@ -230,6 +230,9 @@ class Job:
         return res
 
     def dtor(self):
+        if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
+            print('いちばん親のdtorだ！')
+
         for datum in self.inputs.values():
             datum.dtor()
 
@@ -295,6 +298,9 @@ class Command:
     def __repr__(self):
         return f'<Command name:{self.name}>'
 
+    @property
+    def out_key(self):
+        return self.o_ports[0]['name']
 
 class UnixCommand(Command):
     def __init__(self):
@@ -350,8 +356,6 @@ class Split(Command):
 
 
 class MCommand(UnixCommand):
-    # def __init__(self):
-    #     super().__init__()
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -374,18 +378,77 @@ class MCommand(UnixCommand):
     def source(self, args, inputs):
         return UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
 
-    @property
-    def out_key(self):
-        return self.o_ports[0]['name']
+class MCommandNew(Command):
+    def __init__(self, nysol_mod):
+        super().__init__()
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}]
+        self.nysol_mod = nysol_mod
 
-class Mcut(MCommand):
+    def execute(self, args, inputs):
+        args_for_nysol = args
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+            # print('PathFileSource args_for_nysol:', args_for_nysol)
+        elif isinstance(input_i.source, NysolPythonSource):
+            args_for_nysol.update({'i': input_i.source.nysol_module})
+            # print('NysolPythonSource args_for_nysol:', args_for_nysol)
+
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
+
+import nysol.mcmd as nm
+
+class Msel(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msel)
+        self.name = 'msel'
+        self.description = '行絞り込み'
+        self.params.append(Parameter('c', '絞込条件式'))
+
+class MselOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msel'
+        self.description = '行絞り込み'
+        self.params.append(Parameter('c', '絞込条件式'))
+
+class Mcut(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mcut)
+        self.name = 'mcut'
+        self.description = '列選択'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+
+class McutOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mcut'
         self.description = '列選択'
         self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Msetstr(MCommand):
+class Msetstr(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msetstr)
+        self.name = 'msetstr'
+        self.description = '文字列追加'
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('v', '追加する値(必須)'))
+
+class MsetstrOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'msetstr'
@@ -393,15 +456,16 @@ class Msetstr(MCommand):
         self.params.append(Parameter('a', '追加列名(必須)'))
         self.params.append(Parameter('v', '追加する値(必須)'))
 
-class Msum(MCommand):
+class Mstats(MCommandNew):
     def __init__(self):
-        super().__init__()
-        self.name = 'msum'
-        self.description = '合計'
-        self.params.append(Parameter('k', '合計の基準となる列名'))
-        self.params.append(Parameter('f', '合計する列名:合計後の列名(必須)'))
+        super().__init__(nm.mstats)
+        self.name = 'mstats'
+        self.description = '統計情報'
+        self.params.append(Parameter('k', '単位として集計する列名'))
+        self.params.append(Parameter('c', '計算列名(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Mstats(MCommand):
+class MstatsOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mstats'
@@ -410,7 +474,15 @@ class Mstats(MCommand):
         self.params.append(Parameter('c', '計算列名(必須)'))
         self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Mavg(MCommand):
+class Mavg(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mavg)
+        self.name = 'mavg'
+        self.description = '平均'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('k', '集計の単位となる列名'))
+
+class MavgOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mavg'
@@ -418,7 +490,18 @@ class Mavg(MCommand):
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('k', '集計の単位となる列名'))
 
-class Mbucket(MCommand):
+class Mbucket(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mbucket)
+        self.name = 'mbucket'
+        self.description = '行分割'
+        self.params.append(Parameter('n', '行数(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('F', '出力形式'))
+        self.params.append(Parameter('k', 'バケット分割を行う単位となる列名'))
+        self.params.append(Parameter('O', 'バケット範囲出力ファイル'))
+
+class MbucketOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mbucket'
@@ -428,6 +511,245 @@ class Mbucket(MCommand):
         self.params.append(Parameter('F', '出力形式'))
         self.params.append(Parameter('k', 'バケット分割を行う単位となる列名'))
         self.params.append(Parameter('O', 'バケット範囲出力ファイル'))
+
+class Mselstr(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mselstr)
+        self.name = 'mselstr'
+        self.description = '行選択(文字列)'
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
+        self.params.append(Parameter('k', '選択単位となるキー列名'))
+        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
+
+class MselstrOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mselstr'
+        self.description = '行選択(文字列)'
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
+        self.params.append(Parameter('k', '選択単位となるキー列名'))
+        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
+
+class Msortf(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msortf)
+        self.name = 'msortf'
+        self.desription = 'ソート'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+
+class MsortfOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msortf'
+        self.desription = 'ソート'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+
+class Mcal(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mcal)
+        self.name = 'mcal'
+        self.description = '計算'
+        self.params.append(Parameter('c', '計算式(必須)'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+
+class McalOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcal'
+        self.description = '計算'
+        self.params.append(Parameter('c', '計算式(必須)'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+
+class Mcat(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.m2cat)
+
+        self.name = 'mcat'
+        self.description = 'ファイル結合'
+        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
+        self.params.append(Parameter('k', '結合する列名'))
+
+    def execute(self, args, inputs):
+        args_for_nysol = args
+        inputs_for_arg_i = []
+        # for key, input in inputs.items():
+        #     input.command_to_file()
+        #     inputs_for_arg_i.append(input.source.fullpath.as_posix())
+        for key, input in inputs.items():
+            inputs_for_arg_i.append(input.source.nysol_module)
+        args_for_nysol.update({'i': inputs_for_arg_i})
+
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
+
+class McatOld(MCommand):
+    def __init__(self):
+        super().__init__()
+
+        self.name = 'mcat'
+        self.description = 'ファイル結合'
+        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
+        self.params.append(Parameter('k', '結合する列名'))
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        # 引数をそれぞれパスにしていく
+        inputs_for_arg_i = []
+        for key, input in inputs.items():
+            input.command_to_file()
+            inputs_for_arg_i.append(input.source.fullpath.as_posix())
+        res.append(f"i={','.join(inputs_for_arg_i)}")
+        return res
+
+    def stdin(self, inputs):
+        return None
+
+class Mjoin(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mjoin)
+
+        self.name = 'mjoin'
+        self.description = '結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def execute(self, args, inputs):
+        args_for_nysol = args
+
+        if isinstance(inputs['i'].source, PathFileSource):
+            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
+        elif isinstance(inputs['i'].source, NysolPythonSource):
+            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+
+        input_m = inputs['m']
+
+        if isinstance(inputs['i'].source, NysolPythonSource):
+            args_for_nysol.update({'m': input_m.source.nysol_module})
+        else:
+            # パイプなら、CSVに吐く
+            input_m.command_to_file()
+            args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
+
+        # print('Mjoin execute:', args_for_nysol)
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
+
+class MjoinOld(MCommand):
+    def __init__(self):
+        super().__init__()
+
+        self.name = 'mjoin'
+        self.description = '結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def command_args(self, args, inputs):
+        res = self.name.split()
+
+        res.append(f"k={args['k']}")
+        res.append(f"f={args['f']}")
+        res.append(f"K={args['K']}")
+
+        input_m = inputs['m']
+
+        # パイプなら、CSVに吐く
+        input_m.command_to_file()
+        res.append(f"m={ input_m.source.fullpath }")
+
+        return res
+
+    def stdin(self, inputs):
+        return inputs['i'].source.fd
+
+class Mnumber(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mnumber)
+        self.name = 'mnumber'
+        self.description = '連番'
+        self.params.append(Parameter('s', 'ソート対象列名'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('e', '同一キー同一ソートの処理方法の指定'))
+        self.params.append(Parameter('l', '連番の間隔'))
+        self.params.append(Parameter('k', '連番もしくは連文字を振る単位となる列'))
+        self.params.append(Parameter('S', '開始No'))
+
+class Msummary(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msummary)
+        self.name = 'msummary'
+        self.description = '1変数の統計量の計算'
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '集計列名(必須)'))
+        self.params.append(Parameter('c', '統計量を指定'))
+
+class MsummaryOld(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'msummary'
+        self.description = '1変数の統計量の計算'
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '集計列名(必須)'))
+        self.params.append(Parameter('c', '統計量を指定'))
+        #統計量はあらかじめ決められている
+        # 統計量リスト:sum/mean/count/ucount/devsq/var/uvar/sd/usd/cv/min/qtile1/median/qtile3/max/
+        # range/qrange/mode/skew/uskew/kurt/ukurt
+
+class M2cross(MCommandNew):#new
+    def __init__(self):
+        super().__init__(nm.m2cross)
+        self.name = 'm2cross'
+        self.description = '1対Nのクロス集計'
+        self.params.append(Parameter('f', '組み合わせ列名(必須)'))
+        self.params.append(Parameter('s', '列項目名に展開する列(選択必須)'))
+        self.params.append(Parameter('a', '２項目指定(選択必須)'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL血置換文字列'))
+
+class M2crossOld(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcross'
+        self.description = 'クロス集計'
+        self.params.append(Parameter('f', '指定列の値(必須)'))
+        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
+        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL値置換文字列'))
+
+class Mcross(MCommandNew):#new
+    def __init__(self):
+        super().__init__(nm.mcross)
+        self.name = 'mcross'
+        self.description = 'クロス集計'
+        self.params.append(Parameter('f', '指定列の値(必須)'))
+        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
+        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL値置換文字列'))
+
+class McrossOld(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcross'
+        self.description = 'クロス集計'
+        self.params.append(Parameter('f', '指定列の値(必須)'))
+        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
+        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL値置換文字列'))
+
+class Msum(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msum'
+        self.description = '合計'
+        self.params.append(Parameter('k', '合計の基準となる列名'))
+        self.params.append(Parameter('f', '合計する列名:合計後の列名(必須)'))
 
 class Mmbucket(MCommand):#new
     def __init__(self):
@@ -502,55 +824,6 @@ class Mnewstr(MCommand):
         self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
         self.params.append(Parameter('v', '新しく作成する文字列'))
         self.params.append(Parameter('l', '作成するデータ行数'))
-
-class Mcat(MCommand):
-    def __init__(self):
-        super().__init__()
-
-        self.name = 'mcat'
-        self.description = 'ファイル結合'
-        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる
-        self.params.append(Parameter('j', '結合する列名'))
-
-    def command_args(self, args, inputs):
-        res = self.name.split()
-
-        # 引数をそれぞれパスにしていく
-        inputs_for_arg_i = []
-        for key, input in inputs.items():
-            input.command_to_file()
-            inputs_for_arg_i.append(input.source.fullpath.as_posix())
-        res.append(f"i={','.join(inputs_for_arg_i)}")
-        return res
-
-    def stdin(self, inputs):
-        return None
-
-class Mjoin(MCommand):
-    def __init__(self):
-        super().__init__()
-
-        self.name = 'mjoin'
-        self.description = '結合'
-        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
-
-    def command_args(self, args, inputs):
-        res = self.name.split()
-
-        res.append(f"k={args['k']}")
-        res.append(f"f={args['f']}")
-        res.append(f"K={args['K']}")
-
-        input_m = inputs['m']
-
-        # パイプなら、CSVに吐く
-        input_m.command_to_file()
-        res.append(f"m={ input_m.source.fullpath }")
-
-        return res
-
-    def stdin(self, inputs):
-        return inputs['i'].source.fd
 
 class Mnjoin(MCommand):
     def __init__(self):
@@ -806,27 +1079,12 @@ class Mvcommon(MCommand):#new
     def stdin(self, inputs):
         return inputs['i'].source.fd
 
-class Msortf(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'msortf'
-        self.desription = 'ソート'
-        self.params.append(Parameter('f', '対象列名(必須)'))
-
 class Mfsort(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mfsortf'
         self.desription = '項目ソート'
         self.params.append(Parameter('f', '対象列名(必須)'))
-
-class Mcal(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'mcal'
-        self.description = '計算'
-        self.params.append(Parameter('c', '計算式(必須)'))
-        self.params.append(Parameter('a', '追加列名(必須)'))
 
 class Mfldname(MCommand):#new
     def __init__(self):
@@ -836,8 +1094,7 @@ class Mfldname(MCommand):#new
         self.params.append(Parameter('f', '旧列名(必須)'))
         self.params.append(Parameter('n', '新列名'))
 
-
-class Mnumber(MCommand):
+class MnumberOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mnumber'
@@ -967,15 +1224,6 @@ class Mpadding(MCommand):#new
         self.params.append(Parameter('S', '開始値'))
         self.params.append(Parameter('E', '終了値'))
 
-class Msel(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'msel'
-        self.description = '行絞り込み'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
-        self.params.append(Parameter('c', '絞込条件式(必須)'))
-        # self.params.append(Parameter('u', '指定条件に合わない行を出力するファイル名'))
-
 class Mselnum(MCommand):#editing(o, u)の扱いがわからない
     def __init__(self):
         super().__init__()
@@ -997,17 +1245,6 @@ class Mselrand(MCommand):#editing(u)の扱いがわからない
         self.params.append(Parameter('p', '各キーを選択する割合をパーセンテージで指定(選択必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列'))
         self.params.append(Parameter('S', '乱数の種'))
-        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
-
-class Mselstr(MCommand):###ここから修正再開
-    def __init__(self):
-        super().__init__()
-        self.name = 'mselstr'
-        self.description = '行選択(文字列)'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
-        self.params.append(Parameter('f', '対象列名(必須)'))
-        self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
-        self.params.append(Parameter('k', '選択単位となるキー列名'))
         # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
 
 class Muniq(MCommand):
@@ -1139,18 +1376,6 @@ class Mslide(MCommand):
         self.params.append(Parameter('k', '単位とする列名'))
         self.params.append(Parameter('t', 'ずらす回数'))
 
-class Msummary(MCommand):#new
-    def __init__(self):
-        super().__init__()
-        self.name = 'msummary'
-        self.description = '1変数の統計量の計算'
-        self.params.append(Parameter('k', '単位とする列名'))
-        self.params.append(Parameter('f', '集計列名(必須)'))
-        self.params.append(Parameter('c', '統計量を指定'))
-        #統計量はあらかじめ決められている
-        # 統計量リスト:sum/mean/count/ucount/devsq/var/uvar/sd/usd/cv/min/qtile1/median/qtile3/max/
-        # range/qrange/mode/skew/uskew/kurt/ukurt
-
 class Mwindow(MCommand):#new
     def __init__(self):
         super().__init__()
@@ -1159,17 +1384,6 @@ class Mwindow(MCommand):#new
         self.params.append(Parameter('wk', '出力データにおける、窓を識別する値となる入力データの列名(必須)'))
         self.params.append(Parameter('t', '窓の行数指定(必須)'))
         self.params.append(Parameter('k', '窓を生成する単位となる列名'))
-
-class M2cross(MCommand):#new
-    def __init__(self):
-        super().__init__()
-        self.name = 'm2cross'
-        self.description = '1対Nのクロス集計'
-        self.params.append(Parameter('f', '組み合わせ列名(必須)'))
-        self.params.append(Parameter('s', '列項目名に展開する列(選択必須)'))
-        self.params.append(Parameter('a', '２項目指定(選択必須)'))
-        self.params.append(Parameter('k', 'キー列名'))
-        self.params.append(Parameter('v', 'NULL血置換文字列'))
 
 class Mcombi(MCommand):#new
     def __init__(self):
@@ -1181,17 +1395,6 @@ class Mcombi(MCommand):#new
         self.params.append(Parameter('n', '組み合わせ数(必須)'))
         self.params.append(Parameter('s', '並び替えの後、f=で指定の列の組み合わせを求める列名'))
         self.params.append(Parameter('k', 'キー列名'))
-
-class Mcross(MCommand):#new
-    def __init__(self):
-        super().__init__()
-        self.name = 'mcross'
-        self.description = 'クロス集計'
-        self.params.append(Parameter('f', '指定列の値(必須)'))
-        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
-        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
-        self.params.append(Parameter('k', 'キー列名'))
-        self.params.append(Parameter('v', 'NULL値置換文字列'))
 
 class Mtra(MCommand):
     def __init__(self):
