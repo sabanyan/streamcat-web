@@ -5,7 +5,7 @@ import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../DataTable/index'
 import Inspector from '../../../FlowEditorContainer/Inspector/BaseInspector/index'
 import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import style from '../../../FlowEditorContainer/Inspector/style.scss'
+import style from '../style.scss'
 import Button from '../../Button/index'
 import DownloadButton from '../../Button/DownloadButton'
 

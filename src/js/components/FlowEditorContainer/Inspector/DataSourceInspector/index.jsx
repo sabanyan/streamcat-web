@@ -295,7 +295,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     newSelectedStep.label = e.target.value
     this.props.updateStep(newSelectedStep)
-    console.log(e.target.value)
   }
 
 }
