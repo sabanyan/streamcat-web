@@ -16,6 +16,7 @@ import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
 import DownloadButton from '../Button/DownloadButton'
 import DataPreviewInspector from './DataPreviewInspector'
+import style from './style.scss'
 
 type State = {
   json?: any,//TODO resetting
@@ -94,13 +95,13 @@ export default class DataPreview extends React.Component<Props, State> {
         break
     }
 
-    return <div className={style.kskp_visualization}>
-      <div className="kskp-visualization-container">
-        <div className="kskp-visualization-body">
+    return <div className={style.visualization}>
+      <div className={style.visualization_container}>
+        <div className={style.visualization_body}>
           {chart}
         </div>
       </div>
-      <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
+      <DataPreviewIn spector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
     </div>
   }
 }
