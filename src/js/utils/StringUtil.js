@@ -15,5 +15,12 @@ export default class StringUtil {
     }
     return this.separate(Math.round(size * 100 / 100)) + units[i];
   }
+
+  static stripHtmlToText(html:string)
+  {
+    let tmp = document.createElement("DIV");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText || "";
+  }
 }
 

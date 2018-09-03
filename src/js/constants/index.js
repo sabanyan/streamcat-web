@@ -68,6 +68,7 @@ const Constants = {
     SHOW_MESSAGE: 'show_message_modal',
     CONFIRM: 'confirm',
     SHOW_RUN_RESULT: 'show_run_result',
+    SHOW_RUN_ERROR: 'show_run_error',
     property: {
       title: 'title',
       message: 'message',

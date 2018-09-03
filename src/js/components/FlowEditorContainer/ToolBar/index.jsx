@@ -22,6 +22,7 @@ import { RunResponseType } from '../../../types'
 import FileUploader from '../../shared/FileUploader'
 import type { UploadedFileType } from '../../../types'
 import FlowUtil from '../../../utils/FlowUtil'
+import StringUtil from '../../../utils/StringUtil'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -100,25 +101,46 @@ export default class ToolBar extends React.Component<ToolBarProps> {
           <div>フローの実行が完了し、以下のデータがライブラリに追加されました</div>
           <ul>{result}</ul>
         </div>
-
-        ModalUtil.emitModal({
-          id: Constants.modal.SHOW_RUN_RESULT,
-          visible: true,
-          content: content
-        })
         ModalUtil.registerModal({
           id: Constants.modal.SHOW_RUN_RESULT, onClickDone: () => {
             window.open( "/library?project="+window.navigationModel.project_uuid, "_blank");
           }
+        })
+        ModalUtil.emitModal({
+          id: Constants.modal.SHOW_RUN_RESULT,
+          visible: true,
+          content: content
         })
         //TODO 将来的に修正する（executeFlowAction は hasData = true に変更するためだけの処理になっています）
         this.props.executeFlow()
         this.loading  = false
         this.forceUpdate()
       },(error)=>{
-        console.log(error)
-        this.loading  = false
-        this.forceUpdate()
+        if(!error.success){
+          let error_body
+          error_body = <div className={style.internal_error_body}>
+            <div>
+              <strong>
+              {error.request.statusText}
+            </strong>
+            </div>
+            {StringUtil.stripHtmlToText(error.request.responseText)}
+          </div>
+          const content = <div>
+            <div>フローの実行中にエラーが発生しました。</div>
+            {error_body}
+          </div>
+          ModalUtil.registerModal({
+            id: Constants.modal.SHOW_RUN_ERROR
+          })
+          ModalUtil.emitModal({
+            id: Constants.modal.SHOW_RUN_ERROR,
+            visible: true,
+            content: content
+          })
+          this.loading  = false
+          this.forceUpdate()
+        }
       })
     })
   }
