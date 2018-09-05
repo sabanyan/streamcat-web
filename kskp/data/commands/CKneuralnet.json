@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "cKneuralnet",
+    "id": "ckneuralnet",
     "label": "ニューラルネットワークによる分類",
     "classification": "classification",
     "description": "シナプス回路を模したモデルを用いて学習を行い、分類を行う。",
