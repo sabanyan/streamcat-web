@@ -135,7 +135,6 @@ class Job:
                     last.is_temp = False
 
         elif s.is_command:
-            print(cf.name)
             output = cf.execute(self.step.args, self.inputs)
         # print('execute end:', cf, output)
 
@@ -231,9 +230,6 @@ class Job:
         return res
 
     def dtor(self):
-        if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
-            print('いちばん親のdtorだ！')
-
         for datum in self.inputs.values():
             datum.dtor()
 
@@ -379,7 +375,7 @@ class MCommand(UnixCommand):
     def source(self, args, inputs):
         return UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
 
-class MCommandNew(Command):
+class MCommandNew(UnixCommand):
     def __init__(self, nysol_mod):
         super().__init__()
         self.i_ports = [{'name': 'i', 'type': 'frame'}]
@@ -708,7 +704,7 @@ class MsummaryOld(MCommand):#new
         # 統計量リスト:sum/mean/count/ucount/devsq/var/uvar/sd/usd/cv/min/qtile1/median/qtile3/max/
         # range/qrange/mode/skew/uskew/kurt/ukurt
 
-class M2cross(MCommandNew):#new
+class M2cross(MCommandNew):
     def __init__(self):
         super().__init__(nm.m2cross)
         self.name = 'm2cross'
@@ -719,7 +715,7 @@ class M2cross(MCommandNew):#new
         self.params.append(Parameter('k', 'キー列名'))
         self.params.append(Parameter('v', 'NULL血置換文字列'))
 
-class M2crossOld(MCommand):#new
+class M2crossOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mcross'
@@ -730,7 +726,7 @@ class M2crossOld(MCommand):#new
         self.params.append(Parameter('k', 'キー列名'))
         self.params.append(Parameter('v', 'NULL値置換文字列'))
 
-class Mcross(MCommandNew):#new
+class Mcross(MCommandNew):
     def __init__(self):
         super().__init__(nm.mcross)
         self.name = 'mcross'
@@ -741,7 +737,7 @@ class Mcross(MCommandNew):#new
         self.params.append(Parameter('k', 'キー列名'))
         self.params.append(Parameter('v', 'NULL値置換文字列'))
 
-class McrossOld(MCommand):#new
+class McrossOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mcross'

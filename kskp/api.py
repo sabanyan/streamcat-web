@@ -16,7 +16,8 @@ from .model import (
     fetch_flows_by_project_uuid,
     update_flow_by_uuid,
     get_flow_path_by_uuid,
-    get_user_by_id
+    get_user_by_id,
+    fetch_subflows_all_projects
 )
 from .activity import (
     make_unfinished_history,
@@ -140,6 +141,13 @@ def delete_flow(flow_uuid):
 
     return jsonify({'success': True})
 
+@api.route('/subflows', methods=['GET'])
+@login_required_api
+def fetch_subflows():
+    """
+    サブフロー一覧を取得する。
+    """
+    return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args.get('port'))})
 
 @api.route('/commands')
 def fetch_commands():

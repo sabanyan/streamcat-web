@@ -221,6 +221,32 @@ def fetch_flow_by_uuid(flow_uuid):
     path = get_flow_path_by_uuid(flow_uuid)
     return json.loads(path.read_text())
 
+def fetch_subflows_all_projects(port):
+    """
+    指定したプロジェクトの持つサブフロー一覧の内容リストをuuidを付け加えて返す
+    """
+    subflow_list = []
+    for path in Path(app.config['FLOW_PATH']).iterdir():
+        try:
+            data = json.loads(path.read_text())
+        except json.JSONDecodeError as e:
+            # JSONのフォーマットに則していない場合
+            continue
+
+        data['uuid'] = path.stem
+        data['projectName'] = fecth_project(data['projectId'])['name']
+
+        if port == 'i':
+            if len(data['ports'][0]) > 0:
+                subflow_list.append(data)
+        elif port == 'o':
+            if len(data['ports'][1]) > 0:
+                subflow_list.append(data)
+        else:
+            if len(data['ports'][0]) > 0 or len(data['ports'][1]) > 0:
+                subflow_list.append(data)
+
+    return subflow_list
 
 def fetch_flows_by_project_uuid(project_uuid):
     """
@@ -231,13 +257,13 @@ def fetch_flows_by_project_uuid(project_uuid):
     flow_list = []
     for path in paths:
         try:
-            dict = json.loads(path.read_text())
+            data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合
             continue
 
-        dict['uuid'] = path.stem
-        flow_list.append(dict)
+        data['uuid'] = path.stem
+        flow_list.append(data)
     return flow_list
 
 
