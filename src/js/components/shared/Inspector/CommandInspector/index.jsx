@@ -1,18 +1,18 @@
 //@flow
 import * as React from 'react'
-import BaseInspector from '../BaseInspector'
-import type {FlowEditorProps} from "../../index";
+import BaseInspector from '../BaseInspector/index'
+import type {FlowEditorProps} from "../../../FlowEditorContainer/index";
 import style from '../style.scss'
-import Button from '../../../shared/Button'
+import Button from '../../Button/index'
 import CommandStepModel from '../../../../model/Step/CommandStepModel'
-import InOutConnector from './InOutConnector'
-import Constants from '../../../../constants'
+import InOutConnector from './InOutConnector/index'
+import Constants from '../../../../constants/index'
 import Graph from '../../../../utils/Graph'
-import type { CommandParamType, CommandPortType, StepModelType, SubFlowParamType } from '../../../../types'
+import type { CommandParamType, CommandPortType, StepModelType, SubFlowParamType } from '../../../../types/index'
 import CommandModel from '../../../../model/Command/CommandModel'
 import HttpUtil from '../../../../utils/HttpUtil'
 import FlowModel from '../../../../model/Flow/FlowModel'
-import Loader from '../../../shared/Loader'
+import Loader from '../../Loader/index'
 import FlowUtil from '../../../../utils/FlowUtil'
 import ModalUtil from '../../../../utils/ModalUtil'
 

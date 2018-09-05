@@ -17,7 +17,6 @@ import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
-import CommandInspector from '../../FlowEditorContainer/Inspector/CommandInspector'
 import CommandIcon from '../Icon/CommandIcon'
 import HttpUtil from '../../../utils/HttpUtil'
 
