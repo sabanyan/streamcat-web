@@ -245,7 +245,8 @@ def fetch_subflows_all_projects(request_args):
             if len(data['ports'][1]) == 0:
                 continue
 
-        subflow_list.append(data)
+        if len(data['ports'][0]) > 0 or len(data['ports'][1]) > 0:
+            subflow_list.append(data)
 
     return subflow_list
 
