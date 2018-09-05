@@ -366,7 +366,7 @@ class ApiTestCase(unittest.TestCase):
                 content_type='application/json',
                 data=json.dumps({
                     'b': new_item,
-                    'name': updated_flow_name
+                    'label': updated_flow_name
                 })
             )
             result = json.loads(response.get_data())
@@ -377,7 +377,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(flow_path.stem, data_source_name)
         self.assertEqual(result['data']['projectId'], project_id)
         # 名前は正しく変更されている
-        self.assertEqual(result['data']['name'], updated_flow_name)
+        self.assertEqual(result['data']['label'], updated_flow_name)
         # 新しい内容も入っている
         self.assertEqual(result['data']['b'], new_item)
 
@@ -428,6 +428,8 @@ class ApiTestCase(unittest.TestCase):
             # サブフロー化
             created_flow['ports'][0] = {"name": "i","type": "frame"}
             created_flow['ports'][1] = {"name": "o","type": "frame"}
+            # フローを更新
+            model.write_data_to_json(model.make_flow_path(flow1_datasource_name), created_flow)
 
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
@@ -450,10 +452,10 @@ class ApiTestCase(unittest.TestCase):
         path = model.get_flow_path_by_uuid(flow1_datasource_name)
         path.unlink()
 
-    def test_fetch_subflows_has_inputs(self):
+    def test_fetch_subflows_no_inputs(self):
         """
         fetch_subflows APIをテストする
-        portにinputがあるものを取得する
+        portにinputがないものは出力しない
         """
 
         unlink_list = []
@@ -486,7 +488,7 @@ class ApiTestCase(unittest.TestCase):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
-            endpoint = '/api/v0/subflows?port=i'
+            endpoint = '/api/v0/subflows?no_inputs=on'
             response = client.get(endpoint)
             result = json.loads(response.get_data())
 
@@ -526,7 +528,7 @@ class ApiTestCase(unittest.TestCase):
         with app.app_context():
             (user1, project_id, project_uuid) = setUpProject(self)
 
-            # 取得すべきサブフロー（inputがある）
+            # 取得すべきサブフロー（outputがある）
             flow1_datasource_name = str(uuid.uuid4())
             data1 = {'project_uuid': project_uuid, 'name': 'サブフローテスト用', 'datasource': None}
             subflow1 = model.create_flow(data1, user1, flow1_datasource_name)
@@ -535,7 +537,7 @@ class ApiTestCase(unittest.TestCase):
             # フローを更新
             model.write_data_to_json(model.make_flow_path(flow1_datasource_name), subflow1)
 
-            # 取得すべきではないサブフロー（inputがない）
+            # 取得すべきではないサブフロー（outputがない）
             flow2_datasource_name = str(uuid.uuid4())
             data2 = {'project_uuid': project_uuid, 'name': 'サブフローテスト用２', 'datasource': None}
             subflow2 = model.create_flow(data2, user1, flow2_datasource_name)
@@ -551,7 +553,7 @@ class ApiTestCase(unittest.TestCase):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
-            endpoint = '/api/v0/subflows?port=o'
+            endpoint = '/api/v0/subflows?no_outputs=on'
             response = client.get(endpoint)
             result = json.loads(response.get_data())
 

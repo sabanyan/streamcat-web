@@ -221,7 +221,7 @@ def fetch_flow_by_uuid(flow_uuid):
     path = get_flow_path_by_uuid(flow_uuid)
     return json.loads(path.read_text())
 
-def fetch_subflows_all_projects(port):
+def fetch_subflows_all_projects(request_args):
     """
     指定したプロジェクトの持つサブフロー一覧の内容リストをuuidを付け加えて返す
     """
@@ -235,16 +235,17 @@ def fetch_subflows_all_projects(port):
 
         data['uuid'] = path.stem
         data['projectName'] = fecth_project(data['projectId'])['name']
+        # onの時にno_inputs（＝inputsがない）のサブフローは出さない
+        if request_args.get('no_inputs') == 'on':
+            if len(data['ports'][0]) == 0:
+                continue
 
-        if port == 'i':
-            if len(data['ports'][0]) > 0:
-                subflow_list.append(data)
-        elif port == 'o':
-            if len(data['ports'][1]) > 0:
-                subflow_list.append(data)
-        else:
-            if len(data['ports'][0]) > 0 or len(data['ports'][1]) > 0:
-                subflow_list.append(data)
+        # onの時にno_outputs（＝outputsがない）のサブフローは出さない
+        if request_args.get('no_outputs') == 'on':
+            if len(data['ports'][1]) == 0:
+                continue
+
+        subflow_list.append(data)
 
     return subflow_list
 

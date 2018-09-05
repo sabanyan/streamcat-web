@@ -147,7 +147,7 @@ def fetch_subflows():
     """
     サブフロー一覧を取得する。
     """
-    return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args.get('port'))})
+    return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args)})
 
 @api.route('/commands')
 def fetch_commands():
