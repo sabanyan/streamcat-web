@@ -1,14 +1,14 @@
 //@flow
 import React from 'react'
-import BaseInspector from '../BaseInspector'
-import type { FlowEditorProps } from '../../index'
-import Button from '../../../shared/Button'
-import CommandSelector from '../CommandSelector'
+import BaseInspector from '../BaseInspector/index'
+import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
+import Button from '../../Button/index'
+import CommandSelector from '../CommandSelector/index'
 import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
 import CommandStepModel from '../../../../model/Step/CommandStepModel'
 import Graph from '../../../../utils/Graph'
 import ModalUtil from '../../../../utils/ModalUtil'
-import Constants from '../../../../constants'
+import Constants from '../../../../constants/index'
 import HttpUtil from '../../../../utils/HttpUtil'
 
 class MultiInspector extends React.Component<FlowEditorProps> {

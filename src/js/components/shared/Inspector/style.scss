@@ -19,7 +19,8 @@
 
 
 .property_container {
-  height: calc(100% - 64px);
+  height: 100%;
+  width: 100%;
   overflow: scroll;
 }
 
@@ -42,7 +43,7 @@
 .property_body{
   padding: 16px;
   background-color: $kskp-property-background-color;
-  min-height: calc(100% - 64px);
+  min-height: 100%;
   label{
     font-size: 14px;
     color: $kskp-text;

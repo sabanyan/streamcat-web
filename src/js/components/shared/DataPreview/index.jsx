@@ -15,8 +15,8 @@ import {
 import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
 import DownloadButton from '../Button/DownloadButton'
-import DataPreviewInspector from './DataPreviewInspector'
 import style from './style.scss'
+import DataPreviewInspector from '../Inspector/DataPreviewInspector'
 
 type State = {
   json?: any,//TODO resetting
@@ -63,45 +63,44 @@ export default class DataPreview extends React.Component<Props, State> {
     let chart
     switch (type) {
       case Constants.chart.bar:
-        chart = <Bar data={data} ref="chart" height={100} width={100}></Bar>
+        chart = <Bar data={data} ref="chart" height={100}></Bar>
         break
       case Constants.chart.bubble:
         chart =
-          <Bubble data={data} ref="chart" height={100} width={100}></Bubble>
+          <Bubble data={data} ref="chart" height={100}></Bubble>
         break
       case Constants.chart.doughnut:
         chart =
-          <Doughnut data={data} ref="chart" height={100} width={100}></Doughnut>
+          <Doughnut data={data} ref="chart" height={100}></Doughnut>
         break
       case Constants.chart.horizontalBar:
-        chart = <HorizontalBar data={data} ref="chart" height={100}
-                               width={100}></HorizontalBar>
+        chart = <HorizontalBar data={data} ref="chart" height={100}></HorizontalBar>
         break
       case Constants.chart.line:
-        chart = <Line data={data} ref="chart" height={100} width={100}></Line>
+        chart = <Line data={data} ref="chart" height={100}></Line>
         break
       case Constants.chart.pie:
-        chart = <Pie data={data} ref="chart" height={100} width={100}></Pie>
+        chart = <Pie data={data} ref="chart" height={100}></Pie>
         break
       case Constants.chart.polar:
-        chart = <Polar data={data} ref="chart" height={100} width={100}></Polar>
+        chart = <Polar data={data} ref="chart" height={100}></Polar>
         break
       case Constants.chart.radar:
-        chart = <Radar data={data} ref="chart" height={100} width={100}></Radar>
+        chart = <Radar data={data} ref="chart" height={100}></Radar>
         break
       case Constants.chart.scatter:
         chart =
-          <Scatter data={data} ref="chart" height={100} width={100}></Scatter>
+          <Scatter data={data} ref="chart" height={100}></Scatter>
         break
     }
 
-    return <div className={style.visualization}>
-      <div className={style.visualization_container}>
-        <div className={style.visualization_body}>
+    return <div className={style.data_preview_container}>
+      <div className={style.data_preview_body}>
           {chart}
-        </div>
       </div>
-      <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
+      <div className={style.data_preview_property}>
+        <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
+      </div>
     </div>
   }
 }

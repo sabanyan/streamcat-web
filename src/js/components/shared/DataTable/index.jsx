@@ -1,5 +1,7 @@
 //@flow
 import React from 'react'
+import style from './style.scss'
+import DataTableInspector from '../Inspector/DataTableInspector'
 
 type Props = {
   json: {
@@ -87,16 +89,23 @@ export default class DataTable extends React.Component<Props> {
     //   }
     // }
 
-    return <table
-      className="kskp-data-table table-bordered table table-striped">
-      <thead>
-      <tr className="table-active">
-        {head_ths}
-      </tr>
-      </thead>
-      <tbody>
-      {body_trs}
-      </tbody>
-    </table>
+    return <div className={style.data_table_container}>
+      <div className={style.data_table_body}>
+        <table
+          className="kskp-data-table table-bordered table table-striped">
+          <thead>
+          <tr className="table-active">
+            {head_ths}
+          </tr>
+          </thead>
+          <tbody>
+          {body_trs}
+          </tbody>
+        </table>
+      </div>
+      <div className={style.data_table_property}>
+        <DataTableInspector/>
+      </div>
+    </div>
   }
 }

@@ -3,11 +3,12 @@ import React from 'react'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import DataTable from '../../DataTable/index'
-import Inspector from '../../../FlowEditorContainer/Inspector/BaseInspector/index'
+import Inspector from '../BaseInspector/index'
 import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import style from '../style.scss'
+import style from '../../DataPreview/style.scss'
 import Button from '../../Button/index'
-import DownloadButton from '../../Button/DownloadButton'
+import DownloadButton from '../../Button/DownloadButton/index'
+import BaseInspector from '../BaseInspector'
 
 class DataPreviewInspector extends React.Component<FlowEditorProps> {
 
@@ -25,11 +26,15 @@ class DataPreviewInspector extends React.Component<FlowEditorProps> {
   }
 
   render () {
-    return  <div className={style.visualization_property}>
-      <div className={style.visualization_property_body}>
+    const content = <div>
+        <div className={style.actions}>
+          <DownloadButton download="image.png" href={this.props.image_url} onClick={(e)=>this.onClickSave(e)}>チャートグラフの保存</DownloadButton>
+        </div>
         <div className="kskp-form">
           <div className="mb-16px">
             <label>グラフの種類</label>
+          </div>
+          <div>
             <select className="form-control" onChange={(e) => this.onChangeChart(e)}
                     defaultValue={Constants.chart.bar}>
               <option value={Constants.chart.bar}>縦棒グラフ</option>
@@ -43,12 +48,12 @@ class DataPreviewInspector extends React.Component<FlowEditorProps> {
               <option value={Constants.chart.scatter}>散布図</option>
             </select>
           </div>
-          <div>
-            <DownloadButton download="image.png" href={this.props.image_url} onClick={(e)=>this.onClickSave(e)}>チャートグラフの保存</DownloadButton>
-          </div>
         </div>
       </div>
-    </div>
+
+    return <BaseInspector header={""} title={"プレビュー"} {...this.props}>
+      {content}
+    </BaseInspector>
   }
 
 }

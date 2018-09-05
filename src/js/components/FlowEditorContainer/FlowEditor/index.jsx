@@ -2,7 +2,6 @@
 import React from 'react'
 import Paper from '../Paper'
 import PaperScroller from '../PaperScroller'
-import Inspector from '../Inspector'
 import Step from '../../shared/Step'
 import PaperZoom from '../PaperZoom'
 import ToolBar from '../ToolBar'
@@ -18,6 +17,7 @@ import ZoomUtil from '../../../utils/ZoomUtil'
 import CommandModel from '../../../model/Command/CommandModel'
 import Loader from '../../shared/Loader'
 import { DragType } from '../../../types'
+import Inspector from '../../shared/Inspector'
 
 type State = {}
 
