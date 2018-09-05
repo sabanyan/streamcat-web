@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "rKneuralnet",
+    "id": "rkneuralnet",
     "label": "ニューラルネットワークによる回帰",
     "classification": "regression",
     "description": "シナプス回路を模したモデルを用いて学習を行い、回帰を行う。",

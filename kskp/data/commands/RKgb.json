@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "rKgb",
+    "id": "rkgb",
     "label": "勾配ブースティングによる回帰",
     "classification": "regression",
     "description": "複数の弱い分類器を生成、残渣誤差にフィットするように修正することを繰り返して強い分類器を作り、その分類器を用いて回帰を行う。",
