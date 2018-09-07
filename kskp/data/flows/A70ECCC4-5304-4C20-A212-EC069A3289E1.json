@@ -1,5 +1,6 @@
 {
   "projectId": 1,
+  "description":"",
   "label": "日本NI様サンプル(4つのセンサーで統計量dummy2)",
   "params": [],
   "ports": [

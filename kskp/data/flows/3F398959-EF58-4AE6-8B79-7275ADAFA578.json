@@ -1,6 +1,7 @@
 {
   "projectId": 1,
   "label": "日本NI様サンプル(セクションごとの処理dummy)",
+  "description":"",
   "params": [
     {
       "name": "section",

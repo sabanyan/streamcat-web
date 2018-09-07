@@ -165,6 +165,7 @@ class ApiTestCase(unittest.TestCase):
             result_project_id = model.get_project_id_by_uuid(project_uuid)
 
             self.assertEqual(result['success'], True)
+            self.assertEqual(result['data']['description'], "")
             self.assertEqual(result['data']['projectId'], result_project_id)
             self.assertEqual(result['data']['label'], new_flow_name)
             self.assertEqual(result['data']['nodes'][0]['uuid'], "2C72275F-2019-49AE-B36D-A29D1507F8DD")
