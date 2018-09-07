@@ -1,5 +1,6 @@
 {
   "projectId": 1,
+  "description":"",
   "label": "日本NI様サンプル(基本統計量dummy)",
   "params": [
     {
