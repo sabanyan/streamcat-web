@@ -25,6 +25,11 @@
       "name": "k",
       "label": "指定列が同じ値の行ごとにfrom=,to=,sizeで指定した行番号の行を選択",
       "type": "string"
+    },
+    {
+      "name": "u",
+      "label": "不一致出力ファイルパス",
+      "type": "string"
     }
   ],
   "ports": [

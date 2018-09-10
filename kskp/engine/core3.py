@@ -299,6 +299,10 @@ class Command:
     def out_key(self):
         return self.o_ports[0]['name']
 
+    @property
+    def out_keys(self):
+        return [o_port['name'] for o_port in self.o_ports]
+
 class UnixCommand(Command):
     def __init__(self):
         super().__init__()
@@ -311,7 +315,8 @@ class UnixCommand(Command):
             if isinstance(input.source, PathFileSource):
                 source.deletable_uuids.append(input.uuid)
             elif isinstance(input.source, UnixCommandSource) or \
-                 isinstance(input.source, PandasSource):
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
         frame = Frame(str(uuid.uuid4()), source)
@@ -376,14 +381,16 @@ class MCommand(UnixCommand):
         return UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
 
 class MCommandNew(UnixCommand):
-    def __init__(self, nysol_mod):
+    def __init__(self, nysol_mod, cmd_name=None):
         super().__init__()
         self.i_ports = [{'name': 'i', 'type': 'frame'}]
         self.o_ports = [{'name': 'o', 'type': 'frame'}]
         self.nysol_mod = nysol_mod
+        self.name = cmd_name
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
         # jsonからくるオプションのbool値はstringなので、booleanに変更する
         # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
@@ -396,26 +403,21 @@ class MCommandNew(UnixCommand):
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
             args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
-            # print('PathFileSource args_for_nysol:', args_for_nysol)
         elif isinstance(input_i.source, NysolPythonSource):
-            args_for_nysol.update({'i': input_i.source.nysol_module})
-            # print('NysolPythonSource args_for_nysol:', args_for_nysol)
-        elif isinstance(inputs['i'].source, UnixCommandSource):
-            args_for_nysol.update({'i': inputs['i'].source.fd})
+            process_flow = input_i.source.nysol_module
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+        # nm.cmd用の文字列のコマンドを作成する
+        if self.nysol_mod is nm.submod.cmd.Nysol_Excmd:
+            args_list = self.name
+            for key,value in args_for_nysol.items():
+                args_list += ' %s=%s' % (key, value)
+            args_for_nysol = args_list
 
-        for input in inputs.values():
-            if isinstance(input.source, PathFileSource):
-                source.deletable_uuids.append(input.uuid)
-            elif isinstance(input.source, UnixCommandSource) or \
-                 isinstance(input.source, PandasSource) or \
-                 isinstance(input.source, NysolPythonSource):
-                source.deletable_uuids = input.source.deletable_uuids
-                source.deletable_uuids.append(input.uuid)
+        return args_for_nysol, process_flow
 
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+    def source(self, args, inputs):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow)
 
 import nysol.mcmd as nm
 
@@ -635,14 +637,13 @@ class Mjoin(MCommandNew):
 
         input_m = inputs['m']
 
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        # print('Mjoin execute:', args_for_nysol)
         source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
         frame = Frame(str(uuid.uuid4()), source)
         return { self.out_key: frame }
@@ -812,7 +813,16 @@ class MsepOld(MCommand):#new
         self.description = 'レコードの分割'
         self.params.append(Parameter('d', '異なるデータファイルに分割する列名(必須)'))
 
-class Msep2(MCommand):#mnew
+class Msep2(MCommandNew):#mnew
+    def __init__(self):
+        super().__init__(nm.cmd, 'msep2')
+        self.name = 'msep2'
+        self.description = '連番、項目値表の出力を伴った行分割'
+        self.params.append(Parameter('k', '分割単位となる項目(必須)'))
+        self.params.append(Parameter('O', '連番ファイルを作成するディレクトリ名(必須)'))
+        self.params.append(Parameter('a', 'o=にて出力するファイル名の項目名(必須)'))
+
+class Msep2Old(MCommand):#mnew
     def __init__(self):
         super().__init__()
         self.name = 'msep2'
@@ -1582,10 +1592,21 @@ class Marff2csvOld(MCommand):#new
         self.name = 'marff2csv'
         self.description = 'arffからcsv形式への変換'
 
-class Mcsv2arff(MCommand):#new
+class Mcsv2arff(MCommandNew):#new
+    def __init__(self):
+        super().__init__(nm.cmd, 'mcsv2marff')
+        self.name = 'mcsv2marff'
+        self.description = 'csvからarff形式への変換'
+        self.params.append(Parameter('n', '数値列名(必須)'))
+        self.params.append(Parameter('d', 'カテゴリ列名(必須)'))
+        self.params.append(Parameter('D', '日付列名リスト(必須)'))
+        self.params.append(Parameter('s', '文字列列名(必須)'))
+        self.params.append(Parameter('T', 'タイトル名'))
+
+class Mcsv2arffOld(MCommand):#new
     def __init__(self):
         super().__init__()
-        self.name = 'csv2marff'
+        self.name = 'mcsv2marff'
         self.description = 'csvからarff形式への変換'
         self.params.append(Parameter('n', '数値列名(必須)'))
         self.params.append(Parameter('d', 'カテゴリ列名(必須)'))
@@ -1859,7 +1880,7 @@ class MkeybreakOld(MCommand):#new
 
 class Mmvavg(MCommandNew):#editting(判断を仰ぐ、多分大丈夫やと思うけどね)
     def __init__(self):
-        super().__init__(nm.mmavg)
+        super().__init__(nm.mmvavg)
         self.name = 'mmvavg'
         self.description = '移動平均の算出'
         self.params.append(Parameter('s', '並べ替えの後、移動平均を計算する列名'))
@@ -2289,7 +2310,15 @@ class MvuniqOld(MCommand):#new
         self.description = 'ベクトル要素の単一化'
         self.params.append(Parameter('vf', '対象列名(必須)'))
 
-class Mchkcsv(MCommand):#new
+class Mchkcsv(MCommandNew):#new
+    def __init__(self):
+        super().__init__(nm.cmd, 'mchkcsv')
+        self.name = 'mchkcsv'
+        self.description = 'csvデータのチェック・修復'
+        self.params.append(Parameter('i', '入力ファイル名'))
+        self.params.append(Parameter('a', '入力データ列を無視する、新しい列名'))
+
+class MchkcsvOld(MCommand):#new
     def __init__(self):
         super().__init__()
         self.name = 'mchkcsv'
@@ -2299,6 +2328,39 @@ class Mchkcsv(MCommand):#new
 
 # KCMD
 class SelectTargetColumn(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'SelectTargetColumn'
+        self.description = ''
+        self.params.append(Parameter('t', '対象の列を選択'))# todo 何が言いたいのかが分からない
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        # 引数の設定
+        process_flow = None
+        cl_args = '/kskp/engine/commands/kcmd/preprocess/selecttargetcolumn.py'
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            cl_args += ' -i ' + inputs['i'].source.fullpath.as_posix()
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        for key, value in args.items():
+            if not len(value) == 0:
+                # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
+                if len(key) > 1:
+                    cl_args += ' --' + key + ' ' + value
+                else:
+                    cl_args += ' -' + key + ' ' + value
+
+        return NysolPythonSource('csv', nm.cmd, cl_args, process_flow)
+
+class SelectTargetColumnOld(UnixCommand):
     def __init__(self):
         super().__init__()
         self.name = 'SelectTargetColumn'
@@ -2326,6 +2388,43 @@ class SelectTargetColumn(UnixCommand):
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 class Standardize(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'Standardize'
+        self.description = ''
+        self.params.append(Parameter('c', '標準化を行う行を選択'))
+        self.params.append(Parameter('a', '全列に適用させるかどうか'))
+
+    def execute(self, args, inputs):
+        frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
+        return { self.o_ports[0]['name']: frame }
+
+    def source(self, args, inputs):
+        # 引数の設定
+
+        process_flow = None
+        cl_args = '/kskp/engine/commands/kcmd/preprocess/standardize.py'
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            cl_args += ' -i ' + inputs['i'].source.fullpath.as_posix()
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        for key, value in args.items():
+            if not len(value) == 0:
+                # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
+                if len(key) > 1:
+                    cl_args += ' --' + key + ' ' + value
+                else:
+                    cl_args += ' -' + key + ' ' + value
+        # source = NysolPythonSource('csv', nm.cmd, cl_args, process_flow)
+        # process_flow <<= source.nysol_module
+        # print(process_flow.run())
+        return NysolPythonSource('csv', nm.cmd, cl_args, process_flow)
+
+class StandardizeOld(UnixCommand):
     def __init__(self):
         super().__init__()
         self.name = 'Standardize'

@@ -15,11 +15,6 @@
       "name": "a",
       "label": "o=にて出力するファイル名の項目名(必須)",
       "type": "string"
-    },
-    {
-      "name": "o",
-      "label": "kでの指定項目値に対する連番ファイル名の対応表名",
-      "type": "string"
     }
   ],
   "ports": [

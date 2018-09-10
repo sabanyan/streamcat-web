@@ -1,0 +1,105 @@
+{
+  "projectId": 8,
+  "label": "テストフロー２",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "creator": "開発用",
+  "createdAt": "2018-09-10T06:52:47+09:00",
+  "nodes": [
+    {
+      "id": "i",
+      "position": {
+        "x": 99,
+        "y": 118
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "uuid": "f18969ae-02b5-40a7-9c9c-877e570f58e2",
+      "dataSource": "csv",
+      "label": "i"
+    },
+    {
+      "id": "new 0c4749ed-256d-4ef7-a107-13ed167285a6",
+      "position": {
+        "x": 99,
+        "y": 295
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv",
+      "label": "new 0c4749ed-256d-4ef7-a107-13ed167285a6"
+    },
+    {
+      "id": "new e7fb635e-a375-465c-b10c-161091916be1",
+      "position": {
+        "x": 99,
+        "y": 213
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "new 0c4749ed-256d-4ef7-a107-13ed167285a6"
+      },
+      "args": {
+        "t": "target"
+      },
+      "commandId": "select_target_column"
+    },
+    {
+      "id": "new ee68bf73-3ec4-4dc1-96ae-ba18c76fad10",
+      "position": {
+        "x": 99,
+        "y": 471
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv",
+      "label": "new ee68bf73-3ec4-4dc1-96ae-ba18c76fad10"
+    },
+    {
+      "id": "new eab730e3-5ccb-46b4-ae56-d16861cca25a",
+      "position": {
+        "x": 99,
+        "y": 389
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "command",
+      "label": "標準化",
+      "srcs": {
+        "i": "new 0c4749ed-256d-4ef7-a107-13ed167285a6"
+      },
+      "dsts": {
+        "o": "new ee68bf73-3ec4-4dc1-96ae-ba18c76fad10"
+      },
+      "args": {
+        "a": "",
+        "c": "DIS"
+      },
+      "commandId": "standardize"
+    }
+  ]
+}

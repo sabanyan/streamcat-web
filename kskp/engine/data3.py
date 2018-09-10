@@ -55,25 +55,39 @@ class Source:
 
 class NysolPythonSource(Source):
 
-    def __init__(self, source_type, mod, args):
+    def __init__(self, source_type, mod, args, process_flow=None):
         """ argsいらんかもな、そのままmodに全部持っておけるので """
         super().__init__(source_type)
         self.mod = mod # クラスをそのまま
         self.args = args # dict
+        self.process_flow = process_flow
 
     @property
     def nysol_module(self):
+        f = self.process_flow
         args = self.args
-        return self.mod(**args)
+        f <<= self.mod(args)
+        return f
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
         # self.mod.runしてその結果をstdoutに書くだけ
-        self.args.update({'o': stdout})
+        # nm.cmdはコマンドが文字列なので判別する
+        if isinstance(self.args, str):
+            # pythonはimmutableのため、部分的に書き換えができない
+            # ここではoを追加しているが、既存のoを更新しているわけではないので、
+            # oが2つ以上になってしまうこともあるだろう
+            # なので修正予定
+            self.args += ' -o %s' % stdout
+        elif isinstance(self.args, dict):
+            self.args.update({'o': stdout})
+
         args = self.args
+        print(args)
         # print('NysolPythonSource save: ', self.mod, args)
-        mod = self.mod(**args)
-        mod.run()
+        mod = self.mod(args)
+        self.process_flow <<= mod
+        self.process_flow.run()
 
     def __repr__(self):
         return f'args: {self.args}'

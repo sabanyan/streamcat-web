@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 import pickle
 
@@ -5,8 +6,8 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-from .common.preprocess import Preprocess
-
+from kskp.engine.commands.kcmd.preprocess.common.preprocess import Preprocess
+# from common.preprocess import Preprocess
 
 class Standardize(Preprocess):
     def __init__(self):
@@ -94,10 +95,10 @@ class Standardize(Preprocess):
         #前処理の順番を保存
         self.write_order()
 
-        return standardized
+        # return standardized
 
         # #標準化後のデータセット出力
-        # standardized.to_csv(self.output, index=False)
+        standardized.to_csv(self.output, index=False)
 
 if __name__ == '__main__':
     std = Standardize()
