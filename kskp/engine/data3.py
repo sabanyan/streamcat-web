@@ -62,10 +62,18 @@ class NysolPythonSource(Source):
         self.args = args # dict
         self.process_flow = process_flow
 
+        self.stdout_dict = {
+            ' o=':'',
+            ' -o ':''
+        }
+
     @property
     def nysol_module(self):
         f = self.process_flow
         args = self.args
+        if isinstance(args, str):
+            for key, value in self.stdout_dict.items():
+                args = args.replace(key, value)
         f <<= self.mod(args)
         return f
 
@@ -73,18 +81,13 @@ class NysolPythonSource(Source):
         """ engineから使う最後の保存用 """
         # self.mod.runしてその結果をstdoutに書くだけ
         # nm.cmdはコマンドが文字列なので判別する
-        if isinstance(self.args, str):
-            # pythonはimmutableのため、部分的に書き換えができない
-            # ここではoを追加しているが、既存のoを更新しているわけではないので、
-            # oが2つ以上になってしまうこともあるだろう
-            # なので修正予定
-            self.args += ' -o %s' % stdout
-        elif isinstance(self.args, dict):
-            self.args.update({'o': stdout})
-
         args = self.args
+        if isinstance(self.args, str):
+            for key in self.stdout_dict.keys():
+                args = args.replace(key, key + stdout)
+        elif isinstance(self.args, dict):
+            args.update({'o': stdout})
         print(args)
-        # print('NysolPythonSource save: ', self.mod, args)
         mod = self.mod(args)
         self.process_flow <<= mod
         self.process_flow.run()
