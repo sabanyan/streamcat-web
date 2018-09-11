@@ -8,8 +8,8 @@ from sklearn import metrics
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 import os
 sys.path.append(os.getcwd()+"/modeling")
-# from classification import *
-# from regression import *
+from kskp.engine.commands.kcmd.modeling.classification import *
+from kskp.engine.commands.kcmd.modeling.regression import *
 
 
 class Predict():
@@ -168,9 +168,9 @@ class Predict():
         pred_df=self.model.predict(x_test_original,x_test_preprocessed)
         merged=pd.concat([pred_df,x_test_original],axis=1)
         #出力
-        # self.set_output(merged,parsed.output)
+        self.set_output(merged,parsed.output)
 
-        return merged
+        return
 
 if __name__=="__main__":
     pred=Predict()
