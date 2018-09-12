@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "RKab",
+    "id": "rkab",
     "label": "アダブーストによる回帰",
     "classification": "regression",
     "description": "複数の弱い分類器を生成、重みの更新による選別を繰り返して強い分類器を作り、その分類器を用いて回帰を行う。",

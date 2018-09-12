@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "CKdt",
+    "id": "ckdt",
     "label": "決定木による分類",
     "classification": "classification",
     "description": "データに対して、次々と条件を定義し、それらの条件に沿って分類を行う。",

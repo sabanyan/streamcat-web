@@ -203,7 +203,8 @@ def create_flow(request_json, user_id, data_source_name=None):
             'projectId': get_project_id_by_uuid(request_json.get('project_uuid')),
             'label': request_json.get('name'),
             'ports': [[],[]],
-            'params': []
+            'params': [],
+            'description': ""
         }
         return data
 
@@ -221,6 +222,34 @@ def fetch_flow_by_uuid(flow_uuid):
     path = get_flow_path_by_uuid(flow_uuid)
     return json.loads(path.read_text())
 
+def fetch_subflows_all_projects(request_args):
+    """
+    指定したプロジェクトの持つサブフロー一覧の内容リストをuuidを付け加えて返す
+    """
+    subflow_list = []
+    for path in Path(app.config['FLOW_PATH']).iterdir():
+        try:
+            data = json.loads(path.read_text())
+        except json.JSONDecodeError as e:
+            # JSONのフォーマットに則していない場合
+            continue
+
+        data['uuid'] = path.stem
+        data['projectName'] = fecth_project(data['projectId'])['name']
+        # onの時にno_inputs（＝inputsがない）のサブフローは出さない
+        if request_args.get('no_inputs') == 'on':
+            if len(data['ports'][0]) == 0:
+                continue
+
+        # onの時にno_outputs（＝outputsがない）のサブフローは出さない
+        if request_args.get('no_outputs') == 'on':
+            if len(data['ports'][1]) == 0:
+                continue
+
+        if len(data['ports'][0]) > 0 or len(data['ports'][1]) > 0:
+            subflow_list.append(data)
+
+    return subflow_list
 
 def fetch_flows_by_project_uuid(project_uuid):
     """
@@ -231,13 +260,13 @@ def fetch_flows_by_project_uuid(project_uuid):
     flow_list = []
     for path in paths:
         try:
-            dict = json.loads(path.read_text())
+            data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合
             continue
 
-        dict['uuid'] = path.stem
-        flow_list.append(dict)
+        data['uuid'] = path.stem
+        flow_list.append(data)
     return flow_list
 
 
@@ -281,7 +310,7 @@ def get_flow_paths_by_project_uuid(project_uuid):
         """
         flowのjsonが正しい形式かを確かめるメソッド
         """
-        required_key_list = ['label', 'creator', 'createdAt', 'projectId']
+        required_key_list = ['label', 'creator', 'createdAt', 'projectId', 'description']
         additional_key_list = ['params', 'ports', 'nodes']
 
         # flowチェック（flow一覧表示時）

@@ -1,0 +1,146 @@
+{
+  "projectId": 1,
+  "label": "日本NI様サンプル(セクションごとの処理dummy)",
+  "description":"",
+  "params": [
+    {
+      "name": "section",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [],
+    []
+  ],
+  "nodes": [
+    {
+      "position": {
+        "x": 99,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "i",
+      "type": "frame",
+      "label": "i",
+      "uuid": "44d2abba-68c5-4087-ab93-edfba8835326",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "s1",
+      "type": "command",
+      "label": "s1",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t1~2"
+      },
+      "args": {
+        "f": "Section",
+        "v": "1"
+      },
+      "commandId": "mselstr"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 283
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "t1~2",
+      "type": "frame",
+      "label": "t1~2",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 365
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "s2",
+      "type": "flow",
+      "label": "s2",
+      "srcs": {
+        "i": "t1~2"
+      },
+      "dsts": {
+        "o": "t2~3"
+      },
+      "args": {},
+      "uuid": "E3EB7A3B-D015-4DA3-BF56-1784023D8FCD"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 447
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "t2~3",
+      "type": "frame",
+      "label": "t2~3",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 529
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "s3",
+      "type": "command",
+      "label": "s3",
+      "srcs": {
+        "i": "t2~3"
+      },
+      "dsts": {
+        "o": "o"
+      },
+      "args": {
+        "a": "Section",
+        "v": "1"
+      },
+      "commandId": "msetstr"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 611
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "id": "o",
+      "type": "frame",
+      "label": "o",
+      "uuid": null,
+      "dataSource": "csv"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "Kkmeans",
+    "id": "kkmeans",
     "label": "k-means法によるクラスタ分析",
     "classification": "clustering",
     "description": "各データにランダムなクラスタを割り振り、それぞれの重心をとり、各データのクラスタを自身から一番近い重心に割り振ることを繰り返す。",
