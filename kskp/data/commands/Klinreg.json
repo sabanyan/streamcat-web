@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "Klinreg",
+    "id": "klinreg",
     "label": "線形回帰",
     "classification": "regression",
     "description": "データの相関に沿う（残差が最小）線形関数を求め、それを用いて回帰分析を行う。",

@@ -123,7 +123,7 @@ class Job:
 
         s = self.step
         cf = s.command_or_flow
-        # print('execute begin:', cf, s.args)
+        # print('execute stt:', cf, s.args)
         if s.is_flow:
             if step_paths is not None:
                 self.lasts = self.get_lasts_from(step_paths)
@@ -136,7 +136,7 @@ class Job:
 
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
-        # print('execute end:', output)
+        # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
 
@@ -295,6 +295,9 @@ class Command:
     def __repr__(self):
         return f'<Command name:{self.name}>'
 
+    @property
+    def out_key(self):
+        return self.o_ports[0]['name']
 
 class UnixCommand(Command):
     def __init__(self):
@@ -335,7 +338,7 @@ class Split(Command):
         self.params.append(Parameter('l'))
 
     def execute(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         command_args = ['split']
         command_args.append(f"-l {args['l']}")
         command_args.append(inputs['i'].command_to_file().source.file_name)
@@ -350,17 +353,20 @@ class Split(Command):
 
 
 class MCommand(UnixCommand):
-    # def __init__(self):
-    #     super().__init__()
 
     def command_args(self, args, inputs):
         res = self.name.split()
         for k, v in args.items():
             # booleanに対応していないのでひとまず
-            if k == 'x' and (v == True or v == "true"):
-                res.append('-x')
-            elif k == 'rng' and v == True:
-                res.append('-rng')
+            if k == 'x':
+                if v == True or v == "true":
+                    res.append('-x')
+            elif k == 'rng':
+                if v == True:
+                    res.append('-rng')
+            elif k == 'r':
+                if v == True or v == "true":
+                    res.append('-r')
             else:
                 res.append('%s=%s' % (k, v))
         return res
@@ -369,18 +375,85 @@ class MCommand(UnixCommand):
     def source(self, args, inputs):
         return UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
 
-    @property
-    def out_key(self):
-        return self.o_ports[0]['name']
+class MCommandNew(UnixCommand):
+    def __init__(self, nysol_mod):
+        super().__init__()
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}]
+        self.nysol_mod = nysol_mod
 
-class Mcut(MCommand):
+    def execute(self, args, inputs):
+        args_for_nysol = args
+
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+            # print('PathFileSource args_for_nysol:', args_for_nysol)
+        elif isinstance(input_i.source, NysolPythonSource):
+            args_for_nysol.update({'i': input_i.source.nysol_module})
+            # print('NysolPythonSource args_for_nysol:', args_for_nysol)
+
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
+
+import nysol.mcmd as nm
+
+class Msel(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msel)
+        self.name = 'msel'
+        self.description = '行絞り込み'
+        self.params.append(Parameter('c', '絞込条件式'))
+
+class MselOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msel'
+        self.description = '行絞り込み'
+        self.params.append(Parameter('c', '絞込条件式'))
+
+class Mcut(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mcut)
+        self.name = 'mcut'
+        self.description = '列選択'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+
+class McutOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mcut'
         self.description = '列選択'
         self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Msetstr(MCommand):
+class Msetstr(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msetstr)
+        self.name = 'msetstr'
+        self.description = '文字列追加'
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('v', '追加する値(必須)'))
+
+class MsetstrOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'msetstr'
@@ -388,15 +461,16 @@ class Msetstr(MCommand):
         self.params.append(Parameter('a', '追加列名(必須)'))
         self.params.append(Parameter('v', '追加する値(必須)'))
 
-class Msum(MCommand):
+class Mstats(MCommandNew):
     def __init__(self):
-        super().__init__()
-        self.name = 'msum'
-        self.description = '合計'
-        self.params.append(Parameter('k', '合計の基準となる列名'))
-        self.params.append(Parameter('f', '合計する列名:合計後の列名(必須)'))
+        super().__init__(nm.mstats)
+        self.name = 'mstats'
+        self.description = '統計情報'
+        self.params.append(Parameter('k', '単位として集計する列名'))
+        self.params.append(Parameter('c', '計算列名(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Mstats(MCommand):
+class MstatsOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mstats'
@@ -405,7 +479,15 @@ class Mstats(MCommand):
         self.params.append(Parameter('c', '計算列名(必須)'))
         self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Mavg(MCommand):
+class Mavg(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mavg)
+        self.name = 'mavg'
+        self.description = '平均'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('k', '集計の単位となる列名'))
+
+class MavgOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mavg'
@@ -413,7 +495,18 @@ class Mavg(MCommand):
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('k', '集計の単位となる列名'))
 
-class Mbucket(MCommand):
+class Mbucket(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mbucket)
+        self.name = 'mbucket'
+        self.description = '行分割'
+        self.params.append(Parameter('n', '行数(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('F', '出力形式'))
+        self.params.append(Parameter('k', 'バケット分割を行う単位となる列名'))
+        self.params.append(Parameter('O', 'バケット範囲出力ファイル'))
+
+class MbucketOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mbucket'
@@ -424,88 +517,89 @@ class Mbucket(MCommand):
         self.params.append(Parameter('k', 'バケット分割を行う単位となる列名'))
         self.params.append(Parameter('O', 'バケット範囲出力ファイル'))
 
-class Mmbucket(MCommand):#new
+class Mselstr(MCommandNew):
     def __init__(self):
-        super().__init__()
-        self.name = 'mmbucket'
-        self.description = '多次元行分割'
-        self.params.append(Parameter('n', '行数(必須)'))
+        super().__init__(nm.mselstr)
+        self.name = 'mselstr'
+        self.description = '行選択(文字列)'
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '対象列名(必須)'))
-        self.params.append(Parameter('F', '出力形式'))
-        self.params.append(Parameter('k', '各項目の各バケットの数値範囲を出力するファイル名'))
+        self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
+        self.params.append(Parameter('k', '選択単位となるキー列名'))
+        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
 
-class Msep(MCommand):#new
+class MselstrOld(MCommand):
     def __init__(self):
         super().__init__()
-        self.name = 'msep'
-        self.description = 'レコードの分割'
-        self.params.append(Parameter('d', '異なるデータファイルに分割する列名(必須)'))
+        self.name = 'mselstr'
+        self.description = '行選択(文字列)'
+        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
+        self.params.append(Parameter('k', '選択単位となるキー列名'))
+        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
 
-class Msep2(MCommand):#mnew
+class Msortf(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msortf)
+        self.name = 'msortf'
+        self.desription = 'ソート'
+        self.params.append(Parameter('f', '対象列名(必須)'))
+
+class MsortfOld(MCommand):
     def __init__(self):
         super().__init__()
-        self.name = 'msep2'
-        self.description = '連番、項目値表の出力を伴った行分割'
-        self.params.append(Parameter('k', '分割単位となる項目(必須)'))
-        self.params.append(Parameter('O', '連番ファイルを作成するディレクトリ名(必須)'))
-        self.params.append(Parameter('o', 'kでの指定項目値に対する連番ファイル名の対応表名'))
-        self.params.append(Parameter('a', 'o=にて出力するファイル名の項目名(必須)'))
+        self.name = 'msortf'
+        self.desription = 'ソート'
+        self.params.append(Parameter('f', '対象列名(必須)'))
 
-class Mshuffle(MCommand):#ない？
+class Mcal(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mcal)
+        self.name = 'mcal'
+        self.description = '計算'
+        self.params.append(Parameter('c', '計算式(必須)'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+
+class McalOld(MCommand):
     def __init__(self):
         super().__init__()
-        self.name = 'mshuffle'
-        self.description = 'レコード分割'
-        self.params.append(Parameter('d', '出力ファイル名の接頭辞(必須)'))
-        self.params.append(Parameter('f', 'キー指定'))
-        self.params.append(Parameter('n', '分割ファイル数(選択必須)'))
-        self.params.append(Parameter('v', '分割するファイルごとのデータ量の重み(選択必須)'))
+        self.name = 'mcal'
+        self.description = '計算'
+        self.params.append(Parameter('c', '計算式(必須)'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
 
-class Mtee(MCommand):
+class Mcat(MCommandNew):
     def __init__(self):
-        super().__init__()
-        self.name = 'mtee'
-        self.description = '出力'
-        self.params.append(Parameter('o', '出力先'))
+        super().__init__(nm.m2cat)
 
-class Mnewnumber(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'mnewnumber'
-        self.description = '連番データの新規作成'
-        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
-        self.params.append(Parameter('I', '連番を振る間隔'))
-        self.params.append(Parameter('S', '開始数値/アルファベット(大文字)'))
-        self.params.append(Parameter('l', '作成するデータ行数'))
+        self.name = 'mcat'
+        self.description = 'ファイル結合'
+        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
+        self.params.append(Parameter('k', '結合する列名'))
 
-class Mnewrand(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'mnewrand'
-        self.description = '乱数データの新規作成'
-        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
-        self.params.append(Parameter('max', '乱数の最大値'))
-        self.params.append(Parameter('min', '乱数の最小値'))
-        self.params.append(Parameter('l', '作成するデータ行数'))
-        self.params.append(Parameter('S', '乱数の種を指定する'))
+    def execute(self, args, inputs):
+        args_for_nysol = args
+        inputs_for_arg_i = []
+        # for key, input in inputs.items():
+        #     input.command_to_file()
+        #     inputs_for_arg_i.append(input.source.fullpath.as_posix())
+        for key, input in inputs.items():
+            inputs_for_arg_i.append(input.source.nysol_module)
+        args_for_nysol.update({'i': inputs_for_arg_i})
 
-class Mnewstr(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'mnewstr'
-        self.description = '固定文字列データの新規作成'
-        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
-        self.params.append(Parameter('v', '新しく作成する文字列'))
-        self.params.append(Parameter('l', '作成するデータ行数'))
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
 
-class Mcat(MCommand):
+class McatOld(MCommand):
     def __init__(self):
         super().__init__()
 
         self.name = 'mcat'
         self.description = 'ファイル結合'
-        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる
-        self.params.append(Parameter('j', '結合する列名'))
+        self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
+        self.params.append(Parameter('k', '結合する列名'))
 
     def command_args(self, args, inputs):
         res = self.name.split()
@@ -521,7 +615,37 @@ class Mcat(MCommand):
     def stdin(self, inputs):
         return None
 
-class Mjoin(MCommand):
+class Mjoin(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mjoin)
+
+        self.name = 'mjoin'
+        self.description = '結合'
+        self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+
+    def execute(self, args, inputs):
+        args_for_nysol = args
+
+        if isinstance(inputs['i'].source, PathFileSource):
+            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
+        elif isinstance(inputs['i'].source, NysolPythonSource):
+            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+
+        input_m = inputs['m']
+
+        if isinstance(inputs['i'].source, NysolPythonSource):
+            args_for_nysol.update({'m': input_m.source.nysol_module})
+        else:
+            # パイプなら、CSVに吐く
+            input_m.command_to_file()
+            args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
+
+        # print('Mjoin execute:', args_for_nysol)
+        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
+        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key: frame }
+
+class MjoinOld(MCommand):
     def __init__(self):
         super().__init__()
 
@@ -546,6 +670,236 @@ class Mjoin(MCommand):
 
     def stdin(self, inputs):
         return inputs['i'].source.fd
+
+class Mnumber(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mnumber)
+        self.name = 'mnumber'
+        self.description = '連番'
+        self.params.append(Parameter('s', 'ソート対象列名'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('e', '同一キー同一ソートの処理方法の指定'))
+        self.params.append(Parameter('l', '連番の間隔'))
+        self.params.append(Parameter('k', '連番もしくは連文字を振る単位となる列'))
+        self.params.append(Parameter('S', '開始No'))
+
+class Msummary(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msummary)
+        self.name = 'msummary'
+        self.description = '1変数の統計量の計算'
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '集計列名(必須)'))
+        self.params.append(Parameter('c', '統計量を指定'))
+
+class MsummaryOld(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'msummary'
+        self.description = '1変数の統計量の計算'
+        self.params.append(Parameter('k', '単位とする列名'))
+        self.params.append(Parameter('f', '集計列名(必須)'))
+        self.params.append(Parameter('c', '統計量を指定'))
+        #統計量はあらかじめ決められている
+        # 統計量リスト:sum/mean/count/ucount/devsq/var/uvar/sd/usd/cv/min/qtile1/median/qtile3/max/
+        # range/qrange/mode/skew/uskew/kurt/ukurt
+
+class M2cross(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.m2cross)
+        self.name = 'm2cross'
+        self.description = '1対Nのクロス集計'
+        self.params.append(Parameter('f', '組み合わせ列名(必須)'))
+        self.params.append(Parameter('s', '列項目名に展開する列(選択必須)'))
+        self.params.append(Parameter('a', '２項目指定(選択必須)'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL血置換文字列'))
+
+class M2crossOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcross'
+        self.description = 'クロス集計'
+        self.params.append(Parameter('f', '指定列の値(必須)'))
+        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
+        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL値置換文字列'))
+
+class Mcross(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mcross)
+        self.name = 'mcross'
+        self.description = 'クロス集計'
+        self.params.append(Parameter('f', '指定列の値(必須)'))
+        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
+        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL値置換文字列'))
+
+class McrossOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mcross'
+        self.description = 'クロス集計'
+        self.params.append(Parameter('f', '指定列の値(必須)'))
+        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
+        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL値置換文字列'))
+
+class Msum(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msum)
+        self.name = 'msum'
+        self.description = '合計'
+        self.params.append(Parameter('k', '合計の基準となる列名'))
+        self.params.append(Parameter('f', '合計する列名:合計後の列名(必須)'))
+
+class MsumOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'msum'
+        self.description = '合計'
+        self.params.append(Parameter('k', '合計の基準となる列名'))
+        self.params.append(Parameter('f', '合計する列名:合計後の列名(必須)'))
+
+class Mmbucket(MCommandNew):#new
+    def __init__(self):
+        super().__init__(nm.mmbucket)
+        self.name = 'mmbucket'
+        self.description = '多次元行分割'
+        self.params.append(Parameter('n', '行数(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('F', '出力形式'))
+        self.params.append(Parameter('k', '各項目の各バケットの数値範囲を出力するファイル名'))
+
+class MmbucketOld(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'mmbucket'
+        self.description = '多次元行分割'
+        self.params.append(Parameter('n', '行数(必須)'))
+        self.params.append(Parameter('f', '対象列名(必須)'))
+        self.params.append(Parameter('F', '出力形式'))
+        self.params.append(Parameter('k', '各項目の各バケットの数値範囲を出力するファイル名'))
+
+class Msep(MCommandNew):#new
+    def __init__(self):
+        super().__init__(nm.msep)
+        self.name = 'msep'
+        self.description = 'レコードの分割'
+        self.params.append(Parameter('d', '異なるデータファイルに分割する列名(必須)'))
+
+class MsepOld(MCommand):#new
+    def __init__(self):
+        super().__init__()
+        self.name = 'msep'
+        self.description = 'レコードの分割'
+        self.params.append(Parameter('d', '異なるデータファイルに分割する列名(必須)'))
+
+class Msep2(MCommand):#mnew
+    def __init__(self):
+        super().__init__()
+        self.name = 'msep2'
+        self.description = '連番、項目値表の出力を伴った行分割'
+        self.params.append(Parameter('k', '分割単位となる項目(必須)'))
+        self.params.append(Parameter('O', '連番ファイルを作成するディレクトリ名(必須)'))
+        self.params.append(Parameter('a', 'o=にて出力するファイル名の項目名(必須)'))
+
+class Mshuffle(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mshuffle)
+        self.name = 'mshuffle'
+        self.description = 'レコード分割'
+        self.params.append(Parameter('d', '出力ファイル名の接頭辞(必須)'))
+        self.params.append(Parameter('f', 'キー指定'))
+        self.params.append(Parameter('n', '分割ファイル数(選択必須)'))
+        self.params.append(Parameter('v', '分割するファイルごとのデータ量の重み(選択必須)'))
+
+class MshuffleOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mshuffle'
+        self.description = 'レコード分割'
+        self.params.append(Parameter('d', '出力ファイル名の接頭辞(必須)'))
+        self.params.append(Parameter('f', 'キー指定'))
+        self.params.append(Parameter('n', '分割ファイル数(選択必須)'))
+        self.params.append(Parameter('v', '分割するファイルごとのデータ量の重み(選択必須)'))
+
+class Mtee(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.m2tee)
+        self.name = 'mtee'
+        self.description = '出力'
+        self.params.append(Parameter('o', '出力先'))
+
+class MteeOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mtee'
+        self.description = '出力'
+        self.params.append(Parameter('o', '出力先'))
+
+class Mnewnumber(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mnewnumber)
+        self.name = 'mnewnumber'
+        self.description = '連番データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('I', '連番を振る間隔'))
+        self.params.append(Parameter('S', '開始数値/アルファベット(大文字)'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
+
+class MnewnumberOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnewnumber'
+        self.description = '連番データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('I', '連番を振る間隔'))
+        self.params.append(Parameter('S', '開始数値/アルファベット(大文字)'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
+
+class Mnewrand(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mnewrand)
+        self.name = 'mnewrand'
+        self.description = '乱数データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('max', '乱数の最大値'))
+        self.params.append(Parameter('min', '乱数の最小値'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
+        self.params.append(Parameter('S', '乱数の種を指定する'))
+
+class MnewrandOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnewrand'
+        self.description = '乱数データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('max', '乱数の最大値'))
+        self.params.append(Parameter('min', '乱数の最小値'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
+        self.params.append(Parameter('S', '乱数の種を指定する'))
+
+class Mnewstr(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mnewstr)
+        self.name = 'mnewstr'
+        self.description = '固定文字列データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('v', '新しく作成する文字列'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
+
+class MnewstrOld(MCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'mnewstr'
+        self.description = '固定文字列データの新規作成'
+        self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
+        self.params.append(Parameter('v', '新しく作成する文字列'))
+        self.params.append(Parameter('l', '作成するデータ行数'))
 
 class Mnjoin(MCommand):
     def __init__(self):
@@ -801,27 +1155,12 @@ class Mvcommon(MCommand):#new
     def stdin(self, inputs):
         return inputs['i'].source.fd
 
-class Msortf(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'msortf'
-        self.desription = 'ソート'
-        self.params.append(Parameter('f', '対象列名(必須)'))
-
 class Mfsort(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mfsortf'
         self.desription = '項目ソート'
         self.params.append(Parameter('f', '対象列名(必須)'))
-
-class Mcal(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'mcal'
-        self.description = '計算'
-        self.params.append(Parameter('c', '計算式(必須)'))
-        self.params.append(Parameter('a', '追加列名(必須)'))
 
 class Mfldname(MCommand):#new
     def __init__(self):
@@ -831,8 +1170,7 @@ class Mfldname(MCommand):#new
         self.params.append(Parameter('f', '旧列名(必須)'))
         self.params.append(Parameter('n', '新列名'))
 
-
-class Mnumber(MCommand):
+class MnumberOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mnumber'
@@ -962,15 +1300,6 @@ class Mpadding(MCommand):#new
         self.params.append(Parameter('S', '開始値'))
         self.params.append(Parameter('E', '終了値'))
 
-class Msel(MCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'msel'
-        self.description = '行絞り込み'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
-        self.params.append(Parameter('c', '絞込条件式(必須)'))
-        # self.params.append(Parameter('u', '指定条件に合わない行を出力するファイル名'))
-
 class Mselnum(MCommand):#editing(o, u)の扱いがわからない
     def __init__(self):
         super().__init__()
@@ -992,17 +1321,6 @@ class Mselrand(MCommand):#editing(u)の扱いがわからない
         self.params.append(Parameter('p', '各キーを選択する割合をパーセンテージで指定(選択必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列'))
         self.params.append(Parameter('S', '乱数の種'))
-        # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
-
-class Mselstr(MCommand):###ここから修正再開
-    def __init__(self):
-        super().__init__()
-        self.name = 'mselstr'
-        self.description = '行選択(文字列)'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
-        self.params.append(Parameter('f', '対象列名(必須)'))
-        self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
-        self.params.append(Parameter('k', '選択単位となるキー列名'))
         # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
 
 class Muniq(MCommand):
@@ -1134,18 +1452,6 @@ class Mslide(MCommand):
         self.params.append(Parameter('k', '単位とする列名'))
         self.params.append(Parameter('t', 'ずらす回数'))
 
-class Msummary(MCommand):#new
-    def __init__(self):
-        super().__init__()
-        self.name = 'msummary'
-        self.description = '1変数の統計量の計算'
-        self.params.append(Parameter('k', '単位とする列名'))
-        self.params.append(Parameter('f', '集計列名(必須)'))
-        self.params.append(Parameter('c', '統計量を指定'))
-        #統計量はあらかじめ決められている
-        # 統計量リスト:sum/mean/count/ucount/devsq/var/uvar/sd/usd/cv/min/qtile1/median/qtile3/max/
-        # range/qrange/mode/skew/uskew/kurt/ukurt
-
 class Mwindow(MCommand):#new
     def __init__(self):
         super().__init__()
@@ -1154,17 +1460,6 @@ class Mwindow(MCommand):#new
         self.params.append(Parameter('wk', '出力データにおける、窓を識別する値となる入力データの列名(必須)'))
         self.params.append(Parameter('t', '窓の行数指定(必須)'))
         self.params.append(Parameter('k', '窓を生成する単位となる列名'))
-
-class M2cross(MCommand):#new
-    def __init__(self):
-        super().__init__()
-        self.name = 'm2cross'
-        self.description = '1対Nのクロス集計'
-        self.params.append(Parameter('f', '組み合わせ列名(必須)'))
-        self.params.append(Parameter('s', '列項目名に展開する列(選択必須)'))
-        self.params.append(Parameter('a', '２項目指定(選択必須)'))
-        self.params.append(Parameter('k', 'キー列名'))
-        self.params.append(Parameter('v', 'NULL血置換文字列'))
 
 class Mcombi(MCommand):#new
     def __init__(self):
@@ -1176,17 +1471,6 @@ class Mcombi(MCommand):#new
         self.params.append(Parameter('n', '組み合わせ数(必須)'))
         self.params.append(Parameter('s', '並び替えの後、f=で指定の列の組み合わせを求める列名'))
         self.params.append(Parameter('k', 'キー列名'))
-
-class Mcross(MCommand):#new
-    def __init__(self):
-        super().__init__()
-        self.name = 'mcross'
-        self.description = 'クロス集計'
-        self.params.append(Parameter('f', '指定列の値(必須)'))
-        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
-        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
-        self.params.append(Parameter('k', 'キー列名'))
-        self.params.append(Parameter('v', 'NULL値置換文字列'))
 
 class Mtra(MCommand):
     def __init__(self):
@@ -1329,7 +1613,7 @@ class SelectTargetColumn(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.selecttargetcolumn import SelectTargetColumn as Base
         command = Base()
         # 引数の設定
@@ -1357,7 +1641,7 @@ class Standardize(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.standardize import Standardize as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1384,7 +1668,7 @@ class Label_encode(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.label_encode import Label_encode as Base
         command = Base()
         inputs['i'].command_to_file()
@@ -1411,7 +1695,7 @@ class Normalize(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.normalize import Normalize as Base
         command = Base()
         inputs['i'].command_to_file()
@@ -1437,7 +1721,7 @@ class One_hot_encode(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.one_hot_encode import One_hot_encode as Base
         command = Base()
         inputs['i'].command_to_file()
@@ -1463,7 +1747,7 @@ class Pca(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.preprocess.pca import Pca as Base
         command = Base()
         inputs['i'].command_to_file()
@@ -1493,7 +1777,7 @@ class Kkmeans(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.clustering.kkmeans import Kkmeans as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1517,13 +1801,13 @@ class CKab(UnixCommand):
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('a', 'アルゴリズム（デフォルト：SAMME.R）'))#ここ２択、SAMMEとSAMME.R
         self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト値：50）'))
-        
+
     def execute(self, args, inputs):
         frame = Frame(str(uuid.uuid4()), self.source(args, inputs))
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kab import Kab as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1559,7 +1843,7 @@ class CKbag(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kbag import Kbag as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1593,7 +1877,7 @@ class CKdt(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kdt import Kdt as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1629,7 +1913,7 @@ class CKgb(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kgb import Kgb as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1663,7 +1947,7 @@ class CKnearestNeighbors(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.knearest_neighbors import Knearest_neighbors as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1701,7 +1985,7 @@ class CKneuralnet(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kneuralnet import Kneural_network as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1734,7 +2018,7 @@ class CKrf(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.krf import Krf as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1766,7 +2050,7 @@ class CKsvm(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.ksvm import Ksvm as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1796,7 +2080,7 @@ class KgaussianNb(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.kgaussian_nb import Kgaussian_nb as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1831,7 +2115,7 @@ class Klogreg(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.classification.klogreg import Klogreg as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1865,7 +2149,7 @@ class RKab(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kab import Kab as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1900,7 +2184,7 @@ class RKbag(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kbag import Kbag as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1934,7 +2218,7 @@ class RKdt(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kdt import Kdt as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -1970,7 +2254,7 @@ class RKgb(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kgb import Kgb as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2004,7 +2288,7 @@ class RKnearestNeighbors(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.knearest_neighbors import Knearest_neighbors as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2042,7 +2326,7 @@ class RKneuralnet(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kneuralnet import Kneural_network as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2075,7 +2359,7 @@ class RKrf(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.krf import Krf as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2107,7 +2391,7 @@ class RKsvm(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.ksvm import Ksvm as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2142,7 +2426,7 @@ class Kelastic(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kelastic import Kelastic as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2176,7 +2460,7 @@ class Kridge(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.kridge import Kridge as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2210,7 +2494,7 @@ class Klasso(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.klasso import Klasso as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2243,7 +2527,7 @@ class Klinreg(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.modeling.regression.klinreg import Klinreg as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
@@ -2267,7 +2551,6 @@ class Klinreg(UnixCommand):
 class Evaluate(UnixCommand):
     def __init__(self):
         super().__init__()
-        self.params.append(Parameter('d', 'test_data'))
         self.params.append(Parameter('m', 'select metrics appling model'))
         self.params.append(Parameter('p', 'set probability on'))
         self.params.append(Parameter('metrics_file_name', 'metrics_file_name'))
@@ -2277,15 +2560,17 @@ class Evaluate(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.postprocess.evaluate import Evaluate as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
 
         inputs['i'].command_to_file()
+        inputs['d'].command_to_file()
 
         cl_args = []
         cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-d', inputs['d'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])
@@ -2305,16 +2590,18 @@ class Predict(UnixCommand):
         return { self.o_ports[0]['name']: frame }
 
     def source(self, args, inputs):
-        frames_path = 'kskp/data/frames'
+        frames_path = os.environ['KENG_FRAMES_PATH']
         from .commands.kcmd.postprocess.predict import Predict as Base
         command = Base()
         # command.input = inputs['i'].source.fullpath
 
         inputs['i'].command_to_file()
+        inputs['d'].command_to_file()
 
         # 引数の設定
         cl_args = []
         cl_args.extend(['-i', inputs['i'].source.fullpath.as_posix()])
+        cl_args.extend(['-d', inputs['d'].source.fullpath.as_posix()])
         for key, value in args.items():
             if not len(value) == 0:
                 cl_args.extend(['--' + key, value]) if len(key) > 1 else cl_args.extend(['-' + key, value])

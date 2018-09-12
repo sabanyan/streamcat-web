@@ -1,0 +1,278 @@
+{
+  "projectId": 1,
+  "description":"",
+  "label": "日本NI様サンプル(基本統計量dummy)",
+  "params": [
+    {
+      "name": "sensor",
+      "type": "string"
+    }
+  ],
+  "ports": [
+    [],
+    []
+  ],
+  "nodes": [
+    {
+      "id": "i",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "5ff56eff-2537-4608-8605-4320d898195b",
+      "label": null
+    },
+    {
+      "id": "s1-1",
+      "type": "command",
+      "args": {
+        "f": "3H:3H_avg"
+      },
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t1"
+      },
+      "commandId": "mavg",
+      "label": null
+    },
+    {
+      "id": "t1",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s1-2",
+      "type": "command",
+      "args": {
+        "f": "Time,3H_avg"
+      },
+      "srcs": {
+        "i": "t1"
+      },
+      "dsts": {
+        "o": "o1"
+      },
+      "commandId": "mcut",
+      "label": null
+    },
+    {
+      "id": "o1",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s2-1",
+      "type": "command",
+      "args": {
+        "c": "sd",
+        "f": "3H:3H_sd"
+      },
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t2"
+      },
+      "commandId": "mstats",
+      "label": null
+    },
+    {
+      "id": "t2",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s2-2",
+      "type": "command",
+      "args": {
+        "f": "Time,3H_sd"
+      },
+      "srcs": {
+        "i": "t2"
+      },
+      "dsts": {
+        "o": "o2"
+      },
+      "commandId": "mcut",
+      "label": null
+    },
+    {
+      "id": "o2",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s3-1",
+      "type": "command",
+      "args": {
+        "c": "max",
+        "f": "3H:3H_max"
+      },
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t3"
+      },
+      "commandId": "mstats",
+      "label": null
+    },
+    {
+      "id": "t3",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s3-2",
+      "type": "command",
+      "args": {
+        "f": "Time,3H_max"
+      },
+      "srcs": {
+        "i": "t3"
+      },
+      "dsts": {
+        "o": "o3"
+      },
+      "commandId": "mcut",
+      "label": null
+    },
+    {
+      "id": "o3",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s4-1",
+      "type": "command",
+      "args": {
+        "c": "min",
+        "f": "3H:3H_min"
+      },
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t4"
+      },
+      "commandId": "mstats",
+      "label": null
+    },
+    {
+      "id": "t4",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s4-2",
+      "type": "command",
+      "args": {
+        "f": "Time,3H_min"
+      },
+      "srcs": {
+        "i": "t4"
+      },
+      "dsts": {
+        "o": "o4"
+      },
+      "commandId": "mcut",
+      "label": null
+    },
+    {
+      "id": "o4",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s_mjoin0",
+      "type": "command",
+      "args": {
+        "k": "Time",
+        "f": "",
+        "K": ""
+      },
+      "srcs": {
+        "i": "o1",
+        "m": "o2"
+      },
+      "dsts": {
+        "o": "join0-1"
+      },
+      "commandId": "mjoin",
+      "label": null
+    },
+    {
+      "id": "join0-1",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s_mjoin1",
+      "type": "command",
+      "args": {
+        "k": "Time",
+        "f": "",
+        "K": ""
+      },
+      "srcs": {
+        "i": "join0-1",
+        "m": "o3"
+      },
+      "dsts": {
+        "o": "join1-2"
+      },
+      "commandId": "mjoin",
+      "label": null
+    },
+    {
+      "id": "join1-2",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s_mjoin2",
+      "type": "command",
+      "args": {
+        "k": "Time",
+        "f": "",
+        "K": ""
+      },
+      "srcs": {
+        "i": "join1-2",
+        "m": "o4"
+      },
+      "dsts": {
+        "o": "o"
+      },
+      "commandId": "mjoin",
+      "label": null
+    },
+    {
+      "id": "o",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    }
+  ]
+}

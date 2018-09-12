@@ -1,9 +1,9 @@
 {
     "version": "0.7.0",
-    "id": "Standardize",
-    "label": "正規化",
+    "id": "standardize",
+    "label": "標準化",
     "classification": "preprocess",
-    "description": "データの正規化を行う",
+    "description": "データの標準化を行う",
     "ports": [
         [
             {
@@ -22,7 +22,7 @@
         {
             "name": "c",
             "type": "string",
-            "label": "正規化を行う行を選択"
+            "label": "標準化を行う行を選択"
         },
         {
             "name": "a",

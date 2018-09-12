@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "CKnearestNeighbors",
+    "id": "cknearest_neighbors",
     "label": "最近傍法による分類",
     "classification": "classification",
     "description": "学習データを蓄積、未知のデータを与えた道のデータを与えた際に、そのデータから距離が近い学習データを用いて、分類を行う。",

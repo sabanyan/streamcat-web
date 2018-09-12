@@ -1,0 +1,205 @@
+{
+  "projectId": 1,
+  "description":"",
+  "label": "日本NI様サンプル(4つのセンサーで統計量dummy)",
+  "params": [],
+  "ports": [
+    [],
+    []
+  ],
+  "nodes": [
+    {
+      "id": "i",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "5ff56eff-2537-4608-8605-4320d898195b",
+      "label": null
+    },
+    {
+      "id": "s0",
+      "type": "command",
+      "args": {
+        "x": true,
+        "f": "0,1,2,3,4"
+      },
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "t"
+      },
+      "commandId": "mcut",
+      "label": null
+    },
+    {
+      "id": "t",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s1",
+      "type": "flow",
+      "uuid": "6C21E7C3-8060-42D3-9C8E-E05592AE1979",
+      "args": {
+        "sensor": "3H"
+      },
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o1"
+      },
+      "label": null
+    },
+    {
+      "id": "o1",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s2",
+      "type": "flow",
+      "uuid": "6C21E7C3-8060-42D3-9C8E-E05592AE1979",
+      "args": {
+        "sensor": "3V"
+      },
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o2"
+      },
+      "label": null
+    },
+    {
+      "id": "o2",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s3",
+      "type": "flow",
+      "uuid": "6C21E7C3-8060-42D3-9C8E-E05592AE1979",
+      "args": {
+        "sensor": "4H"
+      },
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o3"
+      },
+      "label": null
+    },
+    {
+      "id": "o3",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s4",
+      "type": "flow",
+      "uuid": "6C21E7C3-8060-42D3-9C8E-E05592AE1979",
+      "args": {
+        "sensor": "4V"
+      },
+      "srcs": {
+        "i": "t"
+      },
+      "dsts": {
+        "o": "o4"
+      },
+      "label": null
+    },
+    {
+      "id": "o4",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s_mjoin0",
+      "type": "command",
+      "args": {
+        "k": "Time",
+        "f": "",
+        "K": ""
+      },
+      "srcs": {
+        "i": "o1",
+        "m": "o2"
+      },
+      "dsts": {
+        "o": "join0-1"
+      },
+      "commandId": "mjoin",
+      "label": null
+    },
+    {
+      "id": "join0-1",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s_mjoin1",
+      "type": "command",
+      "args": {
+        "k": "Time",
+        "f": "",
+        "K": ""
+      },
+      "srcs": {
+        "i": "join0-1",
+        "m": "o3"
+      },
+      "dsts": {
+        "o": "join1-2"
+      },
+      "commandId": "mjoin",
+      "label": null
+    },
+    {
+      "id": "join1-2",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    },
+    {
+      "id": "s_mjoin2",
+      "type": "command",
+      "args": {
+        "k": "Time",
+        "f": "",
+        "K": ""
+      },
+      "srcs": {
+        "i": "join1-2",
+        "m": "o4"
+      },
+      "dsts": {
+        "o": "o"
+      },
+      "commandId": "mjoin",
+      "label": null
+    },
+    {
+      "id": "o",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": null,
+      "label": null
+    }
+  ]
+}

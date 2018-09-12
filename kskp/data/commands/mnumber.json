@@ -10,6 +10,16 @@
       "name": "a",
       "type": "string",
       "label": "追加列名"
+    },
+    {
+      "name": "S",
+      "type": "string",
+      "label": "開始No"
+    },
+    {
+      "name": "k",
+      "type": "string",
+      "label": "項目名リスト"
     }
   ],
   "ports": [

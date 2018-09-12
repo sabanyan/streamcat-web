@@ -300,6 +300,7 @@ class ModelTestCase(unittest.TestCase):
             created_flow = json.loads(path.read_text(encoding='utf-8'))
 
             self.assertEqual(path.stem, data_source_name)
+            self.assertEqual(created_flow['description'], "")
             self.assertEqual(created_flow['projectId'], project_id)
             self.assertEqual(created_flow['label'], new_flow_name)
             self.assertEqual(created_flow['nodes'][0]['uuid'], "2C72275F-2019-49AE-B36D-A29D1507F8DD")
@@ -347,6 +348,12 @@ class ModelTestCase(unittest.TestCase):
         path.unlink()
 
     def test_fetch_flows(self):
+        """
+        fetch_flowsのテスト
+        複数取得できているかのテスト
+        """
+
+        unlink_path = []
         with app.app_context():
             # まず親プロジェクトを作る
             email = 'dev@kskp.io'
@@ -376,15 +383,18 @@ class ModelTestCase(unittest.TestCase):
             created_flow2 = model.create_flow(data2, session['user_id'], data_source_name2)
 
             flow1 = model.fetch_flow_by_uuid(data_source_name1)
+            unlink_path.append(model.get_flow_path_by_uuid(data_source_name1))
             flow2 = model.fetch_flow_by_uuid(data_source_name2)
-            paths = model.get_flow_paths_by_project_uuid(project_uuid)
+            unlink_path.append(model.get_flow_path_by_uuid(data_source_name2))
+
+            flows_list = model.fetch_flows_by_project_uuid(project_uuid)
 
         # 中身の確認
         self.assertEqual({flow1['projectId'], flow2['projectId']}, {project_id, project_id})
         self.assertEqual({flow1['label'], flow2['label']}, {new_flow_name1, new_flow_name2})
 
         # 後片付け
-        for path in paths:
+        for path in unlink_path:
             path.unlink()
 
 
@@ -423,7 +433,7 @@ class ModelTestCase(unittest.TestCase):
 
             # 今作ったプロジェクトのUUIDを取得する
             project_uuid = model.get_all_projects()[0]['uuid']
-            
+
             data_source_name = str(uuid.uuid4())
             data = {'project_uuid': project_uuid, 'name': 'フローテスト用', 'datasource': None}
             flow = model.create_flow(data, session['user_id'], data_source_name)

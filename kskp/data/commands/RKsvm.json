@@ -1,6 +1,6 @@
 {
     "version": "0.7.0",
-    "id": "RKsvm",
+    "id": "rksvm",
     "label": "サポートベクターマシンによる回帰",
     "classification": "regression",
     "description": "与えられたデータからサポートベクトル、マージンを作り出し、それらを用いて回帰を行う。",

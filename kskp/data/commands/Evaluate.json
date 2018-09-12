@@ -1,13 +1,17 @@
 {
     "version": "0.7.0",
-    "id": "Evaluate",
-    "label": "Evaluate",
+    "id": "evaluate",
+    "label": "評価",
     "classification": "postprocess",
     "description": "Evaluate",
     "ports": [
         [
             {
                 "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "d",
                 "type": "frame"
             }
         ],
@@ -19,11 +23,6 @@
         ]
     ],
     "params": [
-        {
-            "name": "d",
-            "type": "string",
-            "label": "test_data"
-        },
         {
             "name": "m",
             "type": "string",
