@@ -180,7 +180,7 @@
     {
       "id": "試験データ.csv",
       "position": {
-        "x": 99,
+        "x": 102,
         "y": 774
       },
       "size": {
@@ -230,6 +230,46 @@
         "p": ""
       },
       "commandId": "predict"
+    },
+    {
+      "id": "new a124d36f-063c-45ae-9e7f-8ad5562908b0",
+      "position": {
+        "x": 162,
+        "y": 1126
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv",
+      "label": "new a124d36f-063c-45ae-9e7f-8ad5562908b0"
+    },
+    {
+      "id": "new 48622df0-f2d0-4c6e-a5d3-284bc769ad14",
+      "position": {
+        "x": 162,
+        "y": 1044
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "new d0defcb5-c79d-4c44-82cc-0bc1800dfd0c"
+      },
+      "dsts": {
+        "o": "new a124d36f-063c-45ae-9e7f-8ad5562908b0"
+      },
+      "args": {
+        "f": "0",
+        "r": "false",
+        "x": "true"
+      },
+      "commandId": "mcut"
     }
   ]
 }

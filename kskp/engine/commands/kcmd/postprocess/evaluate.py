@@ -46,7 +46,7 @@ class Evaluate():
                             metavar="FILE", type=open, help="set test data")
         parser.add_argument("-p","--probability",dest="probability",help="set probability on",action="store_const",const=True,default=False)
         parser.add_argument("-m","--metrics",dest="metrics",help="select metrics appling model",choices=self.all_metrics.keys())
-        parser.add_argument("--metrics_file_name",dest="metrics_file_name",default="metrics.csv",type=str)
+        parser.add_argument("-u",dest="metrics_file_name",default="metrics.csv",type=str)
         return parser#.parse_args(args)
 
 
@@ -74,9 +74,10 @@ class Evaluate():
 
         #モデルの評価
         result=self.all_metrics[parsed.metrics](y_test,pred_df)
+
         #評価結果の出力(暫定)
-        print(parsed.metrics+":")
-        print(result)
+        # print(parsed.metrics+":")
+        # print(result)
         # result.to_csv(parsed.metrics_file_name,index=False)
 
         #出力

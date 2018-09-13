@@ -169,6 +169,7 @@ class Job:
                 for c_k, c_v in job.inputs.items():
                     if c_k == o_port['name']:
                         result[c_k] = c_v
+
         return result
 
     def get_datum(self, datum_id, datum):
@@ -178,6 +179,7 @@ class Job:
 
         self.expand_args(job)
         job.inputs = job.check_inputs(self.inputs_of(job))
+
         return job.execute()[port]
 
     def src_job_from(self, datum_id):
@@ -377,12 +379,11 @@ class MCommand(UnixCommand):
         return UnixCommandSource('csv', self.command_args(args, inputs), stdin=self.stdin(inputs))
 
 class MCommandNew(UnixCommand):
-    def __init__(self, nysol_mod, cmd_name=None):
+    def __init__(self, nysol_mod):
         super().__init__()
         self.i_ports = [{'name': 'i', 'type': 'frame'}]
         self.o_ports = [{'name': 'o', 'type': 'frame'}]
         self.nysol_mod = nysol_mod
-        self.name = cmd_name
 
     def command_args(self, args, inputs):
         args_for_nysol = args
@@ -390,6 +391,7 @@ class MCommandNew(UnixCommand):
 
         # jsonからくるオプションのbool値はstringなので、booleanに変更する
         # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
         import distutils.util
         for key, value in args_for_nysol.items():
             if value == 'true' or value == 'false':
@@ -401,14 +403,6 @@ class MCommandNew(UnixCommand):
             args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
         elif isinstance(input_i.source, NysolPythonSource):
             process_flow = input_i.source.nysol_module
-
-        # nm.cmd用の文字列のコマンドを作成する
-        if self.nysol_mod is nm.submod.cmd.Nysol_Excmd:
-            args_list = self.name
-            for key,value in args_for_nysol.items():
-                args_list += ' %s=%s' % (key, value)
-            args_list += ' o='
-            args_for_nysol = args_list
 
         return args_for_nysol, process_flow
 
@@ -424,6 +418,8 @@ class Msel(MCommandNew):
         self.name = 'msel'
         self.description = '行絞り込み'
         self.params.append(Parameter('c', '絞込条件式'))
+        self.disagree_output = str(uuid.uuid4())
+        self.disagre_source = None
 
 class MselOld(MCommand):
     def __init__(self):
@@ -619,21 +615,31 @@ class McatOld(MCommand):
 class Mjoin(MCommandNew):
     def __init__(self):
         super().__init__(nm.mjoin)
-
         self.name = 'mjoin'
         self.description = '結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            print(input_i)
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
         if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
@@ -641,9 +647,7 @@ class Mjoin(MCommandNew):
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MjoinOld(MCommand):
     def __init__(self):
@@ -812,12 +816,46 @@ class MsepOld(MCommand):#new
 
 class Msep2(MCommandNew):#mnew
     def __init__(self):
-        super().__init__(nm.cmd, 'msep2')
+        super().__init__(nm.cmd)
         self.name = 'msep2'
         self.description = '連番、項目値表の出力を伴った行分割'
         self.params.append(Parameter('k', '分割単位となる項目(必須)'))
         self.params.append(Parameter('O', '連番ファイルを作成するディレクトリ名(必須)'))
         self.params.append(Parameter('a', 'o=にて出力するファイル名の項目名(必須)'))
+
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+        stdout_param = None
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        # 自身がnm.cmdならば文字列のコマンドを作成する
+        if self.nysol_mod is nm.submod.cmd.Nysol_Excmd:
+            stdout_param = ' o='
+            args_list = self.name
+            for key,value in args_for_nysol.items():
+                args_list += ' %s=%s' % (key, value)
+            args_list += stdout_param
+            args_for_nysol = args_list
+
+        return args_for_nysol, process_flow, stdout_param
+
+    def source(self, args, inputs):
+        args, process_flow, stdout_param = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, stdout_param)
 
 class Msep2Old(MCommand):#mnew
     def __init__(self):
@@ -930,26 +968,34 @@ class Mnjoin(MCommandNew):
         self.description = '参照ファイル列の結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MnjoinOld(MCommand):
     def __init__(self):
@@ -985,26 +1031,34 @@ class Mrjoin(MCommandNew):
         self.description = '参照ファイル列の範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MrjoinOld(MCommand):#new
     def __init__(self):
@@ -1041,26 +1095,34 @@ class Mnrjoin(MCommandNew):#new
         self.description = '参照ファイルのの複数範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MnrjoinOld(MCommand):#new
     def __init__(self):
@@ -1096,26 +1158,34 @@ class Mvjoin(MCommandNew):#new
         self.description = 'ベクトル要素の参照結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MvjoinOld(MCommand):#new
     def __init__(self):
@@ -1150,26 +1220,34 @@ class Mvreplace(MCommandNew):#new
         self.description = 'ベクトル要素の参照置換'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MvreplaceOld(MCommand):#new
     def __init__(self):
@@ -1204,26 +1282,34 @@ class Mpaste(MCommandNew):#new
         self.description = '参照ファイル列の行番号マッチング結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MpasteOld(MCommand):#new
     def __init__(self):
@@ -1255,26 +1341,34 @@ class Mproduct(MCommandNew):#new
         self.description = '参照ファイルの直積結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MproductOld(MCommand):#new
     def __init__(self):
@@ -1305,28 +1399,39 @@ class Mcommon(MCommandNew):#new
         self.name = 'mcommon'
         self.description = '行選択'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.disagree_output = str(uuid.uuid4())
+        self.disagre_source = None
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            print(input_i)
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
-
+        return args_for_nysol, process_flow
 
 class McommonOld(MCommand):#new
     def __init__(self):
@@ -1359,27 +1464,39 @@ class Mnrcommon(MCommandNew):#new
         self.name = 'mnrcommon'
         self.description = '参照ファイルの複数範囲条件による行選択'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.disagree_output = str(uuid.uuid4())
+        self.disagre_source = None
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            print(input_i)
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class MnrcommonOld(MCommand):#new
     def __init__(self):
@@ -1415,26 +1532,35 @@ class Mvcommon(MCommandNew):#new
         self.description = 'ベクトル要素の参照選択'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
-    def execute(self, args, inputs):
+    def command_args(self, args, inputs):
         args_for_nysol = args
+        process_flow = None
 
-        if isinstance(inputs['i'].source, PathFileSource):
-            args_for_nysol.update({'i': inputs['i'].source.fullpath.as_posix()})
-        elif isinstance(inputs['i'].source, NysolPythonSource):
-            args_for_nysol.update({'i': inputs['i'].source.nysol_module})
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            print(input_i)
+            process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
-
-        if isinstance(inputs['i'].source, NysolPythonSource):
+        if isinstance(input_m.source, NysolPythonSource):
             args_for_nysol.update({'m': input_m.source.nysol_module})
         else:
             # パイプなら、CSVに吐く
             input_m.command_to_file()
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 
 class MvcommonOld(MCommand):#new
@@ -1591,7 +1717,7 @@ class Marff2csvOld(MCommand):#new
 
 class Mcsv2arff(MCommandNew):#new
     def __init__(self):
-        super().__init__(nm.cmd, 'mcsv2marff')
+        super().__init__(nm.cmd)
         self.name = 'mcsv2marff'
         self.description = 'csvからarff形式への変換'
         self.params.append(Parameter('n', '数値列名(必須)'))
@@ -1599,6 +1725,40 @@ class Mcsv2arff(MCommandNew):#new
         self.params.append(Parameter('D', '日付列名リスト(必須)'))
         self.params.append(Parameter('s', '文字列列名(必須)'))
         self.params.append(Parameter('T', 'タイトル名'))
+
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+        stdout_param = None
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        # 自身がnm.cmdならば文字列のコマンドを作成する
+        if self.nysol_mod is nm.submod.cmd.Nysol_Excmd:
+            stdout_param = ' o='
+            args_list = self.name
+            for key,value in args_for_nysol.items():
+                args_list += ' %s=%s' % (key, value)
+            args_list += stdout_param
+            args_for_nysol = args_list
+
+        return args_for_nysol, process_flow, stdout_param
+
+    def source(self, args, inputs):
+        args, process_flow, stdout_param = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, stdout_param)
 
 class Mcsv2arffOld(MCommand):#new
     def __init__(self):
@@ -1648,13 +1808,59 @@ class Mbest(MCommandNew):
         super().__init__(nm.mbest)
         self.name = 'mbest'
         self.description = '指定行選択'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('s', 'ソート対象列名(必須)'))
         self.params.append(Parameter('from', '選択する開始行番号'))
         self.params.append(Parameter('to', '選択する終了行番号'))
         self.params.append(Parameter('size', '選択する行数'))
-        self.params.append(Parameter('k', '指定列が同じ値の行ごとにfrom=,to=,sizeで指定した行番号の行を選択'))#???
-        # self.params.append(Parameter('u', '条件に合わないデータ出力ファイル名'))
+        self.params.append(Parameter('k', '指定列が同じ値の行ごとにfrom=,to=,sizeで指定した行番号の行を選択'))
+        self.disagree_uuid = str(uuid.uuid4())
+        self.disagree_source = None
+
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+        args_for_nysol.update({'u': ''})
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        # # 不一致出力先の指定(出力先がPathfileSourceの場合だけ！)
+        # self.disagree_source = PathFileSource('csv', os.environ['KENG_FRAMES_PATH'], self.disagree_uuid + '.csv')
+        # args_for_nysol.update({'u': self.disagree_source.fullpath.as_posix()})
+
+        return args_for_nysol, process_flow
+
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        source2 = self.source(args, inputs)
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+        frame = Frame(str(uuid.uuid4()), source)
+
+        # NysolPythonSourceを返すか、PathFileSourceを返すかはここで条件分岐かな？
+        return { self.out_key: frame , 'u': Frame(self.disagree_uuid, source2)}
+
+    def source(self, args, inputs):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow)
 
 class MbestOld(MCommand):
     def __init__(self):
@@ -1674,10 +1880,10 @@ class Mdelnull(MCommandNew):
         super().__init__(nm.mdelnull)
         self.name = 'mdelnull'
         self.description = 'NULL行削除'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('k', '削除する単位となるキー列名'))
-        # self.params.append(Parameter('u', '条件に合わないデータ出力ファイル名'))
+        self.disagree_output = str(uuid.uuid4())
+        self.disagre_source = None
 
 class MdelnullOld(MCommand):
     def __init__(self):
@@ -2309,11 +2515,44 @@ class MvuniqOld(MCommand):#new
 
 class Mchkcsv(MCommandNew):#new
     def __init__(self):
-        super().__init__(nm.cmd, 'mchkcsv')
+        super().__init__(nm.cmd)
         self.name = 'mchkcsv'
         self.description = 'csvデータのチェック・修復'
         self.params.append(Parameter('i', '入力ファイル名'))
         self.params.append(Parameter('a', '入力データ列を無視する、新しい列名'))
+
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+        stdout_param = None
+        # jsonからくるオプションのbool値はstringなので、booleanに変更する
+        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
+        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
+        import distutils.util
+        for key, value in args_for_nysol.items():
+            if value == 'true' or value == 'false':
+                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        # 文字列のコマンドを作成する
+        stdout_param = ' o='
+        args_list = self.name
+        for key,value in args_for_nysol.items():
+            args_list += ' %s=%s' % (key, value)
+        args_list += stdout_param
+        args_for_nysol = args_list
+
+        return args_for_nysol, process_flow, stdout_param
+
+    def source(self, args, inputs):
+        args, process_flow, stdout_param = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, stdout_param)
 
 class MchkcsvOld(MCommand):#new
     def __init__(self):
@@ -2328,6 +2567,7 @@ class KCommand(UnixCommand):
     def __init__(self, nysol_mod):
         super().__init__()
         self.nysol_mod = nysol_mod
+        self.stdout_param = ' -o '
 
     def command_args(self, args, inputs):
         cl_args = self.command_path
@@ -2343,18 +2583,18 @@ class KCommand(UnixCommand):
         # nm.cmd用の文字列のコマンドを作成する
         for key, value in args.items():
             if not len(value) == 0:
-                # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
+                # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しい。
                 if len(key) > 1:
                     cl_args += ' --' + key + ' ' + value
                 else:
                     cl_args += ' -' + key + ' ' + value
 
-        cl_args += ' -o '
+        cl_args += self.stdout_param
         return cl_args, process_flow
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('csv', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class SelectTargetColumn(KCommand):
     def __init__(self):
@@ -2622,7 +2862,7 @@ class CKab(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKabOld(UnixCommand):
     def __init__(self):
@@ -2672,7 +2912,7 @@ class CKbag(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKbagOld(UnixCommand):
     def __init__(self):
@@ -2723,7 +2963,7 @@ class CKdt(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKdtOld(UnixCommand):
     def __init__(self):
@@ -2775,7 +3015,7 @@ class CKgb(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKgbOld(UnixCommand):
     def __init__(self):
@@ -2827,7 +3067,7 @@ class CKnearestNeighbors(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKnearestNeighborsOld(UnixCommand):
     def __init__(self):
@@ -2881,7 +3121,7 @@ class CKneuralnet(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKneuralnetOld(UnixCommand):
     def __init__(self):
@@ -2934,7 +3174,7 @@ class CKrf(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKrfOld(UnixCommand):
     def __init__(self):
@@ -2981,7 +3221,7 @@ class CKsvm(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKsvmOld(UnixCommand):
     def __init__(self):
@@ -3025,7 +3265,7 @@ class KgaussianNb(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KgaussianNbOld(UnixCommand):
     def __init__(self):
@@ -3072,7 +3312,7 @@ class Klogreg(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KlogregOld(UnixCommand):
     def __init__(self):
@@ -3123,7 +3363,7 @@ class RKab(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKabOld(UnixCommand):
     def __init__(self):
@@ -3174,7 +3414,7 @@ class RKbag(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKbagOld(UnixCommand):
     def __init__(self):
@@ -3225,7 +3465,7 @@ class RKdt(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKdtOld(UnixCommand):
     def __init__(self):
@@ -3277,7 +3517,7 @@ class RKgb(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKgbOld(UnixCommand):
     def __init__(self):
@@ -3329,7 +3569,7 @@ class RKnearestNeighbors(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKnearestNeighborsOld(UnixCommand):
     def __init__(self):
@@ -3383,7 +3623,7 @@ class RKneuralnet(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKneuralnetOld(UnixCommand):
     def __init__(self):
@@ -3436,7 +3676,7 @@ class RKrf(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKrfOld(UnixCommand):
     def __init__(self):
@@ -3483,7 +3723,7 @@ class RKsvm(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKsvmOld(UnixCommand):
     def __init__(self):
@@ -3532,7 +3772,7 @@ class Kelastic(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KelasticOld(UnixCommand):
     def __init__(self):
@@ -3583,7 +3823,7 @@ class Kridge(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KridgeOld(UnixCommand):
     def __init__(self):
@@ -3633,7 +3873,7 @@ class Klasso(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KlassoOld(UnixCommand):
     def __init__(self):
@@ -3682,7 +3922,7 @@ class Klinreg(KCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KlinregOld(UnixCommand):
     def __init__(self):
@@ -3726,6 +3966,7 @@ class Evaluate(KCommand):
         self.params.append(Parameter('m', 'select metrics appling model'))
         self.params.append(Parameter('p', 'set probability on'))
         self.params.append(Parameter('metrics_file_name', 'metrics_file_name'))
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
         cl_args = self.command_path
@@ -3751,7 +3992,7 @@ class Evaluate(KCommand):
                     cl_args += ' --' + key + ' ' + value
                 else:
                     cl_args += ' -' + key + ' ' + value
-        cl_args += ' -o '
+        cl_args += self.stdout_param
         return cl_args, process_flow
 
 class EvaluateOld(UnixCommand):
@@ -3817,7 +4058,7 @@ class Predict(KCommand):
                     cl_args += ' --' + key + ' ' + value
                 else:
                     cl_args += ' -' + key + ' ' + value
-        cl_args += ' -o '
+        cl_args += self.stdout_param
         return cl_args, process_flow
 
 class PredictOld(UnixCommand):
