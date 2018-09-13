@@ -5,6 +5,7 @@
   justify-content: space-between;
   .data_table_body{
     width: calc(100% - 400px)!important;
+    overflow: scroll;
     display: flex;
     align-items: stretch;
   }
