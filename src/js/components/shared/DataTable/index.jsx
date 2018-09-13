@@ -5,18 +5,20 @@ import DataTableInspector from '../Inspector/DataTableInspector'
 
 type Props = {
   json: {
-    data: any;//TODO resetting
+    datasets: [];
+    labels: [];
     success: boolean;
     errormessage: string;
     errorcode: number;
     columns: string[]
-  }
+  };
+  title: string;
 }
 
 export default class DataTable extends React.Component<Props> {
   render () {
 
-    let {json} = this.props
+    let {json,title} = this.props
     let tr
     let body_trs
     let tds
@@ -26,69 +28,39 @@ export default class DataTable extends React.Component<Props> {
       return null
     }
 
-    // if (json.data && !Object.keys(json.data).length) {
-    //   return <div>
-    //     表示できるデータがありません
-    //   </div>
-    // }
-    //
-    // if (json.errorcode) {
-    //   return <div>
-    //     <div className="mb-16px">サーバでエラーが発生したため結果を表示することができませんでした</div>
-    //     <strong>エラー({json.errorcode})</strong>
-    //     <div>
-    //       {json.errormessage}
-    //     </div>
-    //   </div>
-    // }
-
     head_ths = []
 
-    // if (json.labels) {
-      // json.labels.map((value, index) => {
-      //   head_ths.push(<th key={index}>{value}</th>)
-      // })
+    body_trs = []
+    tds = []
+    /**
+     * ヘッダー行の設定
+     */
+    json.labels.forEach((label:string, index:number) => {
+      tds.push(<th key={'th_' + index}>{label}</th>)
+    })
+    body_trs.push(<tr key={'tr_th'}>{tds}</tr>)
 
-      /**
-       * データ行の設定
-       */
-      body_trs = []
-      json.datasets.map((dataset, index) => {
-        tds = []
-        /**
-         * ヘッダー行の設定
-         */
-        tds.push(<th key={"th_"+index}>{json.labels[index]}</th>)
-        dataset.data.map(function (data, index) {
-          tds.push(<td key={"td_"+index}>{data}</td>)
-        })
-        body_trs.push(<tr key={"tr_"+index}>{tds}</tr>)
+    /**
+     * データ行の最大行数の取得
+     * @type {number}
+     */
+    let max_row = 0
+    json.datasets.forEach((dataset) => {
+      max_row = Math.max(max_row, dataset.data.length)
+    })
+
+    /**
+     * データ行の設定
+     */
+    for (let row:number = 0; row < max_row; row++) {
+      tds = []
+      json.labels.map(function (label:string, col:number) {
+        if (json.datasets[col].label === label) {
+          tds.push(<td key={'td_' + col}>{json.datasets[col].data[row]}</td>)
+        }
       })
-
-    // }
-    // else {
-    //   const first_key = Object.keys(json.data)[0]
-    //   let data_cnt = json.data[first_key].length
-    //   /**
-    //    * ヘッダー行の設定
-    //    */
-    //   Object.keys(json.data).map((key, index) => {
-    //     head_ths.push(<th key={index}>{key}</th>)
-    //   })
-    //
-    //   /**
-    //    * データ行の設定
-    //    */
-    //   body_trs = []
-    //   for (let i = 0; i < data_cnt; i++) {
-    //     tds = []
-    //     Object.keys(json.data).map((key, index) => {
-    //       tds.push(<td key={index}>{json.data[key][i]}</td>)
-    //     })
-    //     body_trs.push(<tr key={i}>{tds}</tr>)
-    //   }
-    // }
-
+      body_trs.push(<tr key={'tr_' + row}>{tds}</tr>)
+    }
     return <div className={style.data_table_container}>
       <div className={style.data_table_body}>
         <table
@@ -104,7 +76,7 @@ export default class DataTable extends React.Component<Props> {
         </table>
       </div>
       <div className={style.data_table_property}>
-        <DataTableInspector/>
+        <DataTableInspector title={title} />
       </div>
     </div>
   }
