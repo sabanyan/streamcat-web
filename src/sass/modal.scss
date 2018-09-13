@@ -17,10 +17,7 @@ $preview-height: 100%;
       .modal-body{
         overflow: scroll;
         padding:0;
-        -webkit-user-select: text;
-        -moz-user-select: text;
-        -ms-user-select: text;
-        user-select: text;
+        @extend .user-select;
       }
     }
     .close{
@@ -46,10 +43,7 @@ $preview-height: 100%;
     .modal-body{
       max-height: 420px;
       overflow: scroll;
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
-      user-select: text;
+      @extend .user-select;
     }
   }
   .modal-header{

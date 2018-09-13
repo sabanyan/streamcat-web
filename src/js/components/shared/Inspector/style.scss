@@ -9,14 +9,13 @@
   transition: opacity 0.2s linear, right 0.2s ease-in;
   opacity: 0;
   box-shadow: 0 1px 3px $kskp-property-shadow;
+  @extend .user-select;
 }
 
 .in {
   right: 0;
   opacity: 1;
 }
-
-
 
 .property_container {
   height: 100%;
