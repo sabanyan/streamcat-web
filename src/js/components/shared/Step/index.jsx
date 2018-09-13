@@ -304,7 +304,6 @@ export default class Step extends React.Component<Props, State> {
     const selected = this.selectorIntersect()
 
 
-    step.label = (step.label)?step.label:step.id
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
     if(flowIn || flowOut){
