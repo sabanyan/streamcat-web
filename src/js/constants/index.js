@@ -42,6 +42,12 @@ const Constants = {
       subflow:"flow"
     }
   },
+  param:{
+    type:{
+      string:"string",
+      boolean:"boolean"
+    }
+  },
   data:{
     dataSource:{
       csv:"csv"

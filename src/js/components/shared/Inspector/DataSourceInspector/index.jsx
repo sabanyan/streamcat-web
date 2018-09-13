@@ -88,11 +88,12 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   previewFromUUID(uuid:string,label:string){
+    const selected_step = this.getSelectedStep()
     HttpUtil.get("frames/"+uuid).then((response)=>{
       const json = response.data
       let contentGraph = <DataPreview key={uuid} json={json} />
       let contentTable = <div className="table-responsive">
-        <DataTable json={ChartUtil.jsonToChart(json.data.contents)}></DataTable>
+        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.label}></DataTable>
       </div>
 
       ModalUtil.emitModal({

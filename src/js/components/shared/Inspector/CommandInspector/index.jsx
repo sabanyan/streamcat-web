@@ -15,6 +15,9 @@ import FlowModel from '../../../../model/Flow/FlowModel'
 import Loader from '../../Loader/index'
 import FlowUtil from '../../../../utils/FlowUtil'
 import ModalUtil from '../../../../utils/ModalUtil'
+import ParamString from '../../Param/ParamString'
+import ParamBoolean from '../../Param/ParamBoolean'
+import ParamUtil from '../../../../utils/ParamUtil'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -22,9 +25,15 @@ type CommandInspectorProps = {
 }
 
 class CommandInspector extends React.Component<CommandInspectorProps> {
+    inputRefs: any[]
 
     selectedSubFlow:FlowModel
     loaded:boolean = false
+
+    constructor(props: CommandInspectorProps) {
+      super(props)
+      this.inputRefs = []
+    }
 
     componentWillMount () {
       //データフレームの詳細を取得する
@@ -55,10 +64,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     onClickSave(e:Event) {
         let selected_step = this.getSelectedStep()
 
-        //パラメーターを更新
-        Object.keys(this.refs).map((key)=>{
-              selected_step.args[key] = this.refs[key].value
-        })
+      console.log("SAVE")
+        console.log(this.inputRefs)
+
+        selected_step.args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
 
         this.props.updateStep(selected_step)
         this.props.selectSteps()
@@ -94,6 +103,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       console.log(data)
     }
 
+    onBuild(param,element){
+      if (element)this.inputRefs.push({param: param, element: element})
+    }
+
     render() {
         const {commands} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
@@ -102,14 +115,15 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         if(selected_step.type === Constants.step.type.command){
           const command:CommandModel = selected_step.getCommand(commands)
           title = (command)?command.label:selected_step.commandId
+          this.inputRefs = []
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
             const command:CommandModel = selected_step.getCommand(commands)
             const param:CommandParamType = FlowUtil.getCommandParam(key,command)
+            const onBuild = (param,element) => this.onBuild(param,element)
+            let paramElement = ParamUtil.getParamElement(param,onBuild,parameter,param.name)
             return <div key={index}>
-              <label>{param.label}</label>
-              <label className="float-right">{param.name}</label>
-              <input type="text" className="form-control" defaultValue={parameter} placeholder={param.name} ref={param.name}/>
+              {paramElement}
             </div>
           })
         }else if(selected_step.type === Constants.step.type.subflow){

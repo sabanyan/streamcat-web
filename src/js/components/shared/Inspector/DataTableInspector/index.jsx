@@ -13,11 +13,12 @@ import BaseInspector from '../BaseInspector'
 class DataTableInspector extends React.Component<FlowEditorProps> {
 
   render () {
+    const {title} = this.props
     const content = <div>
       
     </div>
 
-    return <BaseInspector header={""} title={""} {...this.props}>
+    return <BaseInspector header={""} title={title} {...this.props}>
       {content}
     </BaseInspector>
   }
