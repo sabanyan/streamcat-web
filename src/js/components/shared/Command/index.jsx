@@ -9,8 +9,11 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandModel from '../../../model/Command/CommandModel'
 import CommandIcon from '../Icon/CommandIcon'
 import type { CommandStepModelProps } from '../../../model/Step/CommandStepModel'
-import type { CommandPortType } from '../../../types'
+import type { CommandParamType, CommandPortType } from '../../../types'
 import WebUtil from '../../../utils/WebUtil'
+import ParamString from '../Param/ParamString'
+import ParamBoolean from '../Param/ParamBoolean'
+import ParamUtil from '../../../utils/ParamUtil'
 
 type Props = {
     command: CommandModel;
@@ -27,17 +30,26 @@ export default class OCommand extends React.Component<Props> {
         this.inputRefs = []
     }
 
+    onBuild(param,element){
+      if (element)this.inputRefs.push({param: param, element: element})
+    }
+
     buildParamsContent() {
         const {command} = this.props
         this.inputRefs = [] //クリア
-        const paramsInputs = command.params.map((param) => {
+        const paramsInputs = command.params.map((param:CommandParamType) => {
+          const onBuild = (param,element) => this.onBuild(param,element)
+          let paramElement = ParamUtil.getParamElement(param,onBuild)
+          // switch (param.type){
+          //   case Constants.param.type.string:
+          //     paramElement =  <ParamString param = {param} defaultValue={""} onBuild={(param,element)=>this.onBuild(param,element)}/>
+          //     break
+          //   case Constants.param.type.boolean:
+          //     paramElement =  <ParamBoolean param = {param} defaultValue={false} onBuild={(param,element)=>this.onBuild(param,element)}/>
+          //     break
+          // }
             return <div key={command.id + "_" + param.name} className="mb-8px">
-                <label>
-                  {param.label}
-                </label>
-                <input type="text" className="form-control" placeholder={param.name} ref={(element) => {
-                    if (element) (this.inputRefs.push({param: param, element: element}))
-                }} defaultValue={""}></input>
+              {paramElement}
             </div>
         })
 
@@ -67,12 +79,7 @@ export default class OCommand extends React.Component<Props> {
                 let args = {}
 
                 //モーダルで入力されたパラメータを取得
-                self.inputRefs.map((inputRef) => {
-                  console.log( inputRef.param.name)
-                  console.log( inputRef.element.value)
-                    args[inputRef.param.name] = inputRef.element.value
-                    inputRef.element.value = "" //値をクリア
-                })
+                args = ParamUtil.getArgsFromInputRefs(self.inputRefs)
 
                 const added_command_step: CommandStepModelProps = new CommandStepModel({
                   id: null,
