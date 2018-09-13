@@ -55,39 +55,47 @@ class Source:
 
 class NysolPythonSource(Source):
 
-    def __init__(self, source_type, mod, args, process_flow=None):
+    def __init__(self, source_type, mod, args, process_flow=None, stdout_param=None):
         """ argsいらんかもな、そのままmodに全部持っておけるので """
         super().__init__(source_type)
         self.mod = mod # クラスをそのまま
         self.args = args # dict
         self.process_flow = process_flow
+        self.stdout_param = stdout_param
 
-        self.stdout_dict = {
-            ' o=':'',
-            ' -o ':''
-        }
+        # コンストラクタの引数が多くなったが、DIを考えて結局こうなった
+        # 引数が多いと必要以上に債務を持っているんじゃないかと不安になる。
+        # 新しいcommnandが増えて、それで変化しないようならこのまま、
+        # また何か変化するようなら少し作り直そう。。。
 
     @property
     def nysol_module(self):
         f = self.process_flow
         args = self.args
+        # nm.cmdの場合コマンドがstrで、各commandクラスで出力パラメータを設定していてPIPEで繋ぐ時はいらないのでそれを削除する
         if isinstance(args, str):
-            for key, value in self.stdout_dict.items():
-                args = args.replace(key, value)
+            args = args.replace(self.stdout_param, '')
         f <<= self.mod(args)
         return f
 
+    # def nysol_module_redirect(self):
+    #     f = self.process_flow
+    #     args = self.args
+    #     # args.update({'o': '/kskp/data/result.csv'})
+    #     f <<= self.mod(args)
+    #     return f.redirect('u')
+
     def save(self, stdout):
         """ engineから使う最後の保存用 """
-        # self.mod.runしてその結果をstdoutに書くだけ
-        # nm.cmdはコマンドが文字列なので判別する
         args = self.args
+        # self.mod.runしてその結果をstdoutに書くだけ
+        # nm.cmdはコマンドが文字列なのでそれで判別する
         if isinstance(self.args, str):
-            for key in self.stdout_dict.keys():
-                args = args.replace(key, key + stdout)
+            # 設定されていた出力パラメータを出力先が入った状態で置き換える
+            args = args.replace(self.stdout_param, self.stdout_param + stdout)
         elif isinstance(self.args, dict):
             args.update({'o': stdout})
-        print(args)
+        # print(args)
         mod = self.mod(args)
         self.process_flow <<= mod
         self.process_flow.run()
