@@ -236,6 +236,7 @@ class Graph {
             id: frame.id,
             type: Constants.step.type.frame,
             uuid: frame.uuid,
+            label: frame.label,
             dataSource: Constants.data.dataSource.csv,
             position: frame.position,
             size: frame.size,
