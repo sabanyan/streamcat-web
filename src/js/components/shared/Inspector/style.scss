@@ -117,17 +117,17 @@
   width: 100%;
   padding: 4px 8px;
   position: relative;
-  &::before{
-    content: "編集";
-    position: absolute;
-    top: 8px;
-    right: 8px;
-  }
+  color: $kskp-text;
+  border-bottom: 1px dotted transparent;
   &:hover{
-    border-bottom: 2px dotted $kskp-text;
+    border-bottom: 1px dotted $kskp-text;
     cursor: pointer;
   }
   &:active,&:focus{
     border: inherit;
+  }
+  &:disabled{
+    border:none!important;
+    cursor: default;
   }
 }
