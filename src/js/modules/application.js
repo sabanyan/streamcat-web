@@ -203,6 +203,7 @@ const Application = (state = initialState, action:{}) => {
                   //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
                   let command:CommandModelType
                   if(add_step instanceof SubFlowStepModel){
+                    console.log(add_step)
                     command = add_step.getCommand(newState.mast.subflows)
                     console.log("subflow")
                   }
@@ -210,6 +211,8 @@ const Application = (state = initialState, action:{}) => {
                     command = add_step.getCommand(newState.mast.commands)
                     console.log("command")
                   }
+                console.log(add_step)
+                console.log(command)
                   const inPorts:[CommandPortType] = command.getInPorts()
                   const outPorts:[CommandPortType] = command.getOutPorts()
                   src_step_ids.forEach((id,index)=>{

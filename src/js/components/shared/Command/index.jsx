@@ -73,7 +73,7 @@ export default class Command extends React.Component<Props> {
     getNewStepWithArgs(command:CommandModelType,args):CommandStepModelProps{
       let node
       let model = {
-        id: command.id,
+        id: null,
         name: command.label,
         label: command.label,
         args: args,
@@ -81,7 +81,7 @@ export default class Command extends React.Component<Props> {
 
       if(command instanceof CommandModel){
         model.type = Constants.step.type.command
-        model.commandId = command.commandId
+        model.commandId = command.id
         node = new CommandStepModel(model)
       }else if(command instanceof SubflowCommandModel){
         model.type = Constants.step.type.subflow
