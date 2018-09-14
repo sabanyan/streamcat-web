@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import sys
 import pickle
 
@@ -10,8 +11,6 @@ from .common.preprocess import Preprocess
 class SelectTargetColumn(Preprocess):
 
     def rename_target_column(self, data):
-        print(data)
-        print(type(data))
         renamed = data.rename(columns={ self.target_colname: 'target' })
         return renamed
 
@@ -44,8 +43,7 @@ class SelectTargetColumn(Preprocess):
         self.remove_temp_files()
 
         # 入力ファイル読み込み
-        data = pd.read_csv(self.input) if stdin is None else pd.read_csv(stdin)
-        # data = args['-i']
+        data = pd.read_csv(self.input)if stdin is None else pd.read_csv(stdin)
 
         # ターゲット列の列名を変更
         renamed = self.rename_target_column(data)

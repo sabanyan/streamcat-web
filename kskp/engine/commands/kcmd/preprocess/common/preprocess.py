@@ -26,7 +26,7 @@ class Preprocess():
 		共通オプションを追加したパーサーを返します。
 		"""
 		parser = argparse.ArgumentParser()
-
+		
 		parser.add_argument('-i', '--input', dest='input',
 			help='set input file name on first preprocess', default=sys.stdin, type=str)
 		parser.add_argument('-o', '--output', dest='output',

@@ -118,7 +118,7 @@ class PathFileSource(FileSource):
 
     @property
     def fd(self):
-        self._fd = open(self.fullpath, 'r')
+        self._fd = open(self.fullpath, 'w+')
         return self._fd
 
     @fd.setter
@@ -166,8 +166,9 @@ class UnixCommandSource(FileSource):
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
+        print('fjdwie\n')
         if self.stdin is not None and self.stdin.closed:
-            # print('closed:', self.args)
+            print('closed:', self.args)
             return
         popen = subprocess.Popen(self.args, stdin=self.stdin, stdout=stdout)
         if self.stdin is not None:
@@ -254,6 +255,7 @@ class Frame(Datum):
 
     def command_to_file(self):#todo ファイル書き込みの効果を失わせてる
         if self.source is not None and not isinstance(self.source, PathFileSource):
+            print(self.source)
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
             # with new_source.fullpath.open(mode='w', encoding='utf-8') as fd:
