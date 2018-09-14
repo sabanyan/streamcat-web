@@ -19,7 +19,7 @@ export default class SubFlowStepModel extends CommandStepModel{
   getCommand(commands:[SubflowCommandModel]):SubflowCommandModel{
     let command = null;
     commands.forEach((_command)=>{
-      if(this.id === _command.id){
+      if(this.uuid === _command.uuid){
         command = _command
       }
     })
