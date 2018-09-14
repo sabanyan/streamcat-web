@@ -4,49 +4,105 @@
   "creator": "開発用",
   "createdAt": "2018-07-27T08:25:19+09:00",
   "params": [],
-  "ports": [[], []],
+  "ports": [
+    [],
+    []
+  ],
   "nodes": [
     {
       "id": "Bi",
+      "position": {
+        "x": 99,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
+      "uuid": "4C545611-4569-4CD5-800E-55BE69CF8BA8",
       "dataSource": "csv",
-      "uuid": "4C545611-4569-4CD5-800E-55BE69CF8BA8"
+      "label": "Bi"
     },
     {
       "id": "B1",
+      "position": {
+        "x": 99,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "flow",
-      "uuid": "1D01BA67-789B-41D5-95A9-CC84D2E4EFA7",
+      "label": "B1",
+      "srcs": {
+        "Ci": "Bi"
+      },
+      "dsts": {
+        "Co1": "Bt"
+      },
       "args": {
         "c": "${A}>2",
         "f1": "B,C",
         "f2": "A"
       },
-      "srcs": { "Ci": "Bi" },
-      "dsts": { "Co1": "Bt" }
+      "uuid": "1D01BA67-789B-41D5-95A9-CC84D2E4EFA7"
     },
     {
       "id": "Bt",
+      "position": {
+        "x": 99,
+        "y": 283
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
+      "uuid": null,
       "dataSource": "csv",
-      "uuid": null
+      "label": "Bt"
     },
     {
       "id": "B2",
+      "position": {
+        "x": 99,
+        "y": 365
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "flow",
-      "uuid": "1D01BA67-789B-41D5-95A9-CC84D2E4EFA7",
+      "label": "B2",
+      "srcs": {
+        "Ci": "Bt"
+      },
+      "dsts": {
+        "Co2": "Bo"
+      },
       "args": {
         "c": "${B}>30",
         "f1": "B",
         "f2": "C"
       },
-      "srcs": { "Ci": "Bt" },
-      "dsts": { "Co2": "Bo" }
+      "uuid": "1D01BA67-789B-41D5-95A9-CC84D2E4EFA7"
     },
     {
       "id": "Bo",
+      "position": {
+        "x": 99,
+        "y": 447
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
       "type": "frame",
+      "uuid": null,
       "dataSource": "csv",
-      "uuid": null
+      "label": "Bo"
     }
   ]
 }

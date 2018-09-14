@@ -82,7 +82,12 @@ class Standardize(Preprocess):
         self.set_parsed_args_unique(parsed)
 
         #入力ファイル読み込み
-        data = pd.read_csv(self.input) if stdin is None else pd.read_csv(stdin)
+        # data = pd.read_csv(self.input)if stdin is None else pd.read_csv(stdin)
+        if stdin is None:
+            data = pd.read_csv(self.input)
+        else:
+            data = pd.read_csv(stdin)
+        # data = read(Popen.stdout.read())
 
         #標準化
         standardized = self.standardize(data)
