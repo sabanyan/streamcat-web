@@ -110,7 +110,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     render() {
         const {commands} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
-        let inputForm,subFlowLink,content,title
+        let inputForm = [],subFlowLink,content,title
+        const onBuild = (param,element) => this.onBuild(param,element)
 
         if(selected_step.type === Constants.step.type.command){
           const command:CommandModel = selected_step.getCommand(commands)
@@ -120,7 +121,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             const parameter = selected_step.args[key]
             const command:CommandModel = selected_step.getCommand(commands)
             const param:CommandParamType = FlowUtil.getCommandParam(key,command)
-            const onBuild = (param,element) => this.onBuild(param,element)
             let paramElement = ParamUtil.getParamElement(param,onBuild,parameter,param.name)
             return <div key={index}>
               {paramElement}
@@ -132,13 +132,25 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             const parameter = selected_step.args[key]
             const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,key))
             const param:SubFlowParamType = (hasSubFlowParam)?FlowUtil.getSubFlowParam(this.selectedSubFlow,key):key
+            let paramElement = ParamUtil.getParamElement(param,onBuild,parameter,param.name)
             return <div key={index}>
-              <label>{param.name}</label>
               <label className="float-right text-danger">{(hasSubFlowParam)?"":"不明なパラメーター"}</label>
-              <input type="text" className="form-control" defaultValue={parameter} placeholder={param.name} ref={param.name}/>
+              {paramElement}
             </div>
           })
           subFlowLink = <a href={"/flows/"+selected_step.uuid} target={"_blank"}>フローを開く</a>
+        }
+
+        let form
+        if(inputForm.length){
+          form = <div>
+                <div className={style.full_hr} />
+                <div>
+                  <div className="kskp-form">
+                  {inputForm}
+                </div>
+            </div>
+          </div>
         }
 
         if(!this.loaded){
@@ -148,13 +160,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             {subFlowLink}
             <div className={style.full_hr} />
             <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step} selectedSubFlow={this.selectedSubFlow}/>
+            {form}
             <div className={style.full_hr} />
-            <div>
-              <div className="kskp-form">
-                {inputForm}
-              </div>
-            </div>
-            <br />
             <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
             <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
           </div>

@@ -107,6 +107,7 @@ const Constants = {
   },
   lang:{
     classification:{
+      subflow:"サブフロー",
       calculation:"項目間の計算",
       col_edit:"列に対する選択・加工",
       data_format:"フォーマットの整形",

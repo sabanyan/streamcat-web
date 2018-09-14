@@ -1,6 +1,8 @@
 //@flow
-import type { CommandStepModelProps } from './CommandStepModel'
 import CommandStepModel from './CommandStepModel'
+import type { CommandStepModelProps } from './CommandStepModel'
+import type { CommandModelType } from '../../types'
+import SubflowCommandModel from '../Command/SubflowCommandModel'
 
 export type SubFlowStepModelProps = {
   ...CommandStepModelProps,
@@ -14,4 +16,14 @@ export default class SubFlowStepModel extends CommandStepModel{
     this.initialize(props,"uuid")
   }
 
+  getCommand(commands:[SubflowCommandModel]):SubflowCommandModel{
+    let command = null;
+    commands.forEach((_command)=>{
+      if(this.id === _command.id){
+        command = _command
+      }
+    })
+    console.log(command)
+    return command
+  }
 }

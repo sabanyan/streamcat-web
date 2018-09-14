@@ -1,6 +1,7 @@
 //@flow
 import React from 'react'
 import type { CommandParamType } from '../../../../types/index'
+import Param from '../index'
 //import classnames from 'classnames'
 //import style from './style.scss'
 
@@ -11,7 +12,7 @@ type Props = {
   refValue?: any;
 }
 
-export default class ParamBoolean extends React.Component<Props> {
+export default class ParamBoolean extends Param {
 
   constructor (props: Props) {
     super(props)

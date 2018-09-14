@@ -3,6 +3,8 @@ import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
 import BaseModel from './BaseModel'
 import BaseModelProps from './BaseModel'
+import type { CommandModelType } from '../../types'
+import CommandModel from '../Command/CommandModel'
 
 type stepType = "command" | "frame"
 
@@ -60,9 +62,9 @@ export default class CommandStepModel extends BaseModel{
     return steps
   }
 
-  getCommand(commands):CommandModel{
+  getCommand(commands:[CommandModel]):CommandModel{
     let command = null;
-    commands.map((_command)=>{
+    commands.forEach((_command)=>{
       if(this.commandId === _command.id){
         command = _command
       }
