@@ -110,8 +110,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     render() {
         const {commands} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
-        let inputForm = [],subFlowLink,content,title
+        let inputForm = []
+        let subFlowLink,content,title
         const onBuild = (param,element) => this.onBuild(param,element)
+
 
         if(selected_step.type === Constants.step.type.command){
           const command:CommandModel = selected_step.getCommand(commands)
@@ -167,8 +169,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           </div>
         }
 
-
-        return <BaseInspector key={selected_step.id} header={selected_step.text} title={title} {...this.props}>
+        return <BaseInspector key={selected_step.id} header={""} label={title} id={selected_step.id} {...this.props}>
           {content}
         </BaseInspector>
     }

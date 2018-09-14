@@ -4,6 +4,8 @@ import style from '../style.scss'
 import InOutConnector from '../CommandInspector/InOutConnector/index'
 
 type Props = {
+  id?:string;
+  label?:string;
   header?: string;
   title?: (string|React.Node);
   children?: React.Node;
@@ -29,12 +31,11 @@ class BaseInspector extends React.Component<Props> {
 
   render () {
 
-    const {header, title, children,onBlurTitle} = this.props
+    const {header,id, label, children,onBlurTitle} = this.props
 
-    let titleContainer = <div>title</div>
-    if(onBlurTitle){
-      titleContainer =  <input type="text" ref={"title"} onBlur={(e)=>onBlurTitle(e)} className={style.title} defaultValue={title}></input>
-    }
+    const title = (label)?label:id
+    let labelContainer
+    labelContainer =  <input type="text" ref={"title"} onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null} className={style.title} defaultValue={title} disabled={((!onBlurTitle)?true:false)}></input>
 
     return <div className={style.property_container}>
       <div className={style.property_header}>
@@ -42,12 +43,13 @@ class BaseInspector extends React.Component<Props> {
       </div>
       <div className={style.property_body}>
         <div className={style.property_title}>
-          {titleContainer}
+          {labelContainer}
         </div>
         {children}
       </div>
     </div>
   }
+
 
 }
 
