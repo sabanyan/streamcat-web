@@ -17,8 +17,6 @@ export default class ParamUtil {
       switch (inputRef.param.type){
         case Constants.param.type.string:
           args[inputRef.param.name] = inputRef.element.value
-          console.log(Constants.param.type.string)
-          console.log(inputRef.element.value)
           break
         case Constants.param.type.boolean:
           args[inputRef.param.name] = (inputRef.element.checked)?true:false
@@ -37,6 +35,9 @@ export default class ParamUtil {
         break
       case Constants.param.type.boolean:
         paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}/>
+        break
+      default:
+        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} disabled={true}/>
         break
     }
     return paramElement

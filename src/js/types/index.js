@@ -3,6 +3,7 @@ import CommandStepModel from '../model/Step/CommandStepModel'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import * as React from 'react'
+import CommandModel from '../model/Command/CommandModel'
 
 export type StepModelType = CommandStepModel|SubFlowStepModel|DataFrameStepModel
 export type CommandParamType = {
@@ -11,8 +12,26 @@ export type CommandParamType = {
   type: string;
 }
 
+export type SubFlowCommandParamType = {
+  id: string;
+  classification: string;
+  createdAt: string;
+  creator: string;
+  description: string;
+  label: string;
+  nodes: [];
+  params: [CommandParamType];
+  ports: [CommandPortType];
+  projectId: number;
+  projectName: string;
+  uuid: string;
+}
+
+export type CommandModelType =  CommandModel | SubflowCommandModel;
+
 export type SubFlowParamType = {
   name: string;
+  type: string;
 }
 
 export type CommandPortType = {

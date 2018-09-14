@@ -6,7 +6,7 @@ import FlowModel from '../model/Flow/FlowModel'
 import NavigationModel from '../model/Navigation/NavigationModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import CommandStepModel from '../model/Step/CommandStepModel'
-import type { CommandPortType, StepModelType } from '../types'
+import type { CommandModelType, CommandPortType, StepModelType } from '../types'
 import CommandModel from '../model/Command/CommandModel'
 import FlowUtil from '../utils/FlowUtil'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
@@ -201,7 +201,15 @@ const Application = (state = initialState, action:{}) => {
                   //出力先ステップの位置調整
 
                   //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
-                  const command:CommandModel = add_step.getCommand(newState.mast.commands)
+                  let command:CommandModelType
+                  if(add_step instanceof SubFlowStepModel){
+                    command = add_step.getCommand(newState.mast.subflows)
+                    console.log("subflow")
+                  }
+                  else if(add_step instanceof CommandStepModel){
+                    command = add_step.getCommand(newState.mast.commands)
+                    console.log("command")
+                  }
                   const inPorts:[CommandPortType] = command.getInPorts()
                   const outPorts:[CommandPortType] = command.getOutPorts()
                   src_step_ids.forEach((id,index)=>{

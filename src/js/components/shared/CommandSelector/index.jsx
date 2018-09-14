@@ -2,18 +2,13 @@
 import React from 'react'
 //import classnames from 'classnames'
 import style from './style.scss'
-import Command from '../../Command/index'
+import Command from '../Command/index'
 
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import CommandModel from '../../../../model/Command/CommandModel'
-import TextField from '../../TextField/index'
-import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
-import ModalUtil from '../../../../utils/ModalUtil'
-import type { StepModelType } from '../../../../types/index'
-import Constants from '../../../../constants/index'
-import HttpUtil from '../../../../utils/HttpUtil'
-import CommandStepModel from '../../../../model/Step/CommandStepModel'
-import Graph from '../../../../utils/Graph'
+import type { FlowEditorProps } from '../../FlowEditorContainer/index'
+import CommandModel from '../../../model/Command/CommandModel'
+import TextField from '../TextField/index'
+import Constants from '../../../constants/index'
+import type { CommandModelType } from '../../../types'
 
 type CommandSelectorProps = {
   ...FlowEditorProps,
@@ -52,19 +47,22 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     const {keyword} = this.state
 
     let sortedCommands:[]
+    let subflowSortedCommands:[]
     sortedCommands = this.sortArray(mast.commands,"id")
     sortedCommands = this.sortArray(sortedCommands,"classification")
+    subflowSortedCommands = this.sortArray(mast.subflows,"id")
 
-    let operators = sortedCommands.filter((command:CommandModel) => {
+    sortedCommands = [...subflowSortedCommands,...sortedCommands]
+
+    let operators = sortedCommands.filter((command:CommandModelType) => {
       if(command.ports){
         if(Object.keys(command.ports[0]).length === numberOfInput)return true
       }
       return false
-    }).filter((command:CommandModel)=>{
+    }).filter((command:CommandModelType)=>{
       if (keyword === '') {
         return true
       }
-      console.log(command)
       const foundLabelWithKeyword = (command.label && command.label.indexOf(keyword) != -1) ? true : false
       const foundDescriptionWithKeyword = (command.description && command.description.indexOf(keyword) != -1) ? true : false
       const foundCommandIdWithKeyword = (command.id && command.id.indexOf(keyword) != -1) ? true : false
@@ -73,8 +71,8 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     })
 
     let operatorsContainer = []
-    let beforeCommand:CommandModel = null
-    operators.map((command:CommandModel,index)=>{
+    let beforeCommand:CommandModelType = null
+    operators.map((command:CommandModelType,index)=>{
       if(!beforeCommand || beforeCommand.classification != command.classification){
         //区切りを表示
         let label = Constants.lang.classification[command.classification]

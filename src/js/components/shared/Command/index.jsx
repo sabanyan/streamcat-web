@@ -9,20 +9,23 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandModel from '../../../model/Command/CommandModel'
 import CommandIcon from '../Icon/CommandIcon'
 import type { CommandStepModelProps } from '../../../model/Step/CommandStepModel'
-import type { CommandParamType, CommandPortType } from '../../../types'
+import type { CommandModelType, CommandParamType, CommandPortType } from '../../../types'
 import WebUtil from '../../../utils/WebUtil'
 import ParamString from '../Param/ParamString'
 import ParamBoolean from '../Param/ParamBoolean'
 import ParamUtil from '../../../utils/ParamUtil'
+import SubflowCommandModel from '../../../model/Command/SubflowCommandModel'
+import SubFlowIcon from '../Icon/SubFlowIcon'
+import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
 
 type Props = {
-    command: CommandModel;
+    command: CommandModelType;
     selected_step_ids: string[];
     addStep: Function;
     selectSteps: Function;
 }
 
-export default class OCommand extends React.Component<Props> {
+export default class Command extends React.Component<Props> {
     inputRefs: any[]
 
     constructor(props: Props) {
@@ -67,6 +70,28 @@ export default class OCommand extends React.Component<Props> {
         window.emitter.emit(Constants.event.MODAL_ON_CLICK_DONE + id, {id: id})
     }
 
+    getNewStepWithArgs(command:CommandModelType,args):CommandStepModelProps{
+      let node
+      let model = {
+        id: command.id,
+        name: command.label,
+        label: command.label,
+        args: args,
+      }
+
+      if(command instanceof CommandModel){
+        model.type = Constants.step.type.command
+        model.commandId = command.commandId
+        node = new CommandStepModel(model)
+      }else if(command instanceof SubflowCommandModel){
+        model.type = Constants.step.type.subflow
+        model.uuid = command.uuid
+        node = new SubFlowStepModel(model)
+      }
+      return node
+
+    }
+
 
     onClickCommand(e:Event,command:CommandModel) {
 
@@ -81,15 +106,7 @@ export default class OCommand extends React.Component<Props> {
                 //モーダルで入力されたパラメータを取得
                 args = ParamUtil.getArgsFromInputRefs(self.inputRefs)
 
-                const added_command_step: CommandStepModelProps = new CommandStepModel({
-                  id: null,
-                  type: Constants.step.type.command,
-                  name: command.label,
-                  label: command.label,
-                  args: args,
-                  type: Constants.step.type.command,
-                  commandId: command.id
-                })
+                const added_command_step: CommandStepModelProps = this.getNewStepWithArgs(command,args)
 
                 const {selected_step_ids} = this.props
 
@@ -155,9 +172,16 @@ export default class OCommand extends React.Component<Props> {
           description = command.description
         }
 
+        let icon
+        if(command instanceof SubflowCommandModel){
+          icon = <SubFlowIcon fillColor={'#8BCD42'} width={16} height={20}/>
+        }else{
+          icon = <CommandIcon command={command}/>
+        }
+
         return <div className={style.command} onClick={(e) => this.onClickCommand(e,command)}>
             <svg className={iconClass}>
-                <CommandIcon command={command}/>
+              {icon}
             </svg>
             <div className={style.command_label_container}>
               <div className={style.command_label}>

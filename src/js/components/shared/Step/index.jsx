@@ -311,19 +311,12 @@ export default class Step extends React.Component<Props, State> {
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
-              filter={filter} style={rect_style}>
+              filter={filter} style={RectStyle}>
           <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#ccc"} fill={"#ccc"}/>
         </Rect>
       </g>
     }else if(this.isSubFlow(step)){
-      icon =
-        <Rect padding={5} selectedOutlineColor={'#B0E273'} fillColor={'#FFFFFF'}
-              hoverFillColor={'#F3FEE8'} selectedFillColor={'#F3FEE8'}
-              hover={hover} selected={selected} stroke={'#7ED321'}
-              filter={filter} style={rect_style}>
-          <SubFlowIcon fillColor={'#8BCD42'}
-                       width={16} height={20}/>
-        </Rect>
+      icon = <SubFlowIcon hover={hover} selected={selected} filter={filter}/>
     }else if (this.isStep(step)) {
       //ステップ
       let command
@@ -331,14 +324,6 @@ export default class Step extends React.Component<Props, State> {
         this.props.mast.commands.forEach(c=>{if(c.id === step.commandId)command = c})
         icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter}/>
       }
-      // icon = <g>
-      //   <Rect padding={5} selectedOutlineColor={'#FFD263'} fillColor={'#FFFFFF'}
-      //         hoverFillColor={'#FFF6E4'} selectedFillColor={'#FFF6E4'}
-      //         hover={hover} selected={selected} stroke={'#FFB300'}
-      //         filter={filter} style={{...rect_style, rx: 12, ry: 12}}>
-      //     <OperatorIcon fillColor={'#F4B63F'} width={16} height={17}/>
-      //   </Rect>
-      // </g>
     }else if (this.isDataFrame(step)) {
       //データソース
       const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
@@ -346,11 +331,13 @@ export default class Step extends React.Component<Props, State> {
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
-              filter={filter} style={rect_style}>
+              filter={filter} style={RectStyle}>
           <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
     }
+
+    const stepLabel = (step.label)?step.label:step.id
 
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}
@@ -359,17 +346,14 @@ export default class Step extends React.Component<Props, State> {
          onMouseLeave={(e) => this.handleMouseLeave(e)}>
         {icon}
         <text className="text" transform={'translate(' + (-8) + ',' +
-        (rect_style.height / 2 + 6) + ')'} textAnchor="end"
-              fontSize={12} width={100} height={100}>{step.label}</text>
-        {/*<text className="text" transform={'translate(' + (-50) + ',' +*/}
-        {/*(rect_style.height / 2 + 6) + ')'} textAnchor="middle"*/}
-              {/*fontSize={10}>{step_subtext}</text>*/}
+        (RectStyle.height / 2 + 6) + ')'} textAnchor="end"
+              fontSize={12} width={100} height={100}>{stepLabel}</text>
       </g>
     )
   }
 }
 
-export const rect_style = {
+export const RectStyle = {
   x: 0,
   y: 0,
   tx: 0,
@@ -381,7 +365,7 @@ export const rect_style = {
   strokeWidth: 2,
 }
 
-export  const circle_style = {
+export const CircleStyle = {
   cx: Constants.default.operator.cx,
   cy: Constants.default.operator.cy,
   tx: 0,
