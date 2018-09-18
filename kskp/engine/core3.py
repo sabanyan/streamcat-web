@@ -633,7 +633,6 @@ class Mjoin(MCommandNew):
             input_i.command_to_file()
             args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
         elif isinstance(input_i.source, NysolPythonSource):
-            print(input_i)
             process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
@@ -839,14 +838,13 @@ class Msep2(MCommandNew):#mnew
         elif isinstance(input_i.source, NysolPythonSource):
             process_flow = input_i.source.nysol_module
 
-        # 自身がnm.cmdならば文字列のコマンドを作成する
-        if self.nysol_mod is nm.submod.cmd.Nysol_Excmd:
-            stdout_param = ' o='
-            args_list = self.name
-            for key,value in args_for_nysol.items():
-                args_list += ' %s=%s' % (key, value)
-            args_list += stdout_param
-            args_for_nysol = args_list
+        # 文字列のコマンドを作成する
+        stdout_param = ' o='
+        args_list = self.name
+        for key,value in args_for_nysol.items():
+            args_list += ' %s=%s' % (key, value)
+        args_list += stdout_param
+        args_for_nysol = args_list
 
         return args_for_nysol, process_flow, stdout_param
 
@@ -1417,7 +1415,6 @@ class Mcommon(MCommandNew):#new
             input_i.command_to_file()
             args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
         elif isinstance(input_i.source, NysolPythonSource):
-            print(input_i)
             process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
@@ -1482,7 +1479,6 @@ class Mnrcommon(MCommandNew):#new
             input_i.command_to_file()
             args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
         elif isinstance(input_i.source, NysolPythonSource):
-            print(input_i)
             process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
@@ -1546,7 +1542,6 @@ class Mvcommon(MCommandNew):#new
             input_i.command_to_file()
             args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
         elif isinstance(input_i.source, NysolPythonSource):
-            print(input_i)
             process_flow = input_i.source.nysol_module
 
         input_m = inputs['m']
@@ -1742,14 +1737,13 @@ class Mcsv2arff(MCommandNew):#new
         elif isinstance(input_i.source, NysolPythonSource):
             process_flow = input_i.source.nysol_module
 
-        # 自身がnm.cmdならば文字列のコマンドを作成する
-        if self.nysol_mod is nm.submod.cmd.Nysol_Excmd:
-            stdout_param = ' o='
-            args_list = self.name
-            for key,value in args_for_nysol.items():
-                args_list += ' %s=%s' % (key, value)
-            args_list += stdout_param
-            args_for_nysol = args_list
+        # 文字列のコマンドを作成する
+        stdout_param = ' o='
+        args_list = self.name
+        for key,value in args_for_nysol.items():
+            args_list += ' %s=%s' % (key, value)
+        args_list += stdout_param
+        args_for_nysol = args_list
 
         return args_for_nysol, process_flow, stdout_param
 
@@ -1814,7 +1808,9 @@ class Mbest(MCommandNew):
 
     def execute(self, args, inputs):
         source = self.source(args, inputs)
+        # 不一致出力データソース
         source_for_u = self.source(args, inputs, multi_out=True)
+
         for input in inputs.values():
             if isinstance(input.source, PathFileSource):
                 source.deletable_uuids.append(input.uuid)
@@ -1823,6 +1819,8 @@ class Mbest(MCommandNew):
                  isinstance(input.source, NysolPythonSource):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
+
+        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
         return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
 
     def source(self, args, inputs, multi_out=False):
@@ -2534,6 +2532,7 @@ class KCommand(UnixCommand):
     def __init__(self, nysol_mod):
         super().__init__()
         self.nysol_mod = nysol_mod
+        self.output_ext = 'csv'
         self.stdout_param = ' -o '
 
     def command_args(self, args, inputs):
@@ -2561,7 +2560,7 @@ class KCommand(UnixCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, self.stdout_param)
+        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
 
 class SelectTargetColumn(KCommand):
     def __init__(self):
@@ -2604,6 +2603,7 @@ class Standardize(KCommand):
         self.name = 'Standardize'
         self.command_path = '/kskp/engine/commands/kcmd/preprocess/standardize.py'
         self.description = ''
+        self.output_ext = 'csv'
         self.params.append(Parameter('c', '標準化を行う行を選択'))
         self.params.append(Parameter('a', '全列に適用させるかどうか'))
 
@@ -2641,6 +2641,7 @@ class Label_encode(KCommand):
         self.name = 'Label_encode'
         self.command_path = '/kskp/engine/commands/kcmd/preprocess/label_encode.py'
         self.description = ''
+        self.output_ext = 'csv'
         self.params.append(Parameter('c', '標準化を行う行を選択'))
 
 class Label_encodeOld(UnixCommand):
@@ -2675,6 +2676,7 @@ class Normalize(KCommand):
         self.name = 'Normalize'
         self.command_path = '/kskp/engine/commands/kcmd/preprocess/normalize.py'
         self.description = ''
+        self.output_ext = 'csv'
         self.params.append(Parameter('c', '正規化を行う列を選択'))
         self.params.append(Parameter('a', '全列に適用させるかどうか'))
 
@@ -2711,6 +2713,7 @@ class One_hot_encode(KCommand):
         self.name = 'One_hot_encode'
         self.command_path = '/kskp/engine/commands/kcmd/preprocess/one_hot_encode.py'
         self.description = ''
+        self.output_ext = 'csv'
         self.params.append(Parameter('c', '標準化を行う行を選択'))
 
 class One_hot_encodeOld(UnixCommand):
@@ -2745,6 +2748,7 @@ class Pca(KCommand):
         self.name = 'Pca'
         self.command_path = '/kskp/engine/commands/kcmd/preprocess/pca.py'
         self.description = ''
+        self.output_ext = 'csv'
         self.params.append(Parameter('n_components', '保持するコンポーネント数（デフォルト：2）'))
 
 class PcaOld(UnixCommand):
@@ -2779,6 +2783,7 @@ class Kkmeans(KCommand):
         self.name = 'Kkmeans'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/clustering/kkmeans.py'
         self.description = 'k-means法によるクラスタ分析'
+        self.output_ext = 'csv'
         self.params.append(Parameter('n_clusters', 'クラスタ数（デフォルト：8）'))
         self.params.append(Parameter('n_init', '初期値選択において、初期の重心を異なる乱数シードを用いて選ぶ回数（デフォルト：10）'))
         self.params.append(Parameter('max_iter', 'アルゴリズムの繰り返しの最大回数（デフォルト：300）'))
@@ -2822,14 +2827,11 @@ class CKab(KCommand):
         self.name = 'Ckab'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kab.py'
         self.description = 'アダブーストによる分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('l', '学習率'))
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('a', 'アルゴリズム（デフォルト：SAMME.R）'))#ここ２択、SAMMEとSAMME.R
         self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト値：50）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKabOld(UnixCommand):
     def __init__(self):
@@ -2870,16 +2872,13 @@ class CKbag(KCommand):
         self.name = 'CKbag'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kbag.py'
         self.description = 'バギングによる分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('n_estimators', '決定木の数（デフォルト値：50）'))
         self.params.append(Parameter('max_samples', 'それぞれの決定木を訓練するために使用するサンプルの数'))
         self.params.append(Parameter('unuse_bootstrap', 'ブートストラップサンプルを使用するかどうか（デフォルト：True）'))#怪しい
         self.params.append(Parameter('max_features', 'それぞれの決定木を訓練するために使用するサンプルから抽出する特徴量の数（デフォルト：1.0）'))
         self.params.append(Parameter('unuse_bootstrap_features', 'ブートストラップサンプルの特徴量を使用するかどうか（デフォルト：False）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKbagOld(UnixCommand):
     def __init__(self):
@@ -2922,15 +2921,12 @@ class CKdt(KCommand):
         self.name = 'CKdt'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kdt.py'
         self.description = '決定木による分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
         self.params.append(Parameter('min_samples_split', '一定数以上のサンプルを持つノードを分割する、その基準値（デフォルト：2）'))
         self.params.append(Parameter('d', '木の深さの最大値'))
         self.params.append(Parameter('c', 'データの分割基準（デフォルト：gini）'))
         self.params.append(Parameter('r', '乱数のシード値'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKdtOld(UnixCommand):
     def __init__(self):
@@ -2972,6 +2968,7 @@ class CKgb(KCommand):
         self.name = 'CKgb'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kgb.py'
         self.description = '勾配ブースティングによる分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
         self.params.append(Parameter('min_samples_split', '一定数以上のサンプルを持つノードを分割する、その基準値（デフォルト：2）'))
         self.params.append(Parameter('d', '木の深さの最大値（デフォルト：3）'))
@@ -2979,10 +2976,6 @@ class CKgb(KCommand):
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト：100）'))
         self.params.append(Parameter('loss', '損失関数（デフォルト：deviance）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKgbOld(UnixCommand):
     def __init__(self):
@@ -3026,15 +3019,12 @@ class CKnearestNeighbors(KCommand):
         self.name = 'CKnearestNeighbors'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/knearest_neighbors.py'
         self.description = '最近傍法による分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('n_neighbors', '未知のデータを与えた際に、近い順に取得するデータの数、いわゆるkの値（デフォルト：5）'))
         self.params.append(Parameter('weights', '重み付けを行うかどうか（デフォルト：uniform）'))
         self.params.append(Parameter('a', 'アルゴリズム（デフォルト：auto)'))
         self.params.append(Parameter('leaf_size', 'BallTreeまたはKDTreeに渡される葉の大きさ（デフォルト：30）'))
         self.params.append(Parameter('p', 'ミンコフスキー距離を用いた距離計算でのパラメータの値（デフォルト：2）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKnearestNeighborsOld(UnixCommand):
     def __init__(self):
@@ -3076,6 +3066,7 @@ class CKneuralnet(KCommand):
         self.name = 'CKneuralnet'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kneuralnet.py'
         self.description = 'ニューラルネットワークによる分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('hidden_layer_sizes', '隠れ層の層の数と各層に配置するニューロンの数（デフォルト：100,）'))
         self.params.append(Parameter('a', '活性化関数（デフォルト：relu）'))
         self.params.append(Parameter('solver', '最適化手法（デフォルト：adam）'))
@@ -3085,10 +3076,6 @@ class CKneuralnet(KCommand):
         self.params.append(Parameter('early_stopping', 'トレーニングデータの内、10％をテストデータとして使用、スコアが２連続でtolより低いと学習を停止する。（デフォルト：False）'))#? validation_fractionが変数として設定できないため、それの初期値（0.1）はそのまま数字で記述する。
         self.params.append(Parameter('momentum', 'SGDの収束性能を向上するための学習係数(デフォルト：0.9)'))# 怪しい
         self.params.append(Parameter('epsilon', 'solverがadamの際の、数式εの値（デフォルト：1e-8）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKneuralnetOld(UnixCommand):
     def __init__(self):
@@ -3134,14 +3121,11 @@ class CKrf(KCommand):
         self.name = 'CKrf'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/krf.py'
         self.description = 'ランダムフォレストによる分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
         self.params.append(Parameter('d', '木の深さの最大値'))
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('b', 'ブートストラップサンプルを使用するかどうか（デフォルト：True）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKrfOld(UnixCommand):
     def __init__(self):
@@ -3182,13 +3166,10 @@ class CKsvm(KCommand):
         self.name = 'CKsvm'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/ksvm.py'
         self.description = 'サポートベクターマシンによる分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('c', 'マージンの大きさ（デフォルト：1.0）'))
         self.params.append(Parameter('k', 'アルゴリズムで使用するカーネルの種類（デフォルト：rbf）'))
         self.params.append(Parameter('g', 'カーネル係数（デフォルト：-1）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class CKsvmOld(UnixCommand):
     def __init__(self):
@@ -3228,11 +3209,8 @@ class KgaussianNb(KCommand):
         self.name = 'KgaussianNb'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kgaussian_nb.py'
         self.description = 'ナイーブベイズによる分類'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('priors', '事前確率'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KgaussianNbOld(UnixCommand):
     def __init__(self):
@@ -3270,16 +3248,13 @@ class Klogreg(KCommand):
         self.name = 'Klogreg'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/klogreg.py'
         self.description = 'ロジスティック回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('C', '正則化強度の逆数（デフォルト：1）'))
         self.params.append(Parameter('p', '正則化を行う地点（デフォルト：l2）'))
         self.params.append(Parameter('b', 'バイアスをかけるかどうか（デフォルト：True）'))
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
         self.params.append(Parameter('c', 'クラスに対する重み'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KlogregOld(UnixCommand):
     def __init__(self):
@@ -3322,15 +3297,12 @@ class RKab(KCommand):
         self.name = 'RKab'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kab.py'
         self.description = 'アダブーストによる回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('l', '学習率'))
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('a', 'アルゴリズム（デフォルト：SAMME.R）'))
         self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト値：50）'))
         self.params.append(Parameter('loss', '損失関数（デフォルト：linear）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKabOld(UnixCommand):
     def __init__(self):
@@ -3372,16 +3344,13 @@ class RKbag(KCommand):
         self.name = 'RKbag'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kbag.py'
         self.description = 'バギングによる回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('n_estimators', '決定木の数（デフォルト値：50）'))
         self.params.append(Parameter('max_samples', 'それぞれの決定木を訓練するために使用するサンプルの数'))
         self.params.append(Parameter('unuse_bootstrap', 'ブートストラップサンプルを使用するかどうか（デフォルト：True）'))
         self.params.append(Parameter('max_features', 'それぞれの決定木を訓練するために使用するサンプルから抽出する特徴量の数（デフォルト：1.0）'))
         self.params.append(Parameter('unuse_bootstrap_features', 'ブートストラップサンプルの特徴量を使用するかどうか（デフォルト：False）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKbagOld(UnixCommand):
     def __init__(self):
@@ -3424,15 +3393,12 @@ class RKdt(KCommand):
         self.name = 'RKdt'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kdt.py'
         self.description = '決定木による回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
         self.params.append(Parameter('min_samples_split', '一定数以上のサンプルを持つノードを分割する、その基準値（デフォルト：2）'))
         self.params.append(Parameter('d', '木の深さの最大値'))
         self.params.append(Parameter('c', 'データの分割基準（デフォルト：gini）'))
         self.params.append(Parameter('r', '乱数のシード値'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKdtOld(UnixCommand):
     def __init__(self):
@@ -3474,6 +3440,7 @@ class RKgb(KCommand):
         self.name = 'RKgb'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kgb.py'
         self.description = '勾配ブースティングによる回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
         self.params.append(Parameter('min_samples_split', '一定数以上のサンプルを持つノードを分割する、その基準値（デフォルト：2）'))
         self.params.append(Parameter('d', '木の深さの最大値（デフォルト：3）'))
@@ -3481,10 +3448,6 @@ class RKgb(KCommand):
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('n_estimators', '弱い学習器の数（デフォルト：100）'))
         self.params.append(Parameter('loss', '損失関数（デフォルト：deviance）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKgbOld(UnixCommand):
     def __init__(self):
@@ -3528,15 +3491,12 @@ class RKnearestNeighbors(KCommand):
         self.name = 'RKnearestNeighbors'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/knearest_neighbors.py'
         self.description = '最近傍法による回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('radius', 'set the range of parameter space'))#todo この引数はないのでは？
         self.params.append(Parameter('weights', '重み付けを行うかどうか（デフォルト：uniform）'))
         self.params.append(Parameter('a', 'アルゴリズム（デフォルト：auto)'))
         self.params.append(Parameter('leaf_size', 'BallTreeまたはKDTreeに渡される葉の大きさ（デフォルト：30）'))
         self.params.append(Parameter('p', 'ミンコフスキー距離を用いた距離計算でのパラメータの値（デフォルト：2）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKnearestNeighborsOld(UnixCommand):
     def __init__(self):
@@ -3578,6 +3538,7 @@ class RKneuralnet(KCommand):
         self.name = 'RKneuralnet'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kneuralnet.py'
         self.description = 'ニューラルネットワークによる回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('hidden_layer_sizes', '隠れ層の層の数と各層に配置するニューロンの数（デフォルト：100,）'))
         self.params.append(Parameter('a', '活性化関数（デフォルト：relu）'))
         self.params.append(Parameter('solver', '最適化手法（デフォルト：adam）'))
@@ -3587,10 +3548,6 @@ class RKneuralnet(KCommand):
         self.params.append(Parameter('early_stopping', 'トレーニングデータの内、10％をテストデータとして使用、スコアが２連続でtolより低いと学習を停止する。（デフォルト：False）'))
         self.params.append(Parameter('momentum', 'SGDの収束性能を向上するための学習係数(デフォルト：0.9)'))
         self.params.append(Parameter('epsilon', 'solverがadamの際の、数式εの値（デフォルト：1e-8）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKneuralnetOld(UnixCommand):
     def __init__(self):
@@ -3636,14 +3593,11 @@ class RKrf(KCommand):
         self.name = 'RKrf'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/krf.py'
         self.description = 'ランダムフォレストによる回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
         self.params.append(Parameter('d', '木の深さの最大値'))
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('b', 'ブートストラップサンプルを使用するかどうか（デフォルト：True）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKrfOld(UnixCommand):
     def __init__(self):
@@ -3684,13 +3638,10 @@ class RKsvm(KCommand):
         self.name = 'RKsvm'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/ksvm.py'
         self.description = 'サポートベクターマシンによる回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('c', 'マージンの大きさ（デフォルト：1.0）'))
         self.params.append(Parameter('k', 'アルゴリズムで使用するカーネルの種類（デフォルト：rbf）'))
         self.params.append(Parameter('g', 'カーネル係数（デフォルト：-1）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class RKsvmOld(UnixCommand):
     def __init__(self):
@@ -3730,16 +3681,13 @@ class Kelastic(KCommand):
         self.name = 'Kelastic'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kelastic.py'
         self.description = 'kelastic net回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
         self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
         self.params.append(Parameter('b', 'バイアスをかけるかどうか'))#todo ここにデフォルト値が設定されていなかったが、必要なのでは？
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
         self.params.append(Parameter('l1_ratio', 'L1、L2に与えるペナルティのうち、L1の比率'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KelasticOld(UnixCommand):
     def __init__(self):
@@ -3782,15 +3730,12 @@ class Kridge(KCommand):
         self.name = 'Kridge'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kridge.py'
         self.description = 'ridge回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
         self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
         self.params.append(Parameter('b', 'バイアスをかけるかどうか'))#todo ここにデフォルト値が設定されていなかったが、必要なのでは？
         self.params.append(Parameter('r', '乱数のシード値'))
         self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KridgeOld(UnixCommand):
     def __init__(self):
@@ -3832,15 +3777,12 @@ class Klasso(KCommand):
         self.name = 'Klasso'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/klasso.py'
         self.description = 'lasso回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
         self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
         self.params.append(Parameter('b', 'バイアスをかけるかどうか（デフォルト：False）'))
         self.params.append(Parameter('r', 's乱数のシード値'))
         self.params.append(Parameter('tol', '学習の収束を判定するための基準値（デフォルト：1e-4）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KlassoOld(UnixCommand):
     def __init__(self):
@@ -3885,11 +3827,8 @@ class Klinreg(KCommand):
         self.name = 'Klinreg'
         self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/klinreg.py'
         self.description = '線形回帰'
+        self.output_ext = 'pickle'
         self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('pickle', self.nysol_mod, args, process_flow, self.stdout_param)
 
 class KlinregOld(UnixCommand):
     def __init__(self):
@@ -3930,6 +3869,7 @@ class Evaluate(KCommand):
         self.name = 'Evaluate'
         self.command_path = '/kskp/engine/commands/kcmd/postprocess/evaluate.py'
         self.description = '評価'
+        self.output_ext = 'csv'
         self.params.append(Parameter('m', 'select metrics appling model'))
         self.params.append(Parameter('p', 'set probability on'))
         self.params.append(Parameter('metrics_file_name', 'metrics_file_name'))
@@ -3946,8 +3886,8 @@ class Evaluate(KCommand):
         elif isinstance(input_i.source, NysolPythonSource):
             process_flow = input_i.source.nysol_module
 
+        # テストデータはcsv（現状実ファイル）でなければいけないので一旦、CSVに吐く
         input_d = inputs['d']
-        # 一旦、CSVに吐く
         input_d.command_to_file()
         cl_args += ' -d ' + input_d.source.fullpath.as_posix()
 
@@ -3999,6 +3939,7 @@ class Predict(KCommand):
         self.name = 'Klinreg'
         self.command_path = '/kskp/engine/commands/kcmd/postprocess/predict.py'
         self.description = '推定'
+        self.output_ext = 'csv'
         self.params.append(Parameter('p', 'set probability on'))
 
     def command_args(self, args, inputs):
@@ -4012,8 +3953,8 @@ class Predict(KCommand):
         elif isinstance(input_i.source, NysolPythonSource):
             process_flow = input_i.source.nysol_module
 
+        # テストデータはcsv（現状実ファイル）でなければいけないので一旦、CSVに吐く
         input_d = inputs['d']
-        # 一旦、CSVに吐く
         input_d.command_to_file()
         cl_args += ' -d ' + input_d.source.fullpath.as_posix()
 
