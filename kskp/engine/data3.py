@@ -55,13 +55,14 @@ class Source:
 
 class NysolPythonSource(Source):
 
-    def __init__(self, source_type, mod, args, process_flow=None, stdout_param=None):
+    def __init__(self, source_type, mod, args, process_flow=None, stdout_param=None, multi_out=False):
         """ argsいらんかもな、そのままmodに全部持っておけるので """
         super().__init__(source_type)
         self.mod = mod # クラスをそのまま
         self.args = args # dict
         self.process_flow = process_flow
         self.stdout_param = stdout_param
+        self.multi_out = multi_out
 
         # コンストラクタの引数が多くなったが、DIを考えて結局こうなった
         # 引数が多いと必要以上に債務を持っているんじゃないかと不安になる。
@@ -76,14 +77,10 @@ class NysolPythonSource(Source):
         if isinstance(args, str):
             args = args.replace(self.stdout_param, '')
         f <<= self.mod(args)
-        return f
 
-    # def nysol_module_redirect(self):
-    #     f = self.process_flow
-    #     args = self.args
-    #     # args.update({'o': '/kskp/data/result.csv'})
-    #     f <<= self.mod(args)
-    #     return f.redirect('u')
+        if self.multi_out:
+            return f.redirect('u')
+        return f
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
@@ -94,8 +91,14 @@ class NysolPythonSource(Source):
             # 設定されていた出力パラメータを出力先が入った状態で置き換える
             args = args.replace(self.stdout_param, self.stdout_param + stdout)
         elif isinstance(self.args, dict):
-            args.update({'o': stdout})
-        # print(args)
+            # 複数outを行うSourceの場合、uに出す様にしている。
+            # ただこれはnysol限定の話であって、nm.cmdで作られたコマンドを実行する場合には
+            # ここを書き直さなければならないだろう
+            # nm.cmdが自由すぎてあらゆる場合で条件分岐を記述しなければならなくなりそうなので、
+            # 何らかの手を打たなければならないだろう・・・（自作コマンドのフォーマットを決めておく、nm.cmdだけ別クラスなり隔離しておくetc…）
+            # しかもnm.cmdはコマンドを連想配列ではなくて文字列で指定するので…
+            args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
+
         mod = self.mod(args)
         self.process_flow <<= mod
         self.process_flow.run()

@@ -46,7 +46,7 @@ class Evaluate():
                             metavar="FILE", type=open, help="set test data")
         parser.add_argument("-p","--probability",dest="probability",help="set probability on",action="store_const",const=True,default=False)
         parser.add_argument("-m","--metrics",dest="metrics",help="select metrics appling model",choices=self.all_metrics.keys())
-        parser.add_argument("-u",dest="metrics_file_name",default="metrics.csv",type=str)
+        parser.add_argument("--metrics_file_name",dest="metrics_file_name",default="metrics.csv",type=str)
         return parser#.parse_args(args)
 
 

@@ -578,9 +578,6 @@ class Mcat(MCommandNew):
     def execute(self, args, inputs):
         args_for_nysol = args
         inputs_for_arg_i = []
-        # for key, input in inputs.items():
-        #     input.command_to_file()
-        #     inputs_for_arg_i.append(input.source.fullpath.as_posix())
         for key, input in inputs.items():
             inputs_for_arg_i.append(input.source.nysol_module)
         args_for_nysol.update({'i': inputs_for_arg_i})
@@ -1814,37 +1811,10 @@ class Mbest(MCommandNew):
         self.params.append(Parameter('to', '選択する終了行番号'))
         self.params.append(Parameter('size', '選択する行数'))
         self.params.append(Parameter('k', '指定列が同じ値の行ごとにfrom=,to=,sizeで指定した行番号の行を選択'))
-        self.disagree_uuid = str(uuid.uuid4())
-        self.disagree_source = None
-
-    def command_args(self, args, inputs):
-        args_for_nysol = args
-        process_flow = None
-
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-        args_for_nysol.update({'u': ''})
-        input_i = inputs['i']
-        if isinstance(input_i.source, PathFileSource):
-            input_i.command_to_file()
-            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
-        elif isinstance(input_i.source, NysolPythonSource):
-            process_flow = input_i.source.nysol_module
-
-        # # 不一致出力先の指定(出力先がPathfileSourceの場合だけ！)
-        # self.disagree_source = PathFileSource('csv', os.environ['KENG_FRAMES_PATH'], self.disagree_uuid + '.csv')
-        # args_for_nysol.update({'u': self.disagree_source.fullpath.as_posix()})
-
-        return args_for_nysol, process_flow
 
     def execute(self, args, inputs):
         source = self.source(args, inputs)
-        source2 = self.source(args, inputs)
+        source_for_u = self.source(args, inputs, multi_out=True)
         for input in inputs.values():
             if isinstance(input.source, PathFileSource):
                 source.deletable_uuids.append(input.uuid)
@@ -1853,14 +1823,11 @@ class Mbest(MCommandNew):
                  isinstance(input.source, NysolPythonSource):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
-        frame = Frame(str(uuid.uuid4()), source)
+        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
 
-        # NysolPythonSourceを返すか、PathFileSourceを返すかはここで条件分岐かな？
-        return { self.out_key: frame , 'u': Frame(self.disagree_uuid, source2)}
-
-    def source(self, args, inputs):
+    def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource('csv', self.nysol_mod, args, process_flow)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
 
 class MbestOld(MCommand):
     def __init__(self):

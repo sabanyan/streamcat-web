@@ -1,0 +1,124 @@
+{
+  "projectId": 8,
+  "label": "テストフロー４",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "creator": "開発用",
+  "createdAt": "2018-09-13T10:12:00+09:00",
+  "nodes": [
+    {
+      "id": "i",
+      "position": {
+        "x": 162,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "uuid": "f30e9054-5636-4976-97fa-fc1f546378a6",
+      "dataSource": "csv",
+      "label": "i"
+    },
+    {
+      "id": "new 773506e5-5446-43de-89b4-0f845c13ada1",
+      "position": {
+        "x": 98,
+        "y": 282
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv",
+      "label": "new 773506e5-5446-43de-89b4-0f845c13ada1"
+    },
+    {
+      "id": "new 8e68f4e7-e82a-4ead-9614-bf4c7808d3d0",
+      "position": {
+        "x": 477,
+        "y": 265
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv",
+      "label": "new 8e68f4e7-e82a-4ead-9614-bf4c7808d3d0"
+    },
+    {
+      "id": "new 7b534fc7-9062-4eba-9999-8441231e82c2",
+      "position": {
+        "x": 162,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "command",
+      "label": "指定行選択",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "new 773506e5-5446-43de-89b4-0f845c13ada1",
+        "u": "new 8e68f4e7-e82a-4ead-9614-bf4c7808d3d0"
+      },
+      "args": {
+        "from": "0",
+        "k": "",
+        "s": "DIS",
+        "size": "",
+        "to": "3"
+      },
+      "commandId": "mbest"
+    },
+    {
+      "id": "new c7829259-341b-468e-8513-68442d08ea6b",
+      "position": {
+        "x": 477,
+        "y": 441
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "label": "o",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "id": "new 4cf5ac1e-61fb-4afc-b12c-e240bce62d34",
+      "position": {
+        "x": 477,
+        "y": 359
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "new 8e68f4e7-e82a-4ead-9614-bf4c7808d3d0"
+      },
+      "dsts": {
+        "o": "new c7829259-341b-468e-8513-68442d08ea6b"
+      },
+      "args": {
+        "t": "target"
+      },
+      "commandId": "select_target_column"
+    }
+  ]
+}
