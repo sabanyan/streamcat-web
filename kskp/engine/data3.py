@@ -60,27 +60,22 @@ class NysolPythonSource(Source):
         super().__init__(source_type)
         self.mod = mod # クラスをそのまま
         self.args = args # dict
-        self.process_flow = process_flow
-        self.stdout_param = stdout_param
-        self.multi_out = multi_out
-
-        # コンストラクタの引数が多くなったが、DIを考えて結局こうなった
-        # 引数が多いと必要以上に債務を持っているんじゃないかと不安になる。
-        # 新しいcommnandが増えて、それで変化しないようならこのまま、
-        # また何か変化するようなら少し作り直そう。。。
+        self.process_flow = process_flow # commandオブジェクト
+        self.stdout_param = stdout_param # str(出力文字列)
+        self.multi_out = multi_out # bool
 
     @property
     def nysol_module(self):
         f = self.process_flow
-        args = self.args
-        # nm.cmdの場合コマンドがstrで、各commandクラスで出力パラメータを設定していてPIPEで繋ぐ時はいらないのでそれを削除する
-        if isinstance(args, str):
-            args = args.replace(self.stdout_param, '')
-        f <<= self.mod(args)
-
-        if self.multi_out:
-            return f.redirect('u')
-        return f
+        f <<= self.mod(self.args)
+        # nm.cmdで2つ出力するコマンドは存在しないことを前提（現状は）
+        # 自作コマンドに柔軟性を持たせるなら、2つ出力することもありそうだが、
+        # nm.cmdに2つの出力をキャッチできなさそうなので、基本的には1つという仕様にする？
+        # 2つ出力をキャッチできたとして、3つ以上はどうなるんだという話になるので、
+        # やっぱり出力は基本的に1つに仕様を固定しておくべきかも。
+        # oとuの2つを出力できるmcmdが特殊ということにしておく？
+        # それならmulti_outを持っておきたくないが、結局どこかで判断しなくてはいけない…。
+        return f.redirect('u') if self.multi_out else f
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
@@ -89,14 +84,11 @@ class NysolPythonSource(Source):
         # nm.cmdはコマンドが文字列なのでそれで判別する
         if isinstance(self.args, str):
             # 設定されていた出力パラメータを出力先が入った状態で置き換える
-            args = args.replace(self.stdout_param, self.stdout_param + stdout)
+            args += self.stdout_param + stdout
         elif isinstance(self.args, dict):
-            # 複数outを行うSourceの場合、uに出す様にしている。
-            # ただこれはnysol限定の話であって、nm.cmdで作られたコマンドを実行する場合には
-            # ここを書き直さなければならないだろう
-            # nm.cmdが自由すぎてあらゆる場合で条件分岐を記述しなければならなくなりそうなので、
-            # 何らかの手を打たなければならないだろう・・・（自作コマンドのフォーマットを決めておく、nm.cmdだけ別クラスなり隔離しておくetc…）
-            # しかもnm.cmdはコマンドを連想配列ではなくて文字列で指定するので…
+            # nm.cmdのargsはstringなので、ここにくるのはnm.cmd以外のnysol_pythonのコマンドの場合のみ
+            # という前提で書いているので、uを直接指定している。
+            # u以外で指定しなければいけない時がくることはあるのか・・・？
             args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
 
         mod = self.mod(args)
