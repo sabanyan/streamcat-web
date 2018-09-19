@@ -76,12 +76,12 @@ class Evaluate():
         result=self.all_metrics[parsed.metrics](y_test,pred_df)
 
         #評価結果の出力(暫定)
-        # print(parsed.metrics+":")
-        # print(result)
+        print(parsed.metrics)
+        print(result)
         # result.to_csv(parsed.metrics_file_name,index=False)
 
         #出力
-        pred.set_output(merged,parsed.output)
+        # pred.set_output(merged,parsed.output)
 
         return
 

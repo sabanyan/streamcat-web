@@ -20,9 +20,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "i",
       "uuid": "2C72275F-2019-49AE-B36D-A29D1507F8DD",
-      "dataSource": "csv",
-      "label": "i"
+      "dataSource": "csv"
     },
     {
       "id": "new 425ccf22-a270-46a9-bac3-46012714f308",
@@ -35,9 +35,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 425ccf22-a270-46a9-bac3-46012714f308",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 425ccf22-a270-46a9-bac3-46012714f308"
+      "dataSource": "csv"
     },
     {
       "id": "new 5fefe394-5817-4e04-9aa7-5b764f7840a7",
@@ -74,9 +74,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 44433744-4496-488a-80c0-809d0440b41b",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 44433744-4496-488a-80c0-809d0440b41b"
+      "dataSource": "csv"
     },
     {
       "id": "new 5bcff599-6e7f-4f96-b9b7-560b55ea9dcd",
@@ -113,9 +113,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new a959daef-e8e3-4c2f-96e0-8f51faf58a91",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new a959daef-e8e3-4c2f-96e0-8f51faf58a91"
+      "dataSource": "csv"
     },
     {
       "id": "new 4b4c1319-b5d3-486c-a081-2d3a8f3b45c3",
@@ -152,9 +152,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new df167b23-7e56-40db-b058-f23a7c801a31",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new df167b23-7e56-40db-b058-f23a7c801a31"
+      "dataSource": "csv"
     },
     {
       "id": "new b1155ec8-3a4b-4102-89ef-aa0d5fabebcc",
@@ -191,9 +191,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new a14c125f-4565-4ec2-a483-a130104b3392",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new a14c125f-4565-4ec2-a483-a130104b3392"
+      "dataSource": "csv"
     },
     {
       "id": "new 2e017a08-a7e0-418e-87c0-e42ff3370591",
@@ -230,9 +230,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 1d6b725d-b455-4d2e-a9be-e6a0d7759dee",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 1d6b725d-b455-4d2e-a9be-e6a0d7759dee"
+      "dataSource": "csv"
     },
     {
       "id": "new 624f4ea5-4964-4ad2-be40-2b5fe079afdd",
@@ -269,9 +269,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new e9c09a48-901a-45d7-8bf3-91a323801277",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new e9c09a48-901a-45d7-8bf3-91a323801277"
+      "dataSource": "csv"
     },
     {
       "id": "new 4c19614f-5711-4e00-91cd-3f8c55631485",
@@ -308,9 +308,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 5d4d1730-ef78-4d47-a043-344141db3fdc",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 5d4d1730-ef78-4d47-a043-344141db3fdc"
+      "dataSource": "csv"
     },
     {
       "id": "new 57a0fb07-e737-427c-ab73-123f32c69d2f",
@@ -347,9 +347,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 26cc0bd4-07a0-4bb6-b304-45e65c3f69ff",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 26cc0bd4-07a0-4bb6-b304-45e65c3f69ff"
+      "dataSource": "csv"
     },
     {
       "id": "new d6713ff7-c457-456b-bbce-549d85f1459b",
@@ -386,9 +386,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new cbff05f1-f1d8-4275-9ae8-784a36f451b3",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new cbff05f1-f1d8-4275-9ae8-784a36f451b3"
+      "dataSource": "csv"
     },
     {
       "id": "new e0cba99a-9f20-48a0-85fc-0817aed29ce4",
@@ -425,9 +425,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 8d2bc61a-5ba6-4696-a034-48107f5d883d",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 8d2bc61a-5ba6-4696-a034-48107f5d883d"
+      "dataSource": "csv"
     },
     {
       "id": "new f47c9768-1325-463e-abb0-149fc28aec0a",
@@ -465,9 +465,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 717a8d6f-4d42-4f59-80f4-56bc2532b808",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 717a8d6f-4d42-4f59-80f4-56bc2532b808"
+      "dataSource": "csv"
     },
     {
       "id": "new 2680b83f-0d27-4063-8bcd-88030e69742d",
@@ -503,9 +503,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 44c5e0ed-0269-4643-bfc1-d9a393db6490",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 44c5e0ed-0269-4643-bfc1-d9a393db6490"
+      "dataSource": "csv"
     },
     {
       "id": "new 2bcb3f41-1c28-433e-a483-62a11dcf2b28",
@@ -542,9 +542,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 7b5eeac2-bb7d-4f4a-9a70-0662c7a85590",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 7b5eeac2-bb7d-4f4a-9a70-0662c7a85590"
+      "dataSource": "csv"
     },
     {
       "id": "new b2ae8380-ba3c-4072-aa3b-cf92ab84c45d",
@@ -582,9 +582,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new d92ffb72-0055-44d6-a0f1-8f86c8565660",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new d92ffb72-0055-44d6-a0f1-8f86c8565660"
+      "dataSource": "csv"
     },
     {
       "id": "new 4a10cbd7-4c9e-48f5-a3ad-422deaf33e2f",
@@ -620,9 +620,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 6cdf9512-4901-486b-9e85-98cdf9132442",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 6cdf9512-4901-486b-9e85-98cdf9132442"
+      "dataSource": "csv"
     },
     {
       "id": "new 5e069a2a-790b-4ec5-a4d2-82bcea1cb3ec",
@@ -660,9 +660,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new bda22fae-7eeb-4543-bbd7-2dd2c0c9b186",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new bda22fae-7eeb-4543-bbd7-2dd2c0c9b186"
+      "dataSource": "csv"
     },
     {
       "id": "new 02be9fa0-7033-4518-9b08-3e24d550faee",
@@ -697,9 +697,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 2940dd07-04ce-4f5f-8771-7397b5ee5c9e",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 2940dd07-04ce-4f5f-8771-7397b5ee5c9e"
+      "dataSource": "csv"
     },
     {
       "id": "new 95e16aa5-8b26-4133-b667-a4e15dd65c7a",
@@ -738,9 +738,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 3e043eb7-6998-46a8-828c-b446abb1febc",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 3e043eb7-6998-46a8-828c-b446abb1febc"
+      "dataSource": "csv"
     },
     {
       "id": "new 619dee07-3baf-4b78-a23a-ba106aa76029",
@@ -777,9 +777,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 626dc350-e6ce-4597-a59f-b0c017a05a15",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 626dc350-e6ce-4597-a59f-b0c017a05a15"
+      "dataSource": "csv"
     },
     {
       "id": "new eb84d71d-252f-4c34-b704-220056370822",
@@ -816,9 +816,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 10667a6d-ee97-4c74-a400-ae7f91794d9c",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 10667a6d-ee97-4c74-a400-ae7f91794d9c"
+      "dataSource": "csv"
     },
     {
       "id": "new 6bf75890-d0fc-4f99-a682-2819b4a0adc9",
@@ -855,9 +855,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 2e3912cc-3f84-430b-aa31-8ea51fb39788",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 2e3912cc-3f84-430b-aa31-8ea51fb39788"
+      "dataSource": "csv"
     },
     {
       "id": "new 3983e19e-65fe-447f-bb80-97b381dac534",
@@ -894,9 +894,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 57c3838f-f0f4-4034-a7c3-410db1fbcc7a",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 57c3838f-f0f4-4034-a7c3-410db1fbcc7a"
+      "dataSource": "csv"
     },
     {
       "id": "new 55702b2b-de59-4c95-851e-f9185fb56d89",
@@ -933,9 +933,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 9be170f4-f4f4-4af8-90a6-c319d982f78c",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 9be170f4-f4f4-4af8-90a6-c319d982f78c"
+      "dataSource": "csv"
     },
     {
       "id": "new 081a6404-aa72-4fb8-8728-e1b2dc91d8a2",
@@ -972,9 +972,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new 2c888c29-6338-4c5e-a72b-75c3f0efd351",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 2c888c29-6338-4c5e-a72b-75c3f0efd351"
+      "dataSource": "csv"
     },
     {
       "id": "new c4cce70d-1a46-4932-9071-274d7611ca7c",
@@ -1013,9 +1013,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new c1be2aac-3ae1-4cfa-91f9-8912cc1c49df",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new c1be2aac-3ae1-4cfa-91f9-8912cc1c49df"
+      "dataSource": "csv"
     },
     {
       "id": "new 472d1584-8c31-4be1-aa6a-2a18cdfae709",
@@ -1052,9 +1052,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new c70e20df-18a5-4301-b623-c3bb94574000",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new c70e20df-18a5-4301-b623-c3bb94574000"
+      "dataSource": "csv"
     },
     {
       "id": "new dcc2e95b-daf1-48bc-9281-9292272b39a6",
@@ -1094,9 +1094,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new b29520eb-65a1-4bca-8fa2-839e7842262c",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new b29520eb-65a1-4bca-8fa2-839e7842262c"
+      "dataSource": "csv"
     },
     {
       "id": "new 3ddbaf72-c4c2-4521-bda0-09cce7639cea",
@@ -1133,9 +1133,9 @@
         "height": 38
       },
       "type": "frame",
+      "label": "new bddfbc39-07eb-41ca-9cae-5b257ef124d5",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new bddfbc39-07eb-41ca-9cae-5b257ef124d5"
+      "dataSource": "csv"
     },
     {
       "id": "new 99a8e70f-115e-4a8c-ae66-4f3a0a830500",
@@ -1168,16 +1168,16 @@
       "id": "new 0e332202-efe7-414d-ab46-8bf56c005ea5",
       "position": {
         "x": 351,
-        "y": 3727
+        "y": 3728
       },
       "size": {
         "width": 38,
         "height": 38
       },
       "type": "frame",
+      "label": "new 0e332202-efe7-414d-ab46-8bf56c005ea5",
       "uuid": null,
-      "dataSource": "csv",
-      "label": "new 0e332202-efe7-414d-ab46-8bf56c005ea5"
+      "dataSource": "csv"
     },
     {
       "id": "new ee68d450-6a42-4ac9-9236-7bde80a54874",
@@ -1203,6 +1203,48 @@
         "x": "false"
       },
       "commandId": "mcut"
+    },
+    {
+      "id": "new 4d277f51-645c-4166-a835-b6e66a0deefe",
+      "position": {
+        "x": 351,
+        "y": 3903
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "frame",
+      "label": "new 0e332202-efe7-414d-ab46-8bf56c005ea5",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "id": "new cd06a2fc-9afd-48b4-8b10-acccf0b54255",
+      "position": {
+        "x": 351,
+        "y": 3821
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "type": "command",
+      "label": "モデリング",
+      "srcs": {
+        "i": "new 0e332202-efe7-414d-ab46-8bf56c005ea5"
+      },
+      "dsts": {
+        "o": "new 4d277f51-645c-4166-a835-b6e66a0deefe"
+      },
+      "args": {
+        "-classification": true,
+        "command_list": "'python modeling/classification/kdt.py,python modeling/classification/ksvm.py,python modeling/classification/kab.py,python modeling/classification/kbag.py,python modeling/classification/kgaussian_nb.py,python modeling/classification/klogreg.py,python modeling/classification/krf.py,python modeling/classification/knearest_neighbors.py'",
+        "feature_list": "3H_Avg,3V_Avg,4H_Avg,4V_Avg",
+        "k": "DATA_SOURCE,時分割1秒",
+        "target_list": "状態"
+      },
+      "commandId": "sml_modeling"
     }
   ]
 }

@@ -4145,6 +4145,54 @@ class PredictOld(UnixCommand):
 
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
+# PCMD
+class Groupby(UnixCommand):
+    pass
+
+class Groupby2(UnixCommand):
+    pass
+
+class SmlModeling(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'SmlModeling'
+        self.nysol_mod = nm.cmd
+        self.command_path = '/kskp/engine/commands/pcmd/sml_modeling.sh'
+        self.description = 'モデリング'
+        self.output_ext = 'csv'
+        self.stdout_param = ' output_metrics_data='
+
+    def command_args(self, args, inputs):
+        cl_args = self.command_path
+        process_flow = None
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+        elif isinstance(input_i.source, NysolPythonSource):
+            # process_flow = input_i.source.nysol_module
+            input_i.command_to_file()
+            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+
+        # nm.cmd用の文字列のコマンドを作成する
+        for key, value in args.items():
+            if isinstance(value, bool):
+                cl_args += ' ' +  key
+                continue
+            if not len(value) == 0:
+                cl_args += ' ' + key + '=' + value
+
+        cl_args += ' kcmd_path=/kskp/engine/commands/kcmd'
+        cl_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
+        cl_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
+
+        return cl_args, process_flow
+
+    def source(self, args, inputs):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -4262,5 +4310,9 @@ commands = {
     'klinreg': Klinreg(),
 
     'evaluate': Evaluate(),
-    'predict': Predict()
+    'predict': Predict(),
+
+    'groupby': Groupby(),
+    'groupby2': Groupby2(),
+    'sml_modeling': SmlModeling()
 }
