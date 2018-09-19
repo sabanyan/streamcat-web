@@ -135,7 +135,8 @@ class Job:
                     last.is_temp = False
 
         elif s.is_command:
-            output = cf.execute(self.step.args, self.inputs)
+            command_inputs = self.check_inputs(self.inputs) # command用inputsの作成
+            output = cf.execute(self.step.args, command_inputs)
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
@@ -178,7 +179,8 @@ class Job:
         job, port = self.src_job_from(datum_id)
 
         self.expand_args(job)
-        job.inputs = job.check_inputs(self.inputs_of(job))
+        job.inputs = self.inputs_of(job) # job用inputs
+        # job.commnad_inputs = job.check_inputs(job.inputs) # commands用inputs
 
         return job.execute()[port]
 
@@ -202,8 +204,15 @@ class Job:
         return res
 
     def inputs_of(self, job):
-        result = {d: self.check_multi_use(job, d, self.get_datum(d, job.inputs[d]))
-                    for port, d in job.step.srcs.items()}
+        # print(job.step.command_or_flow, job.inputs, job.step.srcs)
+        result = {}
+        for port, d in job.step.srcs.items():
+            # Sourceが未作成の場合は作成する
+            # 内包表記でも書けるけど、この場合は内包表記じゃない方が何やっているか見やすいと思います。
+            if job.inputs[d].source is None:
+                result[d] = self.check_multi_use(job, d, self.get_datum(d, job.inputs[d]))
+            else:
+                result[d] = job.inputs[d]
         return result
 
     def check_multi_use(self, job, datum_id, datum):
@@ -417,9 +426,31 @@ class Msel(MCommandNew):
         super().__init__(nm.msel)
         self.name = 'msel'
         self.description = '行絞り込み'
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('c', '絞込条件式'))
         self.disagree_output = str(uuid.uuid4())
         self.disagre_source = None
+
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        # 不一致出力データソース
+        source_for_u = self.source(args, inputs, multi_out=True)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
+        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+
+    def source(self, args, inputs, multi_out=False):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
 
 class MselOld(MCommand):
     def __init__(self):
@@ -519,11 +550,32 @@ class Mselstr(MCommandNew):
         super().__init__(nm.mselstr)
         self.name = 'mselstr'
         self.description = '行選択(文字列)'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('v', '絞込条件値（文字列）(必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列名'))
         # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
+
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        # 不一致出力データソース
+        source_for_u = self.source(args, inputs, multi_out=True)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
+        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+
+    def source(self, args, inputs, multi_out=False):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
 
 class MselstrOld(MCommand):
     def __init__(self):
@@ -1427,6 +1479,27 @@ class Mcommon(MCommandNew):#new
 
         return args_for_nysol, process_flow
 
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        # 不一致出力データソース
+        source_for_u = self.source(args, inputs, multi_out=True)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
+        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+
+    def source(self, args, inputs, multi_out=False):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
+
 class McommonOld(MCommand):#new
     def __init__(self):
         super().__init__()
@@ -1490,6 +1563,27 @@ class Mnrcommon(MCommandNew):#new
             args_for_nysol.update({'m': input_m.source.fullpath.as_posix()})
 
         return args_for_nysol, process_flow
+
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        # 不一致出力データソース
+        source_for_u = self.source(args, inputs, multi_out=True)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
+        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+
+    def source(self, args, inputs, multi_out=False):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
 
 class MnrcommonOld(MCommand):#new
     def __init__(self):
@@ -1845,10 +1939,32 @@ class Mdelnull(MCommandNew):
         super().__init__(nm.mdelnull)
         self.name = 'mdelnull'
         self.description = 'NULL行削除'
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '対象列名(必須)'))
         self.params.append(Parameter('k', '削除する単位となるキー列名'))
         self.disagree_output = str(uuid.uuid4())
         self.disagre_source = None
+
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        # 不一致出力データソース
+        source_for_u = self.source(args, inputs, multi_out=True)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
+        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+
+    def source(self, args, inputs, multi_out=False):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
 
 class MdelnullOld(MCommand):
     def __init__(self):
@@ -1903,11 +2019,32 @@ class Mselnum(MCommandNew):
         super().__init__(nm.mselnum)
         self.name = 'mselnum'
         self.description = '数値範囲による行選択'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('f', '検索列名(必須)'))
         self.params.append(Parameter('c', '検索文字列(必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列名'))
         # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
+
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        # 不一致出力データソース
+        source_for_u = self.source(args, inputs, multi_out=True)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
+        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+
+    def source(self, args, inputs, multi_out=False):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
 
 class MselnumOld(MCommand):
     def __init__(self):
@@ -1925,14 +2062,35 @@ class Mselrand(MCommandNew):
         super().__init__(nm.mselrand)
         self.name = 'mselrand'
         self.description = 'ランダムな行選択'
-        # self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.params.append(Parameter('c', '各キーの値毎に選択する行数(選択必須)'))
         self.params.append(Parameter('p', '各キーを選択する割合をパーセンテージで指定(選択必須)'))
         self.params.append(Parameter('k', '選択単位となるキー列'))
         self.params.append(Parameter('S', '乱数の種'))
         # self.params.append(Parameter('u', '指定条件に合わない行の出力ファイル名'))
 
-class Mselrand(MCommand):
+    def execute(self, args, inputs):
+        source = self.source(args, inputs)
+        # 不一致出力データソース
+        source_for_u = self.source(args, inputs, multi_out=True)
+
+        for input in inputs.values():
+            if isinstance(input.source, PathFileSource):
+                source.deletable_uuids.append(input.uuid)
+            elif isinstance(input.source, UnixCommandSource) or \
+                 isinstance(input.source, PandasSource) or \
+                 isinstance(input.source, NysolPythonSource):
+                source.deletable_uuids = input.source.deletable_uuids
+                source.deletable_uuids.append(input.uuid)
+
+        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
+        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+
+    def source(self, args, inputs, multi_out=False):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
+
+class MselrandOld(MCommand):
     def __init__(self):
         super().__init__()
         self.name = 'mselrand'
@@ -2489,7 +2647,7 @@ class Mchkcsv(MCommandNew):#new
     def command_args(self, args, inputs):
         args_for_nysol = args
         process_flow = None
-        stdout_param = None
+
         # jsonからくるオプションのbool値はstringなので、booleanに変更する
         # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
         # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
@@ -2506,18 +2664,16 @@ class Mchkcsv(MCommandNew):#new
             process_flow = input_i.source.nysol_module
 
         # 文字列のコマンドを作成する
-        stdout_param = ' o='
         args_list = self.name
         for key,value in args_for_nysol.items():
             args_list += ' %s=%s' % (key, value)
-        args_list += stdout_param
         args_for_nysol = args_list
 
-        return args_for_nysol, process_flow, stdout_param
+        return args_for_nysol, process_flow
 
     def source(self, args, inputs):
-        args, process_flow, stdout_param = self.command_args(args, inputs)
-        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, stdout_param)
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, ' o=')
 
 class MchkcsvOld(MCommand):#new
     def __init__(self):
@@ -2549,13 +2705,9 @@ class KCommand(UnixCommand):
         # nm.cmd用の文字列のコマンドを作成する
         for key, value in args.items():
             if not len(value) == 0:
-                # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しい。
-                if len(key) > 1:
-                    cl_args += ' --' + key + ' ' + value
-                else:
-                    cl_args += ' -' + key + ' ' + value
-
-        cl_args += self.stdout_param
+                # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて下さい。
+                cl_args += ' --' if len(key) > 1 else ' -'
+                cl_args += key + ' ' + value
         return cl_args, process_flow
 
     def source(self, args, inputs):
@@ -3895,11 +4047,8 @@ class Evaluate(KCommand):
         for key, value in args.items():
             if not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
-                if len(key) > 1:
-                    cl_args += ' --' + key + ' ' + value
-                else:
-                    cl_args += ' -' + key + ' ' + value
-        cl_args += self.stdout_param
+                cl_args += ' --' if len(key) > 1 else ' -'
+                cl_args += key + ' ' + value
         return cl_args, process_flow
 
 class EvaluateOld(UnixCommand):
@@ -3962,11 +4111,8 @@ class Predict(KCommand):
         for key, value in args.items():
             if not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
-                if len(key) > 1:
-                    cl_args += ' --' + key + ' ' + value
-                else:
-                    cl_args += ' -' + key + ' ' + value
-        cl_args += self.stdout_param
+                cl_args += ' --' if len(key) > 1 else ' -'
+                cl_args += key + ' ' + value
         return cl_args, process_flow
 
 class PredictOld(UnixCommand):
