@@ -90,7 +90,6 @@ class NysolPythonSource(Source):
             # という前提で書いているので、uを直接指定している。
             # u以外で指定しなければいけない時がくることはあるのか・・・？
             args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
-
         mod = self.mod(args)
         self.process_flow <<= mod
         self.process_flow.run()
