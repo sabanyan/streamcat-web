@@ -14,7 +14,7 @@ export type BaseModelProps = {
   size?: { width: number, height: number };
 }
 
-export default class BaseModel extends Model {
+export default class BaseStepModel extends Model {
   id: string = ModelUtil.getNewId()
   type: stepType
   label: string
@@ -28,6 +28,11 @@ export default class BaseModel extends Model {
     this.initialize(props,"label")
     this.setPosition(props.position)
     this.setSize(props.size)
+  }
+
+  getLabel(){
+    if(this.label)return this.label
+    return this.id
   }
 
   setPosition (position: ?{ x: number, y: number }) {
