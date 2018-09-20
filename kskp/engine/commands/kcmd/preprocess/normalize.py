@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from .common.preprocess import Preprocess
+from kskp.engine.commands.kcmd.preprocess.common.preprocess import Preprocess
+# from common.preprocess import Preprocess
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
@@ -93,8 +94,8 @@ class Normalize(Preprocess):
         self.write_order()
 
         #正規化後のデータセット出力
-        # normalized.to_csv(self.output,index=False)
-        return normalized
+        normalized.to_csv(self.output,index=False)
+        # return normalized
 
 if __name__=="__main__":
 	norm=Normalize()

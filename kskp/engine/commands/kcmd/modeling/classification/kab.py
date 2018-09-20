@@ -2,7 +2,7 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Classification
+from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn.ensemble import AdaBoostClassifier
 import pickle
 
@@ -69,7 +69,7 @@ class Kab(Classification):
         # モデルの学習
         self.model=self.model.fit(self.x_train,self.y_train)
         #出力
-        #self.set_output().write(pickle.dumps(self))
+        self.set_output().write(pickle.dumps(self))
 
         return
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from .common.preprocess import Preprocess
+# from kskp.engine.commands.kcmd.preprocess.common.preprocess import Preprocess
+from common.preprocess import Preprocess
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 import json
 import sys
@@ -107,8 +108,8 @@ class Label_encode(Preprocess):
         self.write_order()
 
         #エンコード後のデータセットの出力
-        # encoded.to_csv(self.output,index=False)
-        return encoded
+        encoded.to_csv(self.output,index=False)
+        # return encoded
 
 if __name__=="__main__":
     label_enc=Label_encode()
