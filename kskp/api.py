@@ -282,7 +282,6 @@ def execute_flow(flow_uuid, step_paths):
                             'message': 'flow does not exist'
                         })
     else:
-        t1 = time.time()
         result_data = execute_flow_internal(flow_uuid, step_paths)
         if not result_data:
             return jsonify({
@@ -291,7 +290,6 @@ def execute_flow(flow_uuid, step_paths):
                                 'message': 'result is empty.'
                             })
         else:
-            t2 = time.time()
             return jsonify({'success': True, 'name': result_data})
 
 

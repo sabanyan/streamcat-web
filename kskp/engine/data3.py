@@ -55,25 +55,44 @@ class Source:
 
 class NysolPythonSource(Source):
 
-    def __init__(self, source_type, mod, args):
+    def __init__(self, source_type, mod, args, process_flow=None, stdout_param=None, multi_out=False):
         """ argsいらんかもな、そのままmodに全部持っておけるので """
         super().__init__(source_type)
         self.mod = mod # クラスをそのまま
         self.args = args # dict
+        self.process_flow = process_flow # commandオブジェクト
+        self.stdout_param = stdout_param # str(出力文字列)
+        self.multi_out = multi_out # bool
 
     @property
     def nysol_module(self):
-        args = self.args
-        return self.mod(**args)
+        f = self.process_flow
+        f <<= self.mod(self.args)
+        # nm.cmdで2つ出力するコマンドは存在しないことを前提（現状は）
+        # 自作コマンドに柔軟性を持たせるなら、2つ出力することもありそうだが、
+        # nm.cmdに2つの出力をキャッチできなさそうなので、基本的には1つという仕様にする？
+        # 2つ出力をキャッチできたとして、3つ以上はどうなるんだという話になるので、
+        # やっぱり出力は基本的に1つに仕様を固定しておくべきかも。
+        # oとuの2つを出力できるmcmdが特殊ということにしておく？
+        # それならmulti_outを持っておきたくないが、結局どこかで判断しなくてはいけない…。
+        return f.redirect('u') if self.multi_out else f
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
-        # self.mod.runしてその結果をstdoutに書くだけ
-        self.args.update({'o': stdout})
         args = self.args
-        # print('NysolPythonSource save: ', self.mod, args)
-        mod = self.mod(**args)
-        mod.run()
+        # self.mod.runしてその結果をstdoutに書くだけ
+        # nm.cmdはコマンドが文字列なのでそれで判別する
+        if isinstance(self.args, str):
+            # 設定されていた出力パラメータを出力先が入った状態で置き換える
+            args += self.stdout_param + stdout
+        elif isinstance(self.args, dict):
+            # nm.cmdのargsはstringなので、ここにくるのはnm.cmd以外のnysol_pythonのコマンドの場合のみ
+            # という前提で書いているので、uを直接指定している。
+            # u以外で指定しなければいけない時がくることはあるのか・・・？
+            args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
+        mod = self.mod(args)
+        self.process_flow <<= mod
+        self.process_flow.run()
 
     def __repr__(self):
         return f'args: {self.args}'
