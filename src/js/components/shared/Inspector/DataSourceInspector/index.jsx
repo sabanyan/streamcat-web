@@ -26,7 +26,7 @@ import StringUtil from '../../../../utils/StringUtil'
 
 
 type State = {
-  dataFrameDetail:DataFrameDetailType;
+  dataFrameDetail?:DataFrameDetailType;
   loading: boolean;
 }
 
@@ -88,18 +88,22 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   previewFromUUID(uuid:string,label:string){
+    const {selected_data_source_detail} = this.props
     const selected_step = this.getSelectedStep()
     HttpUtil.get("frames/"+uuid).then((response)=>{
       const json = response.data
-      let contentGraph = <DataPreview key={uuid} json={json} />
+      let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
       let contentTable = <div className="table-responsive">
-        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.label}></DataTable>
+        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
       </div>
 
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
-        contents: [{title:"データの表示",content:contentTable},{title:"グラフの表示",content:contentGraph}],
+        contents: [
+          {title:"データの表示",content:contentTable,parentProps:this.props},
+          {title:"グラフの表示",content:contentGraph,parentProps:this.props}
+        ],
         title: label
       })
       this.setState({
@@ -124,6 +128,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       csv.handleDownload()
     })
   }
+
   onClickDelete (e: Event) {
 
     ModalUtil.registerModal({

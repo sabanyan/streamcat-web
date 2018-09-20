@@ -21,7 +21,6 @@ import DataPreviewInspector from '../Inspector/DataPreviewInspector'
 type State = {
   json?: any,//TODO resetting
   type: string,
-  image_url?: string,
   chart_instance?: any,
   type: string
 }
@@ -32,7 +31,7 @@ export default class DataPreview extends React.Component<Props, State> {
 
   constructor (props: Props) {
     super(props)
-    this.state = {json: props.json, type: Constants.chart.bar, image_url: null}
+    this.state = {json: props.json, type: Constants.chart.bar}
   }
 
   componentWillMount () {
@@ -51,6 +50,7 @@ export default class DataPreview extends React.Component<Props, State> {
   }
 
   render () {
+    const {title} = this.props
 
     let json = this.state.json
 
@@ -94,12 +94,12 @@ export default class DataPreview extends React.Component<Props, State> {
         break
     }
 
-    return <div className={style.data_preview_container}>
-      <div className={style.data_preview_body}>
+    return <div className={style.data_preview_container} style={{height:window.innerHeight}}>
+      <div className={style.data_preview_body} style={{height:window.innerHeight}}>
           {chart}
       </div>
-      <div className={style.data_preview_property}>
-        <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
+      <div className={style.data_preview_property} style={{height:window.innerHeight}}>
+        <DataPreviewInspector chart_instance={this.state.chart_instance} onChange={(type)=>this.onChangePreviewInspector(type)} title={title}/>
       </div>
     </div>
   }

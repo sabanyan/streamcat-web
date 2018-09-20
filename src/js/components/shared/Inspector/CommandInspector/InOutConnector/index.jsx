@@ -34,7 +34,7 @@ class InOutConnector extends React.Component{
     let dataSourceOptions = []
 
     dataFrameOnlyNodes.forEach((dataFrame)=>{
-      dataSourceOptions.push({value: dataFrame.id, label: dataFrame.label, object: dataFrame})
+      dataSourceOptions.push({value: dataFrame.id, label: dataFrame.getLabel(), object: dataFrame})
     })
 
     let command:CommandModel
@@ -58,7 +58,7 @@ class InOutConnector extends React.Component{
 
     let output = selected_out_edges.map((edge,index)=>{
       const node = FlowUtil.getNodeFromID(nodes,edge.name)
-      return <div key={index} className={style.output}>{node.label}</div>
+      return <div key={index} className={style.output}>{node.getLabel()}</div>
     })
 
     return  <div className="kskp-form">

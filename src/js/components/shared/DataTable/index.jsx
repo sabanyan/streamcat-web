@@ -18,7 +18,7 @@ type Props = {
 export default class DataTable extends React.Component<Props> {
   render () {
 
-    let {json,title} = this.props
+    let {json,title,uuid,selected_data_source_detail} = this.props
     let tr
     let body_trs
     let tds
@@ -61,8 +61,8 @@ export default class DataTable extends React.Component<Props> {
       })
       body_trs.push(<tr key={'tr_' + row}>{tds}</tr>)
     }
-    return <div className={style.data_table_container}>
-      <div className={style.data_table_body}>
+    return <div className={style.data_table_container} style={{height:window.innerHeight}}>
+      <div className={style.data_table_body} style={{height:window.innerHeight}}>
         <table
           className="kskp-data-table table-bordered table table-striped">
           <thead>
@@ -75,8 +75,8 @@ export default class DataTable extends React.Component<Props> {
           </tbody>
         </table>
       </div>
-      <div className={style.data_table_property}>
-        <DataTableInspector title={title} />
+      <div className={style.data_table_property} style={{height:window.innerHeight}}>
+        <DataTableInspector title={title}　uuid={uuid} selected_data_source_detail={selected_data_source_detail} />
       </div>
     </div>
   }

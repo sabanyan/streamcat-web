@@ -1,8 +1,8 @@
 //@flow
 import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
-import BaseModel from './BaseModel'
-import BaseModelProps from './BaseModel'
+import BaseStepModel from './BaseStepModel'
+import BaseModelProps from './BaseStepModel'
 import type { CommandModelType } from '../../types'
 import CommandModel from '../Command/CommandModel'
 
@@ -19,7 +19,7 @@ export type CommandStepModelProps = {
   getCommand: Function;
 }
 
-export default class CommandStepModel extends BaseModel{
+export default class CommandStepModel extends BaseStepModel{
   srcs: {} = {}
   dsts: {} = {}
   args: {} = {}
