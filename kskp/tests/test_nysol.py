@@ -1,6 +1,7 @@
 from pathlib import Path
 
-import nysol.mcmd as nm
+# import nysol.mcmd as nm
+import kskp.tests.nm as nm
 
 frames_path = Path('kskp/data/frames')
 
@@ -37,7 +38,7 @@ def stats_by_section(i):
         pooos.append(pooo)
 
     popo = nm.m2cat(i=pooos)
-    
+
     return popo
 
 def stats_by_state(i):
