@@ -389,7 +389,7 @@ class MCommandNew(Command):
         elif isinstance(input_i.source, NysolPythonSource):
             args_for_nysol.update({'i': input_i.source.nysol_module})
             # print('NysolPythonSource args_for_nysol:', args_for_nysol)
-
+            
         source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
 
         for input in inputs.values():
@@ -652,6 +652,52 @@ class MjoinOld(MCommand):
     def stdin(self, inputs):
         return inputs['i'].source.fd
 
+class Mnumber(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.mnumber)
+        self.name = 'mnumber'
+        self.description = '連番'
+        self.params.append(Parameter('s', 'ソート対象列名'))
+        self.params.append(Parameter('a', '追加列名(必須)'))
+        self.params.append(Parameter('e', '同一キー同一ソートの処理方法の指定'))
+        self.params.append(Parameter('l', '連番の間隔'))
+        self.params.append(Parameter('k', '連番もしくは連文字を振る単位となる列'))
+        self.params.append(Parameter('S', '開始No'))
+
+class Msummary(MCommandNew):
+    def __init__(self):
+        super().__init__(nm.msummary)
+
+class M2cross(MCommandNew):#new
+    def __init__(self):
+        super().__init__(nm.m2cross)
+        self.name = 'm2cross'
+        self.description = '1対Nのクロス集計'
+        self.params.append(Parameter('f', '組み合わせ列名(必須)'))
+        self.params.append(Parameter('s', '列項目名に展開する列(選択必須)'))
+        self.params.append(Parameter('a', '２項目指定(選択必須)'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL血置換文字列'))
+
+class Mcross(MCommandNew):#new
+    def __init__(self):
+        super().__init__(nm.mcross)
+        self.name = 'mcross'
+        self.description = 'クロス集計'
+        self.params.append(Parameter('f', '指定列の値(必須)'))
+        self.params.append(Parameter('s', '列名となる元のデータ列(必須)'))#ここの説明が怪しい
+        self.params.append(Parameter('a', 'f=で指定した列名がデータとして展開する列名'))
+        self.params.append(Parameter('k', 'キー列名'))
+        self.params.append(Parameter('v', 'NULL値置換文字列'))
+#
+# class Mchkcsv(MCommandNew):#new
+#     def __init__(self):
+#         super().__init__(nm.chkcsv)
+#         self.name = 'mchkcsv'
+#         self.description = 'csvデータのチェック・修復'
+#         self.params.append(Parameter('i', '入力ファイル名'))
+#         self.params.append(Parameter('a', '入力データ列を無視する、新しい列名'))
+
 commands = {
     'msel': Msel(),
     'mcut': Mcut(),
@@ -678,71 +724,10 @@ commands = {
     # 'mcat': McatOld(),
 
     # # MCDM
-    # 'csv2marff': Mcsv2arff(),
-    # 'm2cross': M2cross(),
-    # 'maccum': Maccum(),
-    # 'marff2csv': Marff2csv(),
-    # 'mbest': Mbest(),
-    # 'mchgnum': Mchgnum(),
-    # 'mcombi': Mcombi(),
-    # 'mchkcsv': Mchkcsv(),
-    # 'mcommon': Mcommon(),
-    # 'mcount': Mcount(),
-    # 'mcross': Mcross(),
-    # 'mdelnull': Mdelnull(),
-    # 'mdformat': Mdformat(),
-    # 'mduprec': Mduprec(),
-    # 'mfldname': Mfldname(),
-    # 'mfsortf': Mfsort(),
-    # 'mhashavg': Mhashavg(),
-    # 'mhashsum': Mhashsum(),
-    # 'mkeybreak': Mkeybreak(),
-    # 'mmbucket': Mmbucket(),
-    # 'mmvavg': Mmvavg(),
-    # 'mmvsim': Mmvsim(),
-    # 'mmvstats': Mmvstats(),
-    # 'mnjoin': Mnjoin(),
-    # 'mnormalize': Mnormalize(),
-    # 'mnrcommon': Mnrcommon(),
-    # 'mnrjoin': Mnrjoin(),
-    # 'mnullto': Mnullto(),
-    # 'mnumber': Mnumber(),
-    # 'mpadding': Mpadding(),
-    # 'mpaste': Mpaste(),
-    # 'mproduct': Mproduct(),
-    # 'mrand': Mrand(),
-    # 'mrjoin': Mrjoin(),
-    # 'msed': Msed(),
-    # 'mselnum': Mselnum(),
-    # 'mselrand': Mselrand(),
-    # 'msep': Msep(),
-    # 'msep2': Msep2(),
-    # 'mshare': Mshare(),
-    # 'mshuffle': Mshuffle(),
-    # 'mslide': Mslide(),
-    # 'msplit': Msplit(),
-    # 'msum': Msum(),
-    # 'msummary': Msummary(),
-    # 'mtab2csv': Mtab2csv(),
-    # 'mtonull': Mtonull(),
-    # 'mtra': Mtra(),
-    # 'mtrafld': Mtrafld(),
-    # 'mtraflg': Mtraflg(),
-    # 'muniq': Muniq(),
-    # 'mvcat': Mvcat(),
-    # 'mvcommon': Mvcommon(),
-    # 'mvcount': Mvcount(),
-    # 'mvdelim': Mvdelim(),
-    # 'mvdelnull': Mvdelnull(),
-    # 'mvjoin': Mvjoin(),
-    # 'mvnullto': Mvnullto(),
-    # 'mvreplace': Mvreplace(),
-    # 'mvsort': Mvsort(),
-    # 'mvuniq': Mvuniq(),
-    # 'mwinddow': Mwindow(),
-    # 'mxml2csv': Mxml2csv(),
-    # 'split': Split(),
-    # 'mtee': Mtee(),
+    'm2cross': M2cross(),
+    'mcross': Mcross(),
+    'mnumber': Mnumber(),
+    'msummary':Msummary()
     #
     # # KCMD
     # 'select_target_column': SelectTargetColumn(),
