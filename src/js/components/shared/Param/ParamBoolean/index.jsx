@@ -3,7 +3,7 @@ import React from 'react'
 import type { CommandParamType } from '../../../../types/index'
 import Param from '../index'
 //import classnames from 'classnames'
-//import style from './style.scss'
+import style from './style.scss'
 
 type Props = {
   param : CommandParamType;
@@ -25,11 +25,11 @@ export default class ParamBoolean extends Param {
       inputRef = element => onBuild(param,element)
     }
 
-    return <div>
-      <label>
+    return <div className={style.param}>
+      <label className={style.label}>
+        <input className={style.checkbox} type="checkbox" defaultChecked={(defaultValue)} ref={inputRef} value={"true"}/>
         {param.label}
       </label>
-      <input type="checkbox" className="form-control" defaultChecked={(defaultValue)} ref={inputRef} value={"true"}/>
     </div>
   }
 

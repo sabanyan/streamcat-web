@@ -124,7 +124,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             const command:CommandModel = selected_step.getCommand(commands)
             const param:CommandParamType = FlowUtil.getCommandParam(key,command)
             let paramElement = ParamUtil.getParamElement(param,onBuild,parameter,param.name)
-            return <div key={index}>
+            return <div key={index} className={"mb-8px"}>
               {paramElement}
             </div>
           })
