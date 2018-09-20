@@ -27,7 +27,7 @@ type State = {
   contents?: [React.Node],
   title?: string,
   done?: string,
-  danger?: boolean
+  danger?: boolean,
 }
 
 export default class Modal extends React.Component<Props, State> {

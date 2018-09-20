@@ -37,7 +37,7 @@ export default class ChartUtil {
     let labels:[] = []
     let datasets:[] = []
 
-    labels = Object.keys(data).map((key:string):string => {
+    labels = Object.keys(data).map((key:string,index:number):string => {
       return key
     })
 
@@ -53,10 +53,56 @@ export default class ChartUtil {
       }
     })
 
+    console.log(datasets)
+
     return {
       datasets: datasets,
       labels: labels,
     }
+
+    //
+    //
+    // let data:{} = json
+    //
+    // let labels:[] = []
+    // let datasets:[] = []
+    //
+    // labels = Object.keys(data).map((key:string):string => {
+    //   return key
+    // })
+    //
+    //
+    // let max_row = 0
+    // Object.keys(data).forEach((key:string)=>{
+    //   max_row = Math.max(max_row,data[key].length)
+    // })
+    //
+    // console.log(max_row)
+    //
+    // for(let index=0; index < max_row;index++){
+    //   const graphData = Object.keys(data).map((key:string):string => {
+    //     return data[key][index]
+    //   })
+    //
+    //   datasets.push({
+    //     label: "",
+    //     backgroundColor: ChartUtil.color(index),
+    //     borderColor: ChartUtil.color(index),
+    //     borderWidth: 1,
+    //     hoverBackgroundColor: ChartUtil.color(index),
+    //     hoverBorderColor: ChartUtil.color(index),
+    //     data: graphData,
+    //   })
+    // }
+    //
+    // console.log(datasets)
+    //
+    // return {
+    //   datasets: datasets,
+    //   labels: labels,
+    // }
+
+
   }
 }
 

@@ -1,6 +1,6 @@
 // @flow
-import type { BaseModelProps } from './BaseModel'
-import BaseModel from './BaseModel'
+import type { BaseModelProps } from './BaseStepModel'
+import BaseStepModel from './BaseStepModel'
 
 type dataSourceType = "csv"
 
@@ -10,7 +10,7 @@ export type DataFrameStepModelProps = {
   dataSource: dataSourceType;
 }
 
-export default class DataFrameStepModel extends BaseModel{
+export default class DataFrameStepModel extends BaseStepModel{
   uuid: string = null
   dataSource: dataSourceType
   constructor (props: DataFrameStepModelProps) {

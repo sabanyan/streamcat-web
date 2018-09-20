@@ -337,7 +337,7 @@ export default class Step extends React.Component<Props, State> {
         </Rect>
     }
 
-    const stepLabel = (step.label)?step.label:step.id
+    const stepLabel = step.getLabel()
 
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}
