@@ -9,6 +9,7 @@ import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandInspector from './CommandInspector/index'
 import Graph from '../../../utils/Graph'
+import FlowSettingsInspector from './FlowSettingsInspector'
 
 class Inspector extends React.Component<FlowEditorProps> {
 
@@ -18,11 +19,15 @@ class Inspector extends React.Component<FlowEditorProps> {
     let property,show
 
     if (selected_step_ids.length == 1) {
-      const selected_step = Graph.getNode(nodes,selected_step_ids[0])
-      if (selected_step instanceof DataFrameStepModel) {
-        property = <DataSourceInspector {...this.props}></DataSourceInspector>
-      } else if (selected_step instanceof CommandStepModel) {
-        property = <CommandInspector {...this.props}></CommandInspector>
+      if(selected_step_ids[0] === "flow"){
+        property = <FlowSettingsInspector {...this.props}/>
+      }else{
+        const selected_step = Graph.getNode(nodes,selected_step_ids[0])
+        if (selected_step instanceof DataFrameStepModel) {
+          property = <DataSourceInspector {...this.props}></DataSourceInspector>
+        } else if (selected_step instanceof CommandStepModel) {
+          property = <CommandInspector {...this.props}></CommandInspector>
+        }
       }
       show = true
     } else if (!selected_step_ids.length) {

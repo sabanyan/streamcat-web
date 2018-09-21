@@ -54,8 +54,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   onClickPreview(e:Event){
     const selected_step = this.getSelectedStep()
 
-    let {nodes,projectId,projectName} = this.props
-    FlowUtil.save(inject_flow_uuid,nodes,projectId,projectName).then(()=>{
+    let {nodes} = this.props
+    FlowUtil.saveNodes(inject_flow_uuid,nodes).then(()=>{
       //すでにデータが存在している場合
       if(selected_step.hasData()){
         this.setState({

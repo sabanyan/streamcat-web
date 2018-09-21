@@ -134,14 +134,36 @@ export default class FlowUtil {
    * @param projectName
    * @returns {Promise<any>}
    */
-  static save (flowUUID:string,nodes:[],projectId:string,projectName:string):any {
+  static saveNodes (flowUUID:string,nodes:[]):any {
     return new Promise((resolve, reject) => {
-      HttpUtil.put("flows/" + flowUUID,this.getFlowJson(nodes,projectId,projectName)).then((response)=>{
+      HttpUtil.put("flows/" + flowUUID,{nodes:nodes}).then((response)=>{
         resolve(response)
       })
     })
   }
 
+  /**
+   * フローの保存
+   * @param flowUUID
+   * @param label
+   * @param description
+   * @param params
+   * @param ports
+   * @returns {Promise<any>}
+   */
+  static saveFlowSettings (flowUUID:string,{label,description,params,ports}):any {
+    let putBody = {}
+    if(label)putBody["label"]=label
+    if(description)putBody["description"]=description
+    if(params)putBody["params"]=params
+    if(ports)putBody["ports"]=ports
+
+    return new Promise((resolve, reject) => {
+      HttpUtil.put("flows/" + flowUUID,putBody).then((response)=>{
+        resolve(response)
+      })
+    })
+  }
   static setModelType(json:{}):StepModelType {
     if (json["srcs"] !== undefined && json["dsts"] !== undefined && json["uuid"] !== undefined) return new SubFlowStepModel(json)
     if (json["srcs"] !== undefined && json["dsts"] !== undefined) return new CommandStepModel(json)
