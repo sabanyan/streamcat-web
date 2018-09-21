@@ -3,7 +3,6 @@ import React from 'react'
 //import classnames from 'classnames'
 import style from './style.scss'
 import Command from '../Command/index'
-
 import type { FlowEditorProps } from '../../FlowEditorContainer/index'
 import CommandModel from '../../../model/Command/CommandModel'
 import TextField from '../TextField/index'

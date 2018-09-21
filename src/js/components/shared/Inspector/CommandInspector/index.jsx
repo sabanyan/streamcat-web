@@ -39,7 +39,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       //データフレームの詳細を取得する
       const {updateStep} = this.props
       const selected_step:StepModelType = this.getSelectedStep()
-      console.log(selected_step)
       this.selectedSubFlow = null
       if (selected_step instanceof CommandStepModel) {
         if(selected_step.type === Constants.step.type.subflow){

@@ -125,7 +125,6 @@ class Graph {
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
-    console.log(edges)
     if (nodes) {
       const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
       const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))

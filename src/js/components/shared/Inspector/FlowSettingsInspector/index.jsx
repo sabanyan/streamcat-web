@@ -1,36 +1,20 @@
 //@flow
 import React from 'react'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import Operator from '../../Command/index'
 import BaseInspector from '../BaseInspector/index'
 import style from '../style.scss'
 import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import Button from '../../Button/index'
-import DataPreview from '../../DataPreview/index'
-import DropDownList from '../../DropDownList/index'
-import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
-import CommandSelector from '../../CommandSelector/index'
-import FlowModel from '../../../../model/Flow/FlowModel'
-import Graph from '../../../../utils/Graph'
-import HttpUtil from '../../../../utils/HttpUtil'
-import type { DataFrameDetailType, StepModelType } from '../../../../types/index'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import CSVModel from '../../../../model/CSV/CSVModel'
-import Loader from '../../Loader/index'
 import FlowUtil from '../../../../utils/FlowUtil'
-import ChartUtil from '../../../../utils/ChartUtil'
-import DataTable from '../../DataTable/index'
-import StateUtil from '../../../../utils/State'
-import StringUtil from '../../../../utils/StringUtil'
-import type { FlowModelProps } from '../../../../model/Flow/FlowModel'
+import classnames from 'classnames'
+import HttpUtil from '../../../../utils/HttpUtil'
+import ModalUtil from '../../../../utils/ModalUtil'
+import Constants from '../../../../constants'
 
-class FlowSettingsInspector extends React.Component<FlowEditorProps,State> {
+class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
+  loading: boolean = false
 
-  loading:boolean = false
-
-  constructor (props:FlowEditorProps){
+  constructor (props: FlowEditorProps) {
     super(props)
   }
 
@@ -38,26 +22,94 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps,State> {
 
   }
 
-  onClickSave (e:Event) {
+  onClickSave (e: Event) {
     const {flow} = this.props
     const {label} = this.props.flow
-    flow.description = this.refs["description"].value
+    flow.description = this.refs['description'].value
     this.props.updateFlow(flow)
-    FlowUtil.saveFlowSettings(inject_flow_uuid,{label:label,description:flow.description})
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {label: label, description: flow.description,params:flow.params})
     this.props.selectSteps()
   }
 
-  onBlurTitle(e:SyntheticInputEvent<EventTarget>){
+  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
     let {flow} = this.props
     flow.label = e.target.value
     this.props.updateFlow(flow)
   }
 
-  render () {
-    console.log(this.props.flow)
-    return <BaseInspector header={""}  label={this.props.flow.label} name={""} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)}>
+  onClickAddFlowParam(){
+    let {flow} = this.props
+    flow.params.push({name:"new_param",type:"string"})
+    this.props.updateFlow(flow)
+  }
 
-      <textarea placeholder={"フローの説明"} className={"form-control"} ref={"description"} defaultValue={this.props.flow.description} rows={8}></textarea>
+  onDeleteParam(param){
+    let {flow} = this.props
+    let newParams = []
+    flow.params.forEach((p)=>{
+      if(p !== param)newParams.push(p)
+    })
+    flow.params = newParams
+    this.props.updateFlow(flow)
+  }
+
+  onClickDeleteParam(param){
+
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        this.onDeleteParam(param)
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        選択されたフロー変数を削除しますか？
+      </div>,
+    })
+  }
+
+  render () {
+    const {flow} = this.props
+    const {params} = this.props.flow
+
+    let inputParams, inputParamsContainer, addFlowParams
+    inputParams = params.map((param) => {
+      return <div className={style.flow_param}>
+        <div className={style.left}>
+          <input type={'text'} className={'form-control'} defaultValue={param.name} />
+        </div>
+        <div className={style.right}>
+          <Button danger={true} onClick={()=>this.onClickDeleteParam(param)}>削除</Button>
+        </div>
+      </div>
+    })
+
+    if (inputParams) {
+      inputParamsContainer = <div>
+        <div className={style.full_hr} />
+        <label>フロー変数</label>
+        {inputParams}
+      </div>
+    } else {
+      <div>
+        フロー変数の設定がありません
+      </div>
+    }
+    addFlowParams = <div className={style.new_flow_params} onClick={()=>this.onClickAddFlowParam()}>
+      <i className={classnames('material-icons', [style.new_flow_params_icon])}>add_circle_outline</i>
+      フロー変数を追加する
+    </div>
+
+    return <BaseInspector header={''} label={this.props.flow.label} name={''} {...this.props}
+                          onBlurTitle={(e) => this.onBlurTitle(e)}>
+      <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
+                defaultValue={this.props.flow.description} rows={8} onBlur={this.onBlurDescription}></textarea>
+      {inputParamsContainer}
+      {addFlowParams}
       <div>
         <div className={style.full_hr} />
         <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
