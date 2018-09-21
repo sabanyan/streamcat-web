@@ -63,10 +63,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     onClickSave(e:Event) {
         let selected_step = this.getSelectedStep()
-
-      console.log("SAVE")
-        console.log(this.inputRefs)
-
         selected_step.args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
 
         this.props.updateStep(selected_step)

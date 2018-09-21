@@ -285,7 +285,8 @@ const Application = (state = initialState, action:{}) => {
         }
         case UPDATE_FLOW_ACTION:{
           let newState = StateUtil.deepCopy(state)
-          return {...newState,...action.flow}
+          newState.flow = action.flow
+          return newState
         }
 
         case DELETE_STEPS_ACTION: {

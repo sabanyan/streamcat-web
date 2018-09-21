@@ -61,7 +61,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   save (): Promise {
     let {nodes,projectId,projectName} = this.props
-    return FlowUtil.save(inject_flow_uuid,nodes,projectId,projectName)
+    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
   }
 
   run () {

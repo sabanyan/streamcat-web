@@ -8,7 +8,8 @@ export type FlowModelProps = {
   nodes: [],
   params: [],
   ports: [],
-  projectId: ?number
+  projectId: ?number,
+  description: string,
 }
 
 export default class FlowModel<FlowModelProps> extends Model {
@@ -19,6 +20,7 @@ export default class FlowModel<FlowModelProps> extends Model {
   ports:[] = [[],[]]
   nodes:[] = []
   projectId = null
+  description = ""
 
   constructor (props: FlowModelProps) {
     super(props)
@@ -29,6 +31,7 @@ export default class FlowModel<FlowModelProps> extends Model {
     this.initialize(props,"ports")
     this.initialize(props,"nodes")
     this.initialize(props,"projectId")
+    this.initialize(props,"description")
   }
 
   getInPorts(){

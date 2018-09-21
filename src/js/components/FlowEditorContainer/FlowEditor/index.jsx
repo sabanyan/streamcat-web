@@ -20,6 +20,8 @@ import { DragType } from '../../../types'
 import Inspector from '../../shared/Inspector'
 import type { SubFlowParamType } from '../../../types'
 import SubflowCommandModel from '../../../model/Command/SubflowCommandModel'
+import SettingIcon from '../../shared/Icon/SettingIcon'
+import SettingsButton from '../../shared/SettingsButton'
 
 type State = {}
 
@@ -148,6 +150,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   render () {
     return <div className={style.flow_editor}>
       <PaperZoom />
+      <SettingsButton {...this.props}/>
       <ToolBar {...this.props} />
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)} message={"フローを構築中です"}/>
       <PaperScroller {...this.props}>
