@@ -31,9 +31,17 @@
   border-bottom:1px solid $kskp-property-border-color;
 }
 
-.property_title{
+.property_label{
   color: $kskp-text;
   font-size: 16px;
+  padding: 0 0 8px;
+  text-align: left;
+  clear: both;
+}
+
+.property_name{
+  color: $kskp-text;
+  font-size: 14px;
   padding: 0 0 8px;
   text-align: left;
   clear: both;
@@ -112,10 +120,10 @@
   }
 }
 
-.title{
+.label{
   border: none;
   width: 100%;
-  padding: 4px 8px;
+  padding: 4px 0;
   position: relative;
   color: $kskp-text;
   border-bottom: 1px dotted transparent;

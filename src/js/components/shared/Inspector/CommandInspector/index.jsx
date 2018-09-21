@@ -111,13 +111,13 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         const {commands} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
         let inputForm = []
-        let subFlowLink,content,title
+        let subFlowLink,content,label
         const onBuild = (param,element) => this.onBuild(param,element)
 
 
         if(selected_step.type === Constants.step.type.command){
           const command:CommandModel = selected_step.getCommand(commands)
-          title = (command)?command.label:selected_step.commandId
+          label = (command)?command.label:selected_step.commandId
           this.inputRefs = []
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
@@ -129,7 +129,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             </div>
           })
         }else if(selected_step.type === Constants.step.type.subflow){
-          title = selected_step.label
+          label = selected_step.label
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
             const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,key))
@@ -169,7 +169,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           </div>
         }
 
-        return <BaseInspector key={selected_step.id} header={""} label={title} id={selected_step.id} {...this.props}>
+        return <BaseInspector key={selected_step.id} header={""} label={label} name={selected_step.id} {...this.props}>
           {content}
         </BaseInspector>
     }
