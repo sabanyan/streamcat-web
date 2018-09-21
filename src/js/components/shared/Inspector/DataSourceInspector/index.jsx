@@ -287,7 +287,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     }
 
 
-    return <BaseInspector header={""}  label={selected_step.label} id={selected_step.id} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)}>
+    return <BaseInspector header={""}  label={selected_step.label} name={selected_step.id} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)}>
       {content}
     </BaseInspector>
   }
