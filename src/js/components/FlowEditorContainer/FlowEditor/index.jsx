@@ -64,7 +64,6 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     networkRequests.push(HttpUtil.get('commands').then((response) => {
       const json = response.data
       const commands = json.data.map((command)=>{
-        console.log(command)
         return new CommandModel(command)
       })
       this.props.addMaster({commands: commands})
@@ -77,7 +76,6 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       const subflows = json.data.map((subflow:SubFlowParamType)=>{
         return new SubflowCommandModel(subflow)
       })
-      console.log(subflows)
       this.props.addMaster({subflows: subflows})
     }).then((response) => {},
       (error) => {console.log(error)}))
