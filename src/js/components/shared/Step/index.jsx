@@ -96,6 +96,9 @@ export default class Step extends React.Component<Props, State> {
       }
     }
     else {
+      //一度選択状態をクリアする（#71）
+      this.props.selectSteps()
+
       this.props.selectSteps([step])
 
 
