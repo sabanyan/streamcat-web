@@ -45,9 +45,9 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
   onClickName(e:Event,uuid:string,name:string){
     HttpUtil.get("frames/"+uuid).then((response)=>{
       const json = response.data
-      let contentGraph = <DataPreview key={uuid} json={json} />
+      let contentGraph = <DataPreview key={uuid} json={json} title={name} uuid={uuid} />
       let contentTable = <div className="table-responsive">
-        <DataTable json={ChartUtil.jsonToChart(json.data.contents)}></DataTable>
+        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={name} uuid={uuid} selected_data_source_detail={response.data.data}></DataTable>
       </div>
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
