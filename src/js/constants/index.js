@@ -29,9 +29,9 @@ const Constants = {
       height: 38 + 6 * 2,
       borderWidth: 2,
       icon: {
-        width: 38,
-        height: 38,
-        padding: 16,
+        width: 42,
+        height: 42,
+        padding: 8,
       },
     },
   },
