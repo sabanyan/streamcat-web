@@ -86,7 +86,7 @@ class DataTableInspector extends React.Component<Props> {
       </div>
     </div>
 
-    return <BaseInspector header={""} id={title} label={""} {...this.props}>
+    return <BaseInspector header={""} name={title} label={title} {...this.props}>
       {content}
     </BaseInspector>
   }

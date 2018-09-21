@@ -60,7 +60,7 @@ class DataPreviewInspector extends React.Component<FlowEditorProps> {
         </div>
       </div>
 
-    return <BaseInspector header={""} name={title} label={""} {...this.props}>
+    return <BaseInspector header={""} name={title} label={title} {...this.props}>
       {content}
     </BaseInspector>
   }
