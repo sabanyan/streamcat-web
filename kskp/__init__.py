@@ -4,6 +4,8 @@ app = Flask('kskp')
 
 # jsonify関数を使うときにUTF-8として返却できるようにするための設定
 app.config['JSON_AS_ASCII'] = False
+# jsonify関数を使ってJSON形式で返すと勝手に並び順がソートされてしまうので、それを無効にする
+app.config["JSON_SORT_KEYS"] = False
 
 from .auth import auth_bp, login_required
 from .api import api
