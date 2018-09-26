@@ -1,4 +1,4 @@
-﻿{
+{
     "id": "mnrcommon",
     "params": [
         {
@@ -24,21 +24,10 @@
             "optional": "true"
         },
         {
-            "name": "u",
-            "type": "string",
-            "label": "指定の条件に一致しない行を出力するファイル名。",
-            "optional": "true"
-        },
-        {
             "name": "r",
             "type": "boolean",
             "label": "R=パラメータで指定した行番号以外の行を選択する",
             "optional": "true"
-        },
-        {
-            "name": "m",
-            "type": "string",
-            "label": "参照ファイル名"
         },
         {
             "name": "assert_diffSize",
@@ -73,7 +62,7 @@
         {
             "name": "q",
             "type": "boolean",
-            "label": "自動並べ替えの無効化（k=パラメータ指定時の自動並べ替えを無効にしたい場合）",
+            "label": "自動並べ替えの無効化",
             "optional": "true"
         },
         {
@@ -87,6 +76,10 @@
         [
             {
                 "name": "i",
+                "type": "frame"
+            },
+            {
+                "name": "m",
                 "type": "frame"
             }
         ],

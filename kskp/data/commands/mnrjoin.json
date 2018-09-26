@@ -1,4 +1,4 @@
-﻿{
+{
     "id": "mnrjoin",
     "params": [
         {
@@ -40,11 +40,6 @@
             "type": "boolean",
             "label": "入力データにない参照データを NULL 値として出力する",
             "optional": "true"
-        },
-        {
-            "name": "m",
-            "type": "string",
-            "label": "参照ファイル名"
         },
         {
             "name": "assert_diffSize",
@@ -91,7 +86,7 @@
         {
             "name": "q",
             "type": "boolean",
-            "label": "自動並べ替えの無効化（k=パラメータ指定時の自動並べ替えを無効にしたい場合）",
+            "label": "自動並べ替えの無効化",
             "optional": "true"
         },
         {

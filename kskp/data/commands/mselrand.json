@@ -1,4 +1,4 @@
-﻿{
+{
     "id": "mselrand",
     "params": [
         {
@@ -21,12 +21,6 @@
             "name": "S",
             "type": "string",
             "label": "乱数の種",
-            "optional": "true"
-        },
-        {
-            "name": "u",
-            "type": "string",
-            "label": "指定の条件に一致しない行を出力するファイル名を指定する。",
             "optional": "true"
         },
         {
@@ -68,7 +62,7 @@
         {
             "name": "q",
             "type": "boolean",
-            "label": "自動並べ替えの無効化（k=パラメータ指定時の自動並べ替えを無効にしたい場合）",
+            "label": "自動並べ替えの無効化",
             "optional": "true"
         },
         {
