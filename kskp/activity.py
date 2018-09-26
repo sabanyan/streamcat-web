@@ -90,7 +90,7 @@ def add_activity_to_flow(user_id):
 
             data['creator'] = get_user_by_id(user_id)['name']
             JST = timezone(timedelta(hours=+9), 'JST')
-            data['executedAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
+            data['createdAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
             return data
         return deco
     return _deco
