@@ -21,13 +21,13 @@
         {
             "name": "n",
             "type": "boolean",
-            "label": "",
+            "label": "参照データにない入力データをNULL値として出力するフラグ。",
             "optional": "true"
         },
         {
             "name": "N",
             "type": "boolean",
-            "label": "参照データにない入力データを NULL 値として出力するフラグ。",
+            "label": "入力データにない参照データをNULL値として出力するフラグ。",
             "optional": "true"
         },
         {

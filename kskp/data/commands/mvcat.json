@@ -20,7 +20,7 @@
         {
             "name": "delim",
             "type": "string",
-            "label": "",
+            "label": "ベクトル要素の区切り文字を指定",
             "optional": "true"
         },
         {
