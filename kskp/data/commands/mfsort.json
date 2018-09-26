@@ -1,39 +1,21 @@
 ﻿{
-    "id": "mtrafld",
+    "id": "mfsort",
     "params": [
-        {
-            "name": "a",
-            "type": "string",
-            "label": "トランザクション列名(必須)"
-        },
         {
             "name": "f",
             "type": "string",
-            "label": "列名リスト",
-            "optional": "true"
-        },
-        {
-            "name": "delim",
-            "type": "string",
-            "label": "トランザクション項目アイテムを区切る文字列",
-            "optional": "true"
-        },
-        {
-            "name": "delim2",
-            "type": "string",
-            "label": "項目名と値ペアを区切る文字列",
-            "optional": "true"
+            "label": "対象列名(必須)"
         },
         {
             "name": "r",
             "type": "boolean",
-            "label": "トランザクション項目をクロス表に変換する。",
+            "label": "逆順に並べる。",
             "optional": "true"
         },
         {
-            "name": "valOnly",
+            "name": "n",
             "type": "boolean",
-            "label": "アイテムとして「項目名=」は出力しない。",
+            "label": "数値順に並べる。",
             "optional": "true"
         },
         {
@@ -45,19 +27,13 @@
         {
             "name": "assert_nullin",
             "type": "boolean",
-            "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
-            "optional": "true"
-        },
-        {
-            "name": "assert_nullout",
-            "type": "boolean",
-            "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
+            "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
             "optional": "true"
         },
         {
             "name": "nfn",
             "type": "boolean",
-            "label": "入力データの1行目を項目名行とみなさない。",
+            "label": "入力データの 1 行目を項目名行とみなさない。",
             "optional": "true"
         },
         {
@@ -100,7 +76,7 @@
         ]
     ],
     "version": "0.7.0",
-    "label": "クロス表をトランザクション項目に変換(Mtrafld)",
-    "classification": "value_crossing",
-    "description": "./static/pdf/mcmd/value_crossing/mtrafld.pdf"
+    "label": "項目ソート",
+    "classification": "row_sort",
+    "description": "./static/pdf/mcmd/row_sort/mfsort.pdf"
 }
