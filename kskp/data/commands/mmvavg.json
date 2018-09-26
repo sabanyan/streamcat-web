@@ -16,7 +16,7 @@
         {
             "name": "n",
             "type": "string",
-            "label": "",
+            "label": "Null データの場合は NULL にするフラグ",
             "optional": "true"
         },
         {

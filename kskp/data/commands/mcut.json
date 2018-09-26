@@ -15,13 +15,13 @@
         {
             "name": "nfni",
             "type": "boolean",
-            "label": "",
+            "label": "入力データの1行目を項目名行とみなさず、項目番号で指定する",
             "optional": "true"
         },
         {
             "name": "assert_diffSize",
             "type": "boolean",
-            "label": "入力データの1行目を項目名行とみなさず、項目番号で指定する。",
+            "label": "入力、出力件数比較を行う",
             "optional": "true"
         },
         {

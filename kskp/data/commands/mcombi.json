@@ -43,13 +43,13 @@
         {
             "name": "assert_diffSize",
             "type": "boolean",
-            "label": "",
+            "label": "入力、出力件数比較を行う",
             "optional": "true"
         },
         {
             "name": "assert_nullin",
             "type": "boolean",
-            "label": "入力、出力件数比較を行う",
+            "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
             "optional": "true"
         },
         {
