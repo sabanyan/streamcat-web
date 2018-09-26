@@ -1,39 +1,44 @@
 ﻿{
-    "id": "mtrafld",
+    "id": "mchgstr",
     "params": [
         {
-            "name": "a",
+            "name": "c",
             "type": "string",
-            "label": "トランザクション列名(必須)"
+            "label": "置換対象となる文字列と対応する置換文字列(必須)"
         },
         {
             "name": "f",
             "type": "string",
-            "label": "列名リスト",
-            "optional": "true"
+            "label": "置換対象列(必須)"
         },
         {
-            "name": "delim",
+            "name": "O",
             "type": "string",
-            "label": "トランザクション項目アイテムを区切る文字列",
+            "label": "c=に無い文字列を置換する場合の文字列",
             "optional": "true"
         },
         {
-            "name": "delim2",
-            "type": "string",
-            "label": "項目名と値ペアを区切る文字列",
-            "optional": "true"
-        },
-        {
-            "name": "r",
+            "name": "A",
             "type": "boolean",
-            "label": "トランザクション項目をクロス表に変換する。",
+            "label": "指定した項目を置き換えるのではなく、新たに項目が追加される",
             "optional": "true"
         },
         {
-            "name": "valOnly",
+            "name": "F",
             "type": "boolean",
-            "label": "アイテムとして「項目名=」は出力しない。",
+            "label": "c=パラメータで指定した置換条件リストのいずれとも合致しない値は、その項目の値のまま出力",
+            "optional": "true"
+        },
+        {
+            "name": "sub",
+            "type": "boolean",
+            "label": "検索を完全一致ではなく部分文字列マッチで比較する",
+            "optional": "true"
+        },
+        {
+            "name": "W",
+            "type": "boolean",
+            "label": "sub オプションが指定されているときにワイド文字として部分文字列マッチをおこなう",
             "optional": "true"
         },
         {
@@ -45,19 +50,19 @@
         {
             "name": "assert_nullin",
             "type": "boolean",
-            "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
+            "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
             "optional": "true"
         },
         {
             "name": "assert_nullout",
             "type": "boolean",
-            "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
+            "label": "出力項目の NULL 値チェックを行う",
             "optional": "true"
         },
         {
             "name": "nfn",
             "type": "boolean",
-            "label": "入力データの1行目を項目名行とみなさない。",
+            "label": "入力データの 1 行目を項目名行とみなさない。",
             "optional": "true"
         },
         {
@@ -100,7 +105,7 @@
         ]
     ],
     "version": "0.7.0",
-    "label": "クロス表をトランザクション項目に変換(Mtrafld)",
-    "classification": "value_crossing",
-    "description": "./static/pdf/mcmd/value_crossing/mtrafld.pdf"
+    "label": "文字列の置換",
+    "classification": "value_transform",
+    "description": "./static/pdf/mcmd/value_transform/mchgstr.pdf"
 }

@@ -1,39 +1,44 @@
 ﻿{
-    "id": "mtrafld",
+    "id": "msim",
     "params": [
         {
-            "name": "a",
+            "name": "c",
             "type": "string",
-            "label": "トランザクション列名(必須)"
+            "label": ""
         },
         {
             "name": "f",
             "type": "string",
-            "label": "列名リスト",
-            "optional": "true"
+            "label": "二列間の類似度を求める列名(必須)"
         },
         {
-            "name": "delim",
+            "name": "a",
             "type": "string",
-            "label": "トランザクション項目アイテムを区切る文字列",
+            "label": "二変数の名前の指定",
             "optional": "true"
         },
         {
-            "name": "delim2",
+            "name": "k",
             "type": "string",
-            "label": "項目名と値ペアを区切る文字列",
+            "label": "単位とする列名",
             "optional": "true"
         },
         {
-            "name": "r",
-            "type": "boolean",
-            "label": "トランザクション項目をクロス表に変換する。",
+            "name": "n",
+            "type": "string",
+            "label": "",
             "optional": "true"
         },
         {
-            "name": "valOnly",
+            "name": "d",
             "type": "boolean",
-            "label": "アイテムとして「項目名=」は出力しない。",
+            "label": "対角行列、上三角行列を出力する。",
+            "optional": "true"
+        },
+        {
+            "name": "bufcount",
+            "type": "string",
+            "label": "バッファの数",
             "optional": "true"
         },
         {
@@ -43,15 +48,21 @@
             "optional": "true"
         },
         {
-            "name": "assert_nullin",
+            "name": "assert_nullkey",
             "type": "boolean",
             "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
             "optional": "true"
         },
         {
-            "name": "assert_nullout",
+            "name": "assert_nullin",
             "type": "boolean",
             "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
+            "optional": "true"
+        },
+        {
+            "name": "assert_nullout",
+            "type": "boolean",
+            "label": "出力項目のNULL値チェックを行う",
             "optional": "true"
         },
         {
@@ -83,6 +94,12 @@
             "type": "string",
             "label": "作業ファイル格納パス名",
             "optional": "true"
+        },
+        {
+            "name": "precision",
+            "type": "string",
+            "label": "有効桁数",
+            "optional": "true"
         }
     ],
     "ports": [
@@ -100,7 +117,7 @@
         ]
     ],
     "version": "0.7.0",
-    "label": "クロス表をトランザクション項目に変換(Mtrafld)",
-    "classification": "value_crossing",
-    "description": "./static/pdf/mcmd/value_crossing/mtrafld.pdf"
+    "label": "二変数間の類似度の計算",
+    "classification": "table_grouping",
+    "description": "./static/pdf/mcmd/table_grouping/msim.pdf"
 }
