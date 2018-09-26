@@ -203,7 +203,8 @@ def create_flow(request_json, user_id, data_source_name=None):
             'projectId': get_project_id_by_uuid(request_json.get('project_uuid')),
             'label': request_json.get('name'),
             'ports': [[],[]],
-            'params': []
+            'params': [],
+            'description': ""
         }
         return data
 
@@ -309,7 +310,7 @@ def get_flow_paths_by_project_uuid(project_uuid):
         """
         flowのjsonが正しい形式かを確かめるメソッド
         """
-        required_key_list = ['label', 'creator', 'createdAt', 'projectId']
+        required_key_list = ['label', 'creator', 'createdAt', 'projectId', 'description']
         additional_key_list = ['params', 'ports', 'nodes']
 
         # flowチェック（flow一覧表示時）
