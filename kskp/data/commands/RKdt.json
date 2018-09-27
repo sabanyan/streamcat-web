@@ -3,7 +3,7 @@
     "id": "rkdt",
     "label": "決定木による回帰",
     "classification": "regression",
-    "description": "データに対して、次々と条件を定義し、それらの条件から回帰を行う",
+    "description": "データに対していくつもの条件を定義し、その条件分岐に沿って回帰を行う",
     "ports": [
         [
             {

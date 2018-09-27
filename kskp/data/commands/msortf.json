@@ -31,6 +31,12 @@
             "optional": "true"
         },
         {
+            "name": "noflg",
+            "type": "boolean",
+            "label": "出力 CSV のヘッダーにソーティングの印 (%0,%0n など) を付けない。",
+            "optional": "true"
+        },
+        {
             "name": "assert_diffSize",
             "type": "boolean",
             "label": "入力、出力件数比較を行う",
