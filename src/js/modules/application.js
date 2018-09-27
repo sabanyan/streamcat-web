@@ -145,23 +145,16 @@ const Application = (state = initialState, action:{}) => {
               let totalSX = 0
               let totalSY = 0
               src_step_ids.forEach((id:string)=>{
-                const from:string = id
-                const to:string = add_step.id
-
                 const target:StepModelType = Graph.getNode(state.nodes,id)
                 totalSX = totalSX + target.position.x
                 totalSY = totalSY + target.position.y
-                graph.addEdge(from,to,from)
               })
 
               //dsts
               let totalDX = 0
               dst_step_ids.forEach((id:string)=>{
-                const from:string = add_step.id
-                const to:string = id
                 //ノードの数に応じて
                 totalDX = totalDX + defaultGraphProps.nodeSeparator
-                graph.addEdge(from,to,to)
               })
 
               //
