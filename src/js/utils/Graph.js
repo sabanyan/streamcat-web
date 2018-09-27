@@ -49,21 +49,21 @@ class Graph {
    * @param id
    * @param from_id
    */
-  addNode (id:string, from_id:([]|string)) {
+  addNode (id:string) {
     const self = this
     this.g.setNode(id, {
       label: id,
       width: defaultNodeProps.width,
       height: defaultNodeProps.height,
     })
-    if (Array.isArray(from_id)) {
-      from_id.forEach((fid) => {
-        self.addEdge(fid, id)
-      })
-    }
-    else if (from_id) {
-      this.addEdge(from_id, id)
-    }
+    // if (Array.isArray(from_id)) {
+    //   from_id.forEach((fid) => {
+    //     self.addEdge(fid, id,Graph.edgeName(fid,id))
+    //   })
+    // }
+    // else if (from_id) {
+    //   this.addEdge(from_id, id,Graph.edgeName(from_id,id))
+    // }
   }
 
   outEdges (id:string) {
@@ -76,6 +76,10 @@ class Graph {
 
   nodeEdges (id:string) {
     return this.g.nodeEdges(id)
+  }
+
+  static edgeName(v:string,w:string,port_name:string){
+    return JSON.stringify({v:v,w:w,port_name:port_name})
   }
 
   /**
@@ -276,20 +280,20 @@ class Graph {
           const hasDsts = (Object.keys(step.dsts).length)
 
           if (hasSrcs) {
-            Object.keys(step.srcs).forEach((key) => {
-              const src = step.srcs[key]
-              const label = src
+            Object.keys(step.srcs).forEach((portName) => {
+              const src = step.srcs[portName]
               const from = src
               const to = node.id
+              const label = Graph.edgeName(from,to,portName)//src
               self.addEdge(from, to, label)
             })
           }
           if (hasDsts) {
-            Object.keys(step.dsts).forEach((key) => {
-              const dst = step.dsts[key]
-              const label = dst
+            Object.keys(step.dsts).forEach((portName) => {
+              const dst = step.dsts[portName]
               const from = node.id
               const to = dst
+              const label = Graph.edgeName(from,to,portName)//dst
               self.addEdge(from, to, label)
             })
           }

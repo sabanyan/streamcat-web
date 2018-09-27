@@ -203,25 +203,44 @@ const Application = (state = initialState, action:{}) => {
                   //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
                   let command:CommandModelType
                   if(add_step instanceof SubFlowStepModel){
-                    console.log(add_step)
                     command = add_step.getCommand(newState.mast.subflows)
-                    console.log("subflow")
                   }
                   else if(add_step instanceof CommandStepModel){
                     command = add_step.getCommand(newState.mast.commands)
-                    console.log("command")
                   }
-                console.log(add_step)
-                console.log(command)
                   const inPorts:[CommandPortType] = command.getInPorts()
                   const outPorts:[CommandPortType] = command.getOutPorts()
                   src_step_ids.forEach((id,index)=>{
                     const newPortName = inPorts[index]
                     add_step.srcs[newPortName.name]=id
+
+
+                    //srcsがあった場合は１つ目のポート名につなぐ
+                    //srcsがない場合は、デフォルト値（i）のポートにつなぐ
+                    const from:string = id
+                    const to:string = add_step.id
+                    let inputPortName = Constants.default.command.inputPortName
+                    if(add_step.srcs !== undefined || add_step.srcs !== {}){
+                      inputPortName = Object.keys(add_step.srcs)[0]
+
+                    }
+                    graph.addEdge(from,to,Graph.edgeName(from,to,newPortName.name))
+
                   })
                   dst_step_ids.forEach((id,index)=>{
                     const newPortName = outPorts[index]
                     add_step.dsts[newPortName.name]=id
+
+
+                    //dstsがあった場合は１つ目のポート名につなぐ
+                    //dstsがない場合は、デフォルト値（i）のポートにつなぐ
+                    const from:string = add_step.id
+                    const to:string = id
+                    let outputPortName = Constants.default.command.outputPortName
+                    if(add_step.dsts !== undefined || add_step.dsts !== {}){
+                      outputPortName = Object.keys(add_step.dsts)[0]
+                    }
+                    graph.addEdge(from,to,Graph.edgeName(from,to,outputPortName))
                   })
               }else{
                 add_step.srcs = {}
@@ -250,13 +269,12 @@ const Application = (state = initialState, action:{}) => {
                   if(node instanceof CommandStepModel ||
                     node instanceof SubFlowStepModel){
                     if(node.srcs !== action.step.srcs){
-                      //ノードのつながりをすべて削除
                       Object.keys(node.srcs).forEach(portName=>{
                         const id = node.srcs[portName]
                         const from = id
                         const to = node.id
                         if(Graph.getNode(newState.nodes,id)){
-                          graph.removeEdge(from,to,from)
+                          graph.removeEdge(from,to,Graph.edgeName(from,to,portName))
                         }
                       })
                       //ノードのつながりを再構築
@@ -265,7 +283,7 @@ const Application = (state = initialState, action:{}) => {
                         const from = id
                         const to = action.step.id
                         if(Graph.getNode(newState.nodes,id)) {
-                          graph.addEdge(from, to, from)
+                          graph.addEdge(from, to, Graph.edgeName(from,to,portName))
                         }
                       })
                     }
