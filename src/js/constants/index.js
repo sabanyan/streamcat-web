@@ -34,6 +34,10 @@ const Constants = {
         padding: 8,
       },
     },
+    command: {
+      inputPortName:"i",
+      outputPortName:"i",
+    }
   },
   step:{
     type:{
