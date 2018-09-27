@@ -43,6 +43,12 @@
             "optional": "true"
         },
         {
+            "name": "R",
+            "type": "string",
+            "label": "行番号範囲リスト (複数項目指定可)",
+            "optional": "true"
+        },
+        {
             "name": "assert_diffSize",
             "type": "boolean",
             "label": "入力、出力件数比較を行う",
