@@ -10,85 +10,85 @@
             "name": "f",
             "type": "string",
             "label": "参照列名(必須)",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "K",
             "type": "string",
             "label": "参照データの結合キー名",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "n",
             "type": "boolean",
             "label": "参照データにない入力データをNULL値として出力するフラグ。",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "N",
             "type": "boolean",
             "label": "入力データにない参照データをNULL値として出力するフラグ。",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "bufcount",
             "type": "string",
             "label": "バッファの数",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "assert_diffSize",
             "type": "boolean",
             "label": "入力、出力件数比較を行う",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "assert_nullkey",
             "type": "boolean",
             "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "assert_nullin",
             "type": "boolean",
             "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "assert_nullout",
             "type": "boolean",
             "label": "出力項目のNULL値チェックを行う",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "nfn",
             "type": "boolean",
             "label": "入力データの1行目を項目名行とみなさない。",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "nfno",
             "type": "boolean",
             "label": "出力データに項目名行を出力しない。",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "x",
             "type": "boolean",
             "label": "項目番号による指定",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "q",
             "type": "boolean",
             "label": "自動並べ替えの無効化",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "tmpPath",
             "type": "string",
             "label": "作業ファイル格納パス名",
-            "optional": "true"
+            "optional": true
         }
     ],
     "ports": [
