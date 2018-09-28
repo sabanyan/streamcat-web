@@ -7,12 +7,6 @@
             "label": "結合キーとなるベクトル列名(必須)"
         },
         {
-            "name": "A",
-            "type": "boolean",
-            "label": "vf=で:(コロン) に続けて指定した項目名で、新たな項目が追加される。",
-            "optional": true
-        },
-        {
             "name": "K",
             "type": "string",
             "label": "参照ファイル上の結合キーとなるベクトル要素の列名(必須)"
@@ -21,6 +15,12 @@
             "name": "f",
             "type": "string",
             "label": "結合ベクトル列名(必須)"
+        },
+        {
+            "name": "A",
+            "type": "boolean",
+            "label": "vf=で:(コロン) に続けて指定した項目名で、新たな項目が追加される。",
+            "optional": true
         },
         {
             "name": "n",

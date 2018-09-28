@@ -398,14 +398,6 @@ class MCommandNew(UnixCommand):
         args_for_nysol = args
         process_flow = None
 
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
@@ -672,14 +664,6 @@ class Mjoin(MCommandNew):
         args_for_nysol = args
         process_flow = None
 
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
@@ -874,14 +858,6 @@ class Msep2(MCommandNew):#mnew
     def command_args(self, args, inputs):
         args_for_nysol = args
         process_flow = None
-        stdout_param = None
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
 
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
@@ -891,18 +867,19 @@ class Msep2(MCommandNew):#mnew
             process_flow = input_i.source.nysol_module
 
         # 文字列のコマンドを作成する
-        stdout_param = ' o='
         args_list = self.name
         for key,value in args_for_nysol.items():
-            args_list += ' %s=%s' % (key, value)
-        args_list += stdout_param
-        args_for_nysol = args_list
+            if isinstance(value, bool):
+                if value == True:
+                    args_list +=  ' -' + key
+            else:
+                args_list += ' %s=%s' % (key, value)
 
-        return args_for_nysol, process_flow, stdout_param
+        return args_list, process_flow
 
     def source(self, args, inputs):
-        args, process_flow, stdout_param = self.command_args(args, inputs)
-        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, stdout_param)
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, ' o=')
 
 class Msep2Old(MCommand):#mnew
     def __init__(self):
@@ -1019,14 +996,6 @@ class Mnjoin(MCommandNew):
         args_for_nysol = args
         process_flow = None
 
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
@@ -1081,14 +1050,6 @@ class Mrjoin(MCommandNew):
     def command_args(self, args, inputs):
         args_for_nysol = args
         process_flow = None
-
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
 
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
@@ -1146,14 +1107,6 @@ class Mnrjoin(MCommandNew):#new
         args_for_nysol = args
         process_flow = None
 
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
@@ -1209,14 +1162,6 @@ class Mvjoin(MCommandNew):#new
         args_for_nysol = args
         process_flow = None
 
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
@@ -1270,14 +1215,6 @@ class Mvreplace(MCommandNew):#new
     def command_args(self, args, inputs):
         args_for_nysol = args
         process_flow = None
-
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
 
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
@@ -1333,14 +1270,6 @@ class Mpaste(MCommandNew):#new
         args_for_nysol = args
         process_flow = None
 
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
@@ -1391,14 +1320,6 @@ class Mproduct(MCommandNew):#new
     def command_args(self, args, inputs):
         args_for_nysol = args
         process_flow = None
-
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
 
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
@@ -1453,14 +1374,6 @@ class Mcommon(MCommandNew):#new
     def command_args(self, args, inputs):
         args_for_nysol = args
         process_flow = None
-
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
 
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
@@ -1539,14 +1452,6 @@ class Mnrcommon(MCommandNew):#new
         args_for_nysol = args
         process_flow = None
 
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
@@ -1622,14 +1527,6 @@ class Mvcommon(MCommandNew):#new
     def command_args(self, args, inputs):
         args_for_nysol = args
         process_flow = None
-
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
 
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
@@ -1815,14 +1712,6 @@ class Mcsv2arff(MCommandNew):#new
     def command_args(self, args, inputs):
         args_for_nysol = args
         process_flow = None
-        stdout_param = None
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
 
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
@@ -1832,18 +1721,18 @@ class Mcsv2arff(MCommandNew):#new
             process_flow = input_i.source.nysol_module
 
         # 文字列のコマンドを作成する
-        stdout_param = ' o='
         args_list = self.name
         for key,value in args_for_nysol.items():
-            args_list += ' %s=%s' % (key, value)
-        args_list += stdout_param
-        args_for_nysol = args_list
-
-        return args_for_nysol, process_flow, stdout_param
+            if isinstance(value, bool):
+                if value == True:
+                    args_list +=  ' -' + key
+            else:
+                args_list += ' %s=%s' % (key, value)
+        return args_list, process_flow
 
     def source(self, args, inputs):
-        args, process_flow, stdout_param = self.command_args(args, inputs)
-        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, stdout_param)
+        args, process_flow= self.command_args(args, inputs)
+        return NysolPythonSource('csv', self.nysol_mod, args, process_flow, ' o=')
 
 class Mcsv2arffOld(MCommand):#new
     def __init__(self):
@@ -2648,14 +2537,6 @@ class Mchkcsv(MCommandNew):#new
         args_for_nysol = args
         process_flow = None
 
-        # jsonからくるオプションのbool値はstringなので、booleanに変更する
-        # stringで来なければ不要、front側で設定するか、backend側で変換するのかだけなので後回し？
-        # 9/5の打合せでbooleanで来るように決まったので、それが実装でき次第削除予定
-        import distutils.util
-        for key, value in args_for_nysol.items():
-            if value == 'true' or value == 'false':
-                args_for_nysol.update({key: bool(distutils.util.strtobool(value))})
-
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
@@ -2666,10 +2547,13 @@ class Mchkcsv(MCommandNew):#new
         # 文字列のコマンドを作成する
         args_list = self.name
         for key,value in args_for_nysol.items():
-            args_list += ' %s=%s' % (key, value)
-        args_for_nysol = args_list
+            if isinstance(value, bool):
+                if value == True:
+                    args_list +=  ' -' + key
+            else:
+                args_list += ' %s=%s' % (key, value)
 
-        return args_for_nysol, process_flow
+        return args_list, process_flow
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
