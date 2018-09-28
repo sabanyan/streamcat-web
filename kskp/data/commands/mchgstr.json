@@ -1,21 +1,44 @@
 {
-    "id": "msum",
+    "id": "mchgstr",
     "params": [
+        {
+            "name": "c",
+            "type": "string",
+            "label": "置換対象となる文字列と対応する置換文字列(必須)"
+        },
         {
             "name": "f",
             "type": "string",
-            "label": "合計する列名:合計後の列名"
+            "label": "置換対象列(必須)"
         },
         {
-            "name": "k",
+            "name": "O",
             "type": "string",
-            "label": "合計の基準となる列名",
+            "label": "c=に無い文字列を置換する場合の文字列",
             "optional": true
         },
         {
-            "name": "n",
+            "name": "A",
             "type": "boolean",
-            "label": "f=で指定した項目に NULL 値が入っていると計算結果も NULL とする。",
+            "label": "指定した項目を置き換えるのではなく、新たに項目が追加される",
+            "optional": true
+        },
+        {
+            "name": "F",
+            "type": "boolean",
+            "label": "c=パラメータで指定した置換条件リストのいずれとも合致しない値は、その項目の値のまま出力",
+            "optional": true
+        },
+        {
+            "name": "sub",
+            "type": "boolean",
+            "label": "検索を完全一致ではなく部分文字列マッチで比較する",
+            "optional": true
+        },
+        {
+            "name": "W",
+            "type": "boolean",
+            "label": "sub オプションが指定されているときにワイド文字として部分文字列マッチをおこなう",
             "optional": true
         },
         {
@@ -25,27 +48,21 @@
             "optional": true
         },
         {
-            "name": "assert_nullkey",
-            "type": "boolean",
-            "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
-            "optional": true
-        },
-        {
             "name": "assert_nullin",
             "type": "boolean",
-            "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
+            "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
             "optional": true
         },
         {
             "name": "assert_nullout",
             "type": "boolean",
-            "label": "出力項目のNULL値チェックを行う",
+            "label": "出力項目の NULL 値チェックを行う",
             "optional": true
         },
         {
             "name": "nfn",
             "type": "boolean",
-            "label": "入力データの1行目を項目名行とみなさない。",
+            "label": "入力データの 1 行目を項目名行とみなさない。",
             "optional": true
         },
         {
@@ -71,12 +88,6 @@
             "type": "string",
             "label": "作業ファイル格納パス名",
             "optional": true
-        },
-        {
-            "name": "precision",
-            "type": "string",
-            "label": "有効桁数",
-            "optional": true
         }
     ],
     "ports": [
@@ -94,7 +105,7 @@
         ]
     ],
     "version": "0.7.0",
-    "label": "合計",
-    "classification": "table_grouping",
-    "description": "./static/pdf/mcmd/table_grouping/msum.pdf"
+    "label": "文字列の置換",
+    "classification": "value_transform",
+    "description": "./static/pdf/mcmd/value_transform/mchgstr.pdf"
 }
