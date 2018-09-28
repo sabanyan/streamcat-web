@@ -1,21 +1,21 @@
 {
-    "id": "msum",
+    "id": "mfsort",
     "params": [
         {
             "name": "f",
             "type": "string",
-            "label": "合計する列名:合計後の列名"
+            "label": "対象列名(必須)"
         },
         {
-            "name": "k",
-            "type": "string",
-            "label": "合計の基準となる列名",
+            "name": "r",
+            "type": "boolean",
+            "label": "逆順に並べる。",
             "optional": true
         },
         {
             "name": "n",
             "type": "boolean",
-            "label": "f=で指定した項目に NULL 値が入っていると計算結果も NULL とする。",
+            "label": "数値順に並べる。",
             "optional": true
         },
         {
@@ -25,27 +25,15 @@
             "optional": true
         },
         {
-            "name": "assert_nullkey",
-            "type": "boolean",
-            "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
-            "optional": true
-        },
-        {
             "name": "assert_nullin",
             "type": "boolean",
-            "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
-            "optional": true
-        },
-        {
-            "name": "assert_nullout",
-            "type": "boolean",
-            "label": "出力項目のNULL値チェックを行う",
+            "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
             "optional": true
         },
         {
             "name": "nfn",
             "type": "boolean",
-            "label": "入力データの1行目を項目名行とみなさない。",
+            "label": "入力データの 1 行目を項目名行とみなさない。",
             "optional": true
         },
         {
@@ -71,12 +59,6 @@
             "type": "string",
             "label": "作業ファイル格納パス名",
             "optional": true
-        },
-        {
-            "name": "precision",
-            "type": "string",
-            "label": "有効桁数",
-            "optional": true
         }
     ],
     "ports": [
@@ -94,7 +76,7 @@
         ]
     ],
     "version": "0.7.0",
-    "label": "合計",
-    "classification": "table_grouping",
-    "description": "./static/pdf/mcmd/table_grouping/msum.pdf"
+    "label": "項目ソート",
+    "classification": "row_sort",
+    "description": "./static/pdf/mcmd/row_sort/mfsort.pdf"
 }

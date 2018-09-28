@@ -1,21 +1,44 @@
 {
-    "id": "msum",
+    "id": "msim",
     "params": [
+        {
+            "name": "c",
+            "type": "string",
+            "label": "類似度（距離）名リスト"
+        },
         {
             "name": "f",
             "type": "string",
-            "label": "合計する列名:合計後の列名"
+            "label": "二列間の類似度を求める列名(必須)"
+        },
+        {
+            "name": "a",
+            "type": "string",
+            "label": "二変数の名前の指定",
+            "optional": true
         },
         {
             "name": "k",
             "type": "string",
-            "label": "合計の基準となる列名",
+            "label": "単位とする列名",
             "optional": true
         },
         {
             "name": "n",
+            "type": "string",
+            "label": "Null データの場合は NULL にするフラグ",
+            "optional": true
+        },
+        {
+            "name": "d",
             "type": "boolean",
-            "label": "f=で指定した項目に NULL 値が入っていると計算結果も NULL とする。",
+            "label": "対角行列、上三角行列を出力する。",
+            "optional": true
+        },
+        {
+            "name": "bufcount",
+            "type": "string",
+            "label": "バッファの数",
             "optional": true
         },
         {
@@ -94,7 +117,7 @@
         ]
     ],
     "version": "0.7.0",
-    "label": "合計",
+    "label": "二変数間の類似度の計算",
     "classification": "table_grouping",
-    "description": "./static/pdf/mcmd/table_grouping/msum.pdf"
+    "description": "./static/pdf/mcmd/table_grouping/msim.pdf"
 }
