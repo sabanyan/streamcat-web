@@ -4,7 +4,8 @@
         {
             "name": "n",
             "type": "string",
-            "label": "分割ファイル数(vとどちらか必須)"
+            "label": "分割ファイル数(vとどちらか必須)",
+            "optional": "true"
         },
         {
             "name": "v",

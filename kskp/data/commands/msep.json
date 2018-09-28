@@ -13,12 +13,6 @@
             "optional": "true"
         },
         {
-            "name": "f",
-            "type": "string",
-            "label": "",
-            "optional": "true"
-        },
-        {
             "name": "assert_nullin",
             "type": "boolean",
             "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
