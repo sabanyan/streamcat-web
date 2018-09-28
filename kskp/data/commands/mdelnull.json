@@ -33,13 +33,13 @@
         {
             "name": "bufcount",
             "type": "string",
-            "label": "",
+            "label": "バッファの数",
             "optional": "true"
         },
         {
             "name": "assert_diffSize",
             "type": "boolean",
-            "label": "バッファの数",
+            "label": "入力、出力件数比較を行う",
             "optional": "true"
         },
         {

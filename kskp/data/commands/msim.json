@@ -4,7 +4,7 @@
         {
             "name": "c",
             "type": "string",
-            "label": ""
+            "label": "類似度（距離）名リスト"
         },
         {
             "name": "f",
@@ -26,7 +26,7 @@
         {
             "name": "n",
             "type": "string",
-            "label": "",
+            "label": "Null データの場合は NULL にするフラグ",
             "optional": "true"
         },
         {

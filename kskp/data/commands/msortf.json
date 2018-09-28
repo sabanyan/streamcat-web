@@ -33,7 +33,7 @@
         {
             "name": "noflg",
             "type": "boolean",
-            "label": "",
+            "label": "出力 CSV のヘッダーにソーティングの印 (%0,%0n など) を付けない。",
             "optional": "true"
         },
         {

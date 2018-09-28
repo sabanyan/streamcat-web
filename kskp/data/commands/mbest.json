@@ -7,12 +7,6 @@
             "label": "ソート対象列名(必須)"
         },
         {
-            "name": "R",
-            "type": "string",
-            "label": "",
-            "optional": "true"
-        },
-        {
             "name": "from",
             "type": "string",
             "label": "選択する開始行番号",
@@ -40,6 +34,12 @@
             "name": "r",
             "type": "boolean",
             "label": "from=,to=(size=) パラメータで指定した行番号以外の行を選択する",
+            "optional": "true"
+        },
+        {
+            "name": "R",
+            "type": "string",
+            "label": "行番号範囲リスト (複数項目指定可)",
             "optional": "true"
         },
         {
