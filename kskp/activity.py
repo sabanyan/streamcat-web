@@ -7,7 +7,7 @@ from flask import session
 from .model import (
     get_flow_path_by_uuid,
     get_user_by_id,
-    get_last_flow_label
+    get_flow_label
     )
 
 def make_unfinished_history(now, session):
@@ -67,7 +67,7 @@ def make_finished_history(now):
             file_path = Path(__file__).parent.joinpath('data/jobs/%s.json' % '{0:%Y%m%d%H%M%S%f}'.format(now))
             json_data = json.loads(file_path.read_text(encoding='utf-8'))
             if json_data['flow']['uuid'] == args[0]:
-                label_dict = get_last_flow_label(Path(__file__).parent.joinpath('data/flows/' + args[0] + '.json'))
+                label_dict = get_flow_label(args[0])
                 for key, val in result.items():
                     # 現在はresultから結果データを取ってきており、データのクラス名を'type'に入れているので
                     # クラス名と'type'に入れたい型が一致しているのが前提になっている（例・frame）
