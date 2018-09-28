@@ -10,43 +10,43 @@
             "name": "r",
             "type": "boolean",
             "label": "選択ではなく削除する。",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "assert_diffSize",
             "type": "boolean",
             "label": "入力、出力件数比較を行う",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "nfn",
             "type": "boolean",
             "label": "入力データの1行目を項目名行とみなさない。",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "nfno",
             "type": "boolean",
             "label": "出力データに項目名行を出力しない。",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "x",
             "type": "boolean",
             "label": "項目番号による指定",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "q",
             "type": "boolean",
             "label": "自動並べ替えの無効化",
-            "optional": "true"
+            "optional": true
         },
         {
             "name": "tmpPath",
             "type": "string",
             "label": "作業ファイル格納パス名",
-            "optional": "true"
+            "optional": true
         }
     ],
     "ports": [
