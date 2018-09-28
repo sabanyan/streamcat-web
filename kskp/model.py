@@ -434,28 +434,21 @@ def get_connection():
 
     return conn
 
-def get_last_flow_label(uuid_path):
+def get_flow_label(flow_uuid):
     """
-    flowのjsonを受け取り、その中からフローの最後の部分に当たるノードを探して
+    flowのjsonを受け取り、その中から指定されたノードを探して
     そのノードのidに対応するlabelをdictにて返す
     探し方は、(データ部のノードid) - (オペレータ部にパイプで繋げられたデータ部のノードid)
     """
-    data = json.loads(uuid_path.read_text(encoding='utf-8'))
+    data = fetch_flow_by_uuid(flow_uuid)
     nodes_list = data['nodes']
     data_nodes = []
-    used_data_nodes = []
     for node in nodes_list:
         if 'dataSource' in node:
             data_nodes.append(node['id'])
-        else:
-            used_data_nodes.extend(list(node['srcs'].values()))
-    last_node_list = list(set(data_nodes) - set(used_data_nodes))
-    print(data_nodes)
-    print(used_data_nodes)
-    print(last_node_list)
 
     label_dict = {}
-    for node in last_node_list:
+    for node in data_nodes:
         for part_of_node in data['nodes']:
             if part_of_node['id'] is node:
                 label_dict[node] = part_of_node['label']
