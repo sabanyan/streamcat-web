@@ -176,6 +176,8 @@ def make_new_frame():
     新しいframeを作成する
     方法は様々
     """
+    # デフォルトはFalse
+    no_contents = False
 
     if 'file' in request.files:
         # ファイルがPOSTで送信されてきたらアップロードだとみなす
@@ -191,7 +193,11 @@ def make_new_frame():
         else:
             flow_uuid = request.args['from']
             step_id = None
-        return execute_flow(flow_uuid, step_paths=step_id)
+
+        if request.args.get('no_contents'):
+            no_contents = True
+
+        return execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
     else:
         return jsonify({
                             'success': False,
@@ -268,7 +274,7 @@ def download_frame():
     return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
                                attachment_filename = downloadFileName, mimetype = 'text/csv')
 
-def execute_flow(flow_uuid, step_paths):
+def execute_flow(flow_uuid, step_paths, no_contents):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
@@ -282,7 +288,7 @@ def execute_flow(flow_uuid, step_paths):
                             'message': 'flow does not exist'
                         })
     else:
-        result_data = execute_flow_internal(flow_uuid, step_paths)
+        result_data = execute_flow_internal(flow_uuid, step_paths, no_contents)
         if not result_data:
             return jsonify({
                                 'success': False,
@@ -556,7 +562,7 @@ def execute_direct3():
 
     return jsonify({'success': True, 'data': 'execute-direct3'})
 
-def execute_flow_internal(flow_uuid, step_paths=None):
+def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
@@ -572,7 +578,12 @@ def execute_flow_internal(flow_uuid, step_paths=None):
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
 
     result = execute_flow_by_uuid(flow_uuid)
-    return [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
+
+    if no_contents:
+        result_list = [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
+    else:
+        result_list = [{'id':key, 'uuid':value.uuid, 'contents':value.contents} for key, value in result.items()]
+    return result_list
 
 
 def load_as_data_frame(result_text):
