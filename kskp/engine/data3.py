@@ -258,7 +258,7 @@ class Datum:
     データ全般を表すクラス
 
     :param source: データソース。現時点では以下のどれかの文字列が入る予定
-                   'popen', 'csv', 'json', 'postgres', 'mysql'
+                   'popen', 'csv', 'json', 'postgres', 'mysql', 'nysol_python'
                    Noneの場合は直接メモリ上だけにデータを持っていることになる
     :param uuid: 各frameを一意に識別するためのID
                  source is Noneであればframe_uuidもNoneであるが、
