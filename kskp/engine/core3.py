@@ -180,7 +180,6 @@ class Job:
 
         self.expand_args(job)
         job.inputs = self.inputs_of(job) # job用inputs
-        # job.commnad_inputs = job.check_inputs(job.inputs) # commands用inputs
 
         return job.execute()[port]
 

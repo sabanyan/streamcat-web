@@ -70,11 +70,11 @@ class NysolPythonSource(Source):
         f <<= self.mod(self.args)
         # nm.cmdで2つ出力するコマンドは存在しないことを前提（現状は）
         # 自作コマンドに柔軟性を持たせるなら、2つ出力することもありそうだが、
-        # nm.cmdに2つの出力をキャッチできなさそうなので、基本的には1つという仕様にする？
+        # nm.cmdで2つの出力を出すことは現状できなさそうなので、基本的には1つという仕様にする？（nysol_pythonがupdateすれば別
         # 2つ出力をキャッチできたとして、3つ以上はどうなるんだという話になるので、
         # やっぱり出力は基本的に1つに仕様を固定しておくべきかも。
         # oとuの2つを出力できるmcmdが特殊ということにしておく？
-        # それならmulti_outを持っておきたくないが、結局どこかで判断しなくてはいけない…。
+        # それならmulti_outを持っておきたくないが、ここでredirectする以上は仕方がない。
         return f.redirect('u') if self.multi_out else f
 
     def save(self, stdout):

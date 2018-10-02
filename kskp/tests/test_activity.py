@@ -7,9 +7,7 @@ import kskp.model as model
 from pathlib import Path
 from ..activity import (
     make_unfinished_history,
-    make_finished_history,
-    add_activity_to_flow,
-    add_data_source_to_flow
+    make_finished_history
 )
 from datetime import datetime, timedelta, timezone
 from unittest import mock
@@ -44,7 +42,7 @@ class ActivityTest(unittest.TestCase):
         with app.app_context():
             with self.client.session_transaction() as session:
                 model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.create_project(project_name, session)
 
             # 今作ったプロジェクトのUUIDを取得する
@@ -97,7 +95,7 @@ class ActivityTest(unittest.TestCase):
         with app.app_context():
             with self.client.session_transaction() as session:
                 model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.create_project(project_name, session)
 
             # 今作ったプロジェクトのUUIDを取得する
@@ -134,76 +132,3 @@ class ActivityTest(unittest.TestCase):
             # 後片付け
             flow_path.unlink()
             jobs_path.unlink()
-
-    def test_add_activity_to_flow(self):
-        '''
-        フロー作成時の履歴付与のテスト
-        '''
-
-        mock_func = mock.MagicMock()
-        mock_func.__name__ = 'activity'
-        mock_func.return_value = {
-            'projectId': 1,
-            'label': 'test',
-            'ports': [[],[]],
-            'params': []
-        }
-
-        now = datetime.now()
-        email = 'dev@kskp.io'
-        name = '開発者'
-
-        with app.app_context():
-            with self.client.session_transaction() as session:
-                model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
-
-            # mockでデコレータをテストする(フローに作成履歴が付与される)
-            unfinished_deco = add_activity_to_flow(session['user_id'])
-            wrapper = unfinished_deco(mock_func)
-            result = wrapper()
-
-            createdAt = datetime(now.year, now.month, now.day, now.hour, now.minute, now.second,
-                                        tzinfo=timezone(timedelta(hours=+9))).isoformat()
-
-            self.assertEqual(result['projectId'], 1)
-            self.assertEqual(result['label'], 'test')
-            self.assertEqual(result['creator'], '開発者')
-            self.assertEqual(result['createdAt'], createdAt)
-
-
-    def test_data_source_to_flow(self):
-        '''
-        フロー作成時のデータソース付与のテスト
-        '''
-
-        mock_func = mock.MagicMock()
-        mock_func.__name__ = 'activity'
-        mock_func.return_value = {
-            'projectId': 1,
-            'label': 'test',
-            'ports': [[],[]],
-            'params': []
-        }
-
-        now = datetime.now()
-        email = 'dev@kskp.io'
-        name = '開発者'
-
-        with app.app_context():
-            with self.client.session_transaction() as session:
-                model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
-
-            # mockでデコレータをテストする(フローにframeを追加する)
-            frame_uuid = str(uuid.uuid4())
-            data_source = {'uuid': frame_uuid, 'type': 'frame', 'label': 'test'}
-            unfinished_deco = add_data_source_to_flow(data_source)
-            wrapper = unfinished_deco(mock_func)
-            result = wrapper()
-
-            self.assertEqual(result['projectId'], 1)
-            self.assertEqual(result['label'], 'test')
-            self.assertEqual(result['nodes'][0]['label'], 'test')
-            self.assertEqual(result['nodes'][0]['type'], 'frame')
-            self.assertEqual(result['nodes'][0]['uuid'], frame_uuid)
