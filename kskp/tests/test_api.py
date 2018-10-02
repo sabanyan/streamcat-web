@@ -34,7 +34,7 @@ class ApiTestCase(unittest.TestCase):
         with app.app_context():
             with self.client.session_transaction() as session:
                 model.create_user(email, '', creator_name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
 
             headers = Headers()
             headers.add('Content-Type', 'application/json')
@@ -70,7 +70,7 @@ class ApiTestCase(unittest.TestCase):
             model.create_user(user2, '', '', '')
 
             with self.client.session_transaction() as session:
-                session['user_id'] = model.get_user_id_by_email(user1)
+                session['user_id'] = model.get_user_id_by_email(user1)['id']
 
             proj1 = 'proj1'
             proj2 = 'proj2'
@@ -95,8 +95,8 @@ class ApiTestCase(unittest.TestCase):
                     self.assertEqual(result['navigation']['user_id'], user_id)
                     self.assertEqual(result['navigation']['user_name'], model.get_user_by_id(user_id)['name'])
 
-                test_projects_by_user_id(model.get_user_id_by_email(user1), {proj1, proj2}) # user1だとproj1とproj2が見られる
-                test_projects_by_user_id(model.get_user_id_by_email(user2), {proj2, proj3}) # user2だとproj2とproj3が見られる
+                test_projects_by_user_id(model.get_user_id_by_email(user1)['id'], {proj1, proj2}) # user1だとproj1とproj2が見られる
+                test_projects_by_user_id(model.get_user_id_by_email(user2)['id'], {proj2, proj3}) # user2だとproj2とproj3が見られる
 
     def test_delete_project(self):
         with app.app_context():
@@ -732,7 +732,7 @@ def setUpProject(self):
     user1 = setUpUser(self)
 
     with self.client.session_transaction() as session:
-        session['user_id'] = model.get_user_id_by_email(user1)
+        session['user_id'] = model.get_user_id_by_email(user1)['id']
 
     model.create_project('proj1', session)
     project_uuid = model.get_all_projects()[0]['uuid']
