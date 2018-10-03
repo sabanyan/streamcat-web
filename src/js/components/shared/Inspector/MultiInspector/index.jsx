@@ -10,6 +10,7 @@ import Graph from '../../../../utils/Graph'
 import ModalUtil from '../../../../utils/ModalUtil'
 import Constants from '../../../../constants/index'
 import HttpUtil from '../../../../utils/HttpUtil'
+import SubFlowStepModel from '../../../../model/Step/SubFlowStepModel'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
   onClickDelete (e: Event) {
@@ -41,6 +42,8 @@ class MultiInspector extends React.Component<FlowEditorProps> {
       const node = Graph.getNode(nodes,id)
       if(node instanceof DataFrameStepModel){
         cnt++
+      }else if(node instanceof SubFlowStepModel){
+        hasMixedCommand = true
       }else if(node instanceof CommandStepModel){
         hasMixedCommand = true
       }
@@ -53,6 +56,14 @@ class MultiInspector extends React.Component<FlowEditorProps> {
   render () {
     const numberOfSelectedDataSources = this.getNumberOfSelectedDataSources()
 
+    let commandSelector
+    if(numberOfSelectedDataSources){
+      commandSelector =<div>
+        <hr/>
+        <CommandSelector numberOfInput={numberOfSelectedDataSources} {...this.props}/>
+      </div>
+    }
+
     return <BaseInspector header={""}
                       title={this.props.selected_step_ids.length + ' files'}>
       <div className="kskp-form">
@@ -60,8 +71,7 @@ class MultiInspector extends React.Component<FlowEditorProps> {
           削除する
         </Button>
       </div>
-      <hr/>
-      <CommandSelector numberOfInput={numberOfSelectedDataSources} {...this.props}/>
+      {commandSelector}
     </BaseInspector>
   }
 
