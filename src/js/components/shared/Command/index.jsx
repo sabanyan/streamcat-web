@@ -40,21 +40,15 @@ export default class Command extends React.Component<Props> {
     buildParamsContent() {
         const {command} = this.props
         this.inputRefs = [] //クリア
-        const paramsInputs = command.params.map((param:CommandParamType) => {
+        let paramsInputs = command.params.map((param:CommandParamType) => {
           const onBuild = (param,element) => this.onBuild(param,element)
           let paramElement = ParamUtil.getParamElement(param,onBuild)
-          // switch (param.type){
-          //   case Constants.param.type.string:
-          //     paramElement =  <ParamString param = {param} defaultValue={""} onBuild={(param,element)=>this.onBuild(param,element)}/>
-          //     break
-          //   case Constants.param.type.boolean:
-          //     paramElement =  <ParamBoolean param = {param} defaultValue={false} onBuild={(param,element)=>this.onBuild(param,element)}/>
-          //     break
-          // }
             return <div key={command.id + "_" + param.name} className="mb-8px">
               {paramElement}
             </div>
         })
+
+        if(!paramsInputs.length)paramsInputs = <div>このフローには設定可能な変数がありません。</div>
 
         const content = <form onSubmit={this.onSubmitModal}>
             {paramsInputs}
