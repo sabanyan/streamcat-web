@@ -13,6 +13,8 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import { DataFrameDetailType } from '../types'
 import Command from '../components/shared/Command'
 import ModelUtil from '../utils/ModelUtil'
+import Ajv from 'ajv'
+import stateSchema from '../schema/state.json'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -103,6 +105,13 @@ let initialState = {
 
 
 const Application = (state = initialState, action:{}) => {
+
+    const ajv = new Ajv()
+    const validate = ajv.compile(stateSchema)
+    const valid = validate(state)
+    if (!valid) console.log(ajv.errors);
+    if(!valid) console.log(ajv.errorsText());
+
     switch (action.type) {
         case LOAD_FLOW_JSON_ACTION: {
             let {context} = action
