@@ -84,12 +84,24 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
       beforeCommand = command
     })
 
-    return <div>
+
+    let commandSelector
+
+    console.log(operators)
+    if(operators.length){
+      commandSelector = <div>
+        <hr/>
         <TextField onChange={(e)=>this.onChangeKeyword(e)} placeholder={"キーワード"}/>
         <div className={style.command_selector_container}>
           {operatorsContainer}
         </div>
       </div>
+    }
+
+
+    return <div>
+      {commandSelector}
+    </div>
   }
 
 }

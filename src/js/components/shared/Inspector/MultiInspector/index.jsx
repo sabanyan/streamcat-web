@@ -59,7 +59,6 @@ class MultiInspector extends React.Component<FlowEditorProps> {
     let commandSelector
     if(numberOfSelectedDataSources){
       commandSelector =<div>
-        <hr/>
         <CommandSelector numberOfInput={numberOfSelectedDataSources} {...this.props}/>
       </div>
     }
