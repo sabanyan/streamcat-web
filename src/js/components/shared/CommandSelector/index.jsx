@@ -54,8 +54,10 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     sortedCommands = [...subflowSortedCommands,...sortedCommands]
 
     let operators = sortedCommands.filter((command:CommandModelType) => {
-      if(command.ports){
-        if(Object.keys(command.ports[0]).length === numberOfInput)return true
+      if(numberOfInput && command.ports){
+        if(command.getInPorts().length === numberOfInput){
+          return true
+        }
       }
       return false
     }).filter((command:CommandModelType)=>{
@@ -83,11 +85,11 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     })
 
     return <div>
-    <TextField onChange={(e)=>this.onChangeKeyword(e)} placeholder={"キーワード"}/>
-      <div className={style.command_selector_container}>
-        {operatorsContainer}
+        <TextField onChange={(e)=>this.onChangeKeyword(e)} placeholder={"キーワード"}/>
+        <div className={style.command_selector_container}>
+          {operatorsContainer}
+        </div>
       </div>
-    </div>
   }
 
 }

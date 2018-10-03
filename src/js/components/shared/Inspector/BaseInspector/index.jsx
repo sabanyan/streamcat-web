@@ -33,8 +33,12 @@ class BaseInspector extends React.Component<Props> {
 
     const {header,name, label, children,onBlurTitle} = this.props
 
+    const disabled = (!onBlurTitle)
     let labelContainer
-    labelContainer =  <input type="text" ref={"title"} onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null} className={style.label} defaultValue={label} disabled={((!onBlurTitle)?true:false)}></input>
+
+    if(!disabled && label){
+      labelContainer =  <input type="text" ref={"title"} onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null} className={style.label} defaultValue={label} disabled={disabled}></input>
+    }
 
     return <div className={style.property_container}>
       <div className={style.property_header}>
