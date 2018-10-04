@@ -6,7 +6,8 @@ from pathlib import Path
 from flask import session
 from .model import (
     get_flow_path_by_uuid,
-    get_user_by_id
+    get_user_by_id,
+    get_flow_nodes_by_uuid
     )
 
 def make_unfinished_history(now, session):
@@ -65,10 +66,11 @@ def make_finished_history(now):
             file_path = Path(__file__).parent.joinpath('data/jobs/%s.json' % '{0:%Y%m%d%H%M%S%f}'.format(now))
             json_data = json.loads(file_path.read_text(encoding='utf-8'))
             if json_data['flow']['uuid'] == args[0]:
+                nodes_dict = get_flow_nodes_by_uuid(args[0])
                 for key, val in result.items():
                     # 現在はresultから結果データを取ってきており、データのクラス名を'type'に入れているので
                     # クラス名と'type'に入れたい型が一致しているのが前提になっている（例・frame）
-                    json_data['data'][key] = {'type': type(val).__name__.lower(), 'uuid': val.uuid}
+                    json_data['data'][key] = {'type': type(val).__name__.lower(), 'uuid': val.uuid, 'label': nodes_dict.get(key)['label']}
                 json_data['state'] = '実行完了'
                 with file_path.open('w') as f:
                     json.dump(json_data, f, indent = '\t', ensure_ascii=False)
