@@ -440,6 +440,12 @@ def write_data_to_json(path, data):
     """
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
 
+def get_flow_nodes_by_uuid(flow_uuid):
+    """
+    flowのjsonを受け取り、idをkey、valueをnodeとした連想配列を返す
+    """
+    data = fetch_flow_by_uuid(flow_uuid)
+    return {node['id']:node for node in data['nodes']}
 
 def query_db(query, args=(), one=False):
     """
@@ -469,7 +475,6 @@ def get_connection():
             init_db()
 
     return conn
-
 
 def init_db():
     conn = get_connection()
