@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-from .common.preprocess import Preprocess
+from kskp.engine.commands.kcmd.preprocess.common.preprocess import Preprocess
+# from common.preprocess import Preprocess
 from sklearn.decomposition import PCA
 import numpy as np
 import pandas as pd
@@ -65,8 +66,8 @@ class Pca(Preprocess):
         self.write_order()
 
         #主成分データセット出力
-        # output_df.to_csv(self.output,index=False)
-        return output_df
+        output_df.to_csv(self.output,index=False)
+        # return output_df
 
 if __name__=="__main__":
     pca=Pca()

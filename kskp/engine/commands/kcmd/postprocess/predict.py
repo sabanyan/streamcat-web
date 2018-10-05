@@ -8,8 +8,8 @@ from sklearn import metrics
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 import os
 sys.path.append(os.getcwd()+"/modeling")
-# from classification import *
-# from regression import *
+from kskp.engine.commands.kcmd.modeling.classification import *
+from kskp.engine.commands.kcmd.modeling.regression import *
 
 
 class Predict():
@@ -57,13 +57,17 @@ class Predict():
         マージしたデータセットを.csvまたは標準出力に出力する
         """
         # outputがstdoutかファイル出力かで場合分け
-        if type(parsed_output) == str:
-            #output = open(parsered.output, 'wb')
-            merged.to_csv(parsed_output,index=False)  # 出力先が指定されている場合、csv形式で出力する
-        else:
-            output = parsed_output.buffer  # されていない場合は標準出力
-            output.write(pickle.dumps(merged))
-        return
+        # if type(parsed_output) == str:
+        #     #output = open(parsered.output, 'wb')
+        #     merged.to_csv(parsed_output,index=False)  # 出力先が指定されている場合、csv形式で出力する
+        # else:
+        #     output = parsed_output.buffer  # されていない場合は標準出力
+        #     output.write(pickle.dumps(merged))
+        # return
+
+        # 元々は上記の記述だっが、csvとして標準入力に流したかったので、下記の出力記述方法にした
+        # とりあえず何かあったときのために上記の出力方法もコメントアウトで残しておく
+        merged.to_csv(parsed_output,index=False)
 
     def normalize(self,x_test):
         if os.path.isfile(self.temp_files_path+"normalize.pickle"):
@@ -168,9 +172,9 @@ class Predict():
         pred_df=self.model.predict(x_test_original,x_test_preprocessed)
         merged=pd.concat([pred_df,x_test_original],axis=1)
         #出力
-        # self.set_output(merged,parsed.output)
+        self.set_output(merged,parsed.output)
 
-        return merged
+        return
 
 if __name__=="__main__":
     pred=Predict()

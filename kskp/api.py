@@ -176,6 +176,8 @@ def make_new_frame():
     新しいframeを作成する
     方法は様々
     """
+    # デフォルトはFalse
+    no_contents = False
 
     if 'file' in request.files:
         # ファイルがPOSTで送信されてきたらアップロードだとみなす
@@ -191,7 +193,11 @@ def make_new_frame():
         else:
             flow_uuid = request.args['from']
             step_id = None
-        return execute_flow(flow_uuid, step_paths=step_id)
+
+        if request.args.get('no_contents'):
+            no_contents = True
+
+        return execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
     else:
         return jsonify({
                             'success': False,
@@ -268,7 +274,7 @@ def download_frame():
     return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
                                attachment_filename = downloadFileName, mimetype = 'text/csv')
 
-def execute_flow(flow_uuid, step_paths):
+def execute_flow(flow_uuid, step_paths, no_contents):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
@@ -282,8 +288,7 @@ def execute_flow(flow_uuid, step_paths):
                             'message': 'flow does not exist'
                         })
     else:
-        t1 = time.time()
-        result_data = execute_flow_internal(flow_uuid, step_paths)
+        result_data = execute_flow_internal(flow_uuid, step_paths, no_contents)
         if not result_data:
             return jsonify({
                                 'success': False,
@@ -291,7 +296,6 @@ def execute_flow(flow_uuid, step_paths):
                                 'message': 'result is empty.'
                             })
         else:
-            t2 = time.time()
             return jsonify({'success': True, 'name': result_data})
 
 
@@ -558,7 +562,7 @@ def execute_direct3():
 
     return jsonify({'success': True, 'data': 'execute-direct3'})
 
-def execute_flow_internal(flow_uuid, step_paths=None):
+def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
@@ -574,7 +578,12 @@ def execute_flow_internal(flow_uuid, step_paths=None):
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
 
     result = execute_flow_by_uuid(flow_uuid)
-    return [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
+
+    if no_contents:
+        result_list = [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
+    else:
+        result_list = [{'id':key, 'uuid':value.uuid, 'contents':value.contents} for key, value in result.items()]
+    return result_list
 
 
 def load_as_data_frame(result_text):
@@ -588,7 +597,9 @@ def load_as_data_frame(result_text):
     if not result_list:
         return result_data, 0
 
-    column_list = result_list[0].split(',')
+    # 重複文字があればインデックスをつける
+    column_list = replace_column_name(result_list[0].split(','))
+
     for column_name in column_list:
         result_data[column_name] = []
 
@@ -599,6 +610,45 @@ def load_as_data_frame(result_text):
 
     # 行数も返すように変更
     return result_data, len(result_list) - 1
+
+def replace_column_name(column_list):
+    """
+    受け取ったカラム名リストに重複している列名があれば
+    連番をつける
+    """
+
+    def check_column_overlap(column_list):
+        """
+        受け取ったカラム名リストを走査する
+        """
+        index_dict = {}
+        column_name_overlap = False
+
+        for index, column_name in enumerate(column_list):
+            if not column_name in index_dict:
+                index_dict[column_name] = []
+            else:
+                column_name_overlap = True
+            index_dict[column_name].append((index, len(index_dict[column_name])))
+
+        return index_dict, column_name_overlap
+
+    index_dict, column_name_overlap = check_column_overlap(column_list)
+
+    if not column_name_overlap:
+        return column_list
+
+    for column_name, tuple_list in index_dict.items():
+        if len(tuple_list) < 2:
+            continue
+
+        for tuple in tuple_list:
+            # tuple[0]　インデックス（column_listの）
+            # tuple[1]　連番
+            if tuple[1] > 0:
+                column_list[tuple[0]] = column_name + '.' + str(tuple[1])
+
+    return column_list
 
 @api.errorhandler(400)
 def handle_bad_request(error):

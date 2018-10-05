@@ -1,6 +1,8 @@
 import json
 import uuid
 import sqlite3
+import functools
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from flask import g
@@ -22,23 +24,14 @@ def create_user(email, password, name, creator):
     hashed_password = auth.get_password_hash(email, password)
     query_db(sql, (email, hashed_password, name, creator))
 
-def get_user(email):
+def get_user_id_by_email(email):
     """
     指定したemailのユーザレコードを返す
     """
     sql = '''
-    SELECT name FROM users WHERE email = ?
+    SELECT id, name FROM users WHERE email = ?
     '''
     return query_db(sql, (email,), one=True)
-
-def get_user_id_by_email(email):
-    """
-    指定したemailのユーザidを返す
-    """
-    sql = '''
-    SELECT id FROM users WHERE email = ?
-    '''
-    return query_db(sql, (email,), one=True)['id']
 
 def get_user_by_id(user_id):
     """
@@ -127,7 +120,6 @@ def start_project(name, session):
     '''
     cur.execute(sql_users_x_projects, (user.id, cur.lastrowid))
 
-
     # 後片付け
     conn.commit()
     cur.close()
@@ -195,7 +187,51 @@ def create_flow(request_json, user_id, data_source_name=None):
     if data_source_name is None:
         data_source_name = str(uuid.uuid4())
 
-    from .activity import add_activity_to_flow, add_data_source_to_flow
+    def add_data_source_to_flow(source):
+        '''
+        フローに作成時にデータソースをつけるためのデコレータ
+        '''
+        def _deco(func):
+            @functools.wraps(func)
+            def deco():
+                if source is None:
+                    return func()
+
+                if not source.get('uuid'):
+                    return func()
+
+                data = func()
+                data_source = {
+                    "id": "i",
+                    "type": source.get('type'),
+                    "dataSource": "csv",
+                    "uuid": source.get('uuid'),
+                    "label": source.get('label')
+                }
+
+                data['nodes'] = []
+                data['nodes'].append(data_source)
+                return data
+            return deco
+        return _deco
+
+    def add_activity_to_flow(user_id):
+        '''
+        フローに作成時に作成履歴をつけるためのデコレータ
+        '''
+        def _deco(func):
+            @functools.wraps(func)
+            def deco():
+                data = func()
+                now = datetime.now()
+
+                data['creator'] = get_user_by_id(user_id)['name']
+                JST = timezone(timedelta(hours=+9), 'JST')
+                data['createdAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
+                return data
+            return deco
+        return _deco
+
     @add_data_source_to_flow(request_json.get('datasource'))
     @add_activity_to_flow(user_id)
     def make_flow_json():
@@ -404,6 +440,12 @@ def write_data_to_json(path, data):
     """
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
 
+def get_flow_nodes_by_uuid(flow_uuid):
+    """
+    flowのjsonを受け取り、idをkey、valueをnodeとした連想配列を返す
+    """
+    data = fetch_flow_by_uuid(flow_uuid)
+    return {node['id']:node for node in data['nodes']}
 
 def query_db(query, args=(), one=False):
     """
@@ -433,7 +475,6 @@ def get_connection():
             init_db()
 
     return conn
-
 
 def init_db():
     conn = get_connection()

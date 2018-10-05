@@ -56,7 +56,7 @@ class AuthTestCase(unittest.TestCase):
 
         with self.client.session_transaction() as session:
             model.create_user(email, password, name, '')
-            bln = auth.authenticate(model.get_user_id_by_email(email), password, session)
+            bln = auth.authenticate(model.get_user_id_by_email(email)['id'], password, session)
             self.assertEqual(bln, True)
 
 def captured_templates(app, recorded, **extra):

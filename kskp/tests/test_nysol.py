@@ -37,7 +37,7 @@ def stats_by_section(i):
         pooos.append(pooo)
 
     popo = nm.m2cat(i=pooos)
-    
+
     return popo
 
 def stats_by_state(i):
@@ -74,8 +74,46 @@ def stats_by_sensor(i, sensor):
 def fpath(name):
     return frames_path.joinpath(f'{name}.csv').as_posix()
 
+import sys
+class RedirectStdStreams(object):
+    def __init__(self, stdout=None, stderr=None):
+        self._stdout = stdout or sys.stdout
+        self._stderr = stderr or sys.stderr
+
+    def __enter__(self):
+        self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
+        self.old_stdout.flush(); self.old_stderr.flush()
+        sys.stdout, sys.stderr = self._stdout, self._stderr
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._stdout.flush(); self._stderr.flush()
+        sys.stdout = self.old_stdout
+        sys.stderr = self.old_stderr
+
+def try_handling_error():
+    i = fpath('2c792bbc-4679-4396-96d1-94fc023073b1')
+    c = nm.mcut(i=i, f='A,B,C,D')
+    import os
+    devnull = open(os.devnull, 'w')
+
+    import io
+    res = io.StringIO()
+
+    with RedirectStdStreams(stdout=devnull, stderr=res):
+        c.run()
+    print('res:', res.getvalue())
+
+    # if '#ERROR#' in r:
+    #     print('エラーだよ')
+    # else:
+    #     print('エラーじゃないよ')
+
+    # with RedirectStdStreams(stdout=devnull, stderr=devnull):
+    #     print("You'll never see me")
+
 if __name__ == '__main__':
     i = fpath('2C72275F-2019-49AE-B36D-A29D1507F8DD')
     # i = '/Users/okzk/GoogleDrive/KSKP/サンプルプロジェクト/日本NI/ni_motor_5sec_2okzk/orgData/180127_1535_4sensor_5sec_2.csv'
     # i = '/Users/okzk/Desktop/data/stage1/sensor_data.csv'
-    main(i)
+    # main(i)
+    try_handling_error()

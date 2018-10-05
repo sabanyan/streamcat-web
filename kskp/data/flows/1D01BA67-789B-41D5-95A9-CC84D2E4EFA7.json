@@ -4,7 +4,11 @@
   "label": "新エンジンの子",
   "creator": "開発用",
   "createdAt": "2018-07-27T08:25:19+09:00",
-  "params": [{"name": "c"}, {"name": "f1"}, {"name": "f2"}],
+  "params": [
+      {"name": "c", "type": "string"},
+      {"name": "f1", "type": "string"},
+      {"name": "f2", "type": "string"}
+  ],
   "ports": [
     [{"name": "Ci", "type": "frame"}],
     [{"name": "Co1", "type": "frame"}, {"name": "Co2", "type": "frame"}]
