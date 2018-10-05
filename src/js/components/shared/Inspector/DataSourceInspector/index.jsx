@@ -181,6 +181,15 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     return Graph.getNode(nodes,selected_step_ids[0])
   }
 
+  onHide(){
+    this.saveNodes()
+  }
+
+  saveNodes(){
+    let {nodes} = this.props
+    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+  }
+
   render () {
     let step_text
     let dataSource
@@ -287,7 +296,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     }
 
 
-    return <BaseInspector header={""}  label={selected_step.label} name={selected_step.id} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)}>
+    return <BaseInspector header={""}  label={selected_step.label} name={selected_step.id} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()}>
       {content}
     </BaseInspector>
   }

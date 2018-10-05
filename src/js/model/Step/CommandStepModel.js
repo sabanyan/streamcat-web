@@ -64,7 +64,6 @@ export default class CommandStepModel extends BaseStepModel{
 
   getCommand(commands:[CommandModel]):CommandModel{
     let command = null;
-    console.log(this)
     commands.forEach((_command)=>{
       if(this.commandId === _command.id){
         command = _command
