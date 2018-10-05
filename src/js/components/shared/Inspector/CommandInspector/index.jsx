@@ -60,20 +60,33 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       return Graph.getNode(nodes,selected_step_ids[0])
     }
 
-    onClickSave(e:Event) {
+    onHide(){
+      this.updateArgs()
+      this.props.selectSteps()
+      this.saveNodes()
+    }
+
+    updateArgs() {
         let selected_step = this.getSelectedStep()
         selected_step.args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
-
         this.props.updateStep(selected_step)
-        this.props.selectSteps()
+    }
+
+    deleteStep(){
+      let selected_step = this.getSelectedStep()
+      this.props.deleteSteps([selected_step.id])
+      this.props.selectSteps()
+    }
+
+    saveNodes(){
+      let {nodes} = this.props
+      return FlowUtil.saveNodes(inject_flow_uuid,nodes)
     }
 
     onClickDelete(e:Event) {
       ModalUtil.registerModal({
         id: Constants.modal.CONFIRM, onClickDone: () => {
-          let selected_step = this.getSelectedStep()
-          this.props.deleteSteps([selected_step.id])
-          this.props.selectSteps()
+          this.deleteStep()
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         },
       })
@@ -159,12 +172,12 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             <InOutConnector {...this.props} onChangeInEdge={(e,data)=>this.onChangeInEdge(e,data)} onChangeOutEdge={(e,data)=>this.onChangeOutEdge(e,data)} selectedStep={selected_step} selectedSubFlow={this.selectedSubFlow}/>
             {form}
             <div className={style.full_hr} />
-            <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
+            {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
             <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
           </div>
         }
 
-        return <BaseInspector key={selected_step.id} header={""} label={label} name={selected_step.id} {...this.props}>
+        return <BaseInspector key={selected_step.id} header={""} label={label} name={selected_step.id} {...this.props} onHide={()=>this.onHide()}>
           {content}
         </BaseInspector>
     }

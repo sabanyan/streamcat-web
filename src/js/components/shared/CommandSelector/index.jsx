@@ -87,7 +87,6 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
 
     let commandSelector
 
-    console.log(operators)
     if(operators.length){
       commandSelector = <div>
         <hr/>
