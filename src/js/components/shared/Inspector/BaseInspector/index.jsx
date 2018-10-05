@@ -20,7 +20,7 @@ class BaseInspector extends React.Component<Props> {
   }
 
   componentWillUnmount(){
-    if(this.props.onBlurTitle){
+    if(this.props.onBlurTitle && this.refs["title"]){
       const e = {
         target:{
           value: this.refs.title.value
