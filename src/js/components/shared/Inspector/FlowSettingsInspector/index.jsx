@@ -9,9 +9,11 @@ import classnames from 'classnames'
 import HttpUtil from '../../../../utils/HttpUtil'
 import ModalUtil from '../../../../utils/ModalUtil'
 import Constants from '../../../../constants'
+import type { SubFlowParamType } from '../../../../types'
 
 class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
+  paramRefs:[] = []
   loading: boolean = false
 
   constructor (props: FlowEditorProps) {
@@ -22,13 +24,26 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
   }
 
-  onClickSave (e: Event) {
+  onSave (e: Event) {
     const {flow} = this.props
     const {label} = this.props.flow
     flow.description = this.refs['description'].value
+    flow.params = this.getCurrentParams()
     this.props.updateFlow(flow)
     FlowUtil.saveFlowSettings(inject_flow_uuid, {label: label, description: flow.description,params:flow.params})
     this.props.selectSteps()
+  }
+
+  getCurrentParams(){
+    //現在入力中のすべてのParamsを取得する
+    let params = []
+    this.paramRefs.forEach(elem=>{
+      let param:SubFlowParamType = {}
+      param["name"] = elem.value
+      param["type"] = "string"
+      params.push(param)
+    })
+    return params
   }
 
   onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
@@ -39,15 +54,28 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
   onClickAddFlowParam(){
     let {flow} = this.props
-    flow.params.push({name:"new_param",type:"string"})
+    const name = this.setNewParamName("new_param",1)
+    flow.params.push({name:name,type:"string"})
     this.props.updateFlow(flow)
   }
 
+  setNewParamName(name:string,cnt:number):string{
+    let {flow} = this.props
+
+    const findResult = flow.params.find(param=>{
+      return param.name === (name + cnt)
+    })
+    if(findResult){
+      return this.setNewParamName(name,cnt+1)
+    }
+    return name + cnt
+  }
+
+
   onDeleteParam(param){
     let {flow} = this.props
-    let newParams = []
-    flow.params.forEach((p)=>{
-      if(p !== param)newParams.push(p)
+    const newParams = flow.params.filter(p=>{
+      return(p !== param)
     })
     flow.params = newParams
     this.props.updateFlow(flow)
@@ -76,17 +104,26 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     const {flow} = this.props
     const {params} = this.props.flow
 
+
     let inputParams, inputParamsContainer, addFlowParams
-    inputParams = params.map((param) => {
-      return <div className={style.flow_param}>
+    this.paramRefs = []
+    inputParams = params.map((param,index) => {
+      return <div key={param.name} className={style.flow_param}>
         <div className={style.left}>
-          <input type={'text'} className={'form-control'} defaultValue={param.name} />
+          <input ref={(ref) => {
+            //render時にrefがnullのケースでcallされる場合があるので、
+            //refがあることを確認してから入れる
+            if(ref){
+              this.paramRefs.push(ref)
+            }
+          }} type={'text'} className={'form-control'} defaultValue={param.name} />
         </div>
         <div className={style.right}>
           <Button danger={true} onClick={()=>this.onClickDeleteParam(param)}>削除</Button>
         </div>
       </div>
     })
+
 
     if (inputParams) {
       inputParamsContainer = <div>
@@ -105,15 +142,15 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     </div>
 
     return <BaseInspector header={''} label={this.props.flow.label} name={''} {...this.props}
-                          onBlurTitle={(e) => this.onBlurTitle(e)}>
+                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={()=>this.onSave()}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8} onBlur={this.onBlurDescription}></textarea>
       {inputParamsContainer}
       {addFlowParams}
-      <div>
-        <div className={style.full_hr} />
-        <Button onClick={(e) => this.onClickSave(e)}>適用</Button>
-      </div>
+      {/*<div>*/}
+        {/*<div className={style.full_hr} />*/}
+        {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
+      {/*</div>*/}
     </BaseInspector>
   }
 }
