@@ -7,10 +7,9 @@ import sys
 from sklearn import metrics
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 import os
-sys.path.append(os.getcwd()+"/modeling")
-from ..modeling.classification import *
-from ..modeling.regression import *
-from .predict import Predict
+from kskp.engine.commands.kcmd.modeling.classification import *
+from kskp.engine.commands.kcmd.modeling.regression import *
+from kskp.engine.commands.kcmd.postprocess.predict import Predict
 from pathlib import Path
 
 
@@ -75,12 +74,17 @@ class Evaluate():
 
         #モデルの評価
         result=self.all_metrics[parsed.metrics](y_test,pred_df)
+
         #評価結果の出力(暫定)
-        print(parsed.metrics+":")
+        print(parsed.metrics)
         print(result)
-        #result.to_csv(parsed.metrics_file_name,index=False)
+        # result.to_csv(parsed.metrics_file_name,index=False)
 
         #出力
         # pred.set_output(merged,parsed.output)
 
-        return merged
+        return
+
+if __name__=="__main__":
+    eval=Evaluate()
+    eval.main(sys.argv[1:])

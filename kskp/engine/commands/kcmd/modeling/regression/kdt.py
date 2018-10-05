@@ -2,7 +2,7 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Regression
+from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.tree import DecisionTreeRegressor
 import pickle
 
