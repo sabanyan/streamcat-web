@@ -57,6 +57,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
     this.setState({
       keyword: ''
     })
+    document.querySelector("input[type=text]").value="";
   }
 
   registerModal () {

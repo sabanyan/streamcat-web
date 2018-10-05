@@ -43,6 +43,7 @@ export default class ProjectListContainer extends React.Component {
     this.setState({
       keyword: ''
     })
+    document.querySelector("input[type=text]").value="";
   }
 
   registerModal () {
