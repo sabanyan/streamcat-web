@@ -53,6 +53,12 @@ export default class FlowListContainer extends React.Component<Props,State> {
     this.registerModal()
   }
 
+  clearKeyword(){
+    this.setState({
+      keyword: ''
+    })
+  }
+
   registerModal () {
     //モーダル処理の登録
     ModalUtil.registerModal({
@@ -69,6 +75,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
           }
         }).then((response) => {
           ModalUtil.closeModal(Constants.modal.ADD_FLOW)
+          this.clearKeyword()
           this.getFlowList()
         })
       },

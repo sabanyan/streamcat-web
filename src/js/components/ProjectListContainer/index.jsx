@@ -39,27 +39,32 @@ export default class ProjectListContainer extends React.Component {
     this.registerModal()
   }
 
+  clearKeyword(){
+    this.setState({
+      keyword: ''
+    })
+  }
+
   registerModal () {
     //モーダル処理の登録
-    const self = this
     ModalUtil.registerModal({
       id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-        HttpUtil.post('projects', {name: self.state.project_name}).
+        HttpUtil.post('projects', {name: this.state.project_name}).
           then((response) => {
             ModalUtil.emitModal(
               {id: Constants.modal.ADD_PROJECT, visible: false})
-            self.getProjectList()
+            this.clearKeyword()
+            this.getProjectList()
           })
       },
     })
   }
 
   getProjectList () {
-    const self = this
-    self.setState({is_loading: true})
+    this.setState({is_loading: true})
     HttpUtil.get('projects').then((response) => {
       const json = response.data
-      self.setState(
+      this.setState(
         {is_loading: false, is_finished: true, project_list: json.data})
     })
   }
@@ -70,7 +75,6 @@ export default class ProjectListContainer extends React.Component {
 
   renderProjectList () {
     const {keyword} = this.state
-    const self = this
     return this.state.project_list.filter((project) => {
       if (keyword === '') {
         return true
@@ -79,7 +83,7 @@ export default class ProjectListContainer extends React.Component {
     }).map((project) => {
       return <ProjectList project={project}
                           href={'./flows?project=' + project.uuid}>
-        <a href="#" onClick={() => self.onClickDelete(project.uuid)}>削除</a>
+        <a href="#" onClick={() => this.onClickDelete(project.uuid)}>削除</a>
       </ProjectList>
     })
   }
@@ -126,11 +130,10 @@ export default class ProjectListContainer extends React.Component {
   }
 
   onClickDelete (project_uuid) {
-    const self = this
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         HttpUtil.delete('projects/' + project_uuid).then((response) => {
-          self.getProjectList()
+          this.getProjectList()
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         })
       },
