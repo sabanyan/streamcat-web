@@ -93,6 +93,20 @@ class ActivityTest(unittest.TestCase):
         email = 'dev@kskp.io'
         name = '開発者'
         project_name = 'テストプロジェクト'
+        node_sample =   [
+                            {
+                                "id": "Ci",
+                                "type": "frame",
+                                "uuid": "",
+                                "label": "123"
+                            },
+                            {
+                                "id": "C3323",
+                                "type": "frame",
+                                "uuid": "",
+                                "label": "fhdsklahds"
+                            }
+                        ]
 
         with app.app_context():
             with self.client.session_transaction() as session:
@@ -106,18 +120,18 @@ class ActivityTest(unittest.TestCase):
             # 実行履歴を作成するためのフローを作成
             new_flow_name = 'ふろー取得てすと'
             data_source_name = str(uuid.uuid4())
-            data = {'project_uuid': project_uuid, 'name': new_flow_name, 'datasource': None}
+            data = {'project_uuid': project_uuid, 'name': new_flow_name, 'datasource': None, 'nodes' : node_sample}
+            # data.update(node_sample)
             created_flow = model.create_flow(data, session['user_id'], data_source_name)
-
             # 実行履歴を作成する
             unfinished_deco = make_unfinished_history(now, session)
             wrapper = unfinished_deco(mock_func)
             wrapper(data_source_name)
-
             # 実行履歴を更新
             # dataは更新していなくて、data作成中にFrameオブジェクトが使われているのでどうしようか考え中
             finished_deco = make_finished_history(now)
             wrapper2 = finished_deco(mock_func_finished)
+
             wrapper2(data_source_name)
 
             # 作成されたファイルパス
@@ -207,3 +221,48 @@ class ActivityTest(unittest.TestCase):
             self.assertEqual(result['nodes'][0]['label'], 'test')
             self.assertEqual(result['nodes'][0]['type'], 'frame')
             self.assertEqual(result['nodes'][0]['uuid'], frame_uuid)
+
+#------------------------------------ written by ryo tsutsui
+    # import copy
+    # def test_file_maker(self):
+    #     '''
+    #     テスト用ファイルの作成
+    #     '''
+    #     jobs_root = app.root_path + '/data/jobs/'
+    #     jobs_path = Path(jobs_root)
+
+    #     json_template = {
+    #         "executedAt": "",
+    #         "executor": {
+    #             "name": ""
+    #         },
+    #         "inputs": {},
+    #         "params": {},
+    #         "flow": {
+    #             "uuid": ""
+    #         },
+    #         "projectId": None,
+    #         "data": {
+    #             "d1": {
+    #                 "type": "frame",
+    #                 "uuid": "",
+    #                 "label": ""
+    #             }
+    #         },
+    #         "errors": {}
+    #     }
+        
+    #     self.jobs_path.mkdir(parents=True, exist_ok=True)
+    #     with app.app_context():
+    #         (user1, project_id, project_uuid) = setUpProject(self)
+        
+    #     for x in range(0, 3):            
+    #         with open (str(self.jobs_path) + '/test' + str(x + 1) + '.json', 'w') as f:
+    #             sample = copy.deepcopy(self.json_template)
+    #             sample['executedAt'] = '1970-01-01T00:00:0' + str(x) + '09:00'
+    #             sample['executor']['name'] = 'ユーザー 太郎'
+    #             sample['flow']['uuid'] = '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
+    #             sample['data']['d1']['uuid'] = '99999999999' + str(x)
+    #             sample['data']['d1']['label'] = str(x)
+    #             sample['projectId'] = project_id
+    #             json.dump(sample, f, ensure_ascii=False, indent=4)

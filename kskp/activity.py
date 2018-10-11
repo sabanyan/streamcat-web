@@ -28,7 +28,15 @@ def make_unfinished_history(now, session):
                 'inputs': {},
                 'params': {},
                 'flow': {
-                    'uuid': ''
+                    'uuid':  '',
+                    'label': ''
+                },
+                "data": {
+                    "d1": {
+                        "type": "frame",
+                        "uuid": "",
+                        "label": ""
+                    }
                 },
                 'projectId': '',
                 'data': {},
@@ -71,12 +79,13 @@ def make_finished_history(now):
                 for key, val in result.items():
                     # 現在はresultから結果データを取ってきており、データのクラス名を'type'に入れているので
                     # クラス名と'type'に入れたい型が一致しているのが前提になっている（例・frame）
-                    json_data['data'][key] = {'type': type(val).__name__.lower(), 'uuid': val.uuid, 'label': label_dict.get(key)}
+                    json_data['data'][key] = {'type': type(val).__name__.lower(), 'uuid': val.uuid, 'label': label_dict.get(key)['label']}
                 json_data['state'] = '実行完了'
                 with file_path.open('w') as f:
                     json.dump(json_data, f, indent = '\t', ensure_ascii=False)
 
                 # 使うかわからないけどとりあえずBoolean返してる
+            print(json_data)
             return result
         return deco
     return _deco

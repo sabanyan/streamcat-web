@@ -204,7 +204,8 @@ def create_flow(request_json, user_id, data_source_name=None):
             'label': request_json.get('name'),
             'ports': [[],[]],
             'params': [],
-            'description': ""
+            'description': "",
+            'nodes': request_json.get('nodes')
         }
         return data
 
@@ -436,23 +437,15 @@ def get_connection():
 
 def get_flow_label(flow_uuid):
     """
-    flowのjsonを受け取り、その中から指定されたノードを探して
-    そのノードのidに対応するlabelをdictにて返す
-    探し方は、(データ部のノードid) - (オペレータ部にパイプで繋げられたデータ部のノードid)
+    flowのjsonを受け取り、dictにて返す
     """
     data = fetch_flow_by_uuid(flow_uuid)
-    nodes_list = data['nodes']
-    data_nodes = []
-    for node in nodes_list:
-        if 'dataSource' in node:
-            data_nodes.append(node['id'])
-
-    label_dict = {}
-    for node in data_nodes:
-        for part_of_node in data['nodes']:
-            if part_of_node['id'] is node:
-                label_dict[node] = part_of_node['label']
-    return label_dict
+    print(data)
+    # tmp = {node['id']:node for node in data['nodes']}
+    # for noder in data['nodes']:
+    #     tmp = {data['id']: noder}
+    # print(tmp)
+    return {node['id']:node for node in data['nodes']}
 
 
 
