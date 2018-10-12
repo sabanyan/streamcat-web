@@ -135,8 +135,7 @@ class Job:
                     last.is_temp = False
 
         elif s.is_command:
-            command_inputs = self.check_inputs(self.inputs) # command用inputsの作成
-            output = cf.execute(self.step.args, command_inputs)
+            output = cf.execute(self.step.args, self.inputs)
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
@@ -179,7 +178,7 @@ class Job:
         job, port = self.src_job_from(datum_id)
 
         self.expand_args(job)
-        job.inputs = self.inputs_of(job) # job用inputs
+        job.inputs = job.check_inputs(self.inputs_of(job))
 
         return job.execute()[port]
 
@@ -213,6 +212,7 @@ class Job:
             else:
                 result[d] = job.inputs[d]
         return result
+
 
     def check_multi_use(self, job, datum_id, datum):
         job_ports = self.dst_job_ids(datum_id)

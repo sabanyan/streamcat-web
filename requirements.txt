@@ -1,0 +1,20 @@
+blinker==1.4
+click==6.7
+Flask==1.0.2
+Flask-Mail==0.9.1
+itsdangerous==0.24
+Jinja2==2.10
+-e git+https://github.com/ksk-anl/kskp-beta.git@61e8c2092cd46b11447a874bca516f9ab38c5a63#egg=kskp
+MarkupSafe==1.0
+memory-profiler==0.52.0
+numpy==1.14.5
+nysol==0.2.0
+pandas==0.23.3
+psutil==5.4.6
+python-dateutil==2.7.3
+pytz==2018.5
+scikit-learn==0.19.2
+scipy==1.1.0
+six==1.11.0
+sklearn==0.0
+Werkzeug==0.14.1
