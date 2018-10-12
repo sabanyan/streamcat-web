@@ -66,23 +66,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   run () {
     return HttpUtil.get("frames?from=" + inject_flow_uuid + "&no_contents=1")
-
-      // fetch('http://' + Constants.api.host + '/api/v0-1/flows/' +
-      //   inject_flow_uuid + '/execute', option).then(function (response) {
-      //   if (response.ok) {
-      //     return response.json()
-      //   }
-      //   else {
-      //     alert('サーバでエラーが発生しました')
-      //   }
-      // }).then(function (json) {
-      //   resolve(json)
-      // }).catch((err) => {
-      //   console.log(err)
-      //   alert('クライアントでエラーが発生しました')
-      //   reject(err)
-      // })
-
   }
 
   onClickProjectRun () {

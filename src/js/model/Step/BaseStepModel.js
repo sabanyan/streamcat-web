@@ -9,13 +9,13 @@ type stepType = "command" | "frame"
 export type BaseModelProps = {
   id?: string;
   type: stepType;
-  label: string;
+  label?: string;
   position?: { x: number, y: number };
   size?: { width: number, height: number };
 }
 
 export default class BaseStepModel extends Model {
-  id: string = ModelUtil.getNewId()
+  id: string
   type: stepType
   label: string
   position: { x: number, y: number } = {x: 0, y: 0}
@@ -28,6 +28,9 @@ export default class BaseStepModel extends Model {
     this.initialize(props,"label")
     this.setPosition(props.position)
     this.setSize(props.size)
+    if(!this.id){
+      this.id = ModelUtil.getNewId(this.type)
+    }
   }
 
   getLabel(){
