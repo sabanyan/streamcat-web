@@ -108,7 +108,7 @@ export default class Command extends React.Component<Props> {
                     //TODO 将来的にはコマンドのoutputsを細かくみて制御する
                       return new DataFrameStepModel({
                         id: null,
-                        label:port.name,
+                        label: null,
                         type: Constants.step.type.frame,
                         uuid: null,
                         dataSource: Constants.data.dataSource.csv,

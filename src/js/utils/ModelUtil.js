@@ -1,16 +1,54 @@
 //@flow
 import Constants from '../constants'
 import type { StepModelType } from '../types'
+import ErrorUtil from './ErrorUtil'
 
 export default class ModelUtil {
   /**
    * フロントエンドで発行するUUID
-   * "new RRRRRRRR-RRRR-4RRR-rRRR-RRRRRRRRRRRR" というフォーマットで発行される
+   * "d1,c1,f1" というフォーマットで発行される
    * @returns {string}
    */
-  static getNewId ():string {
-    return 'new ' +this.generateUUID()
+  static getNewId (type:string,nodes:[]):string {
+    let prefix:string = ModelUtil.getTypePrefix(type)
+    let Id:string = ModelUtil.getMinimumIDNumberFromNodes(type)
+    return prefix + Id
   }
+
+  static getTypePrefix(type:string):string{
+    let prefix:string = ""
+    switch (type){
+      case Constants.step.type.frame:
+        prefix = "d"
+        break
+      case Constants.step.type.subflow:
+        prefix = "f"
+        break
+      case Constants.step.type.command:
+        prefix = "c"
+        break
+      default:
+        new ErrorUtil("想定している型とは異なる型が指定されました")
+    }
+    return prefix
+  }
+
+  static getMinimumIDNumberFromNodes(type:string):string{
+    let prefix:string = ModelUtil.getTypePrefix(type)
+    let idNumber:string = ""
+    for(let index = 1;index <= window.nodes.length;index++){
+      idNumber = index.toString()
+      const found = window.nodes.find((node)=>{
+        return (node.id === prefix + index)
+      })
+      if(found){
+      }else{
+        return idNumber
+      }
+    }
+    return idNumber
+  }
+
 
   /**
    * 乱数による UUID バージョン4
