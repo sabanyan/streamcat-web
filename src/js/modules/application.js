@@ -14,7 +14,8 @@ import { DataFrameDetailType } from '../types'
 import Command from '../components/shared/Command'
 import ModelUtil from '../utils/ModelUtil'
 import Ajv from 'ajv'
-import stateSchema from '../schema/state.json'
+import Validator from '../utils/Validator'
+import Log from '../utils/Log'
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action"
 const ADD_MASTER_ACTION = "add_master_action";
@@ -39,57 +40,7 @@ const SET_ZOOM_ACTION = "set_zoom_action";
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = "update_data_source_detail_action";
 
 const graph:Graph = new Graph()
-//
-// const json = {
-//     "flows": [
-//         "s1",
-//         "s2",
-//         "s3"
-//     ],
-//     "edges": [
-//         {
-//             "v": "s1",
-//             "w": "s2"
-//         },
-//         {
-//             "v": "s2",
-//             "w": "s3"
-//         }
-//     ],
-//     "steps": {
-//         "s1": {
-//             "id": "s1",
-//             "type": "csv",
-//             "text": "test-data",
-//             "property": {
-//                 "overview": {
-//                     "count": "100",
-//                     "created_at": "",
-//                     "created_user_name": "山田 太郎"
-//                 }
-//             }
-//         },
-//         "s2": {
-//             "id": "s2",
-//             "type": "sort",
-//             "text": "ソート"
-//         },
-//         "s3": {
-//             "id": "s3",
-//             "type": "csv",
-//             "text": "sorted-test-data",
-//             "property": {
-//                 "overview": {
-//                     "count": "100",
-//                     "created_at": "Wed Feb 07 2018 11:22:18 GMT+0900 (JST)",
-//                     "created_user_name": "あいうえお"
-//                 }
-//             }
-//         }
-//     }
-// }
 
-// initialState = (typeof inject_initial_flow_data === 'undefined')?{}:graph.load(inject_initial_flow_data)
 let initialState = {
   selected_step_ids:[],
   graph:graph.getGraph({}),
@@ -103,28 +54,23 @@ let initialState = {
   selected_data_source_detail: {}
 }
 
-
 const Application = (state = initialState, action:{}) => {
-
-    const ajv = new Ajv()
-    const validate = ajv.compile(stateSchema)
-    const valid = validate(state)
-    if (!valid) console.log(ajv.errors);
-    if(!valid) console.log(ajv.errorsText());
 
     switch (action.type) {
         case LOAD_FLOW_JSON_ACTION: {
             let {context} = action
             let newState = StateUtil.deepCopy(state)
-
             const loadedJson = graph.load(context.data)
             newState.originalFlow = {...loadedJson}
             newState.flow = new FlowModel(loadedJson)
             newState.nodes = loadedJson.nodes
             newState.project = {id:loadedJson.projectId}
-
             newState.graph = graph.getGraph(newState)
 
+            //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
+            Validator.isFlowModelSchema(newState)
+            Validator.isGraphModelSchema(newState)
+            Validator.isNodesSchema(newState)
             return newState
         }
         case ADD_MASTER_ACTION: {
