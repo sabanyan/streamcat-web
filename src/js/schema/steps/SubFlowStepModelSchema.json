@@ -1,0 +1,84 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "SubFlowStepModelSchema.json",
+  "type": "object",
+  "required": [
+    "args",
+    "dsts",
+    "id",
+    "position",
+    "size",
+    "srcs",
+    "type",
+    "uuid"
+  ],
+  "properties": {
+    "args": {
+      "$id": "#/properties/args",
+      "type": "object",
+      "default": null
+    },
+    "dsts": {
+      "$id": "#/properties/dsts",
+      "type": "object",
+      "default": null
+    },
+    "id": {
+      "$id": "#/properties/id",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "position": {
+      "$id": "#/properties/position",
+      "type": "object",
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "$id": "#/properties/position/properties/x",
+          "type": "integer"
+        },
+        "y": {
+          "$id": "#/properties/position/properties/y",
+          "type": "integer"
+        }
+      }
+    },
+    "size": {
+      "$id": "#/properties/size",
+      "type": "object",
+      "required": [
+        "width",
+        "height"
+      ],
+      "properties": {
+        "width": {
+          "$id": "#/properties/size/properties/width",
+          "type": "integer"
+        },
+        "height": {
+          "$id": "#/properties/size/properties/height",
+          "type": "integer"
+        }
+      }
+    },
+    "srcs": {
+      "$id": "#/properties/srcs",
+      "type": "object"
+    },
+    "type": {
+      "$id": "#/properties/type",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "uuid": {
+      "$id": "#/properties/uuid",
+      "type": "string",
+      "default": null,
+      "pattern": "^(.*)$"
+    }
+  }
+}

@@ -13,6 +13,9 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import { DataFrameDetailType } from '../types'
 import Command from '../components/shared/Command'
 import ModelUtil from '../utils/ModelUtil'
+import Ajv from 'ajv'
+import Validator from '../utils/Validator'
+import Log from '../utils/Log'
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
@@ -63,8 +66,12 @@ const Application = (state = initialState, action: {}) => {
       newState.flow = new FlowModel(loadedJson)
       newState.nodes = loadedJson.nodes
       newState.project = {id: loadedJson.projectId}
-
       newState.graph = graph.getGraph(newState)
+
+      //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
+      Validator.isFlowModelSchema(newState)
+      Validator.isGraphModelSchema(newState)
+      Validator.isNodesSchema(newState)
       break
     }
     case ADD_MASTER_ACTION: {
