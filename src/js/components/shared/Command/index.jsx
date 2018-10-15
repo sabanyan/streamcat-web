@@ -105,21 +105,17 @@ export default class Command extends React.Component<Props> {
                 const {selected_step_ids} = this.props
 
                 const output_steps = command.getOutPorts().map((port:CommandPortType) => {
-                    //TODO 将来的にはコマンドのoutputsを細かくみて制御する
-                      return new DataFrameStepModel({
+                      const output_step = new DataFrameStepModel({
                         id: null,
                         label: null,
                         type: Constants.step.type.frame,
                         uuid: null,
                         dataSource: Constants.data.dataSource.csv,
                       })
+                      this.props.addStep(output_step)
+                      return output_step
                 })
-
-                //出力先の個数に応じてステップを追加する
-                output_steps.map((output_step) => {
-                    self.props.addStep(output_step)
-                })
-
+            
                 const output_step_ids = output_steps.map(step=>step.id)
 
                 self.props.addStep(added_command_step,selected_step_ids,output_step_ids)
