@@ -18,6 +18,8 @@ import ModalUtil from '../../../../utils/ModalUtil'
 import ParamString from '../../Param/ParamString'
 import ParamBoolean from '../../Param/ParamBoolean'
 import ParamUtil from '../../../../utils/ParamUtil'
+import StateUtil from '../../../../utils/State'
+import SubflowCommandModel from '../../../../model/Command/SubflowCommandModel'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -62,7 +64,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     onHide(){
       this.updateArgs()
-      this.props.selectSteps()
+      //this.props.selectSteps()
       this.saveNodes()
     }
 
@@ -116,16 +118,19 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     }
 
     render() {
-        const {commands} = this.props.mast
+        const {commands,subflows} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
         let inputForm = []
-        let subFlowLink,content,label
+        let subFlowLink,content,label,subLabel
         const onBuild = (param,element) => this.onBuild(param,element)
 
 
         if(selected_step.type === Constants.step.type.command){
           const command:CommandModel = selected_step.getCommand(commands)
-          label = (command)?command.label:selected_step.commandId
+          console.log("command",command)
+          console.log("selected_step",selected_step)
+          label = selected_step.label
+          subLabel = command.label
           this.inputRefs = []
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
@@ -137,7 +142,11 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             </div>
           })
         }else if(selected_step.type === Constants.step.type.subflow){
+          const subflowCommand:SubflowCommandModel = selected_step.getCommand(subflows)
+          console.log("subflowCommand",subflowCommand)
+          console.log("selected_step",selected_step)
           label = selected_step.label
+          subLabel = subflowCommand.label
           inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
             const parameter = selected_step.args[key]
             const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,key))
@@ -177,11 +186,17 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           </div>
         }
 
-        return <BaseInspector key={selected_step.id} header={""} label={label} name={selected_step.id} {...this.props} onHide={()=>this.onHide()}>
+        return <BaseInspector key={selected_step.id} header={""} label={label} subLabel = {subLabel} name={selected_step.id} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()} >
           {content}
         </BaseInspector>
     }
 
+    onBlurTitle(e:SyntheticInputEvent<EventTarget>){
+      const selectedStep = this.getSelectedStep()
+      let newSelectedStep = StateUtil.deepCopy(selectedStep)
+      newSelectedStep.label = e.target.value
+      this.props.updateStep(newSelectedStep)
+    }
 }
 
 export default CommandInspector

@@ -6,6 +6,7 @@ import InOutConnector from '../CommandInspector/InOutConnector/index'
 type Props = {
   name?:string;
   label?:string;
+  subLabel?:string;
   header?: string;
   title?: (string|React.Node);
   children?: React.Node;
@@ -35,13 +36,18 @@ class BaseInspector extends React.Component<Props> {
 
   render () {
 
-    const {header,name, label, children,onBlurTitle} = this.props
+    const {header,name, label, children,onBlurTitle,subLabel} = this.props
 
     const disabled = (!onBlurTitle)
-    let labelContainer
+    let labelContainer,subLabelContainer
 
     if(!disabled){
       labelContainer =  <input type="text" ref={"title"} onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null} className={style.label} defaultValue={label} disabled={disabled}></input>
+    }
+    if(subLabel){
+      subLabelContainer = <div>
+          {subLabel}
+        </div>
     }
 
     return <div className={style.property_container}>
@@ -51,6 +57,7 @@ class BaseInspector extends React.Component<Props> {
       <div className={style.property_body}>
         <div className={style.property_label}>
           {labelContainer}
+          {subLabelContainer}
         </div>
         {/*<div className={style.property_name}>*/}
           {/*{name}*/}

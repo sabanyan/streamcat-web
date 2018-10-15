@@ -69,7 +69,7 @@ export default class Command extends React.Component<Props> {
       let model = {
         id: null,
         name: command.label,
-        label: command.label,
+        label: null,
         args: args,
       }
 
@@ -115,7 +115,7 @@ export default class Command extends React.Component<Props> {
                       this.props.addStep(output_step)
                       return output_step
                 })
-            
+
                 const output_step_ids = output_steps.map(step=>step.id)
 
                 self.props.addStep(added_command_step,selected_step_ids,output_step_ids)
