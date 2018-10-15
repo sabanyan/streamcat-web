@@ -204,8 +204,7 @@ def create_flow(request_json, user_id, data_source_name=None):
             'label': request_json.get('name'),
             'ports': [[],[]],
             'params': [],
-            'description': "",
-            'nodes': request_json.get('nodes')
+            'description': ""
         }
         return data
 
@@ -440,12 +439,9 @@ def get_flow_label(flow_uuid):
     flowのjsonを受け取り、dictにて返す
     """
     data = fetch_flow_by_uuid(flow_uuid)
-    print(data)
-    # tmp = {node['id']:node for node in data['nodes']}
-    # for noder in data['nodes']:
-    #     tmp = {data['id']: noder}
-    # print(tmp)
-    return {node['id']:node for node in data['nodes']}
+    if data.get('nodes') is None:
+        return {}
+    return {node['id']:node for node in data.get('nodes')}
 
 
 
