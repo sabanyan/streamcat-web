@@ -23,7 +23,6 @@ export default class SubFlowStepModel extends CommandStepModel{
         command = _command
       }
     })
-    console.log(command)
     return command
   }
 }

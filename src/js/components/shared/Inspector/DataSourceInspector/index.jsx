@@ -301,10 +301,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     </BaseInspector>
   }
 
-  onClickTitle(){
-
-  }
-
   onBlurTitle(e:SyntheticInputEvent<EventTarget>){
     const selectedStep = this.getSelectedStep()
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
