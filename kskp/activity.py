@@ -31,13 +31,6 @@ def make_unfinished_history(now, session):
                     'uuid':  '',
                     'label': ''
                 },
-                "data": {
-                    "d1": {
-                        "type": "frame",
-                        "uuid": "",
-                        "label": ""
-                    }
-                },
                 'projectId': '',
                 'data': {},
                 'errors': {}
@@ -84,8 +77,6 @@ def make_finished_history(now):
                 with file_path.open('w') as f:
                     json.dump(json_data, f, indent = '\t', ensure_ascii=False)
 
-                # 使うかわからないけどとりあえずBoolean返してる
-            print(json_data)
             return result
         return deco
     return _deco

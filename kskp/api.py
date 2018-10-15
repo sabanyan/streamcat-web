@@ -17,7 +17,8 @@ from .model import (
     update_flow_by_uuid,
     get_flow_path_by_uuid,
     get_user_by_id,
-    fetch_subflows_all_projects
+    fetch_subflows_all_projects,
+    get_flow_label
 )
 from .activity import (
     make_unfinished_history,
@@ -572,7 +573,8 @@ def execute_flow_internal(flow_uuid, step_paths=None):
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
 
     result = execute_flow_by_uuid(flow_uuid)
-    return [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
+    label_dict = get_flow_label(flow_uuid)
+    return [{'id':key, 'uuid':value.uuid, 'label':label_dict.get(key)['label']} for key, value in result.items()]
 
 
 def load_as_data_frame(result_text):

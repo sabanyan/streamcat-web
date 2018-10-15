@@ -411,7 +411,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(result['success'], True)
         with app.app_context():
             self.assertFalse(model.make_flow_path(data_source_name).exists())
-    @unittest.skip('test')
+
     def test_fetch_subflows(self):
         """
         fetch_subflows APIをテストする
@@ -452,7 +452,7 @@ class ApiTestCase(unittest.TestCase):
         # 後片付け
         path = model.get_flow_path_by_uuid(flow1_datasource_name)
         path.unlink()
-    @unittest.skip('test')
+
     def test_fetch_subflows_no_inputs(self):
         """
         fetch_subflows APIをテストする
@@ -517,7 +517,7 @@ class ApiTestCase(unittest.TestCase):
         for unlink_flow in unlink_list:
             path = model.get_flow_path_by_uuid(unlink_flow)
             path.unlink()
-    @unittest.skip('test')
+
     def test_fetch_subflows_has_outputs(self):
         """
         fetch_subflows APIをテストする
@@ -559,7 +559,6 @@ class ApiTestCase(unittest.TestCase):
             result = json.loads(response.get_data())
 
         self.assertEqual(result['success'], True)
-
 
         # テストで作成した以外のフローもあるので、テスト対象のサブフローを探す
         # 取得すべきフローを取得できたかのフラグ
@@ -758,201 +757,8 @@ def setUpFlow(self):
 
     return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
 
-
-class JobTestCase(unittest.TestCase):
-    def setUp(self):
-        app.testing = True
-        self.client = app.test_client()
-
-    def tearDown(self):
-        pass
-    @unittest.skip('okikae')
-    def test_jobs(self):
-        '''
-        実行履歴を取得するAPIのテスト
-        count指定なし
-        テストがsample.json、sample2.jsonありきなので、書き直し予定
-        '''
-        with app.app_context():
-            (user1, project_id, project_uuid) = setUpProject(self)
-
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user1
-
-            flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
-
-            endpoint = '/api/v0/jobs'
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
-
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][2]['flow']['uuid'], flow_uuid)
-        self.assertEqual(result['data'][2]['data']['d1']['uuid'], '860538F5-CD5B-47B5-A88A-6D2107601F89')
-        self.assertEqual(result['data'][2]['data']['d2']['uuid'], 'A142C00D-8F97-4E40-97DE-789D7B117E35')
-        self.assertEqual(result['data'][1]['flow']['uuid'], flow_uuid)
-        self.assertEqual(result['data'][1]['data']['d1']['uuid'], '16DF44FA-2D8B-430C-B1AC-2C20954C1317')
-        self.assertEqual(result['data'][1]['data']['d2']['uuid'], '754AD573-3026-41C8-9DC2-4870FC28194E')
-        self.assertEqual(result['data'][0]['flow']['uuid'], 'ACA335C6-675C-49E2-A8B4-5E655CB46254')
-        self.assertEqual(result['data'][0]['data']['d1']['uuid'], 'b97ee374-5b84-48ab-b971-046858937ccb')
-        self.assertEqual(result['data'][0]['data']['d2']['uuid'], '2C72275F-2019-49AE-B36D-A29D1507F8DD')
-        self.assertEqual(result['navigation']['user_id'], user1)
-        self.assertEqual(result['navigation']['user_name'], 'user1')
-    @unittest.skip('okikae')
-    def test_jobs_count(self):
-        '''
-        実行履歴を取得するAPIのテスト
-        count指定あり
-        テストがsample.jsonありきなので、書き直し予定
-        '''
-        with app.app_context():
-            user1 = setUpUser(self)
-
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user1
-
-            count = 1
-
-            endpoint = '/api/v0/jobs?count=%s' % (count)
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
-
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][count - 1]['flow']['uuid'], 'ACA335C6-675C-49E2-A8B4-5E655CB46254')
-        self.assertEqual(result['data'][count - 1]['data']['d1']['uuid'], 'b97ee374-5b84-48ab-b971-046858937ccb')
-        self.assertEqual(result['data'][count - 1]['data']['d2']['uuid'], '2C72275F-2019-49AE-B36D-A29D1507F8DD')
-        self.assertEqual(result['navigation']['user_id'], user1)
-        self.assertEqual(result['navigation']['user_name'], 'user1')
-    @unittest.skip('okikae')
-    def test_jobs_flow(self):
-        '''
-        実行履歴を取得するAPIのテスト
-        count指定無し
-        テストがsample.jsonありきなので、書き直し予定
-        '''
-        with app.app_context():
-            (user1, project_id, project_uuid) = setUpProject(self)
-
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user1
-
-            flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
-
-            endpoint = '/api/v0/jobs?flow=%s' % flow_uuid
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
-
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][1]['flow']['uuid'], flow_uuid)
-        self.assertEqual(result['data'][1]['data']['d1']['uuid'], '860538F5-CD5B-47B5-A88A-6D2107601F89')
-        self.assertEqual(result['data'][1]['data']['d2']['uuid'], 'A142C00D-8F97-4E40-97DE-789D7B117E35')
-        self.assertEqual(result['data'][0]['flow']['uuid'], flow_uuid)
-        self.assertEqual(result['data'][0]['data']['d1']['uuid'], '16DF44FA-2D8B-430C-B1AC-2C20954C1317')
-        self.assertEqual(result['data'][0]['data']['d2']['uuid'], '754AD573-3026-41C8-9DC2-4870FC28194E')
-        self.assertEqual(result['navigation']['user_id'], user1)
-        self.assertEqual(result['navigation']['user_name'], 'user1')
-        self.assertEqual(result['navigation']['project_uuid'], project_uuid)
-        self.assertEqual(result['navigation']['project_name'], 'proj1')
-    @unittest.skip('okikae')
-    def test_jobs_flow_count(self):
-        '''
-        実行履歴を取得するAPIのテスト
-        count指定あり
-        テストがsample.jsonありきなので、書き直し予定
-        '''
-        with app.app_context():
-            (user1, project_id, project_uuid) = setUpProject(self)
-
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user1
-
-            flow_uuid = '2C096E39-28BD-491B-B0E2-7ECFFD113304'
-            count = 1
-
-            endpoint = '/api/v0/jobs?flow=%s&count=%s' % (flow_uuid, count)
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
-
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
-        self.assertEqual(result['data'][count - 1]['data']['d1']['uuid'], '16DF44FA-2D8B-430C-B1AC-2C20954C1317')
-        self.assertEqual(result['data'][count - 1]['data']['d2']['uuid'], '754AD573-3026-41C8-9DC2-4870FC28194E')
-        self.assertEqual(result['navigation']['user_id'], user1)
-        self.assertEqual(result['navigation']['user_name'], 'user1')
-        self.assertEqual(result['navigation']['project_uuid'], project_uuid)
-        self.assertEqual(result['navigation']['project_name'], 'proj1')
-    @unittest.skip('okikae')
-    def test_jobs_project(self):
-        '''
-        実行履歴を取得するAPIのテスト
-        count指定無し
-        テストがsample.jsonありきなので、書き直し予定
-        '''
-        with app.app_context():
-            (user1, project_id, project_uuid) = setUpProject(self)
-
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user1
-
-            count = 1
-
-            endpoint = '/api/v0/jobs?project=%s' % project_uuid
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
-
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][1]['flow']['uuid'], '2C096E39-28BD-491B-B0E2-7ECFFD113304')
-        self.assertEqual(result['data'][1]['data']['d1']['uuid'], '860538F5-CD5B-47B5-A88A-6D2107601F89')
-        self.assertEqual(result['data'][1]['data']['d2']['uuid'], 'A142C00D-8F97-4E40-97DE-789D7B117E35')
-        self.assertEqual(result['data'][0]['flow']['uuid'], 'ACA335C6-675C-49E2-A8B4-5E655CB46254')
-        self.assertEqual(result['data'][0]['data']['d1']['uuid'], 'b97ee374-5b84-48ab-b971-046858937ccb')
-        self.assertEqual(result['data'][0]['data']['d2']['uuid'], '2C72275F-2019-49AE-B36D-A29D1507F8DD')
-        self.assertEqual(result['navigation']['user_id'], user1)
-        self.assertEqual(result['navigation']['user_name'], 'user1')
-        self.assertEqual(result['navigation']['project_uuid'], project_uuid)
-        self.assertEqual(result['navigation']['project_name'], 'proj1')
-    @unittest.skip('okikae')
-    def test_jobs_project_count(self):
-        '''
-        実行履歴を取得するAPIのテスト
-        count指定あり
-        テストがsample.jsonありきなので、書き直し予定
-        '''
-        with app.app_context():
-            (user1, project_id, project_uuid) = setUpProject(self)
-
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user1
-
-            count = 1
-
-            endpoint = '/api/v0/jobs?project=%s&count=%s' % (project_uuid, count)
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
-
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][count - 1]['flow']['uuid'], 'ACA335C6-675C-49E2-A8B4-5E655CB46254')
-        self.assertEqual(result['data'][count - 1]['data']['d1']['uuid'], 'b97ee374-5b84-48ab-b971-046858937ccb')
-        self.assertEqual(result['data'][count - 1]['data']['d2']['uuid'], '2C72275F-2019-49AE-B36D-A29D1507F8DD')
-        self.assertEqual(result['navigation']['user_id'], user1)
-        self.assertEqual(result['navigation']['user_name'], 'user1')
-        self.assertEqual(result['navigation']['project_uuid'], project_uuid)
-        self.assertEqual(result['navigation']['project_name'], 'proj1')
-
-#------------------------------------ written by ryo tsutsui
 import copy
-class JobTestCasePlus(unittest.TestCase):
+class JobTestCase(unittest.TestCase):
     jobs_root = app.root_path + '/data/jobs/'
     jobs_path = Path(jobs_root)
 
@@ -976,7 +782,8 @@ class JobTestCasePlus(unittest.TestCase):
         },
         "errors": {}
     }
-
+    SAMPLE_EXECUTOR = 'ユーザー 太郎'
+    SAMPLE_FLOW_UUID = str(uuid.uuid4())
 
     def setUp(self):
         app.testing = True
@@ -985,26 +792,45 @@ class JobTestCasePlus(unittest.TestCase):
         self.jobs_path.mkdir(parents=True, exist_ok=True)
         with app.app_context():
             (user1, project_id, project_uuid) = setUpProject(self)
-        
-        for x in range(0, 3):            
-            with open (str(self.jobs_path) + '/test' + str(x + 1) + '.json', 'w') as f:
-                sample = copy.deepcopy(self.json_template)
-                sample['executedAt'] = '1970-01-01T00:00:0' + str(x) + '09:00'
-                sample['executor']['name'] = 'ユーザー 太郎'
-                sample['flow']['uuid'] = '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
-                sample['data']['d1']['uuid'] = '99999999999' + str(x)
-                sample['data']['d1']['label'] = str(x)
-                sample['projectId'] = project_id
-                json.dump(sample, f, ensure_ascii=False, indent=4)
 
-        
+        # もともとfor文で作成していたけど、種類が違うjobsを作成したいので（flow_uuidやprojectが異なる）
+        # ちょっとバラしました
+        with open (str(self.jobs_path) + '/test' + str(1) + '.json', 'w') as f:
+            sample = copy.deepcopy(self.json_template)
+            sample['executedAt'] = '1970-01-01T00:00:0' + str(0) + '09:00'
+            sample['executor']['name'] = self.SAMPLE_EXECUTOR
+            sample['flow']['uuid'] = self.SAMPLE_FLOW_UUID
+            sample['data']['d1']['uuid'] = '99999999999' + str(0)
+            sample['data']['d1']['label'] = str(0)
+            sample['projectId'] = project_id
+            json.dump(sample, f, ensure_ascii=False, indent=4)
+
+        with open (str(self.jobs_path) + '/test' + str(2) + '.json', 'w') as f:
+            sample = copy.deepcopy(self.json_template)
+            sample['executedAt'] = '1970-01-01T00:00:0' + str(1) + '09:00'
+            sample['executor']['name'] = self.SAMPLE_EXECUTOR
+            sample['flow']['uuid'] = self.SAMPLE_FLOW_UUID
+            sample['data']['d1']['uuid'] = '99999999999' + str(1)
+            sample['data']['d1']['label'] = str(1)
+            sample['projectId'] = project_id
+            json.dump(sample, f, ensure_ascii=False, indent=4)
+
+        with open (str(self.jobs_path) + '/test' + str(3) + '.json', 'w') as f:
+            sample = copy.deepcopy(self.json_template)
+            sample['executedAt'] = '1970-01-01T00:00:0' + str(2) + '09:00'
+            sample['executor']['name'] = self.SAMPLE_EXECUTOR
+            sample['flow']['uuid'] = self.SAMPLE_FLOW_UUID
+            sample['data']['d1']['uuid'] = '99999999999' + str(2)
+            sample['data']['d1']['label'] = str(2)
+            sample['projectId'] = project_id
+            json.dump(sample, f, ensure_ascii=False, indent=4)
 
     def tearDown(self):
         # ディレクトリ削除
         for f in self.jobs_path.glob('test[0-9].json'):
             f.unlink()
         pass
-    
+
     def test_jobs(self):
         '''
         実行履歴を取得するAPIのテスト
@@ -1024,18 +850,14 @@ class JobTestCasePlus(unittest.TestCase):
 
         for x in range(0, 3):
             #setupでの書き方と同じにしているけど、いらんやり方かな、変更に対応しやすいと思ったけど。
-            flow_uuid = '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
             node_d1_uuid = '99999999999' + str(2 - x)
 
             self.assertEqual(result['success'], True)
-            self.assertEqual(result['data'][x]['flow']['uuid'], flow_uuid)
+            self.assertEqual(result['data'][x]['flow']['uuid'], self.SAMPLE_FLOW_UUID)
             self.assertEqual(result['data'][x]['data']['d1']['uuid'], node_d1_uuid)
             self.assertEqual(result['data'][x]['data']['d1']['label'], str(2 - x))
             self.assertEqual(result['navigation']['user_id'], user1)
             self.assertEqual(result['navigation']['user_name'], 'user1')
-
-
-        pass
 
     def test_jobs_count(self):
         '''
@@ -1055,17 +877,16 @@ class JobTestCasePlus(unittest.TestCase):
             endpoint = '/api/v0/jobs?count=%s' % (count)
             response = client.get(endpoint)
             result = json.loads(response.get_data())
-        flow_uuid = '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
+
         node_d1_uuid = '99999999999' + str(count + 1)
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
+        self.assertEqual(result['data'][count - 1]['flow']['uuid'], self.SAMPLE_FLOW_UUID)
         self.assertEqual(result['data'][count - 1]['data']['d1']['uuid'], node_d1_uuid)
         self.assertEqual(result['data'][count - 1]['data']['d1']['label'], str(count + 1))
         self.assertEqual(result['navigation']['user_id'], user1)
         self.assertEqual(result['navigation']['user_name'], 'user1')
 
-        pass
     # client.get()の部分で
     # AttributeError: 'NoneType' object has no attribute 'read_text'
     # のエラーが出る
@@ -1078,31 +899,41 @@ class JobTestCasePlus(unittest.TestCase):
         with app.app_context():
             (user1, project_id, project_uuid) = setUpProject(self)
 
+            # フロー作成
+            new_flow_name = 'フローテスト用'
+            data = {
+                'project_uuid': project_uuid,
+                'name': new_flow_name,
+                'datasouce': None
+            }
+            created_flow = model.create_flow(data, user1, self.SAMPLE_FLOW_UUID)
 
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
 
-            endpoint = '/api/v0/jobs?flow=%s' % '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
+            endpoint = '/api/v0/jobs?flow=%s' % self.SAMPLE_FLOW_UUID
             response = client.get(endpoint)
             result = json.loads(response.get_data())
 
+
         for x in range(0, 3):
             #setupでの書き方と同じにしているけど、いらんやり方かな、変更に対応しやすいと思ったけど。
-            flow_uuid = '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
             node_d1_uuid = '99999999999' + str(2 - x)
 
             self.assertEqual(result['success'], True)
-            self.assertEqual(result['data'][x]['flow']['uuid'], flow_uuid)
+            self.assertEqual(result['data'][x]['flow']['uuid'], self.SAMPLE_FLOW_UUID)
             self.assertEqual(result['data'][x]['data']['d1']['uuid'], node_d1_uuid)
             self.assertEqual(result['data'][x]['data']['d1']['label'], str(2 - x))
             self.assertEqual(result['navigation']['user_id'], user1)
             self.assertEqual(result['navigation']['user_name'], 'user1')
             self.assertEqual(result['navigation']['project_uuid'], project_uuid)
             self.assertEqual(result['navigation']['project_name'], 'proj1')
-        pass
-        
+
+        path = model.get_flow_path_by_uuid(self.SAMPLE_FLOW_UUID)
+        path.unlink()
+
     # @unittest.skip('check')
     def test_jobs_flow_count(self):
         '''
@@ -1112,24 +943,31 @@ class JobTestCasePlus(unittest.TestCase):
         with app.app_context():
             # (user1, project_id, project_uuid, a, b, c) = setUpFlow(self)
             (user1, project_id, project_uuid) = setUpProject(self)
+            # フロー作成
+            new_flow_name = 'フローテスト用'
+            data = {
+                'project_uuid': project_uuid,
+                'name': new_flow_name,
+                'datasouce': None
+            }
+            created_flow = model.create_flow(data, user1, self.SAMPLE_FLOW_UUID)
 
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
 
-            flow_uuid = '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
             count = 1
             # flow_uuid = '123456789' + str(count + 1)
             node_d1_uuid = '99999999999' + str(count + 1)
 
-            endpoint = '/api/v0/jobs?flow=%s&count=%s' % (flow_uuid, count)
+            endpoint = '/api/v0/jobs?flow=%s&count=%s' % (self.SAMPLE_FLOW_UUID, count)
             response = client.get(endpoint)
             result = json.loads(response.get_data())
 
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
+        self.assertEqual(result['data'][count - 1]['flow']['uuid'], self.SAMPLE_FLOW_UUID)
         self.assertEqual(result['data'][count - 1]['data']['d1']['uuid'], node_d1_uuid)
         self.assertEqual(result['data'][count - 1]['data']['d1']['label'], str(count + 1))
         self.assertEqual(result['navigation']['user_id'], user1)
@@ -1137,7 +975,8 @@ class JobTestCasePlus(unittest.TestCase):
         self.assertEqual(result['navigation']['project_uuid'], project_uuid)
         self.assertEqual(result['navigation']['project_name'], 'proj1')
 
-        pass
+        path = model.get_flow_path_by_uuid(self.SAMPLE_FLOW_UUID)
+        path.unlink()
 
     def test_jobs_project(self):
         '''
@@ -1157,19 +996,17 @@ class JobTestCasePlus(unittest.TestCase):
             result = json.loads(response.get_data())
 
         for x in range(0, 3):
-            #setupでの書き方と同じにしているけど、いらんやり方かな、変更に対応しやすいと思ったけど。
-            flow_uuid = '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
+            #setupでの書き方と同じにしているけど、いらんやり方かな、変更に対応しやすいと思ったけど
             node_d1_uuid = '99999999999' + str(2 - x)
 
             self.assertEqual(result['success'], True)
-            self.assertEqual(result['data'][x]['flow']['uuid'], flow_uuid)
+            self.assertEqual(result['data'][x]['flow']['uuid'], self.SAMPLE_FLOW_UUID)
             self.assertEqual(result['data'][x]['data']['d1']['uuid'], node_d1_uuid)
             self.assertEqual(result['data'][x]['data']['d1']['label'], str(2 - x))
             self.assertEqual(result['navigation']['user_id'], user1)
             self.assertEqual(result['navigation']['user_name'], 'user1')
             self.assertEqual(result['navigation']['project_uuid'], project_uuid)
             self.assertEqual(result['navigation']['project_name'], 'proj1')
-        pass
 
     def test_jobs_project_count(self):
         '''
@@ -1189,23 +1026,18 @@ class JobTestCasePlus(unittest.TestCase):
             endpoint = '/api/v0/jobs?project=%s&count=%s' % (project_uuid, count)
             response = client.get(endpoint)
             result = json.loads(response.get_data())
-            
+
         #setupでの書き方と同じにしているけど、いらんやり方かな、変更に対応しやすいと思ったけど。
-        flow_uuid = '2d0b1baf-3df4-41fe-b1e0-c2d51f3b2383'
         node_d1_uuid = '99999999999' + str(2)
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'][count - 1]['flow']['uuid'], flow_uuid)
+        self.assertEqual(result['data'][count - 1]['flow']['uuid'], self.SAMPLE_FLOW_UUID)
         self.assertEqual(result['data'][count - 1]['data']['d1']['uuid'], node_d1_uuid)
         self.assertEqual(result['data'][count - 1]['data']['d1']['label'], str(count + 1))
         self.assertEqual(result['navigation']['user_id'], user1)
         self.assertEqual(result['navigation']['user_name'], 'user1')
         self.assertEqual(result['navigation']['project_uuid'], project_uuid)
         self.assertEqual(result['navigation']['project_name'], 'proj1')
-        pass
 
 if __name__ == '__main__':
     unittest.main()
-# 実行時には
-# python -m unittest kskp.tests.test_api
-# と指定すると良い、実行時のカレントディレクトリはkskp-betaディレクトリ直下と思われる
