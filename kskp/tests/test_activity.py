@@ -56,8 +56,8 @@ class ActivityTest(unittest.TestCase):
 
             # mockでデコレータをテストする（実行履歴が作成される）
             unfinished_deco = make_unfinished_history(now, session)
-            wrapper = unfinished_deco(mock_func)
-            wrapper(data_source_name)
+            execute_flow = unfinished_deco(mock_func)
+            execute_flow(data_source_name)
 
             # 作成されたファイルパス
             flow_path = model.make_flow_path(data_source_name)
@@ -105,18 +105,17 @@ class ActivityTest(unittest.TestCase):
             new_flow_name = 'ふろー取得てすと'
             data_source_name = str(uuid.uuid4())
             data = {'project_uuid': project_uuid, 'name': new_flow_name, 'datasource': None}
+            # data.update(node_sample)
             created_flow = model.create_flow(data, session['user_id'], data_source_name)
-
             # 実行履歴を作成する
             unfinished_deco = make_unfinished_history(now, session)
-            wrapper = unfinished_deco(mock_func)
-            wrapper(data_source_name)
-
+            execute_flow = unfinished_deco(mock_func)
+            execute_flow(data_source_name)
             # 実行履歴を更新
             # dataは更新していなくて、data作成中にFrameオブジェクトが使われているのでどうしようか考え中
             finished_deco = make_finished_history(now)
-            wrapper2 = finished_deco(mock_func_finished)
-            wrapper2(data_source_name)
+            execute_flow2 = finished_deco(mock_func_finished)
+            execute_flow2(data_source_name)
 
             # 作成されたファイルパス
             flow_path = model.make_flow_path(data_source_name)

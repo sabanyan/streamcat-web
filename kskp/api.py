@@ -17,7 +17,8 @@ from .model import (
     update_flow_by_uuid,
     get_flow_path_by_uuid,
     get_user_by_id,
-    fetch_subflows_all_projects
+    fetch_subflows_all_projects,
+    get_flow_nodes_by_uuid
 )
 from .activity import (
     make_unfinished_history,
@@ -578,11 +579,12 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
 
     result = execute_flow_by_uuid(flow_uuid)
+    nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     if no_contents:
-        result_list = [{'id':key, 'uuid':value.uuid} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key)['label']} for key, value in result.items()]
     else:
-        result_list = [{'id':key, 'uuid':value.uuid, 'contents':value.contents} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key)['label'], 'contents':value.contents} for key, value in result.items()]
     return result_list
 
 
