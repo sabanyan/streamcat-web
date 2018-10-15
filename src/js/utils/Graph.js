@@ -87,9 +87,12 @@ class Graph {
    * @param id
    */
   removeNode (nodes:[],id:string):[] {
-    this.g.nodeEdges(id).forEach((edge)=>{
-      this.g.removeEdge(edge)
-    })
+    const edges = this.g.nodeEdges(id)
+    if(Array.isArray(edges)){
+      edges.forEach((edge)=>{
+        this.g.removeEdge(edge)
+      })
+    }
     this.g.removeNode(id)
     return FlowUtil.removeNodeId(nodes,[id])
   }
