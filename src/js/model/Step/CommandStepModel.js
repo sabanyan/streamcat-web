@@ -80,7 +80,6 @@ export default class CommandStepModel extends BaseStepModel{
     //必須バリデーション
     Object.keys(this.args).map(key => {
       let command:CommandModel = this.getCommand()
-      console.log(command)
       const value = this.args[key]
       const param:CommandParamType = command.getParam(key)
       if(!param.optional){
