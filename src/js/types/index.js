@@ -9,6 +9,7 @@ export type StepModelType = CommandStepModel|SubFlowStepModel|DataFrameStepModel
 export type CommandParamType = {
   label: string;
   name: string;
+  optional?: boolean;
   type: string;
 }
 

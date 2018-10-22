@@ -41,17 +41,13 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
     const graph:Graph = new Graph()
 
-    let networkRequests = []
-
-    networkRequests.push(HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
-      const json = response.data
-      this.props.loadFlowJSON(json)
-    }))
+    let preRequest = []
+    let flowRequest = []
 
     window.emitter.removeListener(Constants.event.ON_LOAD_NAVIGATION)
     window.emitter.addListener(Constants.event.ON_LOAD_NAVIGATION,
       (context) => {
-        networkRequests.push(HttpUtil.get('flows?project='+window.navigationModel.project_uuid+'&navigation=off').then((response) => {
+        preRequest.push(HttpUtil.get('flows?project='+window.navigationModel.project_uuid+'&navigation=off').then((response) => {
           const json = response.data
           // const commands = json.data.map((command)=>{
           //   return new CommandModel(command)
@@ -61,27 +57,37 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           (error) => {console.log(error)}))
       })
 
-    networkRequests.push(HttpUtil.get('commands').then((response) => {
+    preRequest.push(HttpUtil.get('commands').then((response) => {
       const json = response.data
       const commands = json.data.map((command)=>{
         return new CommandModel(command)
       })
+      window.commands = commands
       this.props.addMaster({commands: commands})
     }).then((response) => {},
       (error) => {console.log(error)}))
 
 
-    networkRequests.push(HttpUtil.get('subflows').then((response) => {
+    preRequest.push(HttpUtil.get('subflows').then((response) => {
       const json = response.data
       const subflows = json.data.map((subflow:SubFlowParamType)=>{
         return new SubflowCommandModel(subflow)
       })
+      window.subflows = subflows
       this.props.addMaster({subflows: subflows})
     }).then((response) => {},
       (error) => {console.log(error)}))
 
+    Promise.all(preRequest).then(()=>{
+      flowRequest.push(HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
+        const json = response.data
+        this.props.loadFlowJSON(json)
+      }))
+    }).catch((error)=>{
+      console.log(error)
+    })
 
-    Promise.all(networkRequests).then(()=>{
+    Promise.all(flowRequest).then(()=>{
       this.loaded = true
       this.forceUpdate()
     }).catch((error)=>{

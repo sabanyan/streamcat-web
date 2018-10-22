@@ -2,7 +2,8 @@
 import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
 import Model from '../index'
-
+import CommandModel from '../Command/CommandModel'
+import type { CommandParamType } from '../../types'
 type stepType = "command" | "frame"
 
 
@@ -12,6 +13,8 @@ export type BaseModelProps = {
   label?: string;
   position?: { x: number, y: number };
   size?: { width: number, height: number };
+  invalid?: boolean;
+  error?: boolean;
 }
 
 export default class BaseStepModel extends Model {
@@ -20,12 +23,16 @@ export default class BaseStepModel extends Model {
   label: string
   position: { x: number, y: number } = {x: 0, y: 0}
   size: { width: number, height: number } = {width: 0, height: 0}
+  invalid: {} = {}
+  error: {} = {}
 
   constructor (props: BaseModelProps) {
     super(props)
     this.initialize(props,"id")
     this.initialize(props,"type")
     this.initialize(props,"label")
+    this.initialize(props,"invalid")
+    this.initialize(props,"error")
     this.setPosition(props.position)
     this.setSize(props.size)
     if(!this.id){
@@ -59,5 +66,4 @@ export default class BaseStepModel extends Model {
     this.setPosition({x: frame.x, y: frame.y})
     this.setSize({width: frame.width, height: frame.height})
   }
-
 }

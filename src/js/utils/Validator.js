@@ -17,7 +17,7 @@ class Validator {
     this.ajv = new Ajv()
   }
 
-  validate(schema,state) {
+  schemaValidate(schema,state) {
     const valid = this.ajv.validate(schema, state)
     if (!valid) {
       Log.error(this.ajv.errorsText() + " by " + schema.$id,state)
@@ -27,11 +27,11 @@ class Validator {
   }
 
   isFlowModelSchema(state){
-    return this.validate(FlowModelSchema,state)
+    return this.schemaValidate(FlowModelSchema,state)
   }
 
   isGraphModelSchema(state){
-    return this.validate(GraphModelSchema,state)
+    return this.schemaValidate(GraphModelSchema,state)
   }
 
   isNodesSchema({nodes}){
@@ -52,11 +52,14 @@ class Validator {
   }
 
   isFlowModelSchema(state){
-    return this.validate(FlowModelSchema,state)
+    return this.schemaValidate(FlowModelSchema,state)
   }
 
-
-
+  nodesValidate(nodes){
+    nodes.forEach((node)=>{
+      node.validate()
+    })
+  }
 }
 
 export default new Validator()

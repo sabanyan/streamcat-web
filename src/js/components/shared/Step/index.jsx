@@ -30,6 +30,8 @@ type Props = {
   type: string;
   selected: boolean;
   text: string;
+  invalid: {};
+  error: {};
 }
 
 type State = {
@@ -288,7 +290,7 @@ export default class Step extends React.Component<Props, State> {
 
   render () {
     const {x, y} = this.props.position
-    const {type,flow} = this.props
+    const {type,flow,invalid,error} = this.props
     const {ports} = this.props.flow
     let icon
 
@@ -309,6 +311,7 @@ export default class Step extends React.Component<Props, State> {
 
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
+
     if(flowIn || flowOut){
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
@@ -342,12 +345,23 @@ export default class Step extends React.Component<Props, State> {
 
     const stepLabel = step.getLabel()
 
+    let invalid_icon = null
+    let error_icon = null
+    if((Object.keys(invalid).length)){
+      invalid_icon = <circle cx="46" cy="4" r="8"  stroke="black" fill="orange" />
+    }
+    if((Object.keys(error).length)){
+      error_icon = <circle cx="46" cy="4" r="10"  stroke="black" fill="red" />
+    }
+
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}
          onMouseDown={(e) => this.handleMouseDown(e)}
          onMouseOver={(e) => this.handleMouseOver(e)}
          onMouseLeave={(e) => this.handleMouseLeave(e)}>
         {icon}
+        {invalid_icon}
+        {error_icon}
         <text className="text" transform={'translate(' + (-8) + ',' +
         (RectStyle.height / 2 + 6) + ')'} textAnchor="end"
               fontSize={12} width={100} height={100}>{stepLabel}</text>

@@ -3,7 +3,7 @@ import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
 import BaseStepModel from './BaseStepModel'
 import BaseModelProps from './BaseStepModel'
-import type { CommandModelType } from '../../types'
+import type { CommandModelType, CommandParamType } from '../../types'
 import CommandModel from '../Command/CommandModel'
 
 type stepType = "command" | "frame"
@@ -62,9 +62,9 @@ export default class CommandStepModel extends BaseStepModel{
     return steps
   }
 
-  getCommand(commands:[CommandModel]):CommandModel{
+  getCommand():CommandModel{
     let command = null;
-    commands.forEach((_command)=>{
+    window.commands.forEach((_command)=>{
       if(this.commandId === _command.id){
         command = _command
       }
@@ -72,4 +72,23 @@ export default class CommandStepModel extends BaseStepModel{
     return command
   }
 
+
+  validate(){
+
+    this.invalid = {}
+
+    //必須バリデーション
+    Object.keys(this.args).map(key => {
+      let command:CommandModel = this.getCommand()
+      console.log(command)
+      const value = this.args[key]
+      const param:CommandParamType = command.getParam(key)
+      if(!param.optional){
+        if(value === "" || value === null){
+          this.invalid[key] = "入力が必須の項目です"
+        }
+      }
+    })
+
+  }
 }

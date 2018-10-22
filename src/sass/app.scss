@@ -15,6 +15,10 @@ body {
   min-width: 1024px;
 }
 
+input::placeholder {
+  color: #cacaca!important;
+}
+
 .none-pointer-events{
   pointer-events: none;
   *{
