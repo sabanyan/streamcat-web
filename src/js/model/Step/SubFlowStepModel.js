@@ -28,11 +28,9 @@ export default class SubFlowStepModel extends CommandStepModel{
   }
 
   validate(){
-    console.log("subflow validate")
     //必須バリデーション
     Object.keys(this.args).map(key => {
       let command:SubflowCommandModel = this.getCommand()
-      console.log(command)
       const value = this.args[key]
       const param:CommandParamType = command.getParam(key)
       // if(!param.optional){

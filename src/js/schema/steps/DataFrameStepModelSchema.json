@@ -64,7 +64,7 @@
     },
     "uuid": {
       "$id": "#/properties/uuid",
-      "type": "string",
+      "type": ["string","null"],
       "default": null,
       "pattern": "^(.*)$"
     }

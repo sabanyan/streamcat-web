@@ -45,7 +45,7 @@ class Validator {
       }else if(node instanceof CommandStepModel){
         schema = CommandStepModelSchema
       }
-      const result = this.validate(schema,node)
+      const result = this.schemaValidate(schema,node)
       if(!result)success = false
     })
     return success
