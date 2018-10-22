@@ -1,8 +1,9 @@
 //@flow
 import CommandStepModel from './CommandStepModel'
 import type { CommandStepModelProps } from './CommandStepModel'
-import type { CommandModelType } from '../../types'
+import type { CommandModelType, CommandParamType } from '../../types'
 import SubflowCommandModel from '../Command/SubflowCommandModel'
+import CommandModel from '../Command/CommandModel'
 
 export type SubFlowStepModelProps = {
   ...CommandStepModelProps,
@@ -16,13 +17,29 @@ export default class SubFlowStepModel extends CommandStepModel{
     this.initialize(props,"uuid")
   }
 
-  getCommand(commands:[SubflowCommandModel]):SubflowCommandModel{
-    let command = null;
-    commands.forEach((_command)=>{
-      if(this.uuid === _command.uuid){
-        command = _command
+  getCommand():SubflowCommandModel{
+    let subflow = null;
+    window.subflows.forEach((_subflow)=>{
+      if(this.uuid === _subflow.uuid){
+        subflow = _subflow
       }
     })
-    return command
+    return subflow
+  }
+
+  validate(){
+    console.log("subflow validate")
+    //必須バリデーション
+    Object.keys(this.args).map(key => {
+      let command:SubflowCommandModel = this.getCommand()
+      console.log(command)
+      const value = this.args[key]
+      const param:CommandParamType = command.getParam(key)
+      // if(!param.optional){
+      //   if(value === "" || value === null){
+      //     this.invalid[key] = "入力が必須の項目です"
+      //   }
+      // }
+    })
   }
 }

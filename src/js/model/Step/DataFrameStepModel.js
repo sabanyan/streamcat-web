@@ -22,4 +22,8 @@ export default class DataFrameStepModel extends BaseStepModel{
   hasData():boolean{
     return (this.uuid)
   }
+
+  validate(){
+
+  }
 }

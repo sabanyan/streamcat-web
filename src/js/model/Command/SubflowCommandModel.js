@@ -44,4 +44,12 @@ export default class SubflowCommandModel extends Model {
   getParams():[CommandParamType]{
     return this.params
   }
+
+  getParam(key:string):CommandParamType{
+    let result:CommandParamType = {}
+    this.params.find(param =>{
+      if(param.name === key)result = param
+    })
+    return result
+  }
 }

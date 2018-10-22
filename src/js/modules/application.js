@@ -72,6 +72,8 @@ const Application = (state = initialState, action: {}) => {
       Validator.isFlowModelSchema(newState)
       Validator.isGraphModelSchema(newState)
       Validator.isNodesSchema(newState)
+
+      Validator.nodesValidate(newState.nodes)
       break
     }
     case ADD_MASTER_ACTION: {
@@ -153,10 +155,10 @@ const Application = (state = initialState, action: {}) => {
           //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
           let command: CommandModelType
           if (add_step instanceof SubFlowStepModel) {
-            command = add_step.getCommand(newState.mast.subflows)
+            command = add_step.getCommand()
           }
           else if (add_step instanceof CommandStepModel) {
-            command = add_step.getCommand(newState.mast.commands)
+            command = add_step.getCommand()
           }
           const inPorts: [CommandPortType] = command.getInPorts()
           const outPorts: [CommandPortType] = command.getOutPorts()

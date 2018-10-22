@@ -3,7 +3,7 @@ import React from 'react'
 import type { CommandParamType } from '../../../../types/index'
 import Param from '../index'
 //import classnames from 'classnames'
-//import style from './style.scss'
+import style from './style.scss'
 
 type Props = {
   param : CommandParamType;
@@ -23,10 +23,16 @@ export default class ParamString extends Param {
     if(onBuild){
       inputRef = element => onBuild(param,element)
     }
+
+    let required = null
+    if(!param.optional){
+      required = <span className={style.required}>*</span>
+    }
+
     const label = (param.label)?param.label:param.name
     return <div>
       <label>
-        {label}
+        {label}{required}
       </label>
       <input type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue} ref={inputRef} disabled = {disabled}></input>
     </div>

@@ -20,6 +20,7 @@ import ParamBoolean from '../../Param/ParamBoolean'
 import ParamUtil from '../../../../utils/ParamUtil'
 import StateUtil from '../../../../utils/State'
 import SubflowCommandModel from '../../../../model/Command/SubflowCommandModel'
+import ValidationForm from '../../ValidationForm'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -64,14 +65,13 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     onHide(){
       this.updateArgs()
-      //this.props.selectSteps()
       this.saveNodes()
     }
 
     updateArgs() {
-        let selected_step = this.getSelectedStep()
-        selected_step.args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
-        this.props.updateStep(selected_step)
+      let selected_step = this.getSelectedStep()
+      selected_step.args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
+      this.props.updateStep(selected_step)
     }
 
     deleteStep(){
@@ -117,6 +117,15 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       if (element)this.inputRefs.push({param: param, element: element})
     }
 
+    getInvalidMessageElement(step:StepModel,key:string){
+      if(step.invalid[key]){
+        return <div className={style.invalid_message}>
+          {step.invalid[key]}
+        </div>
+      }
+      return null
+    }
+
     render() {
         const {commands,subflows} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
@@ -126,47 +135,55 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
 
         if(selected_step.type === Constants.step.type.command){
-          const command:CommandModel = selected_step.getCommand(commands)
-          console.log("command",command)
-          console.log("selected_step",selected_step)
+          const command:CommandModel = selected_step.getCommand()
           label = selected_step.label
           subLabel = command.label
           this.inputRefs = []
-          inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
-            const parameter = selected_step.args[key]
-            const command:CommandModel = selected_step.getCommand(commands)
-            const param:CommandParamType = FlowUtil.getCommandParam(key,command)
-            let paramElement = ParamUtil.getParamElement(param,onBuild,parameter,param.name)
+          inputForm = command.params.map((param,index) =>{
+            const value = selected_step.args[param.name]//入力値
+            let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name)//パラメータのエレメント
+            const invalidMessageEelement = this.getInvalidMessageElement(selected_step,param.name)//入力エラー
             return <div key={index} className={"mb-8px"}>
               {paramElement}
+              {invalidMessageEelement}
             </div>
           })
         }else if(selected_step.type === Constants.step.type.subflow){
-          const subflowCommand:SubflowCommandModel = selected_step.getCommand(subflows)
-          console.log("subflowCommand",subflowCommand)
-          console.log("selected_step",selected_step)
+          const subflowCommand:SubflowCommandModel = selected_step.getCommand()
           label = selected_step.label
           subLabel = subflowCommand.label
-          inputForm = Object.keys(selected_step.args).map((key:string,index:number)=>{
-            const parameter = selected_step.args[key]
-            const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,key))
-            const param:SubFlowParamType = (hasSubFlowParam)?FlowUtil.getSubFlowParam(this.selectedSubFlow,key):key
-            let paramElement = ParamUtil.getParamElement(param,onBuild,parameter,param.name)
+          inputForm = subflowCommand.params.map((param,index)=>{
+            const value = selected_step.args[param.name]
+            const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,param.name))
+
+            //サブフローは必須設定がないため optional trueを有効にしておく
+            param.optional = true
+
+            let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name)
+            const invalidMessageEelement = this.getInvalidMessageElement(selected_step,param.name)
             return <div key={index}>
               <label className="float-right text-danger">{(hasSubFlowParam)?"":"不明なパラメーター"}</label>
               {paramElement}
+              {invalidMessageEelement}
             </div>
           })
           subFlowLink = <a href={"/flows/"+selected_step.uuid} target={"_blank"}>フローを開く</a>
         }
 
         let form
+
+        const rules = {
+
+
+
+        }
+
         if(inputForm.length){
           form = <div>
                 <div className={style.full_hr} />
                 <div>
                   <div className="kskp-form">
-                  {inputForm}
+                      {inputForm}
                 </div>
             </div>
           </div>

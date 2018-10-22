@@ -5,6 +5,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import HttpUtil from './HttpUtil'
 import CommandStepModel from '../model/Step/CommandStepModel'
+import Validator from './Validator'
 
 export default class FlowUtil {
 
@@ -135,6 +136,10 @@ export default class FlowUtil {
    * @returns {Promise<any>}
    */
   static saveNodes (flowUUID:string,nodes:[]):any {
+
+    //validation
+    Validator.nodesValidate(nodes)
+
     return new Promise((resolve, reject) => {
       HttpUtil.put("flows/" + flowUUID,{nodes:nodes}).then((response)=>{
         resolve(response)
