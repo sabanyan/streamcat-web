@@ -19,6 +19,7 @@ import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
 import CommandIcon from '../Icon/CommandIcon'
 import HttpUtil from '../../../utils/HttpUtil'
+import ErrorIcon from '../Icon/ErrorIcon'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -348,10 +349,10 @@ export default class Step extends React.Component<Props, State> {
     let invalid_icon = null
     let error_icon = null
     if((Object.keys(invalid).length)){
-      invalid_icon = <circle cx="46" cy="4" r="8"  stroke="black" fill="orange" />
+      invalid_icon = <ErrorIcon></ErrorIcon>
     }
     if((Object.keys(error).length)){
-      error_icon = <circle cx="46" cy="4" r="10"  stroke="black" fill="red" />
+      error_icon = <ErrorIcon></ErrorIcon>
     }
 
     return (
