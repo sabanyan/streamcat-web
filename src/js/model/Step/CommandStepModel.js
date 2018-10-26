@@ -5,6 +5,8 @@ import BaseStepModel from './BaseStepModel'
 import BaseModelProps from './BaseStepModel'
 import type { CommandModelType, CommandParamType } from '../../types'
 import CommandModel from '../Command/CommandModel'
+import validateJS from 'validate.js'
+
 
 type stepType = "command" | "frame"
 
@@ -74,18 +76,25 @@ export default class CommandStepModel extends BaseStepModel{
 
 
   validate(){
-
     this.invalid = {}
-
     //必須バリデーション
     Object.keys(this.args).map(key => {
       let command:CommandModel = this.getCommand()
       const value = this.args[key]
       const param:CommandParamType = command.getParam(key)
+
+      //TODO:param.optionalはrulesに移行予定
       if(!param.optional){
         if(value === "" || value === null){
           this.invalid[key] = "入力が必須の項目です"
         }
+      }
+
+      const result = validateJS(this.args,command.rules)
+      if(result){
+        Object.keys(result).forEach((key)=>{
+          this.invalid[key] = result[key]
+        })
       }
     })
 

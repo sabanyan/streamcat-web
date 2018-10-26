@@ -118,7 +118,19 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     }
 
     getInvalidMessageElement(step:StepModel,key:string){
-      if(step.invalid[key]){
+      const invalidMessage = step.invalid[key]
+      console.log(invalidMessage)
+      if(invalidMessage){
+        console.log(invalidMessage)
+        console.log(Array.isArray(invalidMessage))
+        if(Array.isArray(invalidMessage)){
+          const arrayMessage = invalidMessage.map(message=>{
+            return <div className={style.invalid_message}>
+              {message}
+            </div>
+          })
+          return <div>{arrayMessage}</div>
+        }
         return <div className={style.invalid_message}>
           {step.invalid[key]}
         </div>
@@ -172,12 +184,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         }
 
         let form
-
-        const rules = {
-
-
-
-        }
 
         if(inputForm.length){
           form = <div>

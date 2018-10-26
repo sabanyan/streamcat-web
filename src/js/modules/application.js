@@ -72,7 +72,6 @@ const Application = (state = initialState, action: {}) => {
       Validator.isFlowModelSchema(newState)
       Validator.isGraphModelSchema(newState)
       Validator.isNodesSchema(newState)
-
       Validator.nodesValidate(newState.nodes)
       break
     }

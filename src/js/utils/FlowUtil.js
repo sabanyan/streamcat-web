@@ -136,10 +136,8 @@ export default class FlowUtil {
    * @returns {Promise<any>}
    */
   static saveNodes (flowUUID:string,nodes:[]):any {
-
     //validation
     Validator.nodesValidate(nodes)
-
     return new Promise((resolve, reject) => {
       HttpUtil.put("flows/" + flowUUID,{nodes:nodes}).then((response)=>{
         resolve(response)
