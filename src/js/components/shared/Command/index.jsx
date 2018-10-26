@@ -157,7 +157,7 @@ export default class Command extends React.Component<Props> {
         let description
         if(hasPdfLink) {
           const url = WebUtil.webURL(command.description)
-          description = <a href="#" onClick={(e)=>this.onClickPdf(e,url)} onMouseDown={e => e.stopPropagation()}>PDF</a>
+          description = <a className={style.show_detail} href="#" onClick={(e)=>this.onClickPdf(e,url)} onMouseDown={e => e.stopPropagation()}>詳細を見る</a>
         }else{
           description = command.description
         }

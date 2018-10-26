@@ -44,12 +44,13 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
   render () {
     const {mast,numberOfInput} = this.props
     const {keyword} = this.state
-
+    const isNoKeyword = (keyword.length == 0)
+    let noOperators = true
     let sortedCommands:[]
     let subflowSortedCommands:[]
-    sortedCommands = this.sortArray(mast.commands,"id")
+    sortedCommands = this.sortArray(window.commands,"id")
     sortedCommands = this.sortArray(sortedCommands,"classification")
-    subflowSortedCommands = this.sortArray(mast.subflows,"id")
+    subflowSortedCommands = this.sortArray(window.subflows,"id")
 
     sortedCommands = [...subflowSortedCommands,...sortedCommands]
 
@@ -61,7 +62,8 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
       }
       return false
     }).filter((command:CommandModelType)=>{
-      if (keyword === '') {
+      noOperators = false
+      if (isNoKeyword) {
         return true
       }
       const foundLabelWithKeyword = (command.label && command.label.indexOf(keyword) != -1) ? true : false
@@ -70,7 +72,6 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
 
       return (foundLabelWithKeyword | foundDescriptionWithKeyword | foundCommandIdWithKeyword)
     })
-
     let operatorsContainer = []
     let beforeCommand:CommandModelType = null
     operators.map((command:CommandModelType,index)=>{
@@ -87,11 +88,12 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
 
     let commandSelector
 
-    if(operators.length){
+    if(!noOperators){
+
       commandSelector = <div>
-        <TextField onChange={(e)=>this.onChangeKeyword(e)} placeholder={"キーワード"}/>
+        <TextField onChange={(e,validation)=>this.onChangeKeyword(e,validation)} placeholder={"キーワード"}/>
         <div className={style.command_selector_container}>
-          {operatorsContainer}
+          {(operatorsContainer.length)?operatorsContainer:<div className={style.command_not_found}>コマンドが見つかりませんでした</div>}
         </div>
       </div>
     }

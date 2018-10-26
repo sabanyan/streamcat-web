@@ -14,6 +14,7 @@ export type CommandModelProps = {
   params: [CommandParamType];
   ports: [CommandPortType];
   version: string;
+  rules: {};
 }
 
 export default class CommandModel extends Model {
@@ -23,6 +24,7 @@ export default class CommandModel extends Model {
   label: string = null
   params: [CommandParamType] = []
   ports: [CommandPortType] = [[],[]]
+  rules: {} = {}
   version: string
 
   constructor (props: CommandModelProps) {
@@ -34,6 +36,7 @@ export default class CommandModel extends Model {
     this.initialize(props,"params")
     this.initialize(props,"ports")
     this.initialize(props,"version")
+    this.initialize(props,"rules")
   }
 
   getInPorts():[CommandPortType]{

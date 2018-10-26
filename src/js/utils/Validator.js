@@ -10,11 +10,38 @@ import Log from './Log'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import CommandStepModel from '../model/Step/CommandStepModel'
+import ValidateJS from 'validate.js'
 
 class Validator {
   ajv:Ajv
   constructor (){
     this.ajv = new Ajv()
+    //日本語対応のバリデーターに変更する
+    ValidateJS.options = {fullMessages: false};
+
+    ValidateJS.validators.length.options = {
+      notValid: "入力桁数が正しくありません",
+      wrongLength: "%{count}文字の入力が必要です",
+      tooShort: "%{count}桁の入力が必須です",
+      tooLong: "%{count}桁の入力までです"
+    }
+    ValidateJS.validators.presence.options = {
+      message: "入力が必須の項目です"
+    }
+    ValidateJS.validators.numericality.options = {
+      notValid: "数値を入力してください"
+    }
+    ValidateJS.validators.numericality.options = {
+      notValid: "数値を入力してください",
+      notOdd: "奇数を入力してください",
+      notEven: "偶数を入力してください",
+    }
+    ValidateJS.validators.format.options = {
+      message: "指定のフォーマットが正しくありません",
+    }
+    ValidateJS.validators.datetime.options = {
+      notValid: "日付を入力してください",
+    }
   }
 
   schemaValidate(schema,state) {
@@ -56,7 +83,7 @@ class Validator {
   }
 
   nodesValidate(nodes){
-    nodes.forEach((node)=>{
+    return nodes.forEach((node) => {
       node.validate()
     })
   }

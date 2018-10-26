@@ -34,7 +34,7 @@ export default class ParamString extends Param {
       <label>
         {label}{required}
       </label>
-      <input type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue} ref={inputRef} disabled = {disabled}></input>
+      <input name={param.name} type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue} ref={inputRef} disabled = {disabled}></input>
     </div>
   }
 

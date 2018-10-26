@@ -31,7 +31,7 @@ export default class ParamBoolean extends Param {
 
     return <div className={style.param}>
       <label className={style.label}>
-        <input className={style.checkbox} type="checkbox" defaultChecked={(defaultValue)} ref={inputRef} value={"true"}/>
+        <input name={param.name} className={style.checkbox} type="checkbox" defaultChecked={(defaultValue)} ref={inputRef} value={"true"}/>
         {param.label}{required}
       </label>
     </div>
