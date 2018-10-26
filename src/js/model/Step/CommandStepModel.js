@@ -78,17 +78,16 @@ export default class CommandStepModel extends BaseStepModel{
   validate(){
     this.invalid = {}
     //必須バリデーション
-    Object.keys(this.args).map(key => {
-      let command:CommandModel = this.getCommand()
-      const value = this.args[key]
+    let command:CommandModel = this.getCommand()
+    Object.keys(command.getParams()).map(key => {
       const param:CommandParamType = command.getParam(key)
-
+      const value = this.args[key]
       //TODO:param.optionalはrulesに移行予定
-      if(!param.optional){
-        if(value === "" || value === null){
-          this.invalid[key] = "入力が必須の項目です"
-        }
-      }
+      // if(!param.optional){
+      //   if(value === "" || value === null){
+      //     this.invalid[key] = "入力が必須の項目です"
+      //   }
+      // }
 
       const result = validateJS(this.args,command.rules)
       if(result){
