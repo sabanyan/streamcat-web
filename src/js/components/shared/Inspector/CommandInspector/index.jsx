@@ -152,6 +152,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           const subflowCommand:SubflowCommandModel = selected_step.getCommand()
           label = selected_step.label
           subLabel = subflowCommand.label
+          this.inputRefs = []
           inputForm = subflowCommand.params.map((param,index)=>{
             const value = selected_step.args[param.name]
             const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,param.name))
