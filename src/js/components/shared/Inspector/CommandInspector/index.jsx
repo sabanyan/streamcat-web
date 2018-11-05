@@ -21,6 +21,7 @@ import ParamUtil from '../../../../utils/ParamUtil'
 import StateUtil from '../../../../utils/State'
 import SubflowCommandModel from '../../../../model/Command/SubflowCommandModel'
 import ValidationForm from '../../ValidationForm'
+import classnames from 'classnames'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -153,9 +154,15 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           this.inputRefs = []
           inputForm = command.params.map((param,index) =>{
             const value = selected_step.args[param.name]//入力値
+            let isPresence = false
+            if(command.rules &&
+              command.rules[param.name] &&
+              command.rules[param.name]['presence']){
+              isPresence = true
+            }
             let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name)//パラメータのエレメント
             const invalidMessageEelement = this.getInvalidMessageElement(selected_step,param.name)//入力エラー
-            return <div key={index} className={"mb-8px"}>
+            return <div key={index} className={classnames('mb-8px',{[style.presence]:isPresence,[style.invalid]:(invalidMessageEelement)})}>
               {paramElement}
               {invalidMessageEelement}
             </div>
