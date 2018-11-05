@@ -24,15 +24,11 @@ export default class ParamBoolean extends Param {
     if(onBuild){
       inputRef = element => onBuild(param,element)
     }
-    let required = null
-    if(!param.optional){
-      required = <span className={style.required}>*</span>
-    }
 
     return <div className={style.param}>
       <label className={style.label}>
         <input name={param.name} className={style.checkbox} type="checkbox" defaultChecked={(defaultValue)} ref={inputRef} value={"true"}/>
-        {param.label}{required}
+        {param.label}
       </label>
     </div>
   }

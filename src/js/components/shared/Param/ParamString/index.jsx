@@ -24,15 +24,10 @@ export default class ParamString extends Param {
       inputRef = element => onBuild(param,element)
     }
 
-    let required = null
-    if(!param.optional){
-      required = <span className={style.required}>*</span>
-    }
-
     const label = (param.label)?param.label:param.name
     return <div>
       <label>
-        {label}{required}
+        {label}
       </label>
       <input name={param.name} type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue} ref={inputRef} disabled = {disabled}></input>
     </div>
