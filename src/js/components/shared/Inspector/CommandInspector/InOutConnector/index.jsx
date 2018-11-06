@@ -17,10 +17,18 @@ class InOutConnector extends React.Component{
     const {selectedStep} = this.props
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     //labelにポート名
-    //data.objectにデータフレームが格納されいてる
-    const dataSource:DataFrameStepModel = data.object
-    newSelectedStep.srcs[label] = dataSource.id
-    this.props.updateStep(newSelectedStep)
+    //data.objectにデータフレームが格納されている
+    if(data.object){
+      //ノードが選択されたとき
+      const dataSource:DataFrameStepModel = data.object
+      newSelectedStep.srcs[label] = dataSource.id
+      this.props.updateStep(newSelectedStep)
+    }else{
+      //「選択してください」が選択されたときはノードのつながりを削除する
+      const dataSource:DataFrameStepModel = data.object
+      newSelectedStep.srcs[label] = null
+      this.props.updateStep(newSelectedStep)
+    }
   }
 
 
@@ -40,7 +48,7 @@ class InOutConnector extends React.Component{
     let command:CommandModel
     let inEdgeSelect = []
     if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
-      inEdgeSelect = Object.keys(selectedStep.srcs).map((key,index)=>{
+      inEdgeSelect = Object.keys(selectedStep.srcs).map((key, index) => {
         let dataFrameId: string
         dataFrameId = selectedStep.srcs[key]
         const portName = key
@@ -49,7 +57,8 @@ class InOutConnector extends React.Component{
                         onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={dataFrameId}
                         list={dataSourceOptions} label={portName} hiddenNoSelect={false}></DropDownList>
         </div>
-    })
+      })
+    }
 
     const output = Object.keys(selectedStep.dsts).map((key,index)=>{
       let dataFrameId: string

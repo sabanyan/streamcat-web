@@ -220,6 +220,7 @@ const Application = (state = initialState, action: {}) => {
           if (node instanceof CommandStepModel ||
             node instanceof SubFlowStepModel) {
             if (node.srcs !== action.step.srcs) {
+              //ノードのつながりを削除
               Object.keys(node.srcs).forEach(portName => {
                 const id = node.srcs[portName]
                 const from = id
