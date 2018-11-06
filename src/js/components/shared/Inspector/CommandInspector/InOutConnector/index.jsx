@@ -40,7 +40,6 @@ class InOutConnector extends React.Component{
     let command:CommandModel
     let inEdgeSelect = []
     if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
-
       inEdgeSelect = Object.keys(selectedStep.srcs).map((key,index)=>{
         let dataFrameId: string
         dataFrameId = selectedStep.srcs[key]
@@ -50,23 +49,12 @@ class InOutConnector extends React.Component{
                         onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={dataFrameId}
                         list={dataSourceOptions} label={portName} hiddenNoSelect={false}></DropDownList>
         </div>
-      })
+    })
 
-
-//      inEdgeSelect = selected_in_edges.map((edge, index) => {
-//        let dataFrameId: string
-//        dataFrameId = edge.v //Source(v)が入力のデータフレームのIDのため
-//        const portName:string = JSON.parse(edge.name).port_name
-//        return <div key={index} className={style.param}>
-//          <DropDownList disabled={false} key={"in_edge"}
-//                        onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={dataFrameId}
-//                        list={dataSourceOptions} label={portName} hiddenNoSelect={false}></DropDownList>
-//        </div>
-//      })
-    }
-
-    let output = selected_out_edges.map((edge,index)=>{
-      const node = FlowUtil.getNodeFromID(nodes,edge.w)//Target(w)が出力先のデータフレームのIDのため
+    const output = Object.keys(selectedStep.dsts).map((key,index)=>{
+      let dataFrameId: string
+      dataFrameId = selectedStep.dsts[key]
+      const node = FlowUtil.getNodeFromID(nodes,dataFrameId)
       return <div key={index} className={style.output}>{node.getLabel()}</div>
     })
 
