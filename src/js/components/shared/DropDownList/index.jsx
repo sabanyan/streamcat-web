@@ -19,17 +19,32 @@ type Props = {
 
 export default class DropDownList extends React.Component<Props> {
 
+  /**
+   * 変更イベント
+   * @param e
+   */
   onChange (e:Event) {
     const {onChange,label} = this.props
     const data = this.getDataFromList(e.target.value)
     onChange(e, data, label)
   }
 
+  /**
+   * 選択されたoptionを返す
+   * @param value
+   * @returns {*}
+   */
   getDataFromList (value:string) {
     const {list} = this.props
-    return list.find((data) => {
+    const found = list.find((data) => {
       return (data.value === value)
     })
+    if(found === undefined)return {
+      label: "選択してください",
+      object: null,
+      value: null,
+    }
+    return found
   }
 
   render () {
