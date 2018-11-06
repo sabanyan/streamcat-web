@@ -2,6 +2,7 @@
 import React from 'react'
 import style from './style.scss'
 import TabPanel from './TabPanel'
+import classnames from 'classnames'
 
 /*
 
@@ -46,7 +47,7 @@ export default class TabBar extends React.Component {
     }else{
       children = this.props.children
     }
-    return <div className={style.tabbar}>
+    return <div className={classnames(style.tabbar,{[this.props.className]:(this.props.className)})}>
       {children}
     </div>
   }

@@ -6,7 +6,8 @@ import style from './style.scss'
 type Props = {
   placeholder?: string;
   onChange?: Function;
-  rules?: {}
+  rules?: {};
+  className?: string;
 }
 
 type State = {
@@ -80,6 +81,7 @@ export default class TextField extends React.Component<Props,State> {
 
   renderValidationMessage () {
     const {validation_messages} = this.state
+    if(!validation_messages.length) return null
     const messages = validation_messages.map((message, index) => {
       return <li key={index} className={style.message}>{message}</li>
     })
@@ -100,6 +102,7 @@ export default class TextField extends React.Component<Props,State> {
 
     const input_class = classnames('form-control', {
       [style.error]: !validation,
+      [this.props.className]:(this.props.className)
     })
 
     return <div>

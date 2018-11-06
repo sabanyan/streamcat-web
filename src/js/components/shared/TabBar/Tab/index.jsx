@@ -13,6 +13,9 @@ export default class Tab extends React.Component {
     const tabClass = classnames(
       style.tab, {
         [style.active]: active,
+        [this.props.activeClassName]:(this.props.activeClassName && active)
+      }, {
+        [this.props.className]:(this.props.className)
       },
     )
     return <div className={tabClass} onClick={(e) => this.onClickTab(e)}>
