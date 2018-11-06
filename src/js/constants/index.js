@@ -10,7 +10,7 @@ const Constants = {
       height: 38,
     },
     graph: {
-      nodeSeparator: 88,
+      nodeSeparator: 100 + 8 * 2,//ノードのテキスト部分100px+余白8px×2
       rankSeparator: 44,
     },
     datasource: {

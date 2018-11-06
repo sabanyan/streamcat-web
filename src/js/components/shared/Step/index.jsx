@@ -363,9 +363,16 @@ export default class Step extends React.Component<Props, State> {
         {icon}
         {invalid_icon}
         {error_icon}
-        <text className="text" transform={'translate(' + (-8) + ',' +
-        (RectStyle.height / 2 + 6) + ')'} textAnchor="end"
-              fontSize={12} width={100} height={100}>{stepLabel}</text>
+
+        <foreignObject {...TextStyle} transform={'translate(' + (-100) + ',0)'}>
+          <div style={{display:"table",width:"100%",height:TextStyle.height,paddingRight:"8px"}}>
+          <p xmlns="http://www.w3.org/1999/xhtml" style={{display:"table-cell",verticalAlign:"middle",textAlign:"right"}}>{stepLabel}</p>
+          </div>
+        </foreignObject>
+
+        {/*<text className="text" transform={'translate(' + (-8) + ',' +*/}
+        {/*(RectStyle.height / 2 + 6) + ')'} textAnchor="end"*/}
+              {/*fontSize={12} width={100} height={100}>{stepLabel}</text>*/}
       </g>
     )
   }
@@ -392,4 +399,10 @@ export const CircleStyle = {
   stroke: '#FC9E28',
   r: Constants.default.operator.r,
   strokeWidth: 2,
+}
+
+export const TextStyle = {
+  width: 100,
+  height: 50,
+  fontSize: 10
 }
