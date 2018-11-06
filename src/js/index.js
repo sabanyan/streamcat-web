@@ -10,6 +10,7 @@ import ProjectListContainer from './components/ProjectListContainer'
 import FlowListContainer from './components/FlowListContainer'
 import LibraryListContainer from './components/LibraryListContainer'
 import NavigationBar from './components/shared/NavigationBar'
+import ProfileContainer from './components/ProfileContainer'
 
 window.emitter = new EventEmitter()
 
@@ -44,7 +45,12 @@ if (document.getElementById('library_list')) {
     document.getElementById('library_list'),
   )
 }
-
+if (document.getElementById('profile')) {
+  ReactDOM.render(
+    <ProfileContainer navigation={this}/>,
+    document.getElementById('profile'),
+  )
+}
 if (document.getElementById('navigation')) {
   ReactDOM.render(
     <NavigationBar baseUrl={inject_static_url} navigation={this}/>,
