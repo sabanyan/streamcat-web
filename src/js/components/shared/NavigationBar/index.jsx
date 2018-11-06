@@ -102,8 +102,9 @@ export default class NavigationBar extends React.Component<Props> {
         <img className="icon" src={baseUrl + 'images/icon/user.svg'} />
         {navigation.user_name}
       </a>
-      <div className="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+      <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
         <a href="#" className="dropdown-item" onClick={this.onClickLogout}>ログアウト</a>
+        <a href="/profile" className="dropdown-item">ユーザプロフィール</a>
       </div>
     </li>
 
