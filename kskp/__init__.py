@@ -43,5 +43,10 @@ def flow_designer(flow_uuid):
 def library():
     return render_template('library.html')
 
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    return render_template('profile.html')
+
 if __name__ == '__main__':
     app.run()
