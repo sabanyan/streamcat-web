@@ -48,7 +48,7 @@ export default class DropDownList extends React.Component<Props> {
     }
 
     if(!hiddenNoSelect){
-      options.unshift(<option key={0}>選択してください</option>)
+      options.unshift(<option key={0} value={null}>選択してください</option>)
     }
     let select = <div className={style.dropdownListContainer}>{labelElement}<select disabled={disabled} defaultValue={defaultValue}
                          onChange={(e) => this.onChange(e)}

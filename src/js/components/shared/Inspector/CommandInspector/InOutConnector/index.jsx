@@ -40,16 +40,29 @@ class InOutConnector extends React.Component{
     let command:CommandModel
     let inEdgeSelect = []
     if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
-      inEdgeSelect = selected_in_edges.map((edge, index) => {
+
+      inEdgeSelect = Object.keys(selectedStep.srcs).map((key,index)=>{
         let dataFrameId: string
-        dataFrameId = edge.v //Source(v)が入力のデータフレームのIDのため
-        const portName:string = JSON.parse(edge.name).port_name
+        dataFrameId = selectedStep.srcs[key]
+        const portName = key
         return <div key={index} className={style.param}>
           <DropDownList disabled={false} key={"in_edge"}
                         onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={dataFrameId}
-                        list={dataSourceOptions} label={portName} hiddenNoSelect={true}></DropDownList>
+                        list={dataSourceOptions} label={portName} hiddenNoSelect={false}></DropDownList>
         </div>
       })
+
+
+//      inEdgeSelect = selected_in_edges.map((edge, index) => {
+//        let dataFrameId: string
+//        dataFrameId = edge.v //Source(v)が入力のデータフレームのIDのため
+//        const portName:string = JSON.parse(edge.name).port_name
+//        return <div key={index} className={style.param}>
+//          <DropDownList disabled={false} key={"in_edge"}
+//                        onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={dataFrameId}
+//                        list={dataSourceOptions} label={portName} hiddenNoSelect={false}></DropDownList>
+//        </div>
+//      })
     }
 
     let output = selected_out_edges.map((edge,index)=>{
