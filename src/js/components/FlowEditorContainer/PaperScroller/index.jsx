@@ -20,31 +20,31 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
   //   });
   // }
   //
-  // pasteSteps(){
-  //   navigator.clipboard.readText().then((data)=>{
-  //     console.log(data)
-  //     this.props.pasteSteps(data)
-  //   }, (err)=> {
-  //     alert("クリップボードが利用できません")
-  //   });
-  // }
-  //
-  // getCopyNodes():string{
-  //   const {selected_step_ids,nodes} = this.props
-  //   return JSON.stringify(selected_step_ids.map((id)=>{
-  //     return Graph.getNode(nodes,id)
-  //   }))
-  // }
-  //
-  // copySteps(){
-  //   const {selected_step_ids} = this.props
-  //   const copyData = this.getCopyNodes()
-  //   navigator.clipboard.writeText(copyData).then(()=> {
-  //     this.props.copySteps(selected_step_ids)
-  //   }, (err)=> {
-  //     alert("クリップボードが利用できません")
-  //   });
-  // }
+  pasteSteps(){
+     navigator.clipboard.readText().then((data)=>{
+       console.log(data)
+       this.props.pasteSteps(data)
+     }, (err)=> {
+       alert("クリップボードが利用できません")
+     });
+  }
+
+   getCopyNodes():string{
+     const {selected_step_ids,nodes} = this.props
+     return JSON.stringify(selected_step_ids.map((id)=>{
+       return Graph.getNode(nodes,id)
+     }))
+   }
+
+   copySteps(){
+     const {selected_step_ids} = this.props
+     const copyData = this.getCopyNodes()
+     navigator.clipboard.writeText(copyData).then(()=> {
+       this.props.copySteps(selected_step_ids)
+     }, (err)=> {
+       alert("クリップボードが利用できません")
+     });
+   }
 
   deleteSteps(){
     const {selected_step_ids} = this.props
@@ -57,14 +57,14 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
       //   this.cutSteps()
       //   return
       // }
-      // if (e.metaKey && e.key === 'c') {
-      //   this.copySteps()
-      //   return
-      // }
-      // if (e.metaKey && e.key === 'v') {
-      //   this.pasteSteps()
-      //   return
-      // }
+       if (e.metaKey && e.key === 'c') {
+         this.copySteps()
+         return
+       }
+       if (e.metaKey && e.key === 'v') {
+         this.pasteSteps()
+         return
+       }
       console.log(e.ctrlKey)
       console.log(e.key)
     }

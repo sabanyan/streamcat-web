@@ -91,7 +91,7 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     if(!noOperators){
 
       commandSelector = <div>
-        <TextField onChange={(e,validation)=>this.onChangeKeyword(e,validation)} placeholder={"キーワード"}/>
+        <TextField className={"mb-8px"} onChange={(e,validation)=>this.onChangeKeyword(e,validation)} placeholder={"キーワード"}/>
         <div className={style.command_selector_container}>
           {(operatorsContainer.length)?operatorsContainer:<div className={style.command_not_found}>コマンドが見つかりませんでした</div>}
         </div>
