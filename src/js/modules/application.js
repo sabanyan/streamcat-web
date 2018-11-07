@@ -16,6 +16,7 @@ import ModelUtil from '../utils/ModelUtil'
 import Ajv from 'ajv'
 import Validator from '../utils/Validator'
 import Log from '../utils/Log'
+import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
@@ -213,37 +214,7 @@ const Application = (state = initialState, action: {}) => {
     }
     case UPDATE_STEP_ACTION: {
 
-      newState.nodes = newState.nodes.map((node, index) => {
-
-        //入出力機能によって再度 結びつきが変更された場合の対応
-        if (node.id === action.step.id) {
-          if (node instanceof CommandStepModel ||
-            node instanceof SubFlowStepModel) {
-            if (node.srcs !== action.step.srcs) {
-              //ノードのつながりを削除
-              Object.keys(node.srcs).forEach(portName => {
-                const id = node.srcs[portName]
-                const from = id
-                const to = node.id
-                if (Graph.getNode(newState.nodes, id)) {
-                  graph.removeEdge(from, to, Graph.edgeName(from, to, portName))
-                }
-              })
-              //ノードのつながりを再構築
-              Object.keys(action.step.srcs).forEach(portName => {
-                const id = action.step.srcs[portName]
-                const from = id
-                const to = action.step.id
-                if (Graph.getNode(newState.nodes, id)) {
-                  graph.addEdge(from, to, Graph.edgeName(from, to, portName))
-                }
-              })
-            }
-          }
-          return action.step
-        }
-        return node
-      })
+      newState.nodes = rebuildNodesEdges(newState,action)
 
       //選択されているEdgeも更新する
       newState.selected_in_edges = graph.g.inEdges(state.selected_step_ids[0])
@@ -309,31 +280,60 @@ const Application = (state = initialState, action: {}) => {
     //
     //   return newState
     // }
-    // case PASTE_STEPS_ACTION:
-    // {
-    //   let newState = StateUtil.deepCopy(state)
-    //
-    //   const add_nodes = JSON.parse(action.paste_nodes)
-    //
-    //   //ペースト時に
-    //   //IDが新規に振られるので、旧のIDを新規のIDに置き換え
-    //   //コマンドのノード間の関連(srcs,dsts)を維持する
-    //
-    //   let convertMap = {}
-    //   add_nodes.forEach((json)=>{
-    //     const cacheId = json.id
-    //     json.id = null
-    //     json.label = "コピー " + json.label
-    //     const newNode = FlowUtil.setModelType(json)
-    //     graph.addNode(newNode.id)
-    //     newState.nodes.push(newNode)
-    //     convertMap[cacheId] = newNode.id
-    //   })
-    //   newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
-    //
-    //   newState.graph = graph.getGraph(newState)
-    //   return newState
-    // }
+     case PASTE_STEPS_ACTION:
+     {
+       let newState = StateUtil.deepCopy(state)
+
+       const add_nodes = JSON.parse(action.paste_nodes)
+
+       //ペースト時に
+       //IDが新規に振られるので、旧のIDを新規のIDに置き換え
+       //コマンドのノード間の関連(srcs,dsts)を維持する
+       //let convertMap = {}
+       add_nodes.forEach((json)=>{
+         const cacheId = json.id
+         let label = (json.label)?json.label:cacheId
+         json.id = null
+         json.label = "コピー " + label
+         let newNode:StepModelType = FlowUtil.setModelType(json)
+
+         //ノード本体をコピー
+         graph.addNode(newNode.id)
+
+         //入力値をコピー
+         newNode = FlowUtil.copySrcs(newNode)
+
+         //出力先をつくってつなぎ直す
+         //*****
+         //****  ここが途中！！！！！！
+         //*****
+         Object.keys(newNode.dsts).forEach((key)=>{
+           //出力先を作成し、接続先を変更する
+           console.log("newNode.dsts",key)
+           const copiedStep:DataFrameStepModel = FlowUtil.getNodeFromID(newState.nodes,newNode.dsts[key])
+           console.log("newNode.dsts",copiedStep)
+           const props:DataFrameStepModelProps = {
+             id: null,
+             type: Constants.step.type.frame,
+             uuid: null,
+             label: "コピー " + copiedStep.label,
+             dataSource: copiedStep.dataSource,
+             srcs: newNode.id,
+             dsts: [],
+           }
+           const add_step = new DataFrameStepModel(props)
+           newNode.dsts[key] = add_step.id
+           newState.nodes.push(add_step)
+         })
+         newState.nodes.push(newNode)
+         //convertMap[cacheId] = newNode.id
+         newState.nodes = rebuildNodesEdges(newState,{step:newNode})
+       })
+       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
+
+       newState.graph = graph.getGraph(newState)
+       return newState
+     }
     case SELECT_STEPS_ACTION: {
       if (action.selected_steps && action.selected_steps.length === 1) {
         newState.selected_step_ids = action.selected_steps.map((step) => step.id)
@@ -465,6 +465,40 @@ const Application = (state = initialState, action: {}) => {
 }
 
 export default Application
+
+function rebuildNodesEdges(newState,action){
+  return newState.nodes.map((node, index) => {
+    //入出力機能によって再度 結びつきが変更された場合の対応
+    if (node.id === action.step.id) {
+      if (node instanceof CommandStepModel ||
+        node instanceof SubFlowStepModel) {
+        if (node.srcs !== action.step.srcs) {
+          //ノードのつながりを削除
+          Object.keys(node.srcs).forEach(portName => {
+            const id = node.srcs[portName]
+            const from = id
+            const to = node.id
+            if (Graph.getNode(newState.nodes, id)) {
+              graph.removeEdge(from, to, Graph.edgeName(from, to, portName))
+            }
+          })
+          //ノードのつながりを再構築
+          Object.keys(action.step.srcs).forEach(portName => {
+            const id = action.step.srcs[portName]
+            const from = id
+            const to = action.step.id
+            if (Graph.getNode(newState.nodes, id)) {
+              graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+            }
+          })
+        }
+      }
+      return action.step
+    }
+    return node
+  })
+}
+
 
 /**
  * ステップの追加

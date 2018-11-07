@@ -124,16 +124,18 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       edges = graph.edges.map((edge, index)=> {
         const v_node = Graph.getNode(nodes,edge.v)
         const w_node = Graph.getNode(nodes,edge.w)
-        const vx = v_node.position.x +
-          Constants.default.datasource.width / 2
-        const vy = v_node.position.y +
-          Constants.default.datasource.height / 2
-        const wx = w_node.position.x +
-          Constants.default.operator.width / 2
-        const wy = w_node.position.y +
-          Constants.default.operator.height / 2
-        const name = edge.v + "->" + edge.w
-        return <Edge label={name} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
+        if(v_node && w_node){
+          const vx = v_node.position.x +
+            Constants.default.datasource.width / 2
+          const vy = v_node.position.y +
+            Constants.default.datasource.height / 2
+          const wx = w_node.position.x +
+            Constants.default.operator.width / 2
+          const wy = w_node.position.y +
+            Constants.default.operator.height / 2
+          const name = edge.v + "->" + edge.w
+          return <Edge label={name} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
+        }
       })
     }
     return edges
