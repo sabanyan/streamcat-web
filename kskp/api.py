@@ -582,9 +582,9 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     if no_contents:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key)['label']} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
     else:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key)['label'], 'contents':value.contents} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
     return result_list
 
 
