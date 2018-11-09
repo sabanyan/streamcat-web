@@ -103,7 +103,7 @@ def parse_subjob(node, data):
     return new_job
 
 def parse_job_inputs(data, srcs):
-    return {v: data[v] for v in srcs.values()}
+    return {v: data[v] for v in srcs.values() if v is not None}
 
 def parse_command_step(node_obj, args, srcs, dsts):
     return Step(commands[node_obj['commandId']], args, srcs, dsts)
@@ -205,6 +205,8 @@ class Job:
         # print(job.step.command_or_flow, job.inputs, job.step.srcs)
         result = {}
         for port, d in job.step.srcs.items():
+            if d is None:
+                continue
             # Sourceが未作成の場合は作成する
             # 内包表記でも書けるけど、この場合は内包表記じゃない方が何やっているか見やすいと思います。
             if job.inputs[d].source is None:
@@ -619,7 +621,10 @@ class Mcat(MCommandNew):
         self.params.append(Parameter('k', '結合する列名'))
 
     def execute(self, args, inputs):
-        args_for_nysol = args
+        # args_for_nysol = args
+
+        # m2catはなんのパラメータがあるかわからないので（少なくともmcatとは違う）
+        args_for_nysol = {}
         inputs_for_arg_i = []
         for key, input in inputs.items():
             inputs_for_arg_i.append(input.source.nysol_module)
