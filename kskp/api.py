@@ -380,12 +380,14 @@ def update_profile(user_id):
     # --仮実装（Usersテーブルにgarafana列を追加するまでの間）--
     path = DATAFRAME_DIR_PATH.parent / Path('profile_update.json')
     profile_json = json.loads(path.read_text())
-    for key, value in profile.items():
-        if not key in profile_json:
-            update_user_by_id(user_id, profile)
-            continue
-        profile_json[key] = value
-    path.write_text(json.dumps(profile_json, ensure_ascii=False, indent=2), encoding='utf-8')
+
+    # 条件分岐はmodel側に移行してもいいかも
+    if profile.get('profile') is not None:
+        update_user_by_id(user_id, profile.get('profile'))
+    else:
+        for key, value in profile.get('grafana').items():
+            profile_json['grafana'][key] = value
+        path.write_text(json.dumps(profile_json, ensure_ascii=False, indent=2), encoding='utf-8')
     # ----
 
     return jsonify({'success': True})
