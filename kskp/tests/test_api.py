@@ -364,9 +364,11 @@ class ApiTestCase(unittest.TestCase):
             response = client.put(endpoint,
                 content_type='application/json',
                 data=json.dumps({
-                    'name': updated_user_name,
-                    'password': updated_user_pass,
-                    'email': updated_user_email
+                    'profile':{
+                        'name': updated_user_name,
+                        'password': updated_user_pass,
+                        'email': updated_user_email
+                    }
                 })
             )
             result = json.loads(response.get_data())
@@ -399,9 +401,11 @@ class ApiTestCase(unittest.TestCase):
             response = client.put(endpoint,
                 content_type='application/json',
                 data=json.dumps({
-                    'grafana_id': updated_grafana_id,
-                    'grafana_url': updated_grafana_url,
-                    'grafana_password': updated_grafana_password
+                    'grafana':{
+                        'ID': updated_grafana_id,
+                        'PASS': updated_grafana_password,
+                        'URL': updated_grafana_url,
+                    }
                 })
             )
             result = json.loads(response.get_data())
