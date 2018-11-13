@@ -385,7 +385,7 @@ def update_profile(user_id):
     if profile.get('profile') is not None:
         update_user_by_id(user_id, profile.get('profile'))
     else:
-        for key, value in profile.get('grafana').items():
+        for key, value in profile.get('extension_tools').get('grafana').items():
             profile_json['grafana'][key] = value
         path.write_text(json.dumps(profile_json, ensure_ascii=False, indent=2), encoding='utf-8')
     # ----

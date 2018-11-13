@@ -401,10 +401,12 @@ class ApiTestCase(unittest.TestCase):
             response = client.put(endpoint,
                 content_type='application/json',
                 data=json.dumps({
-                    'grafana':{
-                        'ID': updated_grafana_id,
-                        'PASS': updated_grafana_password,
-                        'URL': updated_grafana_url,
+                    'extension_tools':{
+                        'grafana':{
+                            'ID': updated_grafana_id,
+                            'PASS': updated_grafana_password,
+                            'URL': updated_grafana_url,
+                        }
                     }
                 })
             )
