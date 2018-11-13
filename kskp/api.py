@@ -352,14 +352,14 @@ def fetch_profile(user_id):
     profile['email'] = user['email']
     # profile['grafana_url'] = user['grafana_url']
     # profile['grafana_id'] = user['grafana_id']
-    # profile['grafana_pass'] = user['grafana_pass']
+    # profile['grafana_password'] = user['grafana_password']
 
     # --仮実装（Usersテーブルにgarafana列を追加するまでの間）--
     path = DATAFRAME_DIR_PATH.parent / Path('profile_update.json')
     profile_json = json.loads(path.read_text())
     profile['grafana_url'] = profile_json.get('grafana_url')
     profile['grafana_id'] = profile_json.get('grafana_id')
-    profile['grafana_pass'] = profile_json.get('grafana_pass')
+    profile['grafana_password'] = profile_json.get('grafana_password')
     # ----
 
     return jsonify({'success': True, 'data': profile})

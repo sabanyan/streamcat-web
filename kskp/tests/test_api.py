@@ -393,7 +393,7 @@ class ApiTestCase(unittest.TestCase):
                 session['user_id'] = user1
             endpoint = '/api/v0/profile/%s' % user1
             updated_grafana_url = 'after_url'
-            updated_grafana_pass = 'after_pass'
+            updated_grafana_password = 'after_pass'
             updated_grafana_id = 'after_id'
 
             response = client.put(endpoint,
@@ -401,7 +401,7 @@ class ApiTestCase(unittest.TestCase):
                 data=json.dumps({
                     'grafana_id': updated_grafana_id,
                     'grafana_url': updated_grafana_url,
-                    'grafana_pass': updated_grafana_pass
+                    'grafana_password': updated_grafana_password
                 })
             )
             result = json.loads(response.get_data())
