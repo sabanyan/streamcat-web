@@ -38,7 +38,7 @@ def get_user_by_id(user_id):
     指定したユーザIDのユーザレコードを返す
     """
     sql = '''
-    SELECT email, name FROM users WHERE id = ?
+    SELECT * FROM users WHERE id = ?
     '''
     return query_db(sql, (user_id,), one=True)
 
@@ -55,6 +55,21 @@ def delete_user(email):
     sql = 'DELETE FROM users WHERE email = ?'
     query_db(sql, (email,))
 
+def update_user_by_id(user_id, profile):
+    """
+    ユーザ情報を更新する
+    """
+    update_sql = []
+    update_list = []
+    for key, value in profile.items():
+        update_sql.append(key + '= ?')
+        update_list.append(value)
+
+    sql = '''
+    UPDATE users SET %s WHERE id = ?
+    ''' % ','.join(map(str, update_sql))
+
+    query_db(sql, tuple(update_list) + (user_id,))
 
 def get_current_user(session):
     """
