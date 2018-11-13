@@ -343,6 +343,70 @@ class ApiTestCase(unittest.TestCase):
             path = model.get_flow_path_by_uuid(unlink_flow)
             path.unlink()
 
+    def test_update_profile_user(self):
+        """
+        update_profile APIのテスト
+        ユーザ情報のみ
+        """
+        # まずユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/api/v0/profile/%s' % user1
+            updated_user_name = 'new_user'
+            updated_user_pass = 'new_pass'
+            updated_user_email = 'new_email'
+
+            response = client.put(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                    'name': updated_user_name,
+                    'password': updated_user_pass,
+                    'email': updated_user_email
+                })
+            )
+            result = json.loads(response.get_data())
+            user = model.get_user_by_id(session['user_id'])
+
+        self.assertEqual(result['success'], True)
+        self.assertEqual(updated_user_name, user['name'])
+        self.assertEqual(updated_user_pass, user['password'])
+        self.assertEqual(updated_user_email, user['email'])
+
+    # @unittest.skip
+    def test_update_profile_grafana(self):
+        """
+        update_profile APIのテスト
+        grafana情報のみ
+        """
+        # まずユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/api/v0/profile/%s' % user1
+            updated_grafana_url = 'after_url'
+            updated_grafana_pass = 'after_pass'
+            updated_grafana_id = 'after_id'
+
+            response = client.put(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                    'grafana_id': updated_grafana_id,
+                    'grafana_url': updated_grafana_url,
+                    'grafana_pass': updated_grafana_pass
+                })
+            )
+            result = json.loads(response.get_data())
+
+        self.assertEqual(result['success'], True)
 
     def test_update_flow(self):
         """
