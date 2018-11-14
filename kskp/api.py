@@ -357,9 +357,9 @@ def fetch_profile(user_id):
     # --仮実装（Usersテーブルにgarafana列を追加するまでの間）--
     path = DATAFRAME_DIR_PATH.parent / Path('profile_update.json')
     profile_json = json.loads(path.read_text())
-    profile['grafana_url'] = profile_json.get('URL')
-    profile['grafana_id'] = profile_json.get('ID')
-    profile['grafana_password'] = profile_json.get('PASS')
+    profile['grafana_url'] = profile_json.get('url')
+    profile['grafana_id'] = profile_json.get('id')
+    profile['grafana_password'] = profile_json.get('password')
     # ----
 
     return jsonify({'success': True, 'data': profile})
