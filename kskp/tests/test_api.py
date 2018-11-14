@@ -403,9 +403,9 @@ class ApiTestCase(unittest.TestCase):
                 data=json.dumps({
                     'extension_tools':{
                         'grafana':{
-                            'ID': updated_grafana_id,
-                            'PASS': updated_grafana_password,
-                            'URL': updated_grafana_url,
+                            'id': updated_grafana_id,
+                            'password': updated_grafana_password,
+                            'url': updated_grafana_url,
                         }
                     }
                 })
