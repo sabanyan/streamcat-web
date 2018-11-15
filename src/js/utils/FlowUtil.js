@@ -187,6 +187,18 @@ export default class FlowUtil {
   }
 
   /**
+   * Positionを少しずらしてコピーする
+   */
+  static copyPositionWithOffsetX(step:StepModelType):StepModelType{
+    console.log("copyPositionWithOffsetX")
+    console.log(step)
+    step.position.x = step.position.x + Constants.default.graph.nodeSeparator
+    step.position.y = step.position.y + Constants.default.graph.rankSeparator
+    console.log(step)
+    return step
+  }
+
+  /**
    * Dstsをコピーする
    * @param step
    * @returns {StepModelType}
