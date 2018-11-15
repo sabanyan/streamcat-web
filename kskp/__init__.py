@@ -46,7 +46,7 @@ def library():
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    return render_template('profile.html')
+    return render_template('profile.html', user_id=session['user_id'])
 
 if __name__ == '__main__':
     app.run()

@@ -19,7 +19,8 @@ import JobListHeader from '../shared/List/JobList/JobListHeader'
 import TabBar from '../shared/TabBar'
 import TabList from '../shared/TabBar/TabList'
 import Tab from '../shared/TabBar/Tab'
-import TabPanel from '../shared//TabBar/TabPanel'
+import TabPanel from '../shared/TabBar/TabPanel'
+import Form from '../shared/Form'
 /**
  * ======================================================
  *                      NOT USE REDUX
@@ -29,8 +30,17 @@ import TabPanel from '../shared//TabBar/TabPanel'
 type State = {
   is_loading: boolean;
   is_finished: boolean;
+  profile: {
+    name: string;
+    email: string;
+    grafana_id: string;
+    grafana_password: string;
+    grafana_url: string;
+  };
   selected_tab_id: number;
 }
+
+type Props = {}
 
 export default class ProfileContainer extends React.Component<Props, State> {
 
@@ -39,152 +49,135 @@ export default class ProfileContainer extends React.Component<Props, State> {
     this.state = {
       is_loading: false,
       is_finished: false,
+      profile: {},
       selected_tab_id: 0
     }
   }
 
   componentDidMount () {
-    //  this.getJobList()
+    this.getProfile()
   }
 
-  //
-  // getJobList () {
-  //   const self = this
-  //   self.setState({is_loading: true})
-  //
-  //
-  //   HttpUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
-  //       const json = response.data
-  //       self.setState(
-  //         {is_loading: false, is_finished: true, job_list: json.data})
-  //     }).catch((error)=>{
-  //       self.setState(
-  //         {is_loading: false, is_finished: true, job_list: []})
-  //   })
-  // }
-  //
-  // renderJobListHeader () {
-  //   return <JobListHeader/>
-  // }
-  //
-  // renderJobList () {
-  //   const self = this
-  //   return this.state.job_list.map((job, index) => {
-  //     return <JobList key={index} job={job}/>
-  //   })
-  // }
-  //
-  // renderEmptyState () {
-  //   return <EmptyState
-  //     icon={'inbox'}
-  //     title={'ライブラリが空です'}
-  //     description={'フローを実行することでデータが作成されます'}>
-  //   </EmptyState>
-  // }
-  //
-  // isEmptyFlowList () {
-  //   if(!this.state.is_finished)return false
-  //   if (!Array.isArray(this.state.job_list) || this.state.job_list.length ===
-  //     0 || this.state.job_list === null) {
-  //     return true
-  //   }
-  //   return false
-  // }
-  //
-  // renderAll () {
-  //   if (this.isEmptyFlowList()) {
-  //     return this.renderEmptyState()
-  //   }
-  //   if (!this.state.is_finished)return null
-  //   return <div>
-  //     {this.renderJobListHeader()}
-  //     {this.renderJobList()}
-  //   </div>
-  // }
+  getProfile () {
+    const self = this
+    this.setState({is_loading: true})
 
-  onClickTab(e,tab_id){
-    this.setState({selected_tab_id:tab_id})
+    // user_idはナビゲーションモデルから取得できない
+    // APIをたたかないと取得できないため、injectされたuser_idを使う
+
+    HttpUtil.get('profile/' + inject_user_id).then((response) => {
+      const json = response.data
+      this.setState(
+        {is_loading: false, is_finished: true, profile: json.data})
+    }).catch((error) => {
+      this.setState(
+        {is_loading: false, is_finished: true, profile: {}})
+    })
   }
 
-  render () {
 
-    /**
-     * ナビゲーションモデルはAPIから取得予定
-     * @type {boolean}
-     */
-    /*let isLogin = false
-    if(window.navigationModel){
-      if(window.navigationModel.user_id && window.navigationModel.user_name){
-        isLogin = true
+  onClickSave(){
+    //ON_SUBMIT_FORMを呼び出すと、Fromコンポーネントの現在のステートを含むSubmitイベントが呼ばれる
+    window.emitter.emit(Constants.event.ON_SUBMIT_FORM)
+  }
+
+  onClickTab (e, tab_id) {
+    this.setState({selected_tab_id: tab_id})
+  }
+
+  onSubmit(formState){
+    console.log(formState)
+    this.setState({is_loading: true})
+
+    const body = {
+      "profile":{
+        name:formState["name"],
+        email:formState["email"],
+        password:formState["password"],
+      },
+      "extension_tools":{
+        "grafana":{
+          id:formState["grafana_id"],
+          password:formState["grafana_password"],
+          url:formState["grafana_url"],
+        }
       }
     }
 
-    let username
-    if(isLogin){
-      username = window.navigationModel.user_name
-    }*/
 
-    const {selected_tab_id} = this.state
+    HttpUtil.put('profile/' + inject_user_id,body).then((response) => {
+      const json = response.data
+      console.log(json)
+      this.setState(
+        {is_loading: false})
+    }).catch((error) => {
+      this.setState(
+        {is_loading: false})
+    })
+  }
+
+  render () {
+    if(!this.state.is_finished)return <div className={'container mt-40px'}>
+      <Loader center={true} absolute={true} visible={this.state.is_loading} />
+    </div>
+
+    const {selected_tab_id, profile} = this.state
 
     return <div className={'container mt-40px'}>
-      <Loader center={true} absolute={true} visible={this.state.is_loading} />
-
       <div className={style.page_title}>
         プロフィール
       </div>
-
       <div>
-
-        <TabBar className={style.tabbar}>
-          <TabList>
-            <Tab className={style.tab} activeClassName={style.active} tab_id={0} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>ユーザプロフィール</Tab>
-            <Tab className={style.tab} activeClassName={style.active} tab_id={1} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>Grafana設定</Tab>
-          </TabList>
-        </TabBar>
-
-        <TabPanel tab_id={0} selected_tab_id={selected_tab_id} >
-          <div className={style.card}>
-            <div className={"mb-8px"}>
-              <label>ユーザ名</label>
-              <TextField placeholder={'ユーザ名'} />
+        <Form onSubmit={(formState)=>this.onSubmit(formState)}>
+          <TabBar className={style.tabbar}>
+            <TabList>
+              <Tab className={style.tab} activeClassName={style.active} tab_id={0} selected_tab_id={selected_tab_id}
+                   onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>ユーザプロフィール</Tab>
+              <Tab className={style.tab} activeClassName={style.active} tab_id={1} selected_tab_id={selected_tab_id}
+                   onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>Grafana設定</Tab>
+            </TabList>
+          </TabBar>
+          <TabPanel tab_id={0} selected_tab_id={selected_tab_id}>
+            <div className={style.card}>
+              <div className={'mb-8px'}>
+                <label>ユーザ名</label>
+                <TextField placeholder={'ユーザ名'} defaultValue={profile.name}  useForm={true} formKey={"name"}/>
+              </div>
+              <div className={'mb-8px'}>
+                <label>メールアドレス</label>
+                <TextField placeholder={'メールアドレス'} defaultValue={profile.email} type={"email"} useForm={true} formKey={"pemail"}/>
+              </div>
+              <div className={'mb-8px'}>
+                <label>パスワード</label>
+                <TextField placeholder={'パスワード'}  type={"password"} useForm={true} formKey={"password"}/>
+              </div>
+              <div className={'text-right mt-20px'}>
+                <Button className={'mr-0'} onClick={this.onClickSave}>保存する</Button>
+              </div>
             </div>
-
-            <div className={"mb-8px"}>
-              <label>パスワード</label>
-              <TextField placeholder={'パスワード'} />
+          </TabPanel>
+          <TabPanel tab_id={1} selected_tab_id={selected_tab_id}>
+            <div className={style.card}>
+              <div className={'mb-8px'}>
+                <label>URL</label>
+                <TextField className={'mb-0'} placeholder={'Grafana URL'} defaultValue={profile.grafana_url} useForm={true} formKey={"grafana_url"}/>
+                <small>grafana.com もしくは ホストしている指定のURLを入力してください</small>
+              </div>
+              <div className={'mb-8px'}>
+                <label>ID</label>
+                <TextField placeholder={'ID'} defaultValue={profile.grafana_id} useForm={true} formKey={"grafana_id"}/>
+              </div>
+              <div className={'mb-8px'}>
+                <label>パスワード</label>
+                <TextField placeholder={'パスワード'} defaultValue={profile.grafana_password} type={"password"} useForm={true} formKey={"grafana_password"}/>
+              </div>
+              <div className={'text-right mt-20px'}>
+                <Button className={'mr-0'} onClick={this.onClickSave}>保存する</Button>
+              </div>
             </div>
-            <div className={"text-right mt-20px"}>
-              <Button className={"mr-0"}>保存する</Button>
-            </div>
-          </div>
-        </TabPanel>
-        <TabPanel tab_id={1} selected_tab_id={selected_tab_id} >
-          <div className={style.card}>
-            <div className={"mb-8px"}>
-            <label>URL</label>
-            <TextField className={"mb-0"} placeholder={'Grafana URL'} />
-            <small>grafana.com もしくは ホストしている指定のURLを入力してください</small>
-            </div>
-
-            <div className={"mb-8px"}>
-              <label>ID</label>
-              <TextField placeholder={'ID'} />
-            </div>
-
-            <div className={"mb-8px"}>
-            <label>パスワード</label>
-            <TextField placeholder={'パスワード'} />
-            </div>
-            <div className={"text-right mt-20px"}>
-              <Button className={"mr-0"}>保存する</Button>
-            </div>
-          </div>
-        </TabPanel>
-
-
+          </TabPanel>
+          </Form>
       </div>
-
-
       <ModalManager />
     </div>
   }

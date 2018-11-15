@@ -10,7 +10,7 @@ const Constants = {
       height: 38,
     },
     graph: {
-      nodeSeparator: 100 + 8 * 2,//ノードのテキスト部分100px+余白8px×2
+      nodeSeparator: 80 + 8 * 2,//ノードのテキスト部分80px+余白8px×2
       rankSeparator: 44,
     },
     datasource: {
@@ -97,6 +97,8 @@ const Constants = {
     MODAL_ON_CLICK_OK: 'ModalOnClickDone',
     MODAL_ON_CLICK_DONE: 'ModalOnClickDone',
     MODAL_ON_CLICK_CANCEL: 'ModalOnClickCancel',
+    ON_CHANGE_FORM: "ON_CHANGE_FORM",
+    ON_SUBMIT_FORM: "ON_SUBMIT_FORM"
   },
   chart: {
     bar: 'bar',
