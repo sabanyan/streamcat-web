@@ -24,7 +24,6 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
   //
   pasteSteps(){
      navigator.clipboard.readText().then((data)=>{
-       console.log(data)
        this.props.pasteSteps(data)
      }, (err)=> {
        alert("クリップボードが利用できません")
@@ -89,12 +88,8 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
          this.pasteSteps()
          return
        }
-      console.log(e.ctrlKey)
-      console.log(e.key)
     }
     else {
-      console.log(e.ctrlKey)
-      console.log(e.key)
     }
 
     if (e.key === 'Backspace' || e.key === 'Delete') {
