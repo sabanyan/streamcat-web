@@ -93,7 +93,8 @@ export default class ProfileContainer extends React.Component<Props, State> {
       "profile":{
         name:formState["name"],
         email:formState["email"],
-        password:formState["password"],
+        current_password:formState["current_password"],
+        new_password:formState["new_password"],
       },
       "extension_tools":{
         "grafana":{
@@ -125,16 +126,16 @@ export default class ProfileContainer extends React.Component<Props, State> {
 
     return <div className={'container mt-40px'}>
       <div className={style.page_title}>
-        プロフィール
+        プロフィール設定
       </div>
       <div>
         <Form onSubmit={(formState)=>this.onSubmit(formState)}>
           <TabBar className={style.tabbar}>
             <TabList>
               <Tab className={style.tab} activeClassName={style.active} tab_id={0} selected_tab_id={selected_tab_id}
-                   onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>ユーザプロフィール</Tab>
+                   onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>プロフィール</Tab>
               <Tab className={style.tab} activeClassName={style.active} tab_id={1} selected_tab_id={selected_tab_id}
-                   onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>Grafana設定</Tab>
+                   onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>Grafana</Tab>
             </TabList>
           </TabBar>
           <TabPanel tab_id={0} selected_tab_id={selected_tab_id}>
@@ -145,11 +146,15 @@ export default class ProfileContainer extends React.Component<Props, State> {
               </div>
               <div className={'mb-8px'}>
                 <label>メールアドレス</label>
-                <TextField placeholder={'メールアドレス'} defaultValue={profile.email} type={"email"} useForm={true} formKey={"pemail"}/>
+                <TextField placeholder={'メールアドレス'} defaultValue={profile.email} type={"email"} useForm={true} formKey={"email"}/>
               </div>
               <div className={'mb-8px'}>
                 <label>パスワード</label>
-                <TextField placeholder={'パスワード'}  type={"password"} useForm={true} formKey={"password"}/>
+                <TextField placeholder={'現在のパスワード'}  type={"password"} useForm={true} formKey={"current_password"}/>
+              </div>
+              <div className={'mb-8px'}>
+                <label>新しいパスワード</label>
+                <TextField placeholder={'新しいパスワード'}  type={"password"} useForm={true} formKey={"new_password"}/>
               </div>
               <div className={'text-right mt-20px'}>
                 <Button className={'mr-0'} onClick={this.onClickSave}>保存する</Button>
