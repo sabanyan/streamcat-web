@@ -97,6 +97,8 @@ const Constants = {
     MODAL_ON_CLICK_OK: 'ModalOnClickDone',
     MODAL_ON_CLICK_DONE: 'ModalOnClickDone',
     MODAL_ON_CLICK_CANCEL: 'ModalOnClickCancel',
+    ON_CHANGE_FORM: "ON_CHANGE_FORM",
+    ON_SUBMIT_FORM: "ON_SUBMIT_FORM"
   },
   chart: {
     bar: 'bar',
