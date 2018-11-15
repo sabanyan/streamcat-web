@@ -18,7 +18,8 @@ from .model import (
     get_flow_path_by_uuid,
     get_user_by_id,
     fetch_subflows_all_projects,
-    get_flow_nodes_by_uuid
+    get_flow_nodes_by_uuid,
+    update_user_by_id
 )
 from .activity import (
     make_unfinished_history,
@@ -167,7 +168,6 @@ def fetch_commands():
         commands.append(command_data)
 
     return jsonify({'success': True, 'data': commands})
-
 
 import time
 
@@ -335,6 +335,62 @@ def jobs():
     else:
         return jsonify({'success': True, 'data': results})
 
+@api.route('/profile/<user_id>', methods=['GET'])
+@login_required_api
+@update_navigation
+def fetch_profile(user_id):
+    """
+    プロフィール情報を返却する
+    今のところ、
+    ・ユーザ情報
+    ・Grafana情報
+    の2つ（どっちもusersテーブルにある）
+    """
+    user = get_user_by_id(user_id)
+    profile = {}
+    profile['name'] = user['name']
+    profile['email'] = user['email']
+    # profile['grafana_url'] = user['grafana_url']
+    # profile['grafana_id'] = user['grafana_id']
+    # profile['grafana_password'] = user['grafana_password']
+
+    # --仮実装（Usersテーブルにgarafana列を追加するまでの間）--
+    path = DATAFRAME_DIR_PATH.parent / Path('profile_update.json')
+    profile_json = json.loads(path.read_text())
+    profile['grafana_url'] = profile_json.get('url')
+    profile['grafana_id'] = profile_json.get('id')
+    profile['grafana_password'] = profile_json.get('password')
+    # ----
+
+    return jsonify({'success': True, 'data': profile})
+
+@api.route('/profile/<user_id>', methods=['PUT'])
+@login_required_api
+def update_profile(user_id):
+    """
+    プロフィール情報を更新する
+    今のところ、
+    ・ユーザ情報
+    ・Grafana情報
+    の2つ（どっちもusersテーブルにある）
+    """
+    profile = request.json
+    # update_user_by_id(user_id, profile)
+
+    # --仮実装（Usersテーブルにgarafana列を追加するまでの間）--
+    path = DATAFRAME_DIR_PATH.parent / Path('profile_update.json')
+    profile_json = json.loads(path.read_text())
+
+    # 条件分岐はmodel側に移行してもいいかも
+    if profile.get('profile') is not None:
+        update_user_by_id(user_id, profile.get('profile'))
+    else:
+        for key, value in profile.get('extension_tools').get('grafana').items():
+            profile_json[key] = value
+        path.write_text(json.dumps(profile_json, ensure_ascii=False, indent=2), encoding='utf-8')
+    # ----
+
+    return jsonify({'success': True})
 
 import nysol.mcmd as nm
 
@@ -582,9 +638,9 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     if no_contents:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key)['label']} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
     else:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key)['label'], 'contents':value.contents} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
     return result_list
 
 
