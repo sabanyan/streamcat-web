@@ -4,6 +4,8 @@ import type { FlowEditorProps } from '../index'
 import style from './style.scss'
 import DetectUtil from '../../../utils/DetectUtil'
 import Graph from '../../../utils/Graph'
+import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
+import CommandStepModel from '../../../model/Step/CommandStepModel'
 
 class PaperScroller extends React.Component<FlowEditorProps, State> {
   componentDidMount () {
@@ -36,7 +38,29 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
      }))
    }
 
+  /**
+   * コピー可能なステップの判断（コマンド or サブフロー を1つのみ）
+   * @returns {boolean}
+   */
+   copyableStep(){
+     const {selected_step_ids} = this.props
+
+     if(selected_step_ids.length !== 1)return false
+
+     const targetNode =  Graph.getNode(nodes,selected_step_ids[0])
+
+     if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
+       return true
+     }
+    return false
+  }
+
    copySteps(){
+     if(!this.copyableStep()){
+       navigator.clipboard.writeText("")
+       return
+     }
+
      const {selected_step_ids} = this.props
      const copyData = this.getCopyNodes()
      navigator.clipboard.writeText(copyData).then(()=> {

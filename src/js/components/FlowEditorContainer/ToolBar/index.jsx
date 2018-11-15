@@ -74,58 +74,66 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.forceUpdate()
     this.save().then(() => {
       this.run().then((response) => {
-        const json:RunResponseType = response.data
+        if(response.data.success) {
+          const json: RunResponseType = response.data
 
-        const result = json.name.map((n)=>{
-          return <li>{n.id}</li>
-        })
+          const result = json.name.map((n) => {
+            return <li>{n.id}</li>
+          })
 
-        const content = <div>
-          <div>フローの実行が完了し、以下のデータがライブラリに追加されました</div>
-          <ul>{result}</ul>
-        </div>
-        ModalUtil.registerModal({
-          id: Constants.modal.SHOW_RUN_RESULT, onClickDone: () => {
-            window.open( "/library?project="+window.navigationModel.project_uuid, "_blank");
-          }
-        })
-        ModalUtil.emitModal({
-          id: Constants.modal.SHOW_RUN_RESULT,
-          visible: true,
-          content: content
-        })
-        //TODO 将来的に修正する（executeFlowAction は hasData = true に変更するためだけの処理になっています）
-        this.props.executeFlow()
-        this.loading  = false
-        this.forceUpdate()
-      },(error)=>{
-        if(!error.success){
-          let error_body
-          error_body = <div className={style.internal_error_body}>
-            <div>
-              <strong>
-              {error.request.statusText}
-            </strong>
-            </div>
-            {StringUtil.stripHtmlToText(error.request.responseText)}
-          </div>
           const content = <div>
-            <div>フローの実行中にエラーが発生しました。</div>
-            {error_body}
+            <div>フローの実行が完了し、以下のデータがライブラリに追加されました</div>
+            <ul>{result}</ul>
           </div>
           ModalUtil.registerModal({
-            id: Constants.modal.SHOW_RUN_ERROR
+            id: Constants.modal.SHOW_RUN_RESULT, onClickDone: () => {
+              window.open("/library?project=" + window.navigationModel.project_uuid, "_blank");
+            }
           })
           ModalUtil.emitModal({
-            id: Constants.modal.SHOW_RUN_ERROR,
+            id: Constants.modal.SHOW_RUN_RESULT,
             visible: true,
             content: content
           })
-          this.loading  = false
+          //TODO 将来的に修正する（executeFlowAction は hasData = true に変更するためだけの処理になっています）
+          this.props.executeFlow()
+          this.loading = false
           this.forceUpdate()
+        }else{
+          this.showError(response)
+        }
+      },(error)=>{
+        if(!error.success){
+          this.showError(error)
         }
       })
     })
+  }
+
+  showError(error){
+    let error_body
+    error_body = <div className={style.internal_error_body}>
+      <div>
+        <strong>
+          {error.request.statusText}
+        </strong>
+      </div>
+      {StringUtil.stripHtmlToText(error.request.responseText)}
+    </div>
+    const content = <div>
+      <div>フローの実行中にエラーが発生しました。</div>
+      {error_body}
+    </div>
+    ModalUtil.registerModal({
+      id: Constants.modal.SHOW_RUN_ERROR
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.SHOW_RUN_ERROR,
+      visible: true,
+      content: content
+    })
+    this.loading  = false
+    this.forceUpdate()
   }
 
   onClickDataSourceImport () {
