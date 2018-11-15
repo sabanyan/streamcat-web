@@ -121,8 +121,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     getInvalidMessageElement(step:StepModel,key:string){
       const invalidMessage = step.invalid[key]
       if(invalidMessage){
-        console.log(invalidMessage)
-        console.log(Array.isArray(invalidMessage))
         if(Array.isArray(invalidMessage)){
           const arrayMessage = invalidMessage.map(message=>{
             return <div className={style.invalid_message}>

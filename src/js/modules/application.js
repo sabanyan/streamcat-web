@@ -299,7 +299,6 @@ const Application = (state = initialState, action: {}) => {
          let newNode:StepModelType = FlowUtil.setModelType(json)
 
          //ノード本体をコピー
-         console.log("addNode",newNode)
          graph.addNode(newNode.id)
 
          //入力値をコピー
@@ -326,7 +325,6 @@ const Application = (state = initialState, action: {}) => {
            graph.addNode(add_step.id)
            newDsts[key] = add_step.id
          })
-         console.log("コマンドを追加しました",newNode)
          //convertMap[cacheId] = newNode.id
          newNode.dsts = {}
          newState.nodes.push(newNode)
