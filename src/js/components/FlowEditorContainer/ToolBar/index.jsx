@@ -23,6 +23,7 @@ import FileUploader from '../../shared/FileUploader'
 import type { UploadedFileType } from '../../../types'
 import FlowUtil from '../../../utils/FlowUtil'
 import StringUtil from '../../../utils/StringUtil'
+import ErrorUtil from '../../../utils/ErrorUtil'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -100,41 +101,47 @@ export default class ToolBar extends React.Component<ToolBarProps> {
           this.loading = false
           this.forceUpdate()
         }else{
-          this.showError(response)
+          ErrorUtil.showError(this,response)
         }
       },(error)=>{
         if(!error.success){
-          this.showError(error)
+          ErrorUtil.showError(this,error)
         }
       })
     })
   }
-
-  showError(error){
-    let error_body
-    error_body = <div className={style.internal_error_body}>
-      <div>
-        <strong>
-          {error.request.statusText}
-        </strong>
-      </div>
-      {StringUtil.stripHtmlToText(error.request.responseText)}
-    </div>
-    const content = <div>
-      <div>フローの実行中にエラーが発生しました。</div>
-      {error_body}
-    </div>
-    ModalUtil.registerModal({
-      id: Constants.modal.SHOW_RUN_ERROR
-    })
-    ModalUtil.emitModal({
-      id: Constants.modal.SHOW_RUN_ERROR,
-      visible: true,
-      content: content
-    })
-    this.loading  = false
-    this.forceUpdate()
-  }
+  //
+  // showError(error){
+  //   let errorBody
+  //   if(error.data["message"]){
+  //     errorBody = <div className={style.internal_error_body}>
+  //       {error.data["message"]}
+  //     </div>
+  //   }else{
+  //     errorBody = <div className={style.internal_error_body}><div>
+  //       <strong>
+  //         {error.request.statusText}
+  //       </strong>
+  //     </div>
+  //       {StringUtil.stripHtmlToText(error.request.responseText)}
+  //     </div>
+  //   }
+  //
+  //   const content = <div>
+  //     <div>フローの実行中にエラーが発生しました。</div>
+  //     {errorBody}
+  //   </div>
+  //   ModalUtil.registerModal({
+  //     id: Constants.modal.SHOW_RUN_ERROR
+  //   })
+  //   ModalUtil.emitModal({
+  //     id: Constants.modal.SHOW_RUN_ERROR,
+  //     visible: true,
+  //     content: content
+  //   })
+  //   this.loading  = false
+  //   this.forceUpdate()
+  // }
 
   onClickDataSourceImport () {
 
