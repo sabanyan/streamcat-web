@@ -1,0 +1,84 @@
+{
+  "projectId": 12,
+  "label": "テストフロー",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2018-11-22 14:43:40",
+  "nodes": [
+    {
+      "position": {
+        "x": 99,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "i",
+      "type": "frame",
+      "label": "dat3.csv",
+      "uuid": "91291faf-2213-4fcf-b103-32d1be33b20c",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 295
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "d1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 213
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "c1",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "f": "v1",
+        "pways": "",
+        "maxlines": "",
+        "blocks": "",
+        "threadCnt": "",
+        "noflg": false,
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "fail": false,
+        "tmpPath": ""
+      },
+      "commandId": "msortf"
+    }
+  ]
+}
