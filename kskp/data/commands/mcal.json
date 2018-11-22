@@ -18,18 +18,6 @@
       "optional": true
     },
     {
-      "name": "assert_nullkey",
-      "type": "boolean",
-      "label": "キー項目に NULL 値が含まれているかどうかのチェックを行う",
-      "optional": true
-    },
-    {
-      "name": "assert_nullin",
-      "type": "boolean",
-      "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
-      "optional": true
-    },
-    {
       "name": "assert_nullout",
       "type": "boolean",
       "label": "出力項目の NULL 値チェックを行う",
@@ -51,12 +39,6 @@
       "name": "x",
       "type": "boolean",
       "label": "項目番号による指定",
-      "optional": true
-    },
-    {
-      "name": "q",
-      "type": "boolean",
-      "label": "自動並べ替えの無効化",
       "optional": true
     },
     {
