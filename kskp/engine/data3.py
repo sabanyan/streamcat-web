@@ -10,6 +10,21 @@ import sys # sys.stdout
 
 ref_counts = {}
 
+class RedirectStdStreams(object):
+    def __init__(self, stdout=None, stderr=None):
+        self._stdout = stdout or sys.stdout
+        self._stderr = stderr or sys.stderr
+
+    def __enter__(self):
+        self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
+        self.old_stdout.flush(); self.old_stderr.flush()
+        sys.stdout, sys.stderr = self._stdout, self._stderr
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._stdout.flush(); self._stderr.flush()
+        sys.stdout = self.old_stdout
+        sys.stderr = self.old_stderr
+
 class Source:
     """
     データの取得元、もしくは書込先になる情報をもつクラス
@@ -92,7 +107,12 @@ class NysolPythonSource(Source):
             args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
         mod = self.mod(args)
         self.process_flow <<= mod
-        self.process_flow.run()
+
+        res = io.StringIO()
+        with RedirectStdStreams(stdout=devnull, stderr=res):
+            self.process_flow.run()
+
+        print(res.getvalue())        
 
     def __repr__(self):
         return f'args: {self.args}'
