@@ -1577,14 +1577,14 @@ class MvcommonOld(MCommand):#new
 class Mfsort(MCommandNew):
     def __init__(self):
         super().__init__(nm.mfsort)
-        self.name = 'mfsortf'
+        self.name = 'mfsort'
         self.desription = '項目ソート'
         self.params.append(Parameter('f', '対象列名(必須)'))
 
 class MfsortOld(MCommand):
     def __init__(self):
         super().__init__()
-        self.name = 'mfsortf'
+        self.name = 'mfsort'
         self.desription = '項目ソート'
         self.params.append(Parameter('f', '対象列名(必須)'))
 
@@ -4098,7 +4098,7 @@ commands = {
     'mdformat': Mdformat(),
     'mduprec': Mduprec(),
     'mfldname': Mfldname(),
-    'mfsortf': Mfsort(),
+    'mfsort': Mfsort(),
     'mhashavg': Mhashavg(),
     'mhashsum': Mhashsum(),
     'mkeybreak': Mkeybreak(),
