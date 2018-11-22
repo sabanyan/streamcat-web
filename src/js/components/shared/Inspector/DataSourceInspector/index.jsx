@@ -23,6 +23,8 @@ import ChartUtil from '../../../../utils/ChartUtil'
 import DataTable from '../../DataTable/index'
 import StateUtil from '../../../../utils/State'
 import StringUtil from '../../../../utils/StringUtil'
+import { RunResponseType } from '../../../../types'
+import ErrorUtil from '../../../../utils/ErrorUtil'
 
 
 type State = {
@@ -51,40 +53,43 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     })
   }
 
-  onClickPreview(e:Event){
+  onClickPreview(e:Event) {
     const selected_step = this.getSelectedStep()
 
     let {nodes} = this.props
-    FlowUtil.saveNodes(inject_flow_uuid,nodes).then(()=>{
+    FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
       //すでにデータが存在している場合
-      if(selected_step.hasData()){
+      if (selected_step.hasData()) {
         this.setState({
           loading: true
         })
-        this.previewFromUUID(selected_step.uuid,selected_step.label)
-      }else{
+        this.previewFromUUID(selected_step.uuid, selected_step.label)
+      } else {
         this.setState({
           loading: true
         })
-        HttpUtil.get("frames?from="+inject_flow_uuid+"."+selected_step.id).then((response)=>{
-
-          const uuid = response.data.name[0].uuid
-          const label = response.data.name[0].id
-          this.previewFromUUID(uuid,label)
+        HttpUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
+          if (response.data.success) {
+            const uuid = response.data.name[0].uuid
+            const label = response.data.name[0].id
+            this.previewFromUUID(uuid, label)
+          } else {
+            ErrorUtil.showError(this, response)
+          }
           this.setState({
             loading: false
           })
-        },(error)=>{
+        }, (error) => {
           console.log(error)
+          if (!response.data.success) {
+            ErrorUtil.showError(this, error)
+          }
           this.setState({
             loading: false
           })
         })
-
       }
     })
-
-    e.preventDefault()
   }
 
   previewFromUUID(uuid:string,label:string){

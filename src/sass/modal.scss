@@ -73,6 +73,10 @@ $preview-height: 100%;
   }
 }
 
+.modal-error-text{
+  color: $danger;
+}
+
 .modal-backdrop{
   background: rgba(255, 255, 255, 0.7);
 }
