@@ -117,9 +117,12 @@ class NysolPythonSource(Source):
 
         except Exception as e:
             if res is not None:
-                print('exception:', res.getvalue())
+                val = res.getvalue()
+                print('exception:', val)
+                raise ValueError(val)
             else:
                 print('exception:', e)
+                raise e
         finally:
             print('final!!!')
 
