@@ -112,7 +112,7 @@ class NysolPythonSource(Source):
         with RedirectStdStreams(stdout=devnull, stderr=res):
             self.process_flow.run()
 
-        print(res.getvalue())        
+        print('res:', res.getvalue())        
 
     def __repr__(self):
         return f'args: {self.args}'
