@@ -49,7 +49,8 @@ const Constants = {
   param:{
     type:{
       string:"string",
-      boolean:"boolean"
+      boolean:"boolean",
+      select:"select"
     }
   },
   data:{
