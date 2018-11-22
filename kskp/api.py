@@ -289,16 +289,22 @@ def execute_flow(flow_uuid, step_paths, no_contents):
                             'message': 'flow does not exist'
                         })
     else:
-        result_data = execute_flow_internal(flow_uuid, step_paths, no_contents)
-        if not result_data:
+        try:
+            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents)
+            if not result_data:
+                return jsonify({
+                                    'success': False,
+                                    'code': -1,
+                                    'message': 'result is empty.'
+                                })
+            else:
+                return jsonify({'success': True, 'name': result_data})
+        except Exception as e:
             return jsonify({
                                 'success': False,
                                 'code': -1,
-                                'message': 'result is empty.'
+                                'message': repr(e)
                             })
-        else:
-            return jsonify({'success': True, 'name': result_data})
-
 
 @api.route('/jobs', methods=['GET'])
 @update_navigation
