@@ -109,7 +109,7 @@ class NysolPythonSource(Source):
         self.process_flow <<= mod
 
         res = io.StringIO()
-        with RedirectStdStreams(stdout=devnull, stderr=res):
+        with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
             self.process_flow.run()
 
         print('res:', res.getvalue())        
