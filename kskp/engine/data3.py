@@ -94,25 +94,34 @@ class NysolPythonSource(Source):
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
-        args = self.args
-        # self.mod.runしてその結果をstdoutに書くだけ
-        # nm.cmdはコマンドが文字列なのでそれで判別する
-        if isinstance(self.args, str):
-            # 設定されていた出力パラメータを出力先が入った状態で置き換える
-            args += self.stdout_param + stdout
-        elif isinstance(self.args, dict):
-            # nm.cmdのargsはstringなので、ここにくるのはnm.cmd以外のnysol_pythonのコマンドの場合のみ
-            # という前提で書いているので、uを直接指定している。
-            # u以外で指定しなければいけない時がくることはあるのか・・・？
-            args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
-        mod = self.mod(args)
-        self.process_flow <<= mod
+        res = None
+        try:
+            args = self.args
+            # self.mod.runしてその結果をstdoutに書くだけ
+            # nm.cmdはコマンドが文字列なのでそれで判別する
+            if isinstance(self.args, str):
+                # 設定されていた出力パラメータを出力先が入った状態で置き換える
+                args += self.stdout_param + stdout
+            elif isinstance(self.args, dict):
+                # nm.cmdのargsはstringなので、ここにくるのはnm.cmd以外のnysol_pythonのコマンドの場合のみ
+                # という前提で書いているので、uを直接指定している。
+                # u以外で指定しなければいけない時がくることはあるのか・・・？
+                args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
 
-        res = io.StringIO()
-        with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
-            self.process_flow.run()
+            mod = self.mod(args)
+            self.process_flow <<= mod
 
-        print('res:', res.getvalue())        
+            res = io.StringIO()
+            with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
+                self.process_flow.run()
+
+        except Exception as e:
+            if res is not None:
+                print('exception:', res.getvalue())
+            else:
+                print('exception:', e)
+        finally:
+            print('final!!!')
 
     def __repr__(self):
         return f'args: {self.args}'
