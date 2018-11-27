@@ -285,8 +285,13 @@ def fetch_subflows_all_projects(request_args):
             # JSONのフォーマットに則していない場合
             continue
 
+        # 
+        project = fecth_project(data['projectId'])['name']
+        if project is None:
+            continue
+
         data['uuid'] = path.stem
-        data['projectName'] = fecth_project(data['projectId'])['name']
+        data['projectName'] = project['name']
         # onの時にno_inputs（＝inputsがない）のサブフローは出さない
         if request_args.get('no_inputs') == 'on':
             if len(data['ports'][0]) == 0:
