@@ -285,8 +285,8 @@ def fetch_subflows_all_projects(request_args):
             # JSONのフォーマットに則していない場合
             continue
 
-        # 
-        project = fecth_project(data['projectId'])['name']
+        #
+        project = fecth_project(data['projectId'])
         if project is None:
             continue
 
