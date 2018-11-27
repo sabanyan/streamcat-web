@@ -12,7 +12,7 @@ class CommandsPathLink(PathLink):
         """
 
         commands = []
-        for command_path in self.source.path.iterdir():
+        for command_path in self.context['source'].path.iterdir():
             if not command_path.suffix == '.json':
                 continue
             command_json = command_path.read_text(encoding='utf-8')
