@@ -95,7 +95,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   previewFromUUID(uuid:string,label:string){
     const {selected_data_source_detail} = this.props
     const selected_step = this.getSelectedStep()
-    HttpUtil.get("frames/"+uuid).then((response)=>{
+    //TODO 将来的にはページングなどの対応が必要
+    HttpUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
       const json = response.data
       let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
       let contentTable = <div className="table-responsive">
