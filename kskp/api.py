@@ -214,17 +214,21 @@ def fetch_frame(frame_uuid):
     """
     指定したframeを直接UUIDで指定して取得する
     """
+    # オフセットのデフォルトは最初から（なので０）
+    offset = int(request.args.get('offset')) if request.args.get('offset') is not None else 0
+    # リミットのデフォルトは全行なのでNoneにしておく（０の場合は０行取得だから０は使えない）
+    limit = int(request.args.get('limit')) if request.args.get('limit') is not None else None
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
-    return jsonify({'success': True, 'data': csv_to_frame(file_path)})
+    return jsonify({'success': True, 'data': csv_to_frame(file_path, offset=offset, limit=limit)})
 
-def csv_to_frame(file_path, no_contents=False):
+def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     """
     指定されたCSVファイルを読み込んで、
     詳細情報なども含んだframeを表すdictを返す
     """
     result = {}
-    contents, number_of_lines = load_as_data_frame(file_path.read_text(encoding='utf-8'))
+    contents, number_of_lines = load_as_data_frame(file_path.read_text(encoding='utf-8'), offset, limit)
     if not no_contents:
         result['contents'] = contents
     result['numberOfLines'] = number_of_lines
@@ -650,12 +654,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
     return result_list
 
 
-def load_as_data_frame(result_text):
+def load_as_data_frame(result_text, offset, limit):
     """
     CSVの文字列を受け取り、
     いわゆるデータフレームの形式にして返す
     """
     result_list = [x for x in result_text.split('\n') if x != '']
+    result_len = len(result_list) - 1
     result_data = {}
 
     if not result_list:
@@ -667,13 +672,17 @@ def load_as_data_frame(result_text):
     for column_name in column_list:
         result_data[column_name] = []
 
-    for record in result_list[1:]:
+    # offset+1の1はヘッダを飛ばすため
+    start = 1 + offset
+    end = start + limit if limit is not None else result_len
+
+    for record in result_list[start:end]:
         for idx, column_data in enumerate(record.split(',')):
             # print(column_list[idx])
             result_data[column_list[idx]].append(column_data)
 
     # 行数も返すように変更
-    return result_data, len(result_list) - 1
+    return result_data, result_len
 
 def replace_column_name(column_list):
     """
