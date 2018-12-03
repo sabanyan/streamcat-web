@@ -10,7 +10,7 @@ import os
 sys.path.append(os.getcwd()+"/modeling")
 from kskp.engine.commands.kcmd.modeling.classification import *
 from kskp.engine.commands.kcmd.modeling.regression import *
-
+from pathlib import Path
 
 class Predict():
     def __init__(self):
@@ -21,7 +21,7 @@ class Predict():
             "one_hot_encode":self.one_hot_encode,
             "label_encode":self.label_encode
         }
-        self.temp_files_path="preprocess/temp_files/"
+        self.temp_files_path=Path(__file__).parent.parent.joinpath('preprocess/temp_files/')
 
     def make_parser(self):
         parser = argparse.ArgumentParser()
@@ -70,35 +70,35 @@ class Predict():
         merged.to_csv(parsed_output,index=False)
 
     def normalize(self,x_test):
-        if os.path.isfile(self.temp_files_path+"normalize.pickle"):
+        if os.path.isfile(self.temp_files_path.joinpath("normalize.pickle")):
             #変換規則のファイル読み取り
-            with open(self.temp_files_path+"normalize.pickle","rb") as f:
+            with open(self.temp_files_path.joinpath("normalize.pickle","rb")) as f:
                 self.model.norm_dict=pickle.load(f)
             #正規化
             for col_name in self.model.norm_dict:
                 col=x_test[col_name].values.reshape((-1,1))
                 mms=self.model.norm_dict[col_name]
                 x_test[col_name]=pd.DataFrame(np.array(mms.transform(col)).reshape((-1,1)),columns=self.model.norm_dict)
-            os.remove(self.temp_files_path+"normalize.pickle")
+            os.remove(self.temp_files_path.joinpath("normalize.pickle"))
         return x_test
 
     def standardize(self,x_test):
-        if os.path.isfile(self.temp_files_path+"standardize.pickle"):
+        if os.path.isfile(self.temp_files_path.joinpath("standardize.pickle")):
             #変換規則のファイル読み取り
-            with open(self.temp_files_path+"standardize.pickle","rb") as f:
+            with open(self.temp_files_path.joinpath("standardize.pickle"),"rb") as f:
                 self.model.std_dict=pickle.load(f)
             #標準化
             for col_name in self.model.std_dict:
                 col=x_test[col_name].values.reshape((-1,1))
                 sc=self.model.std_dict[col_name]
                 x_test[col_name]=pd.DataFrame(np.array(sc.transform(col)).reshape((-1,1)),columns=self.model.std_dict)
-            os.remove(self.temp_files_path+"standardize.pickle")
+            os.remove(self.temp_files_path.joinpath("standardize.pickle"))
         return x_test
 
     def label_encode(self,x_test):
-        if os.path.isfile(self.temp_files_path+"label.pickle"):
+        if os.path.isfile(self.temp_files_path.joinpath("label.pickle")):
             #変換規則のファイル読み取り
-            with open(self.temp_files_path+"label.pickle","rb") as f:
+            with open(self.temp_files_path.joinpath("label.pickle"),"rb") as f:
                 self.model.enc_dict=pickle.load(f)
             #ノーマルエンコード
             for col_name in self.model.enc_dict:
@@ -107,13 +107,13 @@ class Predict():
                 le=self.model.enc_dict[col_name]
                 encoded=self.model.enc_dict[col_name].transform(x_test[col_name])
                 x_test[col_name]=pd.DataFrame(encoded,columns=[col_name])
-            os.remove(self.temp_files_path+"label.pickle")
+            os.remove(self.temp_files_path.joinpath("label.pickle"))
         return x_test
 
     def one_hot_encode(self,x_test):
-        if os.path.isfile(self.temp_files_path+"onehot.pickle"):
+        if os.path.isfile(self.temp_files_path.joinpath("onehot.pickle")):
             #変換規則のファイル読み取り
-            with open(self.temp_files_path+"onehot.pickle","rb") as f:
+            with open(self.temp_files_path.joinpath("onehot.pickle"),"rb") as f:
                 self.model.bin_dict=pickle.load(f)
             #one-hotエンコード
             for col_name in self.model.bin_dict:
@@ -125,15 +125,15 @@ class Predict():
                 encoded=pd.DataFrame(lb.transform(enc_col),columns=[col_name+str(class_name) for class_name in le.inverse_transform(np.arange(n_class))])
                 x_test=pd.concat([x_test,encoded],axis=1)
                 x_test=x_test.drop(col_name,axis=1)
-            os.remove(self.temp_files_path+"onehot.pickle")
+            os.remove(self.temp_files_path.join("onehot.pickle"))
         return x_test
 
     def pca(self,x_test):
-        if os.path.isfile(self.temp_files_path+"pca.pickle"):
-            with open(self.temp_files_path+"pca.pickle","rb") as f:
+        if os.path.isfile(self.temp_files_path.joinpath("pca.pickle")):
+            with open(self.temp_files_path.joinpath("pca.pickle"),"rb") as f:
                 self.model.pca=pickle.load(f)
             x_test=self.model.pca.transform(x_test)
-            os.remove(self.temp_files_path+"pca.pickle")
+            os.remove(self.temp_files_path.joinpath("pca.pickle"))
         return x_test
 
     def preprocessing(self,x_test):
@@ -143,15 +143,15 @@ class Predict():
 
         """
         #前処理の順番が記述されているpreprocess_order.txtがあればテストデータに対しても前処理を行う
-        if os.path.isfile(self.temp_files_path+"preprocess_order.txt"):
-            with open(self.temp_files_path+"preprocess_order.txt","r") as f:
+        if os.path.isfile(self.temp_files_path.joinpath("preprocess_order.txt")):
+            with open(self.temp_files_path.joinpath("preprocess_order.txt"),"r") as f:
                 preprocess_order=f.read()
             preprocess_order=preprocess_order.split(",")
 
             for preprocess in preprocess_order:
                 x_test=self.preprocess_dict[preprocess](x_test)
 
-            os.remove(self.temp_files_path+"preprocess_order.txt")
+            os.remove(self.temp_files_path.joinpath("preprocess_order.txt"))
 
 
         return x_test

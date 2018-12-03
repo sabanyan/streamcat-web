@@ -6,7 +6,7 @@ from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn.neighbors import KNeighborsClassifier
 import pickle
 
-class Knearest_neighbors(Classification):
+class CKnearest_neighbors(Classification):
     """
     最近傍法(分類)クラスです
     """
@@ -80,6 +80,6 @@ class Knearest_neighbors(Classification):
         return
 
 if __name__=="__main__":
-    knn=Knearest_neighbors()
+    knn=CKnearest_neighbors()
     knn.main(sys.argv[1:])
     knn.write()

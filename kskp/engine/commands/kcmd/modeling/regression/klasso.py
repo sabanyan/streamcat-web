@@ -6,7 +6,7 @@ from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.linear_model import Lasso
 import pickle
 
-class Klasso(Regression):
+class RKlasso(Regression):
     """
     lasso回帰クラスです
     """
@@ -78,6 +78,6 @@ class Klasso(Regression):
         return
 
 if __name__=="__main__":
-    klasso=Klasso()
+    klasso=RKlasso()
     klasso.main(sys.argv[1:])
     klasso.write()
