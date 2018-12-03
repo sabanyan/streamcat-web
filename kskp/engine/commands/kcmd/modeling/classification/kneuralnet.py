@@ -6,7 +6,7 @@ from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn.neural_network import MLPClassifier
 import pickle
 
-class Kneural_network(Classification):
+class CKneural_network(Classification):
     """
     ニューラルネットワーク(分類)クラスです
     """
@@ -91,6 +91,6 @@ class Kneural_network(Classification):
         return
 
 if __name__=="__main__":
-    knn=Kneural_network()
+    knn=CKneural_network()
     knn.main(sys.argv[1:])
     knn.write()

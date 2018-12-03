@@ -58,9 +58,9 @@ class Evaluate():
         # testデータ読み込み
         test_data = pd.read_csv(parsed.test_data)
         #モデル読み込み
-        model=pred.read_model(parsed.input)
+        pred.model=pred.read_model(parsed.input)
         #予測を確率で出すかどうかの設定(classificationクラスのみ有効)
-        model.probability=parsed.probability
+        pred.model.probability=parsed.probability
         #クラスラベルの処理
         test_data_preprocessed=pred.preprocessing(test_data)
         #ターゲット列の分離
@@ -69,19 +69,20 @@ class Evaluate():
         y_test=test_data_preprocessed[target_col_name]
         x_test=test_data_preprocessed.drop(columns = target_col_name)
         #予測
-        pred_df=model.predict(test_data,x_test)
+        pred_df=pred.model.predict(test_data,x_test)
         merged=pd.concat([pred_df,test_data],axis=1)
 
         #モデルの評価
         result=self.all_metrics[parsed.metrics](y_test,pred_df)
 
         #評価結果の出力(暫定)
+        df = pd.DataFrame({result : parsed.metrics}, index=['1',])
         print(parsed.metrics)
         print(result)
         # result.to_csv(parsed.metrics_file_name,index=False)
 
         #出力
-        # pred.set_output(merged,parsed.output)
+        pred.set_output(df,parsed.output)
 
         return
 

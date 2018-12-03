@@ -8,7 +8,7 @@ import pickle
 
 
 
-class Krf(Classification):
+class CKrf(Classification):
     """
     ランダムフォレスト(分類)クラスです。
     """
@@ -77,6 +77,6 @@ class Krf(Classification):
         return
 
 if __name__=="__main__":
-    krf=Krf()
+    krf=CKrf()
     krf.main(sys.argv[1:])
     krf.write()
