@@ -3,6 +3,7 @@ import Constants from '../constants'
 import ParamString from '../components/shared/Param/ParamString'
 import ParamBoolean from '../components/shared/Param/ParamBoolean'
 import * as React from 'react'
+import ParamSelect from '../components/shared/Param/ParamSelect'
 
 export default class ParamUtil {
   static clearElement(element){
@@ -21,6 +22,8 @@ export default class ParamUtil {
         case Constants.param.type.boolean:
           args[inputRef.param.name] = (inputRef.element.checked)?true:false
           break
+        case Constants.param.type.select:
+          args[inputRef.param.name] = inputRef.element.value
       }
       ParamUtil.clearElement(inputRef.element)
     })
@@ -35,6 +38,9 @@ export default class ParamUtil {
         break
       case Constants.param.type.boolean:
         paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}/>
+        break
+      case Constants.param.type.select:
+        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}/>
         break
       default:
         paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} disabled={true}/>
