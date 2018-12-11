@@ -73,7 +73,11 @@ $preview-height: 100%;
   }
 }
 
-.modal-error-text{
+.modal-server-error-text{
+  color: $danger;
+}
+
+.modal-script-error-text{
   color: $danger;
 }
 
