@@ -96,7 +96,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
             visible: true,
             content: content
           })
-          //TODO 将来的に修正する（executeFlowAction は hasData = true に変更するためだけの処理になっています）
           this.props.executeFlow()
           this.loading = false
           this.forceUpdate()
