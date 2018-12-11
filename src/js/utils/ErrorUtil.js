@@ -12,11 +12,11 @@ export default class ErrorUtil {
   static showError(target,error){
     let errorBody
     if(error.data["message"]){
-      errorBody = <div className={"modal-error-text"}>
+      errorBody = <div className={"modal-server-error-text"}>
         {error.data["message"]}
       </div>
     }else{
-      errorBody = <div className={"modal-error-text"}><div>
+      errorBody = <div className={"modal-server-error-text"}><div>
         <strong>
           {error.request.statusText}
         </strong>
