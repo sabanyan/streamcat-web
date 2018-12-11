@@ -44,7 +44,22 @@ class Validator {
       notValid: "日付を入力してください",
     }
 
-    //指定されたパラメータが入力されている必要がある
+    //---------------------------------------------
+    //
+    // presencesIfTargetIsInput
+    //
+    // ターゲットのパラメーターが 入力されている場合、必須になる
+    // この場合、 a にパラメーターが入力されている場合、 b が必須になる
+    //
+    // 使い方:
+    //   "rules": {
+    //         "b":{
+    //             "presencesIfTargetIsInput": "a"
+    //         },
+    //
+    // 指定されたパラメータが入力されている必要がある
+    //
+    //---------------------------------------------
     ValidateJS.validators.presencesIfTargetIsInput = function(value, options, key, attributes) {
       //対象のパラメータの入力がある場合は必須項目になる
       const command = CommandUtil.getCommand(attributes["_command_id"])
@@ -72,7 +87,47 @@ class Validator {
       }
       return (error)?errorTarget + "が入力されているため、入力が必須の項目です":null;
     };
-
+    //---------------------------------------------
+    //
+    // presencesIfTargetIsNotInput
+    //
+    // ターゲットのパラメーターが 入力されていない場合、必須になる
+    // この場合、 a にパラメーターが入力されていない場合、 b が必須になる
+    //
+    // 使い方:
+    //   "rules": {
+    //         "b":{
+    //             "presencesIfTargetIsNotInput": "a"
+    //         },
+    //
+    //---------------------------------------------
+    ValidateJS.validators.presencesIfTargetIsNotInput = function(value, options, key, attributes) {
+      //対象のパラメータの入力がある場合は必須項目になる
+      const command = CommandUtil.getCommand(attributes["_command_id"])
+      let error = false
+      let errorTarget = ""
+      if(Array.isArray(options)) {
+        //配列指定の場合
+        options.forEach((option)=>{
+          if(!attributes[option] && !value){
+            //ターゲットの値が入力されている場合
+            const paramName = option
+            const label = CommandUtil.getCommandParamLabel(command, paramName)
+            error = true
+            errorTarget = errorTarget + "[" +label + "] "
+          }
+        })
+      }else{
+        //単一指定の場合
+        if(!attributes[options] && !value){
+          error = true
+          const paramName = options
+          const label = CommandUtil.getCommandParamLabel(command, paramName)
+          errorTarget = errorTarget + "[" +label + "] "
+        }
+      }
+      return (error)?errorTarget + "が入力されていないため、入力が必須の項目です":null;
+    };
   }
 
   schemaValidate(schema,state) {
