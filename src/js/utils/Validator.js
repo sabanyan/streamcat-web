@@ -128,6 +128,117 @@ class Validator {
       }
       return (error)?errorTarget + "が入力されていないため、入力が必須の項目です":null;
     };
+    //---------------------------------------------
+    //
+    // onlyOneInput
+    //
+    // 同時に入力されている場合エラーになる
+    //
+    // この場合、f は skip_fnf と tmpPath が同時に入力されているとエラーになる
+    // tmpPath は f が同時に入力されているとエラーになる
+    //
+    // 使い方:
+    // "rules":{
+    //  "f":{
+    //    "onlyOneInput": ["skip_fnf","tmpPath"]
+    //  },
+    //  "tmpPath":{
+    //    "onlyOneInput": ["f"]
+    //  }
+    //
+    //---------------------------------------------
+    ValidateJS.validators.onlyOneInput = function(value, options, key, attributes) {
+      //対象のパラメータの入力がある場合は必須項目になる
+      const command = CommandUtil.getCommand(attributes["_command_id"])
+      let error = false
+      let errorTarget = ""
+      if(Array.isArray(options)) {
+        //配列指定の場合
+        options.forEach((option)=>{
+          if(attributes[option] && value){
+            //ターゲットの値が入力されている場合
+            const paramName = option
+            const label = CommandUtil.getCommandParamLabel(command, paramName)
+            error = true
+            errorTarget = errorTarget + "[" +label + "] "
+          }
+        })
+      }else{
+        //単一指定の場合
+        if(attributes[options] && value){
+          error = true
+          const paramName = options
+          const label = CommandUtil.getCommandParamLabel(command, paramName)
+          errorTarget = errorTarget + "[" +label + "] "
+        }
+      }
+      return (error)?errorTarget + "は同時に指定することができません。片方だけ指定してください。":null;
+    };
+    //---------------------------------------------
+    //
+    // specificedFormartIfTargetInput
+    //
+    // 同時に入力されている場合エラーになる
+    //
+    // この場合、tmpPath は skip_fnf の値が入っている場合、
+    // patternで指定した正規表現に基づきチェックが行われる
+    //
+    // 使い方:
+    // "rules":{
+    //  "tmpPath":{
+    //    "specifiedFormatIfTargetInput": {
+    //        "target": "skip_fnf",
+    //        "pattern": "[a-z0-9]*",
+    //        "message": "英数字で入力してください"
+    //    }
+    //  },
+    //
+    //---------------------------------------------
+    ValidateJS.validators.specifiedFormatIfTargetInput = function(value, options, key, attributes) {
+      if(value){
+        if(options){
+          if(options.target){
+            const targetValue = attributes[options.target]
+            if(targetValue){
+              const regexPattern = RegExp("/"+options.pattern+"/")
+              const valid = regexPattern.test(targetValue)
+              if(!valid){
+                //正規表現が正しくない
+                return options.message
+              }
+            }
+          }
+        }
+      }
+      return null
+
+    }
+      //対象のパラメータの入力がある場合は特定のフォーマットが要求される
+    //   const command = CommandUtil.getCommand(attributes["_command_id"])
+    //   let error = false
+    //   let errorTarget = ""
+    //   if(Array.isArray(options)) {
+    //     //配列指定の場合
+    //     options.forEach((option)=>{
+    //       if(attributes[option] && value){
+    //         //ターゲットの値が入力されている場合
+    //         const paramName = option
+    //         const label = CommandUtil.getCommandParamLabel(command, paramName)
+    //         error = true
+    //         errorTarget = errorTarget + "[" +label + "] "
+    //       }
+    //     })
+    //   }else{
+    //     //単一指定の場合
+    //     if(attributes[options] && value){
+    //       error = true
+    //       const paramName = options
+    //       const label = CommandUtil.getCommandParamLabel(command, paramName)
+    //       errorTarget = errorTarget + "[" +label + "] "
+    //     }
+    //   }
+    //   return (error)?errorTarget + "は同時に指定することができません。片方だけ指定してください。":null;
+    // };
   }
 
   schemaValidate(schema,state) {
