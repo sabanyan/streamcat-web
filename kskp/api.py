@@ -171,6 +171,50 @@ def fetch_commands():
 
 import time
 
+@api.route('/visualizers')
+def fetch_visualizers():
+    """
+    ビジュアライズ用コマンド定義の一覧を返す
+    """
+
+    # 現在はmsankeyを唯一の例として追加
+    visualizers = [
+        {
+            "id": "msankey",
+            "params": [
+                {
+                    "name": "f",
+                    "type": "string",
+                    "label": "枝データ上の2つの節点項目名"
+                },
+                {
+                    "name": "v",
+                    "type": "string",
+                    "label": "枝の重み項目名"
+                }
+            ],
+            "ports": [
+                [
+                    {
+                        "name": "i",
+                        "type": "frame"
+                    }
+                ],
+                [
+                    {
+                        "name": "o",
+                        "type": "html"
+                    }
+                ]
+            ],
+            "label": "sankeyダイアグラムの描画",
+            "classification": "visualizer",
+            "url": "https://www.nysol.jp/view/jp/sect-msankey.html"
+        }
+    ]
+
+    return jsonify({'success': True, 'data': visualizers})
+
 @api.route('/frames', methods=['GET', 'POST'])
 def make_new_frame():
     """
