@@ -1,7 +1,7 @@
 import json
 import uuid
 from pathlib import Path
-
+from .engine.data3 import *
 from flask import Blueprint, request, session, jsonify, send_from_directory
 from .auth import login_required_api
 from .navigation import update_navigation
@@ -19,7 +19,9 @@ from .model import (
     get_user_by_id,
     fetch_subflows_all_projects,
     get_flow_nodes_by_uuid,
-    update_user_by_id
+    update_user_by_id,
+    write_data_to_json,
+    make_flow_path
 )
 from .activity import (
     make_unfinished_history,
@@ -150,6 +152,50 @@ def fetch_subflows():
     サブフロー一覧を取得する。
     """
     return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args)})
+
+@api.route('/executableflows', methods=['POST'])
+@login_required_api
+def make_executable_flow():
+    """
+    サブフローとフレームを取得し、実行可能なフローを新規に作成する。
+    とりあえず新規APIで作成したが、
+    新しいフローが作成されるので、flowsのPOSTなのかなとは思う。
+    このままでもいいが流石にexecutableflowsはダサいので、なんか考える。
+    """
+
+    def replace_inputs(request):
+        """
+        サブフローのインプットを置き換える
+        """
+        flow_uuid = request['flow_uuid']
+        frame_uuid = request['frame_uuid']
+
+        flow_json = fetch_flow_by_uuid(flow_uuid)
+
+        # portsから外部入力になっているフレームを取得
+        for input in flow_json['ports'][0]:
+            frame = None
+            for node in flow_json['nodes']:
+                if node['id'] == input['name']:
+                    frame = node
+                    break
+            # フレームを置き換える
+            frame['uuid'] = frame_uuid
+
+        # portsの中のものを削除する
+        flow_json['ports'][0].clear()
+        new_flow_uuid = str(uuid.uuid4())
+
+        # フローを返す
+        return flow_json, new_flow_uuid
+
+    subflow_and_frames = request.json
+    executable_flow, new_flow_uuid = replace_inputs(subflow_and_frames)
+
+    # 本当に作成するのか？今の所実jsonファイルを作成しないと、実行できないため作成するが…
+    write_data_to_json(make_flow_path(new_flow_uuid), executable_flow)
+
+    return jsonify({'success': True, 'data': executable_flow, 'flow_uuid': new_flow_uuid})
 
 @api.route('/commands')
 def fetch_commands():
@@ -674,8 +720,7 @@ def load_as_data_frame(result_text, offset, limit):
 
     # offset+1の1はヘッダを飛ばすため
     start = 1 + offset
-    end = start + limit if limit is not None else result_len
-
+    end = start + (limit if limit is not None else result_len)
     for record in result_list[start:end]:
         for idx, column_data in enumerate(record.split(',')):
             # print(column_list[idx])

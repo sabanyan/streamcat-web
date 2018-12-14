@@ -692,6 +692,30 @@ class ApiTestCase(unittest.TestCase):
         # self.assertEqual(result['message'], '')
         # self.assertEqual(result['success'], True)
 
+    def test_make_executableflows(self):
+        """
+        make_executableflows APIをテストする
+        """
+        # アップロード用に一時ファイルを作成する
+        flow_uuid = '5e6e9c97-5379-4f2b-b8aa-cac21d80f49f'
+        inputs_json = {
+            'frame_uuid' : 'fd0223bc-7554-4033-81a6-0390e5a28d64',
+            'flow_uuid' : flow_uuid
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/executableflows',
+                json=inputs_json
+            )
+            result = json.loads(response.get_data())
+
     @unittest.skip
     def test_execute_flow(self):
         '''
