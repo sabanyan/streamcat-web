@@ -163,14 +163,12 @@ def make_executable_flow():
     このままでもいいが流石にexecutableflowsはダサいので、なんか考える。
     """
 
-    def replace_inputs(request):
+    def replace_inputs_frame_uuid(request):
         """
         サブフローのインプットを置き換える
+        frame_uuid指定
         """
-        flow_uuid = request['flow_uuid']
-        frame_uuid = request['frame_uuid']
-
-        flow_json = fetch_flow_by_uuid(flow_uuid)
+        flow_json = fetch_flow_by_uuid(request.get('flow_uuid'))
 
         # portsから外部入力になっているフレームを取得
         for input in flow_json['ports'][0]:
@@ -180,7 +178,7 @@ def make_executable_flow():
                     frame = node
                     break
             # フレームを置き換える
-            frame['uuid'] = frame_uuid
+            frame['uuid'] = request.get(input['name'])
 
         # portsの中のものを削除する
         flow_json['ports'][0].clear()
@@ -189,13 +187,58 @@ def make_executable_flow():
         # フローを返す
         return flow_json, new_flow_uuid
 
-    subflow_and_frames = request.json
-    executable_flow, new_flow_uuid = replace_inputs(subflow_and_frames)
+    def replace_inputs_upload_csv(request):
+        """
+        サブフローのインプットを置き換える
+        ファイルアップロード
+        """
+        # 新フロー作成元のサブフロー取得
+        flow_json = fetch_flow_by_uuid(request.form.get('flow_uuid'))
+        key_value = json.loads(request.form.get('key_value'))
+
+        for file_name, file in request.files.items():
+            # ファイルアップロード
+            f = file
+            file_name = file_name
+            frame_uuid = str(uuid.uuid4())
+
+            from werkzeug.utils import secure_filename
+            file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
+            f.save(file_path.as_posix())
+            f.close()
+
+            for key, value in key_value.items():
+                if value == file_name:
+                    key_value[key] = frame_uuid
+
+        # portsから外部入力になっているフレームを取得
+        for input in flow_json['ports'][0]:
+            frame = None
+            for node in flow_json['nodes']:
+                if node['id'] == input['name']:
+                    frame = node
+                    break
+            # フレームを置き換える
+            frame['uuid'] = key_value[input['name']]
+
+        # portsの中のものを削除する
+        flow_json['ports'][0].clear()
+        new_flow_uuid = str(uuid.uuid4())
+
+        # フローを返す
+        return flow_json, new_flow_uuid
+
+    if request.headers['Content_type'] == 'application/json':
+        subflow_and_frames = request.json
+        executable_flow, new_flow_uuid = replace_inputs_frame_uuid(subflow_and_frames)
+    else:
+        subflow_and_csv = request
+        executable_flow, new_flow_uuid = replace_inputs_upload_csv(subflow_and_csv)
 
     # 本当に作成するのか？今の所実jsonファイルを作成しないと、実行できないため作成するが…
     write_data_to_json(make_flow_path(new_flow_uuid), executable_flow)
 
-    return jsonify({'success': True, 'data': executable_flow, 'flow_uuid': new_flow_uuid})
+    return jsonify({'success': True, 'flow_uuid': new_flow_uuid})
 
 @api.route('/commands')
 def fetch_commands():
