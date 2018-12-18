@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx webpack --watch -d",
     "dll": "npx webpack --config webpack.dll.config.js",
-    "build": "npx webpack --env.production && npm run dll --env.production",
+    "build": "npm run dll --env.production && npx webpack --env.production",
     "test": "jest",
     "testwatch": "jest --watchAll",
     "testcoverage": "jest --coverage",
