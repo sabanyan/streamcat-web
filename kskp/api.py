@@ -153,6 +153,81 @@ def fetch_subflows():
     """
     return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args)})
 
+@api.route('/executableflows2', methods=['POST'])
+@login_required_api
+def make_executable_flow2():
+    """
+    inputsを与えてexecute
+    ファイルは必ずuploadするのでPathFileSourceでframeを作れる
+    """
+    # Frameとport名のdict作成（inputs）
+    flow_uuid = request.form.get('flow_uuid')
+    flow_json = fetch_flow_by_uuid(flow_uuid)
+
+    inputs = {}
+
+    for input in flow_json['ports'][0]:
+        frame_uuid = None
+
+        # frame（既にkskpに存在するデータソース）の場合
+        if request.form.get(input['name']) is not None:
+            # フレームを置き換える
+            frame_uuid = request.form.get(input['name'])
+            inputs[input['name']] = Frame(frame_uuid, PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+            continue
+
+        # 新たにkskpにアップロードする場合
+        file = request.files.get(input['name'])
+        if file is not None:
+            # ファイルアップロード
+            frame_uuid = str(uuid.uuid4())
+            from werkzeug.utils import secure_filename
+            file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
+            file.save(file_path.as_posix())
+            file.close()
+            inputs[input['name']] = Frame(frame_uuid, PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+            continue
+
+    now = datetime.now()
+
+    @make_unfinished_history(now, session)
+    @make_finished_history(now)
+    def execute_flow_by_uuid(flow_uuid, inputs):
+        from . import engine as e
+        flow_path = FLOWS_DIR_PATH / Path(flow_uuid + '.json')
+        with open(flow_path.as_posix(), 'r') as f:
+            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs)
+
+    # フローの作成
+    result = execute_flow_by_uuid(flow_uuid, inputs)
+    nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
+
+    result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
+    # if no_contents:
+    #     result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
+    # else:
+    #     result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
+    # return result_list
+
+    # try:
+    #     result_data = execute_flow_internal(flow_uuid, step_paths, no_contents)
+    #     if not result_data:
+    #         return jsonify({
+    #                             'success': False,
+    #                             'code': -1,
+    #                             'message': 'result is empty.'
+    #                         })
+    #     else:
+    #         return jsonify({'success': True, 'name': result_data})
+    # except Exception as e:
+    #     return jsonify({
+    #                         'success': False,
+    #                         'code': -1,
+    #                         'message': repr(e)
+    #                     })
+
+    return jsonify({'success': True, 'name': result_list})
+
 @api.route('/executableflows', methods=['POST'])
 @login_required_api
 def make_executable_flow():
