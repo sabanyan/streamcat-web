@@ -4,10 +4,9 @@
   "description": "kskp-beta",
   "main": "index.js",
   "scripts": {
+    "start": "npx webpack --watch -d",
     "dll": "npx webpack --config webpack.dll.config.js",
-    "build": "npx webpack",
-    "start": "npx webpack --watch -d --mode=development",
-    "production": "npx webpack --watch -d --mode=production & webpack-dev-server --content-base public/",
+    "build": "npx webpack --env.production && npm run dll --env.production",
     "test": "jest",
     "testwatch": "jest --watchAll",
     "testcoverage": "jest --coverage",
