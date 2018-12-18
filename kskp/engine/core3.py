@@ -8,12 +8,12 @@ from datetime import datetime, timedelta, timezone
 flow_obj_cache = {} # uuid: Jsonオブジェクト
 flows_cache = {} # uuid: Flowインスタンス
 
-def parse(flow_uuid):
+def parse(flow_uuid, inputs={}):
     global flow_obj_cache
     global flows_cache
     flow_obj_cache = {}
     flows_cache = {}
-    return parse_job(load_flow(flow_uuid), flow_uuid, {}, {}, {}, {})
+    return parse_job(load_flow(flow_uuid), flow_uuid, {}, {}, {}, inputs=inputs)
 
 def load_flow(flow_uuid):
     if flow_uuid in flow_obj_cache:
