@@ -162,60 +162,69 @@ def make_executable_flow():
     新しいフローが作成されるので、flowsのPOSTなのかなとは思う。
     このままでもいいが流石にexecutableflowsはダサいので、なんか考える。
 
-    とりあえず、どうにでもなるように独立させておく。
+    とりあえず、どうにでもなるようにエンドポイントは独立させておく。
 
     POSTなのでflow_uuidはbodyの中に入れてもらう。
+
+    基本的には一時的なものなので、
+    POSTで作成→frames?fromで実行→DELETEで削除してもらう
     """
 
-    def replace_inputs_upload_csv(request):
-        """
-        サブフローのインプットを置き換える
-        ファイルアップロード
-        """
-        # 新フロー作成元のサブフロー取得
-        flow_json = fetch_flow_by_uuid(request.form.get('flow_uuid'))
+    executable_flow = replace_inputs_upload_csv(request)
+    new_flow_uuid = str(uuid.uuid4())
 
-        # まずfilesを使ってアップロード、でもfor文でアップロードはだるいなぁ、getでするか、Noneだったらformのgetを行うとか？それなら対応表はつくらず、一回のfor文ですみそう！
-        for input in flow_json['ports'][0]:
-            frame = None
-            for node in flow_json['nodes']:
-                if node['id'] == input['name']:
-                    frame = node
-                    break
-
-            # frame（既にkskpに存在するデータソース）
-            if request.form.get(input['name']) is not None:
-                # フレームを置き換える
-                frame['uuid'] = request.form.get(input['name'])
-                continue
-
-            # 新たにkskpにアップロードする
-            file = request.files.get(input['name'])
-            if file is not None:
-                # ファイルアップロード
-                frame_uuid = str(uuid.uuid4())
-                from werkzeug.utils import secure_filename
-                file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
-                file.save(file_path.as_posix())
-                file.close()
-
-                # フレームを置き換える
-                frame['uuid'] = frame_uuid
-                continue
-
-        # portsの中のものを削除する
-        flow_json['ports'][0].clear()
-        new_flow_uuid = str(uuid.uuid4())
-
-        # フローを返す
-        return flow_json, new_flow_uuid
-
-    executable_flow, new_flow_uuid = replace_inputs_upload_csv(request)
-
-    # 本当に作成するのか？今の所実jsonファイルを作成しないと、実行できないため作成するが…
+    # フローの作成
     write_data_to_json(make_flow_path(new_flow_uuid), executable_flow)
 
     return jsonify({'success': True, 'flow_uuid': new_flow_uuid})
+
+
+def replace_inputs_upload_csv(request):
+    """
+    サブフローのインプットを置き換える
+    ファイルアップロード
+    """
+    # 新フロー作成元のサブフロー取得
+    flow_json = fetch_flow_by_uuid(request.form.get('flow_uuid'))
+
+    # portsとnodesはリストなので、ここをfor文で回すのは仕方ないか？
+    for input in flow_json['ports'][0]:
+        frame = None
+        for node in flow_json['nodes']:
+            if node['id'] == input['name']:
+                frame = node
+                break
+
+        # frame（既にkskpに存在するデータソース）の場合
+        if request.form.get(input['name']) is not None:
+            # フレームを置き換える
+            frame['uuid'] = request.form.get(input['name'])
+            continue
+
+        # 新たにkskpにアップロードする場合
+        file = request.files.get(input['name'])
+        if file is not None:
+            # ファイルアップロード
+            frame_uuid = str(uuid.uuid4())
+            from werkzeug.utils import secure_filename
+            file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
+            file.save(file_path.as_posix())
+            file.close()
+
+            # フレームを置き換える
+            frame['uuid'] = frame_uuid
+            continue
+
+    # portsの中のものを削除する（portsのoは別に削除しなくてもいいが、念の為）
+    flow_json['ports'][0].clear()
+    flow_json['ports'][1].clear()
+
+    # フロー名変更（何にしようか？、一時的とは言え、実行中はまだ削除されておらずフローが存在するので、誰かからみられることがあると思うので…）
+    now = datetime.now()
+    flow_json['label'] = flow_json['label'] + '(' + datetime.now(timezone(timedelta(hours=+9), 'JST')).strftime('%Y-%m-%d %H:%M:%S') + ')'
+
+    # フローを返す
+    return flow_json
 
 @api.route('/commands')
 def fetch_commands():

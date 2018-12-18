@@ -8,7 +8,12 @@
         "type": "frame"
       }
     ],
-    []
+    [
+      {
+        "name": "d1",
+        "type": "frame"
+      }
+    ]
   ],
   "params": [],
   "description": "テスト",
