@@ -19,7 +19,7 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, step_paths=None, fr
     if flows_path is not None:
         os.environ['KENG_FLOWS_PATH'] = flows_path
 
-    job = parse(flow_uuid, inputs=inputs)
+    job = parse(flow_uuid, inputs=inputs, args=arguments)
     result = job.execute(step_paths=step_paths)
     job.dtor()
 
