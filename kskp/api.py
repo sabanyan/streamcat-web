@@ -153,80 +153,52 @@ def fetch_subflows():
     """
     return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args)})
 
-@api.route('/executableflows2', methods=['POST'])
+@api.route('/subflows', methods=['POST'])
 @login_required_api
-def make_executable_flow2():
+def execute_subflow():
     """
     inputsを与えてexecute
     ファイルは必ずuploadするのでPathFileSourceでframeを作れる
     """
-    # Frameとport名のdict作成（inputs）
     flow_uuid = request.form.get('flow_uuid')
     flow_json = fetch_flow_by_uuid(flow_uuid)
 
+    # executeの引数
+    # no_contentsも入れれるけど、今はまぁいいか
     inputs = {}
+    args = json.loads(request.form.get('args')) if request.form.get('args') is not None else {}
 
-    for input in flow_json['ports'][0]:
-        frame_uuid = None
+    upload_file_list = []
+
+    for port in flow_json['ports'][0]:
+        frame_uuid = ''
 
         # frame（既にkskpに存在するデータソース）の場合
-        if request.form.get(input['name']) is not None:
+        if request.form.get(port['name']) is not None:
             # フレームを置き換える
-            frame_uuid = request.form.get(input['name'])
-            inputs[input['name']] = Frame(frame_uuid, PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+            frame_uuid = request.form.get(port['name'])
+            inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
             continue
 
         # 新たにkskpにアップロードする場合
-        file = request.files.get(input['name'])
+        file = request.files.get(port['name'])
         if file is not None:
-            # ファイルアップロード
-            frame_uuid = str(uuid.uuid4())
-            from werkzeug.utils import secure_filename
-            file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
-            file.save(file_path.as_posix())
-            file.close()
-            inputs[input['name']] = Frame(frame_uuid, PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+            # ファイルアップロードして、フレームを置き換える
+            frame_uuid = upload_frame(file, '')['uuid']
+            inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+
+            # 使うかわからないけど、uploadしたファイルを覚えておく
+            upload_file_list.append(frame_uuid)
             continue
 
-    now = datetime.now()
+    # フローの実行
+    result = execute_flow(flow_uuid, None, False, inputs, args)
 
-    @make_unfinished_history(now, session)
-    @make_finished_history(now)
-    def execute_flow_by_uuid(flow_uuid, inputs):
-        from . import engine as e
-        flow_path = FLOWS_DIR_PATH / Path(flow_uuid + '.json')
-        with open(flow_path.as_posix(), 'r') as f:
-            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs)
+    # 後片付け（一時的にアップロードしたファイルを削除する、でも削除するかどうか決めていないのでとりあえずコメントアウトする）
+    # for file in upload_file_list:
+    #     os.remove(DATAFRAME_DIR_PATH.as_posix() + '/' + file + '.csv')
 
-    # フローの作成
-    result = execute_flow_by_uuid(flow_uuid, inputs)
-    nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
-
-    result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
-    # if no_contents:
-    #     result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
-    # else:
-    #     result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
-    # return result_list
-
-    # try:
-    #     result_data = execute_flow_internal(flow_uuid, step_paths, no_contents)
-    #     if not result_data:
-    #         return jsonify({
-    #                             'success': False,
-    #                             'code': -1,
-    #                             'message': 'result is empty.'
-    #                         })
-    #     else:
-    #         return jsonify({'success': True, 'name': result_data})
-    # except Exception as e:
-    #     return jsonify({
-    #                         'success': False,
-    #                         'code': -1,
-    #                         'message': repr(e)
-    #                     })
-
-    return jsonify({'success': True, 'name': result_list})
+    return result
 
 @api.route('/executableflows', methods=['POST'])
 @login_required_api
@@ -279,15 +251,8 @@ def replace_inputs_upload_csv(request):
         # 新たにkskpにアップロードする場合
         file = request.files.get(input['name'])
         if file is not None:
-            # ファイルアップロード
-            frame_uuid = str(uuid.uuid4())
-            from werkzeug.utils import secure_filename
-            file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
-            file.save(file_path.as_posix())
-            file.close()
-
-            # フレームを置き換える
-            frame['uuid'] = frame_uuid
+            # ファイルアップロードして、フレームを置き換える
+            frame['uuid'] = upload_frame(file, '')['uuid']
             continue
 
     # portsの中のものを削除する（portsのoは別に削除しなくてもいいが、念の為）
@@ -332,7 +297,7 @@ def make_new_frame():
 
     if 'file' in request.files:
         # ファイルがPOSTで送信されてきたらアップロードだとみなす
-        frame = upload_frame(request)
+        frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
         return jsonify({'success': True, "data": frame})
     elif 'from' in request.args:
         if '.' in request.args['from']:
@@ -394,19 +359,17 @@ def format_time(file_path):
     wk = time.localtime(os.path.getmtime(file_path))
     return time.strftime('%Y/%m/%d %H:%M', wk)
 
-def upload_frame(req):
+def upload_frame(file, file_name):
     """
     CSVをアップロードする
     TODO: テスト未実施
     """
-    f = req.files['file']
-    file_name = req.form['file_name']
     frame_uuid = str(uuid.uuid4())
 
     from werkzeug.utils import secure_filename
     file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
-    f.save(file_path.as_posix())
-    f.close()
+    file.save(file_path.as_posix())
+    file.close()
 
     return {"uuid": frame_uuid, "label": file_name}
 
@@ -429,7 +392,7 @@ def download_frame():
     return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
                                attachment_filename = downloadFileName, mimetype = 'text/csv')
 
-def execute_flow(flow_uuid, step_paths, no_contents):
+def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
@@ -444,7 +407,7 @@ def execute_flow(flow_uuid, step_paths, no_contents):
                         })
     else:
         try:
-            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents)
+            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -779,7 +742,7 @@ def execute_direct3():
 
     return jsonify({'success': True, 'data': 'execute-direct3'})
 
-def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
+def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs={}, args={}):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
@@ -789,12 +752,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
 
     @make_unfinished_history(now, session)
     @make_finished_history(now)
-    def execute_flow_by_uuid(flow_uuid):
+    def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from . import engine as e
-        with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
+        flow_path = FLOWS_DIR_PATH / Path(flow_uuid + '.json')
+        with open(flow_path.as_posix(), 'r') as f:
+            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
 
-    result = execute_flow_by_uuid(flow_uuid)
+    result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     if no_contents:
