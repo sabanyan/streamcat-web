@@ -754,9 +754,9 @@ class FrameApiTestCase(unittest.TestCase):
         self.assertEqual(data['contents']['c'], ['3', '2'])
 
 
-    def test_download_frame(self):
+    def test_download_file(self):
         """
-        download_frame APIのテストをする
+        download_file APIのテストをする
         """
         frame_uuid = '2c792bbc-4679-4396-96d1-94fc023073b1'
         with app.test_client() as client:

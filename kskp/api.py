@@ -19,7 +19,8 @@ from .model import (
     get_user_by_id,
     fetch_subflows_all_projects,
     get_flow_nodes_by_uuid,
-    update_user_by_id
+    update_user_by_id,
+    get_project_name_by_uuid
 )
 from .activity import (
     make_unfinished_history,
@@ -66,6 +67,165 @@ def get_projects():
 
     return jsonify({'success': True, 'data': projects})
 
+@api.route('/projects/<project_uuid>', methods=['GET'])
+@login_required_api
+def get_project_detail(project_uuid):
+    """
+    指定したプロジェクトの詳細を取得する
+    """
+
+    project_detail = {
+        'name':get_project_name_by_uuid(project_uuid),
+        'description':'テスト',
+        'members':[
+            {
+                'name': 'ユーザ１',
+                'id': 1
+            },
+            {
+                'name': 'ユーザ２',
+                'id': 2
+            },
+            {
+                'name': 'ユーザ３',
+                'id': 3
+            }
+        ]
+    }
+    return jsonify({'success': True, 'data': project_detail})
+
+@api.route('/projects/<project_uuid>', methods=['PUT'])
+@login_required_api
+def update_project_detail(project_uuid):
+    """
+    指定したプロジェクトの詳細を更新する
+    """
+
+    # update_json = request.json
+    update_json = {
+        'name' : '新プロジェクト名',
+        'description' : '新プロジェクト概要',
+        'member': [
+            {
+                'id':1
+            },
+            {
+                'id':2
+            },
+            {
+                'id':3
+            }
+        ]
+    }
+
+    # 更新処理
+
+
+    return jsonify({'success': True})
+
+@api.route('/activities', methods=['GET'])
+@login_required_api
+def get_activity():
+    """
+    指定したプロジェクトのアクティビティを取得する
+    """
+
+    activities = [
+        {
+            'user_id': 'テストユーザ１',
+            'timestamp': '2018-12-20 11:30:20',
+            'operation': '作成',
+            'object': 'フロー１'
+        },
+        {
+            'user_id': 'テストユーザ２',
+            'timestamp': '2018-12-20 16:30:10',
+            'operation': '削除',
+            'object': 'フロー１'
+        },
+        {
+            'user_id': 'テストユーザ１',
+            'timestamp': '2018-12-21 16:30:10',
+            'operation': '作成',
+            'object': 'フロー２'
+        },
+        {
+            'user_id': 'テストユーザ３',
+            'timestamp': '2018-12-21 16:30:10',
+            'operation': '実行',
+            'object': 'フロー２'
+        }
+    ]
+
+    return jsonify({'success': True, 'data': activities})
+
+@api.route('/flow-details', methods=['GET'])
+@login_required_api
+def get_flow_details():
+    """
+    指定したプロジェクトのフロー詳細を取得する
+    """
+
+    # 実行中の情報は一旦保留
+    flow_details ={
+        'flows':{
+            'counts':10
+        },
+        'subflows':{
+            'counts':5
+        }
+    }
+    return jsonify({'success': True, 'data': flow_details})
+
+@api.route('/documents', methods=['GET'])
+@login_required_api
+def get_documents():
+    """
+    指定したプロジェクトにアップロードされているドキュメント一覧を取得する
+    """
+
+    docuements = [
+        {
+            'name': 'アップロードファイル１',
+            'type': 'pdf',
+            'uuid': '1'
+        },
+        {
+            'name': 'アップロードファイル２',
+            'type': 'pdf',
+            'uuid': '2'
+        },
+        {
+            'name': 'アップロードファイル３',
+            'type': 'pdf',
+            'uuid': '3'
+        }
+    ]
+    return jsonify({'success': True, 'data': documents})
+
+@api.route('/documents/<uuid>', methods=['POST'])
+@login_required_api
+def upload_documents(uuid):
+    """
+    指定したプロジェクトにドキュメントをアップロードする
+    """
+
+    # ファイルのアップロードと同時にuuidの付与（一意化）
+    # ファイル名とuuidの対応表を更新する
+
+    return jsonify({'success': True})
+
+@api.route('/documents/<uuid>', methods=['DELETE'])
+@login_required_api
+def upload_documents(uuid):
+    """
+    指定したプロジェクトのドキュメントを削除
+    """
+
+    # ファイル名とuuidの対応表から指定したファイルの削除
+    # 対応表からも削除する
+
+    return jsonify({'success': True})
 
 @api.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
@@ -261,7 +421,7 @@ def upload_frame(req):
     return {"uuid": frame_uuid, "label": file_name}
 
 @api.route('/files')
-def download_frame():
+def download_file():
     # 現在typeは未使用
     type = request.args.get('type')
     frame_uuid = request.args.get('uuid')
