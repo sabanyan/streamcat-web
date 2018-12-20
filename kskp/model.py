@@ -62,13 +62,25 @@ def update_user_by_id(user_id, profile):
     update_sql = []
     update_list = []
     for key, value in profile.items():
-        update_sql.append(key + '= ?')
-        update_list.append(value)
+        if key == 'current_password':
+            continue
+
+        if key == 'new_password':
+            email = None
+            if profile.get('email') is not None:
+                email = profile.get('email')
+            else:
+                email = model.get_user_by_id(user_id)['password']
+
+            update_sql.append('password= ?')
+            update_list.append(auth.get_password_hash(email, value))
+        else:
+            update_sql.append(key + '= ?')
+            update_list.append(value)
 
     sql = '''
     UPDATE users SET %s WHERE id = ?
     ''' % ','.join(map(str, update_sql))
-
     query_db(sql, tuple(update_list) + (user_id,))
 
 def get_current_user(session):

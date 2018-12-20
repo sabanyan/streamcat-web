@@ -4162,7 +4162,8 @@ commands = {
     'mnewnumber': Mnewnumber(),
     'msortf': Msortf(),
     'mcal': Mcal(),
-
+    'msim': Msim(),
+    
     # KCMD
     'select_target_column': SelectTargetColumn(),
     'standardize': Standardize(),
