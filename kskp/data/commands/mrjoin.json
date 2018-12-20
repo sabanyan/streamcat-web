@@ -2,7 +2,7 @@
   "id": "mrjoin",
   "params": [
     {
-      "name": "r",
+      "name": "rf",
       "type": "string",
       "label": "範囲比較を行う入力ファイル上の列名(必須)"
     },
