@@ -15,6 +15,8 @@ type Props = {
   defaultValue: string;
   disabled: boolean;
   hiddenNoSelect?: boolean;
+  onClickAction?: Function;
+  actionLabel?: string;
 }
 
 export default class DropDownList extends React.Component<Props> {
@@ -49,9 +51,10 @@ export default class DropDownList extends React.Component<Props> {
 
   render () {
     let {label} = this.props
-    const {list, defaultValue, disabled,hiddenNoSelect} = this.props
+    const {list, defaultValue, disabled,hiddenNoSelect,onClickAction,actionLabel} = this.props
     let options = []
     let index = 0
+    let action = null
     for(const data of list.values()){
       options.push(<option key={index + 1} value={data.value}>{data.label}</option>)
       index++
@@ -65,9 +68,16 @@ export default class DropDownList extends React.Component<Props> {
     if(!hiddenNoSelect){
       options.unshift(<option key={0} value={null}>選択してください</option>)
     }
-    let select = <div className={style.dropdownListContainer}>{labelElement}<select disabled={disabled} defaultValue={defaultValue}
+    if(onClickAction){
+      action = <a href="#" onClick={(e)=>onClickAction(e)} className={style.actionLabel}>{actionLabel}</a>
+    }
+    let select = <div className={classnames(style.dropdownListContainer,{[style.action]:(onClickAction)})}>
+      {labelElement}
+      <select disabled={disabled} defaultValue={defaultValue}
                          onChange={(e) => this.onChange(e)}
-                         className={classnames(style.dropdownList,{[style.hasLabel]:(label)})}>{options}</select></div>
+                         className={classnames(style.dropdownList,{[style.hasLabel]:(label)})}>{options}</select>
+      {action}
+    </div>
     return select
   }
 }

@@ -6,10 +6,13 @@ import CommandStepModel from '../../../../../model/Step/CommandStepModel'
 import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
 import CommandModel from '../../../../../model/Command/CommandModel'
 import FlowUtil from '../../../../../utils/FlowUtil'
-import type { CommandPortType, SubFlowParamType } from '../../../../../types/index'
+import type { CommandPortType, StepModelType, SubFlowParamType } from '../../../../../types/index'
 import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
 import StateUtil from '../../../../../utils/State'
 import FlowModel from '../../../../../model/Flow/FlowModel'
+import Button from '../../../Button'
+import ModalUtil from '../../../../../utils/ModalUtil'
+import Constants from '../../../../../constants'
 
 class InOutConnector extends React.Component{
 
@@ -31,6 +34,26 @@ class InOutConnector extends React.Component{
     }
   }
 
+  deletePort(step:StepModelType,portName:string){
+
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        step.deleteInPort(portName)
+        this.props.updateStep(step)
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        選択されたポートを削除しますか？
+      </div>,
+    })
+
+  }
 
   render () {
     const {nodes,onChangeInEdge,onChangeOutEdge,selectedStep,mast} = this.props
@@ -53,9 +76,17 @@ class InOutConnector extends React.Component{
         dataFrameId = selectedStep.srcs[key]
         const portName = key
         return <div key={index} className={style.param}>
-          <DropDownList disabled={false} key={"in_edge"}
-                        onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={dataFrameId}
-                        list={dataSourceOptions} label={portName} hiddenNoSelect={false}></DropDownList>
+          <DropDownList disabled={false}
+                        key={"in_edge"}
+                        onChange={(e, data, label) => this.onChangeInEdge(e, data, label)}
+                        defaultValue={dataFrameId}
+                        list={dataSourceOptions}
+                        label={portName}
+                        hiddenNoSelect={false}
+                        actionLabel = {"削除"}
+                        onClickAction = {()=>this.deletePort(selectedStep,portName)}
+          ></DropDownList>
+
         </div>
       })
     }
