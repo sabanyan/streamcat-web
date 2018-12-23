@@ -41,6 +41,13 @@ export default class CommandStepModel extends BaseStepModel{
     return step
   }
 
+  /**
+   * 指定されたポートを削除する
+   * @param key
+   */
+  deleteInPort(key){
+    delete this.srcs[key]
+  }
 
   getSrcsSteps(nodes){
     let steps = {}
