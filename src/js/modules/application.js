@@ -164,8 +164,13 @@ const Application = (state = initialState, action: {}) => {
           const inPorts: [CommandPortType] = command.getInPorts()
           const outPorts: [CommandPortType] = command.getOutPorts()
           src_step_ids.forEach((id, index) => {
-            const newPortName = inPorts[index]
-            add_step.srcs[newPortName.name] = id
+            const newPort = inPorts[index]
+            let portName = newPort.name
+            if(portName === "*"){
+              portName = "*1"
+            }
+
+            add_step.srcs[portName] = id
 
             //srcsがあった場合は１つ目のポート名につなぐ
             //srcsがない場合は、デフォルト値（i）のポートにつなぐ
@@ -174,9 +179,8 @@ const Application = (state = initialState, action: {}) => {
             let inputPortName = Constants.default.command.inputPortName
             if (add_step.srcs !== undefined || add_step.srcs !== {}) {
               inputPortName = Object.keys(add_step.srcs)[0]
-
             }
-            graph.addEdge(from, to, Graph.edgeName(from, to, newPortName.name))
+            graph.addEdge(from, to, Graph.edgeName(from, to, portName))
 
           })
           dst_step_ids.forEach((id, index) => {
