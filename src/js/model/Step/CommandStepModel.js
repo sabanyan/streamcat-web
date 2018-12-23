@@ -49,6 +49,46 @@ export default class CommandStepModel extends BaseStepModel{
     delete this.srcs[key]
   }
 
+  /**
+   * 指定されたポートを削除する
+   * @param key
+   */
+  addInPort(key){
+    this.srcs[key] = null
+  }
+
+  /**
+   * 指定されたポート名の最大値を求める
+   * @param key
+   */
+  getInPortIndex(){
+    const srcKeys = Object.keys(this.srcs)
+
+    const filterKeys = srcKeys.filter((key)=>{
+      return (key.indexOf("*") != -1)
+    })
+
+    let max = 0
+    filterKeys.forEach((key)=>{
+      const value = key.replace("*","")
+      console.log(value)
+      max = (value > max)?value:max
+    })
+
+    return parseInt(max)
+  }
+
+  /**
+   * 入力ポートを追加できるか
+   */
+  addableInPort(){
+    const srcKeys = Object.keys(this.srcs)
+    const filterKeys = srcKeys.filter((key)=>{
+      return (key.indexOf("*") != -1)
+    })
+    return (filterKeys.length)
+  }
+
   getSrcsSteps(nodes){
     let steps = {}
     Object.keys(this.srcs).forEach((key)=>{
