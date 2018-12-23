@@ -10,6 +10,7 @@ import HttpUtil from '../../../../utils/HttpUtil'
 import ModalUtil from '../../../../utils/ModalUtil'
 import Constants from '../../../../constants'
 import type { SubFlowParamType } from '../../../../types'
+import AddButton from '../../AddButton'
 
 class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
@@ -136,10 +137,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
         フロー変数の設定がありません
       </div>
     }
-    addFlowParams = <div className={style.new_flow_params} onClick={()=>this.onClickAddFlowParam()}>
-      <i className={classnames('material-icons', [style.new_flow_params_icon])}>add_circle_outline</i>
-      フロー変数を追加する
-    </div>
+    addFlowParams = <AddButton onClick={()=>this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
 
     return <BaseInspector header={''} label={this.props.flow.label} name={''} {...this.props}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={()=>this.onSave()}>
