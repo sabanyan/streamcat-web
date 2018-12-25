@@ -180,6 +180,26 @@ def fetch_visualizers():
     # 現在はmsankeyを唯一の例として追加
     visualizers = [
         {
+            "id": "gridview",
+            "params": [],
+            "ports": [
+                [
+                    {
+                        "name": "i",
+                        "type": "frame"
+                    }
+                ],
+                [
+                    {
+                        "name": "o",
+                        "type": "html"
+                    }
+                ]
+            ],
+            "label": "表形式データの描画",
+            "classification": "visualizer",
+        },
+        {
             "id": "msankey",
             "params": [
                 {
@@ -210,7 +230,27 @@ def fetch_visualizers():
             "label": "sankeyダイアグラムの描画",
             "classification": "visualizer",
             "url": "https://www.nysol.jp/view/jp/sect-msankey.html"
-        }
+        },
+        {
+            "id": "plaintextview",
+            "params": [],
+            "ports": [
+                [
+                    {
+                        "name": "i",
+                        "type": "string"
+                    }
+                ],
+                [
+                    {
+                        "name": "o",
+                        "type": "html"
+                    }
+                ]
+            ],
+            "label": "単純なテキスト表示",
+            "classification": "visualizer",
+        }        
     ]
 
     return jsonify({'success': True, 'data': visualizers})
