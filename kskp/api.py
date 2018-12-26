@@ -135,25 +135,37 @@ def get_activity():
             'user_id': 'テストユーザ１',
             'timestamp': '2018-12-20 11:30:20',
             'operation': '作成',
-            'object': 'フロー１'
+            'target': 'フロー１'
         },
         {
             'user_id': 'テストユーザ２',
-            'timestamp': '2018-12-20 16:30:10',
+            'timestamp': '2018-12-20 12:30:10',
             'operation': '削除',
-            'object': 'フロー１'
+            'target': 'フロー１'
         },
         {
             'user_id': 'テストユーザ１',
-            'timestamp': '2018-12-21 16:30:10',
+            'timestamp': '2018-12-21 15:25:10',
             'operation': '作成',
-            'object': 'フロー２'
+            'target': 'フロー２'
+        },
+        {
+            'user_id': 'テストユーザ２',
+            'timestamp': '2018-12-21 15:50:10',
+            'operation': '編集',
+            'target': 'フロー２'
         },
         {
             'user_id': 'テストユーザ３',
             'timestamp': '2018-12-21 16:30:10',
-            'operation': '実行',
-            'object': 'フロー２'
+            'operation': '実行開始',
+            'target': 'フロー２'
+        },
+        {
+            'user_id': 'テストユーザ３',
+            'timestamp': '2018-12-22 16:30:10',
+            'operation': '実行完了',
+            'target': 'フロー２'
         }
     ]
 
