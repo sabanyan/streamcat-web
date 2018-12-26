@@ -851,13 +851,14 @@ def handle_bad_request(error):
 # visualize用のエンドポイント
 # _init_.pyのappをインポートして此方で定義する（色々やりやすいので）
 # flowの場合はflow_uuid、commandの場合はcommand_idをクエリパラメータとする
+# ひとまず今はframeのuuidが来ることを想定、ファイルそのものはこない。なのでcontent-typeはapplication/json
 @app.route('/visualizers', methods=['POST'])
 @login_required_api
 def visualizer():
-    # command_or_flow = request.args.get('from')
-    # frame_uuid = request.form.get('frame_uuid')
 
     # テストHTML
-    visualize_html = '<html><body><h1>Hello World!</h1></body></html>'
+    visualize_html = '<html><body>command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
+    visualize_html += 'frame_uuid : ' + json.dumps(request.json.get('inputs')) + '</body></html><br/>'
+    visualize_html += 'args : ' + json.dumps(request.json.get('args')) + '</body></html>'
 
     return visualize_html
