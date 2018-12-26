@@ -7,7 +7,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 import pickle
 
 
-class Kgb(Regression):
+class RKgb(Regression):
     """
     勾配ブースティング(回帰)クラスです。
     """
@@ -85,6 +85,6 @@ class Kgb(Regression):
         return
 
 if __name__=="__main__":
-    kgb=Kgb()
+    kgb=RKgb()
     kgb.main(sys.argv[1:])
     kgb.write()

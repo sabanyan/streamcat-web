@@ -1,0 +1,271 @@
+{
+  "projectId": 18,
+  "label": "モデル構築・予測",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2018-11-30 16:05:59",
+  "nodes": [
+    {
+      "position": {
+        "x": 99,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "a73651dd-11d0-47d0-9bbd-117b95464d1f.csv",
+      "type": "frame",
+      "label": "前処理済データ",
+      "uuid": "be1b1d7c-89a0-4eb2-b59a-074125d17893",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 233,
+        "y": 447
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "7325b007-26bc-4571-a883-03e2d057c59d.csv",
+      "type": "frame",
+      "label": "検証用データ",
+      "uuid": "c4bfe522-8cad-48d7-9e91-6a0abfa14cc0",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 233,
+        "y": 611
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "d1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 233,
+        "y": 529
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "c1",
+      "srcs": {
+        "i": "7325b007-26bc-4571-a883-03e2d057c59d.csv"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "f": "武器",
+        "r": true,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 283
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "label": "d2",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 202
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "c2",
+      "srcs": {
+        "i": "a73651dd-11d0-47d0-9bbd-117b95464d1f.csv"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "t": "武器"
+      },
+      "commandId": "select_target_column"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 611
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d3",
+      "type": "frame",
+      "label": "学習済み決定木分類モデル",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 529
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "c3",
+      "srcs": {
+        "i": "d5"
+      },
+      "dsts": {
+        "o": "d3"
+      },
+      "args": {
+        "l": "",
+        "min_samples_split": "",
+        "d": "5",
+        "c": "",
+        "r": ""
+      },
+      "commandId": "ckdt"
+    },
+    {
+      "position": {
+        "x": 167,
+        "y": 774
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d4",
+      "type": "frame",
+      "label": "予測結果",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 166,
+        "y": 693
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c4",
+      "type": "command",
+      "label": "c4",
+      "srcs": {
+        "i": "d3",
+        "d": "d1"
+      },
+      "dsts": {
+        "o": "d4"
+      },
+      "args": {
+        "p": true
+      },
+      "commandId": "predict"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 447
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d5",
+      "type": "frame",
+      "label": "ラベルエンコード済み",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 365
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c5",
+      "type": "command",
+      "label": "c5",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d5"
+      },
+      "args": {
+        "c": "target"
+      },
+      "commandId": "label_encode"
+    }
+  ]
+}

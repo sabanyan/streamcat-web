@@ -2592,7 +2592,10 @@ class KCommand(UnixCommand):
 
         # nm.cmd用の文字列のコマンドを作成する
         for key, value in args.items():
-            if not len(value) == 0:
+            if isinstance(value, bool):
+                if value:
+                    cl_args += ' -' + key
+            elif not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて下さい。
                 cl_args += ' --' if len(key) > 1 else ' -'
                 cl_args += key + ' ' + value
@@ -3933,7 +3936,10 @@ class Evaluate(KCommand):
 
         # nm.cmd用の文字列のコマンドを作成する
         for key, value in args.items():
-            if not len(value) == 0:
+            if  isinstance(value, bool):
+                if value:
+                    cl_args += ' -' + key
+            elif not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
                 cl_args += ' --' if len(key) > 1 else ' -'
                 cl_args += key + ' ' + value
@@ -3996,8 +4002,12 @@ class Predict(KCommand):
         cl_args += ' -d ' + input_d.source.fullpath.as_posix()
 
         # nm.cmd用の文字列のコマンドを作成する
+
         for key, value in args.items():
-            if not len(value) == 0:
+            if  isinstance(value, bool):
+                if value:
+                    cl_args += ' -' + key
+            elif not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
                 cl_args += ' --' if len(key) > 1 else ' -'
                 cl_args += key + ' ' + value
