@@ -6,10 +6,14 @@ import CommandStepModel from '../../../../../model/Step/CommandStepModel'
 import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
 import CommandModel from '../../../../../model/Command/CommandModel'
 import FlowUtil from '../../../../../utils/FlowUtil'
-import type { CommandPortType, SubFlowParamType } from '../../../../../types/index'
+import type { CommandPortType, StepModelType, SubFlowParamType } from '../../../../../types/index'
 import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
 import StateUtil from '../../../../../utils/State'
 import FlowModel from '../../../../../model/Flow/FlowModel'
+import Button from '../../../Button'
+import ModalUtil from '../../../../../utils/ModalUtil'
+import Constants from '../../../../../constants'
+import AddButton from '../../../AddButton'
 
 class InOutConnector extends React.Component{
 
@@ -31,6 +35,45 @@ class InOutConnector extends React.Component{
     }
   }
 
+  onClickAddEdge(step){
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        const nextIndex = step.getInPortIndex() + 1
+        const newStep = StateUtil.deepCopy(step)
+        newStep.addInPort("*" + nextIndex)
+        this.props.updateStep(newStep)
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '追加する',
+      content: <div>
+        入力を追加しますか？
+      </div>,
+    })
+  }
+
+  deletePort(step:StepModelType,portName:string){
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        const newStep = StateUtil.deepCopy(step)
+        newStep.deleteInPort(portName)
+        this.props.updateStep(newStep)
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        {portName} の入力を削除しますか？
+      </div>,
+    })
+  }
 
   render () {
     const {nodes,onChangeInEdge,onChangeOutEdge,selectedStep,mast} = this.props
@@ -47,18 +90,37 @@ class InOutConnector extends React.Component{
 
     let command:CommandModel
     let inEdgeSelect = []
+    let addEdgeContainer
     if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
+
+      addEdgeContainer = (selectedStep.addableInPort())?<AddButton onClick={()=>this.onClickAddEdge(selectedStep)}>入力を追加する</AddButton>:null
+
       inEdgeSelect = Object.keys(selectedStep.srcs).map((key, index) => {
         let dataFrameId: string
         dataFrameId = selectedStep.srcs[key]
         const portName = key
+
+        const actionProps = (selectedStep.addableInPort())?{
+          actionLabel:"削除",
+          onClickAction:()=>this.deletePort(selectedStep,portName)
+        }:null
+
         return <div key={index} className={style.param}>
-          <DropDownList disabled={false} key={"in_edge"}
-                        onChange={(e, data, label) => this.onChangeInEdge(e, data, label)} defaultValue={dataFrameId}
-                        list={dataSourceOptions} label={portName} hiddenNoSelect={false}></DropDownList>
+          <DropDownList disabled={false}
+                        key={"in_edge"}
+                        onChange={(e, data, label) => this.onChangeInEdge(e, data, label)}
+                        defaultValue={dataFrameId}
+                        list={dataSourceOptions}
+                        label={portName}
+                        hiddenNoSelect={false}
+                        {...actionProps}
+          ></DropDownList>
+
         </div>
       })
     }
+
+
 
     const output = Object.keys(selectedStep.dsts).map((key,index)=>{
       let dataFrameId: string
@@ -70,6 +132,7 @@ class InOutConnector extends React.Component{
     return  <div className="kskp-form">
           <label>入力</label>
           {inEdgeSelect}
+          {addEdgeContainer}
           <label>出力</label>
           {output}
         </div>
