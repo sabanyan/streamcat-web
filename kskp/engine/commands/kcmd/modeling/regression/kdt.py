@@ -7,7 +7,7 @@ from sklearn.tree import DecisionTreeRegressor
 import pickle
 
 
-class Kdt(Regression):
+class RKdt(Regression):
     """
     決定木(回帰)クラスです。
     """
@@ -80,6 +80,6 @@ class Kdt(Regression):
         return
 
 if __name__=="__main__":
-    kdt=Kdt()
+    kdt=RKdt()
     kdt.main(sys.argv[1:])
     kdt.write()
