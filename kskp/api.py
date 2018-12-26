@@ -28,6 +28,7 @@ from .activity import (
     make_finished_history
 )
 from datetime import datetime, timezone, timedelta
+from . import app
 
 api = Blueprint('api', __name__)
 
@@ -846,3 +847,17 @@ def handle_bad_request(error):
     # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
     message = 'The browser (or proxy) sent a request that this server could not understand.'
     return jsonify({'success': False, 'message': str(error)})
+
+# visualize用のエンドポイント
+# _init_.pyのappをインポートして此方で定義する（色々やりやすいので）
+# flowの場合はflow_uuid、commandの場合はcommand_idをクエリパラメータとする
+@app.route('/visualizers', methods=['POST'])
+@login_required_api
+def visualizer():
+    # command_or_flow = request.args.get('from')
+    # frame_uuid = request.form.get('frame_uuid')
+
+    # テストHTML
+    visualize_html = '<html><body><h1>Hello World!</h1></body></html>'
+
+    return visualize_html
