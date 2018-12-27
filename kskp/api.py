@@ -864,29 +864,45 @@ def visualizer():
     visualize_html += 'frame_uuid : ' + json.dumps(request.json.get('inputs')) + '<br/>'
     visualize_html += 'args : ' + json.dumps(request.json.get('args'))
 
-    column = 5
-    row = 5
-
+    # とりあえずkeyはiで送られてくることとする
+    file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % request.json.get('inputs').get('i'))
     # テーブル構造
-    visualize_html += '<table border="1">'
-    visualize_html += '<tr>'
-    for i in range(column):
-        visualize_html += '<th>'
-        visualize_html += str(i)
-        visualize_html += '</th>'
-    visualize_html += '</tr>'
-
-    for i in range(row):
-        visualize_html += '<tr>'
-        for j in range(column):
-            visualize_html += '<td>'
-            visualize_html += str(j)
-            visualize_html += '</td>'
-        visualize_html += '</tr>'
-
-    visualize_html += '</table>'
+    if os.path.exists(file_path):
+        visualize_html += csv_to_table_of_html(file_path)
 
     visualize_html += '</body></html>'
 
-
     return visualize_html
+
+
+def csv_to_table_of_html(file_path):
+    """
+    csvのファイルパスから、
+    HTMLのテーブル形式にして返す
+    """
+    # テーブル構造
+    table_of_html = '<table border="1">'
+    with open(file_path, 'r') as f:
+        reader = csv.reader(f)
+        header = next(reader)
+
+        # header
+        table_of_html += '<tr>'
+        for head in header:
+            table_of_html += '<th>'
+            table_of_html += head
+            table_of_html += '</th>'
+        table_of_html += '</tr>'
+
+        # data
+        for csv_row in reader:
+            table_of_html += '<tr>'
+            for datum in csv_row:
+                table_of_html += '<td>'
+                table_of_html += datum
+                table_of_html += '</td>'
+            table_of_html += '</tr>'
+
+    table_of_html += '</table>'
+
+    return table_of_html
