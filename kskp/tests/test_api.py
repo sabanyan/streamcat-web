@@ -1340,8 +1340,7 @@ class ApiTestCase(unittest.TestCase):
         }
 
         inputs = {
-            'i': frame_uuid_1,
-            'i2': frame_uuid_2
+            'i': '25000'
         }
 
         # ユーザの作成
@@ -1364,26 +1363,16 @@ class ApiTestCase(unittest.TestCase):
         # テスト
         # self.assertEqual(result['success'], True)
         # 後片付け
-        print(result)
+        with open('kskp/data/frames/result.html', 'w') as f:
+            f.write(result.decode('utf-8'))
+
         # 削除
         frame_path_1 = Path('kskp/data/frames/' + frame_uuid_1 + '.csv')
         frame_path_2 = Path('kskp/data/frames/' + frame_uuid_2 + '.csv')
         os.remove(frame_path_1)
         os.remove(frame_path_2)
 
-        # このテストで作成したjobsだけ削除する
-        # for path in Path(app.root_path + '/data/jobs/').iterdir():
-        #     job_data = json.loads(path.read_text())
-        #     if job_data['flow']['uuid'] == flow_uuid:
-        #         # 指定したflowでjobができているかのテスト
-        #         self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-        #         self.assertEqual(job_data['state'], '実行完了')
-        #         # 作成したFrameの削除
-        #         for data in job_data['data'].values():
-        #             frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-        #             os.remove(frame_path)
-        #         # jobsの削除
-        #         os.remove(path)
+
 
     @unittest.skip
     def test_execute_flow(self):
