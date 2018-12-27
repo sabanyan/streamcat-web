@@ -858,7 +858,7 @@ def visualizer():
 
     # テストHTML
     visualize_html = '<html><body>command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
-    visualize_html += 'frame_uuid : ' + json.dumps(request.json.get('inputs')) + '</body></html><br/>'
+    visualize_html += 'frame_uuid : ' + json.dumps(request.json.get('inputs')) + '<br/>'
     visualize_html += 'args : ' + json.dumps(request.json.get('args')) + '</body></html>'
 
     return visualize_html
