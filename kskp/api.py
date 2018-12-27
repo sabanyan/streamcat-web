@@ -857,8 +857,36 @@ def handle_bad_request(error):
 def visualizer():
 
     # テストHTML
-    visualize_html = '<html><body>command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
+    visualize_html = '<html><body>'
+
+    # クエリパラメータ及びbody部の情報
+    visualize_html += 'command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
     visualize_html += 'frame_uuid : ' + json.dumps(request.json.get('inputs')) + '<br/>'
-    visualize_html += 'args : ' + json.dumps(request.json.get('args')) + '</body></html>'
+    visualize_html += 'args : ' + json.dumps(request.json.get('args'))
+
+    column = 5
+    row = 5
+
+    # テーブル構造
+    visualize_html += '<table border="1">'
+    visualize_html += '<tr>'
+    for i in range(column):
+        visualize_html += '<th>'
+        visualize_html += str(i)
+        visualize_html += '</th>'
+    visualize_html += '</tr>'
+
+    for i in range(row):
+        visualize_html += '<tr>'
+        for j in range(column):
+            visualize_html += '<td>'
+            visualize_html += str(j)
+            visualize_html += '</td>'
+        visualize_html += '</tr>'
+
+    visualize_html += '</table>'
+
+    visualize_html += '</body></html>'
+
 
     return visualize_html
