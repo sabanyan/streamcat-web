@@ -196,8 +196,8 @@ def execute_subflow():
     result = execute_flow(flow_uuid, None, False, inputs, args)
 
     # 後片付け（一時的にアップロードしたファイルを削除する、でも削除するかどうか決めていないのでとりあえずコメントアウトする）
-    # for file in upload_file_list:
-    #     os.remove(DATAFRAME_DIR_PATH.as_posix() + '/' + file + '.csv')
+    for file in upload_file_list:
+        os.remove(DATAFRAME_DIR_PATH.as_posix() + '/' + file + '.csv')
 
     return result
 
@@ -856,26 +856,43 @@ def handle_bad_request(error):
 @login_required_api
 def visualizer():
 
-    # テストHTML
-    visualize_html = '<html><body>'
+    from .engine.core3 import Command
+    class CsvToHtmlCommand(Command):
+        def __init__(self):
+            super().__init__()
+            self.i_ports = [{'name': 'i', 'type': 'frame'}]
+            self.o_ports = [{'name': 'o', 'type': 'html'}]
 
-    # クエリパラメータ及びbody部の情報
-    visualize_html += 'command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
-    visualize_html += 'frame_uuid : ' + json.dumps(request.json.get('inputs')) + '<br/>'
-    visualize_html += 'args : ' + json.dumps(request.json.get('args'))
+        def execute(self, args, inputs):
+            # テストHTML
+            visualize_html = '<html><body>'
 
-    # とりあえずkeyはiで送られてくることとする
-    file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % request.json.get('inputs').get('i'))
-    # テーブル構造
-    if os.path.exists(file_path):
-        visualize_html += csv_to_table_of_html(file_path)
+            # クエリパラメータ及びbody部の情報
+            # visualize_html += 'command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
+            # visualize_html += 'frame_uuid : ' + json.dumps(inputs) + '<br/>'
+            # visualize_html += 'args : ' + json.dumps(args)
 
-    visualize_html += '</body></html>'
+            # とりあえずkeyはiで送られてくることとする
+            file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % inputs.get('i'))
 
-    return visualize_html
+            offset = int(args.get('offset')) if args.get('offset') is not None else 0
+            limit = int(args.get('limit')) if args.get('limit') is not None else None
+
+            # テーブル構造
+            if os.path.exists(file_path):
+                visualize_html += csv_to_table_of_html(file_path, limit=limit, offset=offset)
+
+            visualize_html += '</body></html>'
+
+            return { self.out_key: visualize_html }
+
+    command = CsvToHtmlCommand()
+    result = command.execute(request.json.get('args'), request.json.get('inputs'))
+
+    return jsonify({'success': True, 'data': result})
 
 
-def csv_to_table_of_html(file_path):
+def csv_to_table_of_html(file_path, limit=None, offset=0):
     """
     csvのファイルパスから、
     HTMLのテーブル形式にして返す
@@ -895,7 +912,12 @@ def csv_to_table_of_html(file_path):
         table_of_html += '</tr>'
 
         # data
-        for csv_row in reader:
+        # offsetとかlimitを設定するならこっちか
+        csv_list = list(reader)
+        start = offset
+        end = start + (limit if limit is not None else len(csv_list))
+
+        for csv_row in csv_list[start:end]:
             table_of_html += '<tr>'
             for datum in csv_row:
                 table_of_html += '<td>'
