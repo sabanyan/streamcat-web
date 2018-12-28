@@ -136,6 +136,7 @@ class Job:
 
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
+            # print(self.step.args, self.inputs)
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
@@ -364,40 +365,51 @@ class Split(Command):
         frame2 = Frame(str(uuid.uuid4()), source2)
         return {'o1': frame1, 'o2': frame2}
 
-class CsvToHtmlCommand(Command):
+class VisualizersCommand(Command):
     def __init__(self):
         super().__init__()
         self.i_ports = [{'name': 'i', 'type': 'frame'}]
         self.o_ports = [{'name': 'o', 'type': 'html'}]
 
+    def visualize_html(self, args, inputs):
+        """ for override """
+        raise Exception()
+
+class CsvToHtmlTableCommand(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
     def execute(self, args, inputs):
-        # テストHTML
-        visualize_html = '<html><body>'
 
         # クエリパラメータ及びbody部の情報
+        # 仮のHTMLを返すときに使用していた
         # visualize_html += 'command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
         # visualize_html += 'frame_uuid : ' + json.dumps(inputs) + '<br/>'
         # visualize_html += 'args : ' + json.dumps(args)
 
-        # とりあえずkeyはiで送られてくることとする
-        file_path = os.environ['KENG_FRAMES_PATH'] / Path('%s.csv' % inputs.get('i'))
-
-        offset = int(args.get('offset')) if args.get('offset') is not None else 0
-        limit = int(args.get('limit')) if args.get('limit') is not None else None
-
+        # HTML作成
+        visualize_html = '<html><body>'
         # テーブル構造
-        if os.path.exists(file_path):
-            visualize_html += self.csv_to_table_of_html(file_path, limit=limit, offset=offset)
-
+        visualize_html += self.visualize_html(args, inputs)
         visualize_html += '</body></html>'
 
         return { self.out_key: visualize_html }
 
-    def csv_to_table_of_html(self, file_path, limit=None, offset=0):
+    def visualize_html(self, args, inputs):
         """
         csvのファイルパスから、
         HTMLのテーブル形式にして返す
         """
+
+        # file_path = os.environ['KENG_FRAMES_PATH'] / Path('%s.csv' % inputs.get('i'))
+        file_path = inputs.get('i').source.fullpath
+        offset = int(args.get('offset')) if args.get('offset') is not None else 0
+        limit = int(args.get('limit')) if args.get('limit') is not None else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
         # テーブル構造
         table_of_html = '<table border="1">'
         with open(file_path, 'r') as f:
@@ -425,7 +437,6 @@ class CsvToHtmlCommand(Command):
                     table_of_html += datum
                     table_of_html += '</td>'
                 table_of_html += '</tr>'
-
         table_of_html += '</table>'
 
         return table_of_html
@@ -4268,4 +4279,7 @@ commands = {
     'groupby': Groupby(),
     'groupby2': Groupby2(),
     'sml_modeling': SmlModeling()
+}
+internal_commands = {
+    'csvtohtmltable': CsvToHtmlTableCommand()
 }
