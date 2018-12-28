@@ -856,75 +856,8 @@ def handle_bad_request(error):
 @login_required_api
 def visualizer():
 
-    from .engine.core3 import Command
-    class CsvToHtmlCommand(Command):
-        def __init__(self):
-            super().__init__()
-            self.i_ports = [{'name': 'i', 'type': 'frame'}]
-            self.o_ports = [{'name': 'o', 'type': 'html'}]
-
-        def execute(self, args, inputs):
-            # テストHTML
-            visualize_html = '<html><body>'
-
-            # クエリパラメータ及びbody部の情報
-            # visualize_html += 'command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
-            # visualize_html += 'frame_uuid : ' + json.dumps(inputs) + '<br/>'
-            # visualize_html += 'args : ' + json.dumps(args)
-
-            # とりあえずkeyはiで送られてくることとする
-            file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % inputs.get('i'))
-
-            offset = int(args.get('offset')) if args.get('offset') is not None else 0
-            limit = int(args.get('limit')) if args.get('limit') is not None else None
-
-            # テーブル構造
-            if os.path.exists(file_path):
-                visualize_html += csv_to_table_of_html(file_path, limit=limit, offset=offset)
-
-            visualize_html += '</body></html>'
-
-            return { self.out_key: visualize_html }
-
+    from .engine.core3 import CsvToHtmlCommand
     command = CsvToHtmlCommand()
     result = command.execute(request.json.get('args'), request.json.get('inputs'))
 
     return jsonify({'success': True, 'data': result})
-
-
-def csv_to_table_of_html(file_path, limit=None, offset=0):
-    """
-    csvのファイルパスから、
-    HTMLのテーブル形式にして返す
-    """
-    # テーブル構造
-    table_of_html = '<table border="1">'
-    with open(file_path, 'r') as f:
-        reader = csv.reader(f)
-        header = next(reader)
-
-        # header
-        table_of_html += '<tr>'
-        for head in header:
-            table_of_html += '<th>'
-            table_of_html += head
-            table_of_html += '</th>'
-        table_of_html += '</tr>'
-
-        # data
-        # offsetとかlimitを設定するならこっちか
-        csv_list = list(reader)
-        start = offset
-        end = start + (limit if limit is not None else len(csv_list))
-
-        for csv_row in csv_list[start:end]:
-            table_of_html += '<tr>'
-            for datum in csv_row:
-                table_of_html += '<td>'
-                table_of_html += datum
-                table_of_html += '</td>'
-            table_of_html += '</tr>'
-
-    table_of_html += '</table>'
-
-    return table_of_html
