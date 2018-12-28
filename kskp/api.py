@@ -856,8 +856,25 @@ def handle_bad_request(error):
 @login_required_api
 def visualizer():
 
-    from .engine.core3 import CsvToHtmlCommand
-    command = CsvToHtmlCommand()
-    result = command.execute(request.json.get('args'), request.json.get('inputs'))
+    from .engine.core3 import internal_commands, Job, Step
+
+    # ひとまず、どうにでもなるように実行部分をengine.executeではなく外に出しておく
+
+    ### ここから
+    # ここから
+    new_inputs = {}
+    new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , request.json.get('inputs')['i'] + '.csv'))
+    new_step = Step(command, request.json.get('args'), {}, {})
+    command = internal_commands.get(request.args.get('from'))
+    job = Job(new_step, new_inputs)
+    # ここまでがengine.executeのparse部分にあたる
+
+    result = job.execute()
+    job.dtor()
+    ### ここまでがengine.execute部分にあたる
+
+    # コマンド単体で実行する場合
+    # 下記を実行するには、pathfilesourceを使っていないので、commandのexecute部分のfile_pathを書き換える必要がある
+    # result = command.execute(request.json.get('args'), request.json.get('inputs'))
 
     return jsonify({'success': True, 'data': result})

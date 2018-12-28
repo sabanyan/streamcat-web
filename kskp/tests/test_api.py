@@ -1308,7 +1308,6 @@ class ApiTestCase(unittest.TestCase):
         import csv
 
         frame_uuid_1 = str(uuid.uuid4())
-        frame_uuid_2 = str(uuid.uuid4())
 
         with open('kskp/data/frames/' + frame_uuid_1 + '.csv', 'w') as csv_file:
             fieldnames = ['customer', 'quantity', 'amount']
@@ -1320,17 +1319,7 @@ class ApiTestCase(unittest.TestCase):
             csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
             csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
 
-        with open('kskp/data/frames/' + frame_uuid_2 + '.csv', 'w') as csv_file:
-            fieldnames = ['customer', 'quantity', 'amount']
-            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
-            csv_writer.writeheader()
-            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
-            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
-            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
-            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
-            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
-
-        flow_uuid = '1D01BA67-789B-41D5-95A9-CC84D2E4EFA7'
+        command_id = 'csvtohtmltable'
 
         args = {
             'c': "${quantity}>15",
@@ -1351,7 +1340,7 @@ class ApiTestCase(unittest.TestCase):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
-            endpoint = '/visualizers?from=%s' % flow_uuid
+            endpoint = '/visualizers?from=%s' % command_id
             response = client.post(endpoint,
                 content_type='application/json',
                 data=json.dumps({
@@ -1371,9 +1360,7 @@ class ApiTestCase(unittest.TestCase):
         # 後片付け
         # 削除
         frame_path_1 = Path('kskp/data/frames/' + frame_uuid_1 + '.csv')
-        frame_path_2 = Path('kskp/data/frames/' + frame_uuid_2 + '.csv')
         os.remove(frame_path_1)
-        os.remove(frame_path_2)
 
     @unittest.skip
     def test_execute_flow(self):
