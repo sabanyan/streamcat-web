@@ -127,7 +127,7 @@ export default class NavigationBar extends React.Component<Props> {
       </div>
       <div className="menu-navbar">
         <ul className="navbar-nav">
-          {this.renderLibraryNavigationItem()}
+          {/*{this.renderLibraryNavigationItem()}*/}
           {this.renderFlowDesignerNavigationItem()}
           {this.renderUserNavigationItem()}
         </ul>
