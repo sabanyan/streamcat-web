@@ -14,6 +14,7 @@ import ModalManager from '../shared/ModalManager'
 import Constants from '../../constants'
 import ModalUtil from '../../utils/ModalUtil'
 import TextField from '../shared/TextField'
+import ProjectInspector from '../shared/Inspector/ProjectInspector'
 
 /**
  * ======================================================
@@ -31,6 +32,7 @@ export default class ProjectListContainer extends React.Component {
       is_loading: false,
       is_finished: false,
       project_name: null,
+      selected_project: null
     }
   }
 
@@ -41,9 +43,11 @@ export default class ProjectListContainer extends React.Component {
 
   clearKeyword(){
     this.setState({
-      keyword: ''
+      keyword: '',
+      selected_project: null
     })
-    document.querySelector("input[type=text]").value="";
+    const target = document.querySelector("input[type=text]")
+    if(target)target.value="";
   }
 
   registerModal () {
@@ -82,9 +86,11 @@ export default class ProjectListContainer extends React.Component {
       }
       return (project.name.indexOf(keyword) != -1) ? true : false
     }).map((project) => {
+      const selected = (this.state.selected_project === project)
       return <ProjectList project={project}
-                          href={'./flows?project=' + project.uuid}>
-        <a href="#" onClick={() => this.onClickDelete(project.uuid)}>削除</a>
+                          href={'./flows?project=' + project.uuid}
+                          selected={selected}
+                          onClickProject={(e,project)=>this.onClickProject(e,project)}>
       </ProjectList>
     })
   }
@@ -102,6 +108,10 @@ export default class ProjectListContainer extends React.Component {
     return <div className={style.search_bar}>
       <TextField placeholder={'プロジェクトを検索'} onChange={(e) => this.onChangeKeyword(e)}/>
     </div>
+  }
+
+  onClickProject(e,project){
+    this.setState({selected_project:project})
   }
 
   onChangeKeyword (e) {
@@ -135,6 +145,7 @@ export default class ProjectListContainer extends React.Component {
       id: Constants.modal.CONFIRM, onClickDone: () => {
         HttpUtil.delete('projects/' + project_uuid).then((response) => {
           this.getProjectList()
+          this.setState({selected_project:null})
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         })
       },
@@ -171,6 +182,10 @@ export default class ProjectListContainer extends React.Component {
     </a>
   }
 
+  renderInspector(){
+    return <ProjectInspector project={this.state.selected_project} onClickDelete={(uuid)=>this.onClickDelete(uuid)}/>
+  }
+
   renderAll () {
     if (this.isEmptyProjectList()) {
       return this.renderEmptyState()
@@ -181,14 +196,17 @@ export default class ProjectListContainer extends React.Component {
       {this.renderProjectListHeader()}
       {this.renderProjectList()}
       {this.renderNewProject()}
+      {this.renderInspector()}
     </div>
   }
 
   render () {
-    return <div className={'container mt-40px'}>
-      <Loader absolute={true} visible={this.state.is_loading}/>
-      {this.renderAll()}
-      <ModalManager/>
+    return <div className={style.inspector_list_container}>
+      <div className={'container mt-40px'}>
+        <Loader absolute={true} visible={this.state.is_loading}/>
+        {this.renderAll()}
+        <ModalManager/>
+      </div>
     </div>
   }
 
