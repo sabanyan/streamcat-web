@@ -188,7 +188,7 @@ class Validator {
     //  "tmpPath":{
     //    "specifiedFormatIfTargetInput": {
     //        "target": "skip_fnf",
-    //        "pattern": "[a-z0-9]*",
+    //        "pattern": "[a-z0-9]",
     //        "message": "英数字で入力してください"
     //    }
     //  },
@@ -200,8 +200,8 @@ class Validator {
           if(options.target){
             const targetValue = attributes[options.target]
             if(targetValue){
-              const regexPattern = RegExp("/"+options.pattern+"/")
-              const valid = regexPattern.test(targetValue)
+              const regexPattern = RegExp(options.pattern)
+              const valid = regexPattern.test(attributes[key])
               if(!valid){
                 //正規表現が正しくない
                 return options.message
