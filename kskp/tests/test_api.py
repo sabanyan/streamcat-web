@@ -1322,9 +1322,6 @@ class ApiTestCase(unittest.TestCase):
         command_id = 'csvtohtmltable'
 
         args = {
-            'c': "${quantity}>15",
-            'f1': 'quantity,amount',
-            'f2': 'customer',
             'limit':50,
             'offset':3
         }
