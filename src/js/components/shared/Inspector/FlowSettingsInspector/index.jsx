@@ -32,7 +32,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     flow.params = this.getCurrentParams()
     this.props.updateFlow(flow)
     FlowUtil.saveFlowSettings(inject_flow_uuid, {label: label, description: flow.description,params:flow.params})
-    this.props.selectSteps()
+    //this.props.selectSteps()
   }
 
   getCurrentParams(){
@@ -103,7 +103,8 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
   render () {
     const {flow} = this.props
-    const {params} = this.props.flow
+    if(!flow)return null
+    const {params} = flow
 
 
     let inputParams, inputParamsContainer, addFlowParams
