@@ -864,8 +864,8 @@ def visualizer():
     # ここから
     new_inputs = {}
     new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , request.json.get('inputs')['i'] + '.csv'))
-    new_step = Step(command, request.json.get('args'), {}, {})
     command = internal_commands.get(request.args.get('from'))
+    new_step = Step(command, request.json.get('args'), {}, {})
     job = Job(new_step, new_inputs)
     # ここまでがengine.executeのparse部分にあたる
 
