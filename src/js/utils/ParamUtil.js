@@ -23,11 +23,19 @@ export default class ParamUtil {
           args[inputRef.param.name] = (inputRef.element.checked)?true:false
           break
         case Constants.param.type.select:
-          args[inputRef.param.name] = inputRef.element.value
+          args[inputRef.param.name] = this.getAllSelectedValue(inputRef.element)
       }
       ParamUtil.clearElement(inputRef.element)
     })
     return args
+  }
+
+  static getAllSelectedValue(element){
+    if(element.multiple){
+      return Array.from(element.selectedOptions).map(v=>v.value);
+    }else{
+      return element.value
+    }
   }
 
   static getParamElement(param,onBuild,defaultValue,refValue){
