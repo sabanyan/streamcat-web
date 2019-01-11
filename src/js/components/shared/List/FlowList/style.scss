@@ -13,6 +13,13 @@
     text-decoration: none!important;
     opacity: 0.8;
   }
+  cursor: pointer;
+}
+
+.selected{
+  .flow_list{
+    background: #fafafa;
+  }
 }
 
 .new{
