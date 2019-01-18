@@ -371,7 +371,12 @@ class VisualizersCommand(Command):
         self.i_ports = [{'name': 'i', 'type': 'frame'}]
         self.o_ports = [{'name': 'o', 'type': 'html'}]
 
-    def visualize_html(self, args, inputs):
+    def execute(self, args, inputs):
+        # HTML作成
+        visualize_html = self.gererate_html(args, inputs)
+        return { self.out_key: visualize_html }
+
+    def gererate_html(self, args, inputs):
         """ for override """
         raise Exception()
 
@@ -379,32 +384,15 @@ class CsvToHtmlTableCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def execute(self, args, inputs):
-
-        # クエリパラメータ及びbody部の情報
-        # 仮のHTMLを返すときに使用していた
-        # visualize_html += 'command_id_or_flow_uuid : ' + request.args.get('from') + '<br/>'
-        # visualize_html += 'frame_uuid : ' + json.dumps(inputs) + '<br/>'
-        # visualize_html += 'args : ' + json.dumps(args)
-
-        # HTML作成
-        visualize_html = '<html><body>'
-        # テーブル構造
-        visualize_html += self.visualize_html(args, inputs)
-        visualize_html += '</body></html>'
-
-        return { self.out_key: visualize_html }
-
-    def visualize_html(self, args, inputs):
+    def gererate_html(self, args, inputs):
         """
         csvのファイルパスから、
         HTMLのテーブル形式にして返す
         """
 
-        # file_path = os.environ['KENG_FRAMES_PATH'] / Path('%s.csv' % inputs.get('i'))
         file_path = inputs.get('i').source.fullpath
-        offset = int(args.get('offset')) if args.get('offset') is not None else 0
-        limit = int(args.get('limit')) if args.get('limit') is not None else None
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
 
         # ブロック句
         if not os.path.exists(file_path):
@@ -416,7 +404,6 @@ class CsvToHtmlTableCommand(VisualizersCommand):
             reader = csv.reader(f)
             header = next(reader)
 
-            # header
             table_of_html += '<tr>'
             for head in header:
                 table_of_html += '<th>'
@@ -424,8 +411,6 @@ class CsvToHtmlTableCommand(VisualizersCommand):
                 table_of_html += '</th>'
             table_of_html += '</tr>'
 
-            # data
-            # offsetとかlimitを設定するならこっちか
             csv_list = list(reader)
             start = offset
             end = start + (limit if limit is not None else len(csv_list))
@@ -440,6 +425,60 @@ class CsvToHtmlTableCommand(VisualizersCommand):
         table_of_html += '</table>'
 
         return table_of_html
+
+class CsvToLineGraphCommand(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        matplotlibの折れ線グラフを作成する
+        """
+
+        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
+        file_path = inputs.get('i').source.fullpath
+
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        # グラフ化に必要なものの準備
+        import matplotlib.pyplot as plt
+        import pandas as pd
+
+        plt.style.use('ggplot')
+        plt.legend(loc='best')
+        plt.xlabel(args.get('x_axis'))
+
+        # indexで指定しているものがx軸になる
+        time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
+        df = pd.read_csv(file_path, index_col=args.get('x_axis'), parse_dates=time_series_column)
+
+        # offset対応
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+        df = df[start:end]
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        # df = df.iloc[:, [0]]
+        # y軸の設定はここ
+        df.plot(y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')))
+
+        # pngで保存
+        linegraph_path = 'kskp/static/images/visualize/%s.png' % file_name
+        plt.savefig(linegraph_path, dpi=200)
+
+        linegraph_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+
+        return linegraph_html
 
 class MCommand(UnixCommand):
 
@@ -4281,5 +4320,6 @@ commands = {
     'sml_modeling': SmlModeling()
 }
 internal_commands = {
-    'csvtohtmltable': CsvToHtmlTableCommand()
+    'csvtohtmltable': CsvToHtmlTableCommand(),
+    'csvtolinegraph': CsvToLineGraphCommand()
 }

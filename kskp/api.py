@@ -2,7 +2,7 @@ import json
 import uuid
 from pathlib import Path
 from .engine.data3 import *
-from flask import Blueprint, request, session, jsonify, send_from_directory
+from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
 from .navigation import update_navigation
 from .model import (
@@ -331,9 +331,9 @@ def fetch_frame(frame_uuid):
     指定したframeを直接UUIDで指定して取得する
     """
     # オフセットのデフォルトは最初から（なので０）
-    offset = int(request.args.get('offset')) if request.args.get('offset') is not None else 0
+    offset = int(request.args.get('offset')) if request.args.get('offset') else 0
     # リミットのデフォルトは全行なのでNoneにしておく（０の場合は０行取得だから０は使えない）
-    limit = int(request.args.get('limit')) if request.args.get('limit') is not None else None
+    limit = int(request.args.get('limit')) if request.args.get('limit') else None
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
     return jsonify({'success': True, 'data': csv_to_frame(file_path, offset=offset, limit=limit)})
@@ -857,14 +857,18 @@ def handle_bad_request(error):
 def visualizer():
 
     from .engine.core3 import internal_commands, Job, Step
+    from bs4 import BeautifulSoup
 
-    # ひとまず、どうにでもなるように実行部分をengine.executeではなく外に出しておく
+    html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
+    visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
 
+    # visualizeコマンドの実行
     ### ここから
     # ここから
     new_inputs = {}
     new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , request.json.get('inputs')['i'] + '.csv'))
     command = internal_commands.get(request.args.get('from'))
+    # 残りの２つの引数はsrcsとdsts
     new_step = Step(command, request.json.get('args'), {}, {})
     job = Job(new_step, new_inputs)
     # ここまでがengine.executeのparse部分にあたる
@@ -873,8 +877,14 @@ def visualizer():
     job.dtor()
     ### ここまでがengine.execute部分にあたる
 
-    # コマンド単体で実行する場合
-    # 下記を実行するには、pathfilesourceを使っていないので、commandのexecute部分のfile_pathを書き換える必要がある
-    # result = command.execute(request.json.get('args'), request.json.get('inputs'))
+    # htmlの中身の作成（テンプレのhtmlを元に作成する）
+    template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
+    soup = BeautifulSoup(result['o'], 'html.parser')
+    div_tag = template_soup.find('div', id='visualize')
+    div_tag.append(soup)
 
-    return jsonify({'success': True, 'data': result})
+    # htmlの作成
+    with open(visualize_path.as_posix(), 'w') as f:
+        f.write(template_soup.prettify())
+
+    return render_template('visualize/%s.html' % html_name)
