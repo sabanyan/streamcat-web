@@ -40,11 +40,6 @@
       "label": "生成する画像の縦の長さ（インチ）"
     },
     {
-      "name": "time_series_column",
-      "type": "string",
-      "label": "時間を示している列名（対象データが時系列データの場合）"
-    },
-    {
       "name": "x_axis",
       "type": "string",
       "label": "x軸に設定する列名"
@@ -53,6 +48,11 @@
       "name": "columns",
       "type": "string",
       "label": "表示するデータの列名リスト"
+    },
+    {
+      "name": "bins",
+      "type": "number",
+      "label": "表示する基数"
     },
     {
       "name": "alpha",

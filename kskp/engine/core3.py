@@ -380,6 +380,7 @@ class VisualizersCommand(Command):
         """ for override """
         raise Exception()
 
+# visualize
 class CsvToHtmlTableCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
@@ -426,6 +427,10 @@ class CsvToHtmlTableCommand(VisualizersCommand):
 
         return table_of_html
 
+# グラフ化に必要なものの準備
+import matplotlib.pyplot as plt
+import pandas as pd
+
 class CsvToLineGraphCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
@@ -446,13 +451,12 @@ class CsvToLineGraphCommand(VisualizersCommand):
         if not os.path.exists(file_path):
             return ''
 
-        # グラフ化に必要なものの準備
-        import matplotlib.pyplot as plt
-        import pandas as pd
-
         plt.style.use('ggplot')
         plt.legend(loc='best')
         plt.xlabel(args.get('x_axis'))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
 
         # indexで指定しているものがx軸になる
         time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
@@ -468,18 +472,73 @@ class CsvToLineGraphCommand(VisualizersCommand):
             # なんかする
             # pass
 
-        # df = df.iloc[:, [0]]
         # y軸の設定はここ
-        df.plot(y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')))
+        # y軸はリスト型。インデックスでも列名でも大丈夫。
+        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+        df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
 
         # pngで保存
-        linegraph_path = 'kskp/static/images/visualize/%s.png' % file_name
-        plt.savefig(linegraph_path, dpi=200)
+        img_path = 'kskp/static/images/visualize/%s.png' % file_name
+        plt.savefig(img_path, dpi=200)
 
-        linegraph_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
 
-        return linegraph_html
+        return img_html
 
+class CsvToHistogram(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        matplotlibのヒストグラムを作成する
+        """
+
+        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtohistogram'
+        file_path = inputs.get('i').source.fullpath
+
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        plt.style.use('ggplot')
+        plt.legend(loc='best')
+        plt.xlabel(args.get('x_axis'))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+
+        # indexで指定しているものがx軸になる
+        df = pd.read_csv(file_path)
+
+        # offset対応
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+        df = df[start:end]
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        # y軸の設定はここ
+        # y軸はリスト型。インデックスでも列名でも大丈夫。
+        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+        df.plot(ax=ax, kind='hist', y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), bins=args.get('bins'), alpha=args.get('alpha'))
+
+        # pngで保存
+        img_path = 'kskp/static/images/visualize/%s.png' % file_name
+        plt.savefig(img_path, dpi=200)
+
+        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+
+        return img_html
+
+# mcommand
 class MCommand(UnixCommand):
 
     def command_args(self, args, inputs):
@@ -4321,5 +4380,6 @@ commands = {
 }
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
-    'csvtolinegraph': CsvToLineGraphCommand()
+    'csvtolinegraph': CsvToLineGraphCommand(),
+    'csvtohistogram': CsvToHistogram()
 }
