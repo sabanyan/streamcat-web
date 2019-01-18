@@ -1299,7 +1299,7 @@ class ApiTestCase(unittest.TestCase):
                 # jobsの削除
                 os.remove(path)
 
-    def test_visualizers(self):
+    def test_visualizers_csvtohtmltable(self):
         """
         visualizers APIをテストする。
         返ってくるのはHTML
@@ -1345,19 +1345,68 @@ class ApiTestCase(unittest.TestCase):
                         'inputs': inputs
                     })
             )
-            result = json.loads(response.get_data())
+            # result = json.loads(response.get_data())
 
         # テスト
-        self.assertEqual(result['success'], True)
-
-        # HTMLの中身を見たい時用
-        # with open('kskp/data/frames/result.html', 'w') as f:
-        #     f.write(result['data']['o'])
+        # HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        # 削除
-        frame_path_1 = Path('kskp/data/frames/' + frame_uuid_1 + '.csv')
-        os.remove(frame_path_1)
+        os.remove('kskp/data/frames/%s.csv' % frame_uuid_1)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+
+    def test_visualizers_linegraph(self):
+        """
+        visualizers APIをテストする。
+        返ってくるのはHTML
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid_1 = 'data0'
+
+        command_id = 'csvtolinegraph'
+
+        args = {
+            'limit': '',
+            'offset': '',
+            'columns': ['temperature'],
+            'x_inch': 14,
+            'y_inch': 7,
+            'x_axis': 'Time',
+            'time_series_column': ['Time']
+        }
+
+        inputs = {
+            'i': frame_uuid_1
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/visualizers?from=%s' % command_id
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                        'args': args,
+                        'inputs': inputs
+                    })
+            )
+
+        # テスト
+        # 画像ファイル、HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
+
+        # 後片付け
+        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
     @unittest.skip
     def test_execute_flow(self):
