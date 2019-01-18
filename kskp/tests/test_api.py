@@ -1302,6 +1302,7 @@ class ApiTestCase(unittest.TestCase):
     def test_visualizers_csvtohtmltable(self):
         """
         visualizers APIをテストする。
+        htmlテーブル
         返ってくるのはHTML
         """
         # アップロード用に一時csvファイルを作成する
@@ -1359,6 +1360,7 @@ class ApiTestCase(unittest.TestCase):
     def test_visualizers_linegraph(self):
         """
         visualizers APIをテストする。
+        折れ線グラフ
         返ってくるのはHTML
         """
         # アップロード用に一時csvファイルを作成する
@@ -1376,6 +1378,60 @@ class ApiTestCase(unittest.TestCase):
             'y_inch': 7,
             'x_axis': 'Time',
             'time_series_column': ['Time']
+        }
+
+        inputs = {
+            'i': frame_uuid_1
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/visualizers?from=%s' % command_id
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                        'args': args,
+                        'inputs': inputs
+                    })
+            )
+
+        # テスト
+        # 画像ファイル、HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
+
+        # 後片付け
+        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+
+    def test_visualizers_histogram(self):
+        """
+        visualizers APIをテストする。
+        ヒストグラム
+        返ってくるのはHTML
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid_1 = '180127_1535_4sensor_5sec'
+
+        command_id = 'csvtohistogram'
+
+        args = {
+            'limit': '',
+            'offset': '',
+            'columns': [1,2,3,4],
+            'x_inch': 7,
+            'y_inch': 3,
+            'bins': 100,
+            'x_axis': '',
+            'alpha': 0.5
         }
 
         inputs = {
