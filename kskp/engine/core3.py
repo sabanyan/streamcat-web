@@ -438,7 +438,7 @@ class CsvToLineGraphCommand(VisualizersCommand):
     def gererate_html(self, args, inputs):
         """
         csvのファイルパスから、
-        matplotlibの折れ線グラフを作成する
+        plotの折れ線グラフを作成する
         """
 
         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
@@ -492,7 +492,7 @@ class CsvToHistogram(VisualizersCommand):
     def gererate_html(self, args, inputs):
         """
         csvのファイルパスから、
-        matplotlibのヒストグラムを作成する
+        plotのヒストグラムを作成する
         """
 
         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtohistogram'
@@ -529,6 +529,59 @@ class CsvToHistogram(VisualizersCommand):
         # y軸はリスト型。インデックスでも列名でも大丈夫。
         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
         df.plot(ax=ax, kind='hist', y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), bins=args.get('bins'), alpha=args.get('alpha'))
+
+        # pngで保存
+        img_path = 'kskp/static/images/visualize/%s.png' % file_name
+        plt.savefig(img_path, dpi=200)
+
+        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+
+        return img_html
+
+class CsvToScatter(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの散布図を作成する
+        """
+
+        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
+        file_path = inputs.get('i').source.fullpath
+
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        plt.style.use('ggplot')
+        plt.legend(loc='best')
+        plt.xlabel(args.get('x_axis'))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+
+        # indexで指定しているものがx軸になる
+        df = pd.read_csv(file_path)
+
+        # offset対応
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+        df = df[start:end]
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        # y軸の設定はここ
+        # y軸はリスト型。インデックスでも列名でも大丈夫。
+        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+        df.plot(ax=ax, kind='scatter', x=args.get('x_axis'), y=args.get('y_axis'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
 
         # pngで保存
         img_path = 'kskp/static/images/visualize/%s.png' % file_name
@@ -4381,5 +4434,6 @@ commands = {
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
     'csvtolinegraph': CsvToLineGraphCommand(),
-    'csvtohistogram': CsvToHistogram()
+    'csvtohistogram': CsvToHistogram(),
+    'csvtoscatter': CsvToScatter()
 }

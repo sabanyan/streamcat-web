@@ -1464,6 +1464,59 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    def test_visualizers_scatter(self):
+        """
+        visualizers APIをテストする。
+        散布図
+        返ってくるのはHTML
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid_1 = '180127_1535_4sensor_5sec'
+
+        command_id = 'csvtoscatter'
+
+        args = {
+            'limit': '',
+            'offset': '',
+            'x_inch': 7,
+            'y_inch': 5,
+            'y_axis': '3H',
+            'x_axis': '4H',
+            'alpha': 0.5
+        }
+
+        inputs = {
+            'i': frame_uuid_1
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/visualizers?from=%s' % command_id
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                        'args': args,
+                        'inputs': inputs
+                    })
+            )
+
+        # テスト
+        # 画像ファイル、HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
+
+        # 後片付け
+        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+
     @unittest.skip
     def test_execute_flow(self):
         '''
