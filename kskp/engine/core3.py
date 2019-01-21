@@ -4126,7 +4126,80 @@ class CheckDuplicateRows(UnixCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
-        print(args)
+        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+
+class MargeFS(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'MargeFS'
+        self.nysol_mod = nm.cmd
+        self.command_path = '/kskp/engine/commands/pcmd/marge_FS.sh'
+        self.description = '不整CSVファイルのクレンジングと集約'
+        self.output_ext = 'csv'
+        self.stdout_param = ' o='
+
+    def command_args(self, args, inputs):
+        cl_args = self.command_path
+        process_flow = None
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+        elif isinstance(input_i.source, NysolPythonSource):
+            # process_flow = input_i.source.nysol_module
+            input_i.command_to_file()
+            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+
+        # nm.cmd用の文字列のコマンドを作成する
+        for key, value in args.items():
+            if isinstance(value, bool):
+                cl_args += ' ' +  key
+                continue
+            if not len(value) == 0:
+                cl_args += ' ' + key + '=' + value
+
+        return cl_args, process_flow
+
+    def source(self, args, inputs):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+
+class MargeIbutsu(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'MargeIbutsu'
+        self.nysol_mod = nm.cmd
+        self.command_path = '/kskp/engine/commands/pcmd/marge_ibutsu.sh'
+        self.description = 'CSVファイルの集約'
+        self.output_ext = 'csv'
+        self.stdout_param = ' o='
+
+    def command_args(self, args, inputs):
+        cl_args = self.command_path
+        process_flow = None
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+        elif isinstance(input_i.source, NysolPythonSource):
+            # process_flow = input_i.source.nysol_module
+            input_i.command_to_file()
+            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+
+        # nm.cmd用の文字列のコマンドを作成する
+        for key, value in args.items():
+            if isinstance(value, bool):
+                cl_args += ' ' +  key
+                continue
+            if not len(value) == 0:
+                cl_args += ' ' + key + '=' + value
+
+        return cl_args, process_flow
+
+    def source(self, args, inputs):
+        args, process_flow = self.command_args(args, inputs)
         return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
 
 commands = {
@@ -4252,5 +4325,7 @@ commands = {
     'groupby': Groupby(),
     'groupby2': Groupby2(),
     'sml_modeling': SmlModeling(),
-    'check_duplicate_rows': CheckDuplicateRows()
+    'check_duplicate_rows': CheckDuplicateRows(),
+    'marge_FS': MargeFS(),
+    'marge_ibutsu': MargeIbutsu()
 }
