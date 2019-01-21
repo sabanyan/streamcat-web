@@ -4091,6 +4091,44 @@ class SmlModeling(UnixCommand):
         args, process_flow = self.command_args(args, inputs)
         return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
 
+class CheckDuplicateRows(UnixCommand):
+    def __init__(self):
+        super().__init__()
+        self.name = 'CheckDuplicateRows'
+        self.nysol_mod = nm.cmd
+        self.command_path = '/kskp/engine/commands/pcmd/check_duplicate_rows.sh'
+        self.description = '重複行の抽出'
+        self.output_ext = 'csv'
+        self.stdout_param = ' o='
+
+    def command_args(self, args, inputs):
+        cl_args = self.command_path
+        process_flow = None
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+        elif isinstance(input_i.source, NysolPythonSource):
+            # process_flow = input_i.source.nysol_module
+            input_i.command_to_file()
+            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+
+        # nm.cmd用の文字列のコマンドを作成する
+        for key, value in args.items():
+            if isinstance(value, bool):
+                cl_args += ' ' +  key
+                continue
+            if not len(value) == 0:
+                cl_args += ' ' + key + '=' + value
+
+        return cl_args, process_flow
+
+    def source(self, args, inputs):
+        args, process_flow = self.command_args(args, inputs)
+        print(args)
+        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -4173,7 +4211,7 @@ commands = {
     'msortf': Msortf(),
     'mcal': Mcal(),
     'msim': Msim(),
-    
+
     # KCMD
     'select_target_column': SelectTargetColumn(),
     'standardize': Standardize(),
@@ -4213,5 +4251,6 @@ commands = {
 
     'groupby': Groupby(),
     'groupby2': Groupby2(),
-    'sml_modeling': SmlModeling()
+    'sml_modeling': SmlModeling(),
+    'check_duplicate_rows': CheckDuplicateRows()
 }
