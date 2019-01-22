@@ -1514,8 +1514,8 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
-        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+        # os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        # os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
     @unittest.skip
     def test_execute_flow(self):
