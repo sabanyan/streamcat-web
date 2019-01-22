@@ -1366,7 +1366,7 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = 'data0'
+        frame_uuid_1 = 'f20541d4-8b8f-4787-6ea9-f1e9d3db80a1'
 
         command_id = 'csvtolinegraph'
 
