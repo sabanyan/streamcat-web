@@ -1,0 +1,64 @@
+{
+  "version": "0.7.0",
+  "id": "csvtolinegraph",
+  "label": "折れ線グラフの作成",
+  "classification": "visualize",
+  "description": "csvファイルから折れ線グラフを作成する",
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "params": [
+    {
+      "name": "limit",
+      "type": "number",
+      "label": "ビジュアライズを出力するデータの限度数"
+    },
+    {
+      "name": "offset",
+      "type": "number",
+      "label": "ビジュアライズを出力するデータの開始位置"
+    },
+    {
+      "name": "x_inch",
+      "type": "number",
+      "label": "生成する画像の横の長さ（インチ）"
+    },
+    {
+      "name": "y_inch",
+      "type": "number",
+      "label": "生成する画像の縦の長さ（インチ）"
+    },
+    {
+      "name": "time_series_column",
+      "type": "string",
+      "label": "時間を示している列名（対象データが時系列データの場合）"
+    },
+    {
+      "name": "x_axis",
+      "type": "string",
+      "label": "x軸に設定する列名"
+    },
+    {
+      "name": "columns",
+      "type": "string",
+      "label": "表示するデータの列名リスト"
+    },
+    {
+      "name": "alpha",
+      "type": "number",
+      "label": "透過率（0〜1）"
+    }
+  ],
+  "url": ""
+}

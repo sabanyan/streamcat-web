@@ -1,8 +1,8 @@
 import json
 import uuid
 from pathlib import Path
-
-from flask import Blueprint, request, session, jsonify, send_from_directory
+from .engine.data3 import *
+from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
 from .navigation import update_navigation
 from .model import (
@@ -19,13 +19,16 @@ from .model import (
     get_user_by_id,
     fetch_subflows_all_projects,
     get_flow_nodes_by_uuid,
-    update_user_by_id
+    update_user_by_id,
+    write_data_to_json,
+    make_flow_path
 )
 from .activity import (
     make_unfinished_history,
     make_finished_history
 )
 from datetime import datetime, timezone, timedelta
+from . import app
 
 api = Blueprint('api', __name__)
 
@@ -151,6 +154,119 @@ def fetch_subflows():
     """
     return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args)})
 
+@api.route('/subflows', methods=['POST'])
+@login_required_api
+def execute_subflow():
+    """
+    inputsを与えてexecute
+    ファイルは必ずuploadするのでPathFileSourceでframeを作れる
+    """
+    flow_uuid = request.form.get('flow_uuid')
+    flow_json = fetch_flow_by_uuid(flow_uuid)
+
+    # executeの引数
+    # no_contentsも入れれるけど、今はまぁいいか
+    inputs = {}
+    args = json.loads(request.form.get('args')) if request.form.get('args') is not None else {}
+
+    upload_file_list = []
+
+    for port in flow_json['ports'][0]:
+        frame_uuid = ''
+
+        # frame（既にkskpに存在するデータソース）の場合
+        if request.form.get(port['name']) is not None:
+            # フレームを置き換える
+            frame_uuid = request.form.get(port['name'])
+            inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+            continue
+
+        # 新たにkskpにアップロードする場合
+        file = request.files.get(port['name'])
+        if file is not None:
+            # ファイルアップロードして、フレームを置き換える
+            frame_uuid = upload_frame(file, '')['uuid']
+            inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+
+            # 使うかわからないけど、uploadしたファイルを覚えておく
+            upload_file_list.append(frame_uuid)
+            continue
+
+    # フローの実行
+    result = execute_flow(flow_uuid, None, False, inputs, args)
+
+    # 後片付け（一時的にアップロードしたファイルを削除する、でも削除するかどうか決めていないのでとりあえずコメントアウトする）
+    for file in upload_file_list:
+        os.remove(DATAFRAME_DIR_PATH.as_posix() + '/' + file + '.csv')
+
+    return result
+
+@api.route('/executableflows', methods=['POST'])
+@login_required_api
+def make_executable_flow():
+    """
+    サブフローとフレームを取得し、実行可能なフローを新規に作成する。
+    とりあえず新規APIで作成したが、
+    新しいフローが作成されるので、flowsのPOSTなのかなとは思う。
+    このままでもいいが流石にexecutableflowsはダサいので、なんか考える。
+
+    とりあえず、どうにでもなるようにエンドポイントは独立させておく。
+
+    POSTなのでflow_uuidはbodyの中に入れてもらう。
+
+    基本的には一時的なものなので、
+    POSTで作成→frames?fromで実行→DELETEで削除してもらう
+    """
+
+    executable_flow = replace_inputs_upload_csv(request)
+    new_flow_uuid = str(uuid.uuid4())
+
+    # フローの作成
+    write_data_to_json(make_flow_path(new_flow_uuid), executable_flow)
+
+    return jsonify({'success': True, 'flow_uuid': new_flow_uuid})
+
+
+def replace_inputs_upload_csv(request):
+    """
+    サブフローのインプットを置き換える
+    ファイルアップロード
+    """
+    # 新フロー作成元のサブフロー取得
+    flow_json = fetch_flow_by_uuid(request.form.get('flow_uuid'))
+
+    # portsとnodesはリストなので、ここをfor文で回すのは仕方ないか？
+    for input in flow_json['ports'][0]:
+        frame = None
+        for node in flow_json['nodes']:
+            if node['id'] == input['name']:
+                frame = node
+                break
+
+        # frame（既にkskpに存在するデータソース）の場合
+        if request.form.get(input['name']) is not None:
+            # フレームを置き換える
+            frame['uuid'] = request.form.get(input['name'])
+            continue
+
+        # 新たにkskpにアップロードする場合
+        file = request.files.get(input['name'])
+        if file is not None:
+            # ファイルアップロードして、フレームを置き換える
+            frame['uuid'] = upload_frame(file, '')['uuid']
+            continue
+
+    # portsの中のものを削除する（portsのoは別に削除しなくてもいいが、念の為）
+    flow_json['ports'][0].clear()
+    flow_json['ports'][1].clear()
+
+    # フロー名変更（何にしようか？、一時的とは言え、実行中はまだ削除されておらずフローが存在するので、誰かからみられることがあると思うので…）
+    now = datetime.now()
+    flow_json['label'] = flow_json['label'] + '(' + datetime.now(timezone(timedelta(hours=+9), 'JST')).strftime('%Y-%m-%d %H:%M:%S') + ')'
+
+    # フローを返す
+    return flow_json
+
 @api.route('/commands')
 def fetch_commands():
     """
@@ -171,6 +287,102 @@ def fetch_commands():
 
 import time
 
+@api.route('/visualizers')
+def fetch_visualizers():
+    """
+    ビジュアライズ用コマンド定義の一覧を返す
+    """
+
+    path = api.root_path / Path('data/commands_for_visualizers')
+
+    commands = []
+    for command_path in path.iterdir():
+        if not command_path.suffix == '.json':
+            continue
+        command_json = command_path.read_text(encoding='utf-8')
+        command_data = json.loads(command_json)
+        commands.append(command_data)
+
+    return jsonify({'success': True, 'data': commands})
+
+    # 現在はmsankeyを唯一の例として追加
+    # visualizers = [
+    #     {
+    #         "id": "gridview",
+    #         "params": [],
+    #         "ports": [
+    #             [
+    #                 {
+    #                     "name": "i",
+    #                     "type": "frame"
+    #                 }
+    #             ],
+    #             [
+    #                 {
+    #                     "name": "o",
+    #                     "type": "html"
+    #                 }
+    #             ]
+    #         ],
+    #         "label": "表形式データの描画",
+    #         "classification": "visualizer",
+    #     },
+    #     {
+    #         "id": "msankey",
+    #         "params": [
+    #             {
+    #                 "name": "f",
+    #                 "type": "string",
+    #                 "label": "枝データ上の2つの節点項目名"
+    #             },
+    #             {
+    #                 "name": "v",
+    #                 "type": "string",
+    #                 "label": "枝の重み項目名"
+    #             }
+    #         ],
+    #         "ports": [
+    #             [
+    #                 {
+    #                     "name": "i",
+    #                     "type": "frame"
+    #                 }
+    #             ],
+    #             [
+    #                 {
+    #                     "name": "o",
+    #                     "type": "html"
+    #                 }
+    #             ]
+    #         ],
+    #         "label": "sankeyダイアグラムの描画",
+    #         "classification": "visualizer",
+    #         "url": "https://www.nysol.jp/view/jp/sect-msankey.html"
+    #     },
+    #     {
+    #         "id": "plaintextview",
+    #         "params": [],
+    #         "ports": [
+    #             [
+    #                 {
+    #                     "name": "i",
+    #                     "type": "string"
+    #                 }
+    #             ],
+    #             [
+    #                 {
+    #                     "name": "o",
+    #                     "type": "html"
+    #                 }
+    #             ]
+    #         ],
+    #         "label": "単純なテキスト表示",
+    #         "classification": "visualizer",
+    #     }
+    # ]
+
+    return jsonify({'success': True, 'data': visualizers})
+
 @api.route('/frames', methods=['GET', 'POST'])
 def make_new_frame():
     """
@@ -182,7 +394,7 @@ def make_new_frame():
 
     if 'file' in request.files:
         # ファイルがPOSTで送信されてきたらアップロードだとみなす
-        frame = upload_frame(request)
+        frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
         return jsonify({'success': True, "data": frame})
     elif 'from' in request.args:
         if '.' in request.args['from']:
@@ -215,9 +427,9 @@ def fetch_frame(frame_uuid):
     指定したframeを直接UUIDで指定して取得する
     """
     # オフセットのデフォルトは最初から（なので０）
-    offset = int(request.args.get('offset')) if request.args.get('offset') is not None else 0
+    offset = int(request.args.get('offset')) if request.args.get('offset') else 0
     # リミットのデフォルトは全行なのでNoneにしておく（０の場合は０行取得だから０は使えない）
-    limit = int(request.args.get('limit')) if request.args.get('limit') is not None else None
+    limit = int(request.args.get('limit')) if request.args.get('limit') else None
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
     return jsonify({'success': True, 'data': csv_to_frame(file_path, offset=offset, limit=limit)})
@@ -244,19 +456,17 @@ def format_time(file_path):
     wk = time.localtime(os.path.getmtime(file_path))
     return time.strftime('%Y/%m/%d %H:%M', wk)
 
-def upload_frame(req):
+def upload_frame(file, file_name):
     """
     CSVをアップロードする
     TODO: テスト未実施
     """
-    f = req.files['file']
-    file_name = req.form['file_name']
     frame_uuid = str(uuid.uuid4())
 
     from werkzeug.utils import secure_filename
     file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
-    f.save(file_path.as_posix())
-    f.close()
+    file.save(file_path.as_posix())
+    file.close()
 
     return {"uuid": frame_uuid, "label": file_name}
 
@@ -279,7 +489,7 @@ def download_frame():
     return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
                                attachment_filename = downloadFileName, mimetype = 'text/csv')
 
-def execute_flow(flow_uuid, step_paths, no_contents):
+def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
@@ -294,7 +504,7 @@ def execute_flow(flow_uuid, step_paths, no_contents):
                         })
     else:
         try:
-            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents)
+            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -629,7 +839,7 @@ def execute_direct3():
 
     return jsonify({'success': True, 'data': 'execute-direct3'})
 
-def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
+def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs={}, args={}):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
@@ -639,12 +849,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
 
     @make_unfinished_history(now, session)
     @make_finished_history(now)
-    def execute_flow_by_uuid(flow_uuid):
+    def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from . import engine as e
-        with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
+        flow_path = FLOWS_DIR_PATH / Path(flow_uuid + '.json')
+        with open(flow_path.as_posix(), 'r') as f:
+            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
 
-    result = execute_flow_by_uuid(flow_uuid)
+    result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     if no_contents:
@@ -674,8 +885,7 @@ def load_as_data_frame(result_text, offset, limit):
 
     # offset+1の1はヘッダを飛ばすため
     start = 1 + offset
-    end = start + limit if limit is not None else result_len
-
+    end = start + (limit if limit is not None else result_len)
     for record in result_list[start:end]:
         for idx, column_data in enumerate(record.split(',')):
             # print(column_list[idx])
@@ -733,3 +943,43 @@ def handle_bad_request(error):
     # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
     message = 'The browser (or proxy) sent a request that this server could not understand.'
     return jsonify({'success': False, 'message': str(error)})
+
+# visualize用のエンドポイント
+# _init_.pyのappをインポートして此方で定義する（色々やりやすいので）
+# flowの場合はflow_uuid、commandの場合はcommand_idをクエリパラメータとする
+# ひとまず今はframeのuuidが来ることを想定、ファイルそのものはこない。なのでcontent-typeはapplication/json
+@app.route('/visualizers', methods=['POST'])
+def visualizer():
+
+    from .engine.core3 import internal_commands, Job, Step
+    from bs4 import BeautifulSoup
+
+    html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
+    visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
+
+    # visualizeコマンドの実行
+    ### ここから
+    # ここから
+    new_inputs = {}
+    new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , request.json.get('inputs')['i'] + '.csv'))
+    command = internal_commands.get(request.args.get('from'))
+    # 残りの２つの引数はsrcsとdsts
+    new_step = Step(command, request.json.get('args'), {}, {})
+    job = Job(new_step, new_inputs)
+    # ここまでがengine.executeのparse部分にあたる
+
+    result = job.execute()
+    job.dtor()
+    ### ここまでがengine.execute部分にあたる
+
+    # htmlの中身の作成（テンプレのhtmlを元に作成する）
+    template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
+    soup = BeautifulSoup(result['o'], 'html.parser')
+    div_tag = template_soup.find('div', id='visualize')
+    div_tag.append(soup)
+
+    # htmlの作成
+    with open(visualize_path.as_posix(), 'w') as f:
+        f.write(template_soup.prettify())
+
+    return render_template('visualize/%s.html' % html_name)

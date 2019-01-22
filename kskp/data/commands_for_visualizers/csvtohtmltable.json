@@ -1,0 +1,34 @@
+{
+  "version": "0.7.0",
+  "id": "csvtolhtmltable",
+  "label": "HTMLテーブルの作成",
+  "classification": "visualize",
+  "description": "csvファイルからHTMLのテーブルを作成する",
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "params": [
+    {
+      "name": "limit",
+      "type": "number",
+      "label": "ビジュアライズを出力するデータの限度数"
+    },
+    {
+      "name": "offset",
+      "type": "number",
+      "label": "ビジュアライズを出力するデータの開始位置"
+    }
+  ],
+  "url": ""
+}
