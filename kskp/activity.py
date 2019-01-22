@@ -17,7 +17,11 @@ def make_unfinished_history(now, session):
     """
     def _deco(func):
         @functools.wraps(func)
-        def deco(*args):
+        def deco(**kwargs):
+
+            inputs = {port:input.source.file_name for port, input in kwargs['inputs'].items() \
+                      if kwargs.get('inputs') is not None}
+            params = kwargs['args'] if kwargs.get('args') is not None else {}
 
             # 直書き…とりあえずの実装
             history_json = {
@@ -25,8 +29,8 @@ def make_unfinished_history(now, session):
                 'executor': {
                     'name': ''
                 },
-                'inputs': {},
-                'params': {},
+                'inputs': inputs,
+                'params': params,
                 'flow': {
                     'uuid':  '',
                     'label': ''
@@ -39,9 +43,9 @@ def make_unfinished_history(now, session):
             JST = timezone(timedelta(hours=+9), 'JST')
             history_json['executedAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
             history_json['executor']['name'] = get_user_by_id(session['user_id'])['name']
-            history_json['flow']['uuid'] = args[0]
+            history_json['flow']['uuid'] = kwargs['flow_uuid']
             history_json['state'] = '実行中'
-            data = json.loads(get_flow_path_by_uuid(args[0]).read_text(encoding='utf-8'))
+            data = json.loads(get_flow_path_by_uuid(kwargs['flow_uuid']).read_text(encoding='utf-8'))
             history_json['projectId'] = data['projectId']
 
             # ファイル書き込み
@@ -50,7 +54,7 @@ def make_unfinished_history(now, session):
             with path.open('w') as f:
                 json.dump(history_json, f, indent = '\t', ensure_ascii=False)
 
-            return func(*args)
+            return func(**kwargs)
         return deco
     return _deco
 
@@ -62,12 +66,12 @@ def make_finished_history(now):
     '''
     def _deco(func):
         @functools.wraps(func)
-        def deco(*args):
-            result = func(*args)
+        def deco(**kwargs):
+            result = func(**kwargs)
             file_path = Path(__file__).parent.joinpath('data/jobs/%s.json' % '{0:%Y%m%d%H%M%S%f}'.format(now))
             json_data = json.loads(file_path.read_text(encoding='utf-8'))
-            if json_data['flow']['uuid'] == args[0]:
-                nodes_dict = get_flow_nodes_by_uuid(args[0])
+            if json_data['flow']['uuid'] == kwargs['flow_uuid']:
+                nodes_dict = get_flow_nodes_by_uuid(kwargs['flow_uuid'])
                 for key, val in result.items():
                     # 現在はresultから結果データを取ってきており、データのクラス名を'type'に入れているので
                     # クラス名と'type'に入れたい型が一致しているのが前提になっている（例・frame）

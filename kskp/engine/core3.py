@@ -8,12 +8,12 @@ from datetime import datetime, timedelta, timezone
 flow_obj_cache = {} # uuid: Jsonオブジェクト
 flows_cache = {} # uuid: Flowインスタンス
 
-def parse(flow_uuid):
+def parse(flow_uuid, inputs={}, args={}):
     global flow_obj_cache
     global flows_cache
     flow_obj_cache = {}
     flows_cache = {}
-    return parse_job(load_flow(flow_uuid), flow_uuid, {}, {}, {}, {})
+    return parse_job(load_flow(flow_uuid), flow_uuid, args, {}, {}, inputs)
 
 def load_flow(flow_uuid):
     if flow_uuid in flow_obj_cache:
@@ -136,6 +136,7 @@ class Job:
 
         elif s.is_command:
             output = cf.execute(self.step.args, self.inputs)
+            # print(self.step.args, self.inputs)
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
@@ -364,7 +365,235 @@ class Split(Command):
         frame2 = Frame(str(uuid.uuid4()), source2)
         return {'o1': frame1, 'o2': frame2}
 
+class VisualizersCommand(Command):
+    def __init__(self):
+        super().__init__()
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'html'}]
 
+    def execute(self, args, inputs):
+        # HTML作成
+        visualize_html = self.gererate_html(args, inputs)
+        return { self.out_key: visualize_html }
+
+    def gererate_html(self, args, inputs):
+        """ for override """
+        raise Exception()
+
+# visualize
+class CsvToHtmlTableCommand(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        HTMLのテーブル形式にして返す
+        """
+
+        file_path = inputs.get('i').source.fullpath
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        # テーブル構造
+        table_of_html = '<table border="1">'
+        with open(file_path, 'r') as f:
+            reader = csv.reader(f)
+            header = next(reader)
+
+            table_of_html += '<tr>'
+            for head in header:
+                table_of_html += '<th>'
+                table_of_html += head
+                table_of_html += '</th>'
+            table_of_html += '</tr>'
+
+            csv_list = list(reader)
+            start = offset
+            end = start + (limit if limit is not None else len(csv_list))
+
+            for csv_row in csv_list[start:end]:
+                table_of_html += '<tr>'
+                for datum in csv_row:
+                    table_of_html += '<td>'
+                    table_of_html += datum
+                    table_of_html += '</td>'
+                table_of_html += '</tr>'
+        table_of_html += '</table>'
+
+        return table_of_html
+
+# グラフ化に必要なものの準備
+import matplotlib.pyplot as plt
+import pandas as pd
+
+class CsvToLineGraphCommand(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def generate_image(self, args, inputs):
+        """
+        ビジュアライズを描画、保存する。
+        """
+
+        # plotの設定
+        plt.style.use('ggplot')
+        plt.legend(loc='best')
+        plt.xlabel(args.get('x_axis'))
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+
+        # dfの作成
+        # index_colで指定しているものがx軸になる
+        time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
+        df = pd.read_csv(inputs.get('i').source.fullpath, index_col=args.get('x_axis'), parse_dates=time_series_column)
+
+        # offset対応
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+        df = df[start:end]
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        # y軸の設定はここ
+        # y軸はリスト型。インデックスでも列名でも大丈夫。
+        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+        df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+
+        # pngで保存
+        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
+        img_path = 'kskp/static/images/visualize/%s.png' % file_name
+        plt.savefig(img_path, dpi=200)
+
+        return file_name
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        image_file_name = self.generate_image(args, inputs)
+        img_tag = '<img src="' + 'static/images/visualize/%s.png' % image_file_name + '">'
+
+        return img_tag
+
+class CsvToHistogram(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotのヒストグラムを作成する
+        """
+
+        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtohistogram'
+        file_path = inputs.get('i').source.fullpath
+
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        plt.style.use('ggplot')
+        plt.legend(loc='best')
+        plt.xlabel(args.get('x_axis'))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+
+        # indexで指定しているものがx軸になる
+        df = pd.read_csv(file_path)
+
+        # offset対応
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+        df = df[start:end]
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        # y軸の設定はここ
+        # y軸はリスト型。インデックスでも列名でも大丈夫。
+        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+        df.plot(ax=ax, kind='hist', y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), bins=args.get('bins'), alpha=args.get('alpha'))
+
+        # pngで保存
+        img_path = 'kskp/static/images/visualize/%s.png' % file_name
+        plt.savefig(img_path, dpi=200)
+
+        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+
+        return img_html
+
+class CsvToScatter(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの散布図を作成する
+        """
+
+        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
+        file_path = inputs.get('i').source.fullpath
+
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        plt.style.use('ggplot')
+        plt.legend(loc='best')
+        plt.xlabel(args.get('x_axis'))
+
+        fig = plt.figure()
+        ax = fig.add_subplot(1,1,1)
+
+        # indexで指定しているものがx軸になる
+        df = pd.read_csv(file_path)
+
+        # offset対応
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+        df = df[start:end]
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        # y軸の設定はここ
+        # y軸はリスト型。インデックスでも列名でも大丈夫。
+        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+        df.plot(ax=ax, kind='scatter', x=args.get('x_axis'), y=args.get('y_axis'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+
+        # pngで保存
+        img_path = 'kskp/static/images/visualize/%s.png' % file_name
+        plt.savefig(img_path, dpi=200)
+
+        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+
+        return img_html
+
+# mcommand
 class MCommand(UnixCommand):
 
     def command_args(self, args, inputs):
@@ -4204,4 +4433,10 @@ commands = {
     'groupby': Groupby(),
     'groupby2': Groupby2(),
     'sml_modeling': SmlModeling()
+}
+internal_commands = {
+    'csvtohtmltable': CsvToHtmlTableCommand(),
+    'csvtolinegraph': CsvToLineGraphCommand(),
+    'csvtohistogram': CsvToHistogram(),
+    'csvtoscatter': CsvToScatter()
 }
