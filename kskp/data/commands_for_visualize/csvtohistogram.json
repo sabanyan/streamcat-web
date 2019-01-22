@@ -1,9 +1,9 @@
 {
   "version": "0.7.0",
-  "id": "csvtolinegraph",
-  "label": "折れ線グラフの作成",
+  "id": "csvtohistogram",
+  "label": "ヒストグラムの作成",
   "classification": "visualize",
-  "description": "csvファイルから折れ線グラフを作成する",
+  "description": "csvファイルからヒストグラムを作成する",
   "ports": [
     [
       {
