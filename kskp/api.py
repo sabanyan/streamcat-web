@@ -293,81 +293,93 @@ def fetch_visualizers():
     ビジュアライズ用コマンド定義の一覧を返す
     """
 
+    path = api.root_path / Path('data/commands_for_visualizers')
+
+    commands = []
+    for command_path in path.iterdir():
+        if not command_path.suffix == '.json':
+            continue
+        command_json = command_path.read_text(encoding='utf-8')
+        command_data = json.loads(command_json)
+        commands.append(command_data)
+
+    return jsonify({'success': True, 'data': commands})
+
     # 現在はmsankeyを唯一の例として追加
-    visualizers = [
-        {
-            "id": "gridview",
-            "params": [],
-            "ports": [
-                [
-                    {
-                        "name": "i",
-                        "type": "frame"
-                    }
-                ],
-                [
-                    {
-                        "name": "o",
-                        "type": "html"
-                    }
-                ]
-            ],
-            "label": "表形式データの描画",
-            "classification": "visualizer",
-        },
-        {
-            "id": "msankey",
-            "params": [
-                {
-                    "name": "f",
-                    "type": "string",
-                    "label": "枝データ上の2つの節点項目名"
-                },
-                {
-                    "name": "v",
-                    "type": "string",
-                    "label": "枝の重み項目名"
-                }
-            ],
-            "ports": [
-                [
-                    {
-                        "name": "i",
-                        "type": "frame"
-                    }
-                ],
-                [
-                    {
-                        "name": "o",
-                        "type": "html"
-                    }
-                ]
-            ],
-            "label": "sankeyダイアグラムの描画",
-            "classification": "visualizer",
-            "url": "https://www.nysol.jp/view/jp/sect-msankey.html"
-        },
-        {
-            "id": "plaintextview",
-            "params": [],
-            "ports": [
-                [
-                    {
-                        "name": "i",
-                        "type": "string"
-                    }
-                ],
-                [
-                    {
-                        "name": "o",
-                        "type": "html"
-                    }
-                ]
-            ],
-            "label": "単純なテキスト表示",
-            "classification": "visualizer",
-        }        
-    ]
+    # visualizers = [
+    #     {
+    #         "id": "gridview",
+    #         "params": [],
+    #         "ports": [
+    #             [
+    #                 {
+    #                     "name": "i",
+    #                     "type": "frame"
+    #                 }
+    #             ],
+    #             [
+    #                 {
+    #                     "name": "o",
+    #                     "type": "html"
+    #                 }
+    #             ]
+    #         ],
+    #         "label": "表形式データの描画",
+    #         "classification": "visualizer",
+    #     },
+    #     {
+    #         "id": "msankey",
+    #         "params": [
+    #             {
+    #                 "name": "f",
+    #                 "type": "string",
+    #                 "label": "枝データ上の2つの節点項目名"
+    #             },
+    #             {
+    #                 "name": "v",
+    #                 "type": "string",
+    #                 "label": "枝の重み項目名"
+    #             }
+    #         ],
+    #         "ports": [
+    #             [
+    #                 {
+    #                     "name": "i",
+    #                     "type": "frame"
+    #                 }
+    #             ],
+    #             [
+    #                 {
+    #                     "name": "o",
+    #                     "type": "html"
+    #                 }
+    #             ]
+    #         ],
+    #         "label": "sankeyダイアグラムの描画",
+    #         "classification": "visualizer",
+    #         "url": "https://www.nysol.jp/view/jp/sect-msankey.html"
+    #     },
+    #     {
+    #         "id": "plaintextview",
+    #         "params": [],
+    #         "ports": [
+    #             [
+    #                 {
+    #                     "name": "i",
+    #                     "type": "string"
+    #                 }
+    #             ],
+    #             [
+    #                 {
+    #                     "name": "o",
+    #                     "type": "html"
+    #                 }
+    #             ]
+    #         ],
+    #         "label": "単純なテキスト表示",
+    #         "classification": "visualizer",
+    #     }
+    # ]
 
     return jsonify({'success': True, 'data': visualizers})
 
