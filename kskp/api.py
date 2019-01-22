@@ -853,7 +853,6 @@ def handle_bad_request(error):
 # flowの場合はflow_uuid、commandの場合はcommand_idをクエリパラメータとする
 # ひとまず今はframeのuuidが来ることを想定、ファイルそのものはこない。なのでcontent-typeはapplication/json
 @app.route('/visualizers', methods=['POST'])
-@login_required_api
 def visualizer():
 
     from .engine.core3 import internal_commands, Job, Step
