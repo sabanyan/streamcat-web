@@ -1374,8 +1374,8 @@ class ApiTestCase(unittest.TestCase):
             'limit': '',
             'offset': '',
             'columns': ['temperature'],
-            'x_inch': 14,
-            'y_inch': 7,
+            'x_inch': 7,
+            'y_inch': 3,
             'x_axis': 'Time',
             'time_series_column': ['Time']
         }
