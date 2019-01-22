@@ -429,7 +429,12 @@ class CsvToHtmlTableCommand(VisualizersCommand):
 
 # グラフ化に必要なものの準備
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
+
+from bokeh.plotting import figure
+from bokeh.resources import CDN
+from bokeh.embed import file_html
 
 class CsvToLineGraphCommand(VisualizersCommand):
     def __init__(self):
@@ -450,7 +455,7 @@ class CsvToLineGraphCommand(VisualizersCommand):
         # dfの作成
         # index_colで指定しているものがx軸になる
         time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
-        df = pd.read_csv(inputs.get('i').source.fullpath, index_col=args.get('x_axis'), parse_dates=time_series_column)
+        df = pd.read_csv(inputs.get('i').source.fullpath, parse_dates=time_series_column)
 
         # offset対応
         offset = int(args.get('offset')) if args.get('offset') else 0
@@ -460,6 +465,19 @@ class CsvToLineGraphCommand(VisualizersCommand):
         end = start + (limit if limit is not None else len(df))
         df = df[start:end]
 
+        plot = figure(x_axis_type="datetime",
+                      x_axis_label='時間',
+                      y_axis_label='気温',
+                      output_backend="webgl",
+                      title="2018年の名古屋の気温",
+                      plot_width=1400,
+                      plot_height=600)
+        
+        plot.line(df['Time'], df['temperature'])
+
+        html = file_html(plot, CDN, 'myplot')
+        with open('kskp/templates/visualize/myplot.html', 'w') as f:
+            f.write(html)
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
             # なんかする
@@ -468,24 +486,24 @@ class CsvToLineGraphCommand(VisualizersCommand):
         # y軸の設定はここ
         # y軸はリスト型。インデックスでも列名でも大丈夫。
         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
-        df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+        # df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+        #
+        # # pngで保存
+        # file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
+        # img_path = 'kskp/static/images/visualize/%s.png' % file_name
+        # plt.savefig(img_path, dpi=200)
 
-        # pngで保存
-        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
-        img_path = 'kskp/static/images/visualize/%s.png' % file_name
-        plt.savefig(img_path, dpi=200)
-
-        return file_name
+        return html
 
     def gererate_html(self, args, inputs):
         """
         csvのファイルパスから、
         plotの折れ線グラフ画像のimageタグを作成する
         """
-        image_file_name = self.generate_image(args, inputs)
-        img_tag = '<img src="' + 'static/images/visualize/%s.png' % image_file_name + '">'
+        html = self.generate_image(args, inputs)
+        # img_tag = '<img src="' + 'static/images/visualize/%s.png' % image_file_name + '">'
 
-        return img_tag
+        return html
 
 class CsvToHistogram(VisualizersCommand):
     def __init__(self):
@@ -4392,7 +4410,7 @@ commands = {
     'msortf': Msortf(),
     'mcal': Mcal(),
     'msim': Msim(),
-    
+
     # KCMD
     'select_target_column': SelectTargetColumn(),
     'standardize': Standardize(),
