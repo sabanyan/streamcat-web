@@ -6,7 +6,7 @@ from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.neighbors import KNeighborsRegressor
 import pickle
 
-class Knearest_neighbors(Regression):
+class RKnearest_neighbors(Regression):
     """
     最近傍法(回帰)クラスです
     """
@@ -80,6 +80,6 @@ class Knearest_neighbors(Regression):
         return
 
 if __name__=="__main__":
-    knn=Knearest_neighbors()
+    knn=RKnearest_neighbors()
     knn.main(sys.argv[1:])
     knn.write()

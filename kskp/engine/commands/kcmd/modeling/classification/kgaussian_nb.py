@@ -6,7 +6,7 @@ from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn.naive_bayes import GaussianNB
 import pickle
 
-class Kgaussian_nb(Classification):
+class CKgaussian_nb(Classification):
     """
     ナイーブベイズ(分類)クラスです
     """
@@ -68,6 +68,6 @@ class Kgaussian_nb(Classification):
         return
 
 if __name__=="__main__":
-    kgnb=Kgaussian_nb()
+    kgnb=CKgaussian_nb()
     kgnb.main(sys.argv[1:])
     kgnb.write()

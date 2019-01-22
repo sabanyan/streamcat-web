@@ -7,7 +7,7 @@ from sklearn.ensemble import BaggingRegressor
 import pickle
 
 
-class Kbag(Regression):
+class RKbag(Regression):
     """
     バギング(回帰)クラスです。
     """
@@ -81,6 +81,6 @@ class Kbag(Regression):
         return
 
 if __name__=="__main__":
-    kbag=Kbag()
+    kbag=RKbag()
     kbag.main(sys.argv[1:])
     kbag.write()

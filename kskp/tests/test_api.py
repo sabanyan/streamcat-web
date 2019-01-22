@@ -379,7 +379,7 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(updated_user_pass, user['password'])
         self.assertEqual(updated_user_email, user['email'])
 
-    # @unittest.skip
+    @unittest.skip
     def test_update_profile_grafana(self):
         """
         update_profile APIのテスト
@@ -691,6 +691,831 @@ class ApiTestCase(unittest.TestCase):
 
         # self.assertEqual(result['message'], '')
         # self.assertEqual(result['success'], True)
+
+    def test_make_executableflows_by_frame_uuid(self):
+        """
+        make_executableflows APIをテストする。
+        既に登録されていフレームをinputに使う。
+
+        TODO:フローが既存のものを使用しているので、
+        テスト内で作成するように変更する
+        """
+        # アップロード用に一時ファイルを作成する
+        frame_uuid = str(uuid.uuid4())
+
+        import csv
+        with open('kskp/data/frames/' + frame_uuid + '.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+
+        flow_uuid = '5e6e9c97-5379-4f2b-b8aa-cac21d80f49f'
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/executableflows',
+                data={
+                    'flow_uuid' : flow_uuid,
+                    'i' : frame_uuid
+                }
+            )
+            result = json.loads(response.get_data())
+
+
+        # テスト
+        new_flow_json = model.fetch_flow_by_uuid(result['flow_uuid'])
+        # 新しいフローが作られているか
+        self.assertNotEqual(result['flow_uuid'], flow_uuid)
+        # 実行できるようにportsやframeが置き換わっているか
+        self.assertEqual(len(new_flow_json['ports'][0]), 0)
+        self.assertEqual(len(new_flow_json['ports'][1]), 0)
+        for node in new_flow_json['nodes']:
+            if node['id'] == 'i':
+                self.assertEqual(node['uuid'], frame_uuid)
+
+        # 後片付け
+        flow_path = model.get_flow_path_by_uuid(result['flow_uuid'])
+        frame_path = Path('kskp/data/frames/' + frame_uuid + '.csv')
+        os.remove(flow_path)
+        os.remove(frame_path)
+
+    def test_make_executableflows_by_multi_frame_uuid(self):
+        """
+        make_executableflows APIをテストする。
+        既に登録されていフレーム（複数）をinputに使う。
+
+        TODO:フローが既存のものを使用しているので、
+        テスト内で作成するように変更する
+        """
+        # アップロード用に一時ファイルを作成する
+        frame_uuid_1 = str(uuid.uuid4())
+        frame_uuid_2 = str(uuid.uuid4())
+
+        import csv
+        with open('kskp/data/frames/' + frame_uuid_1 + '.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+
+        with open('kskp/data/frames/' + frame_uuid_2 + '.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+
+        flow_uuid = '6e6e9c97-5379-4f2b-b8aa-cac21d80f49f'
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/executableflows',
+                data={
+                    'flow_uuid' : flow_uuid,
+                    'i' : frame_uuid_1,
+                    'i2': frame_uuid_2
+                }
+            )
+            result = json.loads(response.get_data())
+
+        # テスト
+        new_flow_json = model.fetch_flow_by_uuid(result['flow_uuid'])
+        # 新しいフローが作られているか
+        self.assertNotEqual(result['flow_uuid'], flow_uuid)
+        # 実行できるようにportsやframeが置き換わっているか
+        self.assertEqual(len(new_flow_json['ports'][0]), 0)
+        self.assertEqual(len(new_flow_json['ports'][1]), 0)
+        for node in new_flow_json['nodes']:
+            if node['id'] == 'i':
+                self.assertEqual(node['uuid'], frame_uuid_1)
+            if node['id'] == 'i2':
+                self.assertEqual(node['uuid'], frame_uuid_2)
+
+        # 後片付け
+        flow_path = model.get_flow_path_by_uuid(result['flow_uuid'])
+        frame_path_1 = Path('kskp/data/frames/' + frame_uuid_1 + '.csv')
+        frame_path_2 = Path('kskp/data/frames/' + frame_uuid_2 + '.csv')
+        os.remove(flow_path)
+        os.remove(frame_path_1)
+        os.remove(frame_path_2)
+
+    def test_make_executableflows_by_csv_file(self):
+        """
+        make_executableflows APIをテストする。
+        アップロードしたcsvデータを使う。
+
+        TODO:フローが既存のものを使用しているので、
+        テスト内で作成するように変更する。
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        with open('kskp/data/frames/test.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+
+        f = open('kskp/data/frames/test.csv', 'br')
+
+        flow_uuid = '5e6e9c97-5379-4f2b-b8aa-cac21d80f49f'
+        frame_uuid = None
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/executableflows',
+                data={
+                        'flow_uuid': flow_uuid,
+                        'i': f
+                    }
+            )
+            result = json.loads(response.get_data())
+
+        # テスト
+        new_flow_json = model.fetch_flow_by_uuid(result['flow_uuid'])
+        # 新しいフローが作られているか
+        self.assertNotEqual(result['flow_uuid'], flow_uuid)
+        # 実行できるようにportsやframeが置き換わっているか
+        self.assertEqual(len(new_flow_json['ports'][0]), 0)
+        self.assertEqual(len(new_flow_json['ports'][1]), 0)
+        for node in new_flow_json['nodes']:
+            # 作成したframe_uuidは外部から与えたものではないので、nullかどうかだけみる
+            if node['id'] == 'i':
+                self.assertIsNotNone(node['uuid'])
+
+        # 後片付け
+        # 削除対象のframe_uuidを取得
+        flow_json = model.fetch_flow_by_uuid(result['flow_uuid'])
+        for node in flow_json['nodes']:
+            if node['id'] == 'i':
+                frame_uuid = node['uuid']
+                break
+
+        # 削除
+        flow_path = model.get_flow_path_by_uuid(result['flow_uuid'])
+        frame_path = Path('kskp/data/frames/' + frame_uuid + '.csv')
+        test_data_path = Path('kskp/data/frames/test.csv')
+        os.remove(flow_path)
+        os.remove(frame_path)
+        os.remove(test_data_path)
+
+    # @unittest.skip
+    def test_make_executableflows_by_multi_csv_file(self):
+        """
+        make_executableflows APIをテストする。
+        アップロードしたcsvデータ（複数）を使う。
+
+        TODO:フローが既存のものを使用しているので、
+        テスト内で作成するように変更する。
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        with open('kskp/data/frames/test.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+        f = open('kskp/data/frames/test.csv', 'br')
+
+        with open('kskp/data/frames/test2.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+        f2 = open('kskp/data/frames/test2.csv', 'br')
+
+        flow_uuid = '6e6e9c97-5379-4f2b-b8aa-cac21d80f49f'
+        frame_uuid_1 = None
+        frame_uuid_2 = None
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/executableflows',
+                data={
+                        'flow_uuid': flow_uuid,
+                        'i': f,
+                        'i2': f2
+                    }
+            )
+            result = json.loads(response.get_data())
+
+        # テスト
+        new_flow_json = model.fetch_flow_by_uuid(result['flow_uuid'])
+        # 新しいフローが作られているか
+        self.assertNotEqual(result['flow_uuid'], flow_uuid)
+        # 実行できるようにportsやframeが置き換わっているか
+        self.assertEqual(len(new_flow_json['ports'][0]), 0)
+        self.assertEqual(len(new_flow_json['ports'][1]), 0)
+        for node in new_flow_json['nodes']:
+            # 作成したframe_uuidは外部から与えたものではないので、nullかどうかだけみる
+            if node['id'] == 'i':
+                self.assertIsNotNone(node['uuid'])
+            if node['id'] == 'i2':
+                self.assertIsNotNone(node['uuid'])
+
+        # 後片付け
+        # 削除対象のframe_uuidを取得
+        flow_json = model.fetch_flow_by_uuid(result['flow_uuid'])
+        for node in flow_json['nodes']:
+            if node['id'] == 'i':
+                frame_uuid_1 = node['uuid']
+            elif node['id'] == 'i2':
+                frame_uuid_2 = node['uuid']
+
+        # 削除
+        flow_path = model.get_flow_path_by_uuid(result['flow_uuid'])
+        frame_path_1 = Path('kskp/data/frames/' + frame_uuid_1 + '.csv')
+        frame_path_2 = Path('kskp/data/frames/' + frame_uuid_2 + '.csv')
+        test_data_path_1 = Path('kskp/data/frames/test.csv')
+        test_data_path_2 = Path('kskp/data/frames/test2.csv')
+        os.remove(flow_path)
+        os.remove(frame_path_1)
+        os.remove(frame_path_2)
+        os.remove(test_data_path_1)
+        os.remove(test_data_path_2)
+
+    def test_make_executableflows_by_multi_csv_file(self):
+        """
+        make_executableflows APIをテストする。
+        アップロードしたcsvデータとKSKP上に既に存在するデータを使う。
+
+        TODO:フローが既存のものを使用しているので、
+        テスト内で作成するように変更する。
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid = str(uuid.uuid4())
+
+        with open('kskp/data/frames/test.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+        f = open('kskp/data/frames/test.csv', 'br')
+
+        with open('kskp/data/frames/' + frame_uuid + '.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+
+        flow_uuid = '6e6e9c97-5379-4f2b-b8aa-cac21d80f49f'
+        frame_uuid_1 = None
+        frame_uuid_2 = frame_uuid
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/executableflows',
+                data={
+                        'flow_uuid': flow_uuid,
+                        'i': f,
+                        'i2': frame_uuid
+                    }
+            )
+            result = json.loads(response.get_data())
+
+        # テスト
+        new_flow_json = model.fetch_flow_by_uuid(result['flow_uuid'])
+        # 新しいフローが作られているか
+        self.assertNotEqual(result['flow_uuid'], flow_uuid)
+        # 実行できるようにportsやframeが置き換わっているか
+        self.assertEqual(len(new_flow_json['ports'][0]), 0)
+        self.assertEqual(len(new_flow_json['ports'][1]), 0)
+        for node in new_flow_json['nodes']:
+            # 作成したframe_uuidは外部から与えたものではないので、nullかどうかだけみる
+            if node['id'] == 'i':
+                self.assertIsNotNone(node['uuid'])
+            if node['id'] == 'i2':
+                self.assertEqual(node['uuid'], frame_uuid)
+
+        # 後片付け
+        # 削除対象のframe_uuidを取得
+        flow_json = model.fetch_flow_by_uuid(result['flow_uuid'])
+        for node in flow_json['nodes']:
+            if node['id'] == 'i':
+                frame_uuid_1 = node['uuid']
+
+        # 削除
+        flow_path = model.get_flow_path_by_uuid(result['flow_uuid'])
+        frame_path_1 = Path('kskp/data/frames/' + frame_uuid_1 + '.csv')
+        frame_path_2 = Path('kskp/data/frames/' + frame_uuid_2 + '.csv')
+        test_data_path_1 = Path('kskp/data/frames/test.csv')
+        os.remove(flow_path)
+        os.remove(frame_path_1)
+        os.remove(frame_path_2)
+        os.remove(test_data_path_1)
+
+    def test_execute_subflow_by_multi_csv_file(self):
+        """
+        make_executableflows APIをテストする。
+        アップロードしたcsvデータとKSKP上に既に存在するデータを使う。
+
+        TODO:フローが既存のものを使用しているので、
+        テスト内で作成するように変更する。
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid = str(uuid.uuid4())
+
+        with open('kskp/data/frames/test.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+        f = open('kskp/data/frames/test.csv', 'br')
+
+        with open('kskp/data/frames/' + frame_uuid + '.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+
+        flow_uuid = '6e6e9c97-5379-4f2b-b8aa-cac21d80f49f'
+        frame_uuid_1 = None
+        frame_uuid_2 = frame_uuid
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/subflows',
+                data={
+                        'flow_uuid': flow_uuid,
+                        'i': f,
+                        'i2': frame_uuid
+                    }
+            )
+            result = json.loads(response.get_data())
+
+        # テスト
+        self.assertEqual(result['success'], True)
+        # 後片付け
+
+        # 削除
+        # frame_path_1 = Path('kskp/data/frames/' + frame_uuid_1 + '.csv')
+        frame_path_2 = Path('kskp/data/frames/' + frame_uuid_2 + '.csv')
+        test_data_path_1 = Path('kskp/data/frames/test.csv')
+        # os.remove(frame_path_1)
+        os.remove(frame_path_2)
+        os.remove(test_data_path_1)
+
+        # このテストで作成したjobsだけ削除する
+        for path in Path(app.root_path + '/data/jobs/').iterdir():
+            job_data = json.loads(path.read_text())
+
+            if job_data['flow']['uuid'] == flow_uuid:
+                # 指定したflowでjobができているかのテスト
+                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
+                self.assertEqual(job_data['state'], '実行完了')
+
+                # 作成したフレームの削除
+                for data in job_data['data'].values():
+                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
+                    os.remove(frame_path)
+
+                # jobsの削除
+                os.remove(path)
+
+    def test_execute_subflow_by_multi_csv_file_with_args(self):
+        """
+        make_executableflows APIをテストする。
+        アップロードしたcsvデータとKSKP上に既に存在するデータを使う。
+
+        TODO:フローが既存のものを使用しているので、
+        テスト内で作成するように変更する。
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid = str(uuid.uuid4())
+
+        with open('kskp/data/frames/test.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+        f = open('kskp/data/frames/test.csv', 'br')
+
+        flow_uuid = '7e6e9c97-5379-4f2b-b8aa-cac21d80f49f'
+        frame_uuid_1 = None
+
+        args = {
+            'f': "0,1"
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/subflows',
+                data={
+                        'flow_uuid': flow_uuid,
+                        'args': json.dumps(args),
+                        'i': f
+                    }
+            )
+            result = json.loads(response.get_data())
+
+        # テスト
+        self.assertEqual(result['success'], True)
+        # 後片付け
+
+        # 削除
+        # frame_path_1 = Path('kskp/data/frames/' + frame_uuid_1 + '.csv')
+        test_data_path_1 = Path('kskp/data/frames/test.csv')
+        # os.remove(frame_path_1)
+        os.remove(test_data_path_1)
+
+        # このテストで作成したjobsだけ削除する
+        for path in Path(app.root_path + '/data/jobs/').iterdir():
+            job_data = json.loads(path.read_text())
+            if job_data['flow']['uuid'] == flow_uuid:
+                # 指定したflowでjobができているかのテスト
+                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
+                self.assertEqual(job_data['state'], '実行完了')
+                # 作成したFrameの削除
+                for data in job_data['data'].values():
+                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
+                    os.remove(frame_path)
+                # jobsの削除
+                os.remove(path)
+
+    # 中間ファイルが作成され邪魔なので、一旦スキップしておく
+    @unittest.skip
+    def test_execute_subflow_by_multi_csv_file_with_args2(self):
+        """
+        make_executableflows APIをテストする。
+        アップロードしたcsvデータとKSKP上に既に存在するデータを使う。
+
+        「新エンジンの子」サブフローにinputsとargsを与えて実行してみた。
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid = str(uuid.uuid4())
+
+        with open('kskp/data/frames/test.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+        f = open('kskp/data/frames/test.csv', 'br')
+
+        flow_uuid = '1D01BA67-789B-41D5-95A9-CC84D2E4EFA7'
+        frame_uuid = None
+
+        args = {
+            'c': "${quantity}>15",
+            'f1': 'quantity,amount',
+            'f2': 'customer'
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            response = client.post('/api/v0/subflows',
+                data={
+                        'flow_uuid': flow_uuid,
+                        'args': json.dumps(args),
+                        'Ci': f
+                    }
+            )
+            result = json.loads(response.get_data())
+
+        # テスト
+        self.assertEqual(result['success'], True)
+        # 後片付け
+
+        # 削除
+        test_data_path_1 = Path('kskp/data/frames/test.csv')
+        os.remove(test_data_path_1)
+
+        # このテストで作成したjobsだけ削除する
+        for path in Path(app.root_path + '/data/jobs/').iterdir():
+            job_data = json.loads(path.read_text())
+            if job_data['flow']['uuid'] == flow_uuid:
+                # 指定したflowでjobができているかのテスト
+                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
+                self.assertEqual(job_data['state'], '実行完了')
+                # 作成したFrameの削除
+                print(job_data['data'])
+                for data in job_data['data'].values():
+                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
+                    # os.remove(frame_path)
+                # jobsの削除
+                os.remove(path)
+
+    def test_visualizers_csvtohtmltable(self):
+        """
+        visualizers APIをテストする。
+        htmlテーブル
+        返ってくるのはHTML
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid_1 = str(uuid.uuid4())
+
+        with open('kskp/data/frames/' + frame_uuid_1 + '.csv', 'w') as csv_file:
+            fieldnames = ['customer', 'quantity', 'amount']
+            csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            csv_writer.writeheader()
+            csv_writer.writerow({'customer': 'A', 'quantity':20, 'amount':5200})
+            csv_writer.writerow({'customer': 'B', 'quantity':18, 'amount':4000})
+            csv_writer.writerow({'customer': 'C', 'quantity':15, 'amount':3500})
+            csv_writer.writerow({'customer': 'D', 'quantity':10, 'amount':2000})
+            csv_writer.writerow({'customer': 'E', 'quantity':3, 'amount':800})
+
+        command_id = 'csvtohtmltable'
+
+        args = {
+            'limit':50,
+            'offset':3
+        }
+
+        inputs = {
+            'i': frame_uuid_1
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/visualizers?from=%s' % command_id
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                        'args': args,
+                        'inputs': inputs
+                    })
+            )
+            # result = json.loads(response.get_data())
+
+        # テスト
+        # HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
+
+        # 後片付け
+        os.remove('kskp/data/frames/%s.csv' % frame_uuid_1)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+
+    def test_visualizers_linegraph(self):
+        """
+        visualizers APIをテストする。
+        折れ線グラフ
+        返ってくるのはHTML
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid_1 = 'f20541d4-8b8f-4787-6ea9-f1e9d3db80a1'
+
+        command_id = 'csvtolinegraph'
+
+        args = {
+            'limit': '',
+            'offset': '',
+            'columns': ['temperature'],
+            'x_inch': 7,
+            'y_inch': 3,
+            'x_axis': 'Time',
+            'time_series_column': ['Time']
+        }
+
+        inputs = {
+            'i': frame_uuid_1
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/visualizers?from=%s' % command_id
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                        'args': args,
+                        'inputs': inputs
+                    })
+            )
+
+        # テスト
+        # 画像ファイル、HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
+
+        # 後片付け
+        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+
+    def test_visualizers_histogram(self):
+        """
+        visualizers APIをテストする。
+        ヒストグラム
+        返ってくるのはHTML
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid_1 = '180127_1535_4sensor_5sec'
+
+        command_id = 'csvtohistogram'
+
+        args = {
+            'limit': '',
+            'offset': '',
+            'columns': [1,2,3,4],
+            'x_inch': 7,
+            'y_inch': 3,
+            'bins': 100,
+            'x_axis': '',
+            'alpha': 0.5
+        }
+
+        inputs = {
+            'i': frame_uuid_1
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/visualizers?from=%s' % command_id
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                        'args': args,
+                        'inputs': inputs
+                    })
+            )
+
+        # テスト
+        # 画像ファイル、HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
+
+        # 後片付け
+        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+
+    def test_visualizers_scatter(self):
+        """
+        visualizers APIをテストする。
+        散布図
+        返ってくるのはHTML
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid_1 = '180127_1535_4sensor_5sec'
+
+        command_id = 'csvtoscatter'
+
+        args = {
+            'limit': '',
+            'offset': '',
+            'x_inch': 7,
+            'y_inch': 5,
+            'y_axis': '3H',
+            'x_axis': '4H',
+            'alpha': 0.5
+        }
+
+        inputs = {
+            'i': frame_uuid_1
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/visualizers?from=%s' % command_id
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                        'args': args,
+                        'inputs': inputs
+                    })
+            )
+
+        # テスト
+        # 画像ファイル、HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
+
+        # 後片付け
+        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
     @unittest.skip
     def test_execute_flow(self):

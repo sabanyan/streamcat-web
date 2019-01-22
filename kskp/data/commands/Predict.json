@@ -1,7 +1,7 @@
 {
   "version": "0.7.0",
   "id": "predict",
-  "label": "推定",
+  "label": "予測",
   "classification": "postprocess",
   "description": "Predict",
   "ports": [
@@ -26,8 +26,8 @@
   "params": [
     {
       "name": "p",
-      "type": "string",
-      "label": "set probability on"
+      "type": "boolean",
+      "label": "それぞれのクラスに属する確率を返すか、属する可能性が最も高いクラスのラベルを返すか（デフォルト：クラスのラベルを返す）、分類のみ有効"
     }
   ],
   "url": ""

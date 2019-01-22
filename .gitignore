@@ -38,3 +38,5 @@ kskp.db
 
 build/
 dist/
+.vscode/settings.json
+.vscode/settings.json
