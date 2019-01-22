@@ -435,34 +435,27 @@ class CsvToLineGraphCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_image(self, args, inputs):
         """
-        csvのファイルパスから、
-        plotの折れ線グラフを作成する
+        ビジュアライズを描画、保存する。
         """
 
-        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
-        file_path = inputs.get('i').source.fullpath
-
-        offset = int(args.get('offset')) if args.get('offset') else 0
-        limit = int(args.get('limit')) if args.get('limit') else None
-
-        # ブロック句
-        if not os.path.exists(file_path):
-            return ''
-
+        # plotの設定
         plt.style.use('ggplot')
         plt.legend(loc='best')
         plt.xlabel(args.get('x_axis'))
-
         fig = plt.figure()
         ax = fig.add_subplot(1,1,1)
 
-        # indexで指定しているものがx軸になる
+        # dfの作成
+        # index_colで指定しているものがx軸になる
         time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
-        df = pd.read_csv(file_path, index_col=args.get('x_axis'), parse_dates=time_series_column)
+        df = pd.read_csv(inputs.get('i').source.fullpath, index_col=args.get('x_axis'), parse_dates=time_series_column)
 
         # offset対応
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
         start = offset
         end = start + (limit if limit is not None else len(df))
         df = df[start:end]
@@ -478,12 +471,21 @@ class CsvToLineGraphCommand(VisualizersCommand):
         df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
 
         # pngで保存
+        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
         img_path = 'kskp/static/images/visualize/%s.png' % file_name
         plt.savefig(img_path, dpi=200)
 
-        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+        return file_name
 
-        return img_html
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        image_file_name = self.generate_image(args, inputs)
+        img_tag = '<img src="' + 'static/images/visualize/%s.png' % image_file_name + '">'
+
+        return img_tag
 
 class CsvToHistogram(VisualizersCommand):
     def __init__(self):

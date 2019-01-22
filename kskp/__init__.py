@@ -48,9 +48,9 @@ def library():
 def profile():
     return render_template('profile.html', user_id=session['user_id'])
 
-@app.route('/test')
-def test():
-    return render_template('visualize/180127_1535_4sensor_5sec_csvtohistogram.html')
+# @app.route('/test')
+# def test():
+#     return render_template('visualize/data0_csvtolinegraph.html')
 
 if __name__ == '__main__':
     app.run()
