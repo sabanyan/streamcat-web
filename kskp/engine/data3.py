@@ -124,7 +124,7 @@ class NysolPythonSource(Source):
                 print('exception:', e)
                 raise e
         finally:
-            print('final!!!')
+            pass
 
     def __repr__(self):
         return f'args: {self.args}'
