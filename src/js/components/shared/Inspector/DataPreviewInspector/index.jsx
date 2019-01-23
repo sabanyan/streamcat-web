@@ -11,22 +11,35 @@ import Button from '../../Button/index'
 import DownloadButton from '../../Button/DownloadButton/index'
 import BaseInspector from '../BaseInspector'
 
-class DataPreviewInspector extends React.Component<FlowEditorProps> {
+type Props = {
+  ...FlowEditorProps,
+  onChange: Function;
+  title: string;
+  chart_instance: any;
+}
 
-  constructor (props){
+type State = {
+  image_url?:string;
+  type?: string;
+}
+
+class DataPreviewInspector extends React.Component<Props,State> {
+
+  constructor (props:Props){
     super(props)
     this.state = {
-      image_url: null
+      image_url: "",
+      type: ""
     }
   }
 
-  onChangeChart (e:Event) {
+  onChangeChart (e:SyntheticInputEvent<EventTarget>) {
     const type = e.target.value
     this.setState({type: type})
     this.props.onChange(type)
   }
 
-  onClickSave(e:Event){
+  onClickSave(e:SyntheticInputEvent<EventTarget>){
     let chart_instance = this.props.chart_instance
     let url_base64 = chart_instance.toBase64Image();
     this.setState({image_url:url_base64})
@@ -60,7 +73,7 @@ class DataPreviewInspector extends React.Component<FlowEditorProps> {
         </div>
       </div>
 
-    return <BaseInspector header={""} name={title} label={title} {...this.props}>
+    return <BaseInspector header={""} label={title} {...this.props}>
       {content}
     </BaseInspector>
   }

@@ -11,7 +11,7 @@ import type { FlowEditorProps } from '../index'
 import Edge from '../../shared/Edge'
 import Selector from '../../shared/Selector'
 import style from './style.scss'
-import HttpUtil from '../../../utils/HttpUtil'
+import APIUtil from '../../../utils/APIUtil'
 import Graph from '../../../utils/Graph'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import CommandModel from '../../../model/Command/CommandModel'
@@ -22,6 +22,7 @@ import type { SubFlowParamType } from '../../../types'
 import SubflowCommandModel from '../../../model/Command/SubflowCommandModel'
 import SettingIcon from '../../shared/Icon/SettingIcon'
 import SettingsButton from '../../shared/SettingsButton'
+import VisualizeModel from '../../../model/Visualize/VisualizeModel'
 
 type State = {}
 
@@ -47,7 +48,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     window.emitter.removeListener(Constants.event.ON_LOAD_NAVIGATION)
     window.emitter.addListener(Constants.event.ON_LOAD_NAVIGATION,
       (context) => {
-        preRequest.push(HttpUtil.get('flows?project='+window.navigationModel.project_uuid+'&navigation=off').then((response) => {
+        preRequest.push(APIUtil.get('flows?project='+window.navigationModel.project_uuid+'&navigation=off').then((response) => {
           const json = response.data
           // const commands = json.data.map((command)=>{
           //   return new CommandModel(command)
@@ -57,7 +58,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           (error) => {console.log(error)}))
       })
 
-    preRequest.push(HttpUtil.get('commands').then((response) => {
+    preRequest.push(APIUtil.get('commands').then((response) => {
       const json = response.data
       const commands = json.data.map((command)=>{
         return new CommandModel(command)
@@ -68,7 +69,18 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       (error) => {console.log(error)}))
 
 
-    preRequest.push(HttpUtil.get('subflows').then((response) => {
+    preRequest.push(APIUtil.get('visualizers').then((response) => {
+      const json = response.data
+      const visualizers = json.data.map((visualize)=>{
+        return new VisualizeModel(visualize)
+      })
+      window.visualizers = visualizers
+      this.props.addMaster({visualizers: visualizers})
+    }).then((response) => {},
+      (error) => {console.log(error)}))
+
+
+    preRequest.push(APIUtil.get('subflows').then((response) => {
       const json = response.data
       const subflows = json.data.map((subflow:SubFlowParamType)=>{
         return new SubflowCommandModel(subflow)
@@ -79,7 +91,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       (error) => {console.log(error)}))
 
     Promise.all(preRequest).then(()=>{
-      flowRequest.push(HttpUtil.get('flows/' + inject_flow_uuid).then((response) => {
+      flowRequest.push(APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
         const json = response.data
         this.props.loadFlowJSON(json)
       }))

@@ -139,7 +139,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     }
     addFlowParams = <AddButton onClick={()=>this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
 
-    return <BaseInspector header={''} label={this.props.flow.label} name={''} {...this.props}
+    return <BaseInspector header={''} label={this.props.flow.label} {...this.props}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={()=>this.onSave()}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8} onBlur={this.onBlurDescription}></textarea>
