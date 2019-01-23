@@ -1,9 +1,13 @@
 #!/bin/bash -eu
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.0"
+readonly  VERSION="0.2"
 
 #外部モジュール参照
 # MCMD使用
+
+#未実装箇所
+# 列名無しの列番号指定は、未対応
+
 #--------------------------------------------------------------
 # check_duplicate_rows
 #--------------------------------------------------------------
@@ -120,12 +124,26 @@ if [[ -z ${key_colums} ]]; then
     exit 1
 fi
 
-
-
 # 定数
-readonly COLUM_NAME_DUPLICATION='__duplication__'
-readonly COLUM_NAME_ROW_NO='__RowNo_BeginWith1_'  #1始まりの行番号
+readonly COLUM_NAME_DUPLICATION='__dup_total__'   #重複数
+readonly COLUM_NAME_ROW_NO='__RowNo_BeginWith1__'  #1始まりの行番号
+readonly COLUM_NAME_DUPLICATION_NO='__dup_no__'   #重複の連番
+
 readonly TMP_FILE_NAME="tmp.csv"
+
+# -qオプションで、キー項目の %数字 列名を除去するための列名変更リストの生成
+#   入力例： key_colums               key1,key2
+#   出力例： key_colums_rename_list   key1:key1,key2:key2
+key_colums_rename_list=''
+top_flg=1
+for i in ${key_colums//,/ }; do
+  if [ ${top_flg} == 1 ]; then
+    key_colums_rename_list="${i}"':'"${i}"
+    top_flg=0
+  else
+    feature_list_1="${key_colums_rename_list}"','"${i}"':'"${i}"
+  fi
+done
 
 # 準備処理
 # i= 指定が無い場合、標準入力をセットする
@@ -143,7 +161,7 @@ tmp_file=""
 if [[ -z ${tmp_path} ]]; then
   tmp_file="${TMP_FILE_NAME}"
 else
-  if [[ "${tmp_path: -1}" == '/' ]]; then
+  if [[ "${tmp_path: -1}" == '/' ]]; then  # 変数最後の1文字 -1の前に空白要に注意
     tmp_file="${tmp_path}${TMP_FILE_NAME}"
   else
     tmp_file="${tmp_path}/${TMP_FILE_NAME}"
@@ -164,9 +182,18 @@ mnumber   a="${COLUM_NAME_DUPLICATION}" \
           -assert_diffSize \
           -assert_nullkey | \
 msel      c='${'"${COLUM_NAME_DUPLICATION}"'}>=2' | \
+mstats    k="${key_colums}" \
+          f="${COLUM_NAME_DUPLICATION}" \
+          c="max" | \
 mnjoin    m="${tmp_file}" \
           k="${key_colums}" | \
-mfldname  f="${key_colums}:${key_colums}" \
+mnumber   a="${COLUM_NAME_DUPLICATION_NO}" \
+          k="${key_colums}" \
+          s="${key_colums}" \
+          S=1 \
+          -assert_diffSize \
+          -assert_nullkey | \
+mfldname  f="${key_colums_rename_list}" \
           o="${output_file}" \
           -q \
           -assert_diffSize

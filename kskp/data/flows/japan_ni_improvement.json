@@ -1583,7 +1583,7 @@
         "o": "new 4d277f51-645c-4166-a835-b6e66a0deefe"
       },
       "args": {
-        "-classification": true,
+        "classification": true,
         "target_list": "状態",
         "k": "DATA_SOURCE,時分割1秒",
         "feature_list": "3H_Avg,3V_Avg,4H_Avg,4V_Avg",
