@@ -14,6 +14,8 @@ type JobFrameProps = {
   type:string;
   uuid:string;
   job: {};
+  onClickJob: Function;
+  selected: boolean;
 }
 
 type JobFrameState = {
@@ -42,6 +44,13 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
     })
   }
 
+  onClick(e:Event){
+    const {job,onClickJob} = this.props
+    if(onClickJob){
+      onClickJob(e,job)
+    }
+  }
+
   onClickName(e:Event,uuid:string,name:string){
     //TODO 将来的にはページングなどの対応が必要
     HttpUtil.get("frames/"+uuid + "?offset=0&limit=1000").then((response)=>{
@@ -61,7 +70,7 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
   }
 
   render () {
-    const {uuid,job} = this.props
+    const {uuid,job,selected} = this.props
 
     const dataframe = Object.keys(job.data).map(d=>{
       return <div>
@@ -73,7 +82,7 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
 
     let executedAt = moment(job.executedAt).format(Constants.format.dateTime)
 
-    return <div className={style.job_list}>
+    return <div className={classnames(style.job_list,{[style.selected]:selected})}  onClick={(e)=>this.onClick(e)}>
       <div className={style.executed_at}>{executedAt}</div>
       <div className={style.name}>
         {dataframe}

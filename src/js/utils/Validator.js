@@ -181,7 +181,7 @@ class Validator {
     // 同時に入力されている場合エラーになる
     //
     // この場合、tmpPath は skip_fnf の値が入っている場合、
-    // patternで指定した正規表現に基づきチェックが行われる
+    // tmpPath は patternで指定した正規表現に基づきチェックが行われる
     //
     // 使い方:
     // "rules":{
