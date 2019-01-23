@@ -15,6 +15,8 @@ import Button from '../shared/Button'
 import TextField from '../shared/TextField'
 import FileUploader from '../shared/FileUploader'
 import { FlowListDataType } from '../../types'
+import ProjectInspector from '../shared/Inspector/ProjectInspector'
+import FlowInspector from '../shared/Inspector/FlowInspector'
 
 /**
  * ======================================================
@@ -43,8 +45,8 @@ export default class FlowListContainer extends React.Component<Props,State> {
       is_finished: false,
       flow_name: '',
       upload_file: {
-
-      }
+      },
+      selected_flow:null
     }
   }
 
@@ -55,9 +57,11 @@ export default class FlowListContainer extends React.Component<Props,State> {
 
   clearKeyword(){
     this.setState({
-      keyword: ''
+      keyword: '',
+      selected_flow: null
     })
-    document.querySelector("input[type=text]").value="";
+    const target = document.querySelector("input[type=text]")
+    if(target)target.value="";
   }
 
   registerModal () {
@@ -104,8 +108,13 @@ export default class FlowListContainer extends React.Component<Props,State> {
       }
       return (flow.label.indexOf(keyword) != -1) ? true : false
     }).map((flow, index) => {
-      return <FlowList key={index} flow={flow} href={'./flows/' + flow.uuid}>
-        <a href="#" onClick={() => this.onClickDelete(flow.uuid)}>削除</a>
+      const selected = (this.state.selected_flow === flow)
+      return <FlowList key={index}
+                       flow={flow}
+                       href={'./flows/' + flow.uuid}
+                       selected={selected}
+                       onClickFlow={(e,flow)=>this.onClickFlow(e,flow)}>
+        {/*<a href="#" onClick={() => this.onClickDelete(flow.uuid)}>削除</a>*/}
       </FlowList>
     })
   }
@@ -123,6 +132,10 @@ export default class FlowListContainer extends React.Component<Props,State> {
     return <div className={style.search_bar}>
       <TextField placeholder={'フローを検索'} onChange={(e) => this.onChangeKeyword(e)}/>
     </div>
+  }
+
+  onClickFlow(e,flow){
+    this.setState({selected_flow:flow})
   }
 
   onChangeKeyword (e:SyntheticInputEvent<EventTarget>) {
@@ -148,9 +161,6 @@ export default class FlowListContainer extends React.Component<Props,State> {
             uuid:json.data.uuid,
             label:json.data.label
           }})
-
-
-
       })
     }
   }
@@ -213,6 +223,10 @@ export default class FlowListContainer extends React.Component<Props,State> {
     </a>
   }
 
+  renderInspector(){
+    return <FlowInspector flow={this.state.selected_flow} onClickDelete={(uuid)=>this.onClickDelete(uuid)}/>
+  }
+
   renderAll () {
     if (this.isEmptyFlowList()) {
       return this.renderEmptyState()
@@ -223,14 +237,17 @@ export default class FlowListContainer extends React.Component<Props,State> {
       {this.renderFlowListHeader()}
       {this.renderFlowList()}
       {this.renderNewFlow()}
+      {this.renderInspector()}
     </div>
   }
 
   render () {
-    return <div className={'container mt-40px'}>
+    return <div className={style.inspector_list_container}>
+      <div className={'container mt-40px'}>
       <Loader absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
       <ModalManager/>
+    </div>
     </div>
   }
 }

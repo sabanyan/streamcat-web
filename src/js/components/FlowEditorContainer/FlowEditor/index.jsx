@@ -166,9 +166,10 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-    return <div className={style.flow_editor}>
+    return <div className={style.flow_editor_container}>
+      <div className={style.flow_editor}>
       <PaperZoom />
-      <SettingsButton {...this.props}/>
+      {/*<SettingsButton {...this.props}/>*/}
       <ToolBar {...this.props} />
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)} message={"フローを構築中です"}/>
       <PaperScroller {...this.props}>
@@ -180,6 +181,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       </PaperScroller>
       <Inspector {...this.props} />
       <ModalManager />
+    </div>
     </div>
   }
 }

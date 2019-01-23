@@ -46,6 +46,9 @@ export type FlowListDataType = {
   ports: [];
   projectId: number;
   uuid: string;
+  creator: string;
+  createdAt: string;
+  description: string;
 }
 
 export type RunResponseNameType = {
