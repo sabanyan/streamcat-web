@@ -18,7 +18,7 @@ import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
 import CommandIcon from '../Icon/CommandIcon'
-import HttpUtil from '../../../utils/HttpUtil'
+import APIUtil from '../../../utils/APIUtil'
 import ErrorIcon from '../Icon/ErrorIcon'
 
 let mouseMoveEvent
@@ -110,7 +110,7 @@ export default class Step extends React.Component<Props, State> {
       if (selected_step instanceof DataFrameStepModel) {
         if(selected_step.hasData()){
           //TODO 将来的にはページングなどの対応が必要
-          HttpUtil.get("frames/" + selected_step.uuid + "?offset=0&limit=1000").then((response)=>{
+          APIUtil.get("frames/" + selected_step.uuid + "?offset=0&limit=1000").then((response)=>{
             const json = response.data
             this.props.updateDataFrameDetail(json.data)
           })

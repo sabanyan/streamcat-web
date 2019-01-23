@@ -10,7 +10,7 @@ import Constants from '../../../../constants/index'
 import Graph from '../../../../utils/Graph'
 import type { CommandParamType, CommandPortType, StepModelType, SubFlowParamType } from '../../../../types/index'
 import CommandModel from '../../../../model/Command/CommandModel'
-import HttpUtil from '../../../../utils/HttpUtil'
+import APIUtil from '../../../../utils/APIUtil'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Loader from '../../Loader/index'
 import FlowUtil from '../../../../utils/FlowUtil'
@@ -47,7 +47,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       if (selected_step instanceof CommandStepModel) {
         if(selected_step.type === Constants.step.type.subflow){
           //サブフローの場合のみ詳細を取得
-          HttpUtil.get("flows/"+selected_step.uuid+"?navigation=off").then((response)=>{
+          APIUtil.get("flows/"+selected_step.uuid+"?navigation=off").then((response)=>{
             this.selectedSubFlow = new FlowModel(response.data.data)
             this.loaded = true
             this.forceUpdate()

@@ -11,7 +11,7 @@ type Props = {
   title?: (string|React.Node);
   children?: React.Node;
   onBlurTitle?: Function;
-  onHide: Function;
+  onHide?: Function;
 }
 
 class BaseInspector extends React.Component<Props> {

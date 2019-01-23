@@ -3,7 +3,7 @@ import Constants from '../constants'
 import type { CommandParamType, StepModelType, SubFlowParamType } from '../types'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
-import HttpUtil from './HttpUtil'
+import APIUtil from './APIUtil'
 import CommandStepModel from '../model/Step/CommandStepModel'
 import Validator from './Validator'
 import graph from './Graph'
@@ -142,7 +142,7 @@ export default class FlowUtil {
     //validation
     Validator.nodesValidate(nodes)
     return new Promise((resolve, reject) => {
-      HttpUtil.put("flows/" + flowUUID,{nodes:nodes}).then((response)=>{
+      APIUtil.put("flows/" + flowUUID,{nodes:nodes}).then((response)=>{
         resolve(response)
       })
     })
@@ -165,7 +165,7 @@ export default class FlowUtil {
     if(ports)putBody["ports"]=ports
 
     return new Promise((resolve, reject) => {
-      HttpUtil.put("flows/" + flowUUID,putBody).then((response)=>{
+      APIUtil.put("flows/" + flowUUID,putBody).then((response)=>{
         resolve(response)
       })
     })

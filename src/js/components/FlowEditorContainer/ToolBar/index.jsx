@@ -14,6 +14,7 @@ import Zoom from './Zoom'
 import style from './style.scss'
 import classnames from 'classnames'
 import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
+import APIUtil from '../../../utils/APIUtil'
 import HttpUtil from '../../../utils/HttpUtil'
 import type { FlowEditorProps } from '../index'
 import type { DataFrameStepModelProps } from '../../../model/Step/DataFrameStepModel'
@@ -66,7 +67,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   run () {
-    return HttpUtil.get("frames?from=" + inject_flow_uuid + "&no_contents=1")
+    return APIUtil.get("frames?from=" + inject_flow_uuid + "&no_contents=1")
   }
 
   onClickProjectRun () {
