@@ -104,16 +104,10 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
       </div>
 
-
-      const contents = this.props.mast.visualizers.map((visualize)=>{
-        const content = <Visualizer visualize={visualize} params={{}}/>
+      const contents = this.props.mast.visualizers.map((visualize,index)=>{
+        const content = <Visualizer key={index} frame_uuid={uuid} visualize={visualize} params={{}}/>
         return {title: visualize.label,content:content,parentProps:this.props}
       })
-
-      //[
-      //           {title:"データの表示",content:contentTable,parentProps:this.props},
-      //           {title:"グラフの表示",content:contentGraph,parentProps:this.props}
-      //         ]
 
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
@@ -311,7 +305,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     }
 
 
-    return <BaseInspector header={""}  label={selected_step.label} name={selected_step.id} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()}>
+    return <BaseInspector header={""}  label={selected_step.label} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()}>
       {content}
     </BaseInspector>
   }

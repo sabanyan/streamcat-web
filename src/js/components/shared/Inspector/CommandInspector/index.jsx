@@ -22,6 +22,7 @@ import StateUtil from '../../../../utils/State'
 import SubflowCommandModel from '../../../../model/Command/SubflowCommandModel'
 import ValidationForm from '../../ValidationForm'
 import classnames from 'classnames'
+import ParamsForm from '../../ParamsForm'
 
 type CommandInspectorProps = {
     ...FlowEditorProps,
@@ -118,24 +119,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       if (element)this.inputRefs.push({param: param, element: element})
     }
 
-    getInvalidMessageElement(step:StepModel,key:string){
-      const invalidMessage = step.invalid[key]
-      if(invalidMessage){
-        if(Array.isArray(invalidMessage)){
-          const arrayMessage = invalidMessage.map(message=>{
-            return <div className={style.invalid_message}>
-              {message}
-            </div>
-          })
-          return <div>{arrayMessage}</div>
-        }
-        return <div className={style.invalid_message}>
-          {step.invalid[key]}
-        </div>
-      }
-      return null
-    }
-
     render() {
         const {commands,subflows} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
@@ -145,59 +128,46 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
 
         if(selected_step.type === Constants.step.type.command){
+          //指定されたステップの元コマンドを取得
           const command:CommandModel = selected_step.getCommand()
+          //選択されたステップのラベルを取得
           label = selected_step.label
+          //コマンドのラベルを取得
           subLabel = command.label
           this.inputRefs = []
-          inputForm = command.params.map((param,index) =>{
-            const value = selected_step.args[param.name]//入力値
-            let isPresence = false
-            if(command.rules &&
-              command.rules[param.name] &&
-              command.rules[param.name]['presence']){
-              isPresence = true
-            }
-            let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name)//パラメータのエレメント
-            const invalidMessageEelement = this.getInvalidMessageElement(selected_step,param.name)//入力エラー
-            return <div key={index} className={classnames('mb-8px',{[style.presence]:isPresence,[style.invalid]:(invalidMessageEelement)})}>
-              {paramElement}
-              {invalidMessageEelement}
-            </div>
-          })
+
+          const params:[CommandParamType] = command.params
+          const args:{} = selected_step.args
+          const invalids:{} = selected_step.invalid
+
+          inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids = {invalids} onBuild={onBuild}/>
+
         }else if(selected_step.type === Constants.step.type.subflow){
           const subflowCommand:SubflowCommandModel = selected_step.getCommand()
           label = selected_step.label
           subLabel = subflowCommand.label
           this.inputRefs = []
-          inputForm = subflowCommand.params.map((param,index)=>{
-            const value = selected_step.args[param.name]
-            const hasSubFlowParam = (FlowUtil.getSubFlowParam(this.selectedSubFlow,param.name))
 
-            //サブフローは必須設定がないため optional trueを有効にしておく
-            param.optional = true
+          const params:[CommandParamType] = subflowCommand.params
+          const args:{} = selected_step.args
+          const invalids:{} = selected_step.invalid
 
-            let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name)
-            const invalidMessageEelement = this.getInvalidMessageElement(selected_step,param.name)
-            return <div key={index}>
-              <label className="float-right text-danger">{(hasSubFlowParam)?"":"不明なパラメーター"}</label>
-              {paramElement}
-              {invalidMessageEelement}
-            </div>
-          })
+          inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids = {invalids} onBuild={onBuild}/>
+
           subFlowLink = <a href={"/flows/"+selected_step.uuid} target={"_blank"}>フローを開く</a>
         }
 
         let form
 
-        if(inputForm.length){
+        if(inputForm){
           form = <div>
                 <div className={style.full_hr} />
                 <div>
                   <div className="kskp-form">
                       {inputForm}
+                  </div>
                 </div>
-            </div>
-          </div>
+              </div>
         }
 
         if(!this.loaded){

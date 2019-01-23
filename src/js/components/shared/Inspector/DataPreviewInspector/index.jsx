@@ -73,7 +73,7 @@ class DataPreviewInspector extends React.Component<Props,State> {
         </div>
       </div>
 
-    return <BaseInspector header={""} name={title} label={title} {...this.props}>
+    return <BaseInspector header={""} label={title} {...this.props}>
       {content}
     </BaseInspector>
   }
