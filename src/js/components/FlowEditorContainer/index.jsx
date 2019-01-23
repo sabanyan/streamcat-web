@@ -38,7 +38,7 @@ export type FlowEditorProps = {
   projectId: string,
   projectName: string,
   graph: { width: number, height: number,edges:any[],nodes:any[] };
-  mast: { commands: any[] };
+  mast: { commands: any[],subflows: any[],visualizers: any[] };
   loadFlowJSON: Function;
   addMaster: Function;
   selectSteps: Function;

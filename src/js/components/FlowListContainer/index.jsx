@@ -3,7 +3,7 @@ import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
 import flowListStyle from '../shared/List/FlowList/style.scss'
-import HttpUtil from '../../utils/HttpUtil'
+import APIUtil from '../../utils/APIUtil'
 import FlowList from '../shared/List/FlowList'
 import FlowListHeader from '../shared/List/FlowList/FlowListHeader'
 import ModalManager from '../shared/ModalManager'
@@ -66,7 +66,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
       id: Constants.modal.ADD_FLOW, onClickDone: () => {
         const {flow_name} = this.state
         const {uuid,label} = this.state.upload_file
-        HttpUtil.post('flows', {
+        APIUtil.post('flows', {
           name: flow_name,
           project_uuid: inject_project_uuid,
           datasource: {
@@ -85,7 +85,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
 
   getFlowList () {
     this.setState({is_loading: true})
-    HttpUtil.get('flows', {project: inject_project_uuid}).then((response) => {
+    APIUtil.get('flows', {project: inject_project_uuid}).then((response) => {
       const json = response.data
       this.setState(
         {is_loading: false, is_finished: true, flow_list: json.data})
@@ -176,7 +176,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
   onClickDelete (flow_uuid:string) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        HttpUtil.delete('flows/' + flow_uuid).then((response) => {
+        APIUtil.delete('flows/' + flow_uuid).then((response) => {
           this.getFlowList()
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         })

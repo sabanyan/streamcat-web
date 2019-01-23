@@ -13,7 +13,7 @@ import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
 import CommandSelector from '../../CommandSelector/index'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Graph from '../../../../utils/Graph'
-import HttpUtil from '../../../../utils/HttpUtil'
+import APIUtil from '../../../../utils/APIUtil'
 import type { DataFrameDetailType, StepModelType } from '../../../../types/index'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
@@ -25,6 +25,7 @@ import StateUtil from '../../../../utils/State'
 import StringUtil from '../../../../utils/StringUtil'
 import { RunResponseType } from '../../../../types'
 import ErrorUtil from '../../../../utils/ErrorUtil'
+import Visualizer from '../../Visualizer'
 
 
 type State = {
@@ -68,7 +69,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         this.setState({
           loading: true
         })
-        HttpUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
+        APIUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
           if (response.data.success) {
             const uuid = response.data.name[0].uuid
             const label = response.data.name[0].id
@@ -96,20 +97,22 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const {selected_data_source_detail} = this.props
     const selected_step = this.getSelectedStep()
     //TODO 将来的にはページングなどの対応が必要
-    HttpUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
+    APIUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
       const json = response.data
       let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
       let contentTable = <div className="table-responsive">
         <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
       </div>
 
+      const contents = this.props.mast.visualizers.map((visualize,index)=>{
+        const content = <Visualizer key={index} frame_uuid={uuid} visualize={visualize} params={{}}/>
+        return {title: visualize.label,content:content,parentProps:this.props}
+      })
+
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
-        contents: [
-          {title:"データの表示",content:contentTable,parentProps:this.props},
-          {title:"グラフの表示",content:contentGraph,parentProps:this.props}
-        ],
+        contents: contents,
         title: label
       })
       this.setState({
@@ -125,7 +128,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         uuid: selected_step.uuid,
         ext:"csv"
     }
-    HttpUtil.get("files",param).then((response)=>{
+    APIUtil.get("files",param).then((response)=>{
       let props:CSVModelProps = {
         uuid: selected_step.uuid,
         data: response.data,
@@ -302,7 +305,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     }
 
 
-    return <BaseInspector header={""}  label={selected_step.label} name={selected_step.id} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()}>
+    return <BaseInspector header={""}  label={selected_step.label} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()}>
       {content}
     </BaseInspector>
   }

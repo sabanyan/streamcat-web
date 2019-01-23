@@ -18,7 +18,7 @@ export default class Tab extends React.Component {
         [this.props.className]:(this.props.className)
       },
     )
-    return <div className={tabClass} onClick={(e) => this.onClickTab(e)}>
+    return <div className={tabClass} onClick={(e) => this.onClickTab(e)} style={{width:this.props.width}}>
       {this.props.children}
     </div>
   }

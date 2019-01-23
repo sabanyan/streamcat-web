@@ -48,6 +48,7 @@ const Constants = {
   },
   param:{
     type:{
+      number:"number",
       string:"string",
       boolean:"boolean",
       select:"select"
