@@ -83,7 +83,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     saveNodes(){
       let {nodes} = this.props
-      return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+      return FlowUtil.saveNodes(inject_flow_uuid,nodes).then(()=>{
+        this.props.addHistory()
+      })
     }
 
     onClickDelete(e:Event) {

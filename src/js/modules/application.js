@@ -31,6 +31,9 @@ const DELETE_STEPS_ACTION = 'delete_steps_action'
 const CUT_STEPS_ACTION = 'cut_steps_action'
 const COPY_STEPS_ACTION = 'copy_steps_action'
 const PASTE_STEPS_ACTION = 'paste_steps_action'
+const ADD_HISTORY_ACTION = 'add_history_action'
+const UNDO_ACTION = 'undo_action'
+const REDO_ACTION = 'redo_action'
 const REFRESH_GRAPH_ACTION = 'refresh_graph_action'
 const EXECUTE_FLOW_ACTION = 'execute_flow_action'
 const SORT_FLOW_ACTION = 'sort_flow_action'
@@ -48,6 +51,10 @@ let initialState = {
   graph: graph.getGraph({}),
   zoom: 100,
   nodes: [],
+  history: {
+    current: 0,
+    nodes: []
+  },
   mast: {},
   selected_tab_id: 0,
   drag: {},
@@ -69,6 +76,9 @@ const Application = (state = initialState, action: {}) => {
       newState.nodes = loadedJson.nodes
       newState.project = {id: loadedJson.projectId}
       newState.graph = graph.getGraph(newState)
+
+      newState.history.current = 0
+      newState.history.nodes = [newState.nodes]
 
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
       Validator.isFlowModelSchema(newState)
@@ -345,6 +355,52 @@ const Application = (state = initialState, action: {}) => {
        window.nodes = newState.nodes
        return newState
      }
+    case ADD_HISTORY_ACTION:{
+      let newState = StateUtil.deepCopy(state)
+
+
+      console.log(JSON.stringify(newState.nodes))
+      console.log(JSON.stringify(newState.history.nodes[newState.history.current]))
+      const isSame = JSON.stringify(newState.nodes) === JSON.stringify(newState.history.nodes[newState.history.current])
+      if(isSame){
+        return newState
+      }
+      if(newState.history.current != newState.history.nodes.length - 1){
+        //前に戻っている状態で履歴が追加された場合は、
+        //current以降の履歴は消す
+        newState.history.nodes = newState.history.nodes.slice(0,newState.history.current + 1)
+        newState.history.nodes.push(newState.nodes)
+        newState.history.current = newState.history.nodes.length - 1
+      }else{
+        newState.history.nodes.push(newState.nodes)
+        newState.history.current = newState.history.nodes.length - 1
+      }
+
+      return newState
+    }
+    case UNDO_ACTION:{
+      let newState = StateUtil.deepCopy(state)
+      if(newState.history.current > 0){
+        //一つ前に巻き戻し
+        newState.history.current = newState.history.current - 1
+        newState.nodes = state.history.nodes[newState.history.current]
+        window.nodes = newState.nodes
+        newState.graph = graph.getGraph(newState)
+      }
+      return newState
+    }
+    case REDO_ACTION:{
+      let newState = StateUtil.deepCopy(state)
+      const max = newState.history.nodes.length
+      if(newState.history.current < max){
+        //一つ前に巻き戻し
+        newState.history.current = newState.history.current + 1
+        newState.nodes = state.history.nodes[newState.history.current]
+        window.nodes = newState.nodes
+        newState.graph = graph.getGraph(newState)
+      }
+      return newState
+    }
     case SELECT_STEPS_ACTION: {
       if (action.selected_steps && action.selected_steps.length === 1) {
         newState.selected_step_ids = action.selected_steps.map((step) => step.id)
@@ -643,7 +699,33 @@ export const pasteStepsAction = (paste_nodes: []) => {
     paste_nodes: paste_nodes
   }
 }
-
+/**
+ * 履歴の追加
+ * @returns {{type: string, step: *}}
+ */
+export const addHistoryAction = () => {
+  return {
+    type: ADD_HISTORY_ACTION,
+  }
+}
+/**
+ * アンドゥ
+ * @returns {{type: string, step: *}}
+ */
+export const undoAction = () => {
+  return {
+    type: UNDO_ACTION,
+  }
+}
+/**
+ * リドゥ
+ * @returns {{type: string, step: *}}
+ */
+export const redoAction = () => {
+    return {
+      type: REDO_ACTION,
+    }
+  }
 /**
  * ステップの選択
  * @param selected_steps

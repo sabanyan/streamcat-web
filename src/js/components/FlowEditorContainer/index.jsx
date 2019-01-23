@@ -9,6 +9,9 @@ import {
   cutStepsAction,
   copyStepsAction,
   pasteStepsAction,
+  addHistoryAction,
+  undoAction,
+  redoAction,
   deleteStepsAction,
   addMasterAction,
   sortFlowAction,
@@ -43,6 +46,9 @@ export type FlowEditorProps = {
   cutSteps: Function;
   copySteps: Function;
   pasteSteps: Function;
+  addHistory: Function;
+  undo: Function;
+  redo: Function;
   deleteSteps: Function;
   updateStep: Function;
   updateFlow: Function;
@@ -72,6 +78,7 @@ export default FlowEditorContainer = connect(
       mast: state.mast,
       edges: state.edges,
       nodes: state.nodes,
+      history: state.history,
       selected_step_ids: state.selected_step_ids,
       selected_tab_id: state.selected_tab_id,
       selected_data_source_detail: state.selected_data_source_detail,
@@ -121,6 +128,15 @@ export default FlowEditorContainer = connect(
       },
       pasteSteps (...args) {
         dispatch(pasteStepsAction(...args))
+      },
+      addHistory (...args) {
+        dispatch(addHistoryAction(...args))
+      },
+      undo (...args) {
+        dispatch(undoAction(...args))
+      },
+      redo (...args) {
+        dispatch(redoAction(...args))
       },
       sortFlow (...args) {
         dispatch(sortFlowAction(...args))

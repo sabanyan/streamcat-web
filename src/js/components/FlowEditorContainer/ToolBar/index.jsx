@@ -24,6 +24,8 @@ import type { UploadedFileType } from '../../../types'
 import FlowUtil from '../../../utils/FlowUtil'
 import StringUtil from '../../../utils/StringUtil'
 import ErrorUtil from '../../../utils/ErrorUtil'
+import Undo from './Undo'
+import Redo from './Redo'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -57,6 +59,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   // }
 
   onClickSort () {
+    this.props.addHistory()
     this.props.sortFlow()
   }
 
@@ -228,6 +231,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   render () {
     const {zoom} = this.props
+
+    const current = this.props.history.current
+    const max = this.props.history.nodes.length
+
+    const redoDisabled = !(current + 1 < max)
+    const undoDisabled = !(current - 1 >= 0)
     return <div>
       <div className={classnames(style.flow_toolbar)}>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
@@ -240,6 +249,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}
         {/*<DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>*/}
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
+        <Undo disabled={undoDisabled} icon={"undo"} onClick={()=>this.props.undo()}>もとに戻す</Undo>
+        <Redo disabled={redoDisabled} icon={"redo"} onClick={()=>this.props.redo()}>繰り返す</Redo>
+
       </div>
       <div className={classnames(style.paper_toolbar)}>
         <Zoom onClickZoomIn={(e)=>this.onClickZoomIn(e)}
