@@ -4,7 +4,6 @@ import style from '../style.scss'
 import InOutConnector from '../CommandInspector/InOutConnector/index'
 
 type Props = {
-  name?:string;
   label?:string;
   subLabel?:string;
   header?: string;
@@ -36,7 +35,7 @@ class BaseInspector extends React.Component<Props> {
 
   render () {
 
-    const {header,name, label, children,onBlurTitle,subLabel} = this.props
+    const {header, label, children,onBlurTitle,subLabel} = this.props
 
     const disabled = (!onBlurTitle)
     let labelContainer,subLabelContainer
@@ -59,9 +58,6 @@ class BaseInspector extends React.Component<Props> {
           {labelContainer}
           {subLabelContainer}
         </div>
-        {/*<div className={style.property_name}>*/}
-          {/*{name}*/}
-        {/*</div>*/}
         {children}
       </div>
     </div>
