@@ -358,9 +358,6 @@ const Application = (state = initialState, action: {}) => {
     case ADD_HISTORY_ACTION:{
       let newState = StateUtil.deepCopy(state)
 
-
-      console.log(JSON.stringify(newState.nodes))
-      console.log(JSON.stringify(newState.history.nodes[newState.history.current]))
       const isSame = JSON.stringify(newState.nodes) === JSON.stringify(newState.history.nodes[newState.history.current])
       if(isSame){
         return newState
@@ -384,6 +381,7 @@ const Application = (state = initialState, action: {}) => {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current - 1
         newState.nodes = state.history.nodes[newState.history.current]
+        allRebuildNodesEdges(newState)
         window.nodes = newState.nodes
         newState.graph = graph.getGraph(newState)
       }
@@ -396,6 +394,7 @@ const Application = (state = initialState, action: {}) => {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current + 1
         newState.nodes = state.history.nodes[newState.history.current]
+        allRebuildNodesEdges(newState)
         window.nodes = newState.nodes
         newState.graph = graph.getGraph(newState)
       }
@@ -592,6 +591,40 @@ function rebuildNodesEdges(newState,action){
   })
 }
 
+/**
+ * エッジのつなぎ直し処理
+ * @param newState
+ * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
+ * @returns {*}
+ */
+function allRebuildNodesEdges(newState){
+  graph.removeAllEdges(newState.graph.edges)
+  return newState.nodes.map((node, index) => {
+    //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
+      if (node instanceof CommandStepModel ||
+        node instanceof SubFlowStepModel) {
+        //ノードのつながりを再構築
+        Object.keys(node.srcs).forEach(portName => {
+          const id = node.srcs[portName]
+          const from = id
+          const to = node.id
+          if (Graph.getNode(newState.nodes, id)) {
+            graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+          }
+        })
+        //ノードのつながりを再構築
+        Object.keys(node.dsts).forEach(portName => {
+          const id = node.dsts[portName]
+          const from = node.id
+          const to = id
+          if (Graph.getNode(newState.nodes, id)) {
+            graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+          }
+        })
+      }
+      return node
+  })
+}
 
 /**
  * ステップの追加

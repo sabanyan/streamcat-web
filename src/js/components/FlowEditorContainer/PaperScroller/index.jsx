@@ -85,7 +85,6 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
         return
       }
       if (e.metaKey && e.shiftKey && e.key === 'z') {
-        console.log("redo")
         this.props.redo()
         return
       }
@@ -142,6 +141,7 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
       if (this.props.drag.end) {
         this.props.dragEnd(e.pageX, e.pageY)
       }
+      this.props.addHistory()
     }
   }
 
