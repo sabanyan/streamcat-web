@@ -4050,157 +4050,106 @@ class Groupby(UnixCommand):
 class Groupby2(UnixCommand):
     pass
 
-class SmlModeling(UnixCommand):
+class NmCmd(MCommandNew):
+    """
+    nysol_pythonのcmdメソッドのクラス
+    使用回数が多く、argsを辞書から文字列に変換する箇所が殆ど同じなので
+    いい加減別クラスとして定義した。
+    """
+    def __init__(self, exe, ext, param):
+        super().__init__(nm.cmd)
+        self.execute_command = exe
+        self.output_ext = ext
+        self.stdout_param = ' ' + param
+
+    def command_args(self, args, inputs):
+        """
+        実行可能状態のargsを生成
+        """
+        # input整理
+        args, process_flow = self.parse_command_inputs(args, inputs)
+        # nm.cmd用の文字列のコマンドを作成する
+        str_args = self.execute_command + self.convert_args_dict_into_str(args)
+
+        return str_args, process_flow
+
+    def parse_command_inputs(self, args, inputs):
+        process_flow = None
+        # input整理
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        return args, process_flow
+
+    def convert_args_dict_into_str(self, dict_args):
+        str_args = ''
+        for key, value in dict_args.items():
+            if isinstance(value, bool):
+                if value:
+                    str_args += ' -' +  key
+                continue
+            if not len(value) == 0:
+                str_args += ' %s=%s' % (key, value)
+        return str_args
+
+    def source(self, args, inputs):
+        args, process_flow = self.command_args(args, inputs)
+        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+
+class SmlModeling(NmCmd):
     def __init__(self):
-        super().__init__()
+        super().__init__('/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
         self.name = 'SmlModeling'
-        self.nysol_mod = nm.cmd
-        self.command_path = '/kskp/engine/commands/pcmd/sml_modeling.sh'
-        self.description = 'モデリング'
-        self.output_ext = 'csv'
-        self.stdout_param = ' output_metrics_data='
+        self.description = 'デモ用モデリング'
+
+    def parse_command_inputs(self, args, inputs):
+        input_i = inputs['i']
+        # うまいこと標準入力がsml_modeling.sh内で受け取れていないようなので、
+        # とりあえずなんであろうとパスを渡す
+        input_i.command_to_file()
+        args.update({'i': input_i.source.fullpath.as_posix()})
+
+        return args, None
 
     def command_args(self, args, inputs):
-        cl_args = self.command_path
-        process_flow = None
-
-        input_i = inputs['i']
-        if isinstance(input_i.source, PathFileSource):
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
-        elif isinstance(input_i.source, NysolPythonSource):
-            # process_flow = input_i.source.nysol_module
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
-
+        # input整理
+        args, process_flow = self.parse_command_inputs(args, inputs)
         # nm.cmd用の文字列のコマンドを作成する
-        for key, value in args.items():
-            if isinstance(value, bool):
-                cl_args += ' ' +  key
-                continue
-            if not len(value) == 0:
-                cl_args += ' ' + key + '=' + value
+        str_args = self.execute_command + self.convert_args_dict_into_str(args)
 
-        cl_args += ' kcmd_path=/kskp/engine/commands/kcmd'
-        cl_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
-        cl_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
+        str_args += ' kcmd_path=/kskp/engine/commands/kcmd'
+        str_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
+        str_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
 
-        return cl_args, process_flow
+        return str_args, process_flow
 
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
-
-class CheckDuplicateRows(UnixCommand):
+class CheckDuplicateRows(NmCmd):
     def __init__(self):
-        super().__init__()
+        super().__init__('/kskp/engine/commands/pcmd/check_duplicate_rows.sh', 'csv', 'o=')
         self.name = 'CheckDuplicateRows'
-        self.nysol_mod = nm.cmd
-        self.command_path = '/kskp/engine/commands/pcmd/check_duplicate_rows.sh'
         self.description = '重複行の抽出'
-        self.output_ext = 'csv'
-        self.stdout_param = ' o='
 
-    def command_args(self, args, inputs):
-        cl_args = self.command_path
-        process_flow = None
-
-        input_i = inputs['i']
-        if isinstance(input_i.source, PathFileSource):
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
-        elif isinstance(input_i.source, NysolPythonSource):
-            # process_flow = input_i.source.nysol_module
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
-
-        # nm.cmd用の文字列のコマンドを作成する
-        for key, value in args.items():
-            if isinstance(value, bool):
-                cl_args += ' ' +  key
-                continue
-            if not len(value) == 0:
-                cl_args += ' ' + key + '=' + value
-
-        return cl_args, process_flow
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
-
-class MargeFS(UnixCommand):
+class MargeFS(NmCmd):
     def __init__(self):
-        super().__init__()
+        super().__init__('/kskp/engine/commands/pcmd/marge_FS.sh', 'csv', 'o=')
         self.name = 'MargeFS'
-        self.nysol_mod = nm.cmd
-        self.command_path = '/kskp/engine/commands/pcmd/marge_FS.sh'
         self.description = '不整CSVファイルのクレンジングと集約'
-        self.output_ext = 'csv'
-        self.stdout_param = ' o='
 
-    def command_args(self, args, inputs):
-        cl_args = self.command_path
-        process_flow = None
-
-        input_i = inputs['i']
-        if isinstance(input_i.source, PathFileSource):
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
-        elif isinstance(input_i.source, NysolPythonSource):
-            # process_flow = input_i.source.nysol_module
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
-
-        # nm.cmd用の文字列のコマンドを作成する
-        for key, value in args.items():
-            if isinstance(value, bool):
-                cl_args += ' ' +  key
-                continue
-            if not len(value) == 0:
-                cl_args += ' ' + key + '=' + value
-
-        return cl_args, process_flow
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
-
-class MargeIbutsu(UnixCommand):
+class MargeIbutsu(NmCmd):
     def __init__(self):
-        super().__init__()
+        super().__init__('/kskp/engine/commands/pcmd/marge_ibutsu.sh', 'csv', 'o=')
         self.name = 'MargeIbutsu'
-        self.nysol_mod = nm.cmd
-        self.command_path = '/kskp/engine/commands/pcmd/marge_ibutsu.sh'
         self.description = 'CSVファイルの集約'
-        self.output_ext = 'csv'
-        self.stdout_param = ' o='
 
-    def command_args(self, args, inputs):
-        cl_args = self.command_path
-        process_flow = None
-
-        input_i = inputs['i']
-        if isinstance(input_i.source, PathFileSource):
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
-        elif isinstance(input_i.source, NysolPythonSource):
-            # process_flow = input_i.source.nysol_module
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
-
-        # nm.cmd用の文字列のコマンドを作成する
-        for key, value in args.items():
-            if isinstance(value, bool):
-                cl_args += ' ' +  key
-                continue
-            if not len(value) == 0:
-                cl_args += ' ' + key + '=' + value
-
-        return cl_args, process_flow
-
-    def source(self, args, inputs):
-        args, process_flow = self.command_args(args, inputs)
-        return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+class ColumnGroupingName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
+        self.name = 'ColumnGroupingName'
+        self.description = '項目群に対して、グループに属する項目名に接頭語を付与する'
 
 commands = {
     # MCDM
@@ -4322,10 +4271,15 @@ commands = {
     'evaluate': Evaluate(),
     'predict': Predict(),
 
+    # 追加コマンド
+    # デモ専用コマンド
     'groupby': Groupby(),
     'groupby2': Groupby2(),
     'sml_modeling': SmlModeling(),
+
+    # O社向けコマンド
     'check_duplicate_rows': CheckDuplicateRows(),
     'marge_FS': MargeFS(),
-    'marge_ibutsu': MargeIbutsu()
+    'marge_ibutsu': MargeIbutsu(),
+    'column_grouping_name': ColumnGroupingName()
 }
