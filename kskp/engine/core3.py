@@ -435,6 +435,8 @@ import pandas as pd
 from bokeh.plotting import figure
 from bokeh.resources import CDN
 from bokeh.embed import file_html
+from bokeh.models import HoverTool
+from bokeh.plotting import ColumnDataSource
 
 class CsvToLineGraphCommand(VisualizersCommand):
     def __init__(self):
@@ -444,13 +446,6 @@ class CsvToLineGraphCommand(VisualizersCommand):
         """
         ビジュアライズを描画、保存する。
         """
-
-        # plotの設定
-        plt.style.use('ggplot')
-        plt.legend(loc='best')
-        plt.xlabel(args.get('x_axis'))
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
 
         # dfの作成
         # index_colで指定しているものがx軸になる
@@ -463,35 +458,55 @@ class CsvToLineGraphCommand(VisualizersCommand):
 
         start = offset
         end = start + (limit if limit is not None else len(df))
-        df = df[start:end]
 
-        plot = figure(x_axis_type="datetime",
-                      x_axis_label='時間',
-                      y_axis_label='気温',
-                      output_backend="webgl",
-                      title="2018年の名古屋の気温",
-                      plot_width=1400,
-                      plot_height=600)
-        
-        plot.line(df['Time'], df['temperature'])
-
-        html = file_html(plot, CDN, 'myplot')
-        with open('kskp/templates/visualize/myplot.html', 'w') as f:
-            f.write(html)
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
             # なんかする
             # pass
 
-        # y軸の設定はここ
-        # y軸はリスト型。インデックスでも列名でも大丈夫。
-        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
-        # df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
-        #
-        # # pngで保存
-        # file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
-        # img_path = 'kskp/static/images/visualize/%s.png' % file_name
-        # plt.savefig(img_path, dpi=200)
+        df = df[start:end]
+        df = df.sort_values('datetime')
+
+        hover = HoverTool()
+        # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
+        # それを防ぐために{%raw%}{%endraw%}で区切っている
+        hover.tooltips = [
+            ('日付', '{%raw%}@datetime{%F}{%endraw%}'),
+            ('株価', '@price')
+        ]
+        hover.formatters = {
+            'datetime': 'datetime',
+            'price': 'numeral'
+        }
+        hover.mode='vline'
+        plot = figure(x_axis_type="datetime",
+                      x_axis_label='日付',
+                      y_axis_label='株価',
+                      output_backend="webgl",
+                      title="2018年トヨタ自動車株価",
+                      plot_width=args.get('x_inch'),
+                      plot_height=args.get('y_inch'))
+
+        plot.add_tools(hover)
+
+        df_openingprice = ColumnDataSource(df[df['stockprice']=='openingprice'])
+        df_closingprice = ColumnDataSource(df[df['stockprice']=='closingprice'])
+
+        plot.line(x='datetime', y='price', color='red', legend='始値', source=df_openingprice)
+        plot.line(x='datetime', y='price', color='blue', legend='終値', source=df_closingprice)
+
+        # こっちでも複数のグラフを描画することができるが
+        # legendをおけなさそうです・・・
+        # plot.multi_line([df['datetime'], df['datetime']],
+        #                 [df['openingprice'], df['closingprice']],
+        #                 color=['red', 'blue'])
+
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
+        html = file_html(plot, CDN, 'myplot')
+        with open('kskp/templates/visualize/myplot.html', 'w') as f:
+            f.write(html)
 
         return html
 
