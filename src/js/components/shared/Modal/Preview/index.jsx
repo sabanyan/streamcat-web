@@ -46,7 +46,7 @@ export default class PreviewModal extends React.Component<Props,State> {
     if(!Array.isArray(contents))contents = [contents]
 
     const tabs = contents.map((content,index)=>{
-      return <Tab tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
+      return <Tab width={"auto"} tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
     })
 
     const tabPanels = contents.map((content,index)=>{

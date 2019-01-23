@@ -6,7 +6,7 @@ import Constants from '../../../../../constants'
 import ModalUtil from '../../../../../utils/ModalUtil'
 import DataTable from '../../../DataTable'
 import moment from 'moment'
-import HttpUtil from '../../../../../utils/HttpUtil'
+import APIUtil from '../../../../../utils/APIUtil'
 import DataPreview from '../../../DataPreview'
 import ChartUtil from '../../../../../utils/ChartUtil'
 

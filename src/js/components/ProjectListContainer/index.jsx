@@ -3,7 +3,7 @@ import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
 import projectListStyle from '../shared/List/ProjectList/style.scss'
-import HttpUtil from '../../utils/HttpUtil'
+import APIUtil from '../../utils/APIUtil'
 import ProjectList from '../shared/List/ProjectList'
 import TextFieldWithButton from '../shared/TextFieldWithButton'
 import ProjectListHeader from '../shared/List/ProjectList/ProjectListHeader'
@@ -50,7 +50,7 @@ export default class ProjectListContainer extends React.Component {
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-        HttpUtil.post('projects', {name: this.state.project_name}).
+        APIUtil.post('projects', {name: this.state.project_name}).
           then((response) => {
             ModalUtil.emitModal(
               {id: Constants.modal.ADD_PROJECT, visible: false})
@@ -63,7 +63,7 @@ export default class ProjectListContainer extends React.Component {
 
   getProjectList () {
     this.setState({is_loading: true})
-    HttpUtil.get('projects').then((response) => {
+    APIUtil.get('projects').then((response) => {
       const json = response.data
       this.setState(
         {is_loading: false, is_finished: true, project_list: json.data})
@@ -133,7 +133,7 @@ export default class ProjectListContainer extends React.Component {
   onClickDelete (project_uuid) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        HttpUtil.delete('projects/' + project_uuid).then((response) => {
+        APIUtil.delete('projects/' + project_uuid).then((response) => {
           this.getProjectList()
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         })
