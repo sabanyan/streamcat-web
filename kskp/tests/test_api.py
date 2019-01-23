@@ -1366,7 +1366,7 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = 'f20541d4-8b8f-4787-6ea9-f1e9d3db80a1'
+        frame_uuid_1 = 'result'
 
         command_id = 'csvtolinegraph'
 
@@ -1374,10 +1374,10 @@ class ApiTestCase(unittest.TestCase):
             'limit': '',
             'offset': '',
             'columns': ['temperature'],
-            'x_inch': 7,
-            'y_inch': 3,
+            'x_inch': 1400,
+            'y_inch': 600,
             'x_axis': 'Time',
-            'time_series_column': ['Time']
+            'time_series_column': ['datetime']
         }
 
         inputs = {
