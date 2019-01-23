@@ -88,6 +88,14 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
          this.pasteSteps()
          return
        }
+      if (e.metaKey && e.key === 'z') {
+        this.props.undo()
+        return
+      }
+      if (e.metaKey && e.key === 'y') {
+        this.props.redo()
+        return
+      }
     }
     else {
     }
