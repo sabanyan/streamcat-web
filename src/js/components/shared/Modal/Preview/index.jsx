@@ -1,5 +1,5 @@
 //@flow
-import React from 'react'
+import * as React from 'react'
 import classnames from 'classnames'
 import TabBar from '../../TabBar'
 import TabList from '../../TabBar/TabList'
@@ -7,20 +7,33 @@ import Tab from '../../TabBar/Tab'
 import TabPanel from '../../TabBar/TabPanel'
 import style from '../style.scss'
 
-export default class PreviewModal extends React.Component {
+type Props = {
+  id:string;
+  contents: [{}];
+  close_button: React.Node;
+  visible: boolean;
+  title: string;
+  footer: React.Node
+}
+type State = {
+  selected_tab_id: number
+}
 
-  constructor (props) {
+export default class PreviewModal extends React.Component<Props,State> {
+
+  constructor (props: Props) {
     super(props)
     this.state = {selected_tab_id:0}
   }
 
-  onClickTab(e,tab_id){
+  onClickTab(e:Event,tab_id:number){
     this.setState({selected_tab_id:tab_id})
   }
 
   render () {
 
-    const {id, contents, close_button, visible, title, footer} = this.props
+    const {id, close_button, visible, title, footer} = this.props
+    let {contents} = this.props
     const modal_class = classnames('modal fade preview top', {
       'show in': visible,
       'none-pointer-events': !visible,
@@ -30,17 +43,17 @@ export default class PreviewModal extends React.Component {
 
     if(!contents)return null
 
+    if(!Array.isArray(contents))contents = [contents]
 
-//    let contentsTab
-//    if(Array.isArray(contents)){
-//
-//    }else{
-//      const contents =
-//      content = {
-//        title: title,
-//        content: content
-//      }
-//    }
+    const tabs = contents.map((content,index)=>{
+      return <Tab tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
+    })
+
+    const tabPanels = contents.map((content,index)=>{
+      return <TabPanel tab_id={index} selected_tab_id={selected_tab_id} >
+      <div>{content.content}</div>
+    </TabPanel>
+    })
 
     return <div className={modal_class} style={{display: 'block'}} id={id}>
       <div className="modal-dialog">
@@ -51,8 +64,7 @@ export default class PreviewModal extends React.Component {
               <div className={style.preview_content_tab}>
                 <TabBar>
                   <TabList>
-                    <Tab tab_id={0} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{contents[0].title}</Tab>
-                    <Tab tab_id={1} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{contents[1].title}</Tab>
+                    {tabs}
                   </TabList>
                 </TabBar>
               </div>
@@ -60,12 +72,7 @@ export default class PreviewModal extends React.Component {
             {close_button}
           </div>
           <div className="modal-body">
-              <TabPanel tab_id={0} selected_tab_id={selected_tab_id} >
-                <div>{contents[0].content}</div>
-              </TabPanel>
-              <TabPanel tab_id={1} selected_tab_id={selected_tab_id} >
-                <div>{contents[1].content}</div>
-              </TabPanel>
+            {tabPanels}
           </div>
           {footer}
         </div>
