@@ -116,6 +116,19 @@ class Graph {
   }
 
   /**
+   * 全エッジの削除
+   * @param edges
+   */
+  removeAllEdges(edges:[]){
+    edges.forEach((edge)=>{
+      const from = edge.v
+      const to = edge.w
+      const portName = edge.name
+      this.removeEdge(from, to,portName)
+    })
+  }
+
+  /**
    * dagreによるレイアウト
    */
   layout(){
