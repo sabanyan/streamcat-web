@@ -48,5 +48,8 @@ def library():
 def profile():
     return render_template('profile.html', user_id=session['user_id'])
 
-if __name__ == '__main__':
+def main():
     app.run()
+
+if __name__ == '__main__':
+    main()
