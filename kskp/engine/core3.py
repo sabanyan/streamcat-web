@@ -4139,11 +4139,23 @@ class MargeFS(NmCmd):
         self.name = 'MargeFS'
         self.description = '不整CSVファイルのクレンジングと集約'
 
+    # そのまま返す
+    # 標準入力を受け取らないので、そのままスルー
+    # 動作確認はしていない（テストデータがないので・・・）
+    def parse_command_inputs(self, args, inputs):
+        return args, None
+
 class MargeIbutsu(NmCmd):
     def __init__(self):
         super().__init__('/kskp/engine/commands/pcmd/marge_ibutsu.sh', 'csv', 'o=')
         self.name = 'MargeIbutsu'
         self.description = 'CSVファイルの集約'
+
+    # そのまま返す
+    # 標準入力を受け取らないので、そのままスルー
+    # 動作確認はしていない（テストデータがないので・・・）
+    def parse_command_inputs(self, args, inputs):
+        return args, None
 
 class ColumnGroupingName(NmCmd):
     def __init__(self):
@@ -4162,6 +4174,12 @@ class ColumnName(NmCmd):
         super().__init__('/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
         self.name = 'ColumnName'
         self.description = '先頭と末尾に、指定した項目名の順番に列を並び替える。'
+
+class ColumnBlankName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
+        self.name = 'ColumnBlankName'
+        self.description = '空白の項目名に対して、指定した文字と重複時の識別子で生成した項目名に変更し、全ての項目を出力する。'
 
 commands = {
     # MCDM
@@ -4295,5 +4313,6 @@ commands = {
     'marge_ibutsu': MargeIbutsu(),
     'column_grouping_name': ColumnGroupingName(),
     'column_unique_name': ColumnUniqueName(),
-    'column_name': ColumnName()
+    'column_name': ColumnName(),
+    'column_blank_name': ColumnBlankName()
 }
