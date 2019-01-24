@@ -4151,6 +4151,12 @@ class ColumnGroupingName(NmCmd):
         self.name = 'ColumnGroupingName'
         self.description = '項目群に対して、グループに属する項目名に接頭語を付与する'
 
+class ColumnUniqueName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_unique_name.sh', 'csv', 'o=')
+        self.name = 'ColumnUniqueName'
+        self.description = '全ての項目名がユニークになるように、項目名を変更する。'
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -4281,5 +4287,6 @@ commands = {
     'check_duplicate_rows': CheckDuplicateRows(),
     'marge_FS': MargeFS(),
     'marge_ibutsu': MargeIbutsu(),
-    'column_grouping_name': ColumnGroupingName()
+    'column_grouping_name': ColumnGroupingName(),
+    'column_unique_name': ColumnUniqueName()
 }
