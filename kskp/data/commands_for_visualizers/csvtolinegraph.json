@@ -30,12 +30,12 @@
       "label": "ビジュアライズを出力するデータの開始位置"
     },
     {
-      "name": "x_inch",
+      "name": "x_size",
       "type": "number",
       "label": "生成する画像の横の長さ（インチ）"
     },
     {
-      "name": "y_inch",
+      "name": "y_size",
       "type": "number",
       "label": "生成する画像の縦の長さ（インチ）"
     },
@@ -45,19 +45,19 @@
       "label": "時間を示している列名（対象データが時系列データの場合）"
     },
     {
-      "name": "x_axis",
+      "name": "graph_title",
       "type": "string",
-      "label": "x軸に設定する列名"
+      "label": "グラフのタイトル"
     },
     {
-      "name": "columns",
+      "name": "x_label",
       "type": "string",
-      "label": "表示するデータの列名リスト"
+      "label": "x軸のラベル"
     },
     {
-      "name": "alpha",
-      "type": "number",
-      "label": "透過率（0〜1）"
+      "name": "y_label",
+      "type": "string",
+      "label": "y軸のラベル"
     }
   ],
   "url": ""

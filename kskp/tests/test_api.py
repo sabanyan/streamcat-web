@@ -1371,13 +1371,28 @@ class ApiTestCase(unittest.TestCase):
         command_id = 'csvtolinegraph'
 
         args = {
-            'limit': '',
-            'offset': '',
-            'columns': ['temperature'],
-            'x_inch': 1400,
-            'y_inch': 600,
+            'limit': '50',
+            'offset': '100',
+            'x_size': 1400,
+            'y_size': 600,
             'x_axis': 'Time',
-            'time_series_column': ['datetime']
+            'time_series_column': ['datetime'],
+            'graph_title': '2018年トヨタ自動車株価',
+            'x_label': '日付',
+            'y_label': '株価',
+            'x_axis_column': 'datetime',
+            'y_axis_column': 'price',
+            'data': [
+                {
+                    'name': 'openingprice',
+                    'color': 'red'
+                },
+                {
+                    'name': 'closingprice',
+                    'color': 'blue'
+                }
+            ],
+            'data_column': 'stockprice'
         }
 
         inputs = {
