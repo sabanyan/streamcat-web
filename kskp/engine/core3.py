@@ -446,7 +446,6 @@ class CsvToLineGraphCommand(VisualizersCommand):
         """
         ビジュアライズを描画、保存する。
         """
-
         # dfの作成
         # index_colで指定しているものがx軸になる
         time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
@@ -464,36 +463,39 @@ class CsvToLineGraphCommand(VisualizersCommand):
             # なんかする
             # pass
 
-        df = df[start:end]
-        df = df.sort_values('datetime')
+        df = df.sort_values(args.get('x_axis_column'))
 
         hover = HoverTool()
         # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
         # それを防ぐために{%raw%}{%endraw%}で区切っている
         hover.tooltips = [
-            ('日付', '{%raw%}@datetime{%F}{%endraw%}'),
-            ('株価', '@price')
+            (args.get('x_axis_column'), '{%raw%}@datetime{%F}{%endraw%}'),
+            (args.get('y_axis_column'), '@price')
         ]
         hover.formatters = {
             'datetime': 'datetime',
             'price': 'numeral'
         }
         hover.mode='vline'
-        plot = figure(x_axis_type="datetime",
-                      x_axis_label='日付',
-                      y_axis_label='株価',
+
+        # 時系列表示設定
+        type = 'auto'
+        if not time_series_column == False:
+            type = 'datetime'
+
+        plot = figure(x_axis_type=type,
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
                       output_backend="webgl",
-                      title="2018年トヨタ自動車株価",
-                      plot_width=args.get('x_inch'),
-                      plot_height=args.get('y_inch'))
+                      title=args.get('graph_title'),
+                      plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'))
 
         plot.add_tools(hover)
 
-        df_openingprice = ColumnDataSource(df[df['stockprice']=='openingprice'])
-        df_closingprice = ColumnDataSource(df[df['stockprice']=='closingprice'])
-
-        plot.line(x='datetime', y='price', color='red', legend='始値', source=df_openingprice)
-        plot.line(x='datetime', y='price', color='blue', legend='終値', source=df_closingprice)
+        for datum in args.get('data'):
+            source = ColumnDataSource(df[df[args.get('data_column')]==datum.get('name')][start:end])
+            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('name'), color=datum.get('color'), source=source)
 
         # こっちでも複数のグラフを描画することができるが
         # legendをおけなさそうです・・・
