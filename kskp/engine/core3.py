@@ -4157,6 +4157,12 @@ class ColumnUniqueName(NmCmd):
         self.name = 'ColumnUniqueName'
         self.description = '全ての項目名がユニークになるように、項目名を変更する。'
 
+class ColumnName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
+        self.name = 'ColumnName'
+        self.description = '先頭と末尾に、指定した項目名の順番に列を並び替える。'
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -4288,5 +4294,6 @@ commands = {
     'marge_FS': MargeFS(),
     'marge_ibutsu': MargeIbutsu(),
     'column_grouping_name': ColumnGroupingName(),
-    'column_unique_name': ColumnUniqueName()
+    'column_unique_name': ColumnUniqueName(),
+    'column_name': ColumnName()
 }
