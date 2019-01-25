@@ -4145,6 +4145,12 @@ class MergeIbutsu(NmCmd):
         self.name = 'MergeIbutsu'
         self.description = 'CSVファイルの集約'
 
+    # そのまま返す
+    # 標準入力を受け取らないので、そのままスルー
+    # 動作確認はしていない（テストデータがないので・・・）
+    def parse_command_inputs(self, args, inputs):
+        return args, None
+
 class ColumnGroupingName(NmCmd):
     def __init__(self):
         super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
@@ -4162,6 +4168,12 @@ class ColumnName(NmCmd):
         super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
         self.name = 'ColumnName'
         self.description = '先頭と末尾に、指定した項目名の順番に列を並び替える。'
+
+class ColumnBlankName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
+        self.name = 'ColumnBlankName'
+        self.description = '空白の項目名に対して、指定した文字と重複時の識別子で生成した項目名に変更し、全ての項目を出力する。'
 
 commands = {
     # MCDM
@@ -4295,5 +4307,6 @@ commands = {
     'merge_ibutsu': MergeIbutsu(),
     'column_grouping_name': ColumnGroupingName(),
     'column_unique_name': ColumnUniqueName(),
-    'column_name': ColumnName()
+    'column_name': ColumnName(),
+    'column_blank_name': ColumnBlankName()
 }
