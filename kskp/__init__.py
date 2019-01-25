@@ -50,7 +50,7 @@ def profile():
 
 @app.route('/test')
 def test():
-    return render_template('visualize/result_csvtolinegraph.html')
+    return render_template('visualize/180127_1535_4sensor_5sec_csvtohistogram.html')
 
 if __name__ == '__main__':
     app.run()
