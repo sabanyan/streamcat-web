@@ -6,7 +6,7 @@ from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn import svm
 import pickle
 
-class Ksvm(Regression):
+class RKsvm(Regression):
     """
     サポートベクターマシン(回帰)クラスです。
     """
@@ -66,6 +66,6 @@ class Ksvm(Regression):
         return
 
 if __name__=="__main__":
-    ksvm=Ksvm()
+    ksvm=RKsvm()
     ksvm.main(sys.argv[1:])
     ksvm.write()

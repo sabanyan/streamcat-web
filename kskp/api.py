@@ -300,15 +300,11 @@ def execute_flow(flow_uuid, step_paths, no_contents):
                                     'success': False,
                                     'code': -1,
                                     'message': 'result is empty.'
-                                })
+                                   })
             else:
                 return jsonify({'success': True, 'name': result_data})
         except Exception as e:
-            return jsonify({
-                                'success': False,
-                                'code': -1,
-                                'message': repr(e)
-                            })
+            raise e
 
 @api.route('/jobs', methods=['GET'])
 @update_navigation
@@ -641,8 +637,9 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid):
         from . import engine as e
-        with open(f'/kskp/data/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path='/kskp/data/frames', flows_path='/kskp/data/flows')
+        data_path = '/home/kskp/kskp/data'
+        with open(f'{data_path}/flows/{flow_uuid}.json', 'r') as f:
+            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=f'{data_path}/frames', flows_path=f'{data_path}/flows')
 
     result = execute_flow_by_uuid(flow_uuid)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)

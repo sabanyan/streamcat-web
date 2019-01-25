@@ -7,7 +7,7 @@ from sklearn.ensemble import AdaBoostClassifier
 import pickle
 
 
-class Kab(Classification):
+class CKab(Classification):
     """
     アダブースト(分類)クラスです。
     """
@@ -74,6 +74,6 @@ class Kab(Classification):
         return
 
 if __name__=="__main__":
-    kab=Kab()
+    kab=CKab()
     kab.main(sys.argv[1:])
     kab.write()
