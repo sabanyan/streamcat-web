@@ -56,6 +56,7 @@ class Model():
 class Supervised(Model):
 	def __init__(self):
 		super().__init__()
+		self.enc_dict = {}
 
 	def make_parser(self):
 		parser=super().make_parser()
@@ -154,6 +155,7 @@ class Classification(Supervised):
 	"""
 	def __init__(self):
 		super().__init__()
+		self.probability = False
 		self.analysis_type="classification"
 		# scoring_typeを定義
 		self.s_type = [
@@ -192,7 +194,7 @@ class Classification(Supervised):
 			pred = self.model.predict_proba(x_test_preprocessed)
 			#もしターゲット列が文字列→連続値変換しているなら予測列名を要素名にする(例: prob_class:OK)
 			if self.target_colname in self.enc_dict:
-				n_class=len(enc_dict[self.target_colname].classes_)
+				n_class=len(self.enc_dict[self.target_colname].classes_)
 				# predの列数に対応したカラム名をつける
 				pred_df=pd.DataFrame(pred,columns=[
 								"prob_class:"+str(class_name) for class_name in self.enc_dict[self.target_colname].inverse_transform(np.arange(n_class))])

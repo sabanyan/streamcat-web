@@ -7,7 +7,7 @@ from sklearn.ensemble import BaggingClassifier
 import pickle
 
 
-class Kbag(Classification):
+class CKbag(Classification):
     """
     バギング(分類)クラスです。
     """
@@ -81,6 +81,6 @@ class Kbag(Classification):
         return
 
 if __name__=="__main__":
-    kbag=Kbag()
+    kbag=CKbag()
     kbag.main(sys.argv[1:])
     kbag.write()

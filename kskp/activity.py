@@ -46,7 +46,10 @@ def make_unfinished_history(now, session):
 
             # ファイル書き込み
             file_name = '{0:%Y%m%d%H%M%S%f}'.format(now)
-            path = Path(__file__).parent.joinpath('data/jobs/%s.json' % file_name)
+            jobs_path = Path(__file__).parent.joinpath('data/jobs')
+            jobs_path.mkdir(exist_ok=True)
+            path = jobs_path.joinpath(file_name + '.json')
+
             with path.open('w') as f:
                 json.dump(history_json, f, indent = '\t', ensure_ascii=False)
 
