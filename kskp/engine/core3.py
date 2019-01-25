@@ -431,13 +431,75 @@ class CsvToHtmlTableCommand(VisualizersCommand):
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import numpy as np
+import scipy.special
 
-from bokeh.plotting import figure
+from bokeh.plotting import figure, ColumnDataSource
 from bokeh.resources import CDN
 from bokeh.embed import file_html
 from bokeh.models import HoverTool
-from bokeh.plotting import ColumnDataSource
+from bokeh.io import output_file, show
+from numpy import histogram
 
+# matplotlibでイメージを作成するクラス
+# class CsvToLineGraphCommand(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def generate_image(self, args, inputs):
+#         """
+#         ビジュアライズを描画、保存する。
+#         """
+#
+#         # plotの設定
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # dfの作成
+#         # index_colで指定しているものがx軸になる
+#         time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
+#         df = pd.read_csv(inputs.get('i').source.fullpath, index_col=args.get('x_axis'), parse_dates=time_series_column)
+#
+#         # offset対応
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         return file_name
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotの折れ線グラフ画像のimageタグを作成する
+#         """
+#         image_file_name = self.generate_image(args, inputs)
+#         img_tag = '<img src="' + 'static/images/visualize/%s.png' % image_file_name + '">'
+#
+#         return img_tag
+
+#
 class CsvToLineGraphCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
@@ -465,19 +527,6 @@ class CsvToLineGraphCommand(VisualizersCommand):
 
         df = df.sort_values(args.get('x_axis_column'))
 
-        hover = HoverTool()
-        # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
-        # それを防ぐために{%raw%}{%endraw%}で区切っている
-        hover.tooltips = [
-            (args.get('x_axis_column'), '{%raw%}@datetime{%F}{%endraw%}'),
-            (args.get('y_axis_column'), '@price')
-        ]
-        hover.formatters = {
-            'datetime': 'datetime',
-            'price': 'numeral'
-        }
-        hover.mode='vline'
-
         # 時系列表示設定
         type = 'auto'
         if not time_series_column == False:
@@ -491,11 +540,35 @@ class CsvToLineGraphCommand(VisualizersCommand):
                       plot_width=args.get('x_size'),
                       plot_height=args.get('y_size'))
 
+        hover = HoverTool()
+        # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
+        # それを防ぐために{%raw%}{%endraw%}で区切っている
+        hover.tooltips = [
+            (args.get('x_axis_column'), '{%raw%}@datetime{%F}{%endraw%}'),
+            (args.get('y_axis_column'), '@price')
+        ]
+        hover.formatters = {
+            args.get('x_axis_column'): 'datetime',
+            args.get('y_axis_column'): 'numeral'
+        }
+        hover.mode='vline'
+
         plot.add_tools(hover)
 
+        # データ名が入っている列が存在する場合
+        # for datum in args.get('data'):
+        #     source = ColumnDataSource(df[df[args.get('data_column')]==datum.get('name')][start:end])
+        #     plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
+        #               color=datum.get('color'), source=source)
+
+        # データが列ごとに分かれている場合
         for datum in args.get('data'):
-            source = ColumnDataSource(df[df[args.get('data_column')]==datum.get('name')][start:end])
-            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('name'), color=datum.get('color'), source=source)
+            source = ColumnDataSource(data={
+                'datetime': df[args.get('x_axis_column')],
+                'price': df[datum.get('name')]
+            })
+            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
+                      color=datum.get('color'), source=source)
 
         # こっちでも複数のグラフを描画することができるが
         # legendをおけなさそうです・・・
@@ -507,8 +580,6 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plot.legend.click_policy="hide"
 
         html = file_html(plot, CDN, 'myplot')
-        with open('kskp/templates/visualize/myplot.html', 'w') as f:
-            f.write(html)
 
         return html
 
@@ -542,13 +613,6 @@ class CsvToHistogram(VisualizersCommand):
         if not os.path.exists(file_path):
             return ''
 
-        plt.style.use('ggplot')
-        plt.legend(loc='best')
-        plt.xlabel(args.get('x_axis'))
-
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-
         # indexで指定しているものがx軸になる
         df = pd.read_csv(file_path)
 
@@ -562,18 +626,85 @@ class CsvToHistogram(VisualizersCommand):
             # なんかする
             # pass
 
-        # y軸の設定はここ
-        # y軸はリスト型。インデックスでも列名でも大丈夫。
-        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
-        df.plot(ax=ax, kind='hist', y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), bins=args.get('bins'), alpha=args.get('alpha'))
+        hover = HoverTool()
+        hover.tooltips = [
+            ('度数', '@top')
+        ]
+        hover.mode='vline'
 
-        # pngで保存
-        img_path = 'kskp/static/images/visualize/%s.png' % file_name
-        plt.savefig(img_path, dpi=200)
+        plot = figure(plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'),
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'))
+        plot.add_tools(hover)
 
-        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+        for column in args.get('data'):
+            hist, edges = histogram(df[column.get('name')].tolist(), bins=args.get('bins'), density=args.get('density'))
+            source = ColumnDataSource({'top':hist, 'left': edges[:-1], 'right': edges[1:]})
+            plot.quad(top='top', bottom=0, left='left', right='right', alpha=0.4, color=column.get('color'), source=source, legend=column.get('legend_name'))
 
-        return img_html
+        plot.add_tools(hover)
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
+        html = file_html(plot, CDN, 'myplot')
+
+        return html
+
+# class CsvToHistogram(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotのヒストグラムを作成する
+#         """
+#
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtohistogram'
+#         file_path = inputs.get('i').source.fullpath
+#
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         # ブロック句
+#         if not os.path.exists(file_path):
+#             return ''
+#
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # indexで指定しているものがx軸になる
+#         df = pd.read_csv(file_path)
+#
+#         # offset対応
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, kind='hist', y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), bins=args.get('bins'), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+#
+#         return img_html
 
 class CsvToScatter(VisualizersCommand):
     def __init__(self):

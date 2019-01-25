@@ -1366,33 +1366,34 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = 'result'
+        frame_uuid_1 = '7203_2018'
 
         command_id = 'csvtolinegraph'
 
         args = {
-            'limit': '50',
-            'offset': '100',
+            'limit': '',
+            'offset': '',
             'x_size': 1400,
             'y_size': 600,
-            'x_axis': 'Time',
-            'time_series_column': ['datetime'],
             'graph_title': '2018年トヨタ自動車株価',
             'x_label': '日付',
             'y_label': '株価',
+            'time_series_column': ['datetime'],
             'x_axis_column': 'datetime',
             'y_axis_column': 'price',
+            'data_column': 'stockprice',
             'data': [
                 {
                     'name': 'openingprice',
-                    'color': 'red'
+                    'color': 'red',
+                    'legend_name': '始値'
                 },
                 {
                     'name': 'closingprice',
-                    'color': 'blue'
+                    'color': 'blue',
+                    'legend_name': '終値'
                 }
             ],
-            'data_column': 'stockprice'
         }
 
         inputs = {
@@ -1441,12 +1442,35 @@ class ApiTestCase(unittest.TestCase):
         args = {
             'limit': '',
             'offset': '',
-            'columns': [1,2,3,4],
-            'x_inch': 7,
-            'y_inch': 3,
+            'x_size': 1400,
+            'y_size': 600,
+            'graph_title': 'テストデータ',
+            'x_label': '',
+            'y_label': '',
             'bins': 100,
-            'x_axis': '',
-            'alpha': 0.5
+            'density': False,
+            'data': [
+                {
+                    'name': '3H',
+                    'color': 'red',
+                    'legend_name': '3H'
+                },
+                {
+                    'name': '3V',
+                    'color': 'blue',
+                    'legend_name': '3V'
+                },
+                {
+                    'name': '4H',
+                    'color': 'green',
+                    'legend_name': '4H'
+                },
+                {
+                    'name': '4V',
+                    'color': 'purple',
+                    'legend_name': '4V'
+                }
+            ],
         }
 
         inputs = {
@@ -1476,8 +1500,8 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
-        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+        # os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        # os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
     def test_visualizers_scatter(self):
         """
