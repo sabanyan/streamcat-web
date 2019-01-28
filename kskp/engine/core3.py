@@ -433,6 +433,8 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 import scipy.special
+import holoviews as hv
+from holoviews import dim
 
 from bokeh.plotting import figure, ColumnDataSource
 from bokeh.resources import CDN
@@ -638,7 +640,6 @@ class CsvToHistogram(VisualizersCommand):
                       y_axis_label=args.get('y_label'),
                       output_backend="webgl",
                       title=args.get('graph_title'))
-        plot.add_tools(hover)
 
         for column in args.get('data'):
             hist, edges = histogram(df[column.get('name')].tolist(), bins=args.get('bins'), density=args.get('density'))
@@ -749,15 +750,145 @@ class CsvToScatter(VisualizersCommand):
         # y軸の設定はここ
         # y軸はリスト型。インデックスでも列名でも大丈夫。
         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
-        df.plot(ax=ax, kind='scatter', x=args.get('x_axis'), y=args.get('y_axis'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
 
-        # pngで保存
-        img_path = 'kskp/static/images/visualize/%s.png' % file_name
-        plt.savefig(img_path, dpi=200)
+        # hover = HoverTool()
+        # hover.tooltips = [
+        #     ('度数', '@top')
+        # ]
+        # hover.mode='vline'
 
-        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+        plot = figure(plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'),
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'))
+        x = df[args.get('x_axis')]
+        y = df[args.get('y_axis')]
+        colors = ["#%02x%02x%02x" % (int(r), int(g), 150) for r, g in zip(50+2*x, 30+2*y)]
 
-        return img_html
+        source = ColumnDataSource({'x': x, 'y': y})
+        plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'), source=source)
+
+        # plot.add_tools(hover)
+        # plot.legend.location = "top_right"
+        # plot.legend.click_policy="hide"
+
+        html = file_html(plot, CDN, 'myplot')
+
+        return html
+
+# class CsvToScatter(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotの散布図を作成する
+#         """
+#
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
+#         file_path = inputs.get('i').source.fullpath
+#
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         # ブロック句
+#         if not os.path.exists(file_path):
+#             return ''
+#
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # indexで指定しているものがx軸になる
+#         df = pd.read_csv(file_path)
+#
+#         # offset対応
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, kind='scatter', x=args.get('x_axis'), y=args.get('y_axis'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+#
+#         return img_html
+
+class CsvToBoxplot(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの散布図を作成する
+        """
+
+        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
+        file_path = inputs.get('i').source.fullpath
+
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        df = pd.read_csv(file_path)
+
+        # offset対応
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+        df = df[start:end]
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        hv.extension('bokeh')
+
+        title = args.get('graph_title')
+        boxwhisker = hv.BoxWhisker(df, kdims=args.get('x_axis'), vdims=args.get('y_axis'), label=title)
+        boxwhisker.opts(width=args.get('x_size'), height=args.get('y_size'))
+
+        renderer = hv.renderer('bokeh')
+        plot=renderer.get_plot(boxwhisker).state
+
+        return file_html(plot, CDN, 'myplot')
+
+        # -----plotly-----
+        # import plotly.plotly as py
+        # import plotly.graph_objs as go
+        # import plotly.offline as offline
+        # # offline.init_notebook_mode()
+        # data = []
+        # df = df[['3H','3V','4H','4V']]
+        # for col in df.columns:
+        #     data.append(  go.Box( y=df[col], name=col, showlegend=False ) )
+        # # data.append( go.Scatter( x = df.columns, y = df.mean(), mode='lines', name='mean' ) )
+        #
+        # url = offline.plot(data, filename='pandas-box-plot.html')
+        # -----plotly-----
+
+        return url
 
 # mcommand
 class MCommand(UnixCommand):
@@ -4604,5 +4735,6 @@ internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
     'csvtolinegraph': CsvToLineGraphCommand(),
     'csvtohistogram': CsvToHistogram(),
-    'csvtoscatter': CsvToScatter()
+    'csvtoscatter': CsvToScatter(),
+    'csvtoboxplot': CsvToBoxplot()
 }
