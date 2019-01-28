@@ -853,7 +853,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
         from . import engine as e
         flow_path = FLOWS_DIR_PATH / Path(flow_uuid + '.json')
         with open(flow_path.as_posix(), 'r') as f:
-            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
+            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), step_paths=step_paths, flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
 
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
