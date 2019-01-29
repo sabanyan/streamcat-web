@@ -50,6 +50,18 @@ def profile():
 
 @app.route('/test')
 def test():
+    return render_template('visualize/result_csvtolinegraph.html')
+
+@app.route('/test2')
+def test2():
+    return render_template('visualize/result2_csvtohistogram.html')
+
+@app.route('/test3')
+def test3():
+    return render_template('visualize/result2_csvtoscatter.html')
+
+@app.route('/test4')
+def test4():
     return render_template('visualize/result2_csvtoboxplot.html')
 
 if __name__ == '__main__':

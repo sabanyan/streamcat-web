@@ -380,6 +380,18 @@ class VisualizersCommand(Command):
         """ for override """
         raise Exception()
 
+    def generate_random_color(self):
+        """
+        ランダムに色を出力
+        bokehは色を指定しないといけないので（デフォルトだと全て同じ色になってしまう）
+        """
+        return '#{:X}{:X}{:X}'.format(*[random.randint(0, 255) for _ in range(3)])
+
+    def color_gen(self):
+        from bokeh.palettes import Category10
+        import itertools
+        yield from itertools.cycle(Category10[10])
+
 # visualize
 class CsvToHtmlTableCommand(VisualizersCommand):
     def __init__(self):
@@ -429,12 +441,10 @@ class CsvToHtmlTableCommand(VisualizersCommand):
 
 # グラフ化に必要なものの準備
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
 import numpy as np
-import scipy.special
 import holoviews as hv
-from holoviews import dim
+import random
 
 from bokeh.plotting import figure, ColumnDataSource
 from bokeh.resources import CDN
@@ -531,7 +541,11 @@ class CsvToLineGraphCommand(VisualizersCommand):
 
         # 時系列表示設定
         type = 'auto'
-        if not time_series_column == False:
+        tooltip = '@' + args.get('x_axis_column')
+        tooltip_format = 'numeral'
+        if time_series_column:
+            tooltip = '{%raw%}@' + args.get('x_axis_column') + '{%F}{%endraw%}'
+            tooltip_format = 'datetime'
             type = 'datetime'
 
         plot = figure(x_axis_type=type,
@@ -546,37 +560,31 @@ class CsvToLineGraphCommand(VisualizersCommand):
         # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
         # それを防ぐために{%raw%}{%endraw%}で区切っている
         hover.tooltips = [
-            (args.get('x_axis_column'), '{%raw%}@datetime{%F}{%endraw%}'),
-            (args.get('y_axis_column'), '@price')
+            (args.get('x_axis_column'), tooltip),
+            (args.get('y_axis_column'), '@' + args.get('y_axis_column'))
         ]
         hover.formatters = {
-            args.get('x_axis_column'): 'datetime',
-            args.get('y_axis_column'): 'numeral'
+            args.get('x_axis_column'): tooltip_format
         }
         hover.mode='vline'
 
         plot.add_tools(hover)
+        color = self.color_gen()
 
         # データ名が入っている列が存在する場合
-        # for datum in args.get('data'):
-        #     source = ColumnDataSource(df[df[args.get('data_column')]==datum.get('name')][start:end])
-        #     plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
-        #               color=datum.get('color'), source=source)
+        for datum in args.get('data'):
+            source = ColumnDataSource(df[df[args.get('data_column')]==datum][start:end])
+            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum,
+                      color=color.__next__(), source=source)
 
         # データが列ごとに分かれている場合
-        for datum in args.get('data'):
-            source = ColumnDataSource(data={
-                'datetime': df[args.get('x_axis_column')],
-                'price': df[datum.get('name')]
-            })
-            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
-                      color=datum.get('color'), source=source)
-
-        # こっちでも複数のグラフを描画することができるが
-        # legendをおけなさそうです・・・
-        # plot.multi_line([df['datetime'], df['datetime']],
-        #                 [df['openingprice'], df['closingprice']],
-        #                 color=['red', 'blue'])
+        # for datum in args.get('data'):
+        #     source = ColumnDataSource(data={
+        #         args.get('x_axis_column'): df[args.get('x_axis_column')],
+        #         args.get('y_axis_column'): df[datum.get('name')]
+        #     })
+        #     plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
+        #               color=datum.get('color'), source=source)
 
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
@@ -615,13 +623,11 @@ class CsvToHistogram(VisualizersCommand):
         if not os.path.exists(file_path):
             return ''
 
-        # indexで指定しているものがx軸になる
         df = pd.read_csv(file_path)
 
         # offset対応
         start = offset
         end = start + (limit if limit is not None else len(df))
-        df = df[start:end]
 
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
@@ -641,10 +647,16 @@ class CsvToHistogram(VisualizersCommand):
                       output_backend="webgl",
                       title=args.get('graph_title'))
 
-        for column in args.get('data'):
-            hist, edges = histogram(df[column.get('name')].tolist(), bins=args.get('bins'), density=args.get('density'))
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
+
+        if len(args.get('specified')) > 0:
+            unique_data = args.get('specified')
+            
+        for datum in unique_data:
+            hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('value_column')][start:end].tolist(), bins=args.get('bins'), density=args.get('density'))
             source = ColumnDataSource({'top':hist, 'left': edges[:-1], 'right': edges[1:]})
-            plot.quad(top='top', bottom=0, left='left', right='right', alpha=0.4, color=column.get('color'), source=source, legend=column.get('legend_name'))
+            plot.quad(top='top', bottom=0, left='left', right='right', alpha=0.4, color=color.__next__(), source=source, legend=datum)
 
         plot.add_tools(hover)
         plot.legend.location = "top_right"
@@ -727,20 +739,12 @@ class CsvToScatter(VisualizersCommand):
         if not os.path.exists(file_path):
             return ''
 
-        plt.style.use('ggplot')
-        plt.legend(loc='best')
-        plt.xlabel(args.get('x_axis'))
-
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-
         # indexで指定しているものがx軸になる
         df = pd.read_csv(file_path)
 
         # offset対応
         start = offset
         end = start + (limit if limit is not None else len(df))
-        df = df[start:end]
 
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
@@ -751,10 +755,11 @@ class CsvToScatter(VisualizersCommand):
         # y軸はリスト型。インデックスでも列名でも大丈夫。
         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
 
-        # hover = HoverTool()
-        # hover.tooltips = [
-        #     ('度数', '@top')
-        # ]
+        hover = HoverTool()
+        hover.tooltips = [
+            (args.get('x_axis'), '@x'),
+            (args.get('y_axis'), '@y')
+        ]
         # hover.mode='vline'
 
         plot = figure(plot_width=args.get('x_size'),
@@ -763,17 +768,15 @@ class CsvToScatter(VisualizersCommand):
                       y_axis_label=args.get('y_label'),
                       output_backend="webgl",
                       title=args.get('graph_title'))
-        x = df[args.get('x_axis')]
-        y = df[args.get('y_axis')]
-        colors = ["#%02x%02x%02x" % (int(r), int(g), 150) for r, g in zip(50+2*x, 30+2*y)]
 
-        source = ColumnDataSource({'x': x, 'y': y})
+        queries = args.get('queries')
+        if len(queries) > 0:
+            for query in queries:
+                df = df[df[query.get('column')]==query.get('value')]
+
+        source = ColumnDataSource({'x': df[args.get('x_axis')], 'y': df[args.get('y_axis')]})
         plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'), source=source)
-
-        # plot.add_tools(hover)
-        # plot.legend.location = "top_right"
-        # plot.legend.click_policy="hide"
-
+        plot.add_tools(hover)
         html = file_html(plot, CDN, 'myplot')
 
         return html
@@ -838,7 +841,7 @@ class CsvToBoxplot(VisualizersCommand):
     def gererate_html(self, args, inputs):
         """
         csvのファイルパスから、
-        plotの散布図を作成する
+        plotの箱ひげ図を作成する
         """
 
         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'

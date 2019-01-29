@@ -1357,6 +1357,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/data/frames/%s.csv' % frame_uuid_1)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_linegraph(self):
         """
         visualizers APIをテストする。
@@ -1366,7 +1367,7 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = '7203_2018'
+        frame_uuid_1 = 'result'
 
         command_id = 'csvtolinegraph'
 
@@ -1382,18 +1383,7 @@ class ApiTestCase(unittest.TestCase):
             'x_axis_column': 'datetime',
             'y_axis_column': 'price',
             'data_column': 'stockprice',
-            'data': [
-                {
-                    'name': 'openingprice',
-                    'color': 'red',
-                    'legend_name': '始値'
-                },
-                {
-                    'name': 'closingprice',
-                    'color': 'blue',
-                    'legend_name': '終値'
-                }
-            ],
+            'data': ['openingprice','closingprice']
         }
 
         inputs = {
@@ -1426,6 +1416,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    # @unittest.skip
     def test_visualizers_histogram(self):
         """
         visualizers APIをテストする。
@@ -1435,7 +1426,7 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = '180127_1535_4sensor_5sec'
+        frame_uuid_1 = 'result2'
 
         command_id = 'csvtohistogram'
 
@@ -1445,32 +1436,13 @@ class ApiTestCase(unittest.TestCase):
             'x_size': 1400,
             'y_size': 600,
             'graph_title': 'テストデータ',
-            'x_label': '',
-            'y_label': '',
+            'x_label': 'Value',
+            'y_label': '度数',
             'bins': 100,
             'density': False,
-            'data': [
-                {
-                    'name': '3H',
-                    'color': 'red',
-                    'legend_name': '3H'
-                },
-                {
-                    'name': '3V',
-                    'color': 'blue',
-                    'legend_name': '3V'
-                },
-                {
-                    'name': '4H',
-                    'color': 'green',
-                    'legend_name': '4H'
-                },
-                {
-                    'name': '4V',
-                    'color': 'purple',
-                    'legend_name': '4V'
-                }
-            ]
+            'data_column': '状態',
+            'specified':[],
+            'value_column': 'Value'
         }
 
         inputs = {
@@ -1503,6 +1475,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_scatter(self):
         """
         visualizers APIをテストする。
@@ -1512,7 +1485,7 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = '180127_1535_4sensor_5sec'
+        frame_uuid_1 = 'result2'
 
         command_id = 'csvtoscatter'
 
@@ -1521,11 +1494,21 @@ class ApiTestCase(unittest.TestCase):
             'offset': '',
             'x_size': 1400,
             'y_size': 600,
-            'graph_title': '3H散布図',
-            'x_label': '時間',
-            'y_label': '',
-            'y_axis': '3H',
+            'graph_title': '3H外輪損傷１：Time×Value',
+            'x_label': 'Time',
+            'y_label': 'Value',
+            'queries':[
+                {
+                    'column': '機器',
+                    'value': '3H'
+                },
+                {
+                    'column': '状態',
+                    'value': '外輪損傷１'
+                }
+            ],
             'x_axis': 'Time',
+            'y_axis': 'Value',
             'alpha': 0.5
         }
 
@@ -1559,6 +1542,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_boxplot(self):
         """
         visualizers APIをテストする。
@@ -1609,8 +1593,8 @@ class ApiTestCase(unittest.TestCase):
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        # os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
-        # os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
     @unittest.skip
     def test_execute_flow(self):
