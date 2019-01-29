@@ -19,41 +19,6 @@
     ]
   ],
   "params": [
-    {
-      "name": "limit",
-      "type": "number",
-      "label": "ビジュアライズを出力するデータの限度数"
-    },
-    {
-      "name": "offset",
-      "type": "number",
-      "label": "ビジュアライズを出力するデータの開始位置"
-    },
-    {
-      "name": "x_inch",
-      "type": "number",
-      "label": "生成する画像の横の長さ（インチ）"
-    },
-    {
-      "name": "y_inch",
-      "type": "number",
-      "label": "生成する画像の縦の長さ（インチ）"
-    },
-    {
-      "name": "x_axis",
-      "type": "string",
-      "label": "x軸に設定する列名"
-    },
-    {
-      "name": "y_axis",
-      "type": "string",
-      "label": "y軸に設定する列名"
-    },
-    {
-      "name": "alpha",
-      "type": "number",
-      "label": "透過率（0〜1）"
-    }
   ],
   "url": ""
 }
