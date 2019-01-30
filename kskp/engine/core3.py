@@ -4171,9 +4171,21 @@ class ColumnName(NmCmd):
 
 class ColumnBlankName(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
         self.name = 'ColumnBlankName'
         self.description = '空白の項目名に対して、指定した文字と重複時の識別子で生成した項目名に変更し、全ての項目を出力する。'
+
+class ColumnList(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_list.sh', 'csv', 'o=')
+        self.name = 'ColumnList'
+        self.description = 'ヘッダー行と先頭の1行 を縦型に変形したリストを出力する'
+
+class WinCp932Read(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/windows_cp932_csv_read.sh', 'csv', 'o=')
+        self.name = 'WinCp932Read'
+        self.description = 'Windowsファイル（Shift-JIS拡張 CP932）を、サーバ上のローカルファイルより読込む。'
 
 commands = {
     # MCDM
@@ -4308,5 +4320,7 @@ commands = {
     'column_grouping_name': ColumnGroupingName(),
     'column_unique_name': ColumnUniqueName(),
     'column_name': ColumnName(),
-    'column_blank_name': ColumnBlankName()
+    'column_blank_name': ColumnBlankName(),
+    'column_list': ColumnList(),
+    'windows_cp932_csv_read': WinCp932Read()
 }

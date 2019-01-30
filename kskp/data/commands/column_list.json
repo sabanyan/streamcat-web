@@ -1,0 +1,23 @@
+{
+  "version": "0.7.0",
+  "id": "column_list",
+  "label": "項目名リストの取得",
+  "classification": "col_edit",
+  "description": "ヘッダー行と先頭の1行 を縦型に変形したリストを出力する",
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "params": [],
+  "url": ""
+}
