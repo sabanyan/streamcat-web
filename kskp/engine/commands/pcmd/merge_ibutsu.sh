@@ -2,7 +2,7 @@
 #UTF-8, LF
 #2019.01.25 Ryo Taniguchi
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.2"
+readonly  VERSION="0.3"
 
 # 
 # オムロン結果データ集約用コマンド
@@ -32,12 +32,13 @@ function usage()
     echo "========================="
     echo "リストとして与えられたCSVファイル中のレコードの行末に元ファイル名を追加し、1つのファイルに集約して出力する。"
     echo "オプション指定"
-    echo "i= 対象となるファイルのパスが、改行区切りで書かれたテキストファイル"
+    echo "f= 対象となるファイルのパスが、改行区切りで書かれたテキストファイル"
     echo "o= レコードを集約したファイル名。省略された場合は標準出力する。"
     echo "p= 作業ファイル格納パス名"
+    echo "i= ダミーオプション。内部処理では使用しない。"
     echo "書式"
     echo "----"
-    echo " ${PROGNAME} i= [o=] p= [--help] [--version]"
+    echo " ${PROGNAME} f= [o=] p= [i=] [--help] [--version]"
 
     exit 1
 }
@@ -64,7 +65,7 @@ do
             echo "${VERSION}"
             exit 1
             ;;
-        'i='* )
+        'f='* )
             p_value=${1#*'='}   # =より前の文字を削除
             if [[ -z "${p=value}" ]] ; then
                 echo "${PROGNAME}: option requires an argument -- $1" 1>&2
@@ -92,6 +93,9 @@ do
             fi
             Tmp_path=${p_value}
             param+=( "$@" )
+            shift 1
+            ;;
+        'i='* )
             shift 1
             ;;
     esac

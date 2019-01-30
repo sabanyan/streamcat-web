@@ -2,7 +2,7 @@
 #UTF-8, LF
 #2019.01.25 Ryo Taniguchi
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.2"
+readonly  VERSION="0.3"
 # オムロンFSデータ集約用コマンド
 
 # 機能
@@ -40,15 +40,16 @@ function usage()
     echo "   複数の列数が最頻値となっている場合は、その中で最大の列数を適正値とする。"
     echo ""
     echo "オプション指定"
-    echo "i= 対象となるファイルのパスが、改行区切りで書かれたテキストファイル。"
+    echo "f= 対象となるファイルのパスが、改行区切りで書かれたテキストファイル。"
     echo "o= 列数が適正と判断されたレコードを集約したファイル名を指定する。省略時は標準出力する。"
     echo "e= 列数が不適正と判断されたレコードを集約したファイル名を指定する。"
     echo "s= 適正な列数を判断すために参照するレコード数"
     echo "p= 作業ファイル格納パス名"
+    echo "i= ダミー。内部処理には使用しない"
     echo ""
     echo "書式"
     echo "----"
-    echo " ${PROGNAME} i= [o=] e= s= p= [--help] [--version]"
+    echo " ${PROGNAME} f= [o=] e= s= p= [i=] [--help] [--version]"
 
     exit 1
 }
@@ -95,7 +96,7 @@ do
             echo "${VERSION}"
             exit 1
             ;;
-        'i='* )
+        'f='* )
             p_value=${1#*'='}   # =より前の文字を削除
             if [[ -z "${p=value}" ]] ; then
                 echo "${PROGNAME}: option requires an argument -- $1" 1>&2
@@ -145,6 +146,9 @@ do
             param+=( "$@" )
             shift 1
             ;;
+        'i='* )
+            shift 1
+            ;;
     esac
 done
 
@@ -153,7 +157,6 @@ done
 if [[ -z ${result_correct} ]]; then
     result_correct='/dev/stdout'
 fi
-
 
 # 参照行数
 Seq_record=$(($Seq_record + 1)) # 参照行数に先頭行分を追加する。
@@ -245,8 +248,9 @@ read target_file;
     }
     ' 
 
+
     # レコードを読み込む
-    cat "${target_file_list}" | nkf -w -Lu -x | \
+    nkf -w -Lu -x "${target_file_list}" | \
         while read file;
         do
             nkf -w -Lu -x "${Tmp_path}${file}" | \
@@ -270,7 +274,6 @@ read target_file;
             '
             #1行以外を読み込み、行末にファイル名を追加して出力する。
         done
-
     # 適正レコードのみ出力(ver 0.0)
     # cat "${target_file_list}" | nkf -w -Lu -x | \
     #     while read file;
