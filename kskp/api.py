@@ -642,11 +642,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=f'{data_path}/frames', flows_path=f'{data_path}/flows')
 
     result = execute_flow_by_uuid(flow_uuid)
+    print('execute終わり！')
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     if no_contents:
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
     else:
+        print('resultを作るよ！')
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
     return result_list
 
