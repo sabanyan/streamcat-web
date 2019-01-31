@@ -198,7 +198,25 @@ def make_new_frame():
         if request.args.get('no_contents'):
             no_contents = True
 
-        return execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
+        result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
+
+        # 結果をキャッシュ化する（オムロン様用一時的対応
+
+        # 1. 対象フローのJSONデータを取得する
+        flow_path = get_flow_path_by_uuid(flow_uuid)
+        current_flow_data = json.loads(flow_path.read_text())
+
+        # 2. resultを読んで書き換えていく
+        for link in result['name']: # ここが'name'なのは変えるべき
+            target_step_id = link['id']
+            target_datum_uuid = link['uuid']
+
+            current_flow_data['nodes'][target_step_id]['uuid'] = target_datum_uuid
+
+        # 3. 最後にファイルに保存する
+        update_flow_by_uuid(flow_uuid, current_flow_data)
+            
+        return result
     else:
         return jsonify({
                             'success': False,
