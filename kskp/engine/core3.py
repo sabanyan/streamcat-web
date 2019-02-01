@@ -4044,11 +4044,6 @@ class PredictOld(UnixCommand):
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 # PCMD
-class Groupby(UnixCommand):
-    pass
-
-class Groupby2(UnixCommand):
-    pass
 
 class NmCmd(MCommandNew):
     """
@@ -4126,6 +4121,12 @@ class SmlModeling(NmCmd):
         str_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
 
         return str_args, process_flow
+
+class Groupby(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/groupby.sh', 'csv', 'o=')
+        self.name = 'Groupby'
+        self.description = 'groupby処理を行う'
 
 class CheckDuplicateRows(NmCmd):
     def __init__(self):
@@ -4308,9 +4309,9 @@ commands = {
     'predict': Predict(),
 
     # 追加コマンド
-    # デモ専用コマンド
     'groupby': Groupby(),
-    'groupby2': Groupby2(),
+
+    # デモ専用コマンド
     'sml_modeling': SmlModeling(),
 
     # O社向けコマンド
