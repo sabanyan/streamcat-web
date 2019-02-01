@@ -1,14 +1,12 @@
 #!/bin/bash -eu
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.0"
+readonly  VERSION="0.2"
 
 #外部モジュール参照
 # MCMD使用
 
 # 注意・残件
-#   ・引数のチェック処理が不十分   必須、組み合わせ、簡単な内容チェックなどは未実装
 #   ・空白含む項目名ある場合の挙動、未検証 ※恐らく意図通りにならない
-#   ・NYSOLの集計系のMCMDが生成する キー項目の末尾へ接尾辞 %数字 を消すことができていない → MCMDでは支障ないが、KCMDやユーザ関数などで支障ありそう
 #--------------------------------------------------------------
 # groupby
 #--------------------------------------------------------------
@@ -16,25 +14,20 @@ readonly  VERSION="0.0"
 # 引数として与えらた変数
 #    k=              集計キー項目をカンマ区切りで与える
 #                    変数：key_list
-#    sensor_list=    同じ統計量計算を行う対象とする列範囲の指定  形式  入力データの列名をカンマ区切りで与える
-#    feature_list=   NYSOLの統計量の指定と算出結果の列名の指定  形式  演算の指定:作成列名 をカンマ区切りで与える
+#    f= sensor_list 同じ統計量計算を行う対象とする列範囲の指定  形式  入力データの列名をカンマ区切りで与える
+#    c= feature_list NYSOLの統計量の指定と算出結果の列名の指定  形式  演算の指定:作成列名 をカンマ区切りで与える
 #    [i=]            入力ファイル名を指定する。省略時は、標準入力を処理する
 #                    変数：input_file      入力ファイル名
 #    [o=]            出力ファイル名を指定する。省略時は、標準出力へ書き込む
-#    [-no_sort]      指定した場合、集計キー項目でソートをしない
+#    [-q]            指定した場合、集計キー項目でソートをしない
 #                    注意：予めソート
-#    [-nkfo]         集計キー項目を列に分けて出力する代わりに、一つの列に種受けキーの値を空白区切りで連結した列を出力する場合に指定
-#                    No Key Fields for Output
-#                    変数：key_columns    集計キー項目列を出力するか否か
-#                     ON   集計キー列を出力
-#                     OFF  集計キー列を出力せす、集計キーを連結した 列名連結と値連結 した列を出力する
 #    [-nfno]         項目名行を出力しない場合に指定する
 #                    No Field Names for Output
 #                    変数：header_output   ヘッダー行の出力要否   コマンド引数 -nfno より値をセットする
 #                     ON   ヘッダー行を出力
 #                     OFF  ヘッダー行を出力しない
-#    [field_name_delimiter=]  センサー名と特徴量名との区切り文字。 省略時は _
-#    [-field_name_prefix]     センサー名と特徴量名との連結方法を、接頭辞型にする。 省略時は、接尾型
+#    [delimiter=]    センサー名と特徴量名との区切り文字。 省略時は _
+#    [-prefix]     センサー名と特徴量名との連結方法を、接頭辞型にする。 省略時は、接尾型
 #
 # 処理の流れ
 #   msortf      集計キー項目でソート
@@ -52,29 +45,40 @@ function usage() {
     echo "  複数の数値列に対して、複数の統計量を適用した結果を、数値列名と統計量名からなる列名として出力する。"
     echo
     echo "  k= カンマ区切りで与えた列名リストを、集計の項目列とし、"
-    echo "  sensor_list=  カンマ区切りで与えた列名リストを、集計対象とする数値項目列とし、"
-    echo "  feature_list= カンマ区切りで与えた集計で適用する統計量と結果に付加する接辞の指定より、"
+    echo "  f=  カンマ区切りで与えた列名リストを、集計対象とする数値項目列とし、"
+    echo "  c= カンマ区切りで与えた集計で適用する統計量と結果に付加する接辞の指定より、"
     echo "  集計項目列でユニーク化したレコードに、数値項目列 × 統計量 の全ての組合せの演算結果を列とした結果を出力する。"
     echo
     echo "  演算子は、NYSOL 統計量リスト を指定することが可能"
     echo
+    echo "  k=            集計のキー項目がある場合、項目名をカンマ区切りで指定する"
+    echo "                例 k=A,B"
+    echo "  f=            集計対象とする数値項目を、カンマ区切りで指定する"
+    echo "                例 f=S1,S2"
+    echo "  c=            適用する統計量と、対象項目名へ付加する接辞語を指定する"
+    echo "                例 c=mean:Ave,count:Num,sum:Sum"
+    echo "  -q            集計のキー項目でソート済の場合に指定するとソートしない分高速化する"
+    echo "  -prefix       接辞語を、項目名の末尾ではなく、先頭に付加する"
+    echo "  delimiter=    項目名と接辞語との区切り文字を指定する"
+    echo "                デフォルトは _"
+    echo
     echo "書式"
     echo "------"
-    echo "${PROGNAME} k=  sensor_list=  feature_list= [i=] [o=] [-no_sort] [-nkfo] [-nfno]"
-    echo " [field_name_delimiter=] [-field_name_prefix]"
+    echo "${PROGNAME} [k=] f= c= [i=] [o=] [-q] [-nfno]"
+    echo " [delimiter=] [-prefix]"
     echo " [-assert_diffSize] [-assert_nullkey] [-assert_nullin] [-assert_nullout]"
     echo " [tmpPath=] [precision=] [--help] [--version]"
     echo
     echo "例"
-    echo "${PROGNAME} k=KA,KB sensor_list=A,B feature_list=count:Num,mean:Avg"
-    echo "出力の列名  KA%0,KB%1,A_Avg,A_Num,B_Avg,B_Num"
+    echo "${PROGNAME} k=KA,KB f=A,B c=count:Num,mean:Avg"
+    echo "出力の列名  KA,KB,A_Avg,A_Num,B_Avg,B_Num"
 
     exit 1
 }
 
 #bash pcmd/groupby.sh i=output/d_log.csv k=DATA_SOURCE,状態 sensor_list=3H,3V,4H,4V feature_list=count:Num,max:Max
 # stdin
-#cat output/d_log.csv | bash pcmd/groupby.sh k=DATA_SOURCE,状態 sensor_list=3H,3V,4H,4V feature_list=count:Num,max:Max field_name_delimiter='|' -field_name_prefix
+#cat output/d_log.csv | bash pcmd/groupby.sh k=DATA_SOURCE,状態 sensor_list=3H,3V,4H,4V feature_list=count:Num,max:Max delimiter='|' -prefix
 
 
 # エラー処理
@@ -105,8 +109,8 @@ assert_nullkey=""
 assert_nullin=""
 assert_nullout=""
 precision=""
-field_name_delimiter="_"
-field_name_prefix=false
+delimiter="_"
+prefix=false
 
 
 param=""
@@ -163,7 +167,6 @@ do
                 exit 1
             fi
             input_file=${p_value}
-            param+=( "$@" )
             shift 1
             ;;
         'o='* )
@@ -173,7 +176,6 @@ do
                 exit 1
             fi
             output_file=${p_value}
-            param+=( "$@" )
             shift 1
             ;;
         'k='* )
@@ -183,61 +185,49 @@ do
                 exit 1
             fi
             key_list=${p_value}
-            param+=( "$@" )
             shift 1
             ;;
-        'sensor_list='* )
+        'f='* )
             p_value=${1#*'='}                 # =より前の文字を削除
             if [[ -z "${p_value}" ]] ; then   # -z: 文字列長がゼロ
                 echo "${PROGNAME}: option requires an argument -- $1" 1>&2
                 exit 1
             fi
             sensor_list=${p_value}
-            param+=( "$@" )
             shift 1
             ;;
-        'feature_list='* )
+        'c='* )
             p_value=${1#*'='}                 # =より前の文字を削除
             if [[ -z "${p_value}" ]] ; then   # -z: 文字列長がゼロ
                 echo "${PROGNAME}: option requires an argument -- $1" 1>&2
                 exit 1
             fi
             feature_list=${p_value}
-            param+=( "$@" )
             shift 1
             ;;
-        '-no_sort' )
+        '-q' )
             no_sort="ON"
-            param+=( "$@" )
-            shift 1
-            ;;
-        '-nkfo' )
-            key_columns="OFF"
-            param+=( "$@" )
             shift 1
             ;;
         '-nfno' )
             header_output="OFF"
-            param+=( "$@" )
             shift 1
             ;;
-        'field_name_delimiter='* )
+        'delimiter='* )
             p_value=${1#*'='}                 # =より前の文字を削除
             if [[ -z "${p_value}" ]] ; then   # -z: 文字列長がゼロ
                 echo "${PROGNAME}: option requires an argument -- $1" 1>&2
                 exit 1
             fi
-            field_name_delimiter=${p_value}
+            delimiter=${p_value}
             shift 1
             ;;
-        '-field_name_prefix' )
-            field_name_prefix=true
-            param+=( "$@" )
+        '-prefix' )
+            prefix=true
             shift 1
             ;;
         '--'|'-' )
             shift 1
-            param+=( "$@" )
             break
             ;;
         *)
@@ -247,11 +237,17 @@ do
     esac
 done
 
-#if [[ -z $param ]]; then
-#    echo "$PROGNAME: too few arguments" 1>&2
-#    echo "Try '$PROGNAME --help' for more information." 1>&2
-#    exit 1
-#fi
+# 必須パラメータ指定無し
+if [[ -z ${sensor_list} ]]; then  # f=
+    echo "$PROGNAME: specify f= argument" 1>&2
+    echo "Try '$PROGNAME --help' for more information." 1>&2
+    exit 1
+fi
+if [[ -z ${feature_list} ]]; then  # c=
+    echo "$PROGNAME: specify c= argument" 1>&2
+    echo "Try '$PROGNAME --help' for more information." 1>&2
+    exit 1
+fi
 
 # feature_list_2  feature_listの指定によりmsummaryで作成された列名をカンマ区切りで与えたリスト
 feature_list_2=""
@@ -302,66 +298,52 @@ if [[ -n ${precision} ]]; then
   precision='precision='${precision}
 fi
 
+# -k オプション指定
+k_opt=""
+k_opt_2=""
+if [[ -n ${key_list} ]]; then
+  k_opt="k=${key_list}"
+  k_opt_2="k=${key_list},${SENSOR_NAME}"
+else
+  k_opt_2="k=${SENSOR_NAME}"
+fi
 
 # センサー名、特徴量名、区切り文字からの列名作成指示
 sensor_feature_name=""
-if [[ "${field_name_prefix}" = true ]]; then
-  sensor_feature_name='cat("'${field_name_delimiter}'",$s{'${VAR_NAME}'},$s{'${SENSOR_NAME}'})'
+if [[ "${prefix}" = true ]]; then
+  sensor_feature_name='cat("'${delimiter}'",$s{'${VAR_NAME}'},$s{'${SENSOR_NAME}'})'
 else
-  sensor_feature_name='cat("'${field_name_delimiter}'",$s{'${SENSOR_NAME}'},$s{'${VAR_NAME}'})'
+  sensor_feature_name='cat("'${delimiter}'",$s{'${SENSOR_NAME}'},$s{'${VAR_NAME}'})'
 fi
 
-if [[ -z ${no_sort} ]]; then
-  msortf   f=${key_list} ${tmp_path} ${assert_diffSize} \
-           < ${input_file} |
-  msummary k=${key_list} \
+# -q オプション
+q_opt=""
+if [[ -n ${no_sort} ]]; then
+  q_opt='-q'
+fi
+
+
+  msummary ${q_opt} ${k_opt} \
+           i=${input_file} \
            f=${sensor_list} \
            c=${feature_list}  \
            a=${SENSOR_NAME} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
-              m2cross  k=${key_list},${SENSOR_NAME} \
-                       f=${feature_list_2} \
-                       a=${VAR_NAME},${VALUE_NAME} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} |
-              mcal     a=${UNIQUE_VAR_NAME} \
-                       c=${sensor_feature_name} ${assert_diffSize} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
-              mcross   k=${key_list} \
-                       f=${VALUE_NAME} \
-                       s=${UNIQUE_VAR_NAME} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} |
-              if [ ${key_columns} == "OFF" ]; then
-                mcal     a=${KEY_NAME_LIST} \
-                         c='cat(" ",'${key_name_char}')' ${assert_diffSize} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
-                mcal     a=${KEY_VALUE_LIST} \
-                         c=${sensor_feature_name} ${assert_diffSize} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
-                mcut     f=${key_list},fld -r ${header} ${tmp_path} ${assert_diffSize} \
-                         > ${output_file}
-              else
-                mcut     f=fld -r ${header} ${tmp_path} ${assert_diffSize} \
-                         > ${output_file}
-              fi
-else
-  msummary k=${key_list} \
-           f=${sensor_list} \
-           c=${feature_list}  \
-           a=${SENSOR_NAME} ${tmp_path} ${assert_nullkey} ${precision} \
-           < ${input_file} |
-               m2cross  k=${key_list},${SENSOR_NAME} \
-                        f=${feature_list_2} \
-                        a=${VAR_NAME},${VALUE_NAME} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} |
-               mcal     a=${UNIQUE_VAR_NAME} \
-                        c=${sensor_feature_name}  ${assert_diffSize} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
-               mcross   k=${key_list} \
-                        f=${VALUE_NAME} \
-                        s=${UNIQUE_VAR_NAME} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} |
-               if [ ${key_columns} == "OFF" ]; then
-                 mcal     a=${KEY_NAME_LIST} \
-                          c='cat(" ",'${key_name_char}')' ${assert_diffSize} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
-                 mcal     a=${KEY_VALUE_LIST} \
-                          c='cat(" ",'${key_value_char}')' ${assert_diffSize} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
-                 mcut     f=${key_list},fld -r ${header} ${tmp_path} ${assert_diffSize} \
-                          > ${output_file}
-               else
-                 mcut     f=fld -r ${header} ${tmp_path} ${assert_diffSize} \
-                          > ${output_file}
-               fi
-fi
+  m2cross  ${k_opt_2} \
+           f=${feature_list_2} \
+           a=${VAR_NAME},${VALUE_NAME} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} |
+  mcal     a=${UNIQUE_VAR_NAME} \
+           c=${sensor_feature_name} ${assert_diffSize} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
+  mcross   ${k_opt} \
+           f=${VALUE_NAME} \
+           s=${UNIQUE_VAR_NAME} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} |
+# -nfno
+ if [[ -z ${header_output} ]]; then
+   mcut     f=fld -r ${header} ${tmp_path} ${assert_diffSize} | \
+   mfldname f=* -q ${header} o=${output_file}
+ else
+   mcut     f=fld -r ${header} ${tmp_path} ${assert_diffSize} \
+            o=${output_file}
+ fi
+
 
 exit 0
