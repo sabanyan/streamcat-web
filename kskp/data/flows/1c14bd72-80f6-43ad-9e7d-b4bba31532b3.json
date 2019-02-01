@@ -1,0 +1,21 @@
+{
+  "projectId": 7,
+  "label": "",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2019-02-01 12:52:08",
+  "nodes": [
+    {
+      "id": "i",
+      "type": "frame",
+      "dataSource": "csv",
+      "uuid": "ed4d1a38-1675-4275-8c6f-c5a8ddfb5396",
+      "label": "sample.csv"
+    }
+  ]
+}
