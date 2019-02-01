@@ -540,10 +540,12 @@ class CsvToLineGraphCommand(VisualizersCommand):
         df = df.sort_values(args.get('x_axis_column'))
 
         # 時系列表示設定
-        type = 'auto'
         tooltip = '@' + args.get('x_axis_column')
         tooltip_format = 'numeral'
+        type = 'auto'
         if time_series_column:
+            # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
+            # それを防ぐために{%raw%}{%endraw%}で区切っている
             tooltip = '{%raw%}@' + args.get('x_axis_column') + '{%F}{%endraw%}'
             tooltip_format = 'datetime'
             type = 'datetime'
@@ -556,9 +558,9 @@ class CsvToLineGraphCommand(VisualizersCommand):
                       plot_width=args.get('x_size'),
                       plot_height=args.get('y_size'))
 
+        # tooltipの設定
         hover = HoverTool()
-        # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
-        # それを防ぐために{%raw%}{%endraw%}で区切っている
+
         hover.tooltips = [
             (args.get('x_axis_column'), tooltip),
             (args.get('y_axis_column'), '@' + args.get('y_axis_column'))
@@ -571,13 +573,19 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plot.add_tools(hover)
         color = self.color_gen()
 
-        # データ名が入っている列が存在する場合
-        for datum in args.get('data'):
+        unique_data = []
+        if len(args.get('data')) > 0:
+            unique_data = args.get('data')
+        else:
+            unique_data = df[args.get('data_column')].unique().tolist()
+
+        # データ名が入っている列が存在する場合（クロス表）
+        for datum in unique_data:
             source = ColumnDataSource(df[df[args.get('data_column')]==datum][start:end])
             plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum,
                       color=color.__next__(), source=source)
 
-        # データが列ごとに分かれている場合
+        # データが列ごとに分かれている場合（未クロス表）
         # for datum in args.get('data'):
         #     source = ColumnDataSource(data={
         #         args.get('x_axis_column'): df[args.get('x_axis_column')],
@@ -652,7 +660,7 @@ class CsvToHistogram(VisualizersCommand):
 
         if len(args.get('specified')) > 0:
             unique_data = args.get('specified')
-            
+
         for datum in unique_data:
             hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('value_column')][start:end].tolist(), bins=args.get('bins'), density=args.get('density'))
             source = ColumnDataSource({'top':hist, 'left': edges[:-1], 'right': edges[1:]})

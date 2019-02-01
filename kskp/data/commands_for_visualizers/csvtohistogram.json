@@ -19,6 +19,66 @@
     ]
   ],
   "params": [
+    {
+      "name": "offsrt",
+      "type": "number",
+      "label": "ビジュアライズを行う開始行"
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "label": "ビジュアライズ対象のデータ数"
+    },
+    {
+      "name": "x_size",
+      "type": "number",
+      "label": "ビジュアライズの横サイズ"
+    },
+    {
+      "name": "y_size",
+      "type": "number",
+      "label": "ビジュアライズの縦サイズ"
+    },
+    {
+      "name": "graph_title",
+      "type": "string",
+      "label": "ビジュアライズのタイトル"
+    },
+    {
+      "name": "x_label",
+      "type": "string",
+      "label": "x軸のラベル"
+    },
+    {
+      "name": "y_label",
+      "type": "string",
+      "label": "y軸のラベル"
+    },
+    {
+      "name": "bins",
+      "type": "number",
+      "label": "ビンの幅"
+    },
+    {
+      "name": "density",
+      "type": "boolean",
+      "label": "密度推定を行う"
+    },
+    {
+      "name": "value_column",
+      "type": "string",
+      "label": "x軸に表示する列名"
+    },
+    {
+      "name": "data_column",
+      "type": "string",
+      "label": "ビジュアライズ対象の項目が入っている列名"
+    },
+    {
+      "name": "specified",
+      "type": "string",
+      "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
+    }
   ],
   "url": ""
 }
