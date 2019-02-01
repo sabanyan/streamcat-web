@@ -50,7 +50,7 @@ def profile():
 
 @app.route('/test')
 def test():
-    return render_template('visualize/result_csvtolinegraph.html')
+    return render_template('visualize/25000_csvtohtmltable.html')
 
 @app.route('/test2')
 def test2():

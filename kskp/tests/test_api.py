@@ -1357,7 +1357,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/data/frames/%s.csv' % frame_uuid_1)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
-    @unittest.skip
+    # @unittest.skip
     def test_visualizers_linegraph(self):
         """
         visualizers APIをテストする。
@@ -1383,7 +1383,7 @@ class ApiTestCase(unittest.TestCase):
             'x_axis_column': 'datetime',
             'y_axis_column': 'price',
             'data_column': 'stockprice',
-            'data': ['openingprice','closingprice']
+            'data': []
         }
 
         inputs = {
@@ -1416,7 +1416,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
-    # @unittest.skip
+    @unittest.skip
     def test_visualizers_histogram(self):
         """
         visualizers APIをテストする。
