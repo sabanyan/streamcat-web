@@ -200,22 +200,6 @@ def make_new_frame():
 
         result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
 
-        # 結果をキャッシュ化する（オムロン様用一時的対応
-
-        # 1. 対象フローのJSONデータを取得する
-        flow_path = get_flow_path_by_uuid(flow_uuid)
-        current_flow_data = json.loads(flow_path.read_text())
-
-        # 2. resultを読んで書き換えていく
-        for link in result['name']: # ここが'name'なのは変えるべき
-            target_step_id = link['id']
-            target_datum_uuid = link['uuid']
-
-            current_flow_data['nodes'][target_step_id]['uuid'] = target_datum_uuid
-
-        # 3. 最後にファイルに保存する
-        update_flow_by_uuid(flow_uuid, current_flow_data)
-            
         return result
     else:
         return jsonify({
@@ -320,6 +304,25 @@ def execute_flow(flow_uuid, step_paths, no_contents):
                                     'message': 'result is empty.'
                                    })
             else:
+                # 結果をキャッシュ化する（オムロン様用一時的対応
+
+                # 1. 対象フローのJSONデータを取得する
+                flow_path = get_flow_path_by_uuid(flow_uuid)
+                current_flow_data = json.loads(flow_path.read_text())
+
+                # 2. resultを読んで書き換えていく
+                for link in result_data: # ここが'name'なのは変えるべき
+                    target_step_id = link['id']
+                    target_datum_uuid = link['uuid']
+
+                    for node in current_flow_data['nodes']:
+                        if node['id'] == target_step_id:
+                            node['uuid'] = target_datum_uuid
+                            break
+
+                # 3. 最後にファイルに保存する
+                update_flow_by_uuid(flow_uuid, current_flow_data)
+            
                 return jsonify({'success': True, 'name': result_data})
         except Exception as e:
             raise e
