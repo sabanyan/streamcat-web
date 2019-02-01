@@ -375,7 +375,7 @@ class Frame(Datum):
             for row in reader:
                 # 時間が足りなくてこんな風に実装してしまいました。。。
                 # ごめんなさい。。。
-                if count > 1000:
+                if count > 1000:                    
                     break
 
                 if first_row:

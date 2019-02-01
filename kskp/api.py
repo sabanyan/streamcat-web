@@ -315,9 +315,9 @@ def execute_flow(flow_uuid, step_paths, no_contents):
                     target_step_id = link['id']
                     target_datum_uuid = link['uuid']
 
-                    for node in current_flow_data['nodes']:
+                    for i, node in enumerate(current_flow_data['nodes']):
                         if node['id'] == target_step_id:
-                            node['uuid'] = target_datum_uuid
+                            current_flow_data['nodes'][i]['uuid'] = target_datum_uuid
                             break
 
                 # 3. 最後にファイルに保存する
