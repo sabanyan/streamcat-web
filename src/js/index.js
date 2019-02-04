@@ -2,8 +2,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import { createStore } from 'redux'
+import { createStore, compose, applyMiddleware,combineReducers } from 'redux'
 import reducer from './modules/application'
+import thunk from 'redux-thunk'
+import {reducer as notificationsReducer} from 'reapop'
 import FlowEditorContainer from './components/FlowEditorContainer'
 import EventEmitter from 'eventemitter3'
 import ProjectListContainer from './components/ProjectListContainer'
@@ -14,8 +16,31 @@ import ProfileContainer from './components/ProfileContainer'
 
 window.emitter = new EventEmitter()
 
-const store = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ &&
+let appStore = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ &&
   window.__REDUX_DEVTOOLS_EXTENSION__())
+
+
+// default value for notifications
+const defaultNotification = {
+  status: 'info',
+  position: 'tr',
+  dismissible: true,
+  dismissAfter: 2000,
+  allowHTML: true,
+  closeButton: true
+};
+
+// store
+const createStoreWithMiddleware = compose(
+  applyMiddleware(thunk)
+)(createStore);
+const store = createStoreWithMiddleware(combineReducers({
+  // reducer must be mounted as `notifications` !
+  notifications: notificationsReducer(defaultNotification), // pass config here
+  // your reducers here
+  appStore
+}), {});
+
 
 if (document.getElementById('flow_editor')) {
   ReactDOM.render(
