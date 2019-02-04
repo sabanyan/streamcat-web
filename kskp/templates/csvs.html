@@ -6,14 +6,14 @@
 <h1>プロジェクト一覧</h1>
 <ul>
     {% for proj in projects %}
-      <li>{{ proj.name }}(id: {{ proj.id }})</li>
+      <li><b>{{ proj.name }}</b>(id: {{ proj.id }})</li>
       <ul>
         {% for flow in flows %}
           {% if flow.proj_id == proj.id %}
-            <li>{{ flow.label }}({{ flow.filename }})</li>
+            <li><b>{{ flow.label }}</b>({{ flow.filename }})</li>
             <ul>
               {% for frame in flow.nodes %}
-                <li>{{ frame.label }}(id: {{ frame.id }} uuid: {{ frame.uuid }})</li>
+                <li><a href="/remove_cache?flow={{ flow.filename }}&frame={{ frame.id }}">キャッシュ削除！</a>(<b>label: {{ frame.label }}</b> id: {{ frame.id }} uuid: {{ frame.uuid }})</li>
               {% endfor %}
             </ul>
           {% endif %}
@@ -21,13 +21,8 @@
       </ul>
     {% endfor %}
 </ul>
-<h1>CSV一覧</h1>
-<ul>
-{% for file in files %}
-  <li>{{ file.name }}</li>
-{% endfor %}
-</ul>
 <h1>どこからも使われていないCSV一覧</h1>
+<a href="/delete_unused_csvs">全部削除！（実行する前は気をつけて！！）</a>
 <ul>
 {% for frame_uuid in unused %}
   <li>{{ frame_uuid }}</li>
