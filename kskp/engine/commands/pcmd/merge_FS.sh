@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash -eu
 #UTF-8, LF
-#2019.01.25 Ryo Taniguchi
+#2019.02.04 Ryo Taniguchi
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.3"
+readonly  VERSION="0.4"
 # オムロンFSデータ集約用コマンド
 
 # 機能
@@ -53,6 +53,16 @@ function usage()
 
     exit 1
 }
+
+# エラー処理
+set -e -u -o pipefail   # パイプ処理中にエラー発生で処理を終了する設定
+error(){
+  echo "#ERROR# Stoped ${PROGNAME}"
+  echo "[ ${BASH_SOURCE} : ${LINENO} ] returns not zero status"
+  exit 1
+}
+trap error ERR
+
 
 
 
@@ -152,11 +162,43 @@ do
     esac
 done
 
+# 必須パラメータ指定なし fオプション
+if [[ -z ${target_file_list} ]]; then
+    echo "$PROGNAME: specify f= argument" 1>&2
+    echo "Try '$PROGNAME --help' for more information." 1>&2
+    exit 1
+fi
+
+# 必須パラメータ指定なし eオプション
+if [[ -z ${result_defect} ]]; then
+    echo "$PROGNAME: specify e= argument" 1>&2
+    echo "Try '$PROGNAME --help' for more information." 1>&2
+    exit 1
+fi
+
+# 必須パラメータ指定なし　sオプション
+if [[ -z ${Seq_record} ]]; then
+    echo "$PROGNAME: specify s= argument" 1>&2
+    echo "Try '$PROGNAME --help' for more information." 1>&2
+    exit 1
+fi
+
+# 必須パラメータ指定なし　pオプション
+if [[ -z ${Tmp_path} ]]; then
+    echo "$PROGNAME: specify p= argument" 1>&2
+    echo "Try '$PROGNAME --help' for more information." 1>&2
+    exit 1
+fi
+
+
+
+
 # 準備処理
 # o= 指定が無い場合、標準出力をセットする。
 if [[ -z ${result_correct} ]]; then
     result_correct='/dev/stdout'
 fi
+
 
 # 参照行数
 Seq_record=$(($Seq_record + 1)) # 参照行数に先頭行分を追加する。
