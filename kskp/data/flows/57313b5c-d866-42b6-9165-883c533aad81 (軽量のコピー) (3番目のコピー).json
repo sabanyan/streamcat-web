@@ -1,0 +1,457 @@
+{
+  "projectId": 6,
+  "label": "軽量テストVer1",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2019-02-01 14:56:58",
+  "nodes": [
+    {
+      "position": {
+        "x": 3115,
+        "y": 97
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー.csv",
+      "type": "frame",
+      "label": "ダミー.csv",
+      "uuid": "79941279-0ceb-4aa7-b5ac-02b527e4987a",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1516,
+        "y": 97
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー2.csv",
+      "type": "frame",
+      "label": "ダミー2.csv",
+      "uuid": "a957f01e-096c-487c-b24c-b746cb4c28e3",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1516,
+        "y": 272
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "label": "d2",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1519,
+        "y": 190
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "v1_0001",
+      "srcs": {
+        "i": "ダミー2.csv"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/Testfilelist_G8K_twin_test_0001.csv",
+        "p": "/home/kskp/KSKP_trial"
+      },
+      "commandId": "merge_ibutsu"
+    },
+    {
+      "position": {
+        "x": 1912,
+        "y": 99
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (8 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー3 (8 番目のコピー).csv",
+      "uuid": "5bccffd2-09e5-4f8c-a279-c35099c95691",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1912,
+        "y": 275
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d3",
+      "type": "frame",
+      "label": "d3",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1912,
+        "y": 193
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "v1_0002",
+      "srcs": {
+        "i": "ダミー3 (8 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d3"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/Test/filelist_G8K_twin_test_0002.csv",
+        "p": "/home/kskp/KSKP_trial"
+      },
+      "commandId": "merge_ibutsu"
+    },
+    {
+      "position": {
+        "x": 2427,
+        "y": 100
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (7 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー3 (7 番目のコピー).csv",
+      "uuid": "1a8c847b-d300-4363-a7b7-cd9dea7c175e",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2426,
+        "y": 294
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d4",
+      "type": "frame",
+      "label": "d4",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2427,
+        "y": 196
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c4",
+      "type": "command",
+      "label": "v2_0001",
+      "srcs": {
+        "i": "ダミー3 (7 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d4"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/Test/filelist_G8K_twin_test_ver2_0001.csv",
+        "p": "/home/kskp/KSKP_trial"
+      },
+      "commandId": "merge_ibutsu"
+    },
+    {
+      "position": {
+        "x": 4059,
+        "y": 95
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (6 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー3 (6 番目のコピー).csv",
+      "uuid": "4c901e18-5968-4951-8d53-c651ef44c02a",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3118,
+        "y": 291
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "d1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3116,
+        "y": 200
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "FS_#1",
+      "srcs": {
+        "i": "ダミー.csv"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/Test/filelist_FS_組立#1.txt",
+        "p": "/home/kskp/KSKP_trial",
+        "e": "/home/kskp/KSKP_trial/FS_不整_＃1_test.txt",
+        "s": "10000"
+      },
+      "commandId": "merge_FS"
+    },
+    {
+      "position": {
+        "x": 4061,
+        "y": 292
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d5",
+      "type": "frame",
+      "label": "d5",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 4066,
+        "y": 192
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c5",
+      "type": "command",
+      "label": "FS_siage",
+      "srcs": {
+        "i": "ダミー3 (6 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d5"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/Test/filelist_FS_仕上.txt",
+        "p": "/home/kskp/KSKP_trial/",
+        "e": "/home/kskp/KSKP_trial/FS_siage_ir_test.txst",
+        "s": "10000"
+      },
+      "commandId": "merge_FS"
+    },
+    {
+      "position": {
+        "x": 3621,
+        "y": 98
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (5 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー3 (5 番目のコピー).csv",
+      "uuid": "62132088-b66b-4c5b-b170-434154f4c11b",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3626,
+        "y": 305
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d6",
+      "type": "frame",
+      "label": "d6",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3618,
+        "y": 204
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c6",
+      "type": "command",
+      "label": "FS_#2",
+      "srcs": {
+        "i": "ダミー3 (5 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d6"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/Test/filelist_FS_組立#2.txt",
+        "p": "/home/kskp/KSKP_trial",
+        "e": "/home/kskp/KSKP_trial/FS_#2_ir_test.txt",
+        "s": "10000"
+      },
+      "commandId": "merge_FS"
+    },
+    {
+      "position": {
+        "x": 4059,
+        "y": 95
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (6 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー3 (6 番目のコピー).csv",
+      "uuid": "4c901e18-5968-4951-8d53-c651ef44c02a",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2722,
+        "y": 99
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (13 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー3 (13 番目のコピー).csv",
+      "uuid": "d22d1ed9-f8c1-4b75-987c-2b2143dec39d",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2723,
+        "y": 275
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d7",
+      "type": "frame",
+      "label": "d7",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2722,
+        "y": 192
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c7",
+      "type": "command",
+      "label": "v2_0002",
+      "srcs": {
+        "i": "ダミー3 (13 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d7"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/Test/filelist_G8K_twin_test_ver2_0002.csv",
+        "p": "/home/kskp/KSKP_trial"
+      },
+      "commandId": "merge_ibutsu"
+    }
+  ]
+}
