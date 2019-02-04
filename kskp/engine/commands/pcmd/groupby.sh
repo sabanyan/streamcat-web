@@ -1,12 +1,14 @@
 #!/bin/bash -eu
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.2"
+readonly  VERSION="0.3"
 
 #外部モジュール参照
 # MCMD使用
 
 # 注意・残件
 #   ・空白含む項目名ある場合の挙動、未検証 ※恐らく意図通りにならない
+# ver.0.3   高速化のために、mcutで不要な項目を除外するように変更
+#
 #--------------------------------------------------------------
 # groupby
 #--------------------------------------------------------------
@@ -301,11 +303,14 @@ fi
 # -k オプション指定
 k_opt=""
 k_opt_2=""
+columns=""  # k= f= の列名リストを格納する
 if [[ -n ${key_list} ]]; then
   k_opt="k=${key_list}"
   k_opt_2="k=${key_list},${SENSOR_NAME}"
+  columns="${key_list},${sensor_list}"
 else
   k_opt_2="k=${SENSOR_NAME}"
+  columns="${sensor_list}"
 fi
 
 # センサー名、特徴量名、区切り文字からの列名作成指示
@@ -322,9 +327,9 @@ if [[ -n ${no_sort} ]]; then
   q_opt='-q'
 fi
 
-
+  mcut     i=${input_file} \
+           f="${columns}"  |
   msummary ${q_opt} ${k_opt} \
-           i=${input_file} \
            f=${sensor_list} \
            c=${feature_list}  \
            a=${SENSOR_NAME} ${tmp_path} ${assert_nullkey} ${assert_nullin} ${assert_nullout} ${precision} |
