@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<h1>プロジェクト一覧</h1>
+<ul>
+    {% for proj in projects %}
+      <li>{{ proj.name }}(id: {{ proj.id }})</li>
+      <ul>
+        {% for flow in flows %}
+          {% if flow.proj_id == proj.id %}
+            <li>{{ flow.label }}({{ flow.filename }})</li>
+            <ul>
+              {% for frame in flow.nodes %}
+                <li>{{ frame.label }}(id: {{ frame.id }} uuid: {{ frame.uuid }})</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    {% endfor %}
+</ul>
+<h1>CSV一覧</h1>
+<ul>
+{% for file in files %}
+  <li>{{ file.name }}</li>
+{% endfor %}
+</ul>
+<h1>どこからも使われていないCSV一覧</h1>
+<ul>
+{% for frame_uuid in unused %}
+  <li>{{ frame_uuid }}</li>
+{% endfor %}
+</ul>
+{% endblock %}
