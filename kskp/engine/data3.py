@@ -111,18 +111,28 @@ class NysolPythonSource(Source):
             mod = self.mod(args)
             self.process_flow <<= mod
 
-            res = io.StringIO()
-            with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
-                self.process_flow.run()
+            # res = io.StringIO()
+            # with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
+            #     self.process_flow.run()
+            with io.StringIO() as messages_mem:
+                with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=messages_mem):
+                    self.process_flow.run()
 
-        except Exception as e:
-            if res is not None:
-                val = res.getvalue()
-                print('exception:', val)
-                raise ValueError(val)
-            else:
-                print('exception:', e)
-                raise e
+                    messages = messages_mem.getvalue()
+
+                    if '#ERROR#' in messages:
+                        content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
+                        err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
+                        raise err
+
+        # except Exception as e:
+        #     if res is not None:
+        #         val = res.getvalue()
+        #         print('exception:', val)
+        #         raise ValueError(val)
+        #     else:
+        #         print('exception:', e)
+        #         raise e
         finally:
             print('final!!!')
 
@@ -399,3 +409,38 @@ def make_path(frame_uuid):
         raise Exception()
 
     return f"{ os.environ['KENG_FRAMES_PATH'] }/{ frame_uuid }.csv"
+
+class MCMDError(Exception):
+    def __init__(self, errors):
+        self.errors = errors
+
+    def __repr__(self):
+        return repr(self.errors[0])
+
+class MCMDErrorInfo():
+    def __init__(self, description, input_n, output_n, called_at):
+        self.description = description
+        self.number_of_input = input_n
+        self.number_of_output = output_n
+        self.called_at = called_at
+
+    @classmethod
+    def parse_stderr(cls, s):
+        """
+        以下のようなMCMDの実行時のエラー文字列をparseしてオブジェクトに起こす
+        '#ERROR# field name not found: `c' in a.csv (kgcut); kgcut f=c i=a.csv; IN=0 OUT=0; 2018/06/14 20:57:21'
+        """
+        # s = "#ERROR# field name not found: `c' in a.csv (kgcut); kgcut f=c i=a.csv; IN=1253 OUT=5624; 2018/06/14 20:57:21"
+        # まず、セミコロンで区切る
+        ss = s.split(';')
+
+        # 入力と出力の件数をパースする
+        if len(ss) >= 3:
+            import re
+            io = re.search(r'IN=(\d+) OUT=(\d+)', ss[2]).groups()
+            return cls(ss[0].replace('#ERROR#', ''), int(io[0]), int(io[1]), ss[3])
+        else:
+            print('re:', s)
+
+    def __repr__(self):
+        return f'MCMDError:{self.description}'
