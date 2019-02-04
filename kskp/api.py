@@ -322,7 +322,13 @@ def execute_flow(flow_uuid, step_paths, no_contents):
             else:
                 return jsonify({'success': True, 'name': result_data})
         except Exception as e:
-            raise e
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                                'success': False,
+                                'code': -1,
+                                'message': repr(e)
+                            })
 
 @api.route('/jobs', methods=['GET'])
 @update_navigation
