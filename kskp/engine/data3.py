@@ -380,8 +380,14 @@ class Frame(Datum):
             reader = csv.reader(fd)
             res = {}
             first_row = True
+            count = 0
 
             for row in reader:
+                # 時間が足りなくてこんな風に実装してしまいました。。。
+                # ごめんなさい。。。
+                if count > 1000:                    
+                    break
+
                 if first_row:
                     for col in row:
                         res[col] = []
@@ -390,6 +396,8 @@ class Frame(Datum):
                 else:
                     for i, col in enumerate(cols):
                         res[col].append(row[i])
+                    # データが1000行なので、ここでカウントアップしてる
+                    count += 1
 
         return res
 

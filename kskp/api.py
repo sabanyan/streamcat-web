@@ -200,22 +200,6 @@ def make_new_frame():
 
         result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
 
-        # 結果をキャッシュ化する（オムロン様用一時的対応
-
-        # 1. 対象フローのJSONデータを取得する
-        flow_path = get_flow_path_by_uuid(flow_uuid)
-        current_flow_data = json.loads(flow_path.read_text())
-
-        # 2. resultを読んで書き換えていく
-        for link in result['name']: # ここが'name'なのは変えるべき
-            target_step_id = link['id']
-            target_datum_uuid = link['uuid']
-
-            current_flow_data['nodes'][target_step_id]['uuid'] = target_datum_uuid
-
-        # 3. 最後にファイルに保存する
-        update_flow_by_uuid(flow_uuid, current_flow_data)
-            
         return result
     else:
         return jsonify({
@@ -320,6 +304,25 @@ def execute_flow(flow_uuid, step_paths, no_contents):
                                     'message': 'result is empty.'
                                    })
             else:
+                # 結果をキャッシュ化する（オムロン様用一時的対応
+
+                # 1. 対象フローのJSONデータを取得する
+                flow_path = get_flow_path_by_uuid(flow_uuid)
+                current_flow_data = json.loads(flow_path.read_text())
+
+                # 2. resultを読んで書き換えていく
+                for link in result_data: # ここが'name'なのは変えるべき
+                    target_step_id = link['id']
+                    target_datum_uuid = link['uuid']
+
+                    for i, node in enumerate(current_flow_data['nodes']):
+                        if node['id'] == target_step_id:
+                            current_flow_data['nodes'][i]['uuid'] = target_datum_uuid
+                            break
+
+                # 3. 最後にファイルに保存する
+                update_flow_by_uuid(flow_uuid, current_flow_data)
+            
                 return jsonify({'success': True, 'name': result_data})
         except Exception as e:
             import traceback
@@ -666,11 +669,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=f'{data_path}/frames', flows_path=f'{data_path}/flows')
 
     result = execute_flow_by_uuid(flow_uuid)
+    print('execute終わり！')
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     if no_contents:
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
     else:
+        print('resultを作るよ！')
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
     return result_list
 

@@ -2,7 +2,7 @@
 #UTF-8, LF
 #2019.01.25 Ryo Taniguchi
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.3"
+readonly  VERSION="0.4"
 
 # 
 # オムロン結果データ集約用コマンド
@@ -107,7 +107,7 @@ if [[ -z ${result} ]]; then
 fi
 
 i=0 #処理ファイル数カウント
-cat "${path_list}" | \
+nkf -w -Lu -x  "${path_list}" | \
     while read file;
     do
         i=$(($i + 1))
