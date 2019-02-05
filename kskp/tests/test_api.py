@@ -1309,7 +1309,7 @@ class ApiTestCase(unittest.TestCase):
         import csv
 
         frame_uuid_1 = str(uuid.uuid4())
-
+        
         with open('kskp/data/frames/' + frame_uuid_1 + '.csv', 'w') as csv_file:
             fieldnames = ['customer', 'quantity', 'amount']
             csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -1367,7 +1367,7 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = 'result'
+        frame_uuid_1 = 'result3'
 
         command_id = 'csvtolinegraph'
 
@@ -1376,13 +1376,14 @@ class ApiTestCase(unittest.TestCase):
             'offset': '',
             'x_size': 1400,
             'y_size': 600,
-            'graph_title': '2018年トヨタ自動車株価',
+            'graph_title': '名古屋・神戸・釧路平均気温（2018/1/1〜2019/1/1）',
             'x_label': '日付',
-            'y_label': '株価',
-            'time_series_column': ['datetime'],
-            'x_axis_column': 'datetime',
-            'y_axis_column': 'price',
-            'data_column': 'stockprice',
+            'y_label': '気温',
+            'alpha': 1,
+            'time_series_column': ['date'],
+            'x_axis_column': 'date',
+            'y_axis_column': 'average',
+            'data_column': 'prefecture',
             'data': []
         }
 
@@ -1409,14 +1410,12 @@ class ApiTestCase(unittest.TestCase):
         # テスト
         # 画像ファイル、HTMLファイルができているかどうかのテスト
         visualize_name = frame_uuid_1 + '_' + command_id
-        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
-    @unittest.skip
+    # @unittest.skip
     def test_visualizers_histogram(self):
         """
         visualizers APIをテストする。
@@ -1438,11 +1437,12 @@ class ApiTestCase(unittest.TestCase):
             'graph_title': 'テストデータ',
             'x_label': 'Value',
             'y_label': '度数',
+            'alpha': 0.5,
             'bins': 100,
             'density': False,
-            'data_column': '状態',
-            'specified':[],
-            'value_column': 'Value'
+            'x_axis': 'Value',
+            'data_column': '機器',
+            'data':[]
         }
 
         inputs = {
@@ -1468,14 +1468,12 @@ class ApiTestCase(unittest.TestCase):
         # テスト
         # 画像ファイル、HTMLファイルができているかどうかのテスト
         visualize_name = frame_uuid_1 + '_' + command_id
-        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
-    @unittest.skip
+    # @unittest.skip
     def test_visualizers_scatter(self):
         """
         visualizers APIをテストする。
@@ -1497,19 +1495,11 @@ class ApiTestCase(unittest.TestCase):
             'graph_title': '3H外輪損傷１：Time×Value',
             'x_label': 'Time',
             'y_label': 'Value',
-            'queries':[
-                {
-                    'column': '機器',
-                    'value': '3H'
-                },
-                {
-                    'column': '状態',
-                    'value': '外輪損傷１'
-                }
-            ],
+            'alpha': 0.5,
             'x_axis': 'Time',
             'y_axis': 'Value',
-            'alpha': 0.5
+            'data_column': '機器',
+            'data': []
         }
 
         inputs = {
@@ -1535,14 +1525,12 @@ class ApiTestCase(unittest.TestCase):
         # テスト
         # 画像ファイル、HTMLファイルができているかどうかのテスト
         visualize_name = frame_uuid_1 + '_' + command_id
-        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
-    @unittest.skip
+    # @unittest.skip
     def test_visualizers_boxplot(self):
         """
         visualizers APIをテストする。
@@ -1562,6 +1550,8 @@ class ApiTestCase(unittest.TestCase):
             'x_size': 1400,
             'y_size': 600,
             'graph_title': 'テスト',
+            'x_label': '状態,機器',
+            'y_label': 'Value',
             'x_axis': ['状態', '機器'],
             'y_axis': 'Value'
         }
@@ -1589,11 +1579,9 @@ class ApiTestCase(unittest.TestCase):
         # テスト
         # 画像ファイル、HTMLファイルができているかどうかのテスト
         visualize_name = frame_uuid_1 + '_' + command_id
-        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
     @unittest.skip

@@ -55,9 +55,14 @@
       "label": "y軸のラベル"
     },
     {
+      "name": "alpha",
+      "type": "number",
+      "label": "透明度"
+    },
+    {
       "name": "time_series_column",
-      "type": "string",
-      "label": "時系列データ列"
+      "type": "multi_select",
+      "label": "時系列データ列。時系列データがなければ入力しない"
     },
     {
       "name": "x_axis_column",
@@ -76,7 +81,7 @@
     },
     {
       "name": "data",
-      "type": "string",
+      "type": "multi_select",
       "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],

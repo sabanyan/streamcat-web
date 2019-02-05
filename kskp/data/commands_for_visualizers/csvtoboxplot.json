@@ -19,6 +19,51 @@
     ]
   ],
   "params": [
+    {
+      "name": "offsrt",
+      "type": "number",
+      "label": "ビジュアライズを行う開始行"
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "label": "ビジュアライズ対象のデータ数"
+    },
+    {
+      "name": "x_size",
+      "type": "number",
+      "label": "ビジュアライズの横サイズ"
+    },
+    {
+      "name": "y_size",
+      "type": "number",
+      "label": "ビジュアライズの縦サイズ"
+    },
+    {
+      "name": "graph_title",
+      "type": "string",
+      "label": "ビジュアライズのタイトル"
+    },
+    {
+      "name": "x_label",
+      "type": "string",
+      "label": "x軸のラベル"
+    },
+    {
+      "name": "y_label",
+      "type": "string",
+      "label": "y軸のラベル"
+    },
+    {
+      "name": "x_axis",
+      "type": "string",
+      "label": "x軸に表示する列名"
+    },
+    {
+      "name": "y_axis",
+      "type": "string",
+      "label": "y軸に表示する列名"
+    }
   ],
   "url": ""
 }
