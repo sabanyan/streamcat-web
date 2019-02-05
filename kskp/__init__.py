@@ -48,21 +48,5 @@ def library():
 def profile():
     return render_template('profile.html', user_id=session['user_id'])
 
-@app.route('/test')
-def test():
-    return render_template('visualize/25000_csvtohtmltable.html')
-
-@app.route('/test2')
-def test2():
-    return render_template('visualize/result2_csvtohistogram.html')
-
-@app.route('/test3')
-def test3():
-    return render_template('visualize/result2_csvtoscatter.html')
-
-@app.route('/test4')
-def test4():
-    return render_template('visualize/result2_csvtoboxplot.html')
-
 if __name__ == '__main__':
     app.run()

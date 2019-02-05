@@ -19,6 +19,16 @@
     ]
   ],
   "params": [
+    {
+      "name": "offsrt",
+      "type": "number",
+      "label": "テーブル表示を行う開始行"
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "label": "表示対象のデータ数"
+    }
   ],
   "url": ""
 }

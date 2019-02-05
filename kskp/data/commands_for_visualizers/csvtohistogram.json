@@ -55,6 +55,11 @@
       "label": "y軸のラベル"
     },
     {
+      "name": "alpha",
+      "type": "number",
+      "label": "透明度"
+    },
+    {
       "name": "bins",
       "type": "number",
       "label": "ビンの幅"
@@ -65,7 +70,7 @@
       "label": "密度推定を行う"
     },
     {
-      "name": "value_column",
+      "name": "x_axis",
       "type": "string",
       "label": "x軸に表示する列名"
     },
@@ -75,8 +80,8 @@
       "label": "ビジュアライズ対象の項目が入っている列名"
     },
     {
-      "name": "specified",
-      "type": "string",
+      "name": "data",
+      "type": "multi_select",
       "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],

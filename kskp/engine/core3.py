@@ -550,14 +550,6 @@ class CsvToLineGraphCommand(VisualizersCommand):
             tooltip_format = 'datetime'
             type = 'datetime'
 
-        plot = figure(x_axis_type=type,
-                      x_axis_label=args.get('x_label'),
-                      y_axis_label=args.get('y_label'),
-                      output_backend="webgl",
-                      title=args.get('graph_title'),
-                      plot_width=args.get('x_size'),
-                      plot_height=args.get('y_size'))
-
         # tooltipの設定
         hover = HoverTool()
 
@@ -570,22 +562,28 @@ class CsvToLineGraphCommand(VisualizersCommand):
         }
         hover.mode='vline'
 
-        plot.add_tools(hover)
-        color = self.color_gen()
+        plot = figure(x_axis_type=type,
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'),
+                      plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'))
 
-        unique_data = []
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
+
         if len(args.get('data')) > 0:
             unique_data = args.get('data')
-        else:
-            unique_data = df[args.get('data_column')].unique().tolist()
 
         # データ名が入っている列が存在する場合（クロス表）
         for datum in unique_data:
             source = ColumnDataSource(df[df[args.get('data_column')]==datum][start:end])
-            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum,
-                      color=color.__next__(), source=source)
+            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'),
+                      legend=datum, alpha=args.get('alpha'), color=color.__next__(),
+                      source=source)
 
-        # データが列ごとに分かれている場合（未クロス表）
+        # データが列ごとに分かれている場合（クロス集計していない場合の表）
         # for datum in args.get('data'):
         #     source = ColumnDataSource(data={
         #         args.get('x_axis_column'): df[args.get('x_axis_column')],
@@ -594,6 +592,7 @@ class CsvToLineGraphCommand(VisualizersCommand):
         #     plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
         #               color=datum.get('color'), source=source)
 
+        plot.add_tools(hover)
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
@@ -607,7 +606,6 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plotの折れ線グラフ画像のimageタグを作成する
         """
         html = self.generate_image(args, inputs)
-        # img_tag = '<img src="' + 'static/images/visualize/%s.png' % image_file_name + '">'
 
         return html
 
@@ -621,21 +619,19 @@ class CsvToHistogram(VisualizersCommand):
         plotのヒストグラムを作成する
         """
 
-        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtohistogram'
         file_path = inputs.get('i').source.fullpath
-
-        offset = int(args.get('offset')) if args.get('offset') else 0
-        limit = int(args.get('limit')) if args.get('limit') else None
-
-        # ブロック句
-        if not os.path.exists(file_path):
-            return ''
-
         df = pd.read_csv(file_path)
 
         # offset対応
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
         start = offset
         end = start + (limit if limit is not None else len(df))
+
+        # ブロック句
+        # if not os.path.exists(file_path):
+        #     return ''
 
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
@@ -658,13 +654,16 @@ class CsvToHistogram(VisualizersCommand):
         color = self.color_gen()
         unique_data = df[args.get('data_column')].unique().tolist()
 
-        if len(args.get('specified')) > 0:
-            unique_data = args.get('specified')
+        if len(args.get('data')) > 0:
+            unique_data = args.get('data')
 
         for datum in unique_data:
-            hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('value_column')][start:end].tolist(), bins=args.get('bins'), density=args.get('density'))
+            hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('x_axis')][start:end].tolist(),
+                                    bins=args.get('bins'), density=args.get('density'))
             source = ColumnDataSource({'top':hist, 'left': edges[:-1], 'right': edges[1:]})
-            plot.quad(top='top', bottom=0, left='left', right='right', alpha=0.4, color=color.__next__(), source=source, legend=datum)
+            plot.quad(top='top', bottom=0, left='left', right='right',
+                      fill_alpha=args.get('alpha'), color=color.__next__(), legend=datum,
+                      source=source)
 
         plot.add_tools(hover)
         plot.legend.location = "top_right"
@@ -737,22 +736,19 @@ class CsvToScatter(VisualizersCommand):
         plotの散布図を作成する
         """
 
-        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
         file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path)
 
+        # offset対応
         offset = int(args.get('offset')) if args.get('offset') else 0
         limit = int(args.get('limit')) if args.get('limit') else None
+
+        start = offset
+        end = start + (limit if limit is not None else len(df))
 
         # ブロック句
         if not os.path.exists(file_path):
             return ''
-
-        # indexで指定しているものがx軸になる
-        df = pd.read_csv(file_path)
-
-        # offset対応
-        start = offset
-        end = start + (limit if limit is not None else len(df))
 
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
@@ -768,7 +764,6 @@ class CsvToScatter(VisualizersCommand):
             (args.get('x_axis'), '@x'),
             (args.get('y_axis'), '@y')
         ]
-        # hover.mode='vline'
 
         plot = figure(plot_width=args.get('x_size'),
                       plot_height=args.get('y_size'),
@@ -777,14 +772,23 @@ class CsvToScatter(VisualizersCommand):
                       output_backend="webgl",
                       title=args.get('graph_title'))
 
-        queries = args.get('queries')
-        if len(queries) > 0:
-            for query in queries:
-                df = df[df[query.get('column')]==query.get('value')]
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
 
-        source = ColumnDataSource({'x': df[args.get('x_axis')], 'y': df[args.get('y_axis')]})
-        plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'), source=source)
+        if len(args.get('data')) > 0:
+            unique_data = args.get('data')
+
+        for datum in unique_data:
+            df_select_datum = df[df[args.get('data_column')]==datum][start:end]
+            source = ColumnDataSource({'x': df_select_datum[args.get('x_axis')], 'y': df_select_datum[args.get('y_axis')]})
+            plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'),
+                         color=color.__next__(), legend=datum, alpha=args.get('alpha'),
+                         source=source)
+
         plot.add_tools(hover)
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
         html = file_html(plot, CDN, 'myplot')
 
         return html
@@ -852,17 +856,15 @@ class CsvToBoxplot(VisualizersCommand):
         plotの箱ひげ図を作成する
         """
 
-        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
         file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path)
 
         offset = int(args.get('offset')) if args.get('offset') else 0
         limit = int(args.get('limit')) if args.get('limit') else None
 
         # ブロック句
-        if not os.path.exists(file_path):
-            return ''
-
-        df = pd.read_csv(file_path)
+        # if not os.path.exists(file_path):
+        #     return ''
 
         # offset対応
         start = offset
@@ -874,30 +876,20 @@ class CsvToBoxplot(VisualizersCommand):
             # なんかする
             # pass
 
+        # ここはbokehをラップしているライブラリのholoviewsを使っている
+        # bokehは書き方がめんどくさいため
         hv.extension('bokeh')
-
+        x_label = args.get('x_label') if args.get('x_label') else ','.join(args.get('x_axis'))
+        y_label = args.get('y_label') if args.get('y_label') else args.get('y_axis')
         title = args.get('graph_title')
+
         boxwhisker = hv.BoxWhisker(df, kdims=args.get('x_axis'), vdims=args.get('y_axis'), label=title)
-        boxwhisker.opts(width=args.get('x_size'), height=args.get('y_size'))
+        boxwhisker.opts(width=args.get('x_size'), height=args.get('y_size'), xlabel=x_label, ylabel=y_label)
 
         renderer = hv.renderer('bokeh')
         plot=renderer.get_plot(boxwhisker).state
 
         return file_html(plot, CDN, 'myplot')
-
-        # -----plotly-----
-        # import plotly.plotly as py
-        # import plotly.graph_objs as go
-        # import plotly.offline as offline
-        # # offline.init_notebook_mode()
-        # data = []
-        # df = df[['3H','3V','4H','4V']]
-        # for col in df.columns:
-        #     data.append(  go.Box( y=df[col], name=col, showlegend=False ) )
-        # # data.append( go.Scatter( x = df.columns, y = df.mean(), mode='lines', name='mean' ) )
-        #
-        # url = offline.plot(data, filename='pandas-box-plot.html')
-        # -----plotly-----
 
         return url
 
