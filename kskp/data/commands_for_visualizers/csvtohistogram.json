@@ -32,12 +32,14 @@
     {
       "name": "x_size",
       "type": "number",
-      "label": "ビジュアライズの横サイズ"
+      "label": "ビジュアライズの横サイズ",
+      "default": 1400
     },
     {
       "name": "y_size",
       "type": "number",
-      "label": "ビジュアライズの縦サイズ"
+      "label": "ビジュアライズの縦サイズ",
+      "default": 600
     },
     {
       "name": "graph_title",
@@ -57,17 +59,20 @@
     {
       "name": "alpha",
       "type": "number",
-      "label": "透明度"
+      "label": "透明度",
+      "default": 1
     },
     {
       "name": "bins",
       "type": "number",
-      "label": "ビンの幅"
+      "label": "ビンの幅",
+      "default": 20
     },
     {
       "name": "density",
       "type": "boolean",
-      "label": "密度推定を行う"
+      "label": "密度推定を行う",
+      "default": false
     },
     {
       "name": "x_axis",

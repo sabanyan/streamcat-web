@@ -32,12 +32,14 @@
     {
       "name": "x_size",
       "type": "number",
-      "label": "ビジュアライズの横サイズ"
+      "label": "ビジュアライズの横サイズ",
+      "default": 1400
     },
     {
       "name": "y_size",
       "type": "number",
-      "label": "ビジュアライズの縦サイズ"
+      "label": "ビジュアライズの縦サイズ",
+      "default": 600
     },
     {
       "name": "graph_title",
@@ -57,12 +59,13 @@
     {
       "name": "alpha",
       "type": "number",
-      "label": "透明度"
+      "label": "透明度",
+      "default": 1
     },
     {
       "name": "time_series_column",
       "type": "multi_select",
-      "label": "時系列データ列。時系列データがなければ入力しない"
+      "label": "時系列データの列を指定する。時系列データがなければ入力しない"
     },
     {
       "name": "x_axis_column",

@@ -32,12 +32,14 @@
     {
       "name": "x_size",
       "type": "number",
-      "label": "ビジュアライズの横サイズ"
+      "label": "ビジュアライズの横サイズ",
+      "default": 1400
     },
     {
       "name": "y_size",
       "type": "number",
-      "label": "ビジュアライズの縦サイズ"
+      "label": "ビジュアライズの縦サイズ",
+      "default": 600
     },
     {
       "name": "graph_title",
