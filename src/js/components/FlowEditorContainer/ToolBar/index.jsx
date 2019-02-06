@@ -24,6 +24,8 @@ import type { UploadedFileType } from '../../../types'
 import FlowUtil from '../../../utils/FlowUtil'
 import StringUtil from '../../../utils/StringUtil'
 import ErrorUtil from '../../../utils/ErrorUtil'
+import Button from '../../shared/Button'
+import ReactDomUtil from '../../../utils/ReactDomUtil'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -71,10 +73,26 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   onClickProjectRun () {
     this.loading = true
-    this.loadingMessage = "フローを実行中です"
+    this.loadingMessage = ""
+
+    const saveNotify = this.props.notify({
+      title: 'フロー保存中',
+      message: 'フローを保存しています',
+      status: 'loading',
+      dismissAfter: 0
+    })
+
     this.forceUpdate()
     this.save().then(() => {
+      this.props.dismissNotify(saveNotify.id)
+      const runNotify = this.props.notify({
+        title: 'フロー実行中',
+        message: 'しばらくお待ち下さい',
+        status: 'loading',
+        dismissAfter: 0
+      })
       this.run().then((response) => {
+        this.props.dismissNotify(runNotify.id)
         if(response.data.success) {
           const json: RunResponseType = response.data
 
@@ -83,28 +101,47 @@ export default class ToolBar extends React.Component<ToolBarProps> {
           })
 
           const content = <div>
-            <div>フローの実行が完了し、以下のデータがライブラリに追加されました</div>
+            <div>ライブラリにフローの実行結果が追加されました。</div>
             <ul>{result}</ul>
           </div>
-          ModalUtil.registerModal({
-            id: Constants.modal.SHOW_RUN_RESULT, onClickDone: () => {
-              window.open("/library?project=" + window.navigationModel.project_uuid, "_blank");
-            }
-          })
-          ModalUtil.emitModal({
-            id: Constants.modal.SHOW_RUN_RESULT,
-            visible: true,
-            content: content
+
+
+          this.props.notify({
+            title: 'フロー実行完了',
+            message:ReactDomUtil.renderToString(content),
+            status: 'success',
+            dismissAfter: 0,
+            buttons:[{
+              name: "開く",
+              primary: true,
+              onClick:() => {
+                window.open("/library?project=" + window.navigationModel.project_uuid, "_blank");
+              }
+            }]
           })
           this.props.executeFlow()
-          this.loading = false
-          this.forceUpdate()
         }else{
-          ErrorUtil.showError(this,response)
+          this.props.notify({
+            title: '実行エラー',
+            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
         }
+        this.loading = false
+        this.forceUpdate()
       },(error)=>{
         if(!error.success){
-          ErrorUtil.showError(this,error)
+          this.props.notify({
+            title: '保存エラー',
+            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+          this.loading = false
+          this.forceUpdate()
         }
       })
     })
