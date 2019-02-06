@@ -8,6 +8,8 @@ import CommandStepModel from '../model/Step/CommandStepModel'
 import Validator from './Validator'
 import graph from './Graph'
 import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
+import ReactDomUtil from './ReactDomUtil'
+import ErrorUtil from './ErrorUtil'
 
 export default class FlowUtil {
 
@@ -129,6 +131,44 @@ export default class FlowUtil {
   }
 
 
+  static runNodes(flowUUID:string,notify:Function,dismissNotify:Function):any{
+      let runNotify
+      if(notify){
+        runNotify = notify({
+          title: 'フロー実行中',
+          message: 'フローを実行しています',
+          status: 'loading',
+          dismissAfter: 0
+        })
+      }
+
+     return new Promise((resolve, reject) => {
+       HttpUtil.get("frames?from=" + flowUUID + "&no_contents=1").then((response)=>{
+         if(dismissNotify)dismissNotify(runNotify.id)
+         if (!response.data.success) {
+           notify({
+             title: '実行エラー',
+             message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+             status: 'error',
+             dismissAfter: 0,
+             closeButton: true
+           })
+         }
+         resolve(response)
+       },()=>{
+         if(dismissNotify)dismissNotify(runNotify.id)
+         notify({
+           title: '実行エラー',
+           message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+           status: 'error',
+           dismissAfter: 0,
+           closeButton: true
+         })
+         reject(error)
+       })
+     })
+  }
+
 
   /**
    * フローの保存
@@ -138,12 +178,43 @@ export default class FlowUtil {
    * @param projectName
    * @returns {Promise<any>}
    */
-  static saveNodes (flowUUID:string,nodes:[]):any {
+  static saveNodes (flowUUID:string,nodes:[],notify:Function,dismissNotify:Function):any {
     //validation
     Validator.nodesValidate(nodes)
+
+    let saveNotify
+    if(notify){
+      saveNotify = notify({
+        title: 'フロー保存中',
+        message: 'フローを保存しています',
+        status: 'loading',
+        dismissAfter: 0
+      })
+    }
+
     return new Promise((resolve, reject) => {
       HttpUtil.put("flows/" + flowUUID,{nodes:nodes}).then((response)=>{
+        if(dismissNotify)dismissNotify(saveNotify.id)
+        if (!response.data.success) {
+          notify({
+            title: '実行エラー',
+            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        }
         resolve(response)
+      },(error)=>{
+        if(dismissNotify)dismissNotify(saveNotify.id)
+        notify({
+          title: '実行エラー',
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+        reject(error)
       })
     })
   }
@@ -157,16 +228,46 @@ export default class FlowUtil {
    * @param ports
    * @returns {Promise<any>}
    */
-  static saveFlowSettings (flowUUID:string,{label,description,params,ports}):any {
+  static saveFlowSettings (flowUUID:string,{label,description,params,ports},notify:Function,dismissNotify:Function):any {
     let putBody = {}
     if(label)putBody["label"]=label
     if(description)putBody["description"]=description
     if(params)putBody["params"]=params
     if(ports)putBody["ports"]=ports
 
+    let saveNotify
+    if(notify){
+      saveNotify = notify({
+        title: 'フロー保存中',
+        message: 'フローを保存しています',
+        status: 'loading',
+        dismissAfter: 0
+      })
+    }
+
     return new Promise((resolve, reject) => {
       HttpUtil.put("flows/" + flowUUID,putBody).then((response)=>{
+        if(dismissNotify)dismissNotify(saveNotify.id)
+        if (!response.data.success) {
+          notify({
+            title: '実行エラー',
+            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        }
         resolve(response)
+      },(error)=>{
+        if(dismissNotify)dismissNotify(saveNotify.id)
+        notify({
+          title: '実行エラー',
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+        reject(error)
       })
     })
   }

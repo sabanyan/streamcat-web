@@ -63,6 +63,7 @@ export type FlowEditorProps = {
   navigation: NavigationModel;
   drag: DragType;
   notify: Function;
+  dissmissNotify: Function;
 }
 
 export default FlowEditorContainer = connect(

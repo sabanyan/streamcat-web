@@ -26,13 +26,12 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
   }
 
   onSave (e: Event) {
-    const {flow} = this.props
+    const {flow,notify,dismissNotify} = this.props
     const {label} = this.props.flow
     flow.description = this.refs['description'].value
     flow.params = this.getCurrentParams()
     this.props.updateFlow(flow)
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {label: label, description: flow.description,params:flow.params})
-    //this.props.selectSteps()
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {label: label, description: flow.description,params:flow.params}, notify, dismissNotify)
   }
 
   getCurrentParams(){
