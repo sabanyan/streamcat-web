@@ -63,48 +63,31 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   save (): Promise {
-    let {nodes,projectId,projectName} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+    let {nodes,projectId,projectName,notify,dismissNotify} = this.props
+    return FlowUtil.saveNodes(inject_flow_uuid,nodes,notify,dismissNotify)
   }
 
   run () {
-    return HttpUtil.get("frames?from=" + inject_flow_uuid + "&no_contents=1")
+    let {notify,dismissNotify} = this.props
+    return FlowUtil.runNodes(inject_flow_uuid,notify,dismissNotify)
   }
 
   onClickProjectRun () {
     this.loading = true
     this.loadingMessage = ""
 
-    const saveNotify = this.props.notify({
-      title: 'フロー保存中',
-      message: 'フローを保存しています',
-      status: 'loading',
-      dismissAfter: 0
-    })
-
     this.forceUpdate()
     this.save().then(() => {
-      this.props.dismissNotify(saveNotify.id)
-      const runNotify = this.props.notify({
-        title: 'フロー実行中',
-        message: 'しばらくお待ち下さい',
-        status: 'loading',
-        dismissAfter: 0
-      })
       this.run().then((response) => {
-        this.props.dismissNotify(runNotify.id)
         if(response.data.success) {
           const json: RunResponseType = response.data
-
           const result = json.name.map((n) => {
             return <li>{n.id}</li>
           })
-
           const content = <div>
             <div>ライブラリにフローの実行結果が追加されました。</div>
             <ul>{result}</ul>
           </div>
-
 
           this.props.notify({
             title: 'フロー実行完了',
@@ -120,29 +103,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
             }]
           })
           this.props.executeFlow()
-        }else{
-          this.props.notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
         }
         this.loading = false
         this.forceUpdate()
       },(error)=>{
-        if(!error.success){
-          this.props.notify({
-            title: '保存エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-          this.loading = false
-          this.forceUpdate()
-        }
+        this.loading = false
+        this.forceUpdate()
       })
     })
   }
