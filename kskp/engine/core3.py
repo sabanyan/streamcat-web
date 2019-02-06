@@ -4188,6 +4188,12 @@ class WinCp932Read(NmCmd):
         self.name = 'WinCp932Read'
         self.description = 'Windowsファイル（Shift-JIS拡張 CP932）を、サーバ上のローカルファイルより読込む。'
 
+class ColumnsToRows(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/columns_to_rows.sh', 'csv', 'o=')
+        self.name = 'ColumnsToRows'
+        self.description = 'f=で指定した複数の列項目に対して、各項目の行を連結した新たな項目をa=で指定した名前で作成する。'
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -4323,5 +4329,6 @@ commands = {
     'column_name': ColumnName(),
     'column_blank_name': ColumnBlankName(),
     'column_list': ColumnList(),
-    'windows_cp932_csv_read': WinCp932Read()
+    'windows_cp932_csv_read': WinCp932Read(),
+    'columns_to_rows': ColumnsToRows()
 }
