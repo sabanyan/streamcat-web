@@ -4,15 +4,15 @@ import Constants from '../../../constants/index'
 import Button from '../Button'
 
 import NotificationsSystem from 'reapop'
-import theme from 'reapop-theme-wybo'
+import theme from './NotificationTheme'
 
 type Props = {
 }
-
 type State = {
+
 }
 
-export default class Notification extends React.Component<Props, State> {
+export default class NotificationManager extends React.Component<Props, State> {
   constructor (props: Props) {
     super(props)
   }

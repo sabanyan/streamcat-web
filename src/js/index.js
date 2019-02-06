@@ -16,31 +16,27 @@ import ProfileContainer from './components/ProfileContainer'
 
 window.emitter = new EventEmitter()
 
-let appStore = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ &&
-  window.__REDUX_DEVTOOLS_EXTENSION__())
-
+//let appStore = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ &&
+//  window.__REDUX_DEVTOOLS_EXTENSION__())
 
 // default value for notifications
 const defaultNotification = {
-  status: 'info',
   position: 'tr',
   dismissible: true,
   dismissAfter: 2000,
   allowHTML: true,
-  closeButton: true
+  closeButton: false
 };
 
 // store
 const createStoreWithMiddleware = compose(
   applyMiddleware(thunk)
 )(createStore);
-const store = createStoreWithMiddleware(combineReducers({
-  // reducer must be mounted as `notifications` !
-  notifications: notificationsReducer(defaultNotification), // pass config here
-  // your reducers here
-  appStore
-}), {});
 
+const store = createStoreWithMiddleware(combineReducers({
+  notifications: notificationsReducer(defaultNotification),
+  reducer
+}), {});
 
 if (document.getElementById('flow_editor')) {
   ReactDOM.render(
