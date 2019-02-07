@@ -23,6 +23,7 @@ import SubflowCommandModel from '../../../model/Command/SubflowCommandModel'
 import SettingIcon from '../../shared/Icon/SettingIcon'
 import SettingsButton from '../../shared/SettingsButton'
 import VisualizeModel from '../../../model/Visualize/VisualizeModel'
+import NotificationManager from '../../shared/NotificationManager'
 
 type State = {}
 
@@ -181,6 +182,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       </PaperScroller>
       <Inspector {...this.props} />
       <ModalManager />
+        <NotificationManager />
     </div>
     </div>
   }

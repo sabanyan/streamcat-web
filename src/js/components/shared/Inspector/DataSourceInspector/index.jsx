@@ -26,6 +26,7 @@ import StringUtil from '../../../../utils/StringUtil'
 import { RunResponseType } from '../../../../types'
 import ErrorUtil from '../../../../utils/ErrorUtil'
 import Visualizer from '../../Visualizer'
+import ReactDomUtil from '../../../../utils/ReactDomUtil'
 
 
 type State = {
@@ -58,6 +59,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const selected_step = this.getSelectedStep()
 
     let {nodes} = this.props
+
+
     FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
       //すでにデータが存在している場合
       if (selected_step.hasData()) {
@@ -66,24 +69,47 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         })
         this.previewFromUUID(selected_step.uuid, selected_step.label)
       } else {
+        const previewNotify = this.props.notify({
+          title: 'プレビュー結果を取得中',
+          message: 'プレビュー結果を取得しています',
+          status: 'loading',
+          dismissAfter: 0
+        })
         this.setState({
           loading: true
         })
-        APIUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
+        HttpUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
+          this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
             const uuid = response.data.name[0].uuid
             const label = response.data.name[0].id
             this.previewFromUUID(uuid, label)
           } else {
-            ErrorUtil.showError(this, response)
+            this.props.notify({
+              title: 'プレビューエラー',
+              message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+              status: 'error',
+              dismissAfter: 0,
+              closeButton: true
+            })
+            this.loading = false
+            this.forceUpdate()
           }
           this.setState({
             loading: false
           })
         }, (error) => {
-          console.log(error)
+          this.props.dismissNotify(previewNotify.id)
           if (!response.data.success) {
-            ErrorUtil.showError(this, error)
+            this.props.notify({
+              title: 'プレビューエラー',
+              message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+              status: 'error',
+              dismissAfter: 0,
+              closeButton: true
+            })
+            this.loading = false
+            this.forceUpdate()
           }
           this.setState({
             loading: false
@@ -192,6 +218,15 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
   onHide(){
     this.saveNodes()
+    this.saveFlowPorts()
+  }
+
+  /**
+   * データソースのIN/OUTを保存
+   *  */
+  saveFlowPorts(){
+    const {flow,notify,dismissNotify} = this.props
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
   }
 
   saveNodes(){
