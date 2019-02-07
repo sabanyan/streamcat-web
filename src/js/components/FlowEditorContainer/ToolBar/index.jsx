@@ -27,6 +27,8 @@ import StringUtil from '../../../utils/StringUtil'
 import ErrorUtil from '../../../utils/ErrorUtil'
 import Undo from './Undo'
 import Redo from './Redo'
+import Button from '../../shared/Button'
+import ReactDomUtil from '../../../utils/ReactDomUtil'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -65,51 +67,52 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   save (): Promise {
-    let {nodes,projectId,projectName} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+    let {nodes,projectId,projectName,notify,dismissNotify} = this.props
+    return FlowUtil.saveNodes(inject_flow_uuid,nodes,notify,dismissNotify)
   }
 
   run () {
-    return APIUtil.get("frames?from=" + inject_flow_uuid + "&no_contents=1")
+    let {notify,dismissNotify} = this.props
+    return FlowUtil.runNodes(inject_flow_uuid,notify,dismissNotify)
   }
 
   onClickProjectRun () {
     this.loading = true
-    this.loadingMessage = "フローを実行中です"
+    this.loadingMessage = ""
+
     this.forceUpdate()
     this.save().then(() => {
       this.run().then((response) => {
         if(response.data.success) {
           const json: RunResponseType = response.data
-
           const result = json.name.map((n) => {
             return <li>{n.id}</li>
           })
-
           const content = <div>
-            <div>フローの実行が完了し、以下のデータがライブラリに追加されました</div>
+            <div>ライブラリにフローの実行結果が追加されました。</div>
             <ul>{result}</ul>
           </div>
-          ModalUtil.registerModal({
-            id: Constants.modal.SHOW_RUN_RESULT, onClickDone: () => {
-              window.open("/library?project=" + window.navigationModel.project_uuid, "_blank");
-            }
-          })
-          ModalUtil.emitModal({
-            id: Constants.modal.SHOW_RUN_RESULT,
-            visible: true,
-            content: content
+
+          this.props.notify({
+            title: 'フロー実行完了',
+            message:ReactDomUtil.renderToString(content),
+            status: 'success',
+            dismissAfter: 0,
+            buttons:[{
+              name: "開く",
+              primary: true,
+              onClick:() => {
+                window.open("/library?project=" + window.navigationModel.project_uuid, "_blank");
+              }
+            }]
           })
           this.props.executeFlow()
-          this.loading = false
-          this.forceUpdate()
-        }else{
-          ErrorUtil.showError(this,response)
         }
+        this.loading = false
+        this.forceUpdate()
       },(error)=>{
-        if(!error.success){
-          ErrorUtil.showError(this,error)
-        }
+        this.loading = false
+        this.forceUpdate()
       })
     })
   }
