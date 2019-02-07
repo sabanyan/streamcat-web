@@ -208,7 +208,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     const selectedFiles:FileList =  e.target.files
     if(selectedFiles){
       const uploadFile:File = selectedFiles[0]
-      HttpUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
+      APIUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
         const {success} = response.data
         const json = response.data
         if(success){

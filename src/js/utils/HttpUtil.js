@@ -55,18 +55,6 @@ class HTTPUtil {
     return axios.delete(url, data, merged_config)
   }
 
-  fileupload(file:File,fileName:string){
-    const options = {
-      headers: { 'enctype': 'multipart/form-data' }
-    }
-
-    let formData:FormData = new FormData();
-    formData.append('file', file)
-    formData.append('file_name', fileName)
-
-    return this.post('frames', formData,options)
-  }
-
   getURLParam(paramName:string){
     var url_string = window.location.href
     var url = new URL(url_string);
