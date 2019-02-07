@@ -843,25 +843,27 @@ class McalOld(MCommand):
 class Mcat(MCommandNew):
     def __init__(self):
         super().__init__(nm.m2cat)
-
         self.name = 'mcat'
         self.description = 'ファイル結合'
         self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
         self.params.append(Parameter('k', '結合する列名'))
 
-    def execute(self, args, inputs):
-        # args_for_nysol = args
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
 
-        # m2catはなんのパラメータがあるかわからないので（少なくともmcatとは違う）
-        args_for_nysol = {}
         inputs_for_arg_i = []
         for key, input in inputs.items():
-            inputs_for_arg_i.append(input.source.nysol_module)
+            if isinstance(input.source, PathFileSource):
+                # 一度nysol_module化する
+                f = None
+                f <<= nm.m2cat(i=input.source.fullpath.as_posix())
+                inputs_for_arg_i.append(f)
+            elif isinstance(input_i.source, NysolPythonSource):
+                inputs_for_arg_i.append(input.source.nysol_module)
         args_for_nysol.update({'i': inputs_for_arg_i})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class McatOld(MCommand):
     def __init__(self):
