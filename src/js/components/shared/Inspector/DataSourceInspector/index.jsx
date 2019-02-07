@@ -215,6 +215,15 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
   onHide(){
     this.saveNodes()
+    this.saveFlowPorts()
+  }
+
+  /**
+   * データソースのIN/OUTを保存
+   *  */
+  saveFlowPorts(){
+    const {flow,notify,dismissNotify} = this.props
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
   }
 
   saveNodes(){
