@@ -12,6 +12,8 @@ setup(
         'pandas',
         'sklearn',
         'matplotlib',
-        'bs4'
+        'bs4',
+        'holoviews',
+        'bokeh'
     ],
 )
