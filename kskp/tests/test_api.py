@@ -1299,6 +1299,7 @@ class ApiTestCase(unittest.TestCase):
                 # jobsの削除
                 os.remove(path)
 
+    @unittest.skip
     def test_visualizers_csvtohtmltable(self):
         """
         visualizers APIをテストする。
@@ -1357,6 +1358,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/data/frames/%s.csv' % frame_uuid_1)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_linegraph(self):
         """
         visualizers APIをテストする。
@@ -1410,6 +1412,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_histogram(self):
         """
         visualizers APIをテストする。
@@ -1464,6 +1467,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_scatter(self):
         """
         visualizers APIをテストする。
