@@ -117,6 +117,41 @@ class ApiTestCase(unittest.TestCase):
             projects_after = model.get_all_projects()
             self.assertEqual(len(projects_after), 0)
 
+    def test_update_project(self):
+        with app.app_context():
+            (user1, project_id, project_uuid) = setUpProject(self)
+
+            # 更新前のプロジェクト名を調べる
+            projects_before = model.get_all_projects()
+            self.assertEqual(len(projects_before), 1)
+            uuid = projects_before[0]['uuid']
+
+            name = projects_before[0]['name']
+            new_name = "変更後のプロジェクト名"
+
+            with app.test_client() as client:
+                with client.session_transaction() as session:
+                    session['user_id'] = user1
+
+                data = {
+                    "project":{
+                        "new_name": new_name,
+                        "description": ""
+                    }
+                }
+                response = client.put('/api/v0/projects/%s' % uuid,
+                                    content_type='application/json',
+                                    data=json.dumps(data)
+                                    )
+
+                result = json.loads(response.get_data())
+
+                self.assertEqual(result['success'], True)
+
+            # 削除後のプロジェクトの数を調べる
+            projects_after_name = model.get_project_name_by_uuid(uuid)
+            self.assertEqual(projects_after_name, new_name)
+
     def test_new_flow(self):
         """
         new_flow APIをテストする
