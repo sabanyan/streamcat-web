@@ -432,7 +432,12 @@ def fetch_frame(frame_uuid):
     limit = int(request.args.get('limit')) if request.args.get('limit') else None
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
-    return jsonify({'success': True, 'data': csv_to_frame(file_path, offset=offset, limit=limit)})
+    result = csv_to_frame(file_path, offset=offset, limit=limit)
+
+    if request.args.get('header_only') == '1':
+        result = [columns for columns in result['contents']]
+
+    return jsonify({'success': True, 'data': result})
 
 def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     """
