@@ -71,12 +71,12 @@ def get_projects():
 @api.route('/projects/<project_uuid>', methods=['PUT'])
 # @login_required_api
 # @update_navigation
-def update_projects(project_uuid):
+def update_project(project_uuid):
     """
     指定したプロジェクトを更新する
     現在はプロジェクト名のみ
     """
-    project_info = request.json.get('project')
+    project_info = request.json
     new_project_name = project_info.get('new_name')
     rename_project_by_uuid(project_uuid, new_project_name)
 

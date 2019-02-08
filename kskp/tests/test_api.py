@@ -134,10 +134,8 @@ class ApiTestCase(unittest.TestCase):
                     session['user_id'] = user1
 
                 data = {
-                    "project":{
-                        "new_name": new_name,
-                        "description": ""
-                    }
+                    "new_name": new_name,
+                    "description": ""
                 }
                 response = client.put('/api/v0/projects/%s' % uuid,
                                     content_type='application/json',
