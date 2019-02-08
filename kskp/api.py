@@ -71,8 +71,8 @@ def get_projects():
     return jsonify({'success': True, 'data': projects})
 
 @api.route('/projects/<project_uuid>', methods=['PUT'])
-# @login_required_api
-# @update_navigation
+@login_required_api
+@update_navigation
 def update_project(project_uuid):
     """
     指定したプロジェクトを更新する
