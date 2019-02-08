@@ -9,6 +9,7 @@ from .model import (
     start_project,
     get_projects_by_user_id,
     delete_project_by_uuid,
+    rename_project_by_uuid,
     get_project_id_by_uuid,
     create_flow,
     delete_flow_by_uuid,
@@ -69,6 +70,19 @@ def get_projects():
 
     return jsonify({'success': True, 'data': projects})
 
+@api.route('/projects/<project_uuid>', methods=['PUT'])
+# @login_required_api
+# @update_navigation
+def update_project(project_uuid):
+    """
+    指定したプロジェクトを更新する
+    現在はプロジェクト名のみ
+    """
+    project_info = request.json
+    new_project_name = project_info.get('new_name')
+    rename_project_by_uuid(project_uuid, new_project_name)
+
+    return jsonify({'success': True})
 
 @api.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
@@ -476,7 +490,7 @@ def upload_frame(file, file_name):
     return {"uuid": frame_uuid, "label": file_name}
 
 @api.route('/files')
-def download_frame():
+def download_file():
     # 現在typeは未使用
     type = request.args.get('type')
     frame_uuid = request.args.get('uuid')
