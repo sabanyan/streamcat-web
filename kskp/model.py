@@ -184,7 +184,6 @@ def get_projects_by_user_id(user_id, search_string=None):
 
     return query_db(sql, args)
 
-
 def delete_project_by_uuid(project_uuid):
     """
     プロジェクトを削除する(uuidが基準)
@@ -192,8 +191,7 @@ def delete_project_by_uuid(project_uuid):
     sql = 'DELETE FROM projects WHERE uuid = ?'
     query_db(sql, (project_uuid,))
 
-
-def rename_project(project_uuid, new_name):
+def rename_project_by_uuid(project_uuid, new_name):
     """
     プロジェクトの名前を変更する
     """
@@ -206,6 +204,7 @@ def fecth_project(project_id):
     """
     sql = 'SELECT uuid, name FROM projects WHERE id = ?'
     return query_db(sql, (project_id,), one=True)
+
 
 def create_flow(request_json, user_id, data_source_name=None):
     """
