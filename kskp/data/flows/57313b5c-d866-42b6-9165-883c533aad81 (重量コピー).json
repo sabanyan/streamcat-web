@@ -58,12 +58,12 @@
       "id": "d2",
       "type": "frame",
       "label": "d2",
-      "uuid": "80a5b7dc-8a52-4812-a77d-64794c497b1d",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 1521,
+        "x": 1519,
         "y": 190
       },
       "size": {
@@ -89,8 +89,8 @@
     },
     {
       "position": {
-        "x": 1903.5,
-        "y": 108.5
+        "x": 1912,
+        "y": 99
       },
       "size": {
         "width": 38,
@@ -101,7 +101,7 @@
       "id": "ダミー3 (8 番目のコピー).csv",
       "type": "frame",
       "label": "ダミー3 (8 番目のコピー).csv",
-      "uuid": "8f79ede0-de52-4b2d-9d5f-639c9217eab1",
+      "uuid": "5bccffd2-09e5-4f8c-a279-c35099c95691",
       "dataSource": "csv"
     },
     {
@@ -118,7 +118,7 @@
       "id": "d3",
       "type": "frame",
       "label": "d3",
-      "uuid": "4c10018e-e562-4b1e-a79e-93dc4ab785a6",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
@@ -178,7 +178,7 @@
       "id": "d4",
       "type": "frame",
       "label": "d4",
-      "uuid": "1e341011-bbb6-4434-940c-0c8639727344",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
@@ -238,7 +238,7 @@
       "id": "d1",
       "type": "frame",
       "label": "d1",
-      "uuid": "842bd4df-58c9-4e96-8f66-cd12d4c2c1f0",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
@@ -283,7 +283,7 @@
       "id": "d5",
       "type": "frame",
       "label": "d5",
-      "uuid": "e822924f-2ed2-459c-a1e0-af8d09a38bcc",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
@@ -316,7 +316,7 @@
     },
     {
       "position": {
-        "x": 3620,
+        "x": 3621,
         "y": 98
       },
       "size": {
@@ -345,7 +345,7 @@
       "id": "d6",
       "type": "frame",
       "label": "d6",
-      "uuid": "f3f91341-0fe7-4039-a115-49afbe650198",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
@@ -395,8 +395,8 @@
     },
     {
       "position": {
-        "x": 2717.5,
-        "y": 102.5
+        "x": 2722,
+        "y": 99
       },
       "size": {
         "width": 38,
@@ -407,7 +407,7 @@
       "id": "ダミー3 (13 番目のコピー).csv",
       "type": "frame",
       "label": "ダミー3 (13 番目のコピー).csv",
-      "uuid": "020f5e3f-8df7-4c8d-b519-240c212bb60e",
+      "uuid": "d22d1ed9-f8c1-4b75-987c-2b2143dec39d",
       "dataSource": "csv"
     },
     {
@@ -424,7 +424,7 @@
       "id": "d7",
       "type": "frame",
       "label": "d7",
-      "uuid": "d505a204-c28b-4dab-a1de-c9f345f23fa0",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
@@ -452,155 +452,6 @@
         "p": "/home/kskp/KSKP_trial"
       },
       "commandId": "merge_ibutsu"
-    },
-    {
-      "position": {
-        "x": 2717.5,
-        "y": 102.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "ダミー3 (13 番目のコピー).csv",
-      "type": "frame",
-      "label": "ダミー3 (13 番目のコピー).csv",
-      "uuid": "020f5e3f-8df7-4c8d-b519-240c212bb60e",
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 1903.5,
-        "y": 108.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "ダミー3 (8 番目のコピー).csv",
-      "type": "frame",
-      "label": "ダミー3 (8 番目のコピー).csv",
-      "uuid": "8f79ede0-de52-4b2d-9d5f-639c9217eab1",
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 279.5,
-        "y": 106.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "ダミー3 (12 番目のコピー).csv",
-      "type": "frame",
-      "label": "ダミー3 (12 番目のコピー).csv",
-      "uuid": "784dff5f-b773-4467-92c2-8423bb1b4cd3",
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 274.5,
-        "y": 283.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "d8",
-      "type": "frame",
-      "label": "【組立PIR】S1",
-      "uuid": "0ae9b60e-2b09-4310-9913-2895f52bf973",
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 279.5,
-        "y": 200.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "c8",
-      "type": "command",
-      "label": "c8",
-      "srcs": {
-        "i": "ダミー3 (12 番目のコピー).csv"
-      },
-      "dsts": {
-        "o": "d8"
-      },
-      "args": {
-        "f": "組立PIR.csv",
-        "p": "/home/kskp/KSKP_trial/4_Buzai"
-      },
-      "commandId": "windows_cp932_csv_read"
-    },
-    {
-      "position": {
-        "x": 449.5,
-        "y": 286.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "type": "frame",
-      "id": "d9",
-      "label": "d9",
-      "uuid": "54df7721-cd8b-4826-ab4d-48c4fd4a127d",
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 366.5,
-        "y": 286.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "type": "command",
-      "id": "c9",
-      "label": "c9",
-      "srcs": {
-        "i": "d8"
-      },
-      "dsts": {
-        "o": "d9"
-      },
-      "args": {
-        "s": "",
-        "from": "",
-        "to": "",
-        "size": "2",
-        "k": "",
-        "r": false,
-        "R": "",
-        "assert_diffSize": false,
-        "assert_nullkey": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "q": true,
-        "tmpPath": ""
-      },
-      "commandId": "mbest"
     }
   ]
 }

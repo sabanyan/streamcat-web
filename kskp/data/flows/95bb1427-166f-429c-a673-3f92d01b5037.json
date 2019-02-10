@@ -8,5 +8,220 @@
   "params": [],
   "description": "",
   "creator": "開発用",
-  "createdAt": "2019-02-01 12:47:14"
+  "createdAt": "2019-02-01 12:47:14",
+  "nodes": [
+    {
+      "position": {
+        "x": 352,
+        "y": 140.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1.csv",
+      "type": "frame",
+      "label": "d1.csv",
+      "uuid": "37a6cf77-661b-49d4-98fc-3003848184e5",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 426,
+        "y": 235.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "d1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 351,
+        "y": 230.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "ID付与",
+      "srcs": {
+        "i": "d1.csv"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "a": "ID",
+        "e": "",
+        "I": "",
+        "k": "",
+        "s": "",
+        "S": "",
+        "B": false,
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": true,
+        "tmpPath": ""
+      },
+      "commandId": "mnumber"
+    },
+    {
+      "position": {
+        "x": 428,
+        "y": 296.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "label": "d2",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 350,
+        "y": 295.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "列順変更",
+      "srcs": {
+        "i": "d1"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "f": "ID,*"
+      },
+      "commandId": "column_name"
+    },
+    {
+      "position": {
+        "x": 543,
+        "y": 140.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d3",
+      "type": "frame",
+      "label": "d3",
+      "uuid": "fec2e9f4-38ce-48a5-8e63-8208a2519fe9",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 445,
+        "y": 138.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "c3",
+      "srcs": {
+        "i": "d1.csv"
+      },
+      "dsts": {
+        "o": "d3"
+      },
+      "args": {
+        "a": "",
+        "diag": true,
+        "r": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mchkcsv"
+    },
+    {
+      "position": {
+        "x": 428,
+        "y": 384.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d4",
+      "type": "frame",
+      "label": "d4",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 352,
+        "y": 388.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c4",
+      "type": "command",
+      "label": "行複写",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d4"
+      },
+      "args": {
+        "f": "",
+        "n": "2",
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mduprec"
+    }
+  ]
 }
