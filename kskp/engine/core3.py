@@ -648,7 +648,7 @@ class Mcat(MCommandNew):
                 f = None
                 f <<= nm.m2cat(i=input.source.fullpath.as_posix())
                 inputs_for_arg_i.append(f)
-            elif isinstance(input_i.source, NysolPythonSource):
+            elif isinstance(input.source, NysolPythonSource):
                 inputs_for_arg_i.append(input.source.nysol_module)
         args_for_nysol.update({'i': inputs_for_arg_i})
 
