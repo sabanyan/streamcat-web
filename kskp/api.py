@@ -230,7 +230,8 @@ def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     詳細情報なども含んだframeを表すdictを返す
     """
     result = {}
-    contents, number_of_lines = load_as_data_frame(file_path.read_text(encoding='utf-8'), offset, limit)
+    contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
+
     if not no_contents:
         result['contents'] = contents
     result['numberOfLines'] = number_of_lines
@@ -680,32 +681,57 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False):
     return result_list
 
 
-def load_as_data_frame(result_text, offset, limit):
+def load_as_data_frame(path_obj, offset, limit):
     """
     CSVの文字列を受け取り、
     いわゆるデータフレームの形式にして返す
+    TODO: offsetはつかってない
     """
-    result_list = [x for x in result_text.split('\n') if x != '']
-    result_len = len(result_list) - 1
+
+    # result_text ＝ path_obj.read_text()
+    # result_list = [x for x in result_text.split('\n') if x != '']
+    # result_len = len(result_list) - 1
+    
+    # if not result_list:
+    #     return result_data, 0
+
+    # # 重複文字があればインデックスをつける
+    # column_list = replace_column_name(result_list[0].split(','))
+
+    # # offset+1の1はヘッダを飛ばすため
+    # start = 1 + offset
+    # end = start + limit if limit is not None else result_len
+
+    # for record in result_list[start:end]:
+    #     for idx, column_data in enumerate(record.split(',')):
+    #         # print(column_list[idx])
+    #         result_data[column_list[idx]].append(column_data)
+
+    result_text = ''
     result_data = {}
+    column_list = []
+    with path_obj.open(encoding='utf-8') as f:
+        n = 0
+        for line in f.readlines():
+            if n > limit:
+                break
 
-    if not result_list:
-        return result_data, 0
+            if n == 0:
+                # 一行目はヘッダとみなす
+                # 重複文字があればインデックスをつける
+                column_list = replace_column_name(line.split(','))
+                for column_name in column_list:
+                    result_data[column_name] = []
+            else:                
+                for idx, column_data in enumerate(line.split(',')):
+                    result_data[column_list[idx]].append(column_data)
 
-    # 重複文字があればインデックスをつける
-    column_list = replace_column_name(result_list[0].split(','))
+            n += 1
 
-    for column_name in column_list:
-        result_data[column_name] = []
+    if n == 0:
+        raise Exception('空のCSVを読み込みました。コマンド実行時にエラーが発生した可能性があります。')
 
-    # offset+1の1はヘッダを飛ばすため
-    start = 1 + offset
-    end = start + limit if limit is not None else result_len
-
-    for record in result_list[start:end]:
-        for idx, column_data in enumerate(record.split(',')):
-            # print(column_list[idx])
-            result_data[column_list[idx]].append(column_data)
+    result_len = n
 
     # 行数も返すように変更
     return result_data, result_len
