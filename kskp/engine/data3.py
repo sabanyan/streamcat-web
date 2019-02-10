@@ -122,18 +122,18 @@ class NysolPythonSource(Source):
             # http://localhost:5000/flows/20190201_2047_Omron_S1_light
 
             # res = io.StringIO()
-            # with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
-            #     self.process_flow.run()
-            with io.StringIO() as messages_mem:
-                with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=messages_mem):
-                    self.process_flow.run()
+            with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
+                self.process_flow.run()
+            # with io.StringIO() as messages_mem:
+            #     with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=messages_mem):
+            #         self.process_flow.run()
 
-                    messages = messages_mem.getvalue()
+            #         messages = messages_mem.getvalue()
 
-                    if '#ERROR#' in messages:
-                        content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
-                        err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
-                        raise err
+            #         if '#ERROR#' in messages:
+            #             content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
+            #             err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
+            #             raise err
 
         # except Exception as e:
         #     if res is not None:
