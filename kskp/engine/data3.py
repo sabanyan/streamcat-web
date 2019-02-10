@@ -111,6 +111,16 @@ class NysolPythonSource(Source):
             mod = self.mod(args)
             self.process_flow <<= mod
 
+            # 環境変数を設定する
+            os.environ['KG_TmpPath'] = '/home/kskp/kskp/data/tmp'
+            # デフォルトの4倍で設定する
+            os.environ['KG_MaxRecLen'] = '40960000'
+            os.environ['KG_iSize'] = '20480000'
+            os.environ['KG_iSize'] = '10240000'
+            os.environ['KG_BlockCount'] = '1280'
+            # sudo docker run -m 32g -e FLASK_ENV=development -u kskp -v "$(pwd)"/kskp:/home/kskp/kskp -v /home/kskp-trial/KSKP_trial:/home/kskp/KSKP_trial -p 5000:5000 --name kskp-trial kskp-trial "flask run -h 0.0.0.0 -p ${PORT:-5000}"
+            # http://localhost:5000/flows/20190201_2047_Omron_S1_light
+
             # res = io.StringIO()
             # with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
             #     self.process_flow.run()
