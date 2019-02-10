@@ -1,12 +1,12 @@
 {
   "projectId": 6,
-  "label": "メインテストVer1",
+  "label": "OMRON_障害確認用_ヘッダ不正時挙動",
   "ports": [
     [],
     []
   ],
   "params": [],
-  "description": "",
+  "description": "列名重複時に、重大障害発生する\n\n推測：MCMDエラー発生時の挙動と推測\n\n症状：巨大なデータで、\n            重複列名で処理できない時、\n            処理が終了せず、\n            メモリ、スワップ増大しゾンビ状態に陥る\n\nトリガ：2コマンド試行で再現\n      (1)  mbest  -q size=2\n       (2) mcel    c='line()<2'\n\n",
   "creator": "開発用",
   "createdAt": "2019-02-01 14:56:58",
   "nodes": [
@@ -549,8 +549,8 @@
     },
     {
       "position": {
-        "x": 449.5,
-        "y": 286.5
+        "x": 463.5,
+        "y": 283.5
       },
       "size": {
         "width": 38,
@@ -558,16 +558,16 @@
       },
       "invalid": {},
       "error": {},
-      "type": "frame",
       "id": "d9",
+      "type": "frame",
       "label": "d9",
       "uuid": "54df7721-cd8b-4826-ab4d-48c4fd4a127d",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 366.5,
-        "y": 286.5
+        "x": 378.5,
+        "y": 282.5
       },
       "size": {
         "width": 38,
@@ -575,9 +575,9 @@
       },
       "invalid": {},
       "error": {},
-      "type": "command",
       "id": "c9",
-      "label": "c9",
+      "type": "command",
+      "label": "先頭確認",
       "srcs": {
         "i": "d8"
       },
@@ -595,6 +595,111 @@
         "assert_diffSize": false,
         "assert_nullkey": false,
         "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": true,
+        "tmpPath": ""
+      },
+      "commandId": "mbest"
+    },
+    {
+      "position": {
+        "x": 1716,
+        "y": 265
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d10",
+      "type": "frame",
+      "label": "d10",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1622,
+        "y": 269
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c10",
+      "type": "command",
+      "label": "CSV検査",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d10"
+      },
+      "args": {
+        "a": "",
+        "diag": true,
+        "r": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mchkcsv"
+    },
+    {
+      "position": {
+        "x": 1715,
+        "y": 342
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d11",
+      "type": "frame",
+      "label": "d11",
+      "uuid": "3480b263-7e16-42be-8d4b-64fe59a47adb",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1622,
+        "y": 337
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c11",
+      "type": "command",
+      "label": "mbest",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d11"
+      },
+      "args": {
+        "s": "",
+        "from": "",
+        "to": "",
+        "size": "2",
+        "k": "",
+        "r": false,
+        "R": "",
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "nfn": true,
         "nfno": false,
         "x": false,
         "q": true,

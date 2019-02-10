@@ -1,6 +1,6 @@
 {
   "projectId": 6,
-  "label": "メインテストVer1",
+  "label": "OMRON_納品用",
   "ports": [
     [],
     []
@@ -12,8 +12,8 @@
   "nodes": [
     {
       "position": {
-        "x": 3115,
-        "y": 97
+        "x": 3290,
+        "y": 201
       },
       "size": {
         "width": 38,
@@ -23,14 +23,14 @@
       "error": {},
       "id": "ダミー.csv",
       "type": "frame",
-      "label": "ダミー.csv",
+      "label": "ダミー",
       "uuid": "79941279-0ceb-4aa7-b5ac-02b527e4987a",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 1516,
-        "y": 97
+        "x": 1616,
+        "y": 193
       },
       "size": {
         "width": 38,
@@ -40,14 +40,14 @@
       "error": {},
       "id": "ダミー2.csv",
       "type": "frame",
-      "label": "ダミー2.csv",
+      "label": "ダミー",
       "uuid": "a957f01e-096c-487c-b24c-b746cb4c28e3",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 1516,
-        "y": 272
+        "x": 1517,
+        "y": 286
       },
       "size": {
         "width": 38,
@@ -57,7 +57,7 @@
       "error": {},
       "id": "d2",
       "type": "frame",
-      "label": "d2",
+      "label": "【検査　ver1 0001】 S1",
       "uuid": "80a5b7dc-8a52-4812-a77d-64794c497b1d",
       "dataSource": "csv"
     },
@@ -74,7 +74,7 @@
       "error": {},
       "id": "c2",
       "type": "command",
-      "label": "v1_0001",
+      "label": "集約",
       "srcs": {
         "i": "ダミー2.csv"
       },
@@ -89,8 +89,8 @@
     },
     {
       "position": {
-        "x": 1903.5,
-        "y": 108.5
+        "x": 2027.5,
+        "y": 197.5
       },
       "size": {
         "width": 38,
@@ -100,14 +100,14 @@
       "error": {},
       "id": "ダミー3 (8 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (8 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "8f79ede0-de52-4b2d-9d5f-639c9217eab1",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 1912,
-        "y": 275
+        "x": 1938,
+        "y": 287
       },
       "size": {
         "width": 38,
@@ -117,14 +117,14 @@
       "error": {},
       "id": "d3",
       "type": "frame",
-      "label": "d3",
+      "label": "【検査　ver1 0002】S1",
       "uuid": "4c10018e-e562-4b1e-a79e-93dc4ab785a6",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 1912,
-        "y": 193
+        "x": 1935,
+        "y": 195
       },
       "size": {
         "width": 38,
@@ -134,7 +134,7 @@
       "error": {},
       "id": "c3",
       "type": "command",
-      "label": "v1_0002",
+      "label": "集約",
       "srcs": {
         "i": "ダミー3 (8 番目のコピー).csv"
       },
@@ -149,8 +149,8 @@
     },
     {
       "position": {
-        "x": 2427,
-        "y": 100
+        "x": 2461,
+        "y": 198
       },
       "size": {
         "width": 38,
@@ -160,14 +160,14 @@
       "error": {},
       "id": "ダミー3 (7 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (7 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "1a8c847b-d300-4363-a7b7-cd9dea7c175e",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 2426,
-        "y": 294
+        "x": 2368,
+        "y": 295
       },
       "size": {
         "width": 38,
@@ -177,13 +177,13 @@
       "error": {},
       "id": "d4",
       "type": "frame",
-      "label": "d4",
+      "label": "【検査 ver2 0001】S1",
       "uuid": "1e341011-bbb6-4434-940c-0c8639727344",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 2427,
+        "x": 2365,
         "y": 196
       },
       "size": {
@@ -194,7 +194,7 @@
       "error": {},
       "id": "c4",
       "type": "command",
-      "label": "v2_0001",
+      "label": "集約",
       "srcs": {
         "i": "ダミー3 (7 番目のコピー).csv"
       },
@@ -209,8 +209,8 @@
     },
     {
       "position": {
-        "x": 4059,
-        "y": 95
+        "x": 4166,
+        "y": 194
       },
       "size": {
         "width": 38,
@@ -220,14 +220,14 @@
       "error": {},
       "id": "ダミー3 (6 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (6 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "4c901e18-5968-4951-8d53-c651ef44c02a",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 3118,
-        "y": 291
+        "x": 3194,
+        "y": 307
       },
       "size": {
         "width": 38,
@@ -237,14 +237,14 @@
       "error": {},
       "id": "d1",
       "type": "frame",
-      "label": "d1",
+      "label": "【組立SPC＃1】S1",
       "uuid": "842bd4df-58c9-4e96-8f66-cd12d4c2c1f0",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 3116,
-        "y": 200
+        "x": 3191,
+        "y": 198
       },
       "size": {
         "width": 38,
@@ -254,7 +254,7 @@
       "error": {},
       "id": "c1",
       "type": "command",
-      "label": "FS_#1",
+      "label": "集約/クレンジング",
       "srcs": {
         "i": "ダミー.csv"
       },
@@ -282,7 +282,7 @@
       "error": {},
       "id": "d5",
       "type": "frame",
-      "label": "d5",
+      "label": "【仕上SPC】S1",
       "uuid": "e822924f-2ed2-459c-a1e0-af8d09a38bcc",
       "dataSource": "csv"
     },
@@ -299,7 +299,7 @@
       "error": {},
       "id": "c5",
       "type": "command",
-      "label": "FS_siage",
+      "label": "集約/クレンジング",
       "srcs": {
         "i": "ダミー3 (6 番目のコピー).csv"
       },
@@ -316,8 +316,8 @@
     },
     {
       "position": {
-        "x": 3620,
-        "y": 98
+        "x": 3715,
+        "y": 204
       },
       "size": {
         "width": 38,
@@ -327,7 +327,7 @@
       "error": {},
       "id": "ダミー3 (5 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (5 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "62132088-b66b-4c5b-b170-434154f4c11b",
       "dataSource": "csv"
     },
@@ -344,7 +344,7 @@
       "error": {},
       "id": "d6",
       "type": "frame",
-      "label": "d6",
+      "label": "【組立SPC＃2】S1",
       "uuid": "f3f91341-0fe7-4039-a115-49afbe650198",
       "dataSource": "csv"
     },
@@ -361,7 +361,7 @@
       "error": {},
       "id": "c6",
       "type": "command",
-      "label": "FS_#2",
+      "label": "集約/クレンジング",
       "srcs": {
         "i": "ダミー3 (5 番目のコピー).csv"
       },
@@ -378,8 +378,8 @@
     },
     {
       "position": {
-        "x": 4059,
-        "y": 95
+        "x": 4166,
+        "y": 194
       },
       "size": {
         "width": 38,
@@ -389,14 +389,14 @@
       "error": {},
       "id": "ダミー3 (6 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (6 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "4c901e18-5968-4951-8d53-c651ef44c02a",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 2717.5,
-        "y": 102.5
+        "x": 2890.5,
+        "y": 197.5
       },
       "size": {
         "width": 38,
@@ -406,14 +406,14 @@
       "error": {},
       "id": "ダミー3 (13 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (13 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "020f5e3f-8df7-4c8d-b519-240c212bb60e",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 2723,
-        "y": 275
+        "x": 2802,
+        "y": 304
       },
       "size": {
         "width": 38,
@@ -423,14 +423,14 @@
       "error": {},
       "id": "d7",
       "type": "frame",
-      "label": "d7",
+      "label": "【検査　ver2 0002】S1",
       "uuid": "d505a204-c28b-4dab-a1de-c9f345f23fa0",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 2723,
-        "y": 192
+        "x": 2800,
+        "y": 196
       },
       "size": {
         "width": 38,
@@ -440,7 +440,7 @@
       "error": {},
       "id": "c7",
       "type": "command",
-      "label": "v2_0002",
+      "label": "集約",
       "srcs": {
         "i": "ダミー3 (13 番目のコピー).csv"
       },
@@ -455,8 +455,8 @@
     },
     {
       "position": {
-        "x": 2717.5,
-        "y": 102.5
+        "x": 2890.5,
+        "y": 197.5
       },
       "size": {
         "width": 38,
@@ -466,14 +466,14 @@
       "error": {},
       "id": "ダミー3 (13 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (13 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "020f5e3f-8df7-4c8d-b519-240c212bb60e",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 1903.5,
-        "y": 108.5
+        "x": 2027.5,
+        "y": 197.5
       },
       "size": {
         "width": 38,
@@ -483,14 +483,14 @@
       "error": {},
       "id": "ダミー3 (8 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (8 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "8f79ede0-de52-4b2d-9d5f-639c9217eab1",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 279.5,
-        "y": 106.5
+        "x": 380.5,
+        "y": 200.5
       },
       "size": {
         "width": 38,
@@ -500,7 +500,7 @@
       "error": {},
       "id": "ダミー3 (12 番目のコピー).csv",
       "type": "frame",
-      "label": "ダミー3 (12 番目のコピー).csv",
+      "label": "ダミー",
       "uuid": "784dff5f-b773-4467-92c2-8423bb1b4cd3",
       "dataSource": "csv"
     },
@@ -523,7 +523,7 @@
     },
     {
       "position": {
-        "x": 279.5,
+        "x": 273.5,
         "y": 200.5
       },
       "size": {
@@ -534,7 +534,7 @@
       "error": {},
       "id": "c8",
       "type": "command",
-      "label": "c8",
+      "label": "インポート",
       "srcs": {
         "i": "ダミー3 (12 番目のコピー).csv"
       },
@@ -549,8 +549,143 @@
     },
     {
       "position": {
-        "x": 449.5,
-        "y": 286.5
+        "x": 3195,
+        "y": 548
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d9",
+      "type": "frame",
+      "label": "【組立SPC】S1_1",
+      "uuid": "f7884c72-3673-40e5-a37e-8d65e5cf514d",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3194,
+        "y": 455
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c9",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d1"
+      },
+      "dsts": {
+        "o": "d9"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 3632,
+        "y": 548
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d10",
+      "type": "frame",
+      "label": "【組立SPC#2】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3629,
+        "y": 454
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c10",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d6"
+      },
+      "dsts": {
+        "o": "d10"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 4064,
+        "y": 550
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d11",
+      "type": "frame",
+      "label": "【仕上SPC】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 4061,
+        "y": 451
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c11",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d5"
+      },
+      "dsts": {
+        "o": "d11"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 3383,
+        "y": 547
       },
       "size": {
         "width": 38,
@@ -559,15 +694,15 @@
       "invalid": {},
       "error": {},
       "type": "frame",
-      "id": "d9",
-      "label": "d9",
-      "uuid": "54df7721-cd8b-4826-ab4d-48c4fd4a127d",
+      "id": "d12",
+      "label": "d12",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 366.5,
-        "y": 286.5
+        "x": 3297,
+        "y": 548
       },
       "size": {
         "width": 38,
@@ -576,19 +711,60 @@
       "invalid": {},
       "error": {},
       "type": "command",
-      "id": "c9",
-      "label": "c9",
+      "id": "c12",
+      "label": "c12",
       "srcs": {
-        "i": "d8"
+        "i": "d9"
       },
       "dsts": {
-        "o": "d9"
+        "o": "d12"
+      },
+      "args": {},
+      "commandId": "column_list"
+    }
+  ]
+}{
+      "position": {
+        "x": 3379,
+        "y": 624
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "type": "frame",
+      "id": "d13",
+      "label": "d13",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3293,
+        "y": 622
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "type": "command",
+      "id": "c13",
+      "label": "c13",
+      "srcs": {
+        "i": "d9"
+      },
+      "dsts": {
+        "o": "d13"
       },
       "args": {
         "s": "",
         "from": "",
         "to": "",
-        "size": "2",
+        "size": "",
         "k": "",
         "r": false,
         "R": "",
@@ -597,7 +773,7 @@
         "nfn": false,
         "nfno": false,
         "x": false,
-        "q": true,
+        "q": false,
         "tmpPath": ""
       },
       "commandId": "mbest"
