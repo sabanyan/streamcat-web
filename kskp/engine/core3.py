@@ -106,7 +106,7 @@ def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
 
 def parse_command_step(node_obj, args, srcs, dsts):
-    return Step(commands[node_obj['commandId']], args, srcs, dsts)
+    return Step(commands[node_obj['commandId']], args, srcs, dsts, node_obj['id'], node_obj['label'])
 
 
 class Job:
@@ -135,7 +135,11 @@ class Job:
                     last.is_temp = False
 
         elif s.is_command:
+            import sys
+            import time
+            sys.stderr.write('stt (' + time.strftime('%Y/%m/%d %H:%M:%S') + ') step[' + self.step.step_label + '(id: ' + self.step.step_id + ')]\n')
             output = cf.execute(self.step.args, self.inputs)
+            sys.stderr.write('end (' + time.strftime('%Y/%m/%d %H:%M:%S') + ')\n\n')
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
@@ -253,11 +257,15 @@ class Job:
 
 
 class Step:
-    def __init__(self, command_or_flow, args, srcs, dsts):
+    def __init__(self, command_or_flow, args, srcs, dsts, step_id='', step_label=''):
         self.command_or_flow = command_or_flow
         self.args = args
         self.srcs = srcs # {'in': 'd0'}
         self.dsts = dsts # {'out': 'd1'}
+
+        # for debug
+        self.step_id = step_id
+        self.step_label = step_label
 
     @property
     def is_command(self):
@@ -318,6 +326,15 @@ class UnixCommand(Command):
         self.o_ports = [{'name': 'o', 'type': 'frame'}]
 
     def execute(self, args, inputs):
+
+        # for debug
+        import sys
+        indent = '  '
+        sys.__stderr__.write(indent + self.name + ': <\n')
+        for k, i in inputs.items():
+            sys.__stderr__.write(indent + '  [' + k + ']: ' + (repr(i))[:80] + '\n')
+        sys.__stderr__.write(indent + '>\n')
+
         source = self.source(args, inputs)
         for input in inputs.values():
             if isinstance(input.source, PathFileSource):

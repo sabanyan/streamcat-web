@@ -134,7 +134,8 @@ class NysolPythonSource(Source):
         #         print('exception:', e)
         #         raise e
         finally:
-            print('final!!!')
+            import time
+            print('final!!! time:', time.ctime())
 
     def __repr__(self):
         return f'args: {self.args}'
