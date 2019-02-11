@@ -52,6 +52,11 @@ def parse_job(obj, flow_uuid, args, srcs, dsts, inputs):
 
 def parse_flow(obj, flow_uuid):
     flow = Flow(flow_uuid)
+
+    # for debug
+    if 'label' in obj:
+        flow.label = obj['label']
+
     for param in obj['params']:
         flow.params.append(Parameter(param['name']))
     flow.i_ports = obj['ports'][0]
@@ -78,6 +83,10 @@ def parse_datum(node_obj):
         datum.is_temp = False
     else:
         datum = Frame()
+
+    if 'label' in node_obj:
+        datum.label = node_obj['label']
+
     return datum
 
 def parse_nodes(obj):
@@ -106,7 +115,10 @@ def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
 
 def parse_command_step(node_obj, args, srcs, dsts):
-    return Step(commands[node_obj['commandId']], args, srcs, dsts, node_obj['id'], node_obj['label'])
+    label = ''
+    if 'label' in node_obj:
+        label = node_obj['label']
+    return Step(commands[node_obj['commandId']], args, srcs, dsts, node_obj['id'], label)
 
 
 class Job:
@@ -179,7 +191,13 @@ class Job:
     def get_datum(self, datum_id, datum):
         if datum.uuid is not None: return datum
 
-        job, port = self.src_job_from(datum_id)
+        src = self.src_job_from(datum_id)
+        if src is None:
+            flow = self.step.command_or_flow
+            sys.__stderr__.write(f'empty and starting data node: {flow.uuid}.{datum_id}\n')
+            raise Exception(f'フロー({flow.label} uuid: {flow.uuid})のノード[{datum.label}]にデータが存在しません。単体の空データは削除してください。')
+
+        job, port = src
 
         self.expand_args(job)
         job.inputs = job.check_inputs(self.inputs_of(job))
@@ -296,6 +314,8 @@ class Flow:
         self.i_ports = []
         self.o_ports = []
         self.description = ''
+
+        self.label = '' # for debug
 
     def __repr__(self):
         return f'<Flow uuid:{self.uuid}>'

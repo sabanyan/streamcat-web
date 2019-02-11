@@ -353,6 +353,7 @@ class Frame(Datum):
 
     def __init__(self, frame_uuid=None, source=None):
         super().__init__(frame_uuid, source)
+        self.label = '' # for debug
 
     def command_to_file(self):
         if self.source is not None and not isinstance(self.source, PathFileSource):
