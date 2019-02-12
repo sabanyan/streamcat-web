@@ -227,6 +227,11 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         </label>
       </div>
     </div>
+    const flowCacheCheckForm = <div className={style.flowCacheCheck}>
+      <div>
+        <label><input type="checkbox" checked=""/></label>
+      </div>
+    </div>
 
     let content
 
@@ -286,6 +291,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
               </div>
               <div className={style.overview_value}>
                 {flowInOutForm}
+              </div>
+            </div>
+            <div className={style.overview}>
+              <div className={style.overview_label}>
+                結果をキャッシュ
+              </div>
+              <div className={style.overview_value}>
+                {flowCacheCheckForm}
               </div>
             </div>
           </div>
