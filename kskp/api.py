@@ -181,7 +181,7 @@ def execute_subflow():
     # executeの引数
     # no_contentsも入れれるけど、今はまぁいいか
     inputs = {}
-    args = json.loads(request.form.get('args')) if request.form.get('args') is not None else {}
+    args = json.loads(request.form.get('args')) if request.form.get('args') else {}
 
     upload_file_list = []
 
