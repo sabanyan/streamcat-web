@@ -182,6 +182,24 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
   }
 
+  onChangeCacheCheck (e: Event) {
+    let flow:FlowModel = this.props.flow
+
+    const cacheChecked = this.refs.cache.checked
+
+    let selected_step = this.getSelectedStep()
+
+    const cache = {name:selected_step.id}
+
+    if (cacheChecked) {
+      flow.setCache(cache)
+    } else {
+      flow.deleteCacheWithId(selected_step.id)
+    }
+
+    this.props.updateFlow(flow)
+  }
+
   getSelectedStep ():StepModelType {
     let {selected_step_ids, nodes} = this.props
     return Graph.getNode(nodes,selected_step_ids[0])
@@ -229,7 +247,10 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     </div>
     const flowCacheCheckForm = <div className={style.flowCacheCheck}>
       <div>
-        <label><input type="checkbox" checked=""/></label>
+        <label><input type="checkbox" checked={flow.hasCacheWithId(selected_step.id)?"checked":""}
+                ref={'cache'}
+                onChange={(e) => this.onChangeCacheCheck(e)}/>
+        </label>
       </div>
     </div>
 
