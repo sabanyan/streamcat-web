@@ -226,15 +226,17 @@ export default class FlowUtil {
    * @param description
    * @param params
    * @param ports
+   * @param cache
    * @returns {Promise<any>}
    */
-  static saveFlowSettings (flowUUID:string,{label,description,params,ports},notify:Function,dismissNotify:Function):any {
+  static saveFlowSettings (flowUUID:string,{label,description,params,ports,caches},notify:Function,dismissNotify:Function):any {
     let putBody = {}
     if(label)putBody["label"]=label
     if(description)putBody["description"]=description
     if(params)putBody["params"]=params
     if(ports)putBody["ports"]=ports
-
+    if(caches)putBody["caches"]=caches
+    
     let saveNotify
     if(notify){
       saveNotify = notify({

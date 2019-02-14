@@ -211,6 +211,24 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
   }
 
+  onChangeCacheCheck (e: Event) {
+    let flow:FlowModel = this.props.flow
+
+    const cacheChecked = this.refs.cache.checked
+
+    let selected_step = this.getSelectedStep()
+
+    const cache = {name:selected_step.id,type: selected_step.type}
+
+    if (cacheChecked) {
+      flow.setCache(cache)
+    } else {
+      flow.deleteCacheWithId(selected_step.id)
+    }
+
+    this.props.updateFlow(flow)
+  }
+
   getSelectedStep ():StepModelType {
     let {selected_step_ids, nodes} = this.props
     return Graph.getNode(nodes,selected_step_ids[0])
@@ -226,7 +244,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
    *  */
   saveFlowPorts(){
     const {flow,notify,dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports, caches:flow.caches}, notify, dismissNotify)
   }
 
   saveNodes(){
@@ -262,6 +280,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
                ref={'flowOut'}
                onChange={(e) => this.onChangeFlowInOut(e)} />
         &nbsp;出力
+        </label>
+      </div>
+    </div>
+    const flowCacheCheckForm = <div className={style.flowCacheCheck}>
+      <div>
+        <label><input type="checkbox" checked={flow.hasCacheWithId(selected_step.id)?"checked":""}
+                ref={'cache'}
+                onChange={(e) => this.onChangeCacheCheck(e)}/>
         </label>
       </div>
     </div>
@@ -324,6 +350,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
               </div>
               <div className={style.overview_value}>
                 {flowInOutForm}
+              </div>
+            </div>
+            <div className={style.overview}>
+              <div className={style.overview_label}>
+                結果をキャッシュ
+              </div>
+              <div className={style.overview_value}>
+                {flowCacheCheckForm}
               </div>
             </div>
           </div>
