@@ -8,6 +8,7 @@ export type FlowModelProps = {
   nodes: [],
   params: [],
   ports: [[],[]],
+  caches: [],
   projectId: ?number,
   description: string,
 }
@@ -18,6 +19,7 @@ export default class FlowModel<FlowModelProps> extends Model {
   label:string = ""
   params:[] = []
   ports:[[],[]] = [[],[]]
+  caches:[] = []
   nodes:[] = []
   projectId = null
   description = ""
@@ -29,6 +31,7 @@ export default class FlowModel<FlowModelProps> extends Model {
     this.initialize(props,"label")
     this.initialize(props,"params")
     this.initialize(props,"ports")
+    this.initialize(props,"caches")
     this.initialize(props,"nodes")
     this.initialize(props,"projectId")
     this.initialize(props,"description")
@@ -101,4 +104,40 @@ export default class FlowModel<FlowModelProps> extends Model {
     this.setPort(1,port)
   }
 
+  // 「結果をキャッシュ」にチェックを入れたノードリストを取得
+  getCaches(){
+    return this.caches
+  }
+
+  getCacheWithId(id){
+    const caches = this.getCaches()
+    return caches.find((cache) => {
+      return (cache.name === id)
+    })
+  }
+
+  hasCacheWithId(id){
+    return (this.getCacheWithId(id))?true:false
+  }
+
+  setCache(cache){
+    let caches = this.getCaches()
+    let hasUpdate = false
+    this.caches = caches.map((c)=>{
+      if(c.name === cache.name){
+        hasUpdate = true
+        return cache.name
+      }
+      return c
+    })
+
+    if(!hasUpdate)this.caches.push(cache)
+  }
+
+  deleteCacheWithId(id) {
+    let caches = this.getCaches()
+    this.caches = caches.filter((port)=>{
+      return (port.name !== id)
+    })
+  }
 }
