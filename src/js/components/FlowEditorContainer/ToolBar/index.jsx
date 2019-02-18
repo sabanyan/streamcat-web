@@ -29,6 +29,7 @@ import Undo from './Undo'
 import Redo from './Redo'
 import Button from '../../shared/Button'
 import ReactDomUtil from '../../../utils/ReactDomUtil'
+import Memo from './Memo'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -232,6 +233,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   onClickDefaultZoom(e:Event){
     this.props.setZoom({value:100})
   }
+  onClickMemo(e:Event) {
+  }
 
   render () {
     const {zoom} = this.props
@@ -255,7 +258,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
         <Undo disabled={undoDisabled} icon={"undo"} onClick={()=>this.props.undo()}>もとに戻す</Undo>
         <Redo disabled={redoDisabled} icon={"redo"} onClick={()=>this.props.redo()}>繰り返す</Redo>
-
+        <Memo disabled={false} icon={'comment'} onClick={(e)=>this.onClickMemo(e)}>メモ</Memo>
       </div>
       <div className={classnames(style.paper_toolbar)}>
         <Zoom onClickZoomIn={(e)=>this.onClickZoomIn(e)}
