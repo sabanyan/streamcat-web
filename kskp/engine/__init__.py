@@ -23,7 +23,11 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, step_paths=None, fr
     result = job.execute(step_paths=step_paths)
     job.dtor()
 
-    return job.lasts
+    _result = {}
+    _result['outputs'] = job.lasts
+    _result['caches'] = job.caches
+
+    return _result
 
 
 def persist_to_files(job):

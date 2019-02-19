@@ -36,8 +36,8 @@ def parse_job(obj, flow_uuid, args, srcs, dsts, inputs):
     step = Step(flow, args, srcs, dsts)
 
     # make subjobs
-    nodes = parse_nodes(obj)
-    jobs = parse_subjobs(nodes, data)
+    nodes, caches = parse_nodes(obj)
+    jobs = parse_subjobs(nodes, data, caches, flow_uuid)
 
     # make lasts
     lasts = parse_lasts(data, jobs)
@@ -81,13 +81,23 @@ def parse_datum(node_obj):
     return datum
 
 def parse_nodes(obj):
-    return [node for node in obj['nodes']
-                 if node['type'] in ['command', 'flow']]
+    nodes = []
+    caches = []
+    for node in obj['nodes']:
+        if node['type'] in ['command', 'flow']:
+            nodes.append(node)
+        elif node['type'] in ['frame']:
+            if node.get('caches'):
+                caches.append(node['id'])
 
-def parse_subjobs(nodes, data):
-    return [parse_subjob(node, data) for node in nodes]
+    return nodes, caches
+    # return [node for node in obj['nodes']
+    #              if node['type'] in ['command', 'flow']]
 
-def parse_subjob(node, data):
+def parse_subjobs(nodes, data, caches, flow_uuid):
+    return [parse_subjob(node, data, caches, flow_uuid) for node in nodes]
+
+def parse_subjob(node, data, caches, flow_uuid):
     t = node['type']
 
     args = node['args']
@@ -95,11 +105,23 @@ def parse_subjob(node, data):
     dsts = node['dsts']
     inputs = parse_job_inputs(data, srcs)
     if t == 'command':
+        # キャッシュを作成するためにoを追加する
+        # Kコマンドはo=ではなく、-oなので、Kコマンド動かすときの事を考えないと。
+        cache = {}
+
+        if dsts['o'] in caches:
+            dst = dsts['o']
+            cache_uuid = str(uuid.uuid4())
+            cache[f'{flow_uuid},{dst}'] = cache_uuid
+            args['o'] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
         new_step = parse_command_step(node, args, srcs, dsts)
         new_job = Job(new_step, inputs)
+        if len(cache) > 0:
+            new_job.caches = cache
     elif t == 'flow':
         flow_uuid = node['uuid']
         new_job = parse_job(load_flow(flow_uuid), flow_uuid, args, srcs, dsts, inputs)
+
     return new_job
 
 def parse_job_inputs(data, srcs):
@@ -115,6 +137,7 @@ class Job:
         self.inputs = {} if inputs is None else inputs
         self.lasts = {}
         self.jobs = []
+        self.caches = {}
         # self.errors = []
 
     # @profile
@@ -130,6 +153,9 @@ class Job:
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
             self.lasts = output
 
+            self.caches = self.aggregate_caches()
+
+            # 以下、一番てっぺんのflow
             if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
                 for last in self.lasts.values():
                     last.is_temp = False
@@ -140,6 +166,61 @@ class Job:
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
+
+    def aggregate_caches(self):
+        self.link_caches()
+        caches = self.get_caches()
+        return caches
+
+    def get_caches(self):
+        if self.step.is_command:
+            return self.caches
+        else:
+            caches = {}
+            for job in self.jobs:
+                caches.update(job.get_caches())
+            return caches
+
+    def link_caches(self):
+        current_flow_data = None
+        flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{self.step.command_or_flow.uuid}.json')
+
+        with open(flows_path, 'r', encoding='utf-8') as f:
+            # 1. 対象フローのJSONデータを取得する
+            current_flow_data = json.load(f)
+
+            # 2. 配下のjobのcachesを使ってflowのjsonを更新する
+            for job in self.jobs:
+                if job.step.is_command:
+                    # 結果をキャッシュ化する
+
+                    already_caches = []
+
+                    # resultを読んで書き換えていく
+                    for flow_uuid_and_step_id, cache_uuid in job.caches.items():
+                        target_step_id = flow_uuid_and_step_id.split(',')[1]
+                        target_datum_uuid = cache_uuid
+
+                        for node in current_flow_data['nodes']:
+                            # 指定したidかつ、そこのuuidがnullの場合、キャッシュをフローのjsonに反映する
+                            if node['id'] == target_step_id:
+                                if node['uuid'] is None:
+                                    node['uuid'] = target_datum_uuid
+                                else:
+                                    # この後行われるget_caches()で纏められてしまうので、使わないcachesは削除しておく
+                                    # job.cachesのfor文の外じゃないと削除できないので、一旦格納しておく
+                                    already_caches.append(flow_uuid_and_step_id)
+                                break
+
+                    # 使わないcachesの削除
+                    for delete_cache in already_caches:
+                        del job.caches[delete_cache]
+
+        # 3. 最後にファイルに保存する
+        flows_path.write_text(json.dumps(current_flow_data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        # とりあえず何かを返しておく
+        return True
 
     def get_lasts_from(self, step_paths):
         result = {}
