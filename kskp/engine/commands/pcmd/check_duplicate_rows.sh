@@ -129,7 +129,9 @@ readonly COLUM_NAME_DUPLICATION='__dup_total__'   #重複数
 readonly COLUM_NAME_ROW_NO='__RowNo_BeginWith1__'  #1始まりの行番号
 readonly COLUM_NAME_DUPLICATION_NO='__dup_no__'   #重複の連番
 
-readonly TMP_FILE_NAME="tmp.csv"
+readonly TMP_FILE_NAME="/home/kskp/kskp/data/tmp/tmp.csv"
+readonly TMP_INPUT_NAME="/home/kskp/kskp/data/tmp/input.csv"
+
 
 # -qオプションで、キー項目の %数字 列名を除去するための列名変更リストの生成
 #   入力例： key_colums               key1,key2
@@ -169,6 +171,8 @@ else
 fi
 
 # データ処理
+# isnull(${'"${COLUM_NAME_DUPLICATION}"'})
+#
 mcal      i="${input_file}" \
           c='line()+1' \
           a="${COLUM_NAME_ROW_NO}" \
