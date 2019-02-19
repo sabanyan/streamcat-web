@@ -43,6 +43,7 @@ const DRAGGING_ACTION = 'dragging_action'
 const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
+const ADD_COMMENT_ACTION = 'add_memo_action'
 
 const graph: Graph = new Graph()
 
@@ -867,5 +868,13 @@ export const updateDataFrameDetailAction = (detail: DataFrameDetailType) => {
   return {
     detail: detail,
     type: UPDATE_DATA_SOURCE_DETAIL_ACTION
+  }
+}
+
+export const addCommentAction = (x:number, y:number) => {
+  return {
+    type: ADD_COMMENT_ACTION,
+    x: x,
+    y: y
   }
 }

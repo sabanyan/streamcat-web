@@ -7,6 +7,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
 import FlowModel from '../model/Flow/FlowModel'
 import FlowUtil from './FlowUtil'
+import CommentStepModel from '../model/Step/CommentStepModel';
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -240,6 +241,9 @@ class Graph {
    * @returns {*}
    */
   load (json:{}) {
+    console.log("loaded json")
+    console.log(json)
+    console.log("-----------")
     const self = this
     let hasPosition = false
 
@@ -318,6 +322,23 @@ class Graph {
           if(step.position && step.size){
             hasPosition = true
           }
+          break;
+        case Constants.step.type.comment:
+          const comment = node
+
+          model = {
+            id: comment.id,
+            name: comment.name,
+            label: comment.label,
+            uuid: step.uuid,
+            content: step.dsts,
+            position: step.position,
+            size: step.size,
+          }
+          node = new CommentStepModel(model)
+          newNodes.push(node)
+
+          break;
       }
     })
 

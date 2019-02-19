@@ -14,6 +14,7 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
 import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel'
+import CommentStepModel from '../../../model/Step/CommentStepModel'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
@@ -274,6 +275,10 @@ export default class Step extends React.Component<Props, State> {
     return (model instanceof SubFlowStepModel)
   }
 
+  isComment (model: modelProps):boolean {
+    return (model instanceof CommentStepModel)
+  }
+
   getFilter () {
     // let filter = this.state.filter;
     // const step = this.props.model;
@@ -337,6 +342,15 @@ export default class Step extends React.Component<Props, State> {
       const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
       icon =
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
+              hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
+              hover={hover} selected={selected} stroke={'#63CFFD'}
+              filter={filter} style={RectStyle}>
+          <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
+                    width={16} height={20}/>
+        </Rect>
+    }else if (this.isComment(step)) {
+      icon =
+      <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
               filter={filter} style={RectStyle}>

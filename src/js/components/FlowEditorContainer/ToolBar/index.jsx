@@ -29,7 +29,10 @@ import Undo from './Undo'
 import Redo from './Redo'
 import Button from '../../shared/Button'
 import ReactDomUtil from '../../../utils/ReactDomUtil'
-import Memo from './Memo'
+import Comment from './Comment'
+import CommentStepModel from '../../../model/Step/CommentStepModel'
+import {CommentStepModelProps} from '../../../model/Step/CommentStepModel'
+import ModelUtil from '../../../utils/ModelUtil';
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -233,7 +236,20 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   onClickDefaultZoom(e:Event){
     this.props.setZoom({value:100})
   }
-  onClickMemo(e:Event) {
+  onClickComment() {
+
+    const props:CommentStepModelProps = {
+      type : Constants.step.type.comment,
+      position : {x: 300, y: 300},
+      size : {width: 30, height: 20},
+      content : "新しいメモ"
+    }
+
+    const comment = new CommentStepModel(props)
+
+    this.props.addStep(comment)
+
+    console.log(this.props.nodes)
   }
 
   render () {
@@ -256,9 +272,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}
         {/*<DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>*/}
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
-        <Undo disabled={undoDisabled} icon={"undo"} onClick={()=>this.props.undo()}>もとに戻す</Undo>
-        <Redo disabled={redoDisabled} icon={"redo"} onClick={()=>this.props.redo()}>繰り返す</Redo>
-        <Memo disabled={false} icon={'comment'} onClick={(e)=>this.onClickMemo(e)}>メモ</Memo>
+        {/*<Undo disabled={undoDisabled} icon={"undo"} onClick={()=>this.props.undo()}>もとに戻す</Undo>
+                          <Redo disabled={redoDisabled} icon={"redo"} onClick={()=>this.props.redo()}>繰り返す</Redo>*/}
+        <Comment disabled={false} icon={'comment'} onClick={()=>this.onClickComment()}>メモ</Comment>
       </div>
       <div className={classnames(style.paper_toolbar)}>
         <Zoom onClickZoomIn={(e)=>this.onClickZoomIn(e)}

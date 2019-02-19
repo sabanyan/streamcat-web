@@ -167,6 +167,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
+    console.log("flowEditor is rendering")
+    console.log(this.props.comments)
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
       <PaperZoom />
