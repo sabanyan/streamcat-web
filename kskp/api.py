@@ -523,7 +523,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                         })
     else:
         try:
-            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
+            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -531,7 +531,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                                     'message': 'result is empty.'
                                 })
             else:
-                return jsonify({'success': True, 'name': result_data})
+                return jsonify({'success': True, 'name': result_data, 'caches': caches_data})
         except Exception as e:
             return jsonify({
                                 'success': False,
@@ -877,11 +877,24 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
+    # キャッシュの処理
+    caches_list = []
+    for flow_uuid_and_step_id, cache_uuid in result['caches'].items():
+        caches = {}
+
+        caches['flow_uuid'] = flow_uuid_and_step_id.split(',')[0]
+        caches['id'] = flow_uuid_and_step_id.split(',')[1]
+        caches['frame_uuid'] = cache_uuid
+
+        caches_list.append(caches)
+
+    # 結果の処理
     if no_contents:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result['outputs'].items()]
     else:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
-    return result_list
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result['outputs'].items()]
+
+    return result_list, caches_list
 
 
 def load_as_data_frame(result_text, offset, limit):
