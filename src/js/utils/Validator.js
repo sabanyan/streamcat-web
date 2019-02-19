@@ -4,7 +4,8 @@ import FlowModelSchema from '../schema/flow/FlowModelSchema.json'
 import GraphModelSchema from '../schema/graph/GraphModelSchema.json'
 import CommandStepModelSchema from '../schema/steps/CommandStepModelSchema.json'
 import DataFrameStepModelSchema from '../schema/steps/DataFrameStepModelSchema.json'
-import SubFlowCommandModeSchema from '../schema/steps/SubFlowStepModelSchema.json'
+import SubFlowCommandModelSchema from '../schema/steps/SubFlowStepModelSchema.json'
+import CommentStepModelSchema from '../schema/steps/CommentStepModelSchema.json'
 
 import Log from './Log'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
@@ -12,6 +13,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import CommandStepModel from '../model/Step/CommandStepModel'
 import ValidateJS from 'validate.js'
 import CommandUtil from './CommandUtil'
+import CommentStepModel from '../model/Step/CommentStepModel.js';
 
 class Validator {
   ajv:Ajv
@@ -265,18 +267,16 @@ class Validator {
       if(node instanceof DataFrameStepModel){
         schema = DataFrameStepModelSchema
       }else if(node instanceof SubFlowStepModel){
-        schema = SubFlowCommandModeSchema
+        schema = SubFlowCommandModelSchema
       }else if(node instanceof CommandStepModel){
         schema = CommandStepModelSchema
+      }else if(node instanceof CommentStepModel){
+        schema = CommentStepModelSchema 
       }
       const result = this.schemaValidate(schema,node)
       if(!result)success = false
     })
     return success
-  }
-
-  isFlowModelSchema(state){
-    return this.schemaValidate(FlowModelSchema,state)
   }
 
   nodesValidate(nodes){

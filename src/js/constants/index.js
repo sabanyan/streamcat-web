@@ -43,7 +43,8 @@ const Constants = {
     type:{
       command:"command",
       frame:"frame",
-      subflow:"flow"
+      subflow:"flow",
+      comment:"comment"
     }
   },
   param:{
