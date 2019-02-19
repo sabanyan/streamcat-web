@@ -191,9 +191,10 @@ export default class FlowUtil {
         dismissAfter: 0
       })
     }
-
+    console.log("save nodes- starts")
     return new Promise((resolve, reject) => {
       APIUtil.put("flows/" + flowUUID,{nodes:nodes}).then((response)=>{
+        console.log("save nodes- end")
         if(dismissNotify)dismissNotify(saveNotify.id)
         if (!response.data.success) {
           notify({
@@ -236,7 +237,7 @@ export default class FlowUtil {
     if(params)putBody["params"]=params
     if(ports)putBody["ports"]=ports
     if(caches)putBody["caches"]=caches
-    
+
     let saveNotify
     if(notify){
       saveNotify = notify({
@@ -246,9 +247,10 @@ export default class FlowUtil {
         dismissAfter: 0
       })
     }
-
+    console.log("save flow settings - starts")
     return new Promise((resolve, reject) => {
       APIUtil.put("flows/" + flowUUID,putBody).then((response)=>{
+        console.log("save flow settings - end")
         if(dismissNotify)dismissNotify(saveNotify.id)
         if (!response.data.success) {
           notify({

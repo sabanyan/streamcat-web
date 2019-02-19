@@ -22,7 +22,8 @@ import {
   dragEndAction,
   loadFlowJSONAction,
   setZoomAction,
-  updateDataFrameDetailAction
+  updateDataFrameDetailAction,
+  addCommentAction
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -70,6 +71,7 @@ export type FlowEditorProps = {
   drag: DragType;
   notify: Function;
   dissmissNotify: Function;
+  addComment: Function;
 }
 
 export default FlowEditorContainer = connect(
@@ -92,6 +94,7 @@ export default FlowEditorContainer = connect(
       flow: state.reducer.flow,
       originalFlow: state.reducer.originalFlow,
       navigation: state.reducer.navigation,
+      comments: state.reducer.comments
     }
   },
   dispatch => {
@@ -175,6 +178,9 @@ export default FlowEditorContainer = connect(
         setTimeout(()=>{
           dispatch(removeNotification(...args))
         },1000)
+      },
+      addComment(...args){
+        dispatch(addCommentAction(...args))
       }
     }
   },

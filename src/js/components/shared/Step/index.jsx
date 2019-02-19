@@ -14,6 +14,7 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
 import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel'
+import CommentStepModel from '../../../model/Step/CommentStepModel'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
@@ -274,6 +275,10 @@ export default class Step extends React.Component<Props, State> {
     return (model instanceof SubFlowStepModel)
   }
 
+  isComment (model: modelProps):boolean {
+    return (model instanceof CommentStepModel)
+  }
+
   getFilter () {
     // let filter = this.state.filter;
     // const step = this.props.model;
@@ -343,6 +348,20 @@ export default class Step extends React.Component<Props, State> {
           <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
+    }else if (this.isComment(step)) {
+      icon = 
+        <svg width="100" height="100">
+            <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#d8ffb5'}
+              hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
+              hover={hover} selected={selected} stroke={'#d8ffb5'}
+              filter={filter} style={RectStyle}>
+            </Rect>
+            <foreignObject {...TextStyle}>
+            <div style={{display:"table",width:"80%",height:TextStyle.height,paddingRight: TextStyle.padding + "px",overflow:"scroll"}}>
+              <p xmlns="http://www.w3.org/1999/xhtml" style={{margin:"1px", display:"table-cell",verticalAlign:"middle",wordBreak:"break-all"}}>{step.content}</p>
+            </div>
+          </foreignObject>
+        </svg>
     }
 
     const stepLabel = step.getLabel()
