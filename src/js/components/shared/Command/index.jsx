@@ -86,56 +86,81 @@ export default class Command extends React.Component<Props> {
 
     }
 
+    onClickCommand(e:Event,command:CommandModel){
+      const args = {}
+      const added_command_step: CommandStepModelProps = this.getNewStepWithArgs(command,args)
 
-    onClickCommand(e:Event,command:CommandModel) {
+      const {selected_step_ids} = this.props
 
-        const self = this
-        let content = this.buildParamsContent()
-
-        ModalUtil.registerModal({
-            id: Constants.modal.ADD_COMMAND, onClickDone: () => {
-
-                let args = {}
-
-                //モーダルで入力されたパラメータを取得
-                args = ParamUtil.getArgsFromInputRefs(self.inputRefs)
-
-                const added_command_step: CommandStepModelProps = this.getNewStepWithArgs(command,args)
-
-                const {selected_step_ids} = this.props
-
-                const output_steps = command.getOutPorts().map((port:CommandPortType) => {
-                      const output_step = new DataFrameStepModel({
-                        id: null,
-                        label: null,
-                        type: Constants.step.type.frame,
-                        uuid: null,
-                        dataSource: Constants.data.dataSource.csv,
-                      })
-                      this.props.addStep(output_step)
-                      return output_step
-                })
-
-                const output_step_ids = output_steps.map(step=>step.id)
-
-                self.props.addStep(added_command_step,selected_step_ids,output_step_ids)
-
-                //ステップの選択をキャンセル
-                self.props.selectSteps()
-
-                //モーダルを閉じる
-                ModalUtil.closeModal(Constants.modal.ADD_COMMAND)
-            }
+      const output_steps = command.getOutPorts().map((port:CommandPortType) => {
+        const output_step = new DataFrameStepModel({
+          id: null,
+          label: null,
+          type: Constants.step.type.frame,
+          uuid: null,
+          dataSource: Constants.data.dataSource.csv,
         })
+        this.props.addStep(output_step)
+        return output_step
+      })
 
-        ModalUtil.emitModal({
-            id: Constants.modal.ADD_COMMAND,
-            visible: true,
-            content: content,
-            title: command.label
-        })
+      const output_step_ids = output_steps.map(step=>step.id)
 
+      this.props.addStep(added_command_step,selected_step_ids,output_step_ids)
+
+      //ステップの選択をキャンセル
+      this.props.selectSteps()
     }
+
+//    onClickCommand(e:Event,command:CommandModel) {
+//
+//        const self = this
+//        let content = this.buildParamsContent()
+//
+//        ModalUtil.registerModal({
+//            id: Constants.modal.ADD_COMMAND, onClickDone: () => {
+//
+//                let args = {}
+//
+//                //モーダルで入力されたパラメータを取得
+//                args = ParamUtil.getArgsFromInputRefs(self.inputRefs)
+//
+//                const added_command_step: CommandStepModelProps = this.getNewStepWithArgs(command,args)
+//
+//                const {selected_step_ids} = this.props
+//
+//                const output_steps = command.getOutPorts().map((port:CommandPortType) => {
+//                      const output_step = new DataFrameStepModel({
+//                        id: null,
+//                        label: null,
+//                        type: Constants.step.type.frame,
+//                        uuid: null,
+//                        dataSource: Constants.data.dataSource.csv,
+//                      })
+//                      this.props.addStep(output_step)
+//                      return output_step
+//                })
+//
+//                const output_step_ids = output_steps.map(step=>step.id)
+//
+//                self.props.addStep(added_command_step,selected_step_ids,output_step_ids)
+//
+//                //ステップの選択をキャンセル
+//                self.props.selectSteps()
+//
+//                //モーダルを閉じる
+//                ModalUtil.closeModal(Constants.modal.ADD_COMMAND)
+//            }
+//        })
+//
+//        ModalUtil.emitModal({
+//            id: Constants.modal.ADD_COMMAND,
+//            visible: true,
+//            content: content,
+//            title: command.label
+//        })
+//
+//    }
 
     onClickPdf(e:Event,url:string){
       window.open(url)
