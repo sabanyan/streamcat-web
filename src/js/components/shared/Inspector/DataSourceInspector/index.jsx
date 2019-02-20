@@ -14,6 +14,7 @@ import CommandSelector from '../../CommandSelector/index'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Graph from '../../../../utils/Graph'
 import APIUtil from '../../../../utils/APIUtil'
+import HttpUtil from '../../../../utils/HttpUtil'
 import type { DataFrameDetailType, StepModelType } from '../../../../types/index'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
@@ -62,6 +63,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
 
     FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
+
+      //ヘッダー情報の取得
+
+      const getFrameHeaderURL = "frames/" + inject_flow_uuid
+      APIUtil.get(getFrameHeaderURL + "?header_only=1").then((response) => {
+        console.log(response)
+      })
+
       //すでにデータが存在している場合
       if (selected_step.hasData()) {
         this.setState({
@@ -78,7 +87,9 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         this.setState({
           loading: true
         })
-        HttpUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
+
+        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id
+        APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
             const uuid = response.data.name[0].uuid
@@ -211,7 +222,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
   }
 
-  getSelectedStep ():StepModelType {
+  getSelectedStep ():DataFrameStepModel {
     let {selected_step_ids, nodes} = this.props
     return Graph.getNode(nodes,selected_step_ids[0])
   }

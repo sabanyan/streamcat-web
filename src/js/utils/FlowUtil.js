@@ -178,7 +178,7 @@ export default class FlowUtil {
    * @param projectName
    * @returns {Promise<any>}
    */
-  static saveNodes (flowUUID:string,nodes:[],notify:Function,dismissNotify:Function):any {
+  static saveNodes (flowUUID:string,nodes:[],notify?:Function,dismissNotify?:Function):any {
     //validation
     Validator.nodesValidate(nodes)
 
