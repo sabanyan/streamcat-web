@@ -605,12 +605,7 @@ class CsvToLineGraphCommand(VisualizersCommand):
         csvのファイルパスから、
         plotの折れ線グラフ画像のimageタグを作成する
         """
-<<<<<<< HEAD
-        image_file_name = self.generate_image(args, inputs)
-        img_tag = '<img src="' + '/static/images/visualize/%s.png' % image_file_name + '">'
-=======
         html = self.generate_image(args, inputs)
->>>>>>> origin/backend
 
         return html
 
