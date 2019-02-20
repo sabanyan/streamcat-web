@@ -311,19 +311,30 @@ class Job:
                 result[d] = job.inputs[d]
         return result
 
+    # def check_multi_use(self, job, datum_id, datum):
+    #     job_ports = self.dst_job_ids(datum_id)
+    #     src_job = self.src_job(datum_id)
+    #
+    #     if len(job_ports) >= 2:
+    #         caches = src_job.caches
+    #
+    #         if len(caches) > 0:
+    #             for cache in caches.values():
+    #                 datum.command_to_file(cache)
+    #                 break
+    #         else:
+    #             datum.command_to_file()
+    #
+    #         for j, port in job_ports.items():
+    #             if j != job:
+    #                 j.inputs[j.step.srcs[port]] = datum
+    #     return datum
 
     def check_multi_use(self, job, datum_id, datum):
         job_ports = self.dst_job_ids(datum_id)
-        src_job = self.src_job(datum_id)
 
         if len(job_ports) >= 2:
-            caches = src_job.caches
-
-            if len(caches) > 0:
-                for cache in caches.values():
-                    datum.command_to_file(cache)
-                    break
-            else:
+            if not isinstance(datum.source, NysolPythonSource):
                 datum.command_to_file()
 
             for j, port in job_ports.items():
@@ -335,11 +346,6 @@ class Job:
         return {j: port for j in self.jobs
                   for port, src_id in j.step.srcs.items()
                   if src_id == datum_id}
-
-    def src_job(self, datum_id):
-        return [j for j in self.jobs
-                  for port, src_id in j.step.dsts.items()
-                  if src_id == datum_id][0]
 
     def check_inputs(self, inputs):
         res = inputs
@@ -355,8 +361,9 @@ class Job:
         for datum in self.inputs.values():
             datum.dtor()
 
-        for datum in self.lasts.values():
-            datum.command_to_file().dtor()
+        # engine_executeに移動
+        # for datum in self.lasts.values():
+        #     datum.command_to_file().dtor()
 
         for job in self.jobs:
             job.dtor()
