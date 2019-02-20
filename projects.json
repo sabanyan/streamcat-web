@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "data":{
+    "name": "",
+    "uuid": "",
+    "created_at": "",
+    "creator_id": "",
+    "creator_name": "",
+    "//": "ここまでは既存の/projects",
+
+    "detail":{
+      "flows": 2,
+      "subflows": 3,
+      "detail": "プロジェクト説明"
+    },
+    "activities": [
+      {
+        "timestamp": "2018-02-05 09:22:37",
+        "user": "開発用",
+        "operation" :""
+      },
+      {
+        "timestamp": "2018-02-05 10:30:01",
+        "user": "開発用",
+        "operation" :""
+      }
+    ],
+    "members": [
+      {
+        "name": "開発用"
+      },
+      {
+        "name": "管理者"
+      }
+    ]
+  }
+}

@@ -9,6 +9,7 @@ from .model import (
     start_project,
     get_projects_by_user_id,
     delete_project_by_uuid,
+    rename_project_by_uuid,
     get_project_id_by_uuid,
     create_flow,
     delete_flow_by_uuid,
@@ -69,6 +70,19 @@ def get_projects():
 
     return jsonify({'success': True, 'data': projects})
 
+@api.route('/projects/<project_uuid>', methods=['PUT'])
+@login_required_api
+@update_navigation
+def update_project(project_uuid):
+    """
+    指定したプロジェクトを更新する
+    現在はプロジェクト名のみ
+    """
+    project_info = request.json
+    new_project_name = project_info.get('new_name')
+    rename_project_by_uuid(project_uuid, new_project_name)
+
+    return jsonify({'success': True})
 
 @api.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
@@ -432,7 +446,12 @@ def fetch_frame(frame_uuid):
     limit = int(request.args.get('limit')) if request.args.get('limit') else None
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
-    return jsonify({'success': True, 'data': csv_to_frame(file_path, offset=offset, limit=limit)})
+    result = csv_to_frame(file_path, offset=offset, limit=limit)
+
+    if request.args.get('header_only') == '1':
+        result = [columns for columns in result['contents']]
+
+    return jsonify({'success': True, 'data': result})
 
 def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     """
@@ -471,7 +490,7 @@ def upload_frame(file, file_name):
     return {"uuid": frame_uuid, "label": file_name}
 
 @api.route('/files')
-def download_frame():
+def download_file():
     # 現在typeは未使用
     type = request.args.get('type')
     frame_uuid = request.args.get('uuid')
@@ -853,7 +872,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
         from . import engine as e
         flow_path = FLOWS_DIR_PATH / Path(flow_uuid + '.json')
         with open(flow_path.as_posix(), 'r') as f:
-            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
+            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), step_paths=step_paths, flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
 
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
