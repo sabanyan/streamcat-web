@@ -104,23 +104,33 @@ def parse_subjob(node, data, caches, flow_uuid):
     srcs = node['srcs']
     dsts = node['dsts']
     inputs = parse_job_inputs(data, srcs)
+
+    cache = {}
+
+    # cachesの作成
+    for key, dst in dsts.items():
+        if dst in caches:
+            cache_uuid = str(uuid.uuid4())
+            cache[f'{flow_uuid},{dst}'] = cache_uuid
+
+    import copy
+    command_args = copy.deepcopy(args)
+
     if t == 'command':
         # キャッシュを作成するためにoを追加する
         # Kコマンドはo=ではなく、-oなので、Kコマンド動かすときの事を考えないと。
-        cache = {}
+        for key, dst in dsts.items():
+            if dst in caches:
+                command_args[key] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
 
-        if dsts['o'] in caches:
-            dst = dsts['o']
-            cache_uuid = str(uuid.uuid4())
-            cache[f'{flow_uuid},{dst}'] = cache_uuid
-            args['o'] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
-        new_step = parse_command_step(node, args, srcs, dsts)
+        new_step = parse_command_step(node, command_args, srcs, dsts)
         new_job = Job(new_step, inputs)
-        if len(cache) > 0:
-            new_job.caches = cache
     elif t == 'flow':
         flow_uuid = node['uuid']
-        new_job = parse_job(load_flow(flow_uuid), flow_uuid, args, srcs, dsts, inputs)
+        new_job = parse_job(load_flow(flow_uuid), flow_uuid, command_args, srcs, dsts, inputs)
+
+    if len(cache) > 0:
+        new_job.caches = cache
 
     return new_job
 
@@ -153,7 +163,7 @@ class Job:
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
             self.lasts = output
 
-            self.caches = self.aggregate_caches()
+            self.caches = self.aggregate_caches(cf.uuid)
 
             # 以下、一番てっぺんのflow
             if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
@@ -167,23 +177,25 @@ class Job:
 
         return self.replace_outputs(output)
 
-    def aggregate_caches(self):
-        self.link_caches()
+    def aggregate_caches(self, flow_uuid):
+        self.link_caches(flow_uuid)
         caches = self.get_caches()
         return caches
 
     def get_caches(self):
-        if self.step.is_command:
-            return self.caches
-        else:
-            caches = {}
+        # flowの場合、配下のcachesを集めてきて、自分のcachesと合わせる
+        if self.step.is_flow:
             for job in self.jobs:
-                caches.update(job.get_caches())
-            return caches
+                self.caches.update(job.get_caches())
 
-    def link_caches(self):
+        return self.caches
+
+    def link_caches(self, flow_uuid):
+        """
+        指定したflowのキャッシュを書き換える
+        """
         current_flow_data = None
-        flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{self.step.command_or_flow.uuid}.json')
+        flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{flow_uuid}.json')
 
         with open(flows_path, 'r', encoding='utf-8') as f:
             # 1. 対象フローのJSONデータを取得する
@@ -191,30 +203,32 @@ class Job:
 
             # 2. 配下のjobのcachesを使ってflowのjsonを更新する
             for job in self.jobs:
-                if job.step.is_command:
-                    # 結果をキャッシュ化する
+                already_caches = []
 
-                    already_caches = []
+                # cachesを元に書き換えていく
+                for flow_uuid_and_step_id, cache_uuid in job.caches.items():
+                    target_flow_uuid = flow_uuid_and_step_id.split(',')[0]
+                    target_step_id = flow_uuid_and_step_id.split(',')[1]
+                    target_datum_uuid = cache_uuid
 
-                    # resultを読んで書き換えていく
-                    for flow_uuid_and_step_id, cache_uuid in job.caches.items():
-                        target_step_id = flow_uuid_and_step_id.split(',')[1]
-                        target_datum_uuid = cache_uuid
+                    # 更新対象のflowかどうか判断する
+                    if not flow_uuid == target_flow_uuid:
+                        break
 
-                        for node in current_flow_data['nodes']:
-                            # 指定したidかつ、そこのuuidがnullの場合、キャッシュをフローのjsonに反映する
-                            if node['id'] == target_step_id:
-                                if node['uuid'] is None:
-                                    node['uuid'] = target_datum_uuid
-                                else:
-                                    # この後行われるget_caches()で纏められてしまうので、使わないcachesは削除しておく
-                                    # job.cachesのfor文の外じゃないと削除できないので、一旦格納しておく
-                                    already_caches.append(flow_uuid_and_step_id)
-                                break
+                    for node in current_flow_data['nodes']:
+                        # 指定したidかつ、そのuuidがnullの場合、キャッシュをフローのjsonに反映する
+                        if node['id'] == target_step_id:
+                            if node['uuid'] is None:
+                                node['uuid'] = target_datum_uuid
+                            else:
+                                # この後行われるget_caches()で纏められてしまうので、使わないcachesは削除しておく
+                                # job.cachesのfor文の外じゃないと削除できないので、一旦格納しておく
+                                already_caches.append(flow_uuid_and_step_id)
+                            break
 
-                    # 使わないcachesの削除
-                    for delete_cache in already_caches:
-                        del job.caches[delete_cache]
+                # 使わないcachesの削除
+                for delete_cache in already_caches:
+                    del job.caches[delete_cache]
 
         # 3. 最後にファイルに保存する
         flows_path.write_text(json.dumps(current_flow_data, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -300,8 +314,17 @@ class Job:
 
     def check_multi_use(self, job, datum_id, datum):
         job_ports = self.dst_job_ids(datum_id)
+        src_job = self.src_job(datum_id)
+
         if len(job_ports) >= 2:
-            datum.command_to_file()
+            caches = src_job.caches
+
+            if len(caches) > 0:
+                for cache in caches.values():
+                    datum.command_to_file(cache)
+                    break
+            else:
+                datum.command_to_file()
 
             for j, port in job_ports.items():
                 if j != job:
@@ -312,6 +335,11 @@ class Job:
         return {j: port for j in self.jobs
                   for port, src_id in j.step.srcs.items()
                   if src_id == datum_id}
+
+    def src_job(self, datum_id):
+        return [j for j in self.jobs
+                  for port, src_id in j.step.dsts.items()
+                  if src_id == datum_id][0]
 
     def check_inputs(self, inputs):
         res = inputs
