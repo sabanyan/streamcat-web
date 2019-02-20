@@ -129,7 +129,6 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
     if (inputParams) {
       inputParamsContainer = <div>
-        <div className={style.full_hr} />
         <label>フロー変数</label>
         {inputParams}
       </div>
@@ -146,10 +145,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
                 defaultValue={this.props.flow.description} rows={8} onBlur={this.onBlurDescription}></textarea>
       {inputParamsContainer}
       {addFlowParams}
-      {/*<div>*/}
-        {/*<div className={style.full_hr} />*/}
-        {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
-      {/*</div>*/}
+      <div className={style.full_hr}/>
       <CommandSelector numberOfInput={0} {...this.props} />
     </BaseInspector>
   }
