@@ -1,9 +1,9 @@
 {
   "version": "0.7.0",
-  "id": "csvtoscatter",
-  "label": "散布図の作成",
+  "id": "csvtoboxplot",
+  "label": "箱ひげ図の作成",
   "classification": "visualize",
-  "description": "csvファイルから散布図を作成する",
+  "description": "csvファイルから箱ひげ図を作成する",
   "ports": [
     [
       {
@@ -57,12 +57,6 @@
       "label": "y軸のラベル"
     },
     {
-      "name": "alpha",
-      "type": "number",
-      "label": "透明度",
-      "default": 1
-    },
-    {
       "name": "x_axis",
       "type": "string",
       "label": "x軸に表示する列名"
@@ -71,16 +65,6 @@
       "name": "y_axis",
       "type": "string",
       "label": "y軸に表示する列名"
-    },
-    {
-      "name": "data_column",
-      "type": "string",
-      "label": "ビジュアライズ対象の項目が入っている列名"
-    },
-    {
-      "name": "data",
-      "type": "multi_select",
-      "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],
   "url": ""
