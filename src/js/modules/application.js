@@ -18,6 +18,7 @@ import Validator from '../utils/Validator'
 import Log from '../utils/Log'
 import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import _ from 'lodash'
+import ZoomUtil from '../utils/ZoomUtil'
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
@@ -109,6 +110,7 @@ const Application = (state = initialState, action: {}) => {
         //srcs
         let totalSX = 0
         let totalSY = 0
+
         src_step_ids.forEach((id: string) => {
           const target: StepModelType = Graph.getNode(state.nodes, id)
           totalSX = totalSX + target.position.x
@@ -131,10 +133,23 @@ const Application = (state = initialState, action: {}) => {
 
         if (src_step_ids || dst_step_ids) {
           //追加したステップの位置調整
-          const average = {
+          let average = {
             sx: totalSX / src_step_ids.length,
             sy: totalSY / src_step_ids.length,
             dx: totalDX / 2
+          }
+
+          if(!src_step_ids.length){
+            //入力がない場合、グラフの中央を基準にする
+            const leftTopPosition = {
+              x: document.querySelector("#flow_editor>div").scrollLeft,
+              y: window.pageYOffset
+            }
+            average = {
+              sx: ZoomUtil.zoomReverse(leftTopPosition.x + (window.innerWidth - 400) / 2,newState.zoom),
+              sy:  ZoomUtil.zoomReverse(leftTopPosition.y + (window.innerHeight - 60) / 2,newState.zoom),
+              dx: totalDX / 2
+            }
           }
 
           const newPosition = {
@@ -222,6 +237,8 @@ const Application = (state = initialState, action: {}) => {
           height: defaultNodeProps.height
         })
       }
+
+      console.log(add_step)
 
       newState.nodes.push(add_step)
       newState.graph = graph.getGraph(newState)
