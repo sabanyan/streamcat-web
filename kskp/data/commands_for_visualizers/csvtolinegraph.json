@@ -1,7 +1,7 @@
 {
   "version": "0.7.0",
   "id": "csvtolinegraph",
-  "label": "折れ線グラフの作成",
+  "label": "折れ線グラフの作成（時系列データ用）",
   "classification": "visualize",
   "description": "csvファイルから折れ線グラフを作成する",
   "ports": [
@@ -20,44 +20,72 @@
   ],
   "params": [
     {
+      "name": "offsrt",
+      "type": "number",
+      "label": "ビジュアライズを行う開始行"
+    },
+    {
       "name": "limit",
       "type": "number",
-      "label": "ビジュアライズを出力するデータの限度数"
+      "label": "ビジュアライズ対象のデータ数"
     },
     {
-      "name": "offset",
+      "name": "x_size",
       "type": "number",
-      "label": "ビジュアライズを出力するデータの開始位置"
+      "label": "ビジュアライズの横サイズ",
+      "default": 1400
     },
     {
-      "name": "x_inch",
+      "name": "y_size",
       "type": "number",
-      "label": "生成する画像の横の長さ（インチ）"
+      "label": "ビジュアライズの縦サイズ",
+      "default": 600
     },
     {
-      "name": "y_inch",
-      "type": "number",
-      "label": "生成する画像の縦の長さ（インチ）"
-    },
-    {
-      "name": "time_series_column",
+      "name": "graph_title",
       "type": "string",
-      "label": "時間を示している列名（対象データが時系列データの場合）"
+      "label": "ビジュアライズのタイトル"
     },
     {
-      "name": "x_axis",
+      "name": "x_label",
       "type": "string",
-      "label": "x軸に設定する列名"
+      "label": "x軸のラベル"
     },
     {
-      "name": "columns",
+      "name": "y_label",
       "type": "string",
-      "label": "表示するデータの列名リスト"
+      "label": "y軸のラベル"
     },
     {
       "name": "alpha",
       "type": "number",
-      "label": "透過率（0〜1）"
+      "label": "透明度",
+      "default": 1
+    },
+    {
+      "name": "time_series_column",
+      "type": "multi_select",
+      "label": "時系列データの列を指定する。時系列データがなければ入力しない"
+    },
+    {
+      "name": "x_axis_column",
+      "type": "string",
+      "label": "x軸に表示する列名"
+    },
+    {
+      "name": "y_axis_column",
+      "type": "string",
+      "label": "y軸に表示する列名"
+    },
+    {
+      "name": "data_column",
+      "type": "string",
+      "label": "ビジュアライズ対象の項目が入っている列名"
+    },
+    {
+      "name": "data",
+      "type": "multi_select",
+      "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],
   "url": ""
