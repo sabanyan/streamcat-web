@@ -11,6 +11,7 @@ import ModalUtil from '../../../../utils/ModalUtil'
 import Constants from '../../../../constants'
 import type { SubFlowParamType } from '../../../../types'
 import AddButton from '../../AddButton'
+import CommandSelector from '../../CommandSelector'
 
 class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
@@ -149,6 +150,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
         {/*<div className={style.full_hr} />*/}
         {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
       {/*</div>*/}
+      <CommandSelector numberOfInput={0} {...this.props} />
     </BaseInspector>
   }
 }
