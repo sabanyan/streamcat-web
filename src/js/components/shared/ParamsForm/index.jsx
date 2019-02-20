@@ -20,31 +20,46 @@ export default class ParamsForm extends React.Component<Props> {
     super(props)
   }
 
-  render () {
-
-    const {params,args,invalids,command,onBuild} = this.props
-
-    const paramsForm = params.map((param,index) =>{
-      const value = args[param.name]//入力値
-      let isPresence = false
-      if(command){
-        if(command.rules &&
-          command.rules[param.name] &&
-          command.rules[param.name]['presence']){
-          isPresence = true
-        }
+  /**
+   * 初期値 or 入力値の取得
+   * @param args
+   * @param param
+   * @returns {*}
+   */
+  getDefaultValueOrArgsValue(args:{},param:CommandParamType){
+    let value = args[param.name]
+    //入力値 or 初期値を取得する
+    if(value === undefined){
+      if(param.default !== undefined){
+        value = param.default
       }
-      let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name)//パラメータのエレメント
-      const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])//入力エラー
-      return <div key={index} className={classnames('mb-8px',{[style.presence]:isPresence,[style.invalid]:(invalidMessageEelement)})}>
-        {paramElement}
-        {invalidMessageEelement}
-      </div>
-    })
-
-    return paramsForm
+    }
+    return value
   }
 
+  /**
+   * コマンドの場合の必須判定
+   * @param command
+   * @param param
+   * @returns {boolean}
+   */
+  isPresence(command:CommandModel,param:CommandParamType){
+    let isPresence = false
+    if(command){
+      if(command.rules &&
+        command.rules[param.name] &&
+        command.rules[param.name]['presence']){
+        isPresence = true
+      }
+    }
+    return isPresence
+  }
+
+  /**
+   * 入力エラーメッセージの取得
+   * @param invalid
+   * @returns {*}
+   */
   getInvalidMessageElement(invalid:([]|string) ){
     const invalidMessage:([]|string) = invalid
     if(invalidMessage){
@@ -61,5 +76,35 @@ export default class ParamsForm extends React.Component<Props> {
       </div>
     }
     return null
+  }
+
+  render () {
+    const {params,args,invalids,command,onBuild} = this.props
+    let isPresence = false
+
+    //パラメータフォームの作成
+    const paramsForm = params.map((param,index) =>{
+
+      //入力値 or 初期値を取得する
+      const value = this.getDefaultValueOrArgsValue(args,param)
+
+      //必須
+      if(command){
+        isPresence = this.isPresence(command,param)
+      }
+
+      //型に種別に応じたDOMElementの取得
+      let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name)
+
+      //入力エラーメッセージ
+      const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
+
+      return <div key={index} className={classnames('mb-8px',{[style.presence]:isPresence,[style.invalid]:(invalidMessageEelement)})}>
+        {paramElement}
+        {invalidMessageEelement}
+      </div>
+    })
+
+    return paramsForm
   }
 }
