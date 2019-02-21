@@ -350,17 +350,12 @@ export default class Step extends React.Component<Props, State> {
         </Rect>
     }else if (this.isComment(step)) {
       icon = 
-        <svg width="100" height="100">
+        <svg width="200" height="300">
             <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#d8ffb5'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#d8ffb5'}
-              filter={filter} style={RectStyle}>
-            </Rect>
-            <foreignObject {...TextStyle}>
-            <div style={{display:"table",width:"80%",height:TextStyle.height,paddingRight: TextStyle.padding + "px",overflow:"scroll"}}>
-              <p xmlns="http://www.w3.org/1999/xhtml" style={{margin:"1px", display:"table-cell",verticalAlign:"middle",wordBreak:"break-all"}}>{step.content}</p>
-            </div>
-          </foreignObject>
+              filter={filter} style={CommentStyle}>
+            </Rect>         
         </svg>
     }
 
@@ -426,4 +421,16 @@ export const TextStyle = {
   height: 50,
   fontSize: 10,
   padding: 8
+}
+
+export const CommentStyle = {
+  x: 0,
+  y: 0,
+  tx: 0,
+  ty: 0,
+  width: Constants.default.note.width,
+  height: Constants.default.note.height,
+  rx: 0,
+  ry: 0,
+  strokeWidth: 2,
 }

@@ -44,9 +44,6 @@ class HTTPUtil {
   }
 
   put (path:string, data:{}, config?:{}) {
-    console.log("---PUT DATA")
-    console.log(data)
-    console.log("-----------")
     const merged_config = this.mergeConfig(config)
     const url = this.httpUrl(path)
     return axios.put(url, data, merged_config)

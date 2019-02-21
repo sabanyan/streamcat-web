@@ -37,6 +37,10 @@ const Constants = {
     command: {
       inputPortName:"i",
       outputPortName:"i",
+    },
+    note: {
+      width: (38 + 6 * 2) * 2,
+      height: (38 + 6 * 2) * 2,
     }
   },
   step:{
