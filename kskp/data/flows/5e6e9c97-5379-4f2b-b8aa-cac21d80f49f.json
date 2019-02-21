@@ -2,12 +2,7 @@
   "projectId": 1,
   "label": "サブフロー実行テスト",
   "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      }
-    ],
+    [],
     [
       {
         "name": "d1",
@@ -22,8 +17,8 @@
   "nodes": [
     {
       "position": {
-        "x": 99,
-        "y": 119
+        "x": 98,
+        "y": 118
       },
       "size": {
         "width": 38,
@@ -38,8 +33,8 @@
     },
     {
       "position": {
-        "x": 99,
-        "y": 295
+        "x": 424,
+        "y": 196
       },
       "size": {
         "width": 38,
@@ -85,6 +80,44 @@
         "tmpPath": ""
       },
       "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 727,
+        "y": 317
+      },
+      "size": {
+        "width": 100,
+        "height": 100
+      },
+      "invalid": {},
+      "error": {},
+      "id": "m1",
+      "type": "comment",
+      "label": "m1",
+      "content": "新しいメモ"
+    },
+    {
+      "position": {
+        "x": 562,
+        "y": 565
+      },
+      "size": {
+        "width": 100,
+        "height": 100
+      },
+      "invalid": {},
+      "error": {},
+      "id": "m2",
+      "type": "comment",
+      "label": "m2",
+      "content": "新しいメモ"
+    }
+  ],
+  "caches": [
+    {
+      "name": "i",
+      "type": "frame"
     }
   ]
 }
