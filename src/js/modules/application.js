@@ -358,7 +358,7 @@ const Application = (state = initialState, action: {}) => {
     case ADD_HISTORY_ACTION:{
       let newState = StateUtil.deepCopy(state)
 
-      const isSame = JSON.stringify(newState.nodes) === JSON.stringify(newState.history.nodes[newState.history.current])
+      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
       if(isSame){
         return newState
       }

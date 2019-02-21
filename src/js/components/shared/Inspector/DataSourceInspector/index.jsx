@@ -230,7 +230,11 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   saveNodes(){
-    let {nodes} = this.props
+    let {nodes,history} = this.props
+    const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history,nodes)
+    if(isSame){
+      return
+    }
     return FlowUtil.saveNodes(inject_flow_uuid,nodes)
   }
 
