@@ -311,31 +311,14 @@ class Job:
                 result[d] = job.inputs[d]
         return result
 
-    # def check_multi_use(self, job, datum_id, datum):
-    #     job_ports = self.dst_job_ids(datum_id)
-    #     src_job = self.src_job(datum_id)
-    #
-    #     if len(job_ports) >= 2:
-    #         caches = src_job.caches
-    #
-    #         if len(caches) > 0:
-    #             for cache in caches.values():
-    #                 datum.command_to_file(cache)
-    #                 break
-    #         else:
-    #             datum.command_to_file()
-    #
-    #         for j, port in job_ports.items():
-    #             if j != job:
-    #                 j.inputs[j.step.srcs[port]] = datum
-    #     return datum
-
     def check_multi_use(self, job, datum_id, datum):
         job_ports = self.dst_job_ids(datum_id)
 
         if len(job_ports) >= 2:
             if not isinstance(datum.source, NysolPythonSource):
-                datum.command_to_file()
+                for cache in caches.values():
+                    datum.command_to_file(cache)
+                    break
 
             for j, port in job_ports.items():
                 if j != job:
