@@ -51,6 +51,46 @@ export type FlowListDataType = {
   description: string;
 }
 
+//sourcesと合致
+export type LibraryListDataType = {
+  id: string;
+  serverId: string;//Directory,SMB,PostgreSQL
+  version: string;
+  /*directoryPath*/ //確認
+}
+
+export type
+
+export type ServersDataType = {
+  id: string;//Directory,SMB,PostgreSQL
+  version: string;
+  label: string;
+  description: string;
+  url: string;
+  params: DirectoryExtendsDataType | SMBExtendsDataType | PostgreSQLExtendsDataType
+}
+
+export type DirectoryExtendsDataType = {
+  directoryPath: string
+}
+
+export type SMBExtendsDataType = {
+  user: string;
+  password: string;
+  server: string;
+  port: string;
+  domain: string;
+  directoryPath: string
+}
+
+export type PostgreSQLExtendsDataType = {
+  user: string;
+  password: string;
+  server: string;
+  port: string;
+  database: string;
+}
+
 export type RunResponseNameType = {
   id: string,
   uuid: string
