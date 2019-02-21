@@ -25,7 +25,7 @@ import LibraryInspector from '../shared/Inspector/LibraryInspector'
 
 
 type State = {
-  job_list: [];
+  libraries: []
   is_loading: boolean;
   is_finished: boolean;
   selected_data: {}
@@ -52,14 +52,43 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     self.setState({is_loading: true})
 
 
-    HttpUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
-        const json = response.data
-        self.setState(
-          {is_loading: false, is_finished: true, job_list: json.data})
-      }).catch((error)=>{
-        self.setState(
-          {is_loading: false, is_finished: true, job_list: []})
+    //仮
+
+    const directoryA = {
+      type: "directory",
+      label: "資料",
+      creator: "山田太郎",
+      created_at: "2019-01-01 10:01:01"
+    }
+    const directoryB= {
+      type: "directory",
+      label: "実行結果",
+      creator: "山田太郎",
+      created_at: "2019-01-01 10:04:01"
+    }
+    const directoryC= {
+      type: "directory",
+      label: "アップロードファイル",
+      creator: "山田太郎",
+      created_at: "2019-01-01 10:06:01"
+    }
+
+
+    self.setState({is_finished: true})
+    self.setState({
+      libraries:[
+        directoryA,directoryB,directoryC
+      ]
     })
+
+    // HttpUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
+    //     const json = response.data
+    //     self.setState(
+    //       {is_loading: false, is_finished: true, job_list: json.data})
+    //   }).catch((error)=>{
+    //     self.setState(
+    //       {is_loading: false, is_finished: true, job_list: []})
+    // })
   }
 
   renderJobListHeader () {
@@ -67,6 +96,20 @@ export default class LibraryListContainer extends React.Component<Props,State> {
   }
 
   renderJobList () {
+    const self = this
+    return this.state.job_list.map((job, index) => {
+      const selected = (this.state.selected_data === job)
+      return <JobList key={index}
+                      job={job}
+                      selected={selected}
+                      onClickJob={(e,job)=>this.onClickJob(e,job)}/>
+    })
+  }
+
+  renderLibrariesHeader () {
+    return <JobListHeader/>
+  }
+  renderLibraries(){
     const self = this
     return this.state.job_list.map((job, index) => {
       const selected = (this.state.selected_data === job)
@@ -85,9 +128,9 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     </EmptyState>
   }
 
-  onClickJob(e,job){
+  onClickLibrary(e,library){
     console.log(job)
-    this.setState({selected_data:job})
+    this.setState({selected_data:library})
   }
 
   isEmptyFlowList () {
@@ -110,8 +153,8 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     }
     if (!this.state.is_finished)return null
     return <div>
-      {this.renderJobListHeader()}
-      {this.renderJobList()}
+      {/*{this.renderJobListHeader()}*/}
+      {/*{this.renderJobList()}*/}
       {this.renderInspector()}
     </div>
   }
