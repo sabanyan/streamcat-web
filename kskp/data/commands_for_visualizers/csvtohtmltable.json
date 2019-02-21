@@ -1,6 +1,6 @@
 {
   "version": "0.7.0",
-  "id": "csvtolhtmltable",
+  "id": "csvtohtmltable",
   "label": "HTMLテーブルの作成",
   "classification": "visualize",
   "description": "csvファイルからHTMLのテーブルを作成する",
