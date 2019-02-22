@@ -186,7 +186,7 @@ export default class FlowUtil {
     if(notify){
       saveNotify = notify({
         title: 'フロー保存中',
-        message: 'フローを保存しています',
+        message: 'フローのノードを保存しています',
         status: 'loading',
         dismissAfter: 0
       })
@@ -239,7 +239,7 @@ export default class FlowUtil {
     if(notify){
       saveNotify = notify({
         title: 'フロー保存中',
-        message: 'フローを保存しています',
+        message: 'フローの設定を保存しています',
         status: 'loading',
         dismissAfter: 0
       })
@@ -327,5 +327,36 @@ export default class FlowUtil {
     if (json["uuid"] !== undefined && json["dataSource"] !== undefined) return new DataFrameStepModel(json)
     return json
   }
+
+  /**
+   * フローの比較
+   * @param flowA
+   * @param flowB
+   * @returns {boolean}
+   */
+  static isSameFlow(flowA:{},flowB:{}){
+    return JSON.stringify(flowA) === JSON.stringify(flowB)
+  }
+  /**
+   * ノードの集合体の比較
+   * @param nodesA
+   * @param nodesB
+   * @returns {boolean}
+   */
+  static isSameNodes(nodesA:[],nodesB:[]){
+    return JSON.stringify(nodesA) === JSON.stringify(nodesB)
+  }
+
+  /**
+   * 現在のノードと履歴の一つ前のノードが一緒かどうか
+   * @param history
+   * @param currentNodes
+   * @returns {boolean}
+   */
+  static isSameCurrentNodesToBeforeHistoryNodes(history,currentNodes){
+    if(!history)return false
+    return JSON.stringify(history.nodes[history.current]) === JSON.stringify(currentNodes)
+  }
+
 
 }
