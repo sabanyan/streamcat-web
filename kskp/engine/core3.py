@@ -139,7 +139,7 @@ def parse_subjob(node, data, caches, flow_uuid):
 def connect_subflow_output_with_cache(cache_uuid, port, jobs):
     """
     指定したjobsの中に、指定したoutput_port（この場合はcacheするdatumにつながるport）をdstsとして持つstepを探し、
-    そのstepがコマンドであれば、argsにoパラメータ及び値をセットし、
+    そのstepがコマンドであれば、argsに出力port及び値をセットし、
     フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
     """
     for job in jobs:
@@ -196,6 +196,7 @@ class Job:
     def aggregate_caches(self, flow_uuid):
         self.link_caches(flow_uuid)
         caches = self.get_caches()
+        self.replace_lasts_to_caches(flow_uuid)
         return caches
 
     def get_caches(self):
@@ -251,6 +252,17 @@ class Job:
 
         # とりあえず何かを返しておく
         return True
+
+    def replace_lasts_to_caches(self, flow_uuid):
+        """
+        lastsにあるdatumで、caches対象のdatumならば
+        datumのuuidをcacheのuuidに書き換える
+        """
+        for port, datum in self.lasts.items():
+            for flow_and_step, cache_uuid in self.caches.items():
+                if flow_and_step.split(',')[0] == flow_uuid and flow_and_step.split(',')[1] == port:
+                    datum.uuid = cache_uuid
+                    break
 
     def get_lasts_from(self, step_paths):
         result = {}
@@ -326,25 +338,6 @@ class Job:
             else:
                 result[d] = job.inputs[d]
         return result
-
-    # def check_multi_use(self, job, datum_id, datum):
-    #     job_ports = self.dst_job_ids(datum_id)
-    #     src_job = self.src_job(datum_id)
-    #
-    #     if len(job_ports) >= 2:
-    #         caches = src_job.caches
-    #
-    #         if len(caches) > 0:
-    #             for cache in caches.values():
-    #                 datum.command_to_file(cache)
-    #                 break
-    #         else:
-    #             datum.command_to_file()
-    #
-    #         for j, port in job_ports.items():
-    #             if j != job:
-    #                 j.inputs[j.step.srcs[port]] = datum
-    #     return datum
 
     def check_multi_use(self, job, datum_id, datum):
         job_ports = self.dst_job_ids(datum_id)
@@ -1291,7 +1284,7 @@ class Mcat(MCommandNew):
                 f = None
                 f <<= nm.m2cat(i=input.source.fullpath.as_posix())
                 inputs_for_arg_i.append(f)
-            elif isinstance(input_i.source, NysolPythonSource):
+            elif isinstance(input.source, NysolPythonSource):
                 inputs_for_arg_i.append(input.source.nysol_module)
         args_for_nysol.update({'i': inputs_for_arg_i})
 
