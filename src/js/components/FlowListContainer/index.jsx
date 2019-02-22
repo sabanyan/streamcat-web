@@ -183,6 +183,29 @@ export default class FlowListContainer extends React.Component<Props,State> {
     })
   }
 
+  onClickDuplicate (flow_uuid:string){
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        const data = {
+          original_flow_uuid: flow_uuid
+        }
+        APIUtil.post('flows',data).then((response) => {
+          this.getFlowList()
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        })
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '複製する',
+      danger: false,
+      content: <div>
+        選択されたフローを複製しますか？
+      </div>,
+    })
+  }
+
   onClickDelete (flow_uuid:string) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -224,7 +247,9 @@ export default class FlowListContainer extends React.Component<Props,State> {
   }
 
   renderInspector(){
-    return <FlowInspector flow={this.state.selected_flow} onClickDelete={(uuid)=>this.onClickDelete(uuid)}/>
+    return <FlowInspector flow={this.state.selected_flow}
+                          onClickDelete={(uuid)=>this.onClickDelete(uuid)}
+                          onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}/>
   }
 
   renderAll () {
