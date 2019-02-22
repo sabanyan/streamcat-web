@@ -105,34 +105,50 @@ def parse_subjob(node, data, caches, flow_uuid):
     dsts = node['dsts']
     inputs = parse_job_inputs(data, srcs)
 
-    cache = {}
-
-    # cachesの作成
-    for key, dst in dsts.items():
-        if dst in caches:
-            cache_uuid = str(uuid.uuid4())
-            cache[f'{flow_uuid},{dst}'] = cache_uuid
+    cache_list = {}
 
     import copy
     command_args = copy.deepcopy(args)
 
     if t == 'command':
-        # キャッシュを作成するためにoを追加する
-        # Kコマンドはo=ではなく、-oなので、Kコマンド動かすときの事を考えないと。
-        for key, dst in dsts.items():
-            if dst in caches:
-                command_args[key] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+        # キャッシュを作成するため、argsを書き換える
+        for p_port, datum_id in dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                cache_list[f'{flow_uuid},{datum_id}'] = cache_uuid
+                command_args[p_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
 
         new_step = parse_command_step(node, command_args, srcs, dsts)
         new_job = Job(new_step, inputs)
     elif t == 'flow':
-        flow_uuid = node['uuid']
-        new_job = parse_job(load_flow(flow_uuid), flow_uuid, command_args, srcs, dsts, inputs)
+        sub_job_flow_uuid = node['uuid']
+        new_job = parse_job(load_flow(sub_job_flow_uuid), sub_job_flow_uuid, command_args, srcs, dsts, inputs)
 
-    if len(cache) > 0:
-        new_job.caches = cache
+        # キャッシュを作成するため、argsを書き換える
+        for p_port, datum_id in dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                cache_list[f'{flow_uuid},{datum_id}'] = cache_uuid
+                connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
+
+    if len(cache_list) > 0:
+        new_job.caches = cache_list
 
     return new_job
+
+def connect_subflow_output_with_cache(cache_uuid, port, jobs):
+    """
+    指定したjobsの中に、指定したoutput_port（この場合はcacheするdatumにつながるport）をdstsとして持つstepを探し、
+    そのstepがコマンドであれば、argsにoパラメータ及び値をセットし、
+    フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
+    """
+    for job in jobs:
+        for c_port, c_datum_id in job.step.dsts.items():
+            if c_datum_id == port:
+                if job.step.is_command:
+                    job.step.args[c_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+                else:
+                    connect_subflow_output_with_cache(cache_uuid, c_port, job.jobs)
 
 def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
@@ -311,14 +327,31 @@ class Job:
                 result[d] = job.inputs[d]
         return result
 
+    # def check_multi_use(self, job, datum_id, datum):
+    #     job_ports = self.dst_job_ids(datum_id)
+    #     src_job = self.src_job(datum_id)
+    #
+    #     if len(job_ports) >= 2:
+    #         caches = src_job.caches
+    #
+    #         if len(caches) > 0:
+    #             for cache in caches.values():
+    #                 datum.command_to_file(cache)
+    #                 break
+    #         else:
+    #             datum.command_to_file()
+    #
+    #         for j, port in job_ports.items():
+    #             if j != job:
+    #                 j.inputs[j.step.srcs[port]] = datum
+    #     return datum
+
     def check_multi_use(self, job, datum_id, datum):
         job_ports = self.dst_job_ids(datum_id)
 
         if len(job_ports) >= 2:
             if not isinstance(datum.source, NysolPythonSource):
-                for cache in caches.values():
-                    datum.command_to_file(cache)
-                    break
+                datum.command_to_file()
 
             for j, port in job_ports.items():
                 if j != job:
