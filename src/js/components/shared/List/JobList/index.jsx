@@ -22,6 +22,8 @@ type Props = {
   job: JobProps;
   href: string;
   children: React.Node;
+  onClickJob: Function;
+  selected: boolean;
 }
 
 export default class JobList extends React.Component<Props> {
@@ -31,9 +33,9 @@ export default class JobList extends React.Component<Props> {
   }
 
   render () {
-    const {icon, children, href, job} = this.props
+    const {icon, children, href, job, onClickJob,selected} = this.props
     const {uuid} = job
 
-    return <JobFrameList uuid={uuid} job={job}/>
+    return <JobFrameList uuid={uuid} job={job} onClickJob={onClickJob} selected={selected}/>
   }
 }

@@ -128,7 +128,8 @@ export default class ProfileContainer extends React.Component<Props, State> {
       <div className={style.page_title}>
         プロフィール設定
       </div>
-      <div>
+      <div className={style.property_body}>
+        <div className={style.card}>
         <Form onSubmit={(formState)=>this.onSubmit(formState)}>
           <TabBar className={style.tabbar}>
             <TabList>
@@ -139,7 +140,6 @@ export default class ProfileContainer extends React.Component<Props, State> {
             </TabList>
           </TabBar>
           <TabPanel tab_id={0} selected_tab_id={selected_tab_id}>
-            <div className={style.card}>
               <div className={'mb-8px'}>
                 <label>ユーザ名</label>
                 <TextField placeholder={'ユーザ名'} defaultValue={profile.name}  useForm={true} formKey={"name"}/>
@@ -159,10 +159,8 @@ export default class ProfileContainer extends React.Component<Props, State> {
               <div className={'text-right mt-20px'}>
                 <Button className={'mr-0'} onClick={this.onClickSave}>保存する</Button>
               </div>
-            </div>
           </TabPanel>
           <TabPanel tab_id={1} selected_tab_id={selected_tab_id}>
-            <div className={style.card}>
               <div className={'mb-8px'}>
                 <label>URL</label>
                 <TextField className={'mb-0'} placeholder={'Grafana URL'} defaultValue={profile.grafana_url} useForm={true} formKey={"grafana_url"}/>
@@ -179,9 +177,9 @@ export default class ProfileContainer extends React.Component<Props, State> {
               <div className={'text-right mt-20px'}>
                 <Button className={'mr-0'} onClick={this.onClickSave}>保存する</Button>
               </div>
-            </div>
           </TabPanel>
           </Form>
+        </div>
       </div>
       <ModalManager />
     </div>
