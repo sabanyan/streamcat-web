@@ -226,6 +226,18 @@ export default class FlowListContainer extends React.Component<Props,State> {
     })
   }
 
+  onBlurTitle(e){
+    const flow = this.state.selected_flow
+    APIUtil.put("flows/" + flow.uuid,{
+      ...flow,
+      label: e.target.value
+    }).then((response)=>{
+      this.getFlowList()
+    },(error)=>{
+
+    })
+  }
+
   isEmptyFlowList () {
     if(!this.state.is_finished)return false
     if (!Array.isArray(this.state.flow_list) || this.state.flow_list.length ===
@@ -249,7 +261,8 @@ export default class FlowListContainer extends React.Component<Props,State> {
   renderInspector(){
     return <FlowInspector flow={this.state.selected_flow}
                           onClickDelete={(uuid)=>this.onClickDelete(uuid)}
-                          onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}/>
+                          onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}
+                          onBlurTitle={(e)=>this.onBlurTitle(e)}/>
   }
 
   renderAll () {

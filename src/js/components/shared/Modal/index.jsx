@@ -18,7 +18,8 @@ type Props = {
   cancel?: string,
   close?: boolean,
   done?: string,
-  children?: React.Node
+  children?: React.Node,
+  primary?: boolean
 }
 
 type State = {
@@ -131,7 +132,7 @@ export default class Modal extends React.Component<Props, State> {
 
     const done = (this.state.done)?this.state.done:this.props.done
     const {visible, title, content, contents, danger} = this.state
-    const {preview, ok, close, footer, cancel, children} = this.props
+    const {preview, ok, close, footer, cancel, children, primary} = this.props
 
     /**
      * 背景
@@ -163,7 +164,7 @@ export default class Modal extends React.Component<Props, State> {
           {cancel}
         </Button>
         &nbsp;
-        <Button danger={danger} primary={true}
+        <Button danger={danger} primary={primary}
           onClick={() => this.onClickDone()}>
           {done}
         </Button>
