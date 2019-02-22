@@ -22,66 +22,79 @@ import TabList from '../../TabBar/TabList'
 import Tab from '../../TabBar/Tab'
 import type { FlowModelProps } from '../../../../model/Flow/FlowModel'
 import moment from 'moment/moment'
+import ErrorUtil from '../../../../utils/ErrorUtil'
+import APIUtil from '../../../../utils/APIUtil'
+import ReactDomUtil from '../../../../utils/ReactDomUtil'
 
 type Props = {
   project: {};
   onClickDelete: Function;
   onClickDuplicate: Function;
+  onBlurTitle: Function;
 }
 
 class FlowInspector extends React.Component<Props> {
+
   constructor (props) {
     super(props)
   }
-  render () {
-    const flow:FlowListDataType = this.props.flow
-    let content = null
-    if(flow){
-      const uuid = flow.uuid
-      const label = flow.label
-      const creator = flow.creator
-      const createdAt = flow.createdAt
-      const description = flow.description
-      content = <div>
-        <div className={"mb-8px"}>
-          {label}
-        </div>
-        <div className={style.actions}>
-          <Button onClick={()=>this.props.onClickDuplicate(uuid)}>複製する</Button>
-          <Button danger={true} onClick={()=>this.props.onClickDelete(uuid)}>削除する</Button>
-        </div>
-        <div className={style.full_hr}/>
-        <div>
-          <label>フロー名</label>
-        </div>
-        <div>
-          {label}
-        </div>
-        <div>
-          <label>説明</label>
-        </div>
-        <div>
-          {(description)?description:"説明がありません"}
-        </div>
-        <div>
-          <label>作成者</label>
-        </div>
-        <div>
-          {creator}
-        </div>
-        <div>
-          <label>作成日時</label>
-        </div>
-        <div>
-          {moment(createdAt).format(Constants.format.dateTime)}
-        </div>
-      </div>
-    }
 
-    return <div className={classnames(style.property,style.in)}>
-      <BaseInspector {...this.props}>
-      {content}
-    </BaseInspector>
+  nullInspector(){
+    return <div className={classnames(style.property, style.in)}>
+      <BaseInspector {...this.props} >
+      </BaseInspector>
+    </div>
+  }
+
+  render () {
+    const flow: FlowListDataType = this.props.flow
+    if (!flow) {
+      return this.nullInspector()
+    }
+    let content = null
+    const uuid = flow.uuid
+    const label = flow.label
+    const creator = flow.creator
+    const createdAt = flow.createdAt
+    const description = flow.description
+    content = <div>
+      <div className={style.actions}>
+        <Button onClick={() => this.props.onClickDuplicate(uuid)}>複製する</Button>
+        <Button danger={true}
+                onClick={() => this.props.onClickDelete(uuid)}>削除する</Button>
+      </div>
+      <div className={style.full_hr}/>
+      <div>
+        <label>フロー名</label>
+      </div>
+      <div>
+        {label}
+      </div>
+      <div>
+        <label>説明</label>
+      </div>
+      <div>
+        {(description) ? description : '説明がありません'}
+      </div>
+      <div>
+        <label>作成者</label>
+      </div>
+      <div>
+        {creator}
+      </div>
+      <div>
+        <label>作成日時</label>
+      </div>
+      <div>
+        {moment(createdAt).format(Constants.format.dateTime)}
+      </div>
+    </div>
+
+    return <div className={classnames(style.property, style.in)}>
+      <BaseInspector label={label}
+                     {...this.props} >
+        {content}
+      </BaseInspector>
     </div>
   }
 
