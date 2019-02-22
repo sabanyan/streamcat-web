@@ -148,7 +148,7 @@ export default class Modal extends React.Component<Props, State> {
      */
     if (ok) {
       buttons = <Button data-dismiss="modal"
-                        onClick={() => this.onClickOK()}>
+                        onClick={() => this.onClickOK()} primary={true}>
         OK
       </Button>
     }
@@ -163,7 +163,7 @@ export default class Modal extends React.Component<Props, State> {
           {cancel}
         </Button>
         &nbsp;
-        <Button danger={danger}
+        <Button danger={danger} primary={true}
           onClick={() => this.onClickDone()}>
           {done}
         </Button>
