@@ -217,26 +217,26 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   onHide(){
-    this.saveNodes()
-    this.saveFlowPorts()
+//    this.saveNodes()
+//    this.saveFlowPorts()
   }
-
-  /**
-   * データソースのIN/OUTを保存
-   *  */
-  saveFlowPorts(){
-    const {flow,notify,dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
-  }
-
-  saveNodes(){
-    let {nodes,history} = this.props
-    const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history,nodes)
-    if(isSame){
-      return
-    }
-    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
-  }
+//
+//  /**
+//   * データソースのIN/OUTを保存
+//   *  */
+//  saveFlowPorts(){
+//    const {flow,notify,dismissNotify} = this.props
+//    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
+//  }
+//
+//  saveNodes(){
+//    let {nodes,history} = this.props
+//    const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history,nodes)
+//    if(isSame){
+//      return
+//    }
+//    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+//  }
 
   render () {
     let step_text
