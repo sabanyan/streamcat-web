@@ -26,6 +26,7 @@ import moment from 'moment/moment'
 type Props = {
   project: {};
   onClickDelete: Function;
+  onClickDuplicate: Function;
 }
 
 class FlowInspector extends React.Component<Props> {
@@ -46,15 +47,21 @@ class FlowInspector extends React.Component<Props> {
           {label}
         </div>
         <div className={style.actions}>
-          <Button>実行する</Button>
+          <Button onClick={()=>this.props.onClickDuplicate(uuid)}>複製する</Button>
           <Button danger={true} onClick={()=>this.props.onClickDelete(uuid)}>削除する</Button>
         </div>
         <div className={style.full_hr}/>
         <div>
+          <label>フロー名</label>
+        </div>
+        <div>
+          {label}
+        </div>
+        <div>
           <label>説明</label>
         </div>
         <div>
-          {description}
+          {(description)?description:"説明がありません"}
         </div>
         <div>
           <label>作成者</label>
