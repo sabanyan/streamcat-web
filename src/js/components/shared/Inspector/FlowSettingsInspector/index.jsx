@@ -26,13 +26,12 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
   }
 
   onSave (e: Event) {
-    const {flow} = this.props
+    const {flow,notify,dismissNotify} = this.props
     const {label} = this.props.flow
     flow.description = this.refs['description'].value
     flow.params = this.getCurrentParams()
     this.props.updateFlow(flow)
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {label: label, description: flow.description,params:flow.params})
-    this.props.selectSteps()
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {label: label, description: flow.description,params:flow.params}, notify, dismissNotify)
   }
 
   getCurrentParams(){
@@ -103,7 +102,8 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
   render () {
     const {flow} = this.props
-    const {params} = this.props.flow
+    if(!flow)return null
+    const {params} = flow
 
 
     let inputParams, inputParamsContainer, addFlowParams
@@ -139,7 +139,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     }
     addFlowParams = <AddButton onClick={()=>this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
 
-    return <BaseInspector header={''} label={this.props.flow.label} name={''} {...this.props}
+    return <BaseInspector header={''} label={this.props.flow.label} {...this.props}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={()=>this.onSave()}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8} onBlur={this.onBlurDescription}></textarea>

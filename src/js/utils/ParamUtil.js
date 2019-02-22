@@ -4,6 +4,7 @@ import ParamString from '../components/shared/Param/ParamString'
 import ParamBoolean from '../components/shared/Param/ParamBoolean'
 import * as React from 'react'
 import ParamSelect from '../components/shared/Param/ParamSelect'
+import ParamNumber from '../components/shared/Param/ParamNumber'
 
 export default class ParamUtil {
   static clearElement(element){
@@ -16,6 +17,9 @@ export default class ParamUtil {
     //モーダルで入力されたパラメータを取得
     inputRefs.map((inputRef) => {
       switch (inputRef.param.type){
+        case Constants.param.type.number:
+          args[inputRef.param.name] = inputRef.element.value
+          break
         case Constants.param.type.string:
           args[inputRef.param.name] = inputRef.element.value
           break
@@ -41,6 +45,9 @@ export default class ParamUtil {
   static getParamElement(param,onBuild,defaultValue,refValue){
     let paramElement
     switch(param.type){
+      case Constants.param.type.number:
+        paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}/>
+        break
       case Constants.param.type.string:
         paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}/>
         break
