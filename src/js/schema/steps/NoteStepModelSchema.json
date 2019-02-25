@@ -57,6 +57,10 @@
       "type": "string",
       "pattern": "^(.*)$"
     },
+    "title": {
+      "$id": "#/properties/title",
+      "type": "string"
+    },
     "content": {
       "$id": "#/properties/content",
       "type": "string"

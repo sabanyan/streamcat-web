@@ -4,6 +4,7 @@ import Constants from '../../constants';
 
 export type NoteStepModelProps = {
     ...BaseModelProps,
+    title: string;
     content: string;
 }
 

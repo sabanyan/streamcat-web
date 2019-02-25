@@ -73,7 +73,7 @@ export default class Note extends React.Component<Props> {
         return <foreignObject {...style} transform={'translate(0,0)'}>
         <div style={{display:"table",width:"100%",height:style.height,paddingRight: style.padding + "px"}}>
         <p xmlns="http://www.w3.org/1999/xhtml" style={TextStyle}>
-        {this.props.model.content}</p>
+        {this.props.model.title}</p>
         </div>
       </foreignObject>
     }
