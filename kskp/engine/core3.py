@@ -52,6 +52,11 @@ def parse_job(obj, flow_uuid, args, srcs, dsts, inputs):
 
 def parse_flow(obj, flow_uuid):
     flow = Flow(flow_uuid)
+
+    # for debug
+    if 'label' in obj:
+        flow.label = obj['label']
+
     for param in obj['params']:
         flow.params.append(Parameter(param['name']))
     flow.i_ports = obj['ports'][0]
@@ -78,6 +83,10 @@ def parse_datum(node_obj):
         datum.is_temp = False
     else:
         datum = Frame()
+
+    if 'label' in node_obj:
+        datum.label = node_obj['label']
+
     return datum
 
 def parse_nodes(obj):
@@ -106,7 +115,10 @@ def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
 
 def parse_command_step(node_obj, args, srcs, dsts):
-    return Step(commands[node_obj['commandId']], args, srcs, dsts)
+    label = ''
+    if 'label' in node_obj:
+        label = node_obj['label']
+    return Step(commands[node_obj['commandId']], args, srcs, dsts, node_obj['id'], label)
 
 
 class Job:
@@ -135,8 +147,11 @@ class Job:
                     last.is_temp = False
 
         elif s.is_command:
+            import sys
+            import time
+            sys.stderr.write('stt (' + time.strftime('%Y/%m/%d %H:%M:%S') + ') step[' + self.step.step_label + '(id: ' + self.step.step_id + ')]\n')
             output = cf.execute(self.step.args, self.inputs)
-            # print(self.step.args, self.inputs)
+            sys.stderr.write('end (' + time.strftime('%Y/%m/%d %H:%M:%S') + ')\n\n')
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
@@ -176,7 +191,13 @@ class Job:
     def get_datum(self, datum_id, datum):
         if datum.uuid is not None: return datum
 
-        job, port = self.src_job_from(datum_id)
+        src = self.src_job_from(datum_id)
+        if src is None:
+            flow = self.step.command_or_flow
+            sys.__stderr__.write(f'empty and starting data node: {flow.uuid}.{datum_id}\n')
+            raise Exception(f'フロー({flow.label} uuid: {flow.uuid})のノード[{datum.label}]にデータが存在しません。単体の空データは削除してください。')
+
+        job, port = src
 
         self.expand_args(job)
         job.inputs = job.check_inputs(self.inputs_of(job))
@@ -254,11 +275,15 @@ class Job:
 
 
 class Step:
-    def __init__(self, command_or_flow, args, srcs, dsts):
+    def __init__(self, command_or_flow, args, srcs, dsts, step_id='', step_label=''):
         self.command_or_flow = command_or_flow
         self.args = args
         self.srcs = srcs # {'in': 'd0'}
         self.dsts = dsts # {'out': 'd1'}
+
+        # for debug
+        self.step_id = step_id
+        self.step_label = step_label
 
     @property
     def is_command(self):
@@ -290,6 +315,8 @@ class Flow:
         self.o_ports = []
         self.description = ''
 
+        self.label = '' # for debug
+
     def __repr__(self):
         return f'<Flow uuid:{self.uuid}>'
 
@@ -319,6 +346,15 @@ class UnixCommand(Command):
         self.o_ports = [{'name': 'o', 'type': 'frame'}]
 
     def execute(self, args, inputs):
+
+        # for debug
+        import sys
+        indent = '  '
+        sys.__stderr__.write(indent + self.name + ': <\n')
+        for k, i in inputs.items():
+            sys.__stderr__.write(indent + '  [' + k + ']: ' + (repr(i))[:80] + '\n')
+        sys.__stderr__.write(indent + '>\n')
+
         source = self.source(args, inputs)
         for input in inputs.values():
             if isinstance(input.source, PathFileSource):
@@ -1159,7 +1195,7 @@ class Mcat(MCommandNew):
                 f = None
                 f <<= nm.m2cat(i=input.source.fullpath.as_posix())
                 inputs_for_arg_i.append(f)
-            elif isinstance(input_i.source, NysolPythonSource):
+            elif isinstance(input.source, NysolPythonSource):
                 inputs_for_arg_i.append(input.source.nysol_module)
         args_for_nysol.update({'i': inputs_for_arg_i})
 
@@ -4575,52 +4611,155 @@ class PredictOld(UnixCommand):
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 # PCMD
-class Groupby(UnixCommand):
-    pass
 
-class Groupby2(UnixCommand):
-    pass
-
-class SmlModeling(UnixCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'SmlModeling'
-        self.nysol_mod = nm.cmd
-        self.command_path = '/kskp/engine/commands/pcmd/sml_modeling.sh'
-        self.description = 'モデリング'
-        self.output_ext = 'csv'
-        self.stdout_param = ' output_metrics_data='
+class NmCmd(MCommandNew):
+    """
+    nysol_pythonのcmdメソッドのクラス
+    使用回数が多く、argsを辞書から文字列に変換する箇所が殆ど同じなので
+    いい加減別クラスとして定義した。
+    """
+    def __init__(self, exe, ext, param):
+        super().__init__(nm.cmd)
+        self.execute_command = exe
+        self.output_ext = ext
+        self.stdout_param = ' ' + param
 
     def command_args(self, args, inputs):
-        cl_args = self.command_path
-        process_flow = None
+        """
+        実行可能状態のargsを生成
+        """
+        # input整理
+        args, process_flow = self.parse_command_inputs(args, inputs)
+        # nm.cmd用の文字列のコマンドを作成する
+        str_args = self.execute_command + self.convert_args_dict_into_str(args)
 
+        return str_args, process_flow
+
+    def parse_command_inputs(self, args, inputs):
+        process_flow = None
+        # input整理
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+            args.update({'i': input_i.source.fullpath.as_posix()})
         elif isinstance(input_i.source, NysolPythonSource):
-            # process_flow = input_i.source.nysol_module
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+            process_flow = input_i.source.nysol_module
 
-        # nm.cmd用の文字列のコマンドを作成する
-        for key, value in args.items():
+        return args, process_flow
+
+    def convert_args_dict_into_str(self, dict_args):
+        str_args = ''
+        for key, value in dict_args.items():
             if isinstance(value, bool):
-                cl_args += ' ' +  key
+                if value:
+                    str_args += ' -' +  key
                 continue
             if not len(value) == 0:
-                cl_args += ' ' + key + '=' + value
-
-        cl_args += ' kcmd_path=/kskp/engine/commands/kcmd'
-        cl_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
-        cl_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
-
-        return cl_args, process_flow
+                str_args += ' %s=%s' % (key, value)
+        return str_args
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
         return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+
+class SmlModeling(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
+        self.name = 'SmlModeling'
+        self.description = 'デモ用モデリング'
+
+    def parse_command_inputs(self, args, inputs):
+        input_i = inputs['i']
+        # うまいこと標準入力がsml_modeling.sh内で受け取れていないようなので、
+        # とりあえずなんであろうとパスを渡す
+        input_i.command_to_file()
+        args.update({'i': input_i.source.fullpath.as_posix()})
+
+        return args, None
+
+    def command_args(self, args, inputs):
+        # input整理
+        args, process_flow = self.parse_command_inputs(args, inputs)
+        # nm.cmd用の文字列のコマンドを作成する
+        str_args = self.execute_command + self.convert_args_dict_into_str(args)
+
+        str_args += ' kcmd_path=/kskp/engine/commands/kcmd'
+        str_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
+        str_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
+
+        return str_args, process_flow
+
+class Groupby(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/groupby.sh', 'csv', 'o=')
+        self.name = 'Groupby'
+        self.description = 'groupby処理を行う'
+
+class CheckDuplicateRows(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/check_duplicate_rows.sh', 'csv', 'o=')
+        self.name = 'CheckDuplicateRows'
+        self.description = '重複行の抽出'
+
+class MergeFS(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/merge_FS.sh', 'csv', 'o=')
+        self.name = 'MergeFS'
+        self.description = '不整CSVファイルのクレンジングと集約'
+
+class MergeIbutsu(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/merge_ibutsu.sh', 'csv', 'o=')
+        self.name = 'MergeIbutsu'
+        self.description = 'CSVファイルの集約'
+
+    # そのまま返す
+    # 標準入力を受け取らないので、そのままスルー
+    # 動作確認はしていない（テストデータがないので・・・）
+    def parse_command_inputs(self, args, inputs):
+        return args, None
+
+class ColumnGroupingName(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
+        self.name = 'ColumnGroupingName'
+        self.description = '項目群に対して、グループに属する項目名に接頭語を付与する'
+
+class ColumnUniqueName(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_unique_name.sh', 'csv', 'o=')
+        self.name = 'ColumnUniqueName'
+        self.description = '全ての項目名がユニークになるように、項目名を変更する。'
+
+class ColumnName(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
+        self.name = 'ColumnName'
+        self.description = '先頭と末尾に、指定した項目名の順番に列を並び替える。'
+
+class ColumnBlankName(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
+        self.name = 'ColumnBlankName'
+        self.description = '空白の項目名に対して、指定した文字と重複時の識別子で生成した項目名に変更し、全ての項目を出力する。'
+
+class ColumnList(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_list.sh', 'csv', 'o=')
+        self.name = 'ColumnList'
+        self.description = 'ヘッダー行と先頭の1行 を縦型に変形したリストを出力する'
+
+class WinCp932Read(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/windows_cp932_csv_read.sh', 'csv', 'o=')
+        self.name = 'WinCp932Read'
+        self.description = 'Windowsファイル（Shift-JIS拡張 CP932）を、サーバ上のローカルファイルより読込む。'
+
+class ColumnsToRows(NmCmd):
+    def __init__(self):
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/columns_to_rows.sh', 'csv', 'o=')
+        self.name = 'ColumnsToRows'
+        self.description = 'f=で指定した複数の列項目に対して、各項目の行を連結した新たな項目をa=で指定した名前で作成する。'
 
 commands = {
     # MCDM
@@ -4742,9 +4881,23 @@ commands = {
     'evaluate': Evaluate(),
     'predict': Predict(),
 
+    # 追加コマンド
     'groupby': Groupby(),
-    'groupby2': Groupby2(),
-    'sml_modeling': SmlModeling()
+
+    # デモ専用コマンド
+    'sml_modeling': SmlModeling(),
+
+    # O社向けコマンド
+    'check_duplicate_rows': CheckDuplicateRows(),
+    'merge_FS': MergeFS(),
+    'merge_ibutsu': MergeIbutsu(),
+    'column_grouping_name': ColumnGroupingName(),
+    'column_unique_name': ColumnUniqueName(),
+    'column_name': ColumnName(),
+    'column_blank_name': ColumnBlankName(),
+    'column_list': ColumnList(),
+    'windows_cp932_csv_read': WinCp932Read(),
+    'columns_to_rows': ColumnsToRows()
 }
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),

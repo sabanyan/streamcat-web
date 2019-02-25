@@ -1,0 +1,1566 @@
+{
+  "projectId": 6,
+  "label": "OMRON_検査データ_mcut不具合",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2019-02-01 14:56:58",
+  "nodes": [
+    {
+      "position": {
+        "x": 3290,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー.csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "79941279-0ceb-4aa7-b5ac-02b527e4987a",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1616,
+        "y": 193
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー2.csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "a957f01e-096c-487c-b24c-b746cb4c28e3",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1517,
+        "y": 286
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "label": "【検査　ver1 0001】 S1",
+      "uuid": "80a5b7dc-8a52-4812-a77d-64794c497b1d",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1521,
+        "y": 190
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "集約",
+      "srcs": {
+        "i": "ダミー2.csv"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/filelist_G8K_twin_test_0001.csv",
+        "p": "/home/kskp/KSKP_trial"
+      },
+      "commandId": "merge_ibutsu"
+    },
+    {
+      "position": {
+        "x": 2027.5,
+        "y": 197.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (8 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "8f79ede0-de52-4b2d-9d5f-639c9217eab1",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1938,
+        "y": 287
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d3",
+      "type": "frame",
+      "label": "【検査　ver1 0002】S1",
+      "uuid": "4c10018e-e562-4b1e-a79e-93dc4ab785a6",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1935,
+        "y": 195
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "集約",
+      "srcs": {
+        "i": "ダミー3 (8 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d3"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/filelist_G8K_twin_test_0002.csv",
+        "p": "/home/kskp/KSKP_trial"
+      },
+      "commandId": "merge_ibutsu"
+    },
+    {
+      "position": {
+        "x": 2461,
+        "y": 198
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (7 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "1a8c847b-d300-4363-a7b7-cd9dea7c175e",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2368,
+        "y": 295
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d4",
+      "type": "frame",
+      "label": "【検査 ver2 0001】S1",
+      "uuid": "1e341011-bbb6-4434-940c-0c8639727344",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2365,
+        "y": 196
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c4",
+      "type": "command",
+      "label": "集約",
+      "srcs": {
+        "i": "ダミー3 (7 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d4"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/filelist_G8K_twin_test_ver2_0001.csv",
+        "p": "/home/kskp/KSKP_trial"
+      },
+      "commandId": "merge_ibutsu"
+    },
+    {
+      "position": {
+        "x": 4166,
+        "y": 194
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (6 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "4c901e18-5968-4951-8d53-c651ef44c02a",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3194,
+        "y": 307
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "【組立SPC＃1】S1",
+      "uuid": "842bd4df-58c9-4e96-8f66-cd12d4c2c1f0",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3191,
+        "y": 198
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "集約/クレンジング",
+      "srcs": {
+        "i": "ダミー.csv"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/filelist_Kumitate_#1.csv",
+        "p": "/home/kskp/KSKP_trial",
+        "e": "/home/kskp/KSKP_trial/FS_不整_＃1_test.txt",
+        "s": "10000"
+      },
+      "commandId": "merge_FS"
+    },
+    {
+      "position": {
+        "x": 4061,
+        "y": 292
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d5",
+      "type": "frame",
+      "label": "【仕上SPC】S1",
+      "uuid": "e822924f-2ed2-459c-a1e0-af8d09a38bcc",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 4066,
+        "y": 192
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c5",
+      "type": "command",
+      "label": "集約/クレンジング",
+      "srcs": {
+        "i": "ダミー3 (6 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d5"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/filelist_Siage.csv",
+        "p": "/home/kskp/KSKP_trial",
+        "e": "/home/kskp/KSKP_trial/FS_siage_ir_test.txst",
+        "s": "10000"
+      },
+      "commandId": "merge_FS"
+    },
+    {
+      "position": {
+        "x": 3715,
+        "y": 204
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (5 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "62132088-b66b-4c5b-b170-434154f4c11b",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3626,
+        "y": 305
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d6",
+      "type": "frame",
+      "label": "【組立SPC＃2】S1",
+      "uuid": "f3f91341-0fe7-4039-a115-49afbe650198",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3622,
+        "y": 203
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c6",
+      "type": "command",
+      "label": "集約/クレンジング",
+      "srcs": {
+        "i": "ダミー3 (5 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d6"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/filelist_Kumitate_#2.csv",
+        "p": "/home/kskp/KSKP_trial",
+        "e": "/home/kskp/KSKP_trial/FS_#2_ir_test.txt",
+        "s": "10000"
+      },
+      "commandId": "merge_FS"
+    },
+    {
+      "position": {
+        "x": 4166,
+        "y": 194
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (6 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "4c901e18-5968-4951-8d53-c651ef44c02a",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2890.5,
+        "y": 197.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (13 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "020f5e3f-8df7-4c8d-b519-240c212bb60e",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2802,
+        "y": 304
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d7",
+      "type": "frame",
+      "label": "【検査　ver2 0002】S1",
+      "uuid": "d505a204-c28b-4dab-a1de-c9f345f23fa0",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2800,
+        "y": 196
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c7",
+      "type": "command",
+      "label": "集約",
+      "srcs": {
+        "i": "ダミー3 (13 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d7"
+      },
+      "args": {
+        "f": "/home/kskp/KSKP_trial/1_Filelist/filelist_G8K_twin_test_ver2_0002.csv",
+        "p": "/home/kskp/KSKP_trial"
+      },
+      "commandId": "merge_ibutsu"
+    },
+    {
+      "position": {
+        "x": 2890.5,
+        "y": 197.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (13 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "020f5e3f-8df7-4c8d-b519-240c212bb60e",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2027.5,
+        "y": 197.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (8 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "8f79ede0-de52-4b2d-9d5f-639c9217eab1",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 380.5,
+        "y": 200.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "ダミー3 (12 番目のコピー).csv",
+      "type": "frame",
+      "label": "ダミー",
+      "uuid": "784dff5f-b773-4467-92c2-8423bb1b4cd3",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 274.5,
+        "y": 282.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d8",
+      "type": "frame",
+      "label": "【組立PIR】S1",
+      "uuid": "0ae9b60e-2b09-4310-9913-2895f52bf973",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 273.5,
+        "y": 200.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c8",
+      "type": "command",
+      "label": "インポート",
+      "srcs": {
+        "i": "ダミー3 (12 番目のコピー).csv"
+      },
+      "dsts": {
+        "o": "d8"
+      },
+      "args": {
+        "f": "組立PIR.csv",
+        "p": "/home/kskp/KSKP_trial/4_Buzai"
+      },
+      "commandId": "windows_cp932_csv_read"
+    },
+    {
+      "position": {
+        "x": 3256,
+        "y": 454
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d9",
+      "type": "frame",
+      "label": "【組立SPC】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3194,
+        "y": 455
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c9",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d1"
+      },
+      "dsts": {
+        "o": "d9"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 3702,
+        "y": 454
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d10",
+      "type": "frame",
+      "label": "【組立SPC#2】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3629,
+        "y": 454
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c10",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d6"
+      },
+      "dsts": {
+        "o": "d10"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 4124,
+        "y": 454
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d11",
+      "type": "frame",
+      "label": "【仕上SPC】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 4061,
+        "y": 451
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c11",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d5"
+      },
+      "dsts": {
+        "o": "d11"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 3260,
+        "y": 524
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d12",
+      "type": "frame",
+      "label": "d12",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3189,
+        "y": 522
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c12",
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "d9"
+      },
+      "dsts": {
+        "o": "d12"
+      },
+      "args": {
+        "f": "1,2,3,4,5,6,8,9,10,11,12,14,15,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,299,300,302,303",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": true,
+        "nfno": false,
+        "x": true,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 3188,
+        "y": 686
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d13",
+      "type": "frame",
+      "label": "【組立SPC＃1】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3190,
+        "y": 581
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c13",
+      "type": "command",
+      "label": "列名ユニーク化",
+      "srcs": {
+        "i": "d12"
+      },
+      "dsts": {
+        "o": "d13"
+      },
+      "args": {
+        "f": "",
+        "n": "組立_【ID】,組立_【CP(b)】,組立_【CP(a)】,組立_【CG】,組立_【AFa】,組立_【STROKE】,組立_【CP(b)GoodOrNg】,組立_【ArmatureLength】,組立_【CP(b)moto】,組立_【MaximumForce】,組立_【CP(b)motohikumae】,組立_【CP(a)GoodOrNg】,組立_【CP(a)moto】,組立_【CGGoorNg】,組立_【CGmoto】,組立_【AFaGoOrNg】,組立_【AFamoto】,組立_【teikaku】,組立_【beforeavg】,組立_【CP(b)_Low】,組立_【CP(b)_High】,組立_【CP(a)_Low】,組立_【CP(a)_High】,組立_【CG_Low】,組立_【CG_High】,組立_【AFa_Low】,組立_【AFa_High】,組立_【Stroke_Low】,組立_【Stroke_High】,組立_【GONG】,組立_【Unknown1】,組立_【日付】,組立_【時刻】,組立_【unknown2】,組立_調整前_【relaytester iD】,組立_調整前_【UT】,組立_調整前_【CODE_1】,組立_調整前_【TYPE】,組立_調整前_【RATE】,組立_調整前_【CR1】,組立_調整前_【CR2】,組立_調整前_【CR3】,組立_調整前_【CR4】,組立_調整前_【PV】,組立_調整前_【PV1】,組立_調整前_【PV2】,組立_調整前_【PV3】,組立_調整前_【PV4】,組立_調整前_【PC】,組立_調整前_【TSO】,組立_調整前_【TSOD】,組立_調整前_【NOV】,組立_調整前_【DV】,組立_調整前_【DV1】,組立_調整前_【DV2】,組立_調整前_【DV3】,組立_調整前_【DV4】,組立_調整前_【DC】,組立_調整前_【TSR】,組立_調整前_【TSRD】,組立_調整前_【HV】,組立_調整前_【VD】,組立_調整前_【AFV】,組立_調整前_【SRC】,組立_調整前_【RRC】,組立_調整前_【SCR】,組立_調整前_【RCR】,組立_調整前_【SDI】,組立_調整前_【RDI】,組立_調整前_【OT】,組立_調整前_【OT1】,組立_調整前_【OT2】,組立_調整前_【OT3】,組立_調整前_【OT4】,組立_調整前_【RT】,組立_調整前_【RT1】,組立_調整前_【RT2】,組立_調整前_【RT3】,組立_調整前_【RT4】,組立_調整前_【OBT1】,組立_調整前_【OBT2】,組立_調整前_【OBT3】,組立_調整前_【OBT4】,組立_調整前_【RBT1】,組立_調整前_【RBT2】,組立_調整前_【RBT3】,組立_調整前_【RBT4】,組立_調整前_【OLT1】,組立_調整前_【OLT2】,組立_調整前_【RLT1】,組立_調整前_【RLT2】,組立_調整前_【OTT1】,組立_調整前_【OTT2】,組立_調整前_【RTT1】,組立_調整前_【RTT2】,組立_調整前_【SAC】,組立_調整前_【CODE_2】,組立_調整前_【JDG_CR1】,組立_調整前_【JDG_CR2】,組立_調整前_【JDG_CR3】,組立_調整前_【JDG_CR4】,組立_調整前_【JDG_PV】,組立_調整前_【JDG_PV1】,組立_調整前_【JDG_PV2】,組立_調整前_【JDG_P3】,組立_調整前_【JDG_P4】,組立_調整前_【JDG_PC】,組立_調整前_【JDG_TSO】,組立_調整前_【JDG_TSRD】,組立_調整前_【JDG_HV】,組立_調整前_【JDG_VD】,組立_調整前_【JDG_AFV】,組立_調整前_【JDG_SRC】,組立_調整前_【JDG_RRC】,組立_調整前_【JDG_SCR】,組立_調整前_【JDG_RCR】,組立_調整前_【JDG_SDI】,組立_調整前_【JDG_RDI】,組立_調整前_【JDG_OT】,組立_調整前_【JDG_OT1】,組立_調整前_【JDG_OT2】,組立_調整前_【JDG_OT3】,組立_調整前_【JDG_OT4】,組立_調整前_【JDG_RT】,組立_調整前_【JDG_RT1】,組立_調整前_【JDG_RT2】,組立_調整前_【JDG_RT3】,組立_調整前_【JDG_RT4】,組立_調整前_【JDG_OBT1】,組立_調整前_【JDG_OBT2】,組立_調整前_【JDG_OBT3】,組立_調整前_【JDG_OBT4】,組立_調整前_【JDG_RBT1】,組立_調整前_【JDG_RBT2】,組立_調整前_【JDG_RBT3】,組立_調整前_【JDG_RBT4】,組立_調整前_【JDG_OLT1】,組立_調整前_【JDG_OLT2】,組立_調整前_【JDG_RLT1】,組立_調整前_【JDG_RLT2】,組立_調整前_【JDG_OTT1】,組立_調整前_【JDG_OTT2】,組立_調整前_【JDG_RTT1】,組立_調整前_【JDG_RTT2】,組立_調整前_【JDG__SAC】,組立_調整前_【日付】,組立_調整前_【時刻】,組立_調整後_【relaytester iD】,組立_調整後_【UT】,組立_調整後_【CODE_1】,組立_調整後_【TYPE】,組立_調整後_【RATE】,組立_調整後_【CR1】,組立_調整後_【CR2】,組立_調整後_【CR3】,組立_調整後_【CR4】,組立_調整後_【PV】,組立_調整後_【PV1】,組立_調整後_【PV2】,組立_調整後_【PV3】,組立_調整後_【PV4】,組立_調整後_【PC】,組立_調整後_【TSO】,組立_調整後_【TSOD】,組立_調整後_【NOV】,組立_調整後_【DV】,組立_調整後_【DV1】,組立_調整後_【DV2】,組立_調整後_【DV3】,組立_調整後_【DV4】,組立_調整後_【DC】,組立_調整後_【TSR】,組立_調整後_【TSRD】,組立_調整後_【HV】,組立_調整後_【VD】,組立_調整後_【AFV】,組立_調整後_【SRC】,組立_調整後_【RRC】,組立_調整後_【SCR】,組立_調整後_【RCR】,組立_調整後_【SDI】,組立_調整後_【RDI】,組立_調整後_【OT】,組立_調整後_【OT1】,組立_調整後_【OT2】,組立_調整後_【OT3】,組立_調整後_【OT4】,組立_調整後_【RT】,組立_調整後_【RT1】,組立_調整後_【RT2】,組立_調整後_【RT3】,組立_調整後_【RT4】,組立_調整後_【OBT1】,組立_調整後_【OBT2】,組立_調整後_【OBT3】,組立_調整後_【OBT4】,組立_調整後_【RBT1】,組立_調整後_【RBT2】,組立_調整後_【RBT3】,組立_調整後_【RBT4】,組立_調整後_【OLT1】,組立_調整後_【OLT2】,組立_調整後_【RLT1】,組立_調整後_【RLT2】,組立_調整後_【OTT1】,組立_調整後_【OTT2】,組立_調整後_【RTT1】,組立_調整後_【RTT2】,組立_調整後_【SAC】,組立_調整後_【CODE_2】,組立_調整後_【JDG_CR1】,組立_調整後_【JDG_CR2】,組立_調整後_【JDG_CR3】,組立_調整後_【JDG_CR4】,組立_調整後_【JDG_PV】,組立_調整後_【JDG_PV1】,組立_調整後_【JDG_PV2】,組立_調整後_【JDG_P3】,組立_調整後_【JDG_P4】,組立_調整後_【JDG_PC】,組立_調整後_【JDG_TSO】,組立_調整後_【JDG_TSRD】,組立_調整後_【JDG_HV】,組立_調整後_【JDG_VD】,組立_調整後_【JDG_AFV】,組立_調整後_【JDG_SRC】,組立_調整後_【JDG_RRC】,組立_調整後_【JDG_SCR】,組立_調整後_【JDG_RCR】,組立_調整後_【JDG_SDI】,組立_調整後_【JDG_RDI】,組立_調整後_【JDG_OT】,組立_調整後_【JDG_OT1】,組立_調整後_【JDG_OT2】,組立_調整後_【JDG_OT3】,組立_調整後_【JDG_OT4】,組立_調整後_【JDG_RT】,組立_調整後_【JDG_RT1】,組立_調整後_【JDG_RT2】,組立_調整後_【JDG_RT3】,組立_調整後_【JDG_RT4】,組立_調整後_【JDG_OBT1】,組立_調整後_【JDG_OBT2】,組立_調整後_【JDG_OBT3】,組立_調整後_【JDG_OBT4】,組立_調整後_【JDG_RBT1】,組立_調整後_【JDG_RBT2】,組立_調整後_【JDG_RBT3】,組立_調整後_【JDG_RBT4】,組立_調整後_【JDG_OLT1】,組立_調整後_【JDG_OLT2】,組立_調整後_【JDG_RLT1】,組立_調整後_【JDG_RLT2】,組立_調整後_【JDG_OTT1】,組立_調整後_【JDG_OTT2】,組立_調整後_【JDG_RTT1】,組立_調整後_【JDG_RTT2】,組立_調整後_【JDG__SAC】,組立_調整後_【日付】,組立_調整後_【時刻】,組立_調整後_【曲げ角度設定値】,組立_filename",
+        "nfni": false,
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mfldname"
+    },
+    {
+      "position": {
+        "x": 3702,
+        "y": 521
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d14",
+      "type": "frame",
+      "label": "d14",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3632,
+        "y": 520
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c14",
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "d10"
+      },
+      "dsts": {
+        "o": "d14"
+      },
+      "args": {
+        "f": "1,2,3,4,5,6,8,9,10,11,12,14,15,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,331,332,334,335",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": true,
+        "nfno": false,
+        "x": true,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 3632,
+        "y": 687
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d15",
+      "type": "frame",
+      "label": "【組立SPC#2】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 3632,
+        "y": 580
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c15",
+      "type": "command",
+      "label": "列名ユニーク化",
+      "srcs": {
+        "i": "d14"
+      },
+      "dsts": {
+        "o": "d15"
+      },
+      "args": {
+        "f": "",
+        "n": "組立_【ID】,組立_【CP(b)】,組立_【CP(a)】,組立_【CG】,組立_【AFa】,組立_【STROKE】,組立_【CP(b)GoodOrNg】,組立_【ArmatureLength】,組立_【CP(b)moto】,組立_【MaximumForce】,組立_【CP(b)motohikumae】,組立_【CP(a)GoodOrNg】,組立_【CP(a)moto】,組立_【CGGoorNg】,組立_【CGmoto】,組立_【AFaGoOrNg】,組立_【AFamoto】,組立_【teikaku】,組立_【beforeavg】,組立_【CP(b)_Low】,組立_【CP(b)_High】,組立_【CP(a)_Low】,組立_【CP(a)_High】,組立_【CG_Low】,組立_【CG_High】,組立_【AFa_Low】,組立_【AFa_High】,組立_【Stroke_Low】,組立_【Stroke_High】,組立_【GONG】,組立_【Unknown1】,組立_【日付】,組立_【時刻】,組立_【unknown2】,組立_調整前_【relaytester iD】,組立_調整前_【UT】,組立_調整前_【CODE_1】,組立_調整前_【TYPE】,組立_調整前_【RATE】,組立_調整前_【CR1】,組立_調整前_【CR2】,組立_調整前_【CR3】,組立_調整前_【CR4】,組立_調整前_【PV】,組立_調整前_【PV1】,組立_調整前_【PV2】,組立_調整前_【PV3】,組立_調整前_【PV4】,組立_調整前_【PC】,組立_調整前_【TSO】,組立_調整前_【TSOD】,組立_調整前_【NOV】,組立_調整前_【DV】,組立_調整前_【DV1】,組立_調整前_【DV2】,組立_調整前_【DV3】,組立_調整前_【DV4】,組立_調整前_【DC】,組立_調整前_【TSR】,組立_調整前_【TSRD】,組立_調整前_【HV】,組立_調整前_【VD】,組立_調整前_【AFV】,組立_調整前_【SRC】,組立_調整前_【RRC】,組立_調整前_【SCR】,組立_調整前_【RCR】,組立_調整前_【SDI】,組立_調整前_【RDI】,組立_調整前_【OT】,組立_調整前_【OT1】,組立_調整前_【OT2】,組立_調整前_【OT3】,組立_調整前_【OT4】,組立_調整前_【RT】,組立_調整前_【RT1】,組立_調整前_【RT2】,組立_調整前_【RT3】,組立_調整前_【RT4】,組立_調整前_【OBT1】,組立_調整前_【OBT2】,組立_調整前_【OBT3】,組立_調整前_【OBT4】,組立_調整前_【RBT1】,組立_調整前_【RBT2】,組立_調整前_【RBT3】,組立_調整前_【RBT4】,組立_調整前_【OLT1】,組立_調整前_【OLT2】,組立_調整前_【RLT1】,組立_調整前_【RLT2】,組立_調整前_【OTT1】,組立_調整前_【OTT2】,組立_調整前_【RTT1】,組立_調整前_【RTT2】,組立_調整前_【SAC】,組立_調整前_【CODE_2】,組立_調整前_【JDG_CR1】,組立_調整前_【JDG_CR2】,組立_調整前_【JDG_CR3】,組立_調整前_【JDG_CR4】,組立_調整前_【JDG_PV】,組立_調整前_【JDG_PV1】,組立_調整前_【JDG_PV2】,組立_調整前_【JDG_P3】,組立_調整前_【JDG_P4】,組立_調整前_【JDG_PC】,組立_調整前_【JDG_TSO】,組立_調整前_【JDG_TSRD】,組立_調整前_【JDG_HV】,組立_調整前_【JDG_VD】,組立_調整前_【JDG_AFV】,組立_調整前_【JDG_SRC】,組立_調整前_【JDG_RRC】,組立_調整前_【JDG_SCR】,組立_調整前_【JDG_RCR】,組立_調整前_【JDG_SDI】,組立_調整前_【JDG_RDI】,組立_調整前_【JDG_OT】,組立_調整前_【JDG_OT1】,組立_調整前_【JDG_OT2】,組立_調整前_【JDG_OT3】,組立_調整前_【JDG_OT4】,組立_調整前_【JDG_RT】,組立_調整前_【JDG_RT1】,組立_調整前_【JDG_RT2】,組立_調整前_【JDG_RT3】,組立_調整前_【JDG_RT4】,組立_調整前_【JDG_OBT1】,組立_調整前_【JDG_OBT2】,組立_調整前_【JDG_OBT3】,組立_調整前_【JDG_OBT4】,組立_調整前_【JDG_RBT1】,組立_調整前_【JDG_RBT2】,組立_調整前_【JDG_RBT3】,組立_調整前_【JDG_RBT4】,組立_調整前_【JDG_OLT1】,組立_調整前_【JDG_OLT2】,組立_調整前_【JDG_RLT1】,組立_調整前_【JDG_RLT2】,組立_調整前_【JDG_OTT1】,組立_調整前_【JDG_OTT2】,組立_調整前_【JDG_RTT1】,組立_調整前_【JDG_RTT2】,組立_調整前_【JDG__SAC】,組立_調整前_【日付】,組立_調整前_【時刻】,組立_調整後_【relaytester iD】,組立_調整後_【UT】,組立_調整後_【CODE_1】,組立_調整後_【TYPE】,組立_調整後_【RATE】,組立_調整後_【CR1】,組立_調整後_【CR2】,組立_調整後_【CR3】,組立_調整後_【CR4】,組立_調整後_【PV】,組立_調整後_【PV1】,組立_調整後_【PV2】,組立_調整後_【PV3】,組立_調整後_【PV4】,組立_調整後_【PC】,組立_調整後_【TSO】,組立_調整後_【TSOD】,組立_調整後_【NOV】,組立_調整後_【DV】,組立_調整後_【DV1】,組立_調整後_【DV2】,組立_調整後_【DV3】,組立_調整後_【DV4】,組立_調整後_【DC】,組立_調整後_【TSR】,組立_調整後_【TSRD】,組立_調整後_【HV】,組立_調整後_【VD】,組立_調整後_【AFV】,組立_調整後_【SRC】,組立_調整後_【RRC】,組立_調整後_【SCR】,組立_調整後_【RCR】,組立_調整後_【SDI】,組立_調整後_【RDI】,組立_調整後_【OT】,組立_調整後_【OT1】,組立_調整後_【OT2】,組立_調整後_【OT3】,組立_調整後_【OT4】,組立_調整後_【RT】,組立_調整後_【RT1】,組立_調整後_【RT2】,組立_調整後_【RT3】,組立_調整後_【RT4】,組立_調整後_【OBT1】,組立_調整後_【OBT2】,組立_調整後_【OBT3】,組立_調整後_【OBT4】,組立_調整後_【RBT1】,組立_調整後_【RBT2】,組立_調整後_【RBT3】,組立_調整後_【RBT4】,組立_調整後_【OLT1】,組立_調整後_【OLT2】,組立_調整後_【RLT1】,組立_調整後_【RLT2】,組立_調整後_【OTT1】,組立_調整後_【OTT2】,組立_調整後_【RTT1】,組立_調整後_【RTT2】,組立_調整後_【SAC】,組立_調整後_【CODE_2】,組立_調整後_【JDG_CR1】,組立_調整後_【JDG_CR2】,組立_調整後_【JDG_CR3】,組立_調整後_【JDG_CR4】,組立_調整後_【JDG_PV】,組立_調整後_【JDG_PV1】,組立_調整後_【JDG_PV2】,組立_調整後_【JDG_P3】,組立_調整後_【JDG_P4】,組立_調整後_【JDG_PC】,組立_調整後_【JDG_TSO】,組立_調整後_【JDG_TSRD】,組立_調整後_【JDG_HV】,組立_調整後_【JDG_VD】,組立_調整後_【JDG_AFV】,組立_調整後_【JDG_SRC】,組立_調整後_【JDG_RRC】,組立_調整後_【JDG_SCR】,組立_調整後_【JDG_RCR】,組立_調整後_【JDG_SDI】,組立_調整後_【JDG_RDI】,組立_調整後_【JDG_OT】,組立_調整後_【JDG_OT1】,組立_調整後_【JDG_OT2】,組立_調整後_【JDG_OT3】,組立_調整後_【JDG_OT4】,組立_調整後_【JDG_RT】,組立_調整後_【JDG_RT1】,組立_調整後_【JDG_RT2】,組立_調整後_【JDG_RT3】,組立_調整後_【JDG_RT4】,組立_調整後_【JDG_OBT1】,組立_調整後_【JDG_OBT2】,組立_調整後_【JDG_OBT3】,組立_調整後_【JDG_OBT4】,組立_調整後_【JDG_RBT1】,組立_調整後_【JDG_RBT2】,組立_調整後_【JDG_RBT3】,組立_調整後_【JDG_RBT4】,組立_調整後_【JDG_OLT1】,組立_調整後_【JDG_OLT2】,組立_調整後_【JDG_RLT1】,組立_調整後_【JDG_RLT2】,組立_調整後_【JDG_OTT1】,組立_調整後_【JDG_OTT2】,組立_調整後_【JDG_RTT1】,組立_調整後_【JDG_RTT2】,組立_調整後_【JDG__SAC】,組立_調整後_【日付】,組立_調整後_【時刻】,組立_調整後_【曲げ角度設定値】,組立_filename",
+        "nfni": false,
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mfldname"
+    },
+    {
+      "position": {
+        "x": 4121,
+        "y": 525
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d16",
+      "type": "frame",
+      "label": "d16",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 4064,
+        "y": 524
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c16",
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "d11"
+      },
+      "dsts": {
+        "o": "d16"
+      },
+      "args": {
+        "f": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,121,122,123,124",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": true,
+        "nfno": false,
+        "x": true,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 4061,
+        "y": 676
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d17",
+      "type": "frame",
+      "label": "【仕上SPC】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 4062,
+        "y": 584
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c17",
+      "type": "command",
+      "label": "列名ユニーク化",
+      "srcs": {
+        "i": "d16"
+      },
+      "dsts": {
+        "o": "d17"
+      },
+      "args": {
+        "f": "",
+        "n": "仕上_【station】,仕上_【UT】,仕上_【CODE】,仕上_【TYPE】,仕上_【RATE】,仕上_【CR1】,仕上_【CR2】,仕上_【CR3】,仕上_【CR4】,仕上_【PV】,仕上_【PV1】,仕上_【PV2】,仕上_【PV3】,仕上_【PV4】,仕上_【PC】,仕上_【TSO】,仕上_【TSOD】,仕上_【NOV】,仕上_【DV】,仕上_【DV1】,仕上_【DV2】,仕上_【DV3】,仕上_【DV4】,仕上_【DC】,仕上_【TSR】,仕上_【TSRD】,仕上_【HV】,仕上_【VD】,仕上_【AFV】,仕上_【SRC】,仕上_【RRC】,仕上_【SCR】,仕上_【RCR】,仕上_【SDI】,仕上_【RDI】,仕上_【OT】,仕上_【OT1】,仕上_【OT2】,仕上_【OT3】,仕上_【OT4】,仕上_【RT】,仕上_【RT1】,仕上_【RT2】,仕上_【RT3】,仕上_【RT4】,仕上_【OBT1】,仕上_【OBT2】,仕上_【OBT3】,仕上_【OBT4】,仕上_【RBT1】,仕上_【RBT2】,仕上_【RBT3】,仕上_【RBT4】,仕上_【OLT1】,仕上_【OLT2】,仕上_【RLT1】,仕上_【RLT2】,仕上_【OTT1】,仕上_【OTT2】,仕上_【RTT1】,仕上_【RTT2】,仕上_【SAC】,仕上_【NGCODE】,仕上_【JDG_CR1】,仕上_【JDG_CR2】,仕上_【JDG_CR3】,仕上_【JDG_CR4】,仕上_【JDG_PV】,仕上_【JDG_PV1】,仕上_【JDG_PV2】,仕上_【JDG_P3】,仕上_【JDG_P4】,仕上_【JDG_PC】,仕上_【JDG_TSO】,仕上_【JDG_TSOD】,仕上_【JDG_NOV】,仕上_【JDG_DV】,仕上_【JDG_DV1】,仕上_【JDG_DV2】,仕上_【JDG_DV3】,仕上_【JDG_DV4】,仕上_【JDG_DC】,仕上_【JDG_TSR】,仕上_【JDG_TSRD】,仕上_【JDG_HV】,仕上_【JDG_VD】,仕上_【JDG_AFV】,仕上_【JDG_SRC】,仕上_【JDG_RRC】,仕上_【JDG_SCR】,仕上_【JDG_RCR】,仕上_【JDG_SDI】,仕上_【JDG_RDI】,仕上_【JDG_OT】,仕上_【JDG_OT1】,仕上_【JDG_OT2】,仕上_【JDG_OT3】,仕上_【JDG_OT4】,仕上_【JDG_RT】,仕上_【JDG_RT1】,仕上_【JDG_RT2】,仕上_【JDG_RT3】,仕上_【JDG_RT4】,仕上_【JDG_OBT1】,仕上_【JDG_OBT2】,仕上_【JDG_OBT3】,仕上_【JDG_OBT4】,仕上_【JDG_RBT1】,仕上_【JDG_RBT2】,仕上_【JDG_RBT3】,仕上_【JDG_RBT4】,仕上_【JDG_OLT1】,仕上_【JDG_OLT2】,仕上_【JDG_RLT1】,仕上_【JDG_RLT2】,仕上_【JDG_OTT1】,仕上_【JDG_OTT2】,仕上_【JDG_RTT1】,仕上_【JDG_RTT2】,仕上_【JDG__SAC】,仕上_【日付】,仕上_【時刻】,仕上_【Unknown】,仕上_【filename】",
+        "nfni": false,
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mfldname"
+    },
+    {
+      "position": {
+        "x": 2881,
+        "y": 459
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d18",
+      "type": "frame",
+      "label": "d18",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2799,
+        "y": 460
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c18",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d7"
+      },
+      "dsts": {
+        "o": "d18"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 2884,
+        "y": 530
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d19",
+      "type": "frame",
+      "label": "d19",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2801,
+        "y": 523
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c19",
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "d18"
+      },
+      "dsts": {
+        "o": "d19"
+      },
+      "args": {
+        "f": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379,380,381,382,383,384,385,386,387,388,389,390,391,392,393,394,395,396,397,398,399,400,401,402,403,404,405,406,407,408,409",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": true,
+        "nfno": false,
+        "x": true,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 2801,
+        "y": 692
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d20",
+      "type": "frame",
+      "label": "【検査ver2 0002】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2803,
+        "y": 589
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c20",
+      "type": "command",
+      "label": "列名ユニーク化",
+      "srcs": {
+        "i": "d19"
+      },
+      "dsts": {
+        "o": "d20"
+      },
+      "args": {
+        "f": "",
+        "n": "検査_【Name】,検査_【TIME】,検査_【CODE】,検査_【FAIL】,検査_【SCR/Ohm】,検査_【OT/ms】,検査_【OT1/ms】,検査_【OT2/ms】,検査_【RT/ms】,検査_【RT1/ms】,検査_【RT2/ms】,検査_1A_【= 1A Ibutsu =】,検査_1A_【OBT1a@F/ms】,検査_1A_【OBT1a@S/ms】,検査_1A_【RBT1a@F/ms】,検査_1A_【RBT1a@S/ms】,検査_1A_【S-MaxOpen_1a@F/ms】,検査_1A_【S-MaxOpen_1a@S/ms】,検査_1A_【R-MaxOpen_1a@F/ms】,検査_1A_【R-MaxOpen_1a@S/ms】,検査_1A_【RTT1@F/ms】,検査_1A_【RTT1@S/ms】,検査_1B_【= 1B Ibutsu =】,検査_1B_【OBT1b@F/ms】,検査_1B_【OBT1b@S/ms】,検査_1B_【RBT1b@F/ms】,検査_1B_【RBT1b@S/ms】,検査_1B_【S-MaxOpen_1b@F/ms】,検査_1B_【S-MaxOpen_1b@S/ms】,検査_1B_【R-MaxOpen_1b@F/ms】,検査_1B_【R-MaxOpen_1b@S/ms】,検査_1B_【OTT1@F/ms】,検査_1B_【OTT1@S/ms】,検査_2A_【= 2A Ibutsu =】,検査_2A_【OBT2a@F/ms】,検査_2A_【OBT2a@S/ms】,検査_2A_【RBT2a@F/ms】,検査_2A_【RBT2a@S/ms】,検査_2A_【S-MaxOpen_2a@F/ms】,検査_2A_【S-MaxOpen_2a@S/ms】,検査_2A_【R-MaxOpen_2a@F/ms】,検査_2A_【R-MaxOpen_2a@S/ms】,検査_2A_【RTT2@F/ms】,検査_2A_【RTT2@S/ms】,検査_2B_【= 2B Ibutsu =】,検査_2B_【OBT2b@F/ms】,検査_2B_【OBT2b@S/ms】,検査_2B_【RBT2b@F/ms】,検査_2B_【RBT2b@S/ms】,検査_2B_【S-MaxOpen_2b@F/ms】,検査_2B_【S-MaxOpen_2b@S/ms】,検査_2B_【R-MaxOpen_2b@F/ms】,検査_2B_【R-MaxOpen_2b@S/ms】,検査_2B_【OTT2@F/ms】,検査_2B_【OTT2@S/ms】,検査_Gen_【= General =】,検査_Gen_【OBT1a/ms】,検査_Gen_【OBT1b/ms】,検査_Gen_【RBT1a/ms】,検査_Gen_【RBT1b/ms】,検査_Gen_【OTT1/ms】,検査_Gen_【RTT1/ms】,検査_Gen_【OLT1/ms】,検査_Gen_【RLT1/ms】,検査_Gen_【OBT2a/ms】,検査_Gen_【OBT2b/ms】,検査_Gen_【RBT2a/ms】,検査_Gen_【RBT2b/ms】,検査_Gen_【OTT2/ms】,検査_Gen_【RTT2/ms】,検査_Gen_【OLT2/ms_1】,検査_Gen_【OLT2/ms_2】,検査_Gen_【CBA1a/us】,検査_Gen_【CBA2a/us】,検査_Gen_【RUS_1a@F/mA】,検査_Gen_【RUS_1a@S/mA】,検査_Gen_【RUS_2a@F/mA】,検査_Gen_【RUS_2a@S/mA】,検査_Gen_【PV@F/V】,検査_Gen_【PV@S/V】,検査_Gen_【DV@F/V】,検査_Gen_【DV@S/V】,検査_Gen_【PC@F/mA】,検査_Gen_【PC@S/mA】,検査_Gen_【DC@F/mA】,検査_Gen_【DC@S/mA】,検査_T1_【== TEST ==】,検査_T1_【SCR/Ohm】,検査_T1_【OTa/ms】,検査_T1_【OTb/ms】,検査_T1_【OBTa/ms】,検査_T1_【OBTb/ms】,検査_T1_【TAU-0%/ms】,検査_T1_【TAU-70%/ms】,検査_T1_【L-0%/mH】,検査_T1_【L-45%/mH】,検査_T1_【L-50%/mH】,検査_T1_【L-55%/mH】,検査_T1_【L-60%/mH】,検査_T1_【L-65%/mH】,検査_T1_【L-70%/mH】,検査_T1_【L-75%/mH】,検査_T1on_【== ON ==】,検査_T1on_【AOC@ON/mA】,検査_T1on_【AOC@CV200%/mA】,検査_T1on_【AOT@ON/ms】,検査_T1on_【AOT@CV200%/ms】,検査_T1on_【AOT@CC120%P/ms】,検査_T1on_【APC@ON/mA】,検査_T1on_【APC@CV200%/mA】,検査_T1on_【APT@ON/ms】,検査_T1on_【APT@CV200%/ms】,検査_T1on_【APT@CC120%P/ms】,検査_T1on_【CBAa@ON/ms】,検査_T1on_【CBAa@CV200%/ms】,検査_T1on_【CBAa@CC120%P/ms】,検査_T1on_【CBAb@ON/ms】,検査_T1on_【CBAb@CV200%/ms】,検査_T1on_【CBAb@CC120%P/ms】,検査_T1on_【DynamicPCb@ON/mA】,検査_T1on_【DynamicPCb@CV200%/mA】,検査_T1on_【DynamicPCa@CV200%/mA】,検査_T1on_【DynamicPCa@ON/mA】,検査_T1on_【DynamicPVa@CC120%P/V】,検査_T1on_【DynamicPVb@CC120%P/V】,検査_T1on_【K-Slope_a@ON】,検査_T1on_【K-Slope_a@CV200%】,検査_T1on_【K-Slope_a@CC120%P】,検査_T1on_【K-Slope_b@ON】,検査_T1on_【K-Slope_b@CV200%】,検査_T1on_【K-Slope_b@CC120%P】,検査_T1on_【MaxOpen1@ON/ms】,検査_T1on_【MaxOpen1@CV200%/ms】,検査_T1on_【MaxOpen1@CC120%P/ms】,検査_T1on_【MaxOpen2@ON/ms】,検査_T1on_【MaxOpen2@CV200%/ms】,検査_T1on_【MaxOpen2@CC120%P/ms】,検査_T1on_【OBTa@ON/ms】,検査_T1on_【OBTa@CV200%/ms】,検査_T1on_【OBTa@CC120%P/ms】,検査_T1on_【OBTb@ON/ms】,検査_T1on_【OBTb@CV200%/ms】,検査_T1on_【OBTb@CC120%P/ms】,検査_T1on_【OTa@ON/ms】,検査_T1on_【OTa@CV200%/ms】,検査_T1on_【OTa@CC120%P/ms】,検査_T1on_【OTb@ON/ms】,検査_T1on_【OTb@CV200%/ms】,検査_T1on_【OTb@CC120%P/ms】,検査_T1on_【OTCa@ON/m】,検査_T1on_【OTCa@CV200%/m】,検査_T1on_【OTCa@CC120%P/m】,検査_T1on_【OTCb@ON/m】,検査_T1on_【OTCb@CV200%/m】,検査_T1on_【OTCb@CC120%P/m】,検査_T1on_【OTT1@ON/ms】,検査_T1on_【OTT1@CV200%/ms】,検査_T1on_【OTT1@CC120%P/ms】,検査_T1on_【rOTa@ON/ms】,検査_T1on_【rOTa@CV200%/ms】,検査_T1on_【rOTa@CC120%P/ms】,検査_T1on_【rOTb@ON/ms】,検査_T1on_【rOTb@CV200%/ms】,検査_T1on_【rOTb@CC120%P/ms】,検査_T1on_【SlopeP@ON】,検査_T1on_【SlopeP@CV200%】,検査_T1on_【SlopeP@CC120%P】,検査_T1on_【SlopeQ@ON】,検査_T1on_【SlopeQ@CV200%】,検査_T1on_【SlopeQ@CC120%P】,検査_T1on_【SOSa@ON/mA】,検査_T1on_【SOSa@CV200%/mA】,検査_T1on_【SOSb@ON/mA】,検査_T1on_【SOSb@CV200%/mA】,検査_T1on_【SUSa@CC120%P/mA】,検査_T1on_【SUSb@CC120%P/mA】,検査_T1off_【== OFF ==】,検査_T1off_【RTa-AVT@DM0/ms】,検査_T1off_【RTa-DCT@DM0/ms】,検査_T1off_【ARC@DM0/ms】,検査_T1off_【ART@DM0/ms】,検査_T1off_【AVC@DM0/ms】,検査_T1off_【AVT@DM0/ms】,検査_T1off_【CSa@DM0/ms】,検査_T1off_【CSb@DM0/ms】,検査_T1off_【DSC@DM0/ms】,検査_T1off_【DST@DM0/ms】,検査_T1off_【DynamicDCa@DM0/ms】,検査_T1off_【DynamicDCb@DM0/ms】,検査_T1off_【K-Slope_a@DM0/ms】,検査_T1off_【K-Slope_b@DM0/ms】,検査_T1off_【MaxOpen_a@DM0/ms】,検査_T1off_【MaxOpen_b@DM0/ms】,検査_T1off_【RBTa@DM0/ms】,検査_T1off_【RBTb@DM0/ms】,検査_T1off_【ｒRTa@DM0/ms】,検査_T1off_【ｒRTb@DM0/ms】,検査_T1off_【RTa@DM0/ms】,検査_T1off_【RTb@DM0/ms】,検査_T1off_【RTCa@DM0/ms】,検査_T1off_【RTCb@DM0/ms】,検査_T1off_【RTT1@DM0/ms】,検査_T1off_【RUSa@DM0/ms】,検査_T1off_【RUSb@DM0/ms】,検査_T1off_【Sigma-CS^2 a@DM0/ms】,検査_T1off_【Sigma-CS^2 b@DM0/ms】,検査_T1off_【Sigma-CSa@DM0/ms】,検査_T1off_【Sigma-CSb@DM0/ms】,検査_T1off_【Sigma-RUS^2 a@DM0/ms】,検査_T1off_【Sigma-RUS^2 b@DM0/ms】,検査_T1off_【Sigma-RUSa@DM0/ms】,検査_T1off_【Sigma-RUSb@DM0/ms】,検査_SW_【== SWEEP ==】,検査_SW_【ARC@-DN-A/ms】,検査_SW_【ART@-DN-A/ms】,検査_SW_【AVC@-DN-A/ms】,検査_SW_【AVT@-DN-A/ms】,検査_SW_【CBAa@-DN-A/ms】,検査_SW_【CBAb@-DN-A/ms】,検査_SW_【CSa@-DN-A/ms】,検査_SW_【CSb@-DN-A/ms】,検査_SW_【CSV2@-DN-A/ms】,検査_SW_【CSV3@-DN-A/ms】,検査_SW_【DVa@-DN-A/ms】,検査_SW_【DVb@-DN-A/ms】,検査_SW_【DynamicDCa@-DN-A/ms】,検査_SW_【DynamicDCb@-DN-A/ms】,検査_SW_【K-Slope_a@-DN-A/ms】,検査_SW_【K-Slope_b@-DN-A/ms】,検査_SW_【MaxOpen1@-DN-A/ms】,検査_SW_【MaxOpen2@-DN-A/ms】,検査_SW_【RBTa@-DN-A/ms】,検査_SW_【RBTb@-DN-A/ms】,検査_SW_【ｒRTa@-DN-A/ms】,検査_SW_【ｒRTb@-DN-A/ms】,検査_SW_【RTa@-DN-A/ms】,検査_SW_【RTb@-DN-A/ms】,検査_SW_【RTCa@-DN-A/ms】,検査_SW_【RTCb@-DN-A/ms】,検査_SW_【RTT1@-DN-A/ms】,検査_SW_【RUSa@-DN-A/ms】,検査_SW_【RUSb@-DN-A/ms】,検査_SW_【SCR@-DN-A/ms】,検査_SW_【Sigma-CS^2 a@-DN-A/ms】,検査_SW_【Sigma-CS^2 b@-DN-A/ms】,検査_SW_【Sigma-CSa@-DN-A/ms】,検査_SW_【Sigma-CSb@-DN-A/ms】,検査_SW_【SlopeA/SlopeQ@-DN-A/ms】,検査_SW_【SlopeP/SlopeR@-DN-A/ms】,検査_SW_【DCa@-DN-A/%】,検査_SW_【DCb@-DN-A/%】,検査_SW_【TSO/TSR (C)@-DN-A/ms】,検査_SW_【TSO/TSR (V)@-DN-A/ms】,検査_T2_【== TEST2回目 ==】,検査_T2_【SCR/Ohm】,検査_T2_【OTa/ms】,検査_T2_【OTb/ms】,検査_T2_【OBTa/ms】,検査_T2_【OBTb/ms】,検査_T2_【TAU-0%/ms】,検査_T2_【TAU-70%/ms】,検査_T2_【L-0%/mH】,検査_T2_【L-45%/mH】,検査_T2_【L-50%/mH】,検査_T2_【L-55%/mH】,検査_T2_【L-60%/mH】,検査_T2_【L-65%/mH】,検査_T2_【L-70%/mH】,検査_T2_【L-75%/mH】,検査_T2on_【== ON ==】,検査_T2on_【AOC@ON/mA】,検査_T2on_【AOC@CV200%/mA】,検査_T2on_【AOT@ON/ms】,検査_T2on_【AOT@CV200%/ms】,検査_T2on_【AOT@CC120%P/ms】,検査_T2on_【APC@ON/mA】,検査_T2on_【APC@CV200%/mA】,検査_T2on_【APT@ON/ms】,検査_T2on_【APT@CV200%/ms】,検査_T2on_【APT@CC120%P/ms】,検査_T2on_【CBAa@ON/ms】,検査_T2on_【CBAa@CV200%/ms】,検査_T2on_【CBAa@CC120%P/ms】,検査_T2on_【CBAb@ON/ms】,検査_T2on_【CBAb@CV200%/ms】,検査_T2on_【CBAb@CC120%P/ms】,検査_T2on_【DynamicPCb@ON/mA】,検査_T2on_【DynamicPCb@CV200%/mA】,検査_T2on_【DynamicPCa@CV200%/mA】,検査_T2on_【DynamicPCa@ON/mA】,検査_T2on_【DynamicPVa@CC120%P/V】,検査_T2on_【DynamicPVb@CC120%P/V】,検査_T2on_【K-Slope_a@ON】,検査_T2on_【K-Slope_a@CV200%】,検査_T2on_【K-Slope_a@CC120%P】,検査_T2on_【K-Slope_b@ON】,検査_T2on_【K-Slope_b@CV200%】,検査_T2on_【K-Slope_b@CC120%P】,検査_T2on_【MaxOpen1@ON/ms】,検査_T2on_【MaxOpen1@CV200%/ms】,検査_T2on_【MaxOpen1@CC120%P/ms】,検査_T2on_【MaxOpen2@ON/ms】,検査_T2on_【MaxOpen2@CV200%/ms】,検査_T2on_【MaxOpen2@CC120%P/ms】,検査_T2on_【OBTa@ON/ms】,検査_T2on_【OBTa@CV200%/ms】,検査_T2on_【OBTa@CC120%P/ms】,検査_T2on_【OBTb@ON/ms】,検査_T2on_【OBTb@CV200%/ms】,検査_T2on_【OBTb@CC120%P/ms】,検査_T2on_【OTa@ON/ms】,検査_T2on_【OTa@CV200%/ms】,検査_T2on_【OTa@CC120%P/ms】,検査_T2on_【OTb@ON/ms】,検査_T2on_【OTb@CV200%/ms】,検査_T2on_【OTb@CC120%P/ms】,検査_T2on_【OTCa@ON/m】,検査_T2on_【OTCa@CV200%/m】,検査_T2on_【OTCa@CC120%P/m】,検査_T2on_【OTCb@ON/m】,検査_T2on_【OTCb@CV200%/m】,検査_T2on_【OTCb@CC120%P/m】,検査_T2on_【OTT1@ON/ms】,検査_T2on_【OTT1@CV200%/ms】,検査_T2on_【OTT1@CC120%P/ms】,検査_T2on_【rOTa@ON/ms】,検査_T2on_【rOTa@CV200%/ms】,検査_T2on_【rOTa@CC120%P/ms】,検査_T2on_【rOTb@ON/ms】,検査_T2on_【rOTb@CV200%/ms】,検査_T2on_【rOTb@CC120%P/ms】,検査_T2on_【SlopeP@ON】,検査_T2on_【SlopeP@CV200%】,検査_T2on_【SlopeP@CC120%P】,検査_T2on_【SlopeQ@ON】,検査_T2on_【SlopeQ@CV200%】,検査_T2on_【SlopeQ@CC120%P】,検査_T2on_【SOSa@ON/mA】,検査_T2on_【SOSa@CV200%/mA】,検査_T2on_【SOSb@ON/mA】,検査_T2on_【SOSb@CV200%/mA】,検査_T2on_【SUSa@CC120%P/mA】,検査_T2on_【SUSb@CC120%P/mA】,検査_T2off_【== OFF ==】,検査_T2off_【RTa-AVT@DM0/ms】,検査_T2off_【RTa-DCT@DM0/ms】,検査_T2off_【ARC@DM0/ms】,検査_T2off_【ART@DM0/ms】,検査_T2off_【AVC@DM0/ms】,検査_T2off_【AVT@DM0/ms】,検査_T2off_【CSa@DM0/ms】,検査_T2off_【CSb@DM0/ms】,検査_T2off_【DSC@DM0/ms】,検査_T2off_【DST@DM0/ms】,検査_T2off_【DynamicDCa@DM0/ms】,検査_T2off_【DynamicDCb@DM0/ms】,検査_T2off_【K-Slope_a@DM0/ms】,検査_T2off_【K-Slope_b@DM0/ms】,検査_T2off_【MaxOpen_a@DM0/ms】,検査_T2off_【MaxOpen_b@DM0/ms】,検査_T2off_【RBTa@DM0/ms】,検査_T2off_【RBTb@DM0/ms】,検査_T2off_【ｒRTa@DM0/ms】,検査_T2off_【ｒRTb@DM0/ms】,検査_T2off_【RTa@DM0/ms】,検査_T2off_【RTb@DM0/ms】,検査_T2off_【RTCa@DM0/ms】,検査_T2off_【RTCb@DM0/ms】,検査_T2off_【RTT1@DM0/ms】,検査_T2off_【RUSa@DM0/ms】,検査_T2off_【RUSb@DM0/ms】,検査_T2off_【Sigma-CS^2 a@DM0/ms】,検査_T2off_【Sigma-CS^2 b@DM0/ms】,検査_T2off_【Sigma-CSa@DM0/ms】,検査_T2off_【Sigma-CSb@DM0/ms】,検査_T2off_【Sigma-RUS^2 a@DM0/ms】,検査_T2off_【Sigma-RUS^2 b@DM0/ms】,検査_T2off_【Sigma-RUSa@DM0/ms】,検査_T2off_【Sigma-RUSb@DM0/ms】,検査_Add_【L-46%/mH@1】,検査_Add_【L-47%/mH@1】,検査_Add_【L-48%/mH@1】,検査_Add_【L-49%/mH@1】,検査_Add_【L-51%/mH@1】,検査_Add_【L-52%/mH@1】,検査_Add_【L-53%/mH@1】,検査_Add_【L-54%/mH@1】,検査_Add_【L-46%/mH@2】,検査_Add_【L-47%/mH@2】,検査_Add_【L-48%/mH@2】,検査_Add_【L-49%/mH@2】,検査_Add_【L-51%/mH@2】,検査_Add_【L-52%/mH@2】,検査_Add_【L-53%/mH@2】,検査_Add_【L-54%/mH@2】,検査_Add_【L-2%/mH@1】,検査_Add_【L-4%/mH@1】,検査_Add_【L-6%/mH@1】,検査_Add_【L-8%/mH@1】,検査_Add_【L-10%/mH@1】,検査_Add_【L-12%/mH@1】,検査_Add_【L-14%/mH@1】,検査_Add_【L-2%/mH@2】,検査_Add_【L-4%/mH@2】,検査_Add_【L-6%/mH@2】,検査_Add_【L-8%/mH@2】,検査_Add_【L-10%/mH@2】,検査_Add_【L-12%/mH@2】,検査_Add_【L-14%/mH@2】,検査_filename",
+        "nfni": false,
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mfldname"
+    },
+    {
+      "position": {
+        "x": 2439,
+        "y": 469
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d21",
+      "type": "frame",
+      "label": "d21",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2367,
+        "y": 466
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c21",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d4"
+      },
+      "dsts": {
+        "o": "d21"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 2443,
+        "y": 534
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d22",
+      "type": "frame",
+      "label": "d22",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2363,
+        "y": 527
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c22",
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "d21"
+      },
+      "dsts": {
+        "o": "d22"
+      },
+      "args": {
+        "f": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": true,
+        "nfno": false,
+        "x": true,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 2367,
+        "y": 701
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d23",
+      "type": "frame",
+      "label": "【検査ver2 0001】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 2369,
+        "y": 584
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c23",
+      "type": "command",
+      "label": "列名ユニーク化",
+      "srcs": {
+        "i": "d22"
+      },
+      "dsts": {
+        "o": "d23"
+      },
+      "args": {
+        "f": "",
+        "n": "検査_【Name】,検査_【TIME】,検査_【CODE】,検査_【FAIL】,検査_【SCR/Ohm】,検査_【OT/ms】,検査_【RT/ms】,検査_1A_【= A Ibutsu =】,検査_1A_【OBT1a@F/ms】,検査_1A_【OBT1a@S/ms】,検査_1A_【RBT1a@F/ms】,検査_1A_【RBT1a@S/ms】,検査_1A_【S-MaxOpen_1a@F/ms】,検査_1A_【S-MaxOpen_1a@S/ms】,検査_1A_【R-MaxOpen_1a@F/ms】,検査_1A_【R-MaxOpen_1a@S/ms】,検査_1A_【RTT1@F/ms】,検査_1A_【RTT1@S/ms】,検査_1B_【= B Ibutsu =】,検査_1B_【OBT1b@F/ms】,検査_1B_【OBT1b@S/ms】,検査_1B_【RBT1b@F/ms】,検査_1B_【RBT1b@S/ms】,検査_1B_【S-MaxOpen_1b@F/ms】,検査_1B_【S-MaxOpen_1b@S/ms】,検査_1B_【R-MaxOpen_1b@F/ms】,検査_1B_【R-MaxOpen_1b@S/ms】,検査_1B_【OTT1@F/ms】,検査_1B_【OTT1@S/ms】,検査_Gen_【= General =】,検査_Gen_【OBT1a/ms】,検査_Gen_【OBT1b/ms】,検査_Gen_【RBT1a/ms】,検査_Gen_【RBT1b/ms】,検査_Gen_【OTT1/ms】,検査_Gen_【RTT1/ms】,検査_Gen_【OLT1/ms】,検査_Gen_【RLT1/ms】,検査_Gen_【CBA1a/us】,検査_Gen_【RUS_1a@F/mA】,検査_Gen_【RUS_1a@S/mA】,検査_Gen_【TAU-0%/ms】,検査_Gen_【TAU-70%/ms】,検査_Gen_【L-0%/mH】,検査_Gen_【L-45%/mH】,検査_Gen_【L-50%/mH】,検査_Gen_【L-55%/mH】,検査_Gen_【L-60%/mH】,検査_Gen_【L-65%/mH】,検査_Gen_【L-70%/mH】,検査_Gen_【L-75%/mH】,検査_Gen_【PV@F/V】,検査_Gen_【PV@S/V】,検査_Gen_【DV@F/V】,検査_Gen_【DV@S/V】,検査_Gen_【PC@F/mA】,検査_Gen_【PC@S/mA】,検査_Gen_【DC@F/mA】,検査_Gen_【DC@S/mA】,検査_T1_【== TEST ==】,検査_T1_【SCR/Ohm】,検査_T1_【OTa/ms】,検査_T1_【OTb/ms】,検査_T1_【OBTa/ms】,検査_T1_【OBTb/ms】,検査_T1_【L-70%/H】,検査_T1_【TAU-70%/ms】,検査_T1on_【== ON ==】,検査_T1on_【AOC@ON/mA】,検査_T1on_【AOC@CV200%/mA】,検査_T1on_【AOT@ON/ms】,検査_T1on_【AOT@CV200%/ms】,検査_T1on_【AOT@CC120%P/ms】,検査_T1on_【APC@ON/mA】,検査_T1on_【APC@CV200%/mA】,検査_T1on_【APT@ON/ms】,検査_T1on_【APT@CV200%/ms】,検査_T1on_【APT@CC120%P/ms】,検査_T1on_【CBAa@ON/ms】,検査_T1on_【CBAa@CV200%/ms】,検査_T1on_【CBAa@CC120%P/ms】,検査_T1on_【CBAb@ON/ms】,検査_T1on_【CBAb@CV200%/ms】,検査_T1on_【CBAb@CC120%P/ms】,検査_T1on_【DynamicPCb@ON/mA】,検査_T1on_【DynamicPCb@CV200%/mA】,検査_T1on_【DynamicPCa@CV200%/mA】,検査_T1on_【DynamicPCa@ON/mA】,検査_T1on_【DynamicPVa@CC120%P/V】,検査_T1on_【DynamicPVb@CC120%P/V】,検査_T1on_【K-Slope_a@ON】,検査_T1on_【K-Slope_a@CV200%】,検査_T1on_【K-Slope_a@CC120%P】,検査_T1on_【K-Slope_b@ON】,検査_T1on_【K-Slope_b@CV200%】,検査_T1on_【K-Slope_b@CC120%P】,検査_T1on_【MaxOpen1@ON/ms】,検査_T1on_【MaxOpen1@CV200%/ms】,検査_T1on_【MaxOpen1@CC120%P/ms】,検査_T1on_【MaxOpen2@ON/ms】,検査_T1on_【MaxOpen2@CV200%/ms】,検査_T1on_【MaxOpen2@CC120%P/ms】,検査_T1on_【OBTa@ON/ms】,検査_T1on_【OBTa@CV200%/ms】,検査_T1on_【OBTa@CC120%P/ms】,検査_T1on_【OBTb@ON/ms】,検査_T1on_【OBTb@CV200%/ms】,検査_T1on_【OBTb@CC120%P/ms】,検査_T1on_【OTa@ON/ms】,検査_T1on_【OTa@CV200%/ms】,検査_T1on_【OTa@CC120%P/ms】,検査_T1on_【OTb@ON/ms】,検査_T1on_【OTb@CV200%/ms】,検査_T1on_【OTb@CC120%P/ms】,検査_T1on_【OTCa@ON/m】,検査_T1on_【OTCa@CV200%/m】,検査_T1on_【OTCa@CC120%P/m】,検査_T1on_【OTCb@ON/m】,検査_T1on_【OTCb@CV200%/m】,検査_T1on_【OTCb@CC120%P/m】,検査_T1on_【OTT1@ON/ms】,検査_T1on_【OTT1@CV200%/ms】,検査_T1on_【OTT1@CC120%P/ms】,検査_T1on_【rOTa@ON/ms】,検査_T1on_【rOTa@CV200%/ms】,検査_T1on_【rOTa@CC120%P/ms】,検査_T1on_【rOTb@ON/ms】,検査_T1on_【rOTb@CV200%/ms】,検査_T1on_【rOTb@CC120%P/ms】,検査_T1on_【SlopeP@ON】,検査_T1on_【SlopeP@CV200%】,検査_T1on_【SlopeP@CC120%P】,検査_T1on_【SlopeQ@ON】,検査_T1on_【SlopeQ@CV200%】,検査_T1on_【SlopeQ@CC120%P】,検査_T1on_【SOSa@ON/mA】,検査_T1on_【SOSa@CV200%/mA】,検査_T1on_【SOSb@ON/mA】,検査_T1on_【SOSb@CV200%/mA】,検査_T1on_【SUSa@CC120%P/mA】,検査_T1on_【SUSb@CC120%P/mA】,検査_T1off_【== OFF ==】,検査_T1off_【RTa-AVT@DM0/ms】,検査_T1off_【RTa-DCT@DM0/ms】,検査_T1off_【ARC@DM0/ms】,検査_T1off_【ART@DM0/ms】,検査_T1off_【AVC@DM0/ms】,検査_T1off_【AVT@DM0/ms】,検査_T1off_【CSa@DM0/ms】,検査_T1off_【CSb@DM0/ms】,検査_T1off_【DSC@DM0/ms】,検査_T1off_【DST@DM0/ms】,検査_T1off_【DynamicDCa@DM0/ms】,検査_T1off_【DynamicDCb@DM0/ms】,検査_T1off_【K-Slope_a@DM0/ms】,検査_T1off_【K-Slope_b@DM0/ms】,検査_T1off_【MaxOpen_a@DM0/ms】,検査_T1off_【MaxOpen_b@DM0/ms】,検査_T1off_【RBTa@DM0/ms】,検査_T1off_【RBTb@DM0/ms】,検査_T1off_【ｒRTa@DM0/ms】,検査_T1off_【ｒRTb@DM0/ms】,検査_T1off_【RTa@DM0/ms】,検査_T1off_【RTb@DM0/ms】,検査_T1off_【RTCa@DM0/ms】,検査_T1off_【RTCb@DM0/ms】,検査_T1off_【RTT1@DM0/ms】,検査_T1off_【RUSa@DM0/ms】,検査_T1off_【RUSb@DM0/ms】,検査_T1off_【Sigma-CS^2 a@DM0/ms】,検査_T1off_【Sigma-CS^2 b@DM0/ms】,検査_T1off_【Sigma-CSa@DM0/ms】,検査_T1off_【Sigma-CSb@DM0/ms】,検査_T1off_【Sigma-RUS^2 a@DM0/ms】,検査_T1off_【Sigma-RUS^2 b@DM0/ms】,検査_T1off_【Sigma-RUSa@DM0/ms】,検査_T1off_【Sigma-RUSb@DM0/ms】,検査_Swp_【== SWEEP ==】,検査_Swp_【ARC@-DN-A/ms】,検査_Swp_【ART@-DN-A/ms】,検査_Swp_【AVC@-DN-A/ms】,検査_Swp_【AVT@-DN-A/ms】,検査_Swp_【CBAa@-DN-A/ms】,検査_Swp_【CBAb@-DN-A/ms】,検査_Swp_【CSa@-DN-A/ms】,検査_Swp_【CSb@-DN-A/ms】,検査_Swp_【CSV2@-DN-A/ms】,検査_Swp_【CSV3@-DN-A/ms】,検査_Swp_【DVa@-DN-A/ms】,検査_Swp_【DVb@-DN-A/ms】,検査_Swp_【DynamicDCa@-DN-A/ms】,検査_Swp_【DynamicDCb@-DN-A/ms】,検査_Swp_【K-Slope_a@-DN-A/ms】,検査_Swp_【K-Slope_b@-DN-A/ms】,検査_Swp_【MaxOpen1@-DN-A/ms】,検査_Swp_【MaxOpen2@-DN-A/ms】,検査_Swp_【RBTa@-DN-A/ms】,検査_Swp_【RBTb@-DN-A/ms】,検査_Swp_【ｒRTa@-DN-A/ms】,検査_Swp_【ｒRTb@-DN-A/ms】,検査_Swp_【RTa@-DN-A/ms】,検査_Swp_【RTb@-DN-A/ms】,検査_Swp_【RTCa@-DN-A/ms】,検査_Swp_【RTCb@-DN-A/ms】,検査_Swp_【RTT1@-DN-A/ms】,検査_Swp_【RUSa@-DN-A/ms】,検査_Swp_【RUSb@-DN-A/ms】,検査_Swp_【SCR@-DN-A/ms】,検査_Swp_【Sigma-CS^2 a@-DN-A/ms】,検査_Swp_【Sigma-CS^2 b@-DN-A/ms】,検査_Swp_【Sigma-CSa@-DN-A/ms】,検査_Swp_【Sigma-CSb@-DN-A/ms】,検査_Swp_【SlopeA/SlopeQ@-DN-A/ms】,検査_Swp_【SlopeP/SlopeR@-DN-A/ms】,検査_Swp_【DCa@-DN-A/%】,検査_Swp_【DCb@-DN-A/%】,検査_Swp_【TSO/TSR (C)@-DN-A/ms】,検査_Swp_【TSO/TSR (V)@-DN-A/ms】,検査_T2_【== TEST2回目 ==】,検査_T2_【SCR/Ohm】,検査_T2_【OTa/ms】,検査_T2_【OTb/ms】,検査_T2_【OBTa/ms】,検査_T2_【OBTb/ms】,検査_T2_【L-70%/H】,検査_T2_【TAU-70%/ms】,検査_T2on_【== ON ==】,検査_T2on_【AOC@ON/mA】,検査_T2on_【AOC@CV200%/mA】,検査_T2on_【AOT@ON/ms】,検査_T2on_【AOT@CV200%/ms】,検査_T2on_【AOT@CC120%P/ms】,検査_T2on_【APC@ON/mA】,検査_T2on_【APC@CV200%/mA】,検査_T2on_【APT@ON/ms】,検査_T2on_【APT@CV200%/ms】,検査_T2on_【APT@CC120%P/ms】,検査_T2on_【CBAa@ON/ms】,検査_T2on_【CBAa@CV200%/ms】,検査_T2on_【CBAa@CC120%P/ms】,検査_T2on_【CBAb@ON/ms】,検査_T2on_【CBAb@CV200%/ms】,検査_T2on_【CBAb@CC120%P/ms】,検査_T2on_【DynamicPCb@ON/mA】,検査_T2on_【DynamicPCb@CV200%/mA】,検査_T2on_【DynamicPCa@CV200%/mA】,検査_T2on_【DynamicPCa@ON/mA】,検査_T2on_【DynamicPVa@CC120%P/V】,検査_T2on_【DynamicPVb@CC120%P/V】,検査_T2on_【K-Slope_a@ON】,検査_T2on_【K-Slope_a@CV200%】,検査_T2on_【K-Slope_a@CC120%P】,検査_T2on_【K-Slope_b@ON】,検査_T2on_【K-Slope_b@CV200%】,検査_T2on_【K-Slope_b@CC120%P】,検査_T2on_【MaxOpen1@ON/ms】,検査_T2on_【MaxOpen1@CV200%/ms】,検査_T2on_【MaxOpen1@CC120%P/ms】,検査_T2on_【MaxOpen2@ON/ms】,検査_T2on_【MaxOpen2@CV200%/ms】,検査_T2on_【MaxOpen2@CC120%P/ms】,検査_T2on_【OBTa@ON/ms】,検査_T2on_【OBTa@CV200%/ms】,検査_T2on_【OBTa@CC120%P/ms】,検査_T2on_【OBTb@ON/ms】,検査_T2on_【OBTb@CV200%/ms】,検査_T2on_【OBTb@CC120%P/ms】,検査_T2on_【OTa@ON/ms】,検査_T2on_【OTa@CV200%/ms】,検査_T2on_【OTa@CC120%P/ms】,検査_T2on_【OTb@ON/ms】,検査_T2on_【OTb@CV200%/ms】,検査_T2on_【OTb@CC120%P/ms】,検査_T2on_【OTCa@ON/m】,検査_T2on_【OTCa@CV200%/m】,検査_T2on_【OTCa@CC120%P/m】,検査_T2on_【OTCb@ON/m】,検査_T2on_【OTCb@CV200%/m】,検査_T2on_【OTCb@CC120%P/m】,検査_T2on_【OTT1@ON/ms】,検査_T2on_【OTT1@CV200%/ms】,検査_T2on_【OTT1@CC120%P/ms】,検査_T2on_【rOTa@ON/ms】,検査_T2on_【rOTa@CV200%/ms】,検査_T2on_【rOTa@CC120%P/ms】,検査_T2on_【rOTb@ON/ms】,検査_T2on_【rOTb@CV200%/ms】,検査_T2on_【rOTb@CC120%P/ms】,検査_T2on_【SlopeP@ON】,検査_T2on_【SlopeP@CV200%】,検査_T2on_【SlopeP@CC120%P】,検査_T2on_【SlopeQ@ON】,検査_T2on_【SlopeQ@CV200%】,検査_T2on_【SlopeQ@CC120%P】,検査_T2on_【SOSa@ON/mA】,検査_T2on_【SOSa@CV200%/mA】,検査_T2on_【SOSb@ON/mA】,検査_T2on_【SOSb@CV200%/mA】,検査_T2on_【SUSa@CC120%P/mA】,検査_T2on_【SUSb@CC120%P/mA】,検査_T2off_【== OFF ==】,検査_T2off_【RTa-AVT@DM0/ms】,検査_T2off_【RTa-DCT@DM0/ms】,検査_T2off_【ARC@DM0/ms】,検査_T2off_【ART@DM0/ms】,検査_T2off_【AVC@DM0/ms】,検査_T2off_【AVT@DM0/ms】,検査_T2off_【CSa@DM0/ms】,検査_T2off_【CSb@DM0/ms】,検査_T2off_【DSC@DM0/ms】,検査_T2off_【DST@DM0/ms】,検査_T2off_【DynamicDCa@DM0/ms】,検査_T2off_【DynamicDCb@DM0/ms】,検査_T2off_【K-Slope_a@DM0/ms】,検査_T2off_【K-Slope_b@DM0/ms】,検査_T2off_【MaxOpen_a@DM0/ms】,検査_T2off_【MaxOpen_b@DM0/ms】,検査_T2off_【RBTa@DM0/ms】,検査_T2off_【RBTb@DM0/ms】,検査_T2off_【ｒRTa@DM0/ms】,検査_T2off_【ｒRTb@DM0/ms】,検査_T2off_【RTa@DM0/ms】,検査_T2off_【RTb@DM0/ms】,検査_T2off_【RTCa@DM0/ms】,検査_T2off_【RTCb@DM0/ms】,検査_T2off_【RTT1@DM0/ms】,検査_T2off_【RUSa@DM0/ms】,検査_T2off_【RUSb@DM0/ms】,検査_T2off_【Sigma-CS^2 a@DM0/ms】,検査_T2off_【Sigma-CS^2 b@DM0/ms】,検査_T2off_【Sigma-CSa@DM0/ms】,検査_T2off_【Sigma-CSb@DM0/ms】,検査_T2off_【Sigma-RUS^2 a@DM0/ms】,検査_T2off_【Sigma-RUS^2 b@DM0/ms】,検査_T2off_【Sigma-RUSa@DM0/ms】,検査_T2off_【Sigma-RUSb@DM0/ms】,検査_Add_【==ADD ==】,検査_Add_【L-46%/mH@1】,検査_Add_【L-47%/mH@1】,検査_Add_【L-48%/mH@1】,検査_Add_【L-49%/mH@1】,検査_Add_【L-51%/mH@1】,検査_Add_【L-52%/mH@1】,検査_Add_【L-53%/mH@1】,検査_Add_【L-54%/mH@1】,検査_Add_【L-2%/H@1】,検査_Add_【L-4%/H@1】,検査_Add_【L-6%/H@1】,検査_Add_【L-8%/H@1】,検査_Add_【L-10%/H@1】,検査_Add_【L-12%/H@1】,検査_Add_【L-14%/H@1】,検査_filename",
+        "nfni": false,
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mfldname"
+    },
+    {
+      "position": {
+        "x": 2022,
+        "y": 480
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d24",
+      "type": "frame",
+      "label": "d24",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1936,
+        "y": 480
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c24",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d3"
+      },
+      "dsts": {
+        "o": "d24"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 2021,
+        "y": 554
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d25",
+      "type": "frame",
+      "label": "d25",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1935,
+        "y": 544
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c25",
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "d24"
+      },
+      "dsts": {
+        "o": "d25"
+      },
+      "args": {
+        "f": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336,337,338,339,340,341,342,343,344,345,346,347,348,349,350,351,352,353,354,355,356,357,358,359,360,361,362,363,364,365,366,367,368,369,370,371,372,373,374,375,376,377,378,379",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": true,
+        "nfno": false,
+        "x": true,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 1934,
+        "y": 718
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d26",
+      "type": "frame",
+      "label": "【検査ver1 0002】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1934,
+        "y": 605
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c26",
+      "type": "command",
+      "label": "列名ユニーク化",
+      "srcs": {
+        "i": "d25"
+      },
+      "dsts": {
+        "o": "d26"
+      },
+      "args": {
+        "f": "",
+        "n": "検査_【Name】,検査_【TIME】,検査_【CODE】,検査_【FAIL】,検査_【SCR/Ohm】,検査_【OT/ms】,検査_【OT1/ms】,検査_【OT2/ms】,検査_【RT/ms】,検査_【RT1/ms】,検査_【RT2/ms】,検査_1A_【= 1A Ibutsu =】,検査_1A_【OBT1a@F/ms】,検査_1A_【OBT1a@S/ms】,検査_1A_【RBT1a@F/ms】,検査_1A_【RBT1a@S/ms】,検査_1A_【S-MaxOpen_1a@F/ms】,検査_1A_【S-MaxOpen_1a@S/ms】,検査_1A_【R-MaxOpen_1a@F/ms】,検査_1A_【R-MaxOpen_1a@S/ms】,検査_1A_【RTT1@F/ms】,検査_1A_【RTT1@S/ms】,検査_1B_【= 1B Ibutsu =】,検査_1B_【OBT1b@F/ms】,検査_1B_【OBT1b@S/ms】,検査_1B_【RBT1b@F/ms】,検査_1B_【RBT1b@S/ms】,検査_1B_【S-MaxOpen_1b@F/ms】,検査_1B_【S-MaxOpen_1b@S/ms】,検査_1B_【R-MaxOpen_1b@F/ms】,検査_1B_【R-MaxOpen_1b@S/ms】,検査_1B_【OTT1@F/ms】,検査_1B_【OTT1@S/ms】,検査_2A_【= 2A Ibutsu =】,検査_2A_【OBT2a@F/ms】,検査_2A_【OBT2a@S/ms】,検査_2A_【RBT2a@F/ms】,検査_2A_【RBT2a@S/ms】,検査_2A_【S-MaxOpen_2a@F/ms】,検査_2A_【S-MaxOpen_2a@S/ms】,検査_2A_【R-MaxOpen_2a@F/ms】,検査_2A_【R-MaxOpen_2a@S/ms】,検査_2A_【RTT2@F/ms】,検査_2A_【RTT2@S/ms】,検査_2B_【= 2B Ibutsu =】,検査_2B_【OBT2b@F/ms】,検査_2B_【OBT2b@S/ms】,検査_2B_【RBT2b@F/ms】,検査_2B_【RBT2b@S/ms】,検査_2B_【S-MaxOpen_2b@F/ms】,検査_2B_【S-MaxOpen_2b@S/ms】,検査_2B_【R-MaxOpen_2b@F/ms】,検査_2B_【R-MaxOpen_2b@S/ms】,検査_2B_【OTT2@F/ms】,検査_2B_【OTT2@S/ms】,検査_Gen_【= General =】,検査_Gen_【OBT1a/ms】,検査_Gen_【OBT1b/ms】,検査_Gen_【RBT1a/ms】,検査_Gen_【RBT1b/ms】,検査_Gen_【OTT1/ms】,検査_Gen_【RTT1/ms】,検査_Gen_【OLT1/ms】,検査_Gen_【RLT1/ms】,検査_Gen_【OBT2a/ms】,検査_Gen_【OBT2b/ms】,検査_Gen_【RBT2a/ms】,検査_Gen_【RBT2b/ms】,検査_Gen_【OTT2/ms】,検査_Gen_【RTT2/ms】,検査_Gen_【OLT2/ms_1】,検査_Gen_【OLT2/ms_2】,検査_Gen_【CBA1a/us】,検査_Gen_【CBA2a/us】,検査_Gen_【RUS_1a@F/mA】,検査_Gen_【RUS_1a@S/mA】,検査_Gen_【RUS_2a@F/mA】,検査_Gen_【RUS_2a@S/mA】,検査_Gen_【PV@F/V】,検査_Gen_【PV@S/V】,検査_Gen_【DV@F/V】,検査_Gen_【DV@S/V】,検査_Gen_【PC@F/mA】,検査_Gen_【PC@S/mA】,検査_Gen_【DC@F/mA】,検査_Gen_【DC@S/mA】,検査_T1_【== TEST ==】,検査_T1_【SCR/Ohm】,検査_T1_【OTa/ms】,検査_T1_【OTb/ms】,検査_T1_【OBTa/ms】,検査_T1_【OBTb/ms】,検査_T1_【TAU-0%/ms】,検査_T1_【TAU-70%/ms】,検査_T1_【L-0%/mH】,検査_T1_【L-45%/mH】,検査_T1_【L-50%/mH】,検査_T1_【L-55%/mH】,検査_T1_【L-60%/mH】,検査_T1_【L-65%/mH】,検査_T1_【L-70%/mH】,検査_T1_【L-75%/mH】,検査_T1on_【== ON ==】,検査_T1on_【AOC@ON/mA】,検査_T1on_【AOC@CV200%/mA】,検査_T1on_【AOT@ON/ms】,検査_T1on_【AOT@CV200%/ms】,検査_T1on_【AOT@CC120%P/ms】,検査_T1on_【APC@ON/mA】,検査_T1on_【APC@CV200%/mA】,検査_T1on_【APT@ON/ms】,検査_T1on_【APT@CV200%/ms】,検査_T1on_【APT@CC120%P/ms】,検査_T1on_【CBAa@ON/ms】,検査_T1on_【CBAa@CV200%/ms】,検査_T1on_【CBAa@CC120%P/ms】,検査_T1on_【CBAb@ON/ms】,検査_T1on_【CBAb@CV200%/ms】,検査_T1on_【CBAb@CC120%P/ms】,検査_T1on_【DynamicPCb@ON/mA】,検査_T1on_【DynamicPCb@CV200%/mA】,検査_T1on_【DynamicPCa@CV200%/mA】,検査_T1on_【DynamicPCa@ON/mA】,検査_T1on_【DynamicPVa@CC120%P/V】,検査_T1on_【DynamicPVb@CC120%P/V】,検査_T1on_【K-Slope_a@ON】,検査_T1on_【K-Slope_a@CV200%】,検査_T1on_【K-Slope_a@CC120%P】,検査_T1on_【K-Slope_b@ON】,検査_T1on_【K-Slope_b@CV200%】,検査_T1on_【K-Slope_b@CC120%P】,検査_T1on_【MaxOpen1@ON/ms】,検査_T1on_【MaxOpen1@CV200%/ms】,検査_T1on_【MaxOpen1@CC120%P/ms】,検査_T1on_【MaxOpen2@ON/ms】,検査_T1on_【MaxOpen2@CV200%/ms】,検査_T1on_【MaxOpen2@CC120%P/ms】,検査_T1on_【OBTa@ON/ms】,検査_T1on_【OBTa@CV200%/ms】,検査_T1on_【OBTa@CC120%P/ms】,検査_T1on_【OBTb@ON/ms】,検査_T1on_【OBTb@CV200%/ms】,検査_T1on_【OBTb@CC120%P/ms】,検査_T1on_【OTa@ON/ms】,検査_T1on_【OTa@CV200%/ms】,検査_T1on_【OTa@CC120%P/ms】,検査_T1on_【OTb@ON/ms】,検査_T1on_【OTb@CV200%/ms】,検査_T1on_【OTb@CC120%P/ms】,検査_T1on_【OTCa@ON/m】,検査_T1on_【OTCa@CV200%/m】,検査_T1on_【OTCa@CC120%P/m】,検査_T1on_【OTCb@ON/m】,検査_T1on_【OTCb@CV200%/m】,検査_T1on_【OTCb@CC120%P/m】,検査_T1on_【OTT1@ON/ms】,検査_T1on_【OTT1@CV200%/ms】,検査_T1on_【OTT1@CC120%P/ms】,検査_T1on_【rOTa@ON/ms】,検査_T1on_【rOTa@CV200%/ms】,検査_T1on_【rOTa@CC120%P/ms】,検査_T1on_【rOTb@ON/ms】,検査_T1on_【rOTb@CV200%/ms】,検査_T1on_【rOTb@CC120%P/ms】,検査_T1on_【SlopeP@ON】,検査_T1on_【SlopeP@CV200%】,検査_T1on_【SlopeP@CC120%P】,検査_T1on_【SlopeQ@ON】,検査_T1on_【SlopeQ@CV200%】,検査_T1on_【SlopeQ@CC120%P】,検査_T1on_【SOSa@ON/mA】,検査_T1on_【SOSa@CV200%/mA】,検査_T1on_【SOSb@ON/mA】,検査_T1on_【SOSb@CV200%/mA】,検査_T1on_【SUSa@CC120%P/mA】,検査_T1on_【SUSb@CC120%P/mA】,検査_T1off_【== OFF ==】,検査_T1off_【RTa-AVT@DM0/ms】,検査_T1off_【RTa-DCT@DM0/ms】,検査_T1off_【ARC@DM0/ms】,検査_T1off_【ART@DM0/ms】,検査_T1off_【AVC@DM0/ms】,検査_T1off_【AVT@DM0/ms】,検査_T1off_【CSa@DM0/ms】,検査_T1off_【CSb@DM0/ms】,検査_T1off_【DSC@DM0/ms】,検査_T1off_【DST@DM0/ms】,検査_T1off_【DynamicDCa@DM0/ms】,検査_T1off_【DynamicDCb@DM0/ms】,検査_T1off_【K-Slope_a@DM0/ms】,検査_T1off_【K-Slope_b@DM0/ms】,検査_T1off_【MaxOpen_a@DM0/ms】,検査_T1off_【MaxOpen_b@DM0/ms】,検査_T1off_【RBTa@DM0/ms】,検査_T1off_【RBTb@DM0/ms】,検査_T1off_【ｒRTa@DM0/ms】,検査_T1off_【ｒRTb@DM0/ms】,検査_T1off_【RTa@DM0/ms】,検査_T1off_【RTb@DM0/ms】,検査_T1off_【RTCa@DM0/ms】,検査_T1off_【RTCb@DM0/ms】,検査_T1off_【RTT1@DM0/ms】,検査_T1off_【RUSa@DM0/ms】,検査_T1off_【RUSb@DM0/ms】,検査_T1off_【Sigma-CS^2 a@DM0/ms】,検査_T1off_【Sigma-CS^2 b@DM0/ms】,検査_T1off_【Sigma-CSa@DM0/ms】,検査_T1off_【Sigma-CSb@DM0/ms】,検査_T1off_【Sigma-RUS^2 a@DM0/ms】,検査_T1off_【Sigma-RUS^2 b@DM0/ms】,検査_T1off_【Sigma-RUSa@DM0/ms】,検査_T1off_【Sigma-RUSb@DM0/ms】,検査_SW_【== SWEEP ==】,検査_SW_【ARC@-DN-A/ms】,検査_SW_【ART@-DN-A/ms】,検査_SW_【AVC@-DN-A/ms】,検査_SW_【AVT@-DN-A/ms】,検査_SW_【CBAa@-DN-A/ms】,検査_SW_【CBAb@-DN-A/ms】,検査_SW_【CSa@-DN-A/ms】,検査_SW_【CSb@-DN-A/ms】,検査_SW_【CSV2@-DN-A/ms】,検査_SW_【CSV3@-DN-A/ms】,検査_SW_【DVa@-DN-A/ms】,検査_SW_【DVb@-DN-A/ms】,検査_SW_【DynamicDCa@-DN-A/ms】,検査_SW_【DynamicDCb@-DN-A/ms】,検査_SW_【K-Slope_a@-DN-A/ms】,検査_SW_【K-Slope_b@-DN-A/ms】,検査_SW_【MaxOpen1@-DN-A/ms】,検査_SW_【MaxOpen2@-DN-A/ms】,検査_SW_【RBTa@-DN-A/ms】,検査_SW_【RBTb@-DN-A/ms】,検査_SW_【ｒRTa@-DN-A/ms】,検査_SW_【ｒRTb@-DN-A/ms】,検査_SW_【RTa@-DN-A/ms】,検査_SW_【RTb@-DN-A/ms】,検査_SW_【RTCa@-DN-A/ms】,検査_SW_【RTCb@-DN-A/ms】,検査_SW_【RTT1@-DN-A/ms】,検査_SW_【RUSa@-DN-A/ms】,検査_SW_【RUSb@-DN-A/ms】,検査_SW_【SCR@-DN-A/ms】,検査_SW_【Sigma-CS^2 a@-DN-A/ms】,検査_SW_【Sigma-CS^2 b@-DN-A/ms】,検査_SW_【Sigma-CSa@-DN-A/ms】,検査_SW_【Sigma-CSb@-DN-A/ms】,検査_SW_【SlopeA/SlopeQ@-DN-A/ms】,検査_SW_【SlopeP/SlopeR@-DN-A/ms】,検査_SW_【DCa@-DN-A/%】,検査_SW_【DCb@-DN-A/%】,検査_SW_【TSO/TSR (C)@-DN-A/ms】,検査_SW_【TSO/TSR (V)@-DN-A/ms】,検査_T2_【== TEST2回目 ==】,検査_T2_【SCR/Ohm】,検査_T2_【OTa/ms】,検査_T2_【OTb/ms】,検査_T2_【OBTa/ms】,検査_T2_【OBTb/ms】,検査_T2_【TAU-0%/ms】,検査_T2_【TAU-70%/ms】,検査_T2_【L-0%/mH】,検査_T2_【L-45%/mH】,検査_T2_【L-50%/mH】,検査_T2_【L-55%/mH】,検査_T2_【L-60%/mH】,検査_T2_【L-65%/mH】,検査_T2_【L-70%/mH】,検査_T2_【L-75%/mH】,検査_T2on_【== ON ==】,検査_T2on_【AOC@ON/mA】,検査_T2on_【AOC@CV200%/mA】,検査_T2on_【AOT@ON/ms】,検査_T2on_【AOT@CV200%/ms】,検査_T2on_【AOT@CC120%P/ms】,検査_T2on_【APC@ON/mA】,検査_T2on_【APC@CV200%/mA】,検査_T2on_【APT@ON/ms】,検査_T2on_【APT@CV200%/ms】,検査_T2on_【APT@CC120%P/ms】,検査_T2on_【CBAa@ON/ms】,検査_T2on_【CBAa@CV200%/ms】,検査_T2on_【CBAa@CC120%P/ms】,検査_T2on_【CBAb@ON/ms】,検査_T2on_【CBAb@CV200%/ms】,検査_T2on_【CBAb@CC120%P/ms】,検査_T2on_【DynamicPCb@ON/mA】,検査_T2on_【DynamicPCb@CV200%/mA】,検査_T2on_【DynamicPCa@CV200%/mA】,検査_T2on_【DynamicPCa@ON/mA】,検査_T2on_【DynamicPVa@CC120%P/V】,検査_T2on_【DynamicPVb@CC120%P/V】,検査_T2on_【K-Slope_a@ON】,検査_T2on_【K-Slope_a@CV200%】,検査_T2on_【K-Slope_a@CC120%P】,検査_T2on_【K-Slope_b@ON】,検査_T2on_【K-Slope_b@CV200%】,検査_T2on_【K-Slope_b@CC120%P】,検査_T2on_【MaxOpen1@ON/ms】,検査_T2on_【MaxOpen1@CV200%/ms】,検査_T2on_【MaxOpen1@CC120%P/ms】,検査_T2on_【MaxOpen2@ON/ms】,検査_T2on_【MaxOpen2@CV200%/ms】,検査_T2on_【MaxOpen2@CC120%P/ms】,検査_T2on_【OBTa@ON/ms】,検査_T2on_【OBTa@CV200%/ms】,検査_T2on_【OBTa@CC120%P/ms】,検査_T2on_【OBTb@ON/ms】,検査_T2on_【OBTb@CV200%/ms】,検査_T2on_【OBTb@CC120%P/ms】,検査_T2on_【OTa@ON/ms】,検査_T2on_【OTa@CV200%/ms】,検査_T2on_【OTa@CC120%P/ms】,検査_T2on_【OTb@ON/ms】,検査_T2on_【OTb@CV200%/ms】,検査_T2on_【OTb@CC120%P/ms】,検査_T2on_【OTCa@ON/m】,検査_T2on_【OTCa@CV200%/m】,検査_T2on_【OTCa@CC120%P/m】,検査_T2on_【OTCb@ON/m】,検査_T2on_【OTCb@CV200%/m】,検査_T2on_【OTCb@CC120%P/m】,検査_T2on_【OTT1@ON/ms】,検査_T2on_【OTT1@CV200%/ms】,検査_T2on_【OTT1@CC120%P/ms】,検査_T2on_【rOTa@ON/ms】,検査_T2on_【rOTa@CV200%/ms】,検査_T2on_【rOTa@CC120%P/ms】,検査_T2on_【rOTb@ON/ms】,検査_T2on_【rOTb@CV200%/ms】,検査_T2on_【rOTb@CC120%P/ms】,検査_T2on_【SlopeP@ON】,検査_T2on_【SlopeP@CV200%】,検査_T2on_【SlopeP@CC120%P】,検査_T2on_【SlopeQ@ON】,検査_T2on_【SlopeQ@CV200%】,検査_T2on_【SlopeQ@CC120%P】,検査_T2on_【SOSa@ON/mA】,検査_T2on_【SOSa@CV200%/mA】,検査_T2on_【SOSb@ON/mA】,検査_T2on_【SOSb@CV200%/mA】,検査_T2on_【SUSa@CC120%P/mA】,検査_T2on_【SUSb@CC120%P/mA】,検査_T2off_【== OFF ==】,検査_T2off_【RTa-AVT@DM0/ms】,検査_T2off_【RTa-DCT@DM0/ms】,検査_T2off_【ARC@DM0/ms】,検査_T2off_【ART@DM0/ms】,検査_T2off_【AVC@DM0/ms】,検査_T2off_【AVT@DM0/ms】,検査_T2off_【CSa@DM0/ms】,検査_T2off_【CSb@DM0/ms】,検査_T2off_【DSC@DM0/ms】,検査_T2off_【DST@DM0/ms】,検査_T2off_【DynamicDCa@DM0/ms】,検査_T2off_【DynamicDCb@DM0/ms】,検査_T2off_【K-Slope_a@DM0/ms】,検査_T2off_【K-Slope_b@DM0/ms】,検査_T2off_【MaxOpen_a@DM0/ms】,検査_T2off_【MaxOpen_b@DM0/ms】,検査_T2off_【RBTa@DM0/ms】,検査_T2off_【RBTb@DM0/ms】,検査_T2off_【ｒRTa@DM0/ms】,検査_T2off_【ｒRTb@DM0/ms】,検査_T2off_【RTa@DM0/ms】,検査_T2off_【RTb@DM0/ms】,検査_T2off_【RTCa@DM0/ms】,検査_T2off_【RTCb@DM0/ms】,検査_T2off_【RTT1@DM0/ms】,検査_T2off_【RUSa@DM0/ms】,検査_T2off_【RUSb@DM0/ms】,検査_T2off_【Sigma-CS^2 a@DM0/ms】,検査_T2off_【Sigma-CS^2 b@DM0/ms】,検査_T2off_【Sigma-CSa@DM0/ms】,検査_T2off_【Sigma-CSb@DM0/ms】,検査_T2off_【Sigma-RUS^2 a@DM0/ms】,検査_T2off_【Sigma-RUS^2 b@DM0/ms】,検査_T2off_【Sigma-RUSa@DM0/ms】,検査_T2off_【Sigma-RUSb@DM0/ms】,検査_filename",
+        "nfni": false,
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mfldname"
+    },
+    {
+      "position": {
+        "x": 1688,
+        "y": 400
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d27",
+      "type": "frame",
+      "label": "d27",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1629,
+        "y": 400
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c27",
+      "type": "command",
+      "label": "空白列名処理",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d27"
+      },
+      "args": {
+        "b": "",
+        "d": "",
+        "r": false,
+        "n": false
+      },
+      "commandId": "column_blank_name"
+    },
+    {
+      "position": {
+        "x": 1588,
+        "y": 541
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d28",
+      "type": "frame",
+      "label": "d28",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1515,
+        "y": 539
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c28",
+      "type": "command",
+      "label": "列選択",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d28"
+      },
+      "args": {
+        "f": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,256,257,258,259,260,261,262,263,264,265,266,267,268,269,270,271,272,273,274,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,315,316,317,318,319,320,321,322,323,324,325,326,327,328,329,330,331,332,333,334,335,336",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": true,
+        "nfno": false,
+        "x": true,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 1520,
+        "y": 711
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d29",
+      "type": "frame",
+      "label": "【検査ver1 0001】S1_1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1519,
+        "y": 601
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c29",
+      "type": "command",
+      "label": "列名ユニーク化",
+      "srcs": {
+        "i": "d28"
+      },
+      "dsts": {
+        "o": "d29"
+      },
+      "args": {
+        "f": "",
+        "n": "検査_【Name】,検査_【TIME】,検査_【CODE】,検査_【FAIL】,検査_【SCR/Ohm】,検査_【OT/ms】,検査_【RT/ms】,検査_1A_【= A Ibutsu =】,検査_1A_【OBT1a@F/ms】,検査_1A_【OBT1a@S/ms】,検査_1A_【RBT1a@F/ms】,検査_1A_【RBT1a@S/ms】,検査_1A_【S-MaxOpen_1a@F/ms】,検査_1A_【S-MaxOpen_1a@S/ms】,検査_1A_【R-MaxOpen_1a@F/ms】,検査_1A_【R-MaxOpen_1a@S/ms】,検査_1A_【RTT1@F/ms】,検査_1A_【RTT1@S/ms】,検査_1B_【= B Ibutsu =】,検査_1B_【OBT1b@F/ms】,検査_1B_【OBT1b@S/ms】,検査_1B_【RBT1b@F/ms】,検査_1B_【RBT1b@S/ms】,検査_1B_【S-MaxOpen_1b@F/ms】,検査_1B_【S-MaxOpen_1b@S/ms】,検査_1B_【R-MaxOpen_1b@F/ms】,検査_1B_【R-MaxOpen_1b@S/ms】,検査_1B_【OTT1@F/ms】,検査_1B_【OTT1@S/ms】,検査_Gen_【= General =】,検査_Gen_【OBT1a/ms】,検査_Gen_【OBT1b/ms】,検査_Gen_【RBT1a/ms】,検査_Gen_【RBT1b/ms】,検査_Gen_【OTT1/ms】,検査_Gen_【RTT1/ms】,検査_Gen_【OLT1/ms】,検査_Gen_【RLT1/ms】,検査_Gen_【CBA1a/us】,検査_Gen_【RUS_1a@F/mA】,検査_Gen_【RUS_1a@S/mA】,検査_Gen_【TAU-0%/ms】,検査_Gen_【TAU-70%/ms】,検査_Gen_【L-0%/mH】,検査_Gen_【L-45%/mH】,検査_Gen_【L-50%/mH】,検査_Gen_【L-55%/mH】,検査_Gen_【L-60%/mH】,検査_Gen_【L-65%/mH】,検査_Gen_【L-70%/mH】,検査_Gen_【L-75%/mH】,検査_Gen_【PV@F/V】,検査_Gen_【PV@S/V】,検査_Gen_【DV@F/V】,検査_Gen_【DV@S/V】,検査_Gen_【PC@F/mA】,検査_Gen_【PC@S/mA】,検査_Gen_【DC@F/mA】,検査_Gen_【DC@S/mA】,検査_T1_【== TEST ==】,検査_T1_【SCR/Ohm】,検査_T1_【OTa/ms】,検査_T1_【OTb/ms】,検査_T1_【OBTa/ms】,検査_T1_【OBTb/ms】,検査_T1_【L-70%/H】,検査_T1_【TAU-70%/ms】,検査_T1on_【== ON ==】,検査_T1on_【AOC@ON/mA】,検査_T1on_【AOC@CV200%/mA】,検査_T1on_【AOT@ON/ms】,検査_T1on_【AOT@CV200%/ms】,検査_T1on_【AOT@CC120%P/ms】,検査_T1on_【APC@ON/mA】,検査_T1on_【APC@CV200%/mA】,検査_T1on_【APT@ON/ms】,検査_T1on_【APT@CV200%/ms】,検査_T1on_【APT@CC120%P/ms】,検査_T1on_【CBAa@ON/ms】,検査_T1on_【CBAa@CV200%/ms】,検査_T1on_【CBAa@CC120%P/ms】,検査_T1on_【CBAb@ON/ms】,検査_T1on_【CBAb@CV200%/ms】,検査_T1on_【CBAb@CC120%P/ms】,検査_T1on_【DynamicPCb@ON/mA】,検査_T1on_【DynamicPCb@CV200%/mA】,検査_T1on_【DynamicPCa@CV200%/mA】,検査_T1on_【DynamicPCa@ON/mA】,検査_T1on_【DynamicPVa@CC120%P/V】,検査_T1on_【DynamicPVb@CC120%P/V】,検査_T1on_【K-Slope_a@ON】,検査_T1on_【K-Slope_a@CV200%】,検査_T1on_【K-Slope_a@CC120%P】,検査_T1on_【K-Slope_b@ON】,検査_T1on_【K-Slope_b@CV200%】,検査_T1on_【K-Slope_b@CC120%P】,検査_T1on_【MaxOpen1@ON/ms】,検査_T1on_【MaxOpen1@CV200%/ms】,検査_T1on_【MaxOpen1@CC120%P/ms】,検査_T1on_【MaxOpen2@ON/ms】,検査_T1on_【MaxOpen2@CV200%/ms】,検査_T1on_【MaxOpen2@CC120%P/ms】,検査_T1on_【OBTa@ON/ms】,検査_T1on_【OBTa@CV200%/ms】,検査_T1on_【OBTa@CC120%P/ms】,検査_T1on_【OBTb@ON/ms】,検査_T1on_【OBTb@CV200%/ms】,検査_T1on_【OBTb@CC120%P/ms】,検査_T1on_【OTa@ON/ms】,検査_T1on_【OTa@CV200%/ms】,検査_T1on_【OTa@CC120%P/ms】,検査_T1on_【OTb@ON/ms】,検査_T1on_【OTb@CV200%/ms】,検査_T1on_【OTb@CC120%P/ms】,検査_T1on_【OTCa@ON/m】,検査_T1on_【OTCa@CV200%/m】,検査_T1on_【OTCa@CC120%P/m】,検査_T1on_【OTCb@ON/m】,検査_T1on_【OTCb@CV200%/m】,検査_T1on_【OTCb@CC120%P/m】,検査_T1on_【OTT1@ON/ms】,検査_T1on_【OTT1@CV200%/ms】,検査_T1on_【OTT1@CC120%P/ms】,検査_T1on_【rOTa@ON/ms】,検査_T1on_【rOTa@CV200%/ms】,検査_T1on_【rOTa@CC120%P/ms】,検査_T1on_【rOTb@ON/ms】,検査_T1on_【rOTb@CV200%/ms】,検査_T1on_【rOTb@CC120%P/ms】,検査_T1on_【SlopeP@ON】,検査_T1on_【SlopeP@CV200%】,検査_T1on_【SlopeP@CC120%P】,検査_T1on_【SlopeQ@ON】,検査_T1on_【SlopeQ@CV200%】,検査_T1on_【SlopeQ@CC120%P】,検査_T1on_【SOSa@ON/mA】,検査_T1on_【SOSa@CV200%/mA】,検査_T1on_【SOSb@ON/mA】,検査_T1on_【SOSb@CV200%/mA】,検査_T1on_【SUSa@CC120%P/mA】,検査_T1on_【SUSb@CC120%P/mA】,検査_T1off_【== OFF ==】,検査_T1off_【RTa-AVT@DM0/ms】,検査_T1off_【RTa-DCT@DM0/ms】,検査_T1off_【ARC@DM0/ms】,検査_T1off_【ART@DM0/ms】,検査_T1off_【AVC@DM0/ms】,検査_T1off_【AVT@DM0/ms】,検査_T1off_【CSa@DM0/ms】,検査_T1off_【CSb@DM0/ms】,検査_T1off_【DSC@DM0/ms】,検査_T1off_【DST@DM0/ms】,検査_T1off_【DynamicDCa@DM0/ms】,検査_T1off_【DynamicDCb@DM0/ms】,検査_T1off_【K-Slope_a@DM0/ms】,検査_T1off_【K-Slope_b@DM0/ms】,検査_T1off_【MaxOpen_a@DM0/ms】,検査_T1off_【MaxOpen_b@DM0/ms】,検査_T1off_【RBTa@DM0/ms】,検査_T1off_【RBTb@DM0/ms】,検査_T1off_【ｒRTa@DM0/ms】,検査_T1off_【ｒRTb@DM0/ms】,検査_T1off_【RTa@DM0/ms】,検査_T1off_【RTb@DM0/ms】,検査_T1off_【RTCa@DM0/ms】,検査_T1off_【RTCb@DM0/ms】,検査_T1off_【RTT1@DM0/ms】,検査_T1off_【RUSa@DM0/ms】,検査_T1off_【RUSb@DM0/ms】,検査_T1off_【Sigma-CS^2 a@DM0/ms】,検査_T1off_【Sigma-CS^2 b@DM0/ms】,検査_T1off_【Sigma-CSa@DM0/ms】,検査_T1off_【Sigma-CSb@DM0/ms】,検査_T1off_【Sigma-RUS^2 a@DM0/ms】,検査_T1off_【Sigma-RUS^2 b@DM0/ms】,検査_T1off_【Sigma-RUSa@DM0/ms】,検査_T1off_【Sigma-RUSb@DM0/ms】,検査_Swp_【== SWEEP ==】,検査_Swp_【ARC@-DN-A/ms】,検査_Swp_【ART@-DN-A/ms】,検査_Swp_【AVC@-DN-A/ms】,検査_Swp_【AVT@-DN-A/ms】,検査_Swp_【CBAa@-DN-A/ms】,検査_Swp_【CBAb@-DN-A/ms】,検査_Swp_【CSa@-DN-A/ms】,検査_Swp_【CSb@-DN-A/ms】,検査_Swp_【CSV2@-DN-A/ms】,検査_Swp_【CSV3@-DN-A/ms】,検査_Swp_【DVa@-DN-A/ms】,検査_Swp_【DVb@-DN-A/ms】,検査_Swp_【DynamicDCa@-DN-A/ms】,検査_Swp_【DynamicDCb@-DN-A/ms】,検査_Swp_【K-Slope_a@-DN-A/ms】,検査_Swp_【K-Slope_b@-DN-A/ms】,検査_Swp_【MaxOpen1@-DN-A/ms】,検査_Swp_【MaxOpen2@-DN-A/ms】,検査_Swp_【RBTa@-DN-A/ms】,検査_Swp_【RBTb@-DN-A/ms】,検査_Swp_【ｒRTa@-DN-A/ms】,検査_Swp_【ｒRTb@-DN-A/ms】,検査_Swp_【RTa@-DN-A/ms】,検査_Swp_【RTb@-DN-A/ms】,検査_Swp_【RTCa@-DN-A/ms】,検査_Swp_【RTCb@-DN-A/ms】,検査_Swp_【RTT1@-DN-A/ms】,検査_Swp_【RUSa@-DN-A/ms】,検査_Swp_【RUSb@-DN-A/ms】,検査_Swp_【SCR@-DN-A/ms】,検査_Swp_【Sigma-CS^2 a@-DN-A/ms】,検査_Swp_【Sigma-CS^2 b@-DN-A/ms】,検査_Swp_【Sigma-CSa@-DN-A/ms】,検査_Swp_【Sigma-CSb@-DN-A/ms】,検査_Swp_【SlopeA/SlopeQ@-DN-A/ms】,検査_Swp_【SlopeP/SlopeR@-DN-A/ms】,検査_Swp_【DCa@-DN-A/%】,検査_Swp_【DCb@-DN-A/%】,検査_Swp_【TSO/TSR (C)@-DN-A/ms】,検査_Swp_【TSO/TSR (V)@-DN-A/ms】,検査_T2_【== TEST2回目 ==】,検査_T2_【SCR/Ohm】,検査_T2_【OTa/ms】,検査_T2_【OTb/ms】,検査_T2_【OBTa/ms】,検査_T2_【OBTb/ms】,検査_T2_【L-70%/H】,検査_T2_【TAU-70%/ms】,検査_T2on_【== ON ==】,検査_T2on_【AOC@ON/mA】,検査_T2on_【AOC@CV200%/mA】,検査_T2on_【AOT@ON/ms】,検査_T2on_【AOT@CV200%/ms】,検査_T2on_【AOT@CC120%P/ms】,検査_T2on_【APC@ON/mA】,検査_T2on_【APC@CV200%/mA】,検査_T2on_【APT@ON/ms】,検査_T2on_【APT@CV200%/ms】,検査_T2on_【APT@CC120%P/ms】,検査_T2on_【CBAa@ON/ms】,検査_T2on_【CBAa@CV200%/ms】,検査_T2on_【CBAa@CC120%P/ms】,検査_T2on_【CBAb@ON/ms】,検査_T2on_【CBAb@CV200%/ms】,検査_T2on_【CBAb@CC120%P/ms】,検査_T2on_【DynamicPCb@ON/mA】,検査_T2on_【DynamicPCb@CV200%/mA】,検査_T2on_【DynamicPCa@CV200%/mA】,検査_T2on_【DynamicPCa@ON/mA】,検査_T2on_【DynamicPVa@CC120%P/V】,検査_T2on_【DynamicPVb@CC120%P/V】,検査_T2on_【K-Slope_a@ON】,検査_T2on_【K-Slope_a@CV200%】,検査_T2on_【K-Slope_a@CC120%P】,検査_T2on_【K-Slope_b@ON】,検査_T2on_【K-Slope_b@CV200%】,検査_T2on_【K-Slope_b@CC120%P】,検査_T2on_【MaxOpen1@ON/ms】,検査_T2on_【MaxOpen1@CV200%/ms】,検査_T2on_【MaxOpen1@CC120%P/ms】,検査_T2on_【MaxOpen2@ON/ms】,検査_T2on_【MaxOpen2@CV200%/ms】,検査_T2on_【MaxOpen2@CC120%P/ms】,検査_T2on_【OBTa@ON/ms】,検査_T2on_【OBTa@CV200%/ms】,検査_T2on_【OBTa@CC120%P/ms】,検査_T2on_【OBTb@ON/ms】,検査_T2on_【OBTb@CV200%/ms】,検査_T2on_【OBTb@CC120%P/ms】,検査_T2on_【OTa@ON/ms】,検査_T2on_【OTa@CV200%/ms】,検査_T2on_【OTa@CC120%P/ms】,検査_T2on_【OTb@ON/ms】,検査_T2on_【OTb@CV200%/ms】,検査_T2on_【OTb@CC120%P/ms】,検査_T2on_【OTCa@ON/m】,検査_T2on_【OTCa@CV200%/m】,検査_T2on_【OTCa@CC120%P/m】,検査_T2on_【OTCb@ON/m】,検査_T2on_【OTCb@CV200%/m】,検査_T2on_【OTCb@CC120%P/m】,検査_T2on_【OTT1@ON/ms】,検査_T2on_【OTT1@CV200%/ms】,検査_T2on_【OTT1@CC120%P/ms】,検査_T2on_【rOTa@ON/ms】,検査_T2on_【rOTa@CV200%/ms】,検査_T2on_【rOTa@CC120%P/ms】,検査_T2on_【rOTb@ON/ms】,検査_T2on_【rOTb@CV200%/ms】,検査_T2on_【rOTb@CC120%P/ms】,検査_T2on_【SlopeP@ON】,検査_T2on_【SlopeP@CV200%】,検査_T2on_【SlopeP@CC120%P】,検査_T2on_【SlopeQ@ON】,検査_T2on_【SlopeQ@CV200%】,検査_T2on_【SlopeQ@CC120%P】,検査_T2on_【SOSa@ON/mA】,検査_T2on_【SOSa@CV200%/mA】,検査_T2on_【SOSb@ON/mA】,検査_T2on_【SOSb@CV200%/mA】,検査_T2on_【SUSa@CC120%P/mA】,検査_T2on_【SUSb@CC120%P/mA】,検査_T2off_【== OFF ==】,検査_T2off_【RTa-AVT@DM0/ms】,検査_T2off_【RTa-DCT@DM0/ms】,検査_T2off_【ARC@DM0/ms】,検査_T2off_【ART@DM0/ms】,検査_T2off_【AVC@DM0/ms】,検査_T2off_【AVT@DM0/ms】,検査_T2off_【CSa@DM0/ms】,検査_T2off_【CSb@DM0/ms】,検査_T2off_【DSC@DM0/ms】,検査_T2off_【DST@DM0/ms】,検査_T2off_【DynamicDCa@DM0/ms】,検査_T2off_【DynamicDCb@DM0/ms】,検査_T2off_【K-Slope_a@DM0/ms】,検査_T2off_【K-Slope_b@DM0/ms】,検査_T2off_【MaxOpen_a@DM0/ms】,検査_T2off_【MaxOpen_b@DM0/ms】,検査_T2off_【RBTa@DM0/ms】,検査_T2off_【RBTb@DM0/ms】,検査_T2off_【ｒRTa@DM0/ms】,検査_T2off_【ｒRTb@DM0/ms】,検査_T2off_【RTa@DM0/ms】,検査_T2off_【RTb@DM0/ms】,検査_T2off_【RTCa@DM0/ms】,検査_T2off_【RTCb@DM0/ms】,検査_T2off_【RTT1@DM0/ms】,検査_T2off_【RUSa@DM0/ms】,検査_T2off_【RUSb@DM0/ms】,検査_T2off_【Sigma-CS^2 a@DM0/ms】,検査_T2off_【Sigma-CS^2 b@DM0/ms】,検査_T2off_【Sigma-CSa@DM0/ms】,検査_T2off_【Sigma-CSb@DM0/ms】,検査_T2off_【Sigma-RUS^2 a@DM0/ms】,検査_T2off_【Sigma-RUS^2 b@DM0/ms】,検査_T2off_【Sigma-RUSa@DM0/ms】,検査_T2off_【Sigma-RUSb@DM0/ms】,検査_filename",
+        "nfni": false,
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mfldname"
+    }
+  ]
+}

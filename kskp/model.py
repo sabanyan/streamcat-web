@@ -8,6 +8,8 @@ from pathlib import Path
 from flask import g
 from . import app
 from . import auth
+from threading import Lock
+lock = Lock()
 
 # app.config['DATABASE'] = app.root_path + '/data/kskp.db'
 app.config.from_pyfile(app.root_path + '/settings.cfg')
@@ -469,7 +471,11 @@ def write_data_to_json(path, data):
     """
     データをJSONとしてファイルに書き込むヘルパー
     """
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+    lock.acquire()
+    try:
+        path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+    finally:
+        lock.release() #release lock
 
 def get_flow_nodes_by_uuid(flow_uuid):
     """
