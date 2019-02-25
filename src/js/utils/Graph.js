@@ -328,6 +328,7 @@ class Graph {
             id: note.id,
             name: note.name,
             label: note.label,
+            title: note.title,
             content: note.content,
             position: note.position,
             type: note.type,

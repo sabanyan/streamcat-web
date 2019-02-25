@@ -13,29 +13,37 @@ import style from '../style.scss'
 type State = {
     noteDetail?:NoteDetailType;
     loading: boolean;
+    title: ref;
+    content: ref;
   }
 
 class NoteInspector extends React.Component<FlowEditorProps,State> {
 
     loading:boolean = false
 
+
     constructor (props:FlowEditorProps) {
         super(props)
         this.state = {
             loading: false
         }
+        this.title = React.createRef();
+        this.content = React.createRef();
     }
 
-    onHide() {
+    onHide() {  
+        this.updateNote()
         this.saveNodes()
     }
 
-    onBlurContent(e: Event) {
+    updateNote() {
         const selectedStep = this.getSelectedStep()
         let newSelectedStep = StateUtil.deepCopy(selectedStep)
-        newSelectedStep.content = e.target.value
-        
+        newSelectedStep.title = this.title.current.value
+        newSelectedStep.content = this.content.current.value
+
         this.props.updateStep(newSelectedStep)
+
     }
 
     saveNodes(){
@@ -67,16 +75,20 @@ class NoteInspector extends React.Component<FlowEditorProps,State> {
             </div>,
           })
     }
-
+    
     render () {
         let selected_step = this.getSelectedStep()
-        const text = selected_step.content
+        const noteTitle = selected_step.title
+        const noteContent = selected_step.content
         let content = <div className="property_body">
-            <div><input type="text" className={'mb-8px'} placeholder={'新しいメモ'} 
-                    className={'form-control'} ref={'description'} rows={8}
-                    onBlur={(e) => this.onBlurContent(e)}
-                    defaultValue={text}>
+            <div>
+                <input type="text" className={'mb-8px'} placeholder={'新しいメモのタイトル'} 
+                    className={'form-control'} ref={this.title} rows={8}
+                    defaultValue={noteTitle}>
                 </input>
+                <hr className={style.full_hr}></hr>
+                <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={this.content}
+                defaultValue={noteContent} rows={8}></textarea>
                 <hr className={style.full_hr}></hr>
                 <Button onClick={(e) => this.onClickDelete(e)} danger={true}>
                 削除
