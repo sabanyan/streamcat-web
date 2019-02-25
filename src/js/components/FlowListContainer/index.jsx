@@ -149,13 +149,11 @@ export default class FlowListContainer extends React.Component<Props,State> {
   }
 
   onChangeFile(e:SyntheticInputEvent<EventTarget>){
-    console.log(e)
     const selectedFiles:FileList =  e.target.files
     if(selectedFiles){
       const uploadFile:File = selectedFiles[0]
       APIUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
         const json = response.data
-        console.log(json)
         this.setState({upload_file:{
             file:uploadFile,
             uuid:json.data.uuid,

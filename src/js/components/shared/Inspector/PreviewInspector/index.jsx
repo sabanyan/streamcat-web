@@ -40,7 +40,6 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
 
     updateArgs() {
       const args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
-      console.log(ParamUtil.getArgsFromInputRefs(this.inputRefs))
       //プレビューリクエスト
       this.props.onSave(args)
     }

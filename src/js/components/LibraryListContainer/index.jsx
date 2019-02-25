@@ -86,7 +86,6 @@ export default class LibraryListContainer extends React.Component<Props,State> {
   }
 
   onClickJob(e,job){
-    console.log(job)
     this.setState({selected_data:job})
   }
 

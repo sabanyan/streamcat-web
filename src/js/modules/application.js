@@ -256,7 +256,6 @@ const Application = (state = initialState, action: {}) => {
       break
     }
     case UPDATE_STEP_ACTION: {
-
       newState.nodes = rebuildNodesEdges(newState,action)
 
       //選択されているEdgeも更新する

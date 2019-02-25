@@ -4,14 +4,15 @@ import Constants from '../../constants';
 
 export type NoteStepModelProps = {
     ...BaseModelProps,
-    title: string;
-    content: string;
+    title: string,
+    content: string
 }
 
 export default class NoteStepModel extends BaseStepModel {
 
     constructor (props:NoteStepModelProps) {
         super(props)
+        this.initialize(props,"title")
         this.initialize(props,"content")
     }
 
@@ -25,6 +26,10 @@ export default class NoteStepModel extends BaseStepModel {
 
     getSize() {
         return this.size
+    }
+
+    getTitle() {
+        return this.title
     }
 
     getContent() {

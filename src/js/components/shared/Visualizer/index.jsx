@@ -56,7 +56,6 @@ export default class Visualizer extends React.Component<Props,State> {
   }
 
   onSave(args:{}){
-    console.log(args)
     this.setState({args:args})
     this.visualizeRequest(this.props.visualize,args)
   }

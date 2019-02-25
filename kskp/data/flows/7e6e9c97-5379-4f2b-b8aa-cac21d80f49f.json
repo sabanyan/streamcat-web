@@ -90,6 +90,40 @@
         "tmpPath": ""
       },
       "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 320.5,
+        "y": 317.5
+      },
+      "size": {
+        "width": 215,
+        "height": 25
+      },
+      "invalid": {},
+      "error": {},
+      "id": "n1",
+      "type": "note",
+      "label": "n1",
+      "content": "テスト",
+      "title": "sss"
+    },
+    {
+      "position": {
+        "x": 299,
+        "y": 464.5
+      },
+      "size": {
+        "width": 215,
+        "height": 25
+      },
+      "invalid": {},
+      "error": {},
+      "id": "n2",
+      "type": "note",
+      "label": "n2",
+      "content": "新しいメモ",
+      "title": "zzz"
     }
   ]
 }

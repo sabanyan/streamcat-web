@@ -71,7 +71,6 @@ export default class CommandStepModel extends BaseStepModel{
     let max = 0
     filterKeys.forEach((key)=>{
       const value = key.replace("*","")
-      console.log(value)
       max = (value > max)?value:max
     })
 
