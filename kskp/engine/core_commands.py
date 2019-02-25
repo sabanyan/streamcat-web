@@ -107,7 +107,7 @@ class Mnrjoin(MCommand):#new
     def __init__(self):
         super().__init__()
         self.name = 'mnrjoin'
-        self.description = '参照ファイルのの複数範囲条件結合'
+        self.description = '参照ファイルの複数範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
@@ -347,7 +347,7 @@ class Mshare(MCommand):#edit
     def __init__(self):
         super().__init__()
         self.name = 'mshare'
-        self.description = '構成費の計算'
+        self.description = '構成比の計算'
         self.params.append(Parameter('f', '指定列の構成比計算(必須)'))
         self.params.append(Parameter('k', '構成比計算の単位となる列名'))
 

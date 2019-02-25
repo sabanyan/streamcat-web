@@ -14,6 +14,8 @@ from .model import *
 app.register_blueprint(auth_bp, url_prefix='/signup')
 app.register_blueprint(api, url_prefix='/api/v0')
 
+from .util_endpoints import endpoints
+app.register_blueprint(endpoints, url_prefix='/')
 
 @app.route('/')
 def top():
@@ -48,9 +50,8 @@ def library():
 def profile():
     return render_template('profile.html', user_id=session['user_id'])
 
-# @app.route('/test')
-# def test():
-#     return render_template('visualize/f20541d4-8b8f-4787-6ea9-f1e9d3db80a1_csvtolinegraph.html')
+def main():
+    app.run()
 
 if __name__ == '__main__':
-    app.run()
+    main()
