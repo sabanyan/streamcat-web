@@ -631,6 +631,34 @@ def update_profile(user_id):
 
     return jsonify({'success': True})
 
+@api.route('/caches', methods=['DELETE'])
+# @login_required_api
+def delete_cache():
+    frame_uuid = ''
+
+    # パース
+    ofs = request.args['of'].split('.')
+    flow_uuid = ofs[0]
+    datum_id = ofs[1]
+
+    frame_name = DATAFRAME_DIR_PATH / ('caches_' + flow_uuid + '_' + datum_id + '.csv')
+
+    p = FLOWS_DIR_PATH.joinpath(flow_uuid + '.json')
+    j = json.loads(p.read_text(), encoding='utf-8')
+
+    for i, node in enumerate(j['nodes']):
+        if node['id'] == datum_id:
+            frame_uuid = j['nodes'][i]['uuid']
+            j['nodes'][i]['uuid'] = None
+            j['nodes'][i]['cacheCreatedAt'] = None
+            # csvのファイル名をcahces_<flow_uuid>_<datum_uuid>に変更
+            frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
+            frame_path.rename(frame_name)
+
+    update_flow_by_uuid(p.stem, j)
+
+    return jsonify({'success': True})
+
 import nysol.mcmd as nm
 
 frames_path = Path('kskp/data/frames')
@@ -877,24 +905,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
-    # キャッシュの処理
-    caches_list = []
-    for flow_uuid_and_step_id, cache_uuid in result['caches'].items():
-        caches = {}
-
-        caches['flow_uuid'] = flow_uuid_and_step_id.split(',')[0]
-        caches['id'] = flow_uuid_and_step_id.split(',')[1]
-        caches['frame_uuid'] = cache_uuid
-
-        caches_list.append(caches)
-
     # 結果の処理
     if no_contents:
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result['outputs'].items()]
     else:
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result['outputs'].items()]
 
-    return result_list, caches_list
+    return result_list, result['caches']
 
 
 def load_as_data_frame(result_text, offset, limit):

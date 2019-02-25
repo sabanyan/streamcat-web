@@ -83,7 +83,7 @@ class CacheTestCase(unittest.TestCase):
         flow_json = json.loads(original_flow_path.read_text())
         for node in flow_json['nodes']:
             if node['id'] in datum_id_list:
-                node['caches'] = True
+                node['makeCache'] = True
         return flow_json
 
     def check_caches_test(self, job):
@@ -92,8 +92,8 @@ class CacheTestCase(unittest.TestCase):
         cachesに関するテストを行う
         """
         for flow_and_datum, cache_uuid in job.caches.items():
-            target_flow_uuid = flow_and_datum.split(',')[0]
-            target_datum_id = flow_and_datum.split(',')[1]
+            target_flow_uuid = flow_and_datum.split('.')[0]
+            target_datum_id = flow_and_datum.split('.')[1]
 
             new_flow_json = json.loads(self.new_flow_path.read_text())
 
