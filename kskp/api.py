@@ -21,7 +21,8 @@ from .model import (
     get_flow_nodes_by_uuid,
     update_user_by_id,
     write_data_to_json,
-    make_flow_path
+    make_flow_path,
+    copy_flow_by_uuid
 )
 from .activity import (
     make_unfinished_history,
@@ -83,7 +84,7 @@ def delete_project(project_uuid):
 
 
 @api.route('/flows', methods=['POST'])
-@login_required_api
+# @login_required_api
 def new_flow():
     """
     新しいフローを作成する
@@ -94,14 +95,27 @@ def new_flow():
     # getで取ってくるとキーが存在しないときはNoneが返ってきて、project_idがNoneになるので
     # これでvalidationできていると言える？
     # 今の所project_uuid以外は必須ではない
-    project_id = get_project_id_by_uuid(j.get('project_uuid'))
 
-    # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
-    if project_id is None:
-        return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
+    new_flow = {}
 
-    # frontendからcreate_flowに渡すものが増えてきたので、request.jsonを直接渡す。
-    new_flow = create_flow(j, session['user_id'])
+    if 'original_flow_uuid' in j:
+        original_flow_path = get_flow_path_by_uuid(j.get('original_flow_uuid'))
+
+        # ブロック句
+        if not os.path.exists(original_flow_path):
+            return jsonify({'success': False, 'message': 'not exist ' + original_flow_uuid })
+
+        # コピー
+        new_flow = copy_flow_by_uuid(j.get('original_flow_uuid'))
+    else:
+        project_id = get_project_id_by_uuid(j.get('project_uuid'))
+
+        # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
+        if project_id is None:
+            return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
+
+        # frontendからcreate_flowに渡すものが増えてきたので、request.jsonを直接渡す。
+        new_flow = create_flow(j, session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
 
