@@ -424,7 +424,9 @@ def make_new_frame():
         if request.args.get('no_contents'):
             no_contents = True
 
-        return execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
+        result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
+
+        return result
     else:
         return jsonify({
                             'success': False,
@@ -459,7 +461,8 @@ def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     詳細情報なども含んだframeを表すdictを返す
     """
     result = {}
-    contents, number_of_lines = load_as_data_frame(file_path.read_text(encoding='utf-8'), offset, limit)
+    contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
+
     if not no_contents:
         result['contents'] = contents
     result['numberOfLines'] = number_of_lines
@@ -529,10 +532,31 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                                     'success': False,
                                     'code': -1,
                                     'message': 'result is empty.'
-                                })
+                                   })
             else:
+                # 結果をキャッシュ化する（オムロン様用一時的対応
+
+                # 1. 対象フローのJSONデータを取得する
+                flow_path = get_flow_path_by_uuid(flow_uuid)
+                current_flow_data = json.loads(flow_path.read_text())
+
+                # 2. resultを読んで書き換えていく
+                for link in result_data: # ここが'name'なのは変えるべき
+                    target_step_id = link['id']
+                    target_datum_uuid = link['uuid']
+
+                    for i, node in enumerate(current_flow_data['nodes']):
+                        if node['id'] == target_step_id:
+                            current_flow_data['nodes'][i]['uuid'] = target_datum_uuid
+                            break
+
+                # 3. 最後にファイルに保存する
+                update_flow_by_uuid(flow_uuid, current_flow_data)
+
                 return jsonify({'success': True, 'name': result_data})
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return jsonify({
                                 'success': False,
                                 'code': -1,
@@ -880,35 +904,62 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
     if no_contents:
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
     else:
+        print('resultを作るよ！')
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
     return result_list
 
 
-def load_as_data_frame(result_text, offset, limit):
+def load_as_data_frame(path_obj, offset, limit):
     """
     CSVの文字列を受け取り、
     いわゆるデータフレームの形式にして返す
+    TODO: offsetはつかってない
     """
-    result_list = [x for x in result_text.split('\n') if x != '']
-    result_len = len(result_list) - 1
+
+    # result_text ＝ path_obj.read_text()
+    # result_list = [x for x in result_text.split('\n') if x != '']
+    # result_len = len(result_list) - 1
+
+    # if not result_list:
+    #     return result_data, 0
+
+    # # 重複文字があればインデックスをつける
+    # column_list = replace_column_name(result_list[0].split(','))
+
+    # # offset+1の1はヘッダを飛ばすため
+    # start = 1 + offset
+    # end = start + limit if limit is not None else result_len
+
+    # for record in result_list[start:end]:
+    #     for idx, column_data in enumerate(record.split(',')):
+    #         # print(column_list[idx])
+    #         result_data[column_list[idx]].append(column_data)
+
+    result_text = ''
     result_data = {}
+    column_list = []
+    with path_obj.open(encoding='utf-8') as f:
+        n = 0
+        for line in f.readlines():
+            if n > limit:
+                break
 
-    if not result_list:
-        return result_data, 0
+            if n == 0:
+                # 一行目はヘッダとみなす
+                # 重複文字があればインデックスをつける
+                column_list = replace_column_name(line.split(','))
+                for column_name in column_list:
+                    result_data[column_name] = []
+            else:
+                for idx, column_data in enumerate(line.split(',')):
+                    result_data[column_list[idx]].append(column_data)
 
-    # 重複文字があればインデックスをつける
-    column_list = replace_column_name(result_list[0].split(','))
+            n += 1
 
-    for column_name in column_list:
-        result_data[column_name] = []
+    if n == 0:
+        raise Exception('空のCSVを読み込みました。コマンド実行時にエラーが発生した可能性があります。')
 
-    # offset+1の1はヘッダを飛ばすため
-    start = 1 + offset
-    end = start + (limit if limit is not None else result_len)
-    for record in result_list[start:end]:
-        for idx, column_data in enumerate(record.split(',')):
-            # print(column_list[idx])
-            result_data[column_list[idx]].append(column_data)
+    result_len = n
 
     # 行数も返すように変更
     return result_data, result_len
