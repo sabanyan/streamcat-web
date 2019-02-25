@@ -87,7 +87,7 @@ def parse_nodes(obj):
         if node['type'] in ['command', 'flow']:
             nodes.append(node)
         elif node['type'] in ['frame']:
-            if node.get('caches'):
+            if node.get('makeCache'):
                 caches.append(node['id'])
 
     return nodes, caches
@@ -115,7 +115,7 @@ def parse_subjob(node, data, caches, flow_uuid):
         for p_port, datum_id in dsts.items():
             if datum_id in caches:
                 cache_uuid = str(uuid.uuid4())
-                cache_list[f'{flow_uuid},{datum_id}'] = cache_uuid
+                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
                 command_args[p_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
 
         new_step = parse_command_step(node, command_args, srcs, dsts)
@@ -128,7 +128,7 @@ def parse_subjob(node, data, caches, flow_uuid):
         for p_port, datum_id in dsts.items():
             if datum_id in caches:
                 cache_uuid = str(uuid.uuid4())
-                cache_list[f'{flow_uuid},{datum_id}'] = cache_uuid
+                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
                 connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
 
     if len(cache_list) > 0:
@@ -209,7 +209,7 @@ class Job:
 
     def link_caches(self, flow_uuid):
         """
-        指定したflowのキャッシュを書き換える
+        指定したflowにキャッシュ情報をつけて書き換える
         """
         current_flow_data = None
         flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{flow_uuid}.json')
@@ -224,8 +224,8 @@ class Job:
 
                 # cachesを元に書き換えていく
                 for flow_uuid_and_step_id, cache_uuid in job.caches.items():
-                    target_flow_uuid = flow_uuid_and_step_id.split(',')[0]
-                    target_step_id = flow_uuid_and_step_id.split(',')[1]
+                    target_flow_uuid = flow_uuid_and_step_id.split('.')[0]
+                    target_step_id = flow_uuid_and_step_id.split('.')[1]
                     target_datum_uuid = cache_uuid
 
                     # 更新対象のflowかどうか判断する
@@ -237,6 +237,8 @@ class Job:
                         if node['id'] == target_step_id:
                             if node['uuid'] is None:
                                 node['uuid'] = target_datum_uuid
+                                JST = timezone(timedelta(hours=+9), 'JST')
+                                node['cacheCreatedAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
                             else:
                                 # この後行われるget_caches()で纏められてしまうので、使わないcachesは削除しておく
                                 # job.cachesのfor文の外じゃないと削除できないので、一旦格納しておく
@@ -260,7 +262,7 @@ class Job:
         """
         for port, datum in self.lasts.items():
             for flow_and_step, cache_uuid in self.caches.items():
-                if flow_and_step.split(',')[0] == flow_uuid and flow_and_step.split(',')[1] == port:
+                if flow_and_step.split('.')[0] == flow_uuid and flow_and_step.split('.')[1] == port:
                     datum.uuid = cache_uuid
                     break
 
