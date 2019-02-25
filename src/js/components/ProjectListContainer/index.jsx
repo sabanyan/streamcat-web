@@ -126,7 +126,7 @@ export default class ProjectListContainer extends React.Component {
 
   onBlurTitle(e){
     const project = this.state.selected_project
-    APIUtil.put("flows/" + project.uuid,{
+    APIUtil.put("projects/" + project.uuid,{
       "new_name": e.target.value
     }).then((response)=>{
       this.getProjectList()
