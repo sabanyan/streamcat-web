@@ -169,6 +169,24 @@ export default class FlowUtil {
      })
   }
 
+  /**
+   * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
+   */
+  static getNotOverlapNodePosition({x,y}:{x:number,y:number},nodes:[]){
+    let result = {x:x,y:y}
+    const threshold = 3
+    nodes.forEach((node)=>{
+      //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
+      if(parseInt(node.position.x) >= parseInt(x) - threshold &&
+        parseInt(node.position.x) <= parseInt(x) + threshold &&
+        parseInt(node.position.y) >= parseInt(y) - threshold &&
+        parseInt(node.position.y) <= parseInt(y) + threshold ){
+        //合致していた場合新しい座標を計算
+        result = FlowUtil.getNotOverlapNodePosition({x:x+10,y:y+10},nodes)
+      }
+    })
+    return result
+  }
 
   /**
    * フローの保存
@@ -191,6 +209,7 @@ export default class FlowUtil {
         dismissAfter: 0
       })
     }
+
     return new Promise((resolve, reject) => {
       APIUtil.put("flows/" + flowUUID,{nodes:nodes}).then((response)=>{
         if(dismissNotify)dismissNotify(saveNotify.id)
@@ -225,16 +244,14 @@ export default class FlowUtil {
    * @param description
    * @param params
    * @param ports
-   * @param cache
    * @returns {Promise<any>}
    */
-  static saveFlowSettings (flowUUID:string,{label,description,params,ports,caches},notify:Function,dismissNotify:Function):any {
+  static saveFlowSettings (flowUUID:string,{label,description,params,ports},notify:Function,dismissNotify:Function):any {
     let putBody = {}
     if(label)putBody["label"]=label
     if(description)putBody["description"]=description
     if(params)putBody["params"]=params
     if(ports)putBody["ports"]=ports
-    if(caches)putBody["caches"]=caches
 
     let saveNotify
     if(notify){
@@ -245,8 +262,9 @@ export default class FlowUtil {
         dismissAfter: 0
       })
     }
+
     return new Promise((resolve, reject) => {
-      APIUtil.put("flows/" + flowUUID,putBody).then((response)=>{  
+      APIUtil.put("flows/" + flowUUID,putBody).then((response)=>{
         if(dismissNotify)dismissNotify(saveNotify.id)
         if (!response.data.success) {
           notify({

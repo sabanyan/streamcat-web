@@ -14,13 +14,14 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
 import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel'
-import CommentStepModel from '../../../model/Step/CommentStepModel'
+import NoteStepModel from '../../../model/Step/NoteStepModel'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
 import CommandIcon from '../Icon/CommandIcon'
 import APIUtil from '../../../utils/APIUtil'
 import ErrorIcon from '../Icon/ErrorIcon'
+import Note from './Note'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -275,8 +276,8 @@ export default class Step extends React.Component<Props, State> {
     return (model instanceof SubFlowStepModel)
   }
 
-  isComment (model: modelProps):boolean {
-    return (model instanceof CommentStepModel)
+  isNote (model: modelProps):boolean {
+    return (model instanceof NoteStepModel)
   }
 
   getFilter () {
@@ -348,15 +349,11 @@ export default class Step extends React.Component<Props, State> {
           <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
-    }else if (this.isComment(step)) {
+    }else if (this.isNote(step)) {
+      let model = step
       icon = 
-        <svg width="200" height="300">
-            <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#d8ffb5'}
-              hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
-              hover={hover} selected={selected} stroke={'#d8ffb5'}
-              filter={filter} style={CommentStyle}>
-            </Rect>         
-        </svg>
+      <Note hover={hover} selected={selected} model={step}></Note>
+      
     }
 
     const stepLabel = step.getLabel()
@@ -423,7 +420,7 @@ export const TextStyle = {
   padding: 8
 }
 
-export const CommentStyle = {
+export const NoteStyle = {
   x: 0,
   y: 0,
   tx: 0,

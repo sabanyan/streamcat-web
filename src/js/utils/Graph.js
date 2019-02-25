@@ -7,7 +7,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
 import FlowModel from '../model/Flow/FlowModel'
 import FlowUtil from './FlowUtil'
-import CommentStepModel from '../model/Step/CommentStepModel';
+import NoteStepModel from '../model/Step/NoteStepModel';
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -166,7 +166,7 @@ class Graph {
     this.g.nodes().forEach((v)=> {
       let graph_node = self.g.node(v)
 
-      if(graph_nod){
+      if(graph_node){
         const key = graph_node.label //グラフ構造のlabelにidを設定しています
         let node = Graph.getNode(nodes,key)
         node.setFrame({
@@ -321,19 +321,19 @@ class Graph {
             hasPosition = true
           }
           break;
-        case Constants.step.type.comment:
-          const comment = node
+        case Constants.step.type.note:
+          const note = node
 
           model = {
-            id: comment.id,
-            name: comment.name,
-            label: comment.label,
-            content: comment.content,
-            position: comment.position,
-            type: comment.type,
-            size: comment.size,
+            id: note.id,
+            name: note.name,
+            label: note.label,
+            content: note.content,
+            position: note.position,
+            type: note.type,
+            size: note.size,
           }
-          node = new CommentStepModel(model)
+          node = new NoteStepModel(model)
           newNodes.push(node)
 
           break;

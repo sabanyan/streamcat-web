@@ -39,8 +39,9 @@ const Constants = {
       outputPortName:"i",
     },
     note: {
-      width: (38 + 6 * 2) * 2,
-      height: (38 + 6 * 2) * 2,
+      width: (38 + 6 * 2) * 4,
+      height: (38 + 6 * 2) / 2,
+      padding: 15,
     }
   },
   step:{
@@ -48,7 +49,7 @@ const Constants = {
       command:"command",
       frame:"frame",
       subflow:"flow",
-      comment:"comment"
+      note:"note"
     }
   },
   param:{

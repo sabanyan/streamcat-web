@@ -27,8 +27,8 @@ export default class ModelUtil {
       case Constants.step.type.command:
         prefix = "c"
         break
-      case Constants.step.type.comment:
-        prefix = "m" // memoのm
+      case Constants.step.type.note:
+        prefix = "n"
         break
       default:
         new ErrorUtil("想定している型とは異なる型が指定されました")

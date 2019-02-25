@@ -29,10 +29,13 @@ import Undo from './Undo'
 import Redo from './Redo'
 import Button from '../../shared/Button'
 import ReactDomUtil from '../../../utils/ReactDomUtil'
-import Comment from './Comment'
-import CommentStepModel from '../../../model/Step/CommentStepModel'
-import {CommentStepModelProps} from '../../../model/Step/CommentStepModel'
+import Note from './Note'
+import NoteStepModel from '../../../model/Step/NoteStepModel'
+import {NoteStepModelProps} from '../../../model/Step/NoteStepModel'
 import ModelUtil from '../../../utils/ModelUtil';
+import PositionUtil from '../../../utils/PositionUtil';
+import { defaultGraphProps } from '../../../utils/Graph'
+import ZoomUtil from '../../../utils/ZoomUtil'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -236,20 +239,28 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   onClickDefaultZoom(e:Event){
     this.props.setZoom({value:100})
   }
-  onClickComment() {
+  onClickNote() {
 
-    const props:CommentStepModelProps = {
-      type : Constants.step.type.comment,
-      position : {x: 300, y: 300},
-      size : {width: 30, height: 20},
-      content : "新しいメモ"
+    let position = PositionUtil.getCenterPosition("#flow_editor>div")
+    position = {
+      x: ZoomUtil.zoomReverse(position.x, this.props.zoom),
+      y: ZoomUtil.zoomReverse(position.y, this.props.zoom)
+         + Constants.default.step.height
+         + defaultGraphProps.rankSeparator
     }
 
-    const comment = new CommentStepModel(props)
+    const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({...position}, this.props.nodes)
 
-    this.props.addStep(comment)
+    const props:CommentStepModelProps = {
+      type : Constants.step.type.note,
+      position : notOverlapNodePosition,
+      size : {width: 30, height: 20},
+      content : "新しいメモ",
+    }
+  
+    const note = new NoteStepModel(props)
 
-    console.log(this.props.nodes)
+    this.props.addStep(note)
   }
 
   render () {
@@ -262,6 +273,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     const undoDisabled = !(current - 1 >= 0)
     return <div>
       <div className={classnames(style.flow_toolbar)}>
+        <Note disabled={false} icon={'comment'} onClick={()=>this.onClickNote()}>メモ</Note>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(
                             e)}>データソースの追加</DataSourceImport>
@@ -274,7 +286,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
         {/*<Undo disabled={undoDisabled} icon={"undo"} onClick={()=>this.props.undo()}>もとに戻す</Undo>
                           <Redo disabled={redoDisabled} icon={"redo"} onClick={()=>this.props.redo()}>繰り返す</Redo>*/}
-        <Comment disabled={false} icon={'comment'} onClick={()=>this.onClickComment()}>メモ</Comment>
       </div>
       <div className={classnames(style.paper_toolbar)}>
         <Zoom onClickZoomIn={(e)=>this.onClickZoomIn(e)}
