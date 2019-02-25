@@ -273,6 +273,76 @@ def fetch_flow_by_uuid(flow_uuid):
     path = get_flow_path_by_uuid(flow_uuid)
     return json.loads(path.read_text())
 
+def copy_flow_by_uuid(original_flow_uuid, data_source_name=None):
+    """
+    指定したフローのuuidを元に
+    コピーしたフローを作成し、その内容を返す
+    """
+    new_flow_uuid = str(uuid.uuid4()) if data_source_name is None else data_source_name
+    new_flow_path = Path(app.config['FLOW_PATH']) / (new_flow_uuid + '.json')
+    original_flow_path = get_flow_path_by_uuid(original_flow_uuid)
+
+    # 中身の読み込み
+    with open(original_flow_path) as original_f:
+        flow_json = json.load(original_f)
+
+    # 中身の書き換え
+    with open(new_flow_path, 'w') as new_f:
+        flow_json['label'] = generate_flow_name(flow_json.get('projectId'), flow_json.get('label'))
+        flow_json['creator'] = get_user_by_id(1)['name']
+        JST = timezone(timedelta(hours=+9), 'JST')
+        flow_json['createdAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
+        json.dump(flow_json, new_f, indent=2, ensure_ascii=False)
+
+    return flow_json
+
+def generate_flow_name(project_id, flow_name, serial_number=1):
+    """
+    コピーしたフローの名前（label）を生成する
+    コピーフローの名前ルール
+    ・基本的にはコピー元のフローの名前の後ろに「のコピー」をつける
+    ・「のコピー」をつけた名前がそのプロジェクト内で重複していた場合、後ろに連番（２〜）をつける
+    """
+    multi_flag = False
+    new_flow_name = ''
+
+    if serial_number == 1:
+        # 引数で「のコピー」付きのflow_nameを渡してもいいかなと思ったけど、
+        # それも含めてここでやったほうが纏まってていいかなと思ったので、ここで行なっている
+
+        # 引数で、後ろに付ける文字列（ここでは「のコピー」）を渡せるようにした方が柔軟性は上がるが、
+        # 今はいいや、その時が来たらそうする。
+        flow_name = flow_name + ' のコピー'
+        new_flow_name = flow_name
+    elif serial_number > 1:
+        new_flow_name = flow_name + str(serial_number)
+
+    for path in Path(app.config['FLOW_PATH']).iterdir():
+        try:
+            data = json.loads(path.read_text())
+        except json.JSONDecodeError as e:
+            # JSONのフォーマットに則していないファイルは無視
+            continue
+
+        # プロジェクトが存在するかのチェック
+        project = fecth_project(project_id)
+        if project is None:
+            continue
+
+        # プロジェクトが同じかどうかのチェック
+        # 別プロジェクトのフローとは名前が重複してもいいので。
+        if data['projectId'] != project_id:
+            continue
+
+        if data['label'] == new_flow_name:
+            multi_flag = True
+            break
+
+    if multi_flag:
+        return generate_flow_name(project_id, flow_name, serial_number + 1)
+    else:
+        return new_flow_name
+
 def fetch_subflows_all_projects(request_args):
     """
     指定したプロジェクトの持つサブフロー一覧の内容リストをuuidを付け加えて返す
@@ -285,7 +355,6 @@ def fetch_subflows_all_projects(request_args):
             # JSONのフォーマットに則していない場合
             continue
 
-        #
         project = fecth_project(data['projectId'])
         if project is None:
             continue
