@@ -18,7 +18,7 @@ import Validator from '../utils/Validator'
 import Log from '../utils/Log'
 import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import _ from 'lodash'
-
+import ZoomUtil from '../utils/ZoomUtil'
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
 const ADD_STEP_ACTION = 'add_step_action'
@@ -43,7 +43,7 @@ const DRAGGING_ACTION = 'dragging_action'
 const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
-const ADD_COMMENT_ACTION = 'add_memo_action'
+const ADD_NOTE_ACTION = 'add_memo_action'
 
 const graph: Graph = new Graph()
 
@@ -132,10 +132,23 @@ const Application = (state = initialState, action: {}) => {
 
         if (src_step_ids || dst_step_ids) {
           //追加したステップの位置調整
-          const average = {
+          let average = {
             sx: totalSX / src_step_ids.length,
             sy: totalSY / src_step_ids.length,
             dx: totalDX / 2
+          }
+
+          if(!src_step_ids.length){
+            //入力がない場合、グラフの中央を基準にする
+            const leftTopPosition = {
+              x: document.querySelector("#flow_editor>div").scrollLeft,
+              y: window.pageYOffset
+            }
+            average = {
+              sx: ZoomUtil.zoomReverse(leftTopPosition.x + (window.innerWidth - 400) / 2,newState.zoom),
+              sy:  ZoomUtil.zoomReverse(leftTopPosition.y + (window.innerHeight - 60) / 2,newState.zoom),
+              dx: totalDX / 2
+            }
           }
 
           const newPosition = {
@@ -151,11 +164,25 @@ const Application = (state = initialState, action: {}) => {
             height: defaultNodeProps.height
           })
 
+          //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
+          const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({...add_step.position},newState.nodes)
+          const notOverlapOffsetX = notOverlapNodePosition.x - add_step.position.x
+          const notOverlapOffsetY = notOverlapNodePosition.y - add_step.position.y
+          if(notOverlapOffsetX !==0 || notOverlapOffsetY !==0){
+            //再調整
+            add_step.setFrame({
+              x: notOverlapNodePosition.x,
+              y: notOverlapNodePosition.y,
+              width: defaultNodeProps.width,
+              height: defaultNodeProps.height
+            })
+          }
+
           //先行して設置されている接続先のノードの位置調整
           dst_step_ids.map((id, index) => {
             let new_node = Graph.getNode(state.nodes, id)
             new_node.setFrame({
-              x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator),
+              x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
               y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator,
               width: defaultNodeProps.width,
               height: defaultNodeProps.height
@@ -871,9 +898,9 @@ export const updateDataFrameDetailAction = (detail: DataFrameDetailType) => {
   }
 }
 
-export const addCommentAction = (x:number, y:number) => {
+export const addNoteAction = (x:number, y:number) => {
   return {
-    type: ADD_COMMENT_ACTION,
+    type: ADD_NOTE_ACTION,
     x: x,
     y: y
   }

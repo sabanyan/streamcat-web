@@ -10,8 +10,8 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandInspector from './CommandInspector/index'
 import Graph from '../../../utils/Graph'
 import FlowSettingsInspector from './FlowSettingsInspector'
-import CommentStepModel from '../../../model/Step/CommentStepModel'
-import CommentInspector from './CommentInspector'
+import NoteStepModel from '../../../model/Step/NoteStepModel'
+import NoteInspector from './NoteInspector'
 
 class Inspector extends React.Component<FlowEditorProps> {
 
@@ -29,8 +29,8 @@ class Inspector extends React.Component<FlowEditorProps> {
           property = <DataSourceInspector {...this.props}></DataSourceInspector>
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector {...this.props}></CommandInspector>
-        } else if (selected_step instanceof CommentStepModel) {
-          property = <CommentInspector {...this.props}></CommentInspector>
+        } else if (selected_step instanceof NoteStepModel) {
+          property = <NoteInspector {...this.props}></NoteInspector>
         }
       }
     } else if (!selected_step_ids.length) {

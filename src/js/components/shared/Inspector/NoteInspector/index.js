@@ -1,5 +1,5 @@
 import React from 'react'
-import type { CommentDetailType } from '../../../../types/index'
+import type { NoteDetailType } from '../../../../types/index'
 import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import BaseInspector from '../BaseInspector/index'
 import Graph from '../../../../utils/Graph'
@@ -11,11 +11,11 @@ import StateUtil from '../../../../utils/State'
 import style from '../style.scss'
 
 type State = {
-    commentDetail?:CommentDetailType;
+    noteDetail?:NoteDetailType;
     loading: boolean;
   }
 
-class CommentInspector extends React.Component<FlowEditorProps,State> {
+class NoteInspector extends React.Component<FlowEditorProps,State> {
 
     loading:boolean = false
 
@@ -34,6 +34,7 @@ class CommentInspector extends React.Component<FlowEditorProps,State> {
         const selectedStep = this.getSelectedStep()
         let newSelectedStep = StateUtil.deepCopy(selectedStep)
         newSelectedStep.content = e.target.value
+        
         this.props.updateStep(newSelectedStep)
     }
 
@@ -70,16 +71,15 @@ class CommentInspector extends React.Component<FlowEditorProps,State> {
     render () {
         let selected_step = this.getSelectedStep()
         const text = selected_step.content
-        let content = <div>
-            <div><textarea className={'mb-8px'} placeholder={'新しいメモ'} 
+        let content = <div className="property_body">
+            <div><input type="text" className={'mb-8px'} placeholder={'新しいメモ'} 
                     className={'form-control'} ref={'description'} rows={8}
                     onBlur={(e) => this.onBlurContent(e)}
                     defaultValue={text}>
-                </textarea>
-            </div>
-            <div className={style.full_hr}>
+                </input>
+                <hr className={style.full_hr}></hr>
                 <Button onClick={(e) => this.onClickDelete(e)} danger={true}>
-                削除する
+                削除
                 </Button>
             </div>
         </div>
@@ -89,4 +89,4 @@ class CommentInspector extends React.Component<FlowEditorProps,State> {
     }
 }
 
-export default CommentInspector
+export default NoteInspector
