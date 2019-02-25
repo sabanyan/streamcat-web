@@ -1,3 +1,5 @@
+# for OMRON
+
 FROM centos:7
 
 RUN groupadd -g 1000 kskp
