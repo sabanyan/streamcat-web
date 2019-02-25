@@ -75,7 +75,7 @@ class CacheTestCase(unittest.TestCase):
 
         return job
 
-    def update_caches_true_in_flow(self, datum_id_list, original_flow_path):
+    def update_makeCache_true_in_flow(self, datum_id_list, original_flow_path):
         """
         指定したoriginalのflowを使って
         指定したdatum_idのcacheをtrueに変換したflowのjsonを返す
@@ -118,7 +118,7 @@ class CacheTestCase(unittest.TestCase):
         # 変更対象のdatum_id
         true_cache_data = ['Bt']
 
-        flow_json = self.update_caches_true_in_flow(true_cache_data, self.original_flow_path)
+        flow_json = self.update_makeCache_true_in_flow(true_cache_data, self.original_flow_path)
         self.new_flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
 
         # フローの実行
@@ -150,7 +150,7 @@ class CacheTestCase(unittest.TestCase):
         # 変更対象のdatum_id
         true_cache_data = ['Bo']
 
-        flow_json = self.update_caches_true_in_flow(true_cache_data, self.original_flow_path)
+        flow_json = self.update_makeCache_true_in_flow(true_cache_data, self.original_flow_path)
         self.new_flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
 
         # フローの実行
@@ -178,7 +178,7 @@ class CacheTestCase(unittest.TestCase):
         # 変更対象のdatum_id
         true_cache_data = ['Bo', 'Bt']
 
-        flow_json = self.update_caches_true_in_flow(true_cache_data, self.original_flow_path)
+        flow_json = self.update_makeCache_true_in_flow(true_cache_data, self.original_flow_path)
         self.new_flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
 
         # フローの実行
@@ -194,6 +194,38 @@ class CacheTestCase(unittest.TestCase):
         # 後片付け
         # flow削除
         self.new_flow_path.unlink()
+        # キャッシュされたcsvを削除
+        for flow_and_datum, cache_uuid in job.caches.items():
+            (Path(os.environ['KENG_FRAMES_PATH']) / (cache_uuid + '.csv')).unlink()
+
+    def test_delete_cache(self):
+        """
+        キャッシュが存在するdatumに対して紐付けを削除し、
+        frame名を変更する
+        """
+        # 変更対象のdatum_id
+        true_cache_data = ['Bt']
+
+        flow_json = self.update_makeCache_true_in_flow(true_cache_data, self.original_flow_path)
+        self.new_flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        # フローの実行
+        job = self.execute(self.new_flow_uuid)
+
+        # キャッシュのテスト
+        # cachesの個数
+        self.assertEqual(len(job.caches), 1)
+
+        # 作成されたキャッシュの確認テスト
+        self.check_caches_test(job)
+
+        # 後片付け
+        # flow削除
+        self.new_flow_path.unlink()
+        # lasts削除
+        for frame in job.lasts.values():
+            path = Path(os.environ['KENG_FRAMES_PATH']) / (frame.uuid + '.csv')
+            path.unlink()
         # キャッシュされたcsvを削除
         for flow_and_datum, cache_uuid in job.caches.items():
             (Path(os.environ['KENG_FRAMES_PATH']) / (cache_uuid + '.csv')).unlink()
