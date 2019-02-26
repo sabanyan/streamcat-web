@@ -335,10 +335,12 @@ class Frame(Datum):
         super().__init__(frame_uuid, source)
         self.label = '' # for debug
 
-    def command_to_file(self):
+    def command_to_file(self, frame_uuid=None):
         if self.source is not None and not isinstance(self.source, PathFileSource):
+            if frame_uuid is not None: self.uuid = frame_uuid
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
+
             if isinstance(self.source, NysolPythonSource):
                 self.source.save(new_source.fullpath.as_posix())
             else:

@@ -22,7 +22,8 @@ from .model import (
     get_flow_nodes_by_uuid,
     update_user_by_id,
     write_data_to_json,
-    make_flow_path
+    make_flow_path,
+    copy_flow_by_uuid
 )
 from .activity import (
     make_unfinished_history,
@@ -108,14 +109,27 @@ def new_flow():
     # getで取ってくるとキーが存在しないときはNoneが返ってきて、project_idがNoneになるので
     # これでvalidationできていると言える？
     # 今の所project_uuid以外は必須ではない
-    project_id = get_project_id_by_uuid(j.get('project_uuid'))
 
-    # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
-    if project_id is None:
-        return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
+    new_flow = {}
 
-    # frontendからcreate_flowに渡すものが増えてきたので、request.jsonを直接渡す。
-    new_flow = create_flow(j, session['user_id'])
+    if 'original_flow_uuid' in j:
+        original_flow_path = get_flow_path_by_uuid(j.get('original_flow_uuid'))
+
+        # ブロック句
+        if not os.path.exists(original_flow_path):
+            return jsonify({'success': False, 'message': 'not exist ' + original_flow_uuid })
+
+        # コピー
+        new_flow = copy_flow_by_uuid(j.get('original_flow_uuid'))
+    else:
+        project_id = get_project_id_by_uuid(j.get('project_uuid'))
+
+        # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
+        if project_id is None:
+            return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
+
+        # frontendからcreate_flowに渡すものが増えてきたので、request.jsonを直接渡す。
+        new_flow = create_flow(j, session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -526,7 +540,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                         })
     else:
         try:
-            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
+            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -534,26 +548,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                                     'message': 'result is empty.'
                                    })
             else:
-                # 結果をキャッシュ化する（オムロン様用一時的対応
-
-                # 1. 対象フローのJSONデータを取得する
-                flow_path = get_flow_path_by_uuid(flow_uuid)
-                current_flow_data = json.loads(flow_path.read_text())
-
-                # 2. resultを読んで書き換えていく
-                for link in result_data: # ここが'name'なのは変えるべき
-                    target_step_id = link['id']
-                    target_datum_uuid = link['uuid']
-
-                    for i, node in enumerate(current_flow_data['nodes']):
-                        if node['id'] == target_step_id:
-                            current_flow_data['nodes'][i]['uuid'] = target_datum_uuid
-                            break
-
-                # 3. 最後にファイルに保存する
-                update_flow_by_uuid(flow_uuid, current_flow_data)
-
-                return jsonify({'success': True, 'name': result_data})
+                return jsonify({'success': True, 'name': result_data, 'caches': caches_data})
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -652,6 +647,34 @@ def update_profile(user_id):
             profile_json[key] = value
         path.write_text(json.dumps(profile_json, ensure_ascii=False, indent=2), encoding='utf-8')
     # ----
+
+    return jsonify({'success': True})
+
+@api.route('/caches', methods=['DELETE'])
+# @login_required_api
+def delete_cache():
+    frame_uuid = ''
+
+    # パース
+    ofs = request.args['of'].split('.')
+    flow_uuid = ofs[0]
+    datum_id = ofs[1]
+
+    frame_name = DATAFRAME_DIR_PATH / ('caches_' + flow_uuid + '_' + datum_id + '.csv')
+
+    p = FLOWS_DIR_PATH.joinpath(flow_uuid + '.json')
+    j = json.loads(p.read_text(), encoding='utf-8')
+
+    for i, node in enumerate(j['nodes']):
+        if node['id'] == datum_id:
+            frame_uuid = j['nodes'][i]['uuid']
+            j['nodes'][i]['uuid'] = None
+            j['nodes'][i]['cacheCreatedAt'] = None
+            # csvのファイル名をcahces_<flow_uuid>_<datum_uuid>に変更
+            frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
+            frame_path.rename(frame_name)
+
+    update_flow_by_uuid(p.stem, j)
 
     return jsonify({'success': True})
 
@@ -901,12 +924,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
+    # 結果の処理
     if no_contents:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result['outputs'].items()]
     else:
-        print('resultを作るよ！')
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
-    return result_list
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result['outputs'].items()]
+
+    return result_list, result['caches']
 
 
 def load_as_data_frame(path_obj, offset, limit):
@@ -1022,10 +1046,10 @@ def handle_bad_request(error):
 def visualizer():
 
     from .engine.core3 import internal_commands, Job, Step
-    from bs4 import BeautifulSoup
+    # from bs4 import BeautifulSoup
 
-    html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
-    visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
+    # html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
+    # visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
 
     # visualizeコマンドの実行
     ### ここから
@@ -1038,18 +1062,68 @@ def visualizer():
     job = Job(new_step, new_inputs)
     # ここまでがengine.executeのparse部分にあたる
 
-    result = job.execute()
+    result = job.execute()['o']
     job.dtor()
     ### ここまでがengine.execute部分にあたる
 
-    # htmlの中身の作成（テンプレのhtmlを元に作成する）
-    template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
-    soup = BeautifulSoup(result['o'], 'html.parser')
-    div_tag = template_soup.find('div', id='visualize')
-    div_tag.append(soup)
+    # # htmlの中身の作成（テンプレのhtmlを元に作成する）
+    # template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
+    # soup = BeautifulSoup(result['o'], 'html.parser')
+    # div_tag = template_soup.find('div', id='visualize')
+    # div_tag.append(soup)
+    #
+    # # htmlの作成
+    # with open(visualize_path.as_posix(), 'w') as f:
+    #     f.write(template_soup.prettify())
 
-    # htmlの作成
-    with open(visualize_path.as_posix(), 'w') as f:
-        f.write(template_soup.prettify())
+    # return render_template('visualize/%s.html' % html_name)
 
-    return render_template('visualize/%s.html' % html_name)
+    # テーブルコマンド
+    if request.args.get('from') == 'csvtohtmltable':
+        return render_template("visualize/table.html", header=result['header'], reader=result['reader'])
+    # bokehのコマンド
+    return render_template("visualize/plot.html", script1=result['script'], div1=result['div'], cdn_js=result['js'], cdn_css=result['css'])
+
+@app.route('/visualizers_test', methods=['GET'])
+def visualizer_test():
+
+    from .engine.core3 import internal_commands, Job, Step
+    # from bs4 import BeautifulSoup
+
+    # html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
+    # visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
+    args = {
+      "limit": "",
+      "offset": "",
+      "x_size": 1400,
+      "y_size": 600,
+      "graph_title": "テスト（折れ線グラフ）",
+      "x_label": "日付",
+      "y_label": "気温",
+      "alpha": 1,
+      "time_series_column": ["date"],
+      "x_axis_column": "date",
+      "y_axis_column": "average",
+      "data_column": "prefecture",
+      "data": []
+    }
+    # visualizeコマンドの実行
+    ### ここから
+    # ここから
+    new_inputs = {}
+    new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , 'result3.csv'))
+    command = internal_commands.get(request.args.get('from'))
+    # 残りの２つの引数はsrcsとdsts
+    new_step = Step(command, args, {}, {})
+    job = Job(new_step, new_inputs)
+    # ここまでがengine.executeのparse部分にあたる
+
+    result = job.execute()['o']
+    job.dtor()
+    ### ここまでがengine.execute部分にあたる
+
+    # テーブルコマンド
+    if request.args.get('from') == 'csvtohtmltable':
+        return render_template("visualize/table.html", header=result['header'], reader=result['reader'])
+    # bokehのコマンド
+    return render_template("visualize/plot.html", script1=result['script'], div1=result['div'], cdn_js=result['js'], cdn_css=result['css'])

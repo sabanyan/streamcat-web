@@ -75,7 +75,7 @@ def make_finished_history(now):
             json_data = json.loads(file_path.read_text(encoding='utf-8'))
             if json_data['flow']['uuid'] == kwargs['flow_uuid']:
                 nodes_dict = get_flow_nodes_by_uuid(kwargs['flow_uuid'])
-                for key, val in result.items():
+                for key, val in result['outputs'].items():
                     # 現在はresultから結果データを取ってきており、データのクラス名を'type'に入れているので
                     # クラス名と'type'に入れたい型が一致しているのが前提になっている（例・frame）
                     json_data['data'][key] = {'type': type(val).__name__.lower(), 'uuid': val.uuid, 'label': nodes_dict.get(key).get('label')}
