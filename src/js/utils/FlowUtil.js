@@ -130,6 +130,53 @@ export default class FlowUtil {
     return nodes
   }
 
+  /**
+  * 
+  */
+  static removeCache(node:StepModelType, updateStep:Function, notify:Function, dismissNotify:Functionxd) {
+    const uuid = node.uuid
+    const nodeId = node.id
+    const url = "caches?of=" + uuid + "." + nodeId
+    let deleteNotify
+    if(notify){
+      deleteNotify = notify({
+        title: 'キャッシュ削除中',
+        message: 'キャッシュを削除しています',
+        status: 'loading',
+        dismissAfter: 0
+      })
+    }
+
+    return new Promise((resolve, reject) => {
+      APIUtil.delete(url).then((response)=>{
+        if(dismissNotify)dismissNotify(deleteNotify.id)
+        if (!response.data.success) {
+          notify({
+            title: '実行エラー',
+            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        }
+        if (response.data.success) {
+          node.setEmptyCache()
+        }
+        resolve(response)
+      },(error)=>{
+        if(dismissNotify)dismissNotify(deleteNotify.id)
+        notify({
+          title: '実行エラー',
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+        reject(error)
+      })
+    })
+  }
+
 
   static runNodes(flowUUID:string,notify:Function,dismissNotify:Function):any{
       let runNotify
@@ -169,6 +216,24 @@ export default class FlowUtil {
      })
   }
 
+  /**
+   * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
+   */
+  static getNotOverlapNodePosition({x,y}:{x:number,y:number},nodes:[]){
+    let result = {x:x,y:y}
+    const threshold = 3
+    nodes.forEach((node)=>{
+      //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
+      if(parseInt(node.position.x) >= parseInt(x) - threshold &&
+        parseInt(node.position.x) <= parseInt(x) + threshold &&
+        parseInt(node.position.y) >= parseInt(y) - threshold &&
+        parseInt(node.position.y) <= parseInt(y) + threshold ){
+        //合致していた場合新しい座標を計算
+        result = FlowUtil.getNotOverlapNodePosition({x:x+10,y:y+10},nodes)
+      }
+    })
+    return result
+  }
 
   /**
    * フローの保存

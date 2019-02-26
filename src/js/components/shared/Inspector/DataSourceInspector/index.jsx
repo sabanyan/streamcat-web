@@ -211,6 +211,19 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
   }
 
+  onChangeCacheCheck (e: Event) {
+  
+    let selected_step = this.getSelectedStep()
+    if(selected_step.isMakeCache()) {
+      selected_step.setMakeCache(false)
+    } else {
+      selected_step.setMakeCache(true)
+    }
+    
+    let flow:FlowModel = this.props.flow
+    this.props.updateFlow(flow)
+  }
+
   getSelectedStep ():StepModelType {
     let {selected_step_ids, nodes} = this.props
     return Graph.getNode(nodes,selected_step_ids[0])
@@ -219,6 +232,30 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   onHide(){
 //    this.saveNodes()
 //    this.saveFlowPorts()
+  }
+
+  onClickDeleteCache() {
+    const {notify,dismissNotify,updateStep} = this.props
+    const node = this.getSelectedStep();
+    FlowUtil.removeCache(node, updateStep,notify,dismissNotify)
+  }
+
+  hasCacheFile() {
+    this.getSelectedStep().nodes
+    return this.props
+  }
+
+  /**
+   * データソースのIN/OUTを保存
+   *  */
+  saveFlowPorts(){
+    const {flow,notify,dismissNotify} = this.props
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
+  }
+
+  saveNodes(){
+    let {nodes} = this.props
+    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
   }
 //
 //  /**
@@ -266,6 +303,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
                ref={'flowOut'}
                onChange={(e) => this.onChangeFlowInOut(e)} />
         &nbsp;出力
+        </label>
+      </div>
+    </div>
+    const cacheCheckForm = <div>
+      <div>
+        <label><input type="checkbox" checked={selected_step.makeCache?"checked":""}
+                ref={'cache'} disabled=""
+                onChange={(e) => this.onChangeCacheCheck(e)}/>
         </label>
       </div>
     </div>
@@ -330,6 +375,28 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
                 {flowInOutForm}
               </div>
             </div>
+          </div>
+        </div>
+        <div className={style.cache}>
+          <div className={style.cache_label}>
+          結果をキャッシュ
+          </div>
+          <div className={style.cache_value}>
+            {cacheCheckForm}
+          </div>
+          <div className={style.cache_delete}>
+            <Button  icon={'delete'} danger={true} 
+              disabled={!selected_step.hasData()}
+
+              onClick={(e) => {this.onClickDeleteCache()}}>
+              キャッシュ削除
+            </Button>
+          </div>
+          <div className={style.cache_label}>
+            キャッシュ作成日
+          </div>
+          <div className={style.cache_value}>
+            {selected_step.cacheCreatedAt}
           </div>
         </div>
         <div className={style.full_hr}/>
