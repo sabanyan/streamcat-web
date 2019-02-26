@@ -15,10 +15,6 @@ type Props = {
 
 class BaseInspector extends React.Component<Props> {
 
-  onBlurTitle(e:SyntheticInputEvent<EventTarget>){
-    if(this.props.onBlurTitle)this.props.onBlurTitle(e)
-  }
-
   componentWillUnmount(){
     if(this.props.onBlurTitle && this.refs["title"]){
       const e = {
@@ -39,9 +35,12 @@ class BaseInspector extends React.Component<Props> {
 
     const disabled = (!onBlurTitle)
     let labelContainer,subLabelContainer
-
-    if(!disabled){
-      labelContainer =  <input type="text" ref={"title"} onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null} className={style.label} defaultValue={label} disabled={disabled}></input>
+    if(!disabled && label !== undefined){
+      labelContainer =  <input type="text" ref={"title"}
+                               onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null}
+                               className={style.label}
+                               defaultValue={label}
+                               disabled={disabled}></input>
     }
     if(subLabel){
       subLabelContainer = <div>

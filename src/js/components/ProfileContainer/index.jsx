@@ -86,6 +86,7 @@ export default class ProfileContainer extends React.Component<Props, State> {
   }
 
   onSubmit(formState){
+    console.log(formState)
     this.setState({is_loading: true})
 
     const body = {
@@ -107,6 +108,7 @@ export default class ProfileContainer extends React.Component<Props, State> {
 
     HttpUtil.put('profile/' + inject_user_id,body).then((response) => {
       const json = response.data
+      console.log(json)
       this.setState(
         {is_loading: false})
     }).catch((error) => {

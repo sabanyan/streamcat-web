@@ -52,6 +52,11 @@ def parse_job(obj, flow_uuid, args, srcs, dsts, inputs):
 
 def parse_flow(obj, flow_uuid):
     flow = Flow(flow_uuid)
+
+    # for debug
+    if 'label' in obj:
+        flow.label = obj['label']
+
     for param in obj['params']:
         flow.params.append(Parameter(param['name']))
     flow.i_ports = obj['ports'][0]
@@ -78,6 +83,10 @@ def parse_datum(node_obj):
         datum.is_temp = False
     else:
         datum = Frame()
+
+    if 'label' in node_obj:
+        datum.label = node_obj['label']
+
     return datum
 
 def parse_nodes(obj):
@@ -106,7 +115,10 @@ def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
 
 def parse_command_step(node_obj, args, srcs, dsts):
-    return Step(commands[node_obj['commandId']], args, srcs, dsts)
+    label = ''
+    if 'label' in node_obj:
+        label = node_obj['label']
+    return Step(commands[node_obj['commandId']], args, srcs, dsts, node_obj['id'], label)
 
 
 class Job:
@@ -135,8 +147,11 @@ class Job:
                     last.is_temp = False
 
         elif s.is_command:
+            import sys
+            import time
+            sys.stderr.write('stt (' + time.strftime('%Y/%m/%d %H:%M:%S') + ') step[' + self.step.step_label + '(id: ' + self.step.step_id + ')]\n')
             output = cf.execute(self.step.args, self.inputs)
-            # print(self.step.args, self.inputs)
+            sys.stderr.write('end (' + time.strftime('%Y/%m/%d %H:%M:%S') + ')\n\n')
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
@@ -176,7 +191,13 @@ class Job:
     def get_datum(self, datum_id, datum):
         if datum.uuid is not None: return datum
 
-        job, port = self.src_job_from(datum_id)
+        src = self.src_job_from(datum_id)
+        if src is None:
+            flow = self.step.command_or_flow
+            sys.__stderr__.write(f'empty and starting data node: {flow.uuid}.{datum_id}\n')
+            raise Exception(f'フロー({flow.label} uuid: {flow.uuid})のノード[{datum.label}]にデータが存在しません。単体の空データは削除してください。')
+
+        job, port = src
 
         self.expand_args(job)
         job.inputs = job.check_inputs(self.inputs_of(job))
@@ -254,11 +275,15 @@ class Job:
 
 
 class Step:
-    def __init__(self, command_or_flow, args, srcs, dsts):
+    def __init__(self, command_or_flow, args, srcs, dsts, step_id='', step_label=''):
         self.command_or_flow = command_or_flow
         self.args = args
         self.srcs = srcs # {'in': 'd0'}
         self.dsts = dsts # {'out': 'd1'}
+
+        # for debug
+        self.step_id = step_id
+        self.step_label = step_label
 
     @property
     def is_command(self):
@@ -290,6 +315,8 @@ class Flow:
         self.o_ports = []
         self.description = ''
 
+        self.label = '' # for debug
+
     def __repr__(self):
         return f'<Flow uuid:{self.uuid}>'
 
@@ -319,6 +346,15 @@ class UnixCommand(Command):
         self.o_ports = [{'name': 'o', 'type': 'frame'}]
 
     def execute(self, args, inputs):
+
+        # for debug
+        import sys
+        indent = '  '
+        sys.__stderr__.write(indent + self.name + ': <\n')
+        for k, i in inputs.items():
+            sys.__stderr__.write(indent + '  [' + k + ']: ' + (repr(i))[:80] + '\n')
+        sys.__stderr__.write(indent + '>\n')
+
         source = self.source(args, inputs)
         for input in inputs.values():
             if isinstance(input.source, PathFileSource):
@@ -380,6 +416,18 @@ class VisualizersCommand(Command):
         """ for override """
         raise Exception()
 
+    def generate_random_color(self):
+        """
+        ランダムに色を出力
+        bokehは色を指定しないといけないので（デフォルトだと全て同じ色になってしまう）
+        """
+        return '#{:X}{:X}{:X}'.format(*[random.randint(0, 255) for _ in range(3)])
+
+    def color_gen(self):
+        from bokeh.palettes import Category10
+        import itertools
+        yield from itertools.cycle(Category10[10])
+
 # visualize
 class CsvToHtmlTableCommand(VisualizersCommand):
     def __init__(self):
@@ -430,7 +478,76 @@ class CsvToHtmlTableCommand(VisualizersCommand):
 # グラフ化に必要なものの準備
 import matplotlib.pyplot as plt
 import pandas as pd
+import numpy as np
+import holoviews as hv
+import random
 
+from bokeh.plotting import figure, ColumnDataSource
+from bokeh.resources import CDN
+from bokeh.embed import file_html
+from bokeh.models import HoverTool
+from bokeh.io import output_file, show
+from numpy import histogram
+
+# matplotlibでイメージを作成するクラス
+# class CsvToLineGraphCommand(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def generate_image(self, args, inputs):
+#         """
+#         ビジュアライズを描画、保存する。
+#         """
+#
+#         # plotの設定
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # dfの作成
+#         # index_colで指定しているものがx軸になる
+#         time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
+#         df = pd.read_csv(inputs.get('i').source.fullpath, index_col=args.get('x_axis'), parse_dates=time_series_column)
+#
+#         # offset対応
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         return file_name
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotの折れ線グラフ画像のimageタグを作成する
+#         """
+#         image_file_name = self.generate_image(args, inputs)
+#         img_tag = '<img src="' + 'static/images/visualize/%s.png' % image_file_name + '">'
+#
+#         return img_tag
+
+#
 class CsvToLineGraphCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
@@ -439,18 +556,10 @@ class CsvToLineGraphCommand(VisualizersCommand):
         """
         ビジュアライズを描画、保存する。
         """
-
-        # plotの設定
-        plt.style.use('ggplot')
-        plt.legend(loc='best')
-        plt.xlabel(args.get('x_axis'))
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-
         # dfの作成
         # index_colで指定しているものがx軸になる
         time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
-        df = pd.read_csv(inputs.get('i').source.fullpath, index_col=args.get('x_axis'), parse_dates=time_series_column)
+        df = pd.read_csv(inputs.get('i').source.fullpath, parse_dates=time_series_column)
 
         # offset対応
         offset = int(args.get('offset')) if args.get('offset') else 0
@@ -458,34 +567,83 @@ class CsvToLineGraphCommand(VisualizersCommand):
 
         start = offset
         end = start + (limit if limit is not None else len(df))
-        df = df[start:end]
 
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
             # なんかする
             # pass
 
-        # y軸の設定はここ
-        # y軸はリスト型。インデックスでも列名でも大丈夫。
-        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
-        df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+        df = df.sort_values(args.get('x_axis_column'))
 
-        # pngで保存
-        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
-        img_path = 'kskp/static/images/visualize/%s.png' % file_name
-        plt.savefig(img_path, dpi=200)
+        # 時系列表示設定
+        tooltip = '@' + args.get('x_axis_column')
+        tooltip_format = 'numeral'
+        type = 'auto'
+        if time_series_column:
+            # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
+            # それを防ぐために{%raw%}{%endraw%}で区切っている
+            tooltip = '{%raw%}@' + args.get('x_axis_column') + '{%F}{%endraw%}'
+            tooltip_format = 'datetime'
+            type = 'datetime'
 
-        return file_name
+        # tooltipの設定
+        hover = HoverTool()
+
+        hover.tooltips = [
+            (args.get('x_axis_column'), tooltip),
+            (args.get('y_axis_column'), '@' + args.get('y_axis_column'))
+        ]
+        hover.formatters = {
+            args.get('x_axis_column'): tooltip_format
+        }
+        hover.mode='vline'
+
+        plot = figure(x_axis_type=type,
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'),
+                      plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'))
+
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
+
+        if len(args.get('data')) > 0:
+            unique_data = args.get('data')
+
+        # データ名が入っている列が存在する場合（クロス表）
+        for datum in unique_data:
+            source = ColumnDataSource(df[df[args.get('data_column')]==datum][start:end])
+            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'),
+                      legend=datum, alpha=args.get('alpha'), color=color.__next__(),
+                      source=source)
+
+        # データが列ごとに分かれている場合（クロス集計していない場合の表）
+        # for datum in args.get('data'):
+        #     source = ColumnDataSource(data={
+        #         args.get('x_axis_column'): df[args.get('x_axis_column')],
+        #         args.get('y_axis_column'): df[datum.get('name')]
+        #     })
+        #     plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
+        #               color=datum.get('color'), source=source)
+
+        plot.add_tools(hover)
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
+        html = file_html(plot, CDN, 'myplot')
+
+        return html
 
     def gererate_html(self, args, inputs):
         """
         csvのファイルパスから、
         plotの折れ線グラフ画像のimageタグを作成する
         """
-        image_file_name = self.generate_image(args, inputs)
-        img_tag = '<img src="' + '/static/images/visualize/%s.png' % image_file_name + '">'
+        html = self.generate_image(args, inputs)
 
-        return img_tag
+        return html
 
 class CsvToHistogram(VisualizersCommand):
     def __init__(self):
@@ -497,48 +655,112 @@ class CsvToHistogram(VisualizersCommand):
         plotのヒストグラムを作成する
         """
 
-        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtohistogram'
         file_path = inputs.get('i').source.fullpath
-
-        offset = int(args.get('offset')) if args.get('offset') else 0
-        limit = int(args.get('limit')) if args.get('limit') else None
-
-        # ブロック句
-        if not os.path.exists(file_path):
-            return ''
-
-        plt.style.use('ggplot')
-        plt.legend(loc='best')
-        plt.xlabel(args.get('x_axis'))
-
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
-
-        # indexで指定しているものがx軸になる
         df = pd.read_csv(file_path)
 
         # offset対応
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
         start = offset
         end = start + (limit if limit is not None else len(df))
-        df = df[start:end]
+
+        # ブロック句
+        # if not os.path.exists(file_path):
+        #     return ''
 
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
             # なんかする
             # pass
 
-        # y軸の設定はここ
-        # y軸はリスト型。インデックスでも列名でも大丈夫。
-        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
-        df.plot(ax=ax, kind='hist', y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), bins=args.get('bins'), alpha=args.get('alpha'))
+        hover = HoverTool()
+        hover.tooltips = [
+            ('度数', '@top')
+        ]
+        hover.mode='vline'
 
-        # pngで保存
-        img_path = 'kskp/static/images/visualize/%s.png' % file_name
-        plt.savefig(img_path, dpi=200)
+        plot = figure(plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'),
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'))
 
-        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
 
-        return img_html
+        if len(args.get('data')) > 0:
+            unique_data = args.get('data')
+
+        for datum in unique_data:
+            hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('x_axis')][start:end].tolist(),
+                                    bins=args.get('bins'), density=args.get('density'))
+            source = ColumnDataSource({'top':hist, 'left': edges[:-1], 'right': edges[1:]})
+            plot.quad(top='top', bottom=0, left='left', right='right',
+                      fill_alpha=args.get('alpha'), color=color.__next__(), legend=datum,
+                      source=source)
+
+        plot.add_tools(hover)
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
+        html = file_html(plot, CDN, 'myplot')
+
+        return html
+
+# class CsvToHistogram(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotのヒストグラムを作成する
+#         """
+#
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtohistogram'
+#         file_path = inputs.get('i').source.fullpath
+#
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         # ブロック句
+#         if not os.path.exists(file_path):
+#             return ''
+#
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # indexで指定しているものがx軸になる
+#         df = pd.read_csv(file_path)
+#
+#         # offset対応
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, kind='hist', y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), bins=args.get('bins'), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+#
+#         return img_html
 
 class CsvToScatter(VisualizersCommand):
     def __init__(self):
@@ -550,25 +772,135 @@ class CsvToScatter(VisualizersCommand):
         plotの散布図を作成する
         """
 
-        file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
         file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path)
 
+        # offset対応
         offset = int(args.get('offset')) if args.get('offset') else 0
         limit = int(args.get('limit')) if args.get('limit') else None
+
+        start = offset
+        end = start + (limit if limit is not None else len(df))
 
         # ブロック句
         if not os.path.exists(file_path):
             return ''
 
-        plt.style.use('ggplot')
-        plt.legend(loc='best')
-        plt.xlabel(args.get('x_axis'))
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
 
-        fig = plt.figure()
-        ax = fig.add_subplot(1,1,1)
+        # y軸の設定はここ
+        # y軸はリスト型。インデックスでも列名でも大丈夫。
+        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
 
-        # indexで指定しているものがx軸になる
+        hover = HoverTool()
+        hover.tooltips = [
+            (args.get('x_axis'), '@x'),
+            (args.get('y_axis'), '@y')
+        ]
+
+        plot = figure(plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'),
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'))
+
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
+
+        if len(args.get('data')) > 0:
+            unique_data = args.get('data')
+
+        for datum in unique_data:
+            df_select_datum = df[df[args.get('data_column')]==datum][start:end]
+            source = ColumnDataSource({'x': df_select_datum[args.get('x_axis')], 'y': df_select_datum[args.get('y_axis')]})
+            plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'),
+                         color=color.__next__(), legend=datum, alpha=args.get('alpha'),
+                         source=source)
+
+        plot.add_tools(hover)
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
+        html = file_html(plot, CDN, 'myplot')
+
+        return html
+
+# class CsvToScatter(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotの散布図を作成する
+#         """
+#
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
+#         file_path = inputs.get('i').source.fullpath
+#
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         # ブロック句
+#         if not os.path.exists(file_path):
+#             return ''
+#
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # indexで指定しているものがx軸になる
+#         df = pd.read_csv(file_path)
+#
+#         # offset対応
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, kind='scatter', x=args.get('x_axis'), y=args.get('y_axis'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+#
+#         return img_html
+
+class CsvToBoxplot(VisualizersCommand):
+    def __init__(self):
+        super().__init__()
+
+    def gererate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの箱ひげ図を作成する
+        """
+
+        file_path = inputs.get('i').source.fullpath
         df = pd.read_csv(file_path)
+
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        # if not os.path.exists(file_path):
+        #     return ''
 
         # offset対応
         start = offset
@@ -580,18 +912,22 @@ class CsvToScatter(VisualizersCommand):
             # なんかする
             # pass
 
-        # y軸の設定はここ
-        # y軸はリスト型。インデックスでも列名でも大丈夫。
-        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
-        df.plot(ax=ax, kind='scatter', x=args.get('x_axis'), y=args.get('y_axis'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+        # ここはbokehをラップしているライブラリのholoviewsを使っている
+        # bokehは書き方がめんどくさいため
+        hv.extension('bokeh')
+        x_label = args.get('x_label') if args.get('x_label') else ','.join(args.get('x_axis'))
+        y_label = args.get('y_label') if args.get('y_label') else args.get('y_axis')
+        title = args.get('graph_title')
 
-        # pngで保存
-        img_path = 'kskp/static/images/visualize/%s.png' % file_name
-        plt.savefig(img_path, dpi=200)
+        boxwhisker = hv.BoxWhisker(df, kdims=args.get('x_axis'), vdims=args.get('y_axis'), label=title)
+        boxwhisker.opts(width=args.get('x_size'), height=args.get('y_size'), xlabel=x_label, ylabel=y_label)
 
-        img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+        renderer = hv.renderer('bokeh')
+        plot=renderer.get_plot(boxwhisker).state
 
-        return img_html
+        return file_html(plot, CDN, 'myplot')
+
+        return url
 
 # mcommand
 class MCommand(UnixCommand):
@@ -843,25 +1179,27 @@ class McalOld(MCommand):
 class Mcat(MCommandNew):
     def __init__(self):
         super().__init__(nm.m2cat)
-
         self.name = 'mcat'
         self.description = 'ファイル結合'
         self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
         self.params.append(Parameter('k', '結合する列名'))
 
-    def execute(self, args, inputs):
-        # args_for_nysol = args
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
 
-        # m2catはなんのパラメータがあるかわからないので（少なくともmcatとは違う）
-        args_for_nysol = {}
         inputs_for_arg_i = []
         for key, input in inputs.items():
-            inputs_for_arg_i.append(input.source.nysol_module)
+            if isinstance(input.source, PathFileSource):
+                # 一度nysol_module化する
+                f = None
+                f <<= nm.m2cat(i=input.source.fullpath.as_posix())
+                inputs_for_arg_i.append(f)
+            elif isinstance(input.source, NysolPythonSource):
+                inputs_for_arg_i.append(input.source.nysol_module)
         args_for_nysol.update({'i': inputs_for_arg_i})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class McatOld(MCommand):
     def __init__(self):
@@ -1333,7 +1671,7 @@ class Mnrjoin(MCommandNew):#new
         super().__init__(nm.mnrjoin)
 
         self.name = 'mnrjoin'
-        self.description = '参照ファイルのの複数範囲条件結合'
+        self.description = '参照ファイルの複数範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
@@ -1361,7 +1699,7 @@ class MnrjoinOld(MCommand):#new
     def __init__(self):
         super().__init__()
         self.name = 'mnrjoin'
-        self.description = '参照ファイルのの複数範囲条件結合'
+        self.description = '参照ファイルの複数範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
@@ -1859,7 +2197,7 @@ class Mshare(MCommandNew):#edit
     def __init__(self):
         super().__init__(nm.mshare)
         self.name = 'mshare'
-        self.description = '構成費の計算'
+        self.description = '構成比の計算'
         self.params.append(Parameter('f', '指定列の構成比計算(必須)'))
         self.params.append(Parameter('k', '構成比計算の単位となる列名'))
 
@@ -1867,7 +2205,7 @@ class MshareOld(MCommand):#edit
     def __init__(self):
         super().__init__()
         self.name = 'mshare'
-        self.description = '構成費の計算'
+        self.description = '構成比の計算'
         self.params.append(Parameter('f', '指定列の構成比計算(必須)'))
         self.params.append(Parameter('k', '構成比計算の単位となる列名'))
 
@@ -4273,52 +4611,155 @@ class PredictOld(UnixCommand):
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 # PCMD
-class Groupby(UnixCommand):
-    pass
 
-class Groupby2(UnixCommand):
-    pass
-
-class SmlModeling(UnixCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'SmlModeling'
-        self.nysol_mod = nm.cmd
-        self.command_path = '/kskp/engine/commands/pcmd/sml_modeling.sh'
-        self.description = 'モデリング'
-        self.output_ext = 'csv'
-        self.stdout_param = ' output_metrics_data='
+class NmCmd(MCommandNew):
+    """
+    nysol_pythonのcmdメソッドのクラス
+    使用回数が多く、argsを辞書から文字列に変換する箇所が殆ど同じなので
+    いい加減別クラスとして定義した。
+    """
+    def __init__(self, exe, ext, param):
+        super().__init__(nm.cmd)
+        self.execute_command = exe
+        self.output_ext = ext
+        self.stdout_param = ' ' + param
 
     def command_args(self, args, inputs):
-        cl_args = self.command_path
-        process_flow = None
+        """
+        実行可能状態のargsを生成
+        """
+        # input整理
+        args, process_flow = self.parse_command_inputs(args, inputs)
+        # nm.cmd用の文字列のコマンドを作成する
+        str_args = self.execute_command + self.convert_args_dict_into_str(args)
 
+        return str_args, process_flow
+
+    def parse_command_inputs(self, args, inputs):
+        process_flow = None
+        # input整理
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+            args.update({'i': input_i.source.fullpath.as_posix()})
         elif isinstance(input_i.source, NysolPythonSource):
-            # process_flow = input_i.source.nysol_module
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+            process_flow = input_i.source.nysol_module
 
-        # nm.cmd用の文字列のコマンドを作成する
-        for key, value in args.items():
+        return args, process_flow
+
+    def convert_args_dict_into_str(self, dict_args):
+        str_args = ''
+        for key, value in dict_args.items():
             if isinstance(value, bool):
-                cl_args += ' ' +  key
+                if value:
+                    str_args += ' -' +  key
                 continue
             if not len(value) == 0:
-                cl_args += ' ' + key + '=' + value
-
-        cl_args += ' kcmd_path=/kskp/engine/commands/kcmd'
-        cl_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
-        cl_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
-
-        return cl_args, process_flow
+                str_args += ' %s=%s' % (key, value)
+        return str_args
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
         return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+
+class SmlModeling(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
+        self.name = 'SmlModeling'
+        self.description = 'デモ用モデリング'
+
+    def parse_command_inputs(self, args, inputs):
+        input_i = inputs['i']
+        # うまいこと標準入力がsml_modeling.sh内で受け取れていないようなので、
+        # とりあえずなんであろうとパスを渡す
+        input_i.command_to_file()
+        args.update({'i': input_i.source.fullpath.as_posix()})
+
+        return args, None
+
+    def command_args(self, args, inputs):
+        # input整理
+        args, process_flow = self.parse_command_inputs(args, inputs)
+        # nm.cmd用の文字列のコマンドを作成する
+        str_args = self.execute_command + self.convert_args_dict_into_str(args)
+
+        str_args += ' kcmd_path=/kskp/engine/commands/kcmd'
+        str_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
+        str_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
+
+        return str_args, process_flow
+
+class Groupby(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/groupby.sh', 'csv', 'o=')
+        self.name = 'Groupby'
+        self.description = 'groupby処理を行う'
+
+class CheckDuplicateRows(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/check_duplicate_rows.sh', 'csv', 'o=')
+        self.name = 'CheckDuplicateRows'
+        self.description = '重複行の抽出'
+
+class MergeFS(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/merge_FS.sh', 'csv', 'o=')
+        self.name = 'MergeFS'
+        self.description = '不整CSVファイルのクレンジングと集約'
+
+class MergeIbutsu(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/merge_ibutsu.sh', 'csv', 'o=')
+        self.name = 'MergeIbutsu'
+        self.description = 'CSVファイルの集約'
+
+    # そのまま返す
+    # 標準入力を受け取らないので、そのままスルー
+    # 動作確認はしていない（テストデータがないので・・・）
+    def parse_command_inputs(self, args, inputs):
+        return args, None
+
+class ColumnGroupingName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
+        self.name = 'ColumnGroupingName'
+        self.description = '項目群に対して、グループに属する項目名に接頭語を付与する'
+
+class ColumnUniqueName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_unique_name.sh', 'csv', 'o=')
+        self.name = 'ColumnUniqueName'
+        self.description = '全ての項目名がユニークになるように、項目名を変更する。'
+
+class ColumnName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
+        self.name = 'ColumnName'
+        self.description = '先頭と末尾に、指定した項目名の順番に列を並び替える。'
+
+class ColumnBlankName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
+        self.name = 'ColumnBlankName'
+        self.description = '空白の項目名に対して、指定した文字と重複時の識別子で生成した項目名に変更し、全ての項目を出力する。'
+
+class ColumnList(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_list.sh', 'csv', 'o=')
+        self.name = 'ColumnList'
+        self.description = 'ヘッダー行と先頭の1行 を縦型に変形したリストを出力する'
+
+class WinCp932Read(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/windows_cp932_csv_read.sh', 'csv', 'o=')
+        self.name = 'WinCp932Read'
+        self.description = 'Windowsファイル（Shift-JIS拡張 CP932）を、サーバ上のローカルファイルより読込む。'
+
+class ColumnsToRows(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/columns_to_rows.sh', 'csv', 'o=')
+        self.name = 'ColumnsToRows'
+        self.description = 'f=で指定した複数の列項目に対して、各項目の行を連結した新たな項目をa=で指定した名前で作成する。'
 
 commands = {
     # MCDM
@@ -4440,13 +4881,28 @@ commands = {
     'evaluate': Evaluate(),
     'predict': Predict(),
 
+    # 追加コマンド
     'groupby': Groupby(),
-    'groupby2': Groupby2(),
-    'sml_modeling': SmlModeling()
+
+    # デモ専用コマンド
+    'sml_modeling': SmlModeling(),
+
+    # O社向けコマンド
+    'check_duplicate_rows': CheckDuplicateRows(),
+    'merge_FS': MergeFS(),
+    'merge_ibutsu': MergeIbutsu(),
+    'column_grouping_name': ColumnGroupingName(),
+    'column_unique_name': ColumnUniqueName(),
+    'column_name': ColumnName(),
+    'column_blank_name': ColumnBlankName(),
+    'column_list': ColumnList(),
+    'windows_cp932_csv_read': WinCp932Read(),
+    'columns_to_rows': ColumnsToRows()
 }
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
     'csvtolinegraph': CsvToLineGraphCommand(),
     'csvtohistogram': CsvToHistogram(),
-    'csvtoscatter': CsvToScatter()
+    'csvtoscatter': CsvToScatter(),
+    'csvtoboxplot': CsvToBoxplot()
 }

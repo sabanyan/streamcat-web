@@ -230,12 +230,13 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   onHide(){
-    this.saveNodes()
-    this.saveFlowPorts()
+//    this.saveNodes()
+//    this.saveFlowPorts()
   }
 
   onClickDeleteCache() {
-    this.deleteCache()
+    const {notify,dismissNotify,updateStep} = this.props
+    FlowUtil.removeCache(this.getSelectedStep().id, updateStep,notify,dismissNotify)
   }
 
   hasCacheFile() {
@@ -255,14 +256,23 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     let {nodes} = this.props
     return FlowUtil.saveNodes(inject_flow_uuid,nodes)
   }
-
-  deleteCache() {
-    const {notify,dismissNotify,nodes} = this.props
-    const uuid = this.getSelectedStep().uuid
-    const nodeId = this.getSelectedStep().nodeId
-
-    FlowUtil.removeCache(uuid,nodeId,notify,dismissNotify,nodes)
-  }
+//
+//  /**
+//   * データソースのIN/OUTを保存
+//   *  */
+//  saveFlowPorts(){
+//    const {flow,notify,dismissNotify} = this.props
+//    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
+//  }
+//
+//  saveNodes(){
+//    let {nodes,history} = this.props
+//    const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history,nodes)
+//    if(isSame){
+//      return
+//    }
+//    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+//  }
 
   render () {
     let step_text
@@ -375,7 +385,9 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
           </div>
           <div className={style.cache_delete}>
             <Button  icon={'delete'} danger={true} 
-              disabled={!selected_step.hasData()}>
+              disabled={!selected_step.hasData()}
+
+              onClick={(e) => {this.onClickDeleteCache()}}>
               キャッシュ削除
             </Button>
           </div>

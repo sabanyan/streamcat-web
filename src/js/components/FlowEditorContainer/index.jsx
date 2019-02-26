@@ -93,7 +93,7 @@ export default FlowEditorContainer = connect(
       zoom: state.reducer.zoom,
       flow: state.reducer.flow,
       originalFlow: state.reducer.originalFlow,
-      navigation: state.reducer.navigation
+      navigation: state.reducer.navigation,
     }
   },
   dispatch => {

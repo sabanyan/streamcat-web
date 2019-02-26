@@ -49,6 +49,7 @@
 
 .property_body{
   padding: 16px;
+  padding-bottom: 64px;
   background-color: $kskp-property-background-color;
   min-height: 100%;
   label{
@@ -239,6 +240,9 @@
   }
 }
 
+.noDescription{
+  color: $kskp-gray;
+}
 
 .cache_ {
   display: inline-block;

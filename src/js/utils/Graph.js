@@ -165,7 +165,6 @@ class Graph {
     this.layout()
     this.g.nodes().forEach((v)=> {
       let graph_node = self.g.node(v)
-
       if(graph_node){
         const key = graph_node.label //グラフ構造のlabelにidを設定しています
         let node = Graph.getNode(nodes,key)

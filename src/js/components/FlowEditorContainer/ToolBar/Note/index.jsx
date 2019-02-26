@@ -6,6 +6,6 @@ const Note = (props:ToolBarButtonType) => {
     const {onClick, children, disabled, icon} = props
     return <ToolBarButton onClick={onClick} disabled={disabled}
                           icon={icon}>{children}</ToolBarButton>
-  }
+}
   
-  export default Note
+export default Note

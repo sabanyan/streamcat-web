@@ -43,6 +43,10 @@ export default class DataFrameStepModel extends BaseStepModel{
     return this.makeCache
   }
 
+  setEmptyCache() {
+    this.cacheCreatedAt = ""
+  }
+
   validate(){
 
   }
