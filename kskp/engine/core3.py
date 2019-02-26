@@ -536,10 +536,10 @@ class VisualizersCommand(Command):
 
     def execute(self, args, inputs):
         # HTML作成
-        visualize_html = self.gererate_html(args, inputs)
+        visualize_html = self.generate_html(args, inputs)
         return { self.out_key: visualize_html }
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
         """ for override """
         raise Exception()
 
@@ -560,7 +560,7 @@ class CsvToHtmlTableCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
         """
         csvのファイルパスから、
         HTMLのテーブル形式にして返す
@@ -574,33 +574,39 @@ class CsvToHtmlTableCommand(VisualizersCommand):
         if not os.path.exists(file_path):
             return ''
 
+        result = {}
+
         # テーブル構造
         table_of_html = '<table border="1">'
         with open(file_path, 'r') as f:
             reader = csv.reader(f)
             header = next(reader)
 
-            table_of_html += '<tr>'
-            for head in header:
-                table_of_html += '<th>'
-                table_of_html += head
-                table_of_html += '</th>'
-            table_of_html += '</tr>'
+            result['header'] = header
+
+            # table_of_html += '<tr>'
+            # for head in header:
+            #     table_of_html += '<th>'
+            #     table_of_html += head
+            #     table_of_html += '</th>'
+            # table_of_html += '</tr>'
 
             csv_list = list(reader)
             start = offset
             end = start + (limit if limit is not None else len(csv_list))
 
-            for csv_row in csv_list[start:end]:
-                table_of_html += '<tr>'
-                for datum in csv_row:
-                    table_of_html += '<td>'
-                    table_of_html += datum
-                    table_of_html += '</td>'
-                table_of_html += '</tr>'
-        table_of_html += '</table>'
+            result['reader'] = csv_list[start:end]
 
-        return table_of_html
+        #     for csv_row in csv_list[start:end]:
+        #         table_of_html += '<tr>'
+        #         for datum in csv_row:
+        #             table_of_html += '<td>'
+        #             table_of_html += datum
+        #             table_of_html += '</td>'
+        #         table_of_html += '</tr>'
+        # table_of_html += '</table>'
+
+        return result
 
 # グラフ化に必要なものの準備
 import matplotlib.pyplot as plt
@@ -609,6 +615,7 @@ import numpy as np
 import holoviews as hv
 import random
 
+from bokeh.embed import components
 from bokeh.plotting import figure, ColumnDataSource
 from bokeh.resources import CDN
 from bokeh.embed import file_html
@@ -679,7 +686,7 @@ class CsvToLineGraphCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def generate_image(self, args, inputs):
+    def generate_plot(self, args, inputs):
         """
         ビジュアライズを描画、保存する。
         """
@@ -759,24 +766,51 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
+        # html = file_html(plot, CDN, 'myplot')
 
-        return html
+        return plot
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
         """
         csvのファイルパスから、
         plotの折れ線グラフ画像のimageタグを作成する
         """
-        html = self.generate_image(args, inputs)
+        p = self.generate_plot(args, inputs)
 
-        return html
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+        result['js'] = CDN.js_files[0]
+        result['css'] = CDN.css_files[0]
+
+        return result
 
 class CsvToHistogram(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.generate_plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+        result['js'] = CDN.js_files[0]
+        result['css'] = CDN.css_files[0]
+
+        return result
+
+    def generate_plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotのヒストグラムを作成する
@@ -832,9 +866,7 @@ class CsvToHistogram(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        return plot
 
 # class CsvToHistogram(VisualizersCommand):
 #     def __init__(self):
@@ -893,7 +925,25 @@ class CsvToScatter(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.generate_plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+        result['js'] = CDN.js_files[0]
+        result['css'] = CDN.css_files[0]
+
+        return result
+
+    def generate_plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotの散布図を作成する
@@ -952,9 +1002,7 @@ class CsvToScatter(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        return plot
 
 # class CsvToScatter(VisualizersCommand):
 #     def __init__(self):
@@ -1013,7 +1061,25 @@ class CsvToBoxplot(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.generate_plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+        result['js'] = CDN.js_files[0]
+        result['css'] = CDN.css_files[0]
+
+        return result
+
+    def generate_plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotの箱ひげ図を作成する
@@ -1052,9 +1118,7 @@ class CsvToBoxplot(VisualizersCommand):
         renderer = hv.renderer('bokeh')
         plot=renderer.get_plot(boxwhisker).state
 
-        return file_html(plot, CDN, 'myplot')
-
-        return url
+        return plot
 
 # mcommand
 class MCommand(UnixCommand):

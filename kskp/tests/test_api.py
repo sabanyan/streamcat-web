@@ -1661,7 +1661,7 @@ class ApiTestCase(unittest.TestCase):
         # 後片付け
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
-    # @unittest.skip
+    @unittest.skip
     def test_visualizers_boxplot(self):
         """
         visualizers APIをテストする。
