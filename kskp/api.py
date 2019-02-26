@@ -540,7 +540,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                         })
     else:
         try:
-            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
+            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -548,26 +548,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                                     'message': 'result is empty.'
                                    })
             else:
-                # 結果をキャッシュ化する（オムロン様用一時的対応
-
-                # 1. 対象フローのJSONデータを取得する
-                flow_path = get_flow_path_by_uuid(flow_uuid)
-                current_flow_data = json.loads(flow_path.read_text())
-
-                # 2. resultを読んで書き換えていく
-                for link in result_data: # ここが'name'なのは変えるべき
-                    target_step_id = link['id']
-                    target_datum_uuid = link['uuid']
-
-                    for i, node in enumerate(current_flow_data['nodes']):
-                        if node['id'] == target_step_id:
-                            current_flow_data['nodes'][i]['uuid'] = target_datum_uuid
-                            break
-
-                # 3. 最後にファイルに保存する
-                update_flow_by_uuid(flow_uuid, current_flow_data)
-
-                return jsonify({'success': True, 'name': result_data})
+                return jsonify({'success': True, 'name': result_data, 'caches': caches_data})
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -666,6 +647,34 @@ def update_profile(user_id):
             profile_json[key] = value
         path.write_text(json.dumps(profile_json, ensure_ascii=False, indent=2), encoding='utf-8')
     # ----
+
+    return jsonify({'success': True})
+
+@api.route('/caches', methods=['DELETE'])
+# @login_required_api
+def delete_cache():
+    frame_uuid = ''
+
+    # パース
+    ofs = request.args['of'].split('.')
+    flow_uuid = ofs[0]
+    datum_id = ofs[1]
+
+    frame_name = DATAFRAME_DIR_PATH / ('caches_' + flow_uuid + '_' + datum_id + '.csv')
+
+    p = FLOWS_DIR_PATH.joinpath(flow_uuid + '.json')
+    j = json.loads(p.read_text(), encoding='utf-8')
+
+    for i, node in enumerate(j['nodes']):
+        if node['id'] == datum_id:
+            frame_uuid = j['nodes'][i]['uuid']
+            j['nodes'][i]['uuid'] = None
+            j['nodes'][i]['cacheCreatedAt'] = None
+            # csvのファイル名をcahces_<flow_uuid>_<datum_uuid>に変更
+            frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
+            frame_path.rename(frame_name)
+
+    update_flow_by_uuid(p.stem, j)
 
     return jsonify({'success': True})
 
@@ -915,12 +924,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
+    # 結果の処理
     if no_contents:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result['outputs'].items()]
     else:
-        print('resultを作るよ！')
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
-    return result_list
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result['outputs'].items()]
+
+    return result_list, result['caches']
 
 
 def load_as_data_frame(path_obj, offset, limit):
