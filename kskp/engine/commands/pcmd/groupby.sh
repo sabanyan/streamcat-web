@@ -1,12 +1,13 @@
 #!/bin/bash -eu
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.3"
+readonly  VERSION="0.4"
 
 #外部モジュール参照
 # MCMD使用
 
 # 注意・残件
 #   ・空白含む項目名ある場合の挙動、未検証 ※恐らく意図通りにならない
+# ver.0.4   k= 指定ない場合にエラーになる不具合を修正 (2019.2.25)
 # ver.0.3   高速化のために、mcutで不要な項目を除外するように変更
 #
 #--------------------------------------------------------------
@@ -77,11 +78,6 @@ function usage() {
 
     exit 1
 }
-
-#bash pcmd/groupby.sh i=output/d_log.csv k=DATA_SOURCE,状態 sensor_list=3H,3V,4H,4V feature_list=count:Num,max:Max
-# stdin
-#cat output/d_log.csv | bash pcmd/groupby.sh k=DATA_SOURCE,状態 sensor_list=3H,3V,4H,4V feature_list=count:Num,max:Max delimiter='|' -prefix
-
 
 # エラー処理
 set -e -u -o pipefail   # パイプ処理中にエラー発生で処理を終了する設定
@@ -326,6 +322,13 @@ q_opt=""
 if [[ -n ${no_sort} ]]; then
   q_opt='-q'
 fi
+
+# echo "columns=${columns}"
+# echo "k_opt=${k_opt}"
+# echo "sensor_list=${sensor_list}"
+# echo "feature_list=${feature_list}"
+# echo "feature_list_2=${feature_list_2}"
+# echo "sensor_feature_name=${sensor_feature_name}"
 
   mcut     i=${input_file} \
            f="${columns}"  |
