@@ -16,6 +16,7 @@ import TextField from '../shared/TextField'
 import JobList from '../shared/List/JobList'
 import JobListHeader from '../shared/List/JobList/JobListHeader'
 import LibraryInspector from '../shared/Inspector/LibraryInspector'
+import APIUtil from '../../utils/APIUtil'
 
 /**
  * ======================================================
@@ -52,7 +53,7 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     self.setState({is_loading: true})
 
 
-    HttpUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
+    APIUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
         const json = response.data
         self.setState(
           {is_loading: false, is_finished: true, job_list: json.data})
