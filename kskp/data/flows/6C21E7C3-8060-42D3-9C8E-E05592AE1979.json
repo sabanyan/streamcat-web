@@ -223,7 +223,19 @@
       },
       "args": {
         "c": "max",
-        "f": "@[sensor]:@[sensor]_max"
+        "f": "@[sensor]:@[sensor]_max",
+        "k": "",
+        "n": false,
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "assert_nullin": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": "",
+        "precision": ""
       },
       "commandId": "mstats"
     },
@@ -241,8 +253,7 @@
       "id": "t3",
       "type": "frame",
       "uuid": null,
-      "dataSource": "csv",
-      "label": ""
+      "dataSource": "csv"
     },
     {
       "position": {
@@ -264,15 +275,7 @@
         "o": "o3"
       },
       "args": {
-        "f": "Time,@[sensor]_max",
-        "r": false,
-        "nfni": false,
-        "assert_diffSize": false,
-        "assert_nullin": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "tmpPath": ""
+        "f": "Time,@[sensor]_max"
       },
       "commandId": "mcut"
     },
@@ -308,22 +311,12 @@
       "srcs": {
         "i": "i"
       },
-      "dsts": {},
+      "dsts": {
+        "o": "t4"
+      },
       "args": {
         "c": "min",
-        "f": "@[sensor]:@[sensor]_min",
-        "k": "",
-        "n": false,
-        "assert_diffSize": false,
-        "assert_nullkey": false,
-        "assert_nullin": false,
-        "assert_nullout": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "q": false,
-        "tmpPath": "",
-        "precision": ""
+        "f": "@[sensor]:@[sensor]_min"
       },
       "commandId": "mstats"
     },
@@ -341,8 +334,7 @@
       "id": "t4",
       "type": "frame",
       "uuid": null,
-      "dataSource": "csv",
-      "label": ""
+      "dataSource": "csv"
     },
     {
       "position": {
@@ -357,12 +349,22 @@
       "error": {},
       "id": "s4-2",
       "type": "command",
-      "srcs": {},
+      "srcs": {
+        "i": "t4"
+      },
       "dsts": {
         "o": "o4"
       },
       "args": {
-        "f": "Time,@[sensor]_min"
+        "f": "Time,@[sensor]_min",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
       },
       "commandId": "mcut"
     },
@@ -380,7 +382,8 @@
       "id": "o4",
       "type": "frame",
       "uuid": null,
-      "dataSource": "csv"
+      "dataSource": "csv",
+      "label": ""
     },
     {
       "position": {
@@ -510,182 +513,6 @@
       "type": "frame",
       "uuid": null,
       "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 439.5,
-        "y": 464.5
-      },
-      "size": {
-        "width": 284.849853515625,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n1",
-      "label": "n1",
-      "content": "abcabcabcabcabcabcabcabcabcabcabcabcabcabcabc"
-    },
-    {
-      "position": {
-        "x": 655.5,
-        "y": 395.5
-      },
-      "size": {
-        "width": 215,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n2",
-      "label": "n2",
-      "content": "新しいメモ"
-    },
-    {
-      "position": {
-        "x": 516.5,
-        "y": 353.5
-      },
-      "size": {
-        "width": 215,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n3",
-      "label": "n3",
-      "content": "新しいメモ"
-    },
-    {
-      "position": {
-        "x": 441.5,
-        "y": 432.5
-      },
-      "size": {
-        "width": 305,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n4",
-      "label": "n4",
-      "content": "新しいメモっっっっっっっっっっっっっっっっっっっっっっっっ"
-    },
-    {
-      "position": {
-        "x": 445.5,
-        "y": 563.5
-      },
-      "size": {
-        "width": 215,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n5",
-      "label": "n5",
-      "content": "新しいメモ"
-    },
-    {
-      "position": {
-        "x": 455.5,
-        "y": 573.5
-      },
-      "size": {
-        "width": 215,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n6",
-      "label": "n6",
-      "content": "新しいメモ"
-    },
-    {
-      "position": {
-        "x": 465.5,
-        "y": 583.5
-      },
-      "size": {
-        "width": 215,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n7",
-      "label": "n7",
-      "content": "新しいメモ"
-    },
-    {
-      "position": {
-        "x": 475.5,
-        "y": 593.5
-      },
-      "size": {
-        "width": 215,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n8",
-      "label": "n8",
-      "content": "新しいメモ"
-    },
-    {
-      "position": {
-        "x": 485.5,
-        "y": 603.5
-      },
-      "size": {
-        "width": 256.5,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n9",
-      "label": "n9",
-      "content": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-    },
-    {
-      "position": {
-        "x": 566.5,
-        "y": 633.5
-      },
-      "size": {
-        "width": 249.5,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n10",
-      "label": "n10",
-      "content": "aaaaaa新しいメモ新しいメモ新しいメモ新しいメモ"
-    },
-    {
-      "position": {
-        "x": 552.5,
-        "y": 545.5
-      },
-      "size": {
-        "width": 215,
-        "height": 25
-      },
-      "invalid": {},
-      "error": {},
-      "type": "note",
-      "id": "n11",
-      "label": "n11",
-      "content": "新しいメモ"
     }
   ]
 }

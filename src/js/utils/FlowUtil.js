@@ -133,9 +133,8 @@ export default class FlowUtil {
   /**
   * 
   */
-  static removeCache(uuid:string, nodeId:string, notify:Function, dismissNotify:Function, nodes:[]) {
-    const url = "/api/v0/caches?of=" + uuid + "." + nodeId
-
+  static removeCache(nodeId:string, notify:Function, dismissNotify:Functionxd) {
+    const url = "caches?of=" + inject_flow_uuid + "." + nodeId
     let deleteNotify
     if(notify){
       deleteNotify = notify({
@@ -159,14 +158,11 @@ export default class FlowUtil {
           })
         }
         if (response.data.success) {
-          let nodes = response.data.data.nodes
-          console.log(response.data.data.nodes)
-          let node = graph.getNode(nodes, id)
-          graph.updateNode(nodes, id, node)
+          node.setEmptyCache()
         }
         resolve(response)
       },(error)=>{
-        if(dismissNotify)dismissNotify(saveNotify.id)
+        if(dismissNotify)dismissNotify(deleteNotify.id)
         notify({
           title: '実行エラー',
           message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
@@ -253,7 +249,7 @@ export default class FlowUtil {
     if(notify){
       saveNotify = notify({
         title: 'フロー保存中',
-        message: 'フローを保存しています',
+        message: 'フローのノードを保存しています',
         status: 'loading',
         dismissAfter: 0
       })
@@ -306,7 +302,7 @@ export default class FlowUtil {
     if(notify){
       saveNotify = notify({
         title: 'フロー保存中',
-        message: 'フローを保存しています',
+        message: 'フローの設定を保存しています',
         status: 'loading',
         dismissAfter: 0
       })
@@ -394,5 +390,36 @@ export default class FlowUtil {
     if (json["uuid"] !== undefined && json["dataSource"] !== undefined) return new DataFrameStepModel(json)
     return json
   }
+
+  /**
+   * フローの比較
+   * @param flowA
+   * @param flowB
+   * @returns {boolean}
+   */
+  static isSameFlow(flowA:{},flowB:{}){
+    return JSON.stringify(flowA) === JSON.stringify(flowB)
+  }
+  /**
+   * ノードの集合体の比較
+   * @param nodesA
+   * @param nodesB
+   * @returns {boolean}
+   */
+  static isSameNodes(nodesA:[],nodesB:[]){
+    return JSON.stringify(nodesA) === JSON.stringify(nodesB)
+  }
+
+  /**
+   * 現在のノードと履歴の一つ前のノードが一緒かどうか
+   * @param history
+   * @param currentNodes
+   * @returns {boolean}
+   */
+  static isSameCurrentNodesToBeforeHistoryNodes(history,currentNodes){
+    if(!history)return false
+    return JSON.stringify(history.nodes[history.current]) === JSON.stringify(currentNodes)
+  }
+
 
 }

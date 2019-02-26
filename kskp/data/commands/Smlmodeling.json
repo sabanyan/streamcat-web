@@ -20,7 +20,7 @@
   ],
   "params": [
     {
-      "name": "-classification",
+      "name": "classification",
       "type": "boolean",
       "label": "classification"
     },

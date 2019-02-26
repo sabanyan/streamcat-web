@@ -100,4 +100,5 @@ export default class FlowModel<FlowModelProps> extends Model {
   setOutPort(port:[]){
     this.setPort(1,port)
   }
+
 }

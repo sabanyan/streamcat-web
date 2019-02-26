@@ -41,10 +41,8 @@ export default class Visualizer extends React.Component<Props,State> {
   visualizeRequest(visualize:VisualizeModel,args:{}){
 
     //TODO 引数のargs,uuidに置き換える
-    const example_args = { "limit": "", "offset": "", "columns": ["temperature"], "x_inch": 7, "y_inch": 3, "x_axis": "Time", "time_series_column": ["Time"] }
-    const example_uuid = "f20541d4-8b8f-4787-6ea9-f1e9d3db80a1"
-
-    const body ={ "args": example_args, "inputs": { "i": example_uuid } }
+    const uuid = this.props.frame_uuid
+    const body ={ "args": args, "inputs": { "i": uuid } }
     this.setState({is_loading:true})
     HttpUtil.post("visualizers?from=" + visualize.id,body).then((res)=>{
       this.setState({html:res.data,is_loading:false})
@@ -56,6 +54,7 @@ export default class Visualizer extends React.Component<Props,State> {
   }
 
   onSave(args:{}){
+    console.log(args)
     this.setState({args:args})
     this.visualizeRequest(this.props.visualize,args)
   }
@@ -78,7 +77,7 @@ export default class Visualizer extends React.Component<Props,State> {
       <div className={style.visualizeContainer}>
         <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
       </div>
-      <PreviewInspector params={visualize.params} args = {args} label={visualize.label}/>
+      <PreviewInspector onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
     </div>
   }
 

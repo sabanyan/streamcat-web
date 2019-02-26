@@ -82,7 +82,7 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "構成費の計算",
+  "label": "構成比の計算",
   "classification": "col_edit",
   "description": "",
   "url": "./static/pdf/mcmd/col_edit/mshare.pdf"

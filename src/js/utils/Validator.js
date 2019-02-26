@@ -4,7 +4,7 @@ import FlowModelSchema from '../schema/flow/FlowModelSchema.json'
 import GraphModelSchema from '../schema/graph/GraphModelSchema.json'
 import CommandStepModelSchema from '../schema/steps/CommandStepModelSchema.json'
 import DataFrameStepModelSchema from '../schema/steps/DataFrameStepModelSchema.json'
-import SubFlowCommandModelSchema from '../schema/steps/SubFlowStepModelSchema.json'
+import SubFlowCommandModeSchema from '../schema/steps/SubFlowStepModelSchema.json'
 import NoteStepModelSchema from '../schema/steps/NoteStepModelSchema.json'
 
 import Log from './Log'
@@ -267,7 +267,7 @@ class Validator {
       if(node instanceof DataFrameStepModel){
         schema = DataFrameStepModelSchema
       }else if(node instanceof SubFlowStepModel){
-        schema = SubFlowCommandModelSchema
+        schema = SubFlowCommandModeSchema
       }else if(node instanceof CommandStepModel){
         schema = CommandStepModelSchema
       }else if(node instanceof NoteStepModel){
@@ -277,6 +277,10 @@ class Validator {
       if(!result)success = false
     })
     return success
+  }
+
+  isFlowModelSchema(state){
+    return this.schemaValidate(FlowModelSchema,state)
   }
 
   nodesValidate(nodes){

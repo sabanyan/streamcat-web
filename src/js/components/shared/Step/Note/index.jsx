@@ -26,8 +26,7 @@ export default class Note extends React.Component<Props> {
     calculateSzie() {
 
         let model = this.props.model
-        let width = StringUtil.getTextWidth(model.content, TextStyle.fontSize)
-        
+        let width = StringUtil.getTextWidth(model.title, TextStyle.fontSize)
         const style = ContentStyle
 
         style.width = Constants.default.note.width + Constants.default.note.padding

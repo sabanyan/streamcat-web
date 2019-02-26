@@ -43,30 +43,29 @@ type ToolBarProps = {
 
 export default class ToolBar extends React.Component<ToolBarProps> {
 
-  loading:boolean  = false
-  loadingMessage:string
-  uploadedFile:UploadedFileType = null
+  loading: boolean = false
+  loadingMessage: string
+  uploadedFile: UploadedFileType = null
 
-  constructor (props:ToolBarProps){
+  constructor (props: ToolBarProps) {
     super(props)
   }
 
-  // onClickSave () {
-  //   this.loading = true
-  //   this.loadingMessage = "フローを保存中です"
-  //   this.save().then((json) => {
-  //     if (json) {
-  //       ModalUtil.emitModal({
-  //         id: Constants.modal.SHOW_MESSAGE,
-  //         visible: true,
-  //         title: '保存完了',
-  //         content: <div>フローを保存しました</div>,
-  //       })
-  //     }
-  //     this.loading = false
-  //     this.forceUpdate()
-  //   })
-  // }
+  onClickSave () {
+    this.saveFlowPorts()
+    this.saveNodes()
+  }
+
+  saveFlowPorts () {
+    const {flow, notify, dismissNotify} = this.props
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports: flow.ports,label: flow.label, description: flow.description,params:flow.params}, notify, dismissNotify)
+
+  }
+
+  saveNodes () {
+    let {nodes, history, notify, dismissNotify} = this.props
+    return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
+  }
 
   onClickSort () {
     this.props.addHistory()
@@ -74,23 +73,23 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   save (): Promise {
-    let {nodes,projectId,projectName,notify,dismissNotify} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid,nodes,notify,dismissNotify)
+    let {nodes, projectId, projectName, notify, dismissNotify, history} = this.props
+    return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
   }
 
   run () {
-    let {notify,dismissNotify} = this.props
-    return FlowUtil.runNodes(inject_flow_uuid,notify,dismissNotify)
+    let {notify, dismissNotify} = this.props
+    return FlowUtil.runNodes(inject_flow_uuid, notify, dismissNotify)
   }
 
   onClickProjectRun () {
     this.loading = true
-    this.loadingMessage = ""
+    this.loadingMessage = ''
 
     this.forceUpdate()
     this.save().then(() => {
       this.run().then((response) => {
-        if(response.data.success) {
+        if (response.data.success) {
           const json: RunResponseType = response.data
           const result = json.name.map((n) => {
             return <li>{n.id}</li>
@@ -102,27 +101,30 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
           this.props.notify({
             title: 'フロー実行完了',
-            message:ReactDomUtil.renderToString(content),
+            message: ReactDomUtil.renderToString(content),
             status: 'success',
             dismissAfter: 0,
-            buttons:[{
-              name: "開く",
-              primary: true,
-              onClick:() => {
-                window.open("/library?project=" + window.navigationModel.project_uuid, "_blank");
-              }
-            }]
+            buttons: [
+              {
+                name: '開く',
+                primary: true,
+                onClick: () => {
+                  window.open('/library?project=' +
+                    window.navigationModel.project_uuid, '_blank')
+                },
+              }],
           })
           this.props.executeFlow()
         }
         this.loading = false
         this.forceUpdate()
-      },(error)=>{
+      }, (error) => {
         this.loading = false
         this.forceUpdate()
       })
     })
   }
+
   //
   // showError(error){
   //   let errorBody
@@ -166,8 +168,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     ModalUtil.registerModal({
       id: Constants.modal.IMPORT_DATASOURCE, onClickDone: () => {
 
-        if(!this.uploadedFile){
-          alert("ファイルを選択してください")
+        if (!this.uploadedFile) {
+          alert('ファイルを選択してください')
           return
         }
 
@@ -177,7 +179,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
         const label = this.uploadedFile.label
         const uuid = this.uploadedFile.uuid
-        const props:DataFrameStepModelProps = {
+        const props: DataFrameStepModelProps = {
           id: label,
           type: Constants.step.type.frame,
           uuid: uuid,
@@ -199,8 +201,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       },
     })
 
-    const content = <FileUploader accept={['text/csv']} defaultLabel={'ファイルを選択してください'}
-                                          onChangeFile={(e) => this.onChangeFile(e)} />
+    const content = <FileUploader accept={['text/csv']}
+                                  defaultLabel={'ファイルを選択してください'}
+                                  onChangeFile={(e) => this.onChangeFile(e)}/>
 
     ModalUtil.emitModal({
       id: Constants.modal.IMPORT_DATASOURCE,
@@ -211,18 +214,18 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   }
 
-  onChangeFile(e:SyntheticInputEvent<EventTarget>){
-    const selectedFiles:FileList =  e.target.files
-    if(selectedFiles){
-      const uploadFile:File = selectedFiles[0]
-      APIUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
+  onChangeFile (e: SyntheticInputEvent<EventTarget>) {
+    const selectedFiles: FileList = e.target.files
+    if (selectedFiles) {
+      const uploadFile: File = selectedFiles[0]
+      APIUtil.fileupload(uploadFile, uploadFile.name).then((response) => {
         const {success} = response.data
         const json = response.data
-        if(success){
+        if (success) {
           this.uploadedFile = {
             label: json.data.label,
             uuid: json.data.uuid,
-            file: uploadFile
+            file: uploadFile,
           }
           this.forceUpdate()
         }
@@ -230,14 +233,16 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
   }
 
-  onClickZoomIn(e:Event){
-      this.props.setZoom({offset:10})
+  onClickZoomIn (e: Event) {
+    this.props.setZoom({offset: 10})
   }
-  onClickZoomOut(e:Event){
-    this.props.setZoom({offset:-10})
+
+  onClickZoomOut (e: Event) {
+    this.props.setZoom({offset: -10})
   }
-  onClickDefaultZoom(e:Event){
-    this.props.setZoom({value:100})
+
+  onClickDefaultZoom (e: Event) {
+    this.props.setZoom({value: 100})
   }
   onClickNote() {
 
@@ -278,25 +283,29 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(
                             e)}>データソースの追加</DataSourceImport>
-        {/*<Save disabled={false} icon={'&#xE2C2'}*/}
-              {/*onClick={(e) => this.onClickSave(e)}>保存</Save>*/}
+        <Save disabled={false} icon={'&#xE2C2'}
+              onClick={(e) => this.onClickSave(e)}>保存</Save>
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
         {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}
         {/*<DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>*/}
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
-        {/*<Undo disabled={undoDisabled} icon={"undo"} onClick={()=>this.props.undo()}>もとに戻す</Undo>
-                          <Redo disabled={redoDisabled} icon={"redo"} onClick={()=>this.props.redo()}>繰り返す</Redo>*/}
+        <Undo disabled={undoDisabled} icon={'undo'}
+              onClick={() => this.props.undo()}>もとに戻す</Undo>
+        <Redo disabled={redoDisabled} icon={'redo'}
+              onClick={() => this.props.redo()}>繰り返す</Redo>
+
       </div>
       <div className={classnames(style.paper_toolbar)}>
-        <Zoom onClickZoomIn={(e)=>this.onClickZoomIn(e)}
-              onClickZoomOut={(e)=>this.onClickZoomOut(e)}
-              onClickDefaultZoom={(e)=>this.onClickDefaultZoom(e)}
+        <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
+              onClickZoomOut={(e) => this.onClickZoomOut(e)}
+              onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
               zoom={zoom}/>
         <Sort disabled={false} icon={'&#xE42A'}
               onClick={(e) => this.onClickSort(e)}>整列</Sort>
       </div>
-      <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={this.loading} message={this.loadingMessage}/>
+      <Loader whiteBackground={true} center={true} absolute={true} fixed={false}
+              visible={this.loading} message={this.loadingMessage}/>
     </div>
   }
 }
