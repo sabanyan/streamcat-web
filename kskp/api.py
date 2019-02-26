@@ -84,7 +84,7 @@ def delete_project(project_uuid):
 
 
 @api.route('/flows', methods=['POST'])
-# @login_required_api
+@login_required_api
 def new_flow():
     """
     新しいフローを作成する
