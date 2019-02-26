@@ -22,7 +22,8 @@ import {
   dragEndAction,
   loadFlowJSONAction,
   setZoomAction,
-  updateDataFrameDetailAction
+  updateDataFrameDetailAction,
+  addNoteAction
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -70,6 +71,7 @@ export type FlowEditorProps = {
   drag: DragType;
   notify: Function;
   dissmissNotify: Function;
+  addNote: Function;
 }
 
 export default FlowEditorContainer = connect(
@@ -175,6 +177,9 @@ export default FlowEditorContainer = connect(
         setTimeout(()=>{
           dispatch(removeNotification(...args))
         },1000)
+      },
+      addNote(...args){
+        dispatch(addNoteAction(...args))
       }
     }
   },
