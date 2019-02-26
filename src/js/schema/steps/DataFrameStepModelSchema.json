@@ -67,6 +67,16 @@
       "type": ["string","null"],
       "default": null,
       "pattern": "^(.*)$"
+    },
+    "makeCache": {
+      "$id": "#/properties/makeCache",
+      "type": "boolean",
+      "default": false
+    },
+    "cacheCreatedAt": {
+      "$id": "#/properties/cacheCreatedAt",
+      "type": ["string","null"],
+      "default": ""
     }
   }
 }

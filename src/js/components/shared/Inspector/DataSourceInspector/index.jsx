@@ -212,20 +212,15 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   onChangeCacheCheck (e: Event) {
-    let flow:FlowModel = this.props.flow
-
-    const cacheChecked = this.refs.cache.checked
-
+  
     let selected_step = this.getSelectedStep()
-
-    const cache = {name:selected_step.id,type: selected_step.type}
-
-    if (cacheChecked) {
-      flow.setCache(cache)
+    if(selected_step.isMakeCache()) {
+      selected_step.setMakeCache(false)
     } else {
-      flow.deleteCacheWithId(selected_step.id)
+      selected_step.setMakeCache(true)
     }
-
+    
+    let flow:FlowModel = this.props.flow
     this.props.updateFlow(flow)
   }
 
@@ -239,17 +234,34 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.saveFlowPorts()
   }
 
+  onClickDeleteCache() {
+    this.deleteCache()
+  }
+
+  hasCacheFile() {
+    this.getSelectedStep().nodes
+    return this.props
+  }
+
   /**
    * データソースのIN/OUTを保存
    *  */
   saveFlowPorts(){
     const {flow,notify,dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports, caches:flow.caches}, notify, dismissNotify)
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
   }
 
   saveNodes(){
     let {nodes} = this.props
     return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+  }
+
+  deleteCache() {
+    const {notify,dismissNotify,nodes} = this.props
+    const uuid = this.getSelectedStep().uuid
+    const nodeId = this.getSelectedStep().nodeId
+
+    FlowUtil.removeCache(uuid,nodeId,notify,dismissNotify,nodes)
   }
 
   render () {
@@ -283,10 +295,10 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         </label>
       </div>
     </div>
-    const flowCacheCheckForm = <div className={style.flowCacheCheck}>
+    const cacheCheckForm = <div>
       <div>
-        <label><input type="checkbox" checked={flow.hasCacheWithId(selected_step.id)?"checked":""}
-                ref={'cache'}
+        <label><input type="checkbox" checked={selected_step.makeCache?"checked":""}
+                ref={'cache'} disabled=""
                 onChange={(e) => this.onChangeCacheCheck(e)}/>
         </label>
       </div>
@@ -352,14 +364,26 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
                 {flowInOutForm}
               </div>
             </div>
-            <div className={style.overview}>
-              <div className={style.overview_label}>
-                結果をキャッシュ
-              </div>
-              <div className={style.overview_value}>
-                {flowCacheCheckForm}
-              </div>
-            </div>
+          </div>
+        </div>
+        <div className={style.cache}>
+          <div className={style.cache_label}>
+          結果をキャッシュ
+          </div>
+          <div className={style.cache_value}>
+            {cacheCheckForm}
+          </div>
+          <div className={style.cache_delete}>
+            <Button  icon={'delete'} danger={true} 
+              disabled={!selected_step.hasData()}>
+              キャッシュ削除
+            </Button>
+          </div>
+          <div className={style.cache_label}>
+            キャッシュ作成日
+          </div>
+          <div className={style.cache_value}>
+            {selected_step.cacheCreatedAt}
           </div>
         </div>
         <div className={style.full_hr}/>

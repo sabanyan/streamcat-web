@@ -263,6 +263,8 @@ class Graph {
             dataSource: Constants.data.dataSource.csv,
             position: frame.position,
             size: frame.size,
+            makeCache: frame.makeCache,
+            cacheCreatedAt: frame.cacheCreatedAt
           }))
           if(frame.position && frame.size){
             hasPosition = true
