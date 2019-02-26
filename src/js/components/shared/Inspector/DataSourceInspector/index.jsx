@@ -236,8 +236,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
   onClickDeleteCache() {
     const {notify,dismissNotify,updateStep} = this.props
-    const node = this.getSelectedStep();
-    FlowUtil.removeCache(node, updateStep,notify,dismissNotify)
+    FlowUtil.removeCache(this.getSelectedStep().id, updateStep,notify,dismissNotify)
   }
 
   hasCacheFile() {

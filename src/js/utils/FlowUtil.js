@@ -133,10 +133,8 @@ export default class FlowUtil {
   /**
   * 
   */
-  static removeCache(node:StepModelType, updateStep:Function, notify:Function, dismissNotify:Functionxd) {
-    const uuid = node.uuid
-    const nodeId = node.id
-    const url = "caches?of=" + uuid + "." + nodeId
+  static removeCache(nodeId:string, notify:Function, dismissNotify:Functionxd) {
+    const url = "caches?of=" + inject_flow_uuid + "." + nodeId
     let deleteNotify
     if(notify){
       deleteNotify = notify({
