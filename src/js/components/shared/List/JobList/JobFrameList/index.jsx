@@ -36,7 +36,7 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
 
     let flowName = flowNames[uuid]
     if(flowName) return flowName
-    HttpUtil.get('flows/' + uuid + "?navigation=off").then((response) => {
+    APIUtil.get('flows/' + uuid + "?navigation=off").then((response) => {
       const json = response.data
       const label = json.data.label
       flowNames[uuid] = label
@@ -53,7 +53,7 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
 
   onClickName(e:Event,uuid:string,name:string){
     //TODO 将来的にはページングなどの対応が必要
-    HttpUtil.get("frames/"+uuid + "?offset=0&limit=1000").then((response)=>{
+    APIUtil.get("frames/"+uuid + "?offset=0&limit=1000").then((response)=>{
       const json = response.data
       let contentGraph = <DataPreview key={uuid} json={json} title={name} uuid={uuid} />
       let contentTable = <div className="table-responsive">
