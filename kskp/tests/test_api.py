@@ -207,6 +207,104 @@ class ApiTestCase(unittest.TestCase):
             # 後片付け
             app.config['FLOW_PATH'] = flow_path
 
+    def test_new_flow_for_copy(self):
+        """
+        new_flow APIをテストする
+        フローコピー用
+        """
+
+        # まずユーザとプロジェクトとフローを作る
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            # フローをコピーする
+            data_copy_flow = {
+                'original_flow_uuid': data_source_name
+            }
+
+            endpoint = '/api/v0/flows'
+            copy_response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data_copy_flow)
+                )
+
+            result = json.loads(copy_response.get_data())
+
+            # コピーされているかの確認
+            copy_flow_label = new_flow_name + ' のコピー'
+            self.assertEqual(result['success'], True)
+            self.assertEqual(result['data']['label'], copy_flow_label)
+
+            # 後片付け
+            os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
+            for path in Path(app.config['FLOW_PATH']).iterdir():
+                with open(path) as f:
+                    flow_json = json.load(f)
+                    if flow_json['label'] == copy_flow_label and flow_json['projectId'] == project_id:
+                        path.unlink()
+                        break
+
+    def test_new_flow_for_copy_multi(self):
+        """
+        new_flow APIをテストする
+        フローコピー用
+        """
+
+        # まずユーザとプロジェクトとフローを作る
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            # フローをコピーする
+            data_copy_flow = {
+                'original_flow_uuid': data_source_name
+            }
+
+            endpoint = '/api/v0/flows'
+
+            # 同じフローを2回コピーする
+            copy_response_1 = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data_copy_flow)
+                )
+
+            copy_response_2 = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data_copy_flow)
+                )
+
+            result_1 = json.loads(copy_response_1.get_data())
+            result_2 = json.loads(copy_response_2.get_data())
+
+            # コピーされているかの確認
+            copy_flow_label_1 = new_flow_name + ' のコピー'
+            self.assertEqual(result_1['success'], True)
+            self.assertEqual(result_1['data']['label'], copy_flow_label_1)
+
+            copy_flow_label_2 = new_flow_name + ' のコピー2'
+            self.assertEqual(result_2['success'], True)
+            self.assertEqual(result_2['data']['label'], copy_flow_label_2)
+
+            # 後片付け
+            os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
+            for path in Path(app.config['FLOW_PATH']).iterdir():
+                with open(path) as f:
+                    flow_json = json.load(f)
+                    if (flow_json['label'] == copy_flow_label_1 or flow_json['label'] == copy_flow_label_2) \
+                        and flow_json['projectId'] == project_id:
+                        path.unlink()
+
     def test_new_flow_nothing_datasource(self):
         """
         new_flow APIをテストする
@@ -252,7 +350,6 @@ class ApiTestCase(unittest.TestCase):
 
             # 後片付け
             app.config['FLOW_PATH'] = flow_path
-
 
     def test_fetch_flows_project_uuid_Nothing(self):
         """
@@ -1564,7 +1661,7 @@ class ApiTestCase(unittest.TestCase):
         # 後片付け
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
-    # @unittest.skip
+    @unittest.skip
     def test_visualizers_boxplot(self):
         """
         visualizers APIをテストする。
@@ -2034,6 +2131,56 @@ class JobTestCase(unittest.TestCase):
         self.assertEqual(result['navigation']['user_name'], 'user1')
         self.assertEqual(result['navigation']['project_uuid'], project_uuid)
         self.assertEqual(result['navigation']['project_name'], 'proj1')
+
+class CacheApiTestCase(unittest.TestCase):
+
+    def setUp(self):
+        app.testing = True
+        self.client = app.test_client()
+
+    def test_delete_cache(self):
+        import csv
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        datum_id = 'test'
+
+        with open('kskp/data/frames/test.csv', 'w') as f:
+            pass
+
+        flow_path = Path(app.config['FLOW_PATH']) / (data_source_name + '.json')
+        flow_json = json.loads(flow_path.read_text(), encoding='utf-8')
+        node = {
+            "id": datum_id,
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": 'test',
+            "cacheCreatedAt": '2019/01/01'
+        }
+        flow_json['nodes'] = []
+        flow_json['nodes'].append(node)
+        flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            endpoint = '/api/v0/caches?of=%s.%s' % (data_source_name, datum_id)
+            response = client.delete(endpoint)
+            result = json.loads(response.get_data())
+
+        # テスト
+        new_file_path = Path('kskp/data/frames/caches_' + data_source_name + '_' + datum_id + '.csv')
+        self.assertEqual(result['success'], True)
+        self.assertTrue(new_file_path.exists())
+
+        # 後片付け
+        new_file_path.unlink()
+        flow_path.unlink()
 
 if __name__ == '__main__':
     unittest.main()
