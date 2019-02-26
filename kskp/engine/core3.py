@@ -36,8 +36,8 @@ def parse_job(obj, flow_uuid, args, srcs, dsts, inputs):
     step = Step(flow, args, srcs, dsts)
 
     # make subjobs
-    nodes = parse_nodes(obj)
-    jobs = parse_subjobs(nodes, data)
+    nodes, caches = parse_nodes(obj)
+    jobs = parse_subjobs(nodes, data, caches, flow_uuid)
 
     # make lasts
     lasts = parse_lasts(data, jobs)
@@ -52,6 +52,11 @@ def parse_job(obj, flow_uuid, args, srcs, dsts, inputs):
 
 def parse_flow(obj, flow_uuid):
     flow = Flow(flow_uuid)
+
+    # for debug
+    if 'label' in obj:
+        flow.label = obj['label']
+
     for param in obj['params']:
         flow.params.append(Parameter(param['name']))
     flow.i_ports = obj['ports'][0]
@@ -78,35 +83,90 @@ def parse_datum(node_obj):
         datum.is_temp = False
     else:
         datum = Frame()
+
+    if 'label' in node_obj:
+        datum.label = node_obj['label']
+
     return datum
 
 def parse_nodes(obj):
-    return [node for node in obj['nodes']
-                 if node['type'] in ['command', 'flow']]
+    nodes = []
+    caches = []
+    for node in obj['nodes']:
+        if node['type'] in ['command', 'flow']:
+            nodes.append(node)
+        elif node['type'] in ['frame']:
+            if node.get('makeCache'):
+                caches.append(node['id'])
 
-def parse_subjobs(nodes, data):
-    return [parse_subjob(node, data) for node in nodes]
+    return nodes, caches
+    # return [node for node in obj['nodes']
+    #              if node['type'] in ['command', 'flow']]
 
-def parse_subjob(node, data):
+def parse_subjobs(nodes, data, caches, flow_uuid):
+    return [parse_subjob(node, data, caches, flow_uuid) for node in nodes]
+
+def parse_subjob(node, data, caches, flow_uuid):
     t = node['type']
 
     args = node['args']
     srcs = node['srcs']
     dsts = node['dsts']
     inputs = parse_job_inputs(data, srcs)
+
+    cache_list = {}
+
+    import copy
+    command_args = copy.deepcopy(args)
+
     if t == 'command':
-        new_step = parse_command_step(node, args, srcs, dsts)
+        # キャッシュを作成するため、argsを書き換える
+        for p_port, datum_id in dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                command_args[p_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+
+        new_step = parse_command_step(node, command_args, srcs, dsts)
         new_job = Job(new_step, inputs)
     elif t == 'flow':
-        flow_uuid = node['uuid']
-        new_job = parse_job(load_flow(flow_uuid), flow_uuid, args, srcs, dsts, inputs)
+        sub_job_flow_uuid = node['uuid']
+        new_job = parse_job(load_flow(sub_job_flow_uuid), sub_job_flow_uuid, command_args, srcs, dsts, inputs)
+
+        # キャッシュを作成するため、argsを書き換える
+        for p_port, datum_id in dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
+
+    if len(cache_list) > 0:
+        new_job.caches = cache_list
+
     return new_job
+
+def connect_subflow_output_with_cache(cache_uuid, port, jobs):
+    """
+    指定したjobsの中に、指定したoutput_port（この場合はcacheするdatumにつながるport）をdstsとして持つstepを探し、
+    そのstepがコマンドであれば、argsに出力port及び値をセットし、
+    フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
+    """
+    for job in jobs:
+        for c_port, c_datum_id in job.step.dsts.items():
+            if c_datum_id == port:
+                if job.step.is_command:
+                    job.step.args[c_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+                else:
+                    connect_subflow_output_with_cache(cache_uuid, c_port, job.jobs)
 
 def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
 
 def parse_command_step(node_obj, args, srcs, dsts):
-    return Step(commands[node_obj['commandId']], args, srcs, dsts)
+    label = ''
+    if 'label' in node_obj:
+        label = node_obj['label']
+    return Step(commands[node_obj['commandId']], args, srcs, dsts, node_obj['id'], label)
 
 
 class Job:
@@ -115,6 +175,7 @@ class Job:
         self.inputs = {} if inputs is None else inputs
         self.lasts = {}
         self.jobs = []
+        self.caches = {}
         # self.errors = []
 
     # @profile
@@ -130,16 +191,95 @@ class Job:
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
             self.lasts = output
 
+            self.caches = self.aggregate_caches(cf.uuid)
+
+            # 以下、一番てっぺんのflow
             if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
                 for last in self.lasts.values():
                     last.is_temp = False
 
         elif s.is_command:
+            import sys
+            import time
+            sys.stderr.write('stt (' + time.strftime('%Y/%m/%d %H:%M:%S') + ') step[' + self.step.step_label + '(id: ' + self.step.step_id + ')]\n')
             output = cf.execute(self.step.args, self.inputs)
-            # print(self.step.args, self.inputs)
+            sys.stderr.write('end (' + time.strftime('%Y/%m/%d %H:%M:%S') + ')\n\n')
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
+
+    def aggregate_caches(self, flow_uuid):
+        self.link_caches(flow_uuid)
+        caches = self.get_caches()
+        self.replace_lasts_to_caches(flow_uuid)
+        return caches
+
+    def get_caches(self):
+        # flowの場合、配下のcachesを集めてきて、自分のcachesと合わせる
+        if self.step.is_flow:
+            for job in self.jobs:
+                self.caches.update(job.get_caches())
+
+        return self.caches
+
+    def link_caches(self, flow_uuid):
+        """
+        指定したflowにキャッシュ情報をつけて書き換える
+        """
+        current_flow_data = None
+        flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{flow_uuid}.json')
+
+        with open(flows_path, 'r', encoding='utf-8') as f:
+            # 1. 対象フローのJSONデータを取得する
+            current_flow_data = json.load(f)
+
+            # 2. 配下のjobのcachesを使ってflowのjsonを更新する
+            for job in self.jobs:
+                already_caches = []
+
+                # cachesを元に書き換えていく
+                for flow_uuid_and_step_id, cache_uuid in job.caches.items():
+                    target_flow_uuid = flow_uuid_and_step_id.split('.')[0]
+                    target_step_id = flow_uuid_and_step_id.split('.')[1]
+                    target_datum_uuid = cache_uuid
+
+                    # 更新対象のflowかどうか判断する
+                    if not flow_uuid == target_flow_uuid:
+                        break
+
+                    for node in current_flow_data['nodes']:
+                        # 指定したidかつ、そのuuidがnullの場合、キャッシュをフローのjsonに反映する
+                        if node['id'] == target_step_id:
+                            if node['uuid'] is None:
+                                node['uuid'] = target_datum_uuid
+                                JST = timezone(timedelta(hours=+9), 'JST')
+                                node['cacheCreatedAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
+                            else:
+                                # この後行われるget_caches()で纏められてしまうので、使わないcachesは削除しておく
+                                # job.cachesのfor文の外じゃないと削除できないので、一旦格納しておく
+                                already_caches.append(flow_uuid_and_step_id)
+                            break
+
+                # 使わないcachesの削除
+                for delete_cache in already_caches:
+                    del job.caches[delete_cache]
+
+        # 3. 最後にファイルに保存する
+        flows_path.write_text(json.dumps(current_flow_data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        # とりあえず何かを返しておく
+        return True
+
+    def replace_lasts_to_caches(self, flow_uuid):
+        """
+        lastsにあるdatumで、caches対象のdatumならば
+        datumのuuidをcacheのuuidに書き換える
+        """
+        for port, datum in self.lasts.items():
+            for flow_and_step, cache_uuid in self.caches.items():
+                if flow_and_step.split('.')[0] == flow_uuid and flow_and_step.split('.')[1] == port:
+                    datum.uuid = cache_uuid
+                    break
 
     def get_lasts_from(self, step_paths):
         result = {}
@@ -176,7 +316,13 @@ class Job:
     def get_datum(self, datum_id, datum):
         if datum.uuid is not None: return datum
 
-        job, port = self.src_job_from(datum_id)
+        src = self.src_job_from(datum_id)
+        if src is None:
+            flow = self.step.command_or_flow
+            sys.__stderr__.write(f'empty and starting data node: {flow.uuid}.{datum_id}\n')
+            raise Exception(f'フロー({flow.label} uuid: {flow.uuid})のノード[{datum.label}]にデータが存在しません。単体の空データは削除してください。')
+
+        job, port = src
 
         self.expand_args(job)
         job.inputs = job.check_inputs(self.inputs_of(job))
@@ -216,11 +362,12 @@ class Job:
                 result[d] = job.inputs[d]
         return result
 
-
     def check_multi_use(self, job, datum_id, datum):
         job_ports = self.dst_job_ids(datum_id)
+
         if len(job_ports) >= 2:
-            datum.command_to_file()
+            if not isinstance(datum.source, NysolPythonSource):
+                datum.command_to_file()
 
             for j, port in job_ports.items():
                 if j != job:
@@ -246,19 +393,24 @@ class Job:
         for datum in self.inputs.values():
             datum.dtor()
 
-        for datum in self.lasts.values():
-            datum.command_to_file().dtor()
+        # engine_executeに移動
+        # for datum in self.lasts.values():
+        #     datum.command_to_file().dtor()
 
         for job in self.jobs:
             job.dtor()
 
 
 class Step:
-    def __init__(self, command_or_flow, args, srcs, dsts):
+    def __init__(self, command_or_flow, args, srcs, dsts, step_id='', step_label=''):
         self.command_or_flow = command_or_flow
         self.args = args
         self.srcs = srcs # {'in': 'd0'}
         self.dsts = dsts # {'out': 'd1'}
+
+        # for debug
+        self.step_id = step_id
+        self.step_label = step_label
 
     @property
     def is_command(self):
@@ -290,6 +442,8 @@ class Flow:
         self.o_ports = []
         self.description = ''
 
+        self.label = '' # for debug
+
     def __repr__(self):
         return f'<Flow uuid:{self.uuid}>'
 
@@ -319,6 +473,15 @@ class UnixCommand(Command):
         self.o_ports = [{'name': 'o', 'type': 'frame'}]
 
     def execute(self, args, inputs):
+
+        # for debug
+        import sys
+        indent = '  '
+        sys.__stderr__.write(indent + self.name + ': <\n')
+        for k, i in inputs.items():
+            sys.__stderr__.write(indent + '  [' + k + ']: ' + (repr(i))[:80] + '\n')
+        sys.__stderr__.write(indent + '>\n')
+
         source = self.source(args, inputs)
         for input in inputs.values():
             if isinstance(input.source, PathFileSource):
@@ -373,10 +536,10 @@ class VisualizersCommand(Command):
 
     def execute(self, args, inputs):
         # HTML作成
-        visualize_html = self.gererate_html(args, inputs)
+        visualize_html = self.generate_html(args, inputs)
         return { self.out_key: visualize_html }
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
         """ for override """
         raise Exception()
 
@@ -397,7 +560,7 @@ class CsvToHtmlTableCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
         """
         csvのファイルパスから、
         HTMLのテーブル形式にして返す
@@ -411,33 +574,39 @@ class CsvToHtmlTableCommand(VisualizersCommand):
         if not os.path.exists(file_path):
             return ''
 
+        result = {}
+
         # テーブル構造
         table_of_html = '<table border="1">'
         with open(file_path, 'r') as f:
             reader = csv.reader(f)
             header = next(reader)
 
-            table_of_html += '<tr>'
-            for head in header:
-                table_of_html += '<th>'
-                table_of_html += head
-                table_of_html += '</th>'
-            table_of_html += '</tr>'
+            result['header'] = header
+
+            # table_of_html += '<tr>'
+            # for head in header:
+            #     table_of_html += '<th>'
+            #     table_of_html += head
+            #     table_of_html += '</th>'
+            # table_of_html += '</tr>'
 
             csv_list = list(reader)
             start = offset
             end = start + (limit if limit is not None else len(csv_list))
 
-            for csv_row in csv_list[start:end]:
-                table_of_html += '<tr>'
-                for datum in csv_row:
-                    table_of_html += '<td>'
-                    table_of_html += datum
-                    table_of_html += '</td>'
-                table_of_html += '</tr>'
-        table_of_html += '</table>'
+            result['reader'] = csv_list[start:end]
 
-        return table_of_html
+        #     for csv_row in csv_list[start:end]:
+        #         table_of_html += '<tr>'
+        #         for datum in csv_row:
+        #             table_of_html += '<td>'
+        #             table_of_html += datum
+        #             table_of_html += '</td>'
+        #         table_of_html += '</tr>'
+        # table_of_html += '</table>'
+
+        return result
 
 # グラフ化に必要なものの準備
 import matplotlib.pyplot as plt
@@ -446,6 +615,7 @@ import numpy as np
 import holoviews as hv
 import random
 
+from bokeh.embed import components
 from bokeh.plotting import figure, ColumnDataSource
 from bokeh.resources import CDN
 from bokeh.embed import file_html
@@ -516,7 +686,7 @@ class CsvToLineGraphCommand(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def generate_image(self, args, inputs):
+    def generate_plot(self, args, inputs):
         """
         ビジュアライズを描画、保存する。
         """
@@ -596,24 +766,51 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
+        # html = file_html(plot, CDN, 'myplot')
 
-        return html
+        return plot
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
         """
         csvのファイルパスから、
         plotの折れ線グラフ画像のimageタグを作成する
         """
-        html = self.generate_image(args, inputs)
+        p = self.generate_plot(args, inputs)
 
-        return html
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+        result['js'] = CDN.js_files[0]
+        result['css'] = CDN.css_files[0]
+
+        return result
 
 class CsvToHistogram(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.generate_plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+        result['js'] = CDN.js_files[0]
+        result['css'] = CDN.css_files[0]
+
+        return result
+
+    def generate_plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotのヒストグラムを作成する
@@ -669,9 +866,7 @@ class CsvToHistogram(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        return plot
 
 # class CsvToHistogram(VisualizersCommand):
 #     def __init__(self):
@@ -730,7 +925,25 @@ class CsvToScatter(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.generate_plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+        result['js'] = CDN.js_files[0]
+        result['css'] = CDN.css_files[0]
+
+        return result
+
+    def generate_plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotの散布図を作成する
@@ -789,9 +1002,7 @@ class CsvToScatter(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        return plot
 
 # class CsvToScatter(VisualizersCommand):
 #     def __init__(self):
@@ -850,7 +1061,25 @@ class CsvToBoxplot(VisualizersCommand):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def generate_html(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.generate_plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+        result['js'] = CDN.js_files[0]
+        result['css'] = CDN.css_files[0]
+
+        return result
+
+    def generate_plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotの箱ひげ図を作成する
@@ -889,9 +1118,7 @@ class CsvToBoxplot(VisualizersCommand):
         renderer = hv.renderer('bokeh')
         plot=renderer.get_plot(boxwhisker).state
 
-        return file_html(plot, CDN, 'myplot')
-
-        return url
+        return plot
 
 # mcommand
 class MCommand(UnixCommand):
@@ -1143,25 +1370,27 @@ class McalOld(MCommand):
 class Mcat(MCommandNew):
     def __init__(self):
         super().__init__(nm.m2cat)
-
         self.name = 'mcat'
         self.description = 'ファイル結合'
         self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
         self.params.append(Parameter('k', '結合する列名'))
 
-    def execute(self, args, inputs):
-        # args_for_nysol = args
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
 
-        # m2catはなんのパラメータがあるかわからないので（少なくともmcatとは違う）
-        args_for_nysol = {}
         inputs_for_arg_i = []
         for key, input in inputs.items():
-            inputs_for_arg_i.append(input.source.nysol_module)
+            if isinstance(input.source, PathFileSource):
+                # 一度nysol_module化する
+                f = None
+                f <<= nm.m2cat(i=input.source.fullpath.as_posix())
+                inputs_for_arg_i.append(f)
+            elif isinstance(input.source, NysolPythonSource):
+                inputs_for_arg_i.append(input.source.nysol_module)
         args_for_nysol.update({'i': inputs_for_arg_i})
 
-        source = NysolPythonSource('csv', self.nysol_mod, args_for_nysol)
-        frame = Frame(str(uuid.uuid4()), source)
-        return { self.out_key: frame }
+        return args_for_nysol, process_flow
 
 class McatOld(MCommand):
     def __init__(self):
@@ -1633,7 +1862,7 @@ class Mnrjoin(MCommandNew):#new
         super().__init__(nm.mnrjoin)
 
         self.name = 'mnrjoin'
-        self.description = '参照ファイルのの複数範囲条件結合'
+        self.description = '参照ファイルの複数範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
@@ -1661,7 +1890,7 @@ class MnrjoinOld(MCommand):#new
     def __init__(self):
         super().__init__()
         self.name = 'mnrjoin'
-        self.description = '参照ファイルのの複数範囲条件結合'
+        self.description = '参照ファイルの複数範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
@@ -2159,7 +2388,7 @@ class Mshare(MCommandNew):#edit
     def __init__(self):
         super().__init__(nm.mshare)
         self.name = 'mshare'
-        self.description = '構成費の計算'
+        self.description = '構成比の計算'
         self.params.append(Parameter('f', '指定列の構成比計算(必須)'))
         self.params.append(Parameter('k', '構成比計算の単位となる列名'))
 
@@ -2167,7 +2396,7 @@ class MshareOld(MCommand):#edit
     def __init__(self):
         super().__init__()
         self.name = 'mshare'
-        self.description = '構成費の計算'
+        self.description = '構成比の計算'
         self.params.append(Parameter('f', '指定列の構成比計算(必須)'))
         self.params.append(Parameter('k', '構成比計算の単位となる列名'))
 
@@ -3121,7 +3350,10 @@ class KCommand(UnixCommand):
 
         # nm.cmd用の文字列のコマンドを作成する
         for key, value in args.items():
-            if not len(value) == 0:
+            if isinstance(value, bool):
+                if value:
+                    cl_args += ' -' + key
+            elif not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて下さい。
                 cl_args += ' --' if len(key) > 1 else ' -'
                 cl_args += key + ' ' + value
@@ -4462,7 +4694,10 @@ class Evaluate(KCommand):
 
         # nm.cmd用の文字列のコマンドを作成する
         for key, value in args.items():
-            if not len(value) == 0:
+            if  isinstance(value, bool):
+                if value:
+                    cl_args += ' -' + key
+            elif not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
                 cl_args += ' --' if len(key) > 1 else ' -'
                 cl_args += key + ' ' + value
@@ -4525,8 +4760,12 @@ class Predict(KCommand):
         cl_args += ' -d ' + input_d.source.fullpath.as_posix()
 
         # nm.cmd用の文字列のコマンドを作成する
+
         for key, value in args.items():
-            if not len(value) == 0:
+            if  isinstance(value, bool):
+                if value:
+                    cl_args += ' -' + key
+            elif not len(value) == 0:
                 # 短い引数と長い引数をlen(key) > 1で判断しているがゴリ押し感があるので別の書き方があれば書き換えて欲しいです。
                 cl_args += ' --' if len(key) > 1 else ' -'
                 cl_args += key + ' ' + value
@@ -4563,52 +4802,155 @@ class PredictOld(UnixCommand):
         return PandasSource('csv', frames_path, str(uuid.uuid4()) + '.csv', dataframe)
 
 # PCMD
-class Groupby(UnixCommand):
-    pass
 
-class Groupby2(UnixCommand):
-    pass
-
-class SmlModeling(UnixCommand):
-    def __init__(self):
-        super().__init__()
-        self.name = 'SmlModeling'
-        self.nysol_mod = nm.cmd
-        self.command_path = '/kskp/engine/commands/pcmd/sml_modeling.sh'
-        self.description = 'モデリング'
-        self.output_ext = 'csv'
-        self.stdout_param = ' output_metrics_data='
+class NmCmd(MCommandNew):
+    """
+    nysol_pythonのcmdメソッドのクラス
+    使用回数が多く、argsを辞書から文字列に変換する箇所が殆ど同じなので
+    いい加減別クラスとして定義した。
+    """
+    def __init__(self, exe, ext, param):
+        super().__init__(nm.cmd)
+        self.execute_command = exe
+        self.output_ext = ext
+        self.stdout_param = ' ' + param
 
     def command_args(self, args, inputs):
-        cl_args = self.command_path
-        process_flow = None
+        """
+        実行可能状態のargsを生成
+        """
+        # input整理
+        args, process_flow = self.parse_command_inputs(args, inputs)
+        # nm.cmd用の文字列のコマンドを作成する
+        str_args = self.execute_command + self.convert_args_dict_into_str(args)
 
+        return str_args, process_flow
+
+    def parse_command_inputs(self, args, inputs):
+        process_flow = None
+        # input整理
         input_i = inputs['i']
         if isinstance(input_i.source, PathFileSource):
             input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+            args.update({'i': input_i.source.fullpath.as_posix()})
         elif isinstance(input_i.source, NysolPythonSource):
-            # process_flow = input_i.source.nysol_module
-            input_i.command_to_file()
-            cl_args += ' i=' + input_i.source.fullpath.as_posix()
+            process_flow = input_i.source.nysol_module
 
-        # nm.cmd用の文字列のコマンドを作成する
-        for key, value in args.items():
+        return args, process_flow
+
+    def convert_args_dict_into_str(self, dict_args):
+        str_args = ''
+        for key, value in dict_args.items():
             if isinstance(value, bool):
-                cl_args += ' ' +  key
+                if value:
+                    str_args += ' -' +  key
                 continue
             if not len(value) == 0:
-                cl_args += ' ' + key + '=' + value
-
-        cl_args += ' kcmd_path=/kskp/engine/commands/kcmd'
-        cl_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
-        cl_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
-
-        return cl_args, process_flow
+                str_args += ' %s=%s' % (key, value)
+        return str_args
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
         return NysolPythonSource(self.output_ext, self.nysol_mod, args, process_flow, self.stdout_param)
+
+class SmlModeling(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
+        self.name = 'SmlModeling'
+        self.description = 'デモ用モデリング'
+
+    def parse_command_inputs(self, args, inputs):
+        input_i = inputs['i']
+        # うまいこと標準入力がsml_modeling.sh内で受け取れていないようなので、
+        # とりあえずなんであろうとパスを渡す
+        input_i.command_to_file()
+        args.update({'i': input_i.source.fullpath.as_posix()})
+
+        return args, None
+
+    def command_args(self, args, inputs):
+        # input整理
+        args, process_flow = self.parse_command_inputs(args, inputs)
+        # nm.cmd用の文字列のコマンドを作成する
+        str_args = self.execute_command + self.convert_args_dict_into_str(args)
+
+        str_args += ' kcmd_path=/kskp/engine/commands/kcmd'
+        str_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
+        str_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
+
+        return str_args, process_flow
+
+class Groupby(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/groupby.sh', 'csv', 'o=')
+        self.name = 'Groupby'
+        self.description = 'groupby処理を行う'
+
+class CheckDuplicateRows(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/check_duplicate_rows.sh', 'csv', 'o=')
+        self.name = 'CheckDuplicateRows'
+        self.description = '重複行の抽出'
+
+class MergeFS(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/merge_FS.sh', 'csv', 'o=')
+        self.name = 'MergeFS'
+        self.description = '不整CSVファイルのクレンジングと集約'
+
+class MergeIbutsu(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/merge_ibutsu.sh', 'csv', 'o=')
+        self.name = 'MergeIbutsu'
+        self.description = 'CSVファイルの集約'
+
+    # そのまま返す
+    # 標準入力を受け取らないので、そのままスルー
+    # 動作確認はしていない（テストデータがないので・・・）
+    def parse_command_inputs(self, args, inputs):
+        return args, None
+
+class ColumnGroupingName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
+        self.name = 'ColumnGroupingName'
+        self.description = '項目群に対して、グループに属する項目名に接頭語を付与する'
+
+class ColumnUniqueName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_unique_name.sh', 'csv', 'o=')
+        self.name = 'ColumnUniqueName'
+        self.description = '全ての項目名がユニークになるように、項目名を変更する。'
+
+class ColumnName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
+        self.name = 'ColumnName'
+        self.description = '先頭と末尾に、指定した項目名の順番に列を並び替える。'
+
+class ColumnBlankName(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
+        self.name = 'ColumnBlankName'
+        self.description = '空白の項目名に対して、指定した文字と重複時の識別子で生成した項目名に変更し、全ての項目を出力する。'
+
+class ColumnList(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/column_list.sh', 'csv', 'o=')
+        self.name = 'ColumnList'
+        self.description = 'ヘッダー行と先頭の1行 を縦型に変形したリストを出力する'
+
+class WinCp932Read(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/windows_cp932_csv_read.sh', 'csv', 'o=')
+        self.name = 'WinCp932Read'
+        self.description = 'Windowsファイル（Shift-JIS拡張 CP932）を、サーバ上のローカルファイルより読込む。'
+
+class ColumnsToRows(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/columns_to_rows.sh', 'csv', 'o=')
+        self.name = 'ColumnsToRows'
+        self.description = 'f=で指定した複数の列項目に対して、各項目の行を連結した新たな項目をa=で指定した名前で作成する。'
 
 commands = {
     # MCDM
@@ -4730,9 +5072,23 @@ commands = {
     'evaluate': Evaluate(),
     'predict': Predict(),
 
+    # 追加コマンド
     'groupby': Groupby(),
-    'groupby2': Groupby2(),
-    'sml_modeling': SmlModeling()
+
+    # デモ専用コマンド
+    'sml_modeling': SmlModeling(),
+
+    # O社向けコマンド
+    'check_duplicate_rows': CheckDuplicateRows(),
+    'merge_FS': MergeFS(),
+    'merge_ibutsu': MergeIbutsu(),
+    'column_grouping_name': ColumnGroupingName(),
+    'column_unique_name': ColumnUniqueName(),
+    'column_name': ColumnName(),
+    'column_blank_name': ColumnBlankName(),
+    'column_list': ColumnList(),
+    'windows_cp932_csv_read': WinCp932Read(),
+    'columns_to_rows': ColumnsToRows()
 }
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),

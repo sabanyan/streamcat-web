@@ -957,10 +957,10 @@ def handle_bad_request(error):
 def visualizer():
 
     from .engine.core3 import internal_commands, Job, Step
-    from bs4 import BeautifulSoup
+    # from bs4 import BeautifulSoup
 
-    html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
-    visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
+    # html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
+    # visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
 
     # visualizeコマンドの実行
     ### ここから
@@ -973,18 +973,68 @@ def visualizer():
     job = Job(new_step, new_inputs)
     # ここまでがengine.executeのparse部分にあたる
 
-    result = job.execute()
+    result = job.execute()['o']
     job.dtor()
     ### ここまでがengine.execute部分にあたる
 
-    # htmlの中身の作成（テンプレのhtmlを元に作成する）
-    template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
-    soup = BeautifulSoup(result['o'], 'html.parser')
-    div_tag = template_soup.find('div', id='visualize')
-    div_tag.append(soup)
+    # # htmlの中身の作成（テンプレのhtmlを元に作成する）
+    # template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
+    # soup = BeautifulSoup(result['o'], 'html.parser')
+    # div_tag = template_soup.find('div', id='visualize')
+    # div_tag.append(soup)
+    #
+    # # htmlの作成
+    # with open(visualize_path.as_posix(), 'w') as f:
+    #     f.write(template_soup.prettify())
 
-    # htmlの作成
-    with open(visualize_path.as_posix(), 'w') as f:
-        f.write(template_soup.prettify())
+    # return render_template('visualize/%s.html' % html_name)
 
-    return render_template('visualize/%s.html' % html_name)
+    # テーブルコマンド
+    if request.args.get('from') == 'csvtohtmltable':
+        return render_template("visualize/table.html", header=result['header'], reader=result['reader'])
+    # bokehのコマンド
+    return render_template("visualize/plot.html", script1=result['script'], div1=result['div'], cdn_js=result['js'], cdn_css=result['css'])
+
+@app.route('/visualizers_test', methods=['GET'])
+def visualizer_test():
+
+    from .engine.core3 import internal_commands, Job, Step
+    # from bs4 import BeautifulSoup
+
+    # html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
+    # visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
+    args = {
+      "limit": "",
+      "offset": "",
+      "x_size": 1400,
+      "y_size": 600,
+      "graph_title": "テスト（折れ線グラフ）",
+      "x_label": "日付",
+      "y_label": "気温",
+      "alpha": 1,
+      "time_series_column": ["date"],
+      "x_axis_column": "date",
+      "y_axis_column": "average",
+      "data_column": "prefecture",
+      "data": []
+    }
+    # visualizeコマンドの実行
+    ### ここから
+    # ここから
+    new_inputs = {}
+    new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , 'result3.csv'))
+    command = internal_commands.get(request.args.get('from'))
+    # 残りの２つの引数はsrcsとdsts
+    new_step = Step(command, args, {}, {})
+    job = Job(new_step, new_inputs)
+    # ここまでがengine.executeのparse部分にあたる
+
+    result = job.execute()['o']
+    job.dtor()
+    ### ここまでがengine.execute部分にあたる
+
+    # テーブルコマンド
+    if request.args.get('from') == 'csvtohtmltable':
+        return render_template("visualize/table.html", header=result['header'], reader=result['reader'])
+    # bokehのコマンド
+    return render_template("visualize/plot.html", script1=result['script'], div1=result['div'], cdn_js=result['js'], cdn_css=result['css'])
