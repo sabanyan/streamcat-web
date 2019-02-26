@@ -2132,5 +2132,55 @@ class JobTestCase(unittest.TestCase):
         self.assertEqual(result['navigation']['project_uuid'], project_uuid)
         self.assertEqual(result['navigation']['project_name'], 'proj1')
 
+class CacheApiTestCase(unittest.TestCase):
+
+    def setUp(self):
+        app.testing = True
+        self.client = app.test_client()
+
+    def test_delete_cache(self):
+        import csv
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        datum_id = 'test'
+
+        with open('kskp/data/frames/test.csv', 'w') as f:
+            pass
+
+        flow_path = Path(app.config['FLOW_PATH']) / (data_source_name + '.json')
+        flow_json = json.loads(flow_path.read_text(), encoding='utf-8')
+        node = {
+            "id": datum_id,
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": 'test',
+            "cacheCreatedAt": '2019/01/01'
+        }
+        flow_json['nodes'] = []
+        flow_json['nodes'].append(node)
+        flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            endpoint = '/api/v0/caches?of=%s.%s' % (data_source_name, datum_id)
+            response = client.delete(endpoint)
+            result = json.loads(response.get_data())
+
+        # テスト
+        new_file_path = Path('kskp/data/frames/caches_' + data_source_name + '_' + datum_id + '.csv')
+        self.assertEqual(result['success'], True)
+        self.assertTrue(new_file_path.exists())
+
+        # 後片付け
+        new_file_path.unlink()
+        flow_path.unlink()
+
 if __name__ == '__main__':
     unittest.main()
