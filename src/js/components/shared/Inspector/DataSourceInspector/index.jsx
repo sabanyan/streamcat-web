@@ -78,7 +78,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         this.setState({
           loading: true
         })
-        HttpUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
+        APIUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
             const uuid = response.data.name[0].uuid
