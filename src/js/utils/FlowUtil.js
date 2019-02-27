@@ -130,52 +130,6 @@ export default class FlowUtil {
     return nodes
   }
 
-  /**
-  * 
-  */
-  static removeCache(nodeId:string, notify:Function, dismissNotify:Functionxd) {
-    const url = "caches?of=" + inject_flow_uuid + "." + nodeId
-    let deleteNotify
-    if(notify){
-      deleteNotify = notify({
-        title: 'キャッシュ削除中',
-        message: 'キャッシュを削除しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
-    }
-
-    return new Promise((resolve, reject) => {
-      APIUtil.delete(url).then((response)=>{
-        if(dismissNotify)dismissNotify(deleteNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        if (response.data.success) {
-          node.setEmptyCache()
-        }
-        resolve(response)
-      },(error)=>{
-        if(dismissNotify)dismissNotify(deleteNotify.id)
-        notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
-      })
-    })
-  }
-
-
   static runNodes(flowUUID:string,notify:Function,dismissNotify:Function):any{
       let runNotify
       if(notify){

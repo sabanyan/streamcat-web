@@ -45,6 +45,7 @@ export default class DataFrameStepModel extends BaseStepModel{
 
   setEmptyCache() {
     this.cacheCreatedAt = ""
+    this.uuid = null
   }
 
   validate(){
