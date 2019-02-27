@@ -36,7 +36,7 @@ const createStoreWithMiddleware = compose(
 const store = createStoreWithMiddleware(combineReducers({
   notifications: notificationsReducer(defaultNotification),
   reducer
-}), {});
+}), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
 if (document.getElementById('flow_editor')) {
   ReactDOM.render(
