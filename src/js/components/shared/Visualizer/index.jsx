@@ -42,27 +42,27 @@ export default class Visualizer extends React.Component<Props,State> {
 
     //TODO 引数のargs,uuidに置き換える
     const uuid = this.props.frame_uuid
-//    const body ={ "args": args, "inputs": { "i": uuid } }
-    const body ={
-      "args":{
-        "limit": "",
-        "offset": "",
-        "x_size": 1400,
-        "y_size": 600,
-        "graph_title": "テスト（折れ線グラフ）",
-        "x_label": "日付",
-        "y_label": "気温",
-        "alpha": 1,
-        "time_series_column": ["date"],
-        "x_axis_column": "date",
-        "y_axis_column": "average",
-        "data_column": "prefecture",
-        "data": []
-      },
-      "inputs":{
-        "i": "result3"
-      }
-    }
+    const body ={ "args": args, "inputs": { "i": uuid } }
+//    const body ={
+//      "args":{
+//        "limit": "",
+//        "offset": "",
+//        "x_size": 1400,
+//        "y_size": 600,
+//        "graph_title": "テスト（折れ線グラフ）",
+//        "x_label": "日付",
+//        "y_label": "気温",
+//        "alpha": 1,
+//        "time_series_column": ["date"],
+//        "x_axis_column": "date",
+//        "y_axis_column": "average",
+//        "data_column": "prefecture",
+//        "data": []
+//      },
+//      "inputs":{
+//        "i": "result3"
+//      }
+//    }
 
     this.setState({is_loading:true})
     HttpUtil.post("visualizers?from=" + visualize.id,body).then((res)=>{
