@@ -229,7 +229,6 @@ export default class FlowListContainer extends React.Component<Props,State> {
   onBlurTitle(e){
     const flow = this.state.selected_flow
     APIUtil.put("flows/" + flow.uuid,{
-      ...flow,
       label: e.target.value
     }).then((response)=>{
       this.getFlowList()
