@@ -76,17 +76,26 @@
     },
     {
       "name": "x_axis",
-      "type": "string",
+      "type": "column",
+      "options":{
+        "multiple": false
+      },
       "label": "x軸に表示する列名"
     },
     {
       "name": "data_column",
-      "type": "string",
+      "type": "column",
+      "options":{
+        "multiple": false
+      },
       "label": "ビジュアライズ対象の項目が入っている列名"
     },
     {
       "name": "data",
       "type": "column",
+      "options":{
+        "multiple": true
+      },
       "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],

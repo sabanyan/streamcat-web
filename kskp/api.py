@@ -451,7 +451,12 @@ def fetch_frame(frame_uuid):
     result = csv_to_frame(file_path, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
-        result = [columns for columns in result['contents']]
+        # headerのカラムに改行コードが含まれているケースの対応
+        headers = []
+        for column in result['contents']:
+            headers.append(column.replace('\n',''))
+        result = headers
+
 
     return jsonify({'success': True, 'data': result})
 

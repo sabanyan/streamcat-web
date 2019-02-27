@@ -20,7 +20,7 @@
   ],
   "params": [
     {
-      "name": "offsrt",
+      "name": "offset",
       "type": "number",
       "label": "ビジュアライズを行う開始行"
     },

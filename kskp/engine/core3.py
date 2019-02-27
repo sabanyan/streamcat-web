@@ -633,9 +633,7 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        #html = file_html(plot, CDN, 'myplot')
         script,div = components(plot)
-
         return render_template("visualize_component.html",script=script,div=div)
 
     def gererate_html(self, args, inputs):
@@ -707,9 +705,8 @@ class CsvToHistogram(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        script,div = components(plot)
+        return render_template("visualize_component.html",script=script,div=div)
 
 # class CsvToHistogram(VisualizersCommand):
 #     def __init__(self):
@@ -827,9 +824,8 @@ class CsvToScatter(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        script,div = components(plot)
+        return render_template("visualize_component.html",script=script,div=div)
 
 # class CsvToScatter(VisualizersCommand):
 #     def __init__(self):
