@@ -51,7 +51,7 @@ RUN yum install -y boost boost-devel
 
 RUN pip install nysol
 
-WORKDIR /
+WORKDIR /home/kskp
 
 USER kskp
 CMD flask run -h 0.0.0.0 -p ${PORT:-5000}
