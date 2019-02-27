@@ -120,29 +120,20 @@ class NysolPythonSource(Source):
             os.environ['KG_BlockCount'] = '1280'
             # sudo docker run -m 32g -e FLASK_ENV=development -u kskp -v "$(pwd)"/kskp:/home/kskp/kskp -v /home/kskp-trial/KSKP_trial:/home/kskp/KSKP_trial -p 5000:5000 --name kskp-trial kskp-trial "flask run -h 0.0.0.0 -p ${PORT:-5000}"
             # http://localhost:5000/flows/20190201_2047_Omron_S1_light
+            
+            # with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
+            #     self.process_flow.run()
+            with io.StringIO() as messages_mem:
+                with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=messages_mem):
+                    self.process_flow.run()
 
-            # res = io.StringIO()
-            with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
-                self.process_flow.run()
-            # with io.StringIO() as messages_mem:
-            #     with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=messages_mem):
-            #         self.process_flow.run()
+                    messages = messages_mem.getvalue()
 
-            #         messages = messages_mem.getvalue()
+                    if '#ERROR#' in messages:
+                        content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
+                        err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
+                        raise err
 
-            #         if '#ERROR#' in messages:
-            #             content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
-            #             err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
-            #             raise err
-
-        # except Exception as e:
-        #     if res is not None:
-        #         val = res.getvalue()
-        #         print('exception:', val)
-        #         raise ValueError(val)
-        #     else:
-        #         print('exception:', e)
-        #         raise e
         finally:
             import time
             print('final!!! time:', time.ctime())
