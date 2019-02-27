@@ -153,7 +153,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
     const selectedFiles:FileList =  e.target.files
     if(selectedFiles){
       const uploadFile:File = selectedFiles[0]
-      HttpUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
+      APIUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
         const json = response.data
         console.log(json)
         this.setState({upload_file:{
