@@ -316,10 +316,12 @@ class Datum:
             s.dtor()
             if isinstance(s, PathFileSource):
                 if self.is_temp and s.fullpath.exists():
-                    pass
-                    # s.fullpath.unlink()
-
-
+                    # pass
+                    s.fullpath.unlink()
+            else:
+                fullpath = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '.csv')
+                if self.is_temp and fullpath.exists():
+                    fullpath.unlink()
 
 import os
 import uuid
