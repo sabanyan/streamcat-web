@@ -45,7 +45,7 @@ const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
 const ADD_NOTE_ACTION = 'add_memo_action'
-
+const UPDATE_CACHE_ACTION = 'update_cache_action'
 const graph: Graph = new Graph()
 
 let initialState = {
@@ -527,7 +527,7 @@ const Application = (state = initialState, action: {}) => {
       if (offset === undefined) {
         //絶対値
         newState = {...state, zoom: value}
-      } else if (state.zoom + offset >= 80 && state.zoom + offset <= 180) {
+      } else if (state.zoom + offset >= 40 && state.zoom + offset <= 180) {
         //差分
         newState = {...state, zoom: state.zoom + offset}
       }
@@ -539,6 +539,19 @@ const Application = (state = initialState, action: {}) => {
       newState.selected_data_source_detail = action.detail
       break
     }
+
+    case UPDATE_CACHE_ACTION: {
+      const updatedStep = action.step
+      newState.nodes = newState.nodes.map((node, index) => {
+        if(node.id == updatedStep.id) {
+          node.cacheCreatedAt = updatedStep.cacheCreatedAt
+          node.uuid = updatedStep.uuid
+          node.makeCache = updatedStep.makeCache
+        }
+        return node
+      })
+    }
+    
     default:
       window.nodes = state.nodes
       return state
@@ -893,5 +906,12 @@ export const addNoteAction = (x:number, y:number) => {
     type: ADD_NOTE_ACTION,
     x: x,
     y: y
+  }
+}
+
+export const updateCacheAction = (step: StepModelType) => {
+  return {
+    type: UPDATE_CACHE_ACTION,
+    step: step
   }
 }
