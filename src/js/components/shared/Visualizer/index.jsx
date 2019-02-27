@@ -43,8 +43,7 @@ export default class Visualizer extends React.Component<Props,State> {
 
     //TODO 引数のargs,uuidに置き換える
     const uuid = this.props.frame_uuid
-      const body ={ "args": args, "inputs": { "i": uuid } }
-    }
+    const body ={ "args": args, "inputs": { "i": uuid }}
 
     this.setState({is_loading:true})
     HttpUtil.post("visualizers?from=" + visualize.id,body).then((res)=>{
