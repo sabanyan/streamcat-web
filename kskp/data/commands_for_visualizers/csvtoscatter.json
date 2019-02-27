@@ -79,7 +79,7 @@
     },
     {
       "name": "data",
-      "type": "string",
+      "type": "column",
       "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],
