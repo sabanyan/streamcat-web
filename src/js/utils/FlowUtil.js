@@ -335,6 +335,54 @@ export default class FlowUtil {
     })
   }
 
+  static saveFlow (flowUUID:string, {label,description,params,ports,nodes},notify:Function,dismissNotify:Function):any {
+    //validation
+    Validator.nodesValidate(nodes)
+
+    let putBody = {}
+    if(label)putBody["label"]=label
+    if(description)putBody["description"]=description
+    if(params)putBody["params"]=params
+    if(ports)putBody["ports"]=ports
+    if(ports)putBody["nodes"]=nodes
+
+    let saveNotify
+    if(notify){
+      saveNotify = notify({
+        title: 'フロー保存中',
+        message: 'フローの設定を保存しています',
+        status: 'loading',
+        dismissAfter: 0
+      })
+    }
+
+    return new Promise((resolve, reject) => {
+      APIUtil.put("flows/" + flowUUID,putBody).then((response)=>{
+        if(dismissNotify)dismissNotify(saveNotify.id)
+        if (!response.data.success) {
+          notify({
+            title: '実行エラー',
+            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        }
+        resolve(response)
+      },(error)=>{
+        if(dismissNotify)dismissNotify(saveNotify.id)
+        notify({
+          title: '実行エラー',
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+        reject(error)
+      })
+    })
+  }
+
 
   // static copyStep(step:StepModelType):StepModelType{
   // }
