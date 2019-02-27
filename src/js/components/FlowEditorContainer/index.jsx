@@ -23,7 +23,8 @@ import {
   loadFlowJSONAction,
   setZoomAction,
   updateDataFrameDetailAction,
-  addNoteAction
+  addNoteAction,
+  updateCacheAction
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -72,6 +73,7 @@ export type FlowEditorProps = {
   notify: Function;
   dissmissNotify: Function;
   addNote: Function;
+  updateCacheAction: Function;
 }
 
 export default FlowEditorContainer = connect(
@@ -180,6 +182,9 @@ export default FlowEditorContainer = connect(
       },
       addNote(...args){
         dispatch(addNoteAction(...args))
+      },
+      updateCacheAction(...args){
+        dispatch(updateCacheAction(...args))
       }
     }
   },

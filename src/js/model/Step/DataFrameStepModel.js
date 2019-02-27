@@ -26,9 +26,12 @@ export default class DataFrameStepModel extends BaseStepModel{
   }
 
   hasData():boolean{
-    return (this.uuid == null) ? false : true
+    return (this.uuid)
   }
 
+  isCached():boolean{
+    return (this.cacheCreatedAt === "") ? false : true
+  }
   isMakeCache():boolean {
     return this.makeCache
   }
@@ -45,6 +48,7 @@ export default class DataFrameStepModel extends BaseStepModel{
 
   setEmptyCache() {
     this.cacheCreatedAt = ""
+    this.uuid = null
   }
 
   validate(){

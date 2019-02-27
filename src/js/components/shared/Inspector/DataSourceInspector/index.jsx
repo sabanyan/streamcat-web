@@ -125,6 +125,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     //TODO 将来的にはページングなどの対応が必要
     APIUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
       const json = response.data
+      console.log(json)
       let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
       let contentTable = <div className="table-responsive">
         <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
@@ -235,13 +236,45 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   onClickDeleteCache() {
-    const {notify,dismissNotify,updateStep} = this.props
-    FlowUtil.removeCache(this.getSelectedStep().id, updateStep,notify,dismissNotify)
+    let {selected_step_ids, nodes, notify,dismissNotify} = this.props
+    
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        this.deleteCache()
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        選択されたデータソースのキャッシュを削除しますか？
+      </div>,
+    })
   }
 
-  hasCacheFile() {
-    this.getSelectedStep().nodes
-    return this.props
+  deleteCache() {
+    const node = this.getSelectedStep()
+    const url = "caches?of=" + inject_flow_uuid + "." + node.id
+    APIUtil.delete(url).then((response)=>{
+      if (!response.data.success) {
+        notify({
+          title: '実行エラー',
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }
+      if (response.data.success) {
+        node.setEmptyCache()
+        this.props.updateCacheAction(node)
+        this.forceUpdate()
+      }
+    })
   }
 
   /**
@@ -385,7 +418,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
           </div>
           <div className={style.cache_delete}>
             <Button  icon={'delete'} danger={true} 
-              disabled={!selected_step.hasData()}
+              disabled={!selected_step.isCached()}
 
               onClick={(e) => {this.onClickDeleteCache()}}>
               キャッシュ削除
