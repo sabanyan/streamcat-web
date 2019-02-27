@@ -28,6 +28,10 @@ export default class ParamUtil {
           break
         case Constants.param.type.select:
           args[inputRef.param.name] = this.getAllSelectedValue(inputRef.element)
+          break
+        case Constants.param.type.column:
+          args[inputRef.param.name] = this.getAllSelectedValue(inputRef.element)
+          break
       }
       ParamUtil.clearElement(inputRef.element)
     })
@@ -59,6 +63,15 @@ export default class ParamUtil {
         break
       default:
         paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} disabled={true}/>
+        break
+      case Constants.param.type.column:
+
+        param.options = {
+          labels:["A","B","c"],
+          values:["A","B","c"],
+          multiple: true
+        }
+        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}/>
         break
     }
     return paramElement
