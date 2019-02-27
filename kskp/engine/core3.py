@@ -4,6 +4,7 @@ import json
 from .data3 import *
 from .util import Parameter
 from datetime import datetime, timedelta, timezone
+from flask import render_template
 
 flow_obj_cache = {} # uuid: Jsonオブジェクト
 flows_cache = {} # uuid: Flowインスタンス
@@ -484,7 +485,7 @@ import random
 
 from bokeh.plotting import figure, ColumnDataSource
 from bokeh.resources import CDN
-from bokeh.embed import file_html
+from bokeh.embed import file_html,components
 from bokeh.models import HoverTool
 from bokeh.io import output_file, show
 from numpy import histogram
@@ -632,9 +633,10 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
+        #html = file_html(plot, CDN, 'myplot')
+        script,div = components(plot)
 
-        return html
+        return render_template("visualize_component.html",script=script,div=div)
 
     def gererate_html(self, args, inputs):
         """
