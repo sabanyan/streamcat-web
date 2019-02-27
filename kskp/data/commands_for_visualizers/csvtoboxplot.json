@@ -58,12 +58,18 @@
     },
     {
       "name": "x_axis",
-      "type": "string",
+      "type": "column",
+      "options":{
+        "multiple": false
+      },
       "label": "x軸に表示する列名"
     },
     {
       "name": "y_axis",
-      "type": "string",
+      "type": "column",
+      "options":{
+        "multiple": false
+      },
       "label": "y軸に表示する列名"
     }
   ],
