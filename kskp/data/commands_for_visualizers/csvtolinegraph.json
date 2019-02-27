@@ -20,7 +20,7 @@
   ],
   "params": [
     {
-      "name": "offsrt",
+      "name": "offset",
       "type": "number",
       "label": "ビジュアライズを行う開始行"
     },
@@ -64,27 +64,42 @@
     },
     {
       "name": "time_series_column",
-      "type": "multi_select",
+      "type": "column",
+      "options":{
+        "multiple": true
+      },
       "label": "時系列データの列を指定する。時系列データがなければ入力しない"
     },
     {
       "name": "x_axis_column",
-      "type": "string",
+      "type": "column",
+      "options":{
+        "multiple": false
+      },
       "label": "x軸に表示する列名"
     },
     {
       "name": "y_axis_column",
-      "type": "string",
+      "type": "column",
+      "options":{
+        "multiple": false
+      },
       "label": "y軸に表示する列名"
     },
     {
       "name": "data_column",
-      "type": "string",
+      "type": "column",
+      "options":{
+        "multiple": false
+      },
       "label": "ビジュアライズ対象の項目が入っている列名"
     },
     {
       "name": "data",
-      "type": "multi_select",
+      "type": "column",
+      "options":{
+        "multiple": true
+      },
       "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],

@@ -19,6 +19,7 @@ type PreviewInspectorProps = {
   label: string,
   params: [],
   args:{},
+  headers: [],
   onBuild: Function,
   onSave: Function
 }
@@ -40,7 +41,6 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
 
     updateArgs() {
       const args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
-      console.log(ParamUtil.getArgsFromInputRefs(this.inputRefs))
       //プレビューリクエスト
       this.props.onSave(args)
     }
@@ -54,7 +54,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
     }
 
     render() {
-        const {params,args,label} = this.props
+        const {params,args,label,headers} = this.props
         let inputForm = []
         let subFlowLink,content,subLabel
 
@@ -69,8 +69,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
           // const params:[CommandParamType] = params
           // const args:{} = args
           const invalids:{} = {}
-
-          inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids = {invalids} onBuild={(param,element)=>this.onBuild(param,element)}/>
+          inputForm = <ParamsForm headers={headers}  params={params} args={args} invalids={invalids} command={null} invalids = {invalids} onBuild={(param,element)=>this.onBuild(param,element)}/>
 
 
         let form
