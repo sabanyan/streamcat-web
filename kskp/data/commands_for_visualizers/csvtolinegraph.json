@@ -64,7 +64,7 @@
     },
     {
       "name": "time_series_column",
-      "type": "multi_select",
+      "type": "string",
       "label": "時系列データの列を指定する。時系列データがなければ入力しない"
     },
     {
@@ -84,7 +84,7 @@
     },
     {
       "name": "data",
-      "type": "multi_select",
+      "type": "string",
       "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],

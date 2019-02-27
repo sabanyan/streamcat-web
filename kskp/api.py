@@ -1046,7 +1046,7 @@ def visualizer():
     template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
     soup = BeautifulSoup(result['o'], 'html.parser')
     div_tag = template_soup.find('div', id='visualize')
-    div_tag.append(soup)
+    div_tag.replace_with(soup)
 
     # htmlの作成
     with open(visualize_path.as_posix(), 'w') as f:
