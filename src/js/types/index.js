@@ -11,6 +11,7 @@ export type CommandParamType = {
   name: string;
   optional?: boolean;
   type: string;
+  default?: string|number;
 }
 
 export type SubFlowCommandParamType = {

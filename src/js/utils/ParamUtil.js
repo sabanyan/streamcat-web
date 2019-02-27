@@ -18,7 +18,7 @@ export default class ParamUtil {
     inputRefs.map((inputRef) => {
       switch (inputRef.param.type){
         case Constants.param.type.number:
-          args[inputRef.param.name] = inputRef.element.value
+          args[inputRef.param.name] = (inputRef.element.value !== "")?parseInt(inputRef.element.value):""
           break
         case Constants.param.type.string:
           args[inputRef.param.name] = inputRef.element.value
@@ -28,6 +28,10 @@ export default class ParamUtil {
           break
         case Constants.param.type.select:
           args[inputRef.param.name] = this.getAllSelectedValue(inputRef.element)
+          break
+        case Constants.param.type.column:
+          args[inputRef.param.name] = this.getAllSelectedValue(inputRef.element)
+          break
       }
       ParamUtil.clearElement(inputRef.element)
     })
@@ -42,7 +46,7 @@ export default class ParamUtil {
     }
   }
 
-  static getParamElement(param,onBuild,defaultValue,refValue){
+  static getParamElement(param,onBuild,defaultValue,refValue,headers){
     let paramElement
     switch(param.type){
       case Constants.param.type.number:
@@ -59,6 +63,18 @@ export default class ParamUtil {
         break
       default:
         paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} disabled={true}/>
+        break
+      case Constants.param.type.column:
+
+
+        //カラム情報を付与
+        param.options = {
+          labels: headers,
+          values: headers,
+          multiple: (param.options.multiple)?true:false
+        }
+
+        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}/>
         break
     }
     return paramElement

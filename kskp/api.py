@@ -451,7 +451,12 @@ def fetch_frame(frame_uuid):
     result = csv_to_frame(file_path, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
-        result = [columns for columns in result['contents']]
+        # headerのカラムに改行コードが含まれているケースの対応
+        headers = []
+        for column in result['contents']:
+            headers.append(column.replace('\n',''))
+        result = headers
+
 
     return jsonify({'success': True, 'data': result})
 
@@ -1046,7 +1051,7 @@ def visualizer():
     template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
     soup = BeautifulSoup(result['o'], 'html.parser')
     div_tag = template_soup.find('div', id='visualize')
-    div_tag.append(soup)
+    div_tag.replace_with(soup)
 
     # htmlの作成
     with open(visualize_path.as_posix(), 'w') as f:

@@ -4,6 +4,7 @@ import json
 from .data3 import *
 from .util import Parameter
 from datetime import datetime, timedelta, timezone
+from flask import render_template
 
 flow_obj_cache = {} # uuid: Jsonオブジェクト
 flows_cache = {} # uuid: Flowインスタンス
@@ -484,7 +485,7 @@ import random
 
 from bokeh.plotting import figure, ColumnDataSource
 from bokeh.resources import CDN
-from bokeh.embed import file_html
+from bokeh.embed import file_html,components
 from bokeh.models import HoverTool
 from bokeh.io import output_file, show
 from numpy import histogram
@@ -632,9 +633,8 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        script,div = components(plot)
+        return render_template("visualize_component.html",script=script,div=div)
 
     def gererate_html(self, args, inputs):
         """
@@ -705,9 +705,8 @@ class CsvToHistogram(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        script,div = components(plot)
+        return render_template("visualize_component.html",script=script,div=div)
 
 # class CsvToHistogram(VisualizersCommand):
 #     def __init__(self):
@@ -825,9 +824,8 @@ class CsvToScatter(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        html = file_html(plot, CDN, 'myplot')
-
-        return html
+        script,div = components(plot)
+        return render_template("visualize_component.html",script=script,div=div)
 
 # class CsvToScatter(VisualizersCommand):
 #     def __init__(self):
