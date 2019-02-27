@@ -52,8 +52,25 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   onClickSave () {
-    this.saveFlowPorts()
-    this.saveNodes()
+    //this.saveFlowPorts()
+    //this.saveNodes()
+    this.saveFlow()
+  }
+
+  /*
+  *
+  */
+  saveFlow() {
+    const {flow, nodes, history, notify, dismissNotify} = this.props
+    return FlowUtil.saveFlow(inject_flow_uuid, {
+                                label: flow.label,
+                                description: flow.description,
+                                params:flow.params,
+                                ports: flow.ports,
+                                nodes: nodes
+                                },
+                              notify,
+                              dismissNotify)
   }
 
   saveFlowPorts () {
