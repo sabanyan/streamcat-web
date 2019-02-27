@@ -8,6 +8,7 @@ import style from './style.scss'
 
 type Props = {
   params:[CommandParamType];//パラメーター定義
+  headers?:[];//カラム情報
   args:{};//入力値
   command: CommandModel;
   invalids: {};
@@ -79,7 +80,7 @@ export default class ParamsForm extends React.Component<Props> {
   }
 
   render () {
-    const {params,args,invalids,command,onBuild} = this.props
+    const {params,args,invalids,command,onBuild,headers} = this.props
     let isPresence = false
 
     //パラメータフォームの作成
@@ -94,7 +95,7 @@ export default class ParamsForm extends React.Component<Props> {
       }
 
       //型に種別に応じたDOMElementの取得
-      let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name)
+      let paramElement = ParamUtil.getParamElement(param,onBuild,value,param.name,headers)
 
       //入力エラーメッセージ
       const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])

@@ -46,7 +46,7 @@ export default class ParamUtil {
     }
   }
 
-  static getParamElement(param,onBuild,defaultValue,refValue){
+  static getParamElement(param,onBuild,defaultValue,refValue,headers){
     let paramElement
     switch(param.type){
       case Constants.param.type.number:
@@ -66,11 +66,14 @@ export default class ParamUtil {
         break
       case Constants.param.type.column:
 
+
+        //カラム情報を付与
         param.options = {
-          labels:["A","B","c"],
-          values:["A","B","c"],
-          multiple: true
+          labels: headers,
+          values: headers,
+          multiple: (param.options.multiple)?true:false
         }
+
         paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}/>
         break
     }

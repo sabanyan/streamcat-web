@@ -13,6 +13,7 @@ type Props = {
   visualize: VisualizeModel,
   params: VisualizeParams;
   frame_uuid: string;
+  headers:[]
 }
 
 type State = {
@@ -42,27 +43,8 @@ export default class Visualizer extends React.Component<Props,State> {
 
     //TODO 引数のargs,uuidに置き換える
     const uuid = this.props.frame_uuid
-    const body ={ "args": args, "inputs": { "i": uuid } }
-//    const body ={
-//      "args":{
-//        "limit": "",
-//        "offset": "",
-//        "x_size": 1400,
-//        "y_size": 600,
-//        "graph_title": "テスト（折れ線グラフ）",
-//        "x_label": "日付",
-//        "y_label": "気温",
-//        "alpha": 1,
-//        "time_series_column": ["date"],
-//        "x_axis_column": "date",
-//        "y_axis_column": "average",
-//        "data_column": "prefecture",
-//        "data": []
-//      },
-//      "inputs":{
-//        "i": "result3"
-//      }
-//    }
+      const body ={ "args": args, "inputs": { "i": uuid } }
+    }
 
     this.setState({is_loading:true})
     HttpUtil.post("visualizers?from=" + visualize.id,body).then((res)=>{
@@ -102,7 +84,7 @@ export default class Visualizer extends React.Component<Props,State> {
   }
 
   render () {
-    const {visualize} = this.props
+    const {visualize,headers} = this.props
     if(this.state.is_loading){
       return <Loader center={true} visible={true}/>
     }
@@ -110,7 +92,7 @@ export default class Visualizer extends React.Component<Props,State> {
     if(!this.state.html){
       return <div>
         <EmptyState title={"表示することができません"} description={""} icon={"cloud_off"}/>
-        <PreviewInspector onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
+        <PreviewInspector headers={headers} onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
       </div>
 
     }
@@ -119,7 +101,7 @@ export default class Visualizer extends React.Component<Props,State> {
       <div className={style.visualizeContainer}>
         <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
       </div>
-      <PreviewInspector onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
+      <PreviewInspector headers={headers}  onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
     </div>
   }
 

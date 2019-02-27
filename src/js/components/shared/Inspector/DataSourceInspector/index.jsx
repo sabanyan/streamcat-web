@@ -64,13 +64,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
     FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
 
-      //ヘッダー情報の取得
-
-      const getFrameHeaderURL = "frames/" + selected_step.uuid
-      APIUtil.get(getFrameHeaderURL + "?header_only=1").then((response) => {
-        console.log(response)
-      })
-
       //すでにデータが存在している場合
       if (selected_step.hasData()) {
         this.setState({
@@ -133,16 +126,25 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   previewFromUUID(uuid:string,label:string){
     const {selected_data_source_detail} = this.props
     const selected_step = this.getSelectedStep()
-    //TODO 将来的にはページングなどの対応が必要
-    APIUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
-      const json = response.data
-      let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
-      let contentTable = <div className="table-responsive">
-        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
-      </div>
+
+    //ヘッダー情報の取得
+
+    const getFrameHeaderURL = "frames/" + selected_step.uuid
+    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
+
+//      //TODO 将来的にはページングなどの対応が必要
+//      APIUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
+//        const json = response.data
+//        let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
+//        let contentTable = <div className="table-responsive">
+//          <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
+//        </div>
+//
+//      })
+      const headers = response.data.data
 
       const contents = this.props.mast.visualizers.map((visualize,index)=>{
-        const content = <Visualizer key={index} frame_uuid={uuid} visualize={visualize} params={{}}/>
+        const content = <Visualizer key={index} frame_uuid={uuid} visualize={visualize} params={{}} headers={headers}/>
         return {title: visualize.label,content:content,parentProps:this.props}
       })
 
@@ -156,6 +158,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         loading: false
       })
     })
+
   }
 
   onClickCSVDownload(e:Event){
