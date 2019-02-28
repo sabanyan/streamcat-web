@@ -46,7 +46,9 @@ def flow_designer(flow_uuid):
 @app.route('/library', methods=['GET', 'POST'])
 @login_required
 def library():
-    return render_template('library.html')
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    return render_template('library.html',js_resources=js_resources,css_resources=css_resources)
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
