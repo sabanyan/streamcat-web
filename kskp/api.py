@@ -511,16 +511,25 @@ def download_file():
     # 現在typeは未使用
     type = request.args.get('type')
     frame_uuid = request.args.get('uuid')
+    label = request.args.get('label', 'テスト')
     ext = request.args.get('ext')
 
     # タイムゾーンの設定
-    JST = timezone(timedelta(hours=+9), 'JST')
-    date = datetime.now(JST)
+    # JST = timezone(timedelta(hours=+9), 'JST')
+    # date = datetime.now(JST)
 
     # ダウンロードファイルの名前
-    downloadFileName = 'KSKP' + date.strftime("%Y%m%d%H%M") + '.' + ext
+    if frame_uuid == 'テスト':
+        downloadFileName = frame_uuid  + '.' + ext
+    else:
+        downloadFileName = label + '.' + ext
+
     # ダウンロード対象のファイルの名前
-    downloadFile = frame_uuid + '.' + ext
+    downloadFile = frame_uuid + '_sjis.' + ext
+    sjis_path = DATAFRAME_DIR_PATH / downloadFile
+    # sjis版がなかったらutf8版を落とす（今の所sjis版はオムロンさま専用なので）
+    if not sjis_path.exists():
+        downloadFile = frame_uuid + '.' + ext
 
     return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
                                attachment_filename = downloadFileName, mimetype = 'text/csv')
@@ -651,7 +660,7 @@ def update_profile(user_id):
     return jsonify({'success': True})
 
 @api.route('/caches', methods=['DELETE'])
-# @login_required_api
+@login_required_api
 def delete_cache():
     frame_uuid = ''
 
@@ -675,7 +684,8 @@ def delete_cache():
             frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
             frame_path.unlink()
             sjis_path = DATAFRAME_DIR_PATH / (frame_uuid + '_sjis.csv')
-            sjis_path.unlink()
+            if sjis_path.exists():
+                sjis_path.unlink()
 
     update_flow_by_uuid(p.stem, j)
 
