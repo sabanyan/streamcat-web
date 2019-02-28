@@ -144,7 +144,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       const headers = response.data.data
 
       const contents = this.props.mast.visualizers.map((visualize,index)=>{
-        const content = <Visualizer key={index} frame_uuid={uuid} visualize={visualize} params={{}} headers={headers}/>
+        const content = <Visualizer key={index + uuid} frame_uuid={uuid} visualize={visualize} params={{}} headers={headers}/>
         return {title: visualize.label,content:content,parentProps:this.props}
       })
 
