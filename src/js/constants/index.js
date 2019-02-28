@@ -57,7 +57,8 @@ const Constants = {
       number:"number",
       string:"string",
       boolean:"boolean",
-      select:"select"
+      select:"select",
+      column:"column"
     }
   },
   data:{
