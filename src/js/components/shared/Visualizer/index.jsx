@@ -41,18 +41,30 @@ export default class Visualizer extends React.Component<Props,State> {
 
   visualizeRequest(visualize:VisualizeModel,args:{}){
 
-    //TODO 引数のargs,uuidに置き換える
     const uuid = this.props.frame_uuid
     const body ={ "args": args, "inputs": { "i": uuid }}
+    const limit = this.getLimitWhenCsvToHTMLTable(visualize.id)
 
     this.setState({is_loading:true})
-    HttpUtil.post("visualizers?from=" + visualize.id,body).then((res)=>{
+    HttpUtil.post("visualizers?from=" + visualize.id + limit,body).then((res)=>{
       this.setState({html:res.data,is_loading:false})
     }).catch((error)=>{
       if(error){
         this.setState({is_loading:false})
       }
     })
+  }
+
+  /**
+   * csvtothmlttableのときのみlimitをつける
+   * @param id
+   * @returns {string}
+   */
+  getLimitWhenCsvToHTMLTable(id:string){
+    if(id === "csvtohtmltable"){
+      return "&limit=1000"
+    }
+    return ""
   }
 
   onSave(args:{}){
