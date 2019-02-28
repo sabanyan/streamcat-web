@@ -4,6 +4,7 @@ import Constants from '../constants'
 import NavigationModel from '../model/Navigation/NavigationModel'
 
 class HTTPUtil {
+  config: {}
   constructor () {
     //default config
     this.config = {}
@@ -26,43 +27,31 @@ class HTTPUtil {
     }
   }
 
-  apiUrl (path:string) {
-    return '/api/v0/' + path
+  httpUrl (path:string) {
+    return "/" + path
   }
 
   get (path:string, data?:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
-    const url = this.apiUrl(path)
+    const url = this.httpUrl(path)
     return axios.get(url, {params: data}, merged_config)
   }
 
   post (path:string, data:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
-    const url = this.apiUrl(path)
+    const url = this.httpUrl(path)
     return axios.post(url, data, merged_config)
   }
 
   put (path:string, data:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
-    const url = this.apiUrl(path)
+    const url = this.httpUrl(path)
     return axios.put(url, data, merged_config)
-  }
-
-  fileupload(file:File,fileName:string){
-    const options = {
-      headers: { 'enctype': 'multipart/form-data' }
-    }
-
-    let formData:FormData = new FormData();
-    formData.append('file', file)
-    formData.append('file_name', fileName)
-
-    return this.post('frames', formData,options)
   }
 
   delete (path:string, data:{}, config:{}) {
     const merged_config = this.mergeConfig(config)
-    const url = this.apiUrl(path)
+    const url = this.httpUrl(path)
     return axios.delete(url, data, merged_config)
   }
 

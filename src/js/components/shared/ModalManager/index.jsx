@@ -60,13 +60,13 @@ export default class ModalManager extends React.Component {
         <div ref={Constants.modal.property.CONFIRM}/>
       </Modal>
       <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT}
-             title="新しいプロジェクトを始める" dynamic={true} done={'作成する'}>
+             title="新しいプロジェクトを始める" dynamic={true} done={'作成する'} primary={true}>
       </Modal>
       <Modal key={Constants.modal.ADD_FLOW} id={Constants.modal.ADD_FLOW}
-             title="新しいフローを始める" dynamic={true} done={'作成する'}>
+             title="新しいフローを始める" dynamic={true} done={'作成する'} primary={true}>
       </Modal>
       <Modal key={Constants.modal.SHOW_RUN_RESULT} id={Constants.modal.SHOW_RUN_RESULT}
-             title="実行完了" dynamic={true} cancel={"OK"} done={'ライブラリを開く'}>
+             title="実行完了" dynamic={true} cancel={"OK"} done={'ライブラリを開く'} primary={true}>
       </Modal>
       <Modal key={Constants.modal.SHOW_RUN_ERROR} id={Constants.modal.SHOW_RUN_ERROR}
              title="実行エラー" dynamic={true} ok={true}>

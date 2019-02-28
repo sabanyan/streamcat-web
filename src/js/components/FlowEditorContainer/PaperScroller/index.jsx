@@ -76,20 +76,40 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
 
   onKeyDown (e: KeyboardEvent) {
     if (DetectUtil.isMac()) {
-      // if (e.metaKey && e.key === 'x') {
-      //   this.cutSteps()
-      //   return
-      // }
-       if (e.metaKey && e.key === 'c') {
-         this.copySteps()
-         return
-       }
-       if (e.metaKey && e.key === 'v') {
-         this.pasteSteps()
-         return
-       }
+      if (e.metaKey && e.key === 'c') {
+        this.copySteps()
+        return
+      }
+      if (e.metaKey && e.key === 'v') {
+        this.pasteSteps()
+        return
+      }
+      if (e.metaKey && e.shiftKey && e.key === 'z') {
+        this.props.redo()
+        return
+      }
+      if (e.metaKey && e.key === 'z') {
+        this.props.undo()
+        return
+      }
     }
     else {
+      if (e.ctrlKey && e.key === 'c') {
+        this.copySteps()
+        return
+      }
+      if (e.ctrlKey && e.key === 'v') {
+        this.pasteSteps()
+        return
+      }
+      if (e.ctrlKey && e.shiftKey && e.key === 'z') {
+        this.props.redo()
+        return
+      }
+      if (e.ctrlKey && e.key === 'z') {
+        this.props.undo()
+        return
+      }
     }
 
     if (e.key === 'Backspace' || e.key === 'Delete') {
@@ -121,6 +141,7 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
       if (this.props.drag.end) {
         this.props.dragEnd(e.pageX, e.pageY)
       }
+      this.props.addHistory()
     }
   }
 

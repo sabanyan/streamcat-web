@@ -18,6 +18,7 @@ import Validator from '../utils/Validator'
 import Log from '../utils/Log'
 import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import _ from 'lodash'
+import ZoomUtil from '../utils/ZoomUtil'
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
@@ -31,6 +32,9 @@ const DELETE_STEPS_ACTION = 'delete_steps_action'
 const CUT_STEPS_ACTION = 'cut_steps_action'
 const COPY_STEPS_ACTION = 'copy_steps_action'
 const PASTE_STEPS_ACTION = 'paste_steps_action'
+const ADD_HISTORY_ACTION = 'add_history_action'
+const UNDO_ACTION = 'undo_action'
+const REDO_ACTION = 'redo_action'
 const REFRESH_GRAPH_ACTION = 'refresh_graph_action'
 const EXECUTE_FLOW_ACTION = 'execute_flow_action'
 const SORT_FLOW_ACTION = 'sort_flow_action'
@@ -40,7 +44,8 @@ const DRAGGING_ACTION = 'dragging_action'
 const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
-
+const ADD_NOTE_ACTION = 'add_memo_action'
+const UPDATE_CACHE_ACTION = 'update_cache_action'
 const graph: Graph = new Graph()
 
 let initialState = {
@@ -48,6 +53,10 @@ let initialState = {
   graph: graph.getGraph({}),
   zoom: 100,
   nodes: [],
+  history: {
+    current: 0,
+    nodes: []
+  },
   mast: {},
   selected_tab_id: 0,
   drag: {},
@@ -69,6 +78,9 @@ const Application = (state = initialState, action: {}) => {
       newState.nodes = loadedJson.nodes
       newState.project = {id: loadedJson.projectId}
       newState.graph = graph.getGraph(newState)
+
+      newState.history.current = 0
+      newState.history.nodes = [newState.nodes]
 
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
       Validator.isFlowModelSchema(newState)
@@ -99,6 +111,7 @@ const Application = (state = initialState, action: {}) => {
         //srcs
         let totalSX = 0
         let totalSY = 0
+
         src_step_ids.forEach((id: string) => {
           const target: StepModelType = Graph.getNode(state.nodes, id)
           totalSX = totalSX + target.position.x
@@ -121,10 +134,23 @@ const Application = (state = initialState, action: {}) => {
 
         if (src_step_ids || dst_step_ids) {
           //追加したステップの位置調整
-          const average = {
+          let average = {
             sx: totalSX / src_step_ids.length,
             sy: totalSY / src_step_ids.length,
             dx: totalDX / 2
+          }
+
+          if(!src_step_ids.length){
+            //入力がない場合、グラフの中央を基準にする
+            const leftTopPosition = {
+              x: document.querySelector("#flow_editor>div").scrollLeft,
+              y: window.pageYOffset
+            }
+            average = {
+              sx: ZoomUtil.zoomReverse(leftTopPosition.x + (window.innerWidth - 400) / 2,newState.zoom),
+              sy:  ZoomUtil.zoomReverse(leftTopPosition.y + (window.innerHeight - 60) / 2,newState.zoom),
+              dx: totalDX / 2
+            }
           }
 
           const newPosition = {
@@ -345,6 +371,51 @@ const Application = (state = initialState, action: {}) => {
        window.nodes = newState.nodes
        return newState
      }
+    case ADD_HISTORY_ACTION:{
+      let newState = StateUtil.deepCopy(state)
+
+      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
+      if(isSame){
+        return newState
+      }
+      if(newState.history.current != newState.history.nodes.length - 1){
+        //前に戻っている状態で履歴が追加された場合は、
+        //current以降の履歴は消す
+        newState.history.nodes = newState.history.nodes.slice(0,newState.history.current + 1)
+        newState.history.nodes.push(newState.nodes)
+        newState.history.current = newState.history.nodes.length - 1
+      }else{
+        newState.history.nodes.push(newState.nodes)
+        newState.history.current = newState.history.nodes.length - 1
+      }
+
+      return newState
+    }
+    case UNDO_ACTION:{
+      let newState = StateUtil.deepCopy(state)
+      if(newState.history.current > 0){
+        //一つ前に巻き戻し
+        newState.history.current = newState.history.current - 1
+        newState.nodes = state.history.nodes[newState.history.current]
+        allRebuildNodesEdges(newState)
+        window.nodes = newState.nodes
+        newState.graph = graph.getGraph(newState)
+      }
+      return newState
+    }
+    case REDO_ACTION:{
+      let newState = StateUtil.deepCopy(state)
+      const max = newState.history.nodes.length
+      if(newState.history.current < max){
+        //一つ前に巻き戻し
+        newState.history.current = newState.history.current + 1
+        newState.nodes = state.history.nodes[newState.history.current]
+        allRebuildNodesEdges(newState)
+        window.nodes = newState.nodes
+        newState.graph = graph.getGraph(newState)
+      }
+      return newState
+    }
     case SELECT_STEPS_ACTION: {
       if (action.selected_steps && action.selected_steps.length === 1) {
         newState.selected_step_ids = action.selected_steps.map((step) => step.id)
@@ -454,7 +525,7 @@ const Application = (state = initialState, action: {}) => {
       if (offset === undefined) {
         //絶対値
         newState = {...state, zoom: value}
-      } else if (state.zoom + offset >= 80 && state.zoom + offset <= 180) {
+      } else if (state.zoom + offset >= 40 && state.zoom + offset <= 180) {
         //差分
         newState = {...state, zoom: state.zoom + offset}
       }
@@ -466,6 +537,19 @@ const Application = (state = initialState, action: {}) => {
       newState.selected_data_source_detail = action.detail
       break
     }
+
+    case UPDATE_CACHE_ACTION: {
+      const updatedStep = action.step
+      newState.nodes = newState.nodes.map((node, index) => {
+        if(node.id == updatedStep.id) {
+          node.cacheCreatedAt = updatedStep.cacheCreatedAt
+          node.uuid = updatedStep.uuid
+          node.makeCache = updatedStep.makeCache
+        }
+        return node
+      })
+    }
+    
     default:
       window.nodes = state.nodes
       return state
@@ -536,6 +620,40 @@ function rebuildNodesEdges(newState,action){
   })
 }
 
+/**
+ * エッジのつなぎ直し処理
+ * @param newState
+ * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
+ * @returns {*}
+ */
+function allRebuildNodesEdges(newState){
+  graph.removeAllEdges(newState.graph.edges)
+  return newState.nodes.map((node, index) => {
+    //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
+      if (node instanceof CommandStepModel ||
+        node instanceof SubFlowStepModel) {
+        //ノードのつながりを再構築
+        Object.keys(node.srcs).forEach(portName => {
+          const id = node.srcs[portName]
+          const from = id
+          const to = node.id
+          if (Graph.getNode(newState.nodes, id)) {
+            graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+          }
+        })
+        //ノードのつながりを再構築
+        Object.keys(node.dsts).forEach(portName => {
+          const id = node.dsts[portName]
+          const from = node.id
+          const to = id
+          if (Graph.getNode(newState.nodes, id)) {
+            graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+          }
+        })
+      }
+      return node
+  })
+}
 
 /**
  * ステップの追加
@@ -643,7 +761,33 @@ export const pasteStepsAction = (paste_nodes: []) => {
     paste_nodes: paste_nodes
   }
 }
-
+/**
+ * 履歴の追加
+ * @returns {{type: string, step: *}}
+ */
+export const addHistoryAction = () => {
+  return {
+    type: ADD_HISTORY_ACTION,
+  }
+}
+/**
+ * アンドゥ
+ * @returns {{type: string, step: *}}
+ */
+export const undoAction = () => {
+  return {
+    type: UNDO_ACTION,
+  }
+}
+/**
+ * リドゥ
+ * @returns {{type: string, step: *}}
+ */
+export const redoAction = () => {
+    return {
+      type: REDO_ACTION,
+    }
+  }
 /**
  * ステップの選択
  * @param selected_steps
@@ -752,5 +896,20 @@ export const updateDataFrameDetailAction = (detail: DataFrameDetailType) => {
   return {
     detail: detail,
     type: UPDATE_DATA_SOURCE_DETAIL_ACTION
+  }
+}
+
+export const addNoteAction = (x:number, y:number) => {
+  return {
+    type: ADD_NOTE_ACTION,
+    x: x,
+    y: y
+  }
+}
+
+export const updateCacheAction = (step: StepModelType) => {
+  return {
+    type: UPDATE_CACHE_ACTION,
+    step: step
   }
 }

@@ -22,5 +22,14 @@ export default class StringUtil {
     tmp.innerHTML = html;
     return tmp.textContent || tmp.innerText || "";
   }
+
+  static getTextWidth(text, font) {
+    let canvas = StringUtil.getTextWidth.canvas || (StringUtil.getTextWidth.canvas = document.createElement("canvas"));
+    let context = canvas.getContext("2d");
+    context.font = font;
+    let metrics = context.measureText(text);
+
+    return metrics.width;
+  }
 }
 

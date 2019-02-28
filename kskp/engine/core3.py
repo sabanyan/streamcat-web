@@ -595,6 +595,7 @@ class Split(Command):
         frame2 = Frame(str(uuid.uuid4()), source2)
         return {'o1': frame1, 'o2': frame2}
 
+# visualize
 class VisualizersCommand(Command):
     def __init__(self):
         super().__init__()
@@ -603,12 +604,43 @@ class VisualizersCommand(Command):
 
     def execute(self, args, inputs):
         # HTML作成
-        visualize_html = self.generate_html(args, inputs)
+        visualize_html = self.template_data(args, inputs)
         return { self.out_key: visualize_html }
 
-    def generate_html(self, args, inputs):
+    def template_data(self, args, inputs):
         """ for override """
         raise Exception()
+
+class VisualizersHtml(VisualizersCommand):
+    """
+    Bokehを使うコマンドと分けたかったのでとりあえず作成
+    とりあえず感が半端ない。。。
+    """
+    def __init__(self):
+        super().__init__()
+
+class VisualizersBokehPlot(VisualizersCommand):
+    """
+    Bokehを使うとき用
+    """
+    def __init__(self):
+        super().__init__()
+
+    def template_data(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+
+        return result
 
     def generate_random_color(self):
         """
@@ -622,12 +654,11 @@ class VisualizersCommand(Command):
         import itertools
         yield from itertools.cycle(Category10[10])
 
-# visualize
-class CsvToHtmlTableCommand(VisualizersCommand):
+class CsvToHtmlTableCommand(VisualizersHtml):
     def __init__(self):
         super().__init__()
 
-    def generate_html(self, args, inputs):
+    def template_data(self, args, inputs):
         """
         csvのファイルパスから、
         HTMLのテーブル形式にして返す
@@ -644,34 +675,17 @@ class CsvToHtmlTableCommand(VisualizersCommand):
         result = {}
 
         # テーブル構造
-        table_of_html = '<table border="1">'
         with open(file_path, 'r') as f:
             reader = csv.reader(f)
             header = next(reader)
 
             result['header'] = header
 
-            # table_of_html += '<tr>'
-            # for head in header:
-            #     table_of_html += '<th>'
-            #     table_of_html += head
-            #     table_of_html += '</th>'
-            # table_of_html += '</tr>'
-
             csv_list = list(reader)
             start = offset
             end = start + (limit if limit is not None else len(csv_list))
 
             result['reader'] = csv_list[start:end]
-
-        #     for csv_row in csv_list[start:end]:
-        #         table_of_html += '<tr>'
-        #         for datum in csv_row:
-        #             table_of_html += '<td>'
-        #             table_of_html += datum
-        #             table_of_html += '</td>'
-        #         table_of_html += '</tr>'
-        # table_of_html += '</table>'
 
         return result
 
@@ -682,10 +696,9 @@ import numpy as np
 import holoviews as hv
 import random
 
-from bokeh.embed import components
 from bokeh.plotting import figure, ColumnDataSource
 from bokeh.resources import CDN
-from bokeh.embed import file_html
+from bokeh.embed import file_html,components
 from bokeh.models import HoverTool
 from bokeh.io import output_file, show
 from numpy import histogram
@@ -749,11 +762,11 @@ from numpy import histogram
 #         return img_tag
 
 #
-class CsvToLineGraphCommand(VisualizersCommand):
+class CsvToLineGraphCommand(VisualizersBokehPlot):
     def __init__(self):
         super().__init__()
 
-    def generate_plot(self, args, inputs):
+    def plot(self, args, inputs):
         """
         ビジュアライズを描画、保存する。
         """
@@ -810,8 +823,9 @@ class CsvToLineGraphCommand(VisualizersCommand):
         color = self.color_gen()
         unique_data = df[args.get('data_column')].unique().tolist()
 
-        if len(args.get('data')) > 0:
-            unique_data = args.get('data')
+        # クエリ
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
 
         # データ名が入っている列が存在する場合（クロス表）
         for datum in unique_data:
@@ -837,47 +851,11 @@ class CsvToLineGraphCommand(VisualizersCommand):
 
         return plot
 
-    def generate_html(self, args, inputs):
-        """
-        csvのファイルパスから、
-        plotの折れ線グラフ画像のimageタグを作成する
-        """
-        p = self.generate_plot(args, inputs)
-
-        result = {}
-
-        script1, div1  = components(p)
-
-        result['script'] = script1
-        result['div'] = div1
-        result['js'] = CDN.js_files[0]
-        result['css'] = CDN.css_files[0]
-
-        return result
-
-class CsvToHistogram(VisualizersCommand):
+class CsvToHistogramCommand(VisualizersBokehPlot):
     def __init__(self):
         super().__init__()
 
-    def generate_html(self, args, inputs):
-        """
-        csvのファイルパスから、
-        plotの折れ線グラフ画像のimageタグを作成する
-        """
-        p = self.generate_plot(args, inputs)
-
-        result = {}
-
-        script1, div1  = components(p)
-
-        result['script'] = script1
-        result['div'] = div1
-        result['js'] = CDN.js_files[0]
-        result['css'] = CDN.css_files[0]
-
-        return result
-
-    def generate_plot(self, args, inputs):
+    def plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotのヒストグラムを作成する
@@ -918,8 +896,8 @@ class CsvToHistogram(VisualizersCommand):
         color = self.color_gen()
         unique_data = df[args.get('data_column')].unique().tolist()
 
-        if len(args.get('data')) > 0:
-            unique_data = args.get('data')
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
 
         for datum in unique_data:
             hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('x_axis')][start:end].tolist(),
@@ -988,29 +966,11 @@ class CsvToHistogram(VisualizersCommand):
 #
 #         return img_html
 
-class CsvToScatter(VisualizersCommand):
+class CsvToScatterCommand(VisualizersBokehPlot):
     def __init__(self):
         super().__init__()
 
-    def generate_html(self, args, inputs):
-        """
-        csvのファイルパスから、
-        plotの折れ線グラフ画像のimageタグを作成する
-        """
-        p = self.generate_plot(args, inputs)
-
-        result = {}
-
-        script1, div1  = components(p)
-
-        result['script'] = script1
-        result['div'] = div1
-        result['js'] = CDN.js_files[0]
-        result['css'] = CDN.css_files[0]
-
-        return result
-
-    def generate_plot(self, args, inputs):
+    def plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotの散布図を作成する
@@ -1055,8 +1015,8 @@ class CsvToScatter(VisualizersCommand):
         color = self.color_gen()
         unique_data = df[args.get('data_column')].unique().tolist()
 
-        if len(args.get('data')) > 0:
-            unique_data = args.get('data')
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
 
         for datum in unique_data:
             df_select_datum = df[df[args.get('data_column')]==datum][start:end]
@@ -1124,29 +1084,17 @@ class CsvToScatter(VisualizersCommand):
 #
 #         return img_html
 
-class CsvToBoxplot(VisualizersCommand):
+class CsvToBoxplotCommand(VisualizersBokehPlot):
+    """
+    厳密にはbokehを直接は使っていない
+    holoviewsというbokehやmatplotlibをラップしたライブラリを使用している
+    bokehをラップしているので、bokehのメソッドを使える。
+    なので、VisualizersBokehPlotをオーバーライドしている
+    """
     def __init__(self):
         super().__init__()
 
-    def generate_html(self, args, inputs):
-        """
-        csvのファイルパスから、
-        plotの折れ線グラフ画像のimageタグを作成する
-        """
-        p = self.generate_plot(args, inputs)
-
-        result = {}
-
-        script1, div1  = components(p)
-
-        result['script'] = script1
-        result['div'] = div1
-        result['js'] = CDN.js_files[0]
-        result['css'] = CDN.css_files[0]
-
-        return result
-
-    def generate_plot(self, args, inputs):
+    def plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotの箱ひげ図を作成する
@@ -5310,7 +5258,7 @@ commands = {
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
     'csvtolinegraph': CsvToLineGraphCommand(),
-    'csvtohistogram': CsvToHistogram(),
-    'csvtoscatter': CsvToScatter(),
-    'csvtoboxplot': CsvToBoxplot()
+    'csvtohistogram': CsvToHistogramCommand(),
+    'csvtoscatter': CsvToScatterCommand(),
+    'csvtoboxplot': CsvToBoxplotCommand()
 }

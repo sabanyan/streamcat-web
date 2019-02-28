@@ -27,6 +27,7 @@ export default class ParamSelect extends Param {
 
     const labels = param.options.labels
     const values = param.options.values
+    const multiple = param.options.multiple
 
     const options = labels.map((label,index)=>{return <option value={values[index]}>{label}</option>})
 
@@ -34,7 +35,7 @@ export default class ParamSelect extends Param {
       <label className={style.label}>
         {param.label}
       </label>
-      <select name={param.name} defaultValue={defaultValue} ref={inputRef} className={"form-control"}>
+      <select name={param.name} defaultValue={defaultValue} ref={inputRef} className={"form-control"} multiple={multiple}>
         {options}
       </select>
     </div>

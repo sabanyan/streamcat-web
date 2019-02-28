@@ -3,7 +3,7 @@ import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
 import flowListStyle from '../shared/List/FlowList/style.scss'
-import HttpUtil from '../../utils/HttpUtil'
+import APIUtil from '../../utils/APIUtil'
 import FlowList from '../shared/List/FlowList'
 import FlowListHeader from '../shared/List/FlowList/FlowListHeader'
 import ModalManager from '../shared/ModalManager'
@@ -15,6 +15,8 @@ import Button from '../shared/Button'
 import TextField from '../shared/TextField'
 import FileUploader from '../shared/FileUploader'
 import { FlowListDataType } from '../../types'
+import ProjectInspector from '../shared/Inspector/ProjectInspector'
+import FlowInspector from '../shared/Inspector/FlowInspector'
 
 /**
  * ======================================================
@@ -43,8 +45,8 @@ export default class FlowListContainer extends React.Component<Props,State> {
       is_finished: false,
       flow_name: '',
       upload_file: {
-
-      }
+      },
+      selected_flow:null
     }
   }
 
@@ -55,9 +57,11 @@ export default class FlowListContainer extends React.Component<Props,State> {
 
   clearKeyword(){
     this.setState({
-      keyword: ''
+      keyword: '',
+      selected_flow: null
     })
-    document.querySelector("input[type=text]").value="";
+    const target = document.querySelector("input[type=text]")
+    if(target)target.value="";
   }
 
   registerModal () {
@@ -66,7 +70,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
       id: Constants.modal.ADD_FLOW, onClickDone: () => {
         const {flow_name} = this.state
         const {uuid,label} = this.state.upload_file
-        HttpUtil.post('flows', {
+        APIUtil.post('flows', {
           name: flow_name,
           project_uuid: inject_project_uuid,
           datasource: {
@@ -85,7 +89,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
 
   getFlowList () {
     this.setState({is_loading: true})
-    HttpUtil.get('flows', {project: inject_project_uuid}).then((response) => {
+    APIUtil.get('flows', {project: inject_project_uuid}).then((response) => {
       const json = response.data
       this.setState(
         {is_loading: false, is_finished: true, flow_list: json.data})
@@ -104,8 +108,13 @@ export default class FlowListContainer extends React.Component<Props,State> {
       }
       return (flow.label.indexOf(keyword) != -1) ? true : false
     }).map((flow, index) => {
-      return <FlowList key={index} flow={flow} href={'./flows/' + flow.uuid}>
-        <a href="#" onClick={() => this.onClickDelete(flow.uuid)}>削除</a>
+      const selected = (this.state.selected_flow === flow)
+      return <FlowList key={index}
+                       flow={flow}
+                       href={'./flows/' + flow.uuid}
+                       selected={selected}
+                       onClickFlow={(e,flow)=>this.onClickFlow(e,flow)}>
+        {/*<a href="#" onClick={() => this.onClickDelete(flow.uuid)}>削除</a>*/}
       </FlowList>
     })
   }
@@ -125,6 +134,10 @@ export default class FlowListContainer extends React.Component<Props,State> {
     </div>
   }
 
+  onClickFlow(e,flow){
+    this.setState({selected_flow:flow})
+  }
+
   onChangeKeyword (e:SyntheticInputEvent<EventTarget>) {
     this.setState({keyword: e.target.value})
   }
@@ -140,7 +153,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
     const selectedFiles:FileList =  e.target.files
     if(selectedFiles){
       const uploadFile:File = selectedFiles[0]
-      HttpUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
+      APIUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
         const json = response.data
         console.log(json)
         this.setState({upload_file:{
@@ -148,9 +161,6 @@ export default class FlowListContainer extends React.Component<Props,State> {
             uuid:json.data.uuid,
             label:json.data.label
           }})
-
-
-
       })
     }
   }
@@ -173,10 +183,33 @@ export default class FlowListContainer extends React.Component<Props,State> {
     })
   }
 
+  onClickDuplicate (flow_uuid:string){
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        const data = {
+          original_flow_uuid: flow_uuid
+        }
+        APIUtil.post('flows',data).then((response) => {
+          this.getFlowList()
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        })
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '複製する',
+      danger: false,
+      content: <div>
+        選択されたフローを複製しますか？
+      </div>,
+    })
+  }
+
   onClickDelete (flow_uuid:string) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        HttpUtil.delete('flows/' + flow_uuid).then((response) => {
+        APIUtil.delete('flows/' + flow_uuid).then((response) => {
           this.getFlowList()
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         })
@@ -190,6 +223,17 @@ export default class FlowListContainer extends React.Component<Props,State> {
       content: <div>
         選択されたフローを削除しますか？
       </div>,
+    })
+  }
+
+  onBlurTitle(e){
+    const flow = this.state.selected_flow
+    APIUtil.put("flows/" + flow.uuid,{
+      label: e.target.value
+    }).then((response)=>{
+      this.getFlowList()
+    },(error)=>{
+
     })
   }
 
@@ -213,6 +257,13 @@ export default class FlowListContainer extends React.Component<Props,State> {
     </a>
   }
 
+  renderInspector(){
+    return <FlowInspector flow={this.state.selected_flow}
+                          onClickDelete={(uuid)=>this.onClickDelete(uuid)}
+                          onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}
+                          onBlurTitle={(e)=>this.onBlurTitle(e)}/>
+  }
+
   renderAll () {
     if (this.isEmptyFlowList()) {
       return this.renderEmptyState()
@@ -223,14 +274,17 @@ export default class FlowListContainer extends React.Component<Props,State> {
       {this.renderFlowListHeader()}
       {this.renderFlowList()}
       {this.renderNewFlow()}
+      {this.renderInspector()}
     </div>
   }
 
   render () {
-    return <div className={'container mt-40px'}>
+    return <div className={style.inspector_list_container}>
+      <div className={'container mt-40px'}>
       <Loader absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
       <ModalManager/>
+    </div>
     </div>
   }
 }

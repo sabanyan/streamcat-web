@@ -40,6 +40,13 @@
   &:first-child,&:last-child{
     border-bottom: 1px solid $kskp-list-border-color;
   }
+  cursor: pointer;
+}
+
+.selected{
+  .project_list{
+    background: #fafafa;
+  }
 }
 
 .name{
