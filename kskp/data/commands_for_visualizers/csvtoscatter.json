@@ -68,7 +68,7 @@
       "options":{
         "multiple": false
       },
-      "label": "x軸に表示する列名"
+      "label": "x軸に表示する項目"
     },
     {
       "name": "y_axis",
@@ -76,7 +76,7 @@
       "options":{
         "multiple": false
       },
-      "label": "y軸に表示する列名"
+      "label": "y軸に表示する項目"
     },
     {
       "name": "data_column",
@@ -85,15 +85,6 @@
         "multiple": false
       },
       "label": "ビジュアライズ対象の項目が入っている列名"
-    },
-    {
-      "name": "data",
-
-      "type": "column",
-      "options":{
-        "multiple": true
-      },
-      "label": "ビジュアライズ対象の項目（空の場合は全て表示）"
     }
   ],
   "url": ""
