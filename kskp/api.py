@@ -1021,17 +1021,10 @@ def handle_bad_request(error):
 
 # visualize用のエンドポイント
 # _init_.pyのappをインポートして此方で定義する（色々やりやすいので）
-# flowの場合はflow_uuid、commandの場合はcommand_idをクエリパラメータとする
-# ひとまず今はframeのuuidが来ることを想定、ファイルそのものはこない。なのでcontent-typeはapplication/json
 @app.route('/visualizers', methods=['POST'])
 def visualizer():
 
     from .engine.core3 import internal_commands, Job, Step
-    from bs4 import BeautifulSoup
-
-    html_name = request.json.get('inputs')['i'] + '_' + request.args.get('from')
-    visualize_path = Path('kskp/templates/visualize/%s.html' % html_name)
-
     # visualizeコマンドの実行
     ### ここから
     # ここから
@@ -1043,18 +1036,13 @@ def visualizer():
     job = Job(new_step, new_inputs)
     # ここまでがengine.executeのparse部分にあたる
 
-    result = job.execute()
+    result = job.execute()['o']
     job.dtor()
     ### ここまでがengine.execute部分にあたる
 
-    # htmlの中身の作成（テンプレのhtmlを元に作成する）
-    template_soup = BeautifulSoup(Path('kskp/templates/visualize.html').read_text(encoding='utf-8'), 'html.parser')
-    soup = BeautifulSoup(result['o'], 'html.parser')
-    div_tag = template_soup.find('div', id='visualize')
-    div_tag.replace_with(soup)
-
-    # htmlの作成
-    with open(visualize_path.as_posix(), 'w') as f:
-        f.write(template_soup.prettify())
-
-    return render_template('visualize/%s.html' % html_name)
+    # テーブルコマンド
+    if request.args.get('from') == 'csvtohtmltable':
+        return render_template("visualize_table.html", header=result['header'], reader=result['reader'])
+        
+    # bokehのコマンド
+    return render_template("visualize_component.html", script=result['script'], div=result['div'])

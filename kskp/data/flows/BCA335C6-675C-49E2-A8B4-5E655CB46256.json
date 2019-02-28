@@ -13,7 +13,7 @@
     {
       "position": {
         "x": 99,
-        "y": 119
+        "y": 118
       },
       "size": {
         "width": 38,
@@ -24,6 +24,8 @@
       "id": "i",
       "type": "frame",
       "uuid": "B9709397-7ABF-490A-A983-264FE88DF2C5",
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -64,6 +66,8 @@
       "id": "t",
       "type": "frame",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -105,6 +109,8 @@
       "id": "o",
       "type": "frame",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -145,6 +151,8 @@
       "id": "o2",
       "type": "frame",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -161,6 +169,8 @@
       "id": "o4",
       "type": "frame",
       "uuid": "b97ee374-5b84-48ab-b971-046858937ccb",
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -202,6 +212,8 @@
       "id": "o3",
       "type": "frame",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     }
   ]
