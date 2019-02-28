@@ -191,6 +191,27 @@ class Job:
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
             self.lasts = output
 
+            def connect_subflow_output_with_cache(cache_uuid, port, p_job):
+                """
+                指定したjobsの中に、指定したoutput_port（この場合はcacheするdatumにつながるport）をdstsとして持つstepを探し、
+                そのstepがコマンドであれば、argsに出力port及び値をセットし、
+                フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
+                """
+                for job in p_job.jobs:
+                    for c_port, c_datum_id in job.step.dsts.items():
+                        if c_datum_id == port:
+                            if job.step.is_command:
+                                p_job.lasts[c_datum_id].is_temp = False
+                            else:
+                                connect_subflow_output_with_cache(cache_uuid, c_port, job)
+
+            # キャッシュを作成するため、argsを書き換える
+            for p_port, datum_id in self.step.dsts.items():
+                for flow_and_datum, uuid in self.caches.items():
+                    cache_datum_id = flow_and_datum.split('.')[1]
+                    if datum_id == cache_datum_id:
+                        connect_subflow_output_with_cache(uuid, p_port, self)
+
             self.caches = self.aggregate_caches(cf.uuid)
 
             # 以下、一番てっぺんのflow
@@ -202,7 +223,17 @@ class Job:
             import sys
             import time
             sys.stderr.write('stt (' + time.strftime('%Y/%m/%d %H:%M:%S') + ') step[' + self.step.step_label + '(id: ' + self.step.step_id + ')]\n')
+
+            # コマンド用のキャッシュ（{port_id: cache_uuid}）をstepのdstsを使って作成する
+            # コマンド内部ではその情報をもとにcache_uuidをframe_uuidに設定する（cacheがあれば）
+            caches_output = {}
+            for flow_and_datum, uuid in self.caches.items():
+                caches_output[flow_and_datum.split('.')[1]] = uuid
+            caches_for_command = self.replace_ports(caches_output)
+            cf.caches = caches_for_command
+
             output = cf.execute(self.step.args, self.inputs)
+
             sys.stderr.write('end (' + time.strftime('%Y/%m/%d %H:%M:%S') + ')\n\n')
         # print('execute end:', cf, output)
 
@@ -313,6 +344,18 @@ class Job:
 
         return result
 
+    def replace_ports(self, output):
+        """
+        {datum_id: Value} → {port: Value}
+        """
+        result = {}
+        for dsts_o_port, dsts_datum_id in self.step.dsts.items():
+            for o_k, o_v in output.items():
+                if dsts_datum_id == o_k:
+                    result[dsts_o_port] = o_v
+
+        return result
+
     def get_datum(self, datum_id, datum):
         if datum.uuid is not None: return datum
 
@@ -363,11 +406,26 @@ class Job:
         return result
 
     def check_multi_use(self, job, datum_id, datum):
+
         job_ports = self.dst_job_ids(datum_id)
 
         if len(job_ports) >= 2:
-            if not isinstance(datum.source, NysolPythonSource):
+            # if not isinstance(datum.source, NysolPythonSource):
+
+            # datum_idを生み出しているjobが対象のcachesを持っているので、
+            # src_job_fromでjobを探してくる!!!!!!!!
+            src_job, src_port = self.src_job_from(datum_id)
+            caches = src_job.caches
+
+            # cachesがない場合
+            if len(caches) == 0:
                 datum.command_to_file()
+            else:
+                # cachesがある場合
+                for flow_and_datum, uuid in caches.items():
+                    cache_datum_id = flow_and_datum.split('.')[1]
+                    if cache_datum_id == datum_id:
+                        datum.command_to_file(uuid)
 
             for j, port in job_ports.items():
                 if j != job:
@@ -455,6 +513,7 @@ class Command:
         self.i_ports = []
         self.o_ports = []
         self.description = ''
+        self.caches = {}
 
     def execute(self, args, inputs):
         pass
@@ -491,7 +550,14 @@ class UnixCommand(Command):
                  isinstance(input.source, NysolPythonSource):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
-        frame = Frame(str(uuid.uuid4()), source)
+
+        frame = None
+        if len(self.caches) > 0 and self.caches.get(self.out_key) is not None:
+            frame = Frame(self.caches.get(self.out_key) , source)
+            frame.is_temp = False
+        else:
+            frame = Frame(str(uuid.uuid4()) , source)
+
         return { self.out_key: frame }
 
     def source(self, args, inputs):
@@ -1194,8 +1260,28 @@ class Msel(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
+
         # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        # return { self.out_key:  Frame(frame_uuid, source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -1319,8 +1405,25 @@ class Mselstr(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2168,8 +2271,25 @@ class Mcommon(MCommandNew):#new
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2245,8 +2365,25 @@ class Mnrcommon(MCommandNew):#new
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2565,8 +2702,25 @@ class Mbest(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2610,8 +2764,25 @@ class Mdelnull(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2690,8 +2861,25 @@ class Mselnum(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2734,8 +2922,25 @@ class Mselrand(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
