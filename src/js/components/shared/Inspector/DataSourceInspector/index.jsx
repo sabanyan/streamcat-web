@@ -152,7 +152,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const param = {
         type:"frame",
         uuid: selected_step.uuid,
-        ext:"csv"
+        ext:"csv",
+        label: selected_step.label
     }
     APIUtil.get("files",param).then((response)=>{
       let props:CSVModelProps = {
