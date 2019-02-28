@@ -84,6 +84,7 @@ export type ToolBarButtonType={
   disabled: boolean;
   icon: string;
   is_paper_toolbar_button: boolean;
+  style: object;
 }
 
 export type ZoomToolBarButtonType = {
