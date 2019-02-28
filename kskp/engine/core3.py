@@ -630,8 +630,9 @@ class CsvToLineGraphCommand(VisualizersBokehPlot):
         color = self.color_gen()
         unique_data = df[args.get('data_column')].unique().tolist()
 
-        if len(args.get('data')) > 0:
-            unique_data = args.get('data')
+        # クエリ
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
 
         # データ名が入っている列が存在する場合（クロス表）
         for datum in unique_data:
@@ -702,8 +703,8 @@ class CsvToHistogramCommand(VisualizersBokehPlot):
         color = self.color_gen()
         unique_data = df[args.get('data_column')].unique().tolist()
 
-        if len(args.get('data')) > 0:
-            unique_data = args.get('data')
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
 
         for datum in unique_data:
             hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('x_axis')][start:end].tolist(),
@@ -821,8 +822,8 @@ class CsvToScatterCommand(VisualizersBokehPlot):
         color = self.color_gen()
         unique_data = df[args.get('data_column')].unique().tolist()
 
-        if len(args.get('data')) > 0:
-            unique_data = args.get('data')
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
 
         for datum in unique_data:
             df_select_datum = df[df[args.get('data_column')]==datum][start:end]

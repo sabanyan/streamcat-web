@@ -60,9 +60,9 @@
       "name": "x_axis",
       "type": "column",
       "options":{
-        "multiple": false
+        "multiple": true
       },
-      "label": "x軸に表示する列名"
+      "label": "x軸に表示する項目"
     },
     {
       "name": "y_axis",
@@ -70,7 +70,7 @@
       "options":{
         "multiple": false
       },
-      "label": "y軸に表示する列名"
+      "label": "y軸に表示する項目"
     }
   ],
   "url": ""
