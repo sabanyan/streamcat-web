@@ -1759,6 +1759,12 @@ class Mnewnumber(MCommandNew):
         self.params.append(Parameter('S', '開始数値/アルファベット(大文字)'))
         self.params.append(Parameter('l', '作成するデータ行数'))
 
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
+
 class MnewnumberOld(MCommand):
     def __init__(self):
         super().__init__()
@@ -1780,6 +1786,12 @@ class Mnewrand(MCommandNew):
         self.params.append(Parameter('l', '作成するデータ行数'))
         self.params.append(Parameter('S', '乱数の種を指定する'))
 
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
+
 class MnewrandOld(MCommand):
     def __init__(self):
         super().__init__()
@@ -1800,6 +1812,12 @@ class Mnewstr(MCommandNew):
         self.params.append(Parameter('v', '新しく作成する文字列'))
         self.params.append(Parameter('l', '作成するデータ行数'))
 
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
+        
 class MnewstrOld(MCommand):
     def __init__(self):
         super().__init__()
