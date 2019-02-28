@@ -297,6 +297,8 @@ class TempPathFileSource(PathFileSource):
     def __repr__(self):
         return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
+import nysol.mcmd as nm
+
 class Datum:
     """
     データ全般を表すクラス
@@ -327,9 +329,19 @@ class Datum:
             s.dtor()
             if isinstance(s, PathFileSource):
                 if self.is_temp and s.fullpath.exists():
-                    pass
-                    # s.fullpath.unlink()
-
+                    # pass
+                    s.fullpath.unlink()
+            else:
+                fullpath = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '.csv')
+                if fullpath.exists():
+                    if self.is_temp:
+                        fullpath.unlink()
+                    else:
+                        sjis_path = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '_sjis' + '.csv')
+                        command_path = Path('./kskp/engine/commands/pcmd/utf8_to_cp932.sh')
+                        if command_path.exists():
+                            command_str = str(command_path) + ' o=' + str(sjis_path) + ' i=' + str(fullpath)
+                            subprocess.run(command_str.split())
 
 
 import os
@@ -346,10 +358,12 @@ class Frame(Datum):
         super().__init__(frame_uuid, source)
         self.label = '' # for debug
 
-    def command_to_file(self):
+    def command_to_file(self, frame_uuid=None):
         if self.source is not None and not isinstance(self.source, PathFileSource):
+            if frame_uuid is not None: self.uuid = frame_uuid
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
+
             if isinstance(self.source, NysolPythonSource):
                 self.source.save(new_source.fullpath.as_posix())
             else:
@@ -388,7 +402,7 @@ class Frame(Datum):
             for row in reader:
                 # 時間が足りなくてこんな風に実装してしまいました。。。
                 # ごめんなさい。。。
-                if count > 1000:                    
+                if count > 1000:
                     break
 
                 if first_row:

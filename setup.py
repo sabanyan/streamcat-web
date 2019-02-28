@@ -10,6 +10,10 @@ setup(
         'numpy',
         'scipy',
         'pandas',
-        'sklearn'
+        'sklearn',
+        'matplotlib',
+        'bs4',
+        'holoviews',
+        'bokeh'
     ],
 )

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+{% block content %}
+<script>
+</script>
+<div id="visualize">
+  <table class="s-tbl">
+  <TR>
+    {% for head in header %}
+    <TH>{{ head }}</TH>
+    {% endfor %}
+  </TR>
+
+  {% for row in reader %}
+  <TR>
+    {% for datum in row %}
+    <TD>{{ datum }}</TD>
+    {% endfor %}
+  </TR>
+  {% endfor %}
+
+  </table>
+</div>
+{% endblock %}

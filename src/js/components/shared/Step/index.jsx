@@ -14,12 +14,14 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
 import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel'
+import NoteStepModel from '../../../model/Step/NoteStepModel'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
 import type { StepModelType } from '../../../types'
 import CommandIcon from '../Icon/CommandIcon'
-import HttpUtil from '../../../utils/HttpUtil'
+import APIUtil from '../../../utils/APIUtil'
 import ErrorIcon from '../Icon/ErrorIcon'
+import Note from './Note'
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -110,7 +112,7 @@ export default class Step extends React.Component<Props, State> {
       if (selected_step instanceof DataFrameStepModel) {
         if(selected_step.hasData()){
           //TODO 将来的にはページングなどの対応が必要
-          HttpUtil.get("frames/" + selected_step.uuid + "?offset=0&limit=1000").then((response)=>{
+          APIUtil.get("frames/" + selected_step.uuid + "?offset=0&limit=1000").then((response)=>{
             const json = response.data
             this.props.updateDataFrameDetail(json.data)
           })
@@ -274,6 +276,10 @@ export default class Step extends React.Component<Props, State> {
     return (model instanceof SubFlowStepModel)
   }
 
+  isNote (model: modelProps):boolean {
+    return (model instanceof NoteStepModel)
+  }
+
   getFilter () {
     // let filter = this.state.filter;
     // const step = this.props.model;
@@ -343,6 +349,11 @@ export default class Step extends React.Component<Props, State> {
           <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
+    }else if (this.isNote(step)) {
+      let model = step
+      icon = 
+      <Note hover={hover} selected={selected} model={step}></Note>
+      
     }
 
     const stepLabel = step.getLabel()
@@ -407,4 +418,16 @@ export const TextStyle = {
   height: 50,
   fontSize: 10,
   padding: 8
+}
+
+export const NoteStyle = {
+  x: 0,
+  y: 0,
+  tx: 0,
+  ty: 0,
+  width: Constants.default.note.width,
+  height: Constants.default.note.height,
+  rx: 0,
+  ry: 0,
+  strokeWidth: 2,
 }

@@ -15,6 +15,9 @@ import Button from '../shared/Button'
 import TextField from '../shared/TextField'
 import JobList from '../shared/List/JobList'
 import JobListHeader from '../shared/List/JobList/JobListHeader'
+import LibraryInspector from '../shared/Inspector/LibraryInspector'
+import APIUtil from '../../utils/APIUtil'
+import VisualizeModel from '../../model/Visualize/VisualizeModel'
 
 /**
  * ======================================================
@@ -27,6 +30,7 @@ type State = {
   job_list: [];
   is_loading: boolean;
   is_finished: boolean;
+  selected_data: {}
 }
 
 export default class LibraryListContainer extends React.Component<Props,State> {
@@ -37,6 +41,7 @@ export default class LibraryListContainer extends React.Component<Props,State> {
       job_list: [],
       is_loading: false,
       is_finished: false,
+      selected_data: null
     }
   }
 
@@ -49,7 +54,7 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     self.setState({is_loading: true})
 
 
-    HttpUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
+    APIUtil.get('jobs', {project: HttpUtil.getURLParam("project") }).then((response) => {
         const json = response.data
         self.setState(
           {is_loading: false, is_finished: true, job_list: json.data})
@@ -57,6 +62,17 @@ export default class LibraryListContainer extends React.Component<Props,State> {
         self.setState(
           {is_loading: false, is_finished: true, job_list: []})
     })
+
+    APIUtil.get('visualizers').then((response) => {
+      const json = response.data
+      const visualizers = json.data.map((visualize)=>{
+        return new VisualizeModel(visualize)
+      })
+      window.visualizers = visualizers
+      this.props.addMaster({visualizers: visualizers})
+    }).then((response) => {},
+      (error) => {console.log(error)})
+
   }
 
   renderJobListHeader () {
@@ -66,7 +82,11 @@ export default class LibraryListContainer extends React.Component<Props,State> {
   renderJobList () {
     const self = this
     return this.state.job_list.map((job, index) => {
-      return <JobList key={index} job={job}/>
+      const selected = (this.state.selected_data === job)
+      return <JobList key={index}
+                      job={job}
+                      selected={selected}
+                      onClickJob={(e,job)=>this.onClickJob(e,job)}/>
     })
   }
 
@@ -78,6 +98,11 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     </EmptyState>
   }
 
+  onClickJob(e,job){
+    console.log(job)
+    this.setState({selected_data:job})
+  }
+
   isEmptyFlowList () {
     if(!this.state.is_finished)return false
     if (!Array.isArray(this.state.job_list) || this.state.job_list.length ===
@@ -85,6 +110,11 @@ export default class LibraryListContainer extends React.Component<Props,State> {
       return true
     }
     return false
+  }
+
+
+  renderInspector(){
+    return <LibraryInspector data={this.state.selected_data}/>
   }
 
   renderAll () {
@@ -95,14 +125,17 @@ export default class LibraryListContainer extends React.Component<Props,State> {
     return <div>
       {this.renderJobListHeader()}
       {this.renderJobList()}
+      {this.renderInspector()}
     </div>
   }
 
   render () {
-    return <div className={'container mt-40px'}>
+    return <div className={style.inspector_list_container}>
+      <div className={'container mt-40px'}>
       <Loader center={true} absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
       <ModalManager/>
+    </div>
     </div>
   }
 }

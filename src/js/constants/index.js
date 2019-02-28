@@ -37,20 +37,28 @@ const Constants = {
     command: {
       inputPortName:"i",
       outputPortName:"i",
+    },
+    note: {
+      width: (38 + 6 * 2) * 4,
+      height: (38 + 6 * 2) / 2,
+      padding: 15,
     }
   },
   step:{
     type:{
       command:"command",
       frame:"frame",
-      subflow:"flow"
+      subflow:"flow",
+      note:"note"
     }
   },
   param:{
     type:{
+      number:"number",
       string:"string",
       boolean:"boolean",
-      select:"select"
+      select:"select",
+      column:"column"
     }
   },
   data:{

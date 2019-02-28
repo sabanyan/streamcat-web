@@ -8,8 +8,7 @@ export default class ErrorUtil {
   constructor (message:string):Error {
     throw new Error(message)
   }
-
-  static showError(target,error){
+  static getErrorBody(error){
     let errorBody
     if(error.data["message"]){
       errorBody = <div className={"modal-server-error-text"}>
@@ -24,7 +23,11 @@ export default class ErrorUtil {
         {StringUtil.stripHtmlToText(error.request.responseText)}
       </div>
     }
+    return errorBody
+  }
 
+  static showError(target,error){
+    const errorBody = ErrorUtil.getErrorBody(error)
     const content = <div>
       <div>フローの実行中にエラーが発生しました。</div>
       {errorBody}

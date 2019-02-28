@@ -1,0 +1,90 @@
+{
+  "projectId": 1,
+  "label": "サブフロー実行テスト",
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "d1",
+        "type": "frame"
+      }
+    ]
+  ],
+  "params": [],
+  "description": "テスト",
+  "creator": "開発用",
+  "createdAt": "2018-12-14 10:44:27",
+  "nodes": [
+    {
+      "position": {
+        "x": 99,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "i",
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 295
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "d1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 213
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "c1",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "f": "customer",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    }
+  ]
+}
