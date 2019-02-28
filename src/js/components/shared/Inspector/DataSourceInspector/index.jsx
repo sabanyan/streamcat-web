@@ -14,6 +14,7 @@ import CommandSelector from '../../CommandSelector/index'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Graph from '../../../../utils/Graph'
 import APIUtil from '../../../../utils/APIUtil'
+import HttpUtil from '../../../../utils/HttpUtil'
 import type { DataFrameDetailType, StepModelType } from '../../../../types/index'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
@@ -62,6 +63,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
 
     FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
+
       //すでにデータが存在している場合
       if (selected_step.hasData()) {
         this.setState({
@@ -78,7 +80,9 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         this.setState({
           loading: true
         })
-        APIUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
+
+        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id
+        APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
             const uuid = response.data.name[0].uuid
@@ -122,17 +126,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   previewFromUUID(uuid:string,label:string){
     const {selected_data_source_detail} = this.props
     const selected_step = this.getSelectedStep()
-    //TODO 将来的にはページングなどの対応が必要
-    APIUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
-      const json = response.data
-      console.log(json)
-      let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
-      let contentTable = <div className="table-responsive">
-        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
-      </div>
 
+    //ヘッダー情報の取得
+
+    const getFrameHeaderURL = "frames/" + uuid
+    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
+      const headers = response.data.data
       const contents = this.props.mast.visualizers.map((visualize,index)=>{
-        const content = <Visualizer key={index} frame_uuid={uuid} visualize={visualize} params={{}}/>
+        const content = <Visualizer key={index + uuid} frame_uuid={uuid} visualize={visualize} params={{}} headers={headers}/>
         return {title: visualize.label,content:content,parentProps:this.props}
       })
 
@@ -146,6 +147,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         loading: false
       })
     })
+
   }
 
   onClickCSVDownload(e:Event){
@@ -213,6 +215,16 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
   }
 
+  getSelectedStep ():DataFrameStepModel {
+    let {selected_step_ids, nodes} = this.props
+    return Graph.getNode(nodes,selected_step_ids[0])
+  }
+
+  onHide(){
+//    this.saveNodes()
+//    this.saveFlowPorts()
+  }
+
   onChangeCacheCheck (e: Event) {
   
     let selected_step = this.getSelectedStep()
@@ -224,17 +236,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     
     let flow:FlowModel = this.props.flow
     this.props.updateFlow(flow)
-  }
-
-  getSelectedStep ():StepModelType {
-    let {selected_step_ids, nodes} = this.props
-    return Graph.getNode(nodes,selected_step_ids[0])
-  }
-
-  onHide(){
-//    this.saveNodes()
-//    this.saveFlowPorts()
-  }
+}
 
   onClickDeleteCache() {
     let {selected_step_ids, nodes, notify,dismissNotify} = this.props

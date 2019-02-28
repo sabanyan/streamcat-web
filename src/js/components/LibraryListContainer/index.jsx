@@ -17,6 +17,7 @@ import JobList from '../shared/List/JobList'
 import JobListHeader from '../shared/List/JobList/JobListHeader'
 import LibraryInspector from '../shared/Inspector/LibraryInspector'
 import APIUtil from '../../utils/APIUtil'
+import VisualizeModel from '../../model/Visualize/VisualizeModel'
 
 /**
  * ======================================================
@@ -61,6 +62,17 @@ export default class LibraryListContainer extends React.Component<Props,State> {
         self.setState(
           {is_loading: false, is_finished: true, job_list: []})
     })
+
+    APIUtil.get('visualizers').then((response) => {
+      const json = response.data
+      const visualizers = json.data.map((visualize)=>{
+        return new VisualizeModel(visualize)
+      })
+      window.visualizers = visualizers
+      this.props.addMaster({visualizers: visualizers})
+    }).then((response) => {},
+      (error) => {console.log(error)})
+
   }
 
   renderJobListHeader () {

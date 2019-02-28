@@ -304,14 +304,15 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     const undoDisabled = !(current - 1 >= 0)
     return <div>
       <div className={classnames(style.flow_toolbar)}>
-        <Note disabled={false} icon={'comment'} onClick={()=>this.onClickNote()}>メモ</Note>
+        <Save disabled={false} icon={'&#xE2C2'}
+          onClick={(e) => this.onClickSave(e)}>保存</Save>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(
                             e)}>データソースの追加</DataSourceImport>
-        <Save disabled={false} icon={'&#xE2C2'}
-              onClick={(e) => this.onClickSave(e)}>保存</Save>
+        
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
+        <Note disabled={false} icon={'comment'} onClick={()=>this.onClickNote()}>メモ</Note>
         {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}
         {/*<DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>*/}
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
