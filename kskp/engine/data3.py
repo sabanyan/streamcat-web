@@ -286,6 +286,8 @@ class TempPathFileSource(PathFileSource):
     def __repr__(self):
         return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
+import nysol.mcmd as nm
+
 class Datum:
     """
     データ全般を表すクラス
@@ -320,8 +322,16 @@ class Datum:
                     s.fullpath.unlink()
             else:
                 fullpath = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '.csv')
-                if self.is_temp and fullpath.exists():
-                    fullpath.unlink()
+                if fullpath.exists():
+                    if self.is_temp:
+                        fullpath.unlink()
+                    else:
+                        sjis_path = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '_sjis' + '.csv')
+                        command_path = Path('./kskp/engine/commands/pcmd/utf8_to_cp932.sh')
+                        if command_path.exists():
+                            command_str = str(command_path) + ' o=' + str(sjis_path) + ' i=' + str(fullpath)
+                            subprocess.run(command_str.split())
+
 
 import os
 import uuid
