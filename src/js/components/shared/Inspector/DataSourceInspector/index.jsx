@@ -129,7 +129,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
     //ヘッダー情報の取得
 
-    const getFrameHeaderURL = "frames/" + selected_step.uuid
+    const getFrameHeaderURL = "frames/" + uuid
     APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
 
 //      //TODO 将来的にはページングなどの対応が必要
