@@ -131,18 +131,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
     const getFrameHeaderURL = "frames/" + uuid
     APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
-
-//      //TODO 将来的にはページングなどの対応が必要
-//      APIUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
-//        const json = response.data
-//        let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
-//        let contentTable = <div className="table-responsive">
-//          <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
-//        </div>
-//
-//      })
       const headers = response.data.data
-
       const contents = this.props.mast.visualizers.map((visualize,index)=>{
         const content = <Visualizer key={index + uuid} frame_uuid={uuid} visualize={visualize} params={{}} headers={headers}/>
         return {title: visualize.label,content:content,parentProps:this.props}

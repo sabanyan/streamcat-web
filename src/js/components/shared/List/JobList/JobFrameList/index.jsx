@@ -9,6 +9,7 @@ import moment from 'moment'
 import APIUtil from '../../../../../utils/APIUtil'
 import DataPreview from '../../../DataPreview'
 import ChartUtil from '../../../../../utils/ChartUtil'
+import Visualizer from '../../../Visualizer'
 
 type JobFrameProps = {
   type:string;
@@ -52,20 +53,42 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
   }
 
   onClickName(e:Event,uuid:string,name:string){
-    //TODO 将来的にはページングなどの対応が必要
-    APIUtil.get("frames/"+uuid + "?offset=0&limit=1000").then((response)=>{
-      const json = response.data
-      let contentGraph = <DataPreview key={uuid} json={json} title={name} uuid={uuid} />
-      let contentTable = <div className="table-responsive">
-        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={name} uuid={uuid} selected_data_source_detail={response.data.data}></DataTable>
-      </div>
+//    //TODO 将来的にはページングなどの対応が必要
+//    APIUtil.get("frames/"+uuid + "?offset=0&limit=1000").then((response)=>{
+//      const json = response.data
+//      let contentGraph = <DataPreview key={uuid} json={json} title={name} uuid={uuid} />
+//      let contentTable = <div className="table-responsive">
+//        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={name} uuid={uuid} selected_data_source_detail={response.data.data}></DataTable>
+//      </div>
+//      ModalUtil.emitModal({
+//        id: Constants.preview.DATASOURCE,
+//        visible: true,
+//        contents: [{title:"データの表示",content:contentTable},{title:"グラフの表示",content:contentGraph}],
+//        title: name,
+//      })
+//    })
+
+
+    const getFrameHeaderURL = "frames/" + uuid
+    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
+      const headers = response.data.data
+      const contents = window.visualizers.map((visualize,index)=>{
+        const content = <Visualizer key={index + uuid} frame_uuid={uuid} visualize={visualize} params={{}} headers={headers}/>
+        return {title: visualize.label,content:content,parentProps:this.props}
+      })
+
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
-        contents: [{title:"データの表示",content:contentTable},{title:"グラフの表示",content:contentGraph}],
-        title: name,
+        contents: contents,
+        title: name
+      })
+      this.setState({
+        loading: false
       })
     })
+
+
     e.preventDefault()
   }
 
