@@ -670,9 +670,12 @@ def delete_cache():
             frame_uuid = j['nodes'][i]['uuid']
             j['nodes'][i]['uuid'] = None
             j['nodes'][i]['cacheCreatedAt'] = None
-            # csvのファイル名をcahces_<flow_uuid>_<datum_uuid>に変更
+
+            # キャッシュを削除する（増え続けると困るので）
             frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
-            frame_path.rename(frame_name)
+            frame_path.unlink()
+            sjis_path = DATAFRAME_DIR_PATH / (frame_uuid + '_sjis.csv')
+            sjis_path.unlink()
 
     update_flow_by_uuid(p.stem, j)
 
