@@ -11,6 +11,7 @@ export type CommandParamType = {
   name: string;
   optional?: boolean;
   type: string;
+  default?: string|number;
 }
 
 export type SubFlowCommandParamType = {
@@ -84,6 +85,7 @@ export type ToolBarButtonType={
   disabled: boolean;
   icon: string;
   is_paper_toolbar_button: boolean;
+  style: object;
 }
 
 export type ZoomToolBarButtonType = {
