@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, session, request
+from bokeh.resources import INLINE
 
 app = Flask('kskp')
 
@@ -38,7 +39,9 @@ def flows():
 @app.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
 def flow_designer(flow_uuid):
-    return render_template('flow_designer.html',flow_uuid=flow_uuid)
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    return render_template('flow_designer.html',flow_uuid=flow_uuid,js_resources=js_resources,css_resources=css_resources)
 
 @app.route('/library', methods=['GET', 'POST'])
 @login_required

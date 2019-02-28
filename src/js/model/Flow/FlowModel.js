@@ -7,7 +7,7 @@ export type FlowModelProps = {
   label: string,
   nodes: [],
   params: [],
-  ports: [],
+  ports: [[],[]],
   projectId: ?number,
   description: string,
 }
@@ -17,13 +17,13 @@ export default class FlowModel<FlowModelProps> extends Model {
   creator = null
   label:string = ""
   params:[] = []
-  ports:[] = [[],[]]
+  ports:[[],[]] = [[],[]]
   nodes:[] = []
   projectId = null
   description = ""
 
   constructor (props: FlowModelProps) {
-    super(props)
+    super()
     this.initialize(props,"createdAt")
     this.initialize(props,"creator")
     this.initialize(props,"label")
@@ -42,46 +42,43 @@ export default class FlowModel<FlowModelProps> extends Model {
     return this.ports[1]
   }
 
-  getInPortWithId(id){
+  getInPortWithId(id:string){
     const inPorts = this.getInPorts()
     return inPorts.find((port)=>{
       return (port.name === id)
     })
   }
 
-  getOutPortWithId(id){
+  getOutPortWithId(id:string){
     const inPorts = this.getOutPorts()
     return inPorts.find((port)=>{
       return (port.name === id)
     })
   }
 
-  hasInPortWithId(id){
+  hasInPortWithId(id:string){
     return (this.getInPortWithId(id))?true:false
   }
 
-  hasOutPortWithId(id){
+  hasOutPortWithId(id:string){
     return (this.getOutPortWithId(id))?true:false
   }
-  deletePortWithId(type,id){
+  deletePortWithId(type:number,id:string){
     let targetPorts = (type === 0)?this.getInPorts():this.getOutPorts()
     this.ports[type] = targetPorts.filter((port)=>{
-      console.log(port.name)
-      console.log(id)
-      console.log((port.name !== id))
       return (port.name !== id)
     })
   }
 
-  deleteInPortWithId(id){
+  deleteInPortWithId(id:string){
     this.deletePortWithId(0,id)
   }
 
-  deleteOutPortWithId(id){
+  deleteOutPortWithId(id:string){
     this.deletePortWithId(1,id)
   }
 
-  setPort(type,port){
+  setPort(type:number,port){
     let targetPorts = (type === 0)?this.getInPorts():this.getOutPorts()
     let hasUpdate = false
     this.ports[type] = targetPorts.map((p)=>{
@@ -96,11 +93,11 @@ export default class FlowModel<FlowModelProps> extends Model {
     if(!hasUpdate)this.ports[type].push(port)
   }
 
-  setInPort(port){
+  setInPort(port:[]){
     this.setPort(0,port)
   }
 
-  setOutPort(port){
+  setOutPort(port:[]){
     this.setPort(1,port)
   }
 

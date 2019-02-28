@@ -1,0 +1,52 @@
+{
+  "projectId": 1,
+  "label": "ビジュアライズテスト用フロー",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2019-02-28 12:17:24",
+  "nodes": [
+    {
+      "position": {
+        "x": 183,
+        "y": 136
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "i",
+      "type": "frame",
+      "label": "折れ線グラフ用",
+      "uuid": "a7537b19-1da3-495e-92c4-16f7de0df68d",
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 225,
+        "y": 261
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "result2.csv",
+      "type": "frame",
+      "label": "散布図・箱ひげ・ヒストグラム用",
+      "uuid": "cf55a828-2d82-413c-8328-b9553e8b6d14",
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    }
+  ]
+}

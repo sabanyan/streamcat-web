@@ -8,8 +8,8 @@
   height: 100%;
   transition: opacity 0.2s linear, right 0.2s ease-in;
   opacity: 0;
-  box-shadow: 0 1px 3px $kskp-property-shadow;
   @extend .user-select;
+  box-shadow: 0 1px 3px $kskp-property-shadow;
 }
 
 .in {
@@ -49,6 +49,7 @@
 
 .property_body{
   padding: 16px;
+  padding-bottom: 64px;
   background-color: $kskp-property-background-color;
   min-height: 100%;
   label{
@@ -101,6 +102,14 @@
 }
 
 .flowInOut{
+  text-align: left;
+  label{
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.flowCacheCheck{
   text-align: left;
   label{
     margin: 0;
@@ -198,4 +207,65 @@
 
 .invalid input[type=text]{
   background: lighten(#F51F28,40%);
+}
+
+.file_list_table{
+  width: 100%;
+  th{
+    color: $kskp-text;
+    font-weight: normal;
+    border-bottom:1px solid $kskp-text;
+  }
+  th,td{
+    font-size: 14px;
+  }
+}
+
+.activity{
+  clear: both;
+  width: 100%;
+  .activity_log{
+    font-size: 14px;
+  }
+  .activity_user{
+    float:right;
+    font-size: 12px;
+    color: $kskp-text;
+  }
+  .activity_time{
+    float: left;
+    font-size: 12px;
+    color: $kskp-text;
+    margin-bottom: 8px;
+  }
+}
+
+.noDescription{
+  color: $kskp-gray;
+}
+
+.cache_ {
+  display: inline-block;
+}
+
+.cache_label {
+  display: inline-block;
+  color: $kskp-property-overview-label-color;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.cache_value {
+  display: inline-block;
+  color: $kskp-property-overview-value-color;
+  margin-bottom: 8px;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+.cache_delete {
+  float: right;
+  margin-top: 8px;
+  margin-left: 8px;
+
 }

@@ -54,12 +54,13 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
 
     sortedCommands = [...subflowSortedCommands,...sortedCommands]
 
+    //コマンドの絞り込み
     let operators = sortedCommands.filter((command:CommandModelType) => {
-      if(numberOfInput && command.ports){
+      //if(numberOfInput && command.ports){
         if(command.getInPorts().length === numberOfInput){
           return true
         }
-      }
+      //}
       return false
     }).filter((command:CommandModelType)=>{
       noOperators = false

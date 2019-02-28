@@ -5,6 +5,7 @@ import GraphModelSchema from '../schema/graph/GraphModelSchema.json'
 import CommandStepModelSchema from '../schema/steps/CommandStepModelSchema.json'
 import DataFrameStepModelSchema from '../schema/steps/DataFrameStepModelSchema.json'
 import SubFlowCommandModeSchema from '../schema/steps/SubFlowStepModelSchema.json'
+import NoteStepModelSchema from '../schema/steps/NoteStepModelSchema.json'
 
 import Log from './Log'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
@@ -12,6 +13,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import CommandStepModel from '../model/Step/CommandStepModel'
 import ValidateJS from 'validate.js'
 import CommandUtil from './CommandUtil'
+import NoteStepModel from '../model/Step/NoteStepModel.js';
 
 class Validator {
   ajv:Ajv
@@ -181,14 +183,14 @@ class Validator {
     // 同時に入力されている場合エラーになる
     //
     // この場合、tmpPath は skip_fnf の値が入っている場合、
-    // patternで指定した正規表現に基づきチェックが行われる
+    // tmpPath は patternで指定した正規表現に基づきチェックが行われる
     //
     // 使い方:
     // "rules":{
     //  "tmpPath":{
     //    "specifiedFormatIfTargetInput": {
     //        "target": "skip_fnf",
-    //        "pattern": "[a-z0-9]*",
+    //        "pattern": "[a-z0-9]",
     //        "message": "英数字で入力してください"
     //    }
     //  },
@@ -200,8 +202,8 @@ class Validator {
           if(options.target){
             const targetValue = attributes[options.target]
             if(targetValue){
-              const regexPattern = RegExp("/"+options.pattern+"/")
-              const valid = regexPattern.test(targetValue)
+              const regexPattern = RegExp(options.pattern)
+              const valid = regexPattern.test(attributes[key])
               if(!valid){
                 //正規表現が正しくない
                 return options.message
@@ -268,6 +270,8 @@ class Validator {
         schema = SubFlowCommandModeSchema
       }else if(node instanceof CommandStepModel){
         schema = CommandStepModelSchema
+      }else if(node instanceof NoteStepModel){
+        schema = NoteStepModelSchema 
       }
       const result = this.schemaValidate(schema,node)
       if(!result)success = false

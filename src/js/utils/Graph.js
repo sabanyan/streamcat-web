@@ -7,6 +7,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
 import FlowModel from '../model/Flow/FlowModel'
 import FlowUtil from './FlowUtil'
+import NoteStepModel from '../model/Step/NoteStepModel';
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -113,6 +114,19 @@ class Graph {
    */
   removeEdge (from_id:string, to_id:string, name:string) {
     this.g.removeEdge({v:from_id, w:to_id,name:name})
+  }
+
+  /**
+   * 全エッジの削除
+   * @param edges
+   */
+  removeAllEdges(edges:[]){
+    edges.forEach((edge)=>{
+      const from = edge.v
+      const to = edge.w
+      const portName = edge.name
+      this.removeEdge(from, to,portName)
+    })
   }
 
   /**
@@ -248,6 +262,8 @@ class Graph {
             dataSource: Constants.data.dataSource.csv,
             position: frame.position,
             size: frame.size,
+            makeCache: frame.makeCache,
+            cacheCreatedAt: frame.cacheCreatedAt
           }))
           if(frame.position && frame.size){
             hasPosition = true
@@ -305,6 +321,24 @@ class Graph {
           if(step.position && step.size){
             hasPosition = true
           }
+          break;
+        case Constants.step.type.note:
+          const note = node
+
+          model = {
+            id: note.id,
+            name: note.name,
+            label: note.label,
+            title: note.title,
+            content: note.content,
+            position: note.position,
+            type: note.type,
+            size: note.size,
+          }
+          node = new NoteStepModel(model)
+          newNodes.push(node)
+
+          break;
       }
     })
 

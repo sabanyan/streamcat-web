@@ -6,7 +6,7 @@ import Constants from '../../../../../constants'
 import ModalUtil from '../../../../../utils/ModalUtil'
 import DataTable from '../../../DataTable'
 import moment from 'moment'
-import HttpUtil from '../../../../../utils/HttpUtil'
+import APIUtil from '../../../../../utils/APIUtil'
 import DataPreview from '../../../DataPreview'
 import ChartUtil from '../../../../../utils/ChartUtil'
 
@@ -14,6 +14,8 @@ type JobFrameProps = {
   type:string;
   uuid:string;
   job: {};
+  onClickJob: Function;
+  selected: boolean;
 }
 
 type JobFrameState = {
@@ -34,7 +36,7 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
 
     let flowName = flowNames[uuid]
     if(flowName) return flowName
-    HttpUtil.get('flows/' + uuid + "?navigation=off").then((response) => {
+    APIUtil.get('flows/' + uuid + "?navigation=off").then((response) => {
       const json = response.data
       const label = json.data.label
       flowNames[uuid] = label
@@ -42,9 +44,16 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
     })
   }
 
+  onClick(e:Event){
+    const {job,onClickJob} = this.props
+    if(onClickJob){
+      onClickJob(e,job)
+    }
+  }
+
   onClickName(e:Event,uuid:string,name:string){
     //TODO 将来的にはページングなどの対応が必要
-    HttpUtil.get("frames/"+uuid + "?offset=0&limit=1000").then((response)=>{
+    APIUtil.get("frames/"+uuid + "?offset=0&limit=1000").then((response)=>{
       const json = response.data
       let contentGraph = <DataPreview key={uuid} json={json} title={name} uuid={uuid} />
       let contentTable = <div className="table-responsive">
@@ -61,7 +70,7 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
   }
 
   render () {
-    const {uuid,job} = this.props
+    const {uuid,job,selected} = this.props
 
     const dataframe = Object.keys(job.data).map(d=>{
       return <div>
@@ -73,7 +82,7 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
 
     let executedAt = moment(job.executedAt).format(Constants.format.dateTime)
 
-    return <div className={style.job_list}>
+    return <div className={classnames(style.job_list,{[style.selected]:selected})}  onClick={(e)=>this.onClick(e)}>
       <div className={style.executed_at}>{executedAt}</div>
       <div className={style.name}>
         {dataframe}

@@ -6,10 +6,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='iconfont/material-icons.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fontawesome.all.min.css') }}" />
     <title>{% block title %}{% endblock %}</title>
     {% endblock %}
 </head>
 <body>
+{% if css_resources and js_resources %}
+{{ css_resources | safe }}
+{{ js_resources | safe }}
+{% endif %}
 {% include "common/navbar.html" %}
 {% with messages = get_flashed_messages() %}
 {% if messages %}
