@@ -131,6 +131,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 },
               }],
           })
+          // cache 情報更新のため
+          this.updateCache()
           this.props.executeFlow()
         }
         this.loading = false
@@ -142,6 +144,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     })
   }
 
+  updateCache() {
+    APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
+      const json = response.data
+      this.props.loadFlowJSON(json)
+    })
+  }
   //
   // showError(error){
   //   let errorBody
