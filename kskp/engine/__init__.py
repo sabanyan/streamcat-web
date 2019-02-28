@@ -19,11 +19,18 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, step_paths=None, fr
     if flows_path is not None:
         os.environ['KENG_FLOWS_PATH'] = flows_path
 
-    job = parse(flow_uuid)
+    job = parse(flow_uuid, inputs=inputs, args=arguments)
     result = job.execute(step_paths=step_paths)
+
+    for datum in job.lasts.values():
+        datum.command_to_file().dtor()
     job.dtor()
 
-    return job.lasts
+    _result = {}
+    _result['outputs'] = job.lasts
+    _result['caches'] = job.caches
+
+    return _result
 
 
 def persist_to_files(job):

@@ -1,0 +1,69 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "NoteStepModelSchema.json",
+  "type": "object",
+  "required": [
+    "id",
+    "position",
+    "size",
+    "type",
+    "content"
+  ],
+  "properties": {
+    "id": {
+      "$id": "#/properties/id",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "position": {
+      "$id": "#/properties/position",
+      "type": "object",
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "$id": "#/properties/position/properties/x",
+          "type": "integer"
+        },
+        "y": {
+          "$id": "#/properties/position/properties/y",
+          "type": "integer"
+        }
+      }
+    },
+    "size": {
+      "$id": "#/properties/size",
+      "type": "object",
+      "required": [
+        "width",
+        "height"
+      ],
+      "properties": {
+        "width": {
+          "$id": "#/properties/size/properties/width",
+          "type": "integer"
+        },
+        "height": {
+          "$id": "#/properties/size/properties/height",
+          "type": "integer"
+        }
+      }
+    },
+    "type": {
+      "$id": "#/properties/type",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "title": {
+      "$id": "#/properties/title",
+      "type": "string"
+    },
+    "content": {
+      "$id": "#/properties/content",
+      "type": "string"
+    }
+  }
+}

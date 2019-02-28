@@ -8,12 +8,12 @@ from datetime import datetime, timedelta, timezone
 flow_obj_cache = {} # uuid: Jsonオブジェクト
 flows_cache = {} # uuid: Flowインスタンス
 
-def parse(flow_uuid):
+def parse(flow_uuid, inputs={}, args={}):
     global flow_obj_cache
     global flows_cache
     flow_obj_cache = {}
     flows_cache = {}
-    return parse_job(load_flow(flow_uuid), flow_uuid, {}, {}, {}, {})
+    return parse_job(load_flow(flow_uuid), flow_uuid, args, {}, {}, inputs)
 
 def load_flow(flow_uuid):
     if flow_uuid in flow_obj_cache:
@@ -36,8 +36,8 @@ def parse_job(obj, flow_uuid, args, srcs, dsts, inputs):
     step = Step(flow, args, srcs, dsts)
 
     # make subjobs
-    nodes = parse_nodes(obj)
-    jobs = parse_subjobs(nodes, data)
+    nodes, caches = parse_nodes(obj)
+    jobs = parse_subjobs(nodes, data, caches, flow_uuid)
 
     # make lasts
     lasts = parse_lasts(data, jobs)
@@ -90,26 +90,74 @@ def parse_datum(node_obj):
     return datum
 
 def parse_nodes(obj):
-    return [node for node in obj['nodes']
-                 if node['type'] in ['command', 'flow']]
+    nodes = []
+    caches = []
+    for node in obj['nodes']:
+        if node['type'] in ['command', 'flow']:
+            nodes.append(node)
+        elif node['type'] in ['frame']:
+            if node.get('makeCache'):
+                caches.append(node['id'])
 
-def parse_subjobs(nodes, data):
-    return [parse_subjob(node, data) for node in nodes]
+    return nodes, caches
+    # return [node for node in obj['nodes']
+    #              if node['type'] in ['command', 'flow']]
 
-def parse_subjob(node, data):
+def parse_subjobs(nodes, data, caches, flow_uuid):
+    return [parse_subjob(node, data, caches, flow_uuid) for node in nodes]
+
+def parse_subjob(node, data, caches, flow_uuid):
     t = node['type']
 
     args = node['args']
     srcs = node['srcs']
     dsts = node['dsts']
     inputs = parse_job_inputs(data, srcs)
+
+    cache_list = {}
+
+    import copy
+    command_args = copy.deepcopy(args)
+
     if t == 'command':
-        new_step = parse_command_step(node, args, srcs, dsts)
+        # キャッシュを作成するため、argsを書き換える
+        for p_port, datum_id in dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                command_args[p_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+
+        new_step = parse_command_step(node, command_args, srcs, dsts)
         new_job = Job(new_step, inputs)
     elif t == 'flow':
-        flow_uuid = node['uuid']
-        new_job = parse_job(load_flow(flow_uuid), flow_uuid, args, srcs, dsts, inputs)
+        sub_job_flow_uuid = node['uuid']
+        new_job = parse_job(load_flow(sub_job_flow_uuid), sub_job_flow_uuid, command_args, srcs, dsts, inputs)
+
+        # キャッシュを作成するため、argsを書き換える
+        for p_port, datum_id in dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
+
+    if len(cache_list) > 0:
+        new_job.caches = cache_list
+
     return new_job
+
+def connect_subflow_output_with_cache(cache_uuid, port, jobs):
+    """
+    指定したjobsの中に、指定したoutput_port（この場合はcacheするdatumにつながるport）をdstsとして持つstepを探し、
+    そのstepがコマンドであれば、argsに出力port及び値をセットし、
+    フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
+    """
+    for job in jobs:
+        for c_port, c_datum_id in job.step.dsts.items():
+            if c_datum_id == port:
+                if job.step.is_command:
+                    job.step.args[c_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+                else:
+                    connect_subflow_output_with_cache(cache_uuid, c_port, job.jobs)
 
 def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
@@ -127,6 +175,7 @@ class Job:
         self.inputs = {} if inputs is None else inputs
         self.lasts = {}
         self.jobs = []
+        self.caches = {}
         # self.errors = []
 
     # @profile
@@ -142,6 +191,31 @@ class Job:
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
             self.lasts = output
 
+            def connect_subflow_output_with_cache(cache_uuid, port, p_job):
+                """
+                指定したjobsの中に、指定したoutput_port（この場合はcacheするdatumにつながるport）をdstsとして持つstepを探し、
+                そのstepがコマンドであれば、argsに出力port及び値をセットし、
+                フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
+                """
+                for job in p_job.jobs:
+                    for c_port, c_datum_id in job.step.dsts.items():
+                        if c_datum_id == port:
+                            if job.step.is_command:
+                                p_job.lasts[c_datum_id].is_temp = False
+                                p_job.lasts[c_datum_id].uuid = cache_uuid
+                            else:
+                                connect_subflow_output_with_cache(cache_uuid, c_port, job)
+
+            # キャッシュを作成するため、argsを書き換える
+            for p_port, datum_id in self.step.dsts.items():
+                for flow_and_datum, uuid in self.caches.items():
+                    cache_datum_id = flow_and_datum.split('.')[1]
+                    if datum_id == cache_datum_id:
+                        connect_subflow_output_with_cache(uuid, p_port, self)
+
+            self.caches = self.aggregate_caches(cf.uuid)
+
+            # 以下、一番てっぺんのflow
             if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
                 for last in self.lasts.values():
                     last.is_temp = False
@@ -150,11 +224,94 @@ class Job:
             import sys
             import time
             sys.stderr.write('stt (' + time.strftime('%Y/%m/%d %H:%M:%S') + ') step[' + self.step.step_label + '(id: ' + self.step.step_id + ')]\n')
+
+            # コマンド用のキャッシュ（{port_id: cache_uuid}）をstepのdstsを使って作成する
+            # コマンド内部ではその情報をもとにcache_uuidをframe_uuidに設定する（cacheがあれば）
+            caches_output = {}
+            for flow_and_datum, uuid in self.caches.items():
+                caches_output[flow_and_datum.split('.')[1]] = uuid
+            caches_for_command = self.replace_ports(caches_output)
+            cf.caches = caches_for_command
+
             output = cf.execute(self.step.args, self.inputs)
+
             sys.stderr.write('end (' + time.strftime('%Y/%m/%d %H:%M:%S') + ')\n\n')
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
+
+    def aggregate_caches(self, flow_uuid):
+        self.link_caches(flow_uuid)
+        caches = self.get_caches()
+        self.replace_lasts_to_caches(flow_uuid)
+        return caches
+
+    def get_caches(self):
+        # flowの場合、配下のcachesを集めてきて、自分のcachesと合わせる
+        if self.step.is_flow:
+            for job in self.jobs:
+                self.caches.update(job.get_caches())
+
+        return self.caches
+
+    def link_caches(self, flow_uuid):
+        """
+        指定したflowにキャッシュ情報をつけて書き換える
+        """
+        current_flow_data = None
+        flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{flow_uuid}.json')
+
+        with open(flows_path, 'r', encoding='utf-8') as f:
+            # 1. 対象フローのJSONデータを取得する
+            current_flow_data = json.load(f)
+
+            # 2. 配下のjobのcachesを使ってflowのjsonを更新する
+            for job in self.jobs:
+                already_caches = []
+
+                # cachesを元に書き換えていく
+                for flow_uuid_and_step_id, cache_uuid in job.caches.items():
+                    target_flow_uuid = flow_uuid_and_step_id.split('.')[0]
+                    target_step_id = flow_uuid_and_step_id.split('.')[1]
+                    target_datum_uuid = cache_uuid
+
+                    # 更新対象のflowかどうか判断する
+                    if not flow_uuid == target_flow_uuid:
+                        break
+
+                    for node in current_flow_data['nodes']:
+                        # 指定したidかつ、そのuuidがnullの場合、キャッシュをフローのjsonに反映する
+                        if node['id'] == target_step_id:
+                            if node['uuid'] is None:
+                                node['uuid'] = target_datum_uuid
+                                JST = timezone(timedelta(hours=+9), 'JST')
+                                node['cacheCreatedAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
+                            else:
+                                # この後行われるget_caches()で纏められてしまうので、使わないcachesは削除しておく
+                                # job.cachesのfor文の外じゃないと削除できないので、一旦格納しておく
+                                already_caches.append(flow_uuid_and_step_id)
+                            break
+
+                # 使わないcachesの削除
+                for delete_cache in already_caches:
+                    del job.caches[delete_cache]
+
+        # 3. 最後にファイルに保存する
+        flows_path.write_text(json.dumps(current_flow_data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        # とりあえず何かを返しておく
+        return True
+
+    def replace_lasts_to_caches(self, flow_uuid):
+        """
+        lastsにあるdatumで、caches対象のdatumならば
+        datumのuuidをcacheのuuidに書き換える
+        """
+        for port, datum in self.lasts.items():
+            for flow_and_step, cache_uuid in self.caches.items():
+                if flow_and_step.split('.')[0] == flow_uuid and flow_and_step.split('.')[1] == port:
+                    datum.uuid = cache_uuid
+                    break
 
     def get_lasts_from(self, step_paths):
         result = {}
@@ -185,6 +342,18 @@ class Job:
                 for c_k, c_v in job.inputs.items():
                     if c_k == o_port['name']:
                         result[c_k] = c_v
+
+        return result
+
+    def replace_ports(self, output):
+        """
+        {datum_id: Value} → {port: Value}
+        """
+        result = {}
+        for dsts_o_port, dsts_datum_id in self.step.dsts.items():
+            for o_k, o_v in output.items():
+                if dsts_datum_id == o_k:
+                    result[dsts_o_port] = o_v
 
         return result
 
@@ -237,11 +406,27 @@ class Job:
                 result[d] = job.inputs[d]
         return result
 
-
     def check_multi_use(self, job, datum_id, datum):
+
         job_ports = self.dst_job_ids(datum_id)
+
         if len(job_ports) >= 2:
-            datum.command_to_file()
+            # if not isinstance(datum.source, NysolPythonSource):
+
+            # datum_idを生み出しているjobが対象のcachesを持っているので、
+            # src_job_fromでjobを探してくる!!!!!!!!
+            src_job, src_port = self.src_job_from(datum_id)
+            caches = src_job.caches
+
+            # cachesがない場合
+            if len(caches) == 0:
+                datum.command_to_file()
+            else:
+                # cachesがある場合
+                for flow_and_datum, uuid in caches.items():
+                    cache_datum_id = flow_and_datum.split('.')[1]
+                    if cache_datum_id == datum_id:
+                        datum.command_to_file(uuid)
 
             for j, port in job_ports.items():
                 if j != job:
@@ -267,8 +452,9 @@ class Job:
         for datum in self.inputs.values():
             datum.dtor()
 
-        for datum in self.lasts.values():
-            datum.command_to_file().dtor()
+        # engine_executeに移動
+        # for datum in self.lasts.values():
+        #     datum.command_to_file().dtor()
 
         for job in self.jobs:
             job.dtor()
@@ -328,6 +514,7 @@ class Command:
         self.i_ports = []
         self.o_ports = []
         self.description = ''
+        self.caches = {}
 
     def execute(self, args, inputs):
         pass
@@ -364,7 +551,14 @@ class UnixCommand(Command):
                  isinstance(input.source, NysolPythonSource):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
-        frame = Frame(str(uuid.uuid4()), source)
+
+        frame = None
+        if len(self.caches) > 0 and self.caches.get(self.out_key) is not None:
+            frame = Frame(self.caches.get(self.out_key) , source)
+            frame.is_temp = False
+        else:
+            frame = Frame(str(uuid.uuid4()) , source)
+
         return { self.out_key: frame }
 
     def source(self, args, inputs):
@@ -401,7 +595,547 @@ class Split(Command):
         frame2 = Frame(str(uuid.uuid4()), source2)
         return {'o1': frame1, 'o2': frame2}
 
+# visualize
+class VisualizersCommand(Command):
+    def __init__(self):
+        super().__init__()
+        self.i_ports = [{'name': 'i', 'type': 'frame'}]
+        self.o_ports = [{'name': 'o', 'type': 'html'}]
 
+    def execute(self, args, inputs):
+        # HTML作成
+        visualize_html = self.template_data(args, inputs)
+        return { self.out_key: visualize_html }
+
+    def template_data(self, args, inputs):
+        """ for override """
+        raise Exception()
+
+class VisualizersHtml(VisualizersCommand):
+    """
+    Bokehを使うコマンドと分けたかったのでとりあえず作成
+    とりあえず感が半端ない。。。
+    """
+    def __init__(self):
+        super().__init__()
+
+class VisualizersBokehPlot(VisualizersCommand):
+    """
+    Bokehを使うとき用
+    """
+    def __init__(self):
+        super().__init__()
+
+    def template_data(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+
+        return result
+
+    def generate_random_color(self):
+        """
+        ランダムに色を出力
+        bokehは色を指定しないといけないので（デフォルトだと全て同じ色になってしまう）
+        """
+        return '#{:X}{:X}{:X}'.format(*[random.randint(0, 255) for _ in range(3)])
+
+    def color_gen(self):
+        from bokeh.palettes import Category10
+        import itertools
+        yield from itertools.cycle(Category10[10])
+
+class CsvToHtmlTableCommand(VisualizersHtml):
+    def __init__(self):
+        super().__init__()
+
+    def template_data(self, args, inputs):
+        """
+        csvのファイルパスから、
+        HTMLのテーブル形式にして返す
+        """
+
+        file_path = inputs.get('i').source.fullpath
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        result = {}
+
+        # テーブル構造
+        with open(file_path, 'r') as f:
+            reader = csv.reader(f)
+            header = next(reader)
+
+            result['header'] = header
+
+            csv_list = list(reader)
+            start = offset
+            end = start + (limit if limit is not None else len(csv_list))
+
+            result['reader'] = csv_list[start:end]
+
+        return result
+
+# グラフ化に必要なものの準備
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+import holoviews as hv
+import random
+
+from bokeh.plotting import figure, ColumnDataSource
+from bokeh.resources import CDN
+from bokeh.embed import file_html,components
+from bokeh.models import HoverTool
+from bokeh.io import output_file, show
+from numpy import histogram
+
+# matplotlibでイメージを作成するクラス
+# class CsvToLineGraphCommand(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def generate_image(self, args, inputs):
+#         """
+#         ビジュアライズを描画、保存する。
+#         """
+#
+#         # plotの設定
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # dfの作成
+#         # index_colで指定しているものがx軸になる
+#         time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
+#         df = pd.read_csv(inputs.get('i').source.fullpath, index_col=args.get('x_axis'), parse_dates=time_series_column)
+#
+#         # offset対応
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtolinegraph'
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         return file_name
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotの折れ線グラフ画像のimageタグを作成する
+#         """
+#         image_file_name = self.generate_image(args, inputs)
+#         img_tag = '<img src="' + 'static/images/visualize/%s.png' % image_file_name + '">'
+#
+#         return img_tag
+
+#
+class CsvToLineGraphCommand(VisualizersBokehPlot):
+    def __init__(self):
+        super().__init__()
+
+    def plot(self, args, inputs):
+        """
+        ビジュアライズを描画、保存する。
+        """
+        # dfの作成
+        # index_colで指定しているものがx軸になる
+        time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
+        df = pd.read_csv(inputs.get('i').source.fullpath, parse_dates=time_series_column)
+
+        # offset対応
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        df = df.sort_values(args.get('x_axis_column'))
+
+        # 時系列表示設定
+        tooltip = '@' + args.get('x_axis_column')
+        tooltip_format = 'numeral'
+        type = 'auto'
+        if time_series_column:
+            # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
+            # それを防ぐために{%raw%}{%endraw%}で区切っている
+            tooltip = '{%raw%}@' + args.get('x_axis_column') + '{%F}{%endraw%}'
+            tooltip_format = 'datetime'
+            type = 'datetime'
+
+        # tooltipの設定
+        hover = HoverTool()
+
+        hover.tooltips = [
+            (args.get('x_axis_column'), tooltip),
+            (args.get('y_axis_column'), '@' + args.get('y_axis_column'))
+        ]
+        hover.formatters = {
+            args.get('x_axis_column'): tooltip_format
+        }
+        hover.mode='vline'
+
+        plot = figure(x_axis_type=type,
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'),
+                      plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'))
+
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
+
+        # クエリ
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
+
+        # データ名が入っている列が存在する場合（クロス表）
+        for datum in unique_data:
+            source = ColumnDataSource(df[df[args.get('data_column')]==datum][start:end])
+            plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'),
+                      legend=datum, alpha=args.get('alpha'), color=color.__next__(),
+                      source=source)
+
+        # データが列ごとに分かれている場合（クロス集計していない場合の表）
+        # for datum in args.get('data'):
+        #     source = ColumnDataSource(data={
+        #         args.get('x_axis_column'): df[args.get('x_axis_column')],
+        #         args.get('y_axis_column'): df[datum.get('name')]
+        #     })
+        #     plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
+        #               color=datum.get('color'), source=source)
+
+        plot.add_tools(hover)
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
+        # html = file_html(plot, CDN, 'myplot')
+
+        return plot
+
+class CsvToHistogramCommand(VisualizersBokehPlot):
+    def __init__(self):
+        super().__init__()
+
+    def plot(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotのヒストグラムを作成する
+        """
+
+        file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path)
+
+        # offset対応
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+
+        # ブロック句
+        # if not os.path.exists(file_path):
+        #     return ''
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        hover = HoverTool()
+        hover.tooltips = [
+            ('度数', '@top')
+        ]
+        hover.mode='vline'
+
+        plot = figure(plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'),
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'))
+
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
+
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
+
+        for datum in unique_data:
+            hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('x_axis')][start:end].tolist(),
+                                    bins=args.get('bins'), density=args.get('density'))
+            source = ColumnDataSource({'top':hist, 'left': edges[:-1], 'right': edges[1:]})
+            plot.quad(top='top', bottom=0, left='left', right='right',
+                      fill_alpha=args.get('alpha'), color=color.__next__(), legend=datum,
+                      source=source)
+
+        plot.add_tools(hover)
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
+        return plot
+
+# class CsvToHistogram(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotのヒストグラムを作成する
+#         """
+#
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtohistogram'
+#         file_path = inputs.get('i').source.fullpath
+#
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         # ブロック句
+#         if not os.path.exists(file_path):
+#             return ''
+#
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # indexで指定しているものがx軸になる
+#         df = pd.read_csv(file_path)
+#
+#         # offset対応
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, kind='hist', y=args.get('columns'), figsize=(args.get('x_inch'),args.get('y_inch')), bins=args.get('bins'), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+#
+#         return img_html
+
+class CsvToScatterCommand(VisualizersBokehPlot):
+    def __init__(self):
+        super().__init__()
+
+    def plot(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの散布図を作成する
+        """
+
+        file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path)
+
+        # offset対応
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+
+        # ブロック句
+        if not os.path.exists(file_path):
+            return ''
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        # y軸の設定はここ
+        # y軸はリスト型。インデックスでも列名でも大丈夫。
+        # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+
+        hover = HoverTool()
+        hover.tooltips = [
+            (args.get('x_axis'), '@x'),
+            (args.get('y_axis'), '@y')
+        ]
+
+        plot = figure(plot_width=args.get('x_size'),
+                      plot_height=args.get('y_size'),
+                      x_axis_label=args.get('x_label'),
+                      y_axis_label=args.get('y_label'),
+                      output_backend="webgl",
+                      title=args.get('graph_title'))
+
+        color = self.color_gen()
+        unique_data = df[args.get('data_column')].unique().tolist()
+
+        # if len(args.get('data')) > 0:
+        #     unique_data = args.get('data')
+
+        for datum in unique_data:
+            df_select_datum = df[df[args.get('data_column')]==datum][start:end]
+            source = ColumnDataSource({'x': df_select_datum[args.get('x_axis')], 'y': df_select_datum[args.get('y_axis')]})
+            plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'),
+                         color=color.__next__(), legend=datum, alpha=args.get('alpha'),
+                         source=source)
+
+        plot.add_tools(hover)
+        plot.legend.location = "top_right"
+        plot.legend.click_policy="hide"
+
+        return plot
+
+# class CsvToScatter(VisualizersCommand):
+#     def __init__(self):
+#         super().__init__()
+#
+#     def gererate_html(self, args, inputs):
+#         """
+#         csvのファイルパスから、
+#         plotの散布図を作成する
+#         """
+#
+#         file_name = inputs.get('i').source.file_name.replace('.csv','') + '_csvtoscatter'
+#         file_path = inputs.get('i').source.fullpath
+#
+#         offset = int(args.get('offset')) if args.get('offset') else 0
+#         limit = int(args.get('limit')) if args.get('limit') else None
+#
+#         # ブロック句
+#         if not os.path.exists(file_path):
+#             return ''
+#
+#         plt.style.use('ggplot')
+#         plt.legend(loc='best')
+#         plt.xlabel(args.get('x_axis'))
+#
+#         fig = plt.figure()
+#         ax = fig.add_subplot(1,1,1)
+#
+#         # indexで指定しているものがx軸になる
+#         df = pd.read_csv(file_path)
+#
+#         # offset対応
+#         start = offset
+#         end = start + (limit if limit is not None else len(df))
+#         df = df[start:end]
+#
+#         # ここstartがdfの最大行数を越えるとエラーが出る
+#         # if len(df) < start:
+#             # なんかする
+#             # pass
+#
+#         # y軸の設定はここ
+#         # y軸はリスト型。インデックスでも列名でも大丈夫。
+#         # csvで同名の列名があることがあるので、基本インデックスでいい気がする
+#         df.plot(ax=ax, kind='scatter', x=args.get('x_axis'), y=args.get('y_axis'), figsize=(args.get('x_inch'),args.get('y_inch')), alpha=args.get('alpha'))
+#
+#         # pngで保存
+#         img_path = 'kskp/static/images/visualize/%s.png' % file_name
+#         plt.savefig(img_path, dpi=200)
+#
+#         img_html = '<img src="' + 'static/images/visualize/%s.png' % file_name + '">'
+#
+#         return img_html
+
+class CsvToBoxplotCommand(VisualizersBokehPlot):
+    """
+    厳密にはbokehを直接は使っていない
+    holoviewsというbokehやmatplotlibをラップしたライブラリを使用している
+    bokehをラップしているので、bokehのメソッドを使える。
+    なので、VisualizersBokehPlotをオーバーライドしている
+    """
+    def __init__(self):
+        super().__init__()
+
+    def plot(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの箱ひげ図を作成する
+        """
+
+        file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path)
+
+        offset = int(args.get('offset')) if args.get('offset') else 0
+        limit = int(args.get('limit')) if args.get('limit') else None
+
+        # ブロック句
+        # if not os.path.exists(file_path):
+        #     return ''
+
+        # offset対応
+        start = offset
+        end = start + (limit if limit is not None else len(df))
+        df = df[start:end]
+
+        # ここstartがdfの最大行数を越えるとエラーが出る
+        # if len(df) < start:
+            # なんかする
+            # pass
+
+        # ここはbokehをラップしているライブラリのholoviewsを使っている
+        # bokehは書き方がめんどくさいため
+        hv.extension('bokeh')
+        x_label = args.get('x_label') if args.get('x_label') else ','.join(args.get('x_axis'))
+        y_label = args.get('y_label') if args.get('y_label') else args.get('y_axis')
+        title = args.get('graph_title')
+
+        boxwhisker = hv.BoxWhisker(df, kdims=args.get('x_axis'), vdims=args.get('y_axis'), label=title)
+        boxwhisker.opts(width=args.get('x_size'), height=args.get('y_size'), xlabel=x_label, ylabel=y_label)
+
+        renderer = hv.renderer('bokeh')
+        plot=renderer.get_plot(boxwhisker).state
+
+        return plot
+
+# mcommand
 class MCommand(UnixCommand):
 
     def command_args(self, args, inputs):
@@ -447,6 +1181,17 @@ class MCommandNew(UnixCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
+        # for datum_id, uuid in self.caches.items():
+
+            # command_path = Path('./kskp/engine/commands/pcmd/utf8_to_cp932.sh')
+            # frame_path = Path(os.environ['KENG_FRAMES_PATH']) / (uuid + '_sjis' + '.csv')
+            # command_str = command_path.as_posix() + ' o=' + frame_path.as_posix()
+            #
+            # sjis = None
+            # sjis <<= nm.m2tee(i=process_flow)
+            # sjis <<= nm.cmd(command_str)
+            # sjis.run()
+
         return NysolPythonSource('csv', self.nysol_mod, args, process_flow)
 
 import nysol.mcmd as nm
@@ -475,8 +1220,28 @@ class Msel(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
+
         # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        # return { self.out_key:  Frame(frame_uuid, source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -600,8 +1365,25 @@ class Mselstr(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -651,7 +1433,6 @@ class McalOld(MCommand):
 class Mcat(MCommandNew):
     def __init__(self):
         super().__init__(nm.m2cat)
-
         self.name = 'mcat'
         self.description = 'ファイル結合'
         self.i_ports = [{'name': '*', 'type': 'frame'}] # 何個でも取れる1
@@ -978,6 +1759,12 @@ class Mnewnumber(MCommandNew):
         self.params.append(Parameter('S', '開始数値/アルファベット(大文字)'))
         self.params.append(Parameter('l', '作成するデータ行数'))
 
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
+
 class MnewnumberOld(MCommand):
     def __init__(self):
         super().__init__()
@@ -999,6 +1786,12 @@ class Mnewrand(MCommandNew):
         self.params.append(Parameter('l', '作成するデータ行数'))
         self.params.append(Parameter('S', '乱数の種を指定する'))
 
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
+
 class MnewrandOld(MCommand):
     def __init__(self):
         super().__init__()
@@ -1018,6 +1811,12 @@ class Mnewstr(MCommandNew):
         self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
         self.params.append(Parameter('v', '新しく作成する文字列'))
         self.params.append(Parameter('l', '作成するデータ行数'))
+
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
 
 class MnewstrOld(MCommand):
     def __init__(self):
@@ -1144,7 +1943,7 @@ class Mnrjoin(MCommandNew):#new
         super().__init__(nm.mnrjoin)
 
         self.name = 'mnrjoin'
-        self.description = '参照ファイルのの複数範囲条件結合'
+        self.description = '参照ファイルの複数範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
@@ -1172,7 +1971,7 @@ class MnrjoinOld(MCommand):#new
     def __init__(self):
         super().__init__()
         self.name = 'mnrjoin'
-        self.description = '参照ファイルのの複数範囲条件結合'
+        self.description = '参照ファイルの複数範囲条件結合'
         self.i_ports = [{'name': 'i', 'type': 'frame'}, {'name': 'm', 'type': 'frame'}]
 
     def command_args(self, args, inputs):
@@ -1450,8 +2249,25 @@ class Mcommon(MCommandNew):#new
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -1527,8 +2343,25 @@ class Mnrcommon(MCommandNew):#new
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -1670,7 +2503,7 @@ class Mshare(MCommandNew):#edit
     def __init__(self):
         super().__init__(nm.mshare)
         self.name = 'mshare'
-        self.description = '構成費の計算'
+        self.description = '構成比の計算'
         self.params.append(Parameter('f', '指定列の構成比計算(必須)'))
         self.params.append(Parameter('k', '構成比計算の単位となる列名'))
 
@@ -1678,7 +2511,7 @@ class MshareOld(MCommand):#edit
     def __init__(self):
         super().__init__()
         self.name = 'mshare'
-        self.description = '構成費の計算'
+        self.description = '構成比の計算'
         self.params.append(Parameter('f', '指定列の構成比計算(必須)'))
         self.params.append(Parameter('k', '構成比計算の単位となる列名'))
 
@@ -1847,8 +2680,25 @@ class Mbest(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -1892,8 +2742,25 @@ class Mdelnull(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -1972,8 +2839,25 @@ class Mselnum(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2016,8 +2900,25 @@ class Mselrand(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -4137,7 +5038,7 @@ class NmCmd(MCommandNew):
 
 class SmlModeling(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
+        super().__init__('/home/kskp/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
         self.name = 'SmlModeling'
         self.description = 'デモ用モデリング'
 
@@ -4385,4 +5286,11 @@ commands = {
     'columns_to_rows': ColumnsToRows(),
     'groupby_columns': GroupbyColumns(),
     'utf8_to_cp932': Utf8ToCp932()
+}
+internal_commands = {
+    'csvtohtmltable': CsvToHtmlTableCommand(),
+    'csvtolinegraph': CsvToLineGraphCommand(),
+    'csvtohistogram': CsvToHistogramCommand(),
+    'csvtoscatter': CsvToScatterCommand(),
+    'csvtoboxplot': CsvToBoxplotCommand()
 }

@@ -26,12 +26,29 @@
     border:1px solid lighten($kskp-button-border,5%);
     transition: all 0.3s;
   }
+  &.primary{
+    border:1px solid darken($kskp-dark-gray,5%);
+    background: $kskp-dark-gray;
+    color: #fff!important;
+  }
+  &.primary:hover{
+    background-color: darken($kskp-dark-gray,5%);
+    border:1px solid lighten($kskp-dark-gray,5%);
+    transition: all 0.3s;
+  }
 }
 
 .text{
   top: -2px;
   position: relative;
   color: $kskp-text !important;
+  font-size: 12px;
+  display: inline-block;
+}
+.whiteText{
+  top: -2px;
+  position: relative;
+  color: #fff;
   font-size: 12px;
   display: inline-block;
 }

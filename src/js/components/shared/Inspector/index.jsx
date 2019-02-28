@@ -10,13 +10,15 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import CommandInspector from './CommandInspector/index'
 import Graph from '../../../utils/Graph'
 import FlowSettingsInspector from './FlowSettingsInspector'
+import NoteStepModel from '../../../model/Step/NoteStepModel'
+import NoteInspector from './NoteInspector'
 
 class Inspector extends React.Component<FlowEditorProps> {
 
   render () {
     let {selected_step_ids,nodes} = this.props
 
-    let property,show
+    let property
 
     if (selected_step_ids.length == 1) {
       if(selected_step_ids[0] === "flow"){
@@ -27,17 +29,17 @@ class Inspector extends React.Component<FlowEditorProps> {
           property = <DataSourceInspector {...this.props}></DataSourceInspector>
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector {...this.props}></CommandInspector>
+        } else if (selected_step instanceof NoteStepModel) {
+          property = <NoteInspector {...this.props}></NoteInspector>
         }
       }
-      show = true
     } else if (!selected_step_ids.length) {
-      show = false
+      property = <FlowSettingsInspector {...this.props}/>
     } else {
       property = <MultiInspector {...this.props}></MultiInspector>
-      show = true
     }
 
-    const property_class = classnames(style.property, {[style.in]: show})
+    const property_class = classnames(style.property, style.in)
 
     return <div className={property_class}>
       {property}
