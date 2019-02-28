@@ -202,6 +202,7 @@ class Job:
                         if c_datum_id == port:
                             if job.step.is_command:
                                 p_job.lasts[c_datum_id].is_temp = False
+                                p_job.lasts[c_datum_id].uuid = cache_uuid
                             else:
                                 connect_subflow_output_with_cache(cache_uuid, c_port, job)
 
@@ -1232,6 +1233,17 @@ class MCommandNew(UnixCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
+        # for datum_id, uuid in self.caches.items():
+
+            # command_path = Path('./kskp/engine/commands/pcmd/utf8_to_cp932.sh')
+            # frame_path = Path(os.environ['KENG_FRAMES_PATH']) / (uuid + '_sjis' + '.csv')
+            # command_str = command_path.as_posix() + ' o=' + frame_path.as_posix()
+            #
+            # sjis = None
+            # sjis <<= nm.m2tee(i=process_flow)
+            # sjis <<= nm.cmd(command_str)
+            # sjis.run()
+
         return NysolPythonSource('csv', self.nysol_mod, args, process_flow)
 
 import nysol.mcmd as nm
