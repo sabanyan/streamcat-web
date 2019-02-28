@@ -18,7 +18,7 @@ export default class ParamUtil {
     inputRefs.map((inputRef) => {
       switch (inputRef.param.type){
         case Constants.param.type.number:
-          args[inputRef.param.name] = (inputRef.element.value !== "")?parseInt(inputRef.element.value):""
+          args[inputRef.param.name] = (inputRef.element.value !== "")?parseInt(inputRef.element.value):null
           break
         case Constants.param.type.string:
           args[inputRef.param.name] = inputRef.element.value
