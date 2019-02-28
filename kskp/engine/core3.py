@@ -402,6 +402,7 @@ class Split(Command):
         frame2 = Frame(str(uuid.uuid4()), source2)
         return {'o1': frame1, 'o2': frame2}
 
+# visualize
 class VisualizersCommand(Command):
     def __init__(self):
         super().__init__()
@@ -410,12 +411,43 @@ class VisualizersCommand(Command):
 
     def execute(self, args, inputs):
         # HTML作成
-        visualize_html = self.gererate_html(args, inputs)
+        visualize_html = self.template_data(args, inputs)
         return { self.out_key: visualize_html }
 
-    def gererate_html(self, args, inputs):
+    def template_data(self, args, inputs):
         """ for override """
         raise Exception()
+
+class VisualizersHtml(VisualizersCommand):
+    """
+    Bokehを使うコマンドと分けたかったのでとりあえず作成
+    とりあえず感が半端ない。。。
+    """
+    def __init__(self):
+        super().__init__()
+
+class VisualizersBokehPlot(VisualizersCommand):
+    """
+    Bokehを使うとき用
+    """
+    def __init__(self):
+        super().__init__()
+
+    def template_data(self, args, inputs):
+        """
+        csvのファイルパスから、
+        plotの折れ線グラフ画像のimageタグを作成する
+        """
+        p = self.plot(args, inputs)
+
+        result = {}
+
+        script1, div1  = components(p)
+
+        result['script'] = script1
+        result['div'] = div1
+
+        return result
 
     def generate_random_color(self):
         """
@@ -429,12 +461,11 @@ class VisualizersCommand(Command):
         import itertools
         yield from itertools.cycle(Category10[10])
 
-# visualize
-class CsvToHtmlTableCommand(VisualizersCommand):
+class CsvToHtmlTableCommand(VisualizersHtml):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def template_data(self, args, inputs):
         """
         csvのファイルパスから、
         HTMLのテーブル形式にして返す
@@ -448,33 +479,22 @@ class CsvToHtmlTableCommand(VisualizersCommand):
         if not os.path.exists(file_path):
             return ''
 
+        result = {}
+
         # テーブル構造
-        table_of_html = '<table border="1">'
         with open(file_path, 'r') as f:
             reader = csv.reader(f)
             header = next(reader)
 
-            table_of_html += '<tr>'
-            for head in header:
-                table_of_html += '<th>'
-                table_of_html += head
-                table_of_html += '</th>'
-            table_of_html += '</tr>'
+            result['header'] = header
 
             csv_list = list(reader)
             start = offset
             end = start + (limit if limit is not None else len(csv_list))
 
-            for csv_row in csv_list[start:end]:
-                table_of_html += '<tr>'
-                for datum in csv_row:
-                    table_of_html += '<td>'
-                    table_of_html += datum
-                    table_of_html += '</td>'
-                table_of_html += '</tr>'
-        table_of_html += '</table>'
+            result['reader'] = csv_list[start:end]
 
-        return table_of_html
+        return result
 
 # グラフ化に必要なものの準備
 import matplotlib.pyplot as plt
@@ -549,11 +569,11 @@ from numpy import histogram
 #         return img_tag
 
 #
-class CsvToLineGraphCommand(VisualizersCommand):
+class CsvToLineGraphCommand(VisualizersBokehPlot):
     def __init__(self):
         super().__init__()
 
-    def generate_image(self, args, inputs):
+    def plot(self, args, inputs):
         """
         ビジュアライズを描画、保存する。
         """
@@ -633,23 +653,15 @@ class CsvToLineGraphCommand(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        script,div = components(plot)
-        return render_template("visualize_component.html",script=script,div=div)
+        # html = file_html(plot, CDN, 'myplot')
 
-    def gererate_html(self, args, inputs):
-        """
-        csvのファイルパスから、
-        plotの折れ線グラフ画像のimageタグを作成する
-        """
-        html = self.generate_image(args, inputs)
+        return plot
 
-        return html
-
-class CsvToHistogram(VisualizersCommand):
+class CsvToHistogramCommand(VisualizersBokehPlot):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotのヒストグラムを作成する
@@ -705,8 +717,7 @@ class CsvToHistogram(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        script,div = components(plot)
-        return render_template("visualize_component.html",script=script,div=div)
+        return plot
 
 # class CsvToHistogram(VisualizersCommand):
 #     def __init__(self):
@@ -761,11 +772,11 @@ class CsvToHistogram(VisualizersCommand):
 #
 #         return img_html
 
-class CsvToScatter(VisualizersCommand):
+class CsvToScatterCommand(VisualizersBokehPlot):
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotの散布図を作成する
@@ -824,8 +835,7 @@ class CsvToScatter(VisualizersCommand):
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
-        script,div = components(plot)
-        return render_template("visualize_component.html",script=script,div=div)
+        return plot
 
 # class CsvToScatter(VisualizersCommand):
 #     def __init__(self):
@@ -880,11 +890,17 @@ class CsvToScatter(VisualizersCommand):
 #
 #         return img_html
 
-class CsvToBoxplot(VisualizersCommand):
+class CsvToBoxplotCommand(VisualizersBokehPlot):
+    """
+    厳密にはbokehを直接は使っていない
+    holoviewsというbokehやmatplotlibをラップしたライブラリを使用している
+    bokehをラップしているので、bokehのメソッドを使える。
+    なので、VisualizersBokehPlotをオーバーライドしている
+    """
     def __init__(self):
         super().__init__()
 
-    def gererate_html(self, args, inputs):
+    def plot(self, args, inputs):
         """
         csvのファイルパスから、
         plotの箱ひげ図を作成する
@@ -923,9 +939,7 @@ class CsvToBoxplot(VisualizersCommand):
         renderer = hv.renderer('bokeh')
         plot=renderer.get_plot(boxwhisker).state
 
-        return file_html(plot, CDN, 'myplot')
-
-        return url
+        return plot
 
 # mcommand
 class MCommand(UnixCommand):
@@ -4900,7 +4914,7 @@ commands = {
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
     'csvtolinegraph': CsvToLineGraphCommand(),
-    'csvtohistogram': CsvToHistogram(),
-    'csvtoscatter': CsvToScatter(),
-    'csvtoboxplot': CsvToBoxplot()
+    'csvtohistogram': CsvToHistogramCommand(),
+    'csvtoscatter': CsvToScatterCommand(),
+    'csvtoboxplot': CsvToBoxplotCommand()
 }
