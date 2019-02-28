@@ -239,8 +239,6 @@ const Application = (state = initialState, action: {}) => {
         })
       }
 
-      console.log(add_step)
-
       newState.nodes.push(add_step)
       newState.graph = graph.getGraph(newState)
       break
