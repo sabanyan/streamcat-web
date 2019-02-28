@@ -236,6 +236,19 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 //    this.saveFlowPorts()
   }
 
+  onChangeCacheCheck (e: Event) {
+  
+    let selected_step = this.getSelectedStep()
+    if(selected_step.isMakeCache()) {
+      selected_step.setMakeCache(false)
+    } else {
+      selected_step.setMakeCache(true)
+    }
+    
+    let flow:FlowModel = this.props.flow
+    this.props.updateFlow(flow)
+}
+
   onClickDeleteCache() {
     let {selected_step_ids, nodes, notify,dismissNotify} = this.props
     
