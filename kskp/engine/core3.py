@@ -272,11 +272,6 @@ class Job:
                 # cachesを元に書き換えていく
                 for flow_uuid_and_step_id, cache_uuid in job.caches.items():
 
-                    # HOTFIX: バグなどによって実際のキャッシュファイルが存在しない場合、
-                    # そもそも処理を紐付け処理を行わない
-                    if not Path(os.environ['KENG_FRAMES_PATH']).joinpath(f'{cache_uuid}.csv').exists():
-                        continue
-
                     target_flow_uuid = flow_uuid_and_step_id.split('.')[0]
                     target_step_id = flow_uuid_and_step_id.split('.')[1]
                     target_datum_uuid = cache_uuid
