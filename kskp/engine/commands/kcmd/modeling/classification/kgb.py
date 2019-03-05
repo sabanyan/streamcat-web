@@ -2,12 +2,12 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Classification
+from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn.ensemble import GradientBoostingClassifier
 import pickle
 
 
-class Kgb(Classification):
+class CKgb(Classification):
     """
     勾配ブースティング(分類)クラスです。
     """
@@ -85,6 +85,6 @@ class Kgb(Classification):
         return
 
 if __name__=="__main__":
-    kgb=Kgb()
+    kgb=CKgb()
     kgb.main(sys.argv[1:])
     kgb.write()

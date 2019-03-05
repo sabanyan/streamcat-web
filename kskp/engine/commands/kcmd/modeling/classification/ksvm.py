@@ -2,11 +2,11 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Classification
+from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn import svm
 import pickle
 
-class Ksvm(Classification):
+class CKsvm(Classification):
     """
     サポートベクターマシン(分類)クラスです。
     """
@@ -68,6 +68,6 @@ class Ksvm(Classification):
         return
 
 if __name__=="__main__":
-    ksvm=Ksvm()
+    ksvm=CKsvm()
     ksvm.main(sys.argv[1:])
     ksvm.write()

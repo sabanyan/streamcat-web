@@ -2,11 +2,11 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Regression
+from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.linear_model import Ridge
 import pickle
 
-class Kridge(Regression):
+class RKridge(Regression):
     """
     ridge回帰クラスです
     """
@@ -79,6 +79,6 @@ class Kridge(Regression):
         return
 
 if __name__=="__main__":
-    kridge=Kridge()
+    kridge=RKridge()
     kridge.main(sys.argv[1:])
     kridge.write()

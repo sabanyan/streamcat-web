@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
@@ -11,8 +11,10 @@ type Props = {
     name: string;
     uuid: string;
   };
-  href: string;
   children: React.Node;
+  selected: boolean;
+  onClickProject: Function;
+  href: string;
 }
 
 export default class ProjectList extends React.Component<Props> {
@@ -21,16 +23,27 @@ export default class ProjectList extends React.Component<Props> {
     super(props)
   }
 
+  onClick(e:Event){
+    const {project,onClickProject} = this.props
+    if(onClickProject){
+      onClickProject(e,project)
+    }
+  }
+
   render () {
-    const {icon, href, children} = this.props
+    const {icon, children, selected,href} = this.props
     const {name, uuid, created_at, creator_name} = this.props.project
 
-    return <div className={style.project_list}>
+    return <div className={classnames(style.project,{[style.selected]:selected})} onClick={(e)=>this.onClick(e)}>
+      <div className={style.project_list}>
+      <div className={style.name}>
       <i className={classnames('material-icons', [style.icon])}>description</i>
-      <a className={style.name} href={href}>{name}</a>
+        <a href={href}>{name}</a>
+      </div>
       <div className={style.creator_name}>{creator_name}</div>
       <div className={style.created_at}>{created_at}</div>
       <div className={style.action}>{children}</div>
+    </div>
     </div>
   }
 

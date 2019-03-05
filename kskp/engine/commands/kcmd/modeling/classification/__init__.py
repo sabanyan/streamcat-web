@@ -1,12 +1,12 @@
-from .ksvm import Ksvm
-from .krf import Krf
-from .kgb import Kgb
-from .kdt import Kdt
-from .kab import Kab
-from .kbag import Kbag
-from .kneuralnet import Kneural_network
-from .knearest_neighbors import Knearest_neighbors
-from .kgaussian_nb import Kgaussian_nb
-from .klogreg import Klogreg
+from .ksvm import CKsvm
+from .krf import CKrf
+from .kgb import CKgb
+from .kdt import CKdt
+from .kab import CKab
+from .kbag import CKbag
+from .kneuralnet import CKneural_network
+from .knearest_neighbors import CKnearest_neighbors
+from .kgaussian_nb import CKgaussian_nb
+from .klogreg import CKlogreg
 #print("load classification")
 #__all__=["ksvm"]

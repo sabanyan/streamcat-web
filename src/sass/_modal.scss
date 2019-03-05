@@ -1,0 +1,140 @@
+$preview-width: 100%;
+$preview-height: 100%;
+.modal.preview {
+  top: 56px;
+  bottom: 0;
+  left: inherit;
+  width: $preview-width;
+  height: 100%;
+  .modal-dialog {
+    max-width: inherit;
+    margin: 0 !important;
+    height: 100%;
+    .modal-content {
+      border-radius: 0;
+      height: calc(100% - 56px);
+      background: #F4F4F4 !important;
+      .modal-body{
+        max-height: inherit!important;
+        overflow: scroll;
+        padding:0;
+        margin-right: 400px;
+        @extend .user-select;
+      }
+    }
+    .close{
+      outline: none!important;
+    }
+    .modal-header {
+      border-radius: 0;
+      height: 56px;
+      *{
+        color: #fff!important;
+      }
+      background: $kskp-preview-modal-header-background-color !important;
+      border-bottom: 1px solid #EEEEEE !important;
+    }
+  }
+}
+
+.modal{
+  &.fade .modal-dialog{
+    transition: transform 0.3s linear;
+  }
+  .modal-content{
+    border: none;
+    .modal-body{
+      max-height: 420px;
+      overflow: scroll;
+      @extend .user-select;
+    }
+  }
+  .modal-header{
+    display: block;
+    max-height: 64px;
+    padding: 16px!important;
+    .modal-title{
+      line-height: 100%;
+      font-weight: bold!important;
+      font-size: 16px;
+    }
+  }
+  //.modal-footer{
+  //  border-top: 1px solid #E8E8E8!important;
+  //}
+  .modal-header,.modal-footer{
+    border: none;
+  }
+  .close{
+    position: absolute;
+    right: 16px;
+    top: 8px;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.modal-server-error-text{
+  color: $danger;
+}
+
+.modal-script-error-text{
+  color: $danger;
+}
+
+.modal-backdrop{
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.modal {
+  &.left {
+    &.fade {
+      .modal-dialog {
+        left: $preview-width;
+        -webkit-transition: opacity 0.3s linear, left 0.3s ease-out;
+        -moz-transition: opacity 0.3s linear, left 0.3s ease-out;
+        -o-transition: opacity 0.3s linear, left 0.3s ease-out;
+        transition: opacity 0.3s linear, left 0.3s ease-out;
+      }
+      &.in {
+        .modal-dialog {
+          left: 0;
+        }
+      }
+    }
+  }
+
+  &.right {
+    &.fade {
+      .modal-dialog {
+        right: $preview-width * -1;
+        -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+        -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+        -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+        transition: opacity 0.3s linear, right 0.3s ease-out;
+      }
+      &.in {
+        .modal-dialog {
+          right: 0;
+        }
+      }
+    }
+  }
+
+  &.top {
+    &.fade {
+      .modal-dialog {
+        top: $preview-height * -1;
+        -webkit-transition: opacity 0.3s linear, left 0.3s ease-out;
+        -moz-transition: opacity 0.3s linear, left 0.3s ease-out;
+        -o-transition: opacity 0.3s linear, left 0.3s ease-out;
+        transition: opacity 0.3s linear, left 0.3s ease-out;
+      }
+      &.in {
+        .modal-dialog {
+          top: 0;
+        }
+      }
+    }
+  }
+}

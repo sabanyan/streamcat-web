@@ -2,12 +2,12 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Classification
+from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn.tree import DecisionTreeClassifier
 import pickle
 
 
-class Kdt(Classification):
+class CKdt(Classification):
     """
     決定木(分類)クラスです。
     """
@@ -53,7 +53,6 @@ class Kdt(Classification):
         ・モデルの学習
         を行います。
         """
-
         parsed=self.parse_args(args)#引数の処理
 
         # 引数から変数に
@@ -80,6 +79,6 @@ class Kdt(Classification):
         return
 
 if __name__=="__main__":
-    kdt=Kdt()
+    kdt=CKdt()
     kdt.main(sys.argv[1:])
     kdt.write()

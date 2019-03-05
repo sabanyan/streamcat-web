@@ -1,3 +1,4 @@
+//@flow
 import React from 'react'
 import DataTable from '../../shared/DataTable'
 import {
@@ -14,12 +15,12 @@ import {
 import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
 import DownloadButton from '../Button/DownloadButton'
-import DataPreviewInspector from './DataPreviewInspector'
+import style from './style.scss'
+import DataPreviewInspector from '../Inspector/DataPreviewInspector'
 
 type State = {
   json?: any,//TODO resetting
   type: string,
-  image_url?: string,
   chart_instance?: any,
   type: string
 }
@@ -30,7 +31,7 @@ export default class DataPreview extends React.Component<Props, State> {
 
   constructor (props: Props) {
     super(props)
-    this.state = {json: props.json, type: Constants.chart.bar, image_url: null}
+    this.state = {json: props.json, type: Constants.chart.bar}
   }
 
   componentWillMount () {
@@ -49,8 +50,7 @@ export default class DataPreview extends React.Component<Props, State> {
   }
 
   render () {
-    console.log("render")
-    console.log(this.state)
+    const {title} = this.props
 
     let json = this.state.json
 
@@ -58,60 +58,49 @@ export default class DataPreview extends React.Component<Props, State> {
       return null
     }
 
-    let data = ChartUtil.jsonToChart(json)
-
+    let data = ChartUtil.jsonToChart(json.data.contents)
     let type = this.state.type
     let chart
     switch (type) {
       case Constants.chart.bar:
-        chart = <Bar data={data} ref="chart" height={100} width={100}></Bar>
+        chart = <Bar data={data} ref="chart" height={100}></Bar>
         break
       case Constants.chart.bubble:
         chart =
-          <Bubble data={data} ref="chart" height={100} width={100}></Bubble>
+          <Bubble data={data} ref="chart" height={100}></Bubble>
         break
       case Constants.chart.doughnut:
         chart =
-          <Doughnut data={data} ref="chart" height={100} width={100}></Doughnut>
+          <Doughnut data={data} ref="chart" height={100}></Doughnut>
         break
       case Constants.chart.horizontalBar:
-        chart = <HorizontalBar data={data} ref="chart" height={100}
-                               width={100}></HorizontalBar>
+        chart = <HorizontalBar data={data} ref="chart" height={100}></HorizontalBar>
         break
       case Constants.chart.line:
-        chart = <Line data={data} ref="chart" height={100} width={100}></Line>
+        chart = <Line data={data} ref="chart" height={100}></Line>
         break
       case Constants.chart.pie:
-        chart = <Pie data={data} ref="chart" height={100} width={100}></Pie>
+        chart = <Pie data={data} ref="chart" height={100}></Pie>
         break
       case Constants.chart.polar:
-        chart = <Polar data={data} ref="chart" height={100} width={100}></Polar>
+        chart = <Polar data={data} ref="chart" height={100}></Polar>
         break
       case Constants.chart.radar:
-        chart = <Radar data={data} ref="chart" height={100} width={100}></Radar>
+        chart = <Radar data={data} ref="chart" height={100}></Radar>
         break
       case Constants.chart.scatter:
         chart =
-          <Scatter data={data} ref="chart" height={100} width={100}></Scatter>
+          <Scatter data={data} ref="chart" height={100}></Scatter>
         break
     }
 
-    return <div className="kskp-visualization">
-      <div className="kskp-visualization-container">
-        <div className="kskp-visualization-body">
-          <div className="row">
-            <div className="col-sm-6">
-              <DataTable json={json}></DataTable>
-            </div>
-            <div className="col-sm-6">
-              {chart}
-            </div>
-          </div>
-        </div>
+    return <div className={style.data_preview_container} style={{height:window.innerHeight}}>
+      <div className={style.data_preview_body} style={{height:window.innerHeight}}>
+          {chart}
       </div>
-
-      <DataPreviewInspector image_url={this.state.image_url} onChange={(type)=>this.onChangePreviewInspector(type)}/>
-
+      <div className={style.data_preview_property} style={{height:window.innerHeight}}>
+        <DataPreviewInspector chart_instance={this.state.chart_instance} onChange={(type)=>this.onChangePreviewInspector(type)} title={title}/>
+      </div>
     </div>
   }
 }

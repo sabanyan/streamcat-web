@@ -2,12 +2,12 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Regression
+from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.ensemble import BaggingRegressor
 import pickle
 
 
-class Kbag(Regression):
+class RKbag(Regression):
     """
     バギング(回帰)クラスです。
     """
@@ -81,6 +81,6 @@ class Kbag(Regression):
         return
 
 if __name__=="__main__":
-    kbag=Kbag()
+    kbag=RKbag()
     kbag.main(sys.argv[1:])
     kbag.write()

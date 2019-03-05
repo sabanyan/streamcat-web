@@ -7,10 +7,9 @@ import sys
 from sklearn import metrics
 from sklearn.preprocessing import LabelBinarizer,LabelEncoder
 import os
-sys.path.append(os.getcwd()+"/modeling")
-from ..modeling.classification import *
-from ..modeling.regression import *
-from .predict import Predict
+from kskp.engine.commands.kcmd.modeling.classification import *
+from kskp.engine.commands.kcmd.modeling.regression import *
+from kskp.engine.commands.kcmd.postprocess.predict import Predict
 from pathlib import Path
 
 
@@ -38,14 +37,14 @@ class Evaluate():
         self.temp_files_path = Path(__file__).parent.parent.joinpath('preprocess/temp_files/')
 
     def parse_args(self, parser):
-        # #parser = argparse.ArgumentParser()
-        # parser.add_argument("-i", "--input", dest="input",
-        #                     help="setting input file", metavar="FILE", default=sys.stdin)
-        # parser.add_argument("-o", "--output", dest="output",
-        #                     help="setting output file", metavar="FILE", default=sys.stdout)
-        # parser.add_argument("-d", "--data", dest="test_data",
-        #                     metavar="FILE", type=open, help="set test data")
-        # parser.add_argument("-p","--probability",dest="probability",help="set probability on",action="store_const",const=True,default=False)
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-i", "--input", dest="input",
+                            help="setting input file", metavar="FILE", default=sys.stdin)
+        parser.add_argument("-o", "--output", dest="output",
+                            help="setting output file", metavar="FILE", default=sys.stdout)
+        parser.add_argument("-d", "--data", dest="test_data",
+                            metavar="FILE", type=open, help="set test data")
+        parser.add_argument("-p","--probability",dest="probability",help="set probability on",action="store_const",const=True,default=False)
         parser.add_argument("-m","--metrics",dest="metrics",help="select metrics appling model",choices=self.all_metrics.keys())
         parser.add_argument("--metrics_file_name",dest="metrics_file_name",default="metrics.csv",type=str)
         return parser#.parse_args(args)
@@ -59,9 +58,9 @@ class Evaluate():
         # testデータ読み込み
         test_data = pd.read_csv(parsed.test_data)
         #モデル読み込み
-        model=pred.read_model(parsed.input)
+        pred.model=pred.read_model(parsed.input)
         #予測を確率で出すかどうかの設定(classificationクラスのみ有効)
-        model.probability=parsed.probability
+        pred.model.probability=parsed.probability
         #クラスラベルの処理
         test_data_preprocessed=pred.preprocessing(test_data)
         #ターゲット列の分離
@@ -70,17 +69,23 @@ class Evaluate():
         y_test=test_data_preprocessed[target_col_name]
         x_test=test_data_preprocessed.drop(columns = target_col_name)
         #予測
-        pred_df=model.predict(test_data,x_test)
+        pred_df=pred.model.predict(test_data,x_test)
         merged=pd.concat([pred_df,test_data],axis=1)
 
         #モデルの評価
         result=self.all_metrics[parsed.metrics](y_test,pred_df)
+
         #評価結果の出力(暫定)
-        print(parsed.metrics+":")
+        df = pd.DataFrame({result : parsed.metrics}, index=['1',])
+        print(parsed.metrics)
         print(result)
-        #result.to_csv(parsed.metrics_file_name,index=False)
+        # result.to_csv(parsed.metrics_file_name,index=False)
 
         #出力
-        # pred.set_output(merged,parsed.output)
+        pred.set_output(df,parsed.output)
 
-        return merged
+        return
+
+if __name__=="__main__":
+    eval=Evaluate()
+    eval.main(sys.argv[1:])

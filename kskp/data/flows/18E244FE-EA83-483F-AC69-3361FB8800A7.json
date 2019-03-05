@@ -1,5 +1,6 @@
 {
   "projectId": 1,
+  "description":"",
   "label": "日本NI様サンプル(故障原因ごとの処理dummy)",
   "params": [
     {

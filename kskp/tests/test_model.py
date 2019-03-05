@@ -53,15 +53,15 @@ class ModelTestCase(unittest.TestCase):
 
     def test_delete_user(self):
         with app.app_context():
-            email = 'dev@kskp.io'
+            email = 'test@kskp.io'
 
-            model.create_user(email, '', '', '')
-            result = model.get_user(email)
-            self.assertEqual(len(result), 1)
+            model.create_user(email, '', 'test', '')
+            result = model.get_user_id_by_email(email)['name']
+            self.assertEqual(result, 'test')
 
             model.delete_user(email)
 
-            result = model.get_user(email)
+            result = model.get_user_id_by_email(email)
             self.assertIsNone(result)
 
     def test_get_current_user(self):
@@ -72,7 +72,7 @@ class ModelTestCase(unittest.TestCase):
                 model.create_user(email, '', name, '')
 
                 with client.session_transaction() as session:
-                    session['user_id'] = model.get_user_id_by_email(email)
+                    session['user_id'] = model.get_user_id_by_email(email)['id']
                     user = model.get_current_user(session)
 
                 self.assertEqual(user.email, email)
@@ -87,7 +87,7 @@ class ModelTestCase(unittest.TestCase):
 
             with self.client.session_transaction() as session:
                 model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.create_project(project_name, session)
 
             results = model.get_all_projects()
@@ -133,7 +133,7 @@ class ModelTestCase(unittest.TestCase):
 
             # テストデータの準備
             self.make_data_for_getting_projects()
-            user_id = model.get_user_id_by_email('user2')
+            user_id = model.get_user_id_by_email('user2')['id']
             # テストの実行
             projects_of_current_user = model.get_projects_by_user_id(user_id)
 
@@ -153,7 +153,7 @@ class ModelTestCase(unittest.TestCase):
         model.create_user(user2, '', '', '')
 
         with self.client.session_transaction() as session:
-            session['user_id'] = model.get_user_id_by_email(user1)
+            session['user_id'] = model.get_user_id_by_email(user1)['id']
 
         proj1 = 'proj1'
         proj2 = 'proj2'
@@ -201,7 +201,7 @@ class ModelTestCase(unittest.TestCase):
 
             with self.client.session_transaction() as session:
                 model.create_user(email, '', creator_name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.start_project(project_name, session)
 
             fetch_sql = '''
@@ -226,7 +226,7 @@ class ModelTestCase(unittest.TestCase):
 
             with self.client.session_transaction() as session:
                 model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.create_project(project_name, session)
 
             # 削除前のプロジェクトの数を調べる
@@ -249,7 +249,7 @@ class ModelTestCase(unittest.TestCase):
 
             with self.client.session_transaction() as session:
                 model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.create_project(project_name, session)
 
             # いま作成したプロジェクトのUUIDを取得する
@@ -272,7 +272,7 @@ class ModelTestCase(unittest.TestCase):
 
             with self.client.session_transaction() as session:
                 model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.create_project(project_name, session)
 
             # 今作ったプロジェクトのUUIDを取得する
@@ -284,7 +284,15 @@ class ModelTestCase(unittest.TestCase):
             # フロー作成
             new_flow_name = 'ふろー'
             data_source_name = str(uuid.uuid4())
-            new_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+            data_source = {
+                "id": "i",
+                "type": "frame",
+                "dataSource": "csv",
+                "uuid": "2C72275F-2019-49AE-B36D-A29D1507F8DD",
+                "label": "test"
+            }
+            data = {'project_uuid': project_uuid, 'name': new_flow_name, 'datasource': data_source}
+            new_flow = model.create_flow(data, session['user_id'], data_source_name)
 
             # フローを取得
             path = model.make_flow_path(data_source_name)
@@ -292,13 +300,16 @@ class ModelTestCase(unittest.TestCase):
             created_flow = json.loads(path.read_text(encoding='utf-8'))
 
             self.assertEqual(path.stem, data_source_name)
+            self.assertEqual(created_flow['description'], "")
             self.assertEqual(created_flow['projectId'], project_id)
-            self.assertEqual(created_flow['name'], new_flow_name)
+            self.assertEqual(created_flow['label'], new_flow_name)
+            self.assertEqual(created_flow['creator'], name)
+            self.assertEqual(created_flow['nodes'][0]['uuid'], "2C72275F-2019-49AE-B36D-A29D1507F8DD")
+            self.assertEqual(created_flow['nodes'][0]['label'], "test")
 
             # 後片付け
             path.unlink()
 
-
     def test_fetch_flow(self):
         with app.app_context():
             # まず親プロジェクトを作る
@@ -309,7 +320,7 @@ class ModelTestCase(unittest.TestCase):
 
             with self.client.session_transaction() as session:
                 model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.create_project(project_name, session)
 
             # 今作ったプロジェクトのUUIDを取得する
@@ -318,49 +329,13 @@ class ModelTestCase(unittest.TestCase):
             # そこからプロジェクトのIDを取得する
             project_id = model.get_project_id_by_uuid(project_uuid)
 
-        # フローを作成する
-        new_flow_name = 'ふろー取得てすと'
-        data_source_name = str(uuid.uuid4())
-        created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
+            # フローを作成する
+            new_flow_name = 'ふろー取得てすと'
+            data_source_name = str(uuid.uuid4())
+            data = {'project_uuid': project_uuid, 'name': new_flow_name, 'datasource': None}
+            created_flow = model.create_flow(data, session['user_id'], data_source_name)
 
-        fetched_flow = model.fetch_flow_by_uuid(data_source_name)
-
-        # ファイル名も確認しておく
-        path = model.get_flow_path_by_uuid(data_source_name)
-        self.assertEqual(path.name, '%s.json' % data_source_name)
-
-        # JSONの中身も確認する
-        self.assertEqual(fetched_flow['projectId'], project_id)
-        self.assertEqual(fetched_flow['name'], new_flow_name)
-
-        # 後片付け
-        path.unlink()
-
-    def test_fetch_flow(self):
-        with app.app_context():
-            # まず親プロジェクトを作る
-            email = 'dev@kskp.io'
-            name = '開発者'
-
-            project_name = 'テストプロジェクト'
-
-            with self.client.session_transaction() as session:
-                model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
-                model.create_project(project_name, session)
-
-            # 今作ったプロジェクトのUUIDを取得する
-            project_uuid = model.get_all_projects()[0]['uuid']
-
-            # そこからプロジェクトのIDを取得する
-            project_id = model.get_project_id_by_uuid(project_uuid)
-
-        # フローを作成する
-        new_flow_name = 'ふろー取得てすと'
-        data_source_name = str(uuid.uuid4())
-        created_flow = model.create_flow(project_id, new_flow_name, data_source_name)
-
-        fetched_flow = model.fetch_flow_by_uuid(data_source_name)
+            fetched_flow = model.fetch_flow_by_uuid(data_source_name)
 
         # ファイル名も確認しておく
         path = model.get_flow_path_by_uuid(data_source_name)
@@ -368,12 +343,18 @@ class ModelTestCase(unittest.TestCase):
 
         # JSONの中身も確認する
         self.assertEqual(fetched_flow['projectId'], project_id)
-        self.assertEqual(fetched_flow['name'], new_flow_name)
+        self.assertEqual(fetched_flow['label'], new_flow_name)
 
         # 後片付け
         path.unlink()
 
     def test_fetch_flows(self):
+        """
+        fetch_flowsのテスト
+        複数取得できているかのテスト
+        """
+
+        unlink_path = []
         with app.app_context():
             # まず親プロジェクトを作る
             email = 'dev@kskp.io'
@@ -382,7 +363,7 @@ class ModelTestCase(unittest.TestCase):
 
             with self.client.session_transaction() as session:
                 model.create_user(email, '', name, '')
-                session['user_id'] = model.get_user_id_by_email(email)
+                session['user_id'] = model.get_user_id_by_email(email)['id']
                 model.create_project(project_name, session)
 
             # 今作ったプロジェクトのUUIDを取得する
@@ -394,54 +375,154 @@ class ModelTestCase(unittest.TestCase):
             # テスト用フローを作成する
             new_flow_name1 = 'ふろー取得てすと1'
             data_source_name1 = str(uuid.uuid4())
-            created_flow1 = model.create_flow(project_id, new_flow_name1, data_source_name1)
+            data = {'project_uuid': project_uuid, 'name': new_flow_name1, 'datasource': None}
+            created_flow1 = model.create_flow(data, session['user_id'], data_source_name1)
 
             new_flow_name2 = 'ふろー取得てすと2'
             data_source_name2 = str(uuid.uuid4())
-            created_flow2 = model.create_flow(project_id, new_flow_name2, data_source_name2)
+            data2 = {'project_uuid': project_uuid, 'name': new_flow_name2, 'datasource': None}
+            created_flow2 = model.create_flow(data2, session['user_id'], data_source_name2)
 
-            flow_list = model.fetch_flows_by_project_uuid(project_uuid)
+            flow1 = model.fetch_flow_by_uuid(data_source_name1)
+            unlink_path.append(model.get_flow_path_by_uuid(data_source_name1))
+            flow2 = model.fetch_flow_by_uuid(data_source_name2)
+            unlink_path.append(model.get_flow_path_by_uuid(data_source_name2))
 
-            paths = model.get_flow_paths_by_project_uuid(project_uuid)
-
-        # ファイル名の確認
-        self.assertEqual({path.stem for path in paths}, {data_source_name1, data_source_name2})
+            flows_list = model.fetch_flows_by_project_uuid(project_uuid)
 
         # 中身の確認
-        self.assertEqual({flow_result['projectId'] for flow_result in flow_list}, {project_id,
-                                                                                   project_id})
-        self.assertEqual({flow_result['name'] for flow_result in flow_list}, {new_flow_name1,
-                                                                              new_flow_name2})
-        self.assertEqual({flow_result['uuid'] for flow_result in flow_list}, {data_source_name1,
-                                                                              data_source_name2})
+        self.assertEqual({flow1['projectId'], flow2['projectId']}, {project_id, project_id})
+        self.assertEqual({flow1['label'], flow2['label']}, {new_flow_name1, new_flow_name2})
 
         # 後片付け
-        for path in paths:
+        for path in unlink_path:
             path.unlink()
 
 
     def test_delete_flow(self):
-        data_source_name = str(uuid.uuid4())
-        flow = model.create_flow(1, '', data_source_name)
-        model.delete_flow_by_uuid(data_source_name)
+        with app.app_context():
+            # まず親プロジェクトを作る
+            email = 'dev@kskp.io'
+            name = '開発者'
+            project_name = 'テストプロジェクト'
 
+            with self.client.session_transaction() as session:
+                model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)['id']
+                model.create_project(project_name, session)
+
+            # 今作ったプロジェクトのUUIDを取得する
+            project_uuid = model.get_all_projects()[0]['uuid']
+
+            data_source_name = str(uuid.uuid4())
+            data = {'project_uuid': project_uuid, 'name': 'フローテスト用', 'datasource': None}
+            flow = model.create_flow(data, session['user_id'], data_source_name)
+            model.delete_flow_by_uuid(data_source_name)
 
     def test_update_flow(self):
-        data_source_name = str(uuid.uuid4())
-        flow = model.create_flow(1, '', data_source_name)
+        with app.app_context():
+            # まず親プロジェクトを作る
+            email = 'dev@kskp.io'
+            name = '開発者'
+            project_name = 'テストプロジェクト'
 
-        model.update_flow_by_uuid(data_source_name, {'a': 1})
-        path = model.make_flow_path(data_source_name)
+            with self.client.session_transaction() as session:
+                model.create_user(email, '', name, '')
+                session['user_id'] = model.get_user_id_by_email(email)['id']
+                model.create_project(project_name, session)
 
-        # 改めてファイルから読み直す
-        result = json.loads(path.read_text(encoding='utf-8'))
+            # 今作ったプロジェクトのUUIDを取得する
+            project_uuid = model.get_all_projects()[0]['uuid']
 
-        # 後片付け
-        path.unlink()
+            data_source_name = str(uuid.uuid4())
+            data = {'project_uuid': project_uuid, 'name': 'フローテスト用', 'datasource': None}
+            flow = model.create_flow(data, session['user_id'], data_source_name)
 
-        self.assertEqual(path.stem, data_source_name)
-        self.assertEqual(result['a'], 1)
+            model.update_flow_by_uuid(data_source_name, {'a': 1})
+            path = model.make_flow_path(data_source_name)
 
+            # 改めてファイルから読み直す
+            result = json.loads(path.read_text(encoding='utf-8'))
+
+            # 後片付け
+            path.unlink()
+
+            self.assertEqual(path.stem, data_source_name)
+            self.assertEqual(result['a'], 1)
+
+    # crate_flow内に定義されているデコレータのテスト
+    # とりあえず作ったが、関数内関数は外部から呼び出せないのでテストできなく、置き場所に困ったので
+    # ここにひとまず置いておく。ヘルパーメソッド作ればできそうだけど、また時間がある時でいいかな？
+    # def test_add_activity_to_flow(self):
+    #     '''
+    #     フロー作成時の履歴付与のテスト
+    #     '''
+    #     mock_func = mock.MagicMock()
+    #     mock_func.__name__ = 'activity'
+    #     mock_func.return_value = {
+    #         'projectId': 1,
+    #         'label': 'test',
+    #         'ports': [[],[]],
+    #         'params': []
+    #     }
+    #
+    #     now = datetime.now()
+    #     email = 'dev@kskp.io'
+    #     name = '開発者'
+    #
+    #     with app.app_context():
+    #         with self.client.session_transaction() as session:
+    #             model.create_user(email, '', name, '')
+    #             session['user_id'] = model.get_user_id_by_email(email)['id']
+    #
+    #         # mockでデコレータをテストする(フローに作成履歴が付与される)
+    #         unfinished_deco = add_activity_to_flow(session['user_id'])
+    #         wrapper = unfinished_deco(mock_func)
+    #         result = wrapper()
+    #         JST = timezone(timedelta(hours=+9), 'JST')
+    #         createdAt = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
+    #
+    #         self.assertEqual(result['projectId'], 1)
+    #         self.assertEqual(result['label'], 'test')
+    #         self.assertEqual(result['creator'], '開発者')
+    #         self.assertEqual(result['createdAt'], createdAt)
+    #
+    #
+    # def test_data_source_to_flow(self):
+    #     '''
+    #     フロー作成時のデータソース付与のテスト
+    #     '''
+    #
+    #     mock_func = mock.MagicMock()
+    #     mock_func.__name__ = 'activity'
+    #     mock_func.return_value = {
+    #         'projectId': 1,
+    #         'label': 'test',
+    #         'ports': [[],[]],
+    #         'params': []
+    #     }
+    #
+    #     now = datetime.now()
+    #     email = 'dev@kskp.io'
+    #     name = '開発者'
+    #
+    #     with app.app_context():
+    #         with self.client.session_transaction() as session:
+    #             model.create_user(email, '', name, '')
+    #             session['user_id'] = model.get_user_id_by_email(email)['id']
+    #
+    #         # mockでデコレータをテストする(フローにframeを追加する)
+    #         frame_uuid = str(uuid.uuid4())
+    #         data_source = {'uuid': frame_uuid, 'type': 'frame', 'label': 'test'}
+    #         unfinished_deco = add_data_source_to_flow(data_source)
+    #         wrapper = unfinished_deco(mock_func)
+    #         result = wrapper()
+    #
+    #         self.assertEqual(result['projectId'], 1)
+    #         self.assertEqual(result['label'], 'test')
+    #         self.assertEqual(result['nodes'][0]['label'], 'test')
+    #         self.assertEqual(result['nodes'][0]['type'], 'frame')
+    #         self.assertEqual(result['nodes'][0]['uuid'], frame_uuid)
 
 if __name__ == '__main__':
     unittest.main()

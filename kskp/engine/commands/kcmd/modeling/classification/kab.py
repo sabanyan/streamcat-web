@@ -2,12 +2,12 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Classification
+from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn.ensemble import AdaBoostClassifier
 import pickle
 
 
-class Kab(Classification):
+class CKab(Classification):
     """
     アダブースト(分類)クラスです。
     """
@@ -69,11 +69,11 @@ class Kab(Classification):
         # モデルの学習
         self.model=self.model.fit(self.x_train,self.y_train)
         #出力
-        #self.set_output().write(pickle.dumps(self))
+        self.set_output().write(pickle.dumps(self))
 
         return
 
 if __name__=="__main__":
-    kab=Kab()
+    kab=CKab()
     kab.main(sys.argv[1:])
     kab.write()

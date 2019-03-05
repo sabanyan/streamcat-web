@@ -1,8 +1,23 @@
 @import "../../../../sass/common";
 
-.dropdownlist{
-  margin-bottom: 8px;
-  padding: 6px 12px;
+.dropdownListContainer{
+  position: relative;
+}
+
+.action{
+  width: calc(100% - 60px);
+}
+
+.actionLabel{
+  width: 60px;
+  right: -60px;
+  top: 8px;
+  position: absolute;
+  text-align: center;
+}
+
+.dropdownList{
+  padding: 0.375rem 24px 0.375rem 0.75rem;
   border-radius: 4px;
   width: 100%;
   background:url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSIjMDAwMDAwIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik03IDEwbDUgNSA1LTV6IiBmaWxsPSIjNjA2QzdBIi8+CiAgICA8cGF0aCBkPSJNMCAwaDI0djI0SDB6IiBmaWxsPSJub25lIi8+Cjwvc3ZnPg==") no-repeat right 2px center;
@@ -10,4 +25,20 @@
   -webkit-appearance: none;
   color: $kskp-text;
   border-color: #CED4DA;
+}
+
+.hasLabel{
+  padding-left: 70px;
+}
+
+.label{
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  border: 1px solid $kskp-dropdown-list-label-border-color;
+  border-radius: 4px;
+  padding: 0 6px;
+  color: $kskp-dropdown-list-label-color;
+  min-width: 44px;
+  text-align: center;
 }

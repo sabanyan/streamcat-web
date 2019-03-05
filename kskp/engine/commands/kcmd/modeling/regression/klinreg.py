@@ -2,11 +2,11 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Regression
+from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.linear_model import LinearRegression
 import pickle
 
-class Klinreg(Regression):
+class RKlinreg(Regression):
     """
     線形回帰クラスです。
     """
@@ -61,6 +61,6 @@ class Klinreg(Regression):
         return
 
 if __name__=="__main__":
-    klinreg=Klinreg()
+    klinreg=RKlinreg()
     klinreg.main(sys.argv[1:])
     klinreg.write()
