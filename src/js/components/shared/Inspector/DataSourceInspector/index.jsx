@@ -146,8 +146,16 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       this.setState({
         loading: false
       })
+      this.updateCache()
     })
 
+  }
+
+  updateCache() {
+    APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
+      const json = response.data
+      this.props.loadFlowJSON(json)
+    })
   }
 
   onClickCSVDownload(e:Event){
@@ -273,9 +281,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         })
       }
       if (response.data.success) {
-        node.setEmptyCache()
-        this.props.updateCacheAction(node)
-        this.forceUpdate()
+        this.updateCache()
       }
     })
   }
