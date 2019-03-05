@@ -5039,7 +5039,7 @@ class NmCmd(MCommandNew):
 
 class SmlModeling(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
+        super().__init__('/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
         self.name = 'SmlModeling'
         self.description = 'デモ用モデリング'
 
@@ -5066,25 +5066,25 @@ class SmlModeling(NmCmd):
 
 class Groupby(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/groupby.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/groupby.sh', 'csv', 'o=')
         self.name = 'Groupby'
         self.description = 'groupby処理を行う'
 
 class CheckDuplicateRows(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/check_duplicate_rows.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/check_duplicate_rows.sh', 'csv', 'o=')
         self.name = 'CheckDuplicateRows'
         self.description = '重複行の抽出'
 
 class MergeFS(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/merge_FS.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/merge_FS.sh', 'csv', 'o=')
         self.name = 'MergeFS'
         self.description = '不整CSVファイルのクレンジングと集約'
 
 class MergeIbutsu(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/merge_ibutsu.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/merge_ibutsu.sh', 'csv', 'o=')
         self.name = 'MergeIbutsu'
         self.description = 'CSVファイルの集約'
 
@@ -5096,55 +5096,55 @@ class MergeIbutsu(NmCmd):
 
 class ColumnGroupingName(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
         self.name = 'ColumnGroupingName'
         self.description = '項目群に対して、グループに属する項目名に接頭語を付与する'
 
 class ColumnUniqueName(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_unique_name.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/column_unique_name.sh', 'csv', 'o=')
         self.name = 'ColumnUniqueName'
         self.description = '全ての項目名がユニークになるように、項目名を変更する。'
 
 class ColumnName(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
         self.name = 'ColumnName'
         self.description = '先頭と末尾に、指定した項目名の順番に列を並び替える。'
 
 class ColumnBlankName(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
         self.name = 'ColumnBlankName'
         self.description = '空白の項目名に対して、指定した文字と重複時の識別子で生成した項目名に変更し、全ての項目を出力する。'
 
 class ColumnList(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/column_list.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/column_list.sh', 'csv', 'o=')
         self.name = 'ColumnList'
         self.description = 'ヘッダー行と先頭の1行 を縦型に変形したリストを出力する'
 
 class WinCp932Read(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/windows_cp932_csv_read.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/windows_cp932_csv_read.sh', 'csv', 'o=')
         self.name = 'WinCp932Read'
         self.description = 'Windowsファイル（Shift-JIS拡張 CP932）を、サーバ上のローカルファイルより読込む。'
 
 class ColumnsToRows(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/columns_to_rows.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/columns_to_rows.sh', 'csv', 'o=')
         self.name = 'ColumnsToRows'
         self.description = 'f=で指定した複数の列項目に対して、各項目の行を連結した新たな項目をa=で指定した名前で作成する。'
 
 class GroupbyColumns(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/groupby_columns.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/groupby_columns.sh', 'csv', 'o=')
         self.name = 'GroupbyColumns'
         self.description = '複数の列項目を、指定した新規列名で、行データへ展開し、複数の統計量を適用した結果を、新規列名と統計量からなる列名として出力する。'
 
 class Utf8ToCp932(NmCmd):
     def __init__(self):
-        super().__init__('/home/kskp/kskp/engine/commands/pcmd/utf8_to_cp932.sh', 'csv', 'o=')
+        super().__init__('/kskp/engine/commands/pcmd/utf8_to_cp932.sh', 'csv', 'o=')
         self.name = 'Utf8ToCp932'
         self.description = 'Windowsファイル（Shift-JIS拡張 CP932、CRLF改行コード）へ変換したデータを出力する。'
 
