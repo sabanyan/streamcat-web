@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import {
   addStepAction,
   updateStepAction,
@@ -9,6 +9,9 @@ import {
   cutStepsAction,
   copyStepsAction,
   pasteStepsAction,
+  addHistoryAction,
+  undoAction,
+  redoAction,
   deleteStepsAction,
   addMasterAction,
   sortFlowAction,
@@ -18,13 +21,19 @@ import {
   draggingAction,
   dragEndAction,
   loadFlowJSONAction,
-  setZoomAction
+  setZoomAction,
+  updateDataFrameDetailAction,
+  addNoteAction,
+  updateCacheAction
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
 import { FlowModelProps } from '../../model/Flow/FlowModel'
 import NavigationModel from '../../model/Navigation/NavigationModel'
+import type { DragType } from '../../types'
+import { DataFrameDetailType } from '../../types'
+import { addNotification,updateNotification,removeNotification} from 'reapop';
 
 let FlowEditorContainer
 
@@ -32,7 +41,7 @@ export type FlowEditorProps = {
   projectId: string,
   projectName: string,
   graph: { width: number, height: number,edges:any[],nodes:any[] };
-  mast: { commands: any[] };
+  mast: { commands: any[],subflows: any[],visualizers: any[] };
   loadFlowJSON: Function;
   addMaster: Function;
   selectSteps: Function;
@@ -40,11 +49,15 @@ export type FlowEditorProps = {
   cutSteps: Function;
   copySteps: Function;
   pasteSteps: Function;
+  addHistory: Function;
+  undo: Function;
+  redo: Function;
   deleteSteps: Function;
   updateStep: Function;
   updateFlow: Function;
   sortFlow: Function;
   executeFlow: Function;
+  updateDataFrameDetail: Function;
   nodes: {};
   selected_step_ids: string[];
   selected_tab_id: string;
@@ -56,36 +69,33 @@ export type FlowEditorProps = {
   zoom: number;
   flow: FlowModelProps;
   navigation: NavigationModel;
-  drag: {
-    start: {
-      x: number,
-      y: number
-    },
-    end: {
-      x: number,
-      y: number
-    }
-  }
+  drag: DragType;
+  notify: Function;
+  dissmissNotify: Function;
+  addNote: Function;
+  updateCacheAction: Function;
 }
 
 export default FlowEditorContainer = connect(
   state => {
     return {
-      projectId: state.projectId,
-      projectName: state.projectName,
-      graph: state.graph,
-      mast: state.mast,
-      edges: state.edges,
-      nodes: state.nodes,
-      selected_step_ids: state.selected_step_ids,
-      selected_tab_id: state.selected_tab_id,
-      drag: state.drag,
-      selected_in_edges: state.selected_in_edges,
-      selected_out_edges: state.selected_out_edges,
-      zoom: state.zoom,
-      flow: state.flow,
-      originalFlow: state.originalFlow,
-      navigation: state.navigation
+      projectId: state.reducer.projectId,
+      projectName: state.reducer.projectName,
+      graph: state.reducer.graph,
+      mast: state.reducer.mast,
+      edges: state.reducer.edges,
+      nodes: state.reducer.nodes,
+      history: state.reducer.history,
+      selected_step_ids: state.reducer.selected_step_ids,
+      selected_tab_id: state.reducer.selected_tab_id,
+      selected_data_source_detail: state.reducer.selected_data_source_detail,
+      drag: state.reducer.drag,
+      selected_in_edges: state.reducer.selected_in_edges,
+      selected_out_edges: state.reducer.selected_out_edges,
+      zoom: state.reducer.zoom,
+      flow: state.reducer.flow,
+      originalFlow: state.reducer.originalFlow,
+      navigation: state.reducer.navigation,
     }
   },
   dispatch => {
@@ -126,6 +136,15 @@ export default FlowEditorContainer = connect(
       pasteSteps (...args) {
         dispatch(pasteStepsAction(...args))
       },
+      addHistory (...args) {
+        dispatch(addHistoryAction(...args))
+      },
+      undo (...args) {
+        dispatch(undoAction(...args))
+      },
+      redo (...args) {
+        dispatch(redoAction(...args))
+      },
       sortFlow (...args) {
         dispatch(sortFlowAction(...args))
       },
@@ -147,6 +166,26 @@ export default FlowEditorContainer = connect(
       setZoom (...args) {
         dispatch(setZoomAction(...args))
       },
+      updateDataFrameDetail(...args){
+        dispatch(updateDataFrameDetailAction(...args))
+      },
+      notify(...args){
+        return dispatch(addNotification(...args))
+      },
+      updateNotify(...args){
+        return dispatch(updateNotification(...args))
+      },
+      dismissNotify(...args){
+        setTimeout(()=>{
+          dispatch(removeNotification(...args))
+        },1000)
+      },
+      addNote(...args){
+        dispatch(addNoteAction(...args))
+      },
+      updateCacheAction(...args){
+        dispatch(updateCacheAction(...args))
+      }
     }
   },
 )(FlowEditor)

@@ -2,11 +2,11 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Regression
+from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.linear_model import ElasticNet
 import pickle
 
-class Kelastic(Regression):
+class RKelastic(Regression):
     """
     elastic net回帰クラスです
     """
@@ -80,6 +80,6 @@ class Kelastic(Regression):
         return
 
 if __name__=="__main__":
-    kelastic=Kelastic()
+    kelastic=RKelastic()
     kelastic.main(sys.argv[1:])
     kelastic.write()

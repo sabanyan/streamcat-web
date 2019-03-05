@@ -1,0 +1,70 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "GraphModelSchema.json",
+  "type": "object",
+  "required": [
+    "graph"
+  ],
+  "properties": {
+    "graph": {
+      "$id": "#/properties/graph",
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "nodes",
+        "edges"
+      ],
+      "properties": {
+        "width": {
+          "$id": "#/properties/graph/properties/width",
+          "type": "integer"
+        },
+        "height": {
+          "$id": "#/properties/graph/properties/height",
+          "type": "integer"
+        },
+        "nodes": {
+          "$id": "#/properties/graph/properties/nodes",
+          "type": "array",
+          "items": {
+            "$id": "#/properties/graph/properties/nodes/items",
+            "type": "string",
+            "pattern": "^(.*)$"
+          }
+        },
+        "edges": {
+          "$id": "#/properties/graph/properties/edges",
+          "type": "array",
+          "items": {
+            "$id": "#/properties/graph/properties/edges/items",
+            "type": "object",
+            "required": [
+              "name",
+              "v",
+              "w"
+            ],
+            "properties": {
+              "name": {
+                "$id": "#/properties/graph/properties/edges/items/properties/name",
+                "type": "string",
+                "pattern": "^(.*)$"
+              },
+              "v": {
+                "$id": "#/properties/graph/properties/edges/items/properties/v",
+                "type": "string",
+                "pattern": "^(.*)$"
+              },
+              "w": {
+                "$id": "#/properties/graph/properties/edges/items/properties/w",
+                "type": "string",
+                "pattern": "^(.*)$"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,12 +1,15 @@
-// @flow
+//@flow
 import * as React from 'react'
 import Constants from "../../../constants";
+import style from './style.scss'
 
 export type IconProps = {
     fillColor: string;
     height: number;
     width: number;
     padding: number;
+    paddingLeft?: number;
+    paddingTop?: number;
     children: React.Node;
 }
 
@@ -19,8 +22,14 @@ class Icon extends React.Component<IconProps> {
     }
 
     render() {
-        return <g transform={"translate(" + this.props.padding + "," + this.props.padding + ")"}>
-            <svg fill={this.props.fillColor} height={this.props.height} width={this.props.width}
+      const {paddingLeft,paddingTop,padding} = this.props
+      let paddingX = padding
+      let paddingY = padding
+      if(paddingLeft !== undefined) paddingX = paddingLeft
+      if(paddingTop !== undefined) paddingY = paddingTop
+
+        return <g transform={"translate(" + paddingX + "," + paddingY + ")"}>
+            <svg className={style.icon} fill={this.props.fillColor} preserveAspectRatio="xMidYMin" height={32} width={32}
                  viewBox={"0 0 "+this.props.width + " " + this.props.height}
                  xmlns="http://www.w3.org/2000/svg">
                 {this.props.children}

@@ -10,6 +10,21 @@ import sys # sys.stdout
 
 ref_counts = {}
 
+class RedirectStdStreams(object):
+    def __init__(self, stdout=None, stderr=None):
+        self._stdout = stdout or sys.stdout
+        self._stderr = stderr or sys.stderr
+
+    def __enter__(self):
+        self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
+        self.old_stdout.flush(); self.old_stderr.flush()
+        sys.stdout, sys.stderr = self._stdout, self._stderr
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._stdout.flush(); self._stderr.flush()
+        sys.stdout = self.old_stdout
+        sys.stderr = self.old_stderr
+
 class Source:
     """
     データの取得元、もしくは書込先になる情報をもつクラス
@@ -55,25 +70,73 @@ class Source:
 
 class NysolPythonSource(Source):
 
-    def __init__(self, source_type, mod, args):
+    def __init__(self, source_type, mod, args, process_flow=None, stdout_param=None, multi_out=False):
         """ argsいらんかもな、そのままmodに全部持っておけるので """
         super().__init__(source_type)
         self.mod = mod # クラスをそのまま
         self.args = args # dict
+        self.process_flow = process_flow # commandオブジェクト
+        self.stdout_param = stdout_param # str(出力文字列)
+        self.multi_out = multi_out # bool
 
     @property
     def nysol_module(self):
-        args = self.args
-        return self.mod(**args)
+        f = self.process_flow
+        f <<= self.mod(self.args)
+        # nm.cmdで2つ出力するコマンドは存在しないことを前提（現状は）
+        # 自作コマンドに柔軟性を持たせるなら、2つ出力することもありそうだが、
+        # nm.cmdで2つの出力を出すことは現状できなさそうなので、基本的には1つという仕様にする？（nysol_pythonがupdateすれば別
+        # 2つ出力をキャッチできたとして、3つ以上はどうなるんだという話になるので、
+        # やっぱり出力は基本的に1つに仕様を固定しておくべきかも。
+        # oとuの2つを出力できるmcmdが特殊ということにしておく？
+        # それならmulti_outを持っておきたくないが、ここでredirectする以上は仕方がない。
+        return f.redirect('u') if self.multi_out else f
 
     def save(self, stdout):
         """ engineから使う最後の保存用 """
-        # self.mod.runしてその結果をstdoutに書くだけ
-        self.args.update({'o': stdout})
-        args = self.args
-        # print('NysolPythonSource save: ', self.mod, args)
-        mod = self.mod(**args)
-        mod.run()
+        res = None
+        try:
+            args = self.args
+            # self.mod.runしてその結果をstdoutに書くだけ
+            # nm.cmdはコマンドが文字列なのでそれで判別する
+            if isinstance(self.args, str):
+                # 設定されていた出力パラメータを出力先が入った状態で置き換える
+                args += self.stdout_param + stdout
+            elif isinstance(self.args, dict):
+                # nm.cmdのargsはstringなので、ここにくるのはnm.cmd以外のnysol_pythonのコマンドの場合のみ
+                # という前提で書いているので、uを直接指定している。
+                # u以外で指定しなければいけない時がくることはあるのか・・・？
+                args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
+
+            mod = self.mod(args)
+            self.process_flow <<= mod
+
+            # 環境変数を設定する
+            os.environ['KG_TmpPath'] = '/home/kskp/kskp/data/tmp'
+            # デフォルトの4倍で設定する
+            os.environ['KG_MaxRecLen'] = '40960000'
+            os.environ['KG_iSize'] = '20480000'
+            os.environ['KG_iSize'] = '10240000'
+            os.environ['KG_BlockCount'] = '1280'
+            # sudo docker run -m 32g -e FLASK_ENV=development -u kskp -v "$(pwd)"/kskp:/home/kskp/kskp -v /home/kskp-trial/KSKP_trial:/home/kskp/KSKP_trial -p 5000:5000 --name kskp-trial kskp-trial "flask run -h 0.0.0.0 -p ${PORT:-5000}"
+            # http://localhost:5000/flows/20190201_2047_Omron_S1_light
+            
+            # with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
+            #     self.process_flow.run()
+            with io.StringIO() as messages_mem:
+                with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=messages_mem):
+                    self.process_flow.run()
+
+                    messages = messages_mem.getvalue()
+
+                    if '#ERROR#' in messages:
+                        content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
+                        err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
+                        raise err
+
+        finally:
+            import time
+            print('final!!! time:', time.ctime())
 
     def __repr__(self):
         return f'args: {self.args}'
@@ -191,7 +254,6 @@ class UnixCommandSource(FileSource):
     def fd(self, value):
         raise Exception()
 
-    # ここ！
     def save(self, stdout):
         """ engineから使う最後の保存用 """
         if self.stdin is not None and self.stdin.closed:
@@ -235,12 +297,14 @@ class TempPathFileSource(PathFileSource):
     def __repr__(self):
         return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
+import nysol.mcmd as nm
+
 class Datum:
     """
     データ全般を表すクラス
 
     :param source: データソース。現時点では以下のどれかの文字列が入る予定
-                   'popen', 'csv', 'json', 'postgres', 'mysql'
+                   'popen', 'csv', 'json', 'postgres', 'mysql', 'nysol_python'
                    Noneの場合は直接メモリ上だけにデータを持っていることになる
     :param uuid: 各frameを一意に識別するためのID
                  source is Noneであればframe_uuidもNoneであるが、
@@ -265,9 +329,19 @@ class Datum:
             s.dtor()
             if isinstance(s, PathFileSource):
                 if self.is_temp and s.fullpath.exists():
-                    pass
-                    # s.fullpath.unlink()
-
+                    # pass
+                    s.fullpath.unlink()
+            else:
+                fullpath = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '.csv')
+                if fullpath.exists():
+                    if self.is_temp:
+                        fullpath.unlink()
+                    else:
+                        sjis_path = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '_sjis' + '.csv')
+                        command_path = Path('./kskp/engine/commands/pcmd/utf8_to_cp932.sh')
+                        if command_path.exists():
+                            command_str = str(command_path) + ' o=' + str(sjis_path) + ' i=' + str(fullpath)
+                            subprocess.run(command_str.split())
 
 
 import os
@@ -282,11 +356,14 @@ class Frame(Datum):
 
     def __init__(self, frame_uuid=None, source=None):
         super().__init__(frame_uuid, source)
+        self.label = '' # for debug
 
-    def command_to_file(self):
+    def command_to_file(self, frame_uuid=None):
         if self.source is not None and not isinstance(self.source, PathFileSource):
+            if frame_uuid is not None: self.uuid = frame_uuid
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
+
             if isinstance(self.source, NysolPythonSource):
                 self.source.save(new_source.fullpath.as_posix())
             else:
@@ -320,8 +397,14 @@ class Frame(Datum):
             reader = csv.reader(fd)
             res = {}
             first_row = True
+            count = 0
 
             for row in reader:
+                # 時間が足りなくてこんな風に実装してしまいました。。。
+                # ごめんなさい。。。
+                if count > 1000:
+                    break
+
                 if first_row:
                     for col in row:
                         res[col] = []
@@ -330,6 +413,8 @@ class Frame(Datum):
                 else:
                     for i, col in enumerate(cols):
                         res[col].append(row[i])
+                    # データが1000行なので、ここでカウントアップしてる
+                    count += 1
 
         return res
 
@@ -349,3 +434,38 @@ def make_path(frame_uuid):
         raise Exception()
 
     return f"{ os.environ['KENG_FRAMES_PATH'] }/{ frame_uuid }.csv"
+
+class MCMDError(Exception):
+    def __init__(self, errors):
+        self.errors = errors
+
+    def __repr__(self):
+        return repr(self.errors[0])
+
+class MCMDErrorInfo():
+    def __init__(self, description, input_n, output_n, called_at):
+        self.description = description
+        self.number_of_input = input_n
+        self.number_of_output = output_n
+        self.called_at = called_at
+
+    @classmethod
+    def parse_stderr(cls, s):
+        """
+        以下のようなMCMDの実行時のエラー文字列をparseしてオブジェクトに起こす
+        '#ERROR# field name not found: `c' in a.csv (kgcut); kgcut f=c i=a.csv; IN=0 OUT=0; 2018/06/14 20:57:21'
+        """
+        # s = "#ERROR# field name not found: `c' in a.csv (kgcut); kgcut f=c i=a.csv; IN=1253 OUT=5624; 2018/06/14 20:57:21"
+        # まず、セミコロンで区切る
+        ss = s.split(';')
+
+        # 入力と出力の件数をパースする
+        if len(ss) >= 3:
+            import re
+            io = re.search(r'IN=(\d+) OUT=(\d+)', ss[2]).groups()
+            return cls(ss[0].replace('#ERROR#', ''), int(io[0]), int(io[1]), ss[3])
+        else:
+            print('re:', s)
+
+    def __repr__(self):
+        return f'MCMDError:{self.description}'

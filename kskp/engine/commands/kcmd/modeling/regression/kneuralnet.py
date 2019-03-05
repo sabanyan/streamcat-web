@@ -2,11 +2,11 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Regression
+from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.neural_network import MLPRegressor
 import pickle
 
-class Kneural_network(Regression):
+class RKneural_network(Regression):
     """
     ニューラルネットワーク(回帰)クラスです
     """
@@ -91,6 +91,6 @@ class Kneural_network(Regression):
         return
 
 if __name__=="__main__":
-    knn=Kneural_network()
+    knn=RKneural_network()
     knn.main(sys.argv[1:])
     knn.write()

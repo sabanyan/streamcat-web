@@ -1,11 +1,12 @@
+#!/usr/bin/env python3
 import sys
 import pickle
 
 import numpy as np
 import pandas as pd
 
-from .common.preprocess import Preprocess
-
+from kskp.engine.commands.kcmd.preprocess.common.preprocess import Preprocess
+# from common.preprocess import Preprocess
 
 class SelectTargetColumn(Preprocess):
 
@@ -51,8 +52,8 @@ class SelectTargetColumn(Preprocess):
         with open(self.temp_files_path.joinpath('target_col_name.txt'), 'w') as f:
             f.write(self.target_colname)
 
-        return renamed
-        # renamed.to_csv(self.output, index=False)
+        # return renamed
+        renamed.to_csv(self.output, index=False)
 
 if __name__ == '__main__':
     rename = SelectTargetColumn()

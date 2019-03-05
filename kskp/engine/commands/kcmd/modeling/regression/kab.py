@@ -2,12 +2,12 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Regression
+from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.ensemble import AdaBoostRegressor
 import pickle
 
 
-class Kab(Regression):
+class RKab(Regression):
     """
     アダブースト(回帰)クラスです。
     """
@@ -76,6 +76,6 @@ class Kab(Regression):
         return
 
 if __name__=="__main__":
-    kab=Kab()
+    kab=RKab()
     kab.main(sys.argv[1:])
     kab.write()

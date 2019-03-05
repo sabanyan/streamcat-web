@@ -1,14 +1,22 @@
 @import "../../node_modules/bootstrap/scss/bootstrap";
-@import "./common";
-@import "./list";
-@import "./form";
-@import "./nav";
-@import "./modal";
-@import "./margins";
+@import "common";
+@import "list";
+@import "form";
+@import "nav";
+@import "modal";
+@import "margins";
 //@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
 //
 body {
   padding-top: 64px; //navigation-header-height
+}
+
+.container{
+  min-width: 1024px;
+}
+
+input::placeholder {
+  color: #cacaca!important;
 }
 
 .none-pointer-events{
@@ -26,23 +34,6 @@ body {
 .kskp-canvas-tool, .kskp-property {
   position: fixed;
 }
-
-.kskp-property-basic-operators{
-  padding-bottom: 44px!important;
-  .operator{
-    cursor: pointer;
-    .label{
-      color: $kskp-list-link-color!important;
-      &:hover{
-        text-decoration: underline;
-      }
-    }
-    &.no-icon{
-      padding-top:34px;
-    }
-  }
-}
-
 
 .kskp-visualization {
   height: 100%;
@@ -85,6 +76,17 @@ body {
       padding: 16px;
     }
   }
+}
+
+.s-tbl {
+	border-collapse: collapse;
+}
+.s-tbl th, .s-tbl td {
+	border: 1px solid #c0c0c0;
+  padding: 5px 10px;
+}
+.s-tbl tr:nth-child(odd) {
+	background: #e0e0e0;
 }
 
 body, html {

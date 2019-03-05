@@ -1,20 +1,42 @@
+//@flow
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
-import { createStore } from 'redux'
+import { createStore, compose, applyMiddleware,combineReducers } from 'redux'
 import reducer from './modules/application'
+import thunk from 'redux-thunk'
+import {reducer as notificationsReducer} from 'reapop'
 import FlowEditorContainer from './components/FlowEditorContainer'
-import VisualizationContainer from './components/VisualizationContainer'
 import EventEmitter from 'eventemitter3'
 import ProjectListContainer from './components/ProjectListContainer'
 import FlowListContainer from './components/FlowListContainer'
 import LibraryListContainer from './components/LibraryListContainer'
 import NavigationBar from './components/shared/NavigationBar'
+import ProfileContainer from './components/ProfileContainer'
 
 window.emitter = new EventEmitter()
 
-const store = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ &&
-  window.__REDUX_DEVTOOLS_EXTENSION__())
+//let appStore = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ &&
+//  window.__REDUX_DEVTOOLS_EXTENSION__())
+
+// default value for notifications
+const defaultNotification = {
+  position: 'tr',
+  dismissible: true,
+  dismissAfter: 2000,
+  allowHTML: true,
+  closeButton: false
+};
+
+// store
+const createStoreWithMiddleware = compose(
+  applyMiddleware(thunk)
+)(createStore);
+
+const store = createStoreWithMiddleware(combineReducers({
+  notifications: notificationsReducer(defaultNotification),
+  reducer
+}), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
 if (document.getElementById('flow_editor')) {
   ReactDOM.render(
@@ -22,15 +44,6 @@ if (document.getElementById('flow_editor')) {
       <FlowEditorContainer/>
     </Provider>,
     document.getElementById('flow_editor'),
-  )
-}
-
-if (document.getElementById('visualization')) {
-  ReactDOM.render(
-    <Provider store={store}>
-      <VisualizationContainer/>
-    </Provider>,
-    document.getElementById('visualization'),
   )
 }
 
@@ -53,7 +66,12 @@ if (document.getElementById('library_list')) {
     document.getElementById('library_list'),
   )
 }
-
+if (document.getElementById('profile')) {
+  ReactDOM.render(
+    <ProfileContainer navigation={this}/>,
+    document.getElementById('profile'),
+  )
+}
 if (document.getElementById('navigation')) {
   ReactDOM.render(
     <NavigationBar baseUrl={inject_static_url} navigation={this}/>,

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<h1>今回削除された一覧</h1>
+<ul>
+    {% for frame_uuid in deleting %}
+      <li>{{ frame_uuid }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

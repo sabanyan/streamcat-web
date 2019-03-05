@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
@@ -22,6 +22,8 @@ type Props = {
   job: JobProps;
   href: string;
   children: React.Node;
+  onClickJob: Function;
+  selected: boolean;
 }
 
 export default class JobList extends React.Component<Props> {
@@ -31,13 +33,9 @@ export default class JobList extends React.Component<Props> {
   }
 
   render () {
-    const {icon, children, href,job} = this.props
+    const {icon, children, href, job, onClickJob,selected} = this.props
     const {uuid} = job
 
-    const jobFrameList = Object.keys(job.data).map((data_key)=>{
-      const dataframe = job.data[data_key]
-      return <JobFrameList {...dataframe} job={job}/>
-    })
-    return jobFrameList
+    return <JobFrameList uuid={uuid} job={job} onClickJob={onClickJob} selected={selected}/>
   }
 }

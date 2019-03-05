@@ -89,7 +89,7 @@ def complete_sign_up():
 
     flash('ユーザー登録が完了しました。')
 
-    session['user_id'] = model.get_user_id_by_email(session['signup_email'])
+    session['user_id'] = model.get_user_id_by_email(session['signup_email'])['id']
     del session['signup_email']
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
@@ -158,7 +158,7 @@ def authenticate(user_id, password, session):
 
     if hashed_password == passwords['password']:
         # 認証成功
-        session['user_id'] = user_id # model.get_user(user_id)  # ユーザID保存
+        session['user_id'] = user_id # model.get_user_id_by_email(user_id)  # ユーザID保存
         return True
     else:
         return False
@@ -179,9 +179,20 @@ def login_required(func):
                 # 認証を要求している場合
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
-                if authenticate(model.get_user_id_by_email(f['email']), f['password'], session):
+                user = model.get_user_id_by_email(f['email'])
+
+                if user is None:
+                    return render_template('login.html', email=f['email'])
+
+                if authenticate(user['id'], f['password'], session):
                     # 認証成功 本来のページへ遷移する
-                    return redirect(request.base_url)
+                    if session.get('last_URL'):
+                        last_url = session['last_URL']
+                        session.pop('last_url', None)
+                        return redirect(last_url)
+                    else:
+                        return redirect(request.base_url)
+
                 else:
                     # 認証失敗
                     # メールアドレスは残してパスワードだけにする
@@ -191,9 +202,19 @@ def login_required(func):
             elif request.args['session'] == 'off':
                 # ログアウト処理
                 # TODO: セッションを消すだけで良いか要検討
-                del session['user_id']
+                session.pop('user_id', None)
                 # 再度やり直し
-                return redirect(request.base_url)
+
+                # 'session=off'だけを消し去ったURLを作りたいがための記述
+                query = '?'
+                for key, arg in request.args.items():
+                    if not key == 'session':
+                        if not query == '?':
+                            query += '&'
+                        query += key + '=' + arg
+
+                session['last_URL'] = request.base_url + query
+                return redirect(session['last_URL'])
             else:
                 # 無効なクエリパラメータの値
                 # ひとまずログインページを返しておく

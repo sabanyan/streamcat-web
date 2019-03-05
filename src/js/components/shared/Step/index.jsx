@@ -1,4 +1,4 @@
-// @flow
+//@flow
 import React from 'react'
 import { render } from 'react-dom'
 import Constants from '../../../constants/index'
@@ -14,23 +14,27 @@ import CommandStepModel from '../../../model/Step/CommandStepModel'
 import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
 import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
 import type { SubFlowStepModelProps } from '../../../model/Step/SubFlowStepModel'
+import NoteStepModel from '../../../model/Step/NoteStepModel'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import InOutIcon from '../Icon/InOutIcon'
+import type { StepModelType } from '../../../types'
+import CommandIcon from '../Icon/CommandIcon'
+import APIUtil from '../../../utils/APIUtil'
+import ErrorIcon from '../Icon/ErrorIcon'
+import Note from './Note'
 
 let mouseMoveEvent
 let mouseUpEvent
 
-type modelProps = {
-  model: CommandStepModelProps | DataFrameStepModelProps | SubFlowStepModelProps
-}
-
 type Props = {
   ...FlowEditorProps,
-  ...modelProps,
+  model: StepModelType;
   position: { x: number, y: number };
   type: string;
   selected: boolean;
   text: string;
+  invalid: {};
+  error: {};
 }
 
 type State = {
@@ -66,19 +70,6 @@ export default class Step extends React.Component<Props, State> {
         y: e.pageY,
       },
     })
-    let step = this.props.model
-    //選択イベントの呼び出し
-    if (e.shiftKey) {
-      if (!this.isSelected()) {
-        this.props.addSelectStep(step.id)
-      }
-      else {
-        this.props.deleteSelectStep(step.id)
-      }
-    }
-    else {
-      this.props.selectSteps([step])
-    }
     //mousemoveイベントでハンドリング
     mouseMoveEvent = (e: MouseEvent) => this.handleMouseMove(e)
     mouseUpEvent = (e: MouseEvent) => this.handleMouseUp(e)
@@ -97,6 +88,43 @@ export default class Step extends React.Component<Props, State> {
     this.setState({
       coords: null,
     })
+
+
+    let step = this.props.model
+    //選択イベントの呼び出し
+    if (e.shiftKey) {
+      if (!this.isSelected()) {
+        this.props.addSelectStep(step.id)
+      }
+      else {
+        this.props.deleteSelectStep(step.id)
+      }
+    }
+    else {
+      //一度選択状態をクリアする（#71）
+      this.props.selectSteps()
+
+      this.props.selectSteps([step])
+
+
+      //データフレームの詳細を取得する
+      const selected_step:StepModelType = step//this.getSelectedStep()
+      if (selected_step instanceof DataFrameStepModel) {
+        if(selected_step.hasData()){
+          //TODO 将来的にはページングなどの対応が必要
+          APIUtil.get("frames/" + selected_step.uuid + "?offset=0&limit=1000").then((response)=>{
+            const json = response.data
+            this.props.updateDataFrameDetail(json.data)
+          })
+        }else{
+          this.props.updateDataFrameDetail({})
+        }
+      }else{
+        this.props.updateDataFrameDetail({})
+      }
+    }
+
+
     document.removeEventListener('mousemove', mouseMoveEvent)
     document.removeEventListener('mouseup', mouseUpEvent)
   }
@@ -119,6 +147,7 @@ export default class Step extends React.Component<Props, State> {
   }
 
   updateStep (e: MouseEvent) {
+    const {zoom} = this.props
     let coords_x = e.pageX
     let coords_y = e.pageY
 
@@ -130,8 +159,8 @@ export default class Step extends React.Component<Props, State> {
     //移動量から現在位置を割り出す
     const xDiff = coords_x - e.pageX
     const yDiff = coords_y - e.pageY
-    const new_x = this.props.position.x - xDiff
-    const new_y = this.props.position.y - yDiff
+    const new_x = this.props.position.x - ZoomUtil.zoomReverse(xDiff,zoom)
+    const new_y = this.props.position.y - ZoomUtil.zoomReverse(yDiff,zoom)
 
     //移動に応じてStepの位置を更新
     let step = this.props.model
@@ -225,7 +254,7 @@ export default class Step extends React.Component<Props, State> {
     return this.isSelected()
   }
 
-  isSelected () {
+  isSelected ():boolean {
     let selected = false
     this.props.selected_step_ids.map((id) => {
       if (id === this.props.model.id) {
@@ -235,16 +264,20 @@ export default class Step extends React.Component<Props, State> {
     return selected
   }
 
-  isStep (model: modelProps) {
+  isStep (model: modelProps):boolean {
     return (model instanceof CommandStepModel)
   }
 
-  isDataFrame (model: modelProps) {
+  isDataFrame (model: modelProps):boolean {
     return (model instanceof DataFrameStepModel)
   }
 
-  isSubFlow (model: modelProps) {
+  isSubFlow (model: modelProps):boolean {
     return (model instanceof SubFlowStepModel)
+  }
+
+  isNote (model: modelProps):boolean {
+    return (model instanceof NoteStepModel)
   }
 
   getFilter () {
@@ -265,11 +298,11 @@ export default class Step extends React.Component<Props, State> {
 
   render () {
     const {x, y} = this.props.position
-    const {type,flow} = this.props
+    const {type,flow,invalid,error} = this.props
     const {ports} = this.props.flow
     let icon
 
-    let step = this.props.model
+    let step:StepModelType = this.props.model
 
     /**
      * STEPの種類に応じた見た目の設定
@@ -283,48 +316,55 @@ export default class Step extends React.Component<Props, State> {
     const hover = this.state.hover
     const selected = this.selectorIntersect()
 
-    step.label = (step.label)?step.label:step.id
+
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
+
     if(flowIn || flowOut){
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
-              filter={filter} style={rect_style}>
+              filter={filter} style={RectStyle}>
           <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#ccc"} fill={"#ccc"}/>
         </Rect>
       </g>
     }else if(this.isSubFlow(step)){
-      icon =
-        <Rect padding={5} selectedOutlineColor={'#B0E273'} fillColor={'#FFFFFF'}
-              hoverFillColor={'#F3FEE8'} selectedFillColor={'#F3FEE8'}
-              hover={hover} selected={selected} stroke={'#7ED321'}
-              filter={filter} style={rect_style}>
-          <SubFlowIcon fillColor={'#8BCD42'}
-                       width={16} height={20}/>
-        </Rect>
+      icon = <SubFlowIcon hover={hover} selected={selected} filter={filter}/>
     }else if (this.isStep(step)) {
       //ステップ
-      icon = <g>
-        <Rect padding={5} selectedOutlineColor={'#FFD263'} fillColor={'#FFFFFF'}
-              hoverFillColor={'#FFF6E4'} selectedFillColor={'#FFF6E4'}
-              hover={hover} selected={selected} stroke={'#FFB300'}
-              filter={filter} style={{...rect_style, rx: 12, ry: 12}}>
-          <OperatorIcon fillColor={'#F4B63F'} width={16} height={17}/>
-        </Rect>
-      </g>
+      let command
+      if(this.props.mast.commands){
+        this.props.mast.commands.forEach(c=>{if(c.id === step.commandId)command = c})
+        icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter}/>
+      }
     }else if (this.isDataFrame(step)) {
       //データソース
-      const stroke = (!step.uuid) ? {stroke: '#CCCCCC'} : {}
+      const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
       icon =
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
-              filter={filter} style={rect_style}>
-          <FileIcon fillColor={(step.uuid) ? '#63CFFD' : '#CCCCCC'}
+              filter={filter} style={RectStyle}>
+          <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
                     width={16} height={20}/>
         </Rect>
+    }else if (this.isNote(step)) {
+      let model = step
+      icon = 
+      <Note hover={hover} selected={selected} model={step}></Note>
+      
+    }
+
+    const stepLabel = step.getLabel()
+
+    let invalid_icon = null
+    let error_icon = null
+    if((Object.keys(invalid).length)){
+      invalid_icon = <ErrorIcon></ErrorIcon>
+    }
+    if((Object.keys(error).length)){
+      error_icon = <ErrorIcon></ErrorIcon>
     }
 
     return (
@@ -333,18 +373,24 @@ export default class Step extends React.Component<Props, State> {
          onMouseOver={(e) => this.handleMouseOver(e)}
          onMouseLeave={(e) => this.handleMouseLeave(e)}>
         {icon}
-        <text className="text" transform={'translate(' + (-8) + ',' +
-        (rect_style.height / 2 + 6) + ')'} textAnchor="end"
-              fontSize={12} width={100} height={100}>{step.label}</text>
-        {/*<text className="text" transform={'translate(' + (-50) + ',' +*/}
-        {/*(rect_style.height / 2 + 6) + ')'} textAnchor="middle"*/}
-              {/*fontSize={10}>{step_subtext}</text>*/}
+        {invalid_icon}
+        {error_icon}
+
+        <foreignObject {...TextStyle} transform={'translate(' + (-1 * TextStyle.width) + ',0)'}>
+          <div style={{display:"table",width:"100%",height:TextStyle.height,paddingRight: TextStyle.padding + "px"}}>
+          <p xmlns="http://www.w3.org/1999/xhtml" style={{display:"table-cell",verticalAlign:"middle",textAlign:"right",wordBreak:"break-all"}}>{stepLabel}</p>
+          </div>
+        </foreignObject>
+
+        {/*<text className="text" transform={'translate(' + (-8) + ',' +*/}
+        {/*(RectStyle.height / 2 + 6) + ')'} textAnchor="end"*/}
+              {/*fontSize={12} width={100} height={100}>{stepLabel}</text>*/}
       </g>
     )
   }
 }
 
-const rect_style = {
+export const RectStyle = {
   x: 0,
   y: 0,
   tx: 0,
@@ -356,7 +402,7 @@ const rect_style = {
   strokeWidth: 2,
 }
 
-const circle_style = {
+export const CircleStyle = {
   cx: Constants.default.operator.cx,
   cy: Constants.default.operator.cy,
   tx: 0,
@@ -364,5 +410,24 @@ const circle_style = {
   fill: '#ffffff',
   stroke: '#FC9E28',
   r: Constants.default.operator.r,
+  strokeWidth: 2,
+}
+
+export const TextStyle = {
+  width: 80,
+  height: 50,
+  fontSize: 10,
+  padding: 8
+}
+
+export const NoteStyle = {
+  x: 0,
+  y: 0,
+  tx: 0,
+  ty: 0,
+  width: Constants.default.note.width,
+  height: Constants.default.note.height,
+  rx: 0,
+  ry: 0,
   strokeWidth: 2,
 }

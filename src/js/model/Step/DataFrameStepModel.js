@@ -1,6 +1,6 @@
 // @flow
-import type { BaseModelProps } from './BaseModel'
-import BaseModel from './BaseModel'
+import type { BaseModelProps } from './BaseStepModel'
+import BaseStepModel from './BaseStepModel'
 
 type dataSourceType = "csv"
 
@@ -8,21 +8,50 @@ export type DataFrameStepModelProps = {
   ...BaseModelProps,
   uuid: string;
   dataSource: dataSourceType;
-  asFlowIn: boolean;
-  asFlowOut: boolean;
+  makeCache: boolean;
+  cacheCreatedAt: string;
 }
 
-export default class DataFrameStepModel extends BaseModel{
-  uuid: string
+export default class DataFrameStepModel extends BaseStepModel{
+  uuid: string = null
   dataSource: dataSourceType
-  asFlowIn: boolean
-  asFlowOut: boolean
-
+  makeCache: boolean = false
+  cacheCreatedAt: string = ""
   constructor (props: DataFrameStepModelProps) {
     super(props)
-    this.uuid = props.uuid
-    this.dataSource = props.dataSource
-    this.asFlowIn = (props.asFlowIn)?props.asFlowIn:this.asFlowIn
-    this.asFlowOut = (props.asFlowOut)?props.asFlowOut:this.asFlowOut
+    this.initialize(props,"uuid")
+    this.initialize(props,"dataSource")
+    this.initialize(props,"makeCache")
+    this.initialize(props,"cacheCreatedAt")
+  }
+
+  hasData():boolean{
+    return (this.uuid)
+  }
+
+  isCached():boolean{
+    return (this.cacheCreatedAt === "") ? false : true
+  }
+  isMakeCache():boolean {
+    return this.makeCache
+  }
+
+  getCacheCreatedAt():boolean {
+    return this.cacheCreatedAt
+  }
+
+  setMakeCache(flag:boolean) {
+    this.makeCache = flag
+    
+    return this.makeCache
+  }
+
+  setEmptyCache() {
+    this.cacheCreatedAt = ""
+    this.uuid = null
+  }
+
+  validate(){
+
   }
 }

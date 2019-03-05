@@ -1,0 +1,45 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "SubFlowCommandModeSchema.json",
+  "type": "object",
+  "required": [
+    "classification",
+    "createdAt",
+    "creator",
+    "id",
+    "label",
+    "nodes"
+  ],
+  "properties": {
+    "classification": {
+      "$id": "#/properties/classification",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "createdAt": {
+      "$id": "#/properties/createdAt",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "creator": {
+      "$id": "#/properties/creator",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "id": {
+      "$id": "#/properties/id",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "label": {
+      "$id": "#/properties/label",
+      "type": "string",
+      "pattern": "^(.*)$"
+    },
+    "nodes": {
+      "$id": "#/properties/nodes",
+      "type": "array"
+    }
+  }
+}

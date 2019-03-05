@@ -1,21 +1,37 @@
+//@flow
+import Model from '../index'
 
 export type FlowModelProps = {
+  createdAt : ?string,
+  creator: ?string,
   label: string,
-  params: [],
   nodes: [],
-  ports: []
+  params: [],
+  ports: [[],[]],
+  projectId: ?number,
+  description: string,
 }
 
-export default class FlowModel {
-  label:string
-  params:[]
-  nodes:[]
-  ports:[]
+export default class FlowModel<FlowModelProps> extends Model {
+  createdAt = null
+  creator = null
+  label:string = ""
+  params:[] = []
+  ports:[[],[]] = [[],[]]
+  nodes:[] = []
+  projectId = null
+  description = ""
+
   constructor (props: FlowModelProps) {
-    this.label = props.label
-    this.params = props.params
-    this.nodes = props.nodes
-    this.ports = props.ports
+    super()
+    this.initialize(props,"createdAt")
+    this.initialize(props,"creator")
+    this.initialize(props,"label")
+    this.initialize(props,"params")
+    this.initialize(props,"ports")
+    this.initialize(props,"nodes")
+    this.initialize(props,"projectId")
+    this.initialize(props,"description")
   }
 
   getInPorts(){
@@ -26,46 +42,43 @@ export default class FlowModel {
     return this.ports[1]
   }
 
-  getInPortWithId(id){
+  getInPortWithId(id:string){
     const inPorts = this.getInPorts()
     return inPorts.find((port)=>{
       return (port.name === id)
     })
   }
 
-  getOutPortWithId(id){
+  getOutPortWithId(id:string){
     const inPorts = this.getOutPorts()
     return inPorts.find((port)=>{
       return (port.name === id)
     })
   }
 
-  hasInPortWithId(id){
+  hasInPortWithId(id:string){
     return (this.getInPortWithId(id))?true:false
   }
 
-  hasOutPortWithId(id){
+  hasOutPortWithId(id:string){
     return (this.getOutPortWithId(id))?true:false
   }
-  deletePortWithId(type,id){
+  deletePortWithId(type:number,id:string){
     let targetPorts = (type === 0)?this.getInPorts():this.getOutPorts()
     this.ports[type] = targetPorts.filter((port)=>{
-      console.log(port.name)
-      console.log(id)
-      console.log((port.name !== id))
       return (port.name !== id)
     })
   }
 
-  deleteInPortWithId(id){
+  deleteInPortWithId(id:string){
     this.deletePortWithId(0,id)
   }
 
-  deleteOutPortWithId(id){
+  deleteOutPortWithId(id:string){
     this.deletePortWithId(1,id)
   }
 
-  setPort(type,port){
+  setPort(type:number,port){
     let targetPorts = (type === 0)?this.getInPorts():this.getOutPorts()
     let hasUpdate = false
     this.ports[type] = targetPorts.map((p)=>{
@@ -80,11 +93,11 @@ export default class FlowModel {
     if(!hasUpdate)this.ports[type].push(port)
   }
 
-  setInPort(port){
+  setInPort(port:[]){
     this.setPort(0,port)
   }
 
-  setOutPort(port){
+  setOutPort(port:[]){
     this.setPort(1,port)
   }
 

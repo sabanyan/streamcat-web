@@ -1,30 +1,42 @@
+//@flow
 import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
 import type { CommandParamType, CommandPortType } from '../../types'
+import Model from '../index'
 
 type stepType = "command" | "frame"
 
 export type CommandModelProps = {
+  classification: string;
+  description: string;
   id: string;
   label: string;
   params: [CommandParamType];
   ports: [CommandPortType];
   version: string;
+  rules: {};
 }
 
-export default class CommandModel {
+export default class CommandModel extends Model {
+  classification: string
+  description: string
   id: string
-  label: string
-  params: [CommandParamType]
-  ports: [CommandPortType]
+  label: string = null
+  params: [CommandParamType] = []
+  ports: [CommandPortType] = [[],[]]
+  rules: {} = {}
   version: string
 
   constructor (props: CommandModelProps) {
-    this.id = props.id
-    this.label = props.label
-    this.params = props.params
-    this.ports = props.ports
-    this.version = props.version
+    super(props)
+    this.initialize(props,"classification")
+    this.initialize(props,"description")
+    this.initialize(props,"id")
+    this.initialize(props,"label")
+    this.initialize(props,"params")
+    this.initialize(props,"ports")
+    this.initialize(props,"version")
+    this.initialize(props,"rules")
   }
 
   getInPorts():[CommandPortType]{
@@ -37,5 +49,13 @@ export default class CommandModel {
 
   getParams():[CommandParamType]{
     return this.params
+  }
+
+  getParam(key:string):CommandParamType{
+    let result:CommandParamType = {}
+    this.params.find(param =>{
+      if(param.name === key)result = param
+    })
+    return result
   }
 }

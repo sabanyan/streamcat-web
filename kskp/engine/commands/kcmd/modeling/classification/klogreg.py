@@ -2,11 +2,11 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Classification
+from kskp.engine.commands.kcmd.modeling.common.Model import Classification
 from sklearn.linear_model import LogisticRegression
 import pickle
 
-class Klogreg(Classification):
+class CKlogreg(Classification):
     """
     ロジスティック回帰クラスです
     """
@@ -83,6 +83,6 @@ class Klogreg(Classification):
         return
 
 if __name__=="__main__":
-    klogreg=Klogreg()
+    klogreg=CKlogreg()
     klogreg.main(sys.argv[1:])
     klogreg.write()

@@ -1,18 +1,18 @@
-// @flow
+//@flow
 import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
+import type { FlowListDataType } from '../../../../types'
+import Constants from '../../../../constants'
+import moment from 'moment/moment'
 
 type Props = {
-  icon: string;
-  flow: {
-    created_at: string;
-    creator_name: string;
-    name: string;
-    uuid: string;
-  };
-  href: string;
+  icon?: string;
+  flow: FlowListDataType;
+  href?: string;
   children: React.Node;
+  selected: boolean;
+  onClickFlow: Function;
 }
 
 export default class FlowList extends React.Component<Props> {
@@ -21,16 +21,29 @@ export default class FlowList extends React.Component<Props> {
     super(props)
   }
 
-  render () {
-    const {icon, children, href} = this.props
-    const {name, uuid, created_at, creator_name} = this.props.flow
+  onClick(e:Event){
+    const {flow,onClickFlow} = this.props
+    if(onClickFlow){
+      onClickFlow(e,flow)
+    }
+  }
 
-    return <div className={style.flow_list}>
-      <i className={classnames('material-icons', [style.icon])}>description</i>
-      <a className={style.name} href={href}>{name}</a>
-      <div className={style.creator_name}>{creator_name}</div>
-      <div className={style.created_at}>{created_at}</div>
-      <div className={style.action}>{children}</div>
+  render () {
+    const {icon, children, href,selected} = this.props
+    const flow:FlowListDataType = this.props.flow
+
+    return <div className={classnames(style.flow,{[style.selected]:selected})} onClick={(e)=>this.onClick(e)}>
+      <div className={style.flow_list}>
+        <div className={style.name}>
+          <i className={classnames('material-icons', [style.icon])}>description</i>
+          <a href={href}>
+            {flow.label}
+          </a>
+        </div>
+        <div className={style.creator_name}>{flow.creator}</div>
+        <div className={style.created_at}>{moment(flow.createdAt).format(Constants.format.dateTime)}</div>
+        <div className={style.action}>{children}</div>
+      </div>
     </div>
   }
 

@@ -1,7 +1,15 @@
-// @flow
+//@flow
 import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
+
+type FlowListHeaderProps = {
+  flow_list_header: string;
+  name: string;
+  creator_name: string;
+  created_at: string;
+  action: string;
+}
 
 export default class FlowListHeader extends React.Component {
 

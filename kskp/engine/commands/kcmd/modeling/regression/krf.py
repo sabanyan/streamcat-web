@@ -2,12 +2,12 @@
 import sys
 import os
 sys.path.append(os.getcwd()+"/modeling/common")
-from ..common.Model import Regression
+from kskp.engine.commands.kcmd.modeling.common.Model import Regression
 from sklearn.ensemble import RandomForestRegressor
 import pickle
 
 
-class Krf(Regression):
+class RKrf(Regression):
     """
     ランダムフォレスト(回帰)クラスです。
     """
@@ -76,6 +76,6 @@ class Krf(Regression):
         return
 
 if __name__=="__main__":
-    krf=Krf()
+    krf=RKrf()
     krf.main(sys.argv[1:])
     krf.write()

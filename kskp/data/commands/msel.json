@@ -3,8 +3,44 @@
   "params": [
     {
       "name": "c",
-      "label": "絞込条件式(必須)",
-      "type": "string"
+      "type": "string",
+      "label": "絞込条件式(必須)"
+    },
+    {
+      "name": "r",
+      "type": "boolean",
+      "label": "選択ではなく削除する。",
+      "optional": true
+    },
+    {
+      "name": "assert_diffSize",
+      "type": "boolean",
+      "label": "入力、出力件数比較を行う",
+      "optional": true
+    },
+    {
+      "name": "nfn",
+      "type": "boolean",
+      "label": "入力データの1行目を項目名行とみなさない。",
+      "optional": true
+    },
+    {
+      "name": "nfno",
+      "type": "boolean",
+      "label": "出力データに項目名行を出力しない。",
+      "optional": true
+    },
+    {
+      "name": "x",
+      "type": "boolean",
+      "label": "項目番号による指定",
+      "optional": true
+    },
+    {
+      "name": "tmpPath",
+      "type": "string",
+      "label": "作業ファイル格納パス名",
+      "optional": true
     }
   ],
   "ports": [
@@ -26,5 +62,8 @@
     ]
   ],
   "version": "0.7.0",
-  "label": "行絞り込み"
+  "label": "行絞り込み",
+  "classification": "row_edit",
+  "description": "",
+  "url": "./static/pdf/mcmd/row_edit/msel.pdf"
 }
