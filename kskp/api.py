@@ -935,7 +935,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from . import engine as e
-        data_path = '/home/kskp/kskp/data'
+        data_path = '/kskp/data'
         with open(f'{data_path}/flows/{flow_uuid}.json', 'r') as f:
             return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=f'{data_path}/frames', flows_path=f'{data_path}/flows', inputs=inputs, arguments=args)
 
