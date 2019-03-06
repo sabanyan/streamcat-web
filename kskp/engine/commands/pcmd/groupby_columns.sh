@@ -67,7 +67,7 @@ readonly DEF_IFS=${IFS}   # bash 環境変数の記録
 list_of_lists=""  # f=
 stats_list=""     # c=
 keys_list=""      # k=
-cmd_path="./"     # cmd_path=
+cmd_path="./kskp/engine/commands/pcmd"     # cmd_path=
 prefix=0          # -prefix
 delimiter=""      # delimiter=
 
@@ -372,6 +372,12 @@ if [[ prefix -eq 1 ]]; then
 fi
 
 echo "groupby_opt=${groupby_opt}"
+
+echo "debug: ${cmd_path}"
+echo "debug: ${columns_list_add}"
+echo "debug: ${stats_list}"
+echo "debug: ${output_file}"
+echo "debug: ${groupby_opt}"
 
 #----------------------
 # スクリプトの生成
