@@ -3551,7 +3551,7 @@ class SelectTargetColumn(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'SelectTargetColumn'
-        self.command_path = '/kskp/engine/commands/kcmd/preprocess/selecttargetcolumn.py'
+        self.command_path = 'kskp/engine/commands/kcmd/preprocess/selecttargetcolumn.py'
         self.description = ''
         self.params.append(Parameter('t', '対象の列を選択'))# todo 何が言いたいのかが分からない
 
@@ -3586,7 +3586,7 @@ class Standardize(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Standardize'
-        self.command_path = '/kskp/engine/commands/kcmd/preprocess/standardize.py'
+        self.command_path = 'kskp/engine/commands/kcmd/preprocess/standardize.py'
         self.description = ''
         self.output_ext = 'csv'
         self.params.append(Parameter('c', '標準化を行う行を選択'))
@@ -3624,7 +3624,7 @@ class Label_encode(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Label_encode'
-        self.command_path = '/kskp/engine/commands/kcmd/preprocess/label_encode.py'
+        self.command_path = 'kskp/engine/commands/kcmd/preprocess/label_encode.py'
         self.description = ''
         self.output_ext = 'csv'
         self.params.append(Parameter('c', '標準化を行う行を選択'))
@@ -3659,7 +3659,7 @@ class Normalize(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Normalize'
-        self.command_path = '/kskp/engine/commands/kcmd/preprocess/normalize.py'
+        self.command_path = 'kskp/engine/commands/kcmd/preprocess/normalize.py'
         self.description = ''
         self.output_ext = 'csv'
         self.params.append(Parameter('c', '正規化を行う列を選択'))
@@ -3696,7 +3696,7 @@ class One_hot_encode(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'One_hot_encode'
-        self.command_path = '/kskp/engine/commands/kcmd/preprocess/one_hot_encode.py'
+        self.command_path = 'kskp/engine/commands/kcmd/preprocess/one_hot_encode.py'
         self.description = ''
         self.output_ext = 'csv'
         self.params.append(Parameter('c', '標準化を行う行を選択'))
@@ -3731,7 +3731,7 @@ class Pca(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Pca'
-        self.command_path = '/kskp/engine/commands/kcmd/preprocess/pca.py'
+        self.command_path = 'kskp/engine/commands/kcmd/preprocess/pca.py'
         self.description = ''
         self.output_ext = 'csv'
         self.params.append(Parameter('n_components', '保持するコンポーネント数（デフォルト：2）'))
@@ -3766,7 +3766,7 @@ class Kkmeans(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Kkmeans'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/clustering/kkmeans.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/clustering/kkmeans.py'
         self.description = 'k-means法によるクラスタ分析'
         self.output_ext = 'csv'
         self.params.append(Parameter('n_clusters', 'クラスタ数（デフォルト：8）'))
@@ -3810,7 +3810,7 @@ class CKab(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Ckab'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kab.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/kab.py'
         self.description = 'アダブーストによる分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('l', '学習率'))
@@ -3855,7 +3855,7 @@ class CKbag(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'CKbag'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kbag.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/kbag.py'
         self.description = 'バギングによる分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('r', '乱数のシード値'))
@@ -3904,7 +3904,7 @@ class CKdt(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'CKdt'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kdt.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/kdt.py'
         self.description = '決定木による分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
@@ -3951,7 +3951,7 @@ class CKgb(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'CKgb'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kgb.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/kgb.py'
         self.description = '勾配ブースティングによる分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
@@ -4002,7 +4002,7 @@ class CKnearestNeighbors(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'CKnearestNeighbors'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/knearest_neighbors.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/knearest_neighbors.py'
         self.description = '最近傍法による分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('n_neighbors', '未知のデータを与えた際に、近い順に取得するデータの数、いわゆるkの値（デフォルト：5）'))
@@ -4049,7 +4049,7 @@ class CKneuralnet(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'CKneuralnet'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kneuralnet.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/kneuralnet.py'
         self.description = 'ニューラルネットワークによる分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('hidden_layer_sizes', '隠れ層の層の数と各層に配置するニューロンの数（デフォルト：100,）'))
@@ -4104,7 +4104,7 @@ class CKrf(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'CKrf'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/krf.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/krf.py'
         self.description = 'ランダムフォレストによる分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
@@ -4149,7 +4149,7 @@ class CKsvm(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'CKsvm'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/ksvm.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/ksvm.py'
         self.description = 'サポートベクターマシンによる分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('c', 'マージンの大きさ（デフォルト：1.0）'))
@@ -4192,7 +4192,7 @@ class KgaussianNb(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'KgaussianNb'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/kgaussian_nb.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/kgaussian_nb.py'
         self.description = 'ナイーブベイズによる分類'
         self.output_ext = 'pickle'
         self.params.append(Parameter('priors', '事前確率'))
@@ -4231,7 +4231,7 @@ class Klogreg(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Klogreg'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/classification/klogreg.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/classification/klogreg.py'
         self.description = 'ロジスティック回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('C', '正則化強度の逆数（デフォルト：1）'))
@@ -4280,7 +4280,7 @@ class RKab(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'RKab'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kab.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/kab.py'
         self.description = 'アダブーストによる回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('l', '学習率'))
@@ -4327,7 +4327,7 @@ class RKbag(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'RKbag'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kbag.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/kbag.py'
         self.description = 'バギングによる回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('r', '乱数のシード値'))
@@ -4376,7 +4376,7 @@ class RKdt(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'RKdt'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kdt.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/kdt.py'
         self.description = '決定木による回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
@@ -4423,7 +4423,7 @@ class RKgb(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'RKgb'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kgb.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/kgb.py'
         self.description = '勾配ブースティングによる回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
@@ -4474,7 +4474,7 @@ class RKnearestNeighbors(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'RKnearestNeighbors'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/knearest_neighbors.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/knearest_neighbors.py'
         self.description = '最近傍法による回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('radius', 'set the range of parameter space'))#todo この引数はないのでは？
@@ -4521,7 +4521,7 @@ class RKneuralnet(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'RKneuralnet'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kneuralnet.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/kneuralnet.py'
         self.description = 'ニューラルネットワークによる回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('hidden_layer_sizes', '隠れ層の層の数と各層に配置するニューロンの数（デフォルト：100,）'))
@@ -4576,7 +4576,7 @@ class RKrf(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'RKrf'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/krf.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/krf.py'
         self.description = 'ランダムフォレストによる回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('l', '各ノードに必要なサンプル数の下限（デフォルト：1）'))
@@ -4621,7 +4621,7 @@ class RKsvm(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'RKsvm'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/ksvm.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/ksvm.py'
         self.description = 'サポートベクターマシンによる回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('c', 'マージンの大きさ（デフォルト：1.0）'))
@@ -4664,7 +4664,7 @@ class Kelastic(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Kelastic'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kelastic.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/kelastic.py'
         self.description = 'kelastic net回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
@@ -4713,7 +4713,7 @@ class Kridge(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Kridge'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/kridge.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/kridge.py'
         self.description = 'ridge回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
@@ -4760,7 +4760,7 @@ class Klasso(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Klasso'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/klasso.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/klasso.py'
         self.description = 'lasso回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('a', 'モデルの正則化強度（デフォルト：1）'))
@@ -4810,7 +4810,7 @@ class Klinreg(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Klinreg'
-        self.command_path = '/kskp/engine/commands/kcmd/modeling/regression/klinreg.py'
+        self.command_path = 'kskp/engine/commands/kcmd/modeling/regression/klinreg.py'
         self.description = '線形回帰'
         self.output_ext = 'pickle'
         self.params.append(Parameter('normalize', '正規化を行うかどうか（デフォルト」：False）'))
@@ -4852,7 +4852,7 @@ class Evaluate(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Evaluate'
-        self.command_path = '/kskp/engine/commands/kcmd/postprocess/evaluate.py'
+        self.command_path = 'kskp/engine/commands/kcmd/postprocess/evaluate.py'
         self.description = '評価'
         self.output_ext = 'csv'
         self.params.append(Parameter('m', 'select metrics appling model'))
@@ -4922,7 +4922,7 @@ class Predict(KCommand):
     def __init__(self):
         super().__init__(nm.cmd)
         self.name = 'Klinreg'
-        self.command_path = '/kskp/engine/commands/kcmd/postprocess/predict.py'
+        self.command_path = 'kskp/engine/commands/kcmd/postprocess/predict.py'
         self.description = '推定'
         self.output_ext = 'csv'
         self.params.append(Parameter('p', 'set probability on'))
@@ -5039,7 +5039,7 @@ class NmCmd(MCommandNew):
 
 class SmlModeling(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
+        super().__init__('kskp/engine/commands/pcmd/sml_modeling.sh', 'csv', 'output_metrics_data=')
         self.name = 'SmlModeling'
         self.description = 'デモ用モデリング'
 
@@ -5058,33 +5058,33 @@ class SmlModeling(NmCmd):
         # nm.cmd用の文字列のコマンドを作成する
         str_args = self.execute_command + self.convert_args_dict_into_str(args)
 
-        str_args += ' kcmd_path=/kskp/engine/commands/kcmd'
-        str_args += ' temp_path=/kskp/engine/commands/pcmd/tmp'
-        str_args += ' model_data_path=/kskp/engine/commands/pcmd/model'
+        str_args += ' kcmd_path=kskp/engine/commands/kcmd'
+        str_args += ' temp_path=kskp/engine/commands/pcmd/tmp'
+        str_args += ' model_data_path=kskp/engine/commands/pcmd/model'
 
         return str_args, process_flow
 
 class Groupby(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/groupby.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/groupby.sh', 'csv', 'o=')
         self.name = 'Groupby'
         self.description = 'groupby処理を行う'
 
 class CheckDuplicateRows(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/check_duplicate_rows.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/check_duplicate_rows.sh', 'csv', 'o=')
         self.name = 'CheckDuplicateRows'
         self.description = '重複行の抽出'
 
 class MergeFS(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/merge_FS.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/merge_FS.sh', 'csv', 'o=')
         self.name = 'MergeFS'
         self.description = '不整CSVファイルのクレンジングと集約'
 
 class MergeIbutsu(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/merge_ibutsu.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/merge_ibutsu.sh', 'csv', 'o=')
         self.name = 'MergeIbutsu'
         self.description = 'CSVファイルの集約'
 
@@ -5096,55 +5096,55 @@ class MergeIbutsu(NmCmd):
 
 class ColumnGroupingName(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/column_grouping_name.sh', 'csv', 'o=')
         self.name = 'ColumnGroupingName'
         self.description = '項目群に対して、グループに属する項目名に接頭語を付与する'
 
 class ColumnUniqueName(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/column_unique_name.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/column_unique_name.sh', 'csv', 'o=')
         self.name = 'ColumnUniqueName'
         self.description = '全ての項目名がユニークになるように、項目名を変更する。'
 
 class ColumnName(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/column_name.sh', 'csv', 'o=')
         self.name = 'ColumnName'
         self.description = '先頭と末尾に、指定した項目名の順番に列を並び替える。'
 
 class ColumnBlankName(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/column_blank_name.sh', 'csv', 'o=')
         self.name = 'ColumnBlankName'
         self.description = '空白の項目名に対して、指定した文字と重複時の識別子で生成した項目名に変更し、全ての項目を出力する。'
 
 class ColumnList(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/column_list.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/column_list.sh', 'csv', 'o=')
         self.name = 'ColumnList'
         self.description = 'ヘッダー行と先頭の1行 を縦型に変形したリストを出力する'
 
 class WinCp932Read(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/windows_cp932_csv_read.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/windows_cp932_csv_read.sh', 'csv', 'o=')
         self.name = 'WinCp932Read'
         self.description = 'Windowsファイル（Shift-JIS拡張 CP932）を、サーバ上のローカルファイルより読込む。'
 
 class ColumnsToRows(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/columns_to_rows.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/columns_to_rows.sh', 'csv', 'o=')
         self.name = 'ColumnsToRows'
         self.description = 'f=で指定した複数の列項目に対して、各項目の行を連結した新たな項目をa=で指定した名前で作成する。'
 
 class GroupbyColumns(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/groupby_columns.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/groupby_columns.sh', 'csv', 'o=')
         self.name = 'GroupbyColumns'
         self.description = '複数の列項目を、指定した新規列名で、行データへ展開し、複数の統計量を適用した結果を、新規列名と統計量からなる列名として出力する。'
 
 class Utf8ToCp932(NmCmd):
     def __init__(self):
-        super().__init__('/kskp/engine/commands/pcmd/utf8_to_cp932.sh', 'csv', 'o=')
+        super().__init__('kskp/engine/commands/pcmd/utf8_to_cp932.sh', 'csv', 'o=')
         self.name = 'Utf8ToCp932'
         self.description = 'Windowsファイル（Shift-JIS拡張 CP932、CRLF改行コード）へ変換したデータを出力する。'
 
