@@ -23,7 +23,24 @@ from .model import (
     update_user_by_id,
     write_data_to_json,
     make_flow_path,
-    copy_flow_by_uuid
+    copy_flow_by_uuid,
+
+    get_all_stores,
+    create_store,
+    delete_store_by_id,
+    get_library,
+    get_folder,
+    create_folder,
+    rename_folder_by_id,
+    delete_folder_by_id,
+    get_remote_folder,
+    create_remote_folder,
+    rename_remote_folder_by_id,
+    delete_remote_folder_by_id,
+    get_database,
+    create_database,
+    rename_database_by_id,
+    delete_database_by_id
 )
 from .activity import (
     make_unfinished_history,
@@ -1083,3 +1100,268 @@ def visualizer():
 
     # bokehのコマンド
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
+
+
+@api.route('/stores', methods=['GET'])
+def fecth_stores():
+    """
+    データストアの定義(雛形)の一覧を返却する
+    """
+    try:    
+        stores = get_all_stores()
+        return jsonify({'success': True, 'data': stores})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores', methods=['POST'])
+# @login_required_api
+def make_new_store():
+    """
+    データストアの定義(雛形)を作成する
+    """
+    try:
+        new_store_id = request.json['id']    
+        new_store= create_store(new_store_id, request.json, 1)
+        return jsonify({'success': True, 'data': new_store})    
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores/<store_id>', methods=['DELETE'])
+# @login_required_api
+def delete_store(store_id):
+    """
+    データストアの定義(雛形)を削除する
+    """
+    try:
+        delete_store_by_id(store_id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/library', methods=['GET'])
+# @login_required_api
+def fecth_library():
+    """
+    ルートデータストアを返却する
+    """
+    try:
+        sources = get_library()
+        return jsonify({'success': True, 'data': sources})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+@api.route('/folders/<folder_uuid>', methods=['GET'])
+# @login_required_api
+def fetch_folder(folder_uuid):
+    """
+    フォルダを返却する
+    """
+    try:
+        folder = get_folder(folder_uuid)
+        return jsonify({'success': True, 'data': folder})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/folders', methods=['POST'])
+# @login_required_api
+def make_new_folder():
+    """
+    フォルダを作成する
+    """
+    try:
+        new_folder= create_folder(request.json, 1)
+        return jsonify({'success': True, 'data': new_folder})    
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/folders/<folder_uuid>', methods=['PUT'])
+# @login_required_api
+def update_folder(folder_uuid):
+    """
+    フォルダを修正する
+    """
+    try:
+        new_label = request.json['label']
+        folder= rename_folder_by_id(folder_uuid, new_label)
+        return jsonify({'success': True, 'data': folder})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/folders/<folder_uuid>', methods=['DELETE'])
+# @login_required_api
+def delete_folder(folder_uuid):
+    """
+    フォルダを削除する
+    """
+    try:
+        delete_folder_by_id(folder_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+
+@api.route('/remote-folders/<folder_uuid>', methods=['GET'])
+# @login_required_api
+def fetch_remote_folder(folder_uuid):
+    """
+    リモートフォルダを返却する
+    """
+    try:
+        folder = get_remote_folder(folder_uuid)
+        return jsonify({'success': True, 'data': folder})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/remote-folders', methods=['POST'])
+# @login_required_api
+def make_new_remote_folder():
+    """
+    リモートフォルダを作成する
+    """
+    try:
+        new_folder= create_remote_folder(request.json, 1)
+        return jsonify({'success': True, 'data': new_folder})    
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/remote-folders/<folder_uuid>', methods=['PUT'])
+# @login_required_api
+def update_remote_folder(folder_uuid):
+    """
+    リモートフォルダを修正する
+    """
+    try:
+        new_label = request.json['label']
+        folder= rename_remote_folder_by_id(folder_uuid, new_label)
+        return jsonify({'success': True, 'data': folder})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
+# @login_required_api
+def delete_remote_folder(folder_uuid):
+    """
+    リモートフォルダを削除する
+    """
+    try:
+        delete_remote_folder_by_id(folder_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+
+@api.route('/databases/<database_uuid>', methods=['GET'])
+# @login_required_api
+def fetch_database(database_uuid):
+    """
+    データベースを返却する
+    """
+    try:
+        database = get_database(database_uuid)
+        return jsonify({'success': True, 'data': database})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/databases', methods=['POST'])
+# @login_required_api
+def make_new_database():
+    """
+    データベースを作成する
+    """
+    try:
+        new_database= create_database(request.json, 1)
+        return jsonify({'success': True, 'data': new_database})    
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/databases/<database_uuid>', methods=['PUT'])
+# @login_required_api
+def update_database(database_uuid):
+    """
+    データベースを修正する
+    """
+    try:
+        new_label = request.json['label']
+        database= rename_database_by_id(database_uuid, new_label)
+        return jsonify({'success': True, 'data': database})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/databases/<database_uuid>', methods=['DELETE'])
+# @login_required_api
+def delete_database(database_uuid):
+    """
+    データベースを削除する
+    """
+    try:
+        delete_database_by_id(database_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
