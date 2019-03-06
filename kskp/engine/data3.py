@@ -462,8 +462,12 @@ class MCMDErrorInfo():
         # 入力と出力の件数をパースする
         if len(ss) >= 3:
             import re
-            io = re.search(r'IN=(\d+) OUT=(\d+)', ss[2]).groups()
-            return cls(ss[0].replace('#ERROR#', ''), int(io[0]), int(io[1]), ss[3])
+            result = re.search(r'IN=(\d+) OUT=(\d+)', ss[2])
+            if result is not None:
+                io = result.groups()
+                return cls(ss[0].replace('#ERROR#', ''), int(io[0]), int(io[1]), ss[3])
+            else:
+                return cls(s, -1, -1, '')
         else:
             print('re:', s)
 
