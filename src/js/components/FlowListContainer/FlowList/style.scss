@@ -1,4 +1,4 @@
-@import "../../../sass/common";
+@import "../../../../sass/common";
 
 .header{
   font-weight: bold;
@@ -13,4 +13,11 @@
 .inspector_list_container{
   margin-right: 400px;
   overflow-x:scroll;
+}
+
+.flow_toolbar {
+ 
+  width: 100%;
+  top: 100px;
+  left: 10px;
 }
