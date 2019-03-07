@@ -55,7 +55,9 @@ if (document.getElementById('project_list')) {
 }
 if (document.getElementById('flow_list')) {
   ReactDOM.render(
-    <FlowListContainer/>,
+    <Provider store={store}>
+      <FlowListContainer/>
+    </Provider>,
     document.getElementById('flow_list'),
   )
 }

@@ -290,16 +290,19 @@ export default class FlowUtil {
   }
 
   static saveFlow (flowUUID:string, {label,description,params,ports,nodes},notify:Function,dismissNotify:Function):any {
-    //validation
-    Validator.nodesValidate(nodes)
+    
+    
 
     let putBody = {}
     if(label)putBody["label"]=label
     if(description)putBody["description"]=description
     if(params)putBody["params"]=params
     if(ports)putBody["ports"]=ports
-    if(ports)putBody["nodes"]=nodes
-
+    if(ports){
+      //validation
+      Validator.nodesValidate(nodes)
+      putBody["nodes"]=nodes
+    }
     let saveNotify
     if(notify){
       saveNotify = notify({
