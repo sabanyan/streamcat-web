@@ -1,19 +1,29 @@
 {
-  "projectId": 6,
+  "projectId": 9,
   "label": "検査　1極/2極対応変形処理",
   "ports": [
-    [],
-    []
+    [
+      {
+        "name": "inputdata",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "outputdata",
+        "type": "frame"
+      }
+    ]
   ],
   "params": [],
-  "description": "",
+  "description": "検査データのオーダーNo単位集計\n\nTest1、2回目項目の意味が1極/2極で異なる点を反映した集計",
   "creator": "開発用",
   "createdAt": "2019-02-08 18:47:57",
   "nodes": [
     {
       "position": {
-        "x": 482,
-        "y": 327
+        "x": 806,
+        "y": 207
       },
       "size": {
         "width": 38,
@@ -21,16 +31,16 @@
       },
       "invalid": {},
       "error": {},
-      "id": "検査データ_sample.csv",
+      "id": "inputdata",
       "type": "frame",
-      "label": "検査データ_sample.csv",
-      "uuid": "c2fed501-afc3-48d5-8df8-a4f30d28c8cb",
+      "label": "inputdata",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 569,
-        "y": 225
+        "x": 1092,
+        "y": 486.5
       },
       "size": {
         "width": 38,
@@ -38,16 +48,89 @@
       },
       "invalid": {},
       "error": {},
-      "id": "testdata00.csv",
+      "id": "d3",
       "type": "frame",
-      "label": "testdata00.csv",
-      "uuid": "dc6fc572-c3e6-49ff-a4f5-2c48f0ea448a",
+      "label": "d3",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 1187,
-        "y": 1157
+        "x": 974,
+        "y": 485.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "項目名リスト",
+      "srcs": {
+        "i": "d1"
+      },
+      "dsts": {
+        "o": "d3"
+      },
+      "args": {},
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 802,
+        "y": 717.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "label": "d2",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 802,
+        "y": 638.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "オーダーNoでソート",
+      "srcs": {
+        "i": "d1"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "f": "検査_オーダーNo",
+        "r": false,
+        "n": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mfsort"
+    },
+    {
+      "position": {
+        "x": 803,
+        "y": 484.5
       },
       "size": {
         "width": 38,
@@ -63,8 +146,8 @@
     },
     {
       "position": {
-        "x": 1182,
-        "y": 746
+        "x": 801,
+        "y": 410.5
       },
       "size": {
         "width": 38,
@@ -74,17 +157,296 @@
       "error": {},
       "id": "c1",
       "type": "command",
-      "label": "オーダ単位で集計",
+      "label": "使用項目選択",
       "srcs": {
-        "i": "検査データ_sample.csv"
+        "i": "inputdata"
       },
       "dsts": {
         "o": "d1"
       },
       "args": {
-        "k": "",
-        "f": "",
-        "c": "",
+        "f": "検査_【Name】,検査_【SCR/Ohm】,検査_【OT/ms】,検査_【OT1/ms】,検査_【OT2/ms】,検査_【RT/ms】,検査_【RT1/ms】,検査_【RT2/ms】,検査_1A_【OBT1a@F/ms】,検査_1A_【OBT1a@S/ms】,検査_1A_【RBT1a@F/ms】,検査_1A_【RBT1a@S/ms】,検査_1A_【S-MaxOpen_1a@F/ms】,検査_1A_【S-MaxOpen_1a@S/ms】,検査_1A_【R-MaxOpen_1a@F/ms】,検査_1A_【R-MaxOpen_1a@S/ms】,検査_1A_【RTT1@F/ms】,検査_1A_【RTT1@S/ms】,検査_1B_【OBT1b@F/ms】,検査_1B_【OBT1b@S/ms】,検査_1B_【RBT1b@F/ms】,検査_1B_【RBT1b@S/ms】,検査_1B_【S-MaxOpen_1b@F/ms】,検査_1B_【S-MaxOpen_1b@S/ms】,検査_1B_【R-MaxOpen_1b@F/ms】,検査_1B_【R-MaxOpen_1b@S/ms】,検査_1B_【OTT1@F/ms】,検査_1B_【OTT1@S/ms】,検査_2A_【OBT2a@F/ms】,検査_2A_【OBT2a@S/ms】,検査_2A_【RBT2a@F/ms】,検査_2A_【RBT2a@S/ms】,検査_2A_【S-MaxOpen_2a@F/ms】,検査_2A_【S-MaxOpen_2a@S/ms】,検査_2A_【R-MaxOpen_2a@F/ms】,検査_2A_【R-MaxOpen_2a@S/ms】,検査_2A_【RTT2@F/ms】,検査_2A_【RTT2@S/ms】,検査_2B_【OBT2b@F/ms】,検査_2B_【OBT2b@S/ms】,検査_2B_【RBT2b@F/ms】,検査_2B_【RBT2b@S/ms】,検査_2B_【S-MaxOpen_2b@F/ms】,検査_2B_【S-MaxOpen_2b@S/ms】,検査_2B_【R-MaxOpen_2b@F/ms】,検査_2B_【R-MaxOpen_2b@S/ms】,検査_2B_【OTT2@F/ms】,検査_2B_【OTT2@S/ms】,検査_Gen_【OBT1a/ms】,検査_Gen_【OBT1b/ms】,検査_Gen_【RBT1a/ms】,検査_Gen_【RBT1b/ms】,検査_Gen_【OTT1/ms】,検査_Gen_【RTT1/ms】,検査_Gen_【OLT1/ms】,検査_Gen_【RLT1/ms】,検査_Gen_【OBT2a/ms】,検査_Gen_【OBT2b/ms】,検査_Gen_【RBT2a/ms】,検査_Gen_【RBT2b/ms】,検査_Gen_【OTT2/ms】,検査_Gen_【RTT2/ms】,検査_Gen_【OLT2/ms_1】,検査_Gen_【OLT2/ms_2】,検査_Gen_【CBA1a/us】,検査_Gen_【CBA2a/us】,検査_Gen_【RUS_1a@F/mA】,検査_Gen_【RUS_1a@S/mA】,検査_Gen_【RUS_2a@F/mA】,検査_Gen_【RUS_2a@S/mA】,検査_Gen_【PV@F/V】,検査_Gen_【PV@S/V】,検査_Gen_【DV@F/V】,検査_Gen_【DV@S/V】,検査_Gen_【PC@F/mA】,検査_Gen_【PC@S/mA】,検査_Gen_【DC@F/mA】,検査_Gen_【DC@S/mA】,検査_T1_【SCR/Ohm】,検査_T1_【OTa/ms】,検査_T1_【OTb/ms】,検査_T1_【OBTa/ms】,検査_T1_【OBTb/ms】,検査_T1_【TAU-0％/ms】,検査_T1_【TAU-70％/ms】,検査_T1_【L-0％/mH】,検査_T1_【L-45％/mH】,検査_T1_【L-50％/mH】,検査_T1_【L-55％/mH】,検査_T1_【L-60％/mH】,検査_T1_【L-65％/mH】,検査_T1_【L-70％/mH】,検査_T1_【L-75％/mH】,検査_T1on_【AOC@ON/mA】,検査_T1on_【AOC@CV200％/mA】,検査_T1on_【AOT@ON/ms】,検査_T1on_【AOT@CV200％/ms】,検査_T1on_【AOT@CC120％P/ms】,検査_T1on_【APC@ON/mA】,検査_T1on_【APC@CV200％/mA】,検査_T1on_【APT@ON/ms】,検査_T1on_【APT@CV200％/ms】,検査_T1on_【APT@CC120％P/ms】,検査_T1on_【CBAa@ON/ms】,検査_T1on_【CBAa@CV200％/ms】,検査_T1on_【CBAa@CC120％P/ms】,検査_T1on_【CBAb@ON/ms】,検査_T1on_【CBAb@CV200％/ms】,検査_T1on_【CBAb@CC120％P/ms】,検査_T1on_【DynamicPCb@ON/mA】,検査_T1on_【DynamicPCb@CV200％/mA】,検査_T1on_【DynamicPCa@CV200％/mA】,検査_T1on_【DynamicPCa@ON/mA】,検査_T1on_【DynamicPVa@CC120％P/V】,検査_T1on_【DynamicPVb@CC120％P/V】,検査_T1on_【K-Slope_a@ON】,検査_T1on_【K-Slope_a@CV200％】,検査_T1on_【K-Slope_a@CC120％P】,検査_T1on_【K-Slope_b@ON】,検査_T1on_【K-Slope_b@CV200％】,検査_T1on_【K-Slope_b@CC120％P】,検査_T1on_【MaxOpen1@ON/ms】,検査_T1on_【MaxOpen1@CV200％/ms】,検査_T1on_【MaxOpen1@CC120％P/ms】,検査_T1on_【MaxOpen2@ON/ms】,検査_T1on_【MaxOpen2@CV200％/ms】,検査_T1on_【MaxOpen2@CC120％P/ms】,検査_T1on_【OBTa@ON/ms】,検査_T1on_【OBTa@CV200％/ms】,検査_T1on_【OBTa@CC120％P/ms】,検査_T1on_【OBTb@ON/ms】,検査_T1on_【OBTb@CV200％/ms】,検査_T1on_【OBTb@CC120％P/ms】,検査_T1on_【OTa@ON/ms】,検査_T1on_【OTa@CV200％/ms】,検査_T1on_【OTa@CC120％P/ms】,検査_T1on_【OTb@ON/ms】,検査_T1on_【OTb@CV200％/ms】,検査_T1on_【OTb@CC120％P/ms】,検査_T1on_【OTCa@ON/m】,検査_T1on_【OTCa@CV200％/m】,検査_T1on_【OTCa@CC120％P/m】,検査_T1on_【OTCb@ON/m】,検査_T1on_【OTCb@CV200％/m】,検査_T1on_【OTCb@CC120％P/m】,検査_T1on_【OTT1@ON/ms】,検査_T1on_【OTT1@CV200％/ms】,検査_T1on_【OTT1@CC120％P/ms】,検査_T1on_【rOTa@ON/ms】,検査_T1on_【rOTa@CV200％/ms】,検査_T1on_【rOTa@CC120％P/ms】,検査_T1on_【rOTb@ON/ms】,検査_T1on_【rOTb@CV200％/ms】,検査_T1on_【rOTb@CC120％P/ms】,検査_T1on_【SlopeP@ON】,検査_T1on_【SlopeP@CV200％】,検査_T1on_【SlopeP@CC120％P】,検査_T1on_【SlopeQ@ON】,検査_T1on_【SlopeQ@CV200％】,検査_T1on_【SlopeQ@CC120％P】,検査_T1on_【SOSa@ON/mA】,検査_T1on_【SOSa@CV200％/mA】,検査_T1on_【SOSb@ON/mA】,検査_T1on_【SOSb@CV200％/mA】,検査_T1on_【SUSa@CC120％P/mA】,検査_T1on_【SUSb@CC120％P/mA】,検査_T1off_【RTa-AVT@DM0/ms】,検査_T1off_【RTa-DCT@DM0/ms】,検査_T1off_【ARC@DM0/ms】,検査_T1off_【ART@DM0/ms】,検査_T1off_【AVC@DM0/ms】,検査_T1off_【AVT@DM0/ms】,検査_T1off_【CSa@DM0/ms】,検査_T1off_【CSb@DM0/ms】,検査_T1off_【DSC@DM0/ms】,検査_T1off_【DST@DM0/ms】,検査_T1off_【DynamicDCa@DM0/ms】,検査_T1off_【DynamicDCb@DM0/ms】,検査_T1off_【K-Slope_a@DM0/ms】,検査_T1off_【K-Slope_b@DM0/ms】,検査_T1off_【MaxOpen_a@DM0/ms】,検査_T1off_【MaxOpen_b@DM0/ms】,検査_T1off_【RBTa@DM0/ms】,検査_T1off_【RBTb@DM0/ms】,検査_T1off_【ｒRTa@DM0/ms】,検査_T1off_【ｒRTb@DM0/ms】,検査_T1off_【RTa@DM0/ms】,検査_T1off_【RTb@DM0/ms】,検査_T1off_【RTCa@DM0/ms】,検査_T1off_【RTCb@DM0/ms】,検査_T1off_【RTT1@DM0/ms】,検査_T1off_【RUSa@DM0/ms】,検査_T1off_【RUSb@DM0/ms】,検査_T1off_【Sigma-CS^2_a@DM0/ms】,検査_T1off_【Sigma-CS^2_b@DM0/ms】,検査_T1off_【Sigma-CSa@DM0/ms】,検査_T1off_【Sigma-CSb@DM0/ms】,検査_T1off_【Sigma-RUS^2_a@DM0/ms】,検査_T1off_【Sigma-RUS^2_b@DM0/ms】,検査_T1off_【Sigma-RUSa@DM0/ms】,検査_T1off_【Sigma-RUSb@DM0/ms】,検査_SW_【ARC@-DN-A/ms】,検査_SW_【ART@-DN-A/ms】,検査_SW_【AVC@-DN-A/ms】,検査_SW_【AVT@-DN-A/ms】,検査_SW_【CBAa@-DN-A/ms】,検査_SW_【CBAb@-DN-A/ms】,検査_SW_【CSa@-DN-A/ms】,検査_SW_【CSb@-DN-A/ms】,検査_SW_【CSV2@-DN-A/ms】,検査_SW_【CSV3@-DN-A/ms】,検査_SW_【DVa@-DN-A/ms】,検査_SW_【DVb@-DN-A/ms】,検査_SW_【DynamicDCa@-DN-A/ms】,検査_SW_【DynamicDCb@-DN-A/ms】,検査_SW_【K-Slope_a@-DN-A/ms】,検査_SW_【K-Slope_b@-DN-A/ms】,検査_SW_【MaxOpen1@-DN-A/ms】,検査_SW_【MaxOpen2@-DN-A/ms】,検査_SW_【RBTa@-DN-A/ms】,検査_SW_【RBTb@-DN-A/ms】,検査_SW_【ｒRTa@-DN-A/ms】,検査_SW_【ｒRTb@-DN-A/ms】,検査_SW_【RTa@-DN-A/ms】,検査_SW_【RTb@-DN-A/ms】,検査_SW_【RTCa@-DN-A/ms】,検査_SW_【RTCb@-DN-A/ms】,検査_SW_【RTT1@-DN-A/ms】,検査_SW_【RUSa@-DN-A/ms】,検査_SW_【RUSb@-DN-A/ms】,検査_SW_【SCR@-DN-A/ms】,検査_SW_【Sigma-CS^2_a@-DN-A/ms】,検査_SW_【Sigma-CS^2_b@-DN-A/ms】,検査_SW_【Sigma-CSa@-DN-A/ms】,検査_SW_【Sigma-CSb@-DN-A/ms】,検査_SW_【SlopeA/SlopeQ@-DN-A/ms】,検査_SW_【SlopeP/SlopeR@-DN-A/ms】,検査_SW_【DCa@-DN-A/％】,検査_SW_【DCb@-DN-A/％】,検査_SW_【TSO/TSR_(C)@-DN-A/ms】,検査_SW_【TSO/TSR_(V)@-DN-A/ms】,検査_T2_【SCR/Ohm】,検査_T2_【OTa/ms】,検査_T2_【OTb/ms】,検査_T2_【OBTa/ms】,検査_T2_【OBTb/ms】,検査_T2_【TAU-0％/ms】,検査_T2_【TAU-70％/ms】,検査_T2_【L-0％/mH】,検査_T2_【L-45％/mH】,検査_T2_【L-50％/mH】,検査_T2_【L-55％/mH】,検査_T2_【L-60％/mH】,検査_T2_【L-65％/mH】,検査_T2_【L-70％/mH】,検査_T2_【L-75％/mH】,検査_T2on_【AOC@ON/mA】,検査_T2on_【AOC@CV200％/mA】,検査_T2on_【AOT@ON/ms】,検査_T2on_【AOT@CV200％/ms】,検査_T2on_【AOT@CC120％P/ms】,検査_T2on_【APC@ON/mA】,検査_T2on_【APC@CV200％/mA】,検査_T2on_【APT@ON/ms】,検査_T2on_【APT@CV200％/ms】,検査_T2on_【APT@CC120％P/ms】,検査_T2on_【CBAa@ON/ms】,検査_T2on_【CBAa@CV200％/ms】,検査_T2on_【CBAa@CC120％P/ms】,検査_T2on_【CBAb@ON/ms】,検査_T2on_【CBAb@CV200％/ms】,検査_T2on_【CBAb@CC120％P/ms】,検査_T2on_【DynamicPCb@ON/mA】,検査_T2on_【DynamicPCb@CV200％/mA】,検査_T2on_【DynamicPCa@CV200％/mA】,検査_T2on_【DynamicPCa@ON/mA】,検査_T2on_【DynamicPVa@CC120％P/V】,検査_T2on_【DynamicPVb@CC120％P/V】,検査_T2on_【K-Slope_a@ON】,検査_T2on_【K-Slope_a@CV200％】,検査_T2on_【K-Slope_a@CC120％P】,検査_T2on_【K-Slope_b@ON】,検査_T2on_【K-Slope_b@CV200％】,検査_T2on_【K-Slope_b@CC120％P】,検査_T2on_【MaxOpen1@ON/ms】,検査_T2on_【MaxOpen1@CV200％/ms】,検査_T2on_【MaxOpen1@CC120％P/ms】,検査_T2on_【MaxOpen2@ON/ms】,検査_T2on_【MaxOpen2@CV200％/ms】,検査_T2on_【MaxOpen2@CC120％P/ms】,検査_T2on_【OBTa@ON/ms】,検査_T2on_【OBTa@CV200％/ms】,検査_T2on_【OBTa@CC120％P/ms】,検査_T2on_【OBTb@ON/ms】,検査_T2on_【OBTb@CV200％/ms】,検査_T2on_【OBTb@CC120％P/ms】,検査_T2on_【OTa@ON/ms】,検査_T2on_【OTa@CV200％/ms】,検査_T2on_【OTa@CC120％P/ms】,検査_T2on_【OTb@ON/ms】,検査_T2on_【OTb@CV200％/ms】,検査_T2on_【OTb@CC120％P/ms】,検査_T2on_【OTCa@ON/m】,検査_T2on_【OTCa@CV200％/m】,検査_T2on_【OTCa@CC120％P/m】,検査_T2on_【OTCb@ON/m】,検査_T2on_【OTCb@CV200％/m】,検査_T2on_【OTCb@CC120％P/m】,検査_T2on_【OTT1@ON/ms】,検査_T2on_【OTT1@CV200％/ms】,検査_T2on_【OTT1@CC120％P/ms】,検査_T2on_【rOTa@ON/ms】,検査_T2on_【rOTa@CV200％/ms】,検査_T2on_【rOTa@CC120％P/ms】,検査_T2on_【rOTb@ON/ms】,検査_T2on_【rOTb@CV200％/ms】,検査_T2on_【rOTb@CC120％P/ms】,検査_T2on_【SlopeP@ON】,検査_T2on_【SlopeP@CV200％】,検査_T2on_【SlopeP@CC120％P】,検査_T2on_【SlopeQ@ON】,検査_T2on_【SlopeQ@CV200％】,検査_T2on_【SlopeQ@CC120％P】,検査_T2on_【SOSa@ON/mA】,検査_T2on_【SOSa@CV200％/mA】,検査_T2on_【SOSb@ON/mA】,検査_T2on_【SOSb@CV200％/mA】,検査_T2on_【SUSa@CC120％P/mA】,検査_T2on_【SUSb@CC120％P/mA】,検査_T2off_【RTa-AVT@DM0/ms】,検査_T2off_【RTa-DCT@DM0/ms】,検査_T2off_【ARC@DM0/ms】,検査_T2off_【ART@DM0/ms】,検査_T2off_【AVC@DM0/ms】,検査_T2off_【AVT@DM0/ms】,検査_T2off_【CSa@DM0/ms】,検査_T2off_【CSb@DM0/ms】,検査_T2off_【DSC@DM0/ms】,検査_T2off_【DST@DM0/ms】,検査_T2off_【DynamicDCa@DM0/ms】,検査_T2off_【DynamicDCb@DM0/ms】,検査_T2off_【K-Slope_a@DM0/ms】,検査_T2off_【K-Slope_b@DM0/ms】,検査_T2off_【MaxOpen_a@DM0/ms】,検査_T2off_【MaxOpen_b@DM0/ms】,検査_T2off_【RBTa@DM0/ms】,検査_T2off_【RBTb@DM0/ms】,検査_T2off_【ｒRTa@DM0/ms】,検査_T2off_【ｒRTb@DM0/ms】,検査_T2off_【RTa@DM0/ms】,検査_T2off_【RTb@DM0/ms】,検査_T2off_【RTCa@DM0/ms】,検査_T2off_【RTCb@DM0/ms】,検査_T2off_【RTT1@DM0/ms】,検査_T2off_【RUSa@DM0/ms】,検査_T2off_【RUSb@DM0/ms】,検査_T2off_【Sigma-CS^2_a@DM0/ms】,検査_T2off_【Sigma-CS^2_b@DM0/ms】,検査_T2off_【Sigma-CSa@DM0/ms】,検査_T2off_【Sigma-CSb@DM0/ms】,検査_T2off_【Sigma-RUS^2_a@DM0/ms】,検査_T2off_【Sigma-RUS^2_b@DM0/ms】,検査_T2off_【Sigma-RUSa@DM0/ms】,検査_T2off_【Sigma-RUSb@DM0/ms】,検査_Add_【L-46％/mH@1】,検査_Add_【L-47％/mH@1】,検査_Add_【L-48％/mH@1】,検査_Add_【L-49％/mH@1】,検査_Add_【L-51％/mH@1】,検査_Add_【L-52％/mH@1】,検査_Add_【L-53％/mH@1】,検査_Add_【L-54％/mH@1】,検査_Add_【L-46％/mH@2】,検査_Add_【L-47％/mH@2】,検査_Add_【L-48％/mH@2】,検査_Add_【L-49％/mH@2】,検査_Add_【L-51％/mH@2】,検査_Add_【L-52％/mH@2】,検査_Add_【L-53％/mH@2】,検査_Add_【L-54％/mH@2】,検査_Add_【L-2％/mH@1】,検査_Add_【L-4％/mH@1】,検査_Add_【L-6％/mH@1】,検査_Add_【L-8％/mH@1】,検査_Add_【L-10％/mH@1】,検査_Add_【L-12％/mH@1】,検査_Add_【L-14％/mH@1】,検査_Add_【L-2％/mH@2】,検査_Add_【L-4％/mH@2】,検査_Add_【L-6％/mH@2】,検査_Add_【L-8％/mH@2】,検査_Add_【L-10％/mH@2】,検査_Add_【L-12％/mH@2】,検査_Add_【L-14％/mH@2】,検査_オーダーNo,極別,検査_<ON-押切/mN>,検査_<ON-CG/mm>,検査_<復帰速度/xx>,検査_<AFa#2/mm>,検査_<ON-押切#2/mN>,検査_<ON-CG#2/mm>,検査_<復帰速度#2/xx>",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 1091,
+        "y": 725.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d4",
+      "type": "frame",
+      "label": "d4",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 969,
+        "y": 723.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c4",
+      "type": "command",
+      "label": "項目名リスト",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d4"
+      },
+      "args": {},
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 800,
+        "y": 1408.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d5",
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 800,
+        "y": 1326.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c5",
+      "type": "command",
+      "label": "検査_【SCR/Ohm】_T1T2平均",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d5"
+      },
+      "args": {
+        "a": "検査_【SCR/Ohm】_T1T2平均",
+        "c": "avg(${検査_T1_【SCR/Ohm】},${検査_T2_【SCR/Ohm】})",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 1016,
+        "y": 1889.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d6",
+      "type": "frame",
+      "label": "d6",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 924,
+        "y": 1890.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c6",
+      "type": "command",
+      "label": "項目名リスト確認",
+      "srcs": {
+        "i": "d8"
+      },
+      "dsts": {
+        "o": "d6"
+      },
+      "args": {},
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 800,
+        "y": 1671.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d7",
+      "type": "frame",
+      "label": "d7",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 799,
+        "y": 1599.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c7",
+      "type": "command",
+      "label": "検査_【OTa/ms】_T1T2平均",
+      "srcs": {
+        "i": "d5"
+      },
+      "dsts": {
+        "o": "d7"
+      },
+      "args": {
+        "a": "検査_【OTa/ms】_T1T2平均",
+        "c": "avg(${検査_T1_【OTa/ms】},${検査_T2_【OTa/ms】})",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 798,
+        "y": 1920.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d8",
+      "type": "frame",
+      "label": "テスト1、2間集計データ追加",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 797,
+        "y": 1846.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c8",
+      "type": "command",
+      "label": "検査_【OTb/ms】_T1T2平均",
+      "srcs": {
+        "i": "d7"
+      },
+      "dsts": {
+        "o": "d8"
+      },
+      "args": {
+        "a": "検査_【OTb/ms】_T1T2平均",
+        "c": "avg(${検査_T1_【OTb/ms】},${検査_T2_【OTb/ms】})",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 795,
+        "y": 2315.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d21",
+      "type": "frame",
+      "label": "d21",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 799,
+        "y": 2236.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c21",
+      "type": "command",
+      "label": "オーダー単位集計",
+      "srcs": {
+        "i": "d8"
+      },
+      "dsts": {
+        "o": "d21"
+      },
+      "args": {
+        "k": "検査_オーダーNo",
+        "f": "検査_【SCR/Ohm】,検査_【OT/ms】,検査_【OT1/ms】,検査_【OT2/ms】,検査_【RT/ms】,検査_【RT1/ms】,検査_【RT2/ms】,検査_1A_【OBT1a@F/ms】,検査_1A_【OBT1a@S/ms】,検査_1A_【RBT1a@F/ms】,検査_1A_【RBT1a@S/ms】,検査_1A_【S-MaxOpen_1a@F/ms】,検査_1A_【S-MaxOpen_1a@S/ms】,検査_1A_【R-MaxOpen_1a@F/ms】,検査_1A_【R-MaxOpen_1a@S/ms】,検査_1A_【RTT1@F/ms】,検査_1A_【RTT1@S/ms】,検査_1B_【OBT1b@F/ms】,検査_1B_【OBT1b@S/ms】,検査_1B_【RBT1b@F/ms】,検査_1B_【RBT1b@S/ms】,検査_1B_【S-MaxOpen_1b@F/ms】,検査_1B_【S-MaxOpen_1b@S/ms】,検査_1B_【R-MaxOpen_1b@F/ms】,検査_1B_【R-MaxOpen_1b@S/ms】,検査_1B_【OTT1@F/ms】,検査_1B_【OTT1@S/ms】,検査_2A_【OBT2a@F/ms】,検査_2A_【OBT2a@S/ms】,検査_2A_【RBT2a@F/ms】,検査_2A_【RBT2a@S/ms】,検査_2A_【S-MaxOpen_2a@F/ms】,検査_2A_【S-MaxOpen_2a@S/ms】,検査_2A_【R-MaxOpen_2a@F/ms】,検査_2A_【R-MaxOpen_2a@S/ms】,検査_2A_【RTT2@F/ms】,検査_2A_【RTT2@S/ms】,検査_2B_【OBT2b@F/ms】,検査_2B_【OBT2b@S/ms】,検査_2B_【RBT2b@F/ms】,検査_2B_【RBT2b@S/ms】,検査_2B_【S-MaxOpen_2b@F/ms】,検査_2B_【S-MaxOpen_2b@S/ms】,検査_2B_【R-MaxOpen_2b@F/ms】,検査_2B_【R-MaxOpen_2b@S/ms】,検査_2B_【OTT2@F/ms】,検査_2B_【OTT2@S/ms】,検査_Gen_【OBT1a/ms】,検査_Gen_【OBT1b/ms】,検査_Gen_【RBT1a/ms】,検査_Gen_【RBT1b/ms】,検査_Gen_【OTT1/ms】,検査_Gen_【RTT1/ms】,検査_Gen_【OLT1/ms】,検査_Gen_【RLT1/ms】,検査_Gen_【OBT2a/ms】,検査_Gen_【OBT2b/ms】,検査_Gen_【RBT2b/ms】,検査_Gen_【OTT2/ms】,検査_Gen_【RTT2/ms】,検査_Gen_【OLT2/ms_1】,検査_Gen_【OLT2/ms_2】,検査_Gen_【CBA1a/us】,検査_Gen_【CBA2a/us】,検査_Gen_【RUS_1a@F/mA】,検査_Gen_【RUS_1a@S/mA】,検査_Gen_【RUS_2a@F/mA】,検査_Gen_【RUS_2a@S/mA】,検査_Gen_【PV@F/V】,検査_Gen_【PV@S/V】,検査_Gen_【DV@F/V】,検査_Gen_【DV@S/V】,検査_Gen_【PC@F/mA】,検査_Gen_【PC@S/mA】,検査_Gen_【DC@F/mA】,検査_Gen_【DC@S/mA】,検査_T1_【SCR/Ohm】,検査_T1_【OTa/ms】,検査_T1_【OTb/ms】,検査_T1_【OBTa/ms】,検査_T1_【OBTb/ms】,検査_T1_【TAU-0％/ms】,検査_T1_【TAU-70％/ms】,検査_T1_【L-0％/mH】,検査_T1_【L-45％/mH】,検査_T1_【L-50％/mH】,検査_T1_【L-55％/mH】,検査_T1_【L-60％/mH】,検査_T1_【L-65％/mH】,検査_T1_【L-70％/mH】,検査_T1_【L-75％/mH】,検査_T1on_【AOC@ON/mA】,検査_T1on_【AOC@CV200％/mA】,検査_T1on_【AOT@ON/ms】,検査_T1on_【AOT@CV200％/ms】,検査_T1on_【AOT@CC120％P/ms】,検査_T1on_【APC@ON/mA】,検査_T1on_【APC@CV200％/mA】,検査_T1on_【APT@ON/ms】,検査_T1on_【APT@CV200％/ms】,検査_T1on_【APT@CC120％P/ms】,検査_T1on_【CBAa@ON/ms】,検査_T1on_【CBAa@CV200％/ms】,検査_T1on_【CBAa@CC120％P/ms】,検査_T1on_【CBAb@ON/ms】,検査_T1on_【CBAb@CV200％/ms】,検査_T1on_【CBAb@CC120％P/ms】,検査_T1on_【DynamicPCb@ON/mA】,検査_T1on_【DynamicPCb@CV200％/mA】,検査_T1on_【DynamicPCa@CV200％/mA】,検査_T1on_【DynamicPCa@ON/mA】,検査_T1on_【DynamicPVa@CC120％P/V】,検査_T1on_【DynamicPVb@CC120％P/V】,検査_T1on_【K-Slope_a@ON】,検査_T1on_【K-Slope_a@CV200％】,検査_T1on_【K-Slope_a@CC120％P】,検査_T1on_【K-Slope_b@ON】,検査_T1on_【K-Slope_b@CV200％】,検査_T1on_【K-Slope_b@CC120％P】,検査_T1on_【MaxOpen1@ON/ms】,検査_T1on_【MaxOpen1@CV200％/ms】,検査_T1on_【MaxOpen1@CC120％P/ms】,検査_T1on_【MaxOpen2@ON/ms】,検査_T1on_【MaxOpen2@CV200％/ms】,検査_T1on_【MaxOpen2@CC120％P/ms】,検査_T1on_【OBTa@ON/ms】,検査_T1on_【OBTa@CV200％/ms】,検査_T1on_【OBTa@CC120％P/ms】,検査_T1on_【OBTb@ON/ms】,検査_T1on_【OBTb@CV200％/ms】,検査_T1on_【OBTb@CC120％P/ms】,検査_T1on_【OTa@ON/ms】,検査_T1on_【OTa@CV200％/ms】,検査_T1on_【OTa@CC120％P/ms】,検査_T1on_【OTb@ON/ms】,検査_T1on_【OTb@CV200％/ms】,検査_T1on_【OTb@CC120％P/ms】,検査_T1on_【OTCa@ON/m】,検査_T1on_【OTCa@CV200％/m】,検査_T1on_【OTCa@CC120％P/m】,検査_T1on_【OTCb@ON/m】,検査_T1on_【OTCb@CV200％/m】,検査_T1on_【OTCb@CC120％P/m】,検査_T1on_【OTT1@ON/ms】,検査_T1on_【OTT1@CV200％/ms】,検査_T1on_【OTT1@CC120％P/ms】,検査_T1on_【rOTa@ON/ms】,検査_T1on_【rOTa@CV200％/ms】,検査_T1on_【rOTa@CC120％P/ms】,検査_T1on_【rOTb@ON/ms】,検査_T1on_【rOTb@CV200％/ms】,検査_T1on_【rOTb@CC120％P/ms】,検査_T1on_【SlopeP@ON】,検査_T1on_【SlopeP@CV200％】,検査_T1on_【SlopeP@CC120％P】,検査_T1on_【SlopeQ@ON】,検査_T1on_【SlopeQ@CV200％】,検査_T1on_【SlopeQ@CC120％P】,検査_T1on_【SOSa@ON/mA】,検査_T1on_【SOSa@CV200％/mA】,検査_T1on_【SOSb@ON/mA】,検査_T1on_【SOSb@CV200％/mA】,検査_T1on_【SUSa@CC120％P/mA】,検査_T1on_【SUSb@CC120％P/mA】,検査_T1off_【RTa-AVT@DM0/ms】,検査_T1off_【RTa-DCT@DM0/ms】,検査_T1off_【ARC@DM0/ms】,検査_T1off_【ART@DM0/ms】,検査_T1off_【AVC@DM0/ms】,検査_T1off_【AVT@DM0/ms】,検査_T1off_【CSa@DM0/ms】,検査_T1off_【CSb@DM0/ms】,検査_T1off_【DSC@DM0/ms】,検査_T1off_【DST@DM0/ms】,検査_T1off_【DynamicDCa@DM0/ms】,検査_T1off_【DynamicDCb@DM0/ms】,検査_T1off_【K-Slope_a@DM0/ms】,検査_T1off_【K-Slope_b@DM0/ms】,検査_T1off_【MaxOpen_a@DM0/ms】,検査_T1off_【MaxOpen_b@DM0/ms】,検査_T1off_【RBTa@DM0/ms】,検査_T1off_【RBTb@DM0/ms】,検査_T1off_【ｒRTa@DM0/ms】,検査_T1off_【ｒRTb@DM0/ms】,検査_T1off_【RTa@DM0/ms】,検査_T1off_【RTb@DM0/ms】,検査_T1off_【RTCa@DM0/ms】,検査_T1off_【RTCb@DM0/ms】,検査_T1off_【RTT1@DM0/ms】,検査_T1off_【RUSa@DM0/ms】,検査_T1off_【RUSb@DM0/ms】,検査_T1off_【Sigma-CS^2_a@DM0/ms】,検査_T1off_【Sigma-CS^2_b@DM0/ms】,検査_T1off_【Sigma-CSa@DM0/ms】,検査_T1off_【Sigma-CSb@DM0/ms】,検査_T1off_【Sigma-RUS^2_a@DM0/ms】,検査_T1off_【Sigma-RUS^2_b@DM0/ms】,検査_T1off_【Sigma-RUSa@DM0/ms】,検査_T1off_【Sigma-RUSb@DM0/ms】,検査_SW_【ARC@-DN-A/ms】,検査_SW_【ART@-DN-A/ms】,検査_SW_【AVC@-DN-A/ms】,検査_SW_【AVT@-DN-A/ms】,検査_SW_【CBAa@-DN-A/ms】,検査_SW_【CBAb@-DN-A/ms】,検査_SW_【CSa@-DN-A/ms】,検査_SW_【CSb@-DN-A/ms】,検査_SW_【CSV2@-DN-A/ms】,検査_SW_【CSV3@-DN-A/ms】,検査_SW_【DVa@-DN-A/ms】,検査_SW_【DVb@-DN-A/ms】,検査_SW_【DynamicDCa@-DN-A/ms】,検査_SW_【DynamicDCb@-DN-A/ms】,検査_SW_【K-Slope_a@-DN-A/ms】,検査_SW_【K-Slope_b@-DN-A/ms】,検査_SW_【MaxOpen1@-DN-A/ms】,検査_SW_【MaxOpen2@-DN-A/ms】,検査_SW_【RBTa@-DN-A/ms】,検査_SW_【RBTb@-DN-A/ms】,検査_SW_【ｒRTa@-DN-A/ms】,検査_SW_【ｒRTb@-DN-A/ms】,検査_SW_【RTa@-DN-A/ms】,検査_SW_【RTb@-DN-A/ms】,検査_SW_【RTCa@-DN-A/ms】,検査_SW_【RTCb@-DN-A/ms】,検査_SW_【RTT1@-DN-A/ms】,検査_SW_【RUSa@-DN-A/ms】,検査_SW_【RUSb@-DN-A/ms】,検査_SW_【SCR@-DN-A/ms】,検査_SW_【Sigma-CS^2_a@-DN-A/ms】,検査_SW_【Sigma-CS^2_b@-DN-A/ms】,検査_SW_【Sigma-CSa@-DN-A/ms】,検査_SW_【Sigma-CSb@-DN-A/ms】,検査_SW_【SlopeA/SlopeQ@-DN-A/ms】,検査_SW_【SlopeP/SlopeR@-DN-A/ms】,検査_SW_【DCa@-DN-A/％】,検査_SW_【DCb@-DN-A/％】,検査_SW_【TSO/TSR_(C)@-DN-A/ms】,検査_SW_【TSO/TSR_(V)@-DN-A/ms】,検査_T2_【SCR/Ohm】,検査_T2_【OTa/ms】,検査_T2_【OTb/ms】,検査_T2_【OBTa/ms】,検査_T2_【OBTb/ms】,検査_T2_【TAU-0％/ms】,検査_T2_【TAU-70％/ms】,検査_T2_【L-0％/mH】,検査_T2_【L-45％/mH】,検査_T2_【L-50％/mH】,検査_T2_【L-55％/mH】,検査_T2_【L-60％/mH】,検査_T2_【L-65％/mH】,検査_T2_【L-70％/mH】,検査_T2_【L-75％/mH】,検査_T2on_【AOC@ON/mA】,検査_T2on_【AOC@CV200％/mA】,検査_T2on_【AOT@ON/ms】,検査_T2on_【AOT@CV200％/ms】,検査_T2on_【AOT@CC120％P/ms】,検査_T2on_【APC@ON/mA】,検査_T2on_【APC@CV200％/mA】,検査_T2on_【APT@ON/ms】,検査_T2on_【APT@CV200％/ms】,検査_T2on_【APT@CC120％P/ms】,検査_T2on_【CBAa@ON/ms】,検査_T2on_【CBAa@CV200％/ms】,検査_T2on_【CBAa@CC120％P/ms】,検査_T2on_【CBAb@ON/ms】,検査_T2on_【CBAb@CV200％/ms】,検査_T2on_【CBAb@CC120％P/ms】,検査_T2on_【DynamicPCb@ON/mA】,検査_T2on_【DynamicPCb@CV200％/mA】,検査_T2on_【DynamicPCa@CV200％/mA】,検査_T2on_【DynamicPCa@ON/mA】,検査_T2on_【DynamicPVa@CC120％P/V】,検査_T2on_【DynamicPVb@CC120％P/V】,検査_T2on_【K-Slope_a@ON】,検査_T2on_【K-Slope_a@CV200％】,検査_T2on_【K-Slope_a@CC120％P】,検査_T2on_【K-Slope_b@ON】,検査_T2on_【K-Slope_b@CV200％】,検査_T2on_【K-Slope_b@CC120％P】,検査_T2on_【MaxOpen1@ON/ms】,検査_T2on_【MaxOpen1@CV200％/ms】,検査_T2on_【MaxOpen1@CC120％P/ms】,検査_T2on_【MaxOpen2@ON/ms】,検査_T2on_【MaxOpen2@CV200％/ms】,検査_T2on_【MaxOpen2@CC120％P/ms】,検査_T2on_【OBTa@ON/ms】,検査_T2on_【OBTa@CV200％/ms】,検査_T2on_【OBTa@CC120％P/ms】,検査_T2on_【OBTb@ON/ms】,検査_T2on_【OBTb@CV200％/ms】,検査_T2on_【OBTb@CC120％P/ms】,検査_T2on_【OTa@ON/ms】,検査_T2on_【OTa@CV200％/ms】,検査_T2on_【OTa@CC120％P/ms】,検査_T2on_【OTb@ON/ms】,検査_T2on_【OTb@CV200％/ms】,検査_T2on_【OTb@CC120％P/ms】,検査_T2on_【OTCa@ON/m】,検査_T2on_【OTCa@CV200％/m】,検査_T2on_【OTCa@CC120％P/m】,検査_T2on_【OTCb@ON/m】,検査_T2on_【OTCb@CV200％/m】,検査_T2on_【OTCb@CC120％P/m】,検査_T2on_【OTT1@ON/ms】,検査_T2on_【OTT1@CV200％/ms】,検査_T2on_【OTT1@CC120％P/ms】,検査_T2on_【rOTa@ON/ms】,検査_T2on_【rOTa@CV200％/ms】,検査_T2on_【rOTa@CC120％P/ms】,検査_T2on_【rOTb@ON/ms】,検査_T2on_【rOTb@CV200％/ms】,検査_T2on_【rOTb@CC120％P/ms】,検査_T2on_【SlopeP@ON】,検査_T2on_【SlopeP@CV200％】,検査_T2on_【SlopeP@CC120％P】,検査_T2on_【SlopeQ@ON】,検査_T2on_【SlopeQ@CV200％】,検査_T2on_【SlopeQ@CC120％P】,検査_T2on_【SOSa@ON/mA】,検査_T2on_【SOSa@CV200％/mA】,検査_T2on_【SOSb@ON/mA】,検査_T2on_【SOSb@CV200％/mA】,検査_T2on_【SUSa@CC120％P/mA】,検査_T2on_【SUSb@CC120％P/mA】,検査_T2off_【RTa-AVT@DM0/ms】,検査_T2off_【RTa-DCT@DM0/ms】,検査_T2off_【ARC@DM0/ms】,検査_T2off_【ART@DM0/ms】,検査_T2off_【AVC@DM0/ms】,検査_T2off_【AVT@DM0/ms】,検査_T2off_【CSa@DM0/ms】,検査_T2off_【CSb@DM0/ms】,検査_T2off_【DSC@DM0/ms】,検査_T2off_【DST@DM0/ms】,検査_T2off_【DynamicDCa@DM0/ms】,検査_T2off_【DynamicDCb@DM0/ms】,検査_T2off_【K-Slope_a@DM0/ms】,検査_T2off_【K-Slope_b@DM0/ms】,検査_T2off_【MaxOpen_a@DM0/ms】,検査_T2off_【MaxOpen_b@DM0/ms】,検査_T2off_【RBTa@DM0/ms】,検査_T2off_【RBTb@DM0/ms】,検査_T2off_【ｒRTa@DM0/ms】,検査_T2off_【ｒRTb@DM0/ms】,検査_T2off_【RTa@DM0/ms】,検査_T2off_【RTb@DM0/ms】,検査_T2off_【RTCa@DM0/ms】,検査_T2off_【RTCb@DM0/ms】,検査_T2off_【RTT1@DM0/ms】,検査_T2off_【RUSa@DM0/ms】,検査_T2off_【RUSb@DM0/ms】,検査_T2off_【Sigma-CS^2_a@DM0/ms】,検査_T2off_【Sigma-CS^2_b@DM0/ms】,検査_T2off_【Sigma-CSa@DM0/ms】,検査_T2off_【Sigma-CSb@DM0/ms】,検査_T2off_【Sigma-RUS^2_a@DM0/ms】,検査_T2off_【Sigma-RUS^2_b@DM0/ms】,検査_T2off_【Sigma-RUSa@DM0/ms】,検査_T2off_【Sigma-RUSb@DM0/ms】,検査_Add_【L-46％/mH@1】,検査_Add_【L-47％/mH@1】,検査_Add_【L-48％/mH@1】,検査_Add_【L-49％/mH@1】,検査_Add_【L-51％/mH@1】,検査_Add_【L-52％/mH@1】,検査_Add_【L-53％/mH@1】,検査_Add_【L-54％/mH@1】,検査_Add_【L-46％/mH@2】,検査_Add_【L-47％/mH@2】,検査_Add_【L-48％/mH@2】,検査_Add_【L-49％/mH@2】,検査_Add_【L-51％/mH@2】,検査_Add_【L-52％/mH@2】,検査_Add_【L-53％/mH@2】,検査_Add_【L-54％/mH@2】,検査_Add_【L-2％/mH@1】,検査_Add_【L-4％/mH@1】,検査_Add_【L-6％/mH@1】,検査_Add_【L-8％/mH@1】,検査_Add_【L-10％/mH@1】,検査_Add_【L-12％/mH@1】,検査_Add_【L-14％/mH@1】,検査_Add_【L-2％/mH@2】,検査_Add_【L-4％/mH@2】,検査_Add_【L-6％/mH@2】,検査_Add_【L-8％/mH@2】,検査_Add_【L-10％/mH@2】,検査_Add_【L-12％/mH@2】,検査_Add_【L-14％/mH@2】,検査_<ON-押切/mN>,検査_<ON-CG/mm>,検査_<復帰速度/xx>,検査_<AFa#2/mm>,検査_<ON-押切#2/mN>,検査_<ON-CG#2/mm>,検査_<復帰速度#2/xx>,検査_【SCR/Ohm】_T1T2平均,検査_【OTa/ms】_T1T2平均,検査_【OTb/ms】_T1T2平均",
+        "c": "mean:平均,count:件数,usd:標偏,median:中央,skew:歪度,kurt:尖度",
         "delimiter": "",
         "q": false,
         "nfno": false,
@@ -94,8 +456,8 @@
     },
     {
       "position": {
-        "x": 480,
-        "y": 414
+        "x": 1354,
+        "y": 2322.5
       },
       "size": {
         "width": 38,
@@ -103,11 +465,177 @@
       },
       "invalid": {},
       "error": {},
-      "id": "95076d2f-6cbb-49d7-b1c4-98ad317f8ad4.csv",
+      "id": "d22",
       "type": "frame",
-      "label": "95076d2f-6cbb-49d7-b1c4-98ad317f8ad4.csv",
-      "uuid": "4120b9f4-4edd-400d-be51-b964e303d8df",
+      "label": "d22",
+      "uuid": null,
       "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1352,
+        "y": 1592.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c23",
+      "type": "command",
+      "label": "Test1、2　行展開GroupBy処理",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d22"
+      },
+      "args": {
+        "f": "検査_T_【SCR/Ohm】:検査_T1_【SCR/Ohm】,検査_T2_【SCR/Ohm】\\検査_T_【OTa/ms】:検査_T1_【OTa/ms】,検査_T2_【OTa/ms】\\検査_T_【OTb/ms】:検査_T1_【OTb/ms】,検査_T2_【OTb/ms】",
+        "c": "mean:平均,count:件数,usd:標偏,median:中央,skew:歪度,kurt:尖度",
+        "k": "検査_オーダーNo",
+        "delimiter": "",
+        "prefix": false,
+        "cmd_path": "/home/kskp/kskp/engine/commands/pcmd"
+      },
+      "commandId": "groupby_columns"
+    },
+    {
+      "position": {
+        "x": 823.5,
+        "y": 2767
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "outputdata",
+      "type": "frame",
+      "label": "outputdata",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 826.5,
+        "y": 2604
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c10",
+      "type": "command",
+      "label": "c10",
+      "srcs": {
+        "i": "d21",
+        "m": "d22"
+      },
+      "dsts": {
+        "o": "outputdata"
+      },
+      "args": {
+        "k": "検査_オーダーNo",
+        "f": "",
+        "K": "",
+        "n": false,
+        "N": false,
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "assert_nullin": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mjoin"
+    },
+    {
+      "position": {
+        "x": 1537,
+        "y": 2325.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d11",
+      "type": "frame",
+      "label": "d11",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1456,
+        "y": 2318.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c12",
+      "type": "command",
+      "label": "項目確認",
+      "srcs": {
+        "i": "d22"
+      },
+      "dsts": {
+        "o": "d11"
+      },
+      "args": {},
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 1001,
+        "y": 2316.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d9",
+      "type": "frame",
+      "label": "d9",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 923,
+        "y": 2319.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c9",
+      "type": "command",
+      "label": "項目確認",
+      "srcs": {
+        "i": "d21"
+      },
+      "dsts": {
+        "o": "d9"
+      },
+      "args": {},
+      "commandId": "column_list"
     }
   ]
 }

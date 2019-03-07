@@ -1,5 +1,5 @@
 {
-  "projectId": 6,
+  "projectId": 9,
   "label": "組立SPC 特徴量計算",
   "ports": [
     [
@@ -69,23 +69,6 @@
         "precision": ""
       },
       "commandId": "mcal"
-    },
-    {
-      "position": {
-        "x": 984,
-        "y": 200
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "07bf102a-285c-42ed-a1b3-ead0c5434c5f.csv",
-      "type": "frame",
-      "label": "組立SPC元データ",
-      "uuid": "9431a339-221f-421a-ac10-5a5bfe53f690",
-      "dataSource": "csv"
     },
     {
       "position": {
@@ -186,56 +169,6 @@
         "precision": ""
       },
       "commandId": "mcal"
-    },
-    {
-      "position": {
-        "x": 1688,
-        "y": 823
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "d4",
-      "type": "frame",
-      "label": "d4",
-      "uuid": null,
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 1555,
-        "y": 820
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "c4",
-      "type": "command",
-      "label": "確認",
-      "srcs": {
-        "i": "d3"
-      },
-      "dsts": {
-        "o": "d4"
-      },
-      "args": {
-        "f": "組立_【CP(a)】,組立_【CP(a)moto】, 組立_<CPa調整量>",
-        "r": false,
-        "nfni": false,
-        "assert_diffSize": false,
-        "assert_nullin": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "tmpPath": ""
-      },
-      "commandId": "mcut"
     },
     {
       "position": {
@@ -357,7 +290,7 @@
     {
       "position": {
         "x": 1287,
-        "y": 1629
+        "y": 1628
       },
       "size": {
         "width": 38,
@@ -1006,7 +939,7 @@
     },
     {
       "position": {
-        "x": 1274,
+        "x": 1275,
         "y": 6555
       },
       "size": {
@@ -1039,106 +972,6 @@
     },
     {
       "position": {
-        "x": 1640,
-        "y": 6786
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "d21",
-      "type": "frame",
-      "label": "d21",
-      "uuid": null,
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 1525,
-        "y": 6787
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "c21",
-      "type": "command",
-      "label": "確認",
-      "srcs": {
-        "i": "out"
-      },
-      "dsts": {
-        "o": "d21"
-      },
-      "args": {
-        "f": "組立_【AFa_High】,組立_【AFa_Low】,組立_<AFa変動量>",
-        "r": false,
-        "nfni": false,
-        "assert_diffSize": false,
-        "assert_nullin": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "tmpPath": ""
-      },
-      "commandId": "mcut"
-    },
-    {
-      "position": {
-        "x": 1633,
-        "y": 6868
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "d22",
-      "type": "frame",
-      "label": "d22",
-      "uuid": null,
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 1533,
-        "y": 6864
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "c22",
-      "type": "command",
-      "label": "特徴量計算結果確認",
-      "srcs": {
-        "i": "out"
-      },
-      "dsts": {
-        "o": "d22"
-      },
-      "args": {
-        "f": "*<*>",
-        "r": false,
-        "nfni": false,
-        "assert_diffSize": false,
-        "assert_nullin": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "tmpPath": ""
-      },
-      "commandId": "mcut"
-    },
-    {
-      "position": {
         "x": 980,
         "y": 270.5
       },
@@ -1151,48 +984,8 @@
       "id": "in",
       "type": "frame",
       "label": "inputdata",
-      "uuid": "34148937-cb51-48c4-880d-a90969af5178",
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 1608,
-        "y": 6939
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "type": "frame",
-      "id": "d20",
-      "label": "d20",
       "uuid": null,
       "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 1508,
-        "y": 6939
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "type": "command",
-      "id": "c23",
-      "label": "項目名リスト",
-      "srcs": {
-        "i": "out"
-      },
-      "dsts": {
-        "o": "d20"
-      },
-      "args": {},
-      "commandId": "column_list"
     }
   ]
 }

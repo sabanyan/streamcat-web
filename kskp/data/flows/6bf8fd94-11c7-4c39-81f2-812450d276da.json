@@ -1,5 +1,5 @@
 {
-  "projectId": 6,
+  "projectId": 9,
   "label": "検査 ver2 S2　極別差吸収 ",
   "ports": [
     [
@@ -38,7 +38,7 @@
       "id": "i1",
       "type": "frame",
       "label": "test01.csv",
-      "uuid": "6457db56-502d-49e8-b1c4-c0fe56aa4736",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
@@ -55,7 +55,7 @@
       "id": "i2",
       "type": "frame",
       "label": "test02.csv",
-      "uuid": "8bfcbe45-1911-4b65-86db-e2a965640a87",
+      "uuid": null,
       "dataSource": "csv"
     },
     {
@@ -477,8 +477,7 @@
       "id": "d15",
       "type": "frame",
       "uuid": null,
-      "dataSource": "csv",
-      "label": ""
+      "dataSource": "csv"
     },
     {
       "position": {
@@ -956,40 +955,6 @@
         "tmpPath": ""
       },
       "commandId": "mcut"
-    },
-    {
-      "position": {
-        "x": 612,
-        "y": 285.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "v2_0001サンプル.csv",
-      "type": "frame",
-      "label": "【検査ver2 0001】サンプル",
-      "uuid": "15eeb7dd-3637-4b1a-b241-f57a0a5f7136",
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 1317,
-        "y": 290.5
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "v2_0002サンプル.csv",
-      "type": "frame",
-      "label": "【検査ver2 0002】サンプル",
-      "uuid": "93a1613f-6d0e-44ff-b3d1-8b7a795fe3de",
-      "dataSource": "csv"
     }
   ]
 }
