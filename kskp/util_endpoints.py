@@ -74,7 +74,7 @@ def delete_unused_csvs():
 def all_csvs(base_path):
     unused_frame_uuids = []
     filenames = []
-    for d in Path(base_path + '/kskp/data/frames').iterdir():        
+    for d in Path(base_path + '/kskp/data/frames').iterdir():
         filenames.append(
             {
                 'name': d.name
@@ -94,4 +94,4 @@ def remove_cache():
 
     update_flow_by_uuid(p.stem, j)
 
-    return redirect('/csvs') 
+    return redirect('/csvs')

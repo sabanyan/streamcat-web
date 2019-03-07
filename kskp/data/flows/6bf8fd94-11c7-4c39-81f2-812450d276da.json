@@ -39,6 +39,8 @@
       "type": "frame",
       "label": "test01.csv",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -56,6 +58,8 @@
       "type": "frame",
       "label": "test02.csv",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -73,6 +77,8 @@
       "type": "frame",
       "label": "列名リスト 1",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -95,7 +101,11 @@
       "dsts": {
         "o": "d1"
       },
-      "args": {},
+      "args": {
+        "n": "",
+        "-no": false,
+        "-nfno": false
+      },
       "commandId": "column_list"
     },
     {
@@ -113,6 +123,8 @@
       "type": "frame",
       "label": "d2",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -153,6 +165,8 @@
       "type": "frame",
       "label": "d9",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -208,6 +222,8 @@
       "type": "frame",
       "label": "d10",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -263,6 +279,8 @@
       "type": "frame",
       "label": "列名対応",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -280,8 +298,8 @@
       "type": "command",
       "label": "結合",
       "srcs": {
-        "i": "d19",
-        "m": "d17"
+        "i": "d18",
+        "m": "d16"
       },
       "dsts": {
         "o": "d11"
@@ -319,6 +337,8 @@
       "type": "frame",
       "label": "d12",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -369,6 +389,8 @@
       "type": "frame",
       "label": "列名対応",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -418,6 +440,8 @@
       "id": "d14",
       "type": "frame",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -477,6 +501,8 @@
       "id": "d15",
       "type": "frame",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -537,6 +563,8 @@
       "type": "frame",
       "label": "d4",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -587,6 +615,8 @@
       "type": "frame",
       "label": "追加列名リスト",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -637,6 +667,8 @@
       "type": "frame",
       "label": "削除列名リスト",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -687,6 +719,8 @@
       "type": "frame",
       "label": "d7",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -727,6 +761,8 @@
       "type": "frame",
       "label": "列名補正",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -762,8 +798,8 @@
     },
     {
       "position": {
-        "x": 439,
-        "y": 660
+        "x": 371,
+        "y": 720
       },
       "size": {
         "width": 38,
@@ -775,6 +811,8 @@
       "type": "frame",
       "label": "d16",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -810,58 +848,8 @@
     },
     {
       "position": {
-        "x": 372,
-        "y": 790
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "d17",
-      "type": "frame",
-      "label": "d17",
-      "uuid": null,
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 369,
-        "y": 717
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "id": "c17",
-      "type": "command",
-      "label": "不要列削除",
-      "srcs": {
-        "i": "d16"
-      },
-      "dsts": {
-        "o": "d17"
-      },
-      "args": {
-        "f": "FIRST_ROW",
-        "r": true,
-        "nfni": false,
-        "assert_diffSize": false,
-        "assert_nullin": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "tmpPath": ""
-      },
-      "commandId": "mcut"
-    },
-    {
-      "position": {
-        "x": 1370,
-        "y": 656
+        "x": 1288,
+        "y": 720
       },
       "size": {
         "width": 38,
@@ -873,6 +861,8 @@
       "type": "frame",
       "label": "d18",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
@@ -908,8 +898,8 @@
     },
     {
       "position": {
-        "x": 1293,
-        "y": 773
+        "x": 654,
+        "y": 594
       },
       "size": {
         "width": 38,
@@ -917,16 +907,18 @@
       },
       "invalid": {},
       "error": {},
-      "id": "d19",
+      "id": "d3",
       "type": "frame",
-      "label": "d19",
+      "label": "d3",
       "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 1292,
-        "y": 709
+        "x": 564,
+        "y": 595
       },
       "size": {
         "width": 38,
@@ -934,27 +926,67 @@
       },
       "invalid": {},
       "error": {},
-      "id": "c19",
+      "id": "c3",
       "type": "command",
-      "label": "不要列削除",
+      "label": "c3",
       "srcs": {
-        "i": "d18"
+        "i": "d1"
       },
       "dsts": {
-        "o": "d19"
+        "o": "d3"
       },
       "args": {
-        "f": "FIRST_ROW",
-        "r": true,
-        "nfni": false,
-        "assert_diffSize": false,
-        "assert_nullin": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "tmpPath": ""
+        "n": "",
+        "-no": false,
+        "-nfno": false
       },
-      "commandId": "mcut"
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 1525,
+        "y": 581
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d8",
+      "type": "frame",
+      "label": "d8",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1454,
+        "y": 596
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c20",
+      "type": "command",
+      "label": "c20",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d8"
+      },
+      "args": {
+        "n": "",
+        "-no": false,
+        "-nfno": false
+      },
+      "commandId": "column_list"
     }
   ]
 }

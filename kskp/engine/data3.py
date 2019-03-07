@@ -120,7 +120,7 @@ class NysolPythonSource(Source):
             os.environ['KG_BlockCount'] = '1280'
             # sudo docker run -m 32g -e FLASK_ENV=development -u kskp -v "$(pwd)"/kskp:/home/kskp/kskp -v /home/kskp-trial/KSKP_trial:/home/kskp/KSKP_trial -p 5000:5000 --name kskp-trial kskp-trial "flask run -h 0.0.0.0 -p ${PORT:-5000}"
             # http://localhost:5000/flows/20190201_2047_Omron_S1_light
-            
+
             # with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
             #     self.process_flow.run()
             with io.StringIO() as messages_mem:
@@ -130,9 +130,13 @@ class NysolPythonSource(Source):
                     messages = messages_mem.getvalue()
 
                     if '#ERROR#' in messages:
-                        content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
-                        err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
-                        raise err
+                        contents = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin]
+                        if len(contents) > 0:
+                            content = contents[0]
+                            err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
+                            raise err
+                        else:
+                            raise Exception(messages)
 
         finally:
             import time
@@ -462,8 +466,12 @@ class MCMDErrorInfo():
         # 入力と出力の件数をパースする
         if len(ss) >= 3:
             import re
-            io = re.search(r'IN=(\d+) OUT=(\d+)', ss[2]).groups()
-            return cls(ss[0].replace('#ERROR#', ''), int(io[0]), int(io[1]), ss[3])
+            result = re.search(r'IN=(\d+) OUT=(\d+)', ss[2])
+            if result is not None:
+                io = result.groups()
+                return cls(ss[0].replace('#ERROR#', ''), int(io[0]), int(io[1]), ss[3])
+            else:
+                return cls(s, -1, -1, '')
         else:
             print('re:', s)
 
