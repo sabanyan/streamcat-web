@@ -38,8 +38,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "frame",
       "id": "d1",
+      "type": "frame",
       "label": "【履歴】S2",
       "uuid": null,
       "dataSource": "csv"
@@ -55,8 +55,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "command",
       "id": "c1",
+      "type": "command",
       "label": "正規化",
       "srcs": {
         "i": "i"
@@ -77,8 +77,8 @@
     },
     {
       "position": {
-        "x": 563,
-        "y": 128
+        "x": 564,
+        "y": 129
       },
       "size": {
         "width": 38,
@@ -86,8 +86,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "frame",
       "id": "d2",
+      "type": "frame",
       "label": "重複",
       "uuid": null,
       "dataSource": "csv"
@@ -103,8 +103,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "command",
       "id": "c2",
+      "type": "command",
       "label": "重複",
       "srcs": {
         "i": "i"
@@ -129,8 +129,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "frame",
       "id": "d3",
+      "type": "frame",
       "label": "欠損",
       "uuid": null,
       "dataSource": "csv"
@@ -146,8 +146,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "command",
       "id": "c3",
+      "type": "command",
       "label": "欠損",
       "srcs": {
         "i": "i"
@@ -183,8 +183,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "frame",
       "id": "d4",
+      "type": "frame",
       "label": "【履歴】S3",
       "uuid": null,
       "dataSource": "csv"
@@ -200,8 +200,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "command",
       "id": "c4",
+      "type": "command",
       "label": "特徴量設定",
       "srcs": {
         "i": "d1"
@@ -231,8 +231,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "frame",
       "id": "d5",
+      "type": "frame",
       "label": "欠損",
       "uuid": null,
       "dataSource": "csv"
@@ -248,8 +248,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "command",
       "id": "c5",
+      "type": "command",
       "label": "欠損",
       "srcs": {
         "i": "d1"
@@ -285,8 +285,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "frame",
       "id": "d6",
+      "type": "frame",
       "label": "【履歴】S4",
       "uuid": null,
       "dataSource": "csv"
@@ -302,8 +302,8 @@
       },
       "invalid": {},
       "error": {},
-      "type": "command",
       "id": "c6",
+      "type": "command",
       "label": "外れ値行除外",
       "srcs": {
         "i": "d4"
