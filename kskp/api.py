@@ -42,6 +42,7 @@ from .model import (
     rename_database_by_id,
     delete_database_by_id
 )
+from .models.store import Store
 from .activity import (
     make_unfinished_history,
     make_finished_history
@@ -1108,7 +1109,8 @@ def fecth_stores():
     データストアの定義(雛形)の一覧を返却する
     """
     try:    
-        stores = get_all_stores()
+        # stores = get_all_stores()
+        stores = Store.find_all()
         return jsonify({'success': True, 'data': stores})
     except Exception as e:
         return jsonify({
