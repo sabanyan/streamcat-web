@@ -704,7 +704,7 @@ def get_library():
 		"label"  : "ルート",
 		"creator": "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": [
+		"children": [
 			{
 				"uuid"   : "2c792bbc-4679-4396-96d1-94fc023073b1",
 				"type"   : "folder",
@@ -737,7 +737,7 @@ def get_folder(folder_uuid):
 		"label"  : "実行結果",
 		"creator": "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": [
+		"children": [
 			{
 				"uuid"   : "61f70b75-46ac-4716-ae8d-c0c895775745",
 				"type"   : "folder",
@@ -763,7 +763,7 @@ def create_folder(data, user_id):
 		"label"  : "新しいフォルダ",
 		"creator": "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": []
+		"children": []
 	}
     return ret   
 
@@ -774,7 +774,7 @@ def rename_folder_by_id(folder_uuid, new_label):
 		"label"  : "名称変更したフォルダ",
 		"creator": "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": []
+		"children": []
 	}
     return ret
 
@@ -796,7 +796,7 @@ def get_remote_folder(folder_uuid):
 		"directory": "share",
 		"creator"  : "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": [
+		"children": [
 			{
 				"uuid"   : "0d7aa9b8-cf46-4920-abcd-244e5b3f152b",
 				"type"   : "folder",
@@ -829,7 +829,7 @@ def create_remote_folder(data, user_id):
         "directory": "share",
 		"creator"  : "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": []
+		"children": []
 	}
     return ret   
 
@@ -847,7 +847,7 @@ def rename_remote_folder_by_id(folder_uuid, new_label):
         "directory": "share",
 		"creator"  : "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": []
+		"children": []
 	}
     return ret   
 

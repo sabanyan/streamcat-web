@@ -43,6 +43,7 @@ from .model import (
     delete_database_by_id
 )
 from .models.store import Store
+from .models.folder import Folder
 from .activity import (
     make_unfinished_history,
     make_finished_history
@@ -1108,10 +1109,13 @@ def fecth_stores():
     """
     データストアの定義(雛形)の一覧を返却する
     """
-    try:    
-        # stores = get_all_stores()
+    try:
         stores = Store.find_all()
-        return jsonify({'success': True, 'data': stores})
+        ret = []
+        for store in stores:
+            ret.append(store.to_json())
+
+        return jsonify({'success': True, 'data': ret})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1126,9 +1130,15 @@ def make_new_store():
     データストアの定義(雛形)を作成する
     """
     try:
-        new_store_id = request.json['id']    
-        new_store= create_store(new_store_id, request.json, 1)
-        return jsonify({'success': True, 'data': new_store})    
+        new_store = Store.create(request.json['id']
+                                ,request.json['version']
+                                ,request.json['label']
+                                ,request.json['description']
+                                ,request.json['url']
+                                ,request.json['params']
+                                ,1)
+        new_store.save()
+        return jsonify({'success': True, 'data': new_store.to_json()})    
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1143,7 +1153,8 @@ def delete_store(store_id):
     データストアの定義(雛形)を削除する
     """
     try:
-        delete_store_by_id(store_id)
+        delete_store = Store(store_id)
+        delete_store.delete()
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -1159,8 +1170,8 @@ def fecth_library():
     ルートデータストアを返却する
     """
     try:
-        sources = get_library()
-        return jsonify({'success': True, 'data': sources})
+        root_store = Folder.find_by_parent_uuid(None)
+        return jsonify({'success': True, 'data': root_store})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1176,8 +1187,10 @@ def fetch_folder(folder_uuid):
     フォルダを返却する
     """
     try:
-        folder = get_folder(folder_uuid)
-        return jsonify({'success': True, 'data': folder})
+        # folder = get_folder(folder_uuid)
+        # return jsonify({'success': True, 'data': folder})
+        folder = Folder.find_by_uuid(folder_uuid)
+        return jsonify({'success': True, 'data': folder.to_json() if folder is not None else None})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1192,8 +1205,14 @@ def make_new_folder():
     フォルダを作成する
     """
     try:
-        new_folder= create_folder(request.json, 1)
-        return jsonify({'success': True, 'data': new_folder})    
+        # new_folder= create_folder(request.json, 1)
+        # return jsonify({'success': True, 'data': new_folder})
+        new_folder = Folder.create(str(uuid.uuid4())
+                                 , request.json['parent']
+                                 , request.json['label']
+                                 , 1)
+        new_folder.save()
+        return jsonify({'success': True, 'data': new_folder.to_json()})   
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1225,7 +1244,10 @@ def delete_folder(folder_uuid):
     フォルダを削除する
     """
     try:
-        delete_folder_by_id(folder_uuid)
+        # delete_folder_by_id(folder_uuid)
+        # return jsonify({'success': True})
+        delete_folder = Folder(folder_uuid)
+        delete_folder.delete()
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -1233,7 +1255,6 @@ def delete_folder(folder_uuid):
                         'code'   : -1,
                         'message': repr(e)
                         })
-
 
 
 @api.route('/remote-folders/<folder_uuid>', methods=['GET'])

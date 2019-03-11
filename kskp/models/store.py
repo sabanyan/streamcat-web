@@ -22,51 +22,53 @@ class Store(db.Model):
     creator     = db.Column(db.Integer)
     modifier    = db.Column(db.Integer)
 
-    def __init__(self, id, version, label, description, url, params, creator):
+    def __init__(self, id=None, data=None, creator=None):
         self.id = id
-        # self.data = {'version'    : version,
-        #              'label'      : label,
-        #              'description': description,
-        #              'url'        : url,
-        #              'params'     : params
-        #             }
-        self.data = json.dumps({'version'    : version,
-                                'label'      : label,
-                                'description': description,
-                                'url'        : url,
-                                'params'     : params
-                              })
-
+        self.data = data
         self.creator = creator
         self.modifier = creator
 
     @classmethod
+    def create(cls, id, version=None, label=None, description=None, url=None, params=None, creator=None):
+        data = json.dumps({'version'    : version,
+                           'label'      : label,
+                           'description': description,
+                           'url'        : url,
+                           'params'     : params})
+        return Store(id, data, creator)
+
+    @classmethod
     def find_all(cls):
         create_schema_if_first_use()
-
-        stores= db.session.query(Store.id,
-                                 Store.data,
-                                 Store.create_at,
-                                 Store.modified_at,
-                                 Store.creator,
-                                 Store.modifier).all()
+        results = db.session.query(Store.id,
+                                   Store.data,
+                                   Store.create_at,
+                                   Store.modified_at,
+                                   Store.creator,
+                                   Store.modifier).all()
         ret = []
-        for store in stores:
-            # ret.append({'id'          : server.id,
-            #             'version'     : server.data['version'],
-            #             'label'       : server.data['label'],
-            #             'description' : server.data['description'],
-            #             'url'         : server.data['url'],
-            #             'params'      : server.data['params']
-            #            })
-            ret.append({'id'          : store.id,
-                        'version'     : json.loads(store.data)['version'],
-                        'label'       : json.loads(store.data)['label'],
-                        'description' : json.loads(store.data)['description'],
-                        'url'         : json.loads(store.data)['url'],
-                        'params'      : json.loads(store.data)['params']
-                        })
+        for result in results:
+            ret.append(Store(result.id, result.data, result.creator))
         return ret
+
+    def save(self):
+        create_schema_if_first_use()
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        create_schema_if_first_use()
+        db.session.query(Store).filter(Store.id==self.id).delete()
+        db.session.commit()
 
     def __str__(self):
         return self.id
+
+    def to_json(self):
+        return {'id'          : self.id,
+                'version'     : json.loads(self.data)['version'],
+                'label'       : json.loads(self.data)['label'],
+                'description' : json.loads(self.data)['description'],
+                'url'         : json.loads(self.data)['url'],
+                'params'      : json.loads(self.data)['params']
+                }
