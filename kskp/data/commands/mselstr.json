@@ -64,7 +64,7 @@
       "type": "string",
       "label": "バッファの数",
       "optional": true,
-      "default": 20
+      "default": 10
     },
     {
       "name": "assert_diffSize",
