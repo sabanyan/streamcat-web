@@ -21,7 +21,8 @@
       "name": "bufcount",
       "type": "string",
       "label": "バッファの数",
-      "optional": true
+      "optional": true,
+      "default": 20
     },
     {
       "name": "assert_diffSize",
@@ -81,7 +82,8 @@
       "name": "precision",
       "type": "string",
       "label": "有効桁数",
-      "optional": true
+      "optional": true,
+      "default": 10
     }
   ],
   "ports": [
