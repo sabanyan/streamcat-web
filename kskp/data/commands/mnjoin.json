@@ -34,7 +34,8 @@
       "name": "bufcount",
       "type": "string",
       "label": "バッファの数",
-      "optional": true
+      "optional": true,
+      "default": 20
     },
     {
       "name": "assert_diffSize",

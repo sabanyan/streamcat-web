@@ -15,7 +15,8 @@
       "name": "delim",
       "type": "string",
       "label": "トランザクション項目アイテムを区切る文字",
-      "optional": true
+      "optional": true,
+      "default": " "
     },
     {
       "name": "r",
