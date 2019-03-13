@@ -667,7 +667,7 @@ class CsvToHtmlTableCommand(VisualizersHtml):
 
         file_path = inputs.get('i').source.fullpath
         offset = int(args.get('offset')) if args.get('offset') else 0
-        limit = int(args.get('limit')) if args.get('limit') else None
+        limit = int(args.get('limit')) if args.get('limit') else 100
 
         # ブロック句
         if not os.path.exists(file_path):
@@ -677,16 +677,30 @@ class CsvToHtmlTableCommand(VisualizersHtml):
 
         # テーブル構造
         with open(file_path, 'r') as f:
-            reader = csv.reader(f)
-            header = next(reader)
+            n = 0
+            result['reader'] = []
+            for line in f.readlines():
+                if n > limit:
+                    break
 
-            result['header'] = header
+                if n == 0:
+                    # 一行目はヘッダとみなす
+                    result['header'] = line.split(',')
+                else:
+                    result['reader'].append(line.split(','))
 
-            csv_list = list(reader)
-            start = offset
-            end = start + (limit if limit is not None else len(csv_list))
+                n += 1
 
-            result['reader'] = csv_list[start:end]
+            # reader = csv.reader(f)
+            # header = next(reader)
+            #
+            # result['header'] = header
+            #
+            # csv_list = list(reader)
+            # start = offset
+            # end = start + (limit if limit is not None else len(csv_list))
+            #
+            # result['reader'] = csv_list[start:end]
 
         return result
 
