@@ -667,7 +667,7 @@ class CsvToHtmlTableCommand(VisualizersHtml):
 
         file_path = inputs.get('i').source.fullpath
         offset = int(args.get('offset')) if args.get('offset') else 0
-        limit = int(args.get('limit')) if args.get('limit') else 100
+        limit = int(args.get('limit')) if args.get('limit') else None
 
         # ブロック句
         if not os.path.exists(file_path):
