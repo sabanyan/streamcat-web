@@ -132,49 +132,6 @@ export default class FlowList extends React.Component<FlowListProps,State> {
     </EmptyState>
   }
     
-  onClickRun() {
-    let {notify, dismissNotify} = this.props
-    let flow = this.state.selected_flow
-    let flow_uuid = flow.uuid
-    let params = flow.params
-    
-    let putbody = {}
-    if(params)putbody["params"]=params
-
-    FlowUtil.saveFlow(flow_uuid, putbody, notify, dismissNotify).then((response) => {
-      if (response.data.success) {
-        FlowUtil.runNodes(flow_uuid, notify, dismissNotify).then((response) => {
-          if (response.data.success) {
-            const json: RunResponseType = response.data
-            const result = json.name.map((n, index) => {
-              return <li key={index}>{n.id}</li>
-            })
-            const content = <div>
-              <div>ライブラリにフローの実行結果が追加されました。</div>
-              <ul>{result}</ul>
-            </div>
-  
-            this.props.notify({
-              title: 'フロー実行完了',
-              message: ReactDomUtil.renderToString(content),
-              status: 'success',
-              dismissAfter: 0,
-              buttons: [
-                {
-                  name: '開く',
-                  primary: true,
-                  onClick: () => {
-                    window.open('/library?project=' +
-                      window.navigationModel.project_uuid, '_blank')
-                  },
-                }],
-            })
-          }
-        })
-      }
-    }) 
-  }
-
   onClickAddFlowParam() {
     let flow = this.state.selected_flow
     const name = this.setNewParamName("new_param",1)
@@ -350,8 +307,9 @@ export default class FlowList extends React.Component<FlowListProps,State> {
   }
 
   renderInspector(){
-    return <FlowInspector flow={this.state.selected_flow}
-      onClickRun={(e)=>this.onClickRun(e)}
+    return <FlowInspector 
+      {...this.props}
+      flow={this.state.selected_flow}
       onClickDeleteParam={(param)=>this.onClickDeleteParam(param)}
       onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}
       onBlurTitle={(e)=>this.onBlurTitle(e)}

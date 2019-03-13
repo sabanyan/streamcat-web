@@ -27,6 +27,7 @@ import APIUtil from '../../../../utils/APIUtil'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
 import Run from '../../../FlowEditorContainer/ToolBar/Run'
 import AddButton from '../../AddButton'
+import FlowUtil from '../../../../utils/FlowUtil';
 
 type Props = {
   project: {};
@@ -37,10 +38,11 @@ type Props = {
   onClickDeleteParam: Function;
 }
 
-class FlowInspector extends React.Component<Props> {
 
+class FlowInspector extends React.Component<Props, State> {
   constructor (props) {
     super(props)
+    this.paramRefs = []
   }
 
   nullInspector(){
@@ -50,28 +52,61 @@ class FlowInspector extends React.Component<Props> {
     </div>
   }
 
+  onClickRun () {
+    const text = "modal"
+    ModalUtil.registerModal({
+      id: Constants.modal.SHOW_FLOW_SETTING, onClickDone: () => {
+        this.run()
+        //モーダルを閉じる
+        ModalUtil.closeModal(Constants.modal.SHOW_FLOW_SETTING)
+      },
+    })
+
+    let content = <div>
+      {this.renderInputFile()}
+      {this.renderFlowParameter()}
+    </div>
+    
+    ModalUtil.emitModal({
+      id: Constants.modal.SHOW_FLOW_SETTING,
+      visible: true,
+      done: '実行する',
+      cancle: 'キャンセル',
+      danger: false,
+      content: content,
+    })
+  }
+
+  renderInputFile() {
+    const inputFileContainer = <div>
+        <label>入力ファイル</label>
+    </div>
+
+    return inputFileContainer
+  }
+
   renderFlowParameter () {
     const {flow} = this.props
     if(!flow)return null
-    const {params} = flow
 
+    let {params} = flow
     let inputParams, inputParamsContainer, addFlowParams
     this.paramRefs = []
-    inputParams = params.map((param,index) => {
-    return <div key={param.name} className={style.flow_param}>
-        <div className={style.left}>
-        <input ref={(ref) => {
-            //render時にrefがnullのケースでcallされる場合があるので、
-            //refがあることを確認してから入れる
-            if(ref){
-            this.paramRefs.push(ref)
-            }
-        }} type={'text'} className={'form-control'} defaultValue={param.name} />
-        </div>
-        <div className={style.right}>
-        <Button danger={true} onClick={()=>this.props.onClickDeleteParam(param)}>削除</Button>
-        </div>
-    </div>
+    inputParams = params.map((param) => {
+      return <div key={param.name} className={style.flow_param}>
+          <div className={style.left}>
+          <input ref={(ref) => {
+              //render時にrefがnullのケースでcallされる場合があるので、
+              //refがあることを確認してから入れる
+              if(ref){
+              this.paramRefs.push({param:param, element:ref})
+              }
+          }} type={'text'} className={'form-control'} defaultValue={param.name} />
+          </div>
+          <div className={style.right}>
+          {/*<Button danger={true} onClick={()=>this.props.onClickDeleteParam(param)}>削除</Button>*/}
+          </div>
+      </div>
     })
     
     inputParamsContainer = <div>
@@ -83,8 +118,52 @@ class FlowInspector extends React.Component<Props> {
   
     return <div>
         {inputParamsContainer}
-        {addFlowParams}
+        {/*addFlowParams*/}
     </div>
+  }
+
+  run () {
+    let putbody = {}
+    const params = []
+    this.paramRefs.map((paramRef) => {
+      params.push({name:paramRef.element.value, type:paramRef.param.type})  
+    })
+    const flow_uuid = this.props.flow.uuid
+    if(params)putbody["params"]=params
+    const notify = this.props.notify
+    const dismissNotify = this.props.dismissNotify
+    FlowUtil.saveFlow(flow_uuid, putbody, notify, dismissNotify).then((response) => {
+      if (response.data.success) {
+        FlowUtil.runNodes(flow_uuid, notify, dismissNotify).then((response) => {
+          if (response.data.success) {
+            const json: RunResponseType = response.data
+            const result = json.name.map((n, index) => {
+              return <li key={index}>{n.id}</li>
+            })
+            const content = <div>
+              <div>ライブラリにフローの実行結果が追加されました。</div>
+              <ul>{result}</ul>
+            </div>
+  
+            this.props.notify({
+              title: 'フロー実行完了',
+              message: ReactDomUtil.renderToString(content),
+              status: 'success',
+              dismissAfter: 0,
+              buttons: [
+                {
+                  name: '開く',
+                  primary: true,
+                  onClick: () => {
+                    window.open('/library?project=' +
+                      window.navigationModel.project_uuid, '_blank')
+                  },
+                }],
+            })
+          }
+        })
+      }
+    }) 
   }
 
   render () {
@@ -100,8 +179,8 @@ class FlowInspector extends React.Component<Props> {
     const description = flow.description
     content = <div>
       <div className={style.actions}>
-        <Run disabled={false} icon={'&#xE037'}
-        onClick={(e) => this.props.onClickRun()}>フローを実行</Run>
+        <Run disabled={false}
+        onClick={(e) => this.onClickRun()}>フローを実行</Run>
         <Button onClick={() => this.props.onClickDuplicate(uuid)}>複製する</Button>
         <Button danger={true}
                 onClick={() => this.props.onClickDelete(uuid)}>削除する</Button>
@@ -131,7 +210,6 @@ class FlowInspector extends React.Component<Props> {
       <div>
         {moment(createdAt).format(Constants.format.dateTime)}
       </div>
-      {this.renderFlowParameter()}
     </div>
 
     return <div className={classnames(style.property, style.in)}>
