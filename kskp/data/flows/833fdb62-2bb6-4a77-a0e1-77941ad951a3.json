@@ -1,0 +1,85 @@
+{
+  "projectId": 1,
+  "label": "テストフロ",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2019-03-13 19:01:02",
+  "nodes": [
+    {
+      "position": {
+        "x": 99,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "i",
+      "type": "frame",
+      "label": "test.csv",
+      "uuid": "86365ce9-9b01-4ec3-b672-7739e8f1e507",
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 295
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "type": "frame",
+      "id": "d1",
+      "label": "d1",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 98,
+        "y": 212
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "type": "command",
+      "id": "c1",
+      "label": "c1",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "f": "A,B",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    }
+  ]
+}

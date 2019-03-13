@@ -221,12 +221,8 @@ def execute_subflow():
             continue
 
     # フローの実行
-    result = execute_flow(flow_uuid, None, False, inputs, args)
-
-    # 後片付け（一時的にアップロードしたファイルを削除する、でも削除するかどうか決めていないのでとりあえずコメントアウトする）
-    for file in upload_file_list:
-        os.remove(DATAFRAME_DIR_PATH.as_posix() + '/' + file + '.csv')
-
+    result = execute_flow(flow_uuid, None, False, None, inputs, args)
+    
     return result
 
 @api.route('/executableflows', methods=['POST'])
@@ -438,7 +434,9 @@ def make_new_frame():
         if request.args.get('no_contents'):
             no_contents = True
 
-        result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
+        limit = int(request.args.get('limit')) if request.args.get('limit') else None
+
+        result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents, limit=limit)
 
         return result
     else:
@@ -458,7 +456,7 @@ def fetch_frame(frame_uuid):
     """
     # オフセットのデフォルトは最初から（なので０）
     offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-    limit = int(request.args.get('limit')) if request.args.get('limit') else 100
+    limit = int(request.args.get('limit')) if request.args.get('limit') else None
     no_contents = True if request.args.get('no_contents') else False
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
@@ -540,7 +538,7 @@ def download_file():
     return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
                                attachment_filename = downloadFileName, mimetype = 'text/csv')
 
-def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
+def execute_flow(flow_uuid, step_paths, no_contents, limit=None, inputs={}, args={}):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
@@ -555,7 +553,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                         })
     else:
         try:
-            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
+            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, limit, inputs, args)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -924,7 +922,7 @@ def execute_direct3():
 
     return jsonify({'success': True, 'data': 'execute-direct3'})
 
-def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs={}, args={}):
+def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=None, inputs={}, args={}):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
@@ -947,7 +945,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
     if no_contents:
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result['outputs'].items()]
     else:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result['outputs'].items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents(limit)} for key, value in result['outputs'].items()]
 
     return result_list, result['caches']
 
@@ -984,7 +982,7 @@ def load_as_data_frame(path_obj, offset, limit):
     with path_obj.open(encoding='utf-8') as f:
         n = 0
         for line in f.readlines():
-            if n > limit:
+            if limit is not None and n > limit:
                 break
 
             if n == 0:
