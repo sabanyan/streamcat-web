@@ -51,6 +51,10 @@ RUN yum install -y boost boost-devel
 
 RUN pip install nysol
 
+# install nkf
+RUN yum install -y epel-release
+RUN yum install -y nkf --enablerepo=epel
+
 WORKDIR /home/kskp
 
 USER kskp

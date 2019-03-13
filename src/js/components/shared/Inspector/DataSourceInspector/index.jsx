@@ -331,6 +331,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       }
     }
 
+
     const flow:FlowModel  = this.props.flow
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
@@ -362,10 +363,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       content = <Loader center={true} absolute={true} fixed={false} visible={true}/>
     }else {
 
-      const numberOfLines = StringUtil.separate(this.props.selected_data_source_detail.numberOfLines)
       const fileSize = StringUtil.convertToFileSize(this.props.selected_data_source_detail.fileSize)
-      const lastModifiedAt = StringUtil.separate(this.props.selected_data_source_detail.lastModifiedAt)
-
+      const lastModifiedAt = this.props.selected_data_source_detail.lastModifiedAt
       content = <div>
         <div className={style.property_overview}>
           <div className={style.actions}>
@@ -376,14 +375,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
           </div>
           <div className={style.full_hr}/>
           <div className={style.overviews}>
-            <div className={style.overview}>
-              <div className={style.overview_label}>
-                データの件数
-              </div>
-              <div className={style.overview_value}>
-                {numberOfLines} {/*{property.overview.count || 0}*/}
-              </div>
-            </div>
             <div className={style.overview}>
               <div className={style.overview_label}>
                 ファイルサイズ
