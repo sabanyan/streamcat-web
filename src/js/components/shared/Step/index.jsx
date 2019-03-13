@@ -112,7 +112,7 @@ export default class Step extends React.Component<Props, State> {
       if (selected_step instanceof DataFrameStepModel) {
         if(selected_step.hasData()){
           //TODO 将来的にはページングなどの対応が必要
-          APIUtil.get("frames/" + selected_step.uuid + "?offset=0&limit=1000").then((response)=>{
+          APIUtil.get("frames/" + selected_step.uuid + "?no_contents=1").then((response)=>{
             const json = response.data
             this.props.updateDataFrameDetail(json.data)
           })
