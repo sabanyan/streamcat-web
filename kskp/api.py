@@ -458,11 +458,11 @@ def fetch_frame(frame_uuid):
     """
     # オフセットのデフォルトは最初から（なので０）
     offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-    # リミットのデフォルトは全行なのでNoneにしておく（０の場合は０行取得だから０は使えない）
-    limit = int(request.args.get('limit')) if request.args.get('limit') else None
+    limit = int(request.args.get('limit')) if request.args.get('limit') else 100
+    no_contents = True if request.args.get('no_contents') else False
 
     file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
-    result = csv_to_frame(file_path, offset=offset, limit=limit)
+    result = csv_to_frame(file_path, no_contents=no_contents, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
         # headerのカラムに改行コードが含まれているケースの対応
@@ -480,11 +480,12 @@ def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     詳細情報なども含んだframeを表すdictを返す
     """
     result = {}
-    contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
 
     if not no_contents:
+        contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
         result['contents'] = contents
-    result['numberOfLines'] = number_of_lines
+        # 行数は一旦返さないことにする
+        # result['numberOfLines'] = number_of_lines
     result['fileSize'] = os.path.getsize(file_path)
     result['lastModifiedAt'] = format_time(file_path)
 
