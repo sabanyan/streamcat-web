@@ -480,12 +480,12 @@ def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     詳細情報なども含んだframeを表すdictを返す
     """
     result = {}
-    contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
 
     if not no_contents:
+        contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
         result['contents'] = contents
-    # 行数は一旦返さないことにする
-    # result['numberOfLines'] = number_of_lines
+        # 行数は一旦返さないことにする
+        # result['numberOfLines'] = number_of_lines
     result['fileSize'] = os.path.getsize(file_path)
     result['lastModifiedAt'] = format_time(file_path)
 
