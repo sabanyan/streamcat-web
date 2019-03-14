@@ -679,7 +679,7 @@ class CsvToHtmlTableCommand(VisualizersHtml):
         with open(file_path, 'r') as f:
             n = 0
             result['reader'] = []
-            for line in f.readlines():
+            for line in f:
                 if limit is not None and n > limit:
                     break
 

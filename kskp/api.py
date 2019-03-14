@@ -222,7 +222,7 @@ def execute_subflow():
 
     # フローの実行
     result = execute_flow(flow_uuid, None, False, None, inputs, args)
-    
+
     return result
 
 @api.route('/executableflows', methods=['POST'])
@@ -981,7 +981,7 @@ def load_as_data_frame(path_obj, offset, limit):
     column_list = []
     with path_obj.open(encoding='utf-8') as f:
         n = 0
-        for line in f.readlines():
+        for line in f:
             if limit is not None and n > limit:
                 break
 
