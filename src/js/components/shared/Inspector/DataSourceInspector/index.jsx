@@ -81,7 +81,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
           loading: true
         })
 
-        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id
+        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id + "&no_contents=1"
         APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
@@ -234,21 +234,21 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   onChangeCacheCheck (e: Event) {
-  
+
     let selected_step = this.getSelectedStep()
     if(selected_step.isMakeCache()) {
       selected_step.setMakeCache(false)
     } else {
       selected_step.setMakeCache(true)
     }
-    
+
     let flow:FlowModel = this.props.flow
     this.props.updateFlow(flow)
 }
 
   onClickDeleteCache() {
     let {selected_step_ids, nodes, notify,dismissNotify} = this.props
-    
+
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         this.deleteCache()
@@ -417,7 +417,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
             {cacheCheckForm}
           </div>
           <div className={style.cache_delete}>
-            <Button  icon={'delete'} danger={true} 
+            <Button  icon={'delete'} danger={true}
               disabled={!selected_step.isCached()}
 
               onClick={(e) => {this.onClickDeleteCache()}}>
