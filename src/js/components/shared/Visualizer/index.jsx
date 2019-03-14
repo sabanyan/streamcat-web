@@ -42,10 +42,10 @@ export default class Visualizer extends React.Component<Props,State> {
   }
 
   getDefaultArgs(params:[]) {
-    let args = []
+    let args = {}
     params.map((param) => {
       if(param.default) {
-        args.push({[param.name] : param.default})
+        args[param.name] = param.default
       }  
     })
     return args
