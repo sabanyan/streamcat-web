@@ -388,8 +388,8 @@ class Frame(Datum):
             self.source.incr_ref_count(self.uuid)
         return self
 
-    @property
-    def contents(self):
+    # @property
+    def contents(self, limit=None):
         if self.source is None:
             return '(no contents)'
 
@@ -402,7 +402,7 @@ class Frame(Datum):
             for row in reader:
                 # 時間が足りなくてこんな風に実装してしまいました。。。
                 # ごめんなさい。。。
-                if count > 1000:
+                if limit is not None and count > limit - 1:
                     break
 
                 if first_row:
