@@ -7,8 +7,8 @@ from .model import get_all_projects, update_flow_by_uuid
 
 endpoints = Blueprint('util', __name__)
 
-base_path = '/home/kskp'
-# base_path = ''
+# base_path = '/home/kskp'
+base_path = ''
 
 @endpoints.route('/csvs')
 def csvs():
