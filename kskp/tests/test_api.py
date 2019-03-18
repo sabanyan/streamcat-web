@@ -244,6 +244,8 @@ class ApiTestCase(unittest.TestCase):
             # 後片付け
             os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
             for path in Path(app.config['FLOW_PATH']).iterdir():
+                if not path.suffix == '.json':
+                    continue
                 with open(path) as f:
                     flow_json = json.load(f)
                     if flow_json['label'] == copy_flow_label and flow_json['projectId'] == project_id:

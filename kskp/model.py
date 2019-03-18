@@ -332,6 +332,8 @@ def generate_flow_name(project_id, flow_name, serial_number=1):
 
     for path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not path.suffix == '.json':
+                continue
             data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していないファイルは無視
@@ -363,6 +365,8 @@ def fetch_subflows_all_projects(request_args):
     subflow_list = []
     for path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not path.suffix == '.json':
+                continue
             data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合
@@ -434,6 +438,8 @@ def get_flow_path_by_uuid(flow_uuid):
     指定したUUIDをファイル名にもつフローファイルのパスを返すヘルパー
     """
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        if not flow_path.suffix == '.json':
+            continue
         if flow_path.stem == flow_uuid:
             return flow_path
 
@@ -495,6 +501,8 @@ def get_flow_paths_by_project_uuid(project_uuid):
 
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not flow_path.suffix == '.json':
+                continue
             data = json.loads(flow_path.read_text(encoding='utf-8'))
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合は飛ばす

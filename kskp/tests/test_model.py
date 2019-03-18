@@ -8,6 +8,12 @@ from pathlib import Path
 from kskp import app
 import kskp.model as model
 
+import pprint
+from kskp.models.library import Library
+from kskp.models.folder import Folder
+from kskp.models.remote_folder import RemoteFolder
+from kskp.models.database import Detabase
+
 class ModelTestCase(unittest.TestCase):
     def setUp(self):
         self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
@@ -257,7 +263,7 @@ class ModelTestCase(unittest.TestCase):
 
             # 名前を変更する
             new_project_name = '新しい名前'
-            model.rename_project(project_uuid, new_project_name)
+            model.rename_project_by_uuid(project_uuid, new_project_name)
 
             self.assertEqual(model.get_all_projects()[0]['name'], new_project_name)
 
@@ -449,6 +455,22 @@ class ModelTestCase(unittest.TestCase):
 
             self.assertEqual(path.stem, data_source_name)
             self.assertEqual(result['a'], 1)
+
+
+
+    def test_get_root(self):
+        with app.app_context():
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                              , None
+                              , 'ルートフォルダ🌲'
+                              , creator=1)
+            model.set_folder2(new_folder)
+            # 作成したルートフォルダを取得する
+            root = model.get_root()
+        self.assertEqual(root, new_folder)
+
+
 
     # crate_flow内に定義されているデコレータのテスト
     # とりあえず作ったが、関数内関数は外部から呼び出せないのでテストできなく、置き場所に困ったので
