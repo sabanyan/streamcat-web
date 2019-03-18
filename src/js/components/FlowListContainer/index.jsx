@@ -153,7 +153,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
     const selectedFiles:FileList =  e.target.files
     if(selectedFiles){
       const uploadFile:File = selectedFiles[0]
-      HttpUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
+      APIUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
         const json = response.data
         console.log(json)
         this.setState({upload_file:{
@@ -183,6 +183,29 @@ export default class FlowListContainer extends React.Component<Props,State> {
     })
   }
 
+  onClickDuplicate (flow_uuid:string){
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        const data = {
+          original_flow_uuid: flow_uuid
+        }
+        APIUtil.post('flows',data).then((response) => {
+          this.getFlowList()
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        })
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '複製する',
+      danger: false,
+      content: <div>
+        選択されたフローを複製しますか？
+      </div>,
+    })
+  }
+
   onClickDelete (flow_uuid:string) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -200,6 +223,17 @@ export default class FlowListContainer extends React.Component<Props,State> {
       content: <div>
         選択されたフローを削除しますか？
       </div>,
+    })
+  }
+
+  onBlurTitle(e){
+    const flow = this.state.selected_flow
+    APIUtil.put("flows/" + flow.uuid,{
+      label: e.target.value
+    }).then((response)=>{
+      this.getFlowList()
+    },(error)=>{
+
     })
   }
 
@@ -224,7 +258,10 @@ export default class FlowListContainer extends React.Component<Props,State> {
   }
 
   renderInspector(){
-    return <FlowInspector flow={this.state.selected_flow} onClickDelete={(uuid)=>this.onClickDelete(uuid)}/>
+    return <FlowInspector flow={this.state.selected_flow}
+                          onClickDelete={(uuid)=>this.onClickDelete(uuid)}
+                          onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}
+                          onBlurTitle={(e)=>this.onBlurTitle(e)}/>
   }
 
   renderAll () {

@@ -124,6 +124,17 @@ export default class ProjectListContainer extends React.Component {
     })
   }
 
+  onBlurTitle(e){
+    const project = this.state.selected_project
+    APIUtil.put("projects/" + project.uuid,{
+      "new_name": e.target.value
+    }).then((response)=>{
+      this.getProjectList()
+    },(error)=>{
+
+    })
+  }
+
   onClickNew (e) {
     ModalUtil.emitModal({
       id: Constants.modal.ADD_PROJECT,
@@ -183,7 +194,9 @@ export default class ProjectListContainer extends React.Component {
   }
 
   renderInspector(){
-    return <ProjectInspector project={this.state.selected_project} onClickDelete={(uuid)=>this.onClickDelete(uuid)}/>
+    return <ProjectInspector project={this.state.selected_project}
+                             onClickDelete={(uuid)=>this.onClickDelete(uuid)}
+                             onBlurTitle={(e)=>this.onBlurTitle(e)}/>
   }
 
   renderAll () {

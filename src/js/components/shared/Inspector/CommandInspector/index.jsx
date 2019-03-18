@@ -67,13 +67,14 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     onHide(){
       this.updateArgs()
-      this.saveNodes()
+//      this.saveNodes()
     }
 
     updateArgs() {
       let selected_step = this.getSelectedStep()
       selected_step.args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
       this.props.updateStep(selected_step)
+      this.props.addHistory()
     }
 
     deleteStep(){
@@ -82,12 +83,16 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       this.props.selectSteps()
     }
 
-    saveNodes(){
-      let {nodes} = this.props
-      return FlowUtil.saveNodes(inject_flow_uuid,nodes).then(()=>{
-        this.props.addHistory()
-      })
-    }
+//    saveNodes(){
+//      let {nodes,history} = this.props
+//
+//      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history,nodes)
+//      if(isSame)return
+//
+//      return FlowUtil.saveNodes(inject_flow_uuid,nodes).then(()=>{
+//        this.props.addHistory()
+//      })
+//    }
 
     onClickDelete(e:Event) {
       ModalUtil.registerModal({

@@ -130,7 +130,6 @@ export default class FlowUtil {
     return nodes
   }
 
-
   static runNodes(flowUUID:string,notify:Function,dismissNotify:Function):any{
       let runNotify
       if(notify){
@@ -143,7 +142,7 @@ export default class FlowUtil {
       }
 
      return new Promise((resolve, reject) => {
-       HttpUtil.get("frames?from=" + flowUUID + "&no_contents=1").then((response)=>{
+       APIUtil.get("frames?from=" + flowUUID + "&no_contents=1").then((response)=>{
          if(dismissNotify)dismissNotify(runNotify.id)
          if (!response.data.success) {
            notify({
@@ -169,6 +168,24 @@ export default class FlowUtil {
      })
   }
 
+  /**
+   * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
+   */
+  static getNotOverlapNodePosition({x,y}:{x:number,y:number},nodes:[]){
+    let result = {x:x,y:y}
+    const threshold = 3
+    nodes.forEach((node)=>{
+      //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
+      if(parseInt(node.position.x) >= parseInt(x) - threshold &&
+        parseInt(node.position.x) <= parseInt(x) + threshold &&
+        parseInt(node.position.y) >= parseInt(y) - threshold &&
+        parseInt(node.position.y) <= parseInt(y) + threshold ){
+        //合致していた場合新しい座標を計算
+        result = FlowUtil.getNotOverlapNodePosition({x:x+10,y:y+10},nodes)
+      }
+    })
+    return result
+  }
 
   /**
    * フローの保存
@@ -178,7 +195,7 @@ export default class FlowUtil {
    * @param projectName
    * @returns {Promise<any>}
    */
-  static saveNodes (flowUUID:string,nodes:[],notify:Function,dismissNotify:Function):any {
+  static saveNodes (flowUUID:string,nodes:[],notify?:Function,dismissNotify?:Function):any {
     //validation
     Validator.nodesValidate(nodes)
 
@@ -186,7 +203,7 @@ export default class FlowUtil {
     if(notify){
       saveNotify = notify({
         title: 'フロー保存中',
-        message: 'フローを保存しています',
+        message: 'フローのノードを保存しています',
         status: 'loading',
         dismissAfter: 0
       })
@@ -239,7 +256,55 @@ export default class FlowUtil {
     if(notify){
       saveNotify = notify({
         title: 'フロー保存中',
-        message: 'フローを保存しています',
+        message: 'フローの設定を保存しています',
+        status: 'loading',
+        dismissAfter: 0
+      })
+    }
+
+    return new Promise((resolve, reject) => {
+      APIUtil.put("flows/" + flowUUID,putBody).then((response)=>{
+        if(dismissNotify)dismissNotify(saveNotify.id)
+        if (!response.data.success) {
+          notify({
+            title: '実行エラー',
+            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        }
+        resolve(response)
+      },(error)=>{
+        if(dismissNotify)dismissNotify(saveNotify.id)
+        notify({
+          title: '実行エラー',
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+        reject(error)
+      })
+    })
+  }
+
+  static saveFlow (flowUUID:string, {label,description,params,ports,nodes},notify:Function,dismissNotify:Function):any {
+    //validation
+    Validator.nodesValidate(nodes)
+
+    let putBody = {}
+    if(label)putBody["label"]=label
+    if(description)putBody["description"]=description
+    if(params)putBody["params"]=params
+    if(ports)putBody["ports"]=ports
+    if(ports)putBody["nodes"]=nodes
+
+    let saveNotify
+    if(notify){
+      saveNotify = notify({
+        title: 'フロー保存中',
+        message: 'フローの設定を保存しています',
         status: 'loading',
         dismissAfter: 0
       })
@@ -327,5 +392,36 @@ export default class FlowUtil {
     if (json["uuid"] !== undefined && json["dataSource"] !== undefined) return new DataFrameStepModel(json)
     return json
   }
+
+  /**
+   * フローの比較
+   * @param flowA
+   * @param flowB
+   * @returns {boolean}
+   */
+  static isSameFlow(flowA:{},flowB:{}){
+    return JSON.stringify(flowA) === JSON.stringify(flowB)
+  }
+  /**
+   * ノードの集合体の比較
+   * @param nodesA
+   * @param nodesB
+   * @returns {boolean}
+   */
+  static isSameNodes(nodesA:[],nodesB:[]){
+    return JSON.stringify(nodesA) === JSON.stringify(nodesB)
+  }
+
+  /**
+   * 現在のノードと履歴の一つ前のノードが一緒かどうか
+   * @param history
+   * @param currentNodes
+   * @returns {boolean}
+   */
+  static isSameCurrentNodesToBeforeHistoryNodes(history,currentNodes){
+    if(!history)return false
+    return JSON.stringify(history.nodes[history.current]) === JSON.stringify(currentNodes)
+  }
+
 
 }

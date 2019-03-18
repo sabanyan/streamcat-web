@@ -49,6 +49,7 @@
 
 .property_body{
   padding: 16px;
+  padding-bottom: 64px;
   background-color: $kskp-property-background-color;
   min-height: 100%;
   label{
@@ -101,6 +102,14 @@
 }
 
 .flowInOut{
+  text-align: left;
+  label{
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.flowCacheCheck{
   text-align: left;
   label{
     margin: 0;
@@ -231,3 +240,32 @@
   }
 }
 
+.noDescription{
+  color: $kskp-gray;
+}
+
+.cache_ {
+  display: inline-block;
+}
+
+.cache_label {
+  display: inline-block;
+  color: $kskp-property-overview-label-color;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.cache_value {
+  display: inline-block;
+  color: $kskp-property-overview-value-color;
+  margin-bottom: 8px;
+  margin-left: 8px;
+  font-size: 14px;
+}
+
+.cache_delete {
+  float: right;
+  margin-top: 8px;
+  margin-left: 8px;
+
+}

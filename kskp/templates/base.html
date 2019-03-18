@@ -10,6 +10,10 @@
     {% endblock %}
 </head>
 <body>
+{% if css_resources and js_resources %}
+{{ css_resources | safe }}
+{{ js_resources | safe }}
+{% endif %}
 {% include "common/navbar.html" %}
 {% with messages = get_flashed_messages() %}
 {% if messages %}
