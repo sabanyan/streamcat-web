@@ -12,6 +12,7 @@ import TextField from '../../shared/TextField'
 import JobList from '../../shared/List/JobList'
 import JobListHeader from '../../shared/List/JobList/JobListHeader'
 import LibraryInspector from '../../shared/Inspector/LibraryInspector'
+import NotificationManager from '../../shared/NotificationManager'
 
 type State = {
   libraries: [];
@@ -39,6 +40,8 @@ export default class Library extends React.Component<Props,State> {
   getJobList () {
     const self = this
     self.setState({is_loading: true})
+
+
 
 
     //仮
@@ -154,6 +157,7 @@ export default class Library extends React.Component<Props,State> {
       <Loader center={true} absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
       <ModalManager/>
+      <NotificationManager />
     </div>
     </div>
   }
