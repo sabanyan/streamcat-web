@@ -62,7 +62,9 @@ if (document.getElementById('flow_list')) {
 
 if (document.getElementById('library_list')) {
   ReactDOM.render(
-    <LibraryListContainer/>,
+    <Provider store={store}>
+      <LibraryListContainer/>
+    </Provider>,
     document.getElementById('library_list'),
   )
 }

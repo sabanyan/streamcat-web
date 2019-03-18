@@ -60,8 +60,6 @@ export type LibraryListDataType = {
   /*directoryPath*/ //確認
 }
 
-export type
-
 export type ServersDataType = {
   id: string;//Directory,SMB,PostgreSQL
   version: string;

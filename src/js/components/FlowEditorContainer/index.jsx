@@ -71,7 +71,8 @@ export type FlowEditorProps = {
   navigation: NavigationModel;
   drag: DragType;
   notify: Function;
-  dissmissNotify: Function;
+  updateNotify: Function;
+  dismissNotify: Function;
   addNote: Function;
   updateCacheAction: Function;
 }
