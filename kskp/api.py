@@ -610,6 +610,8 @@ def jobs():
 
     # jobsリストの作成
     for job_path in Path(JOBS_DIR_PATH).iterdir():
+        if not job_path.suffix == '.json':
+            continue
         data = json.loads(job_path.read_text(encoding='utf-8'))
         if 'flow' in request.args:
             if data['flow']['uuid'] == request.args['flow']:
