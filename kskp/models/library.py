@@ -2,95 +2,170 @@
 import json
 from . import db, create_schema_if_first_use
 
+from sqlalchemy.orm import aliased
+import random
+import datetime
+
 class Library(db.Model):
     """
     Libraryモデル
     """
 
-    # テーブル名
+    # テーブル名の定義
     __tablename__ = 'library'
     
-    id          = db.Column(db.Integer, primary_key=True)
-    parent_id   = db.Column(db.Integer, unique=True)
+    # 列名と列のデータ型等の定義
+    id          = db.Column(db.String, primary_key=True)
+    parent_id   = db.Column(db.String)
+    uuid        = db.Column(db.String, unique=True)
+    dir_path    = db.Column(db.String)
     type        = db.Column(db.String)
     data        = db.Column(db.String)
-    create_at   = db.Column(db.String, default=db.text('CURRENT_TIMESTAMP'))
-    modified_at = db.Column(db.String, default=db.text('CURRENT_TIMESTAMP'))
     creator     = db.Column(db.Integer)
     modifier    = db.Column(db.Integer)
+    created_at  = db.Column(db.String, default=db.text('CURRENT_TIMESTAMP'))
+    modified_at = db.Column(db.String, default=db.text('CURRENT_TIMESTAMP'))
 
-    def __init__(self, id=None, parent_id=None, type=None, data=None, creator=None):
+    def __init__(self, id=None, parent_id=None, uuid=None, dir_path=None, type=None, data=None, creator=None, modifier=None):
         self.id = id
         self.parent_id = parent_id
+        self.uuid = uuid
+        self.dir_path = dir_path
         self.type = type
         self.data = data
         self.creator = creator
-        self.modifier = creator
+        self.modifier = modifier
+
+        # 
+        self.parent_uuid = None
 
     @classmethod
-    def create_folder(cls, id, parent_id=None, uuid=None, label=None, creator=None):
-        data = json.dumps({'uuid'  : uuid,
-                           'label' : label})
-        return Library(id, parent_id, 'folder', data, creator)
+    def create_folder_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+        
+        # SQLiteではidは乱数で採番する
+        id = random.randint(0,99999)
+
+        # parent_uuidからparent_idを取得する
+        result = db.session.query(Library.id).filter(Library.uuid == parent_uuid).one_or_none()
+        if result is None:
+            parent_id = None
+        else:
+            parent_id = result.id
+
+        # dir_pathは親フォルダのdir_pathを引き継ぐ
+        library = Library.find_by_uuid(parent_uuid)
+        if library is None:
+            # 親フォルダがない場合はデフォルトパスとする
+            dir_path = 'kskp/data'
+        else:
+            dir_path = library.dir_path
+
+        # dataを作成する
+        data = json.dumps({'label' : label})
+
+        # Libraryオブジェクトを返す
+        ret = Library(id, parent_id, uuid, dir_path, 'folder', data, creator, modifier)
+        ret.parent_uuid = parent_uuid
+        return ret
 
     @classmethod
-    def create_remote_folder(cls
-                           , id
-                           , parent_id=None
-                           , uuid=None
-                           , label=None
-                           , user=None
-                           , password=None
-                           , server=None
-                           , port=None
-                           , domain=None
-                           , directory=None
-                           , creator=None):
-        data = json.dumps({'uuid'  : uuid
-                         , 'label' : label
-                         , 'user'  : user
-                         , 'password' : password
-                         , 'server'   : server
-                         , 'port'     : property
-                         , 'domain'   : domain
-                         , 'directory': directory})
-        return Library(id, parent_id, 'remote-folder', data, creator)
+    def create_remote_folder_type(cls):
+        pass
 
     @classmethod
-    def create_database(cls
-                      , id
-                      , parent_id=None
-                      , uuid=None
-                      , label=None
-                      , dbms=None
-                      , connection_string=None
-                      , creator=None):
-        data = json.dumps({'uuid'  : uuid
-                         , 'label' : label
-                         , 'dbms'  : dbms
-                         , 'connectionString' : connection_string})
-        return Library(id, parent_id, 'database', data, creator)
+    def create_database_type(cls):
+        pass
 
     @classmethod
     def find_by_uuid(cls, uuid):
-        pass
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+
+        # 指定されたuuidを持つLibraryレコードを取得する
+        result = db.session.query(Library.id,
+                                  Library.parent_id,
+                                  Library.uuid,
+                                  Library.dir_path,
+                                  Library.type,
+                                  Library.data,
+                                  Library.creator,
+                                  Library.created_at).filter(Library.uuid==uuid).one_or_none()
+        if result is None:
+            return None
+        else:
+            return Library(result.id
+                         , result.parent_id
+                         , result.uuid
+                         , result.dir_path
+                         , result.type
+                         , result.data
+                         , result.creator
+                         , result.created_at)
 
     @classmethod
     def find_by_parent_uuid(cls, parent_uuid):
-        pass
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+
+        # 指定されたuuidの親をもつLibraryレコードを全て取得する
+        Library2 = aliased(Library)
+        sub_query = db.session.query(Library2)
+        results = db.session.query(Library.id,
+                                   Library.parent_id,
+                                   Library.uuid,
+                                   Library.dir_path,
+                                   Library.type,
+                                   Library.data,
+                                   Library.creator,
+                                   Library.created_at) \
+                            .filter(sub_query.filter(Library2.id == Library.parent_id and
+                                                     Library2.id == parent_uuid).exists()).all()
+        rets = []
+        for result in results:
+            rets.append(Library(result.id
+                              , result.parent_id
+                              , result.uuid
+                              , result.dir_path
+                              , result.type
+                              , result.data
+                              , result.creator
+                              , result.created_at))
+        return rets
+
+    def get_parent_uuid(self):
+        if self.parent_uuid is None:
+            return self.parent_uuid
+        else:
+            result = db.session.query(Library.uuid).fileter(Library.id==self.parent_id).one_or_none()
+
+        if result is None:
+            return None
+        else:
+            return result.uuid
 
     def save(self):
-        pass
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+
+        db.session.add(self)
+        db.session.commit()
+
+    def update_data(self):
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+
+        library = db.session.query(Library).filter(Library.uuid==self.uuid).first()
+        library.data = self.data
+        library.modifier = self.modifier
+        library.modified_at = self.modified_at
+
+        library.modified_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        db.session.commit()
 
     def delete(self):
-        pass
-
-    def to_json(self):
-        return {'id'          : self.id,
-                'parent'      : self.parent_id,
-                'version'     : json.loads(self.data)['version'],
-                'label'       : json.loads(self.data)['label'],
-                'description' : json.loads(self.data)['description'],
-                'url'         : json.loads(self.data)['url'],
-                'params'      : json.loads(self.data)['params']
-                }
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+        db.session.query(Library).filter(Library.id==self.id).delete()
+        db.session.commit()
