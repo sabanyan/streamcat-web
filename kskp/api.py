@@ -40,10 +40,18 @@ from .model import (
     get_database,
     create_database,
     rename_database_by_id,
-    delete_database_by_id
+    delete_database_by_id,
+
+    get_root,
+    get_folder2,
+    set_folder2,
+    upd_folder2,
+    del_folder2
 )
 from .models.store import Store
 from .models.folder import Folder
+from .models.remote_folder import RemoteFolder
+from .models.database import Detabase
 from .activity import (
     make_unfinished_history,
     make_finished_history
@@ -1103,6 +1111,7 @@ def visualizer():
     # bokehのコマンド
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
 
+import pprint
 
 @api.route('/stores', methods=['GET'])
 def fecth_stores():
@@ -1170,8 +1179,9 @@ def fecth_library():
     ルートデータストアを返却する
     """
     try:
-        root_store = Folder.find_by_parent_uuid(None)
-        return jsonify({'success': True, 'data': root_store})
+        # root_store = Library.find_by_parent_uuid(None)
+        root = get_root()
+        return jsonify({'success': True, 'data': root.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1189,8 +1199,30 @@ def fetch_folder(folder_uuid):
     try:
         # folder = get_folder(folder_uuid)
         # return jsonify({'success': True, 'data': folder})
-        folder = Folder.find_by_uuid(folder_uuid)
-        return jsonify({'success': True, 'data': folder.to_json() if folder is not None else None})
+
+        # folder = Library.find_by_uuid(folder_uuid)
+        # if folder is None:
+        #     data = None
+        # else:
+        #     data = folder.to_json()
+        #     children = Library.find_by_parent_uuid(folder.id)
+        #     data['children'] = []
+        #     for child in children:
+        #         data['children'].append(child.to_json())
+        # return jsonify({'success': True, 'data': data})
+
+        folder = get_folder2(folder_uuid)
+
+        if folder is None:
+            data = None
+        else:
+            data = folder.to_json()
+            children = folder.get_children()
+            data['children'] = []
+            for child in children:
+                data['children'].append(child.to_json())
+        return jsonify({'success': True, 'data': data})
+
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1207,12 +1239,20 @@ def make_new_folder():
     try:
         # new_folder= create_folder(request.json, 1)
         # return jsonify({'success': True, 'data': new_folder})
-        new_folder = Folder.create(str(uuid.uuid4())
-                                 , request.json['parent']
-                                 , request.json['label']
-                                 , 1)
-        new_folder.save()
-        return jsonify({'success': True, 'data': new_folder.to_json()})   
+
+        # new_folder = Library.create(str(uuid.uuid4())
+        #                          , request.json['parent']
+        #                          , request.json['label']
+        #                          , 1)
+        # new_folder.save()
+        # return jsonify({'success': True, 'data': new_folder.to_json()})
+
+        new_folder = Folder(str(uuid.uuid4())
+                          , request.json['parent']
+                          , request.json['label']
+                          , creator=1)
+        set_folder2(new_folder)
+        return jsonify({'success': True, 'data': new_folder.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1227,9 +1267,13 @@ def update_folder(folder_uuid):
     フォルダを修正する
     """
     try:
-        new_label = request.json['label']
-        folder= rename_folder_by_id(folder_uuid, new_label)
-        return jsonify({'success': True, 'data': folder})
+        # folder= rename_folder_by_id(folder_uuid, new_label)
+        folder = Folder(folder_uuid
+                      , None
+                      , request.json['label']
+                      , modifier=2)
+        upd_folder2(folder)
+        return jsonify({'success': True, 'data': folder.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1246,8 +1290,7 @@ def delete_folder(folder_uuid):
     try:
         # delete_folder_by_id(folder_uuid)
         # return jsonify({'success': True})
-        delete_folder = Folder(folder_uuid)
-        delete_folder.delete()
+        del_folder2(folder_uuid)
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({

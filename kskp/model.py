@@ -888,3 +888,66 @@ def rename_database_by_id(database_uuid, new_label):
 
 def delete_database_by_id(database_uuid):
     pass
+
+import pprint
+from .models.library import Library
+from .models.folder import Folder
+from .models.remote_folder import RemoteFolder
+from .models.database import Detabase
+
+def get_root():
+    """
+    ルートを取得する
+    """
+    roots = Library.find_by_parent_uuid(None)
+    
+    if len(roots) == 0 :
+        raise Exception('No root exists!')
+    elif len(roots) > 1:
+        raise Exception('More than 2 roots exists!')
+
+    root = roots[0]
+
+    if root.type == 'folder':
+        return Folder.create_by_library(root)
+    elif root.type == 'remote-folder':
+        return RemoteFolder.create_by_library(root)
+    elif root.type == 'database':
+        return Database.create_by_library(root)
+
+def get_folder2(uuid):
+    library = Library.find_by_uuid(uuid)
+
+    if library is None:
+        return None
+
+    if library.type == 'folder':
+        return Folder.create_by_library(library)
+    elif library.type == 'remote-folder':
+        return RemoteFolder.create_by_library(library)
+    elif library.type == 'database':
+        return Database.create_by_library(library)
+
+def set_folder2(folder):
+    if isinstance(folder, Folder):
+        library = Library.create_folder_type(folder.uuid, folder.parent_uuid, folder.label, folder.creator, folder.creator)
+        library.save()
+        folder.created_at = library.created_at
+    elif isinstance(folder, RemoteFolder):
+        pass
+    elif isinstance(folder, Detabase):
+        pass
+
+def upd_folder2(folder):
+    if isinstance(folder, Folder):
+        library = Library.create_folder_type(folder.uuid, folder.parent_uuid, folder.label, folder.creator, folder.modifier)
+        library.update_data()
+        folder.created_at = library.created_at
+    elif isinstance(folder, RemoteFolder):
+        pass
+    elif isinstance(folder, Detabase):
+        pass 
+
+def del_folder2(uuid):
+    library = Library.find_by_uuid(uuid)
+    library.delete()

@@ -1,69 +1,43 @@
-# from sqlalchemy.dialects.postgresql import TIMESTAMP, JSONB, ENUM
 import json
-from . import db, create_schema_if_first_use
 
-class Folder(db.Model):
-    """
-    Folderモデル
-    """
+from .library import Library
 
-    # テーブル名
-    __tablename__ = 'library'
-    
-    id          = db.Column(db.String, primary_key=True)
-    parent_id   = db.Column(db.String, unique=True)
-    type        = db.Column(db.String)
-    data        = db.Column(db.String)
-    create_at   = db.Column(db.String, default=db.text('CURRENT_TIMESTAMP'))
-    modified_at = db.Column(db.String, default=db.text('CURRENT_TIMESTAMP'))
-    creator     = db.Column(db.Integer)
-    modifier    = db.Column(db.Integer)
-
-    def __init__(self, id=None, parent_id=None, data=None, creator=None):
-        self.id = id
-        self.parent_id = parent_id
-        self.type = 'folder'
-        self.data = data
+class Folder():
+    def __init__(self, uuid, parent_uuid, label, creator=None, modifier=None, created_at=None):
+        self.uuid = uuid
+        self.parent_uuid = parent_uuid
+        self.label = label
         self.creator = creator
-        self.modifier = creator
+        self.modifier = modifier
+        self.created_at = created_at
+
+    def get_children(self):
+        #  DB検索
+        child_libraries = Library.find_by_parent_uuid(self.uuid)
+        ret = []
+        for child_library in child_libraries:
+            ret.append(Folder.create_by_library(child_library))
+        return ret
 
     @classmethod
-    def create(cls, id=None, parent_id=None, label=None, creator=None):
-        data = json.dumps({'label' : label})
-        return Folder(id, parent_id, data, creator)
-
-    @classmethod
-    def find_by_uuid(cls, uuid):
-        create_schema_if_first_use()
-        result = db.session.query(Folder.id,
-                                  Folder.parent_id,
-                                  Folder.type,
-                                  Folder.data,
-                                  Folder.create_at,
-                                  Folder.modified_at,
-                                  Folder.creator,
-                                  Folder.modifier).filter(Folder.id==uuid).one_or_none()
-        if result is None:
-            return None
-        else:
-            return Folder(result.id, result.parent_id, result.data, result.creator)
-
-    @classmethod
-    def find_by_parent_uuid(cls, parent_uuid):
-        pass
-
-    def save(self):
-        create_schema_if_first_use()
-        db.session.add(self)
-        db.session.commit()
-
-    def delete(self):
-        create_schema_if_first_use()
-        db.session.query(Folder).filter(Folder.id==self.id).delete()
-        db.session.commit()
+    def create_by_library(cls, library):
+        label = json.loads(library.data)['label']
+        return Folder(library.uuid, library.get_parent_uuid(), label, library.creator, library.modifier, library.created_at)
 
     def to_json(self):
-        return {'id'          : self.id,
-                'parent'      : self.parent_id,
-                'type'        : self.type,
-                'label'       : json.loads(self.data)['label']}
+        return {'uuid'      : self.uuid
+               ,'type'      : 'folder'
+               ,'label'     : self.label
+               ,'creator'   : self.creator
+               ,'createdAt' : self.created_at }
+
+
+# ローダ、セーバがFolderストアからアクセスする方法
+# Loader.load(folder)
+# Saver.save(folder)
+#
+# Loader.load(database)
+# Saver.save(database)
+#
+
+
