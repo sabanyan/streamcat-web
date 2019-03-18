@@ -28,7 +28,7 @@
       "name": "limit",
       "type": "number",
       "label": "表示対象のデータ数",
-      "default": 1000
+      "default": 100
     }
   ],
   "url": ""
