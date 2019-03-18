@@ -412,22 +412,22 @@ class Job:
         job_ports = self.dst_job_ids(datum_id)
 
         if len(job_ports) >= 2:
-            # if not isinstance(datum.source, NysolPythonSource):
+            if not isinstance(datum.source, NysolPythonSource):
 
-            # datum_idを生み出しているjobが対象のcachesを持っているので、
-            # src_job_fromでjobを探してくる!!!!!!!!
-            src_job, src_port = self.src_job_from(datum_id)
-            caches = src_job.caches
+                # datum_idを生み出しているjobが対象のcachesを持っているので、
+                # src_job_fromでjobを探してくる!!!!!!!!
+                src_job, src_port = self.src_job_from(datum_id)
+                caches = src_job.caches
 
-            # cachesがない場合
-            if len(caches) == 0:
-                datum.command_to_file()
-            else:
-                # cachesがある場合
-                for flow_and_datum, uuid in caches.items():
-                    cache_datum_id = flow_and_datum.split('.')[1]
-                    if cache_datum_id == datum_id:
-                        datum.command_to_file(uuid)
+                # cachesがない場合
+                if len(caches) == 0:
+                    datum.command_to_file()
+                else:
+                    # cachesがある場合
+                    for flow_and_datum, uuid in caches.items():
+                        cache_datum_id = flow_and_datum.split('.')[1]
+                        if cache_datum_id == datum_id:
+                            datum.command_to_file(uuid)
 
             for j, port in job_ports.items():
                 if j != job:
@@ -1244,7 +1244,6 @@ class Msel(MCommandNew):
                 frame_source = source_for_u
             else:
                 frame_source = source
-
             if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
                 frame = Frame(self.caches.get(o_port['name']) , frame_source)
                 # frame.is_temp = False
@@ -1252,7 +1251,6 @@ class Msel(MCommandNew):
                 frame = Frame(str(uuid.uuid4()) , frame_source)
 
             result[o_port['name']] = frame
-
         return result
 
         # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
