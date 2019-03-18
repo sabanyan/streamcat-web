@@ -18,6 +18,7 @@ import Validator from '../utils/Validator'
 import Log from '../utils/Log'
 import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import _ from 'lodash'
+import ZoomUtil from '../utils/ZoomUtil'
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
@@ -43,7 +44,8 @@ const DRAGGING_ACTION = 'dragging_action'
 const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
-
+const ADD_NOTE_ACTION = 'add_memo_action'
+const UPDATE_CACHE_ACTION = 'update_cache_action'
 const graph: Graph = new Graph()
 
 let initialState = {
@@ -109,6 +111,7 @@ const Application = (state = initialState, action: {}) => {
         //srcs
         let totalSX = 0
         let totalSY = 0
+
         src_step_ids.forEach((id: string) => {
           const target: StepModelType = Graph.getNode(state.nodes, id)
           totalSX = totalSX + target.position.x
@@ -131,10 +134,23 @@ const Application = (state = initialState, action: {}) => {
 
         if (src_step_ids || dst_step_ids) {
           //追加したステップの位置調整
-          const average = {
+          let average = {
             sx: totalSX / src_step_ids.length,
             sy: totalSY / src_step_ids.length,
             dx: totalDX / 2
+          }
+
+          if(!src_step_ids.length){
+            //入力がない場合、グラフの中央を基準にする
+            const leftTopPosition = {
+              x: document.querySelector("#flow_editor>div").scrollLeft,
+              y: window.pageYOffset
+            }
+            average = {
+              sx: ZoomUtil.zoomReverse(leftTopPosition.x + (window.innerWidth - 400) / 2,newState.zoom),
+              sy:  ZoomUtil.zoomReverse(leftTopPosition.y + (window.innerHeight - 60) / 2,newState.zoom),
+              dx: totalDX / 2
+            }
           }
 
           const newPosition = {
@@ -358,7 +374,7 @@ const Application = (state = initialState, action: {}) => {
     case ADD_HISTORY_ACTION:{
       let newState = StateUtil.deepCopy(state)
 
-      const isSame = JSON.stringify(newState.nodes) === JSON.stringify(newState.history.nodes[newState.history.current])
+      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
       if(isSame){
         return newState
       }
@@ -509,7 +525,7 @@ const Application = (state = initialState, action: {}) => {
       if (offset === undefined) {
         //絶対値
         newState = {...state, zoom: value}
-      } else if (state.zoom + offset >= 80 && state.zoom + offset <= 180) {
+      } else if (state.zoom + offset >= 40 && state.zoom + offset <= 180) {
         //差分
         newState = {...state, zoom: state.zoom + offset}
       }
@@ -521,6 +537,19 @@ const Application = (state = initialState, action: {}) => {
       newState.selected_data_source_detail = action.detail
       break
     }
+
+    case UPDATE_CACHE_ACTION: {
+      const updatedStep = action.step
+      newState.nodes = newState.nodes.map((node, index) => {
+        if(node.id == updatedStep.id) {
+          node.cacheCreatedAt = updatedStep.cacheCreatedAt
+          node.uuid = updatedStep.uuid
+          node.makeCache = updatedStep.makeCache
+        }
+        return node
+      })
+    }
+    
     default:
       window.nodes = state.nodes
       return state
@@ -867,5 +896,20 @@ export const updateDataFrameDetailAction = (detail: DataFrameDetailType) => {
   return {
     detail: detail,
     type: UPDATE_DATA_SOURCE_DETAIL_ACTION
+  }
+}
+
+export const addNoteAction = (x:number, y:number) => {
+  return {
+    type: ADD_NOTE_ACTION,
+    x: x,
+    y: y
+  }
+}
+
+export const updateCacheAction = (step: StepModelType) => {
+  return {
+    type: UPDATE_CACHE_ACTION,
+    step: step
   }
 }

@@ -1,4 +1,5 @@
 from flask import Flask, render_template, url_for, redirect, session, request
+from bokeh.resources import INLINE
 
 app = Flask('kskp')
 
@@ -14,6 +15,8 @@ from .model import *
 app.register_blueprint(auth_bp, url_prefix='/signup')
 app.register_blueprint(api, url_prefix='/api/v0')
 
+from .util_endpoints import endpoints
+app.register_blueprint(endpoints, url_prefix='/')
 
 @app.route('/')
 def top():
@@ -36,21 +39,24 @@ def flows():
 @app.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
 def flow_designer(flow_uuid):
-    return render_template('flow_designer.html',flow_uuid=flow_uuid)
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    return render_template('flow_designer.html',flow_uuid=flow_uuid,js_resources=js_resources,css_resources=css_resources)
 
 @app.route('/library', methods=['GET', 'POST'])
 @login_required
 def library():
-    return render_template('library.html')
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    return render_template('library.html',js_resources=js_resources,css_resources=css_resources)
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     return render_template('profile.html', user_id=session['user_id'])
 
-# @app.route('/test')
-# def test():
-#     return render_template('visualize/f20541d4-8b8f-4787-6ea9-f1e9d3db80a1_csvtolinegraph.html')
+def main():
+    app.run()
 
 if __name__ == '__main__':
-    app.run()
+    main()

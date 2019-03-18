@@ -1,5 +1,5 @@
 //@flow
-import React from 'react'
+import * as React from 'react'
 import VisualizeModel from '../../../model/Visualize/VisualizeModel'
 import HttpUtil from '../../../utils/HttpUtil'
 import EmptyState from '../EmptyState'
@@ -13,6 +13,7 @@ type Props = {
   visualize: VisualizeModel,
   params: VisualizeParams;
   frame_uuid: string;
+  headers:[]
 }
 
 type State = {
@@ -40,13 +41,12 @@ export default class Visualizer extends React.Component<Props,State> {
 
   visualizeRequest(visualize:VisualizeModel,args:{}){
 
-    //TODO 引数のargs,uuidに置き換える
-    const example_args = { "limit": "", "offset": "", "columns": ["temperature"], "x_inch": 7, "y_inch": 3, "x_axis": "Time", "time_series_column": ["Time"] }
-    const example_uuid = "f20541d4-8b8f-4787-6ea9-f1e9d3db80a1"
+    const uuid = this.props.frame_uuid
+    const body ={ "args": args, "inputs": { "i": uuid }}
+    const limit = this.getLimitWhenCsvToHTMLTable(visualize.id)
 
-    const body ={ "args": example_args, "inputs": { "i": example_uuid } }
     this.setState({is_loading:true})
-    HttpUtil.post("visualizers?from=" + visualize.id,body).then((res)=>{
+    HttpUtil.post("visualizers?from=" + visualize.id + limit,body).then((res)=>{
       this.setState({html:res.data,is_loading:false})
     }).catch((error)=>{
       if(error){
@@ -55,15 +55,47 @@ export default class Visualizer extends React.Component<Props,State> {
     })
   }
 
+  /**
+   * csvtothmlttableのときのみlimitをつける
+   * @param id
+   * @returns {string}
+   */
+  getLimitWhenCsvToHTMLTable(id:string){
+    if(id === "csvtohtmltable"){
+      return "&limit=1000"
+    }
+    return ""
+  }
+
   onSave(args:{}){
     console.log(args)
     this.setState({args:args})
     this.visualizeRequest(this.props.visualize,args)
   }
 
+  componentDidUpdate(){
+    //visualizeRequestで取得したhtml内のscriptがrenderされた後にscriptを再取得
+    const scripts = $(".visualize-component").find("script")
+    if(scripts[0]){
+      //再度appendし直してjsを実行させる
+      this.innerHTMLScriptReLaunch(scripts[0])
+    }
+  }
+
+  /**
+   * innerHTMLのscriptをappendし直して実行させる
+   * @param script
+   */
+  innerHTMLScriptReLaunch(script){
+    var s = document.createElement("script")
+    script.src ? (s.src = script.src) : (s.innerHTML = script.innerHTML)
+    s.async = false
+    document.head.append(s)
+    s.remove()
+  }
 
   render () {
-    const {visualize} = this.props
+    const {visualize,headers} = this.props
     if(this.state.is_loading){
       return <Loader center={true} visible={true}/>
     }
@@ -71,15 +103,16 @@ export default class Visualizer extends React.Component<Props,State> {
     if(!this.state.html){
       return <div>
         <EmptyState title={"表示することができません"} description={""} icon={"cloud_off"}/>
-        <PreviewInspector onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
+        <PreviewInspector headers={headers} onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
       </div>
 
     }
+
     return <div>
       <div className={style.visualizeContainer}>
         <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
       </div>
-      <PreviewInspector params={visualize.params} args = {args} label={visualize.label}/>
+      <PreviewInspector headers={headers}  onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
     </div>
   }
 

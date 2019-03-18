@@ -14,6 +14,7 @@ import CommandSelector from '../../CommandSelector/index'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Graph from '../../../../utils/Graph'
 import APIUtil from '../../../../utils/APIUtil'
+import HttpUtil from '../../../../utils/HttpUtil'
 import type { DataFrameDetailType, StepModelType } from '../../../../types/index'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
@@ -62,6 +63,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
 
 
     FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
+
       //すでにデータが存在している場合
       if (selected_step.hasData()) {
         this.setState({
@@ -78,7 +80,9 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         this.setState({
           loading: true
         })
-        HttpUtil.get("frames?from=" + inject_flow_uuid + "." + selected_step.id).then((response) => {
+
+        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id
+        APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
             const uuid = response.data.name[0].uuid
@@ -122,16 +126,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   previewFromUUID(uuid:string,label:string){
     const {selected_data_source_detail} = this.props
     const selected_step = this.getSelectedStep()
-    //TODO 将来的にはページングなどの対応が必要
-    APIUtil.get("frames/" + uuid + "?offset=0&limit=1000").then((response)=>{
-      const json = response.data
-      let contentGraph = <DataPreview key={uuid} json={json} title={selected_step.getLabel()}/>
-      let contentTable = <div className="table-responsive">
-        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={selected_step.getLabel()} uuid={selected_step.uuid} selected_data_source_detail={selected_data_source_detail}></DataTable>
-      </div>
 
+    //ヘッダー情報の取得
+
+    const getFrameHeaderURL = "frames/" + uuid
+    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
+      const headers = response.data.data
       const contents = this.props.mast.visualizers.map((visualize,index)=>{
-        const content = <Visualizer key={index} frame_uuid={uuid} visualize={visualize} params={{}}/>
+        const content = <Visualizer key={index + uuid} frame_uuid={uuid} visualize={visualize} params={{}} headers={headers}/>
         return {title: visualize.label,content:content,parentProps:this.props}
       })
 
@@ -144,6 +146,15 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       this.setState({
         loading: false
       })
+      this.updateCache()
+    })
+
+  }
+
+  updateCache() {
+    APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
+      const json = response.data
+      this.props.loadFlowJSON(json)
     })
   }
 
@@ -152,7 +163,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const param = {
         type:"frame",
         uuid: selected_step.uuid,
-        ext:"csv"
+        ext:"csv",
+        label: selected_step.label
     }
     APIUtil.get("files",param).then((response)=>{
       let props:CSVModelProps = {
@@ -211,14 +223,67 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
   }
 
-  getSelectedStep ():StepModelType {
+  getSelectedStep ():DataFrameStepModel {
     let {selected_step_ids, nodes} = this.props
     return Graph.getNode(nodes,selected_step_ids[0])
   }
 
   onHide(){
-    this.saveNodes()
-    this.saveFlowPorts()
+//    this.saveNodes()
+//    this.saveFlowPorts()
+  }
+
+  onChangeCacheCheck (e: Event) {
+  
+    let selected_step = this.getSelectedStep()
+    if(selected_step.isMakeCache()) {
+      selected_step.setMakeCache(false)
+    } else {
+      selected_step.setMakeCache(true)
+    }
+    
+    let flow:FlowModel = this.props.flow
+    this.props.updateFlow(flow)
+}
+
+  onClickDeleteCache() {
+    let {selected_step_ids, nodes, notify,dismissNotify} = this.props
+    
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        this.deleteCache()
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        選択されたデータソースのキャッシュを削除しますか？
+      </div>,
+    })
+  }
+
+  deleteCache() {
+    const node = this.getSelectedStep()
+    const url = "caches?of=" + inject_flow_uuid + "." + node.id
+    APIUtil.delete(url).then((response)=>{
+      if (!response.data.success) {
+        notify({
+          title: '実行エラー',
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }
+      if (response.data.success) {
+        this.updateCache()
+      }
+    })
   }
 
   /**
@@ -233,6 +298,23 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     let {nodes} = this.props
     return FlowUtil.saveNodes(inject_flow_uuid,nodes)
   }
+//
+//  /**
+//   * データソースのIN/OUTを保存
+//   *  */
+//  saveFlowPorts(){
+//    const {flow,notify,dismissNotify} = this.props
+//    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
+//  }
+//
+//  saveNodes(){
+//    let {nodes,history} = this.props
+//    const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history,nodes)
+//    if(isSame){
+//      return
+//    }
+//    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+//  }
 
   render () {
     let step_text
@@ -262,6 +344,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
                ref={'flowOut'}
                onChange={(e) => this.onChangeFlowInOut(e)} />
         &nbsp;出力
+        </label>
+      </div>
+    </div>
+    const cacheCheckForm = <div>
+      <div>
+        <label><input type="checkbox" checked={selected_step.makeCache?"checked":""}
+                ref={'cache'} disabled=""
+                onChange={(e) => this.onChangeCacheCheck(e)}/>
         </label>
       </div>
     </div>
@@ -326,6 +416,28 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
                 {flowInOutForm}
               </div>
             </div>
+          </div>
+        </div>
+        <div className={style.cache}>
+          <div className={style.cache_label}>
+          結果をキャッシュ
+          </div>
+          <div className={style.cache_value}>
+            {cacheCheckForm}
+          </div>
+          <div className={style.cache_delete}>
+            <Button  icon={'delete'} danger={true} 
+              disabled={!selected_step.isCached()}
+
+              onClick={(e) => {this.onClickDeleteCache()}}>
+              キャッシュ削除
+            </Button>
+          </div>
+          <div className={style.cache_label}>
+            キャッシュ作成日
+          </div>
+          <div className={style.cache_value}>
+            {selected_step.cacheCreatedAt}
           </div>
         </div>
         <div className={style.full_hr}/>

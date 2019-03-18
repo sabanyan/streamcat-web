@@ -11,6 +11,7 @@ import ModalUtil from '../../../../utils/ModalUtil'
 import Constants from '../../../../constants'
 import type { SubFlowParamType } from '../../../../types'
 import AddButton from '../../AddButton'
+import CommandSelector from '../../CommandSelector'
 
 class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
@@ -25,13 +26,16 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
   }
 
-  onSave (e: Event) {
+  onHide (e: Event) {
     const {flow,notify,dismissNotify} = this.props
     const {label} = this.props.flow
+
+    const beforeFlow = Object.assign({},{...flow})
+
     flow.description = this.refs['description'].value
     flow.params = this.getCurrentParams()
+
     this.props.updateFlow(flow)
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {label: label, description: flow.description,params:flow.params}, notify, dismissNotify)
   }
 
   getCurrentParams(){
@@ -128,7 +132,6 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
 
     if (inputParams) {
       inputParamsContainer = <div>
-        <div className={style.full_hr} />
         <label>フロー変数</label>
         {inputParams}
       </div>
@@ -140,15 +143,13 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     addFlowParams = <AddButton onClick={()=>this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
 
     return <BaseInspector header={''} label={this.props.flow.label} {...this.props}
-                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={()=>this.onSave()}>
+                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={()=>this.onHide()}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8} onBlur={this.onBlurDescription}></textarea>
       {inputParamsContainer}
       {addFlowParams}
-      {/*<div>*/}
-        {/*<div className={style.full_hr} />*/}
-        {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
-      {/*</div>*/}
+      <div className={style.full_hr}/>
+      <CommandSelector numberOfInput={0} {...this.props} />
     </BaseInspector>
   }
 }

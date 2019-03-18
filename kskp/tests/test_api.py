@@ -117,6 +117,39 @@ class ApiTestCase(unittest.TestCase):
             projects_after = model.get_all_projects()
             self.assertEqual(len(projects_after), 0)
 
+    def test_update_project(self):
+        with app.app_context():
+            (user1, project_id, project_uuid) = setUpProject(self)
+
+            # 更新前のプロジェクト名を調べる
+            projects_before = model.get_all_projects()
+            self.assertEqual(len(projects_before), 1)
+            uuid = projects_before[0]['uuid']
+
+            name = projects_before[0]['name']
+            new_name = "変更後のプロジェクト名"
+
+            with app.test_client() as client:
+                with client.session_transaction() as session:
+                    session['user_id'] = user1
+
+                data = {
+                    "new_name": new_name,
+                    "description": ""
+                }
+                response = client.put('/api/v0/projects/%s' % uuid,
+                                    content_type='application/json',
+                                    data=json.dumps(data)
+                                    )
+
+                result = json.loads(response.get_data())
+
+                self.assertEqual(result['success'], True)
+
+            # 削除後のプロジェクトの数を調べる
+            projects_after_name = model.get_project_name_by_uuid(uuid)
+            self.assertEqual(projects_after_name, new_name)
+
     def test_new_flow(self):
         """
         new_flow APIをテストする
@@ -174,6 +207,104 @@ class ApiTestCase(unittest.TestCase):
             # 後片付け
             app.config['FLOW_PATH'] = flow_path
 
+    def test_new_flow_for_copy(self):
+        """
+        new_flow APIをテストする
+        フローコピー用
+        """
+
+        # まずユーザとプロジェクトとフローを作る
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            # フローをコピーする
+            data_copy_flow = {
+                'original_flow_uuid': data_source_name
+            }
+
+            endpoint = '/api/v0/flows'
+            copy_response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data_copy_flow)
+                )
+
+            result = json.loads(copy_response.get_data())
+
+            # コピーされているかの確認
+            copy_flow_label = new_flow_name + ' のコピー'
+            self.assertEqual(result['success'], True)
+            self.assertEqual(result['data']['label'], copy_flow_label)
+
+            # 後片付け
+            os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
+            for path in Path(app.config['FLOW_PATH']).iterdir():
+                with open(path) as f:
+                    flow_json = json.load(f)
+                    if flow_json['label'] == copy_flow_label and flow_json['projectId'] == project_id:
+                        path.unlink()
+                        break
+
+    def test_new_flow_for_copy_multi(self):
+        """
+        new_flow APIをテストする
+        フローコピー用
+        """
+
+        # まずユーザとプロジェクトとフローを作る
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            # フローをコピーする
+            data_copy_flow = {
+                'original_flow_uuid': data_source_name
+            }
+
+            endpoint = '/api/v0/flows'
+
+            # 同じフローを2回コピーする
+            copy_response_1 = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data_copy_flow)
+                )
+
+            copy_response_2 = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data_copy_flow)
+                )
+
+            result_1 = json.loads(copy_response_1.get_data())
+            result_2 = json.loads(copy_response_2.get_data())
+
+            # コピーされているかの確認
+            copy_flow_label_1 = new_flow_name + ' のコピー'
+            self.assertEqual(result_1['success'], True)
+            self.assertEqual(result_1['data']['label'], copy_flow_label_1)
+
+            copy_flow_label_2 = new_flow_name + ' のコピー2'
+            self.assertEqual(result_2['success'], True)
+            self.assertEqual(result_2['data']['label'], copy_flow_label_2)
+
+            # 後片付け
+            os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
+            for path in Path(app.config['FLOW_PATH']).iterdir():
+                with open(path) as f:
+                    flow_json = json.load(f)
+                    if (flow_json['label'] == copy_flow_label_1 or flow_json['label'] == copy_flow_label_2) \
+                        and flow_json['projectId'] == project_id:
+                        path.unlink()
+
     def test_new_flow_nothing_datasource(self):
         """
         new_flow APIをテストする
@@ -219,7 +350,6 @@ class ApiTestCase(unittest.TestCase):
 
             # 後片付け
             app.config['FLOW_PATH'] = flow_path
-
 
     def test_fetch_flows_project_uuid_Nothing(self):
         """
@@ -1299,6 +1429,7 @@ class ApiTestCase(unittest.TestCase):
                 # jobsの削除
                 os.remove(path)
 
+    @unittest.skip
     def test_visualizers_csvtohtmltable(self):
         """
         visualizers APIをテストする。
@@ -1357,6 +1488,7 @@ class ApiTestCase(unittest.TestCase):
         os.remove('kskp/data/frames/%s.csv' % frame_uuid_1)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_linegraph(self):
         """
         visualizers APIをテストする。
@@ -1366,18 +1498,24 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = 'f20541d4-8b8f-4787-6ea9-f1e9d3db80a1'
+        frame_uuid_1 = 'result3'
 
         command_id = 'csvtolinegraph'
 
         args = {
             'limit': '',
             'offset': '',
-            'columns': ['temperature'],
-            'x_inch': 7,
-            'y_inch': 3,
-            'x_axis': 'Time',
-            'time_series_column': ['Time']
+            'x_size': 1400,
+            'y_size': 600,
+            'graph_title': '名古屋・神戸・釧路平均気温（2018/1/1〜2019/1/1）',
+            'x_label': '日付',
+            'y_label': '気温',
+            'alpha': 1,
+            'time_series_column': ['date'],
+            'x_axis_column': 'date',
+            'y_axis_column': 'average',
+            'data_column': 'prefecture',
+            'data': []
         }
 
         inputs = {
@@ -1403,13 +1541,12 @@ class ApiTestCase(unittest.TestCase):
         # テスト
         # 画像ファイル、HTMLファイルができているかどうかのテスト
         visualize_name = frame_uuid_1 + '_' + command_id
-        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_histogram(self):
         """
         visualizers APIをテストする。
@@ -1419,19 +1556,24 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = '180127_1535_4sensor_5sec'
+        frame_uuid_1 = 'result2'
 
         command_id = 'csvtohistogram'
 
         args = {
             'limit': '',
             'offset': '',
-            'columns': [1,2,3,4],
-            'x_inch': 7,
-            'y_inch': 3,
+            'x_size': 1400,
+            'y_size': 600,
+            'graph_title': 'テストデータ',
+            'x_label': 'Value',
+            'y_label': '度数',
+            'alpha': 0.5,
             'bins': 100,
-            'x_axis': '',
-            'alpha': 0.5
+            'density': False,
+            'x_axis': 'Value',
+            'data_column': '機器',
+            'data':[]
         }
 
         inputs = {
@@ -1457,13 +1599,12 @@ class ApiTestCase(unittest.TestCase):
         # テスト
         # 画像ファイル、HTMLファイルができているかどうかのテスト
         visualize_name = frame_uuid_1 + '_' + command_id
-        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
+    @unittest.skip
     def test_visualizers_scatter(self):
         """
         visualizers APIをテストする。
@@ -1473,18 +1614,23 @@ class ApiTestCase(unittest.TestCase):
         # アップロード用に一時csvファイルを作成する
         import csv
 
-        frame_uuid_1 = '180127_1535_4sensor_5sec'
+        frame_uuid_1 = 'result2'
 
         command_id = 'csvtoscatter'
 
         args = {
             'limit': '',
             'offset': '',
-            'x_inch': 7,
-            'y_inch': 5,
-            'y_axis': '3H',
-            'x_axis': '4H',
-            'alpha': 0.5
+            'x_size': 1400,
+            'y_size': 600,
+            'graph_title': '3H外輪損傷１：Time×Value',
+            'x_label': 'Time',
+            'y_label': 'Value',
+            'alpha': 0.5,
+            'x_axis': 'Time',
+            'y_axis': 'Value',
+            'data_column': '機器',
+            'data': []
         }
 
         inputs = {
@@ -1510,11 +1656,63 @@ class ApiTestCase(unittest.TestCase):
         # テスト
         # 画像ファイル、HTMLファイルができているかどうかのテスト
         visualize_name = frame_uuid_1 + '_' + command_id
-        self.assertEqual(os.path.exists('kskp/static/images/visualize/%s.png' % visualize_name), True)
         self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
 
         # 後片付け
-        os.remove('kskp/static/images/visualize/%s.png' % visualize_name)
+        os.remove('kskp/templates/visualize/%s.html' % visualize_name)
+
+    @unittest.skip
+    def test_visualizers_boxplot(self):
+        """
+        visualizers APIをテストする。
+        箱ひげ図
+        返ってくるのはHTML
+        """
+        # アップロード用に一時csvファイルを作成する
+        import csv
+
+        frame_uuid_1 = 'result2'
+
+        command_id = 'csvtoboxplot'
+
+        args = {
+            'limit': '',
+            'offset': '',
+            'x_size': 1400,
+            'y_size': 600,
+            'graph_title': 'テスト',
+            'x_label': '状態,機器',
+            'y_label': 'Value',
+            'x_axis': ['状態', '機器'],
+            'y_axis': 'Value'
+        }
+
+        inputs = {
+            'i': frame_uuid_1
+        }
+
+        # ユーザの作成
+        with app.app_context():
+            user1 = setUpUser(self)
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+            endpoint = '/visualizers?from=%s' % command_id
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps({
+                        'args': args,
+                        'inputs': inputs
+                    })
+            )
+
+        # テスト
+        # 画像ファイル、HTMLファイルができているかどうかのテスト
+        visualize_name = frame_uuid_1 + '_' + command_id
+        self.assertEqual(os.path.exists('kskp/templates/visualize/%s.html' % visualize_name), True)
+
+        # 後片付け
         os.remove('kskp/templates/visualize/%s.html' % visualize_name)
 
     @unittest.skip
@@ -1579,9 +1777,9 @@ class FrameApiTestCase(unittest.TestCase):
         self.assertEqual(data['contents']['c'], ['3', '2'])
 
 
-    def test_download_frame(self):
+    def test_download_file(self):
         """
-        download_frame APIのテストをする
+        download_file APIのテストをする
         """
         frame_uuid = '2c792bbc-4679-4396-96d1-94fc023073b1'
         with app.test_client() as client:
@@ -1933,6 +2131,56 @@ class JobTestCase(unittest.TestCase):
         self.assertEqual(result['navigation']['user_name'], 'user1')
         self.assertEqual(result['navigation']['project_uuid'], project_uuid)
         self.assertEqual(result['navigation']['project_name'], 'proj1')
+
+class CacheApiTestCase(unittest.TestCase):
+
+    def setUp(self):
+        app.testing = True
+        self.client = app.test_client()
+
+    def test_delete_cache(self):
+        import csv
+        # まずユーザとプロジェクトを作る
+        with app.app_context():
+            (user1,
+             project_id, project_uuid,
+             new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        datum_id = 'test'
+
+        with open('kskp/data/frames/test.csv', 'w') as f:
+            pass
+
+        flow_path = Path(app.config['FLOW_PATH']) / (data_source_name + '.json')
+        flow_json = json.loads(flow_path.read_text(), encoding='utf-8')
+        node = {
+            "id": datum_id,
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": 'test',
+            "cacheCreatedAt": '2019/01/01'
+        }
+        flow_json['nodes'] = []
+        flow_json['nodes'].append(node)
+        flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        # 実際のAPIを投げるテストを開始する
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user1
+
+            endpoint = '/api/v0/caches?of=%s.%s' % (data_source_name, datum_id)
+            response = client.delete(endpoint)
+            result = json.loads(response.get_data())
+
+        # テスト
+        new_file_path = Path('kskp/data/frames/caches_' + data_source_name + '_' + datum_id + '.csv')
+        self.assertEqual(result['success'], True)
+        self.assertTrue(new_file_path.exists())
+
+        # 後片付け
+        new_file_path.unlink()
+        flow_path.unlink()
 
 if __name__ == '__main__':
     unittest.main()

@@ -5,12 +5,13 @@ import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import * as React from 'react'
 import CommandModel from '../model/Command/CommandModel'
 
-export type StepModelType = CommandStepModel|SubFlowStepModel|DataFrameStepModel
+export type StepModelType = CommandStepModel|SubFlowStepModel|DataFrameStepModel|NoteStepModel
 export type CommandParamType = {
   label: string;
   name: string;
   optional?: boolean;
   type: string;
+  default?: string|number;
 }
 
 export type SubFlowCommandParamType = {
@@ -124,6 +125,7 @@ export type ToolBarButtonType={
   disabled: boolean;
   icon: string;
   is_paper_toolbar_button: boolean;
+  style: object;
 }
 
 export type ZoomToolBarButtonType = {
