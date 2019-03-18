@@ -271,6 +271,7 @@ class Job:
 
                 # cachesを元に書き換えていく
                 for flow_uuid_and_step_id, cache_uuid in job.caches.items():
+
                     target_flow_uuid = flow_uuid_and_step_id.split('.')[0]
                     target_step_id = flow_uuid_and_step_id.split('.')[1]
                     target_datum_uuid = cache_uuid
@@ -1817,7 +1818,7 @@ class Mnewstr(MCommandNew):
         process_flow = None
 
         return args_for_nysol, process_flow
-        
+
 class MnewstrOld(MCommand):
     def __init__(self):
         super().__init__()
@@ -5135,6 +5136,18 @@ class ColumnsToRows(NmCmd):
         self.name = 'ColumnsToRows'
         self.description = 'f=で指定した複数の列項目に対して、各項目の行を連結した新たな項目をa=で指定した名前で作成する。'
 
+class GroupbyColumns(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/groupby_columns.sh', 'csv', 'o=')
+        self.name = 'GroupbyColumns'
+        self.description = '複数の列項目を、指定した新規列名で、行データへ展開し、複数の統計量を適用した結果を、新規列名と統計量からなる列名として出力する。'
+
+class Utf8ToCp932(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/utf8_to_cp932.sh', 'csv', 'o=')
+        self.name = 'Utf8ToCp932'
+        self.description = 'Windowsファイル（Shift-JIS拡張 CP932、CRLF改行コード）へ変換したデータを出力する。'
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -5271,7 +5284,9 @@ commands = {
     'column_blank_name': ColumnBlankName(),
     'column_list': ColumnList(),
     'windows_cp932_csv_read': WinCp932Read(),
-    'columns_to_rows': ColumnsToRows()
+    'columns_to_rows': ColumnsToRows(),
+    'groupby_columns': GroupbyColumns(),
+    'utf8_to_cp932': Utf8ToCp932()
 }
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
