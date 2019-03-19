@@ -65,6 +65,9 @@ export default class ModalManager extends React.Component {
       <Modal key={Constants.modal.ADD_FLOW} id={Constants.modal.ADD_FLOW}
              title="新しいフローを始める" dynamic={true} done={'作成する'} primary={true}>
       </Modal>
+      <Modal key={Constants.modal.ADD_FILE} id={Constants.modal.ADD_FILE}
+             title="ファイルをアップロードする" dynamic={true} done={'追加する'} primary={true}>
+      </Modal>
       <Modal key={Constants.modal.SHOW_RUN_RESULT} id={Constants.modal.SHOW_RUN_RESULT}
              title="実行完了" dynamic={true} cancel={"OK"} done={'ライブラリを開く'} primary={true}>
       </Modal>

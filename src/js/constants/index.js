@@ -83,6 +83,7 @@ const Constants = {
     ADD_COMMAND: 'add_command',
     ADD_PROJECT: 'add_project',
     ADD_FLOW: 'add_flow',
+    ADD_FILE: 'add_file',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
     CONFIRM: 'confirm',
@@ -145,6 +146,15 @@ const Constants = {
       regression:"回帰",
     }
   },
+  library:{
+    type:{
+      document: "document",
+      frame: "frame",
+      folder: "folder",
+      database: "database",
+      remoteFolder: "remote-folder"
+    }
+  }
 
 }
 export default Constants

@@ -52,12 +52,12 @@ export type FlowListDataType = {
   description: string;
 }
 
-//sourcesと合致
 export type LibraryListDataType = {
-  id: string;
-  serverId: string;//Directory,SMB,PostgreSQL
-  version: string;
-  /*directoryPath*/ //確認
+  createdAt: string;
+  creator: string;
+  label: string;
+  type: string;
+  uuid: string;
 }
 
 export type ServersDataType = {
@@ -101,9 +101,9 @@ export type RunResponseType =  {
 }
 
 export type UploadedFileType = {
-  file: File,
-  uuid: string,
-  label: string
+  file: File | null,
+  uuid?: string,
+  label?: string
 }
 
 export type DragType = {

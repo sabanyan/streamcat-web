@@ -1,5 +1,28 @@
 @import "../../../../../sass/common";
 
+.library_list{
+  position: relative;
+  display: block;
+  border-radius: 0;
+  color: $kskp-text;
+  background: #fff;
+  padding: 16px;
+  &:hover{
+    color: $kskp-text;
+    text-decoration: none!important;
+    opacity: 0.8;
+  }
+  cursor: pointer;
+}
+
+.library{
+  display: block;
+  border-top: 1px solid $kskp-list-border-color;
+  &:first-child,&:last-child{
+    border-bottom: 1px solid $kskp-list-border-color;
+  }
+}
+
 .job_list_header{
   position: relative;
   display: block;
@@ -73,4 +96,34 @@
 .uuid{
   color: #dadada;
   line-height: 1em;
+}
+
+.name{
+  display: inline-block;
+  width: calc(100% - 20% - 200px - 80px);
+}
+.created_at{
+  display: inline-block;
+  width: 200px;
+}
+.creator_name{
+  display: inline-block;
+  width: 20%;
+}
+
+.databaseIcon{
+  margin-right: 4px;
+  margin-left: 2px;
+  position: relative;
+  top: 2px;
+}
+
+.new{
+  text-align: center;
+  .library_list{
+    color: $kskp-list-link-color;
+    .icon{
+      color: $kskp-list-link-color;
+    }
+  }
 }
