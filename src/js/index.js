@@ -3,7 +3,8 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { createStore, compose, applyMiddleware,combineReducers } from 'redux'
-import reducer from './modules/application'
+import flowEditorReducer from './modules/application'
+import libraryReducer from './modules/application'
 import thunk from 'redux-thunk'
 import {reducer as notificationsReducer} from 'reapop'
 import FlowEditorContainer from './components/FlowEditorContainer'
@@ -35,7 +36,8 @@ const createStoreWithMiddleware = compose(
 
 const store = createStoreWithMiddleware(combineReducers({
   notifications: notificationsReducer(defaultNotification),
-  reducer
+  flowEditorReducer,
+  libraryReducer
 }), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
 if (document.getElementById('flow_editor')) {

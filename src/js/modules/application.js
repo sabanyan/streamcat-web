@@ -65,7 +65,7 @@ let initialState = {
   selected_data_source_detail: {}
 }
 
-const Application = (state = initialState, action: {}) => {
+const FlowEditorReducer = (state = initialState, action: {}) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
   //stateを一度ディープコピーしないとrenderされないためコピーする
   let newState = StateUtil.deepCopy(state)
@@ -559,7 +559,7 @@ const Application = (state = initialState, action: {}) => {
 
 }
 
-export default Application
+export default FlowEditorReducer
 
 /**
  * エッジのつなぎ直し処理
