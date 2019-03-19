@@ -59,9 +59,20 @@ export default class LibraryList extends React.Component<Props> {
     return null
   }
 
+  canUseHref(subStore) {
+    return (subStore.type === Constants.library.type.folder)
+  }
+
   render () {
     const {icon, children, href, selected} = this.props
     const subStore: LibraryListDataType = this.props.subStore
+
+    let label = <span>{subStore.label}</span>
+    if(this.canUseHref(subStore)){
+      label = <a href={href}>
+        {subStore.label}
+      </a>
+    }
 
 
     return <div className={classnames(style.library, {[style.selected]: selected})}
@@ -69,9 +80,7 @@ export default class LibraryList extends React.Component<Props> {
       <div className={style.library_list}>
         <div className={style.name}>
           {this.renderLibraryListIcon(subStore.type)}
-          <a href={href}>
-            {subStore.label}
-          </a>
+          {label}
         </div>
         <div className={style.creator_name}>{subStore.creator}</div>
         <div className={style.created_at}>{moment(subStore.createdAt).
