@@ -456,9 +456,7 @@ const Application = (state = initialState, action: {}) => {
     case SORT_FLOW_ACTION: {
       // memoはソート対象外にする
       let targets = newState.nodes.filter((node) => {
-        if (node instanceof NoteStepModel === false) {
-          return node
-        }  
+        return !(node instanceof NoteStepModel)
       })
       graph.refreshPosition(targets) //ノード位置を再計算
       newState.graph = graph.getGraph(newState)
