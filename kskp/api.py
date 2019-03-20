@@ -1174,6 +1174,23 @@ def delete_store(store_id):
                         'message': repr(e)
                         })
 
+def __make_fetch_data(folder):
+    if folder is None:
+        data = None
+    else:
+        data = folder.to_json()
+        # folderPath属性を作成する
+        folder_list = folder.get_folder_path()
+        data['folderPath'] = []
+        for f in folder_list:
+            data['folderPath'].append(f)
+        # children属性を作成する
+        children = folder.get_children()
+        data['children'] = []
+        for child in children:
+            data['children'].append(child.to_json())
+    return data
+
 @api.route('/library', methods=['GET'])
 # @login_required_api
 @update_navigation
@@ -1184,15 +1201,7 @@ def fecth_library():
     try:
         # root_store = Library.find_by_parent_uuid(None)
         root = get_root()
-
-        if root is None:
-            data = None
-        else:
-            data = root.to_json()
-            children = root.get_children()
-            data['children'] = []
-            for child in children:
-                data['children'].append(child.to_json())
+        data = __make_fetch_data(root)
         return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
@@ -1225,15 +1234,7 @@ def fetch_folder(folder_uuid):
         # return jsonify({'success': True, 'data': data})
 
         folder = get_folder2(folder_uuid)
-
-        if folder is None:
-            data = None
-        else:
-            data = folder.to_json()
-            children = folder.get_children()
-            data['children'] = []
-            for child in children:
-                data['children'].append(child.to_json())
+        data = __make_fetch_data(folder)
         return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({

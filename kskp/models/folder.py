@@ -31,6 +31,9 @@ class Folder():
                 ret.append(Document.create_by_library(child_library))
         return ret
 
+    def get_folder_path(self):
+        return Library.get_folder_path2(self.uuid)
+
     @classmethod
     def create_by_library(cls, library):
         label = json.loads(library.data)['label']
