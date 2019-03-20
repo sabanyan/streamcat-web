@@ -4,6 +4,8 @@ import json
 from . import db, create_schema_if_first_use
 
 from sqlalchemy.orm import aliased
+from sqlalchemy import literal, text
+from sqlalchemy.sql.expression import label, literal_column
 import random
 import datetime
 
@@ -125,8 +127,8 @@ class Library(db.Model):
                                    Library.creator,
                                    Library.modifier,
                                    Library.created_at) \
-                            .filter(sub_query.filter(Library2.id == Library.parent_id and
-                                                     Library2.id == parent_uuid).exists()).all()
+                            .filter(sub_query.filter(Library2.id==Library.parent_id)
+                                             .filter(Library2.uuid==parent_uuid).exists()).all()
         rets = []
         for result in results:
             rets.append(Library(result.id
@@ -137,7 +139,7 @@ class Library(db.Model):
                               , result.data
                               , result.creator
                               , result.modifier
-                              , result.created_at))
+                              , result.created_at)) 
         return rets
 
     @classmethod
@@ -167,6 +169,55 @@ class Library(db.Model):
                               , result.modifier
                               , result.created_at))
         return rets
+
+    @classmethod
+    def get_folder_path(cls, uuid1):
+        # 
+        #  folderPathの値を作成するため、再帰クエリを投げようとしたが、ORMによる方法も直接SQLを発行する方法のどちらもエラーになった
+        # 
+
+        import pprint
+        # sql = " ;WITH RECURSIVE R AS (SELECT id, uuid, data FROM library WHERE parent_id IS NULL" \
+        #       "                      UNION ALL" \
+        #       "                      SELECT L.id, L.uuid, L.data FROM library L JOIN R ON L.parent_id = R.id" \
+        #       "                      WHERE L.uuid = '%s')" \
+        #       " SELECT * FROM R;" % uuid
+
+        # sql = "with TT(id) AS (SELECT 1 as id) SELECT 2"
+        # results = db.session.execute()
+
+        r1 = db.session.query(Library.id, Library.uuid, Library.data, literal_column("0").label('level')) \
+                       .filter(Library.parent_id==None)
+        r1 = r1.cte('RR', recursive=True)  
+        r1 = r1.union_all(db.session.query(Library.id, Library.uuid, Library.data, r1.c.level+literal_column("1"))
+               .join(r1, r1.c.id==Library.id)
+               .filter(text("Library.uuid=='%s'" % uuid1)))
+
+        pprint.pprint(str(db.session.query(r1)))             
+
+        results = db.session.query(r1).all()
+
+        ret = []
+        # for result in results:
+        #     print(result.uuid)
+        #     print(json.loads(result.data)['label'])
+        #     ret.append((result.uuid, json.loads(result.data)['label']))
+        return ret
+
+    @classmethod
+    def get_folder_path2(cls, uuid):
+        # 指定されたUUIDのLibraryレコードを取得する
+        result = db.session.query(Library.uuid, Library.parent_id, Library.data).filter(Library.uuid==uuid).one_or_none()
+        parent_id = result.parent_id
+        path_to_root = [{'uuid':result.uuid, 'label':json.loads(result.data)['label'] }]
+        # 取得したレコードから外部キー’parent_id’をたどり、途中のLibraryレコードをリストに順に保存する
+        while parent_id != None:
+            result = db.session.query(Library.uuid, Library.parent_id, Library.data).filter(Library.id==parent_id).one_or_none()
+            path_to_root.append({'uuid':result.uuid, 'label':json.loads(result.data)['label'] })
+            parent_id = result.parent_id
+        # 保存したリストの並びを逆にする
+        path_to_root.reverse()
+        return path_to_root
 
     def get_parent_uuid(self):
         if self.parent_uuid is None:

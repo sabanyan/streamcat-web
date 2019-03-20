@@ -618,6 +618,35 @@ class ModelTestCase(unittest.TestCase):
             model.del_folder2(new_folder.uuid)
             model.del_folder2(new_child_folder.uuid)
 
+    def test_get_folder_path(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # ルートフォルダの子フォルダを作成する
+            new_child_folder = Folder(str(uuid.uuid4())
+                                    , new_folder.uuid
+                                    , '子フォルダ🌱'
+                                    , creator=2)  
+            model.set_folder2(new_child_folder)
+            # ルートフォルダのフォルダパスリストを取得する
+            folder_list = new_folder.get_folder_path()
+            # 取得したフォルダパスリストが正しいことを検証する
+            self.assertEqual(len(folder_list), 1)
+            self.assertEqual(folder_list[0]['label'], 'ルートフォルダ🌲')
+            # 子フォルダのフォルダパスリストを取得する
+            child_folder_list = new_child_folder.get_folder_path()
+            self.assertEqual(len(child_folder_list), 2)
+            self.assertEqual(child_folder_list[0]['label'], 'ルートフォルダ🌲')
+            self.assertEqual(child_folder_list[1]['label'], '子フォルダ🌱')
+        finally:
+            # 作成したフォルダを全て削除する
+            model.del_folder2(new_folder.uuid)
+            model.del_folder2(new_child_folder.uuid)
+
     def test_get_folder2(self):
         try:
             # ルートフォルダを作成する
