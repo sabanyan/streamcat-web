@@ -1,4 +1,5 @@
 # from sqlalchemy.dialects.postgresql import TIMESTAMP, JSONB, ENUM
+import os
 import json
 from . import db, create_schema_if_first_use
 
@@ -26,7 +27,7 @@ class Library(db.Model):
     created_at  = db.Column(db.String, default=db.text('CURRENT_TIMESTAMP'))
     modified_at = db.Column(db.String, default=db.text('CURRENT_TIMESTAMP'))
 
-    def __init__(self, id=None, parent_id=None, uuid=None, dir_path=None, type=None, data=None, creator=None, modifier=None):
+    def __init__(self, id=None, parent_id=None, uuid=None, dir_path=None, type=None, data=None, creator=None, modifier=None, created_at=None):
         self.id = id
         self.parent_id = parent_id
         self.uuid = uuid
@@ -35,6 +36,7 @@ class Library(db.Model):
         self.data = data
         self.creator = creator
         self.modifier = modifier
+        self.created_at = created_at
 
         # 
         self.parent_uuid = None
@@ -58,7 +60,7 @@ class Library(db.Model):
         library = Library.find_by_uuid(parent_uuid)
         if library is None:
             # 親フォルダがない場合はデフォルトパスとする
-            dir_path = 'kskp/data'
+            dir_path = 'kskp/data/library'
         else:
             dir_path = library.dir_path
 
@@ -91,6 +93,7 @@ class Library(db.Model):
                                   Library.type,
                                   Library.data,
                                   Library.creator,
+                                  Library.modifier,
                                   Library.created_at).filter(Library.uuid==uuid).one_or_none()
         if result is None:
             return None
@@ -102,6 +105,7 @@ class Library(db.Model):
                          , result.type
                          , result.data
                          , result.creator
+                         , result.modifier
                          , result.created_at)
 
     @classmethod
@@ -119,6 +123,7 @@ class Library(db.Model):
                                    Library.type,
                                    Library.data,
                                    Library.creator,
+                                   Library.modifier,
                                    Library.created_at) \
                             .filter(sub_query.filter(Library2.id == Library.parent_id and
                                                      Library2.id == parent_uuid).exists()).all()
@@ -131,6 +136,35 @@ class Library(db.Model):
                               , result.type
                               , result.data
                               , result.creator
+                              , result.modifier
+                              , result.created_at))
+        return rets
+
+    @classmethod
+    def find_root(cls):
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+
+        # 親を持たないLibraryレコードを全て取得する
+        results = db.session.query(Library.id,
+                                   Library.parent_id,
+                                   Library.uuid,
+                                   Library.dir_path,
+                                   Library.type,
+                                   Library.data,
+                                   Library.creator,
+                                   Library.modifier,
+                                   Library.created_at).filter(Library.parent_id == None).all()
+        rets = []
+        for result in results:
+            rets.append(Library(result.id
+                              , result.parent_id
+                              , result.uuid
+                              , result.dir_path
+                              , result.type
+                              , result.data
+                              , result.creator
+                              , result.modifier
                               , result.created_at))
         return rets
 
@@ -148,6 +182,9 @@ class Library(db.Model):
     def save(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
+
+        # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
+        os.makedirs(self.dir_path, exist_ok=True)
 
         db.session.add(self)
         db.session.commit()
@@ -167,5 +204,17 @@ class Library(db.Model):
     def delete(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
+
         db.session.query(Library).filter(Library.id==self.id).delete()
         db.session.commit()
+
+        # 全てのフォルダから紐づかないディレクトリは物理削除する
+        dir_path = self.dir_path.rstrip(os.pathsep)
+        while dir_path != '' and dir_path != '/' and dir_path != 'kskp/data':
+            results_count = db.session.query(Library).filter(Library.dir_path.like(dir_path + '%')).count()
+            if results_count == 0:
+                if os.path.isdir(dir_path):
+                    os.rmdir(dir_path)
+                dir_path = os.path.dirname(dir_path)
+            else:
+                break
