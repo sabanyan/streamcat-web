@@ -901,13 +901,13 @@ import pprint
 from .models.library import Library
 from .models.folder import Folder
 from .models.remote_folder import RemoteFolder
-from .models.database import Detabase
+from .models.database import Database
 
 def get_root():
     """
     ルートを取得する
     """
-    roots = Library.find_by_parent_uuid(None)
+    roots = Library.find_root()
     
     if len(roots) == 0 :
         raise Exception('No root exists!')
@@ -943,7 +943,7 @@ def set_folder2(folder):
         folder.created_at = library.created_at
     elif isinstance(folder, RemoteFolder):
         pass
-    elif isinstance(folder, Detabase):
+    elif isinstance(folder, Database):
         pass
 
 def upd_folder2(folder):
@@ -953,7 +953,7 @@ def upd_folder2(folder):
         folder.created_at = library.created_at
     elif isinstance(folder, RemoteFolder):
         pass
-    elif isinstance(folder, Detabase):
+    elif isinstance(folder, Database):
         pass 
 
 def del_folder2(uuid):

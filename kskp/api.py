@@ -51,7 +51,7 @@ from .model import (
 from .models.store import Store
 from .models.folder import Folder
 from .models.remote_folder import RemoteFolder
-from .models.database import Detabase
+from .models.database import Database
 from .activity import (
     make_unfinished_history,
     make_finished_history
@@ -1176,6 +1176,7 @@ def delete_store(store_id):
 
 @api.route('/library', methods=['GET'])
 # @login_required_api
+@update_navigation
 def fecth_library():
     """
     ルートデータストアを返却する
@@ -1183,7 +1184,16 @@ def fecth_library():
     try:
         # root_store = Library.find_by_parent_uuid(None)
         root = get_root()
-        return jsonify({'success': True, 'data': root.to_json()})
+
+        if root is None:
+            data = None
+        else:
+            data = root.to_json()
+            children = root.get_children()
+            data['children'] = []
+            for child in children:
+                data['children'].append(child.to_json())
+        return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1194,6 +1204,7 @@ def fecth_library():
 
 @api.route('/folders/<folder_uuid>', methods=['GET'])
 # @login_required_api
+@update_navigation
 def fetch_folder(folder_uuid):
     """
     フォルダを返却する
@@ -1224,7 +1235,6 @@ def fetch_folder(folder_uuid):
             for child in children:
                 data['children'].append(child.to_json())
         return jsonify({'success': True, 'data': data})
-
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1304,6 +1314,7 @@ def delete_folder(folder_uuid):
 
 @api.route('/remote-folders/<folder_uuid>', methods=['GET'])
 # @login_required_api
+@update_navigation
 def fetch_remote_folder(folder_uuid):
     """
     リモートフォルダを返却する
@@ -1371,6 +1382,7 @@ def delete_remote_folder(folder_uuid):
 
 @api.route('/databases/<database_uuid>', methods=['GET'])
 # @login_required_api
+@update_navigation
 def fetch_database(database_uuid):
     """
     データベースを返却する

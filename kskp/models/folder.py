@@ -1,5 +1,4 @@
 import json
-
 from .library import Library
 
 class Folder():
@@ -12,11 +11,24 @@ class Folder():
         self.created_at = created_at
 
     def get_children(self):
+        from .remote_folder import RemoteFolder
+        from .database import Database
+        from .frame import Frame
+        from .document import Document
         #  DB検索
         child_libraries = Library.find_by_parent_uuid(self.uuid)
         ret = []
         for child_library in child_libraries:
-            ret.append(Folder.create_by_library(child_library))
+            if child_library.type == 'folder':
+                ret.append(Folder.create_by_library(child_library))
+            elif child_library.type == 'remote-folder':
+                ret.append(RemoteFolder.create_by_library(child_library))
+            elif child_library.type == 'database':
+                ret.append(Database.create_by_library(child_library))
+            elif child_library.type == 'frame':
+                ret.append(Frame.create_by_library(child_library))
+            elif child_library.type == 'document':
+                ret.append(Document.create_by_library(child_library))
         return ret
 
     @classmethod
