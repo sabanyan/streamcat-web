@@ -40,8 +40,18 @@ from .model import (
     get_database,
     create_database,
     rename_database_by_id,
-    delete_database_by_id
+    delete_database_by_id,
+
+    get_root,
+    get_folder2,
+    set_folder2,
+    upd_folder2,
+    del_folder2
 )
+from .models.store import Store
+from .models.folder import Folder
+from .models.remote_folder import RemoteFolder
+from .models.database import Database
 from .activity import (
     make_unfinished_history,
     make_finished_history
@@ -600,6 +610,8 @@ def jobs():
 
     # jobsリストの作成
     for job_path in Path(JOBS_DIR_PATH).iterdir():
+        if not job_path.suffix == '.json':
+            continue
         data = json.loads(job_path.read_text(encoding='utf-8'))
         if 'flow' in request.args:
             if data['flow']['uuid'] == request.args['flow']:
@@ -1101,15 +1113,20 @@ def visualizer():
     # bokehのコマンド
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
 
+import pprint
 
 @api.route('/stores', methods=['GET'])
 def fecth_stores():
     """
     データストアの定義(雛形)の一覧を返却する
     """
-    try:    
-        stores = get_all_stores()
-        return jsonify({'success': True, 'data': stores})
+    try:
+        stores = Store.find_all()
+        ret = []
+        for store in stores:
+            ret.append(store.to_json())
+
+        return jsonify({'success': True, 'data': ret})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1124,9 +1141,15 @@ def make_new_store():
     データストアの定義(雛形)を作成する
     """
     try:
-        new_store_id = request.json['id']    
-        new_store= create_store(new_store_id, request.json, 1)
-        return jsonify({'success': True, 'data': new_store})    
+        new_store = Store.create(request.json['id']
+                                ,request.json['version']
+                                ,request.json['label']
+                                ,request.json['description']
+                                ,request.json['url']
+                                ,request.json['params']
+                                ,1)
+        new_store.save()
+        return jsonify({'success': True, 'data': new_store.to_json()})    
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1141,7 +1164,8 @@ def delete_store(store_id):
     データストアの定義(雛形)を削除する
     """
     try:
-        delete_store_by_id(store_id)
+        delete_store = Store(store_id)
+        delete_store.delete()
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -1150,15 +1174,35 @@ def delete_store(store_id):
                         'message': repr(e)
                         })
 
+def __make_fetch_data(folder):
+    if folder is None:
+        data = None
+    else:
+        data = folder.to_json()
+        # folderPath属性を作成する
+        folder_list = folder.get_folder_path()
+        data['folderPath'] = []
+        for f in folder_list:
+            data['folderPath'].append(f)
+        # children属性を作成する
+        children = folder.get_children()
+        data['children'] = []
+        for child in children:
+            data['children'].append(child.to_json())
+    return data
+
 @api.route('/library', methods=['GET'])
 # @login_required_api
+@update_navigation
 def fecth_library():
     """
     ルートデータストアを返却する
     """
     try:
-        sources = get_library()
-        return jsonify({'success': True, 'data': sources})
+        # root_store = Library.find_by_parent_uuid(None)
+        root = get_root()
+        data = __make_fetch_data(root)
+        return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1169,13 +1213,29 @@ def fecth_library():
 
 @api.route('/folders/<folder_uuid>', methods=['GET'])
 # @login_required_api
+@update_navigation
 def fetch_folder(folder_uuid):
     """
     フォルダを返却する
     """
     try:
-        folder = get_folder(folder_uuid)
-        return jsonify({'success': True, 'data': folder})
+        # folder = get_folder(folder_uuid)
+        # return jsonify({'success': True, 'data': folder})
+
+        # folder = Library.find_by_uuid(folder_uuid)
+        # if folder is None:
+        #     data = None
+        # else:
+        #     data = folder.to_json()
+        #     children = Library.find_by_parent_uuid(folder.id)
+        #     data['children'] = []
+        #     for child in children:
+        #         data['children'].append(child.to_json())
+        # return jsonify({'success': True, 'data': data})
+
+        folder = get_folder2(folder_uuid)
+        data = __make_fetch_data(folder)
+        return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1190,8 +1250,22 @@ def make_new_folder():
     フォルダを作成する
     """
     try:
-        new_folder= create_folder(request.json, 1)
-        return jsonify({'success': True, 'data': new_folder})    
+        # new_folder= create_folder(request.json, 1)
+        # return jsonify({'success': True, 'data': new_folder})
+
+        # new_folder = Library.create(str(uuid.uuid4())
+        #                          , request.json['parent']
+        #                          , request.json['label']
+        #                          , 1)
+        # new_folder.save()
+        # return jsonify({'success': True, 'data': new_folder.to_json()})
+
+        new_folder = Folder(str(uuid.uuid4())
+                          , request.json['parent']
+                          , request.json['label']
+                          , creator=1)
+        set_folder2(new_folder)
+        return jsonify({'success': True, 'data': new_folder.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1206,9 +1280,13 @@ def update_folder(folder_uuid):
     フォルダを修正する
     """
     try:
-        new_label = request.json['label']
-        folder= rename_folder_by_id(folder_uuid, new_label)
-        return jsonify({'success': True, 'data': folder})
+        # folder= rename_folder_by_id(folder_uuid, new_label)
+        folder = Folder(folder_uuid
+                      , None
+                      , request.json['label']
+                      , modifier=2)
+        upd_folder2(folder)
+        return jsonify({'success': True, 'data': folder.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1223,7 +1301,9 @@ def delete_folder(folder_uuid):
     フォルダを削除する
     """
     try:
-        delete_folder_by_id(folder_uuid)
+        # delete_folder_by_id(folder_uuid)
+        # return jsonify({'success': True})
+        del_folder2(folder_uuid)
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -1233,9 +1313,9 @@ def delete_folder(folder_uuid):
                         })
 
 
-
 @api.route('/remote-folders/<folder_uuid>', methods=['GET'])
 # @login_required_api
+@update_navigation
 def fetch_remote_folder(folder_uuid):
     """
     リモートフォルダを返却する
@@ -1303,6 +1383,7 @@ def delete_remote_folder(folder_uuid):
 
 @api.route('/databases/<database_uuid>', methods=['GET'])
 # @login_required_api
+@update_navigation
 def fetch_database(database_uuid):
     """
     データベースを返却する

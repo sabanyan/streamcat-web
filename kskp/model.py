@@ -332,6 +332,8 @@ def generate_flow_name(project_id, flow_name, serial_number=1):
 
     for path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not path.suffix == '.json':
+                continue
             data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していないファイルは無視
@@ -363,6 +365,8 @@ def fetch_subflows_all_projects(request_args):
     subflow_list = []
     for path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not path.suffix == '.json':
+                continue
             data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合
@@ -434,6 +438,8 @@ def get_flow_path_by_uuid(flow_uuid):
     指定したUUIDをファイル名にもつフローファイルのパスを返すヘルパー
     """
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        if not flow_path.suffix == '.json':
+            continue
         if flow_path.stem == flow_uuid:
             return flow_path
 
@@ -495,6 +501,8 @@ def get_flow_paths_by_project_uuid(project_uuid):
 
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not flow_path.suffix == '.json':
+                continue
             data = json.loads(flow_path.read_text(encoding='utf-8'))
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合は飛ばす
@@ -704,7 +712,7 @@ def get_library():
 		"label"  : "ルート",
 		"creator": "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": [
+		"children": [
 			{
 				"uuid"   : "2c792bbc-4679-4396-96d1-94fc023073b1",
 				"type"   : "folder",
@@ -737,7 +745,7 @@ def get_folder(folder_uuid):
 		"label"  : "実行結果",
 		"creator": "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": [
+		"children": [
 			{
 				"uuid"   : "61f70b75-46ac-4716-ae8d-c0c895775745",
 				"type"   : "folder",
@@ -763,7 +771,7 @@ def create_folder(data, user_id):
 		"label"  : "新しいフォルダ",
 		"creator": "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": []
+		"children": []
 	}
     return ret   
 
@@ -774,7 +782,7 @@ def rename_folder_by_id(folder_uuid, new_label):
 		"label"  : "名称変更したフォルダ",
 		"creator": "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": []
+		"children": []
 	}
     return ret
 
@@ -796,7 +804,7 @@ def get_remote_folder(folder_uuid):
 		"directory": "share",
 		"creator"  : "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": [
+		"children": [
 			{
 				"uuid"   : "0d7aa9b8-cf46-4920-abcd-244e5b3f152b",
 				"type"   : "folder",
@@ -829,7 +837,7 @@ def create_remote_folder(data, user_id):
         "directory": "share",
 		"creator"  : "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": []
+		"children": []
 	}
     return ret   
 
@@ -847,7 +855,7 @@ def rename_remote_folder_by_id(folder_uuid, new_label):
         "directory": "share",
 		"creator"  : "user1",
 		"createdAt": "2019-01-08 12:00:01",
-		"subStores": []
+		"children": []
 	}
     return ret   
 
@@ -888,3 +896,66 @@ def rename_database_by_id(database_uuid, new_label):
 
 def delete_database_by_id(database_uuid):
     pass
+
+import pprint
+from .models.library import Library
+from .models.folder import Folder
+from .models.remote_folder import RemoteFolder
+from .models.database import Database
+
+def get_root():
+    """
+    ルートを取得する
+    """
+    roots = Library.find_root()
+    
+    if len(roots) == 0 :
+        raise Exception('No root exists!')
+    elif len(roots) > 1:
+        raise Exception('More than 2 roots exists!')
+
+    root = roots[0]
+
+    if root.type == 'folder':
+        return Folder.create_by_library(root)
+    elif root.type == 'remote-folder':
+        return RemoteFolder.create_by_library(root)
+    elif root.type == 'database':
+        return Database.create_by_library(root)
+
+def get_folder2(uuid):
+    library = Library.find_by_uuid(uuid)
+
+    if library is None:
+        return None
+
+    if library.type == 'folder':
+        return Folder.create_by_library(library)
+    elif library.type == 'remote-folder':
+        return RemoteFolder.create_by_library(library)
+    elif library.type == 'database':
+        return Database.create_by_library(library)
+
+def set_folder2(folder):
+    if isinstance(folder, Folder):
+        library = Library.create_folder_type(folder.uuid, folder.parent_uuid, folder.label, folder.creator, folder.creator)
+        library.save()
+        folder.created_at = library.created_at
+    elif isinstance(folder, RemoteFolder):
+        pass
+    elif isinstance(folder, Database):
+        pass
+
+def upd_folder2(folder):
+    if isinstance(folder, Folder):
+        library = Library.create_folder_type(folder.uuid, folder.parent_uuid, folder.label, folder.creator, folder.modifier)
+        library.update_data()
+        folder.created_at = library.created_at
+    elif isinstance(folder, RemoteFolder):
+        pass
+    elif isinstance(folder, Database):
+        pass 
+
+def del_folder2(uuid):
+    library = Library.find_by_uuid(uuid)
+    library.delete()
