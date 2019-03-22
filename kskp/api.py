@@ -120,7 +120,7 @@ def new_flow():
             return jsonify({'success': False, 'message': 'not exist ' + original_flow_uuid })
 
         # コピー
-        new_flow = copy_flow_by_uuid(j.get('original_flow_uuid'))
+        new_flow = copy_flow_by_uuid(j.get('original_flow_uuid'), session['user_id'])
     else:
         project_id = get_project_id_by_uuid(j.get('project_uuid'))
 
