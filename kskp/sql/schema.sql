@@ -24,3 +24,4 @@ CREATE TABLE users_x_projects (
     user_id INTEGER NOT NULL,
     project_id INTEGER NOT NULL
 );
+
