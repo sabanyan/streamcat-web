@@ -237,6 +237,12 @@ export default class FlowListContainer extends React.Component<Props,State> {
     })
   }
 
+  //FIXIT: baseinpsectorのタイトル変更時、イベント処理
+  onChangeTitle(e){
+    this.state.selected_flow.label = e.target.value
+    this.forceUpdate()
+  }
+
   isEmptyFlowList () {
     if(!this.state.is_finished)return false
     if (!Array.isArray(this.state.flow_list) || this.state.flow_list.length ===
@@ -258,10 +264,14 @@ export default class FlowListContainer extends React.Component<Props,State> {
   }
 
   renderInspector(){
+
+    const flow = this.state.selected_flow
+
     return <FlowInspector flow={this.state.selected_flow}
                           onClickDelete={(uuid)=>this.onClickDelete(uuid)}
                           onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}
-                          onBlurTitle={(e)=>this.onBlurTitle(e)}/>
+                          onBlurTitle={(e)=>this.onBlurTitle(e)}
+                          onChangeTitle={(e)=>this.onChangeTitle(e)}/>
   }
 
   renderAll () {
