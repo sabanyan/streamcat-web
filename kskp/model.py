@@ -936,26 +936,60 @@ def get_folder2(uuid):
     elif library.type == 'database':
         return Database.create_by_library(library)
 
-def set_folder2(folder):
-    if isinstance(folder, Folder):
-        library = Library.create_folder_type(folder.uuid, folder.parent_uuid, folder.label, folder.creator, folder.creator)
+def set_folder2(f):
+    if isinstance(f, Folder):
+        library = Library.create_folder_type(f.uuid, f.parent_uuid, f.label, f.creator, f.creator)
         library.save()
-        folder.created_at = library.created_at
-    elif isinstance(folder, RemoteFolder):
-        pass
-    elif isinstance(folder, Database):
+        f.created_at = library.created_at
+    elif isinstance(f, RemoteFolder):
+        library = Library.create_remote_folder_type(f.uuid
+                                                  , f.parent_uuid
+                                                  , f.label
+                                                  , f.user
+                                                  , f.password
+                                                  , f.server
+                                                  , f.port
+                                                  , f.domain
+                                                  , f.directory
+                                                  , f.creator
+                                                  , f.creator)
+        library.save()
+        # ここでリモートディレクトリをマウントする
+        f.mount(library.dir_path)
+        f.created_at = library.created_at
+    elif isinstance(f, Database):
         pass
 
-def upd_folder2(folder):
-    if isinstance(folder, Folder):
-        library = Library.create_folder_type(folder.uuid, folder.parent_uuid, folder.label, folder.creator, folder.modifier)
+def upd_folder2(f):
+    if isinstance(f, Folder):
+        library = Library.create_folder_type(f.uuid, f.parent_uuid, f.label, f.creator, f.modifier)
         library.update_data()
-        folder.created_at = library.created_at
-    elif isinstance(folder, RemoteFolder):
-        pass
-    elif isinstance(folder, Database):
+        f.created_at = library.created_at
+    elif isinstance(f, RemoteFolder):
+        library = Library.create_remote_folder_type(f.uuid
+                                                  , f.parent_uuid
+                                                  , f.label
+                                                  , f.user
+                                                  , f.password
+                                                  , f.server
+                                                  , f.port
+                                                  , f.domain
+                                                  , f.directory
+                                                  , f.creator
+                                                  , f.modifier)
+        library.update_data()
+        f.created_at = library.created_at
+    elif isinstance(f, Database):
         pass 
 
 def del_folder2(uuid):
     library = Library.find_by_uuid(uuid)
-    library.delete()
+
+    if library.type == 'folder':
+        library.delete()
+    elif library.type == 'remote-folder':
+        # ここでリモートディレクトリのマウントを解除する
+        remote_folder = RemoteFolder.create_by_library(library)
+        remote_folder.unmount(library.dir_path)
+        # マウントポイントのディレクトリを削除する
+        library.delete()

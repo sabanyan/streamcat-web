@@ -1315,14 +1315,18 @@ def delete_folder(folder_uuid):
 
 @api.route('/remote-folders/<folder_uuid>', methods=['GET'])
 # @login_required_api
-@update_navigation
+# @update_navigation
 def fetch_remote_folder(folder_uuid):
     """
     リモートフォルダを返却する
     """
     try:
-        folder = get_remote_folder(folder_uuid)
-        return jsonify({'success': True, 'data': folder})
+        # folder = get_remote_folder(folder_uuid)
+        # return jsonify({'success': True, 'data': folder})
+
+        remote_folder = get_folder2(folder_uuid)
+        data = __make_fetch_data(remote_folder)
+        return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1337,8 +1341,21 @@ def make_new_remote_folder():
     リモートフォルダを作成する
     """
     try:
-        new_folder= create_remote_folder(request.json, 1)
-        return jsonify({'success': True, 'data': new_folder})    
+        # new_folder= create_remote_folder(request.json, 1)
+        # return jsonify({'success': True, 'data': new_folder})
+
+        new_folder = RemoteFolder(str(uuid.uuid4())
+                                , request.json['parent']
+                                , request.json['label']
+                                , request.json['user']
+                                , request.json['password']
+                                , request.json['server']
+                                , request.json['port']
+                                , request.json['domain']
+                                , request.json['directory']
+                                , creator=1)
+        set_folder2(new_folder)
+        return jsonify({'success': True, 'data': new_folder.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1370,7 +1387,9 @@ def delete_remote_folder(folder_uuid):
     リモートフォルダを削除する
     """
     try:
-        delete_remote_folder_by_id(folder_uuid)
+        # delete_remote_folder_by_id(folder_uuid)
+        # return jsonify({'success': True})
+        del_folder2(folder_uuid)
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
