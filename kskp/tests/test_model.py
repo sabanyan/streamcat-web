@@ -8,6 +8,15 @@ from pathlib import Path
 from kskp import app
 import kskp.model as model
 
+import pprint
+
+from kskp.models import db
+from kskp.models.store import Store
+from kskp.models.library import Library
+from kskp.models.folder import Folder
+from kskp.models.remote_folder import RemoteFolder
+from kskp.models.database import Database
+
 class ModelTestCase(unittest.TestCase):
     def setUp(self):
         self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
@@ -257,7 +266,7 @@ class ModelTestCase(unittest.TestCase):
 
             # 名前を変更する
             new_project_name = '新しい名前'
-            model.rename_project(project_uuid, new_project_name)
+            model.rename_project_by_uuid(project_uuid, new_project_name)
 
             self.assertEqual(model.get_all_projects()[0]['name'], new_project_name)
 
@@ -449,6 +458,251 @@ class ModelTestCase(unittest.TestCase):
 
             self.assertEqual(path.stem, data_source_name)
             self.assertEqual(result['a'], 1)
+
+
+
+    # def test_fetch_servers(self):
+    #     """
+    #     fetch_servers APIをテストする
+    #     """
+
+    #     # serverテーブルへのセットアップ
+    #     server1 = Server('Directory',
+    #                      '1.0.0',
+    #                      'ディレクトリ',
+    #                      '',
+    #                      '',
+    #                      [{'name':'filePath', 'type':'string', 'label':'CSVファイル格納パス名'}],
+    #                      1)
+    #     server2 = Server('PostgreSQL',
+    #                      '1.0.0',
+    #                      'PostgreSQLへの接続設定(ODBC)',
+    #                      '',
+    #                      '',
+    #                      [{'name':'connectionString', 'type':'string', 'label':'postgreSQLへの接続文字列'}],
+    #                      1)
+    #     db.session.add(server1)
+    #     db.session.add(server2)
+    #     db.session.commit()
+
+    #     with app.test_client() as client:
+    #         response = client.get('/api/v0/servers')
+    #         result = json.loads(response.get_data())
+
+    #     expected_result = [
+    #         {
+    #             'id'     : 'Directory',
+    #             'version': '1.0.0',
+    #             'label'  : 'ディレクトリ',
+    #             'description'  : '',
+    #             'url'   : '',
+    #             'params': [{
+    #                     'name' : 'filePath',
+    #                     'type' : 'string',
+    #                     'label': 'CSVファイル格納パス名'
+    #                     }]
+    #         },
+    #         {
+    #             'id'     : 'PostgreSQL',
+    #             'version': '1.0.0',
+    #             'label'  : 'PostgreSQLへの接続設定(ODBC)',
+    #             'description'  : '',
+    #             'url'   : '',
+    #             'params': [{
+    #                     'name' : 'connectionString',
+    #                     'type' : 'string',
+    #                     'label': 'postgreSQLへの接続文字列'
+    #                     }]
+    #         }
+    #     ]
+
+    #     self.assertEqual(result['success'], True)
+    #     self.assertEqual(result['data'], expected_result)
+
+    # def test_create_server(self):
+    #     """
+    #     create_server APIをテストする
+    #     """
+    #     # serverテーブルへのセットアップ
+    #     from ..models import db
+    #     from ..models.server import Server
+
+    #     data = {
+    #             'id'       : 'Directory',
+    #             'version'  : '1.0.1',
+    #             'label'    : 'ディレクトリ',
+    #             'description': 'ディレクトリ以下のファイルをデータソースとする',
+    #             'url'      : 'http://',
+    #             'params'   :
+    #                 [
+    #                     {'name' : 'directoryPath',
+    #                      'type' : 'string',
+    #                      'label': 'ディレクトリパス'},
+    #                     {'name' : 'dummy',
+    #                      'type' : 'int',
+    #                      'label': 'テスト用ダミー'}                         
+    #                 ]
+    #            }
+
+    #     with app.test_client() as client:
+    #         with client.session_transaction() as session:
+    #             session['user_id'] = 'user1'
+    #         response = client.post('/api/v0/servers',
+    #                                 content_type='application/json',
+    #                                 data=json.dumps(data)            
+    #                               )
+    #         result = json.loads(response.get_data())
+
+    #     expected_result = data
+    #     self.assertEqual(result['success'], True)
+    #     self.assertEqual(result['data'], expected_result)
+
+    # def test_delete_server(self):
+    #     """
+    #     delete_server_by_id APIをテストする
+    #     """
+    #     # serverテーブルへのセットアップ
+    #     from ..models import db
+    #     from ..models.server import Server
+
+    #     with app.test_client() as client:
+    #         with client.session_transaction() as session:
+    #             session['user_id'] = 'user1'
+    #         response = client.delete('/api/v0/servers/%s' % 'PostgreSQL')
+    #         result = json.loads(response.get_data())
+
+    #     self.assertEqual(result['success'], True)
+
+
+
+    def test_get_root(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # 作成したルートフォルダを取得する
+            root = model.get_root()
+            # 作成したフォルダと取得したフォルダが同じことを検証する
+            self.assertEqual(root.to_json(), new_folder.to_json())
+            # 作成したフォルダに対応するディレクトリが存在することを検証する
+            self.assertTrue(os.path.isdir('kskp/data/library'))
+        finally:
+            # 作成したフォルダを全て削除する
+            model.del_folder2(new_folder.uuid)
+
+    def test_get_children(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # ルートフォルダの子フォルダを作成する
+            new_child_folder = Folder(str(uuid.uuid4())
+                                    , new_folder.uuid
+                                    , '子フォルダ🌱'
+                                    , creator=2)  
+            model.set_folder2(new_child_folder)
+            # get_children()で作成した子フォルダを取得する
+            child = new_folder.get_children()[0]
+            # 作成した子フォルダと取得した子フォルダが同じことを検証する
+            self.assertEqual(child.to_json(), new_child_folder.to_json())
+            # 作成したフォルダに対応するディレクトリが存在することを検証する
+            self.assertTrue(os.path.isdir('kskp/data/library'))
+        finally:
+            # 作成したフォルダを全て削除する
+            model.del_folder2(new_folder.uuid)
+            model.del_folder2(new_child_folder.uuid)
+
+    def test_get_folder_path(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # ルートフォルダの子フォルダを作成する
+            new_child_folder = Folder(str(uuid.uuid4())
+                                    , new_folder.uuid
+                                    , '子フォルダ🌱'
+                                    , creator=2)  
+            model.set_folder2(new_child_folder)
+            # ルートフォルダのフォルダパスリストを取得する
+            folder_list = new_folder.get_folder_path()
+            # 取得したフォルダパスリストが正しいことを検証する
+            self.assertEqual(len(folder_list), 1)
+            self.assertEqual(folder_list[0]['label'], 'ルートフォルダ🌲')
+            # 子フォルダのフォルダパスリストを取得する
+            child_folder_list = new_child_folder.get_folder_path()
+            self.assertEqual(len(child_folder_list), 2)
+            self.assertEqual(child_folder_list[0]['label'], 'ルートフォルダ🌲')
+            self.assertEqual(child_folder_list[1]['label'], '子フォルダ🌱')
+        finally:
+            # 作成したフォルダを全て削除する
+            model.del_folder2(new_folder.uuid)
+            model.del_folder2(new_child_folder.uuid)
+
+    def test_get_folder2(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # 作成したルートフォルダを取得する
+            root = model.get_folder2(new_folder.uuid)
+            # 作成したフォルダと取得したフォルダが同じことを検証する
+            self.assertEqual(root.to_json(), new_folder.to_json())
+            # 作成したフォルダに対応するディレクトリが存在することを検証する
+            self.assertTrue(os.path.isdir('kskp/data/library'))
+        finally:
+            # 作成したフォルダを全て削除する
+            model.del_folder2(new_folder.uuid)
+
+    def test_upd_folder2(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # 作成したルートフォルダを修正する
+            new_folder.label = 'ルートフォルダー🌳'
+            model.upd_folder2(new_folder.uuid)
+            # 作成したフォルダと取得したフォルダが同じことを検証する
+            self.assertEqual(new_folder.label, 'ルートフォルダー🌳')
+            # 作成したフォルダに対応するディレクトリが存在することを検証する
+            self.assertTrue(os.path.isdir('kskp/data/library'))
+        finally:
+            # 作成したフォルダを全て削除する
+            model.del_folder2(new_folder.uuid)
+
+    def test_del_folder2(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # 作成したルートフォルダを削除する
+            model.del_folder2(new_folder.uuid)
+            # 削除したルートフォルダの取得を試みる
+            root = model.get_folder2(new_folder.uuid)
+            # 作成したフォルダが削除されたことを検証する
+            self.assertEqual(root, None)
+            # 作成したディレクトリが削除されていることを検証する
+            self.assertTrue(os.path.isdir('kskp/data'))
+            self.assertFalse(os.path.isdir('kskp/data/library'))
+        finally:
+            pass
 
     # crate_flow内に定義されているデコレータのテスト
     # とりあえず作ったが、関数内関数は外部から呼び出せないのでテストできなく、置き場所に困ったので
