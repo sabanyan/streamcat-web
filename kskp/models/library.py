@@ -75,8 +75,53 @@ class Library(db.Model):
         return ret
 
     @classmethod
-    def create_remote_folder_type(cls):
-        pass
+    def create_remote_folder_type(cls
+                                , uuid
+                                , parent_uuid
+                                , label
+                                , user
+                                , password
+                                , server
+                                , port
+                                , domain
+                                , directory
+                                , creator=None
+                                , modifier=None):
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+
+        # SQLiteではidは乱数で採番する
+        id = random.randint(0,99999)
+
+        # parent_uuidからparent_idを取得する
+        result = db.session.query(Library.id).filter(Library.uuid == parent_uuid).one_or_none()
+        if result is None:
+            parent_id = None
+        else:
+            parent_id = result.id
+
+        # dir_pathは親フォルダのdir_pathを引き継ぐ
+        library = Library.find_by_uuid(parent_uuid)
+        if library is None:
+            # 親フォルダがない場合はデフォルトパスとする
+            dir_path = 'kskp/data/library'
+        else:
+            # 共有するリモートディレクトリ名をローカルのマウントディレクトリ名にする
+            dir_path = os.path.join(library.dir_path, directory)
+        
+        # dataを作成する
+        data = json.dumps({'label'    : label
+                         , 'user'     : user
+                         , 'password' : password
+                         , 'server'   : server
+                         , 'port'     : port
+                         , 'domain'   : domain
+                         , 'directory': directory})
+
+        # Libraryオブジェクトを返す
+        ret = Library(id, parent_id, uuid, dir_path, 'remote-folder', data, creator, modifier)
+        ret.parent_uuid = parent_uuid
+        return ret
 
     @classmethod
     def create_database_type(cls):
