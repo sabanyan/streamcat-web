@@ -286,7 +286,7 @@ def fetch_flow_by_uuid(flow_uuid):
     path = get_flow_path_by_uuid(flow_uuid)
     return json.loads(path.read_text())
 
-def copy_flow_by_uuid(original_flow_uuid, data_source_name=None):
+def copy_flow_by_uuid(original_flow_uuid, user_id, data_source_name=None):
     """
     指定したフローのuuidを元に
     コピーしたフローを作成し、その内容を返す
@@ -302,7 +302,7 @@ def copy_flow_by_uuid(original_flow_uuid, data_source_name=None):
     # 中身の書き換え
     with open(new_flow_path, 'w') as new_f:
         flow_json['label'] = generate_flow_name(flow_json.get('projectId'), flow_json.get('label'))
-        flow_json['creator'] = get_user_by_id(1)['name']
+        flow_json['creator'] = get_user_by_id(user_id)['name']
         JST = timezone(timedelta(hours=+9), 'JST')
         flow_json['createdAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
         json.dump(flow_json, new_f, indent=2, ensure_ascii=False)
