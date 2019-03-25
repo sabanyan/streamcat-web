@@ -1,6 +1,7 @@
 import json
 import shlex
 import subprocess
+import platform
 from time import sleep
 from pathlib import Path
 from .library import Library
@@ -104,16 +105,25 @@ class RemoteFolder():
 
     def mount(self, mount_dir):
         try:
-            remote_dir = '//{}/{}'.format(self.server, self.directory)
-            comline = 'sudo mount -t cifs -o username={},password={},vers=2.1,iocharset=utf8 "{}" {}' \
-                    .format(self.user, self.password, remote_dir, mount_dir)
+            remote_dir = '{}/{}'.format(self.server, self.directory)
+            platform_system = platform.system()
+            if platform_system == 'Linux':
+                comline = 'sudo mount -t cifs -o username={},password={},vers=2.1,iocharset=utf8 //{} {}' \
+                          .format(self.user, self.password, remote_dir, mount_dir)
+            elif platform_system == 'Darwin':
+                # macOSの場合(unittestはmacOSで実行しているため)
+                comline = 'sudo mount -t smbfs //{}:{}@{} {}' \
+                          .format(self.user, self.password, remote_dir, mount_dir )
+            else:
+                raise Exception('This os(%s) may has no mount command.' % platform_system)
+
             res = subprocess.check_output(shlex.split(comline))
             # すぐ操作するとビジーになっていることがあるため、マウント・アンマウントの前後でスリープtime.sleep()を入れています
             sleep(2)
         except Exception as e:
             import pprint
             pprint.pprint(comline)
-            pprint.pprint(str(res))    
+            pprint.pprint(str(e))    
             raise e
  
     def unmount(self, mount_dir):
@@ -121,11 +131,9 @@ class RemoteFolder():
             import pprint
             sleep(2)
             comline = "sudo umount {}".format(mount_dir)
-            pprint.pprint('>>>2')
             res = subprocess.check_output(shlex.split(comline))
-            pprint.pprint('>>>3') 
         except Exception as e:
             import pprint
             pprint.pprint(comline)
-            pprint.pprint(str(res))    
+            pprint.pprint(str(e))    
             raise e

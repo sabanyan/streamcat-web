@@ -2184,5 +2184,176 @@ class CacheApiTestCase(unittest.TestCase):
         new_file_path.unlink()
         flow_path.unlink()
 
+
+from kskp.models import db
+from kskp.models.store import Store
+
+class DataStoreTestCase(unittest.TestCase):
+
+    def test_create_fetchall_delete_stores(self):
+        """
+        fetch_stores APIをテストする
+        """
+        # storesテーブルへのセット
+        store1 = Store.create('Directory',
+                              '1.0.0',
+                              'ディレクトリ',
+                              '',
+                              '',
+                              [{'name':'filePath', 'type':'string', 'label':'CSVファイル格納パス名'}],
+                              1)
+        store2 = Store.create('PostgreSQL',
+                              '1.0.0',
+                              'PostgreSQLへの接続設定(ODBC)',
+                              '',
+                              '',
+                              [{'name':'connectionString', 'type':'string', 'label':'postgreSQLへの接続文字列'}],
+                              1)
+        db.session.add(store1)
+        db.session.add(store2)
+        db.session.commit()
+
+        # GET /stores
+        with app.test_client() as client:
+            response = client.get('/api/v0/stores')
+            result = json.loads(response.get_data())
+
+        # 期待するAPIの戻り値
+        expected_result = [
+            {
+                'id'     : 'Directory',
+                'version': '1.0.0',
+                'label'  : 'ディレクトリ',
+                'description'  : '',
+                'url'   : '',
+                'params': [{
+                        'name' : 'filePath',
+                        'type' : 'string',
+                        'label': 'CSVファイル格納パス名'
+                        }]
+            },
+            {
+                'id'     : 'PostgreSQL',
+                'version': '1.0.0',
+                'label'  : 'PostgreSQLへの接続設定(ODBC)',
+                'description'  : '',
+                'url'   : '',
+                'params': [{
+                        'name' : 'connectionString',
+                        'type' : 'string',
+                        'label': 'postgreSQLへの接続文字列'
+                        }]
+            }
+        ]
+
+        # storesテーブルに設定した値をGET /stores apiで取得できることを検証する
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'], expected_result)
+
+        # DELETE /stores
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
+            response = client.delete('/api/v0/stores/%s' % expected_result[0]['id'])
+            response = client.delete('/api/v0/stores/%s' % expected_result[1]['id'])
+            result = json.loads(response.get_data())
+
+    def test_create_fetch_delete_store(self):
+        """
+        create_store APIをテストする
+        """
+        # POSTするデータ
+        data = {
+                'id'       : 'Directory',
+                'version'  : '1.0.1',
+                'label'    : 'ディレクトリ',
+                'description': 'ディレクトリ以下のファイルをデータソースとする',
+                'url'      : 'http://',
+                'params'   :
+                    [
+                        {'name' : 'directoryPath',
+                         'type' : 'string',
+                         'label': 'ディレクトリパス'},
+                        {'name' : 'dummy',
+                         'type' : 'int',
+                         'label': 'テスト用ダミー'}                         
+                    ]
+               }
+
+        # POST /stores
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
+            response = client.post('/api/v0/stores',
+                                    content_type='application/json',
+                                    data=json.dumps(data))
+            result = json.loads(response.get_data())
+
+        # POST /stores　apiが正常終了することを検証する
+        expected_result = data
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'], expected_result)
+
+        # GET /stores
+        with app.test_client() as client:
+            response = client.get('/api/v0/stores/%s' % expected_result['id'])
+            result = json.loads(response.get_data())
+
+        # POST /storesした値をGET /stores apiで取得できることを検証する
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'], data)
+
+        # DELETE /stores
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
+            response = client.delete('/api/v0/stores/%s' % expected_result['id'])
+            result = json.loads(response.get_data())
+        
+        # DELETE /stores apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+
+        # GET /stores
+        with app.test_client() as client:
+            response = client.get('/api/v0/stores/%s' % expected_result['id'])
+            result = json.loads(response.get_data())
+
+        # DELETE /storesした値をGET /stores apiで取得できないことを検証する
+        self.assertEqual(result['success'], True)
+        self.assertEqual(result['data'], None)
+
+    def test_create_frame(self):
+        # フォルダを作成する(POST /folders)
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
+            response = client.post('/api/v0/folders',
+                                    content_type='application/json',
+                                    data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
+            result = json.loads(response.get_data())
+            folder_uuid = result['data']['uuid']
+
+        # POST /folders apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+
+        # アップロード用に一時ファイルを作成する
+        f, file_name = tempfile.mkstemp()
+
+        # フレームデータを作成する(POST /frames)
+        with app.test_client() as client:
+            response = client.post('/api/v0/frames',
+                content_type='multipart/form-data',
+                data={
+                    'label' : '新しいフレームファイル',
+                    'parent': folder_uuid,
+                    'file'  : f
+                }
+            )
+            result = json.loads(response.get_data())
+
+        # Post /frames apiが正常終了することを検証する
+        pprint.pprint(result)
+        self.assertEqual(result['success'], True)
+
 if __name__ == '__main__':
     unittest.main()
