@@ -104,6 +104,19 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     })
   }
 
+  onDescriptionChange(e) {
+    let {flow} = this.props
+    flow.description = e.currentTarget.value
+    this.props.updateFlow(flow)
+  }
+
+  onParamChange(e) {
+    let {flow} = this.props
+    let params = this.getCurrentParams()
+    flow.params = params
+    this.props.updateFlow(flow)
+  }
+
   render () {
     const {flow} = this.props
     if(!flow)return null
@@ -113,7 +126,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     let inputParams, inputParamsContainer, addFlowParams
     this.paramRefs = []
     inputParams = params.map((param,index) => {
-      return <div key={param.name} className={style.flow_param}>
+      return <div key={index + "param"} className={style.flow_param}>
         <div className={style.left}>
           <input ref={(ref) => {
             //render時にrefがnullのケースでcallされる場合があるので、
@@ -121,7 +134,8 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
             if(ref){
               this.paramRefs.push(ref)
             }
-          }} type={'text'} className={'form-control'} defaultValue={param.name} />
+          }} type={'text'} className={'form-control'} defaultValue={param.name}
+          onChange={(e) => {this.onParamChange(e)}} />
         </div>
         <div className={style.right}>
           <Button danger={true} onClick={()=>this.onClickDeleteParam(param)}>削除</Button>
@@ -145,7 +159,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
     return <BaseInspector header={''} label={this.props.flow.label} {...this.props}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={()=>this.onHide()}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
-                defaultValue={this.props.flow.description} rows={8} onBlur={this.onBlurDescription}></textarea>
+                defaultValue={this.props.flow.description} rows={8} onChange={(e) => this.onDescriptionChange(e)}></textarea>
       {inputParamsContainer}
       {addFlowParams}
       <div className={style.full_hr}/>
