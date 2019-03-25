@@ -85,8 +85,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   onClickSort () {
-    this.props.addHistory()
     this.props.sortFlow()
+    this.props.addHistory()
   }
 
   save (): Promise {
@@ -220,7 +220,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
         //ステップの選択をキャンセル
         self.props.selectSteps()
-
+        this.props.addHistory()
+        
         //モーダルを閉じる
         ModalUtil.closeModal(Constants.modal.IMPORT_DATASOURCE)
       },
@@ -236,7 +237,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       content: content,
       title: 'データソースの追加',
     })
-
   }
 
   onChangeFile (e: SyntheticInputEvent<EventTarget>) {
@@ -290,8 +290,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
   
     const note = new NoteStepModel(props)
-
     this.props.addStep(note)
+    this.props.addHistory()
+
   }
 
   render () {

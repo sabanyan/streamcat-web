@@ -44,7 +44,6 @@ const DRAGGING_ACTION = 'dragging_action'
 const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
-const ADD_NOTE_ACTION = 'add_memo_action'
 const UPDATE_CACHE_ACTION = 'update_cache_action'
 const graph: Graph = new Graph()
 
@@ -69,6 +68,8 @@ const Application = (state = initialState, action: {}) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
   //stateを一度ディープコピーしないとrenderされないためコピーする
   let newState = StateUtil.deepCopy(state)
+  // FIXIT: FIX133の臨時対応, なぜかhistorynodesの参照先をコピーしてるぽい
+  newState.history = StateUtil.deepCopy(state.history)
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
       let {context} = action
@@ -238,7 +239,7 @@ const Application = (state = initialState, action: {}) => {
           height: defaultNodeProps.height
         })
       }
-
+      
       newState.nodes.push(add_step)
       newState.graph = graph.getGraph(newState)
       break
@@ -372,12 +373,15 @@ const Application = (state = initialState, action: {}) => {
        return newState
      }
     case ADD_HISTORY_ACTION:{
-      let newState = StateUtil.deepCopy(state)
-
+      //let newState = StateUtil.deepCopy(state)
       const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
+      console.log(newState.nodes)
+      console.log(newState.history.nodes)
+      
       if(isSame){
         return newState
       }
+      
       if(newState.history.current != newState.history.nodes.length - 1){
         //前に戻っている状態で履歴が追加された場合は、
         //current以降の履歴は消す
@@ -392,7 +396,7 @@ const Application = (state = initialState, action: {}) => {
       return newState
     }
     case UNDO_ACTION:{
-      let newState = StateUtil.deepCopy(state)
+      let newState = StateUtil.deepCopy(state)    
       if(newState.history.current > 0){
         //一つ前に巻き戻し
         newState.history.current = newState.history.current - 1
@@ -896,14 +900,6 @@ export const updateDataFrameDetailAction = (detail: DataFrameDetailType) => {
   return {
     detail: detail,
     type: UPDATE_DATA_SOURCE_DETAIL_ACTION
-  }
-}
-
-export const addNoteAction = (x:number, y:number) => {
-  return {
-    type: ADD_NOTE_ACTION,
-    x: x,
-    y: y
   }
 }
 
