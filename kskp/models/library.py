@@ -1,8 +1,7 @@
 # from sqlalchemy.dialects.postgresql import TIMESTAMP, JSONB, ENUM
-import os
 import json
 from . import db, create_schema_if_first_use
-
+from werkzeug.utils import secure_filename
 from sqlalchemy.orm import aliased
 from sqlalchemy import literal, text
 from sqlalchemy.sql.expression import label, literal_column
@@ -127,6 +126,38 @@ class Library(db.Model):
     def create_database_type(cls):
         pass
 
+    @classmethod
+    def create_frame_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+        
+        # SQLiteではidは乱数で採番する
+        id = random.randint(0,99999)
+
+        # parent_uuidからparent_idを取得する
+        result = db.session.query(Library.id).filter(Library.uuid == parent_uuid).one_or_none()
+        if result is None:
+            parent_id = None
+        else:
+            parent_id = result.id
+
+        # dir_pathは親フォルダのdir_pathを引き継ぐ
+        library = Library.find_by_uuid(parent_uuid)
+        if library is None:
+            # 親フォルダがない場合はデフォルトパスとする
+            dir_path = os.path.join('kskp/data/library', secure_filename(label))
+        else:
+            # 共有するリモートディレクトリ名をローカルのマウントディレクトリ名にする
+            dir_path = os.path.join(library.dir_path, secure_filename(label))
+
+        # dataを作成する
+        data = json.dumps({'label' : label})
+
+        # Libraryオブジェクトを返す
+        ret = Library(id, parent_id, uuid, dir_path, 'frame', data, creator, modifier)
+        ret.parent_uuid = parent_uuid
+        return ret
+            
     @classmethod
     def find_by_uuid(cls, uuid):
         # テーブルがない場合は作成する
@@ -264,6 +295,11 @@ class Library(db.Model):
         path_to_root.reverse()
         return path_to_root
 
+    @classmethod
+    def dir_path_exists(cls, dir_path):
+        results_count = db.session.query(Library).filter(Library.dir_path.like(dir_path + '%')).count()
+        return results_count > 0
+
     def get_parent_uuid(self):
         if self.parent_uuid is None:
             return self.parent_uuid
@@ -278,10 +314,6 @@ class Library(db.Model):
     def save(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
-
-        # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
-        os.makedirs(self.dir_path, exist_ok=True)
-
         db.session.add(self)
         db.session.commit()
 
@@ -304,13 +336,3 @@ class Library(db.Model):
         db.session.query(Library).filter(Library.id==self.id).delete()
         db.session.commit()
 
-        # 全てのフォルダから紐づかないディレクトリは物理削除する
-        dir_path = self.dir_path.rstrip(os.pathsep)
-        while dir_path != '' and dir_path != '/' and dir_path != 'kskp/data':
-            results_count = db.session.query(Library).filter(Library.dir_path.like(dir_path + '%')).count()
-            if results_count == 0:
-                if os.path.isdir(dir_path):
-                    os.rmdir(dir_path)
-                dir_path = os.path.dirname(dir_path)
-            else:
-                break

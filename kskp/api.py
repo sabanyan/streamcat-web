@@ -46,7 +46,8 @@ from .model import (
     get_folder2,
     set_folder2,
     upd_folder2,
-    del_folder2
+    del_folder2,
+    set_frame2
 )
 from .models.store import Store
 from .models.folder import Folder
@@ -447,10 +448,23 @@ def make_new_frame():
     # デフォルトはFalse
     no_contents = False
 
+    pprint.pprint(request.files.get('label'))
+
     if 'file' in request.files:
-        # ファイルがPOSTで送信されてきたらアップロードだとみなす
-        frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
-        return jsonify({'success': True, "data": frame})
+        if 'parent' in request.forms and 'label' in request.forms:
+            # parentとlabel属性があれば新形式のPOST /framesだとみなす
+            from .models.frame import Frame
+            new_frame = Frame(str(uuid.uuid4())
+                            , request.json['parent']
+                            , request.json['label']
+                            , request.files.get('file')
+                            , creator=1)
+            set_frame2(new_frame)
+            return jsonify({'success': True, 'data': new_frame.to_json()})
+        else:
+            # ファイルがPOSTで送信されてきたらアップロードだとみなす
+            frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
+            return jsonify({'success': True, "data": frame})
     elif 'from' in request.args:
         if '.' in request.args['from']:
             # ドットで区切って、具体的に一つだけstepを指定することができる
@@ -1127,6 +1141,26 @@ def fecth_stores():
             ret.append(store.to_json())
 
         return jsonify({'success': True, 'data': ret})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores/<store_id>', methods=['GET'])
+def fecth_store(store_id):
+    """
+    データストアの定義(雛形)を返却する
+    """
+    try:
+        store = Store.find_by_id(store_id)
+        if store is None:
+            data = None
+        else:
+            data = store.to_json()
+
+        return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
                         'success': False,
