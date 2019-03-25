@@ -686,7 +686,8 @@ def delete_cache():
 
             # キャッシュを削除する（増え続けると困るので）
             frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
-            frame_path.unlink()
+            if frame_path.exists():
+                frame_path.unlink()
             sjis_path = DATAFRAME_DIR_PATH / (frame_uuid + '_sjis.csv')
             if sjis_path.exists():
                 sjis_path.unlink()

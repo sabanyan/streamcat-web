@@ -785,17 +785,19 @@ class CsvToLineGraphCommand(VisualizersBokehPlot):
         """
         ビジュアライズを描画、保存する。
         """
-        # dfの作成
-        # index_colで指定しているものがx軸になる
-        time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
-        df = pd.read_csv(inputs.get('i').source.fullpath, parse_dates=time_series_column)
 
         # offset対応
         offset = int(args.get('offset')) if args.get('offset') else 0
         limit = int(args.get('limit')) if args.get('limit') else None
 
-        start = offset
-        end = start + (limit if limit is not None else len(df))
+        # dfの作成
+        # index_colで指定しているものがx軸になる
+        time_series_column = args.get('time_series_column') if args.get('time_series_column') else False
+        df = pd.read_csv(inputs.get('i').source.fullpath, parse_dates=time_series_column, nrows=limit, skiprows=range(1, offset))
+        df[args.get('data_column')] = df[args.get('data_column')].astype(str)
+
+        # start = offset
+        # end = start + (limit if limit is not None else len(df))
 
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
@@ -811,7 +813,7 @@ class CsvToLineGraphCommand(VisualizersBokehPlot):
         if time_series_column:
             # そのままHTMLに出力されるので{%F}だけだと、jinja2が勘違いをする
             # それを防ぐために{%raw%}{%endraw%}で区切っている
-            tooltip = '{%raw%}@' + args.get('x_axis_column') + '{%F}{%endraw%}'
+            tooltip = '@' + args.get('x_axis_column') + '{%F}'
             tooltip_format = 'datetime'
             type = 'datetime'
 
@@ -844,7 +846,7 @@ class CsvToLineGraphCommand(VisualizersBokehPlot):
 
         # データ名が入っている列が存在する場合（クロス表）
         for datum in unique_data:
-            source = ColumnDataSource(df[df[args.get('data_column')]==datum][start:end])
+            source = ColumnDataSource(df[df[args.get('data_column')]==datum])
             plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'),
                       legend=datum, alpha=args.get('alpha'), color=color.__next__(),
                       source=source)
@@ -858,7 +860,7 @@ class CsvToLineGraphCommand(VisualizersBokehPlot):
         #     plot.line(x=args.get('x_axis_column'), y=args.get('y_axis_column'), legend=datum.get('legend_name'),
         #               color=datum.get('color'), source=source)
 
-        plot.add_tools(hover)
+        # plot.add_tools(hover)
         plot.legend.location = "top_right"
         plot.legend.click_policy="hide"
 
@@ -876,15 +878,16 @@ class CsvToHistogramCommand(VisualizersBokehPlot):
         plotのヒストグラムを作成する
         """
 
-        file_path = inputs.get('i').source.fullpath
-        df = pd.read_csv(file_path)
-
         # offset対応
         offset = int(args.get('offset')) if args.get('offset') else 0
         limit = int(args.get('limit')) if args.get('limit') else None
 
-        start = offset
-        end = start + (limit if limit is not None else len(df))
+        file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path, nrows=limit, skiprows=range(1, offset))
+        df[args.get('data_column')] = df[args.get('data_column')].astype(str)
+
+        # start = offset
+        # end = start + (limit if limit is not None else len(df))
 
         # ブロック句
         # if not os.path.exists(file_path):
@@ -915,7 +918,7 @@ class CsvToHistogramCommand(VisualizersBokehPlot):
         #     unique_data = args.get('data')
 
         for datum in unique_data:
-            hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('x_axis')][start:end].tolist(),
+            hist, edges = histogram(df[df[args.get('data_column')]==datum][args.get('x_axis')].tolist(),
                                     bins=args.get('bins'), density=args.get('density'))
             source = ColumnDataSource({'top':hist, 'left': edges[:-1], 'right': edges[1:]})
             plot.quad(top='top', bottom=0, left='left', right='right',
@@ -990,16 +993,16 @@ class CsvToScatterCommand(VisualizersBokehPlot):
         csvのファイルパスから、
         plotの散布図を作成する
         """
-
-        file_path = inputs.get('i').source.fullpath
-        df = pd.read_csv(file_path)
-
         # offset対応
         offset = int(args.get('offset')) if args.get('offset') else 0
         limit = int(args.get('limit')) if args.get('limit') else None
 
-        start = offset
-        end = start + (limit if limit is not None else len(df))
+        file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path, nrows=limit, skiprows=range(1, offset))
+        df[args.get('data_column')] = df[args.get('data_column')].astype(str)
+        #
+        # start = offset
+        # end = start + (limit if limit is not None else len(df))
 
         # ブロック句
         if not os.path.exists(file_path):
@@ -1034,7 +1037,7 @@ class CsvToScatterCommand(VisualizersBokehPlot):
         #     unique_data = args.get('data')
 
         for datum in unique_data:
-            df_select_datum = df[df[args.get('data_column')]==datum][start:end]
+            df_select_datum = df[df[args.get('data_column')]==datum]
             source = ColumnDataSource({'x': df_select_datum[args.get('x_axis')], 'y': df_select_datum[args.get('y_axis')]})
             plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'),
                          color=color.__next__(), legend=datum, alpha=args.get('alpha'),
@@ -1115,20 +1118,15 @@ class CsvToBoxplotCommand(VisualizersBokehPlot):
         plotの箱ひげ図を作成する
         """
 
-        file_path = inputs.get('i').source.fullpath
-        df = pd.read_csv(file_path)
-
         offset = int(args.get('offset')) if args.get('offset') else 0
         limit = int(args.get('limit')) if args.get('limit') else None
+
+        file_path = inputs.get('i').source.fullpath
+        df = pd.read_csv(file_path, nrows=limit, skiprows=range(1, offset))
 
         # ブロック句
         # if not os.path.exists(file_path):
         #     return ''
-
-        # offset対応
-        start = offset
-        end = start + (limit if limit is not None else len(df))
-        df = df[start:end]
 
         # ここstartがdfの最大行数を越えるとエラーが出る
         # if len(df) < start:
