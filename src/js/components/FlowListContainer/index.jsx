@@ -13,7 +13,7 @@ export type FlowListProps = {
 export default FlowListContainer = connect(
   state => {
     return {
-      flow : state.reducer.flow
+      flow : state.flowListReducer.flow
     }
   },
   dispatch => {

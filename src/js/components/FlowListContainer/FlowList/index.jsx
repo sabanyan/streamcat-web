@@ -21,12 +21,6 @@ import FlowUtil from '../../../utils/FlowUtil'
 import NotificationManager from '../../shared/NotificationManager'
 import ReactDomUtil from '../../../utils/ReactDomUtil'
 
-/**
- * ======================================================
- *                      NOT USE REDUX
- * ======================================================
- */
-
 type State = {
   flow_list: [FlowListDataType];
   keyword: string;

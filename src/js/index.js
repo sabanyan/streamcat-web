@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { createStore, compose, applyMiddleware,combineReducers } from 'redux'
 import reducer from './modules/application'
+import flowListReducer from './modules/flowListReducer'
 import thunk from 'redux-thunk'
 import {reducer as notificationsReducer} from 'reapop'
 import FlowEditorContainer from './components/FlowEditorContainer'
@@ -38,6 +39,11 @@ const store = createStoreWithMiddleware(combineReducers({
   reducer
 }), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
+const flowListStore = createStoreWithMiddleware(combineReducers({
+  notifications: notificationsReducer(defaultNotification),
+  flowListReducer
+}), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+
 if (document.getElementById('flow_editor')) {
   ReactDOM.render(
     <Provider store={store}>
@@ -55,7 +61,7 @@ if (document.getElementById('project_list')) {
 }
 if (document.getElementById('flow_list')) {
   ReactDOM.render(
-    <Provider store={store}>
+    <Provider store={flowListStore}>
       <FlowListContainer/>
     </Provider>,
     document.getElementById('flow_list'),
