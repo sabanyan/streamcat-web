@@ -149,3 +149,11 @@ export type DataFrameDetailType = {
   numberOfLines: string;
   lastModifiedAt: string;
 }
+
+
+export type BreadCrumbHistoryType = {
+  id: string,
+  label: string,
+  url: string,
+  current: boolean,
+}
