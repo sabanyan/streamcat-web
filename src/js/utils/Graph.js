@@ -168,12 +168,14 @@ class Graph {
       if(graph_node){
         const key = graph_node.label //グラフ構造のlabelにidを設定しています
         let node = Graph.getNode(nodes,key)
-        node.setFrame({
-          x: graph_node.x,
-          y: graph_node.y,
-          width: graph_node.width,
-          height: graph_node.height,
-        })
+        if(node) {
+          node.setFrame({
+            x: graph_node.x,
+            y: graph_node.y,
+            width: graph_node.width,
+            height: graph_node.height,
+          })
+        }
       }
     })
     return nodes
