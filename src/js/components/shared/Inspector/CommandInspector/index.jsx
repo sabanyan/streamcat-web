@@ -138,7 +138,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           //指定されたステップの元コマンドを取得
           const command:CommandModel = selected_step.getCommand()
           //選択されたステップのラベルを取得
-          label = selected_step.label
+          label = command.label
           //コマンドのラベルを取得
           subLabel = command.label
           this.inputRefs = []
