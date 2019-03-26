@@ -77,6 +77,14 @@ export default class Library extends React.Component<Props, State> {
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.modal.ADD_DOCUMENT, onClickDone: () => {
+        if(!this.state.document_name){
+          alert("資料名を入力してください")
+          return false;
+        }
+        if(!this.state.upload_file){
+          alert("ファイルを選択してください")
+          return false;
+        }
         this.setState({is_loading: true, selected_data: null})
         const file:File = this.state.upload_file.file
         const label = this.state.document_name
@@ -92,6 +100,16 @@ export default class Library extends React.Component<Props, State> {
     })
     ModalUtil.registerModal({
       id: Constants.modal.ADD_FRAME, onClickDone: () => {
+        if(!this.state.frame_name){
+          alert("フレーム名を入力してください")
+          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+          return false;
+        }
+        if(!this.state.upload_file){
+          alert("ファイルを選択してください")
+          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+          return false;
+        }
         this.setState({is_loading: true, selected_data: null})
         const file:File = this.state.upload_file.file
         const fileName = this.state.frame_name //TODO 将来的には使わない
@@ -108,6 +126,11 @@ export default class Library extends React.Component<Props, State> {
     })
     ModalUtil.registerModal({
       id: Constants.modal.ADD_FOLDER, onClickDone: () => {
+        if(!this.state.folder_name){
+          alert("ファルダ名を入力してください")
+          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+          return false;
+        }
         this.setState({is_loading: true, selected_data: null})
         const body = {
           'label': this.state.folder_name,
@@ -257,8 +280,8 @@ export default class Library extends React.Component<Props, State> {
         <TextField placeholder={'資料名'}
                    onChange={(e, validation) => this.onChangeDocumentName(e,
                      validation)}/>
-        <FileUploader accept={['*/*']} defaultLabel={'資料を選択してください'}
-                      onChangeFile={(e) => this.onChangeFile(e)}/>
+        <div className={"mt-8px"}/>
+        <FileUploader accept={['*/*']} onChangeFile={(e) => this.onChangeFile(e)}/>
       </div>,
     })
     e.preventDefault()
@@ -273,8 +296,8 @@ export default class Library extends React.Component<Props, State> {
         <TextField placeholder={'フレーム名'}
                    onChange={(e, validation) => this.onChangeFrameName(e,
                      validation)}/>
-        <FileUploader accept={['*/*']} defaultLabel={'フレームを選択してください'}
-                      onChangeFile={(e) => this.onChangeFile(e)}/>
+        <div className={"mt-8px"}/>
+        <FileUploader accept={['*/*']} onChangeFile={(e) => this.onChangeFile(e)}/>
       </div>,
     })
     e.preventDefault()
@@ -404,6 +427,24 @@ export default class Library extends React.Component<Props, State> {
   }
 
   onClickDelete (selected_data: LibraryListDataType) {
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        this.deleteLibraryChild(selected_data)
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '削除する',
+      danger: true,
+      content: <div>
+        {selected_data.label} を削除しますか？
+      </div>,
+    })
+  }
+
+  deleteLibraryChild(selected_data: LibraryListDataType){
     this.setState({is_loading: true})
     this.deleteLibraryListData(selected_data.type, selected_data.uuid).then((response)=>{
       this.setState({is_loading: false})
@@ -426,6 +467,7 @@ export default class Library extends React.Component<Props, State> {
       }
     })
   }
+
 
   deleteLibraryListData (type: string, uuid: string) {
     switch (type) {
