@@ -151,7 +151,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
         }else if(selected_step.type === Constants.step.type.subflow){
           const subflowCommand:SubflowCommandModel = selected_step.getCommand()
-          label = selected_step.label
+          label = subflowCommand.label
           subLabel = subflowCommand.label
           this.inputRefs = []
 

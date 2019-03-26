@@ -333,6 +333,7 @@ export default class Step extends React.Component<Props, State> {
       </g>
     }else if(this.isSubFlow(step)){
       icon = <SubFlowIcon hover={hover} selected={selected} filter={filter}/>
+      stepLabel = step.getCommand().getLabel()
     }else if (this.isStep(step)) {
       //ステップ
       let command
