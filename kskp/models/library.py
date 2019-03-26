@@ -1,7 +1,7 @@
 # from sqlalchemy.dialects.postgresql import TIMESTAMP, JSONB, ENUM
+import os
 import json
 from . import db, create_schema_if_first_use
-from werkzeug.utils import secure_filename
 from sqlalchemy.orm import aliased
 from sqlalchemy import literal, text
 from sqlalchemy.sql.expression import label, literal_column
@@ -145,10 +145,10 @@ class Library(db.Model):
         library = Library.find_by_uuid(parent_uuid)
         if library is None:
             # 親フォルダがない場合はデフォルトパスとする
-            dir_path = os.path.join('kskp/data/library', secure_filename(label))
+            dir_path = os.path.join('kskp/data/library', Library.__secure_filename(label))
         else:
             # 共有するリモートディレクトリ名をローカルのマウントディレクトリ名にする
-            dir_path = os.path.join(library.dir_path, secure_filename(label))
+            dir_path = os.path.join(library.dir_path, Library.__secure_filename(label))
 
         # dataを作成する
         data = json.dumps({'label' : label})
@@ -299,6 +299,12 @@ class Library(db.Model):
     def dir_path_exists(cls, dir_path):
         results_count = db.session.query(Library).filter(Library.dir_path.like(dir_path + '%')).count()
         return results_count > 0
+
+    @classmethod
+    def __secure_filename(cls, filename):
+        # '/'と'\0'はunixとmacOSではファイル名に使用できない
+        trans_table = str.maketrans({'/' : '／', '\0' : ''})
+        return filename.translate(trans_table)
 
     def get_parent_uuid(self):
         if self.parent_uuid is None:

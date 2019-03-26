@@ -2336,8 +2336,9 @@ class DataStoreTestCase(unittest.TestCase):
         # POST /folders apiが正常終了することを検証する
         self.assertEqual(result['success'], True)
 
+        import io
         # アップロード用に一時ファイルを作成する
-        f, file_name = tempfile.mkstemp()
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
 
         # フレームデータを作成する(POST /frames)
         with app.test_client() as client:
@@ -2351,9 +2352,19 @@ class DataStoreTestCase(unittest.TestCase):
             )
             result = json.loads(response.get_data())
 
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '新しいフレームファイル'
+            ,'type'     : 'frame'
+            ,'creator'  : 1
+        }
+
         # Post /frames apiが正常終了することを検証する
-        pprint.pprint(result)
         self.assertEqual(result['success'], True)
+        # Post /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
 
 if __name__ == '__main__':
     unittest.main()
