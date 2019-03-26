@@ -89,7 +89,7 @@ class APIUtil {
       formData.append('parent', parentUUID)
     }
 
-    return this.post('frames', formData,options)
+    return this.post('documents', formData,options)
   }
 
 }
