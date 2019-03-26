@@ -18,6 +18,9 @@ export default class BreadCrumb extends React.Component<Props> {
 
     if(!history)return null
 
+    //1階層のときは表示しない
+    if(history.length === 1 && history[0].current)return null
+
     const breadCrumbElements = history.map((h:BreadCrumbHistoryType)=>{
       if(h.url && !h.current){
         return <li><a href={h.url}>{h.label}</a></li>
