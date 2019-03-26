@@ -27,6 +27,14 @@ export default class SubFlowStepModel extends CommandStepModel{
     return subflow
   }
 
+  getLabel() {
+    if ( this.label == this.id) {
+      return this.getCommand().label
+    }
+
+    return this.label
+  }
+  
   validate(){
     //必須バリデーション
     Object.keys(this.args).map(key => {

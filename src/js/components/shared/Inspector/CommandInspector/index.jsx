@@ -138,7 +138,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           //指定されたステップの元コマンドを取得
           const command:CommandModel = selected_step.getCommand()
           //選択されたステップのラベルを取得
-          label = command.label
+          label = selected_step.getLabel()
           //コマンドのラベルを取得
           subLabel = command.label
           this.inputRefs = []
@@ -151,7 +151,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
         }else if(selected_step.type === Constants.step.type.subflow){
           const subflowCommand:SubflowCommandModel = selected_step.getCommand()
-          label = subflowCommand.label
+          label = selected_step.getLabel()
           subLabel = subflowCommand.label
           this.inputRefs = []
 
