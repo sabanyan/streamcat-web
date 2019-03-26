@@ -20,7 +20,7 @@ type Props = {}
 
 type State = {
   stores: [];
-  subStores: [];
+  libraryChildren: [];
   is_loading: boolean;
   is_finished: boolean;
   selected_data?: LibraryListDataType | null;
@@ -35,7 +35,7 @@ export default class Library extends React.Component<Props, State> {
     //TODO ReduxのStoreで管理する
     this.state = {
       stores: [],
-      subStores: [],
+      libraryChildren: [],
       currentFolderUUID: '',//現在のフォルダのuuid
       is_loading: false,
       is_finished: false,
@@ -100,7 +100,7 @@ export default class Library extends React.Component<Props, State> {
       return APIUtil.get('folders/' + inject_folder_uuid).then((response) => {
         const json = response.data.data
         this.setState({
-          subStores: json.subStores,
+          libraryChildren: json.children,
           currentFolderUUID: inject_folder_uuid,
         })
       })
@@ -110,7 +110,7 @@ export default class Library extends React.Component<Props, State> {
       return APIUtil.get('library').then((response) => {
         const json = response.data.data
         this.setState({
-          subStores: json.subStores,
+          libraryChildren: json.children,
           currentFolderUUID: json.uuid,
         })
       })
@@ -219,12 +219,12 @@ export default class Library extends React.Component<Props, State> {
   }
 
   renderLibraries () {
-    return this.state.subStores.map((subStore, index) => {
-      const selected = (this.state.selected_data === subStore)
-      return <LibraryList subStore={subStore} selected={selected}
+    return this.state.libraryChildren.map((child, index) => {
+      const selected = (this.state.selected_data === child)
+      return <LibraryList libraryChild={child} selected={selected}
                           onClick={(e, library) => this.onClickLibrary(e,
                             library)}
-                          href={'/folders/' + subStore.uuid}/>
+                          href={'/folders/' + child.uuid}/>
     })
   }
 
@@ -246,8 +246,8 @@ export default class Library extends React.Component<Props, State> {
     if (!this.state.is_finished) {
       return false
     }
-    if (!Array.isArray(this.state.subStores) || this.state.subStores.length ===
-      0 || this.state.subStores === null) {
+    if (!Array.isArray(this.state.libraryChildren) || this.state.libraryChildren.length ===
+      0 || this.state.libraryChildren === null) {
       return true
     }
     return false
@@ -276,7 +276,22 @@ export default class Library extends React.Component<Props, State> {
     const data: LibraryListDataType = this.state.selected_data
     return <LibraryInspector data={data}
                              onClickDelete={(selected_data) => this.onClickDelete(
-                               selected_data)}/>
+                               selected_data)}
+                             onBlurTitle={(e) => this.onBlurTitle(e,
+                               data)}/>
+  }
+
+  onBlurTitle (
+    e: SyntheticInputEvent<EventTarget>, selected_data: LibraryListDataType) {
+    const newLibraryChildren = this.state.libraryChildren.map((child) => {
+      if (selected_data.uuid === child.uuid) {
+        child.label = e.target.value
+        return child
+      }
+    })
+    this.setState({
+      libraryChildren: newLibraryChildren,
+    })
   }
 
   renderAll () {
