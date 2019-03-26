@@ -37,6 +37,7 @@ type State = {
   upload_file?: UploadedFileType | null;
   frame_name: string;
   document_name: string;
+  folder_name: string;
 }
 
 export default class Library extends React.Component<Props, State> {
@@ -54,7 +55,8 @@ export default class Library extends React.Component<Props, State> {
       selected_data: null,
       upload_file: null,
       frame_name: "",
-      document_name: ""
+      document_name: "",
+      folder_name: ""
   }
   }
 
@@ -100,16 +102,31 @@ export default class Library extends React.Component<Props, State> {
             this.completeUploaded(response)
             ModalUtil.closeModal(Constants.modal.ADD_FRAME)
           },()=>{
-            this.unhandledNotify()
+            this.unhandledNotify("アップロードエラー")
           })
+      },
+    })
+    ModalUtil.registerModal({
+      id: Constants.modal.ADD_FOLDER, onClickDone: () => {
+        this.setState({is_loading: true, selected_data: null})
+        const body = {
+          'label': this.state.folder_name,
+          'parent': this.state.currentFolderUUID,
+        }
+        APIUtil.post('folders', body).then((response) => {
+          this.completeAddedFolder(response)
+          ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
+        },()=>{
+          this.unhandledNotify("フォルダ作成エラー")
+        })
       },
     })
   }
 
-  unhandledNotify(){
+  unhandledNotify(title:string){
     this.setState({is_loading: false})
     this.props.notify({
-      title: 'アップロードエラー',
+      title: title,
       message: Constants.errorMessage.unhandledError,
       status: 'error',
       dismissAfter: 0,
@@ -117,11 +134,32 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
-  completeUploaded(response:any){
+  completeAddedFolder(response:any){
     const json = response.data.data
     this.setState({is_loading: false})
-
     if (!response.data.success) {
+      this.props.notify({
+        title: 'フォルダ作成エラー',
+        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
+      })
+    }else{
+      this.props.notify({
+        title: 'フォルダを作成しました',
+        message: this.state.folder_name + "を作成しました",
+        status: 'success'
+      })
+    }
+    this.fetchFolder()
+  }
+  completeUploaded(response:any){
+    const json = response.data.data
+    const success = response.data.success
+    this.setState({is_loading: false})
+
+    if (!success) {
       this.props.notify({
         title: 'アップロードエラー',
         message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
@@ -129,8 +167,7 @@ export default class Library extends React.Component<Props, State> {
         dismissAfter: 0,
         closeButton: true
       })
-    }
-    if (response.data.success) {
+    }else{
       this.props.notify({
         title: 'アップロードしました',
         message: this.state.frame_name + "をアップロードしました",
@@ -193,19 +230,25 @@ export default class Library extends React.Component<Props, State> {
 // => { console.log(response); })
   }
 
-  onChangeDocumentName (e:SyntheticInputEvent<EventTarget>) {
+  onChangeDocumentName (e:SyntheticInputEvent<EventTarget>,validation) {
     this.setState({
       document_name: e.target.value,
     })
   }
 
-  onChangeFrameName (e:SyntheticInputEvent<EventTarget>){
+  onChangeFrameName (e:SyntheticInputEvent<EventTarget>,validation){
     this.setState({
       frame_name: e.target.value,
     })
   }
 
-  onClickNewDocument (e: SyntheticInputEvent<EventTarget>) {
+  onChangeFolderName (e:SyntheticInputEvent<EventTarget>,validation){
+    this.setState({
+      folder_name: e.target.value,
+    })
+  }
+
+  onClickNewDocument (e: SyntheticInputEvent<EventTarget>,validation) {
     ModalUtil.emitModal({
       id: Constants.modal.ADD_DOCUMENT,
       visible: true,
@@ -238,14 +281,15 @@ export default class Library extends React.Component<Props, State> {
   }
 
   onClickNewFolder (e: SyntheticInputEvent<EventTarget>) {
-    this.setState({is_loading: true, selected_data: null})
-    const body = {
-      'label': '新しいフォルダ',
-      'parent': this.state.currentFolderUUID,
-    }
-    APIUtil.post('folders', body).then((response) => {
-      const json = response.data.data
-      this.setState({is_loading: false})
+    ModalUtil.emitModal({
+      id: Constants.modal.ADD_FOLDER,
+      visible: true,
+      done: '追加する',
+      content: <div>
+        <TextField placeholder={'フォルダ名'}
+                   onChange={(e, validation) => this.onChangeFolderName(e,
+                     validation)}/>
+      </div>,
     })
     e.preventDefault()
   }

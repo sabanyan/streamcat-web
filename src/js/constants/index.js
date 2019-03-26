@@ -83,6 +83,7 @@ const Constants = {
     ADD_COMMAND: 'add_command',
     ADD_PROJECT: 'add_project',
     ADD_FLOW: 'add_flow',
+    ADD_FOLDER: 'add_folder',
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
     IMPORT_DATASOURCE: 'import_datasource',

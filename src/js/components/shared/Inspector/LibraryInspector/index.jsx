@@ -11,17 +11,22 @@ import Button from '../../Button'
 type Props = {
   data?: LibraryListDataType;
   onClickDelete: Function;
+  onBlurTitle?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
   constructor (props:Props) {
     super(props)
   }
+  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
+    this.props.onBlurTitle(e)
+  }
   render () {
-
     const {data} = this.props
     let content = null
+    let label = ""
     if(data){
+      label = data.label
       content = <div>
           <div className={"mb-8px"}>
             {data.label}
@@ -51,13 +56,19 @@ class LibraryInspector extends React.Component<Props> {
             {moment(data.createdAt).format(Constants.format.dateTime)}
           </div>
       </div>
+      return <div className={classnames(style.property,style.in)}>
+        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+          {content}
+        </BaseInspector>
+      </div>
+    }else{
+      return <div className={classnames(style.property,style.in)}>
+        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+          {content}
+        </BaseInspector>
+      </div>
     }
 
-    return <div className={classnames(style.property,style.in)}>
-      <BaseInspector {...this.props}>
-      {content}
-    </BaseInspector>
-    </div>
   }
 
 }
