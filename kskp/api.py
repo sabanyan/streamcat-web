@@ -448,15 +448,13 @@ def make_new_frame():
     # デフォルトはFalse
     no_contents = False
 
-    pprint.pprint(request.files.get('label'))
-
     if 'file' in request.files:
-        if 'parent' in request.forms and 'label' in request.forms:
+        if 'parent' in request.form and 'label' in request.form:
             # parentとlabel属性があれば新形式のPOST /framesだとみなす
             from .models.frame import Frame
             new_frame = Frame(str(uuid.uuid4())
-                            , request.json['parent']
-                            , request.json['label']
+                            , request.form.get('parent')
+                            , request.form.get('label')
                             , request.files.get('file')
                             , creator=1)
             set_frame2(new_frame)

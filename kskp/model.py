@@ -1009,16 +1009,11 @@ def del_folder2(uuid):
         __remove_dir(library.dir_path)
 
 def set_frame2(frame):
-
-    pprint.pprint('>>> 1')
-
     library = Library.create_frame_type(frame.uuid, frame.parent_uuid, frame.label, frame.creator, frame.creator)
     # Frameファイルを作成する
     frame.save(library.dir_path)
-    pprint.pprint('>>> 2')
     # libraryレコードをDBに格納する
     library.save()
-    pprint.pprint('>>> 3')
     frame.created_at = library.created_at
 
 def __make_dir(dir_path):
