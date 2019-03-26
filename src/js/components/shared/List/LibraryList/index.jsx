@@ -9,7 +9,7 @@ import { LibraryListDataType } from '../../../../types'
 
 type Props = {
   icon?: string;
-  subStore: LibraryListDataType;
+  libraryChild: LibraryListDataType;
   href?: string;
   children?: React.Node;
   selected: boolean;
@@ -23,9 +23,9 @@ export default class LibraryList extends React.Component<Props> {
   }
 
   onClick (e: Event) {
-    const {subStore, onClick} = this.props
+    const {libraryChild, onClick} = this.props
     if (onClick) {
-      onClick(e, subStore)
+      onClick(e, libraryChild)
     }
   }
 
@@ -59,18 +59,18 @@ export default class LibraryList extends React.Component<Props> {
     return null
   }
 
-  canUseHref(subStore) {
-    return (subStore.type === Constants.library.type.folder)
+  canUseHref(libraryChild) {
+    return (libraryChild.type === Constants.library.type.folder)
   }
 
   render () {
     const {icon, children, href, selected} = this.props
-    const subStore: LibraryListDataType = this.props.subStore
+    const libraryChild: LibraryListDataType = this.props.libraryChild
 
-    let label = <span>{subStore.label}</span>
-    if(this.canUseHref(subStore)){
+    let label = <span>{libraryChild.label}</span>
+    if(this.canUseHref(libraryChild)){
       label = <a href={href}>
-        {subStore.label}
+        {libraryChild.label}
       </a>
     }
 
@@ -79,11 +79,11 @@ export default class LibraryList extends React.Component<Props> {
                 onClick={(e) => this.onClick(e)}>
       <div className={style.library_list}>
         <div className={style.name}>
-          {this.renderLibraryListIcon(subStore.type)}
+          {this.renderLibraryListIcon(libraryChild.type)}
           {label}
         </div>
-        <div className={style.creator_name}>{subStore.creator}</div>
-        <div className={style.created_at}>{moment(subStore.createdAt).
+        <div className={style.creator_name}>{libraryChild.creator}</div>
+        <div className={style.created_at}>{moment(libraryChild.createdAt).
           format(Constants.format.dateTime)}</div>
         <div className={style.action}>{children}</div>
       </div>
