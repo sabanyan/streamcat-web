@@ -1,4 +1,8 @@
 import json
+import shlex
+import subprocess
+from time import sleep
+from pathlib import Path
 from .library import Library
 
 class RemoteFolder():
@@ -53,6 +57,12 @@ class RemoteFolder():
                 ret.append(Document.create_by_library(child_library))
         return ret
 
+    def __set_children(self):
+        # ここで登録するファイルのTypeはどうやって決めるのだろう？？
+        library = Library.find_by_uuid(self.uuid)        
+        for path in Path(library.dir_path).iterdir():
+            label = path.stem
+
     def get_folder_path(self):
         return Library.get_folder_path2(self.uuid)
 
@@ -91,3 +101,31 @@ class RemoteFolder():
                 ,'directory' : self.directory
                 ,'creator'   : self.creator
                 ,'createdAt' : self.created_at }
+
+    def mount(self, mount_dir):
+        try:
+            remote_dir = '//{}/{}'.format(self.server, self.directory)
+            comline = 'sudo mount -t cifs -o username={},password={},vers=2.1,iocharset=utf8 "{}" {}' \
+                    .format(self.user, self.password, remote_dir, mount_dir)
+            res = subprocess.check_output(shlex.split(comline))
+            # すぐ操作するとビジーになっていることがあるため、マウント・アンマウントの前後でスリープtime.sleep()を入れています
+            sleep(2)
+        except Exception as e:
+            import pprint
+            pprint.pprint(comline)
+            pprint.pprint(str(res))    
+            raise e
+ 
+    def unmount(self, mount_dir):
+        try:
+            import pprint
+            sleep(2)
+            comline = "sudo umount {}".format(mount_dir)
+            pprint.pprint('>>>2')
+            res = subprocess.check_output(shlex.split(comline))
+            pprint.pprint('>>>3') 
+        except Exception as e:
+            import pprint
+            pprint.pprint(comline)
+            pprint.pprint(str(res))    
+            raise e
