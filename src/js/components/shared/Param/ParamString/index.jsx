@@ -19,9 +19,8 @@ export default class ParamString extends Param {
 
   render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
-    const {param,events,defaultValue,refValue,disabled} = this.props
+    const {param,onBuild,events,defaultValue,refValue,disabled} = this.props
     let inputRef = refValue
-    let onBuild = events.onBuild
     if(onBuild){
       inputRef = element => onBuild(param,element)
     }
