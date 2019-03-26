@@ -155,6 +155,9 @@ const Constants = {
       database: "database",
       remoteFolder: "remote-folder"
     }
+  },
+  errorMessage:{
+    unhandledError: "予期せぬエラーが発生しました"
   }
 
 }

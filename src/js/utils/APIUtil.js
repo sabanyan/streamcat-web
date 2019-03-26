@@ -48,7 +48,7 @@ class APIUtil {
     return axios.put(url, data, merged_config)
   }
 
-  delete (path:string, data:{}, config:{}) {
+  delete (path:string, data?:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.delete(url, data, merged_config)
