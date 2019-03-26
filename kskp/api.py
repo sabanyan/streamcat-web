@@ -182,9 +182,9 @@ def fetch_subflows():
     """
     return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args)})
 
-@api.route('/subflows', methods=['POST'])
-@login_required_api
-def execute_subflow():
+# @api.route('/subflows', methods=['POST'])
+# @login_required_api
+def execute_flow_by_add_inputs(request):
     """
     inputsを与えてexecute
     ファイルは必ずuploadするのでPathFileSourceでframeを作れる
@@ -439,6 +439,8 @@ def make_new_frame():
         result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents, limit=limit)
 
         return result
+    elif request.form.get('flow_uuid'):
+        return execute_flow_by_add_inputs(request)
     else:
         return jsonify({
                             'success': False,

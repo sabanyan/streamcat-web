@@ -1243,7 +1243,7 @@ class ApiTestCase(unittest.TestCase):
             with client.session_transaction() as session:
                 session['user_id'] = user1
 
-            response = client.post('/api/v0/subflows',
+            response = client.post('/api/v0/frames',
                 data={
                         'flow_uuid': flow_uuid,
                         'i': f,
@@ -1313,7 +1313,7 @@ class ApiTestCase(unittest.TestCase):
             with client.session_transaction() as session:
                 session['user_id'] = user1
 
-            response = client.post('/api/v0/subflows',
+            response = client.post('/api/v0/frames',
                 data={
                         'flow_uuid': flow_uuid,
                         'args': json.dumps(args),
@@ -1381,7 +1381,7 @@ class ApiTestCase(unittest.TestCase):
             with client.session_transaction() as session:
                 session['user_id'] = user1
 
-            response = client.post('/api/v0/subflows',
+            response = client.post('/api/v0/frames',
                 data={
                         'flow_uuid': flow_uuid,
                         'args': json.dumps(args),
