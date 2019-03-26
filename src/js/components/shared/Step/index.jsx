@@ -333,7 +333,7 @@ export default class Step extends React.Component<Props, State> {
       </g>
     }else if(this.isSubFlow(step)){
       icon = <SubFlowIcon hover={hover} selected={selected} filter={filter}/>
-      stepLabel = step.getCommand().getLabel()
+      stepLabel = step.getLabel()
     }else if (this.isStep(step)) {
       //ステップ
       let command
@@ -341,7 +341,7 @@ export default class Step extends React.Component<Props, State> {
         this.props.mast.commands.forEach(c=>{if(c.id === step.commandId)command = c})
         icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter}/>
       }
-      stepLabel = command.getLabel()
+      stepLabel = step.getLabel()
     }else if (this.isDataFrame(step)) {
       //データソース
       const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
