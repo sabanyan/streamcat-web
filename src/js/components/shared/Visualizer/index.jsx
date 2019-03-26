@@ -95,7 +95,7 @@ export default class Visualizer extends React.Component<Props,State> {
   }
 
   render () {
-    const {visualize,headers} = this.props
+    const {visualize,headers, frame_uuid} = this.props
     if(this.state.is_loading){
       return <Loader center={true} visible={true}/>
     }
@@ -103,7 +103,7 @@ export default class Visualizer extends React.Component<Props,State> {
     if(!this.state.html){
       return <div>
         <EmptyState title={"表示することができません"} description={""} icon={"cloud_off"}/>
-        <PreviewInspector headers={headers} onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
+        <PreviewInspector key={"perview_" + visualize.label + frame_uuid} headers={headers} onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
       </div>
 
     }
