@@ -19,6 +19,7 @@ import Log from '../utils/Log'
 import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import _ from 'lodash'
 import ZoomUtil from '../utils/ZoomUtil'
+import NoteStepModel from '../model/Step/NoteStepModel';
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
@@ -453,7 +454,11 @@ const Application = (state = initialState, action: {}) => {
     }
 
     case SORT_FLOW_ACTION: {
-      graph.refreshPosition(newState.nodes) //ノード位置を再計算
+      // memoはソート対象外にする
+      let targets = newState.nodes.filter((node) => {
+        return !(node instanceof NoteStepModel)
+      })
+      graph.refreshPosition(targets) //ノード位置を再計算
       newState.graph = graph.getGraph(newState)
       break
     }
