@@ -7,7 +7,7 @@ import style from './style.scss'
 
 type Props = {
   param : CommandParamType;
-  onBuild?: Function;
+  events?: Function;
   defaultValue : any;
   refValue?: any;
 }
@@ -19,15 +19,17 @@ export default class ParamBoolean extends Param {
   }
 
   render () {
-    const {param,onBuild,defaultValue,refValue} = this.props
+    //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
+    const {param,events,defaultValue,refValue} = this.props
     let inputRef = refValue
+    let onBuild = events.onBuild
     if(onBuild){
       inputRef = element => onBuild(param,element)
     }
 
     return <div className={style.param}>
       <label className={style.label}>
-        <input name={param.name} className={style.checkbox} type="checkbox" defaultChecked={(defaultValue)} ref={inputRef} value={"true"}/>
+        <input name={param.name} className={style.checkbox} type="checkbox" ref={inputRef} checked={defaultValue} paramtype={param.type}  {...events} />
         {param.label}
       </label>
     </div>

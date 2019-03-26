@@ -19,36 +19,8 @@ type State = {
 
 class NoteInspector extends React.Component<FlowEditorProps,State> {
 
-    loading:boolean = false
-
-
     constructor (props:FlowEditorProps) {
         super(props)
-        this.state = {
-            loading: false
-        }
-        this.title = React.createRef();
-        this.content = React.createRef();
-    }
-
-    onHide() {  
-        this.updateNote()
-        this.saveNodes()
-    }
-
-    updateNote() {
-        const selectedStep = this.getSelectedStep()
-        let newSelectedStep = StateUtil.deepCopy(selectedStep)
-        newSelectedStep.title = this.title.current.value
-        newSelectedStep.content = this.content.current.value
-
-        this.props.updateStep(newSelectedStep)
-
-    }
-
-    saveNodes(){
-        let {nodes} = this.props
-        return FlowUtil.saveNodes(inject_flow_uuid,nodes)
     }
 
     getSelectedStep():StepModelType {
@@ -75,6 +47,26 @@ class NoteInspector extends React.Component<FlowEditorProps,State> {
             </div>,
           })
     }
+
+    update (getNewStep:Function) {
+        let selectedStep = this.getSelectedStep()
+        const newStep = getNewStep(selectedStep)
+        this.props.updateStep(newStep)
+    }
+
+    onTitleChange(e: Event) {
+        this.update((step) => {
+            step.title = e.target.value
+            return step
+        })
+    }
+
+    onContentChange(e: Event) {
+        this.update((step) => {
+            step.content = e.target.value
+            return step
+        })
+    }
     
     render () {
         let selected_step = this.getSelectedStep()
@@ -83,12 +75,12 @@ class NoteInspector extends React.Component<FlowEditorProps,State> {
         let content = <div className="property_body">
             <div>
                 <input type="text" className={'mb-8px'} placeholder={'新しいメモのタイトル'} 
-                    className={'form-control'} ref={this.title} rows={8}
-                    defaultValue={noteTitle}>
+                    className={'form-control'} rows={8}
+                    defaultValue={noteTitle} onChange={(e) => {this.onTitleChange(e)}}>
                 </input>
                 <hr className={style.full_hr}></hr>
-                <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={this.content}
-                defaultValue={noteContent} rows={8}></textarea>
+                <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'}
+                defaultValue={noteContent} rows={8} onChange={(e) => {this.onContentChange(e)}}></textarea>
                 <hr className={style.full_hr}></hr>
                 <Button onClick={(e) => this.onClickDelete(e)} danger={true}>
                 削除
@@ -96,8 +88,9 @@ class NoteInspector extends React.Component<FlowEditorProps,State> {
             </div>
         </div>
 
-        return <BaseInspector header={""} label={selected_step.label} {...this.props}
-                onHide={()=>this.onHide()} style={style}>{content}</BaseInspector>
+        return <BaseInspector header={""} label={selected_step.label} {...this.props} style={style}>
+            {content}
+        </BaseInspector>
     }
 }
 
