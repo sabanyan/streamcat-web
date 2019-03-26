@@ -14,13 +14,19 @@ import LibraryListHeader from '../../shared/List/LibraryList/LibraryListHeader'
 import ModalUtil from '../../../utils/ModalUtil'
 import Constants from '../../../constants'
 import FileUploader from '../../shared/FileUploader'
-import type { LibraryListDataType, UploadedFileType } from '../../../types'
+import type {
+  BreadCrumbHistoryType,
+  LibraryListDataType,
+  UploadedFileType,
+} from '../../../types'
+import BreadCrumb from '../../shared/BreadCrumb'
 
 type Props = {}
 
 type State = {
   stores: [];
   libraryChildren: [];
+  folderPath: [];
   is_loading: boolean;
   is_finished: boolean;
   selected_data?: LibraryListDataType | null;
@@ -101,6 +107,7 @@ export default class Library extends React.Component<Props, State> {
         const json = response.data.data
         this.setState({
           libraryChildren: json.children,
+          folderPath: json.folderPath,
           currentFolderUUID: inject_folder_uuid,
         })
       })
@@ -111,6 +118,7 @@ export default class Library extends React.Component<Props, State> {
         const json = response.data.data
         this.setState({
           libraryChildren: json.children,
+          folderPath: json.folderPath,
           currentFolderUUID: json.uuid,
         })
       })
@@ -246,7 +254,8 @@ export default class Library extends React.Component<Props, State> {
     if (!this.state.is_finished) {
       return false
     }
-    if (!Array.isArray(this.state.libraryChildren) || this.state.libraryChildren.length ===
+    if (!Array.isArray(this.state.libraryChildren) ||
+      this.state.libraryChildren.length ===
       0 || this.state.libraryChildren === null) {
       return true
     }
@@ -281,6 +290,29 @@ export default class Library extends React.Component<Props, State> {
                                data)}/>
   }
 
+  renderBreadCrumb () {
+    if(Array.isArray(this.state.folderPath)){
+      return <BreadCrumb history={this.makeHistory(this.state.folderPath)}/>
+    }
+    return null
+  }
+
+  makeHistory(folderPath:[]):[BreadCrumbHistoryType]{
+    const history = folderPath.map((path,index)=>{
+      return {
+        id: path.uuid,
+        label: path.label,
+        url: this.makeLibraryURL(path.uuid),
+        current: ((folderPath.length-1) === index )
+      }
+    })
+    return history
+  }
+
+  makeLibraryURL(uuid:string):string{
+    return "/folders/"+uuid
+  }
+
   onBlurTitle (
     e: SyntheticInputEvent<EventTarget>, selected_data: LibraryListDataType) {
     const newLibraryChildren = this.state.libraryChildren.map((child) => {
@@ -295,13 +327,14 @@ export default class Library extends React.Component<Props, State> {
   }
 
   renderAll () {
-    if (this.isEmptyLibraryList()) {
-      return this.renderEmptyState()
-    }
+//    if (this.isEmptyLibraryList()) {
+//      return this.renderEmptyState()
+//    }
     if (!this.state.is_finished) {
       return null
     }
     return <div>
+      {this.renderBreadCrumb()}
       {this.renderLibrariesHeader()}
       {this.renderLibraries()}
       {this.renderInspector()}
