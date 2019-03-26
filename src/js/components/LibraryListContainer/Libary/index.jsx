@@ -20,6 +20,9 @@ import type {
   UploadedFileType,
 } from '../../../types'
 import BreadCrumb from '../../shared/BreadCrumb'
+import TextField from '../../shared/TextField'
+import ReactDomUtil from '../../../utils/ReactDomUtil'
+import ErrorUtil from '../../../utils/ErrorUtil'
 
 type Props = {}
 
@@ -32,6 +35,8 @@ type State = {
   selected_data?: LibraryListDataType | null;
   currentFolderUUID: string;
   upload_file?: UploadedFileType | null;
+  frame_name: string;
+  document_name: string;
 }
 
 export default class Library extends React.Component<Props, State> {
@@ -41,45 +46,102 @@ export default class Library extends React.Component<Props, State> {
     //TODO ReduxのStoreで管理する
     this.state = {
       stores: [],
+      folderPath: [],
       libraryChildren: [],
       currentFolderUUID: '',//現在のフォルダのuuid
       is_loading: false,
       is_finished: false,
       selected_data: null,
       upload_file: null,
-    }
+      frame_name: "",
+      document_name: ""
+  }
   }
 
   componentDidMount () {
+    this.fetchFolder()
+    this.registerModal()
+  }
+
+  fetchFolder(){
     const getStores = this.getStores()
-    const getSubStores = this.getSubStores()
-    Promise.all([getStores, getSubStores]).then(() => {
+    const getFolderChildren = this.getFolderChildren()
+    Promise.all([getStores, getFolderChildren]).then(() => {
       this.setState({is_loading: false, is_finished: true})
     })
-    this.registerModal()
   }
 
   registerModal () {
     //モーダル処理の登録
     ModalUtil.registerModal({
-      id: Constants.modal.ADD_FILE, onClickDone: () => {
+      id: Constants.modal.ADD_DOCUMENT, onClickDone: () => {
         this.setState({is_loading: true, selected_data: null})
-        const file = this.state.upload_file.file
-        const fileName = '' //未使用
-        const label = '新しいファイル'
+        const file:File = this.state.upload_file.file
+        const label = this.state.document_name
+        const parentUUID = this.state.currentFolderUUID
+        APIUtil.documentUpload(file,label, parentUUID).
+          then((response) => {
+            this.completeUploaded(response)
+            ModalUtil.closeModal(Constants.modal.ADD_DOCUMENT)
+          },()=>{
+            this.unhandledNotify()
+          })
+      },
+    })
+    ModalUtil.registerModal({
+      id: Constants.modal.ADD_FRAME, onClickDone: () => {
+        this.setState({is_loading: true, selected_data: null})
+        const file:File = this.state.upload_file.file
+        const fileName = this.state.frame_name //TODO 将来的には使わない
+        const label = this.state.frame_name
         const parentUUID = this.state.currentFolderUUID
         APIUtil.frameUpload(file, fileName, label, parentUUID).
           then((response) => {
-            const json = response.data.data
-            this.setState({is_loading: false})
-            ModalUtil.closeModal(Constants.modal.ADD_FILE)
+            this.completeUploaded(response)
+            ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+          },()=>{
+            this.unhandledNotify()
           })
       },
     })
   }
 
+  unhandledNotify(){
+    this.setState({is_loading: false})
+    this.props.notify({
+      title: 'アップロードエラー',
+      message: Constants.errorMessage.unhandledError,
+      status: 'error',
+      dismissAfter: 0,
+      closeButton: true
+    })
+  }
+
+  completeUploaded(response:any){
+    const json = response.data.data
+    this.setState({is_loading: false})
+
+    if (!response.data.success) {
+      this.props.notify({
+        title: 'アップロードエラー',
+        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
+      })
+    }
+    if (response.data.success) {
+      this.props.notify({
+        title: 'アップロードしました',
+        message: this.state.frame_name + "をアップロードしました",
+        status: 'success'
+      })
+    }
+    this.fetchFolder()
+  }
+
+
   onChangeFile (e: SyntheticInputEvent<EventTarget>) {
-    console.log(e)
     const selectedFiles: FileList = e.target.files
     if (selectedFiles) {
       const uploadFile: File = selectedFiles[0]
@@ -100,7 +162,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   //libraryの取得処理
-  getSubStores () {
+  getFolderChildren () {
     if (inject_folder_uuid) {
       //該当フォルダを取得
       return APIUtil.get('folders/' + inject_folder_uuid).then((response) => {
@@ -131,13 +193,44 @@ export default class Library extends React.Component<Props, State> {
 // => { console.log(response); })
   }
 
-  onClickNewFile (e: SyntheticInputEvent<EventTarget>) {
+  onChangeDocumentName (e:SyntheticInputEvent<EventTarget>) {
+    this.setState({
+      document_name: e.target.value,
+    })
+  }
+
+  onChangeFrameName (e:SyntheticInputEvent<EventTarget>){
+    this.setState({
+      frame_name: e.target.value,
+    })
+  }
+
+  onClickNewDocument (e: SyntheticInputEvent<EventTarget>) {
     ModalUtil.emitModal({
-      id: Constants.modal.ADD_FILE,
+      id: Constants.modal.ADD_DOCUMENT,
       visible: true,
       done: '追加する',
       content: <div>
-        <FileUploader accept={['text/csv']} defaultLabel={'ファイルを選択してください'}
+        <TextField placeholder={'資料名'}
+                   onChange={(e, validation) => this.onChangeDocumentName(e,
+                     validation)}/>
+        <FileUploader accept={['*/*']} defaultLabel={'資料を選択してください'}
+                      onChangeFile={(e) => this.onChangeFile(e)}/>
+      </div>,
+    })
+    e.preventDefault()
+  }
+
+  onClickNewFrame (e: SyntheticInputEvent<EventTarget>) {
+    ModalUtil.emitModal({
+      id: Constants.modal.ADD_FRAME,
+      visible: true,
+      done: '追加する',
+      content: <div>
+        <TextField placeholder={'フレーム名'}
+                   onChange={(e, validation) => this.onChangeFrameName(e,
+                     validation)}/>
+        <FileUploader accept={['*/*']} defaultLabel={'フレームを選択してください'}
                       onChangeFile={(e) => this.onChangeFile(e)}/>
       </div>,
     })
@@ -200,8 +293,12 @@ export default class Library extends React.Component<Props, State> {
     return this.renderNew((e) => this.onClickNewDatabase(e), 'データベースを追加する')
   }
 
-  renderNewFile () {
-    return this.renderNew((e) => this.onClickNewFile(e), 'ファイルをアップロードする')
+  renderNewDocument () {
+    return this.renderNew((e) => this.onClickNewDocument(e), '資料をアップロードする')
+  }
+
+  renderNewFrame () {
+    return this.renderNew((e) => this.onClickNewFrame(e), 'フレームをアップロードする')
   }
 
   renderNewRemoteFolder () {
@@ -263,7 +360,27 @@ export default class Library extends React.Component<Props, State> {
   }
 
   onClickDelete (selected_data: LibraryListDataType) {
-    this.deleteLibraryListData(selected_data.type, selected_data.uuid)
+    this.setState({is_loading: true})
+    this.deleteLibraryListData(selected_data.type, selected_data.uuid).then((response)=>{
+      this.setState({is_loading: false})
+      if (!response.data.success) {
+        this.props.notify({
+          title: '削除エラー',
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }
+      if (response.data.success) {
+        this.props.notify({
+          title: '削除しました',
+          message: selected_data.label + "を削除しました",
+          status: 'success'
+        })
+        this.fetchFolder()
+      }
+    })
   }
 
   deleteLibraryListData (type: string, uuid: string) {
@@ -339,9 +456,10 @@ export default class Library extends React.Component<Props, State> {
       {this.renderLibraries()}
       {this.renderInspector()}
       {this.renderNewFolder()}
-      {this.renderNewFile()}
-      {this.renderNewDatabase()}
-      {this.renderNewRemoteFolder()}
+      {this.renderNewDocument()}
+      {this.renderNewFrame()}
+      {/*{this.renderNewDatabase()}*/}
+      {/*{this.renderNewRemoteFolder()}*/}
     </div>
   }
 
