@@ -40,5 +40,28 @@ export default class ModalUtil {
   static closeModal (modalId:string) {
     ModalUtil.emitModal({id: modalId, visible: false})
   }
+
+  static getContentsFrom(frame_uuid, visualizers, params, headers, parentProps) : [] {
+    let sortedVisualizers = visualizers.sort((a, b) => {
+      // ある順序の基準において a が b より小
+      if (a.order < b.order) {
+        return -1;
+      }
+      //その順序の基準において a が b より大
+      if (a.order > b.order) {
+        return 1;
+      }
+      // a は b と等しいはず
+      return 0;
+    })
+
+    let contents = []
+    for (const v of sortedVisualizers) {
+      const content = {frame_uuid:frame_uuid, visualize:v, params:params, headers:headers}
+      contents.push({title: v.label,content:content,parentProps:parentProps})
+    }
+
+    return contents
+  }
 }
 
