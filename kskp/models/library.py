@@ -144,8 +144,9 @@ class Library(db.Model):
         # dir_pathは親フォルダのdir_pathを引き継ぐ
         library = Library.find_by_uuid(parent_uuid)
         if library is None:
-            # 親フォルダがない場合はデフォルトパスとする
-            dir_path = os.path.join('kskp/data/library', Library.__secure_filename(label))
+            # labelの更新時に親フォルダがないFrameオブジェクトを用意するので例外は送出しない
+            # raise Exception('Must be a parent folder to create frame file.')
+            dir_path = None
         else:
             # 共有するリモートディレクトリ名をローカルのマウントディレクトリ名にする
             dir_path = os.path.join(library.dir_path, Library.__secure_filename(label))
@@ -326,18 +327,28 @@ class Library(db.Model):
     def update_data(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
-
+        # 指定されたUUIDのLibraryレコードを取得する
         library = db.session.query(Library).filter(Library.uuid==self.uuid).first()
         library.data = self.data
         library.modifier = self.modifier
-        library.modified_at = self.modified_at
-
         library.modified_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # レコードを更新する
         db.session.commit()
+        # 取得したレコードの値を自身に設定し直す
+        self.id = id
+        self.parent_id = library.parent_id
+        self.dir_path = library.dir_path
+        self.type = library.type
+        self.creator = library.creator
+        self.created_at = library.created_at
 
     def delete(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
+
+        # 削除対象のフォルダの下にフォルダまたはファイルが存在する場合は例外を送出する
+        if len(self.find_by_parent_uuid(self.uuid)) > 0:
+            raise Exception('Can not delete folder that has child file or folder.')
 
         db.session.query(Library).filter(Library.id==self.id).delete()
         db.session.commit()
