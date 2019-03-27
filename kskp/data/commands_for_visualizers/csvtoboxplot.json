@@ -1,7 +1,8 @@
 {
   "version": "0.7.0",
   "id": "csvtoboxplot",
-  "label": "箱ひげ図の作成",
+  "order": 400,
+  "label": "箱ひげ図",
   "classification": "visualize",
   "description": "csvファイルから箱ひげ図を作成する",
   "ports": [

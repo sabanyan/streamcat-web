@@ -1,7 +1,8 @@
 {
   "version": "0.7.0",
   "id": "csvtohistogram",
-  "label": "ヒストグラムの作成",
+  "order": 200,
+  "label": "ヒストグラム",
   "classification": "visualize",
   "description": "csvファイルからヒストグラムを作成する",
   "ports": [

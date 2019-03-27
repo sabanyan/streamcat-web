@@ -1,7 +1,8 @@
 {
   "version": "0.7.0",
   "id": "csvtoscatter",
-  "label": "散布図の作成",
+  "order": 300,
+  "label": "散布図",
   "classification": "visualize",
   "description": "csvファイルから散布図を作成する",
   "ports": [

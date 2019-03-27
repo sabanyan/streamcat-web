@@ -72,23 +72,23 @@ export default class ParamUtil {
   }
   
   // FIXIT: 
-  static getParamElement(param,events,defaultValue,refValue,headers){
+  static getParamElement(param,onBuild,events,defaultValue,refValue,headers){
     let paramElement
     switch(param.type){
       case Constants.param.type.number:
-        paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} events={events} />
+        paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
         break
       case Constants.param.type.string:
-        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} events={events} />
+        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
         break
       case Constants.param.type.boolean:
-        paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} events={events} />
+        paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
         break
       case Constants.param.type.select:
-        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} events={events} />
+        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
         break
       default:
-        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} events={events} disabled={true}/>
+        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} disabled={true}/>
         break
       case Constants.param.type.column:
 

@@ -20,9 +20,8 @@ export default class ParamSelect extends Param {
 
   render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
-    const {param,events,defaultValue,refValue} = this.props
+    const {param,onBuild,events,defaultValue,refValue} = this.props
     let inputRef = refValue
-    let onBuild = events.onBuild
     if(onBuild){
       inputRef = element => onBuild(param,element)
     }
