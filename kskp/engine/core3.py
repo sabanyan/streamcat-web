@@ -134,8 +134,10 @@ def parse_subjob(node, data, caches, flow_uuid):
         for p_port, datum_id in new_job.step.dsts.items():
             if datum_id in caches:
                 cache_uuid = str(uuid.uuid4())
-                mtee_job = update_step_args_for_cache(new_job.step, cache_uuid, p_port, new_jobs)
-                # mteeのjobがある場合は、そっちのjobにcachesを与える（キャッシュ対象のdatumを出力している方につける）
+                # キャッシュを出力するコマンドが
+                # 1. nm.cmdの場合・・・argsにo=をつけたm2teeを挟む（新たにm2teeのjobが作られる）
+                # 2. mcmdの場合　・・・コマンドにargsにo=をつけるだけ
+                mtee_job = update_step_args_for_cache(new_job.step, cache_uuid, p_port)
                 if mtee_job is None:
                     new_job.caches[f'{flow_uuid}.{datum_id}'] = cache_uuid
                 else:
@@ -150,8 +152,18 @@ def parse_subjob(node, data, caches, flow_uuid):
         for p_port, datum_id in new_job.step.dsts.items():
             if datum_id in caches:
                 cache_uuid = str(uuid.uuid4())
-                # mteeのjobが追加されるべきはnew_jobの配下のjob、つまりnew_job.jobsなのでそこにextendしている
-                new_job.jobs.extend(connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs))
+                # 例：
+                # mainflow
+                # A -(a)-> subflow -(b)-> B(make cache)
+                #
+                # subflow
+                # IN -(c)-> nm.cmd -(d)-> OUT
+                #
+                # 上記の例の時にデータノードBにcacheを作ろうとすると、
+                # 実際にm2teeを挟むのは矢印bではなく、矢印dの後でなくてはならない。
+                # 矢印dに当たるものを再帰的に探し出すのがconnect_subflow_output_with_cacheである
+                mtee_jobs = connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
+                new_job.jobs.extend(mtee_jobs)
                 new_job.caches[f'{flow_uuid}.{datum_id}'] = cache_uuid
 
     new_jobs.append(new_job)
@@ -170,7 +182,7 @@ def connect_subflow_output_with_cache(cache_uuid, port, jobs):
             if c_datum_id == port:
                 # コマンドまで行き着いたらargsを更新して、そうではなかったら再帰的に潜る
                 if job.step.is_command:
-                    mtee_job = update_step_args_for_cache(job.step, cache_uuid, c_port, new_jobs)
+                    mtee_job = update_step_args_for_cache(job.step, cache_uuid, c_port)
                     if mtee_job is not None:
                         new_jobs.append(mtee_job)
                 else:
@@ -178,7 +190,7 @@ def connect_subflow_output_with_cache(cache_uuid, port, jobs):
 
     return new_jobs
 
-def update_step_args_for_cache(step, cache_uuid, cache_save_port, new_jobs):
+def update_step_args_for_cache(step, cache_uuid, cache_save_port):
     """
     キャッシュ出力のために、キャッシュ出力対象のdatumを生成するstep（この場合はコマンド）のargsを書き換える。
     コマンドがMコマンドの場合は、oパラメータを追加し、
@@ -186,7 +198,7 @@ def update_step_args_for_cache(step, cache_uuid, cache_save_port, new_jobs):
     """
     mtee_job = None
     cache_save_path = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
-    tp = type_of_how_to_cache(step.command_or_flow)
+    tp = get_type_of_how_to_cache(step.command_or_flow)
     if tp == 'mcmd':
         step.args[cache_save_port] = cache_save_path
     elif tp == 'unix_command':
@@ -194,7 +206,7 @@ def update_step_args_for_cache(step, cache_uuid, cache_save_port, new_jobs):
 
     return mtee_job
 
-def type_of_how_to_cache(command_obj):
+def get_type_of_how_to_cache(command_obj):
     """
     指定したコマンドが何かを判定する
     現在はMコマンドか、NmCmdのどちらかしかできない
@@ -204,10 +216,10 @@ def type_of_how_to_cache(command_obj):
         # TODO: 存在しないコマンドが指定されるのは例外なので何か適切なエラー返さないと
         return 'error'
 
-    if MCommandNew in type(cmd_obj).mro():
-        return 'mcmd'
-    elif NmCmd in type(cmd_obj).mro():
+    if isinstance(cmd_obj, NmCmd):
         return 'unix_command'
+    elif isinstance(cmd_obj, MCommandNew):
+        return 'mcmd'
     else:
         return None
 
@@ -222,6 +234,7 @@ def put_mtee_in_cache_command(dsts, port, output_path=None):
     # その前にもう一つデータノードも必要
     # idはなんでもいいけど、被らないものを作りたかったのでuuid作った。。。
     new_m2tee_data_node_id = str(uuid.uuid4())
+    new_m2tee_step_id = str(uuid.uuid4())
     new_m2tee_data_node = {
         'type': 'frame',
         'id': new_m2tee_data_node_id
@@ -237,7 +250,7 @@ def put_mtee_in_cache_command(dsts, port, output_path=None):
         args['o'] = output_path
 
     # m2teeのjobの作成
-    m2tee_step = Step(commands['mtee'], args, {'i':new_m2tee_data_node_id}, {'o':datum_id}, '何か新しいm2teeのstep_id', 'ラベルは不要？')
+    m2tee_step = Step(commands['mtee'], args, {'i':new_m2tee_data_node_id}, {'o':datum_id}, new_m2tee_step_id, f'{datum_id}の前に挟むm2tee')
     m2tee_inputs = {new_m2tee_data_node_id: Frame()}
 
     return Job(m2tee_step, m2tee_inputs)
@@ -5081,15 +5094,14 @@ class PredictOld(UnixCommand):
 
 # PCMD
 
-class NmCmd(UnixCommand):
+class NmCmd(MCommandNew):
     """
     nysol_pythonのcmdメソッドのクラス
     使用回数が多く、argsを辞書から文字列に変換する箇所が殆ど同じなので
     いい加減別クラスとして定義した。
     """
     def __init__(self, exe, ext, param):
-        super().__init__()
-        self.nysol_mod = nm.cmd
+        super().__init__(nm.cmd)
         self.execute_command = exe
         self.output_ext = ext
         self.stdout_param = ' ' + param
