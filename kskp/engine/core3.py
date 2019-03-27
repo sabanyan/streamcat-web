@@ -104,9 +104,15 @@ def parse_nodes(obj):
     #              if node['type'] in ['command', 'flow']]
 
 def parse_subjobs(nodes, data, caches, flow_uuid):
-    return [parse_subjob(node, data, caches, flow_uuid) for node in nodes]
+    subjobs = []
+    for node in nodes:
+        jobs = parse_subjob(node, data, caches, flow_uuid)
+        subjobs.extend(jobs)
+    return subjobs
 
 def parse_subjob(node, data, caches, flow_uuid):
+    new_jobs = []
+
     t = node['type']
 
     args = node['args']
@@ -120,30 +126,37 @@ def parse_subjob(node, data, caches, flow_uuid):
     command_args = copy.deepcopy(args)
 
     if t == 'command':
-        # キャッシュを作成するため、argsを書き換える
-        for p_port, datum_id in dsts.items():
-            if datum_id in caches:
-                cache_uuid = str(uuid.uuid4())
-                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
-                command_args[p_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
-
         new_step = parse_command_step(node, command_args, srcs, dsts)
         new_job = Job(new_step, inputs)
+
+        # キャッシュを作成するため、argsを書き換える
+        # TODO: t==flowの場合とほぼ同じ形なので抽出してメソッド化した方がいいよね。。。
+        for p_port, datum_id in new_job.step.dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                mtee_job = update_step_args_for_cache(new_job.step, cache_uuid, p_port, new_jobs)
+                # mteeのjobがある場合は、そっちのjobにcachesを与える（キャッシュ対象のdatumを出力している方につける）
+                if mtee_job is None:
+                    new_job.caches[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                else:
+                    mtee_job.caches[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                    new_jobs.append(mtee_job)
+
     elif t == 'flow':
         sub_job_flow_uuid = node['uuid']
         new_job = parse_job(load_flow(sub_job_flow_uuid), sub_job_flow_uuid, command_args, srcs, dsts, inputs)
 
         # キャッシュを作成するため、argsを書き換える
-        for p_port, datum_id in dsts.items():
+        for p_port, datum_id in new_job.step.dsts.items():
             if datum_id in caches:
                 cache_uuid = str(uuid.uuid4())
-                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
-                connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
+                # mteeのjobが追加されるべきはnew_jobの配下のjob、つまりnew_job.jobsなのでそこにextendしている
+                new_job.jobs.extend(connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs))
+                new_job.caches[f'{flow_uuid}.{datum_id}'] = cache_uuid
 
-    if len(cache_list) > 0:
-        new_job.caches = cache_list
+    new_jobs.append(new_job)
 
-    return new_job
+    return new_jobs
 
 def connect_subflow_output_with_cache(cache_uuid, port, jobs):
     """
@@ -151,13 +164,83 @@ def connect_subflow_output_with_cache(cache_uuid, port, jobs):
     そのstepがコマンドであれば、argsに出力port及び値をセットし、
     フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
     """
+    new_jobs = []
     for job in jobs:
         for c_port, c_datum_id in job.step.dsts.items():
             if c_datum_id == port:
+                # コマンドまで行き着いたらargsを更新して、そうではなかったら再帰的に潜る
                 if job.step.is_command:
-                    job.step.args[c_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+                    mtee_job = update_step_args_for_cache(job.step, cache_uuid, c_port, new_jobs)
+                    if mtee_job is not None:
+                        new_jobs.append(mtee_job)
                 else:
                     connect_subflow_output_with_cache(cache_uuid, c_port, job.jobs)
+
+    return new_jobs
+
+def update_step_args_for_cache(step, cache_uuid, cache_save_port, new_jobs):
+    """
+    キャッシュ出力のために、キャッシュ出力対象のdatumを生成するstep（この場合はコマンド）のargsを書き換える。
+    コマンドがMコマンドの場合は、oパラメータを追加し、
+    nysol_pythonのnm.cmdの場合は、m2teeを追加する。
+    """
+    mtee_job = None
+    cache_save_path = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+    tp = type_of_how_to_cache(step.command_or_flow)
+    if tp == 'mcmd':
+        step.args[cache_save_port] = cache_save_path
+    elif tp == 'unix_command':
+        mtee_job = put_mtee_in_cache_command(step.dsts, cache_save_port, cache_save_path)
+
+    return mtee_job
+
+def type_of_how_to_cache(command_obj):
+    """
+    指定したコマンドが何かを判定する
+    現在はMコマンドか、NmCmdのどちらかしかできない
+    """
+    cmd_obj = command_obj
+    if cmd_obj is None:
+        # TODO: 存在しないコマンドが指定されるのは例外なので何か適切なエラー返さないと
+        return 'error'
+
+    if MCommandNew in type(cmd_obj).mro():
+        return 'mcmd'
+    elif NmCmd in type(cmd_obj).mro():
+        return 'unix_command'
+    else:
+        return None
+
+def put_mtee_in_cache_command(dsts, port, output_path=None):
+    """
+    指定したdsts[port]にmteeを挟み込む。
+    cache_pathがあれば、出力もさせる。
+    戻り値はmteeのjob
+    """
+    ## m2teeをはさむ
+
+    # その前にもう一つデータノードも必要
+    # idはなんでもいいけど、被らないものを作りたかったのでuuid作った。。。
+    new_m2tee_data_node_id = str(uuid.uuid4())
+    new_m2tee_data_node = {
+        'type': 'frame',
+        'id': new_m2tee_data_node_id
+    }
+
+    # 元々の出力先のdatum_id
+    datum_id = dsts[port]
+    # 元々の出力先を仮のdatumに変更する
+    dsts[port] = new_m2tee_data_node_id
+
+    args = {}
+    if output_path is not None:
+        args['o'] = output_path
+
+    # m2teeのjobの作成
+    m2tee_step = Step(commands['mtee'], args, {'i':new_m2tee_data_node_id}, {'o':datum_id}, '何か新しいm2teeのstep_id', 'ラベルは不要？')
+    m2tee_inputs = {new_m2tee_data_node_id: Frame()}
+
+    return Job(m2tee_step, m2tee_inputs)
 
 def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
@@ -401,6 +484,7 @@ class Job:
                 continue
             # Sourceが未作成の場合は作成する
             # 内包表記でも書けるけど、この場合は内包表記じゃない方が何やっているか見やすいと思います。
+
             if job.inputs[d].source is None:
                 result[d] = self.check_multi_use(job, d, self.get_datum(d, job.inputs[d]))
             else:
@@ -4997,14 +5081,15 @@ class PredictOld(UnixCommand):
 
 # PCMD
 
-class NmCmd(MCommandNew):
+class NmCmd(UnixCommand):
     """
     nysol_pythonのcmdメソッドのクラス
     使用回数が多く、argsを辞書から文字列に変換する箇所が殆ど同じなので
     いい加減別クラスとして定義した。
     """
     def __init__(self, exe, ext, param):
-        super().__init__(nm.cmd)
+        super().__init__()
+        self.nysol_mod = nm.cmd
         self.execute_command = exe
         self.output_ext = ext
         self.stdout_param = ' ' + param
