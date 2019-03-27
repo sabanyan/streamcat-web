@@ -29,14 +29,19 @@ export default class Visualizer extends React.Component<Props,State> {
     super(props)
     this.inputRefs = []
     this.state = {
-      html: null,
-      args: {},
-      is_loading:true
+      html: (props.result) ? props.result.html : null,
+      args: (props.result) ? props.result.args : {},
+      is_loading:(props.result) ? false : true
     }
   }
 
   componentWillMount () {
-    this.visualizeRequest(this.props.visualize,{})
+    const result = this.props.result
+    if (result) {
+      this.setState({})
+    } else if(this.props.visualize){
+      this.visualizeRequest(this.props.visualize,{})
+    }
   }
 
   visualizeRequest(visualize:VisualizeModel,args:{}){
@@ -48,6 +53,15 @@ export default class Visualizer extends React.Component<Props,State> {
     this.setState({is_loading:true})
     HttpUtil.post("visualizers?from=" + visualize.id + limit,body).then((res)=>{
       this.setState({html:res.data,is_loading:false})
+      // 結果を保存
+      if(this.props.onSaveResult) {
+        const index = this.props.index
+        const result = {
+          html:this.state.html,
+          args:this.state.args
+        }
+        this.props.onSaveResult(index, result)
+      }    
     }).catch((error)=>{
       if(error){
         this.setState({is_loading:false})
@@ -68,7 +82,6 @@ export default class Visualizer extends React.Component<Props,State> {
   }
 
   onSave(args:{}){
-    console.log(args)
     this.setState({args:args})
     this.visualizeRequest(this.props.visualize,args)
   }
@@ -96,10 +109,13 @@ export default class Visualizer extends React.Component<Props,State> {
 
   render () {
     const {visualize,headers, frame_uuid} = this.props
-    if(this.state.is_loading){
+    const args = this.state.args
+    const is_loading = this.state.is_loading
+    const html = this.state.html
+
+    if(is_loading){
       return <Loader center={true} visible={true}/>
     }
-    const args = this.state.args
     if(!this.state.html){
       return <div>
         <EmptyState title={"表示することができません"} description={""} icon={"cloud_off"}/>
