@@ -81,7 +81,7 @@ export default class ParamsForm extends React.Component<Props> {
   }
 
   render () {
-    const {params,args,invalids,command,onBuild,headers,events} = this.props
+    const {params,args,invalids,command,onBuild,events,headers} = this.props
     let isPresence = false
 
     //パラメータフォームの作成
@@ -99,10 +99,7 @@ export default class ParamsForm extends React.Component<Props> {
       let paramElement
       //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
    
-      if (onBuild) {
-        events[onBuild] = onBuild
-      }
-      paramElement = ParamUtil.getParamElement(param,events,value,param.name,headers)
+      paramElement = ParamUtil.getParamElement(param,onBuild,events,value,param.name,headers)
       //入力エラーメッセージ
       const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
 
