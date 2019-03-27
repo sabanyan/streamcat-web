@@ -1,4 +1,5 @@
 import os
+import io
 import json
 import unittest
 import tempfile
@@ -15,6 +16,7 @@ from kskp.models.library import Library
 from kskp.models.folder import Folder
 from kskp.models.remote_folder import RemoteFolder
 from kskp.models.database import Database
+from kskp.models.frame import Frame
 
 class ModelTestCase(unittest.TestCase):
     def setUp(self):
@@ -499,6 +501,7 @@ class ModelTestCase(unittest.TestCase):
             self.assertTrue(os.path.isdir('kskp/data/library'))
         finally:
             # 作成したフォルダを全て削除する
+            model.del_folder2(new_child_folder.uuid)
             model.del_folder2(new_folder.uuid)
 
     def test_get_folder_path(self):
@@ -558,7 +561,7 @@ class ModelTestCase(unittest.TestCase):
             model.set_folder2(new_folder)
             # 作成したルートフォルダを修正する
             new_folder.label = 'ルートフォルダー🌳'
-            model.upd_folder2(new_folder.uuid)
+            model.upd_folder2(new_folder)
             # 作成したフォルダと取得したフォルダが同じことを検証する
             self.assertEqual(new_folder.label, 'ルートフォルダー🌳')
             # 作成したフォルダに対応するディレクトリが存在することを検証する
@@ -587,6 +590,86 @@ class ModelTestCase(unittest.TestCase):
         finally:
             pass
 
+    def test_get_frame2(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # フレームを格納する
+            new_frame = Frame(str(uuid.uuid4())
+                            , new_folder.uuid
+                            , 'フレームファイルです'
+                            , io.BytesIO(b"xxxxxxxxx")
+                            , creator=1)
+            model.set_file2(new_frame)
+            # 作成したフレームを取得する
+            frame = model.get_file2(new_frame.uuid)
+            # 作成したフレームと取得したフレームが同じことを検証する
+            self.assertEqual(frame.to_json(), new_frame.to_json())
+            # 作成したフレームに対応するファイルが存在することを検証する
+            self.assertTrue(os.path.isfile('kskp/data/library/フレームファイルです'))
+        finally:
+            # 作成したフォルダを全て削除する
+            frame.close()
+            new_frame.close()
+            model.del_file2(new_frame.uuid)
+            model.del_folder2(new_folder.uuid)
+
+    def test_upd_frame2(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # フレームを格納する
+            new_frame = Frame(str(uuid.uuid4())
+                            , new_folder.uuid
+                            , '步レー敄ファ禕ル.csv'
+                            , io.BytesIO(b"abcdefghijklmnopqrstu")
+                            , creator=1)
+            model.set_file2(new_frame)
+            # 作成したフレームを修正する
+            new_frame.label = 'FRAME・FILE'
+            model.upd_file2(new_frame)
+            # 作成したフレームと取得したフレームが同じことを検証する
+            self.assertEqual(new_frame.label, 'FRAME・FILE')
+        finally:
+            # 作成したフォルダを全て削除する
+            model.del_file2(new_frame.uuid)
+            model.del_folder2(new_folder.uuid)
+
+    def test_del_frame2(self):
+        try:
+            # ルートフォルダを作成する
+            new_folder = Folder(str(uuid.uuid4())
+                                , None
+                                , 'ルートフォルダ🌲'
+                                , creator=1)
+            model.set_folder2(new_folder)
+            # フレームを格納する
+            new_frame = Frame(str(uuid.uuid4())
+                            , new_folder.uuid
+                            , 'フレームファイルです🧓🏿'
+                            , io.BytesIO(b"1234567890")
+                            , creator=1)
+            model.set_file2(new_frame)
+            # 作成したフレームを削除する
+            model.del_file2(new_frame.uuid)
+            # 削除したフレームの取得を試みる
+            frame = model.get_file2(new_folder.uuid)
+            # 作成したフレームが削除されたことを検証する
+            self.assertEqual(frame, None)
+            # 作成したファイルがが物理削除されていることを検証する
+            self.assertFalse(os.path.exists('kskp/data/library/フレームファイルです🧓🏿'))
+        finally:
+            # 作成したフォルダを全て削除する
+            new_frame.close()
+            model.del_folder2(new_folder.uuid)
 
     def test_get_remote_folder(self):
         try:
@@ -606,6 +689,31 @@ class ModelTestCase(unittest.TestCase):
             root = model.get_folder2(new_remote_folder.uuid)
             # 作成したフォルダと取得したフォルダが同じことを検証する
             self.assertEqual(root.to_json(), new_remote_folder.to_json())
+            # 作成したフォルダに対応するディレクトリが存在することを検証する
+            self.assertTrue(os.path.isdir('kskp/data/library'))
+        finally:
+            # 作成したフォルダを全て削除する
+            model.del_folder2(new_remote_folder.uuid)
+
+    def test_upd_remote_folder(self):
+        try:
+            # ルートフォルダを作成する
+            new_remote_folder = RemoteFolder(str(uuid.uuid4())
+                                            , None
+                                            , 'ルートフォルダ🌲'
+                                            , 'ksk-ds'
+                                            , 'kskanalytics'
+                                            , 'kskds-HP-Workstation-z620.local'
+                                            , 139
+                                            , 'WORKGROUP'
+                                            , 'share'
+                                            , creator=1)
+            model.set_folder2(new_remote_folder)
+            # 作成したルートフォルダを修正する
+            new_remote_folder.label = 'ルートフォルダー🌳'
+            model.upd_folder2(new_remote_folder)
+            # 作成したフォルダと取得したフォルダが同じことを検証する
+            self.assertEqual(new_remote_folder.label, 'ルートフォルダー🌳')
             # 作成したフォルダに対応するディレクトリが存在することを検証する
             self.assertTrue(os.path.isdir('kskp/data/library'))
         finally:

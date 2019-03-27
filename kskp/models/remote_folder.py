@@ -10,7 +10,6 @@ class RemoteFolder():
     """
     Remote-Folderモデル
     """
-
     def __init__(self
                 , uuid
                 , parent_uuid
@@ -59,10 +58,14 @@ class RemoteFolder():
         return ret
 
     def __set_children(self):
-        # ここで登録するファイルのTypeはどうやって決めるのだろう？？
+        # ここで登録するファイルのTypeはunknown-fileとする
         library = Library.find_by_uuid(self.uuid)        
         for path in Path(library.dir_path).iterdir():
-            label = path.stem
+            if path.is_dir():
+                pass
+            elif path.is_file():
+                label = path.stem
+            
 
     def get_folder_path(self):
         return Library.get_folder_path2(self.uuid)
@@ -113,27 +116,39 @@ class RemoteFolder():
             elif platform_system == 'Darwin':
                 # macOSの場合(unittestはmacOSで実行しているため)
                 comline = 'sudo mount -t smbfs //{}:{}@{} {}' \
-                          .format(self.user, self.password, remote_dir, mount_dir )
+                          .format(self.user, self.password, remote_dir, mount_dir)
             else:
                 raise Exception('This os(%s) may has no mount command.' % platform_system)
-
-            res = subprocess.check_output(shlex.split(comline))
+            # マウントを実行する
+            sub = subprocess.run(shlex.split(comline), stderr=subprocess.PIPE)
+            # サブプロセスのリターンコードがNGの場合は例外を送出する
+            sub.check_returncode()
             # すぐ操作するとビジーになっていることがあるため、マウント・アンマウントの前後でスリープtime.sleep()を入れています
-            sleep(2)
-        except Exception as e:
-            import pprint
-            pprint.pprint(comline)
-            pprint.pprint(str(e))    
-            raise e
+            sleep(2)      
+        except subprocess.CalledProcessError as e:
+            path = Path(mount_dir)
+            if not path.exists():
+                error_message = 'mount point(%s) does not exist' % mount_dir
+            elif not path.is_dir():
+                error_message = 'mount point(%s) is not directory' % mount_dir
+            # python3.7でis_mount()は追加される
+            # elif path.is_mount():
+            #     error_message = 'mount point(%s) already mounted on' % mount_dir
+            else:
+                error_message = sub.stderr.decode('utf-8')
+            raise Exception('"mount" command returned error --> ' + error_message)
  
     def unmount(self, mount_dir):
         try:
             import pprint
             sleep(2)
             comline = "sudo umount {}".format(mount_dir)
-            res = subprocess.check_output(shlex.split(comline))
-        except Exception as e:
-            import pprint
-            pprint.pprint(comline)
-            pprint.pprint(str(e))    
-            raise e
+            # マウント解除を実行する
+            sub = subprocess.run(shlex.split(comline), stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            path = Path(mount_dir)
+            if not path.exists():
+                error_message = 'mount point(%s) does not exist' % mount_dir
+            else:
+                error_message = sub.stderr.decode('utf-8')
+            raise Exception('"umount" command returned error --> ' + error_message)

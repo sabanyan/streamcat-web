@@ -42,17 +42,22 @@ from .model import (
     rename_database_by_id,
     delete_database_by_id,
 
+    get_path,
     get_root,
     get_folder2,
     set_folder2,
     upd_folder2,
     del_folder2,
-    set_frame2
+    get_file2,
+    set_file2,
+    upd_file2,
+    del_file2
 )
 from .models.store import Store
 from .models.folder import Folder
 from .models.remote_folder import RemoteFolder
 from .models.database import Database
+from .models.document import Document
 from .activity import (
     make_unfinished_history,
     make_finished_history
@@ -455,9 +460,9 @@ def make_new_frame():
             new_frame = Frame(str(uuid.uuid4())
                             , request.form.get('parent')
                             , request.form.get('label')
-                            , request.files.get('file')
+                            , request.files.get('file').stream
                             , creator=1)
-            set_frame2(new_frame)
+            set_file2(new_frame)
             return jsonify({'success': True, 'data': new_frame.to_json()})
         else:
             # ファイルがPOSTで送信されてきたらアップロードだとみなす
@@ -500,7 +505,14 @@ def fetch_frame(frame_uuid):
     # リミットのデフォルトは全行なのでNoneにしておく（０の場合は０行取得だから０は使えない）
     limit = int(request.args.get('limit')) if request.args.get('limit') else None
 
-    file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
+    # 先にLibraryテーブルから指定されたUUIDのフレームを探す
+    file_path = get_path(frame_uuid)
+    if file_path is None:
+        file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
+    else:
+        limit = 999 if limit is None else limit
+        file_path = Path(file_path)
+
     result = csv_to_frame(file_path, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
@@ -510,8 +522,43 @@ def fetch_frame(frame_uuid):
             headers.append(column.replace('\n',''))
         result = headers
 
-
     return jsonify({'success': True, 'data': result})
+
+@api.route('/frames/<frame_uuid>', methods=['PUT'])
+def update_frame(frame_uuid):
+    """
+    指定したframeのラベル名を変更する
+    """
+    try:
+        from .models.frame import Frame
+        frame = Frame(frame_uuid
+                      , None
+                      , request.json['label']
+                      , None
+                      , modifier=2)
+        upd_file2(frame)
+        return jsonify({'success': True, 'data': frame.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/frames/<frame_uuid>', methods=['DELETE'])
+def delete_frame(frame_uuid):
+    """
+    指定したframeを物理削除する
+    """
+    try:
+        del_file2(frame_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
 
 def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     """
@@ -1490,6 +1537,80 @@ def delete_database(database_uuid):
     """
     try:
         delete_database_by_id(database_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+@api.route('/documents/<doc_uuid>', methods=['GET'])
+def fetch_document(doc_uuid):
+    """
+    ドキュメントを返却する
+    """
+    try:
+        offset = int(request.args.get('offset')) if request.args.get('offset') else 0
+        limit = int(request.args.get('limit')) if request.args.get('limit') else 999
+        file_path = Path(get_path(doc_uuid))
+        result = csv_to_frame(file_path, offset=offset, limit=limit)
+        return jsonify({'success': True, 'data': result})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/documents', methods=['POST'])
+def make_new_document():
+    """
+    ドキュメントを作成する
+    """
+    try:
+        new_doc = Document(str(uuid.uuid4())
+                         , request.form.get('parent')
+                         , request.form.get('label')
+                         , request.files.get('file').stream
+                         , creator=1)
+        set_file2(new_doc)
+        return jsonify({'success': True, 'data': new_doc.to_json()})
+    except Exception as e:
+        return jsonify({
+                            'success': False,
+                            'code': -1,
+                            'message': 'invalid json'
+                        })
+
+@api.route('/documents/<doc_uuid>', methods=['PUT'])
+def update_document(doc_uuid):
+    """
+    指定したdocumentのラベル名を変更する
+    """
+    try:
+        doc = Document(doc_uuid
+                     , None
+                     , request.json['label']
+                     , None
+                     , modifier=2)
+        upd_file2(doc)
+        return jsonify({'success': True, 'data': doc.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/documents/<doc_uuid>', methods=['DELETE'])
+def delete_document(doc_uuid):
+    """
+    指定したdocumentを物理削除する
+    """
+    try:
+        del_file2(doc_uuid)
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
