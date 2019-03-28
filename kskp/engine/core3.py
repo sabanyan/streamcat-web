@@ -1096,7 +1096,7 @@ class CsvToScatterCommand(VisualizersBokehPlot):
 
         file_path = inputs.get('i').source.fullpath
         df = pd.read_csv(file_path, nrows=limit, skiprows=range(1, offset))
-        df[args.get('data_column')] = df[args.get('data_column')].astype(str)
+        # df[args.get('data_column')] = df[args.get('data_column')].astype(str)
         #
         # start = offset
         # end = start + (limit if limit is not None else len(df))
@@ -1122,23 +1122,23 @@ class CsvToScatterCommand(VisualizersBokehPlot):
 
         plot = figure(plot_width=args.get('x_size'),
                       plot_height=args.get('y_size'),
-                      x_axis_label=args.get('x_label'),
-                      y_axis_label=args.get('y_label'),
+                      x_axis_label=args.get('x_label') if args.get('x_label') is not None else args.get('x_axis'),
+                      y_axis_label=args.get('y_label') if args.get('y_label') is not None else args.get('y_axis'),
                       output_backend="webgl",
                       title=args.get('graph_title'))
 
         color = self.color_gen()
-        unique_data = df[args.get('data_column')].unique().tolist()
+        # unique_data = df[args.get('data_column')].unique().tolist()
 
         # if len(args.get('data')) > 0:
         #     unique_data = args.get('data')
 
-        for datum in unique_data:
-            df_select_datum = df[df[args.get('data_column')]==datum]
-            source = ColumnDataSource({'x': df_select_datum[args.get('x_axis')], 'y': df_select_datum[args.get('y_axis')]})
-            plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'),
-                         color=color.__next__(), legend=datum, alpha=args.get('alpha'),
-                         source=source)
+        # for datum in unique_data:
+        df_select_datum = df
+        source = ColumnDataSource({'x': df_select_datum[args.get('x_axis')], 'y': df_select_datum[args.get('y_axis')]})
+        plot.scatter(x='x', y='y', fill_alpha=args.get('alpha'),
+                     color=color.__next__(), alpha=args.get('alpha'),
+                     source=source)
 
         plot.add_tools(hover)
         plot.legend.location = "top_right"
