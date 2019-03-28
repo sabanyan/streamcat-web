@@ -3,31 +3,21 @@ import React from 'react'
 import classnames from 'classnames'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
-import DataTable from '../../DataTable/index'
 import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import style from '../style.scss'
 import Button from '../../Button/index'
 import DownloadButton from '../../Button/DownloadButton/index'
 import BaseInspector from '../BaseInspector'
 import type { FlowListDataType, StepModelType } from '../../../../types'
-import HttpUtil from '../../../../utils/HttpUtil'
-import Graph from '../../../../utils/Graph'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import CSVModel from '../../../../model/CSV/CSVModel'
-import StringUtil from '../../../../utils/StringUtil'
-import Inspector from '../index'
-import TabBar from '../../TabBar'
-import TabPanel from '../../TabBar/TabPanel'
-import TabList from '../../TabBar/TabList'
-import Tab from '../../TabBar/Tab'
 import type { FlowModelProps } from '../../../../model/Flow/FlowModel'
 import moment from 'moment/moment'
-import ErrorUtil from '../../../../utils/ErrorUtil'
-import APIUtil from '../../../../utils/APIUtil'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
 import Run from '../../../FlowEditorContainer/ToolBar/Run'
-import AddButton from '../../AddButton'
 import FlowUtil from '../../../../utils/FlowUtil';
+import AddButton from '../../AddButton/index'
+import HttpUtil from '../../../../utils/HttpUtil'
+import InputFlowForm from '../../InputFlowForm'
 
 type Props = {
   project: {};
@@ -42,7 +32,16 @@ type Props = {
 class FlowInspector extends React.Component<Props, State> {
   constructor (props) {
     super(props)
-    this.paramRefs = []
+    this.argRefs = []
+    this.inputRefs = []
+
+    ModalUtil.registerModal({
+      id: Constants.modal.RUN_FLOW, onClickDone: () => {
+        this.run()
+        //モーダルを閉じる
+        ModalUtil.closeModal(Constants.modal.RUN_FLOW)
+      },
+    })
   }
 
   nullInspector(){
@@ -53,28 +52,46 @@ class FlowInspector extends React.Component<Props, State> {
   }
 
   onClickRun () {
-    const text = "modal"
-    ModalUtil.registerModal({
-      id: Constants.modal.SHOW_FLOW_SETTING, onClickDone: () => {
-        this.run()
-        //モーダルを閉じる
-        ModalUtil.closeModal(Constants.modal.SHOW_FLOW_SETTING)
-      },
-    })
+    let contents = {
+      flow : this.props.flow,
+      run : (runArgs) => this.runFlow(), 
+      parentProps : this.props
+    }
 
-    let content = <div>
-      {this.renderInputFile()}
-      {this.renderFlowParameter()}
-    </div>
-    
     ModalUtil.emitModal({
-      id: Constants.modal.SHOW_FLOW_SETTING,
+      id: Constants.modal.RUN_FLOW,
       visible: true,
       done: '実行する',
       cancle: 'キャンセル',
       danger: false,
-      content: content,
+      contents: contents,
     })
+  }
+
+
+
+  renderFlowVariableForm() {
+    const {params} = this.props.flow
+    this.argRefs = []
+    let form = params.map((param) => {
+      return <div key={"param_"+param.name} className={style.flow_param}>
+                <div className={style.left}>
+                  <input ref={(ref) => {
+                    if(ref){
+                      this.argRefs.push({param:param, element:ref})
+                    }
+                  }} 
+                  type={'text'} className={'form-control'} placeholder={param.name} />
+                </div>
+                <div className={style.right}>
+              </div>
+            </div>
+    })
+
+    return <div>
+      <label>フロー変数</label>
+      {form}
+    </div>
   }
 
   renderInputFile() {
@@ -122,7 +139,7 @@ class FlowInspector extends React.Component<Props, State> {
     </div>
   }
 
-  run () {
+  run (runArgs) {
     let putbody = {}
     const params = []
     this.paramRefs.map((paramRef) => {
@@ -132,38 +149,34 @@ class FlowInspector extends React.Component<Props, State> {
     if(params)putbody["params"]=params
     const notify = this.props.notify
     const dismissNotify = this.props.dismissNotify
-    FlowUtil.saveFlow(flow_uuid, putbody, notify, dismissNotify).then((response) => {
+    FlowUtil.runNodes(flow_uuid, notify, dismissNotify).then((response) => {
       if (response.data.success) {
-        FlowUtil.runNodes(flow_uuid, notify, dismissNotify).then((response) => {
-          if (response.data.success) {
-            const json: RunResponseType = response.data
-            const result = json.name.map((n, index) => {
-              return <li key={index}>{n.id}</li>
-            })
-            const content = <div>
-              <div>ライブラリにフローの実行結果が追加されました。</div>
-              <ul>{result}</ul>
-            </div>
-  
-            this.props.notify({
-              title: 'フロー実行完了',
-              message: ReactDomUtil.renderToString(content),
-              status: 'success',
-              dismissAfter: 0,
-              buttons: [
-                {
-                  name: '開く',
-                  primary: true,
-                  onClick: () => {
-                    window.open('/library?project=' +
-                      window.navigationModel.project_uuid, '_blank')
-                  },
-                }],
-            })
-          }
+        const json: RunResponseType = response.data
+        const result = json.name.map((n, index) => {
+          return <li key={index}>{n.id}</li>
+        })
+        const content = <div>
+          <div>ライブラリにフローの実行結果が追加されました。</div>
+          <ul>{result}</ul>
+        </div>
+
+        this.props.notify({
+          title: 'フロー実行完了',
+          message: ReactDomUtil.renderToString(content),
+          status: 'success',
+          dismissAfter: 0,
+          buttons: [
+            {
+              name: '開く',
+              primary: true,
+              onClick: () => {
+                window.open('/library?project=' +
+                  window.navigationModel.project_uuid, '_blank')
+              },
+            }],
         })
       }
-    }) 
+    })
   }
 
   render () {

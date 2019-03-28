@@ -168,6 +168,55 @@ export default class FlowUtil {
      })
   }
 
+  static runWithArgs(runArgs:{},notify:Function,dismissNotify:Function):any{
+    let runNotify
+    if(notify){
+      runNotify = notify({
+        title: 'フロー実行中',
+        message: 'フローを実行しています',
+        status: 'loading',
+        dismissAfter: 0
+      })
+    }
+
+   let args = {}
+   runArgs.variables.map ((v) => {
+     args[v.name] = v.value
+   })
+
+   let body = {
+     flow_uuid : runArgs.flow_uuid,
+     args : args
+     
+   }
+
+   return new Promise((resolve, reject) => {
+     APIUtil.get("frames?from=" + flowUUID + "&no_contents=1").then((response)=>{
+       if(dismissNotify)dismissNotify(runNotify.id)
+       if (!response.data.success) {
+         notify({
+           title: '実行エラー',
+           message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+           status: 'error',
+           dismissAfter: 0,
+           closeButton: true
+         })
+       }
+       resolve(response)
+     },()=>{
+       if(dismissNotify)dismissNotify(runNotify.id)
+       notify({
+         title: '実行エラー',
+         message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+         status: 'error',
+         dismissAfter: 0,
+         closeButton: true
+       })
+       reject(error)
+     })
+   })
+}
+
   /**
    * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
    */
