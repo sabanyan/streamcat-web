@@ -111,8 +111,8 @@ export default class NavigationBar extends React.Component<Props> {
         {navigation.user_name}
       </a>
       <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-        <a href="/profile" className="dropdown-item">プロフィール設定</a>
-        <div className="dropdown-divider"></div>
+        {/*<a href="/profile" className="dropdown-item">プロフィール設定</a>*/}
+        {/*<div className="dropdown-divider"></div>*/}
         <a href="#" className="dropdown-item" onClick={this.onClickLogout}>ログアウト</a>
       </div>
     </li>
