@@ -897,11 +897,23 @@ def rename_database_by_id(database_uuid, new_label):
 def delete_database_by_id(database_uuid):
     pass
 
+
+import os
+import pathlib
 import pprint
 from .models.library import Library
 from .models.folder import Folder
 from .models.remote_folder import RemoteFolder
 from .models.database import Database
+from .models.frame import Frame
+from .models.document import Document
+
+# 古い実装で利用するための関数
+def get_path(uuid):
+    library = Library.find_by_uuid(uuid)
+    if library is None:
+        return None
+    return library.dir_path
 
 def get_root():
     """
@@ -939,6 +951,9 @@ def get_folder2(uuid):
 def set_folder2(f):
     if isinstance(f, Folder):
         library = Library.create_folder_type(f.uuid, f.parent_uuid, f.label, f.creator, f.creator)
+        # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
+        __make_dir(library.dir_path)
+        # libraryレコードをDBに格納する
         library.save()
         f.created_at = library.created_at
     elif isinstance(f, RemoteFolder):
@@ -953,9 +968,12 @@ def set_folder2(f):
                                                   , f.directory
                                                   , f.creator
                                                   , f.creator)
-        library.save()
+        # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
+        __make_dir(library.dir_path)
         # ここでリモートディレクトリをマウントする
         f.mount(library.dir_path)
+        # libraryレコードをDBに格納する
+        library.save()
         f.created_at = library.created_at
     elif isinstance(f, Database):
         pass
@@ -985,11 +1003,99 @@ def upd_folder2(f):
 def del_folder2(uuid):
     library = Library.find_by_uuid(uuid)
 
+    if library is None:
+        return
+
     if library.type == 'folder':
         library.delete()
+        __remove_dir(library.dir_path)
     elif library.type == 'remote-folder':
         # ここでリモートディレクトリのマウントを解除する
         remote_folder = RemoteFolder.create_by_library(library)
         remote_folder.unmount(library.dir_path)
         # マウントポイントのディレクトリを削除する
         library.delete()
+        __remove_dir(library.dir_path)
+
+
+def get_file2(uuid):
+    library = Library.find_by_uuid(uuid)
+
+    if library is None:
+        return None
+
+    if library.type == 'frame':
+        return Frame.create_by_library(library)
+    elif library.type == 'document':
+        return Document.create_by_library(library)
+    elif library.type == 'unknown-file':
+        pass
+
+def set_file2(frame):
+    library = Library.create_frame_type(frame.uuid, frame.parent_uuid, frame.label, frame.creator, frame.creator)
+    # 保存先のディレクトリを取得する
+    dir = pathlib.Path(library.dir_path).parent
+    if not dir.exists():
+        # 保存先のディレクトリが無い場合は作成する
+        __make_dir(str(dir))
+    elif not dir.is_dir():
+        raise Exception('Can not make directory, because same name file(%s) exists!' % str(dir))
+    # Frameファイルを作成する
+    frame.save(library.dir_path)
+    # libraryレコードをDBに格納する
+    library.save()
+    frame.created_at = library.created_at
+
+def upd_file2(f):
+    library = Library.create_frame_type(f.uuid, f.parent_uuid, f.label, f.creator, f.modifier)
+    library.update_data()
+    f.creator = library.creator
+    f.created_at = library.created_at
+
+def del_file2(uuid):
+    library = Library.find_by_uuid(uuid)
+
+    if library is None:
+        return
+
+    if library.type == 'frame' or library.type == 'document' or library.type == 'unknown-file':
+        library.delete()
+        __remove_file(library.dir_path)
+
+
+def __make_dir(dir_path):
+    try:
+        dir_path = pathlib.Path(dir_path)
+        if dir_path.exists() and not dir_path.is_dir():
+            raise Exception('Can not make directory, because same name file(%s) exists.' % dir_path)
+        elif not dir_path.is_dir():
+            # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
+            os.makedirs(str(dir_path), exist_ok=True)
+    except PermissionError as e:
+        # ファイルに対する権限がない場合
+        raise e
+
+def __remove_dir(dir_path):
+    try:
+        # 全てのフォルダから紐づかないディレクトリは物理削除する
+        dir_path = dir_path.rstrip(os.pathsep)
+        while dir_path != '' and dir_path != '/' and dir_path != 'kskp/data':
+            if Library.dir_path_exists(dir_path):
+                break
+            else:
+                if os.path.isdir(dir_path):
+                    os.rmdir(dir_path)
+                dir_path = os.path.dirname(dir_path)
+    except PermissionError as e:
+        # ファイルに対する権限がない場合
+        raise e
+
+def __remove_file(dir_path):
+    try:
+        if not os.path.isfile(dir_path):
+            raise Exception('Can not delete %s, because it is not reguler file.' % dir_path)
+        # ファイルを物理削除する
+        os.remove(dir_path)
+    except PermissionError as e:
+        # ファイルに対する権限がない場合
+        raise e

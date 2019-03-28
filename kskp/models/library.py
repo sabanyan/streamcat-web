@@ -2,7 +2,6 @@
 import os
 import json
 from . import db, create_schema_if_first_use
-
 from sqlalchemy.orm import aliased
 from sqlalchemy import literal, text
 from sqlalchemy.sql.expression import label, literal_column
@@ -127,6 +126,39 @@ class Library(db.Model):
     def create_database_type(cls):
         pass
 
+    @classmethod
+    def create_frame_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+        # テーブルがない場合は作成する
+        create_schema_if_first_use()
+        
+        # SQLiteではidは乱数で採番する
+        id = random.randint(0,99999)
+
+        # parent_uuidからparent_idを取得する
+        result = db.session.query(Library.id).filter(Library.uuid == parent_uuid).one_or_none()
+        if result is None:
+            parent_id = None
+        else:
+            parent_id = result.id
+
+        # dir_pathは親フォルダのdir_pathを引き継ぐ
+        library = Library.find_by_uuid(parent_uuid)
+        if library is None:
+            # labelの更新時に親フォルダがないFrameオブジェクトを用意するので例外は送出しない
+            # raise Exception('Must be a parent folder to create frame file.')
+            dir_path = None
+        else:
+            # 共有するリモートディレクトリ名をローカルのマウントディレクトリ名にする
+            dir_path = os.path.join(library.dir_path, Library.__secure_filename(label))
+
+        # dataを作成する
+        data = json.dumps({'label' : label})
+
+        # Libraryオブジェクトを返す
+        ret = Library(id, parent_id, uuid, dir_path, 'frame', data, creator, modifier)
+        ret.parent_uuid = parent_uuid
+        return ret
+            
     @classmethod
     def find_by_uuid(cls, uuid):
         # テーブルがない場合は作成する
@@ -264,6 +296,17 @@ class Library(db.Model):
         path_to_root.reverse()
         return path_to_root
 
+    @classmethod
+    def dir_path_exists(cls, dir_path):
+        results_count = db.session.query(Library).filter(Library.dir_path.like(dir_path + '%')).count()
+        return results_count > 0
+
+    @classmethod
+    def __secure_filename(cls, filename):
+        # '/'と'\0'はunixとmacOSではファイル名に使用できない
+        trans_table = str.maketrans({'/' : '／', '\0' : ''})
+        return filename.translate(trans_table)
+
     def get_parent_uuid(self):
         if self.parent_uuid is None:
             return self.parent_uuid
@@ -278,39 +321,35 @@ class Library(db.Model):
     def save(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
-
-        # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
-        os.makedirs(self.dir_path, exist_ok=True)
-
         db.session.add(self)
         db.session.commit()
 
     def update_data(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
-
+        # 指定されたUUIDのLibraryレコードを取得する
         library = db.session.query(Library).filter(Library.uuid==self.uuid).first()
         library.data = self.data
         library.modifier = self.modifier
-        library.modified_at = self.modified_at
-
         library.modified_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # レコードを更新する
         db.session.commit()
+        # 取得したレコードの値を自身に設定し直す
+        self.id = id
+        self.parent_id = library.parent_id
+        self.dir_path = library.dir_path
+        self.type = library.type
+        self.creator = library.creator
+        self.created_at = library.created_at
 
     def delete(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
 
+        # 削除対象のフォルダの下にフォルダまたはファイルが存在する場合は例外を送出する
+        if len(self.find_by_parent_uuid(self.uuid)) > 0:
+            raise Exception('Can not delete folder that has child file or folder.')
+
         db.session.query(Library).filter(Library.id==self.id).delete()
         db.session.commit()
 
-        # 全てのフォルダから紐づかないディレクトリは物理削除する
-        dir_path = self.dir_path.rstrip(os.pathsep)
-        while dir_path != '' and dir_path != '/' and dir_path != 'kskp/data':
-            results_count = db.session.query(Library).filter(Library.dir_path.like(dir_path + '%')).count()
-            if results_count == 0:
-                if os.path.isdir(dir_path):
-                    os.rmdir(dir_path)
-                dir_path = os.path.dirname(dir_path)
-            else:
-                break

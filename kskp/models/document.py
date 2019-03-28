@@ -1,11 +1,13 @@
 import json
+import pathlib
 from .library import Library
 
 class Document():
-    def __init__(self, uuid, parent_uuid, label, creator=None, modifier=None, created_at=None):
+    def __init__(self, uuid, parent_uuid, label, stream, creator=None, modifier=None, created_at=None):
         self.uuid = uuid
         self.parent_uuid = parent_uuid
         self.label = label
+        self.stream = stream
         self.creator = creator
         self.modifier = modifier
         self.created_at = created_at
@@ -13,8 +15,17 @@ class Document():
     @classmethod
     def create_by_library(cls, library):
         label = json.loads(library.data)['label']
-        return Document(library.uuid, library.get_parent_uuid(), label, library.creator, library.modifier, library.created_at)
+        stream = open(library.dir_path, mode='rb')
+        return Document(library.uuid, library.get_parent_uuid(), label, stream, library.creator, library.modifier, library.created_at)
 
+    def save(self, dir_path):
+        with open(dir_path, mode='wb') as f:
+            while True:
+                buff = self.stream.read(4096)
+                f.write(buff)
+                if buff is None or len(buff)==0:
+                    break
+                    
     def to_json(self):
         return {'uuid'      : self.uuid
                ,'type'      : 'document'
@@ -22,6 +33,11 @@ class Document():
                ,'creator'   : self.creator
                ,'createdAt' : self.created_at }
 
+    def close(self):
+        if self.stream is not None and not self.stream.closed:
+            self.stream.close()
 
+    def __del__(self):
+        self.close()
 
 
