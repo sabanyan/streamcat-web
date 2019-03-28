@@ -87,21 +87,20 @@ export default class ParamUtil {
       case Constants.param.type.select:
         paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
         break
-      default:
-        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} disabled={true}/>
-        break
+
       case Constants.param.type.column:
-
-
         //カラム情報を付与
         param.options = {
           labels: headers,
           values: headers,
           multiple: (param.options.multiple)?true:false
         }
-
-        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} events={events}/>
+        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events}/>
         break
+
+      default:
+      paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} disabled={true}/>
+      break
     }
     return paramElement
   }
