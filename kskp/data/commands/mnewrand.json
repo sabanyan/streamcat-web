@@ -28,7 +28,8 @@
       "name": "l",
       "type": "string",
       "label": "作成するデータ行数",
-      "optional": true
+      "optional": true,
+      "default": 10
     },
     {
       "name": "int",
