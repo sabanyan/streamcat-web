@@ -10,7 +10,8 @@
       "name": "e",
       "type": "string",
       "label": "同一キー同一ソート項目値への処理方法を指定する。",
-      "optional": true
+      "optional": true,
+      "default": "seq"
     },
     {
       "name": "I",
