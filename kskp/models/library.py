@@ -330,6 +330,30 @@ class Library(db.Model):
         else:
             return result.uuid
 
+    @classmethod
+    def get_user_name_by_id(cls, user_id):
+        if user_id is None:
+            return ''
+        sql = " SELECT name FROM users WHERE id = %s" % user_id
+        results = db.session.execute(sql)
+        if results is None:
+            return ''
+        else:
+            for result in results:
+                return result.name
+
+    def get_creator_name(self):
+        if self.creator is None:
+            return ''
+        else:
+            return Library.get_user_name_by_id(self.creator)
+
+    def get_modifier_name(self):
+        if self.modifier is None:
+            return ''
+        else:
+            return Library.get_user_name_by_id(self.modifier)
+
     def save(self):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
