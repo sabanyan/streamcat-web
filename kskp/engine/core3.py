@@ -104,9 +104,15 @@ def parse_nodes(obj):
     #              if node['type'] in ['command', 'flow']]
 
 def parse_subjobs(nodes, data, caches, flow_uuid):
-    return [parse_subjob(node, data, caches, flow_uuid) for node in nodes]
+    subjobs = []
+    for node in nodes:
+        jobs = parse_subjob(node, data, caches, flow_uuid)
+        subjobs.extend(jobs)
+    return subjobs
 
 def parse_subjob(node, data, caches, flow_uuid):
+    new_jobs = []
+
     t = node['type']
 
     args = node['args']
@@ -120,30 +126,49 @@ def parse_subjob(node, data, caches, flow_uuid):
     command_args = copy.deepcopy(args)
 
     if t == 'command':
-        # キャッシュを作成するため、argsを書き換える
-        for p_port, datum_id in dsts.items():
-            if datum_id in caches:
-                cache_uuid = str(uuid.uuid4())
-                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
-                command_args[p_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
-
         new_step = parse_command_step(node, command_args, srcs, dsts)
         new_job = Job(new_step, inputs)
+
+        # キャッシュを作成するため、argsを書き換える
+        # TODO: t==flowの場合とほぼ同じ形なので抽出してメソッド化した方がいいよね。。。
+        for p_port, datum_id in new_job.step.dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                # キャッシュを出力するコマンドが
+                # 1. nm.cmdの場合・・・argsにo=をつけたm2teeを挟む（新たにm2teeのjobが作られる）
+                # 2. mcmdの場合　・・・コマンドにargsにo=をつけるだけ
+                mtee_job = update_step_args_for_cache(new_job.step, cache_uuid, p_port)
+                if mtee_job is None:
+                    new_job.caches[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                else:
+                    mtee_job.caches[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                    new_jobs.append(mtee_job)
+
     elif t == 'flow':
         sub_job_flow_uuid = node['uuid']
         new_job = parse_job(load_flow(sub_job_flow_uuid), sub_job_flow_uuid, command_args, srcs, dsts, inputs)
 
         # キャッシュを作成するため、argsを書き換える
-        for p_port, datum_id in dsts.items():
+        for p_port, datum_id in new_job.step.dsts.items():
             if datum_id in caches:
                 cache_uuid = str(uuid.uuid4())
-                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
-                connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
+                # 例：
+                # mainflow
+                # A -(a)-> subflow -(b)-> B(make cache)
+                #
+                # subflow
+                # IN -(c)-> nm.cmd -(d)-> OUT
+                #
+                # 上記の例の時にデータノードBにcacheを作ろうとすると、
+                # 実際にm2teeを挟むのは矢印bではなく、矢印dの後でなくてはならない。
+                # 矢印dに当たるものを再帰的に探し出すのがconnect_subflow_output_with_cacheである
+                mtee_jobs = connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
+                new_job.jobs.extend(mtee_jobs)
+                new_job.caches[f'{flow_uuid}.{datum_id}'] = cache_uuid
 
-    if len(cache_list) > 0:
-        new_job.caches = cache_list
+    new_jobs.append(new_job)
 
-    return new_job
+    return new_jobs
 
 def connect_subflow_output_with_cache(cache_uuid, port, jobs):
     """
@@ -151,13 +176,84 @@ def connect_subflow_output_with_cache(cache_uuid, port, jobs):
     そのstepがコマンドであれば、argsに出力port及び値をセットし、
     フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
     """
+    new_jobs = []
     for job in jobs:
         for c_port, c_datum_id in job.step.dsts.items():
             if c_datum_id == port:
+                # コマンドまで行き着いたらargsを更新して、そうではなかったら再帰的に潜る
                 if job.step.is_command:
-                    job.step.args[c_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+                    mtee_job = update_step_args_for_cache(job.step, cache_uuid, c_port)
+                    if mtee_job is not None:
+                        new_jobs.append(mtee_job)
                 else:
                     connect_subflow_output_with_cache(cache_uuid, c_port, job.jobs)
+
+    return new_jobs
+
+def update_step_args_for_cache(step, cache_uuid, cache_save_port):
+    """
+    キャッシュ出力のために、キャッシュ出力対象のdatumを生成するstep（この場合はコマンド）のargsを書き換える。
+    コマンドがMコマンドの場合は、oパラメータを追加し、
+    nysol_pythonのnm.cmdの場合は、m2teeを追加する。
+    """
+    mtee_job = None
+    cache_save_path = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+    tp = get_type_of_how_to_cache(step.command_or_flow)
+    if tp == 'mcmd':
+        step.args[cache_save_port] = cache_save_path
+    elif tp == 'unix_command':
+        mtee_job = put_mtee_in_cache_command(step.dsts, cache_save_port, cache_save_path)
+
+    return mtee_job
+
+def get_type_of_how_to_cache(command_obj):
+    """
+    指定したコマンドが何かを判定する
+    現在はMコマンドか、NmCmdのどちらかしかできない
+    """
+    cmd_obj = command_obj
+    if cmd_obj is None:
+        # TODO: 存在しないコマンドが指定されるのは例外なので何か適切なエラー返さないと
+        return 'error'
+
+    if isinstance(cmd_obj, NmCmd):
+        return 'unix_command'
+    elif isinstance(cmd_obj, MCommandNew):
+        return 'mcmd'
+    else:
+        return None
+
+def put_mtee_in_cache_command(dsts, port, output_path=None):
+    """
+    指定したdsts[port]にmteeを挟み込む。
+    cache_pathがあれば、出力もさせる。
+    戻り値はmteeのjob
+    """
+    ## m2teeをはさむ
+
+    # その前にもう一つデータノードも必要
+    # idはなんでもいいけど、被らないものを作りたかったのでuuid作った。。。
+    new_m2tee_data_node_id = str(uuid.uuid4())
+    new_m2tee_step_id = str(uuid.uuid4())
+    new_m2tee_data_node = {
+        'type': 'frame',
+        'id': new_m2tee_data_node_id
+    }
+
+    # 元々の出力先のdatum_id
+    datum_id = dsts[port]
+    # 元々の出力先を仮のdatumに変更する
+    dsts[port] = new_m2tee_data_node_id
+
+    args = {}
+    if output_path is not None:
+        args['o'] = output_path
+
+    # m2teeのjobの作成
+    m2tee_step = Step(commands['mtee'], args, {'i':new_m2tee_data_node_id}, {'o':datum_id}, new_m2tee_step_id, f'{datum_id}の前に挟むm2tee')
+    m2tee_inputs = {new_m2tee_data_node_id: Frame()}
+
+    return Job(m2tee_step, m2tee_inputs)
 
 def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
@@ -401,6 +497,7 @@ class Job:
                 continue
             # Sourceが未作成の場合は作成する
             # 内包表記でも書けるけど、この場合は内包表記じゃない方が何やっているか見やすいと思います。
+
             if job.inputs[d].source is None:
                 result[d] = self.check_multi_use(job, d, self.get_datum(d, job.inputs[d]))
             else:
