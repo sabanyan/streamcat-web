@@ -6,6 +6,7 @@ import type { FlowListDataType } from '../../../../types'
 import Constants from '../../../../constants'
 import moment from 'moment/moment'
 import { LibraryListDataType } from '../../../../types'
+import FileIcon from '../../Icon/FileIcon'
 
 type Props = {
   icon?: string;
@@ -45,6 +46,9 @@ export default class LibraryList extends React.Component<Props> {
 
     switch (type){
       case Constants.library.type.document:
+        return  <i className={classnames('material-icons',
+          [style.icon])}>description</i>
+      case Constants.library.type.frame:
         return  <i className={classnames('material-icons',
           [style.icon])}>description</i>
       case Constants.library.type.folder:

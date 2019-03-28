@@ -8,8 +8,8 @@ export type DataFrameStepModelProps = {
   ...BaseModelProps,
   uuid: string;
   dataSource: dataSourceType;
-  makeCache: boolean;
-  cacheCreatedAt: string;
+  makeCache?: boolean;
+  cacheCreatedAt?: string;
 }
 
 export default class DataFrameStepModel extends BaseStepModel{

@@ -10,7 +10,8 @@ import Button from '../../Button'
 
 type Props = {
   data?: LibraryListDataType;
-  onClickDelete: Function;
+  onClickDelete?: Function;
+  onClickApply?: Function;
   onBlurTitle?: Function;
 }
 
@@ -19,12 +20,27 @@ class LibraryInspector extends React.Component<Props> {
     super(props)
   }
   onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
-    this.props.onBlurTitle(e)
+    if(this.props.onBlurTitle){
+      this.props.onBlurTitle(e)
+    }
   }
   render () {
-    const {data} = this.props
+    const {data,onClickDelete,onClickApply} = this.props
     let content = null
     let label = ""
+
+    let deleteButton
+    if(onClickDelete){
+      deleteButton = <Button danger={true}
+                                 onClick={() => onClickDelete(data)}>削除する</Button>
+    }
+    let applyButton
+    if(onClickApply){
+      applyButton = <Button primary={true}
+                             onClick={() => onClickApply(data)}>選択する</Button>
+    }
+
+
     if(data){
       label = data.label
       content = <div>
@@ -32,9 +48,8 @@ class LibraryInspector extends React.Component<Props> {
             {data.label}
           </div>
           <div className={style.actions}>
-            <Button danger={true}
-                    onClick={() => this.props.onClickDelete(data)}>削除する</Button>
-
+            {deleteButton}
+            {applyButton}
           </div>
           <div className={style.full_hr}/>
           <div>
@@ -56,13 +71,13 @@ class LibraryInspector extends React.Component<Props> {
             {moment(data.createdAt).format(Constants.format.dateTime)}
           </div>
       </div>
-      return <div className={classnames(style.property,style.in)}>
+      return <div className={classnames(style.property,style.in,'inspector')}>
         <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
       </div>
     }else{
-      return <div className={classnames(style.property,style.in)}>
+      return <div className={classnames(style.property,style.in,'inspector')}>
         <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
