@@ -4,7 +4,6 @@ import json
 from .data3 import *
 from .util import Parameter
 from datetime import datetime, timedelta, timezone
-from flask import render_template
 
 flow_obj_cache = {} # uuid: Jsonオブジェクト
 flows_cache = {} # uuid: Flowインスタンス
@@ -37,8 +36,8 @@ def parse_job(obj, flow_uuid, args, srcs, dsts, inputs):
     step = Step(flow, args, srcs, dsts)
 
     # make subjobs
-    nodes = parse_nodes(obj)
-    jobs = parse_subjobs(nodes, data)
+    nodes, caches = parse_nodes(obj)
+    jobs = parse_subjobs(nodes, data, caches, flow_uuid)
 
     # make lasts
     lasts = parse_lasts(data, jobs)
@@ -91,26 +90,74 @@ def parse_datum(node_obj):
     return datum
 
 def parse_nodes(obj):
-    return [node for node in obj['nodes']
-                 if node['type'] in ['command', 'flow']]
+    nodes = []
+    caches = []
+    for node in obj['nodes']:
+        if node['type'] in ['command', 'flow']:
+            nodes.append(node)
+        elif node['type'] in ['frame']:
+            if node.get('makeCache'):
+                caches.append(node['id'])
 
-def parse_subjobs(nodes, data):
-    return [parse_subjob(node, data) for node in nodes]
+    return nodes, caches
+    # return [node for node in obj['nodes']
+    #              if node['type'] in ['command', 'flow']]
 
-def parse_subjob(node, data):
+def parse_subjobs(nodes, data, caches, flow_uuid):
+    return [parse_subjob(node, data, caches, flow_uuid) for node in nodes]
+
+def parse_subjob(node, data, caches, flow_uuid):
     t = node['type']
 
     args = node['args']
     srcs = node['srcs']
     dsts = node['dsts']
     inputs = parse_job_inputs(data, srcs)
+
+    cache_list = {}
+
+    import copy
+    command_args = copy.deepcopy(args)
+
     if t == 'command':
-        new_step = parse_command_step(node, args, srcs, dsts)
+        # キャッシュを作成するため、argsを書き換える
+        for p_port, datum_id in dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                command_args[p_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+
+        new_step = parse_command_step(node, command_args, srcs, dsts)
         new_job = Job(new_step, inputs)
     elif t == 'flow':
-        flow_uuid = node['uuid']
-        new_job = parse_job(load_flow(flow_uuid), flow_uuid, args, srcs, dsts, inputs)
+        sub_job_flow_uuid = node['uuid']
+        new_job = parse_job(load_flow(sub_job_flow_uuid), sub_job_flow_uuid, command_args, srcs, dsts, inputs)
+
+        # キャッシュを作成するため、argsを書き換える
+        for p_port, datum_id in dsts.items():
+            if datum_id in caches:
+                cache_uuid = str(uuid.uuid4())
+                cache_list[f'{flow_uuid}.{datum_id}'] = cache_uuid
+                connect_subflow_output_with_cache(cache_uuid, p_port, new_job.jobs)
+
+    if len(cache_list) > 0:
+        new_job.caches = cache_list
+
     return new_job
+
+def connect_subflow_output_with_cache(cache_uuid, port, jobs):
+    """
+    指定したjobsの中に、指定したoutput_port（この場合はcacheするdatumにつながるport）をdstsとして持つstepを探し、
+    そのstepがコマンドであれば、argsに出力port及び値をセットし、
+    フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
+    """
+    for job in jobs:
+        for c_port, c_datum_id in job.step.dsts.items():
+            if c_datum_id == port:
+                if job.step.is_command:
+                    job.step.args[c_port] = os.environ['KENG_FRAMES_PATH'] + '/' + cache_uuid + '.csv'
+                else:
+                    connect_subflow_output_with_cache(cache_uuid, c_port, job.jobs)
 
 def parse_job_inputs(data, srcs):
     return {v: data[v] for v in srcs.values() if v is not None}
@@ -128,6 +175,7 @@ class Job:
         self.inputs = {} if inputs is None else inputs
         self.lasts = {}
         self.jobs = []
+        self.caches = {}
         # self.errors = []
 
     # @profile
@@ -143,6 +191,31 @@ class Job:
             output = { k: self.get_datum(k, v) for k, v in self.lasts.items() }
             self.lasts = output
 
+            def connect_subflow_output_with_cache(cache_uuid, port, p_job):
+                """
+                指定したjobsの中に、指定したoutput_port（この場合はcacheするdatumにつながるport）をdstsとして持つstepを探し、
+                そのstepがコマンドであれば、argsに出力port及び値をセットし、
+                フロー（この場合はサブフロー）であれば、配下のjobsを対象に再帰的に潜る
+                """
+                for job in p_job.jobs:
+                    for c_port, c_datum_id in job.step.dsts.items():
+                        if c_datum_id == port:
+                            if job.step.is_command:
+                                p_job.lasts[c_datum_id].is_temp = False
+                                p_job.lasts[c_datum_id].uuid = cache_uuid
+                            else:
+                                connect_subflow_output_with_cache(cache_uuid, c_port, job)
+
+            # キャッシュを作成するため、argsを書き換える
+            for p_port, datum_id in self.step.dsts.items():
+                for flow_and_datum, uuid in self.caches.items():
+                    cache_datum_id = flow_and_datum.split('.')[1]
+                    if datum_id == cache_datum_id:
+                        connect_subflow_output_with_cache(uuid, p_port, self)
+
+            self.caches = self.aggregate_caches(cf.uuid)
+
+            # 以下、一番てっぺんのflow
             if len(self.step.srcs) == 0 and len(self.step.dsts) == 0:
                 for last in self.lasts.values():
                     last.is_temp = False
@@ -151,11 +224,95 @@ class Job:
             import sys
             import time
             sys.stderr.write('stt (' + time.strftime('%Y/%m/%d %H:%M:%S') + ') step[' + self.step.step_label + '(id: ' + self.step.step_id + ')]\n')
+
+            # コマンド用のキャッシュ（{port_id: cache_uuid}）をstepのdstsを使って作成する
+            # コマンド内部ではその情報をもとにcache_uuidをframe_uuidに設定する（cacheがあれば）
+            caches_output = {}
+            for flow_and_datum, uuid in self.caches.items():
+                caches_output[flow_and_datum.split('.')[1]] = uuid
+            caches_for_command = self.replace_ports(caches_output)
+            cf.caches = caches_for_command
+
             output = cf.execute(self.step.args, self.inputs)
+
             sys.stderr.write('end (' + time.strftime('%Y/%m/%d %H:%M:%S') + ')\n\n')
         # print('execute end:', cf, output)
 
         return self.replace_outputs(output)
+
+    def aggregate_caches(self, flow_uuid):
+        self.link_caches(flow_uuid)
+        caches = self.get_caches()
+        self.replace_lasts_to_caches(flow_uuid)
+        return caches
+
+    def get_caches(self):
+        # flowの場合、配下のcachesを集めてきて、自分のcachesと合わせる
+        if self.step.is_flow:
+            for job in self.jobs:
+                self.caches.update(job.get_caches())
+
+        return self.caches
+
+    def link_caches(self, flow_uuid):
+        """
+        指定したflowにキャッシュ情報をつけて書き換える
+        """
+        current_flow_data = None
+        flows_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{flow_uuid}.json')
+
+        with open(flows_path, 'r', encoding='utf-8') as f:
+            # 1. 対象フローのJSONデータを取得する
+            current_flow_data = json.load(f)
+
+            # 2. 配下のjobのcachesを使ってflowのjsonを更新する
+            for job in self.jobs:
+                already_caches = []
+
+                # cachesを元に書き換えていく
+                for flow_uuid_and_step_id, cache_uuid in job.caches.items():
+
+                    target_flow_uuid = flow_uuid_and_step_id.split('.')[0]
+                    target_step_id = flow_uuid_and_step_id.split('.')[1]
+                    target_datum_uuid = cache_uuid
+
+                    # 更新対象のflowかどうか判断する
+                    if not flow_uuid == target_flow_uuid:
+                        break
+
+                    for node in current_flow_data['nodes']:
+                        # 指定したidかつ、そのuuidがnullの場合、キャッシュをフローのjsonに反映する
+                        if node['id'] == target_step_id:
+                            if node['uuid'] is None:
+                                node['uuid'] = target_datum_uuid
+                                JST = timezone(timedelta(hours=+9), 'JST')
+                                node['cacheCreatedAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
+                            else:
+                                # この後行われるget_caches()で纏められてしまうので、使わないcachesは削除しておく
+                                # job.cachesのfor文の外じゃないと削除できないので、一旦格納しておく
+                                already_caches.append(flow_uuid_and_step_id)
+                            break
+
+                # 使わないcachesの削除
+                for delete_cache in already_caches:
+                    del job.caches[delete_cache]
+
+        # 3. 最後にファイルに保存する
+        flows_path.write_text(json.dumps(current_flow_data, ensure_ascii=False, indent=2), encoding='utf-8')
+
+        # とりあえず何かを返しておく
+        return True
+
+    def replace_lasts_to_caches(self, flow_uuid):
+        """
+        lastsにあるdatumで、caches対象のdatumならば
+        datumのuuidをcacheのuuidに書き換える
+        """
+        for port, datum in self.lasts.items():
+            for flow_and_step, cache_uuid in self.caches.items():
+                if flow_and_step.split('.')[0] == flow_uuid and flow_and_step.split('.')[1] == port:
+                    datum.uuid = cache_uuid
+                    break
 
     def get_lasts_from(self, step_paths):
         result = {}
@@ -186,6 +343,18 @@ class Job:
                 for c_k, c_v in job.inputs.items():
                     if c_k == o_port['name']:
                         result[c_k] = c_v
+
+        return result
+
+    def replace_ports(self, output):
+        """
+        {datum_id: Value} → {port: Value}
+        """
+        result = {}
+        for dsts_o_port, dsts_datum_id in self.step.dsts.items():
+            for o_k, o_v in output.items():
+                if dsts_datum_id == o_k:
+                    result[dsts_o_port] = o_v
 
         return result
 
@@ -238,11 +407,27 @@ class Job:
                 result[d] = job.inputs[d]
         return result
 
-
     def check_multi_use(self, job, datum_id, datum):
+
         job_ports = self.dst_job_ids(datum_id)
+
         if len(job_ports) >= 2:
-            datum.command_to_file()
+            # if not isinstance(datum.source, NysolPythonSource):
+
+            # datum_idを生み出しているjobが対象のcachesを持っているので、
+            # src_job_fromでjobを探してくる!!!!!!!!
+            src_job, src_port = self.src_job_from(datum_id)
+            caches = src_job.caches
+
+            # cachesがない場合
+            if len(caches) == 0:
+                datum.command_to_file()
+            else:
+                # cachesがある場合
+                for flow_and_datum, uuid in caches.items():
+                    cache_datum_id = flow_and_datum.split('.')[1]
+                    if cache_datum_id == datum_id:
+                        datum.command_to_file(uuid)
 
             for j, port in job_ports.items():
                 if j != job:
@@ -268,8 +453,9 @@ class Job:
         for datum in self.inputs.values():
             datum.dtor()
 
-        for datum in self.lasts.values():
-            datum.command_to_file().dtor()
+        # engine_executeに移動
+        # for datum in self.lasts.values():
+        #     datum.command_to_file().dtor()
 
         for job in self.jobs:
             job.dtor()
@@ -329,6 +515,7 @@ class Command:
         self.i_ports = []
         self.o_ports = []
         self.description = ''
+        self.caches = {}
 
     def execute(self, args, inputs):
         pass
@@ -365,7 +552,14 @@ class UnixCommand(Command):
                  isinstance(input.source, NysolPythonSource):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
-        frame = Frame(str(uuid.uuid4()), source)
+
+        frame = None
+        if len(self.caches) > 0 and self.caches.get(self.out_key) is not None:
+            frame = Frame(self.caches.get(self.out_key) , source)
+            frame.is_temp = False
+        else:
+            frame = Frame(str(uuid.uuid4()) , source)
+
         return { self.out_key: frame }
 
     def source(self, args, inputs):
@@ -988,6 +1182,17 @@ class MCommandNew(UnixCommand):
 
     def source(self, args, inputs):
         args, process_flow = self.command_args(args, inputs)
+        # for datum_id, uuid in self.caches.items():
+
+            # command_path = Path('./kskp/engine/commands/pcmd/utf8_to_cp932.sh')
+            # frame_path = Path(os.environ['KENG_FRAMES_PATH']) / (uuid + '_sjis' + '.csv')
+            # command_str = command_path.as_posix() + ' o=' + frame_path.as_posix()
+            #
+            # sjis = None
+            # sjis <<= nm.m2tee(i=process_flow)
+            # sjis <<= nm.cmd(command_str)
+            # sjis.run()
+
         return NysolPythonSource('csv', self.nysol_mod, args, process_flow)
 
 import nysol.mcmd as nm
@@ -1016,8 +1221,28 @@ class Msel(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
+
         # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        # return { self.out_key:  Frame(frame_uuid, source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -1141,8 +1366,25 @@ class Mselstr(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -1518,6 +1760,12 @@ class Mnewnumber(MCommandNew):
         self.params.append(Parameter('S', '開始数値/アルファベット(大文字)'))
         self.params.append(Parameter('l', '作成するデータ行数'))
 
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
+
 class MnewnumberOld(MCommand):
     def __init__(self):
         super().__init__()
@@ -1539,6 +1787,12 @@ class Mnewrand(MCommandNew):
         self.params.append(Parameter('l', '作成するデータ行数'))
         self.params.append(Parameter('S', '乱数の種を指定する'))
 
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
+
 class MnewrandOld(MCommand):
     def __init__(self):
         super().__init__()
@@ -1558,6 +1812,12 @@ class Mnewstr(MCommandNew):
         self.params.append(Parameter('a', '新規作成する連番行の項目名(必須)'))
         self.params.append(Parameter('v', '新しく作成する文字列'))
         self.params.append(Parameter('l', '作成するデータ行数'))
+
+    def command_args(self, args, inputs):
+        args_for_nysol = args
+        process_flow = None
+
+        return args_for_nysol, process_flow
 
 class MnewstrOld(MCommand):
     def __init__(self):
@@ -1990,8 +2250,25 @@ class Mcommon(MCommandNew):#new
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2067,8 +2344,25 @@ class Mnrcommon(MCommandNew):#new
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2387,8 +2681,25 @@ class Mbest(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2432,8 +2743,25 @@ class Mdelnull(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2512,8 +2840,25 @@ class Mselnum(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -2556,8 +2901,25 @@ class Mselrand(MCommandNew):
                 source.deletable_uuids = input.source.deletable_uuids
                 source.deletable_uuids.append(input.uuid)
 
-        # uが直書きだが、一致をi不一致をuに結びつけるものがないので、このままでいいかなと思っています。
-        return { self.out_key:  Frame(str(uuid.uuid4()), source) ,'u': Frame(str(uuid.uuid4()), source_for_u)}
+        result = {}
+        for o_port in self.o_ports:
+            frame = None
+            frame_source = None
+
+            if o_port['name'] == 'u':
+                frame_source = source_for_u
+            else:
+                frame_source = source
+
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , frame_source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , frame_source)
+
+            result[o_port['name']] = frame
+
+        return result
 
     def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
@@ -4774,6 +5136,18 @@ class ColumnsToRows(NmCmd):
         self.name = 'ColumnsToRows'
         self.description = 'f=で指定した複数の列項目に対して、各項目の行を連結した新たな項目をa=で指定した名前で作成する。'
 
+class GroupbyColumns(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/groupby_columns.sh', 'csv', 'o=')
+        self.name = 'GroupbyColumns'
+        self.description = '複数の列項目を、指定した新規列名で、行データへ展開し、複数の統計量を適用した結果を、新規列名と統計量からなる列名として出力する。'
+
+class Utf8ToCp932(NmCmd):
+    def __init__(self):
+        super().__init__('/kskp/engine/commands/pcmd/utf8_to_cp932.sh', 'csv', 'o=')
+        self.name = 'Utf8ToCp932'
+        self.description = 'Windowsファイル（Shift-JIS拡張 CP932、CRLF改行コード）へ変換したデータを出力する。'
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -4910,7 +5284,9 @@ commands = {
     'column_blank_name': ColumnBlankName(),
     'column_list': ColumnList(),
     'windows_cp932_csv_read': WinCp932Read(),
-    'columns_to_rows': ColumnsToRows()
+    'columns_to_rows': ColumnsToRows(),
+    'groupby_columns': GroupbyColumns(),
+    'utf8_to_cp932': Utf8ToCp932()
 }
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),

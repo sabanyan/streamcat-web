@@ -52,6 +52,44 @@ export type FlowListDataType = {
   description: string;
 }
 
+export type LibraryListDataType = {
+  createdAt: string;
+  creator: string;
+  label: string;
+  type: string;
+  uuid: string;
+}
+
+export type ServersDataType = {
+  id: string;//Directory,SMB,PostgreSQL
+  version: string;
+  label: string;
+  description: string;
+  url: string;
+  params: DirectoryExtendsDataType | SMBExtendsDataType | PostgreSQLExtendsDataType
+}
+
+export type DirectoryExtendsDataType = {
+  directoryPath: string
+}
+
+export type SMBExtendsDataType = {
+  user: string;
+  password: string;
+  server: string;
+  port: string;
+  domain: string;
+  directoryPath: string
+}
+
+export type PostgreSQLExtendsDataType = {
+  user: string;
+  password: string;
+  server: string;
+  port: string;
+  database: string;
+}
+
 export type RunResponseNameType = {
   id: string,
   uuid: string
@@ -63,9 +101,9 @@ export type RunResponseType =  {
 }
 
 export type UploadedFileType = {
-  file: File,
-  uuid: string,
-  label: string
+  file: File | null,
+  uuid?: string,
+  label?: string
 }
 
 export type DragType = {
@@ -110,4 +148,12 @@ export type DataFrameDetailType = {
   contents: {};
   numberOfLines: string;
   lastModifiedAt: string;
+}
+
+
+export type BreadCrumbHistoryType = {
+  id: string,
+  label: string,
+  url: string,
+  current: boolean,
 }

@@ -12,3 +12,28 @@ INSERT INTO users_x_projects (user_id, project_id) VALUES (1, 3);
 INSERT INTO users_x_projects (user_id, project_id) VALUES (2, 1);
 INSERT INTO users_x_projects (user_id, project_id) VALUES (2, 2);
 INSERT INTO users_x_projects (user_id, project_id) VALUES (3, 3);
+
+-- ルートフォルダとその子供たちをlibraryにINSERTする
+INSERT INTO library (id, parent_id, uuid, dir_path, type, data, creator, created_at) 
+VALUES (1, NULL, '4c423c18-2867-406b-af15-8ad0481c63b4', 'kskp/data/library', 'folder', 
+       '{"label":"ROOT FOLDER"}', 1, '2010-01-01 12:00:00');
+
+INSERT INTO library (id, parent_id, uuid, dir_path, type, data, creator, created_at) 
+VALUES (11, 1, '2c792bbc-4679-4396-96d1-94fc023073b1', 'kskp/data/library', 'folder', 
+       '{"label":"フォルダ"}', 1, '2010-01-01 12:00:01');
+
+INSERT INTO library (id, parent_id, uuid, dir_path, type, data, creator, created_at) 
+VALUES (12, 1, '5ff56eff-2537-4608-8605-4320d898195b', 'kskp/data/library', 'remote-folder', 
+       '{"label":"共有フォルダ","user":"user1","password":"pass","server":"192.168.0.3","port":"139","domain":"WORKGROUP","directory":"share"}', 1, '2010-01-01 12:00:02');
+
+INSERT INTO library (id, parent_id, uuid, dir_path, type, data, creator, created_at) 
+VALUES (13, 1, '8cfde127-68e5-4bc1-a68a-8aa6f68b05ff', 'kskp/data/library', 'database', 
+       '{"label":"データベース", "dbms":"ORACLE", "connectionString":"data source=myDB;user id=user01;password=pass01;"}', 1, '2010-01-01 12:00:03');
+
+INSERT INTO library (id, parent_id, uuid, dir_path, type, data, creator, created_at) 
+VALUES (14, 1, '44d2abba-68c5-4087-ab93-edfba8835326', 'kskp/data/library', 'frame', 
+       '{"label":"フレーム"}', 1, '2010-01-01 12:00:04');
+
+INSERT INTO library (id, parent_id, uuid, dir_path, type, data, creator, created_at) 
+VALUES (15, 1, '61f70b75-46ac-4716-ae8d-c0c895775745', 'kskp/data/library', 'document', 
+       '{"label":"文書"}', 1, '2010-01-01 12:00:05');

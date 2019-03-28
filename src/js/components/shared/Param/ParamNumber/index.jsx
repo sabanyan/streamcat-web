@@ -7,7 +7,7 @@ import style from './style.scss'
 
 type Props = {
   param : CommandParamType;
-  onBuild?: Function;
+  events?: {};
   defaultValue : any;
   refValue?: any;
 }
@@ -18,7 +18,8 @@ export default class ParamNumber extends Param {
   }
 
   render () {
-    const {param,onBuild,defaultValue,refValue,disabled} = this.props
+    //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
+    const {param,onBuild,events,defaultValue,refValue,disabled} = this.props
     let inputRef = refValue
     if(onBuild){
       inputRef = element => onBuild(param,element)
@@ -29,7 +30,7 @@ export default class ParamNumber extends Param {
       <label>
         {label}
       </label>
-      <input name={param.name} type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue} ref={inputRef} disabled = {disabled}></input>
+      <input name={param.name} type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue} ref={inputRef} disabled = {disabled} paramtype={param.type} {...events} ></input>
     </div>
   }
 

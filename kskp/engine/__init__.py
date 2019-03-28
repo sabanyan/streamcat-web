@@ -21,9 +21,37 @@ def execute(flow_uuid, flow_json, arguments={}, inputs=None, step_paths=None, fr
 
     job = parse(flow_uuid, inputs=inputs, args=arguments)
     result = job.execute(step_paths=step_paths)
+
+    for datum in job.lasts.values():
+        datum.command_to_file().dtor()
+
+    # HOTFIX: cache専用のdtor
+    # 一番上のjobがこの段階では全てのcachesを集めて持っているはずなので、
+    # ここでひとまず行う
+    for address, uuid in job.caches.items():
+        flow_uuid = address.split('.')[0]
+        datum_id = address.split('.')[1]
+
+        flow_path = Path(os.environ['KENG_FLOWS_PATH']).joinpath(f'{flow_uuid}.json')
+        frame_path = Path(os.environ['KENG_FRAMES_PATH']).joinpath(f'{uuid}.csv')
+
+        # 生成されていないcacheの紐付けを削除する
+        if not frame_path.exists():
+            flow_data = json.loads(flow_path.read_text())
+            for node in flow_data['nodes']:
+                if node['id'] == datum_id:
+                    node['uuid'] = None
+                    node['cacheCreatedAt'] = None
+
+            flow_path.write_text(json.dumps(flow_data, ensure_ascii=False, indent=2), encoding='utf-8')
+            
     job.dtor()
 
-    return job.lasts
+    _result = {}
+    _result['outputs'] = job.lasts
+    _result['caches'] = job.caches
+
+    return _result
 
 
 def persist_to_files(job):

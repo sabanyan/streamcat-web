@@ -22,8 +22,42 @@ from .model import (
     get_flow_nodes_by_uuid,
     update_user_by_id,
     write_data_to_json,
-    make_flow_path
+    make_flow_path,
+    copy_flow_by_uuid,
+
+    get_all_stores,
+    create_store,
+    delete_store_by_id,
+    get_library,
+    get_folder,
+    create_folder,
+    rename_folder_by_id,
+    delete_folder_by_id,
+    get_remote_folder,
+    create_remote_folder,
+    rename_remote_folder_by_id,
+    delete_remote_folder_by_id,
+    get_database,
+    create_database,
+    rename_database_by_id,
+    delete_database_by_id,
+
+    get_path,
+    get_root,
+    get_folder2,
+    set_folder2,
+    upd_folder2,
+    del_folder2,
+    get_file2,
+    set_file2,
+    upd_file2,
+    del_file2
 )
+from .models.store import Store
+from .models.folder import Folder
+from .models.remote_folder import RemoteFolder
+from .models.database import Database
+from .models.document import Document
 from .activity import (
     make_unfinished_history,
     make_finished_history
@@ -108,14 +142,27 @@ def new_flow():
     # getで取ってくるとキーが存在しないときはNoneが返ってきて、project_idがNoneになるので
     # これでvalidationできていると言える？
     # 今の所project_uuid以外は必須ではない
-    project_id = get_project_id_by_uuid(j.get('project_uuid'))
 
-    # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
-    if project_id is None:
-        return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
+    new_flow = {}
 
-    # frontendからcreate_flowに渡すものが増えてきたので、request.jsonを直接渡す。
-    new_flow = create_flow(j, session['user_id'])
+    if 'original_flow_uuid' in j:
+        original_flow_path = get_flow_path_by_uuid(j.get('original_flow_uuid'))
+
+        # ブロック句
+        if not os.path.exists(original_flow_path):
+            return jsonify({'success': False, 'message': 'not exist ' + original_flow_uuid })
+
+        # コピー
+        new_flow = copy_flow_by_uuid(j.get('original_flow_uuid'))
+    else:
+        project_id = get_project_id_by_uuid(j.get('project_uuid'))
+
+        # 指定されたUUIDを持つプロジェクトが存在しない場合はエラー
+        if project_id is None:
+            return jsonify({'success': False, 'message': 'invalid project uuid: (%s)' % j['project_uuid']})
+
+        # frontendからcreate_flowに渡すものが増えてきたので、request.jsonを直接渡す。
+        new_flow = create_flow(j, session['user_id'])
 
     return jsonify({'success': True, 'data': new_flow})
 
@@ -407,9 +454,20 @@ def make_new_frame():
     no_contents = False
 
     if 'file' in request.files:
-        # ファイルがPOSTで送信されてきたらアップロードだとみなす
-        frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
-        return jsonify({'success': True, "data": frame})
+        if 'parent' in request.form and 'label' in request.form:
+            # parentとlabel属性があれば新形式のPOST /framesだとみなす
+            from .models.frame import Frame
+            new_frame = Frame(str(uuid.uuid4())
+                            , request.form.get('parent')
+                            , request.form.get('label')
+                            , request.files.get('file').stream
+                            , creator=1)
+            set_file2(new_frame)
+            return jsonify({'success': True, 'data': new_frame.to_json()})
+        else:
+            # ファイルがPOSTで送信されてきたらアップロードだとみなす
+            frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
+            return jsonify({'success': True, "data": frame})
     elif 'from' in request.args:
         if '.' in request.args['from']:
             # ドットで区切って、具体的に一つだけstepを指定することができる
@@ -447,7 +505,14 @@ def fetch_frame(frame_uuid):
     # リミットのデフォルトは全行なのでNoneにしておく（０の場合は０行取得だから０は使えない）
     limit = int(request.args.get('limit')) if request.args.get('limit') else None
 
-    file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
+    # 先にLibraryテーブルから指定されたUUIDのフレームを探す
+    file_path = get_path(frame_uuid)
+    if file_path is None:
+        file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
+    else:
+        limit = 999 if limit is None else limit
+        file_path = Path(file_path)
+
     result = csv_to_frame(file_path, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
@@ -457,8 +522,43 @@ def fetch_frame(frame_uuid):
             headers.append(column.replace('\n',''))
         result = headers
 
-
     return jsonify({'success': True, 'data': result})
+
+@api.route('/frames/<frame_uuid>', methods=['PUT'])
+def update_frame(frame_uuid):
+    """
+    指定したframeのラベル名を変更する
+    """
+    try:
+        from .models.frame import Frame
+        frame = Frame(frame_uuid
+                      , None
+                      , request.json['label']
+                      , None
+                      , modifier=2)
+        upd_file2(frame)
+        return jsonify({'success': True, 'data': frame.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/frames/<frame_uuid>', methods=['DELETE'])
+def delete_frame(frame_uuid):
+    """
+    指定したframeを物理削除する
+    """
+    try:
+        del_file2(frame_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
 
 def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     """
@@ -502,16 +602,25 @@ def download_file():
     # 現在typeは未使用
     type = request.args.get('type')
     frame_uuid = request.args.get('uuid')
+    label = request.args.get('label', 'テスト')
     ext = request.args.get('ext')
 
     # タイムゾーンの設定
-    JST = timezone(timedelta(hours=+9), 'JST')
-    date = datetime.now(JST)
+    # JST = timezone(timedelta(hours=+9), 'JST')
+    # date = datetime.now(JST)
 
     # ダウンロードファイルの名前
-    downloadFileName = 'KSKP' + date.strftime("%Y%m%d%H%M") + '.' + ext
+    if frame_uuid == 'テスト':
+        downloadFileName = frame_uuid  + '.' + ext
+    else:
+        downloadFileName = label + '.' + ext
+
     # ダウンロード対象のファイルの名前
-    downloadFile = frame_uuid + '.' + ext
+    downloadFile = frame_uuid + '_sjis.' + ext
+    sjis_path = DATAFRAME_DIR_PATH / downloadFile
+    # sjis版がなかったらutf8版を落とす（今の所sjis版はオムロンさま専用なので）
+    if not sjis_path.exists():
+        downloadFile = frame_uuid + '.' + ext
 
     return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
                                attachment_filename = downloadFileName, mimetype = 'text/csv')
@@ -531,7 +640,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                         })
     else:
         try:
-            result_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
+            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -539,26 +648,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                                     'message': 'result is empty.'
                                    })
             else:
-                # 結果をキャッシュ化する（オムロン様用一時的対応
-
-                # 1. 対象フローのJSONデータを取得する
-                flow_path = get_flow_path_by_uuid(flow_uuid)
-                current_flow_data = json.loads(flow_path.read_text())
-
-                # 2. resultを読んで書き換えていく
-                for link in result_data: # ここが'name'なのは変えるべき
-                    target_step_id = link['id']
-                    target_datum_uuid = link['uuid']
-
-                    for i, node in enumerate(current_flow_data['nodes']):
-                        if node['id'] == target_step_id:
-                            current_flow_data['nodes'][i]['uuid'] = target_datum_uuid
-                            break
-
-                # 3. 最後にファイルに保存する
-                update_flow_by_uuid(flow_uuid, current_flow_data)
-
-                return jsonify({'success': True, 'name': result_data})
+                return jsonify({'success': True, 'name': result_data, 'caches': caches_data})
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -579,6 +669,8 @@ def jobs():
 
     # jobsリストの作成
     for job_path in Path(JOBS_DIR_PATH).iterdir():
+        if not job_path.suffix == '.json':
+            continue
         data = json.loads(job_path.read_text(encoding='utf-8'))
         if 'flow' in request.args:
             if data['flow']['uuid'] == request.args['flow']:
@@ -657,6 +749,38 @@ def update_profile(user_id):
             profile_json[key] = value
         path.write_text(json.dumps(profile_json, ensure_ascii=False, indent=2), encoding='utf-8')
     # ----
+
+    return jsonify({'success': True})
+
+@api.route('/caches', methods=['DELETE'])
+@login_required_api
+def delete_cache():
+    frame_uuid = ''
+
+    # パース
+    ofs = request.args['of'].split('.')
+    flow_uuid = ofs[0]
+    datum_id = ofs[1]
+
+    frame_name = DATAFRAME_DIR_PATH / ('caches_' + flow_uuid + '_' + datum_id + '.csv')
+
+    p = FLOWS_DIR_PATH.joinpath(flow_uuid + '.json')
+    j = json.loads(p.read_text(), encoding='utf-8')
+
+    for i, node in enumerate(j['nodes']):
+        if node['id'] == datum_id:
+            frame_uuid = j['nodes'][i]['uuid']
+            j['nodes'][i]['uuid'] = None
+            j['nodes'][i]['cacheCreatedAt'] = None
+
+            # キャッシュを削除する（増え続けると困るので）
+            frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
+            frame_path.unlink()
+            sjis_path = DATAFRAME_DIR_PATH / (frame_uuid + '_sjis.csv')
+            if sjis_path.exists():
+                sjis_path.unlink()
+
+    update_flow_by_uuid(p.stem, j)
 
     return jsonify({'success': True})
 
@@ -899,19 +1023,20 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from . import engine as e
-        flow_path = FLOWS_DIR_PATH / Path(flow_uuid + '.json')
-        with open(flow_path.as_posix(), 'r') as f:
-            return e.execute(flow_uuid, f.read(), frames_path=DATAFRAME_DIR_PATH.as_posix(), step_paths=step_paths, flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
+        data_path = '/kskp/data'
+        with open(f'{data_path}/flows/{flow_uuid}.json', 'r') as f:
+            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=f'{data_path}/frames', flows_path=f'{data_path}/flows', inputs=inputs, arguments=args)
 
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
+    # 結果の処理
     if no_contents:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result['outputs'].items()]
     else:
-        print('resultを作るよ！')
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result.items()]
-    return result_list
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result['outputs'].items()]
+
+    return result_list, result['caches']
 
 
 def load_as_data_frame(path_obj, offset, limit):
@@ -1037,12 +1162,459 @@ def visualizer():
     # ここまでがengine.executeのparse部分にあたる
 
     result = job.execute()['o']
-    job.dtor()
+    # job.dtor()
     ### ここまでがengine.execute部分にあたる
 
     # テーブルコマンド
     if request.args.get('from') == 'csvtohtmltable':
         return render_template("visualize_table.html", header=result['header'], reader=result['reader'])
-        
+
     # bokehのコマンド
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
+
+import pprint
+
+@api.route('/stores', methods=['GET'])
+def fecth_stores():
+    """
+    データストアの定義(雛形)の一覧を返却する
+    """
+    try:
+        stores = Store.find_all()
+        ret = []
+        for store in stores:
+            ret.append(store.to_json())
+
+        return jsonify({'success': True, 'data': ret})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores/<store_id>', methods=['GET'])
+def fecth_store(store_id):
+    """
+    データストアの定義(雛形)を返却する
+    """
+    try:
+        store = Store.find_by_id(store_id)
+        if store is None:
+            data = None
+        else:
+            data = store.to_json()
+
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores', methods=['POST'])
+# @login_required_api
+def make_new_store():
+    """
+    データストアの定義(雛形)を作成する
+    """
+    try:
+        new_store = Store.create(request.json['id']
+                                ,request.json['version']
+                                ,request.json['label']
+                                ,request.json['description']
+                                ,request.json['url']
+                                ,request.json['params']
+                                ,1)
+        new_store.save()
+        return jsonify({'success': True, 'data': new_store.to_json()})    
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores/<store_id>', methods=['DELETE'])
+# @login_required_api
+def delete_store(store_id):
+    """
+    データストアの定義(雛形)を削除する
+    """
+    try:
+        delete_store = Store(store_id)
+        delete_store.delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+def __make_fetch_data(folder):
+    if folder is None:
+        data = None
+    else:
+        data = folder.to_json()
+        # folderPath属性を作成する
+        folder_list = folder.get_folder_path()
+        data['folderPath'] = []
+        for f in folder_list:
+            data['folderPath'].append(f)
+        # children属性を作成する
+        children = folder.get_children()
+        data['children'] = []
+        for child in children:
+            data['children'].append(child.to_json())
+    return data
+
+@api.route('/library', methods=['GET'])
+# @login_required_api
+@update_navigation
+def fecth_library():
+    """
+    ルートデータストアを返却する
+    """
+    try:
+        # root_store = Library.find_by_parent_uuid(None)
+        root = get_root()
+        data = __make_fetch_data(root)
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+@api.route('/folders/<folder_uuid>', methods=['GET'])
+# @login_required_api
+@update_navigation
+def fetch_folder(folder_uuid):
+    """
+    フォルダを返却する
+    """
+    try:
+        # folder = get_folder(folder_uuid)
+        # return jsonify({'success': True, 'data': folder})
+
+        # folder = Library.find_by_uuid(folder_uuid)
+        # if folder is None:
+        #     data = None
+        # else:
+        #     data = folder.to_json()
+        #     children = Library.find_by_parent_uuid(folder.id)
+        #     data['children'] = []
+        #     for child in children:
+        #         data['children'].append(child.to_json())
+        # return jsonify({'success': True, 'data': data})
+
+        folder = get_folder2(folder_uuid)
+        data = __make_fetch_data(folder)
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/folders', methods=['POST'])
+# @login_required_api
+def make_new_folder():
+    """
+    フォルダを作成する
+    """
+    try:
+        # new_folder= create_folder(request.json, 1)
+        # return jsonify({'success': True, 'data': new_folder})
+
+        # new_folder = Library.create(str(uuid.uuid4())
+        #                          , request.json['parent']
+        #                          , request.json['label']
+        #                          , 1)
+        # new_folder.save()
+        # return jsonify({'success': True, 'data': new_folder.to_json()})
+
+        new_folder = Folder(str(uuid.uuid4())
+                          , request.json['parent']
+                          , request.json['label']
+                          , creator=1)
+        set_folder2(new_folder)
+        return jsonify({'success': True, 'data': new_folder.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/folders/<folder_uuid>', methods=['PUT'])
+# @login_required_api
+def update_folder(folder_uuid):
+    """
+    フォルダを修正する
+    """
+    try:
+        # folder= rename_folder_by_id(folder_uuid, new_label)
+        folder = Folder(folder_uuid
+                      , None
+                      , request.json['label']
+                      , modifier=2)
+        upd_folder2(folder)
+        return jsonify({'success': True, 'data': folder.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/folders/<folder_uuid>', methods=['DELETE'])
+# @login_required_api
+def delete_folder(folder_uuid):
+    """
+    フォルダを削除する
+    """
+    try:
+        # delete_folder_by_id(folder_uuid)
+        # return jsonify({'success': True})
+        del_folder2(folder_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+@api.route('/remote-folders/<folder_uuid>', methods=['GET'])
+# @login_required_api
+# @update_navigation
+def fetch_remote_folder(folder_uuid):
+    """
+    リモートフォルダを返却する
+    """
+    try:
+        # folder = get_remote_folder(folder_uuid)
+        # return jsonify({'success': True, 'data': folder})
+
+        remote_folder = get_folder2(folder_uuid)
+        data = __make_fetch_data(remote_folder)
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/remote-folders', methods=['POST'])
+# @login_required_api
+def make_new_remote_folder():
+    """
+    リモートフォルダを作成する
+    """
+    try:
+        # new_folder= create_remote_folder(request.json, 1)
+        # return jsonify({'success': True, 'data': new_folder})
+
+        new_folder = RemoteFolder(str(uuid.uuid4())
+                                , request.json['parent']
+                                , request.json['label']
+                                , request.json['user']
+                                , request.json['password']
+                                , request.json['server']
+                                , request.json['port']
+                                , request.json['domain']
+                                , request.json['directory']
+                                , creator=1)
+        set_folder2(new_folder)
+        return jsonify({'success': True, 'data': new_folder.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/remote-folders/<folder_uuid>', methods=['PUT'])
+# @login_required_api
+def update_remote_folder(folder_uuid):
+    """
+    リモートフォルダを修正する
+    """
+    try:
+        new_label = request.json['label']
+        folder= rename_remote_folder_by_id(folder_uuid, new_label)
+        return jsonify({'success': True, 'data': folder})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
+# @login_required_api
+def delete_remote_folder(folder_uuid):
+    """
+    リモートフォルダを削除する
+    """
+    try:
+        # delete_remote_folder_by_id(folder_uuid)
+        # return jsonify({'success': True})
+        del_folder2(folder_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+
+@api.route('/databases/<database_uuid>', methods=['GET'])
+# @login_required_api
+@update_navigation
+def fetch_database(database_uuid):
+    """
+    データベースを返却する
+    """
+    try:
+        database = get_database(database_uuid)
+        return jsonify({'success': True, 'data': database})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/databases', methods=['POST'])
+# @login_required_api
+def make_new_database():
+    """
+    データベースを作成する
+    """
+    try:
+        new_database= create_database(request.json, 1)
+        return jsonify({'success': True, 'data': new_database})    
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/databases/<database_uuid>', methods=['PUT'])
+# @login_required_api
+def update_database(database_uuid):
+    """
+    データベースを修正する
+    """
+    try:
+        new_label = request.json['label']
+        database= rename_database_by_id(database_uuid, new_label)
+        return jsonify({'success': True, 'data': database})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/databases/<database_uuid>', methods=['DELETE'])
+# @login_required_api
+def delete_database(database_uuid):
+    """
+    データベースを削除する
+    """
+    try:
+        delete_database_by_id(database_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+@api.route('/documents/<doc_uuid>', methods=['GET'])
+def fetch_document(doc_uuid):
+    """
+    ドキュメントを返却する
+    """
+    try:
+        offset = int(request.args.get('offset')) if request.args.get('offset') else 0
+        limit = int(request.args.get('limit')) if request.args.get('limit') else 999
+        file_path = Path(get_path(doc_uuid))
+        result = csv_to_frame(file_path, offset=offset, limit=limit)
+        return jsonify({'success': True, 'data': result})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/documents', methods=['POST'])
+def make_new_document():
+    """
+    ドキュメントを作成する
+    """
+    try:
+        new_doc = Document(str(uuid.uuid4())
+                         , request.form.get('parent')
+                         , request.form.get('label')
+                         , request.files.get('file').stream
+                         , creator=1)
+        set_file2(new_doc)
+        return jsonify({'success': True, 'data': new_doc.to_json()})
+    except Exception as e:
+        return jsonify({
+                            'success': False,
+                            'code': -1,
+                            'message': 'invalid json'
+                        })
+
+@api.route('/documents/<doc_uuid>', methods=['PUT'])
+def update_document(doc_uuid):
+    """
+    指定したdocumentのラベル名を変更する
+    """
+    try:
+        doc = Document(doc_uuid
+                     , None
+                     , request.json['label']
+                     , None
+                     , modifier=2)
+        upd_file2(doc)
+        return jsonify({'success': True, 'data': doc.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/documents/<doc_uuid>', methods=['DELETE'])
+def delete_document(doc_uuid):
+    """
+    指定したdocumentを物理削除する
+    """
+    try:
+        del_file2(doc_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })

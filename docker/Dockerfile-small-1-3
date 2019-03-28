@@ -32,6 +32,12 @@ COPY ./nysol-2.4-0.x86_64.rpm /home/kskp/nysol-2.4-0.x86_64.rpm
 RUN yum install -y sudo gem
 RUN rpm -ih /home/kskp/nysol-2.4-0.x86_64.rpm
 
+# Install samba packages
+RUN yum install -y samba-client samba-winbind cifs-utils
+
+# Add privilage for mount command
+RUN echo "kskp ALL=(ALL) NOPASSWD: /usr/bin/mount,/usr/sbin/mount.cifs,/usr/bin/umount" >> /etc/sudoers
+
 USER kskp
 COPY ./kskp /home/kskp/kskp
 
@@ -51,7 +57,7 @@ RUN yum install -y boost boost-devel
 
 RUN pip install nysol
 
-WORKDIR /
+WORKDIR /home/kskp
 
 USER kskp
 CMD flask run -h 0.0.0.0 -p ${PORT:-5000}
