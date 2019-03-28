@@ -5,8 +5,12 @@ import platform
 from time import sleep
 from pathlib import Path
 from .library import Library
+from .folder import Folder
+from .database import Database
+from .frame import Frame
+from .document import Document
 
-class RemoteFolder():
+class RemoteFolder(Folder):
     """
     Remote-Folderモデル
     """
@@ -23,52 +27,13 @@ class RemoteFolder():
                 , creator=None
                 , modifier=None
                 , created_at=None):
-        self.uuid = uuid
-        self.parent_uuid = parent_uuid
-        self.label = label
+        super().__init__(uuid, parent_uuid, label, creator, modifier, created_at)
         self.user = user
         self.password = password
         self.server = server
         self.port = port
         self.domain = domain
-        self.directory = directory
-        self.creator = creator
-        self.modifier = modifier
-        self.created_at = created_at
-
-    def get_children(self):
-        from .folder import Folder
-        from .database import Database
-        from .frame import Frame
-        from .document import Document
-        #  DB検索
-        child_libraries = Library.find_by_parent_uuid(self.uuid)
-        ret = []
-        for child_library in child_libraries:
-            if child_library.type == 'folder':
-                ret.append(Folder.create_by_library(child_library))
-            elif child_library.type == 'remote-folder':
-                ret.append(RemoteFolder.create_by_library(child_library))
-            elif child_library.type == 'database':
-                ret.append(Database.create_by_library(child_library))
-            elif child_library.type == 'frame':
-                ret.append(Frame.create_by_library(child_library))
-            elif child_library.type == 'document':
-                ret.append(Document.create_by_library(child_library))
-        return ret
-
-    def __set_children(self):
-        # ここで登録するファイルのTypeはunknown-fileとする
-        library = Library.find_by_uuid(self.uuid)        
-        for path in Path(library.dir_path).iterdir():
-            if path.is_dir():
-                pass
-            elif path.is_file():
-                label = path.stem
-            
-
-    def get_folder_path(self):
-        return Library.get_folder_path2(self.uuid)
+        self.directory = directory                
 
     @classmethod
     def create_by_library(cls, library):

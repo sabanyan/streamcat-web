@@ -127,7 +127,7 @@ class Library(db.Model):
         pass
 
     @classmethod
-    def create_frame_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+    def __create_file_type(cls, uuid, parent_uuid, label):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
         
@@ -153,9 +153,21 @@ class Library(db.Model):
 
         # dataを作成する
         data = json.dumps({'label' : label})
+        return (id, parent_id, dir_path, data)
 
+    @classmethod
+    def create_frame_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+        (id, parent_id, dir_path, data) = Library.__create_file_type(uuid, parent_uuid, label)
         # Libraryオブジェクトを返す
         ret = Library(id, parent_id, uuid, dir_path, 'frame', data, creator, modifier)
+        ret.parent_uuid = parent_uuid
+        return ret
+
+    @classmethod
+    def create_document_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+        (id, parent_id, dir_path, data) = Library.__create_file_type(uuid, parent_uuid, label)
+        # Libraryオブジェクトを返す
+        ret = Library(id, parent_id, uuid, dir_path, 'document', data, creator, modifier)
         ret.parent_uuid = parent_uuid
         return ret
             

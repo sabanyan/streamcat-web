@@ -1,6 +1,4 @@
 import json
-import pathlib
-from .library import Library
 
 class Document():
     def __init__(self, uuid, parent_uuid, label, stream, creator=None, modifier=None, created_at=None):
