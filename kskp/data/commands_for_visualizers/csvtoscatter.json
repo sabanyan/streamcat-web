@@ -1,7 +1,7 @@
 {
   "version": "0.7.0",
   "id": "csvtoscatter",
-  "order": 300,
+  "order": 500,
   "label": "散布図",
   "classification": "visualize",
   "description": "csvファイルから散布図を作成する",
@@ -35,14 +35,6 @@
         "multiple": false
       },
       "label": "y軸に表示する項目"
-    },
-    {
-      "name": "data_column",
-      "type": "column",
-      "options":{
-        "multiple": false
-      },
-      "label": "キー項目列名"
     },
     {
       "name": "alpha",
