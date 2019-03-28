@@ -23,8 +23,12 @@ import BreadCrumb from '../../shared/BreadCrumb'
 import TextField from '../../shared/TextField'
 import ReactDomUtil from '../../../utils/ReactDomUtil'
 import ErrorUtil from '../../../utils/ErrorUtil'
+import type { LibraryProps } from '../index'
+import HttpUtil from '../../../utils/HttpUtil'
 
-type Props = {}
+type Props = {
+  ...LibraryProps
+}
 
 type State = {
   stores: [];
@@ -38,12 +42,16 @@ type State = {
   frame_name: string;
   document_name: string;
   folder_name: string;
+  mode: string;
 }
 
 export default class Library extends React.Component<Props, State> {
 
   constructor (props: Props) {
     super(props)
+
+    const mode = HttpUtil.getURLParam("dialog")?Constants.library.mode.dialog:Constants.library.mode.list
+
     //TODO ReduxのStoreで管理する
     this.state = {
       stores: [],
@@ -56,8 +64,9 @@ export default class Library extends React.Component<Props, State> {
       upload_file: null,
       frame_name: "",
       document_name: "",
-      folder_name: ""
-  }
+      folder_name: "",
+      mode: mode
+    }
   }
 
   componentDidMount () {
@@ -227,30 +236,28 @@ export default class Library extends React.Component<Props, State> {
       //該当フォルダを取得
       return APIUtil.get('folders/' + inject_folder_uuid).then((response) => {
         const json = response.data.data
-        this.setState({
-          libraryChildren: json.children,
-          folderPath: json.folderPath,
-          currentFolderUUID: inject_folder_uuid,
-        })
+        if(response.data.success){
+          this.setState({
+            libraryChildren: json.children,
+            folderPath: json.folderPath,
+            currentFolderUUID: inject_folder_uuid,
+          })
+        }
       })
     }
     else {
       //ルートを取得
       return APIUtil.get('library').then((response) => {
         const json = response.data.data
-        this.setState({
-          libraryChildren: json.children,
-          folderPath: json.folderPath,
-          currentFolderUUID: json.uuid,
-        })
+        if(response.data.success) {
+          this.setState({
+            libraryChildren: json.children,
+            folderPath: json.folderPath,
+            currentFolderUUID: json.uuid,
+          })
+        }
       })
     }
-//    APIUtil.get('folders/2c792bbc-4679-4396-96d1-94fc023073b1').then((response)
-// => { console.log(response); })
-// APIUtil.get('folders/61f70b75-46ac-4716-ae8d-c0c895775745').then((response)
-// => { console.log(response); })
-// APIUtil.get('databases/4C545611-4569-4CD5-800E-55BE69CF8BA8').then((response)
-// => { console.log(response); })
   }
 
   onChangeDocumentName (e:SyntheticInputEvent<EventTarget>,validation) {
@@ -391,12 +398,14 @@ export default class Library extends React.Component<Props, State> {
   }
 
   renderLibraries () {
+    const dialogOption = (this.state.mode === Constants.library.mode.dialog)?"?dialog=true":""
+
     return this.state.libraryChildren.map((child, index) => {
       const selected = (this.state.selected_data === child)
       return <LibraryList libraryChild={child} selected={selected}
                           onClick={(e, library) => this.onClickLibrary(e,
                             library)}
-                          href={'/folders/' + child.uuid}/>
+                          href={'/folders/' + child.uuid + dialogOption}/>
     })
   }
 
@@ -486,11 +495,34 @@ export default class Library extends React.Component<Props, State> {
 
   renderInspector () {
     const data: LibraryListDataType = this.state.selected_data
+    let onClickDelete = null
+    let onClickApply =  null
+
+    switch (this.state.mode){
+      case Constants.library.mode.dialog:
+        if(data && data.type === Constants.library.type.frame){
+            onClickApply = (data) => this.onClickApply(
+              data)
+        }
+        break
+      case Constants.library.mode.list:
+        onClickDelete = (data) => this.onClickDelete(
+          data)
+        break
+    }
+
     return <LibraryInspector data={data}
-                             onClickDelete={(selected_data) => this.onClickDelete(
-                               selected_data)}
+                             onClickDelete={onClickDelete}
+                             onClickApply={onClickApply}
                              onBlurTitle={(e) => this.onBlurTitle(e,
                                data)}/>
+  }
+
+  onClickApply(selected_data:LibraryListDataType){
+    if(window.opener || !window.opener.closed){
+      window.opener.onCallbackApply(selected_data);
+    }
+    window.close();
   }
 
   renderBreadCrumb () {
@@ -501,11 +533,13 @@ export default class Library extends React.Component<Props, State> {
   }
 
   makeHistory(folderPath:[]):[BreadCrumbHistoryType]{
+    const dialogOption = (this.state.mode === Constants.library.mode.dialog)?"?dialog=true":""
+
     const history = folderPath.map((path,index)=>{
       return {
         id: path.uuid,
         label: path.label,
-        url: this.makeLibraryURL(path.uuid),
+        url: this.makeLibraryURL(path.uuid)+dialogOption,
         current: ((folderPath.length-1) === index )
       }
     })
@@ -536,14 +570,19 @@ export default class Library extends React.Component<Props, State> {
     if (!this.state.is_finished) {
       return null
     }
+
+    let newUI = <div>
+      {this.renderNewFolder()}
+      {this.renderNewDocument()}
+      {this.renderNewFrame()}
+    </div>
+
     return <div>
       {this.renderBreadCrumb()}
       {this.renderLibrariesHeader()}
       {this.renderLibraries()}
       {this.renderInspector()}
-      {this.renderNewFolder()}
-      {this.renderNewDocument()}
-      {this.renderNewFrame()}
+      {(this.state.mode === Constants.library.mode.list)?newUI:null}
       {/*{this.renderNewDatabase()}*/}
       {/*{this.renderNewRemoteFolder()}*/}
     </div>

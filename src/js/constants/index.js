@@ -155,6 +155,10 @@ const Constants = {
       folder: "folder",
       database: "database",
       remoteFolder: "remote-folder"
+    },
+    mode: {
+      dialog: "dialog", //選択モード
+      list: "list" //通常モード
     }
   },
   errorMessage:{
