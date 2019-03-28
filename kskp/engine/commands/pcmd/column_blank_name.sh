@@ -1,6 +1,9 @@
 #!/bin/bash -eu
 readonly  PROGNAME=$(basename $0 .sh)   # フォルダ名、拡張子を除いたファイル名
-readonly  VERSION="0.0"
+readonly  VERSION="0.1"
+
+# 履歴
+# 2019.02.19  修正 空白列1つのみのケース対応漏れを修正
 
 #注意
 
@@ -159,12 +162,13 @@ awk -v b="${blank}" \
     #   fname [<名前>]  項目名をキーにしたし出現順番
     #   dup   [1..NF]  重複フラグ格納
     #   dup_no[1..NF]  重複項目別の連番
+    #   last_i         最後の重複あった列の番号
     for (i=1; i<=NF; i++) {
       # 空白項目名だけ対象とする
       if ($i == "") {
         tmp[$i] += 1;
+        last_i = i;
       }
-
       if (tmp[$i] == 2) {
         dup[ fname[$i] ] = 1;
         dup_no[ fname[$i] ] += 1;
@@ -175,6 +179,12 @@ awk -v b="${blank}" \
       }
       fname[$i] = i;  # 同一項目名の前回の出現順番の記憶
     } # end of for i
+
+    # 修正 空白列 1つのみのケース対応
+    if (tmp[""] == 1) {
+      dup[last_i] = 1;
+      dup_no[last_i] = 1;
+    }
 
     # デバッグ用 解析結果確認
     # for (i=1; i<=NF; i++) {

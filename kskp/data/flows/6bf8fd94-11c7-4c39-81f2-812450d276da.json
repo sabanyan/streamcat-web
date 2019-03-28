@@ -1,0 +1,992 @@
+{
+  "projectId": 9,
+  "label": "検査 ver2 S2　極別差吸収 ",
+  "ports": [
+    [
+      {
+        "name": "i1",
+        "type": "frame"
+      },
+      {
+        "name": "i2",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "output",
+        "type": "frame"
+      }
+    ]
+  ],
+  "params": [],
+  "description": "検査データの極別結合\ntestdata01をtestdata02に合わせて変更する。\n\n（KSKP外で操作が必要な箇所）\n出力された追加する列、削除する列リストからオプションを作って列を追加する。",
+  "creator": "開発用",
+  "createdAt": "2019-02-07 16:09:04",
+  "nodes": [
+    {
+      "position": {
+        "x": 737,
+        "y": 371.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "i1",
+      "type": "frame",
+      "label": "test01.csv",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1399,
+        "y": 384.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "i2",
+      "type": "frame",
+      "label": "test02.csv",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 441,
+        "y": 595
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "列名リスト 1",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 376,
+        "y": 591
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "項目名取得",
+      "srcs": {
+        "i": "d9"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "n": "",
+        "-no": false,
+        "-nfno": false
+      },
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 1369,
+        "y": 594
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "label": "d2",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1294,
+        "y": 592
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "項目名取得",
+      "srcs": {
+        "i": "d10"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {},
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 368,
+        "y": 501
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d9",
+      "type": "frame",
+      "label": "d9",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 375,
+        "y": 437
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c9",
+      "type": "command",
+      "label": "レコード削除",
+      "srcs": {
+        "i": "i1"
+      },
+      "dsts": {
+        "o": "d9"
+      },
+      "args": {
+        "s": "検査_【Name】",
+        "from": "1",
+        "to": "1",
+        "size": "",
+        "k": "",
+        "r": false,
+        "R": "",
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mbest"
+    },
+    {
+      "position": {
+        "x": 1288,
+        "y": 522
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d10",
+      "type": "frame",
+      "label": "d10",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1284,
+        "y": 451
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c10",
+      "type": "command",
+      "label": "レコード削除",
+      "srcs": {
+        "i": "i2"
+      },
+      "dsts": {
+        "o": "d10"
+      },
+      "args": {
+        "s": "検査_【Name】",
+        "from": "1",
+        "to": "1",
+        "size": "",
+        "k": "",
+        "r": false,
+        "R": "",
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mbest"
+    },
+    {
+      "position": {
+        "x": 388.5,
+        "y": 1131
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d11",
+      "type": "frame",
+      "label": "列名対応",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 389.5,
+        "y": 986
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c11",
+      "type": "command",
+      "label": "結合",
+      "srcs": {
+        "i": "d18",
+        "m": "d16"
+      },
+      "dsts": {
+        "o": "d11"
+      },
+      "args": {
+        "k": "FIELD_NAME",
+        "f": "",
+        "K": "",
+        "n": true,
+        "N": true,
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "assert_nullin": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mjoin"
+    },
+    {
+      "position": {
+        "x": 460.5,
+        "y": 1307
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d12",
+      "type": "frame",
+      "label": "d12",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 390.5,
+        "y": 1308
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c12",
+      "type": "command",
+      "label": "フラグ　：　列名追加",
+      "srcs": {
+        "i": "d11"
+      },
+      "dsts": {
+        "o": "d12"
+      },
+      "args": {
+        "a": "列名追加フラグ",
+        "c": "and(not(isnull(${列名リスト2})),isnull(${列名リスト1}))",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 394.5,
+        "y": 1461
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d13",
+      "type": "frame",
+      "label": "列名対応",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 390.5,
+        "y": 1377
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c13",
+      "type": "command",
+      "label": "フラグ:列名削除",
+      "srcs": {
+        "i": "d12"
+      },
+      "dsts": {
+        "o": "d13"
+      },
+      "args": {
+        "a": "列名削除フラグ",
+        "c": "and(isnull(${列名リスト2}),not(isnull(${列名リスト1})))",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 280.5,
+        "y": 1563
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d14",
+      "type": "frame",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 213.5,
+        "y": 1564
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c14",
+      "type": "command",
+      "label": "追加列名選択",
+      "srcs": {
+        "i": "d13"
+      },
+      "dsts": {
+        "o": "d14"
+      },
+      "args": {
+        "f": "列名追加フラグ",
+        "v": "1",
+        "k": "FIELD_NAME",
+        "F": false,
+        "r": false,
+        "R": false,
+        "sub": false,
+        "head": false,
+        "tail": false,
+        "W": false,
+        "bufcount": "",
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mselstr"
+    },
+    {
+      "position": {
+        "x": 556.5,
+        "y": 1560
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d15",
+      "type": "frame",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 490.5,
+        "y": 1562
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c15",
+      "type": "command",
+      "label": "削除列名選択",
+      "srcs": {
+        "i": "d13"
+      },
+      "dsts": {
+        "o": "d15"
+      },
+      "args": {
+        "f": "列名削除フラグ",
+        "v": "1",
+        "k": "FIELD_NAME",
+        "F": false,
+        "r": false,
+        "R": false,
+        "sub": false,
+        "head": false,
+        "tail": false,
+        "W": false,
+        "bufcount": "",
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mselstr"
+    },
+    {
+      "position": {
+        "x": 816,
+        "y": 1839
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d4",
+      "type": "frame",
+      "label": "d4",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 734,
+        "y": 1835
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c4",
+      "type": "command",
+      "label": "列削除",
+      "srcs": {
+        "i": "i1"
+      },
+      "dsts": {
+        "o": "d4"
+      },
+      "args": {
+        "f": "検査_1A_【=_A_Ibutsu_=】,検査_1B_【=_B_Ibutsu_=】,検査_Add_【==ADD_==】,検査_Add_【L-10％/H@1】,検査_Add_【L-12％/H@1】,検査_Add_【L-14％/H@1】,検査_Add_【L-2％/H@1】,検査_Add_【L-4％/H@1】,検査_Add_【L-6％/H@1】,検査_Add_【L-8％/H@1】,検査_Gen_【L-0％/mH】,検査_Gen_【L-45％/mH】,検査_Gen_【L-50％/mH】,検査_Gen_【L-55％/mH】,検査_Gen_【L-60％/mH】,検査_Gen_【L-65％/mH】,検査_Gen_【L-70％/mH】,検査_Gen_【L-75％/mH】,検査_Gen_【TAU-0％/ms】,検査_Gen_【TAU-70％/ms】,検査_Swp_【==_SWEEP_==】,検査_Swp_【ARC@-DN-A/ms】,検査_Swp_【ART@-DN-A/ms】,検査_Swp_【AVC@-DN-A/ms】,検査_Swp_【AVT@-DN-A/ms】,検査_Swp_【CBAa@-DN-A/ms】,検査_Swp_【CBAb@-DN-A/ms】,検査_Swp_【CSV2@-DN-A/ms】,検査_Swp_【CSV3@-DN-A/ms】,検査_Swp_【CSa@-DN-A/ms】,検査_Swp_【CSb@-DN-A/ms】,検査_Swp_【DCa@-DN-A/％】,検査_Swp_【DCb@-DN-A/％】,検査_Swp_【DVa@-DN-A/ms】,検査_Swp_【DVb@-DN-A/ms】,検査_Swp_【DynamicDCa@-DN-A/ms】,検査_Swp_【DynamicDCb@-DN-A/ms】,検査_Swp_【K-Slope_a@-DN-A/ms】,検査_Swp_【K-Slope_b@-DN-A/ms】,検査_Swp_【MaxOpen1@-DN-A/ms】,検査_Swp_【MaxOpen2@-DN-A/ms】,検査_Swp_【RBTa@-DN-A/ms】,検査_Swp_【RBTb@-DN-A/ms】,検査_Swp_【RTCa@-DN-A/ms】,検査_Swp_【RTCb@-DN-A/ms】,検査_Swp_【RTT1@-DN-A/ms】,検査_Swp_【RTa@-DN-A/ms】,検査_Swp_【RTb@-DN-A/ms】,検査_Swp_【RUSa@-DN-A/ms】,検査_Swp_【RUSb@-DN-A/ms】,検査_Swp_【SCR@-DN-A/ms】,検査_Swp_【Sigma-CS^2_a@-DN-A/ms】,検査_Swp_【Sigma-CS^2_b@-DN-A/ms】,検査_Swp_【Sigma-CSa@-DN-A/ms】,検査_Swp_【Sigma-CSb@-DN-A/ms】,検査_Swp_【SlopeA/SlopeQ@-DN-A/ms】,検査_Swp_【SlopeP/SlopeR@-DN-A/ms】,検査_Swp_【TSO/TSR_(C)@-DN-A/ms】,検査_Swp_【TSO/TSR_(V)@-DN-A/ms】,検査_Swp_【ｒRTa@-DN-A/ms】,検査_Swp_【ｒRTb@-DN-A/ms】,検査_T1_【L-70％/H】,検査_T1of_【==_OFF_==】,検査_T1of_【ARC@DM0/ms】,検査_T1of_【ART@DM0/ms】,検査_T1of_【AVC@DM0/ms】,検査_T1of_【AVT@DM0/ms】,検査_T1of_【CSa@DM0/ms】,検査_T1of_【CSb@DM0/ms】,検査_T1of_【DSC@DM0/ms】,検査_T1of_【DST@DM0/ms】,検査_T1of_【DynamicDCa@DM0/ms】,検査_T1of_【DynamicDCb@DM0/ms】,検査_T1of_【K-Slope_a@DM0/ms】,検査_T1of_【K-Slope_b@DM0/ms】,検査_T1of_【MaxOpen_a@DM0/ms】,検査_T1of_【MaxOpen_b@DM0/ms】,検査_T1of_【RBTa@DM0/ms】,検査_T1of_【RBTb@DM0/ms】,検査_T1of_【RTCa@DM0/ms】,検査_T1of_【RTCb@DM0/ms】,検査_T1of_【RTT1@DM0/ms】,検査_T1of_【RTa-AVT@DM0/ms】,検査_T1of_【RTa-DCT@DM0/ms】,検査_T1of_【RTa@DM0/ms】,検査_T1of_【RTb@DM0/ms】,検査_T1of_【RUSa@DM0/ms】,検査_T1of_【RUSb@DM0/ms】,検査_T1of_【Sigma-CS^2_a@DM0/ms】,検査_T1of_【Sigma-CS^2_b@DM0/ms】,検査_T1of_【Sigma-CSa@DM0/ms】,検査_T1of_【Sigma-CSb@DM0/ms】,検査_T1of_【Sigma-RUS^2_a@DM0/ms】,検査_T1of_【Sigma-RUS^2_b@DM0/ms】,検査_T1of_【Sigma-RUSa@DM0/ms】,検査_T1of_【Sigma-RUSb@DM0/ms】,検査_T1of_【ｒRTa@DM0/ms】,検査_T1of_【ｒRTb@DM0/ms】,検査_T2_【L-70％/H】,検査_T2of_【==_OFF_==】,検査_T2of_【ARC@DM0/ms】,検査_T2of_【ART@DM0/ms】,検査_T2of_【AVC@DM0/ms】,検査_T2of_【AVT@DM0/ms】,検査_T2of_【CSa@DM0/ms】,検査_T2of_【CSb@DM0/ms】,検査_T2of_【DSC@DM0/ms】,検査_T2of_【DST@DM0/ms】,検査_T2of_【DynamicDCa@DM0/ms】,検査_T2of_【DynamicDCb@DM0/ms】,検査_T2of_【K-Slope_a@DM0/ms】,検査_T2of_【K-Slope_b@DM0/ms】,検査_T2of_【MaxOpen_a@DM0/ms】,検査_T2of_【MaxOpen_b@DM0/ms】,検査_T2of_【RBTa@DM0/ms】,検査_T2of_【RBTb@DM0/ms】,検査_T2of_【RTCa@DM0/ms】,検査_T2of_【RTCb@DM0/ms】,検査_T2of_【RTT1@DM0/ms】,検査_T2of_【RTa-AVT@DM0/ms】,検査_T2of_【RTa-DCT@DM0/ms】,検査_T2of_【RTa@DM0/ms】,検査_T2of_【RTb@DM0/ms】,検査_T2of_【RUSa@DM0/ms】,検査_T2of_【RUSb@DM0/ms】,検査_T2of_【Sigma-CS^2_a@DM0/ms】,検査_T2of_【Sigma-CS^2_b@DM0/ms】,検査_T2of_【Sigma-CSa@DM0/ms】,検査_T2of_【Sigma-CSb@DM0/ms】,検査_T2of_【Sigma-RUS^2_a@DM0/ms】,検査_T2of_【Sigma-RUS^2_b@DM0/ms】,検査_T2of_【Sigma-RUSa@DM0/ms】,検査_T2of_【Sigma-RUSb@DM0/ms】,検査_T2of_【ｒRTa@DM0/ms】,検査_T2of_【ｒRTb@DM0/ms】",
+        "r": true,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 216.5,
+        "y": 1760
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d5",
+      "type": "frame",
+      "label": "追加列名リスト",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 215.5,
+        "y": 1632
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c5",
+      "type": "command",
+      "label": "不要列削除",
+      "srcs": {
+        "i": "d14"
+      },
+      "dsts": {
+        "o": "d5"
+      },
+      "args": {
+        "f": "FIELD_NAME",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 485.5,
+        "y": 1759
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d6",
+      "type": "frame",
+      "label": "削除列名リスト",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 488.5,
+        "y": 1631
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c6",
+      "type": "command",
+      "label": "不要列削除",
+      "srcs": {
+        "i": "d15"
+      },
+      "dsts": {
+        "o": "d6"
+      },
+      "args": {
+        "f": "FIELD_NAME",
+        "r": false,
+        "nfni": false,
+        "assert_diffSize": false,
+        "assert_nullin": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 988,
+        "y": 1823
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d7",
+      "type": "frame",
+      "label": "d7",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 904,
+        "y": 1830
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c7",
+      "type": "command",
+      "label": "列名確認",
+      "srcs": {
+        "i": "d4"
+      },
+      "dsts": {
+        "o": "d7"
+      },
+      "args": {},
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 735,
+        "y": 2042
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "output",
+      "type": "frame",
+      "label": "列名補正",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 735,
+        "y": 1918
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c8",
+      "type": "command",
+      "label": "列追加",
+      "srcs": {
+        "i": "d4"
+      },
+      "dsts": {
+        "o": "output"
+      },
+      "args": {
+        "v": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+        "a": "検査_1A_【=_1A_Ibutsu_=】,検査_1B_【=_1B_Ibutsu_=】,検査_2A_【=_2A_Ibutsu_=】,検査_2A_【OBT2a@F/ms】,検査_2A_【OBT2a@S/ms】,検査_2A_【R-MaxOpen_2a@F/ms】,検査_2A_【R-MaxOpen_2a@S/ms】,検査_2A_【RBT2a@F/ms】,検査_2A_【RBT2a@S/ms】,検査_2A_【RTT2@F/ms】,検査_2A_【RTT2@S/ms】,検査_2A_【S-MaxOpen_2a@F/ms】,検査_2A_【S-MaxOpen_2a@S/ms】,検査_2B_【=_2B_Ibutsu_=】,検査_2B_【OBT2b@F/ms】,検査_2B_【OBT2b@S/ms】,検査_2B_【OTT2@F/ms】,検査_2B_【OTT2@S/ms】,検査_2B_【R-MaxOpen_2b@F/ms】,検査_2B_【R-MaxOpen_2b@S/ms】,検査_2B_【RBT2b@F/ms】,検査_2B_【RBT2b@S/ms】,検査_2B_【S-MaxOpen_2b@F/ms】,検査_2B_【S-MaxOpen_2b@S/ms】,検査_Add_【L-10％/mH@1】,検査_Add_【L-10％/mH@2】,検査_Add_【L-12％/mH@1】,検査_Add_【L-12％/mH@2】,検査_Add_【L-14％/mH@1】,検査_Add_【L-14％/mH@2】,検査_Add_【L-2％/mH@1】,検査_Add_【L-2％/mH@2】,検査_Add_【L-46％/mH@2】,検査_Add_【L-47％/mH@2】,検査_Add_【L-48％/mH@2】,検査_Add_【L-49％/mH@2】,検査_Add_【L-4％/mH@1】,検査_Add_【L-4％/mH@2】,検査_Add_【L-51％/mH@2】,検査_Add_【L-52％/mH@2】,検査_Add_【L-53％/mH@2】,検査_Add_【L-54％/mH@2】,検査_Add_【L-6％/mH@1】,検査_Add_【L-6％/mH@2】,検査_Add_【L-8％/mH@1】,検査_Add_【L-8％/mH@2】,検査_Gen_【CBA2a/us】,検査_Gen_【OBT2a/ms】,検査_Gen_【OBT2b/ms】,検査_Gen_【OLT2/ms_1】,検査_Gen_【OLT2/ms_2】,検査_Gen_【OTT2/ms】,検査_Gen_【RBT2a/ms】,検査_Gen_【RBT2b/ms】,検査_Gen_【RTT2/ms】,検査_Gen_【RUS_2a@F/mA】,検査_Gen_【RUS_2a@S/mA】,検査_SW_【==_SWEEP_==】,検査_SW_【ARC@-DN-A/ms】,検査_SW_【ART@-DN-A/ms】,検査_SW_【AVC@-DN-A/ms】,検査_SW_【AVT@-DN-A/ms】,検査_SW_【CBAa@-DN-A/ms】,検査_SW_【CBAb@-DN-A/ms】,検査_SW_【CSV2@-DN-A/ms】,検査_SW_【CSV3@-DN-A/ms】,検査_SW_【CSa@-DN-A/ms】,検査_SW_【CSb@-DN-A/ms】,検査_SW_【DCa@-DN-A/％】,検査_SW_【DCb@-DN-A/％】,検査_SW_【DVa@-DN-A/ms】,検査_SW_【DVb@-DN-A/ms】,検査_SW_【DynamicDCa@-DN-A/ms】,検査_SW_【DynamicDCb@-DN-A/ms】,検査_SW_【K-Slope_a@-DN-A/ms】,検査_SW_【K-Slope_b@-DN-A/ms】,検査_SW_【MaxOpen1@-DN-A/ms】,検査_SW_【MaxOpen2@-DN-A/ms】,検査_SW_【RBTa@-DN-A/ms】,検査_SW_【RBTb@-DN-A/ms】,検査_SW_【RTCa@-DN-A/ms】,検査_SW_【RTCb@-DN-A/ms】,検査_SW_【RTT1@-DN-A/ms】,検査_SW_【RTa@-DN-A/ms】,検査_SW_【RTb@-DN-A/ms】,検査_SW_【RUSa@-DN-A/ms】,検査_SW_【RUSb@-DN-A/ms】,検査_SW_【SCR@-DN-A/ms】,検査_SW_【Sigma-CS^2_a@-DN-A/ms】,検査_SW_【Sigma-CS^2_b@-DN-A/ms】,検査_SW_【Sigma-CSa@-DN-A/ms】,検査_SW_【Sigma-CSb@-DN-A/ms】,検査_SW_【SlopeA/SlopeQ@-DN-A/ms】,検査_SW_【SlopeP/SlopeR@-DN-A/ms】,検査_SW_【TSO/TSR_(C)@-DN-A/ms】,検査_SW_【TSO/TSR_(V)@-DN-A/ms】,検査_SW_【ｒRTa@-DN-A/ms】,検査_SW_【ｒRTb@-DN-A/ms】,検査_T1_【L-0％/mH】,検査_T1_【L-45％/mH】,検査_T1_【L-50％/mH】,検査_T1_【L-55％/mH】,検査_T1_【L-60％/mH】,検査_T1_【L-65％/mH】,検査_T1_【L-70％/mH】,検査_T1_【L-75％/mH】,検査_T1_【TAU-0％/ms】,検査_T1off_【==_OFF_==】,検査_T1off_【ARC@DM0/ms】,検査_T1off_【ART@DM0/ms】,検査_T1off_【AVC@DM0/ms】,検査_T1off_【AVT@DM0/ms】,検査_T1off_【CSa@DM0/ms】,検査_T1off_【CSb@DM0/ms】,検査_T1off_【DSC@DM0/ms】,検査_T1off_【DST@DM0/ms】,検査_T1off_【DynamicDCa@DM0/ms】,検査_T1off_【DynamicDCb@DM0/ms】,検査_T1off_【K-Slope_a@DM0/ms】,検査_T1off_【K-Slope_b@DM0/ms】,検査_T1off_【MaxOpen_a@DM0/ms】,検査_T1off_【MaxOpen_b@DM0/ms】,検査_T1off_【RBTa@DM0/ms】,検査_T1off_【RBTb@DM0/ms】,検査_T1off_【RTCa@DM0/ms】,検査_T1off_【RTCb@DM0/ms】,検査_T1off_【RTT1@DM0/ms】,検査_T1off_【RTa-AVT@DM0/ms】,検査_T1off_【RTa-DCT@DM0/ms】,検査_T1off_【RTa@DM0/ms】,検査_T1off_【RTb@DM0/ms】,検査_T1off_【RUSa@DM0/ms】,検査_T1off_【RUSb@DM0/ms】,検査_T1off_【Sigma-CS^2_a@DM0/ms】,検査_T1off_【Sigma-CS^2_b@DM0/ms】,検査_T1off_【Sigma-CSa@DM0/ms】,検査_T1off_【Sigma-CSb@DM0/ms】,検査_T1off_【Sigma-RUS^2_a@DM0/ms】,検査_T1off_【Sigma-RUS^2_b@DM0/ms】,検査_T1off_【Sigma-RUSa@DM0/ms】,検査_T1off_【Sigma-RUSb@DM0/ms】,検査_T1off_【ｒRTa@DM0/ms】,検査_T1off_【ｒRTb@DM0/ms】,検査_T2_【L-0％/mH】,検査_T2_【L-45％/mH】,検査_T2_【L-50％/mH】,検査_T2_【L-55％/mH】,検査_T2_【L-60％/mH】,検査_T2_【L-65％/mH】,検査_T2_【L-70％/mH】,検査_T2_【L-75％/mH】,検査_T2_【TAU-0％/ms】,検査_T2off_【==_OFF_==】,検査_T2off_【ARC@DM0/ms】,検査_T2off_【ART@DM0/ms】,検査_T2off_【AVC@DM0/ms】,検査_T2off_【AVT@DM0/ms】,検査_T2off_【CSa@DM0/ms】,検査_T2off_【CSb@DM0/ms】,検査_T2off_【DSC@DM0/ms】,検査_T2off_【DST@DM0/ms】,検査_T2off_【DynamicDCa@DM0/ms】,検査_T2off_【DynamicDCb@DM0/ms】,検査_T2off_【K-Slope_a@DM0/ms】,検査_T2off_【K-Slope_b@DM0/ms】,検査_T2off_【MaxOpen_a@DM0/ms】,検査_T2off_【MaxOpen_b@DM0/ms】,検査_T2off_【RBTa@DM0/ms】,検査_T2off_【RBTb@DM0/ms】,検査_T2off_【RTCa@DM0/ms】,検査_T2off_【RTCb@DM0/ms】,検査_T2off_【RTT1@DM0/ms】,検査_T2off_【RTa-AVT@DM0/ms】,検査_T2off_【RTa-DCT@DM0/ms】,検査_T2off_【RTa@DM0/ms】,検査_T2off_【RTb@DM0/ms】,検査_T2off_【RUSa@DM0/ms】,検査_T2off_【RUSb@DM0/ms】,検査_T2off_【Sigma-CS^2_a@DM0/ms】,検査_T2off_【Sigma-CS^2_b@DM0/ms】,検査_T2off_【Sigma-CSa@DM0/ms】,検査_T2off_【Sigma-CSb@DM0/ms】,検査_T2off_【Sigma-RUS^2_a@DM0/ms】,検査_T2off_【Sigma-RUS^2_b@DM0/ms】,検査_T2off_【Sigma-RUSa@DM0/ms】,検査_T2off_【Sigma-RUSb@DM0/ms】,検査_T2off_【ｒRTa@DM0/ms】,検査_T2off_【ｒRTb@DM0/ms】,検査_【OT1/ms】,検査_【OT2/ms】,検査_【RT1/ms】,検査_【RT2/ms】",
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "msetstr"
+    },
+    {
+      "position": {
+        "x": 371,
+        "y": 720
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d16",
+      "type": "frame",
+      "label": "d16",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 372,
+        "y": 654
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c16",
+      "type": "command",
+      "label": "列追加",
+      "srcs": {
+        "i": "d1"
+      },
+      "dsts": {
+        "o": "d16"
+      },
+      "args": {
+        "v": "1",
+        "a": "列名リスト1",
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "msetstr"
+    },
+    {
+      "position": {
+        "x": 1288,
+        "y": 720
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d18",
+      "type": "frame",
+      "label": "d18",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1289,
+        "y": 654
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c18",
+      "type": "command",
+      "label": "列追加",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d18"
+      },
+      "args": {
+        "v": "1",
+        "a": "列名リスト2",
+        "assert_diffSize": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": ""
+      },
+      "commandId": "msetstr"
+    },
+    {
+      "position": {
+        "x": 654,
+        "y": 594
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d3",
+      "type": "frame",
+      "label": "d3",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 564,
+        "y": 595
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "c3",
+      "srcs": {
+        "i": "d1"
+      },
+      "dsts": {
+        "o": "d3"
+      },
+      "args": {
+        "n": "",
+        "-no": false,
+        "-nfno": false
+      },
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 1525,
+        "y": 581
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d8",
+      "type": "frame",
+      "label": "d8",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1454,
+        "y": 596
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c20",
+      "type": "command",
+      "label": "c20",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d8"
+      },
+      "args": {
+        "n": "",
+        "-no": false,
+        "-nfno": false
+      },
+      "commandId": "column_list"
+    }
+  ]
+}

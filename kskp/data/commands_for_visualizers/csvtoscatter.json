@@ -1,7 +1,8 @@
 {
   "version": "0.7.0",
   "id": "csvtoscatter",
-  "label": "散布図の作成",
+  "order": 300,
+  "label": "散布図",
   "classification": "visualize",
   "description": "csvファイルから散布図を作成する",
   "ports": [
@@ -19,49 +20,6 @@
     ]
   ],
   "params": [
-    {
-      "name": "offsrt",
-      "type": "number",
-      "label": "ビジュアライズを行う開始行"
-    },
-    {
-      "name": "limit",
-      "type": "number",
-      "label": "ビジュアライズ対象のデータ数"
-    },
-    {
-      "name": "x_size",
-      "type": "number",
-      "label": "ビジュアライズの横サイズ",
-      "default": 1400
-    },
-    {
-      "name": "y_size",
-      "type": "number",
-      "label": "ビジュアライズの縦サイズ",
-      "default": 600
-    },
-    {
-      "name": "graph_title",
-      "type": "string",
-      "label": "ビジュアライズのタイトル"
-    },
-    {
-      "name": "x_label",
-      "type": "string",
-      "label": "x軸のラベル"
-    },
-    {
-      "name": "y_label",
-      "type": "string",
-      "label": "y軸のラベル"
-    },
-    {
-      "name": "alpha",
-      "type": "number",
-      "label": "透明度",
-      "default": 1
-    },
     {
       "name": "x_axis",
       "type": "column",
@@ -84,7 +42,51 @@
       "options":{
         "multiple": false
       },
-      "label": "ビジュアライズ対象の項目が入っている列名"
+      "label": "キー項目列名"
+    },
+    {
+      "name": "alpha",
+      "type": "number",
+      "label": "透明度",
+      "default": 1
+    },
+    {
+      "name": "offset",
+      "type": "number",
+      "label": "ビジュアライズを行う開始行"
+    },
+    {
+      "name": "limit",
+      "type": "number",
+      "label": "ビジュアライズ対象のデータ数",
+      "default": 100
+    },
+    {
+      "name": "x_size",
+      "type": "number",
+      "label": "ビジュアライズの横サイズ",
+      "default": 1000
+    },
+    {
+      "name": "y_size",
+      "type": "number",
+      "label": "ビジュアライズの縦サイズ",
+      "default": 600
+    },
+    {
+      "name": "graph_title",
+      "type": "string",
+      "label": "ビジュアライズのタイトル"
+    },
+    {
+      "name": "x_label",
+      "type": "string",
+      "label": "x軸のラベル"
+    },
+    {
+      "name": "y_label",
+      "type": "string",
+      "label": "y軸のラベル"
     }
   ],
   "url": ""

@@ -1,7 +1,8 @@
 {
   "version": "0.7.0",
   "id": "csvtohtmltable",
-  "label": "HTMLテーブルの作成",
+  "order": 100,
+  "label": "HTMLテーブル",
   "classification": "visualize",
   "description": "csvファイルからHTMLのテーブルを作成する",
   "ports": [
@@ -20,7 +21,7 @@
   ],
   "params": [
     {
-      "name": "offsrt",
+      "name": "offset",
       "type": "number",
       "label": "テーブル表示を行う開始行"
     },
@@ -28,7 +29,7 @@
       "name": "limit",
       "type": "number",
       "label": "表示対象のデータ数",
-      "default": 1000
+      "default": 100
     }
   ],
   "url": ""

@@ -1,6 +1,7 @@
 from pathlib import Path
 
-import nysol.mcmd as nm
+# import nysol.mcmd as nm
+import kskp.tests.nm as nm
 
 frames_path = Path('kskp/data/frames')
 

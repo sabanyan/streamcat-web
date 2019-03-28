@@ -1,0 +1,262 @@
+{
+  "projectId": 7,
+  "label": "分析フロー作成",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2019-02-01 12:53:08",
+  "nodes": [
+    {
+      "position": {
+        "x": 502,
+        "y": 443
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "i",
+      "type": "frame",
+      "label": "data.csv",
+      "uuid": "2fcea612-6751-4efa-9ac0-6bfa3926931f",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 350,
+        "y": 124
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "a1.csv",
+      "type": "frame",
+      "label": "a1.csv",
+      "uuid": "12bdd3e9-ef65-4bdd-82b8-ddddcb3466af",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 494,
+        "y": 122
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "a2.csv",
+      "type": "frame",
+      "label": "a2.csv",
+      "uuid": "900fad12-b2ad-4b3e-88a7-032d782d30de",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 422,
+        "y": 299
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "d1",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 422,
+        "y": 217
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "c1",
+      "srcs": {
+        "i": "a1.csv",
+        "m": "a2.csv"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "k": "A",
+        "f": "",
+        "K": "",
+        "n": false,
+        "N": false,
+        "assert_diffSize": false,
+        "assert_nullkey": false,
+        "assert_nullin": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "q": false,
+        "tmpPath": ""
+      },
+      "commandId": "mjoin"
+    },
+    {
+      "position": {
+        "x": 284,
+        "y": 300
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "label": "d2",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 285,
+        "y": 214
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "c2",
+      "srcs": {
+        "i": "a1.csv"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "k": "A",
+        "tmpPath": ""
+      },
+      "commandId": "check_duplicate_rows"
+    },
+    {
+      "position": {
+        "x": 502,
+        "y": 613
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d3",
+      "type": "frame",
+      "label": "計算結果",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 502,
+        "y": 531
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "列項目に対する計算",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "d3"
+      },
+      "args": {
+        "a": "",
+        "c": "",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 682,
+        "y": 397
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d4",
+      "type": "frame",
+      "label": "集計結果",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 682,
+        "y": 315
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c4",
+      "type": "command",
+      "label": "行データに対する統計量",
+      "srcs": {
+        "i": "a1.csv"
+      },
+      "dsts": {
+        "o": "d4"
+      },
+      "args": {
+        "k": "",
+        "f": "",
+        "c": "",
+        "delimiter": "",
+        "q": false,
+        "nfno": false,
+        "prefix": false
+      },
+      "commandId": "groupby"
+    }
+  ]
+}

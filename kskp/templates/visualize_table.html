@@ -8,14 +8,14 @@
   <table class="s-tbl">
   <TR>
     {% for head in header %}
-    <TH>{{ head }}</TH>
+    <TH style="white-space: nowrap;">{{ head }}</TH>
     {% endfor %}
   </TR>
 
   {% for row in reader %}
   <TR>
     {% for datum in row %}
-    <TD>{{ datum }}</TD>
+    <TD style="white-space: nowrap;">{{ datum }}</TD>
     {% endfor %}
   </TR>
   {% endfor %}
