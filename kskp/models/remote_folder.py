@@ -13,6 +13,7 @@ from .document import Document
 class RemoteFolder(Folder):
     """
     Remote-Folderモデル
+    引数portとdomainは現在は用いていない(将来pysmbなどを利用するときのために残しています)
     """
     def __init__(self
                 , uuid
@@ -105,7 +106,6 @@ class RemoteFolder(Folder):
  
     def unmount(self, mount_dir):
         try:
-            import pprint
             sleep(2)
             comline = "sudo umount {}".format(mount_dir)
             # マウント解除を実行する

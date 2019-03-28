@@ -2560,6 +2560,8 @@ class FolderTestCase(unittest.TestCase):
 
         # ドキュメントを作成する(POST /documents)
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.post('/api/v0/documents',
                 content_type='multipart/form-data',
                 data={
@@ -2624,6 +2626,8 @@ class FolderTestCase(unittest.TestCase):
 
         # フレームデータを作成する(POST /documents)
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.post('/api/v0/documents',
                 content_type='multipart/form-data',
                 data={
@@ -2639,7 +2643,7 @@ class FolderTestCase(unittest.TestCase):
         expected_result = {
              'label'    : '新しいフレームファイル!'
             ,'type'     : 'document'
-            ,'creator'  : 1
+            ,'creator'  : 'user1'
         }
 
         # Post /documents apiが正常終了することを検証する
@@ -2699,6 +2703,8 @@ class FolderTestCase(unittest.TestCase):
 
         # フレームデータを作成する(POST /documents)
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.post('/api/v0/documents',
                 content_type='multipart/form-data',
                 data={
@@ -2712,6 +2718,8 @@ class FolderTestCase(unittest.TestCase):
 
         # フレームのラベル名を変更する(PUT /documents)
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.put('/api/v0/documents/' + doc_uuid,
                 content_type='application/json',
                 data=json.dumps({'label' : ' DOCUMENT-F I L E '})
@@ -2722,7 +2730,7 @@ class FolderTestCase(unittest.TestCase):
         expected_result = {
              'label'    : ' DOCUMENT-F I L E '
             ,'type'     : 'document'
-            ,'creator'  : 1
+            ,'creator'  : 'user1'
         }
 
         # PUT /documents apiが正常終了することを検証する

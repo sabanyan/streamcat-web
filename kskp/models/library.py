@@ -127,7 +127,7 @@ class Library(db.Model):
         pass
 
     @classmethod
-    def __create_file_type(cls, uuid, parent_uuid, label):
+    def _create_file_type(cls, uuid, parent_uuid, label):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
         
@@ -149,7 +149,7 @@ class Library(db.Model):
             dir_path = None
         else:
             # 共有するリモートディレクトリ名をローカルのマウントディレクトリ名にする
-            dir_path = os.path.join(library.dir_path, Library.__secure_filename(label))
+            dir_path = os.path.join(library.dir_path, Library._secure_filename(label))
 
         # dataを作成する
         data = json.dumps({'label' : label})
@@ -157,7 +157,7 @@ class Library(db.Model):
 
     @classmethod
     def create_frame_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
-        (id, parent_id, dir_path, data) = Library.__create_file_type(uuid, parent_uuid, label)
+        (id, parent_id, dir_path, data) = Library._create_file_type(uuid, parent_uuid, label)
         # Libraryオブジェクトを返す
         ret = Library(id, parent_id, uuid, dir_path, 'frame', data, creator, modifier)
         ret.parent_uuid = parent_uuid
@@ -165,7 +165,7 @@ class Library(db.Model):
 
     @classmethod
     def create_document_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
-        (id, parent_id, dir_path, data) = Library.__create_file_type(uuid, parent_uuid, label)
+        (id, parent_id, dir_path, data) = Library._create_file_type(uuid, parent_uuid, label)
         # Libraryオブジェクトを返す
         ret = Library(id, parent_id, uuid, dir_path, 'document', data, creator, modifier)
         ret.parent_uuid = parent_uuid
@@ -314,7 +314,7 @@ class Library(db.Model):
         return results_count > 0
 
     @classmethod
-    def __secure_filename(cls, filename):
+    def _secure_filename(cls, filename):
         # '/'と'\0'はunixとmacOSではファイル名に使用できない
         trans_table = str.maketrans({'/' : '／', '\0' : ''})
         return filename.translate(trans_table)

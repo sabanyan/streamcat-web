@@ -460,7 +460,6 @@ class ModelTestCase(unittest.TestCase):
             self.assertEqual(path.stem, data_source_name)
             self.assertEqual(result['a'], 1)
 
-
     def test_get_root(self):
         try:
             # ルートフォルダを作成する
@@ -743,7 +742,13 @@ class ModelTestCase(unittest.TestCase):
             # get_children()で作成した子フォルダを取得する
             child = new_remote_folder.get_children()[0]
             # 作成した子フォルダと取得した子フォルダが同じことを検証する
-            self.assertEqual(child.to_json(), new_child_folder.to_json())
+            # self.assertIn(child.to_json(), new_child_folder.to_json())
+            assertTrue = False
+            for child in new_remote_folder.get_children():
+                if child.to_json() == new_child_folder.to_json():
+                    assertTrue = True
+            self.assertTrue(assertTrue)
+
             # 作成したフォルダに対応するディレクトリが存在することを検証する
             self.assertTrue(os.path.isdir('kskp/data/library'))
         finally:
