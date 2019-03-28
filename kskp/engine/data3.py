@@ -111,6 +111,16 @@ class NysolPythonSource(Source):
             mod = self.mod(args)
             self.process_flow <<= mod
 
+            # 環境変数を設定する
+            # os.environ['KG_TmpPath'] = '/home/kskp/kskp/data/tmp'
+            # # デフォルトの4倍で設定する
+            # os.environ['KG_MaxRecLen'] = '40960000'
+            # os.environ['KG_iSize'] = '20480000'
+            # os.environ['KG_iSize'] = '10240000'
+            # os.environ['KG_BlockCount'] = '1280'
+            # sudo docker run -m 32g -e FLASK_ENV=development -u kskp -v "$(pwd)"/kskp:/home/kskp/kskp -v /home/kskp-trial/KSKP_trial:/home/kskp/KSKP_trial -p 5000:5000 --name kskp-trial kskp-trial "flask run -h 0.0.0.0 -p ${PORT:-5000}"
+            # http://localhost:5000/flows/20190201_2047_Omron_S1_light
+
             # with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
             #     self.process_flow.run()
             with io.StringIO() as messages_mem:
@@ -123,6 +133,7 @@ class NysolPythonSource(Source):
                         content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
                         err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
                         raise err
+
         finally:
             import time
             print('final!!! time:', time.ctime())
@@ -286,6 +297,8 @@ class TempPathFileSource(PathFileSource):
     def __repr__(self):
         return f'TempPathFileSource path: {Path(self.source_dir).joinpath(self.file_name)}'
 
+import nysol.mcmd as nm
+
 class Datum:
     """
     データ全般を表すクラス
@@ -316,9 +329,19 @@ class Datum:
             s.dtor()
             if isinstance(s, PathFileSource):
                 if self.is_temp and s.fullpath.exists():
-                    pass
-                    # s.fullpath.unlink()
-
+                    # pass
+                    s.fullpath.unlink()
+            else:
+                fullpath = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '.csv')
+                if fullpath.exists():
+                    if self.is_temp:
+                        fullpath.unlink()
+                    else:
+                        sjis_path = Path(os.environ['KENG_FRAMES_PATH']) / (self.uuid + '_sjis' + '.csv')
+                        command_path = Path('./kskp/engine/commands/pcmd/utf8_to_cp932.sh')
+                        if command_path.exists():
+                            command_str = str(command_path) + ' o=' + str(sjis_path) + ' i=' + str(fullpath)
+                            subprocess.run(command_str.split())
 
 
 import os
@@ -335,10 +358,12 @@ class Frame(Datum):
         super().__init__(frame_uuid, source)
         self.label = '' # for debug
 
-    def command_to_file(self):
+    def command_to_file(self, frame_uuid=None):
         if self.source is not None and not isinstance(self.source, PathFileSource):
+            if frame_uuid is not None: self.uuid = frame_uuid
             file_name = self.uuid + self.source.ext
             new_source = PathFileSource(self.source.type, os.environ['KENG_FRAMES_PATH'], file_name)
+
             if isinstance(self.source, NysolPythonSource):
                 self.source.save(new_source.fullpath.as_posix())
             else:

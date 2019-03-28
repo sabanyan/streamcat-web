@@ -24,12 +24,14 @@ function usage() {
     echo " p= f= でローカルファイルを指定しなかった場合は、標準入力より読み込む"
     echo
     echo " p= 入力ファイル名のサーバのローカルパス名を指定する"
-    echo " f= 入力ファイル名を指定する。省略時は、標準入力を処理する"
+    echo " f= 入力ファイル名を指定する。"
+
+    echo " i= 入力ファイル名を指定する。p=とf=が指定されていない時に使われる。省略時は、標準入力を処理する"
     echo " o= 出力ファイル名を指定する。省略時は、標準出力へ書き込む"
     echo
     echo "書式"
     echo "------"
-    echo "${PROGNAME} [p=] [f=] [o=] [--help] [--version]"
+    echo "${PROGNAME} [p=] [f=] [i=] [o=] [--help] [--version]"
     echo
 
     exit 1
@@ -91,7 +93,12 @@ do
             shift 1
             ;;
         'i='* )
-            # 処理には使用しないダミー
+            p_value=${1#*'='}                 # =より前の文字を削除
+            if [[ -z "${p_value}" ]] ; then   # -z: 文字列長がゼロ
+                echo "${PROGNAME}: option requires an argument -- $1" 1>&2
+                exit 1
+            fi
+            input_file=${p_value}
             shift 1
             ;;
         '--'|'-' )
@@ -120,7 +127,11 @@ done
 # 準備処理
 # p= and f= 指定が無い場合、標準入力をセットする
 if [[ -z ${path_name} && -z ${file_name} ]]; then
-  input_file='/dev/stdin'
+  # 準備処理
+  # i= 指定が無い場合、標準入力をセットする
+  if [[ -z "${input_file}" ]]; then
+    input_file='/dev/stdin'
+  fi
 else
   input_file="${path_name}/${file_name}"
 fi

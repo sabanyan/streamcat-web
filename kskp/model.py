@@ -286,6 +286,78 @@ def fetch_flow_by_uuid(flow_uuid):
     path = get_flow_path_by_uuid(flow_uuid)
     return json.loads(path.read_text())
 
+def copy_flow_by_uuid(original_flow_uuid, data_source_name=None):
+    """
+    指定したフローのuuidを元に
+    コピーしたフローを作成し、その内容を返す
+    """
+    new_flow_uuid = str(uuid.uuid4()) if data_source_name is None else data_source_name
+    new_flow_path = Path(app.config['FLOW_PATH']) / (new_flow_uuid + '.json')
+    original_flow_path = get_flow_path_by_uuid(original_flow_uuid)
+
+    # 中身の読み込み
+    with open(original_flow_path) as original_f:
+        flow_json = json.load(original_f)
+
+    # 中身の書き換え
+    with open(new_flow_path, 'w') as new_f:
+        flow_json['label'] = generate_flow_name(flow_json.get('projectId'), flow_json.get('label'))
+        flow_json['creator'] = get_user_by_id(1)['name']
+        JST = timezone(timedelta(hours=+9), 'JST')
+        flow_json['createdAt'] = datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')
+        json.dump(flow_json, new_f, indent=2, ensure_ascii=False)
+
+    return flow_json
+
+def generate_flow_name(project_id, flow_name, serial_number=1):
+    """
+    コピーしたフローの名前（label）を生成する
+    コピーフローの名前ルール
+    ・基本的にはコピー元のフローの名前の後ろに「のコピー」をつける
+    ・「のコピー」をつけた名前がそのプロジェクト内で重複していた場合、後ろに連番（２〜）をつける
+    """
+    multi_flag = False
+    new_flow_name = ''
+
+    if serial_number == 1:
+        # 引数で「のコピー」付きのflow_nameを渡してもいいかなと思ったけど、
+        # それも含めてここでやったほうが纏まってていいかなと思ったので、ここで行なっている
+
+        # 引数で、後ろに付ける文字列（ここでは「のコピー」）を渡せるようにした方が柔軟性は上がるが、
+        # 今はいいや、その時が来たらそうする。
+        flow_name = flow_name + ' のコピー'
+        new_flow_name = flow_name
+    elif serial_number > 1:
+        new_flow_name = flow_name + str(serial_number)
+
+    for path in Path(app.config['FLOW_PATH']).iterdir():
+        try:
+            if not path.suffix == '.json':
+                continue
+            data = json.loads(path.read_text())
+        except json.JSONDecodeError as e:
+            # JSONのフォーマットに則していないファイルは無視
+            continue
+
+        # プロジェクトが存在するかのチェック
+        project = fecth_project(project_id)
+        if project is None:
+            continue
+
+        # プロジェクトが同じかどうかのチェック
+        # 別プロジェクトのフローとは名前が重複してもいいので。
+        if data['projectId'] != project_id:
+            continue
+
+        if data['label'] == new_flow_name:
+            multi_flag = True
+            break
+
+    if multi_flag:
+        return generate_flow_name(project_id, flow_name, serial_number + 1)
+    else:
+        return new_flow_name
+
 def fetch_subflows_all_projects(request_args):
     """
     指定したプロジェクトの持つサブフロー一覧の内容リストをuuidを付け加えて返す
@@ -293,12 +365,13 @@ def fetch_subflows_all_projects(request_args):
     subflow_list = []
     for path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not path.suffix == '.json':
+                continue
             data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合
             continue
 
-        #
         project = fecth_project(data['projectId'])
         if project is None:
             continue
@@ -365,6 +438,8 @@ def get_flow_path_by_uuid(flow_uuid):
     指定したUUIDをファイル名にもつフローファイルのパスを返すヘルパー
     """
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        if not flow_path.suffix == '.json':
+            continue
         if flow_path.stem == flow_uuid:
             return flow_path
 
@@ -426,6 +501,8 @@ def get_flow_paths_by_project_uuid(project_uuid):
 
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not flow_path.suffix == '.json':
+                continue
             data = json.loads(flow_path.read_text(encoding='utf-8'))
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合は飛ばす
@@ -535,3 +612,490 @@ class User:
     def __init__(self, id, email):
         self.id = id
         self.email = email
+
+
+def get_all_stores():
+    ret = [
+        {
+			"id"     : "folder",
+			"version": "1.0.0",
+			"label"  : "フォルダ",
+			"description": "KSKPが管理するフォルダ",
+			"url"    : "",
+			"params" : [
+                    {
+                        "name" : "folderPath",
+                        "type" : "string",
+                        "label": "フォルダパス"
+				    }
+                ]
+            
+		},
+        {
+			"id"     : "remote-folder",
+			"version": "1.0.0",
+			"label"  : "リモートフォルダ",
+			"description": "KSKPが管理するリモートフォルダ",
+			"url"    : "",
+			"params" : [
+                    {
+                        "name" : "user",
+                        "type" : "string",
+                        "label": "ユーザ名"
+				    },
+                    {
+                        "name" : "password",
+                        "type" : "string",
+                        "label": "パスワード"
+				    },
+                    {
+                        "name" : "server",
+                        "type" : "string",
+                        "label": "サーバのホスト名またはIP"
+				    },
+                    {
+                        "name" : "port",
+                        "type" : "number",
+                        "label": "ポート番号"
+				    },
+                    {
+                        "name" : "domain",
+                        "type" : "string",
+                        "label": "ドメイン名"
+				    },
+                    {
+                        "name" : "directoryPath",
+                        "type" : "string",
+                        "label": "ディレクトリパス"
+				    }
+                ]
+		},
+        {
+			"id"     : "database",
+			"version": "1.0.0",
+			"label"  : "データベース",
+			"description": "KSKPが管理するデータベース",
+			"url"    : "",
+			"params" : [{
+					"name" : "connectionString",
+					"type" : "string",
+					"label": "接続文字列"
+				    }]
+		},
+    ]
+    return ret
+
+def create_store(store_id, data, user_id):
+    ret = {
+            "id"     : "another-datasotre",
+			"version": "1.0.0",
+			"label"  : "フォルダ",
+			"description": "KSKPが管理するフォルダ",
+			"url"    : "",
+			"params" : [
+                {
+                    "name" : "folderPath",
+                    "type" : "string",
+                    "label": "フォルダパス"
+                }
+            ]
+	}
+    return ret
+
+def delete_store_by_id(store_id):
+    pass
+
+def get_library():
+    ret = {
+		"uuid"   : "0cc129d1-7af0-4bb3-8ab9-07710b616b52",
+		"type"   : "folder",
+		"label"  : "ルート",
+		"creator": "user1",
+		"createdAt": "2019-01-08 12:00:01",
+		"children": [
+			{
+				"uuid"   : "2c792bbc-4679-4396-96d1-94fc023073b1",
+				"type"   : "folder",
+				"label"  : "実行結果",
+				"creator": "user1",
+				"createdAt": "2019-01-08 12:00:01"
+			},
+			{
+				"uuid"   : "2C72275F-2019-49AE-B36D-A29D1507F8DD",
+				"type"   : "folder",
+				"label"  : "アップロードファイル",
+				"creator": "user1",
+				"createdAt": "2019-01-08 12:00:01"
+			},
+			{
+				"uuid"   : "4C545611-4569-4CD5-800E-55BE69CF8BA8",
+				"type"   : "database",
+				"label"  : "データベース1",
+				"connectionString" : "data source=myDB;user id=user01;password=pass01;"
+			}
+		]
+	}
+    return ret
+
+
+def get_folder(folder_uuid):
+    ret = {
+		"uuid"   : "44d2abba-68c5-4087-ab93-edfba8835326",
+		"type"   : "folder",
+		"label"  : "実行結果",
+		"creator": "user1",
+		"createdAt": "2019-01-08 12:00:01",
+		"children": [
+			{
+				"uuid"   : "61f70b75-46ac-4716-ae8d-c0c895775745",
+				"type"   : "folder",
+				"label"  : "フロー1",
+				"creator": "user1",
+				"createdAt": "2019-01-08 12:00:01"
+			},
+			{
+				"uuid"   : "67c16604-c3d8-4cdc-a066-9fdd6a3645a3",
+				"type"   : "folder",
+				"label"  : "フロー2",
+				"creator": "user1",
+				"createdAt": "2019-01-08 12:00:01"
+			}
+		]
+	}
+    return ret   
+
+def create_folder(data, user_id):
+    ret = {
+		"uuid"   : "96e855e2-a4c6-449c-a884-0950d1f0d683",
+		"type"   : "folder",
+		"label"  : "新しいフォルダ",
+		"creator": "user1",
+		"createdAt": "2019-01-08 12:00:01",
+		"children": []
+	}
+    return ret   
+
+def rename_folder_by_id(folder_uuid, new_label):
+    ret = {
+		"uuid"   : "96e855e2-a4c6-449c-a884-0950d1f0d683",
+		"type"   : "folder",
+		"label"  : "名称変更したフォルダ",
+		"creator": "user1",
+		"createdAt": "2019-01-08 12:00:01",
+		"children": []
+	}
+    return ret
+
+def delete_folder_by_id(folder_uuid):
+    pass
+
+
+
+def get_remote_folder(folder_uuid):
+    ret = {
+		"uuid"   : "649e696a-c828-437e-a891-43eec2be42a6",
+		"type"   : "remote-folder",
+		"label"  : "共有フォルダ",
+		"user"   : "user1",
+		"password" : "pass",
+		"server"   : "192.168.0.3",
+		"port"     : "139",
+		"domain"   : "WORKGROUP",
+		"directory": "share",
+		"creator"  : "user1",
+		"createdAt": "2019-01-08 12:00:01",
+		"children": [
+			{
+				"uuid"   : "0d7aa9b8-cf46-4920-abcd-244e5b3f152b",
+				"type"   : "folder",
+				"label"  : "資料",
+				"creator": "user1",
+				"createdAt": "2019-01-08 12:00:01"      
+			},
+			{
+				"uuid"   : "190e134f-8aae-4478-83ea-1281fb7b5ecf",
+				"type"   : "frame",
+				"label"  : "フロー1の結果",
+				"creator": "user1",
+				"createdAt": "2019-01-08 12:00:01"
+			}
+		]
+	}
+    return ret   
+
+def create_remote_folder(data, user_id):
+    ret = {
+		"uuid"   : "649e696a-c828-437e-a891-43eec2be42a6",
+		"type"   : "remote-folder",
+        "label"  : "新しい共有フォルダ",
+        "parent" : "0cc129d1-7af0-4bb3-8ab9-07710b616b52",
+        "user"   : "user1",
+        "password" : "pass",
+        "server"   : "192.168.0.3",
+        "port"     : "139",
+        "domain"   : "WORKGROUP",
+        "directory": "share",
+		"creator"  : "user1",
+		"createdAt": "2019-01-08 12:00:01",
+		"children": []
+	}
+    return ret   
+
+def rename_remote_folder_by_id(folder_uuid, new_label):
+    ret = {
+		"uuid"   : "649e696a-c828-437e-a891-43eec2be42a6",
+		"type"   : "remote-folder",
+        "label"  : "名称変更した共有フォルダ",
+        "parent" : "0cc129d1-7af0-4bb3-8ab9-07710b616b52",
+        "user"   : "user1",
+        "password" : "pass",
+        "server"   : "192.168.0.3",
+        "port"     : "139",
+        "domain"   : "WORKGROUP",
+        "directory": "share",
+		"creator"  : "user1",
+		"createdAt": "2019-01-08 12:00:01",
+		"children": []
+	}
+    return ret   
+
+def delete_remote_folder_by_id(folder_uuid):
+    pass
+
+
+
+def get_database(database_uuid):
+    ret = {
+		"uuid"   : "4C545611-4569-4CD5-800E-55BE69CF8BA8",
+		"type"   : "database",
+		"label"  : "データベース1",
+        "dbms"   : "ORACLE",
+		"connectionString" : "data source=myDB;user id=user01;password=pass01;"
+	}
+    return ret   
+
+def create_database(data, user_id):
+    ret = {
+		"uuid"   : "4C545611-4569-4CD5-800E-55BE69CF8BA8",
+		"type"   : "database",
+		"label"  : "データベース1",
+        "dbms"   : "ORACLE",
+		"connectionString" : "data source=myDB;user id=user01;password=pass01;"
+	}
+    return ret   
+
+def rename_database_by_id(database_uuid, new_label):
+    ret = {
+		"uuid"   : "4C545611-4569-4CD5-800E-55BE69CF8BA8",
+		"type"   : "database",
+		"label"  : "名称変更したデータベース1",
+        "dbms"   : "ORACLE",
+		"connectionString" : "data source=myDB;user id=user01;password=pass01;"
+	}
+    return ret   
+
+def delete_database_by_id(database_uuid):
+    pass
+
+
+import os
+import pathlib
+import pprint
+from .models.library import Library
+from .models.folder import Folder
+from .models.remote_folder import RemoteFolder
+from .models.database import Database
+from .models.frame import Frame
+from .models.document import Document
+
+# 古い実装で利用するための関数
+def get_path(uuid):
+    library = Library.find_by_uuid(uuid)
+    if library is None:
+        return None
+    return library.dir_path
+
+def get_root():
+    """
+    ルートを取得する
+    """
+    roots = Library.find_root()
+    
+    if len(roots) == 0 :
+        raise Exception('No root exists!')
+    elif len(roots) > 1:
+        raise Exception('More than 2 roots exists!')
+
+    root = roots[0]
+
+    if root.type == 'folder':
+        return Folder.create_by_library(root)
+    elif root.type == 'remote-folder':
+        return RemoteFolder.create_by_library(root)
+    elif root.type == 'database':
+        return Database.create_by_library(root)
+
+def get_folder2(uuid):
+    library = Library.find_by_uuid(uuid)
+
+    if library is None:
+        return None
+
+    if library.type == 'folder':
+        return Folder.create_by_library(library)
+    elif library.type == 'remote-folder':
+        return RemoteFolder.create_by_library(library)
+    elif library.type == 'database':
+        return Database.create_by_library(library)
+
+def set_folder2(f):
+    if isinstance(f, Folder):
+        library = Library.create_folder_type(f.uuid, f.parent_uuid, f.label, f.creator, f.creator)
+        # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
+        __make_dir(library.dir_path)
+        # libraryレコードをDBに格納する
+        library.save()
+        f.created_at = library.created_at
+    elif isinstance(f, RemoteFolder):
+        library = Library.create_remote_folder_type(f.uuid
+                                                  , f.parent_uuid
+                                                  , f.label
+                                                  , f.user
+                                                  , f.password
+                                                  , f.server
+                                                  , f.port
+                                                  , f.domain
+                                                  , f.directory
+                                                  , f.creator
+                                                  , f.creator)
+        # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
+        __make_dir(library.dir_path)
+        # ここでリモートディレクトリをマウントする
+        f.mount(library.dir_path)
+        # libraryレコードをDBに格納する
+        library.save()
+        f.created_at = library.created_at
+    elif isinstance(f, Database):
+        pass
+
+def upd_folder2(f):
+    if isinstance(f, Folder):
+        library = Library.create_folder_type(f.uuid, f.parent_uuid, f.label, f.creator, f.modifier)
+        library.update_data()
+        f.created_at = library.created_at
+    elif isinstance(f, RemoteFolder):
+        library = Library.create_remote_folder_type(f.uuid
+                                                  , f.parent_uuid
+                                                  , f.label
+                                                  , f.user
+                                                  , f.password
+                                                  , f.server
+                                                  , f.port
+                                                  , f.domain
+                                                  , f.directory
+                                                  , f.creator
+                                                  , f.modifier)
+        library.update_data()
+        f.created_at = library.created_at
+    elif isinstance(f, Database):
+        pass 
+
+def del_folder2(uuid):
+    library = Library.find_by_uuid(uuid)
+
+    if library is None:
+        return
+
+    if library.type == 'folder':
+        library.delete()
+        __remove_dir(library.dir_path)
+    elif library.type == 'remote-folder':
+        # ここでリモートディレクトリのマウントを解除する
+        remote_folder = RemoteFolder.create_by_library(library)
+        remote_folder.unmount(library.dir_path)
+        # マウントポイントのディレクトリを削除する
+        library.delete()
+        __remove_dir(library.dir_path)
+
+
+def get_file2(uuid):
+    library = Library.find_by_uuid(uuid)
+
+    if library is None:
+        return None
+
+    if library.type == 'frame':
+        return Frame.create_by_library(library)
+    elif library.type == 'document':
+        return Document.create_by_library(library)
+    elif library.type == 'unknown-file':
+        pass
+
+def set_file2(frame):
+    library = Library.create_frame_type(frame.uuid, frame.parent_uuid, frame.label, frame.creator, frame.creator)
+    # 保存先のディレクトリを取得する
+    dir = pathlib.Path(library.dir_path).parent
+    if not dir.exists():
+        # 保存先のディレクトリが無い場合は作成する
+        __make_dir(str(dir))
+    elif not dir.is_dir():
+        raise Exception('Can not make directory, because same name file(%s) exists!' % str(dir))
+    # Frameファイルを作成する
+    frame.save(library.dir_path)
+    # libraryレコードをDBに格納する
+    library.save()
+    frame.created_at = library.created_at
+
+def upd_file2(f):
+    library = Library.create_frame_type(f.uuid, f.parent_uuid, f.label, f.creator, f.modifier)
+    library.update_data()
+    f.creator = library.creator
+    f.created_at = library.created_at
+
+def del_file2(uuid):
+    library = Library.find_by_uuid(uuid)
+
+    if library is None:
+        return
+
+    if library.type == 'frame' or library.type == 'document' or library.type == 'unknown-file':
+        library.delete()
+        __remove_file(library.dir_path)
+
+
+def __make_dir(dir_path):
+    try:
+        dir_path = pathlib.Path(dir_path)
+        if dir_path.exists() and not dir_path.is_dir():
+            raise Exception('Can not make directory, because same name file(%s) exists.' % dir_path)
+        elif not dir_path.is_dir():
+            # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
+            os.makedirs(str(dir_path), exist_ok=True)
+    except PermissionError as e:
+        # ファイルに対する権限がない場合
+        raise e
+
+def __remove_dir(dir_path):
+    try:
+        # 全てのフォルダから紐づかないディレクトリは物理削除する
+        dir_path = dir_path.rstrip(os.pathsep)
+        while dir_path != '' and dir_path != '/' and dir_path != 'kskp/data':
+            if Library.dir_path_exists(dir_path):
+                break
+            else:
+                if os.path.isdir(dir_path):
+                    os.rmdir(dir_path)
+                dir_path = os.path.dirname(dir_path)
+    except PermissionError as e:
+        # ファイルに対する権限がない場合
+        raise e
+
+def __remove_file(dir_path):
+    try:
+        if not os.path.isfile(dir_path):
+            raise Exception('Can not delete %s, because it is not reguler file.' % dir_path)
+        # ファイルを物理削除する
+        os.remove(dir_path)
+    except PermissionError as e:
+        # ファイルに対する権限がない場合
+        raise e
