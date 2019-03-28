@@ -10,19 +10,22 @@
       "name": "from",
       "type": "string",
       "label": "選択する開始行番号",
-      "optional": true
+      "optional": true,
+      "default": 0
     },
     {
       "name": "to",
       "type": "string",
       "label": "選択する終了行番号",
-      "optional": true
+      "optional": true,
+      "default": 0
     },
     {
       "name": "size",
       "type": "string",
       "label": "選択する行数",
-      "optional": true
+      "optional": true,
+      "default": 1
     },
     {
       "name": "k",
