@@ -81,7 +81,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
           loading: true
         })
 
-        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id
+        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id + "&no_contents=1"
         APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
@@ -132,11 +132,25 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const getFrameHeaderURL = "frames/" + uuid
     APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
       const headers = response.data.data
-      const contents = this.props.mast.visualizers.map((visualize,index)=>{
-        const content = <Visualizer key={index + uuid} frame_uuid={uuid} visualize={visualize} params={{}} headers={headers}/>
-        return {title: visualize.label,content:content,parentProps:this.props}
+      let visualizers = this.props.mast.visualizers.sort((a, b) => {
+        // ある順序の基準において a が b より小
+        if (a.order < b.order) {
+          return -1;
+        }
+        //その順序の基準において a が b より大
+        if (a.order > b.order) {
+          return 1;
+        }
+        // a は b と等しいはず
+        return 0;
       })
 
+      let contents = []
+      for (const v of visualizers) {
+        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
+        contents.push({title: v.label,content:content,parentProps:this.props})
+      }
+ 
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
@@ -234,21 +248,21 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   onChangeCacheCheck (e: Event) {
-  
+
     let selected_step = this.getSelectedStep()
     if(selected_step.isMakeCache()) {
       selected_step.setMakeCache(false)
     } else {
       selected_step.setMakeCache(true)
     }
-    
+
     let flow:FlowModel = this.props.flow
     this.props.updateFlow(flow)
 }
 
   onClickDeleteCache() {
     let {selected_step_ids, nodes, notify,dismissNotify} = this.props
-    
+
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         this.deleteCache()
@@ -331,6 +345,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       }
     }
 
+
     const flow:FlowModel  = this.props.flow
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
@@ -362,10 +377,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       content = <Loader center={true} absolute={true} fixed={false} visible={true}/>
     }else {
 
-      const numberOfLines = StringUtil.separate(this.props.selected_data_source_detail.numberOfLines)
       const fileSize = StringUtil.convertToFileSize(this.props.selected_data_source_detail.fileSize)
-      const lastModifiedAt = StringUtil.separate(this.props.selected_data_source_detail.lastModifiedAt)
-
+      const lastModifiedAt = this.props.selected_data_source_detail.lastModifiedAt
       content = <div>
         <div className={style.property_overview}>
           <div className={style.actions}>
@@ -376,14 +389,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
           </div>
           <div className={style.full_hr}/>
           <div className={style.overviews}>
-            <div className={style.overview}>
-              <div className={style.overview_label}>
-                データの件数
-              </div>
-              <div className={style.overview_value}>
-                {numberOfLines} {/*{property.overview.count || 0}*/}
-              </div>
-            </div>
             <div className={style.overview}>
               <div className={style.overview_label}>
                 ファイルサイズ
@@ -426,7 +431,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
             {cacheCheckForm}
           </div>
           <div className={style.cache_delete}>
-            <Button  icon={'delete'} danger={true} 
+            <Button  icon={'delete'} danger={true}
               disabled={!selected_step.isCached()}
 
               onClick={(e) => {this.onClickDeleteCache()}}>

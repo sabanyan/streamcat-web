@@ -1,28 +1,19 @@
 {
-  "projectId": 1,
-  "label": "サブフロー実行テスト（複数）",
+  "projectId": 7,
+  "label": "",
   "ports": [
-    [
-      {
-        "name": "i",
-        "type": "frame"
-      },
-      {
-        "name": "i2",
-        "type": "frame"
-      }
-    ],
+    [],
     []
   ],
   "params": [],
-  "description": "テスト",
+  "description": "",
   "creator": "開発用",
-  "createdAt": "2018-12-14 10:44:27",
+  "createdAt": "2019-02-01 12:52:08",
   "nodes": [
     {
       "position": {
         "x": 99,
-        "y": 119
+        "y": 120
       },
       "size": {
         "width": 38,
@@ -32,13 +23,14 @@
       "error": {},
       "id": "i",
       "type": "frame",
-      "uuid": null,
+      "label": "sample.csv",
+      "uuid": "ed4d1a38-1675-4275-8c6f-c5a8ddfb5396",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 99,
-        "y": 295
+        "x": 98,
+        "y": 297
       },
       "size": {
         "width": 38,
@@ -49,13 +41,13 @@
       "id": "d1",
       "type": "frame",
       "label": "d1",
-      "uuid": null,
+      "uuid": "ed51dade-62de-4138-9328-f312b179bba4",
       "dataSource": "csv"
     },
     {
       "position": {
         "x": 99,
-        "y": 213
+        "y": 214
       },
       "size": {
         "width": 38,
@@ -73,22 +65,22 @@
         "o": "d1"
       },
       "args": {
-        "f": "customer",
+        "a": "",
+        "diag": true,
         "r": false,
-        "nfni": false,
-        "assert_diffSize": false,
-        "assert_nullin": false,
+        "assert_nullout": false,
         "nfn": false,
         "nfno": false,
         "x": false,
+        "q": false,
         "tmpPath": ""
       },
-      "commandId": "mcut"
+      "commandId": "mchkcsv"
     },
     {
       "position": {
-        "x": 360,
-        "y": 141
+        "x": 246,
+        "y": 298
       },
       "size": {
         "width": 38,
@@ -96,32 +88,16 @@
       },
       "invalid": {},
       "error": {},
-      "id": "i2",
-      "type": "frame",
-      "uuid": "null",
-      "dataSource": "csv"
-    },
-    {
-      "position": {
-        "x": 360,
-        "y": 317
-      },
-      "size": {
-        "width": 38,
-        "height": 38
-      },
-      "invalid": {},
-      "error": {},
-      "type": "frame",
       "id": "d2",
+      "type": "frame",
       "label": "d2",
-      "uuid": null,
+      "uuid": "9f6c9f32-48af-49ae-9ecd-724264fbbdf1",
       "dataSource": "csv"
     },
     {
       "position": {
-        "x": 360,
-        "y": 235
+        "x": 246,
+        "y": 119
       },
       "size": {
         "width": 38,
@@ -129,29 +105,17 @@
       },
       "invalid": {},
       "error": {},
-      "type": "command",
       "id": "c2",
+      "type": "command",
       "label": "c2",
       "srcs": {
-        "i": "i2"
+        "i": "i"
       },
       "dsts": {
         "o": "d2"
       },
-      "args": {
-        "f": "customer",
-        "pways": "",
-        "maxlines": "",
-        "blocks": "",
-        "threadCnt": "",
-        "noflg": false,
-        "assert_diffSize": false,
-        "nfn": false,
-        "nfno": false,
-        "x": false,
-        "tmpPath": ""
-      },
-      "commandId": "msortf"
+      "args": {},
+      "commandId": "column_list"
     }
   ]
 }

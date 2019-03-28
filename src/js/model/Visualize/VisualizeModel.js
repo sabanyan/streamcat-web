@@ -16,6 +16,7 @@ export default class VisualizeModel<VisualizeModelProps> extends Model {
   classification = ""
   description = ""
   id:string = ""
+  order = -1
   label:string = ""
   params:[] = []
   ports:[[],[]] = [[],[]]
@@ -27,6 +28,7 @@ export default class VisualizeModel<VisualizeModelProps> extends Model {
     this.initialize(props,"classification")
     this.initialize(props,"description")
     this.initialize(props,"id")
+    this.initialize(props,"order")
     this.initialize(props,"label")
     this.initialize(props,"params")
     this.initialize(props,"ports")
