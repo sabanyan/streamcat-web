@@ -66,8 +66,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     }
 
     onHide(){
-      this.updateArgs()
-//      this.saveNodes()
+      //this.updateArgs()
+      //this.saveNodes()
     }
 
     updateArgs() {
@@ -126,14 +126,30 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       if (element)this.inputRefs.push({param: param, element: element})
     }
 
+    onArgChange(e:Event) {
+      const argName = e.currentTarget.name
+
+      this.update((step) => {
+        if (step.args) {
+          let v =   ParamUtil.getArgValue(e.currentTarget)
+          step.args[argName] = v
+        }
+        return step
+      })
+    }
+
+    update (getNewStep:Function) {
+      let selectedStep = this.getSelectedStep()
+      const newStep = getNewStep(selectedStep)
+      this.props.updateStep(newStep)
+    }
+
     render() {
         const {commands,subflows} = this.props.mast
         let selected_step:StepModelType = this.getSelectedStep()
         let inputForm = []
         let subFlowLink,content,label,subLabel
-        const onBuild = (param,element) => this.onBuild(param,element)
-
-
+        let events = {onChange : (e) => this.onArgChange(e)}
         if(selected_step.type === Constants.step.type.command){
           //指定されたステップの元コマンドを取得
           const command:CommandModel = selected_step.getCommand()
@@ -146,8 +162,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           const params:[CommandParamType] = command.params
           const args:{} = selected_step.args
           const invalids:{} = selected_step.invalid
-
-          inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids = {invalids} onBuild={onBuild}/>
+        
+          inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids = {invalids} events={events}/>
 
         }else if(selected_step.type === Constants.step.type.subflow){
           const subflowCommand:SubflowCommandModel = selected_step.getCommand()
@@ -159,7 +175,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           const args:{} = selected_step.args
           const invalids:{} = selected_step.invalid
 
-          inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids = {invalids} onBuild={onBuild}/>
+          inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids = {invalids} events={events}/>
 
           subFlowLink = <a href={"/flows/"+selected_step.uuid} target={"_blank"}>フローを開く</a>
         }
@@ -191,7 +207,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           </div>
         }
 
-        return <BaseInspector key={selected_step.id} header={""} label={label} subLabel = {subLabel} name={selected_step.id} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()} >
+        return <BaseInspector key={selected_step.id} header={""} label={label} subLabel = {subLabel} name={selected_step.id} {...this.props} onHide={()=>this.onHide()} >
           {content}
         </BaseInspector>
     }
