@@ -51,6 +51,20 @@ class Store(db.Model):
             ret.append(Store(result.id, result.data, result.creator))
         return ret
 
+    @classmethod
+    def find_by_id(cls, id):
+        create_schema_if_first_use()
+        result = db.session.query(Store.id,
+                                  Store.data,
+                                  Store.create_at,
+                                  Store.modified_at,
+                                  Store.creator,
+                                  Store.modifier).filter(Store.id==id).one_or_none()
+        if result is None:
+            return None
+        else:
+            return Store(result.id, result.data, result.creator)
+
     def save(self):
         create_schema_if_first_use()
         db.session.add(self)
