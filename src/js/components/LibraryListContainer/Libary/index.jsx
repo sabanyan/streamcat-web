@@ -564,11 +564,11 @@ export default class Library extends React.Component<Props, State> {
   }
 
   renderAll () {
-//    if (this.isEmptyLibraryList()) {
-//      return this.renderEmptyState()
-//    }
     if (!this.state.is_finished) {
       return null
+    }
+    if (this.isEmptyLibraryList() && this.state.mode === Constants.library.mode.dialog) {
+      return this.renderEmptyState()
     }
 
     let newUI = <div>
