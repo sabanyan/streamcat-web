@@ -1,5 +1,6 @@
 import json
 from .document import Document
+from .library import Library
 
 class Frame(Document):
     def __init__(self, uuid, parent_uuid, label, stream, creator=None, modifier=None, created_at=None):

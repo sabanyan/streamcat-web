@@ -671,9 +671,10 @@ def get_root():
     roots = Library.find_root()
     
     if len(roots) == 0 :
-        raise Exception('No root exists!')
+        # ルートフォルダがない場合はNoneを返す
+        return None
     elif len(roots) > 1:
-        raise Exception('More than 2 roots exists!')
+        raise Exception('More than 2 roots exist!')
 
     root = roots[0]
 
@@ -701,7 +702,7 @@ def set_folder2(f):
     if type(f) is Folder:
         library = Library.create_folder_type(f.uuid, f.parent_uuid, f.label, f.creator, f.creator)
         # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
-        __make_dir(library.dir_path)
+        _make_dir(library.dir_path)
         # libraryレコードをDBに格納する
         library.save()
         f.created_at = library.created_at
@@ -718,7 +719,7 @@ def set_folder2(f):
                                                   , f.creator
                                                   , f.creator)
         # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
-        __make_dir(library.dir_path)
+        _make_dir(library.dir_path)
         # ここでリモートディレクトリをマウントする
         f.mount(library.dir_path)
         # libraryレコードをDBに格納する
@@ -771,14 +772,14 @@ def del_folder2(uuid):
 
     if library.type == 'folder':
         library.delete()
-        __remove_dir(library.dir_path)
+        _remove_dir(library.dir_path)
     elif library.type == 'remote-folder':
         # ここでリモートディレクトリのマウントを解除する
         remote_folder = RemoteFolder.create_by_library(library)
         remote_folder.unmount(library.dir_path)
         # マウントポイントのディレクトリを削除する
         library.delete()
-        __remove_dir(library.dir_path)
+        _remove_dir(library.dir_path)
 
 
 def get_file2(uuid):
@@ -803,7 +804,7 @@ def set_file2(file):
     dir = pathlib.Path(library.dir_path).parent
     if not dir.exists():
         # 保存先のディレクトリが無い場合は作成する
-        __make_dir(str(dir))
+        _make_dir(str(dir))
     elif not dir.is_dir():
         raise Exception('Can not make directory, because same name file(%s) exists!' % str(dir))
     # ファイルを作成する
@@ -829,10 +830,10 @@ def del_file2(uuid):
 
     if library.type == 'frame' or library.type == 'document' or library.type == 'unknown-file':
         library.delete()
-        __remove_file(library.dir_path)
+        _remove_file(library.dir_path)
 
 
-def __make_dir(dir_path):
+def _make_dir(dir_path):
     try:
         dir_path = pathlib.Path(dir_path)
         if dir_path.exists() and not dir_path.is_dir():
@@ -844,7 +845,7 @@ def __make_dir(dir_path):
         # ファイルに対する権限がない場合
         raise e
 
-def __remove_dir(dir_path):
+def _remove_dir(dir_path):
     try:
         # 全てのフォルダから紐づかないディレクトリは物理削除する
         dir_path = dir_path.rstrip(os.pathsep)
@@ -859,7 +860,7 @@ def __remove_dir(dir_path):
         # ファイルに対する権限がない場合
         raise e
 
-def __remove_file(dir_path):
+def _remove_file(dir_path):
     try:
         if not os.path.isfile(dir_path):
             raise Exception('Can not delete %s, because it is not reguler file.' % dir_path)

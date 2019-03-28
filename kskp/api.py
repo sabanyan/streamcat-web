@@ -1269,17 +1269,17 @@ def fecth_library():
     """
     try:
         root = get_root()
+        
         # ルートフォルダが存在しない場合はルートフォルダを作成する
         # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
         if root is None:
-            new_root = Folder(str(uuid.uuidr4)
+            new_root = Folder(str(uuid.uuid4())
                             , None
-                            , 'ROOT FOLDER'
-                            , session['user_id'])
-            self.set_folder2()
-
-
-
+                            , 'ROOT_FOLDER'
+                            , creator=session['user_id'])
+            set_folder2(new_root)
+            # 作成したルートフォルダを取得し直す
+            root = get_root()
 
         data = _make_fetch_data(root)
         return jsonify({'success': True, 'data': data})

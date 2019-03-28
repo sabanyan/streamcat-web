@@ -2325,6 +2325,21 @@ class DataStoreTestCase(unittest.TestCase):
 
 class FolderTestCase(unittest.TestCase):
 
+    @unittest.skip
+    def test_get_root(self):
+        # ルートフォルダを取得する(GET /library)
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = '1'
+            response = client.get('/api/v0/library')
+            result = json.loads(response.get_data())
+
+        # POST /library apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+
+        # 作成したフォルダに対応するディレクトリが存在することを検証する
+        self.assertTrue(os.path.isdir('kskp/data/library'))
+
     def test_create_get_frame(self):
         # フォルダを作成する(POST /folders)
         with app.test_client() as client:
@@ -2345,6 +2360,8 @@ class FolderTestCase(unittest.TestCase):
 
         # フレームを作成する(POST /frames)
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.post('/api/v0/frames',
                 content_type='multipart/form-data',
                 data={
@@ -2409,6 +2426,8 @@ class FolderTestCase(unittest.TestCase):
 
         # フレームデータを作成する(POST /frames)
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.post('/api/v0/frames',
                 content_type='multipart/form-data',
                 data={
@@ -2424,7 +2443,7 @@ class FolderTestCase(unittest.TestCase):
         expected_result = {
              'label'    : '新しいフレームファイル!'
             ,'type'     : 'frame'
-            ,'creator'  : 1
+            ,'creator'  : 'user1'
         }
 
         # Post /frames apiが正常終了することを検証する
@@ -2473,6 +2492,8 @@ class FolderTestCase(unittest.TestCase):
                                     content_type='application/json',
                                     data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
             result = json.loads(response.get_data())
+
+            pprint.pprint(result)
             folder_uuid = result['data']['uuid']
 
         # POST /folders apiが正常終了することを検証する
@@ -2484,6 +2505,8 @@ class FolderTestCase(unittest.TestCase):
 
         # フレームデータを作成する(POST /frames)
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.post('/api/v0/frames',
                 content_type='multipart/form-data',
                 data={
@@ -2507,7 +2530,7 @@ class FolderTestCase(unittest.TestCase):
         expected_result = {
              'label'    : ' F L A M E-F I L E '
             ,'type'     : 'frame'
-            ,'creator'  : 1
+            ,'creator'  : 'user1'
         }
 
         # PUT /frames apiが正常終了することを検証する

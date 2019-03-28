@@ -45,7 +45,6 @@ class RemoteFolder(Folder):
         port     = json.loads(library.data)['port']
         domain   = json.loads(library.data)['domain']
         directory= json.loads(library.data)['directory']
-
         return RemoteFolder(library.uuid
                             , library.get_parent_uuid()
                             , label
