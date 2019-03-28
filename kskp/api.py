@@ -1214,7 +1214,7 @@ def fecth_store(store_id):
                       })
 
 @api.route('/stores', methods=['POST'])
-# @login_required_api
+@login_required_api
 def make_new_store():
     """
     データストアの定義(雛形)を作成する
@@ -1237,7 +1237,7 @@ def make_new_store():
                       })
 
 @api.route('/stores/<store_id>', methods=['DELETE'])
-# @login_required_api
+@login_required_api
 def delete_store(store_id):
     """
     データストアの定義(雛形)を削除する
@@ -1253,7 +1253,7 @@ def delete_store(store_id):
                         'message': repr(e)
                         })
 
-def __make_fetch_data(folder):
+def _make_fetch_data(folder):
     if folder is None:
         data = None
     else:
@@ -1271,16 +1271,15 @@ def __make_fetch_data(folder):
     return data
 
 @api.route('/library', methods=['GET'])
-# @login_required_api
+@login_required_api
 @update_navigation
 def fecth_library():
     """
     ルートデータストアを返却する
     """
     try:
-        # root_store = Library.find_by_parent_uuid(None)
         root = get_root()
-        data = __make_fetch_data(root)
+        data = _make_fetch_data(root)
         return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
@@ -1291,29 +1290,15 @@ def fecth_library():
 
 
 @api.route('/folders/<folder_uuid>', methods=['GET'])
-# @login_required_api
+@login_required_api
 @update_navigation
 def fetch_folder(folder_uuid):
     """
     フォルダを返却する
     """
     try:
-        # folder = get_folder(folder_uuid)
-        # return jsonify({'success': True, 'data': folder})
-
-        # folder = Library.find_by_uuid(folder_uuid)
-        # if folder is None:
-        #     data = None
-        # else:
-        #     data = folder.to_json()
-        #     children = Library.find_by_parent_uuid(folder.id)
-        #     data['children'] = []
-        #     for child in children:
-        #         data['children'].append(child.to_json())
-        # return jsonify({'success': True, 'data': data})
-
         folder = get_folder2(folder_uuid)
-        data = __make_fetch_data(folder)
+        data = _make_fetch_data(folder)
         return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
@@ -1323,22 +1308,12 @@ def fetch_folder(folder_uuid):
                         })
 
 @api.route('/folders', methods=['POST'])
-# @login_required_api
+@login_required_api
 def make_new_folder():
     """
     フォルダを作成する
     """
     try:
-        # new_folder= create_folder(request.json, 1)
-        # return jsonify({'success': True, 'data': new_folder})
-
-        # new_folder = Library.create(str(uuid.uuid4())
-        #                          , request.json['parent']
-        #                          , request.json['label']
-        #                          , 1)
-        # new_folder.save()
-        # return jsonify({'success': True, 'data': new_folder.to_json()})
-
         new_folder = Folder(str(uuid.uuid4())
                           , request.json['parent']
                           , request.json['label']
@@ -1353,17 +1328,16 @@ def make_new_folder():
                       })
 
 @api.route('/folders/<folder_uuid>', methods=['PUT'])
-# @login_required_api
+@login_required_api
 def update_folder(folder_uuid):
     """
     フォルダを修正する
     """
     try:
-        # folder= rename_folder_by_id(folder_uuid, new_label)
         folder = Folder(folder_uuid
                       , None
                       , request.json['label']
-                      , modifier=2)
+                      , modifier=session['user_id'])
         upd_folder2(folder)
         return jsonify({'success': True, 'data': folder.to_json()})
     except Exception as e:
@@ -1374,14 +1348,12 @@ def update_folder(folder_uuid):
                         })
 
 @api.route('/folders/<folder_uuid>', methods=['DELETE'])
-# @login_required_api
+@login_required_api
 def delete_folder(folder_uuid):
     """
     フォルダを削除する
     """
     try:
-        # delete_folder_by_id(folder_uuid)
-        # return jsonify({'success': True})
         del_folder2(folder_uuid)
         return jsonify({'success': True})
     except Exception as e:
@@ -1393,18 +1365,15 @@ def delete_folder(folder_uuid):
 
 
 @api.route('/remote-folders/<folder_uuid>', methods=['GET'])
-# @login_required_api
-# @update_navigation
+@login_required_api
+@update_navigation
 def fetch_remote_folder(folder_uuid):
     """
     リモートフォルダを返却する
     """
     try:
-        # folder = get_remote_folder(folder_uuid)
-        # return jsonify({'success': True, 'data': folder})
-
         remote_folder = get_folder2(folder_uuid)
-        data = __make_fetch_data(remote_folder)
+        data = _make_fetch_data(remote_folder)
         return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
@@ -1414,15 +1383,12 @@ def fetch_remote_folder(folder_uuid):
                         })
 
 @api.route('/remote-folders', methods=['POST'])
-# @login_required_api
+@login_required_api
 def make_new_remote_folder():
     """
     リモートフォルダを作成する
     """
     try:
-        # new_folder= create_remote_folder(request.json, 1)
-        # return jsonify({'success': True, 'data': new_folder})
-
         new_folder = RemoteFolder(str(uuid.uuid4())
                                 , request.json['parent']
                                 , request.json['label']
@@ -1432,7 +1398,7 @@ def make_new_remote_folder():
                                 , request.json['port']
                                 , request.json['domain']
                                 , request.json['directory']
-                                , creator=1)
+                                , creator=session['user_id'])
         set_folder2(new_folder)
         return jsonify({'success': True, 'data': new_folder.to_json()})
     except Exception as e:
@@ -1443,7 +1409,7 @@ def make_new_remote_folder():
                       })
 
 @api.route('/remote-folders/<folder_uuid>', methods=['PUT'])
-# @login_required_api
+@login_required_api
 def update_remote_folder(folder_uuid):
     """
     リモートフォルダを修正する
@@ -1460,14 +1426,12 @@ def update_remote_folder(folder_uuid):
                         })
 
 @api.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
-# @login_required_api
+@login_required_api
 def delete_remote_folder(folder_uuid):
     """
     リモートフォルダを削除する
     """
     try:
-        # delete_remote_folder_by_id(folder_uuid)
-        # return jsonify({'success': True})
         del_folder2(folder_uuid)
         return jsonify({'success': True})
     except Exception as e:
@@ -1480,7 +1444,7 @@ def delete_remote_folder(folder_uuid):
 
 
 @api.route('/databases/<database_uuid>', methods=['GET'])
-# @login_required_api
+@login_required_api
 @update_navigation
 def fetch_database(database_uuid):
     """
@@ -1497,7 +1461,7 @@ def fetch_database(database_uuid):
                         })
 
 @api.route('/databases', methods=['POST'])
-# @login_required_api
+@login_required_api
 def make_new_database():
     """
     データベースを作成する
@@ -1513,7 +1477,7 @@ def make_new_database():
                       })
 
 @api.route('/databases/<database_uuid>', methods=['PUT'])
-# @login_required_api
+@login_required_api
 def update_database(database_uuid):
     """
     データベースを修正する
@@ -1530,7 +1494,7 @@ def update_database(database_uuid):
                         })
 
 @api.route('/databases/<database_uuid>', methods=['DELETE'])
-# @login_required_api
+@login_required_api
 def delete_database(database_uuid):
     """
     データベースを削除する
@@ -1547,13 +1511,14 @@ def delete_database(database_uuid):
 
 
 @api.route('/documents/<doc_uuid>', methods=['GET'])
+@login_required_api
 def fetch_document(doc_uuid):
     """
     ドキュメントを返却する
     """
     try:
         offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-        limit = int(request.args.get('limit')) if request.args.get('limit') else 999
+        limit = int(request.args.get('limit')) if request.args.get('limit') else 100
         file_path = Path(get_path(doc_uuid))
         result = csv_to_frame(file_path, offset=offset, limit=limit)
         return jsonify({'success': True, 'data': result})
@@ -1565,6 +1530,7 @@ def fetch_document(doc_uuid):
                         })
 
 @api.route('/documents', methods=['POST'])
+@login_required_api
 def make_new_document():
     """
     ドキュメントを作成する
@@ -1574,17 +1540,18 @@ def make_new_document():
                          , request.form.get('parent')
                          , request.form.get('label')
                          , request.files.get('file').stream
-                         , creator=1)
+                         , creator=session['user_id'])
         set_file2(new_doc)
         return jsonify({'success': True, 'data': new_doc.to_json()})
     except Exception as e:
         return jsonify({
-                            'success': False,
-                            'code': -1,
-                            'message': 'invalid json'
+                        'success': False,
+                        'code': -1,
+                        'message': 'invalid json'
                         })
 
 @api.route('/documents/<doc_uuid>', methods=['PUT'])
+@login_required_api
 def update_document(doc_uuid):
     """
     指定したdocumentのラベル名を変更する
@@ -1594,7 +1561,7 @@ def update_document(doc_uuid):
                      , None
                      , request.json['label']
                      , None
-                     , modifier=2)
+                     , 2)
         upd_file2(doc)
         return jsonify({'success': True, 'data': doc.to_json()})
     except Exception as e:
@@ -1605,6 +1572,7 @@ def update_document(doc_uuid):
                         })
 
 @api.route('/documents/<doc_uuid>', methods=['DELETE'])
+@login_required_api
 def delete_document(doc_uuid):
     """
     指定したdocumentを物理削除する
