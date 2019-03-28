@@ -3,6 +3,7 @@ import * as React from 'react'
 import Constants from '../../../constants/index'
 import StandardModal from './Standard'
 import PreviewModal from './Preview'
+import RunFlowModal from './RunFlow'
 import Button from '../Button'
 
 type Props = {
@@ -132,7 +133,7 @@ export default class Modal extends React.Component<Props, State> {
 
     const done = (this.state.done)?this.state.done:this.props.done
     const {visible, title, content, contents, danger} = this.state
-    const {preview, ok, close, footer, cancel, children, primary} = this.props
+    const {preview, runFlow, ok, close, footer, cancel, children, primary} = this.props
 
     /**
      * 背景
@@ -204,10 +205,13 @@ export default class Modal extends React.Component<Props, State> {
       modal = <PreviewModal id={id} title={title} footer={modal_footer}
                             close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
       </PreviewModal>
-    }
-    else {
+    } else if (runFlow) {
+      modal = <RunFlowModal id={id} title={title} footer={modal_footer}
+                            close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
+      </RunFlowModal>
+    } else {
       modal = <StandardModal id={id} title={title} footer={modal_footer}
-                             close_button={close_button} visible={visible}>
+                             close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
         {(visible)?modal_body:null}
       </StandardModal>
     }
