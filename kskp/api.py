@@ -433,6 +433,7 @@ def fetch_visualizers():
     return jsonify({'success': True, 'data': visualizers})
 
 @api.route('/frames', methods=['GET', 'POST'])
+@login_required_api
 def make_new_frame():
     """
     新しいframeを作成する
@@ -449,7 +450,7 @@ def make_new_frame():
                             , request.form.get('parent')
                             , request.form.get('label')
                             , request.files.get('file').stream
-                            , creator=1)
+                            , creator=session['user_id'])
             set_file2(new_frame)
             return jsonify({'success': True, 'data': new_frame.to_json()})
         else:
@@ -499,9 +500,10 @@ def fetch_frame(frame_uuid):
         file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
     else:
         limit = 999 if limit is None else limit
+        no_contents = request.args.get('no_contents') is not None
         file_path = Path(file_path)
 
-    result = csv_to_frame(file_path, offset=offset, limit=limit)
+    result = csv_to_frame(file_path, no_contents=no_contents, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
         # headerのカラムに改行コードが含まれているケースの対応
@@ -1214,7 +1216,7 @@ def make_new_store():
                                 ,request.json['description']
                                 ,request.json['url']
                                 ,request.json['params']
-                                ,1)
+                                ,session['user_id'])
         new_store.save()
         return jsonify({'success': True, 'data': new_store.to_json()})    
     except Exception as e:
@@ -1267,6 +1269,18 @@ def fecth_library():
     """
     try:
         root = get_root()
+        # ルートフォルダが存在しない場合はルートフォルダを作成する
+        # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
+        if root is None:
+            new_root = Folder(str(uuid.uuidr4)
+                            , None
+                            , 'ROOT FOLDER'
+                            , session['user_id'])
+            self.set_folder2()
+
+
+
+
         data = _make_fetch_data(root)
         return jsonify({'success': True, 'data': data})
     except Exception as e:
@@ -1305,7 +1319,7 @@ def make_new_folder():
         new_folder = Folder(str(uuid.uuid4())
                           , request.json['parent']
                           , request.json['label']
-                          , creator=1)
+                          , creator=session['user_id'])
         set_folder2(new_folder)
         return jsonify({'success': True, 'data': new_folder.to_json()})
     except Exception as e:
@@ -1404,8 +1418,25 @@ def update_remote_folder(folder_uuid):
     """
     try:
         new_label = request.json['label']
-        folder= rename_remote_folder_by_id(folder_uuid, new_label)
-        return jsonify({'success': True, 'data': folder})
+        new_user = request.json['user']
+        new_password = request.json['password']
+        new_server = request.json['server']
+        new_port = request.json['port']
+        new_domain = request.json['domain']
+        new_directory = request.json['directory']
+
+        folder = RemoteFolder(folder_uuid
+                            , None
+                            , new_label
+                            , new_user
+                            , new_password
+                            , new_server
+                            , new_port
+                            , new_domain
+                            , new_directory
+                            , modifier=session['user_id'])
+        upd_folder2(folder)
+        return jsonify({'success': True, 'data': folder.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1507,6 +1538,8 @@ def fetch_document(doc_uuid):
     try:
         offset = int(request.args.get('offset')) if request.args.get('offset') else 0
         limit = int(request.args.get('limit')) if request.args.get('limit') else 100
+        no_contents = request.args.get('no_contents') is not None
+
         file_path = Path(get_path(doc_uuid))
         result = csv_to_frame(file_path, offset=offset, limit=limit)
         return jsonify({'success': True, 'data': result})
@@ -1549,7 +1582,7 @@ def update_document(doc_uuid):
                      , None
                      , request.json['label']
                      , None
-                     , 2)
+                     , session['user_id'])
         upd_file2(doc)
         return jsonify({'success': True, 'data': doc.to_json()})
     except Exception as e:
