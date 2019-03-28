@@ -949,14 +949,14 @@ def get_folder2(uuid):
         return Database.create_by_library(library)
 
 def set_folder2(f):
-    if isinstance(f, Folder):
+    if type(f) is Folder:
         library = Library.create_folder_type(f.uuid, f.parent_uuid, f.label, f.creator, f.creator)
         # フォルダに紐付くディレクトリ(dir_path列で指定されるディレクトリ)がなければ作成する
         __make_dir(library.dir_path)
         # libraryレコードをDBに格納する
         library.save()
         f.created_at = library.created_at
-    elif isinstance(f, RemoteFolder):
+    elif type(f) is RemoteFolder:
         library = Library.create_remote_folder_type(f.uuid
                                                   , f.parent_uuid
                                                   , f.label
@@ -975,15 +975,29 @@ def set_folder2(f):
         # libraryレコードをDBに格納する
         library.save()
         f.created_at = library.created_at
-    elif isinstance(f, Database):
+        # リモートディレクトリ直下のファイルをDBに登録する
+        for path in Path(library.dir_path).iterdir():
+            if path.is_dir():
+                pass
+            elif path.is_file():
+                import pprint
+                pprint.pprint(path.name)
+                label = path.name
+                child_library = Library.create_frame_type(str(uuid.uuid4())
+                                                        , library.uuid
+                                                        , label
+                                                        , library.creator
+                                                        , library.modifier)
+                child_library.save()
+    elif type(f) is Database:
         pass
 
 def upd_folder2(f):
-    if isinstance(f, Folder):
+    if type(f) is Folder:
         library = Library.create_folder_type(f.uuid, f.parent_uuid, f.label, f.creator, f.modifier)
         library.update_data()
         f.created_at = library.created_at
-    elif isinstance(f, RemoteFolder):
+    elif type(f) is RemoteFolder:
         library = Library.create_remote_folder_type(f.uuid
                                                   , f.parent_uuid
                                                   , f.label
@@ -997,7 +1011,7 @@ def upd_folder2(f):
                                                   , f.modifier)
         library.update_data()
         f.created_at = library.created_at
-    elif isinstance(f, Database):
+    elif type(f) is Database:
         pass 
 
 def del_folder2(uuid):
@@ -1031,8 +1045,11 @@ def get_file2(uuid):
     elif library.type == 'unknown-file':
         pass
 
-def set_file2(frame):
-    library = Library.create_frame_type(frame.uuid, frame.parent_uuid, frame.label, frame.creator, frame.creator)
+def set_file2(file):
+    if type(file) is Frame:
+        library = Library.create_frame_type(file.uuid, file.parent_uuid, file.label, file.creator, file.creator)
+    elif type(file) is Document:
+        library = Library.create_document_type(file.uuid, file.parent_uuid, file.label, file.creator, file.creator)
     # 保存先のディレクトリを取得する
     dir = pathlib.Path(library.dir_path).parent
     if not dir.exists():
@@ -1040,17 +1057,20 @@ def set_file2(frame):
         __make_dir(str(dir))
     elif not dir.is_dir():
         raise Exception('Can not make directory, because same name file(%s) exists!' % str(dir))
-    # Frameファイルを作成する
-    frame.save(library.dir_path)
+    # ファイルを作成する
+    file.save(library.dir_path)
     # libraryレコードをDBに格納する
     library.save()
-    frame.created_at = library.created_at
+    file.created_at = library.created_at
 
-def upd_file2(f):
-    library = Library.create_frame_type(f.uuid, f.parent_uuid, f.label, f.creator, f.modifier)
+def upd_file2(file):
+    if type(file) is Frame:
+        library = Library.create_frame_type(file.uuid, file.parent_uuid, file.label, file.creator, file.creator)
+    elif type(file) is Document:
+        library = Library.create_document_type(file.uuid, file.parent_uuid, file.label, file.creator, file.creator)
     library.update_data()
-    f.creator = library.creator
-    f.created_at = library.created_at
+    file.creator = library.creator
+    file.created_at = library.created_at
 
 def del_file2(uuid):
     library = Library.find_by_uuid(uuid)

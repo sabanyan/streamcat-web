@@ -47,12 +47,3 @@ class Folder():
                ,'createdAt' : self.created_at }
 
 
-# ローダ、セーバがFolderストアからアクセスする方法
-# Loader.load(folder)
-# Saver.save(folder)
-#
-# Loader.load(database)
-# Saver.save(database)
-#
-
-
