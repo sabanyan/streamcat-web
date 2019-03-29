@@ -127,7 +127,7 @@ class Library(db.Model):
         pass
 
     @classmethod
-    def create_frame_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+    def _create_file_type(cls, uuid, parent_uuid, label):
         # テーブルがない場合は作成する
         create_schema_if_first_use()
         
@@ -149,13 +149,25 @@ class Library(db.Model):
             dir_path = None
         else:
             # 共有するリモートディレクトリ名をローカルのマウントディレクトリ名にする
-            dir_path = os.path.join(library.dir_path, Library.__secure_filename(label))
+            dir_path = os.path.join(library.dir_path, Library._secure_filename(label))
 
         # dataを作成する
         data = json.dumps({'label' : label})
+        return (id, parent_id, dir_path, data)
 
+    @classmethod
+    def create_frame_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+        (id, parent_id, dir_path, data) = Library._create_file_type(uuid, parent_uuid, label)
         # Libraryオブジェクトを返す
         ret = Library(id, parent_id, uuid, dir_path, 'frame', data, creator, modifier)
+        ret.parent_uuid = parent_uuid
+        return ret
+
+    @classmethod
+    def create_document_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
+        (id, parent_id, dir_path, data) = Library._create_file_type(uuid, parent_uuid, label)
+        # Libraryオブジェクトを返す
+        ret = Library(id, parent_id, uuid, dir_path, 'document', data, creator, modifier)
         ret.parent_uuid = parent_uuid
         return ret
             
@@ -302,7 +314,7 @@ class Library(db.Model):
         return results_count > 0
 
     @classmethod
-    def __secure_filename(cls, filename):
+    def _secure_filename(cls, filename):
         # '/'と'\0'はunixとmacOSではファイル名に使用できない
         trans_table = str.maketrans({'/' : '／', '\0' : ''})
         return filename.translate(trans_table)
@@ -317,6 +329,30 @@ class Library(db.Model):
             return None
         else:
             return result.uuid
+
+    @classmethod
+    def get_user_name_by_id(cls, user_id):
+        if user_id is None:
+            return ''
+        sql = " SELECT name FROM users WHERE id = %s" % user_id
+        results = db.session.execute(sql)
+        if results is None:
+            return ''
+        else:
+            for result in results:
+                return result.name
+
+    def get_creator_name(self):
+        if self.creator is None:
+            return ''
+        else:
+            return Library.get_user_name_by_id(self.creator)
+
+    def get_modifier_name(self):
+        if self.modifier is None:
+            return ''
+        else:
+            return Library.get_user_name_by_id(self.modifier)
 
     def save(self):
         # テーブルがない場合は作成する
