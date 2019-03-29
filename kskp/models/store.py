@@ -1,6 +1,6 @@
 # from sqlalchemy.dialects.postgresql import TIMESTAMP, JSONB, ENUM
 import json
-from . import db, create_schema_if_first_use
+from . import db
 
 class Store(db.Model):
     """
@@ -39,7 +39,6 @@ class Store(db.Model):
 
     @classmethod
     def find_all(cls):
-        create_schema_if_first_use()
         results = db.session.query(Store.id,
                                    Store.data,
                                    Store.create_at,
@@ -53,7 +52,6 @@ class Store(db.Model):
 
     @classmethod
     def find_by_id(cls, id):
-        create_schema_if_first_use()
         result = db.session.query(Store.id,
                                   Store.data,
                                   Store.create_at,
@@ -66,12 +64,10 @@ class Store(db.Model):
             return Store(result.id, result.data, result.creator)
 
     def save(self):
-        create_schema_if_first_use()
         db.session.add(self)
         db.session.commit()
 
     def delete(self):
-        create_schema_if_first_use()
         db.session.query(Store).filter(Store.id==self.id).delete()
         db.session.commit()
 
