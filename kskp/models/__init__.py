@@ -9,6 +9,7 @@ from .. import app
 # app.config["SQLALCHEMY_DATABASE_URI"] = "postgresql://tanakahiroshi:@localhost/kskp"
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data/kskp_alchemy.db"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data/kskp.db"
+# 起動時のWarningを抑制するため以下の設定値をTrueにする
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
