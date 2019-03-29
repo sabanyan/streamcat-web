@@ -13,11 +13,8 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data/kskp.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
-
-import pprint
-
+# 最初にアクセスが発生した時にのみ実行される
 @app.before_first_request
 def session_setup():
-    pprint.pprint('CREATE ALL TABLES')
     # SQLAlchemyで使用するテーブルが存在しない場合は作成する
     db.create_all()
