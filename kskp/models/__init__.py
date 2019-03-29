@@ -14,10 +14,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
 
-app.is_first_use = True
+import pprint
 
-def create_schema_if_first_use():
-    if app.is_first_use:
-        app.is_first_use = False
-        db.drop_all()
-        db.create_all()
+@app.before_first_request
+def session_setup():
+    pprint.pprint('CREATE ALL TABLES')
+    # SQLAlchemyで使用するテーブルが存在しない場合は作成する
+    db.create_all()

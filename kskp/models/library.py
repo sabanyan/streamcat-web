@@ -1,7 +1,7 @@
 # from sqlalchemy.dialects.postgresql import TIMESTAMP, JSONB, ENUM
 import os
 import json
-from . import db, create_schema_if_first_use
+from . import db
 from sqlalchemy.orm import aliased
 from sqlalchemy import literal, text
 from sqlalchemy.sql.expression import label, literal_column
@@ -44,9 +44,6 @@ class Library(db.Model):
 
     @classmethod
     def create_folder_type(cls, uuid, parent_uuid, label, creator=None, modifier=None):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
-        
         # SQLiteではidは乱数で採番する
         id = random.randint(0,99999)
 
@@ -86,9 +83,6 @@ class Library(db.Model):
                                 , directory
                                 , creator=None
                                 , modifier=None):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
-
         # SQLiteではidは乱数で採番する
         id = random.randint(0,99999)
 
@@ -128,9 +122,6 @@ class Library(db.Model):
 
     @classmethod
     def _create_file_type(cls, uuid, parent_uuid, label):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
-        
         # SQLiteではidは乱数で採番する
         id = random.randint(0,99999)
 
@@ -173,9 +164,6 @@ class Library(db.Model):
             
     @classmethod
     def find_by_uuid(cls, uuid):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
-
         # 指定されたuuidを持つLibraryレコードを取得する
         result = db.session.query(Library.id,
                                   Library.parent_id,
@@ -201,9 +189,6 @@ class Library(db.Model):
 
     @classmethod
     def find_by_parent_uuid(cls, parent_uuid):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
-
         # 指定されたuuidの親をもつLibraryレコードを全て取得する
         Library2 = aliased(Library)
         sub_query = db.session.query(Library2)
@@ -233,9 +218,6 @@ class Library(db.Model):
 
     @classmethod
     def find_root(cls):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
-
         # 親を持たないLibraryレコードを全て取得する
         results = db.session.query(Library.id,
                                    Library.parent_id,
@@ -355,14 +337,10 @@ class Library(db.Model):
             return Library.get_user_name_by_id(self.modifier)
 
     def save(self):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
         db.session.add(self)
         db.session.commit()
 
     def update_data(self):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
         # 指定されたUUIDのLibraryレコードを取得する
         library = db.session.query(Library).filter(Library.uuid==self.uuid).first()
         library.data = self.data
@@ -379,9 +357,6 @@ class Library(db.Model):
         self.created_at = library.created_at
 
     def delete(self):
-        # テーブルがない場合は作成する
-        create_schema_if_first_use()
-
         # 削除対象のフォルダの下にフォルダまたはファイルが存在する場合は例外を送出する
         if len(self.find_by_parent_uuid(self.uuid)) > 0:
             raise Exception('Can not delete folder that has child file or folder.')
