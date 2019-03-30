@@ -284,7 +284,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       action.step_ids.forEach((id) => {
         if (Graph.getNode(newState.nodes, id) instanceof DataFrameStepModel) {
           //削除対象のノードの親がある場合、親を調べる
-          if (graph.g.inEdges(id).length > 0) {
+          if (graph.g.inEdges(id) && graph.g.inEdges(id).length > 0) {
             const deleteTargetStepId = graph.g.inEdges(id)[0].v
             const deleteTargetStep = Graph.getNode(newState.nodes, deleteTargetStepId)
             if (deleteTargetStep instanceof CommandStepModel ||
