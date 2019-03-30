@@ -75,6 +75,12 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
   }
 
   onKeyDown (e: KeyboardEvent) {
+    const current = this.props.history.current
+    const max = this.props.history.nodes.length
+
+    const redoDisabled = !(current + 1 < max)
+    const undoDisabled = !(current - 1 >= 0)
+
     if (DetectUtil.isMac()) {
       if (e.metaKey && e.key === 'c') {
         this.copySteps()
@@ -85,11 +91,11 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
         return
       }
       if (e.metaKey && e.shiftKey && e.key === 'z') {
-        this.props.redo()
+        if(!redoDisabled)this.props.redo()
         return
       }
       if (e.metaKey && e.key === 'z') {
-        this.props.undo()
+        if(!undoDisabled)this.props.undo()
         return
       }
     }
@@ -103,11 +109,11 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
         return
       }
       if (e.ctrlKey && e.shiftKey && e.key === 'z') {
-        this.props.redo()
+        if(!redoDisabled)this.props.redo()
         return
       }
       if (e.ctrlKey && e.key === 'z') {
-        this.props.undo()
+        if(!undoDisabled)this.props.undo()
         return
       }
     }
