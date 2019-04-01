@@ -109,7 +109,7 @@ const Application = (state = initialState, action: {}) => {
 
       if (add_step instanceof CommandStepModel ||
         add_step instanceof SubFlowStepModel) {
-        //srcs
+
         let totalSX = 0
         let totalSY = 0
 
@@ -167,11 +167,25 @@ const Application = (state = initialState, action: {}) => {
             height: defaultNodeProps.height
           })
 
+          //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
+          const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({...add_step.position},newState.nodes)
+          const notOverlapOffsetX = notOverlapNodePosition.x - add_step.position.x
+          const notOverlapOffsetY = notOverlapNodePosition.y - add_step.position.y
+          if(notOverlapOffsetX !==0 || notOverlapOffsetY !==0){
+            //再調整
+            add_step.setFrame({
+              x: notOverlapNodePosition.x,
+              y: notOverlapNodePosition.y,
+              width: defaultNodeProps.width,
+              height: defaultNodeProps.height
+            })
+          }
+
           //先行して設置されている接続先のノードの位置調整
           dst_step_ids.map((id, index) => {
             let new_node = Graph.getNode(state.nodes, id)
             new_node.setFrame({
-              x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator),
+              x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
               y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator,
               width: defaultNodeProps.width,
               height: defaultNodeProps.height
