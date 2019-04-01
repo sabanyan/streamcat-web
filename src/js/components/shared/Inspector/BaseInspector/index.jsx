@@ -1,6 +1,7 @@
 //@flow
 import * as React from 'react'
 import style from '../style.scss'
+import classnames from 'classnames'
 import InOutConnector from '../CommandInspector/InOutConnector/index'
 
 type Props = {
@@ -48,7 +49,7 @@ class BaseInspector extends React.Component<Props> {
         </div>
     }
 
-    return <div className={style.property_container}>
+    return <div className={classnames(style.property_container,'inspector-container')}>
       <div className={style.property_header}>
         {header}
       </div>

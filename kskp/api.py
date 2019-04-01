@@ -23,8 +23,29 @@ from .model import (
     update_user_by_id,
     write_data_to_json,
     make_flow_path,
-    copy_flow_by_uuid
+    copy_flow_by_uuid,
+
+    get_database,
+    create_database,
+    rename_database_by_id,
+    delete_database_by_id,
+
+    get_path,
+    get_root,
+    get_folder2,
+    set_folder2,
+    upd_folder2,
+    del_folder2,
+    get_file2,
+    set_file2,
+    upd_file2,
+    del_file2
 )
+from .models.store import Store
+from .models.folder import Folder
+from .models.remote_folder import RemoteFolder
+from .models.database import Database
+from .models.document import Document
 from .activity import (
     make_unfinished_history,
     make_finished_history
@@ -408,6 +429,7 @@ def fetch_visualizers():
     return jsonify({'success': True, 'data': visualizers})
 
 @api.route('/frames', methods=['GET', 'POST'])
+@login_required_api
 def make_new_frame():
     """
     新しいframeを作成する
@@ -417,9 +439,20 @@ def make_new_frame():
     no_contents = False
 
     if 'file' in request.files:
-        # ファイルがPOSTで送信されてきたらアップロードだとみなす
-        frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
-        return jsonify({'success': True, "data": frame})
+        if 'parent' in request.form and 'label' in request.form:
+            # parentとlabel属性があれば新形式のPOST /framesだとみなす
+            from .models.frame import Frame
+            new_frame = Frame(str(uuid.uuid4())
+                            , request.form.get('parent')
+                            , request.form.get('label')
+                            , request.files.get('file').stream
+                            , creator=session['user_id'])
+            set_file2(new_frame)
+            return jsonify({'success': True, 'data': new_frame.to_json()})
+        else:
+            # ファイルがPOSTで送信されてきたらアップロードだとみなす
+            frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
+            return jsonify({'success': True, "data": frame})
     elif 'from' in request.args:
         if '.' in request.args['from']:
             # ドットで区切って、具体的に一つだけstepを指定することができる
@@ -461,7 +494,15 @@ def fetch_frame(frame_uuid):
     limit = int(request.args.get('limit')) if request.args.get('limit') else None
     no_contents = True if request.args.get('no_contents') else False
 
-    file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
+    # 先にLibraryテーブルから指定されたUUIDのフレームを探す
+    file_path = get_path(frame_uuid)
+    if file_path is None:
+        file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
+    else:
+        limit = 999 if limit is None else limit
+        no_contents = request.args.get('no_contents') is not None
+        file_path = Path(file_path)
+
     result = csv_to_frame(file_path, no_contents=no_contents, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
@@ -471,8 +512,43 @@ def fetch_frame(frame_uuid):
             headers.append(column.replace('\n',''))
         result = headers
 
-
     return jsonify({'success': True, 'data': result})
+
+@api.route('/frames/<frame_uuid>', methods=['PUT'])
+def update_frame(frame_uuid):
+    """
+    指定したframeのラベル名を変更する
+    """
+    try:
+        from .models.frame import Frame
+        frame = Frame(frame_uuid
+                      , None
+                      , request.json['label']
+                      , None
+                      , modifier=2)
+        upd_file2(frame)
+        return jsonify({'success': True, 'data': frame.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/frames/<frame_uuid>', methods=['DELETE'])
+def delete_frame(frame_uuid):
+    """
+    指定したframeを物理削除する
+    """
+    try:
+        del_file2(frame_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
 
 def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     """
@@ -584,6 +660,8 @@ def jobs():
 
     # jobsリストの作成
     for job_path in Path(JOBS_DIR_PATH).iterdir():
+        if not job_path.suffix == '.json':
+            continue
         data = json.loads(job_path.read_text(encoding='utf-8'))
         if 'flow' in request.args:
             if data['flow']['uuid'] == request.args['flow']:
@@ -1085,3 +1163,449 @@ def visualizer():
 
     # bokehのコマンド
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
+
+import pprint
+
+@api.route('/stores', methods=['GET'])
+def fecth_stores():
+    """
+    データストアの定義(雛形)の一覧を返却する
+    """
+    try:
+        stores = Store.find_all()
+        ret = []
+        for store in stores:
+            ret.append(store.to_json())
+
+        return jsonify({'success': True, 'data': ret})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores/<store_id>', methods=['GET'])
+def fecth_store(store_id):
+    """
+    データストアの定義(雛形)を返却する
+    """
+    try:
+        store = Store.find_by_id(store_id)
+        if store is None:
+            data = None
+        else:
+            data = store.to_json()
+
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores', methods=['POST'])
+@login_required_api
+def make_new_store():
+    """
+    データストアの定義(雛形)を作成する
+    """
+    try:
+        new_store = Store.create(request.json['id']
+                                ,request.json['version']
+                                ,request.json['label']
+                                ,request.json['description']
+                                ,request.json['url']
+                                ,request.json['params']
+                                ,session['user_id'])
+        new_store.save()
+        return jsonify({'success': True, 'data': new_store.to_json()})    
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/stores/<store_id>', methods=['DELETE'])
+@login_required_api
+def delete_store(store_id):
+    """
+    データストアの定義(雛形)を削除する
+    """
+    try:
+        delete_store = Store(store_id)
+        delete_store.delete()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+def _make_fetch_data(folder):
+    if folder is None:
+        data = None
+    else:
+        data = folder.to_json()
+        # folderPath属性を作成する
+        folder_list = folder.get_folder_path()
+        data['folderPath'] = []
+        for f in folder_list:
+            data['folderPath'].append(f)
+        # children属性を作成する
+        children = folder.get_children()
+        data['children'] = []
+        for child in children:
+            data['children'].append(child.to_json())
+    return data
+
+@api.route('/library', methods=['GET'])
+@login_required_api
+@update_navigation
+def fecth_library():
+    """
+    ルートデータストアを返却する
+    """
+    try:
+        root = get_root()
+        
+        # ルートフォルダが存在しない場合はルートフォルダを作成する
+        # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
+        if root is None:
+            new_root = Folder(str(uuid.uuid4())
+                            , None
+                            , 'ROOT_FOLDER'
+                            , creator=session['user_id'])
+            set_folder2(new_root)
+            # 作成したルートフォルダを取得し直す
+            root = get_root()
+
+        data = _make_fetch_data(root)
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+@api.route('/folders/<folder_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+def fetch_folder(folder_uuid):
+    """
+    フォルダを返却する
+    """
+    try:
+        folder = get_folder2(folder_uuid)
+        data = _make_fetch_data(folder)
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/folders', methods=['POST'])
+@login_required_api
+def make_new_folder():
+    """
+    フォルダを作成する
+    """
+    try:
+        new_folder = Folder(str(uuid.uuid4())
+                          , request.json['parent']
+                          , request.json['label']
+                          , creator=session['user_id'])
+        set_folder2(new_folder)
+        return jsonify({'success': True, 'data': new_folder.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/folders/<folder_uuid>', methods=['PUT'])
+@login_required_api
+def update_folder(folder_uuid):
+    """
+    フォルダを修正する
+    """
+    try:
+        folder = Folder(folder_uuid
+                      , None
+                      , request.json['label']
+                      , modifier=session['user_id'])
+        upd_folder2(folder)
+        return jsonify({'success': True, 'data': folder.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/folders/<folder_uuid>', methods=['DELETE'])
+@login_required_api
+def delete_folder(folder_uuid):
+    """
+    フォルダを削除する
+    """
+    try:
+        del_folder2(folder_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+@api.route('/remote-folders/<folder_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+def fetch_remote_folder(folder_uuid):
+    """
+    リモートフォルダを返却する
+    """
+    try:
+        remote_folder = get_folder2(folder_uuid)
+        data = _make_fetch_data(remote_folder)
+        return jsonify({'success': True, 'data': data})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/remote-folders', methods=['POST'])
+@login_required_api
+def make_new_remote_folder():
+    """
+    リモートフォルダを作成する
+    """
+    try:
+        new_folder = RemoteFolder(str(uuid.uuid4())
+                                , request.json['parent']
+                                , request.json['label']
+                                , request.json['user']
+                                , request.json['password']
+                                , request.json['server']
+                                , request.json['port']
+                                , request.json['domain']
+                                , request.json['directory']
+                                , creator=session['user_id'])
+        set_folder2(new_folder)
+        return jsonify({'success': True, 'data': new_folder.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/remote-folders/<folder_uuid>', methods=['PUT'])
+@login_required_api
+def update_remote_folder(folder_uuid):
+    """
+    リモートフォルダを修正する
+    """
+    try:
+        new_label = request.json['label']
+        new_user = request.json['user']
+        new_password = request.json['password']
+        new_server = request.json['server']
+        new_port = request.json['port']
+        new_domain = request.json['domain']
+        new_directory = request.json['directory']
+
+        folder = RemoteFolder(folder_uuid
+                            , None
+                            , new_label
+                            , new_user
+                            , new_password
+                            , new_server
+                            , new_port
+                            , new_domain
+                            , new_directory
+                            , modifier=session['user_id'])
+        upd_folder2(folder)
+        return jsonify({'success': True, 'data': folder.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
+@login_required_api
+def delete_remote_folder(folder_uuid):
+    """
+    リモートフォルダを削除する
+    """
+    try:
+        del_folder2(folder_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+
+@api.route('/databases/<database_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+def fetch_database(database_uuid):
+    """
+    データベースを返却する
+    """
+    try:
+        database = get_database(database_uuid)
+        return jsonify({'success': True, 'data': database})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/databases', methods=['POST'])
+@login_required_api
+def make_new_database():
+    """
+    データベースを作成する
+    """
+    try:
+        new_database= create_database(request.json, 1)
+        return jsonify({'success': True, 'data': new_database})    
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                      })
+
+@api.route('/databases/<database_uuid>', methods=['PUT'])
+@login_required_api
+def update_database(database_uuid):
+    """
+    データベースを修正する
+    """
+    try:
+        new_label = request.json['label']
+        database= rename_database_by_id(database_uuid, new_label)
+        return jsonify({'success': True, 'data': database})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/databases/<database_uuid>', methods=['DELETE'])
+@login_required_api
+def delete_database(database_uuid):
+    """
+    データベースを削除する
+    """
+    try:
+        delete_database_by_id(database_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+
+@api.route('/documents/<doc_uuid>', methods=['GET'])
+@login_required_api
+def fetch_document(doc_uuid):
+    """
+    ドキュメントを返却する
+    """
+    try:
+        offset = int(request.args.get('offset')) if request.args.get('offset') else 0
+        limit = int(request.args.get('limit')) if request.args.get('limit') else 100
+        no_contents = request.args.get('no_contents') is not None
+
+        file_path = Path(get_path(doc_uuid))
+        result = csv_to_frame(file_path, offset=offset, limit=limit)
+        return jsonify({'success': True, 'data': result})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/documents', methods=['POST'])
+@login_required_api
+def make_new_document():
+    """
+    ドキュメントを作成する
+    """
+    try:
+        new_doc = Document(str(uuid.uuid4())
+                         , request.form.get('parent')
+                         , request.form.get('label')
+                         , request.files.get('file').stream
+                         , creator=session['user_id'])
+        set_file2(new_doc)
+        return jsonify({'success': True, 'data': new_doc.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code': -1,
+                        'message': 'invalid json'
+                        })
+
+@api.route('/documents/<doc_uuid>', methods=['PUT'])
+@login_required_api
+def update_document(doc_uuid):
+    """
+    指定したdocumentのラベル名を変更する
+    """
+    try:
+        doc = Document(doc_uuid
+                     , None
+                     , request.json['label']
+                     , None
+                     , session['user_id'])
+        upd_file2(doc)
+        return jsonify({'success': True, 'data': doc.to_json()})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
+
+@api.route('/documents/<doc_uuid>', methods=['DELETE'])
+@login_required_api
+def delete_document(doc_uuid):
+    """
+    指定したdocumentを物理削除する
+    """
+    try:
+        del_file2(doc_uuid)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': repr(e)
+                        })
