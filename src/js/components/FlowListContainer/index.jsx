@@ -2,8 +2,9 @@ import { connect } from 'react-redux'
 import FlowList from './FlowList'
 import { addNotification,updateNotification,removeNotification} from 'reapop';
 import {
+  selectFlowAction,
   updateRunArgsAction,
-} from '../../modules/FlowList'
+} from '../../modules/flowList'
 
 let FlowListContainer
 
@@ -21,7 +22,10 @@ export default FlowListContainer = connect(
   },
   dispatch => {
     return {
-      updateRunArgsAction(...args){
+      selectFlow(...args){
+        return dispatch(selectFlowAction(...args))
+      },
+      updateRunArgs(...args){
         return dispatch(updateRunArgsAction(...args))
       },
       notify(...args){

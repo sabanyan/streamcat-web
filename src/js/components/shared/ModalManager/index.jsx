@@ -37,7 +37,6 @@ export default class ModalManager extends React.Component {
   }
 
   render () {
-
     return <div>
       <Modal key={Constants.modal.ADD_COMMAND}
              id={Constants.modal.ADD_COMMAND} dynamic={true}>
@@ -80,8 +79,9 @@ export default class ModalManager extends React.Component {
       <Modal key={Constants.modal.SHOW_RUN_ERROR} id={Constants.modal.SHOW_RUN_ERROR}
              title="実行エラー" dynamic={true} ok={true}>
       </Modal>
-      <Modal key={Constants.modal.SHOW_FLOW_SETTING} id={Constants.modal.RUN_FLOW}
-             title="選択されたフローを実行します" dynamic={true} runFlow={true} footer={true}>
+      <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW} 
+             title="選択されたフローを実行します" dynamic={true} footer={true}
+             {...this.props}>
       </Modal>
     </div>
   }
