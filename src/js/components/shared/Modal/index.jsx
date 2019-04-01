@@ -201,19 +201,29 @@ export default class Modal extends React.Component<Props, State> {
     let modal
     let modal_body = (dynamic) ? content : children
 
-    if (preview) {
-      modal = <PreviewModal id={id} title={title} footer={modal_footer}
-                            close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
-      </PreviewModal>
-    } else if (runFlow) {
-      modal = <RunFlowModal id={id} title={title} footer={modal_footer}
-                            close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
-      </RunFlowModal>
-    } else {
-      modal = <StandardModal id={id} title={title} footer={modal_footer}
-                             close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
-        {(visible)?modal_body:null}
-      </StandardModal>
+    switch (id) {
+      case Constants.preview.DATASOURCE :
+        modal = <PreviewModal 
+                  id={id} title={title} footer={modal_footer}
+                  close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
+                </PreviewModal>
+        break
+
+      case Constants.modal.RUN_FLOW :
+        modal = <RunFlowModal 
+                  id={id} title={title} footer={modal_footer}
+                  close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
+                  {(visible)?modal_body:null}
+                </RunFlowModal>
+        break
+
+      default :
+        modal = <StandardModal 
+                  id={id} title={title} footer={modal_footer}
+                  close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
+                  {(visible)?modal_body:null}
+                </StandardModal>
+        break
     }
 
     return <div>

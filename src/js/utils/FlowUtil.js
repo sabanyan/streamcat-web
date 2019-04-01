@@ -186,12 +186,15 @@ export default class FlowUtil {
 
    let body = {
      flow_uuid : runArgs.flow_uuid,
-     args : args
-     
+     args : args,
    }
 
+   runArgs.flows.map((f) => {
+    body[f.name] = f.uuid
+   })
+
    return new Promise((resolve, reject) => {
-     APIUtil.get("frames?from=" + flowUUID + "&no_contents=1").then((response)=>{
+     APIUtil.post("frames", body).then((response)=>{
        if(dismissNotify)dismissNotify(runNotify.id)
        if (!response.data.success) {
          notify({

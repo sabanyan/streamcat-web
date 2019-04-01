@@ -11,11 +11,12 @@ export default class RunFlowModal extends React.Component {
   }
 
   render () {
-    const {id, children, close_button, visible, title, footer, contents} = this.props
+    const {id, children, close_button, visible, title, footer} = this.props
     const modal_class = classnames('modal fade', {
       'show in': visible,
       'none-pointer-events': !visible,
     })
+
     return <div className={modal_class} style={{display: 'block'}} id={id}>
       <div className="modal-dialog">
         <div className="modal-content">
@@ -24,7 +25,7 @@ export default class RunFlowModal extends React.Component {
             {close_button}
           </div>
           <div className="modal-body">
-          <InputFlowForm {...this.props.contents}/>
+            {children}
           </div>
           {footer}
         </div>

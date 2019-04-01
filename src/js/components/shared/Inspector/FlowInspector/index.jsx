@@ -51,20 +51,18 @@ class FlowInspector extends React.Component<Props, State> {
     </div>
   }
 
+ 
   onClickRun () {
-    let contents = {
-      flow : this.props.flow,
-      run : (runArgs) => this.runFlow(), 
-      parentProps : this.props
-    }
+    let content = <InputFlowForm {...this.props} />
 
     ModalUtil.emitModal({
       id: Constants.modal.RUN_FLOW,
       visible: true,
       done: '実行する',
       cancle: 'キャンセル',
+      dynamic: true,
       danger: false,
-      contents: contents,
+      content: content,
     })
   }
 
@@ -139,17 +137,44 @@ class FlowInspector extends React.Component<Props, State> {
     </div>
   }
 
-  run (runArgs) {
-    let putbody = {}
-    const params = []
-    this.paramRefs.map((paramRef) => {
-      params.push({name:paramRef.element.value, type:paramRef.param.type})  
+  resetRunArgsValue() {
+    const runArgs = this.props.runArgs
+    runArgs.flows = runArgs.flows.map((f) => {
+      f.uuid = null
+      return f
     })
-    const flow_uuid = this.props.flow.uuid
-    if(params)putbody["params"]=params
+    runArgs.variables = runArgs.variables.map((v) => {
+      v.value = null
+      return v
+    })
+
+    this.props.updateRunArgs(runArgs)
+  }
+
+  run () {
+    const runArgs = this.props.runArgs
+   
+    const unValidFlow = runArgs.flows.filter((f) => {
+      return (f.uuid) ? false : true
+    })
+    // FIXIT use validator
+    if (unValidFlow.length > 0) {
+      alert("入力フローは入力必須です")
+      return
+    }
+    const unValidVar = runArgs.variables.filter((v) => {
+      return (v.value) ? false : true
+    })
+    
+    if (unValidVar.length > 0) {
+      alert("入力変数は入力必須です")
+      return
+    }
+
     const notify = this.props.notify
     const dismissNotify = this.props.dismissNotify
-    FlowUtil.runNodes(flow_uuid, notify, dismissNotify).then((response) => {
+    FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then((response) => {
+      this.resetRunArgsValue()
       if (response.data.success) {
         const json: RunResponseType = response.data
         const result = json.name.map((n, index) => {

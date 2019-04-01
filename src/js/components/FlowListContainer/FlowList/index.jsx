@@ -184,7 +184,7 @@ export default class FlowList extends React.Component<FlowListProps,State> {
   }
 
   onClickFlow(e,flow){
-    this.setState({selected_flow:flow})
+    this.props.selectFlow(flow)
   }
 
   onChangeKeyword (e:SyntheticInputEvent<EventTarget>) {
@@ -201,13 +201,16 @@ export default class FlowList extends React.Component<FlowListProps,State> {
     const selectedFiles:FileList = e.target.files
     if(selectedFiles){
       const uploadFile:File = selectedFiles[0]
-      APIUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
+      APIUtil.frameUpload(uploadFile,uploadFile.name).then((response)=>{
+        const {success} = response.data
         const json = response.data
-        this.setState({upload_file:{
-          file:uploadFile,
-          uuid:json.data.uuid,
-          label:json.data.label
-        }})
+        if (success) {
+          this.setState({upload_file:{
+            file:uploadFile,
+            uuid:json.data.uuid,
+            label:json.data.label
+          }})
+        }
       })
     }
   }
@@ -305,7 +308,6 @@ export default class FlowList extends React.Component<FlowListProps,State> {
   renderInspector(){
     return <FlowInspector 
       {...this.props}
-      flow={this.state.selected_flow}
       onClickDeleteParam={(param)=>this.onClickDeleteParam(param)}
       onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}
       onBlurTitle={(e)=>this.onBlurTitle(e)}
@@ -333,7 +335,7 @@ export default class FlowList extends React.Component<FlowListProps,State> {
       <div className={'container mt-40px'}>
       <Loader absolute={true} visible={this.state.is_loading}/>
       {this.renderAll()}
-      <ModalManager/>
+      <ModalManager {...this.props}/>
         <NotificationManager />
     </div>
     </div>
