@@ -45,6 +45,7 @@ export default class BaseStepModel extends Model {
 
   getLabel(){
     if(this.label)return this.label
+    this.label = this.id
     return this.id
   }
 
