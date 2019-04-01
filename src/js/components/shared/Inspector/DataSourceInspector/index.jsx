@@ -456,7 +456,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       </div>
     }
 
-
+    // FIXIT onBlurTitle to onChange #164
     return <BaseInspector header={""}  label={selected_step.label} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()}>
       {content}
     </BaseInspector>
