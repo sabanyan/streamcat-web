@@ -1,3 +1,8 @@
+# import ptvsd
+# ptvsd.enable_attach(address = ('0.0.0.0', 3000))
+# ptvsd.wait_for_attach()
+# ptvsd.break_into_debugger()
+
 from flask import Flask, render_template, url_for, redirect, session, request
 from bokeh.resources import INLINE
 
@@ -49,6 +54,14 @@ def library():
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
     return render_template('library.html',js_resources=js_resources,css_resources=css_resources)
+
+@app.route('/folders/<folder_uuid>', methods=['GET'])
+@login_required
+def folders(folder_uuid):
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    folder_uuid = folder_uuid.rsplit('?')[0]
+    return render_template('library.html',folder_uuid=folder_uuid,js_resources=js_resources,css_resources=css_resources)
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required

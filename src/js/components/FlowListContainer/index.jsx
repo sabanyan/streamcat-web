@@ -70,6 +70,10 @@ export default class FlowListContainer extends React.Component<Props,State> {
       id: Constants.modal.ADD_FLOW, onClickDone: () => {
         const {flow_name} = this.state
         const {uuid,label} = this.state.upload_file
+        if(!flow_name){
+          alert("フロー名を入力してください")
+          return false
+        }
         APIUtil.post('flows', {
           name: flow_name,
           project_uuid: inject_project_uuid,
@@ -153,7 +157,7 @@ export default class FlowListContainer extends React.Component<Props,State> {
     const selectedFiles:FileList =  e.target.files
     if(selectedFiles){
       const uploadFile:File = selectedFiles[0]
-      APIUtil.fileupload(uploadFile,uploadFile.name).then((response)=>{
+      APIUtil.frameUpload(uploadFile,uploadFile.name).then((response)=>{
         const json = response.data
         console.log(json)
         this.setState({upload_file:{
@@ -171,12 +175,10 @@ export default class FlowListContainer extends React.Component<Props,State> {
       visible: true,
       done: '作成する',
       content: <div>
-        <TextField rules={{
-          required: true,
-          minlength: 5,
-        }} placeholder={'フロー'}
+        <TextField placeholder={'フロー名'}
                    onChange={(e, validation) => this.onChangeFlowName(e,
                      validation)} />
+        <div className={"mt-8px"}/>
         <FileUploader accept={['text/csv']} defaultLabel={'ファイルを選択してください'}
                       onChangeFile={(e) => this.onChangeFile(e)} />
       </div>,

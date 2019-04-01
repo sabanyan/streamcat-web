@@ -41,7 +41,7 @@ class Inspector extends React.Component<FlowEditorProps> {
 
     const property_class = classnames(style.property, style.in)
 
-    return <div className={property_class}>
+    return <div className={[property_class]}>
       {property}
     </div>
   }

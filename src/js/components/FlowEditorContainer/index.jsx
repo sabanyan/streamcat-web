@@ -34,6 +34,7 @@ import NavigationModel from '../../model/Navigation/NavigationModel'
 import type { DragType } from '../../types'
 import { DataFrameDetailType } from '../../types'
 import { addNotification,updateNotification,removeNotification} from 'reapop';
+import flowEditorReducer from '../../modules/application'
 
 let FlowEditorContainer
 
@@ -71,7 +72,8 @@ export type FlowEditorProps = {
   navigation: NavigationModel;
   drag: DragType;
   notify: Function;
-  dissmissNotify: Function;
+  updateNotify: Function;
+  dismissNotify: Function;
   addNote: Function;
   updateCacheAction: Function;
 }
@@ -79,23 +81,23 @@ export type FlowEditorProps = {
 export default FlowEditorContainer = connect(
   state => {
     return {
-      projectId: state.reducer.projectId,
-      projectName: state.reducer.projectName,
-      graph: state.reducer.graph,
-      mast: state.reducer.mast,
-      edges: state.reducer.edges,
-      nodes: state.reducer.nodes,
-      history: state.reducer.history,
-      selected_step_ids: state.reducer.selected_step_ids,
-      selected_tab_id: state.reducer.selected_tab_id,
-      selected_data_source_detail: state.reducer.selected_data_source_detail,
-      drag: state.reducer.drag,
-      selected_in_edges: state.reducer.selected_in_edges,
-      selected_out_edges: state.reducer.selected_out_edges,
-      zoom: state.reducer.zoom,
-      flow: state.reducer.flow,
-      originalFlow: state.reducer.originalFlow,
-      navigation: state.reducer.navigation,
+      projectId: state.flowEditorReducer.projectId,
+      projectName: state.flowEditorReducer.projectName,
+      graph: state.flowEditorReducer.graph,
+      mast: state.flowEditorReducer.mast,
+      edges: state.flowEditorReducer.edges,
+      nodes: state.flowEditorReducer.nodes,
+      history: state.flowEditorReducer.history,
+      selected_step_ids: state.flowEditorReducer.selected_step_ids,
+      selected_tab_id: state.flowEditorReducer.selected_tab_id,
+      selected_data_source_detail: state.flowEditorReducer.selected_data_source_detail,
+      drag: state.flowEditorReducer.drag,
+      selected_in_edges: state.flowEditorReducer.selected_in_edges,
+      selected_out_edges: state.flowEditorReducer.selected_out_edges,
+      zoom: state.flowEditorReducer.zoom,
+      flow: state.flowEditorReducer.flow,
+      originalFlow: state.flowEditorReducer.originalFlow,
+      navigation: state.flowEditorReducer.navigation,
     }
   },
   dispatch => {
