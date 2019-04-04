@@ -68,8 +68,6 @@ const Application = (state = initialState, action: {}) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
   //stateを一度ディープコピーしないとrenderされないためコピーする
   let newState = StateUtil.deepCopy(state)
-  // FIXIT: FIX133の臨時対応, なぜかhistorynodesの参照先をコピーしてるぽい
-  newState.history = StateUtil.deepCopy(state.history)
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
       let {context} = action
@@ -83,6 +81,8 @@ const Application = (state = initialState, action: {}) => {
       newState.history.current = 0
       newState.history.nodes = [newState.nodes]
 
+      // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
+      newState.history = StateUtil.deepCopy(newState.history)
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
       Validator.isFlowModelSchema(newState)
       Validator.isGraphModelSchema(newState)
