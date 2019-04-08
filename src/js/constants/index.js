@@ -86,7 +86,6 @@ const Constants = {
     ADD_FOLDER: 'add_folder',
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
-    RUN_FLOW: 'run_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
     CONFIRM: 'confirm',

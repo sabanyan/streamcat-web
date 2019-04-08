@@ -168,58 +168,6 @@ export default class FlowUtil {
      })
   }
 
-  static runWithArgs(runArgs:{},notify:Function,dismissNotify:Function):any{
-    let runNotify
-    if(notify){
-      runNotify = notify({
-        title: 'フロー実行中',
-        message: 'フローを実行しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
-    }
-
-   let args = {}
-   runArgs.variables.map ((v) => {
-     args[v.name] = v.value
-   })
-
-   let body = {
-     flow_uuid : runArgs.flow_uuid,
-     args : args,
-   }
-
-   runArgs.flows.map((f) => {
-    body[f.name] = f.uuid
-   })
-
-   return new Promise((resolve, reject) => {
-     APIUtil.post("frames", body).then((response)=>{
-       if(dismissNotify)dismissNotify(runNotify.id)
-       if (!response.data.success) {
-         notify({
-           title: '実行エラー',
-           message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-           status: 'error',
-           dismissAfter: 0,
-           closeButton: true
-         })
-       }
-       resolve(response)
-     },()=>{
-       if(dismissNotify)dismissNotify(runNotify.id)
-       notify({
-         title: '実行エラー',
-         message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-         status: 'error',
-         dismissAfter: 0,
-         closeButton: true
-       })
-       reject(error)
-     })
-   })
-}
-
   /**
    * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
    */
@@ -342,19 +290,16 @@ export default class FlowUtil {
   }
 
   static saveFlow (flowUUID:string, {label,description,params,ports,nodes},notify:Function,dismissNotify:Function):any {
-    
-    
+    //validation
+    Validator.nodesValidate(nodes)
 
     let putBody = {}
     if(label)putBody["label"]=label
     if(description)putBody["description"]=description
     if(params)putBody["params"]=params
     if(ports)putBody["ports"]=ports
-    if(ports){
-      //validation
-      Validator.nodesValidate(nodes)
-      putBody["nodes"]=nodes
-    }
+    if(ports)putBody["nodes"]=nodes
+
     let saveNotify
     if(notify){
       saveNotify = notify({
