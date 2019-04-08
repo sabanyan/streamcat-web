@@ -18,9 +18,9 @@ export default class AddButton extends React.Component<Props> {
   }
 
   render () {
-    const {onClick, children, className, name} = this.props
+    const {onClick, children, className} = this.props
     const iconClass = classnames('material-icons', [style.icon])
-    return <div name={name} className={style.addButton} onClick={onClick}>
+    return <div className={style.addButton} onClick={onClick}>
       <i className={iconClass}>add_circle_outline</i>
       {children}
     </div>
