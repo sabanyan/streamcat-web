@@ -37,14 +37,15 @@ export default class BaseStepModel extends Model {
     this.setSize(props.size)
     if(!this.id){
       this.id = ModelUtil.getNewId(this.type)
-      if(!this.label){
-        this.label = this.id
-      }
+    }
+    if(!this.label){
+      this.label = this.id
     }
   }
 
   getLabel(){
     if(this.label)return this.label
+    this.label = this.id
     return this.id
   }
 
