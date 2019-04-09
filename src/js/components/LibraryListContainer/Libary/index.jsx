@@ -110,13 +110,11 @@ export default class Library extends React.Component<Props, State> {
     ModalUtil.registerModal({
       id: Constants.modal.ADD_FRAME, onClickDone: () => {
         if(!this.state.frame_name){
-          alert("フレーム名を入力してください")
-          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+          alert("名称を入力してください")
           return false;
         }
         if(!this.state.upload_file){
           alert("ファイルを選択してください")
-          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
           return false;
         }
         this.setState({is_loading: true, selected_data: null})
