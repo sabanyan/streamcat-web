@@ -368,23 +368,21 @@ export default class Step extends React.Component<Props, State> {
     }
 
     return (
-      <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}
-         onMouseDown={(e) => this.handleMouseDown(e)}
-         onMouseOver={(e) => this.handleMouseOver(e)}
-         onMouseLeave={(e) => this.handleMouseLeave(e)}>
-        {icon}
+      <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}>
+        <g className={style.iconContainer} onMouseDown={(e) => this.handleMouseDown(e)}
+          onMouseOver={(e) => this.handleMouseOver(e)}
+          onMouseLeave={(e) => this.handleMouseLeave(e)}>
+          {icon}
+        </g>
         {invalid_icon}
         {error_icon}
-
-        <foreignObject {...TextStyle} transform={'translate(' + (-1 * TextStyle.width) + ',0)'}>
-          <div style={{display:"table",width:"100%",height:TextStyle.height,paddingRight: TextStyle.padding + "px"}}>
-          <p xmlns="http://www.w3.org/1999/xhtml" style={{display:"table-cell",verticalAlign:"middle",textAlign:"right",wordBreak:"break-all"}}>{stepLabel}</p>
-          </div>
-        </foreignObject>
-
-        {/*<text className="text" transform={'translate(' + (-8) + ',' +*/}
-        {/*(RectStyle.height / 2 + 6) + ')'} textAnchor="end"*/}
-              {/*fontSize={12} width={100} height={100}>{stepLabel}</text>*/}
+        <g className={style.labelContainer}>
+          <foreignObject {...TextStyle} transform={'translate(' + (-1 * TextStyle.width) + ',0)'}>
+            <div style={{display:"table",width:"100%",height:TextStyle.height,paddingRight: TextStyle.padding + "px"}}>
+            <p xmlns="http://www.w3.org/1999/xhtml" style={{display:"table-cell",verticalAlign:"middle",textAlign:"right",wordBreak:"break-all"}}>{stepLabel}</p>
+            </div>
+          </foreignObject>
+        </g>
       </g>
     )
   }
