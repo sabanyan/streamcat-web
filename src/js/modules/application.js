@@ -390,8 +390,6 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     case ADD_HISTORY_ACTION:{
       //let newState = StateUtil.deepCopy(state)
       const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
-      console.log(newState.nodes)
-      console.log(newState.history.nodes)
       
       if(isSame){
         return newState
