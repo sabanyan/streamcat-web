@@ -110,6 +110,7 @@ export default class Command extends React.Component<Props> {
 
       //ステップの選択をキャンセル
       this.props.selectSteps()
+      this.props.addHistory()
     }
 
 //    onClickCommand(e:Event,command:CommandModel) {

@@ -420,6 +420,7 @@ export default class FlowUtil {
    */
   static isSameCurrentNodesToBeforeHistoryNodes(history,currentNodes){
     if(!history)return false
+    if(history.nodes[history.current].length !== currentNodes.length) return false
     return JSON.stringify(history.nodes[history.current]) === JSON.stringify(currentNodes)
   }
 
