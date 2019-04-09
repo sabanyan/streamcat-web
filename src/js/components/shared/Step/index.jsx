@@ -320,6 +320,8 @@ export default class Step extends React.Component<Props, State> {
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
 
+    let stepLabel = step.getLabel()
+
     if(flowIn || flowOut){
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
@@ -331,6 +333,7 @@ export default class Step extends React.Component<Props, State> {
       </g>
     }else if(this.isSubFlow(step)){
       icon = <SubFlowIcon hover={hover} selected={selected} filter={filter}/>
+      stepLabel = step.getLabel()
     }else if (this.isStep(step)) {
       //ステップ
       let command
@@ -338,6 +341,7 @@ export default class Step extends React.Component<Props, State> {
         this.props.mast.commands.forEach(c=>{if(c.id === step.commandId)command = c})
         icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter}/>
       }
+      stepLabel = step.getLabel()
     }else if (this.isDataFrame(step)) {
       //データソース
       const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
@@ -356,7 +360,7 @@ export default class Step extends React.Component<Props, State> {
       
     }
 
-    const stepLabel = step.getLabel()
+    
 
     let invalid_icon = null
     let error_icon = null
