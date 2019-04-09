@@ -121,6 +121,14 @@ export default class CommandStepModel extends BaseStepModel{
     return command
   }
 
+  getLabel() {
+    if ( this.label == this.id) {
+      return this.getCommand().label
+    }
+
+    return this.label
+  }
+
 
   validate(){
     this.invalid = {}
