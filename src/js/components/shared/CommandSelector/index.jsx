@@ -41,6 +41,17 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     })
   }
 
+  /**
+   * 複数個の入力ができるコマンド（入力ポートのtype が *）かどうか判定する
+   * @param command
+   * @returns {boolean}
+   */
+  isMultiInPorts(command:CommandModelType){
+    if(!command.getInPorts())return false
+    if(!command.getInPorts().length)return false
+    return (command.getInPorts()[0].name === '*')
+  }
+
   render () {
     const {mast,numberOfInput} = this.props
     const {keyword} = this.state
@@ -57,7 +68,9 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
     //コマンドの絞り込み
     let operators = sortedCommands.filter((command:CommandModelType) => {
       //if(numberOfInput && command.ports){
-        if(command.getInPorts().length === numberOfInput){
+        if(this.isMultiInPorts(command)){
+          return true
+        }else if(command.getInPorts().length === numberOfInput){
           return true
         }
       //}
