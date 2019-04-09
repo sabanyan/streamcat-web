@@ -85,8 +85,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   onClickSort () {
-    this.props.addHistory()
     this.props.sortFlow()
+    this.props.addHistory()
   }
 
   save (): Promise {
@@ -206,6 +206,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       this.props.addStep(add_step)
       //ステップの選択をキャンセル
       this.props.selectSteps()
+      this.props.addHistory()
     })
   }
 
@@ -260,8 +261,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
   
     const note = new NoteStepModel(props)
-
     this.props.addStep(note)
+    this.props.addHistory()
+
   }
 
   render () {
