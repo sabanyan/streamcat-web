@@ -300,11 +300,11 @@ export default class Library extends React.Component<Props, State> {
       visible: true,
       done: '追加する',
       content: <div>
-        <TextField placeholder={'フレーム名'}
+        <TextField placeholder={'名称'}
                    onChange={(e, validation) => this.onChangeFrameName(e,
                      validation)}/>
         <div className={"mt-8px"}/>
-        <FileUploader accept={['*/*']} onChangeFile={(e) => this.onChangeFile(e)}/>
+        <FileUploader accept={['text/csv']} onChangeFile={(e) => this.onChangeFile(e)}/>
       </div>,
     })
     e.preventDefault()
@@ -372,7 +372,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   renderNewFrame () {
-    return this.renderNew((e) => this.onClickNewFrame(e), 'フレームをアップロードする')
+    return this.renderNew((e) => this.onClickNewFrame(e), 'CSVをアップロードする')
   }
 
   renderNewRemoteFolder () {
