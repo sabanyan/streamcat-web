@@ -132,24 +132,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const getFrameHeaderURL = "frames/" + uuid
     APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
       const headers = response.data.data
-      let visualizers = this.props.mast.visualizers.sort((a, b) => {
-        // ある順序の基準において a が b より小
-        if (a.order < b.order) {
-          return -1;
-        }
-        //その順序の基準において a が b より大
-        if (a.order > b.order) {
-          return 1;
-        }
-        // a は b と等しいはず
-        return 0;
-      })
-
-      let contents = []
-      for (const v of visualizers) {
-        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
-        contents.push({title: v.label,content:content,parentProps:this.props})
-      }
+      const visualizers = this.props.mast.visualizers
+      const contents = ModalUtil.getContentsFrom(uuid, visualizers, {}, headers, this.props)
  
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
