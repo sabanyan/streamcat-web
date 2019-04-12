@@ -80,6 +80,9 @@ export default class ModalManager extends React.Component {
       <Modal key={Constants.modal.SHOW_RUN_ERROR} id={Constants.modal.SHOW_RUN_ERROR}
              title="実行エラー" dynamic={true} ok={true}>
       </Modal>
+      <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW} 
+             title="選択されたフローを実行します" dynamic={true} footer={true}>
+      </Modal>
     </div>
   }
 }
