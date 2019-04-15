@@ -441,13 +441,23 @@ def make_new_frame():
     if 'file' in request.files:
         if 'parent' in request.form and 'label' in request.form:
             # parentとlabel属性があれば新形式のPOST /framesだとみなす
-            from .models.frame import Frame
-            new_frame = Frame(str(uuid.uuid4())
-                            , request.form.get('parent')
-                            , request.form.get('label')
-                            , request.files.get('file').stream
-                            , creator=session['user_id'])
-            set_file2(new_frame)
+            # from .models.frame import Frame
+            # new_frame = Frame(str(uuid.uuid4())
+            #                 , request.form.get('parent')
+            #                 , request.form.get('label')
+            #                 , request.files.get('file').stream
+            #                 , creator=session['user_id'])
+            # set_file2(new_frame)
+
+            from .library import FrameStore
+            new_frame = FrameStore(request.form.get('parent')
+                                 , request.form.get('label')
+                                 , request.files.get('file').stream
+                                 , creator=session['user_id'])
+            # ドキュメントに紐付くファイル(path列で指定されるファイル)がなければ作成する
+            new_frame.make_file()
+            # documentレコードをDBに格納する
+            new_frame.save()
             return jsonify({'success': True, 'data': new_frame.to_json()})
         else:
             # ファイルがPOSTで送信されてきたらアップロードだとみなす
@@ -495,7 +505,12 @@ def fetch_frame(frame_uuid):
     no_contents = True if request.args.get('no_contents') else False
 
     # 先にLibraryテーブルから指定されたUUIDのフレームを探す
-    file_path = get_path(frame_uuid)
+    # file_path = get_path(frame_uuid)
+
+    from .library import FrameStore
+    frame = FrameStore.find_by_uuid(frame_uuid)
+    file_path = frame.path if frame is not None else None
+
     if file_path is None:
         file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
     else:
@@ -520,13 +535,21 @@ def update_frame(frame_uuid):
     指定したframeのラベル名を変更する
     """
     try:
-        from .models.frame import Frame
-        frame = Frame(frame_uuid
-                      , None
-                      , request.json['label']
-                      , None
-                      , modifier=2)
-        upd_file2(frame)
+        # from .models.frame import Frame
+        # frame = Frame(frame_uuid
+        #               , None
+        #               , request.json['label']
+        #               , None
+        #               , modifier=2)
+        # upd_file2(frame)
+        # return jsonify({'success': True, 'data': frame.to_json()})
+        from .library import FrameStore
+        frame = FrameStore.find_by_uuid(frame_uuid)
+        if frame is None:
+            raise Exception('no frame exists.')
+        frame.data = json.dumps({'label' : request.json['label']})
+        frame.modifier = session['user_id']
+        frame.update_data()
         return jsonify({'success': True, 'data': frame.to_json()})
     except Exception as e:
         return jsonify({
@@ -541,7 +564,14 @@ def delete_frame(frame_uuid):
     指定したframeを物理削除する
     """
     try:
-        del_file2(frame_uuid)
+        # del_file2(frame_uuid)
+        # return jsonify({'success': True})
+        from .library import FrameStore
+        frame = FrameStore.find_by_uuid(frame_uuid)
+        if frame is None:
+            raise Exception('no frame exists.')
+        frame.delete()
+        frame.remove_file() 
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -1249,18 +1279,30 @@ def _make_fetch_data(folder):
     if folder is None:
         data = None
     else:
+        # フォルダ直下のフォルダとデータベースとドキュメントを取得する
+        childrenGetter = FolderChildrenGetter()
+        children = childrenGetter.execute(None, folder)
+
+        # children属性を作成する
         data = folder.to_json()
+        data['children'] = []
+        for child in children:
+            data['children'].append(child.to_json())
+        
         # folderPath属性を作成する
         folder_list = folder.get_folder_path()
         data['folderPath'] = []
         for f in folder_list:
             data['folderPath'].append(f)
-        # children属性を作成する
-        children = folder.get_children()
-        data['children'] = []
-        for child in children:
-            data['children'].append(child.to_json())
     return data
+
+from .library import (
+    FolderStore, 
+    RemoteFolderStore, 
+    DatabaseStore,
+    DocumentStore,
+    FolderChildrenGetter
+)
 
 @api.route('/library', methods=['GET'])
 @login_required_api
@@ -1270,18 +1312,33 @@ def fecth_library():
     ルートデータストアを返却する
     """
     try:
-        root = get_root()
+        # root = get_root()
         
-        # ルートフォルダが存在しない場合はルートフォルダを作成する
-        # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
+        # # ルートフォルダが存在しない場合はルートフォルダを作成する
+        # # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
+        # if root is None:
+        #     new_root = Folder(str(uuid.uuid4())
+        #                     , None
+        #                     , 'ROOT_FOLDER'
+        #                     , creator=session['user_id'])
+        #     set_folder2(new_root)
+        #     # 作成したルートフォルダを取得し直す
+        #     root = get_root()
+
+        # data = _make_fetch_data(root)
+        # return jsonify({'success': True, 'data': data})
+
+        root = FolderStore.find_root()
         if root is None:
-            new_root = Folder(str(uuid.uuid4())
-                            , None
-                            , 'ROOT_FOLDER'
-                            , creator=session['user_id'])
-            set_folder2(new_root)
-            # 作成したルートフォルダを取得し直す
-            root = get_root()
+            new_root = FolderStore(parent_uuid=None
+                                 , label='ROOT_FOLDER'
+                                 , creator=session['user_id']
+                                 , modifier=session['user_id'])
+            # フォルダに紐付くディレクトリ(path列で指定されるディレクトリ)がなければ作成する
+            new_root.make_dir()
+            # folderレコードをDBに格納する
+            new_root.save()
+            root = new_root
 
         data = _make_fetch_data(root)
         return jsonify({'success': True, 'data': data})
@@ -1292,7 +1349,6 @@ def fecth_library():
                         'message': repr(e)
                         })
 
-
 @api.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
@@ -1301,7 +1357,13 @@ def fetch_folder(folder_uuid):
     フォルダを返却する
     """
     try:
-        folder = get_folder2(folder_uuid)
+        # folder = get_folder2(folder_uuid)
+        # data = _make_fetch_data(folder)
+        # return jsonify({'success': True, 'data': data})
+
+        folder = FolderStore.find_by_uuid(folder_uuid)
+        if folder is None:
+            raise Exception('no folder exists.')
         data = _make_fetch_data(folder)
         return jsonify({'success': True, 'data': data})
     except Exception as e:
@@ -1318,11 +1380,20 @@ def make_new_folder():
     フォルダを作成する
     """
     try:
-        new_folder = Folder(str(uuid.uuid4())
-                          , request.json['parent']
-                          , request.json['label']
-                          , creator=session['user_id'])
-        set_folder2(new_folder)
+        # new_folder = Folder(str(uuid.uuid4())
+        #                   , request.json['parent']
+        #                   , request.json['label']
+        #                   , creator=session['user_id'])
+        # set_folder2(new_folder)
+        # return jsonify({'success': True, 'data': new_folder.to_json()})
+        new_folder = FolderStore(request.json['parent']
+                               , request.json['label']
+                               , creator=session['user_id']
+                               , modifier=session['user_id'])
+        # フォルダに紐付くディレクトリ(path列で指定されるディレクトリ)がなければ作成する
+        new_folder.make_dir()
+        # folderレコードをDBに格納する
+        new_folder.save()
         return jsonify({'success': True, 'data': new_folder.to_json()})
     except Exception as e:
         return jsonify({
@@ -1338,11 +1409,19 @@ def update_folder(folder_uuid):
     フォルダを修正する
     """
     try:
-        folder = Folder(folder_uuid
-                      , None
-                      , request.json['label']
-                      , modifier=session['user_id'])
-        upd_folder2(folder)
+        # folder = Folder(folder_uuid
+        #               , None
+        #               , request.json['label']
+        #               , modifier=session['user_id'])
+        # upd_folder2(folder)
+        # return jsonify({'success': True, 'data': folder.to_json()})
+
+        folder = FolderStore.find_by_uuid(folder_uuid)
+        if folder is None:
+            raise Exception('no folder exists.')
+        folder.data = json.dumps({'label' : request.json['label']})
+        folder.modifier = session['user_id']
+        folder.update_data()
         return jsonify({'success': True, 'data': folder.to_json()})
     except Exception as e:
         return jsonify({
@@ -1358,7 +1437,13 @@ def delete_folder(folder_uuid):
     フォルダを削除する
     """
     try:
-        del_folder2(folder_uuid)
+        # del_folder2(folder_uuid)
+        # return jsonify({'success': True})
+        folder = FolderStore.find_by_uuid(folder_uuid)
+        if folder is None:
+            raise Exception('no folder exists.')
+        folder.delete()
+        folder.remove_dir() 
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -1376,8 +1461,27 @@ def fetch_remote_folder(folder_uuid):
     リモートフォルダを返却する
     """
     try:
-        remote_folder = get_folder2(folder_uuid)
-        data = _make_fetch_data(remote_folder)
+        # remote_folder = get_folder2(folder_uuid)
+        # data = _make_fetch_data(remote_folder)
+        # return jsonify({'success': True, 'data': data})
+
+        folder = RemoteFolderStore.find_by_uuid(folder_uuid)
+
+        # フォルダ直下のフォルダとデータベースとドキュメントを取得する
+        childrenGetter = FolderChildrenGetter()
+        children = childrenGetter.execute(None, folder)
+
+        # children属性を作成する
+        data = folder.to_json()
+        for child in children:
+            data['children'].append(child.to_json())
+        
+        # folderPath属性を作成する
+        folder_list = folder.get_folder_path()
+        data['folderPath'] = []
+        for f in folder_list:
+            data['folderPath'].append(f)
+
         return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
@@ -1393,17 +1497,39 @@ def make_new_remote_folder():
     リモートフォルダを作成する
     """
     try:
-        new_folder = RemoteFolder(str(uuid.uuid4())
-                                , request.json['parent']
-                                , request.json['label']
-                                , request.json['user']
-                                , request.json['password']
-                                , request.json['server']
-                                , request.json['port']
-                                , request.json['domain']
-                                , request.json['directory']
-                                , creator=session['user_id'])
-        set_folder2(new_folder)
+        # new_folder = RemoteFolder(str(uuid.uuid4())
+        #                         , request.json['parent']
+        #                         , request.json['label']
+        #                         , request.json['user']
+        #                         , request.json['password']
+        #                         , request.json['server']
+        #                         , request.json['port']
+        #                         , request.json['domain']
+        #                         , request.json['directory']
+        #                         , creator=session['user_id'])
+        # set_folder2(new_folder)
+        # return jsonify({'success': True, 'data': new_folder.to_json()})
+
+        new_folder = RemoteFolderStore(request.json['parent']
+                                     , request.json['label']
+                                     , request.json['user']
+                                     , request.json['password']
+                                     , request.json['server']
+                                     , request.json['port']
+                                     , request.json['domain']
+                                     , request.json['directory']
+                                     , creator=session['user_id']
+                                     , modifier=session['user_id'])
+
+        # フォルダに紐付くディレクトリ(path列で指定されるディレクトリ)がなければ作成する
+        new_folder.make_dir()
+        # ここでリモートディレクトリをマウントする
+        new_folder.mount()
+        # remote-folderレコードをDBに格納する
+        new_folder.save()
+        # リモートディレクトリ直下のファイルをDBに登録する
+        pass
+
         return jsonify({'success': True, 'data': new_folder.to_json()})
     except Exception as e:
         return jsonify({
@@ -1419,25 +1545,37 @@ def update_remote_folder(folder_uuid):
     リモートフォルダを修正する
     """
     try:
-        new_label = request.json['label']
-        new_user = request.json['user']
-        new_password = request.json['password']
-        new_server = request.json['server']
-        new_port = request.json['port']
-        new_domain = request.json['domain']
-        new_directory = request.json['directory']
+        # new_label = request.json['label']
+        # new_user = request.json['user']
+        # new_password = request.json['password']
+        # new_server = request.json['server']
+        # new_port = request.json['port']
+        # new_domain = request.json['domain']
+        # new_directory = request.json['directory']
 
-        folder = RemoteFolder(folder_uuid
-                            , None
-                            , new_label
-                            , new_user
-                            , new_password
-                            , new_server
-                            , new_port
-                            , new_domain
-                            , new_directory
-                            , modifier=session['user_id'])
-        upd_folder2(folder)
+        # folder = RemoteFolder(folder_uuid
+        #                     , None
+        #                     , new_label
+        #                     , new_user
+        #                     , new_password
+        #                     , new_server
+        #                     , new_port
+        #                     , new_domain
+        #                     , new_directory
+        #                     , modifier=session['user_id'])
+        # upd_folder2(folder)
+        # return jsonify({'success': True, 'data': folder.to_json()})
+
+        folder = RemoteFolderStore(request.json['parent']
+                                 , request.json['label']
+                                 , request.json['user']
+                                 , request.json['password']
+                                 , request.json['server']
+                                 , request.json['port']
+                                 , request.json['domain']
+                                 , request.json['directory']
+                                 , modifier=session['user_id'])
+        folder.update_data()
         return jsonify({'success': True, 'data': folder.to_json()})
     except Exception as e:
         return jsonify({
@@ -1453,7 +1591,19 @@ def delete_remote_folder(folder_uuid):
     リモートフォルダを削除する
     """
     try:
-        del_folder2(folder_uuid)
+        # del_folder2(folder_uuid)
+        # return jsonify({'success': True})
+
+        # リモートディレクトリ直下のファイルをDBから登録解除する
+        pass
+        folder = RemoteFolderStore.find_by_uuid(folder_uuid)
+        # remote-folderレコードをDBから削除する
+        folder.delete()
+        # ここでリモートディレクトリをマウント解除する
+        folder.umount()
+        # フォルダに紐づくディレクトリを削除する
+        folder.remove_dir()
+
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -1461,7 +1611,6 @@ def delete_remote_folder(folder_uuid):
                         'code'   : -1,
                         'message': repr(e)
                         })
-
 
 
 @api.route('/databases/<database_uuid>', methods=['GET'])
@@ -1472,8 +1621,11 @@ def fetch_database(database_uuid):
     データベースを返却する
     """
     try:
-        database = get_database(database_uuid)
-        return jsonify({'success': True, 'data': database})
+        # database = get_database(database_uuid)
+        # return jsonify({'success': True, 'data': database})
+
+        database = DatabaseStore.find_by_uuid(database_uuid)
+        return jsonify({'success': True, 'data': database.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1488,8 +1640,16 @@ def make_new_database():
     データベースを作成する
     """
     try:
-        new_database= create_database(request.json, 1)
-        return jsonify({'success': True, 'data': new_database})    
+        # new_database= create_database(request.json, 1)
+        # return jsonify({'success': True, 'data': new_database})
+
+        new_database = DatabaseStore()
+        # ここでDBに接続する
+        new_database.connect()
+        # databaseレコードをDBに格納する
+        new_database.save()
+
+        return jsonify({'success': True, 'data': new_database.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1504,9 +1664,22 @@ def update_database(database_uuid):
     データベースを修正する
     """
     try:
-        new_label = request.json['label']
-        database= rename_database_by_id(database_uuid, new_label)
-        return jsonify({'success': True, 'data': database})
+        # new_label = request.json['label']
+        # database= rename_database_by_id(database_uuid, new_label)
+        # return jsonify({'success': True, 'data': database})
+
+        database = DatabaseStore()
+
+        # 接続文字列を変更する場合は、DBに再接続する
+        reconnecting = database.connectionString != request.json['connectionString']
+
+        if reconnecting:
+            database.disconnect()
+        database.update_data()
+        if reconnecting:
+            database.connect()
+
+        return jsonify({'success': True, 'data': database.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1521,7 +1694,13 @@ def delete_database(database_uuid):
     データベースを削除する
     """
     try:
-        delete_database_by_id(database_uuid)
+        # delete_database_by_id(database_uuid)
+        # return jsonify({'success': True})
+
+        database = DatabaseStore.find_by_uuid(database_uuid)
+        database.delete()
+        database.disconnect()
+
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
@@ -1538,13 +1717,17 @@ def fetch_document(doc_uuid):
     ドキュメントを返却する
     """
     try:
-        offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-        limit = int(request.args.get('limit')) if request.args.get('limit') else 100
-        no_contents = request.args.get('no_contents') is not None
+        doc = DocumentStore.find_by_uuid(doc_uuid)
 
-        file_path = Path(get_path(doc_uuid))
-        result = csv_to_frame(file_path, offset=offset, limit=limit)
-        return jsonify({'success': True, 'data': result})
+        data = {}
+        data['fileSize'] = doc.get_file_size()
+        data['lastModifiedAt'] = doc.modified_at
+        no_contents = request.args.get('no_contents') is not None
+        if not no_contents:
+            import base64
+            data['contents'] = base64.b64encode(doc.get_file()).decode("utf-8")
+
+        return jsonify({'success': True, 'data': data})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -1559,18 +1742,28 @@ def make_new_document():
     ドキュメントを作成する
     """
     try:
-        new_doc = Document(str(uuid.uuid4())
-                         , request.form.get('parent')
-                         , request.form.get('label')
-                         , request.files.get('file').stream
-                         , creator=session['user_id'])
-        set_file2(new_doc)
+        # new_doc = Document(str(uuid.uuid4())
+        #                  , request.form.get('parent')
+        #                  , request.form.get('label')
+        #                  , request.files.get('file').stream
+        #                  , creator=session['user_id'])
+        # set_file2(new_doc)
+        # return jsonify({'success': True, 'data': new_doc.to_json()})
+
+        new_doc = DocumentStore(request.form.get('parent')
+                              , request.form.get('label')
+                              , request.files.get('file').stream
+                              , session['user_id'])
+        # ドキュメントに紐付くファイル(path列で指定されるファイル)がなければ作成する
+        new_doc.make_file()
+        # documentレコードをDBに格納する
+        new_doc.save()
         return jsonify({'success': True, 'data': new_doc.to_json()})
     except Exception as e:
         return jsonify({
                         'success': False,
                         'code': -1,
-                        'message': 'invalid json'
+                        'message': repr(e)
                         })
 
 @api.route('/documents/<doc_uuid>', methods=['PUT'])
@@ -1580,12 +1773,20 @@ def update_document(doc_uuid):
     指定したdocumentのラベル名を変更する
     """
     try:
-        doc = Document(doc_uuid
-                     , None
-                     , request.json['label']
-                     , None
-                     , session['user_id'])
-        upd_file2(doc)
+        # doc = Document(doc_uuid
+        #              , None
+        #              , request.json['label']
+        #              , None
+        #              , session['user_id'])
+        # upd_file2(doc)
+        # return jsonify({'success': True, 'data': doc.to_json()})
+
+        doc = DocumentStore.find_by_uuid(doc_uuid)
+        if doc is None:
+            raise Exception('no document exists.')
+        doc.data = json.dumps({'label' : request.json['label']})
+        doc.modifier = session['user_id']
+        doc.update_data()
         return jsonify({'success': True, 'data': doc.to_json()})
     except Exception as e:
         return jsonify({
@@ -1601,7 +1802,14 @@ def delete_document(doc_uuid):
     指定したdocumentを物理削除する
     """
     try:
-        del_file2(doc_uuid)
+        # del_file2(doc_uuid)
+        # return jsonify({'success': True})
+        
+        doc = DocumentStore.find_by_uuid(doc_uuid)
+        if doc is None:
+            raise Exception('no document exists.')
+        doc.delete()
+        doc.remove_file() 
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({
