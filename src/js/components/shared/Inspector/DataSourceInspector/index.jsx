@@ -202,9 +202,12 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const flowOutChecked = this.refs.flowOut.checked
 
     let selected_step = this.getSelectedStep()
-
     //パラメーターを更新
-    const port = {name:selected_step.id,type: selected_step.type}
+    const port = {
+      label:selected_step.getLabel(),
+      nodeId: selected_step.id,
+      type: selected_step.type
+    }
 
     if (flowInChecked) {
       flow.setInPort(port)
