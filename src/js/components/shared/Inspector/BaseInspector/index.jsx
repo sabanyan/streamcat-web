@@ -23,7 +23,7 @@ class BaseInspector extends React.Component<Props> {
           value: this.refs.title.value
         }
       }
-      this.props.onBlurTitle(e)
+      this.props.onBlurTitle(e,this.props)
     }
     if(this.props.onHide){
       this.props.onHide()
@@ -38,7 +38,7 @@ class BaseInspector extends React.Component<Props> {
     // FIXIT ロジクもう少し分かりやすく
     if(!disabled && label !== undefined){
       labelContainer =  <input type="text" ref={"title"}
-                               onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null}
+                               onBlur={(onBlurTitle)?(e)=>{onBlurTitle(e, this.props)}:null}
                                className={style.label}
                                defaultValue={label}
                                disabled={disabled}></input>

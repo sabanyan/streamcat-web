@@ -90,7 +90,7 @@ export default class FlowList extends React.Component<FlowListProps,State> {
   }
     
   getFlowList () {
-    this.setState({is_loading: true})
+    //this.setState({is_loading: true})
     APIUtil.get('flows', {project: inject_project_uuid}).then((response) => {
       const json = response.data
       this.setState(
@@ -184,6 +184,7 @@ export default class FlowList extends React.Component<FlowListProps,State> {
   }
 
   onClickFlow(e,flow){
+    this.setState({selected_flow:flow})
     this.props.selectFlow(flow)
   }
 
@@ -274,21 +275,22 @@ export default class FlowList extends React.Component<FlowListProps,State> {
     })
   }
 
-  onBlurTitle(e){
-    const flow = this.state.selected_flow
-    APIUtil.put("flows/" + flow.uuid,{
-      label: e.target.value
-    }).then((response)=>{
-      this.getFlowList()
-    },(error)=>{
-    
-    })
+  onBlurTitle(e, props){
+    const flow = props.flow
+    if (flow) {
+      APIUtil.put("flows/" + flow.uuid,{
+        label: e.target.value
+      }).then((response)=>{
+        this.getFlowList()
+      },(error)=>{
+      
+      })
+    }
   }
     
   isEmptyFlowList () {
     if(!this.state.is_finished)return false
-    if (!Array.isArray(this.state.flow_list) || this.state.flow_list.length ===
-    0 || this.state.flow_list === null) {
+    if (!Array.isArray(this.state.flow_list) || this.state.flow_list.length === 0 || this.state.flow_list === null) {
       return true
     }
     return false
@@ -310,7 +312,7 @@ export default class FlowList extends React.Component<FlowListProps,State> {
       {...this.props}
       onClickDeleteParam={(param)=>this.onClickDeleteParam(param)}
       onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}
-      onBlurTitle={(e)=>this.onBlurTitle(e)}
+      onBlurTitle={(e, props)=>this.onBlurTitle(e, props)}
       onClickAddFlowParam={(e)=>this.onClickAddFlowParam(e)}/>
   }
   
