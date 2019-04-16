@@ -199,7 +199,7 @@ class ProjectInspector extends React.Component<Props> {
     </div>
 
     return <Resizer>
-      <BaseInspector label={name} {...this.props} >
+      <BaseInspector key={uuid + "_" + name} label={name} {...this.props} >
         {content}
       </BaseInspector>
     </Resizer>

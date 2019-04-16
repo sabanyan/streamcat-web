@@ -87,7 +87,8 @@ export default class ProjectListContainer extends React.Component {
       return (project.name.indexOf(keyword) != -1) ? true : false
     }).map((project) => {
       const selected = (this.state.selected_project === project)
-      return <ProjectList project={project}
+      return <ProjectList key={project.uuid}
+                          project={project}
                           href={'./flows?project=' + project.uuid}
                           selected={selected}
                           onClickProject={(e,project)=>this.onClickProject(e,project)}>
@@ -124,15 +125,17 @@ export default class ProjectListContainer extends React.Component {
     })
   }
 
-  onBlurTitle(e){
-    const project = this.state.selected_project
-    APIUtil.put("projects/" + project.uuid,{
-      "new_name": e.target.value
-    }).then((response)=>{
-      this.getProjectList()
-    },(error)=>{
-
-    })
+  onBlurTitle(e, props){
+    const project = props.project
+    if (project) {
+      APIUtil.put("projects/" + project.uuid,{
+        "new_name": e.target.value
+      }).then((response)=>{
+        this.getProjectList()
+      },(error)=>{
+  
+      })
+    }
   }
 
   onClickNew (e) {
@@ -196,7 +199,7 @@ export default class ProjectListContainer extends React.Component {
   renderInspector(){
     return <ProjectInspector project={this.state.selected_project}
                              onClickDelete={(uuid)=>this.onClickDelete(uuid)}
-                             onBlurTitle={(e)=>this.onBlurTitle(e)}/>
+                             onBlurTitle={(e, props)=>this.onBlurTitle(e, props)}/>
   }
 
   renderAll () {
