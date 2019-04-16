@@ -1390,10 +1390,10 @@ def make_new_folder():
                                , request.json['label']
                                , creator=session['user_id']
                                , modifier=session['user_id'])
+        # folderレコードをDBに格納する
+        new_folder.save()                              
         # フォルダに紐付くディレクトリ(path列で指定されるディレクトリ)がなければ作成する
         new_folder.make_dir()
-        # folderレコードをDBに格納する
-        new_folder.save()
         return jsonify({'success': True, 'data': new_folder.to_json()})
     except Exception as e:
         return jsonify({
@@ -1421,6 +1421,7 @@ def update_folder(folder_uuid):
             raise Exception('no folder exists.')
         folder.data = json.dumps({'label' : request.json['label']})
         folder.modifier = session['user_id']
+        # ラベル名を変更する
         folder.update_data()
         return jsonify({'success': True, 'data': folder.to_json()})
     except Exception as e:
@@ -1754,10 +1755,10 @@ def make_new_document():
                               , request.form.get('label')
                               , request.files.get('file').stream
                               , session['user_id'])
+        # documentレコードをDBに格納する
+        new_doc.save()                             
         # ドキュメントに紐付くファイル(path列で指定されるファイル)がなければ作成する
         new_doc.make_file()
-        # documentレコードをDBに格納する
-        new_doc.save()
         return jsonify({'success': True, 'data': new_doc.to_json()})
     except Exception as e:
         return jsonify({

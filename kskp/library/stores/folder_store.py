@@ -46,7 +46,8 @@ class FolderStore(db.Model, AbcStore):
             # 親フォルダがない場合はデフォルトパスとする
             self.path = 'kskp/data/library'
         else:
-            self.path = os.path.join(parent.path, label)
+            dir_name = AbcStore.escape_filename(label)
+            self.path = os.path.join(parent.path, dir_name)
 
         # type
         self.type = 'folder'
@@ -112,14 +113,41 @@ class FolderStore(db.Model, AbcStore):
         return roots[0]
 
     def save(self):
-        db.session.add(self)
-        db.session.commit()
+        try:
+            # 新規登録レコードの登録中に、親レコードが消されないようロックする。
+            db.session.query(FolderStore).filter(FolderStore.id==self.parent_id).with_for_update().one()
+            db.session.add(self)
+        except Exception as e:
+            # ロールバックとロック解除
+            db.session.rollback()
+            raise e
+        else:
+            # コミットとロック解除
+            db.session.commit()
 
     def update_data(self):
-        # 更新時刻を設定する
-        self.modified_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # レコードを更新する
-        db.session.commit()
+        try:
+            # 新しいpathを作成する
+            old_path = self.path
+            dir_name = os.path.dirname(self.path)
+            new_label = json.loads(self.data)['label']
+            new_path = os.path.join(dir_name, new_label)
+            new_path = FolderStore._get_another_path(new_path)
+            # pathを設定する
+            self.path = new_path
+            # 更新時刻を設定する
+            self.modified_at = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            ## ここでUPDATE文を発行して、対象ディレクトリが存在するかチェックしたい
+            ## SELECT文でチェックした方が良いだろうか？
+            # ディレクトリ名を変更する
+            os.rename(old_path, new_path)
+        except Exception as e:
+            # ロールバック
+            db.session.rollback()
+            raise e
+        else:
+            # レコードの更新とコミット
+            db.session.commit()
 
     def delete(self):
         # 削除対象のフォルダの下にフォルダまたはファイルが存在する場合は例外を送出する
@@ -144,15 +172,15 @@ class FolderStore(db.Model, AbcStore):
 
     def make_dir(self):
         try:
-            if os.path.exists(self.path) and not os.path.isdir(self.path):
-                raise Exception('Can not make directory, because same name file(%s) exists.' % self.path)
-            elif not os.path.isdir(self.path):
-                # フォルダに紐付くディレクトリ(path列で指定されるディレクトリ)がなければ作成する
-                os.makedirs(self.path, exist_ok=True)
+            # 同じ名称のファイルが既に存在する場合、末尾に数字を付加したディレクトリ名で作成する
+            path = FolderStore._get_another_path(self.path)
+            # フォルダに紐付くディレクトリ(path列で指定されるディレクトリ)がなければ作成する
+            if not os.path.isdir(path):
+                os.makedirs(path, exist_ok=True)
         except PermissionError as e:
             # ファイルに対する権限がない場合
             raise e
-
+    
     def remove_dir(self):
         try:
             # 全てのフォルダから紐づかないディレクトリは物理削除する
@@ -168,6 +196,16 @@ class FolderStore(db.Model, AbcStore):
             # ファイルに対する権限がない場合
             raise e
     
+    @staticmethod
+    def _get_another_path(path):
+        # 同じ名称のファイルが既に存在する場合、末尾に数字を付加したディレクトリ名で作成する
+        while os.path.exists(path) and not os.path.isdir(path):
+            filename = os.path.basename(path)
+            dirname = os.path.dirname(path)
+            new_filename = AbcStore.get_another_name(filename)
+            path = os.path.join(dirname, new_filename)
+        return path
+
     @staticmethod
     def _dir_path_exists(dir_path):
         results_count = db.session.query(FolderStore).filter(FolderStore.path.like(dir_path + '%')).count()
