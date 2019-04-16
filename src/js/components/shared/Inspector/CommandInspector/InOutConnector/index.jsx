@@ -126,7 +126,14 @@ class InOutConnector extends React.Component{
       let dataFrameId: string
       dataFrameId = selectedStep.dsts[key]
       const node = FlowUtil.getNodeFromID(nodes,dataFrameId)
-      return <div key={index} className={style.output}>{node.getLabel()}</div>
+      return <div key={index} className={style.outPort_}>
+        <div className={style.outPort_Port}>
+          {key}
+        </div>
+        <div className={style.outPort_Node}>
+          {dataFrameId + " / " + node.getLabel()}
+        </div>
+      </div>
     })
 
     return  <div className="kskp-form">
