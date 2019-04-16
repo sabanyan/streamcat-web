@@ -47,7 +47,8 @@ class DocumentStore(db.Model, AbcStore):
             # 親フォルダがない場合はデフォルトパスとする
             self.path = 'kskp/data/library'
         else:
-            self.path = os.path.join(parent.path, label)
+            file_name = AbcStore.escape_filename(label)
+            self.path = os.path.join(parent.path, file_name)
 
         # type
         self.type = 'document'
@@ -116,13 +117,13 @@ class DocumentStore(db.Model, AbcStore):
 
     def make_file(self):
         try:
-            if os.path.exists(self.path):
-                raise Exception('Can not make file, because same name file(%s) exists.' % self.path)
+            # 同じ名称のファイルが既に存在する場合、末尾に数字を付加したファイル名で作成する
+            path = DocumentStore._get_another_path(self.path)
             # ドキュメントに紐付くファイル(path列で指定されるファイル)がなければ作成する
-            dir_name = os.path.dirname(self.path)
+            dir_name = os.path.dirname(path)
             os.makedirs(dir_name, exist_ok=True)
             # ファイルを作成する
-            self._save_file(self.path)
+            self._save_file(path)
         except PermissionError as e:
             # ファイルに対する権限がない場合
             raise e
@@ -154,6 +155,16 @@ class DocumentStore(db.Model, AbcStore):
                 f.write(buff)
                 if buff is None or len(buff)==0:
                     break
+
+    @staticmethod
+    def _get_another_path(path):
+        # 同じ名称のファイルが既に存在する場合、末尾に数字を付加したファイル名で作成する
+        while os.path.exists(path):
+            filename = os.path.basename(path)
+            dirname = os.path.dirname(path)
+            new_filename = AbcStore.get_another_name(filename)
+            path = os.path.join(dirname, new_filename)
+        return path
 
     def to_json(self):
         return {'uuid'      : self.uuid

@@ -1,3 +1,4 @@
+import os
 
 class AbcStore():
 
@@ -37,7 +38,24 @@ class AbcStore():
             return user['name']
     
     @staticmethod
-    def _secure_filename(filename):
+    def escape_filename(filename):
         # '/'と'\0'はunixとmacOSではファイル名に使用できない
         trans_table = str.maketrans({'/' : '／', '\0' : ''})
         return filename.translate(trans_table)
+
+    @staticmethod
+    def get_another_name(filename):
+        (body, ext) = os.path.splitext(filename)
+        # 後ろから1番目の'_'でファイル名を区切る
+        bodylist = body.rsplit('_', 1)
+
+        if len(bodylist) == 2 and bodylist[1].isdecimal():
+            nextNumber = int(bodylist[1]) + 1
+            return bodylist[0] + '_' + str(nextNumber)
+        else:
+            return body + '_1' + ext
+
+
+        
+        
+
