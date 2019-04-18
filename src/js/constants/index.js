@@ -42,6 +42,12 @@ const Constants = {
       width: (38 + 6 * 2) * 4,
       height: (38 + 6 * 2) / 2,
       padding: 15,
+    },
+    inspector: {
+      width: 400,
+      closingRatio: 0.3,
+      closedWidth: 24,
+      maxWidth: 800
     }
   },
   step:{
