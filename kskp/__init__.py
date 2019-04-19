@@ -15,10 +15,12 @@ app.config["JSON_SORT_KEYS"] = False
 
 from .auth import auth_bp, login_required
 from .api import api
+from .lib import lib
 from .model import *
 
 app.register_blueprint(auth_bp, url_prefix='/signup')
 app.register_blueprint(api, url_prefix='/api/v0')
+app.register_blueprint(lib, url_prefix='/api/v0')
 
 from .util_endpoints import endpoints
 app.register_blueprint(endpoints, url_prefix='/')
