@@ -41,10 +41,10 @@ class ProjectInspector extends React.Component<Props> {
   }
 
   nullInspector () {
-    return <div className={classnames(style.property, style.in)}>
+    return <Resizer>
       <BaseInspector {...this.props} >
       </BaseInspector>
-    </div>
+    </Resizer>
   }
 
   render () {
