@@ -246,9 +246,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
 }
 
-  onClickDeleteCache() {
-    let {selected_step_ids, nodes, notify,dismissNotify} = this.props
-    
+  onClickDeleteCache() {  
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         this.deleteCache()
@@ -268,8 +266,10 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   deleteCache() {
-    const node = this.getSelectedStep()
-    const url = "caches?of=" + inject_flow_uuid + "." + node.id
+    const {selected_step_ids} = this.props
+    const id = selected_step_ids[0]
+    const url = "caches?of=" + inject_flow_uuid + "." + id
+ 
     APIUtil.delete(url).then((response)=>{
       if (!response.data.success) {
         notify({
@@ -281,7 +281,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         })
       }
       if (response.data.success) {
-        this.updateCache()
+        this.props.deleteCache(id)
       }
     })
   }

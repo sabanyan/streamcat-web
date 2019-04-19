@@ -30,6 +30,7 @@ const SELECT_STEPS_ACTION = 'select_steps_action'
 const ADD_SELECT_STEP_ACTION = 'add_select_step_action'
 const DELETE_SELECT_STEP_ACTION = 'delete_select_step_action'
 const DELETE_STEPS_ACTION = 'delete_steps_action'
+const DELETE_CACHE_ACTION = 'delete_cache_action'
 const CUT_STEPS_ACTION = 'cut_steps_action'
 const COPY_STEPS_ACTION = 'copy_steps_action'
 const PASTE_STEPS_ACTION = 'paste_steps_action'
@@ -476,6 +477,17 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       break
     }
 
+    case DELETE_CACHE_ACTION: {
+      const id = action.selected_step_id
+      let node = Graph.getNode(state.nodes, id)
+      if (node instanceof DataFrameStepModel) {
+        node.deleteCache()
+      }
+
+      newState.nodes = Graph.updateNode({nodes: state.nodes, key: id, new_node: node})
+      break
+    }
+
     case SORT_FLOW_ACTION: {
       // memoはソート対象外にする
       let targets = newState.nodes.filter((node) => {
@@ -566,17 +578,6 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       break
     }
 
-    case UPDATE_CACHE_ACTION: {
-      const updatedStep = action.step
-      newState.nodes = newState.nodes.map((node, index) => {
-        if(node.id == updatedStep.id) {
-          node.cacheCreatedAt = updatedStep.cacheCreatedAt
-          node.uuid = updatedStep.uuid
-          node.makeCache = updatedStep.makeCache
-        }
-        return node
-      })
-    }
     
     default:
       window.nodes = state.nodes
@@ -842,6 +843,13 @@ export const deleteSelectStepAction = (selected_step_id: string) => {
   }
 }
 
+export const deleteCacheAction = (selected_step_id: string) => {
+  return {
+    type: DELETE_CACHE_ACTION,
+    selected_step_id: selected_step_id
+  }
+}
+
 /**
  * フローの実行
  * @param flowid
@@ -927,9 +935,10 @@ export const updateDataFrameDetailAction = (detail: DataFrameDetailType) => {
   }
 }
 
-export const updateCacheAction = (step: StepModelType) => {
+export const addNoteAction = (x:number, y:number) => {
   return {
-    type: UPDATE_CACHE_ACTION,
-    step: step
+    type: ADD_NOTE_ACTION,
+    x: x,
+    y: y
   }
 }

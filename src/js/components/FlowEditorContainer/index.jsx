@@ -13,6 +13,7 @@ import {
   undoAction,
   redoAction,
   deleteStepsAction,
+  deleteCacheAction,
   addMasterAction,
   sortFlowAction,
   executeFlowAction,
@@ -24,7 +25,6 @@ import {
   setZoomAction,
   updateDataFrameDetailAction,
   addNoteAction,
-  updateCacheAction
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -54,6 +54,7 @@ export type FlowEditorProps = {
   undo: Function;
   redo: Function;
   deleteSteps: Function;
+  deleteCache: Function;
   updateStep: Function;
   updateFlow: Function;
   sortFlow: Function;
@@ -75,7 +76,6 @@ export type FlowEditorProps = {
   updateNotify: Function;
   dismissNotify: Function;
   addNote: Function;
-  updateCacheAction: Function;
 }
 
 export default FlowEditorContainer = connect(
@@ -128,6 +128,9 @@ export default FlowEditorContainer = connect(
       },
       deleteSteps (...args) {
         dispatch(deleteStepsAction(...args))
+      },
+      deleteCache (...args) {
+        dispatch(deleteCacheAction(...args))
       },
       cutSteps (...args) {
         dispatch(cutStepsAction(...args))
@@ -185,9 +188,6 @@ export default FlowEditorContainer = connect(
       addNote(...args){
         dispatch(addNoteAction(...args))
       },
-      updateCacheAction(...args){
-        dispatch(updateCacheAction(...args))
-      }
     }
   },
 )(FlowEditor)

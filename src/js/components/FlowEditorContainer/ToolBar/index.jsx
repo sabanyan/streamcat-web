@@ -130,12 +130,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 },
               }],
           })
-          // cache 情報更新のため
-          this.updateCache()
-          this.props.executeFlow()
+          //現在、EXECUTE_FLOW_ACTIONは何もしないため 
+          //this.props.executeFlow()
         }
         this.loading = false
-        this.forceUpdate()
+        // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
+        this.flowUpdate()
       }, (error) => {
         this.loading = false
         this.forceUpdate()
@@ -143,7 +143,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     })
   }
 
-  updateCache() {
+  flowUpdate() {
     APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
       this.props.loadFlowJSON(json)
