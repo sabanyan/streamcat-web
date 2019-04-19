@@ -10,4 +10,5 @@
   opacity: 0;
   @extend .user-select;
   box-shadow: 0 1px 3px $kskp-property-shadow;
+  z-index: 1;
 }
