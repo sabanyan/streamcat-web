@@ -138,7 +138,7 @@ def fetch_folder(folder_uuid):
 
 @lib.route('/folders', methods=['POST'])
 @login_required_api
-@handle_exception()
+@handle_exception(return_json=True)
 def make_new_folder():
     """
     フォルダを作成する
@@ -147,33 +147,29 @@ def make_new_folder():
                         , request.json['label']
                         , creator=session['user_id']
                         , modifier=session['user_id'])
-    new_folder.save()        
-    return jsonify({'success': True, 'data': new_folder.to_json()})
+    new_folder.save()
+    return new_folder
 
 @lib.route('/folders/<folder_uuid>', methods=['PUT'])
 @login_required_api
-@handle_exception()
+@handle_exception(return_json=True)
 def update_folder(folder_uuid):
     """
     フォルダを修正する
     """
     label = request.json['label']
     modifier = session['user_id']
-    folder = Folder.update_data(folder_uuid, label, modifier)
-    return jsonify({'success': True, 'data': folder.to_json()})
+    return Folder.update_data(folder_uuid, label, modifier)
 
 @lib.route('/folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
-@handle_exception()
+@handle_exception(return_json=True)
 def delete_folder(folder_uuid):
     """
     フォルダを削除する
     """
     folder = Folder.find_by_uuid(folder_uuid)
     folder.delete()
-    return jsonify({'success': True})
-
-    
 
 
 # @lib.route('/remote-folders/<folder_uuid>', methods=['GET'])
