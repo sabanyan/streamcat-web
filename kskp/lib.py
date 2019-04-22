@@ -10,6 +10,12 @@ from .library import (
 
 lib = Blueprint('lib', __name__)
 
+## これは読んでいて思いついたことですが、どのエンドポイントも決まり文句として
+## try ~ except節があり、
+## 成功した時にはjsonify{'success': True, 'data': なんとか}
+## 失敗した時には決まったエラー用JSONを返しているので、
+## この部分をdecoratorにすればめちゃくちゃスッキリすると思います。
+
 @lib.route('/stores', methods=['GET'])
 def fecth_stores():
     """
@@ -21,6 +27,7 @@ def fecth_stores():
         for store in stores:
             ret.append(store.to_json())
         return jsonify({'success': True, 'data': ret})
+        ## return jsonify({'success': True, 'data': [s.to_json for s in stores]})
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -40,6 +47,7 @@ def fecth_store(store_id):
         else:
             data = store.to_json()
         return jsonify({'success': True, 'data': data})
+        ## store is Noneの時は、{'success': True, 'data': None}を返すけどそれは正しい仕様ですか？
     except Exception as e:
         return jsonify({
                         'success': False,
@@ -77,6 +85,7 @@ def delete_store(store_id):
     データストアの定義(雛形)を削除する
     """
     try:
+        ## delete_store -> deleting_storeとか単にstoreの方がいい
         delete_store = Store(store_id)
         delete_store.delete()
         return jsonify({'success': True})
@@ -87,6 +96,7 @@ def delete_store(store_id):
                         'message': str(e)
                         })
 
+## 関数名、_convert_typeにしましょう
 def _type_convert(datum):
     if datum is None:
         return None
@@ -97,6 +107,12 @@ def _type_convert(datum):
     else:
         raise Exception('Undefined type of datum is found!')
 
+## folderがNoneの場合ってどんな場合でしょうか？また、その場合、return Noneしてもいいんでしょうか？
+## それが正しいとしても、early returnの方が私は好みです。
+## 関数名がちょっとわかりにくいです。少なくとも、make fetch dataは意味が通らないです。。。
+## コードを読む限りでは、sqlalchemlyのデータをjsonに読み替えている感じがしますけど、
+## そうであればせめてコメントには書いてほしい。
+## 私なら_jsonify_folder()とかにしますかね、難しいところですけど
 def _make_fetch_data(folder):
     if folder is None:
         data = None
@@ -111,12 +127,14 @@ def _make_fetch_data(folder):
             json = _type_convert(child).to_json()
             # children属性に1要素追加する
             data['children'].append(json)
+        ## data['children'] = [_convert_type(c).to_json for c in children]
         
         # folderPath属性を作成する
         folder_list = folder.get_folder_path()
         data['folderPath'] = []
         for f in folder_list:
             data['folderPath'].append(f)
+        ## data['folderPath'] = [f for f in folder_list]
     return data
 
 @lib.route('/library', methods=['GET'])
