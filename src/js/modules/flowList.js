@@ -26,8 +26,8 @@ const flowList = (state = initialState, action: {}) => {
                 newState.flow = action.flow
 
                 //フロー選択時、フロー実行時使われる入力フローの初期化
-                const inputPorts = newState.flow.ports[0]
-                const params = newState.flow.params
+                const inputPorts = newState.flow.ports[0].sort((a,b) => compareInputPorts(a,b))
+                const params = newState.flow.params.sort((a,b) => compareParams(a,b))
                 const runArgs = {
                     'flow_uuid' : newState.flow.uuid,
                     'flows' : inputPorts,
@@ -42,6 +42,32 @@ const flowList = (state = initialState, action: {}) => {
     }
     
     return newState
+}
+
+const compareInputPorts = (a,b) => {
+    // ある順序の基準において a が b より小
+    if (a.name < b.name) {
+        return -1;
+    }
+    //その順序の基準において a が b より大
+    if (a.name > b.name) {
+        return 1;
+    }
+    // a は b と等しいはず
+    return 0;
+}
+
+const compareParams = (a,b) => {
+    // ある順序の基準において a が b より小
+    if (a.name < b.name) {
+        return -1;
+    }
+    //その順序の基準において a が b より大
+    if (a.name > b.name) {
+        return 1;
+    }
+    // a は b と等しいはず
+    return 0;
 }
 
 export const selectFlowAction = (flow) => {

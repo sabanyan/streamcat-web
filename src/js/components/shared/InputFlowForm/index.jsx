@@ -44,7 +44,7 @@ export default class InputFlowForm extends React.Component<Props, State> {
       return  <AddButton
         name = {name}
         onClick={(e) => this.onClickInput(e)}
-        type={'text'} className={'form-control'}>
+        type={'text'} style={style}>
         {content}
       </AddButton>
     }
@@ -57,7 +57,8 @@ export default class InputFlowForm extends React.Component<Props, State> {
       }
 
       const runArgs = this.props.runArgs
-      const result = runArgs.flows.map((f) => {
+      const result = []
+      for (const f of runArgs.flows) {
         const form = <div key = {f.name} className={style ? style.flow_param : null}>
           <div className={style ? style.left : null}>
             {this.renderAddInputFlowButton(f.name, f.uuid)}
@@ -65,28 +66,28 @@ export default class InputFlowForm extends React.Component<Props, State> {
           <div className={style ? style.right : null}>
           </div>
         </div>
-
-        return form
-      })
+        result.push(form)
+      }
+      
       return result
     }
 
     renderFlowVariableForm(flow) {
       const params = flow.params 
-      let form = params.map((v) => {
-        return <div key={v.name} className={style.flow_param}>
-                  <div className={style.left}>
-                    <input onChange={(e) => {this.onChangeVariable(e)}}
-                    name={v.name}
-                    type={'text'} className={'form-control'} placeholder={v.name} />
-                  </div>
-                  <div className={style.right}>
-                </div>
-              </div>
-      })
+      let forms = []
+      for (const v of params) {
+        const form = <div key={v.name} className={style.flow_param}>
+          <div className={style.left}>
+            <input onChange={(e) => {this.onChangeVariable(e)}}
+            name={v.name}
+            type={'text'} className={style.flow_param_input} placeholder={v.name} />
+          </div>
+        </div>
+        forms.push(form)
+      }
   
       return <div>
-        {form}
+        {forms}
       </div>
     }
 

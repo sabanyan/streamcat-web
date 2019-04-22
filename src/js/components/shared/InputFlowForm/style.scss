@@ -169,6 +169,14 @@
   overflow: scroll;
 }
 
+.flow_param_input{
+  text-align: left;
+  margin-left: 10px;
+  margin-bottom: 5px;
+  height: 30px;
+  width: 300px;
+}
+
 .new_flow_params{
   color: $primary-link-color;
   font-size: 14px;
@@ -268,4 +276,14 @@
   margin-top: 8px;
   margin-left: 8px;
 
+}
+
+.addButton{
+  color: $primary-link-color;
+  text-align: left;
+  margin-left: 10px;
+  cursor: pointer;
+  &:hover{
+    color: darken($primary-link-color,10%);
+  }
 }
