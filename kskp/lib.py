@@ -1,6 +1,7 @@
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
 from .navigation import update_navigation
+from .handle_exception import handle_exception
 from .library import (
     Store,
     Datum,
@@ -16,88 +17,55 @@ lib = Blueprint('lib', __name__)
 ## 失敗した時には決まったエラー用JSONを返しているので、
 ## この部分をdecoratorにすればめちゃくちゃスッキリすると思います。
 
+
 @lib.route('/stores', methods=['GET'])
+@handle_exception()
 def fecth_stores():
     """
     データストアの定義(雛形)の一覧を返却する
     """
-    try:
-        stores = Store.find_all()
-        ret = []
-        for store in stores:
-            ret.append(store.to_json())
-        return jsonify({'success': True, 'data': ret})
-        ## return jsonify({'success': True, 'data': [s.to_json for s in stores]})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                      })
+    stores = Store.find_all()
+    return jsonify({'success': True, 'data': [store.to_json() for store in stores]})
 
 @lib.route('/stores/<store_id>', methods=['GET'])
+@handle_exception(return_json=True)
 def fecth_store(store_id):
     """
     データストアの定義(雛形)を返却する
     """
-    try:
-        store = Store.find_by_id(store_id)
-        if store is None:
-            data = None
-        else:
-            data = store.to_json()
-        return jsonify({'success': True, 'data': data})
-        ## store is Noneの時は、{'success': True, 'data': None}を返すけどそれは正しい仕様ですか？
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                      })
+    return Store.find_by_id(store_id)
+    ## store is Noneの時は、{'success': True, 'data': None}を返すけどそれは正しい仕様ですか？
 
 @lib.route('/stores', methods=['POST'])
 @login_required_api
+@handle_exception(return_json=True)
 def make_new_store():
     """
     データストアの定義(雛形)を作成する
     """
-    try:
-        new_store = Store.create(request.json['id']
-                                ,request.json['version']
-                                ,request.json['label']
-                                ,request.json['description']
-                                ,request.json['url']
-                                ,request.json['params']
-                                ,session['user_id'])
-        new_store.save()
-        return jsonify({'success': True, 'data': new_store.to_json()})    
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                      })
+    new_store = Store.create(request.json['id']
+                            ,request.json['version']
+                            ,request.json['label']
+                            ,request.json['description']
+                            ,request.json['url']
+                            ,request.json['params']
+                            ,session['user_id'])
+    new_store.save()
+    return new_store
 
 @lib.route('/stores/<store_id>', methods=['DELETE'])
 @login_required_api
+@handle_exception(return_json=True)
 def delete_store(store_id):
     """
     データストアの定義(雛形)を削除する
     """
-    try:
-        ## delete_store -> deleting_storeとか単にstoreの方がいい
-        delete_store = Store(store_id)
-        delete_store.delete()
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                        })
+    ## delete_store -> deleting_storeとか単にstoreの方がいい
+    store = Store(store_id)
+    store.delete()
 
 ## 関数名、_convert_typeにしましょう
-def _type_convert(datum):
+def _convert_type(datum):
     if datum is None:
         return None
     elif datum.type == Datum.FOLDER_TYPE:
@@ -113,130 +81,99 @@ def _type_convert(datum):
 ## コードを読む限りでは、sqlalchemlyのデータをjsonに読み替えている感じがしますけど、
 ## そうであればせめてコメントには書いてほしい。
 ## 私なら_jsonify_folder()とかにしますかね、難しいところですけど
-def _make_fetch_data(folder):
+def _jsonify_folder(folder):
+    """
+    NOTE: この関数を呼び出す前にfolderがNoneで無いかチェックすること
+    """
     if folder is None:
-        data = None
-    else:
-        # フォルダ直下のフォルダとデータベースとドキュメントを取得する
-        children = Datum.find_by_parent_uuid(folder.uuid)
+        raise Exception('The folder argument must not be None.')
 
-        # children属性を作成する
-        data = folder.to_json()
-        data['children'] = []
-        for child in children:
-            json = _type_convert(child).to_json()
-            # children属性に1要素追加する
-            data['children'].append(json)
-        ## data['children'] = [_convert_type(c).to_json for c in children]
-        
-        # folderPath属性を作成する
-        folder_list = folder.get_folder_path()
-        data['folderPath'] = []
-        for f in folder_list:
-            data['folderPath'].append(f)
-        ## data['folderPath'] = [f for f in folder_list]
+    # フォルダ直下のフォルダとデータベースとドキュメントを取得する
+    children = Datum.find_by_parent_uuid(folder.uuid)
+
+    # children属性を作成する
+    data = folder.to_json()
+    ## data['children'] = [_convert_type(c).to_json for c in children]
+    data['children'] = [_convert_type(child).to_json for child in children]
+    
+    # folderPath属性を作成する
+    folder_list = folder.get_folder_path()
+    ## data['folderPath'] = [f for f in folder_list]
+    data['folderPath'] = [folder for folder in folder_list]
     return data
 
 @lib.route('/library', methods=['GET'])
 @login_required_api
 @update_navigation
+@handle_exception()
 def fecth_library():
     """
     ルートデータストアを返却する
     """
-    try:
-        root = _type_convert(Datum.find_root())
-        # ルートフォルダが存在しない場合はルートフォルダを作成する
-        # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
-        if root is None:
-            new_root = Folder(parent_uuid=None
-                            , label='ROOT_FOLDER'
-                            , creator=session['user_id']
-                            , modifier=session['user_id'])
-            # folderレコードをDBに格納する
-            new_root.save()
-            root = new_root
-        data = _make_fetch_data(root)
-        return jsonify({'success': True, 'data': data})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                        })
+    root = _convert_type(Datum.find_root())
+    # ルートフォルダが存在しない場合はルートフォルダを作成する
+    # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
+    if root is None:
+        new_root = Folder(parent_uuid=None
+                        , label='ROOT_FOLDER'
+                        , creator=session['user_id']
+                        , modifier=session['user_id'])
+        # folderレコードをDBに格納する
+        new_root.save()
+        root = new_root
+    data = _jsonify_folder(root)
+    return jsonify({'success': True, 'data': data})
 
 @lib.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
+@handle_exception()
 def fetch_folder(folder_uuid):
     """
     フォルダを返却する
     """
-    try:
-        folder = Folder.find_by_uuid(folder_uuid)
-        data = _make_fetch_data(folder)  
-        return jsonify({'success': True, 'data': data})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                        })
+    folder = Folder.find_by_uuid(folder_uuid)
+    data = _jsonify_folder(folder)  
+    return jsonify({'success': True, 'data': data})
 
 @lib.route('/folders', methods=['POST'])
 @login_required_api
+@handle_exception()
 def make_new_folder():
     """
     フォルダを作成する
     """
-    try:
-        new_folder = Folder(request.json['parent']
-                          , request.json['label']
-                          , creator=session['user_id']
-                          , modifier=session['user_id'])
-        new_folder.save()               
-        return jsonify({'success': True, 'data': new_folder.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                      })
+    new_folder = Folder(request.json['parent']
+                        , request.json['label']
+                        , creator=session['user_id']
+                        , modifier=session['user_id'])
+    new_folder.save()        
+    return jsonify({'success': True, 'data': new_folder.to_json()})
 
 @lib.route('/folders/<folder_uuid>', methods=['PUT'])
 @login_required_api
+@handle_exception()
 def update_folder(folder_uuid):
     """
     フォルダを修正する
     """
-    try:
-        label = request.json['label']
-        modifier = session['user_id']
-        folder = Folder.update_data(folder_uuid, label, modifier)
-        return jsonify({'success': True, 'data': folder.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                        })
+    label = request.json['label']
+    modifier = session['user_id']
+    folder = Folder.update_data(folder_uuid, label, modifier)
+    return jsonify({'success': True, 'data': folder.to_json()})
 
 @lib.route('/folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
+@handle_exception()
 def delete_folder(folder_uuid):
     """
     フォルダを削除する
     """
-    try:
-        folder = Folder.find_by_uuid(folder_uuid)
-        folder.delete()
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                        })
+    folder = Folder.find_by_uuid(folder_uuid)
+    folder.delete()
+    return jsonify({'success': True})
+
+    
 
 
 # @lib.route('/remote-folders/<folder_uuid>', methods=['GET'])

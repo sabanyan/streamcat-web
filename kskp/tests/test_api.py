@@ -2359,8 +2359,9 @@ class DataStoreTestCase(unittest.TestCase):
             result = json.loads(response.get_data())
 
         # DELETE /storesした値をGET /stores apiで取得できないことを検証する
-        self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'], None)
+        self.assertEqual(result['success'], False)
+        self.assertEqual(result['code'], -1)
+        self.assertEqual(result['message'], 'No store is found by designated store id')
 
 
 class LibraryTestCase(unittest.TestCase):
