@@ -12,6 +12,7 @@ import Graph from '../../../utils/Graph'
 import FlowSettingsInspector from './FlowSettingsInspector'
 import NoteStepModel from '../../../model/Step/NoteStepModel'
 import NoteInspector from './NoteInspector'
+import Resizer from './Resizer'
 
 class Inspector extends React.Component<FlowEditorProps> {
 
@@ -41,9 +42,9 @@ class Inspector extends React.Component<FlowEditorProps> {
 
     const property_class = classnames(style.property, style.in)
 
-    return <div className={[property_class]}>
+    return <Resizer>
       {property}
-    </div>
+    </Resizer>
   }
 
 }
