@@ -14,6 +14,7 @@ import moment from 'moment/moment'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
 import InputFlowForm from '../../InputFlowForm'
 import FlowUtil from '../../../../utils/FlowUtil';
+import Resizer from '../Resizer'
 
 type Props = {
   project: {};
@@ -37,10 +38,10 @@ class FlowInspector extends React.Component<Props> {
   }
 
   nullInspector(){
-    return <div className={classnames(style.property, style.in)}>
+    return <Resizer>
       <BaseInspector {...this.props} >
       </BaseInspector>
-    </div>
+    </Resizer>
   }
 
   resetRunArgsValue() {
@@ -153,12 +154,12 @@ class FlowInspector extends React.Component<Props> {
       </div>
     </div>
 
-    return <div className={classnames(style.property, style.in)}>
+    return <Resizer>
       <BaseInspector label={label}
                      {...this.props} >
         {content}
       </BaseInspector>
-    </div>
+    </Resizer>
   }
 
 }

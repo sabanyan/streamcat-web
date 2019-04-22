@@ -20,6 +20,8 @@ import TabBar from '../../TabBar'
 import TabPanel from '../../TabBar/TabPanel'
 import TabList from '../../TabBar/TabList'
 import Tab from '../../TabBar/Tab'
+import InspectorKnob from '../InspectorKnob'
+import Resizer from '../Resizer'
 
 type Props = {
   project: {};
@@ -39,10 +41,10 @@ class ProjectInspector extends React.Component<Props> {
   }
 
   nullInspector () {
-    return <div className={classnames(style.property, style.in)}>
+    return <Resizer>
       <BaseInspector {...this.props} >
       </BaseInspector>
-    </div>
+    </Resizer>
   }
 
   render () {
@@ -196,11 +198,11 @@ class ProjectInspector extends React.Component<Props> {
       {/*</TabPanel>*/}
     </div>
 
-    return <div className={classnames(style.property, style.in)}>
+    return <Resizer>
       <BaseInspector label={name} {...this.props} >
         {content}
       </BaseInspector>
-    </div>
+    </Resizer>
   }
 
 }

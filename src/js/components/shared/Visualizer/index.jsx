@@ -118,7 +118,7 @@ export default class Visualizer extends React.Component<Props,State> {
     }
     if(!this.state.html){
       return <div>
-        <EmptyState title={"表示することができません"} description={""} icon={"cloud_off"}/>
+        <EmptyState title={"表示することができません"} description={"条件を変更して反映ボタンを押してください"} icon={"cloud_off"}/>
         <PreviewInspector key={"perview_" + visualize.label + frame_uuid} headers={headers} onSave={(args)=>this.onSave(args)} params={visualize.params} args = {args} label={visualize.label}/>
       </div>
 
