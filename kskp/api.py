@@ -5,6 +5,7 @@ from .engine.data3 import *
 from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
 from .navigation import update_navigation
+from .handle_exception import handle_exception
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -474,80 +475,61 @@ import time
 
 @api.route('/frames/<frame_uuid>')
 @login_required_api
+@handle_exception()
 def fetch_frame(frame_uuid):
     """
     指定したframeを直接UUIDで指定して取得する
     """
-    try:
-        # オフセットのデフォルトは最初から（なので０）
-        offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-        limit = int(request.args.get('limit')) if request.args.get('limit') else None
-        no_contents = True if request.args.get('no_contents') else False
+    # オフセットのデフォルトは最初から（なので０）
+    offset = int(request.args.get('offset')) if request.args.get('offset') else 0
+    limit = int(request.args.get('limit')) if request.args.get('limit') else None
+    no_contents = True if request.args.get('no_contents') else False
 
-        frame = FrameDoc.find_by_uuid(frame_uuid)
-        file_path = frame.path if frame is not None else None
+    frame = FrameDoc.find_by_uuid(frame_uuid)
+    file_path = frame.path if frame is not None else None
 
-        if file_path is None:
-            # ライブラリにフレームが無い場合は従来のフォルダ内を探す
-            file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
-        else:
-            limit = 999 if limit is None else limit
-            no_contents = request.args.get('no_contents') is not None
-            file_path = Path(file_path)
+    if file_path is None:
+        # ライブラリにフレームが無い場合は従来のフォルダ内を探す
+        file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
+    else:
+        limit = 999 if limit is None else limit
+        no_contents = request.args.get('no_contents') is not None
+        file_path = Path(file_path)
 
-        result = csv_to_frame(file_path, no_contents=no_contents, offset=offset, limit=limit)
+    result = csv_to_frame(file_path, no_contents=no_contents, offset=offset, limit=limit)
 
-        if request.args.get('header_only') == '1':
-            # headerのカラムに改行コードが含まれているケースの対応
-            headers = []
-            for column in result['contents']:
-                headers.append(column.replace('\n',''))
-            result = headers
+    if request.args.get('header_only') == '1':
+        # headerのカラムに改行コードが含まれているケースの対応
+        headers = []
+        for column in result['contents']:
+            headers.append(column.replace('\n',''))
+        result = headers
 
-        return jsonify({'success': True, 'data': result})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                        })
+    return jsonify({'success': True, 'data': result})
 
 @api.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
+@handle_exception(return_json=True)
 def update_frame(frame_uuid):
     """
     指定したframeのラベル名を変更する
     """
-    try:
-        label = request.json['label']
-        modifier = session['user_id']
-        frame = FrameDoc.update_data(frame_uuid, label, modifier)
-        return jsonify({'success': True, 'data': frame.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                        })
+    label = request.json['label']
+    modifier = session['user_id']
+    return FrameDoc.update_data(frame_uuid, label, modifier)
 
 @api.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api
+@handle_exception(return_json=True)
 def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
     """
-    try:
-        frame = FrameDoc.find_by_uuid(frame_uuid)
-        if frame is None:
-            raise Exception('no frame exists.')
-        frame.delete()
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': str(e)
-                        })
+    frame = FrameDoc.find_by_uuid(frame_uuid)
+    if frame is None:
+        raise Exception('no frame exists.')
+    frame.delete()
+    return frame
 
 def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     """
