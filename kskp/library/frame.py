@@ -52,7 +52,7 @@ class Frame(Datum):
         """
         # 既にルートフォルダが存在する場合は、parent_id=NULLを許可しない
         if self.parent_id is None and Datum.count_root() > 0:
-            raise Exception('You can not add root frame. A root already exists.')
+            raise Exception('You can not add another root frame. A root already exists.')
         # ドキュメントに紐付くファイル(path列で指定されるファイル)がなければ作成する
         path = self._make_file()
         self.path = path

@@ -2363,7 +2363,7 @@ class DataStoreTestCase(unittest.TestCase):
         self.assertEqual(result['data'], None)
 
 
-class FolderTestCase(unittest.TestCase):
+class LibraryTestCase(unittest.TestCase):
     def test_get_root(self):
         """
         ルートフォルダがある場合にGET /libraryを実行した場合
@@ -2483,6 +2483,53 @@ class FolderTestCase(unittest.TestCase):
         self.assertEqual(result['success'], False)
         self.assertEqual(result['code'], -1)
         self.assertEqual(result['message'], 'no folder is found by designated id.')
+
+    def test_update_folder(self):
+        # フォルダを作成する(POST /folders)
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = '1'
+            response = client.post('/api/v0/folders',
+                                    content_type='application/json',
+                                    data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
+            result = json.loads(response.get_data())
+            folder_uuid = result['data']['uuid']
+
+            # POST /folders apiが正常終了することを検証する
+            self.assertEqual(result['success'], True)
+
+            # フレームのラベル名を変更する(PUT /frames)
+            response = client.put('/api/v0/folders/' + folder_uuid,
+                content_type='application/json',
+                data=json.dumps({'label' : ' NEW FOLDER '})
+            )
+            result = json.loads(response.get_data())
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : ' NEW FOLDER '
+            ,'type'     : 'folder'
+            ,'creator'  : '開発用'
+        }
+
+        # PUT /folders apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /folders apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
+        self.assertNotEqual(result['data']['uuid'], None)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダを削除する(DELETE /folders)
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = '1'
+            response = client.delete('/api/v0/folders/' + folder_uuid)
+            result = json.loads(response.get_data())
+
+        # Delete /folders apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
 
 
     def test_create_get_frame(self):
