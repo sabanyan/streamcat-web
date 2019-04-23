@@ -1,7 +1,7 @@
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
-from .navigation import update_navigation
-from .return_with_json import return_with_json
+from .utils.navigation import update_navigation
+from .utils.api_base import api_base
 from .library import (
     Store,
     Datum,
@@ -19,7 +19,7 @@ lib = Blueprint('lib', __name__)
 
 
 @lib.route('/stores', methods=['GET'])
-@return_with_json
+@api_base
 def fecth_stores():
     """
     データストアの定義(雛形)の一覧を返却する
@@ -27,7 +27,7 @@ def fecth_stores():
     return Store.find_all()
 
 @lib.route('/stores/<store_id>', methods=['GET'])
-@return_with_json
+@api_base
 def fecth_store(store_id):
     """
     データストアの定義(雛形)を返却する
@@ -37,7 +37,7 @@ def fecth_store(store_id):
 
 @lib.route('/stores', methods=['POST'])
 @login_required_api
-@return_with_json
+@api_base
 def make_new_store():
     """
     データストアの定義(雛形)を作成する
@@ -54,7 +54,7 @@ def make_new_store():
 
 @lib.route('/stores/<store_id>', methods=['DELETE'])
 @login_required_api
-@return_with_json
+@api_base
 def delete_store(store_id):
     """
     データストアの定義(雛形)を削除する
@@ -104,7 +104,7 @@ def _jsonify_folder(folder):
 @lib.route('/library', methods=['GET'])
 @login_required_api
 @update_navigation
-@return_with_json
+@api_base
 def fecth_library():
     """
     ルートデータストアを返却する
@@ -125,7 +125,7 @@ def fecth_library():
 @lib.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
-@return_with_json
+@api_base
 def fetch_folder(folder_uuid):
     """
     フォルダを返却する
@@ -135,7 +135,7 @@ def fetch_folder(folder_uuid):
 
 @lib.route('/folders', methods=['POST'])
 @login_required_api
-@return_with_json
+@api_base
 def make_new_folder():
     """
     フォルダを作成する
@@ -149,7 +149,7 @@ def make_new_folder():
 
 @lib.route('/folders/<folder_uuid>', methods=['PUT'])
 @login_required_api
-@return_with_json
+@api_base
 def update_folder(folder_uuid):
     """
     フォルダを修正する
@@ -160,7 +160,7 @@ def update_folder(folder_uuid):
 
 @lib.route('/folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
-@return_with_json
+@api_base
 def delete_folder(folder_uuid):
     """
     フォルダを削除する
