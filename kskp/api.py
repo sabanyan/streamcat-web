@@ -4,8 +4,8 @@ from pathlib import Path
 from .engine.data3 import *
 from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
-from .navigation import update_navigation
-from .return_with_json import return_with_json
+from .utils.navigation import update_navigation
+from .utils.api_base import api_base
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -28,7 +28,7 @@ from .model import (
 )
 # data3.pyのFrameクラスと名称を被らないようにAS別名を付ける
 from .library import Frame as FrameDoc
-from .activity import (
+from .utils.activity import (
     make_unfinished_history,
     make_finished_history
 )
@@ -475,7 +475,7 @@ import time
 
 @api.route('/frames/<frame_uuid>')
 @login_required_api
-@return_with_json
+@api_base
 def fetch_frame(frame_uuid):
     """
     指定したframeを直接UUIDで指定して取得する
@@ -509,7 +509,7 @@ def fetch_frame(frame_uuid):
 
 @api.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
-@return_with_json
+@api_base
 def update_frame(frame_uuid):
     """
     指定したframeのラベル名を変更する
@@ -520,7 +520,7 @@ def update_frame(frame_uuid):
 
 @api.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api
-@return_with_json
+@api_base
 def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
