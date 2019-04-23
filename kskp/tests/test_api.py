@@ -1331,6 +1331,8 @@ class ApiTestCase(unittest.TestCase):
         # 削除
         # このテストで作成したjobsだけ削除する
         for path in Path(app.root_path + '/data/jobs/').iterdir():
+            if path.name == '.DS_Store':
+                continue
             job_data = json.loads(path.read_text())
             if job_data['flow']['uuid'] == flow_uuid:
                 # 指定したflowでjobができているかのテスト
@@ -1402,6 +1404,8 @@ class ApiTestCase(unittest.TestCase):
 
         # このテストで作成したjobsだけ削除する
         for path in Path(app.root_path + '/data/jobs/').iterdir():
+            if path.name == '.DS_Store':
+                continue
             job_data = json.loads(path.read_text())
             if job_data['flow']['uuid'] == flow_uuid:
                 # 指定したflowでjobができているかのテスト
@@ -1727,6 +1731,8 @@ class ApiTestCase(unittest.TestCase):
         # 削除
         # このテストで作成したjobsだけ削除する
         for path in Path(app.root_path + '/data/jobs/').iterdir():
+            if path.name == '.DS_Store':
+                continue
             job_data = json.loads(path.read_text())
             if job_data['flow']['uuid'] == flow_uuid:
                 # 指定したflowでjobができているかのテスト
@@ -1766,6 +1772,8 @@ class ApiTestCase(unittest.TestCase):
         # 削除
         # このテストで作成したjobsだけ削除する
         for path in Path(app.root_path + '/data/jobs/').iterdir():
+            if path.name == '.DS_Store':
+                continue
             job_data = json.loads(path.read_text())
             if job_data['flow']['uuid'] == flow_uuid:
                 # 指定したflowでjobができているかのテスト
@@ -1807,6 +1815,8 @@ class FrameApiTestCase(unittest.TestCase):
         fetch_frame APIをテストする
         """
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.get('/api/v0/frames/%s' % self.frame_uuid)
         result = json.loads(response.get_data())
 
