@@ -22,6 +22,10 @@ app.register_blueprint(auth_bp, url_prefix='/signup')
 app.register_blueprint(api, url_prefix='/api/v0')
 app.register_blueprint(lib, url_prefix='/api/v0')
 
+# flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
+from .library_json_encoder import LibraryJSONEncoder
+app.json_encoder = LibraryJSONEncoder
+
 from .util_endpoints import endpoints
 app.register_blueprint(endpoints, url_prefix='/')
 

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, session, jsonify
 from .auth import login_required_api
 from .navigation import update_navigation
-from .handle_exception import handle_exception
+from .return_with_json import return_with_json
 from .library import (
     Store,
     Datum,
@@ -19,16 +19,15 @@ lib = Blueprint('lib', __name__)
 
 
 @lib.route('/stores', methods=['GET'])
-@handle_exception()
+@return_with_json
 def fecth_stores():
     """
     データストアの定義(雛形)の一覧を返却する
     """
-    stores = Store.find_all()
-    return jsonify({'success': True, 'data': [store.to_json() for store in stores]})
+    return Store.find_all()
 
 @lib.route('/stores/<store_id>', methods=['GET'])
-@handle_exception(return_json=True)
+@return_with_json
 def fecth_store(store_id):
     """
     データストアの定義(雛形)を返却する
@@ -38,7 +37,7 @@ def fecth_store(store_id):
 
 @lib.route('/stores', methods=['POST'])
 @login_required_api
-@handle_exception(return_json=True)
+@return_with_json
 def make_new_store():
     """
     データストアの定義(雛形)を作成する
@@ -55,7 +54,7 @@ def make_new_store():
 
 @lib.route('/stores/<store_id>', methods=['DELETE'])
 @login_required_api
-@handle_exception(return_json=True)
+@return_with_json
 def delete_store(store_id):
     """
     データストアの定義(雛形)を削除する
@@ -105,7 +104,7 @@ def _jsonify_folder(folder):
 @lib.route('/library', methods=['GET'])
 @login_required_api
 @update_navigation
-@handle_exception()
+@return_with_json
 def fecth_library():
     """
     ルートデータストアを返却する
@@ -121,24 +120,22 @@ def fecth_library():
         # folderレコードをDBに格納する
         new_root.save()
         root = new_root
-    data = _jsonify_folder(root)
-    return jsonify({'success': True, 'data': data})
+    return _jsonify_folder(root)
 
 @lib.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
-@handle_exception()
+@return_with_json
 def fetch_folder(folder_uuid):
     """
     フォルダを返却する
     """
     folder = Folder.find_by_uuid(folder_uuid)
-    data = _jsonify_folder(folder)  
-    return jsonify({'success': True, 'data': data})
+    return _jsonify_folder(folder)  
 
 @lib.route('/folders', methods=['POST'])
 @login_required_api
-@handle_exception(return_json=True)
+@return_with_json
 def make_new_folder():
     """
     フォルダを作成する
@@ -152,7 +149,7 @@ def make_new_folder():
 
 @lib.route('/folders/<folder_uuid>', methods=['PUT'])
 @login_required_api
-@handle_exception(return_json=True)
+@return_with_json
 def update_folder(folder_uuid):
     """
     フォルダを修正する
@@ -163,14 +160,13 @@ def update_folder(folder_uuid):
 
 @lib.route('/folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
-@handle_exception(return_json=True)
+@return_with_json
 def delete_folder(folder_uuid):
     """
     フォルダを削除する
     """
     folder = Folder.find_by_uuid(folder_uuid)
     folder.delete()
-
 
 # @lib.route('/remote-folders/<folder_uuid>', methods=['GET'])
 # @login_required_api
