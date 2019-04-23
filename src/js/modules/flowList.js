@@ -46,11 +46,11 @@ const flowList = (state = initialState, action: {}) => {
 
 const compareInputPorts = (a,b) => {
     // ある順序の基準において a が b より小
-    if (a.name < b.name) {
+    if (a.label < b.label) {
         return -1;
     }
     //その順序の基準において a が b より大
-    if (a.name > b.name) {
+    if (a.label > b.label) {
         return 1;
     }
     // a は b と等しいはず
