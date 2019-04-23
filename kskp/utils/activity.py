@@ -50,7 +50,7 @@ def make_unfinished_history(now, session):
 
             # ファイル書き込み
             file_name = '{0:%Y%m%d%H%M%S%f}'.format(now)
-            jobs_path = Path(__file__).parent.joinpath('data/jobs')
+            jobs_path = Path(__file__).parent.parent.joinpath('data/jobs')
             jobs_path.mkdir(exist_ok=True)
             path = jobs_path.joinpath(file_name + '.json')
 
@@ -71,7 +71,7 @@ def make_finished_history(now):
         @functools.wraps(func)
         def deco(**kwargs):
             result = func(**kwargs)
-            file_path = Path(__file__).parent.joinpath('data/jobs/%s.json' % '{0:%Y%m%d%H%M%S%f}'.format(now))
+            file_path = Path(__file__).parent.parent.joinpath('data/jobs/%s.json' % '{0:%Y%m%d%H%M%S%f}'.format(now))
             json_data = json.loads(file_path.read_text(encoding='utf-8'))
             if json_data['flow']['uuid'] == kwargs['flow_uuid']:
                 nodes_dict = get_flow_nodes_by_uuid(kwargs['flow_uuid'])
