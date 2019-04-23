@@ -1,6 +1,9 @@
 from flask import jsonify
 import functools
 
+## 「例外を処理している」「JSONで結果を返す」という
+## 2種類の処理を行なっているため命名が難しいですが
+## あえて大まかな括りで、api_skeltonとかapi_baseとかapi_templateとかの方がいいんですかね
 def return_with_json(func):
     """
     デコレートした関数から例外が創出された場合は、エラーJSONを返す
