@@ -29,7 +29,6 @@ import ErrorUtil from '../../../../utils/ErrorUtil'
 import Visualizer from '../../Visualizer'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
 
-
 type State = {
   dataFrameDetail?:DataFrameDetailType;
   loading: boolean;
@@ -202,9 +201,12 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const flowOutChecked = this.refs.flowOut.checked
 
     let selected_step = this.getSelectedStep()
-
     //パラメーターを更新
-    const port = {name:selected_step.id,type: selected_step.type}
+    const port = {
+      label:selected_step.getLabel(),
+      nodeId: selected_step.id,
+      type: selected_step.type
+    }
 
     if (flowInChecked) {
       flow.setInPort(port)
@@ -460,6 +462,27 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     newSelectedStep.label = e.target.value
     this.props.updateStep(newSelectedStep)
+    // 該当ステップがIn・OutPortの場合の処理
+    let flow:FlowModel = this.props.flow
+    const flowInChecked = (this.refs.flowIn) ? this.refs.flowIn.checked : null
+    const flowOutChecked = (this.refs.flowOut) ? this.refs.flowOut.checked : null
+    const id = selectedStep.id
+
+    if (flowInChecked || flowOutChecked) {  
+      if (flowInChecked) {
+        let inPort = flow.getInPortWithId(id)
+        inPort.label = newSelectedStep.label
+        flow.setInPort(inPort)
+      }
+  
+      if (flowOutChecked) {
+        let outPort = flow.getOutPortWithId(id)
+        outPort.label = newSelectedStep.label
+        flow.setOutPort(outPort)
+      }
+  
+      this.props.updateFlow(flow)
+    }
   }
 
 }

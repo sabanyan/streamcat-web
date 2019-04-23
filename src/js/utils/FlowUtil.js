@@ -191,7 +191,7 @@ export default class FlowUtil {
    }
 
    runArgs.flows.map((f) => {
-    body[f.name] = f.uuid
+    body[f.nodeId] = f.uuid
    })
 
    return new Promise((resolve, reject) => {

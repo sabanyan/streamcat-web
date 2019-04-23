@@ -208,6 +208,9 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
           src_step_ids.forEach((id, index) => {
             const newPort = inPorts[index]
             let portName = newPort.name
+            if (add_step instanceof SubFlowStepModel) {
+              portName = newPort.nodeId
+            }
             if(portName === "*"){
               portName = "*1"
             }
@@ -226,9 +229,13 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
 
           })
           dst_step_ids.forEach((id, index) => {
-            const newPortName = outPorts[index]
-            add_step.dsts[newPortName.name] = id
-
+            const newPort = outPorts[index]
+            let portName = newPort.name
+            if (add_step instanceof SubFlowStepModel) {
+              portName = newPort.label
+            }
+            add_step.dsts[portName] = id
+            
             //dstsがあった場合は１つ目のポート名につなぐ
             //dstsがない場合は、デフォルト値（i）のポートにつなぐ
             const from: string = add_step.id

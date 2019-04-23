@@ -45,14 +45,14 @@ export default class FlowModel<FlowModelProps> extends Model {
   getInPortWithId(id:string){
     const inPorts = this.getInPorts()
     return inPorts.find((port)=>{
-      return (port.name === id)
+      return (port.nodeId === id)
     })
   }
 
   getOutPortWithId(id:string){
     const inPorts = this.getOutPorts()
     return inPorts.find((port)=>{
-      return (port.name === id)
+      return (port.nodeId === id)
     })
   }
 
@@ -66,7 +66,7 @@ export default class FlowModel<FlowModelProps> extends Model {
   deletePortWithId(type:number,id:string){
     let targetPorts = (type === 0)?this.getInPorts():this.getOutPorts()
     this.ports[type] = targetPorts.filter((port)=>{
-      return (port.name !== id)
+      return (port.nodeId !== id)
     })
   }
 
@@ -82,7 +82,7 @@ export default class FlowModel<FlowModelProps> extends Model {
     let targetPorts = (type === 0)?this.getInPorts():this.getOutPorts()
     let hasUpdate = false
     this.ports[type] = targetPorts.map((p)=>{
-      if(p.name === port.name){
+      if(p.nodeId === port.nodeId){
         //ポートを更新
         hasUpdate = true
         return port

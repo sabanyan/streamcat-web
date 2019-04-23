@@ -25,8 +25,7 @@ export default class InputFlowForm extends React.Component<Props, State> {
         // update
         let runArgs = this.props.runArgs
         const flows  = runArgs.flows.map((f) => {
-          if (f.name == name) {
-            
+          if (f.label == name) {
             f.uuid = uuid
           }
           return f
@@ -36,13 +35,13 @@ export default class InputFlowForm extends React.Component<Props, State> {
       })
     }
 
-    renderAddInputFlowButton(name, uuid) {
-      const content = (uuid) ?
-        name + " : " + uuid
+    renderAddInputFlowButton(key, value) {
+      const content = (value) ?
+        key + " : " + value
         :
-        name + " : 入力ファイルを選択してください"
+        key + " : 入力ファイルを選択してください"
       return  <AddButton
-        name = {name}
+        name = {key}
         onClick={(e) => this.onClickInput(e)}
         type={'text'} style={style}>
         {content}
@@ -50,18 +49,19 @@ export default class InputFlowForm extends React.Component<Props, State> {
     }
 
     renderInputFlowForm(flow) {
-      const {ports} = flow  
-
-      if (ports[0].length === 0) {
+      const runArgs = this.props.runArgs
+      
+      if (runArgs.length === 0) {
         return null
       }
 
-      const runArgs = this.props.runArgs
       const result = []
       for (const f of runArgs.flows) {
-        const form = <div key = {f.name} className={style ? style.flow_param : null}>
+        const key = f.label
+        const value = f.uuid
+        const form = <div key = {key} className={style ? style.flow_param : null}>
           <div className={style ? style.left : null}>
-            {this.renderAddInputFlowButton(f.name, f.uuid)}
+            {this.renderAddInputFlowButton(key, value)}
           </div>
           <div className={style ? style.right : null}>
           </div>
@@ -73,7 +73,12 @@ export default class InputFlowForm extends React.Component<Props, State> {
     }
 
     renderFlowVariableForm(flow) {
-      const params = flow.params 
+      const params = flow.params
+      
+      if (params.length === 0) {
+        return null
+      }
+
       let forms = []
       for (const v of params) {
         const form = <div key={v.name} className={style.flow_param}>
@@ -107,12 +112,9 @@ export default class InputFlowForm extends React.Component<Props, State> {
     }
 
     render () {
-
       const {flow} = this.props
-      let inputFlowForm, inputVariableForm
-
-      inputFlowForm = this.renderInputFlowForm(flow)
-      inputVariableForm = this.renderFlowVariableForm(flow)
+      const inputFlowForm = this.renderInputFlowForm(flow)
+      const inputVariableForm = this.renderFlowVariableForm(flow)
 
       return <div>
         <label>入力ファイル</label>
