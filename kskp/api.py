@@ -5,7 +5,7 @@ from .engine.data3 import *
 from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
 from .navigation import update_navigation
-from .handle_exception import handle_exception
+from .return_with_json import return_with_json
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -475,7 +475,7 @@ import time
 
 @api.route('/frames/<frame_uuid>')
 @login_required_api
-@handle_exception()
+@return_with_json
 def fetch_frame(frame_uuid):
     """
     指定したframeを直接UUIDで指定して取得する
@@ -505,11 +505,11 @@ def fetch_frame(frame_uuid):
             headers.append(column.replace('\n',''))
         result = headers
 
-    return jsonify({'success': True, 'data': result})
+    return result
 
 @api.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
-@handle_exception(return_json=True)
+@return_with_json
 def update_frame(frame_uuid):
     """
     指定したframeのラベル名を変更する
@@ -520,7 +520,7 @@ def update_frame(frame_uuid):
 
 @api.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api
-@handle_exception(return_json=True)
+@return_with_json
 def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
