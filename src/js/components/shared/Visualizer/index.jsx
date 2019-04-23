@@ -40,18 +40,30 @@ export default class Visualizer extends React.Component<Props,State> {
     if (result) {
       this.setState({})
     } else if(this.props.visualize){
-      this.visualizeRequest(this.props.visualize,{})
+      const args = this.getDefaultArgs(this.props.visualize.params)
+      this.visualizeRequest(this.props.visualize,args)
     }
   }
+
+  getDefaultArgs(params:[]) {
+    let args = {}
+    params.map((param) => {
+      if(param.default) {
+        args[param.name] = param.default
+      }  
+    })
+    return args
+ }
 
   visualizeRequest(visualize:VisualizeModel,args:{}){
 
     const uuid = this.props.frame_uuid
     const body ={ "args": args, "inputs": { "i": uuid }}
-    const limit = this.getLimitWhenCsvToHTMLTable(visualize.id)
+    // 現在Limitはクエリパラメーターではなく、Bodyのargs{limit:}を使ってるため
+    //const limit = this.getLimitWhenCsvToHTMLTable(visualize.id)
 
     this.setState({is_loading:true})
-    HttpUtil.post("visualizers?from=" + visualize.id + limit,body).then((res)=>{
+    HttpUtil.post("visualizers?from=" + visualize.id,body).then((res)=>{
       this.setState({html:res.data,is_loading:false})
       // 結果を保存
       if(this.props.onSaveResult) {
