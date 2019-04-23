@@ -5,7 +5,7 @@ import uuid
 import tempfile
 import kskp.model as model
 from pathlib import Path
-from ..activity import (
+from ..utils.activity import (
     make_unfinished_history,
     make_finished_history
 )

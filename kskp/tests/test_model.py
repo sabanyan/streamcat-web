@@ -11,13 +11,6 @@ import kskp.model as model
 
 import pprint
 
-from kskp.models import db
-from kskp.models.library import Library
-from kskp.models.folder import Folder
-from kskp.models.remote_folder import RemoteFolder
-from kskp.models.database import Database
-from kskp.models.frame import Frame
-
 class ModelTestCase(unittest.TestCase):
     def setUp(self):
         self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
