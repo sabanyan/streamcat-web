@@ -1,7 +1,7 @@
 from flask import jsonify
 import functools
 
-def return_with_json(func):
+def api_base(func):
     """
     デコレートした関数から例外が創出された場合は、エラーJSONを返す
     関数が正常終了した場合は戻り値を'data'属性に格納して返す

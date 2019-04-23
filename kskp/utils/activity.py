@@ -4,7 +4,7 @@ import functools
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from flask import session
-from .model import (
+from ..model import (
     get_flow_path_by_uuid,
     get_user_by_id,
     get_flow_nodes_by_uuid
