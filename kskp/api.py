@@ -581,21 +581,33 @@ def download_file():
     # JST = timezone(timedelta(hours=+9), 'JST')
     # date = datetime.now(JST)
 
-    # ダウンロードファイルの名前
-    if frame_uuid == 'テスト':
-        downloadFileName = frame_uuid  + '.' + ext
+
+    frame = FrameDoc.find_by_uuid(frame_uuid)
+    file_path = frame.path if frame is not None else None
+
+    if file_path is None:
+        # ダウンロードファイルの名前
+        if frame_uuid == 'テスト':
+            downloadFileName = frame_uuid  + '.' + ext
+        else:
+            downloadFileName = label + '.' + ext
+
+        # ダウンロード対象のファイルの名前
+        downloadFile = frame_uuid + '_sjis.' + ext
+        sjis_path = DATAFRAME_DIR_PATH / downloadFile
+        # sjis版がなかったらutf8版を落とす（今の所sjis版はオムロンさま専用なので）
+        if not sjis_path.exists():
+            downloadFile = frame_uuid + '.' + ext
+
+        return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
+                                   attachment_filename = downloadFileName, mimetype = 'text/csv')
     else:
-        downloadFileName = label + '.' + ext
-
-    # ダウンロード対象のファイルの名前
-    downloadFile = frame_uuid + '_sjis.' + ext
-    sjis_path = DATAFRAME_DIR_PATH / downloadFile
-    # sjis版がなかったらutf8版を落とす（今の所sjis版はオムロンさま専用なので）
-    if not sjis_path.exists():
-        downloadFile = frame_uuid + '.' + ext
-
-    return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
-                               attachment_filename = downloadFileName, mimetype = 'text/csv')
+        # ライブラリに存在する場合はライブラリからダウンロードする
+        dir_path = Path(api.root_path).parent / Path(os.path.dirname(file_path))
+        file_name = os.path.basename(file_path)
+        return send_from_directory(dir_path, file_name, as_attachment = True,
+                                   attachment_filename = file_name, mimetype = 'text/csv')
+        
 
 def execute_flow(flow_uuid, step_paths, no_contents, limit=None, inputs={}, args={}):
 
@@ -1127,7 +1139,17 @@ def visualizer():
     ### ここから
     # ここから
     new_inputs = {}
-    new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , request.json.get('inputs')['i'] + '.csv'))
+
+    frame_uuid = request.json.get('inputs')['i']
+    frame = FrameDoc.find_by_uuid(frame_uuid)
+    file_path = frame.path if frame is not None else None
+    
+    if file_path is None:
+        new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH, request.json.get('inputs')['i'] + '.csv'))
+    else:
+        new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / Path(os.path.dirname(file_path)), os.path.basename(file_path)))
+
+
     command = internal_commands.get(request.args.get('from'))
     # 残りの２つの引数はsrcsとdsts
     new_step = Step(command, request.json.get('args'), {}, {})
@@ -1137,6 +1159,8 @@ def visualizer():
     result = job.execute()['o']
     # job.dtor()
     ### ここまでがengine.execute部分にあたる
+
+    import pprint
 
     # テーブルコマンド
     if request.args.get('from') == 'csvtohtmltable':
