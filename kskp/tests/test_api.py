@@ -23,6 +23,20 @@ class ApiTestCase(unittest.TestCase):
         os.close(self.db_fd)
         os.unlink(app.config['DATABASE'])
 
+    @staticmethod
+    def remove_copy_flow_files(data_source_name, copy_flow_label, project_id):
+        """
+        テストで作成したフローのコピーファイルを削除する
+        """
+        for path in Path(app.config['FLOW_PATH']).iterdir():
+            if not path.suffix == '.json':
+                continue
+            with open(path) as f:
+                flow_json = json.load(f)
+                if flow_json['label'] == copy_flow_label and flow_json['projectId'] == project_id:
+                    path.unlink()
+                    break
+
     def test_new_project(self):
         """
         new_project APIをテストする
@@ -219,6 +233,12 @@ class ApiTestCase(unittest.TestCase):
              project_id, project_uuid,
              new_flow_name, data_source_name, created_flow) = setUpFlow(self)
 
+        
+        copy_flow_label = new_flow_name + ' のコピー'
+
+        # 前のテストが失敗してフローのコピーが残っていればそれを削除する
+        ApiTestCase.remove_copy_flow_files(data_source_name, copy_flow_label, project_id)
+
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
@@ -237,20 +257,12 @@ class ApiTestCase(unittest.TestCase):
             result = json.loads(copy_response.get_data())
 
             # コピーされているかの確認
-            copy_flow_label = new_flow_name + ' のコピー'
             self.assertEqual(result['success'], True)
             self.assertEqual(result['data']['label'], copy_flow_label)
 
             # 後片付け
             os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
-            for path in Path(app.config['FLOW_PATH']).iterdir():
-                if not path.suffix == '.json':
-                    continue
-                with open(path) as f:
-                    flow_json = json.load(f)
-                    if flow_json['label'] == copy_flow_label and flow_json['projectId'] == project_id:
-                        path.unlink()
-                        break
+            ApiTestCase.remove_copy_flow_files(data_source_name, copy_flow_label, project_id)
 
     def test_new_flow_for_copy_multi(self):
         """
@@ -263,6 +275,13 @@ class ApiTestCase(unittest.TestCase):
             (user1,
              project_id, project_uuid,
              new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        copy_flow_label_1 = new_flow_name + ' のコピー'
+        copy_flow_label_2 = new_flow_name + ' のコピー2'
+
+        # 前のテストが失敗してフローのコピーが残っていればそれを削除する
+        ApiTestCase.remove_copy_flow_files(data_source_name, copy_flow_label_1, project_id)
+        ApiTestCase.remove_copy_flow_files(data_source_name, copy_flow_label_2, project_id)
 
         with app.test_client() as client:
             with client.session_transaction() as session:
@@ -290,11 +309,9 @@ class ApiTestCase(unittest.TestCase):
             result_2 = json.loads(copy_response_2.get_data())
 
             # コピーされているかの確認
-            copy_flow_label_1 = new_flow_name + ' のコピー'
             self.assertEqual(result_1['success'], True)
             self.assertEqual(result_1['data']['label'], copy_flow_label_1)
 
-            copy_flow_label_2 = new_flow_name + ' のコピー2'
             self.assertEqual(result_2['success'], True)
             self.assertEqual(result_2['data']['label'], copy_flow_label_2)
 
