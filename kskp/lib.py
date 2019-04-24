@@ -11,13 +11,6 @@ from .library import (
 
 lib = Blueprint('lib', __name__)
 
-## これは読んでいて思いついたことですが、どのエンドポイントも決まり文句として
-## try ~ except節があり、
-## 成功した時にはjsonify{'success': True, 'data': なんとか}
-## 失敗した時には決まったエラー用JSONを返しているので、
-## この部分をdecoratorにすればめちゃくちゃスッキリすると思います。
-
-
 @lib.route('/stores', methods=['GET'])
 @api_base
 def fecth_stores():
@@ -33,7 +26,6 @@ def fecth_store(store_id):
     データストアの定義(雛形)を返却する
     """
     return Store.find_by_id(store_id)
-    ## store is Noneの時は、{'success': True, 'data': None}を返すけどそれは正しい仕様ですか？
 
 @lib.route('/stores', methods=['POST'])
 @login_required_api
@@ -59,11 +51,9 @@ def delete_store(store_id):
     """
     データストアの定義(雛形)を削除する
     """
-    ## delete_store -> deleting_storeとか単にstoreの方がいい
     store = Store(store_id)
     store.delete()
 
-## 関数名、_convert_typeにしましょう
 def _convert_type(datum):
     if datum is None:
         return None
@@ -74,12 +64,6 @@ def _convert_type(datum):
     else:
         raise Exception('Undefined type of datum is found!')
 
-## folderがNoneの場合ってどんな場合でしょうか？また、その場合、return Noneしてもいいんでしょうか？
-## それが正しいとしても、early returnの方が私は好みです。
-## 関数名がちょっとわかりにくいです。少なくとも、make fetch dataは意味が通らないです。。。
-## コードを読む限りでは、sqlalchemlyのデータをjsonに読み替えている感じがしますけど、
-## そうであればせめてコメントには書いてほしい。
-## 私なら_jsonify_folder()とかにしますかね、難しいところですけど
 def _jsonify_folder(folder):
     """
     NOTE: この関数を呼び出す前にfolderがNoneで無いかチェックすること
@@ -92,12 +76,10 @@ def _jsonify_folder(folder):
 
     # children属性を作成する
     data = folder.to_json()
-    ## data['children'] = [_convert_type(c).to_json for c in children]
     data['children'] = [_convert_type(child) for child in children]
     
     # folderPath属性を作成する
     folder_list = folder.get_folder_path()
-    ## data['folderPath'] = [f for f in folder_list]
     data['folderPath'] = [folder for folder in folder_list]
     return data
 
