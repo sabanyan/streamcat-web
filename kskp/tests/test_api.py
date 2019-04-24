@@ -302,6 +302,8 @@ class ApiTestCase(unittest.TestCase):
             os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
             for path in Path(app.config['FLOW_PATH']).iterdir():
                 with open(path) as f:
+                    if path.name == '.DS_Store':
+                        continue
                     flow_json = json.load(f)
                     if (flow_json['label'] == copy_flow_label_1 or flow_json['label'] == copy_flow_label_2) \
                         and flow_json['projectId'] == project_id:
