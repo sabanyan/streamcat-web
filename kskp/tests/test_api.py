@@ -2509,6 +2509,9 @@ class LibraryTestCase(unittest.TestCase):
             # POST /folders apiが正常終了することを検証する
             self.assertEqual(result['success'], True)
 
+            # 親フォルダがない場合はデフォルトパスとする
+            self.assertTrue(os.path.isdir('kskp/data/library'))
+
             # フレームのラベル名を変更する(PUT /frames)
             response = client.put('/api/v0/folders/' + folder_uuid,
                 content_type='application/json',
@@ -2531,6 +2534,9 @@ class LibraryTestCase(unittest.TestCase):
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
         self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダに対応するディレクトリが存在することを検証する
+        self.assertTrue(os.path.isdir('kskp/data/ NEW FOLDER '))
 
         # フォルダを削除する(DELETE /folders)
         with app.test_client() as client:
@@ -2578,6 +2584,9 @@ class LibraryTestCase(unittest.TestCase):
 
         # POST /frames apiが正常終了することを検証する
         self.assertEqual(result['success'], True)
+
+        # フレームに対応するファイルが存在することを検証する
+        self.assertTrue(os.path.isfile('kskp/data/library/新しいフレームファイル?'))
 
         # フレームを取得する(GET /frames)
         with app.test_client() as client:
@@ -2744,6 +2753,9 @@ class LibraryTestCase(unittest.TestCase):
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
         self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フレームに対応するファイルが存在することを検証する
+        self.assertTrue(os.path.isfile('kskp/data/library/ F L A M E-F I L E '))
 
         # 中のファイルを削除する(DELETE /frames)
         with app.test_client() as client:
