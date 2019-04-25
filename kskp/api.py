@@ -492,6 +492,7 @@ def fetch_frame(frame_uuid):
         # ライブラリにフレームが無い場合は従来のフォルダ内を探す
         file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
     else:
+        # ライブラリにフレームが存在する場合はライブラリから取得する
         limit = 999 if limit is None else limit
         no_contents = request.args.get('no_contents') is not None
         file_path = Path(file_path)
@@ -586,6 +587,8 @@ def download_file():
     file_path = frame.path if frame is not None else None
 
     if file_path is None:
+        # ライブラリにフレームが無い場合は従来のフォルダ内を探す
+
         # ダウンロードファイルの名前
         if frame_uuid == 'テスト':
             downloadFileName = frame_uuid  + '.' + ext
@@ -602,7 +605,7 @@ def download_file():
         return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
                                    attachment_filename = downloadFileName, mimetype = 'text/csv')
     else:
-        # ライブラリに存在する場合はライブラリからダウンロードする
+        # ライブラリにフレームが存在する場合はライブラリから取得する
         dir_path = Path(api.root_path).parent / Path(os.path.dirname(file_path))
         file_name = os.path.basename(file_path)
         return send_from_directory(dir_path, file_name, as_attachment = True,
@@ -1145,8 +1148,10 @@ def visualizer():
     file_path = frame.path if frame is not None else None
     
     if file_path is None:
+        # ライブラリにフレームが無い場合は従来のフォルダ内を探す
         new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH, request.json.get('inputs')['i'] + '.csv'))
     else:
+        # ライブラリにフレームが存在する場合はライブラリから取得する
         new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / Path(os.path.dirname(file_path)), os.path.basename(file_path)))
 
 
@@ -1159,8 +1164,6 @@ def visualizer():
     result = job.execute()['o']
     # job.dtor()
     ### ここまでがengine.execute部分にあたる
-
-    import pprint
 
     # テーブルコマンド
     if request.args.get('from') == 'csvtohtmltable':
