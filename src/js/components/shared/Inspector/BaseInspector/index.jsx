@@ -49,6 +49,8 @@ class BaseInspector extends React.Component<Props> {
         </div>
     }
 
+    const width = 100
+
     return <div className={classnames(style.property_container,'inspector-container')}>
       <div className={style.property_header}>
         {header}

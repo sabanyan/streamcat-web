@@ -25,6 +25,7 @@ import moment from 'moment/moment'
 import ErrorUtil from '../../../../utils/ErrorUtil'
 import APIUtil from '../../../../utils/APIUtil'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
+import Resizer from '../Resizer'
 
 type Props = {
   project: {};
@@ -40,10 +41,10 @@ class FlowInspector extends React.Component<Props> {
   }
 
   nullInspector(){
-    return <div className={classnames(style.property, style.in)}>
+    return <Resizer>
       <BaseInspector {...this.props} >
       </BaseInspector>
-    </div>
+    </Resizer>
   }
 
   render () {
@@ -90,12 +91,12 @@ class FlowInspector extends React.Component<Props> {
       </div>
     </div>
 
-    return <div className={classnames(style.property, style.in)}>
+    return <Resizer>
       <BaseInspector label={label}
                      {...this.props} >
         {content}
       </BaseInspector>
-    </div>
+    </Resizer>
   }
 
 }
