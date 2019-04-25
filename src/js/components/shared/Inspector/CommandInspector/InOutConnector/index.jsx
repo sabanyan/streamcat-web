@@ -131,7 +131,7 @@ class InOutConnector extends React.Component{
           {key}
         </div>
         <div className={style.outPort_Node}>
-          {dataFrameId + " / " + node.getLabel()}
+          {node.getLabel()}
         </div>
       </div>
     })
