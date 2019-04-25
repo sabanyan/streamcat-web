@@ -108,3 +108,10 @@ $kskp-port-label-color: darken(#B7C8D3,5%);
   -ms-user-select: text;
   user-select: text;
 }
+
+.user-not-select{
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

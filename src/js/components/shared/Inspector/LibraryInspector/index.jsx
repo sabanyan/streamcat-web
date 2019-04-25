@@ -7,6 +7,7 @@ import type { LibraryListDataType } from '../../../../types'
 import moment from 'moment/moment'
 import Constants from '../../../../constants'
 import Button from '../../Button'
+import Resizer from '../Resizer'
 
 type Props = {
   data?: LibraryListDataType;
@@ -77,11 +78,11 @@ class LibraryInspector extends React.Component<Props> {
         </BaseInspector>
       </div>
     }else{
-      return <div className={classnames(style.property,style.in,'inspector')}>
+      return <Resizer>
         <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
-      </div>
+      </Resizer>
     }
 
   }
