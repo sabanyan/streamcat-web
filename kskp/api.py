@@ -26,10 +26,11 @@ from .model import (
     make_flow_path,
     copy_flow_by_uuid
 )
-from .lib import _get_library
+from .lib import get_library
 # data3.pyのFrameクラスと名称を被らないようにAS別名を付ける
-from .library import Frame as FrameDoc
-from .library import Folder as FolderStore
+# (将来的にdata3.pyのFrameと統合したい)
+from .library import Frame as FrameModel
+from .library import Folder
 from .utils.activity import (
     make_unfinished_history,
     make_finished_history
@@ -427,11 +428,11 @@ def make_new_frame():
         if 'parent' in request.form and 'label' in request.form:
             try:
                 # parentとlabel属性があれば新形式のPOST /framesだとみなす
-                new_frame = FrameDoc(request.form.get('parent')
-                                    , request.form.get('label')
-                                    , request.files.get('file').stream
-                                    , creator=session['user_id']
-                                    , modifier=session['user_id'])
+                new_frame = FrameModel(request.form.get('parent')
+                                     , request.form.get('label')
+                                     , request.files.get('file').stream
+                                     , creator=session['user_id']
+                                     , modifier=session['user_id'])
                 # documentレコードをDBに格納する
                 new_frame.save()
                 return jsonify({'success': True, 'data': new_frame.to_json()})
@@ -490,7 +491,7 @@ def fetch_frame(frame_uuid):
     limit = int(request.args.get('limit')) if request.args.get('limit') else None
     no_contents = True if request.args.get('no_contents') else False
 
-    frame = FrameDoc.find_by_uuid(frame_uuid)
+    frame = FrameModel.find_by_uuid(frame_uuid)
     file_path = frame.path if frame is not None else None
 
     if file_path is None:
@@ -522,7 +523,7 @@ def update_frame(frame_uuid):
     """
     label = request.json['label']
     modifier = session['user_id']
-    return FrameDoc.update_data(frame_uuid, label, modifier)
+    return FrameModel.update_data(frame_uuid, label, modifier)
 
 @api.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api
@@ -531,7 +532,7 @@ def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
     """
-    frame = FrameDoc.find_by_uuid(frame_uuid)
+    frame = FrameModel.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
     frame.delete()
@@ -588,7 +589,7 @@ def download_file():
     # date = datetime.now(JST)
 
 
-    frame = FrameDoc.find_by_uuid(frame_uuid)
+    frame = FrameModel.find_by_uuid(frame_uuid)
     file_path = frame.path if frame is not None else None
 
     if file_path is None:
@@ -1031,14 +1032,14 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
         label = flow_label + '_' + nodes_dict.get(key).get('label')
         file_path = os.path.join(frame_folder_path, value.uuid + '.csv')
         if os.path.isfile(file_path):
-            new_frame = FrameDoc(FRAME_FOLDER_UUID
-                                , label
-                                , None
-                                , creator=session['user_id']
-                                , modifier=session['user_id'])
+            new_frame = FrameModel(FRAME_FOLDER_UUID,
+                                   label,
+                                   None,
+                                   creator=session['user_id'],
+                                   modifier=session['user_id'])
             # フレームのuuidはエンジン内で付番されたUUIDとする
             new_frame.uuid = value.uuid
-            new_frame.regist(file_path)
+            new_frame.register(file_path)
 
     # 結果の処理
     if no_contents:
@@ -1166,7 +1167,7 @@ def visualizer():
     new_inputs = {}
 
     frame_uuid = request.json.get('inputs')['i']
-    frame = FrameDoc.find_by_uuid(frame_uuid)
+    frame = FrameModel.find_by_uuid(frame_uuid)
     file_path = frame.path if frame is not None else None
     
     if file_path is None:
@@ -1197,14 +1198,14 @@ def visualizer():
 def get_frame_dir_path(user_id):
     try:
         # フレーム格納フォルダのUUIDは決め打ちである
-        folder = FolderStore.find_by_uuid(FRAME_FOLDER_UUID)
+        folder = Folder.find_by_uuid(FRAME_FOLDER_UUID)
     except Exception as e:
         # フレーム格納フォルダが無い場合は作成する
-        root = _get_library(user_id)
-        folder = FolderStore(root.uuid
-                           , FRAME_FOLDER_LABEL
-                           , user_id
-                           , user_id)
+        root = get_library(user_id)
+        folder = Folder(root.uuid,
+                        FRAME_FOLDER_LABEL,
+                        user_id,
+                        user_id)
         # Folderのコンストラクタで付番したUUIDを捨てて、フレーム格納フォルダのUUIDを格納する
         folder.uuid = FRAME_FOLDER_UUID
         folder.save()

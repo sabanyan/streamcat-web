@@ -181,8 +181,8 @@ class Folder(Datum):
         return False
 
     def to_json(self):
-        return {'uuid'      : self.uuid
-               ,'type'      : Datum.FOLDER_TYPE
-               ,'label'     : json.loads(self.data, encoding='utf-8')['label']
-               ,'creator'   : Datum.get_user_name_by_user_id(self.creator)
-               ,'createdAt' : self.created_at}
+        return {'uuid'      : self.uuid,
+                'type'      : Datum.FOLDER_TYPE,
+                'label'     : json.loads(self.data, encoding='utf-8')['label'],
+                'creator'   : Datum.get_user_name_by_user_id(self.creator),
+                'createdAt' : self.created_at}

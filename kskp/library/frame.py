@@ -65,7 +65,7 @@ class Frame(Datum):
         finally:
             db.session.commit()
 
-    def regist(self, file_path):
+    def register(self, file_path):
         """
         指定されたパスのファイルをFrameとして登録する
         """
@@ -100,14 +100,14 @@ class Frame(Datum):
         
         try:
             # 同じファイルに対応するドキュメントのpath列を、ファイル名の移動に合わせて変更する
-            db.session.query(Datum).filter(Datum.path==old_path).update({'path'       :new_path
-                                                                       , 'modifier'   :modifier
-                                                                       , 'modified_at':Datum.get_current_time_str()})
+            db.session.query(Datum).filter(Datum.path==old_path).update({'path'       :new_path,
+                                                                         'modifier'   :modifier,
+                                                                         'modified_at':Datum.get_current_time_str()})
             # レコードを更新する
             data = json.dumps({'label' : label})
-            db.session.query(Datum).filter(Datum.uuid==uuid).update({'data'       :data
-                                                                   , 'modifier'   :modifier
-                                                                   , 'modified_at':Datum.get_current_time_str()})
+            db.session.query(Datum).filter(Datum.uuid==uuid).update({'data'       :data,
+                                                                     'modifier'   :modifier,
+                                                                     'modified_at':Datum.get_current_time_str()})
         except Exception as e:
             db.session.rollback()
             raise e
@@ -172,8 +172,8 @@ class Frame(Datum):
                     break
 
     def to_json(self):
-        return {'uuid'      : self.uuid
-               ,'type'      : Datum.FRAME_TYPE
-               ,'label'     : json.loads(self.data, encoding='utf-8')['label']
-               ,'creator'   : Datum.get_user_name_by_user_id(self.creator)
-               ,'createdAt' : self.created_at}
+        return {'uuid'      : self.uuid,
+                'type'      : Datum.FRAME_TYPE,
+                'label'     : json.loads(self.data, encoding='utf-8')['label'],
+                'creator'   : Datum.get_user_name_by_user_id(self.creator),
+                'createdAt' : self.created_at}
