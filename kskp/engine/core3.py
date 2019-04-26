@@ -75,9 +75,18 @@ def parse_data(obj):
 def parse_datum(node_obj):
     frame_uuid = node_obj['uuid']
     if frame_uuid is not None:
-        frames_path = os.environ['KENG_FRAMES_PATH']
+        # frames_path = os.environ['KENG_FRAMES_PATH']
         data_source = node_obj['dataSource']
-        file_name = f'{frame_uuid}.{data_source}'
+        # file_name = f'{frame_uuid}.{data_source}'
+
+        # ライブラリ対応として、入力データフレームはライブラリから取得する
+        from ..library import Frame as FrameDoc
+        frame = FrameDoc.find_by_uuid(frame_uuid)
+        if frame is None:
+            raise Exception('No input frame is found! ')
+        frames_path = os.path.dirname(frame.path)
+        file_name = os.path.basename(frame.path)
+
         source = PathFileSource(data_source, frames_path, file_name)
         datum = Frame(frame_uuid, source)
         datum.is_temp = False

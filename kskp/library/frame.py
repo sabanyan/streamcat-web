@@ -65,6 +65,23 @@ class Frame(Datum):
         finally:
             db.session.commit()
 
+    def regist(self, file_path):
+        """
+        指定されたパスのファイルをFrameとして登録する
+        """
+        # 既にルートフォルダが存在する場合は、parent_id=NULLを許可しない
+        if self.parent_id is None and Datum.count_root() > 0:
+            raise Exception('You can not add another root frame. A root already exists!')
+        self.path = file_path
+        try:
+            # Dataテーブルにレコードを新規追加する
+            db.session.add(self)
+        except Exception as e:
+            db.session.rollback()
+            raise e
+        finally:
+            db.session.commit()
+
     @staticmethod
     def update_data(uuid, label, modifier):
         """

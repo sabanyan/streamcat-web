@@ -83,6 +83,23 @@ def _jsonify_folder(folder):
     data['folderPath'] = [folder for folder in folder_list]
     return data
 
+def _get_library(user_id):
+    """
+    ルートデータストアを取得する、存在しない場合は作成する
+    """
+    root = _convert_type(Datum.find_root())
+    # ルートフォルダが存在しない場合はルートフォルダを作成する
+    # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
+    if root is None:
+        new_root = Folder(parent_uuid=None
+                        , label='ROOT_FOLDER'
+                        , creator=user_id
+                        , modifier=user_id)
+        # folderレコードをDBに格納する
+        new_root.save()
+        root = new_root
+    return root
+
 @lib.route('/library', methods=['GET'])
 @login_required_api
 @update_navigation
@@ -91,17 +108,7 @@ def fecth_library():
     """
     ルートデータストアを返却する
     """
-    root = _convert_type(Datum.find_root())
-    # ルートフォルダが存在しない場合はルートフォルダを作成する
-    # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
-    if root is None:
-        new_root = Folder(parent_uuid=None
-                        , label='ROOT_FOLDER'
-                        , creator=session['user_id']
-                        , modifier=session['user_id'])
-        # folderレコードをDBに格納する
-        new_root.save()
-        root = new_root
+    root = _get_library(session['user_id'])
     return _jsonify_folder(root)
 
 @lib.route('/folders/<folder_uuid>', methods=['GET'])
