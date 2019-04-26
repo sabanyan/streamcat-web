@@ -26,8 +26,10 @@ from .model import (
     make_flow_path,
     copy_flow_by_uuid
 )
+from .lib import _get_library
 # data3.pyのFrameクラスと名称を被らないようにAS別名を付ける
 from .library import Frame as FrameDoc
+from .library import Folder as FolderStore
 from .utils.activity import (
     make_unfinished_history,
     make_finished_history
@@ -40,7 +42,8 @@ api = Blueprint('api', __name__)
 DATAFRAME_DIR_PATH = api.root_path / Path('data/frames')
 JOBS_DIR_PATH = api.root_path / Path('data/jobs')
 FLOWS_DIR_PATH = api.root_path / Path('data/flows')
-
+FRAME_FOLDER_UUID = 'fffffd73-75d7-440f-b459-b49b3449d655'
+FRAME_FOLDER_LABEL = 'フロー実行結果'
 @api.route('/projects', methods=['POST'])
 @login_required_api
 def new_project():
@@ -224,7 +227,7 @@ def execute_flow_by_add_inputs(request):
             continue
 
     # フローの実行
-    result = execute_flow(flow_uuid, None, False, None, inputs, args)
+    result = execute_flow(flow_uuid, None, False, None, inputs, args, flow_label=flow_json['label'])
 
     return result
 
@@ -458,7 +461,9 @@ def make_new_frame():
 
         limit = int(request.args.get('limit')) if request.args.get('limit') else None
 
-        result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents, limit=limit)
+        flow_json = fetch_flow_by_uuid(flow_uuid)
+
+        result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents, limit=limit, flow_label=flow_json['label'])
 
         return result
     elif request.form.get('flow_uuid'):
@@ -612,7 +617,7 @@ def download_file():
                                    attachment_filename = file_name, mimetype = 'text/csv')
         
 
-def execute_flow(flow_uuid, step_paths, no_contents, limit=None, inputs={}, args={}):
+def execute_flow(flow_uuid, step_paths, no_contents, limit=None, inputs={}, args={}, flow_label=None):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
@@ -627,7 +632,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, limit=None, inputs={}, args
                         })
     else:
         try:
-            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, limit, inputs, args)
+            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, limit, inputs, args, flow_label=flow_label)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -999,7 +1004,7 @@ def execute_direct3():
 
     return jsonify({'success': True, 'data': 'execute-direct3'})
 
-def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=None, inputs={}, args={}):
+def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=None, inputs={}, args={}, flow_label=None):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
@@ -1007,16 +1012,33 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
 
     now = datetime.now()
 
+
+    # フローの実行結果を格納するディレクトリパスを取得する
+    frame_folder_path = get_frame_dir_path(session['user_id']).path
+
     @make_unfinished_history(now, session)
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from . import engine as e
         # data_path = (DATAFRAME_DIR_PATH / 'data').as_posix()
         with open(FLOWS_DIR_PATH.joinpath(f'{flow_uuid}.json'), 'r') as f:
-            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=DATAFRAME_DIR_PATH.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
-
+            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=frame_folder_path, flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs)
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
+
+    # 出力されたデータフレームをライブラリに登録する
+    for key, value in result['outputs'].items():
+        label = flow_label + '_' + nodes_dict.get(key).get('label')
+        file_path = os.path.join(frame_folder_path, value.uuid + '.csv')
+        if os.path.isfile(file_path):
+            new_frame = FrameDoc(FRAME_FOLDER_UUID
+                                , label
+                                , None
+                                , creator=session['user_id']
+                                , modifier=session['user_id'])
+            # フレームのuuidはエンジン内で付番されたUUIDとする
+            new_frame.uuid = value.uuid
+            new_frame.regist(file_path)
 
     # 結果の処理
     if no_contents:
@@ -1171,3 +1193,19 @@ def visualizer():
 
     # bokehのコマンド
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
+
+def get_frame_dir_path(user_id):
+    try:
+        # フレーム格納フォルダのUUIDは決め打ちである
+        folder = FolderStore.find_by_uuid(FRAME_FOLDER_UUID)
+    except Exception as e:
+        # フレーム格納フォルダが無い場合は作成する
+        root = _get_library(user_id)
+        folder = FolderStore(root.uuid
+                           , FRAME_FOLDER_LABEL
+                           , user_id
+                           , user_id)
+        # Folderのコンストラクタで付番したUUIDを捨てて、フレーム格納フォルダのUUIDを格納する
+        folder.uuid = FRAME_FOLDER_UUID
+        folder.save()
+    return folder
