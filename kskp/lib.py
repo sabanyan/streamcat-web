@@ -34,13 +34,13 @@ def make_new_store():
     """
     データストアの定義(雛形)を作成する
     """
-    new_store = Store.create(request.json['id']
-                            ,request.json['version']
-                            ,request.json['label']
-                            ,request.json['description']
-                            ,request.json['url']
-                            ,request.json['params']
-                            ,session['user_id'])
+    new_store = Store.create(request.json['id'],
+                             request.json['version'],
+                             request.json['label'],
+                             request.json['description'],
+                             request.json['url'],
+                             request.json['params'],
+                             session['user_id'])
     new_store.save()
     return new_store
 
@@ -83,7 +83,7 @@ def _jsonify_folder(folder):
     data['folderPath'] = [folder for folder in folder_list]
     return data
 
-def _get_library(user_id):
+def get_library(user_id):
     """
     ルートデータストアを取得する、存在しない場合は作成する
     """
@@ -91,10 +91,10 @@ def _get_library(user_id):
     # ルートフォルダが存在しない場合はルートフォルダを作成する
     # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
     if root is None:
-        new_root = Folder(parent_uuid=None
-                        , label='ROOT_FOLDER'
-                        , creator=user_id
-                        , modifier=user_id)
+        new_root = Folder(parent_uuid=None,
+                          label='ROOT_FOLDER',
+                          creator=user_id,
+                          modifier=user_id)
         # folderレコードをDBに格納する
         new_root.save()
         root = new_root
@@ -108,7 +108,7 @@ def fecth_library():
     """
     ルートデータストアを返却する
     """
-    root = _get_library(session['user_id'])
+    root = get_library(session['user_id'])
     return _jsonify_folder(root)
 
 @lib.route('/folders/<folder_uuid>', methods=['GET'])
@@ -129,10 +129,10 @@ def make_new_folder():
     """
     フォルダを作成する
     """
-    new_folder = Folder(request.json['parent']
-                        , request.json['label']
-                        , creator=session['user_id']
-                        , modifier=session['user_id'])
+    new_folder = Folder(request.json['parent'],
+                        request.json['label'],
+                        creator=session['user_id'],
+                        modifier=session['user_id'])
     new_folder.save()
     return new_folder
 
