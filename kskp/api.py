@@ -1058,8 +1058,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             # (lastsノードがキャッシュを出力する場合は、result['outputs]とresult['caches']の両方に同じファイル名が格納される)
             frame = FrameModel.find_by_uuid(uuid)
             if frame is not None:
-                return
-                
+                return 
             new_frame = FrameModel(FRAME_FOLDER_UUID,
                                    label,
                                    None,
@@ -1068,6 +1067,20 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             # フレームのuuidはエンジン内で付番されたUUIDとする
             new_frame.uuid = uuid
             new_frame.regist(file_path_obj.as_posix())
+
+    def regist_sjis_file_to_library(uuid, label):
+        """
+        execute_flow_by_uuid()の_sjisファイルをライブラリに登録する
+        """
+        file_path_obj = Path.joinpath(frame_folder_path_obj, uuid + '_sjis.csv')
+        if Path(file_path_obj).is_file():
+            new_frame = FrameModel(FRAME_FOLDER_UUID,
+                                   label,
+                                   None,
+                                   creator=session['user_id'],
+                                   modifier=session['user_id'])
+            new_frame.regist(file_path_obj.as_posix())
+
 
     # 出力されたデータフレームをライブラリに登録する
     for key, value in result['outputs'].items():
@@ -1078,6 +1091,9 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             label = flow_label + '_' + nodes_dict.get(key).get('label')
         regist_file_to_library(value.uuid, label)
 
+        # 出力された_sjisファイルをライブラリに登録する
+        regist_sjis_file_to_library(value.uuid, label + '_sjis')
+
     # 出力されたキャッシュファイルをライブラリに登録する
     for key, uuid in result['caches'].items():
         if key is None or key.split('.')[1] is None:
@@ -1085,6 +1101,9 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
         else:
             label = flow_label + '_' + key.split('.')[1] + '_cache'
         regist_file_to_library(uuid, label)
+
+        # 出力された_sjisファイルをライブラリに登録する
+        regist_sjis_file_to_library(uuid, label + '_sjis')
 
 
     # 結果の処理
