@@ -27,6 +27,15 @@ class Folder(Datum):
         return Folder.convert_to_folder(datum)
 
     @staticmethod
+    def exists(uuid):
+        """
+        指定されたuuidを持つFolderが存在する場合はTrueを返す
+        """
+        result = db.session.query(Datum).filter(Datum.uuid==uuid)\
+                                         .filter(Datum.type==Datum.FOLDER_TYPE).count()
+        return result > 0
+
+    @staticmethod
     def convert_to_folder(datum):
         parent_uuid = Datum.get_uuid_by_id(datum.parent_id)
         label = json.loads(datum.data, encoding='utf-8')['label']

@@ -13,6 +13,10 @@ def parse(flow_uuid, inputs={}, args={}):
     global flows_cache
     flow_obj_cache = {}
     flows_cache = {}
+
+    import pprint
+    pprint.pprint(args)
+
     return parse_job(load_flow(flow_uuid), flow_uuid, args, {}, {}, inputs)
 
 def load_flow(flow_uuid):
@@ -80,12 +84,16 @@ def parse_datum(node_obj):
         # file_name = f'{frame_uuid}.{data_source}'
 
         # ライブラリ対応として、入力データフレームはライブラリから取得する
-        from ..library import Frame as FrameDoc
-        frame = FrameDoc.find_by_uuid(frame_uuid)
-        if frame is None:
-            raise Exception('No input frame is found! ')
-        frames_path = os.path.dirname(frame.path)
-        file_name = os.path.basename(frame.path)
+        if frame_uuid != 'null':
+            from ..library import Frame as FrameModule
+            frame = FrameModule.find_by_uuid(frame_uuid)
+            if frame is None:
+                raise Exception('Input frame of %s is not found!' % frame_uuid)
+            frames_path = frame.path_obj.parent
+            file_name = frame.path_obj.name
+        else:
+            frames_path = os.environ['KENG_FRAMES_PATH']
+            file_name = f'{frame_uuid}.{data_source}'
 
         source = PathFileSource(data_source, frames_path, file_name)
         datum = Frame(frame_uuid, source)
@@ -285,6 +293,8 @@ class Job:
 
     # @profile
     def execute(self, step_paths=None):
+        import pprint
+        pprint.pprint(self.step.args)
         self.replace_inputs()
 
         s = self.step
@@ -493,8 +503,13 @@ class Job:
         res = v
         if isinstance(v, str):
             r = re.search(r'@\[(\S*?)\]', v)
+            import pprint
             if r is not None:
                 for g in r.groups():
+                    pprint.pprint('>>>')
+                    pprint.pprint(g)
+                    pprint.pprint(args)
+                    pprint.pprint(v)
                     res = v.replace(f'@[{g}]', args[g])
         return res
 
