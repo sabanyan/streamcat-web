@@ -19,6 +19,22 @@ class ApiTestCase(unittest.TestCase):
         with app.app_context():
             model.init_db()
 
+        from kskp.library import Frame as FrameModel
+        from kskp.api import get_frame_dir_path
+
+        # テストで用いるテスト用フレームが残っていれば削除する
+        input_frame_uuid = '86365ce9-9b01-4ec3-b672-7739e8f1e507'
+        # ↑ フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
+        frame = FrameModel.find_by_uuid(input_frame_uuid)
+        if frame is None:
+            # テストで用いるテスト用フレームをライブラリに登録する
+            frame_folder = get_frame_dir_path(1)
+            new_frame = FrameModel(frame_folder.uuid, 'ApiTestCase用フレーム', None)
+            input_frame_path = os.path.join('kskp/data/frames', input_frame_uuid + '.csv')
+            new_frame.uuid = input_frame_uuid
+            new_frame.register(input_frame_path)
+
+
     def tearDown(self):
         os.close(self.db_fd)
         os.unlink(app.config['DATABASE'])
@@ -1279,23 +1295,24 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        for path in Path(app.root_path + '/data/jobs/').iterdir():
-            if path.name == '.DS_Store':
-                continue
-            job_data = json.loads(path.read_text())
+        self._remove_job_file_and_frame(flow_uuid)
+        # for path in Path(app.root_path + '/data/jobs/').iterdir():
+        #     if path.name == '.DS_Store':
+        #         continue
+        #     job_data = json.loads(path.read_text())
 
-            if job_data['flow']['uuid'] == flow_uuid:
-                # 指定したflowでjobができているかのテスト
-                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-                self.assertEqual(job_data['state'], '実行完了')
+        #     if job_data['flow']['uuid'] == flow_uuid:
+        #         # 指定したflowでjobができているかのテスト
+        #         self.assertEqual(job_data['flow']['uuid'], flow_uuid)
+        #         self.assertEqual(job_data['state'], '実行完了')
 
-                # 作成したフレームの削除
-                for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    os.remove(frame_path)
+        #         # 作成したフレームの削除
+        #         for data in job_data['data'].values():
+        #             frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
+        #             os.remove(frame_path)
 
-                # jobsの削除
-                os.remove(path)
+        #         # jobsの削除
+        #         os.remove(path)
 
     def test_execute_subflow_by_multi_csv_file_with_args(self):
         """
@@ -1346,25 +1363,28 @@ class ApiTestCase(unittest.TestCase):
             result = json.loads(response.get_data())
 
         # テスト
+        pprint.pprint('>>>')
+        pprint.pprint(result)
         self.assertEqual(result['success'], True)
         # 後片付け
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        for path in Path(app.root_path + '/data/jobs/').iterdir():
-            if path.name == '.DS_Store':
-                continue
-            job_data = json.loads(path.read_text())
-            if job_data['flow']['uuid'] == flow_uuid:
-                # 指定したflowでjobができているかのテスト
-                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-                self.assertEqual(job_data['state'], '実行完了')
-                # 作成したFrameの削除
-                for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    os.remove(frame_path)
-                # jobsの削除
-                os.remove(path)
+        self._remove_job_file_and_frame(flow_uuid)
+        # for path in Path(app.root_path + '/data/jobs/').iterdir():
+        #     if path.name == '.DS_Store':
+        #         continue
+        #     job_data = json.loads(path.read_text())
+        #     if job_data['flow']['uuid'] == flow_uuid:
+        #         # 指定したflowでjobができているかのテスト
+        #         self.assertEqual(job_data['flow']['uuid'], flow_uuid)
+        #         self.assertEqual(job_data['state'], '実行完了')
+        #         # 作成したFrameの削除
+        #         for data in job_data['data'].values():
+        #             frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
+        #             os.remove(frame_path)
+        #         # jobsの削除
+        #         os.remove(path)
 
     def test_execute_subflow_by_multi_csv_file_with_args2(self):
         """
@@ -1424,20 +1444,21 @@ class ApiTestCase(unittest.TestCase):
             os.remove('kskp/data/frames/' + frame_uuid + '.csv')
 
         # このテストで作成したjobsだけ削除する
-        for path in Path(app.root_path + '/data/jobs/').iterdir():
-            if path.name == '.DS_Store':
-                continue
-            job_data = json.loads(path.read_text())
-            if job_data['flow']['uuid'] == flow_uuid:
-                # 指定したflowでjobができているかのテスト
-                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-                self.assertEqual(job_data['state'], '実行完了')
-                # 作成したFrameの削除
-                for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    # os.remove(frame_path)
-                # jobsの削除
-                os.remove(path)
+        self._remove_job_file_and_frame(flow_uuid)
+        # for path in Path(app.root_path + '/data/jobs/').iterdir():
+        #     if path.name == '.DS_Store':
+        #         continue
+        #     job_data = json.loads(path.read_text())
+        #     if job_data['flow']['uuid'] == flow_uuid:
+        #         # 指定したflowでjobができているかのテスト
+        #         self.assertEqual(job_data['flow']['uuid'], flow_uuid)
+        #         self.assertEqual(job_data['state'], '実行完了')
+        #         # 作成したFrameの削除
+        #         for data in job_data['data'].values():
+        #             frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
+        #             # os.remove(frame_path)
+        #         # jobsの削除
+        #         os.remove(path)
 
     @unittest.skip
     def test_visualizers_csvtohtmltable(self):
@@ -1751,20 +1772,7 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        for path in Path(app.root_path + '/data/jobs/').iterdir():
-            if path.name == '.DS_Store':
-                continue
-            job_data = json.loads(path.read_text())
-            if job_data['flow']['uuid'] == flow_uuid:
-                # 指定したflowでjobができているかのテスト
-                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-                self.assertEqual(job_data['state'], '実行完了')
-                # 作成したFrameの削除
-                for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    os.remove(frame_path)
-                # jobsの削除
-                os.remove(path)
+        self._remove_job_file_and_frame(flow_uuid)
 
     def test_execute_flow_limit(self):
         '''
@@ -1792,6 +1800,13 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
+        self._remove_job_file_and_frame(flow_uuid)
+
+    def _remove_job_file_and_frame(self, flow_uuid):
+        """
+        テストで作成されたjobsファイルとFrameを削除する
+        """
+        from kskp.library import Frame as FrameModel
         for path in Path(app.root_path + '/data/jobs/').iterdir():
             if path.name == '.DS_Store':
                 continue
@@ -1802,8 +1817,11 @@ class ApiTestCase(unittest.TestCase):
                 self.assertEqual(job_data['state'], '実行完了')
                 # 作成したFrameの削除
                 for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    os.remove(frame_path)
+                    # frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
+                    # os.remove(frame_path)
+                    frame = FrameModel.find_by_uuid(data['uuid'])
+                    if frame is not None:
+                        frame.delete()
                 # jobsの削除
                 os.remove(path)
 

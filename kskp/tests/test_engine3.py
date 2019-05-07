@@ -58,6 +58,20 @@ class CacheTestCase(unittest.TestCase):
         os.environ['KENG_FLOWS_PATH'] = 'kskp/data/flows'
         os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
 
+        from kskp.library import Frame as FrameModel
+        from kskp.api import get_frame_dir_path
+
+        # テストで用いるテスト用フレームをライブラリに登録する
+        input_frame_uuid = '4C545611-4569-4CD5-800E-55BE69CF8BA8'
+        frame = FrameModel.find_by_uuid(input_frame_uuid)
+        if frame is None:
+            # テストで用いるテスト用フレームをライブラリに登録する
+            frame_folder = get_frame_dir_path(1)
+            new_frame = FrameModel(frame_folder.uuid, 'CacheTestCase用フレーム', None)
+            input_frame_path = os.path.join(os.environ['KENG_FRAMES_PATH'], input_frame_uuid + '.csv')
+            new_frame.uuid = input_frame_uuid
+            new_frame.register(input_frame_path)
+
         # cacheを書き換え専用のフローとそのパス
         self.original_flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
         self.new_flow_uuid = str(uuid.uuid4())

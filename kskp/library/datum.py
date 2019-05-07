@@ -4,6 +4,7 @@ import random
 import platform
 import datetime
 from . import db
+from pathlib import Path
 from sqlalchemy.orm import aliased
 
 class Datum(db.Model):
@@ -63,6 +64,18 @@ class Datum(db.Model):
         # creator, modifier
         self.creator = creator
         self.modifier = modifier
+
+    @property
+    def path_obj(self):
+        if self.path is None:
+            raise Exception('path attribute must not be None in path_obj property.')
+        return Path(self.path)
+
+    @path_obj.setter
+    def path_obj(self, value):
+        if value is None:
+            raise Exception('setting value must not be None in path_obj property.')
+        self.path = value.as_posix()
 
     @staticmethod
     def find_root():

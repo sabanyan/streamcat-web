@@ -213,7 +213,13 @@ def execute_flow_by_add_inputs(request):
         if request.form.get(port['name']) is not None:
             # フレームを置き換える
             frame_uuid = request.form.get(port['name'])
-            inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+            frame = FrameModel.find_by_uuid(frame_uuid)
+            if frame is None:
+                # ライブラリにフレームが無い場合は従来のフォルダ内を探す
+                inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+            else:
+                # ライブラリにフレームが存在する場合はライブラリから取得する
+                inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name))
             continue
 
         # 新たにkskpにアップロードする場合
@@ -221,8 +227,13 @@ def execute_flow_by_add_inputs(request):
         if file is not None:
             # ファイルアップロードして、フレームを置き換える
             frame_uuid = upload_frame(file, '')['uuid']
-            inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
-
+            frame = FrameModel.find_by_uuid(frame_uuid)
+            if frame is None:
+                # ライブラリにフレームが無い場合は従来のフォルダ内を探す
+                inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
+            else:
+                # ライブラリにフレームが存在する場合はライブラリから取得する
+                inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name))
             # 使うかわからないけど、uploadしたファイルを覚えておく
             upload_file_list.append(frame_uuid)
             continue
@@ -492,16 +503,15 @@ def fetch_frame(frame_uuid):
     no_contents = True if request.args.get('no_contents') else False
 
     frame = FrameModel.find_by_uuid(frame_uuid)
-    file_path = frame.path if frame is not None else None
 
-    if file_path is None:
+    if frame is None:
         # ライブラリにフレームが無い場合は従来のフォルダ内を探す
         file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
     else:
         # ライブラリにフレームが存在する場合はライブラリから取得する
         limit = 999 if limit is None else limit
         no_contents = request.args.get('no_contents') is not None
-        file_path = Path(file_path)
+        file_path = frame.path_obj
 
     result = csv_to_frame(file_path, no_contents=no_contents, offset=offset, limit=limit)
 
@@ -1015,23 +1025,28 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
 
 
     # フローの実行結果を格納するディレクトリパスを取得する
-    frame_folder_path = get_frame_dir_path(session['user_id']).path
+    frame_folder_path_obj = get_frame_dir_path(session['user_id']).path_obj
 
     @make_unfinished_history(now, session)
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
+
+        import pprint
+        pprint.pprint(')))')
+        pprint.pprint(args)
+
         from . import engine as e
         # data_path = (DATAFRAME_DIR_PATH / 'data').as_posix()
         with open(FLOWS_DIR_PATH.joinpath(f'{flow_uuid}.json'), 'r') as f:
-            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=frame_folder_path, flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs)
+            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=frame_folder_path_obj.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs)
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     # 出力されたデータフレームをライブラリに登録する
     for key, value in result['outputs'].items():
         label = flow_label + '_' + nodes_dict.get(key).get('label')
-        file_path = os.path.join(frame_folder_path, value.uuid + '.csv')
-        if os.path.isfile(file_path):
+        file_path_obj = Path.joinpath(frame_folder_path_obj, value.uuid + '.csv')
+        if Path(file_path_obj).is_file():
             new_frame = FrameModel(FRAME_FOLDER_UUID,
                                    label,
                                    None,
@@ -1039,7 +1054,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
                                    modifier=session['user_id'])
             # フレームのuuidはエンジン内で付番されたUUIDとする
             new_frame.uuid = value.uuid
-            new_frame.register(file_path)
+            new_frame.register(file_path_obj.as_posix())
 
     # 結果の処理
     if no_contents:
@@ -1168,14 +1183,13 @@ def visualizer():
 
     frame_uuid = request.json.get('inputs')['i']
     frame = FrameModel.find_by_uuid(frame_uuid)
-    file_path = frame.path if frame is not None else None
     
-    if file_path is None:
+    if frame is None:
         # ライブラリにフレームが無い場合は従来のフォルダ内を探す
         new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH, request.json.get('inputs')['i'] + '.csv'))
     else:
         # ライブラリにフレームが存在する場合はライブラリから取得する
-        new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / Path(os.path.dirname(file_path)), os.path.basename(file_path)))
+        new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name))
 
 
     command = internal_commands.get(request.args.get('from'))
@@ -1196,10 +1210,10 @@ def visualizer():
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
 
 def get_frame_dir_path(user_id):
-    try:
-        # フレーム格納フォルダのUUIDは決め打ちである
+    # フレーム格納フォルダのUUIDは決め打ちである
+    if Folder.exists(FRAME_FOLDER_UUID):
         folder = Folder.find_by_uuid(FRAME_FOLDER_UUID)
-    except Exception as e:
+    else:
         # フレーム格納フォルダが無い場合は作成する
         root = get_library(user_id)
         folder = Folder(root.uuid,
