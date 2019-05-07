@@ -13,10 +13,6 @@ def parse(flow_uuid, inputs={}, args={}):
     global flows_cache
     flow_obj_cache = {}
     flows_cache = {}
-
-    import pprint
-    pprint.pprint(args)
-
     return parse_job(load_flow(flow_uuid), flow_uuid, args, {}, {}, inputs)
 
 def load_flow(flow_uuid):
@@ -293,8 +289,6 @@ class Job:
 
     # @profile
     def execute(self, step_paths=None):
-        import pprint
-        pprint.pprint(self.step.args)
         self.replace_inputs()
 
         s = self.step
@@ -503,13 +497,8 @@ class Job:
         res = v
         if isinstance(v, str):
             r = re.search(r'@\[(\S*?)\]', v)
-            import pprint
             if r is not None:
                 for g in r.groups():
-                    pprint.pprint('>>>')
-                    pprint.pprint(g)
-                    pprint.pprint(args)
-                    pprint.pprint(v)
                     res = v.replace(f'@[{g}]', args[g])
         return res
 

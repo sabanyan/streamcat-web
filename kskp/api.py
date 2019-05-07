@@ -1030,21 +1030,20 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
     @make_unfinished_history(now, session)
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
-
-        import pprint
-        pprint.pprint(')))')
-        pprint.pprint(args)
-
         from . import engine as e
         # data_path = (DATAFRAME_DIR_PATH / 'data').as_posix()
         with open(FLOWS_DIR_PATH.joinpath(f'{flow_uuid}.json'), 'r') as f:
-            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=frame_folder_path_obj.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs)
+            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=frame_folder_path_obj.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
     # 出力されたデータフレームをライブラリに登録する
     for key, value in result['outputs'].items():
-        label = flow_label + '_' + nodes_dict.get(key).get('label')
+        if nodes_dict.get(key).get('label') is None:
+            # データフレームにlabel属性が定義されていない場合に備える
+            label = flow_label
+        else:
+            label = flow_label + '_' + nodes_dict.get(key).get('label')
         file_path_obj = Path.joinpath(frame_folder_path_obj, value.uuid + '.csv')
         if Path(file_path_obj).is_file():
             new_frame = FrameModel(FRAME_FOLDER_UUID,
