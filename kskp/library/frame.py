@@ -65,7 +65,7 @@ class Frame(Datum):
         finally:
             db.session.commit()
 
-    def register(self, file_path):
+    def regist(self, file_path):
         """
         指定されたパスのファイルをFrameとして登録する
         """

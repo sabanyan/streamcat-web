@@ -777,12 +777,19 @@ def delete_cache():
             j['nodes'][i]['cacheCreatedAt'] = None
 
             # キャッシュを削除する（増え続けると困るので）
-            frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
-            if frame_path.exists():
-                frame_path.unlink()
-            sjis_path = DATAFRAME_DIR_PATH / (frame_uuid + '_sjis.csv')
-            if sjis_path.exists():
-                sjis_path.unlink()
+            # frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
+            # if frame_path.exists():
+            #     frame_path.unlink()
+            # sjis_path = DATAFRAME_DIR_PATH / (frame_uuid + '_sjis.csv')
+            # if sjis_path.exists():
+            #     sjis_path.unlink()
+
+            frame = FrameModel.find_by_uuid(frame_uuid)
+            if frame is not None:
+                sjis_path = frame.path_obj.parent / (frame_uuid + '_sjis.csv')
+                if sjis_path.exists():
+                    sjis_path.unlink()
+                frame.delete()
 
     update_flow_by_uuid(p.stem, j)
 
@@ -1037,6 +1044,31 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
+
+    import pprint
+    pprint.pprint(result) 
+
+    def regist_file_to_library(uuid, label):
+        """
+        execute_flow_by_uuid()の結果ファイルをライブラリに登録する
+        """
+        file_path_obj = Path.joinpath(frame_folder_path_obj, uuid + '.csv')
+        if Path(file_path_obj).is_file():
+            # 既に登録済みのuuidであれば登録処理をしない
+            # (lastsノードがキャッシュを出力する場合は、result['outputs]とresult['caches']の両方に同じファイル名が格納される)
+            frame = FrameModel.find_by_uuid(uuid)
+            if frame is not None:
+                return
+                
+            new_frame = FrameModel(FRAME_FOLDER_UUID,
+                                   label,
+                                   None,
+                                   creator=session['user_id'],
+                                   modifier=session['user_id'])
+            # フレームのuuidはエンジン内で付番されたUUIDとする
+            new_frame.uuid = uuid
+            new_frame.regist(file_path_obj.as_posix())
+
     # 出力されたデータフレームをライブラリに登録する
     for key, value in result['outputs'].items():
         if nodes_dict.get(key).get('label') is None:
@@ -1044,16 +1076,16 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             label = flow_label
         else:
             label = flow_label + '_' + nodes_dict.get(key).get('label')
-        file_path_obj = Path.joinpath(frame_folder_path_obj, value.uuid + '.csv')
-        if Path(file_path_obj).is_file():
-            new_frame = FrameModel(FRAME_FOLDER_UUID,
-                                   label,
-                                   None,
-                                   creator=session['user_id'],
-                                   modifier=session['user_id'])
-            # フレームのuuidはエンジン内で付番されたUUIDとする
-            new_frame.uuid = value.uuid
-            new_frame.register(file_path_obj.as_posix())
+        regist_file_to_library(value.uuid, label)
+
+    # 出力されたキャッシュファイルをライブラリに登録する
+    for key, uuid in result['caches'].items():
+        if key is None or key.split('.')[1] is None:
+            label = flow_label + '_cache'
+        else:
+            label = flow_label + '_' + key.split('.')[1] + '_cache'
+        regist_file_to_library(uuid, label)
+
 
     # 結果の処理
     if no_contents:
