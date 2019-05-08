@@ -14,6 +14,10 @@ lock = Lock()
 # app.config['DATABASE'] = app.root_path + '/data/kskp.db'
 app.config.from_pyfile(app.root_path + '/settings.cfg')
 app.config['FLOW_PATH'] = app.root_path + '/data/flows'
+FRAME_FOLDER_UUID = 'fffffd73-75d7-440f-b459-b49b3449d655'
+FRAME_FOLDER_LABEL = 'フロー実行結果'
+CACHE_FOLDER_UUID = 'ccd66c48-f69a-4a7d-8855-9faec4eafccf'
+CACHE_FOLDER_LABEL = 'フロー実行キャッシュ'
 
 def create_user(email, password, name, creator):
     """
@@ -520,6 +524,37 @@ def make_flow_path(file_name):
     """
     return Path(app.config['FLOW_PATH']) / Path('%s.json' % file_name)
 
+def get_frame_dir_path(user_id):
+    # フレーム格納フォルダを取得する
+    return _get_or_make_dir_path(FRAME_FOLDER_UUID, FRAME_FOLDER_LABEL, user_id)
+
+def get_cache_dir_path(user_id):
+    # キャッシュ格納フォルダを取得する
+    return _get_or_make_dir_path(CACHE_FOLDER_UUID, CACHE_FOLDER_LABEL, user_id)
+
+def _get_or_make_dir_path(uuid, label, user_id):
+    from .library import Folder
+    from .lib import get_library
+    # 特定用途のフォルダのUUIDは決め打ちである
+    if Folder.exists(uuid):
+        folder = Folder.find_by_uuid(uuid)
+    else:
+        # フォルダが無い場合は作成する
+        root = get_library(user_id)
+        folder = Folder(root.uuid,
+                        label,
+                        user_id,
+                        user_id)
+        # Folderのコンストラクタで付番したUUIDを捨てて、特定用途のフォルダのUUIDを格納する
+        folder.uuid = uuid
+        folder.save()
+    return folder
+
+def get_all_frame_uuid_in_frame(flow_uuid):
+    """
+    指定するフローのJSONファイルにおいて、フレームノードで参照するフレームUUIDを全て取得する
+    """
+    return [node['uuid'] for id, node in get_flow_nodes_by_uuid(flow_uuid).items() if node['type'] == 'frame']
 
 def get_project_id_by_uuid(project_uuid):
     """
