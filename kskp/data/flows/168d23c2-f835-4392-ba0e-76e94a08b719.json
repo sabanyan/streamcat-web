@@ -1,0 +1,165 @@
+{
+  "projectId": 1,
+  "label": "new_flow2",
+  "ports": [
+    [],
+    []
+  ],
+  "params": [],
+  "description": "",
+  "creator": "開発用",
+  "createdAt": "2019-04-25 17:13:04",
+  "nodes": [
+    {
+      "position": {
+        "x": 166,
+        "y": 119
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d",
+      "type": "frame",
+      "label": "test_frame.csv",
+      "uuid": "1ac6c925-391c-40cf-97fb-54ce59a1a151",
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 283
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d1",
+      "type": "frame",
+      "label": "d1",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 99,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c1",
+      "type": "command",
+      "label": "c1",
+      "srcs": {
+        "i": "d"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "diag": true
+      },
+      "commandId": "mchkcsv"
+    },
+    {
+      "position": {
+        "x": 233,
+        "y": 283
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "label": "d2",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 233,
+        "y": 201
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "c2",
+      "srcs": {
+        "i": "d"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "f": "amount"
+      },
+      "commandId": "mcut"
+    },
+    {
+      "position": {
+        "x": 233,
+        "y": 447
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d3",
+      "type": "frame",
+      "label": "d3",
+      "uuid": null,
+      "makeCache": false,
+      "cacheCreatedAt": "",
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 233,
+        "y": 365
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "c3",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d3"
+      },
+      "args": {
+        "f": "amount"
+      },
+      "commandId": "mcut"
+    }
+  ]
+}
