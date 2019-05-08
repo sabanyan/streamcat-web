@@ -9,9 +9,10 @@ from pathlib import Path
 from werkzeug.datastructures import Headers
 
 from kskp import app
+from .test_case_base import TestCaseBase
 import kskp.model as model
 
-class ApiTestCase(unittest.TestCase):
+class ApiTestCase(TestCaseBase):
     def setUp(self):
         self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
         app.testing = True
@@ -19,21 +20,11 @@ class ApiTestCase(unittest.TestCase):
         with app.app_context():
             model.init_db()
 
-        from kskp.library import Frame as FrameModel
-        from kskp.api import get_frame_dir_path
-
-        # テストで用いるテスト用フレームが残っていれば削除する
+        # フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
         input_frame_uuid = '86365ce9-9b01-4ec3-b672-7739e8f1e507'
-        # ↑ フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
-        frame = FrameModel.find_by_uuid(input_frame_uuid)
-        if frame is None:
-            # テストで用いるテスト用フレームをライブラリに登録する
-            frame_folder = get_frame_dir_path(1)
-            new_frame = FrameModel(frame_folder.uuid, 'ApiTestCase用フレーム', None)
-            input_frame_path = os.path.join('kskp/data/frames', input_frame_uuid + '.csv')
-            new_frame.uuid = input_frame_uuid
-            new_frame.register(input_frame_path)
-
+        input_frame_path = os.path.join('kskp/data/frames', input_frame_uuid + '.csv')
+        # テスト用フレームがをライブラリに登録する
+        self.save_frame_to_library(input_frame_uuid, input_frame_path)
 
     def tearDown(self):
         os.close(self.db_fd)

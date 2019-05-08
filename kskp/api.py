@@ -24,9 +24,13 @@ from .model import (
     update_user_by_id,
     write_data_to_json,
     make_flow_path,
-    copy_flow_by_uuid
+    copy_flow_by_uuid,
+    get_all_frame_uuid_in_frame,
+    get_frame_dir_path,
+    get_cache_dir_path,
+    FRAME_FOLDER_UUID,
+    CACHE_FOLDER_UUID
 )
-from .lib import get_library
 # data3.pyのFrameクラスと名称を被らないようにAS別名を付ける
 # (将来的にdata3.pyのFrameと統合したい)
 from .library import Frame as FrameModel
@@ -43,10 +47,6 @@ api = Blueprint('api', __name__)
 DATAFRAME_DIR_PATH = api.root_path / Path('data/frames')
 JOBS_DIR_PATH = api.root_path / Path('data/jobs')
 FLOWS_DIR_PATH = api.root_path / Path('data/flows')
-FRAME_FOLDER_UUID = 'fffffd73-75d7-440f-b459-b49b3449d655'
-FRAME_FOLDER_LABEL = 'フロー実行結果'
-CACHE_FOLDER_UUID = 'ccd66c48-f69a-4a7d-8855-9faec4eafccf'
-CACHE_FOLDER_LABEL = 'フロー実行キャッシュ'
 @api.route('/projects', methods=['POST'])
 @login_required_api
 def new_project():
@@ -208,37 +208,35 @@ def execute_flow_by_add_inputs(request):
 
     upload_file_list = []
 
+    def get_frame_obj(frame_uuid):
+        """
+        指定したフレームからエンジンのFrameオブジェクトを作成して返す
+        """
+        # フレームを置き換える
+        frame = FrameModel.find_by_uuid(frame_uuid)
+        if frame is None:
+            # ライブラリにフレームが無い場合は従来のフォルダ内を探す
+            source = PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv')
+        else:
+            # ライブラリにフレームが存在する場合はライブラリから取得する
+            source = PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name)
+        return Frame(str(uuid.uuid4()), source)
+        
     for port in flow_json['ports'][0]:
-        frame_uuid = ''
-
         # frame（既にkskpに存在するデータソース）の場合
         if request.form.get(port['name']) is not None:
             # フレームを置き換える
             frame_uuid = request.form.get(port['name'])
-            frame = FrameModel.find_by_uuid(frame_uuid)
-            if frame is None:
-                # ライブラリにフレームが無い場合は従来のフォルダ内を探す
-                inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
-            else:
-                # ライブラリにフレームが存在する場合はライブラリから取得する
-                inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name))
-            continue
+            inputs[port['name']] = get_frame_obj(frame_uuid)
 
         # 新たにkskpにアップロードする場合
         file = request.files.get(port['name'])
         if file is not None:
             # ファイルアップロードして、フレームを置き換える
             frame_uuid = upload_frame(file, '')['uuid']
-            frame = FrameModel.find_by_uuid(frame_uuid)
-            if frame is None:
-                # ライブラリにフレームが無い場合は従来のフォルダ内を探す
-                inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
-            else:
-                # ライブラリにフレームが存在する場合はライブラリから取得する
-                inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name))
+            inputs[port['name']] = get_frame_obj(frame_uuid)
             # 使うかわからないけど、uploadしたファイルを覚えておく
             upload_file_list.append(frame_uuid)
-            continue
 
     # フローの実行
     result = execute_flow(flow_uuid, None, False, None, inputs, args, flow_label=flow_json['label'])
@@ -547,6 +545,17 @@ def delete_frame(frame_uuid):
     frame = FrameModel.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
+    
+    # 削除しようとするframeが、フローで使用されている場合は例外を送出する
+    for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        if not flow_path.suffix == '.json':
+            continue
+        flow_uuid = flow_path.stem
+        using_frame_uuids = get_all_frame_uuid_in_frame(flow_uuid)
+        if frame_uuid in using_frame_uuids:
+            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow_uuid)
+
+    # フレームを削除する
     frame.delete()
     return frame
 
@@ -1040,17 +1049,17 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
-    def regist_file_to_library(folder_uuid, uuid, label):
+    def register_file_to_library(folder_uuid, uuid, label):
         """
-        execute_flow_by_uuid()の結果ファイルをライブラリに登録する
+        execute_flow_by_uuid()が出力した結果ファイルとキャッシュファイルをライブラリに登録する
+        ファイル名に用いているUUIDをライブラリエントリにも付番し、ライブラリに登録する
         """
         file_path_obj = Path.joinpath(frame_folder_path_obj, uuid + '.csv')
         if Path(file_path_obj).is_file():
             # 既に登録済みのuuidであれば登録処理をしない
             # (lastsノードがキャッシュを出力する場合は、result['outputs]とresult['caches']の両方に同じファイル名が格納される)
-            frame = FrameModel.find_by_uuid(uuid)
-            if frame is not None:
-                return 
+            if FrameModel.exists(uuid):
+                return
             new_frame = FrameModel(folder_uuid,
                                    label,
                                    None,
@@ -1058,11 +1067,12 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
                                    modifier=session['user_id'])
             # フレームのuuidはエンジン内で付番されたUUIDとする
             new_frame.uuid = uuid
-            new_frame.regist(file_path_obj.as_posix())
+            new_frame.save_with_path(file_path_obj.as_posix())
 
-    def regist_sjis_file_to_library(folder_uuid, uuid, label):
+    def register_sjis_file_to_library(folder_uuid, uuid, label):
         """
-        execute_flow_by_uuid()の_sjisファイルをライブラリに登録する
+        execute_flow_by_uuid()が出力した_sjisファイルをライブラリに登録する
+        ファイル名にはUTF-8版と同じUUIDが_sjis版に使用されているため、ライブラリエントリには新たなUUIDを採番する
         """
         file_path_obj = Path.joinpath(frame_folder_path_obj, uuid + '_sjis.csv')
         if Path(file_path_obj).is_file():
@@ -1071,20 +1081,19 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
                                    None,
                                    creator=session['user_id'],
                                    modifier=session['user_id'])
-            new_frame.regist(file_path_obj.as_posix())
-
+            new_frame.save_with_path(file_path_obj.as_posix())
 
     # 出力されたデータフレームをライブラリに登録する
     for key, value in result['outputs'].items():
         if nodes_dict.get(key).get('label') is None:
             # データフレームにlabel属性が定義されていない場合に備える
-            label = flow_label
+            label = flow_label + '_' + nodes_dict.get(key).get('id')
         else:
             label = flow_label + '_' + nodes_dict.get(key).get('label')
-        regist_file_to_library(FRAME_FOLDER_UUID, value.uuid, label)
+        register_file_to_library(FRAME_FOLDER_UUID, value.uuid, label)
 
         # 出力された_sjisファイルをライブラリに登録する
-        regist_sjis_file_to_library(FRAME_FOLDER_UUID, value.uuid, label + '_sjis')
+        register_sjis_file_to_library(FRAME_FOLDER_UUID, value.uuid, label + '_sjis')
 
     # 出力されたキャッシュファイルをライブラリに登録する
     for key, uuid in result['caches'].items():
@@ -1092,11 +1101,10 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             label = flow_label + '_cache'
         else:
             label = flow_label + '_' + key.split('.')[1] + '_cache'
-        regist_file_to_library(CACHE_FOLDER_UUID, uuid, label)
+        register_file_to_library(CACHE_FOLDER_UUID, uuid, label)
 
         # 出力された_sjisファイルをライブラリに登録する
-        regist_sjis_file_to_library(CACHE_FOLDER_UUID, uuid, label + '_sjis')
-
+        register_sjis_file_to_library(CACHE_FOLDER_UUID, uuid, label + '_sjis')
 
     # 結果の処理
     if no_contents:
@@ -1228,11 +1236,12 @@ def visualizer():
     
     if frame is None:
         # ライブラリにフレームが無い場合は従来のフォルダ内を探す
-        new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH, request.json.get('inputs')['i'] + '.csv'))
+        source = PathFileSource('csv', DATAFRAME_DIR_PATH, request.json.get('inputs')['i'] + '.csv')
     else:
         # ライブラリにフレームが存在する場合はライブラリから取得する
-        new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name))
+        source = PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name)
 
+    new_inputs['i'] = Frame(str(uuid.uuid4()), source)
 
     command = internal_commands.get(request.args.get('from'))
     # 残りの２つの引数はsrcsとdsts
@@ -1251,26 +1260,3 @@ def visualizer():
     # bokehのコマンド
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
 
-def get_frame_dir_path(user_id):
-    # フレーム格納フォルダを取得する
-    return get_or_make_dir_path(FRAME_FOLDER_UUID, FRAME_FOLDER_LABEL, user_id)
-
-def get_cache_dir_path(user_id):
-    # キャッシュ格納フォルダを取得する
-    return get_or_make_dir_path(CACHE_FOLDER_UUID, CACHE_FOLDER_LABEL, user_id)
-
-def get_or_make_dir_path(uuid, label, user_id):
-    # 特定用途のフォルダのUUIDは決め打ちである
-    if Folder.exists(uuid):
-        folder = Folder.find_by_uuid(uuid)
-    else:
-        # フォルダが無い場合は作成する
-        root = get_library(user_id)
-        folder = Folder(root.uuid,
-                        label,
-                        user_id,
-                        user_id)
-        # Folderのコンストラクタで付番したUUIDを捨てて、特定用途のフォルダのUUIDを格納する
-        folder.uuid = uuid
-        folder.save()
-    return folder

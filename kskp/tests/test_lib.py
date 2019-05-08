@@ -547,6 +547,29 @@ class LibraryTestCase(unittest.TestCase):
         self.assertEqual(result['success'], True)
 
 
+    def test_delete_using_frame(self):
+        from ..library import Frame
+        input_frame_uuid = '1ac6c925-391c-40cf-97fb-54ce59a1a151'
+
+
+        if not Frame.exists(input_frame_uuid):
+            # test_frame.csvをライブラリに登録する
+            root = Frame.find_root()
+
+            input_frame = Frame(root.uuid, 'test_frame.csv', None)
+            input_frame.uuid = input_frame_uuid
+            input_frame.path = 'kskp/data/library/test_frame.csv'
+            input_frame.save()
+
+        # フレームを削除する(DELETE /frames)
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = '1'
+            response = client.delete('/api/v0/frames/' + input_frame_uuid)
+            result = json.loads(response.get_data())
+
+        self.assertFalse(result['success'])
+
     # def test_create_get_document(self):
     #     # フォルダを作成する(POST /folders)
     #     with app.test_client() as client:
@@ -783,7 +806,7 @@ class ExecuteTestCase(unittest.TestCase):
             root = FrameModel.find_root()
             input_frame = FrameModel(root.uuid, 'test_frame.csv', None, 1)
             input_frame.uuid = input_frame_uuid
-            input_frame.regist(os.path.join(app.root_path + '/data/library'))
+            input_frame.save_with_path(os.path.join(app.root_path + '/data/library'))
 
         # 実行
         with app.test_client() as client:

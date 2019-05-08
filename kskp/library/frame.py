@@ -74,7 +74,7 @@ class Frame(Datum):
         finally:
             db.session.commit()
 
-    def regist(self, file_path):
+    def save_with_path(self, file_path):
         """
         指定されたパスのファイルをFrameとして登録する
         """
@@ -127,7 +127,7 @@ class Frame(Datum):
     
     def delete(self):
         """
-        Folderを削除する
+        Frameを削除する
         """
         try:
             # フレームレコードを削除する
@@ -135,6 +135,21 @@ class Frame(Datum):
                                    .filter(Datum.type==Datum.FRAME_TYPE).delete()
             # ファイルを削除する
             self._remove_file() 
+        except Exception as e:
+            db.session.rollback()
+            raise e
+        finally:
+            db.session.commit()
+
+    def delete_without_file(self):
+        """
+        Frameを削除するが、対応するファイルは削除しない
+        (テストにおいてテスト用ファイルを削除したくない場合に使用する)
+        """
+        try:
+            # フレームレコードを削除する
+            db.session.query(Datum).filter(Datum.id==self.id)\
+                                   .filter(Datum.type==Datum.FRAME_TYPE).delete()
         except Exception as e:
             db.session.rollback()
             raise e
