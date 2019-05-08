@@ -767,8 +767,6 @@ def delete_cache():
     flow_uuid = ofs[0]
     datum_id = ofs[1]
 
-    frame_name = DATAFRAME_DIR_PATH / ('caches_' + flow_uuid + '_' + datum_id + '.csv')
-
     p = FLOWS_DIR_PATH.joinpath(flow_uuid + '.json')
     j = json.loads(p.read_text(), encoding='utf-8')
 
@@ -779,13 +777,6 @@ def delete_cache():
             j['nodes'][i]['cacheCreatedAt'] = None
 
             # キャッシュを削除する（増え続けると困るので）
-            # frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
-            # if frame_path.exists():
-            #     frame_path.unlink()
-            # sjis_path = DATAFRAME_DIR_PATH / (frame_uuid + '_sjis.csv')
-            # if sjis_path.exists():
-            #     sjis_path.unlink()
-
             frame = FrameModel.find_by_uuid(frame_uuid)
             if frame is not None:
                 sjis_path = frame.path_obj.parent / (frame_uuid + '_sjis.csv')
@@ -1035,7 +1026,6 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
 
     # フローの実行結果を格納するディレクトリパスを取得する
     frame_folder_path_obj = get_frame_dir_path(session['user_id']).path_obj
-    cache_folder_path_obj = get_cache_dir_path(session['user_id']).path_obj
 
     @make_unfinished_history(now, session)
     @make_finished_history(now)
