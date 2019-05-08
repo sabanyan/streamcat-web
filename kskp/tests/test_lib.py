@@ -774,7 +774,16 @@ class ExecuteTestCase(unittest.TestCase):
         """
         フローの実行結果がライブラリに登録されることを検証する
         """
+        input_frame_uuid = '1ac6c925-391c-40cf-97fb-54ce59a1a151'
         flow_uuid = '168d23c2-f835-4392-ba0e-76e94a08b719'
+
+        # 入力フレームをライブラリに登録する
+        from ..library import Frame as FrameModel
+        if not FrameModel.exists(input_frame_uuid):
+            root = FrameModel.find_root()
+            input_frame = FrameModel(root.uuid, 'test_frame.csv', None, 1)
+            input_frame.uuid = input_frame_uuid
+            input_frame.regist(os.path.join(app.root_path + '/data/library'))
 
         # 実行
         with app.test_client() as client:
@@ -787,7 +796,6 @@ class ExecuteTestCase(unittest.TestCase):
         self.assertEqual(result['success'], True)
 
         # 出力結果がライブラリに登録されることを検証する
-        from ..library import Frame as FrameModel
         frame_uuid_d1 = result['name'][0]['uuid']
         frame_uuid_d3 = result['name'][1]['uuid']
         self.assertTrue(FrameModel.exists(frame_uuid_d1))
