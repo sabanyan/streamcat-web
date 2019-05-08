@@ -55,14 +55,16 @@ class CacheTestCase(TestCaseBase):
     """
     キャッシュに関するテスト
     """
+
+    INPUT_FRAME_UUID = '4C545611-4569-4CD5-800E-55BE69CF8BA8'
+
     def setUp(self):
         os.environ['KENG_FLOWS_PATH'] = 'kskp/data/flows'
         os.environ['KENG_FRAMES_PATH'] = 'kskp/data/frames'
 
         # テスト用フレームをライブラリに登録する
-        input_frame_uuid = '4C545611-4569-4CD5-800E-55BE69CF8BA8'
-        input_frame_path = os.path.join(os.environ['KENG_FRAMES_PATH'], input_frame_uuid + '.csv')
-        self.save_frame_to_library(input_frame_uuid, input_frame_path)
+        input_frame_path = os.path.join(os.environ['KENG_FRAMES_PATH'], self.INPUT_FRAME_UUID + '.csv')
+        self.save_frame_to_library(self.INPUT_FRAME_UUID, input_frame_path)
 
         # cacheを書き換え専用のフローとそのパス
         self.original_flow_uuid = '27C35909-504E-43F2-A115-DADB6F57D38C'
@@ -70,6 +72,10 @@ class CacheTestCase(TestCaseBase):
 
         self.new_flow_path = Path(os.environ['KENG_FLOWS_PATH']) / (self.new_flow_uuid + '.json')
         self.original_flow_path = Path(os.environ['KENG_FLOWS_PATH']) / (self.original_flow_uuid  + '.json')
+
+    def tearDown(self):
+        # テスト用フレームをライブラリから削除する
+        self.remove_frame_from_library(self.INPUT_FRAME_UUID)
 
     def execute(self, flow_uuid, step_paths=None):
         job = parse(flow_uuid)
