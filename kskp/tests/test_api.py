@@ -1295,7 +1295,7 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        self._remove_job_file_and_frame(flow_uuid)
+        self.remove_job_file_and_frame(flow_uuid)
 
     def test_execute_subflow_by_multi_csv_file_with_args(self):
         """
@@ -1351,7 +1351,7 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        self._remove_job_file_and_frame(flow_uuid)
+        self.remove_job_file_and_frame(flow_uuid)
 
     def test_execute_subflow_by_multi_csv_file_with_args2(self):
         """
@@ -1414,7 +1414,7 @@ class ApiTestCase(unittest.TestCase):
                 frame.delete()
 
         # このテストで作成したjobsだけ削除する
-        self._remove_job_file_and_frame(flow_uuid)
+        self.remove_job_file_and_frame(flow_uuid)
 
     @unittest.skip
     def test_visualizers_csvtohtmltable(self):
@@ -1728,7 +1728,7 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        self._remove_job_file_and_frame(flow_uuid)
+        self.remove_job_file_and_frame(flow_uuid)
 
     def test_execute_flow_limit(self):
         '''
@@ -1756,9 +1756,9 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        self._remove_job_file_and_frame(flow_uuid)
+        self.remove_job_file_and_frame(flow_uuid)
 
-    def _remove_job_file_and_frame(self, flow_uuid):
+    def remove_job_file_and_frame(self, flow_uuid):
         """
         指定したflow_uuidのフローで作成されたjobsファイルとFrameを削除する
         """
