@@ -35,6 +35,15 @@ class Frame(Datum):
         return Frame.convert_to_frame(datum)
 
     @staticmethod
+    def exists(uuid):
+        """
+        指定されたuuidを持つFrameが存在する場合はTrueを返す
+        """
+        result = db.session.query(Datum).filter(Datum.uuid==uuid)\
+                                        .filter(Datum.type==Datum.FRAME_TYPE).count()
+        return result > 0
+
+    @staticmethod
     def convert_to_frame(datum):
         parent_uuid = Datum.get_uuid_by_id(datum.parent_id)
         label = json.loads(datum.data, encoding='utf-8')['label']

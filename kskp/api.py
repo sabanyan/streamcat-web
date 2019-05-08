@@ -45,6 +45,8 @@ JOBS_DIR_PATH = api.root_path / Path('data/jobs')
 FLOWS_DIR_PATH = api.root_path / Path('data/flows')
 FRAME_FOLDER_UUID = 'fffffd73-75d7-440f-b459-b49b3449d655'
 FRAME_FOLDER_LABEL = 'フロー実行結果'
+CACHE_FOLDER_UUID = 'ccd66c48-f69a-4a7d-8855-9faec4eafccf'
+CACHE_FOLDER_LABEL = 'フロー実行キャッシュ'
 @api.route('/projects', methods=['POST'])
 @login_required_api
 def new_project():
@@ -1033,6 +1035,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
 
     # フローの実行結果を格納するディレクトリパスを取得する
     frame_folder_path_obj = get_frame_dir_path(session['user_id']).path_obj
+    cache_folder_path_obj = get_cache_dir_path(session['user_id']).path_obj
 
     @make_unfinished_history(now, session)
     @make_finished_history(now)
@@ -1044,11 +1047,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
 
-
-    import pprint
-    pprint.pprint(result) 
-
-    def regist_file_to_library(uuid, label):
+    def regist_file_to_library(folder_uuid, uuid, label):
         """
         execute_flow_by_uuid()の結果ファイルをライブラリに登録する
         """
@@ -1059,7 +1058,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             frame = FrameModel.find_by_uuid(uuid)
             if frame is not None:
                 return 
-            new_frame = FrameModel(FRAME_FOLDER_UUID,
+            new_frame = FrameModel(folder_uuid,
                                    label,
                                    None,
                                    creator=session['user_id'],
@@ -1068,13 +1067,13 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             new_frame.uuid = uuid
             new_frame.regist(file_path_obj.as_posix())
 
-    def regist_sjis_file_to_library(uuid, label):
+    def regist_sjis_file_to_library(folder_uuid, uuid, label):
         """
         execute_flow_by_uuid()の_sjisファイルをライブラリに登録する
         """
         file_path_obj = Path.joinpath(frame_folder_path_obj, uuid + '_sjis.csv')
         if Path(file_path_obj).is_file():
-            new_frame = FrameModel(FRAME_FOLDER_UUID,
+            new_frame = FrameModel(folder_uuid,
                                    label,
                                    None,
                                    creator=session['user_id'],
@@ -1089,10 +1088,10 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             label = flow_label
         else:
             label = flow_label + '_' + nodes_dict.get(key).get('label')
-        regist_file_to_library(value.uuid, label)
+        regist_file_to_library(FRAME_FOLDER_UUID, value.uuid, label)
 
         # 出力された_sjisファイルをライブラリに登録する
-        regist_sjis_file_to_library(value.uuid, label + '_sjis')
+        regist_sjis_file_to_library(FRAME_FOLDER_UUID, value.uuid, label + '_sjis')
 
     # 出力されたキャッシュファイルをライブラリに登録する
     for key, uuid in result['caches'].items():
@@ -1100,10 +1099,10 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
             label = flow_label + '_cache'
         else:
             label = flow_label + '_' + key.split('.')[1] + '_cache'
-        regist_file_to_library(uuid, label)
+        regist_file_to_library(CACHE_FOLDER_UUID, uuid, label)
 
         # 出力された_sjisファイルをライブラリに登録する
-        regist_sjis_file_to_library(uuid, label + '_sjis')
+        regist_sjis_file_to_library(CACHE_FOLDER_UUID, uuid, label + '_sjis')
 
 
     # 結果の処理
@@ -1260,17 +1259,25 @@ def visualizer():
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
 
 def get_frame_dir_path(user_id):
-    # フレーム格納フォルダのUUIDは決め打ちである
-    if Folder.exists(FRAME_FOLDER_UUID):
-        folder = Folder.find_by_uuid(FRAME_FOLDER_UUID)
+    # フレーム格納フォルダを取得する
+    return get_or_make_dir_path(FRAME_FOLDER_UUID, FRAME_FOLDER_LABEL, user_id)
+
+def get_cache_dir_path(user_id):
+    # キャッシュ格納フォルダを取得する
+    return get_or_make_dir_path(CACHE_FOLDER_UUID, CACHE_FOLDER_LABEL, user_id)
+
+def get_or_make_dir_path(uuid, label, user_id):
+    # 特定用途のフォルダのUUIDは決め打ちである
+    if Folder.exists(uuid):
+        folder = Folder.find_by_uuid(uuid)
     else:
-        # フレーム格納フォルダが無い場合は作成する
+        # フォルダが無い場合は作成する
         root = get_library(user_id)
         folder = Folder(root.uuid,
-                        FRAME_FOLDER_LABEL,
+                        label,
                         user_id,
                         user_id)
-        # Folderのコンストラクタで付番したUUIDを捨てて、フレーム格納フォルダのUUIDを格納する
-        folder.uuid = FRAME_FOLDER_UUID
+        # Folderのコンストラクタで付番したUUIDを捨てて、特定用途のフォルダのUUIDを格納する
+        folder.uuid = uuid
         folder.save()
     return folder

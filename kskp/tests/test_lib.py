@@ -769,5 +769,35 @@ class LibraryTestCase(unittest.TestCase):
     #     # Delete /folders apiが正常終了することを検証する
     #     self.assertEqual(result['success'], True)
 
+class ExecuteTestCase(unittest.TestCase):
+    def test_execute_flow(self):
+        """
+        フローの実行結果がライブラリに登録されることを検証する
+        """
+        flow_uuid = '168d23c2-f835-4392-ba0e-76e94a08b719'
+
+        # 実行
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 1
+            response = client.get('/api/v0/frames?from=%s' % flow_uuid)
+            result = json.loads(response.get_data())
+
+        # フローの実行が正常終了することを検証する
+        self.assertEqual(result['success'], True)
+
+        # 出力結果がライブラリに登録されることを検証する
+        from ..library import Frame as FrameModel
+        frame_uuid_d1 = result['name'][0]['uuid']
+        frame_uuid_d3 = result['name'][1]['uuid']
+        self.assertTrue(FrameModel.exists(frame_uuid_d1))
+        self.assertTrue(FrameModel.exists(frame_uuid_d3))
+        
+        # 削除
+        # このテストで作成したjobsだけ削除する
+        from .test_api import ApiTestCase
+        apiTestCase = ApiTestCase("test_new_project")
+        apiTestCase.remove_job_file_and_frame(flow_uuid)
+
 if __name__ == '__main__':
     unittest.main()
