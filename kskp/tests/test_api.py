@@ -13,6 +13,10 @@ from .test_case_base import TestCaseBase
 import kskp.model as model
 
 class ApiTestCase(TestCaseBase):
+
+    # フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
+    INPUT_FRAME_UUID = '86365ce9-9b01-4ec3-b672-7739e8f1e507'
+
     def setUp(self):
         self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
         app.testing = True
@@ -20,13 +24,14 @@ class ApiTestCase(TestCaseBase):
         with app.app_context():
             model.init_db()
 
-        # フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
-        input_frame_uuid = '86365ce9-9b01-4ec3-b672-7739e8f1e507'
-        input_frame_path = os.path.join('kskp/data/frames', input_frame_uuid + '.csv')
-        # テスト用フレームがをライブラリに登録する
-        self.save_frame_to_library(input_frame_uuid, input_frame_path)
+        # テスト用フレームをライブラリに登録する
+        input_frame_path = os.path.join('kskp/data/frames', self.INPUT_FRAME_UUID + '.csv')
+        self.save_frame_to_library(self.INPUT_FRAME_UUID, input_frame_path)
 
     def tearDown(self):
+        # テスト用フレームをライブラリから削除する
+        self.remove_frame_from_library(self.INPUT_FRAME_UUID)
+
         os.close(self.db_fd)
         os.unlink(app.config['DATABASE'])
 

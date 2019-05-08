@@ -4,6 +4,9 @@ import unittest
 from ..library import Frame
 
 class TestCaseBase(unittest.TestCase):
+    """
+    各テストケースで使用する共通関数を定義する
+    """
 
     def save_frame_to_library(self, frame_uuid, frame_file_path):
         """
