@@ -765,7 +765,7 @@ def delete_cache():
     # パース
     ofs = request.args['of'].split('.')
     flow_uuid = ofs[0]
-    datum_id = ofs[1]z
+    datum_id = ofs[1]
 
     p = FLOWS_DIR_PATH.joinpath(flow_uuid + '.json')
     j = json.loads(p.read_text(), encoding='utf-8')
@@ -1028,7 +1028,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
     frame_folder_path_obj = get_frame_dir_path(session['user_id']).path_obj
 
     # キャッシュフォルダを作成する
-    get_cache_dir_path(session['user_id']).path_obj
+    get_cache_dir_path(session['user_id'])
 
     @make_unfinished_history(now, session)
     @make_finished_history(now)
