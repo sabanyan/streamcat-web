@@ -27,14 +27,16 @@ from .model import (
     copy_flow_by_uuid,
     get_all_frame_uuid_in_frame,
     get_frame_dir_path,
-    get_cache_dir_path,
+    get_cache_dir_path
+)
+from .library import (
+    # data3.pyのFrameクラスと名称を被らないようにAS別名を付ける
+    # (将来的にdata3.pyのFrameと統合したい)
+    Frame as FrameModel,
+    Folder,
     FRAME_FOLDER_UUID,
     CACHE_FOLDER_UUID
 )
-# data3.pyのFrameクラスと名称を被らないようにAS別名を付ける
-# (将来的にdata3.pyのFrameと統合したい)
-from .library import Frame as FrameModel
-from .library import Folder
 from .utils.activity import (
     make_unfinished_history,
     make_finished_history
@@ -1067,7 +1069,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
                                    modifier=session['user_id'])
             # フレームのuuidはエンジン内で付番されたUUIDとする
             new_frame.uuid = uuid
-            new_frame.save_with_path(file_path_obj.as_posix())
+            new_frame.add_entry_from_path(file_path_obj.as_posix())
 
     def register_sjis_file_to_library(folder_uuid, uuid, label):
         """
@@ -1081,7 +1083,7 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=N
                                    None,
                                    creator=session['user_id'],
                                    modifier=session['user_id'])
-            new_frame.save_with_path(file_path_obj.as_posix())
+            new_frame.add_entry_from_path(file_path_obj.as_posix())
 
     # 出力されたデータフレームをライブラリに登録する
     for key, value in result['outputs'].items():

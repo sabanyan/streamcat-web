@@ -20,7 +20,7 @@ class TestCaseBase(unittest.TestCase):
             class_name = self.__class__.__name__
             new_frame = Frame(frame_folder.uuid, 'テスト用フレーム(%s)' % class_name, None)
             new_frame.uuid = frame_uuid
-            new_frame.save_with_path(frame_file_path)
+            new_frame.add_entry_from_path(frame_file_path)
 
     def remove_frame_from_library(self, frame_uuid):
         """
@@ -29,7 +29,7 @@ class TestCaseBase(unittest.TestCase):
         """
         frame = Frame.find_by_uuid(frame_uuid)
         if frame is not None:
-            frame.delete_without_file()
+            frame.remove_reference_only()
 
 
     # def get_uri(uri, user_id):

@@ -74,7 +74,7 @@ class Frame(Datum):
         finally:
             db.session.commit()
 
-    def save_with_path(self, file_path):
+    def add_entry_from_path(self, file_path):
         """
         指定されたパスのファイルをFrameとして登録する
         """
@@ -141,7 +141,7 @@ class Frame(Datum):
         finally:
             db.session.commit()
 
-    def delete_without_file(self):
+    def remove_reference_only(self):
         """
         Frameを削除するが、対応するファイルは削除しない
         (テストにおいてテスト用ファイルを削除したくない場合に使用する)

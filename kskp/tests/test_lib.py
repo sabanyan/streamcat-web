@@ -806,7 +806,7 @@ class ExecuteTestCase(unittest.TestCase):
             root = FrameModel.find_root()
             input_frame = FrameModel(root.uuid, 'test_frame.csv', None, 1)
             input_frame.uuid = input_frame_uuid
-            input_frame.save_with_path(os.path.join(app.root_path + '/data/library'))
+            input_frame.add_entry_from_path(os.path.join(app.root_path + '/data/library'))
 
         # 実行
         with app.test_client() as client:
