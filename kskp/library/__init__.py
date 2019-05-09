@@ -1,7 +1,6 @@
-from flask import Flask, session, jsonify
 import sqlalchemy
+from flask import Flask, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
-# from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID, JSONB, ENUM
 
 from .. import app
 
@@ -12,6 +11,18 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///data/kskp.db"
 # 起動時のWarningを抑制するため以下の設定値をTrueにする
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
+
+from .store import Store
+from .datum import Datum
+from .folder import Folder
+from .frame import Frame
+
+# from sqlalchemy.dialects.postgresql import TIMESTAMP, UUID, JSONB, ENUM
+
+FRAME_FOLDER_UUID = 'fffffd73-75d7-440f-b459-b49b3449d655'
+FRAME_FOLDER_LABEL = 'フロー実行結果'
+CACHE_FOLDER_UUID = 'ccd66c48-f69a-4a7d-8855-9faec4eafccf'
+CACHE_FOLDER_LABEL = 'フロー実行キャッシュ'
 
 # 最初にアクセスが発生した時にのみ実行される
 @app.before_first_request
