@@ -45,10 +45,7 @@ class Store(db.Model):
                                    Store.modified_at,
                                    Store.creator,
                                    Store.modifier).all()
-        ret = []
-        for result in results:
-            ret.append(Store(result.id, result.data, result.creator))
-        return ret
+        return [Store(result.id, result.data, result.creator) for result in results]
 
     @classmethod
     def find_by_id(cls, id):
@@ -59,9 +56,8 @@ class Store(db.Model):
                                   Store.creator,
                                   Store.modifier).filter(Store.id==id).one_or_none()
         if result is None:
-            return None
-        else:
-            return Store(result.id, result.data, result.creator)
+            raise Exception('No store is found by designated store id')
+        return Store(result.id, result.data, result.creator)
 
     def save(self):
         db.session.add(self)
