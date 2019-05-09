@@ -9,15 +9,19 @@ from flask import g
 from . import app
 from . import auth
 from threading import Lock
+
+from .library import (
+    FRAME_FOLDER_UUID,
+    FRAME_FOLDER_LABEL,
+    CACHE_FOLDER_UUID,
+    CACHE_FOLDER_LABEL
+)
+
 lock = Lock()
 
 # app.config['DATABASE'] = app.root_path + '/data/kskp.db'
 app.config.from_pyfile(app.root_path + '/settings.cfg')
 app.config['FLOW_PATH'] = app.root_path + '/data/flows'
-FRAME_FOLDER_UUID = 'fffffd73-75d7-440f-b459-b49b3449d655'
-FRAME_FOLDER_LABEL = 'フロー実行結果'
-CACHE_FOLDER_UUID = 'ccd66c48-f69a-4a7d-8855-9faec4eafccf'
-CACHE_FOLDER_LABEL = 'フロー実行キャッシュ'
 
 def create_user(email, password, name, creator):
     """
