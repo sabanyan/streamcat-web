@@ -113,7 +113,7 @@ class NysolPythonSource(Source):
 
             # 環境変数を設定する
             # os.environ['KG_TmpPath'] = '/home/kskp/kskp/data/tmp'
-            # # デフォルトの4倍で設定する
+            # デフォルトの4倍で設定する
             # os.environ['KG_MaxRecLen'] = '40960000'
             # os.environ['KG_iSize'] = '20480000'
             # os.environ['KG_iSize'] = '10240000'
@@ -130,9 +130,13 @@ class NysolPythonSource(Source):
                     messages = messages_mem.getvalue()
 
                     if '#ERROR#' in messages:
-                        content = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin][0]
-                        err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
-                        raise err
+                        contents = [lin for lin in messages.split('\n') if lin.startswith('#ERROR#') and 'kgshell' not in lin]
+                        if len(contents) > 0:
+                            content = contents[0]
+                            err = MCMDError([MCMDErrorInfo.parse_stderr(content)])
+                            raise err
+                        else:
+                            raise Exception(messages)
 
         finally:
             import time
@@ -388,8 +392,8 @@ class Frame(Datum):
             self.source.incr_ref_count(self.uuid)
         return self
 
-    @property
-    def contents(self):
+    # @property
+    def contents(self, limit=None):
         if self.source is None:
             return '(no contents)'
 
@@ -402,7 +406,7 @@ class Frame(Datum):
             for row in reader:
                 # 時間が足りなくてこんな風に実装してしまいました。。。
                 # ごめんなさい。。。
-                if count > 1000:
+                if limit is not None and count > limit - 1:
                     break
 
                 if first_row:
@@ -462,8 +466,12 @@ class MCMDErrorInfo():
         # 入力と出力の件数をパースする
         if len(ss) >= 3:
             import re
-            io = re.search(r'IN=(\d+) OUT=(\d+)', ss[2]).groups()
-            return cls(ss[0].replace('#ERROR#', ''), int(io[0]), int(io[1]), ss[3])
+            result = re.search(r'IN=(\d+) OUT=(\d+)', ss[2])
+            if result is not None:
+                io = result.groups()
+                return cls(ss[0].replace('#ERROR#', ''), int(io[0]), int(io[1]), ss[3])
+            else:
+                return cls(s, -1, -1, '')
         else:
             print('re:', s)
 

@@ -1,0 +1,430 @@
+{
+  "projectId": 9,
+  "label": "検査　Ver2　指標追加",
+  "ports": [
+    [
+      {
+        "name": "inputdata",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "outputdata",
+        "type": "frame"
+      }
+    ]
+  ],
+  "params": [],
+  "description": "検査データの指標追加\n",
+  "creator": "開発用",
+  "createdAt": "2019-02-08 17:17:17",
+  "nodes": [
+    {
+      "position": {
+        "x": 994,
+        "y": 562.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d2",
+      "type": "frame",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 994,
+        "y": 485.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c2",
+      "type": "command",
+      "label": "ON-押切/mN　計算",
+      "srcs": {
+        "i": "inputdata"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "a": "検査_<ON-押切/mN>",
+        "c": "nulls()",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 998,
+        "y": 973.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d4",
+      "type": "frame",
+      "label": "d4",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 998,
+        "y": 912.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c3",
+      "type": "command",
+      "label": "ON-CG/mm 計算",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d4"
+      },
+      "args": {
+        "a": "検査_<ON-CG/mm>",
+        "c": "nulls()",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 1001,
+        "y": 1381.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d5",
+      "type": "frame",
+      "label": "d5",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1001,
+        "y": 1313.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c4",
+      "type": "command",
+      "label": "復帰速度　計算",
+      "srcs": {
+        "i": "d4"
+      },
+      "dsts": {
+        "o": "d5"
+      },
+      "args": {
+        "a": "検査_<復帰速度/xx>",
+        "c": "nulls()",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 996,
+        "y": 1875.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d6",
+      "type": "frame",
+      "label": "d6",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 999,
+        "y": 1789.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c5",
+      "type": "command",
+      "label": "ON-AFa#2 計算",
+      "srcs": {
+        "i": "d5"
+      },
+      "dsts": {
+        "o": "d6"
+      },
+      "args": {
+        "a": "検査_<AFa#2/mm>",
+        "c": "nulls()",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 1006,
+        "y": 2472.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d7",
+      "type": "frame",
+      "label": "d7",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1010,
+        "y": 2408.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c6",
+      "type": "command",
+      "label": "ON-押切#2/mN 計算",
+      "srcs": {
+        "i": "d6"
+      },
+      "dsts": {
+        "o": "d7"
+      },
+      "args": {
+        "a": "検査_<ON-押切#2/mN>",
+        "c": "nulls()",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 1010,
+        "y": 2932.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d8",
+      "type": "frame",
+      "label": "d8",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1007,
+        "y": 2844.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c7",
+      "type": "command",
+      "label": "ON-CG#2/mm 計算",
+      "srcs": {
+        "i": "d7"
+      },
+      "dsts": {
+        "o": "d8"
+      },
+      "args": {
+        "a": "検査_<ON-CG#2/mm>",
+        "c": "nulls()",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 1243,
+        "y": 570.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "d10",
+      "type": "frame",
+      "label": "d10",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1147,
+        "y": 572.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c9",
+      "type": "command",
+      "label": "確認",
+      "srcs": {
+        "i": "d2"
+      },
+      "dsts": {
+        "o": "d10"
+      },
+      "args": {},
+      "commandId": "column_list"
+    },
+    {
+      "position": {
+        "x": 1004,
+        "y": 4442.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "outputdata",
+      "type": "frame",
+      "label": "特徴量追加終了",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "position": {
+        "x": 1010,
+        "y": 3452.5
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "c8",
+      "type": "command",
+      "label": "復帰速度#2/xx 計算",
+      "srcs": {
+        "i": "d8"
+      },
+      "dsts": {
+        "o": "outputdata"
+      },
+      "args": {
+        "a": "検査_<復帰速度#2/xx>",
+        "c": "nulls()",
+        "assert_diffSize": false,
+        "assert_nullout": false,
+        "nfn": false,
+        "nfno": false,
+        "x": false,
+        "tmpPath": "",
+        "precision": ""
+      },
+      "commandId": "mcal"
+    },
+    {
+      "position": {
+        "x": 850,
+        "y": 363
+      },
+      "size": {
+        "width": 38,
+        "height": 38
+      },
+      "invalid": {},
+      "error": {},
+      "id": "inputdata",
+      "type": "frame",
+      "label": "inputdata",
+      "uuid": null,
+      "dataSource": "csv"
+    }
+  ]
+}

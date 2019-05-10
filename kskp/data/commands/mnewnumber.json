@@ -10,19 +10,22 @@
       "name": "I",
       "type": "string",
       "label": "連番を振る間隔",
-      "optional": true
+      "optional": true,
+      "default": 1
     },
     {
       "name": "S",
       "type": "string",
       "label": "開始数値/アルファベット(大文字)",
-      "optional": true
+      "optional": true,
+      "default": 1
     },
     {
       "name": "l",
       "type": "string",
       "label": "作成するデータ行数",
-      "optional": true
+      "optional": true,
+      "default": 10
     },
     {
       "name": "nfn",

@@ -47,16 +47,6 @@ export default class PreviewModal extends React.Component<Props,State> {
     return results[index]
   }
 
-  renderTabContent(index) {
-    const contents = this.props.contents
-    const {frame_uuid, headers, params, visualize} = contents[index].content
-    const result = this.state.results[index]
-  
-    return <Visualizer key={frame_uuid + '_' + index} frame_uuid={frame_uuid} visualize={visualize} 
-      params={params} headers={headers} onSaveResult={(index, result) => {this.saveResults(index, result)}}
-      index={index} result={result} />
-  }
-
   render () {
     const {id, close_button, visible, title, footer} = this.props
     let {contents} = this.props
@@ -73,10 +63,17 @@ export default class PreviewModal extends React.Component<Props,State> {
 
     if(!Array.isArray(contents))contents = [contents]
 
-    const tabs = contents.map((content,index)=>{
-      return <Tab key={"tab_" + index} width={"auto"} tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
-    })
+    let tabs = []
+    let tabPannels = []
 
+    //順番を維持するためForEachでLoop
+    contents.forEach((content, index) => {
+      let tab = <Tab key={"tab_" + index} width={"auto"} tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
+      let tabPannel = <TabPanel tab_id={index} selected_tab_id={selected_tab_id}><div>{content.content}</div></TabPanel>
+      tabs.push(tab)
+      tabPannels.push(tabPannel)
+    })
+ 
     return <div className={modal_class} style={{display: 'block'}} id={id}>
       <div className="modal-dialog">
         <div className="modal-content">
@@ -94,7 +91,7 @@ export default class PreviewModal extends React.Component<Props,State> {
             {close_button}
           </div>
           <div className="modal-body">
-            {this.renderTabContent(selected_tab_id)}
+            {tabPannels}
           </div>
           {footer}
         </div>

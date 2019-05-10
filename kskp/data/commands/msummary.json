@@ -15,7 +15,8 @@
       "name": "a",
       "type": "string",
       "label": "新項目名",
-      "optional": true
+      "optional": true,
+      "default": "fld"
     },
     {
       "name": "k",
@@ -87,7 +88,8 @@
       "name": "precision",
       "type": "string",
       "label": "有効桁数",
-      "optional": true
+      "optional": true,
+      "default": 10
     }
   ],
   "ports": [

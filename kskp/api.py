@@ -4,7 +4,8 @@ from pathlib import Path
 from .engine.data3 import *
 from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
-from .navigation import update_navigation
+from .utils.navigation import update_navigation
+from .utils.api_base import api_base
 from .model import (
     start_project,
     get_projects_by_user_id,
@@ -24,29 +25,19 @@ from .model import (
     write_data_to_json,
     make_flow_path,
     copy_flow_by_uuid,
-
-    get_database,
-    create_database,
-    rename_database_by_id,
-    delete_database_by_id,
-
-    get_path,
-    get_root,
-    get_folder2,
-    set_folder2,
-    upd_folder2,
-    del_folder2,
-    get_file2,
-    set_file2,
-    upd_file2,
-    del_file2
+    get_all_frame_uuid_in_frame,
+    get_frame_dir_path,
+    get_cache_dir_path
 )
-from .models.store import Store
-from .models.folder import Folder
-from .models.remote_folder import RemoteFolder
-from .models.database import Database
-from .models.document import Document
-from .activity import (
+from .library import (
+    # data3.pyのFrameクラスと名称を被らないようにAS別名を付ける
+    # (将来的にdata3.pyのFrameと統合したい)
+    Frame as FrameModel,
+    Folder,
+    FRAME_FOLDER_UUID,
+    CACHE_FOLDER_UUID
+)
+from .utils.activity import (
     make_unfinished_history,
     make_finished_history
 )
@@ -58,7 +49,6 @@ api = Blueprint('api', __name__)
 DATAFRAME_DIR_PATH = api.root_path / Path('data/frames')
 JOBS_DIR_PATH = api.root_path / Path('data/jobs')
 FLOWS_DIR_PATH = api.root_path / Path('data/flows')
-
 @api.route('/projects', methods=['POST'])
 @login_required_api
 def new_project():
@@ -141,7 +131,7 @@ def new_flow():
             return jsonify({'success': False, 'message': 'not exist ' + original_flow_uuid })
 
         # コピー
-        new_flow = copy_flow_by_uuid(j.get('original_flow_uuid'))
+        new_flow = copy_flow_by_uuid(j.get('original_flow_uuid'), session['user_id'])
     else:
         project_id = get_project_id_by_uuid(j.get('project_uuid'))
 
@@ -203,9 +193,9 @@ def fetch_subflows():
     """
     return jsonify({'success': True, 'data': fetch_subflows_all_projects(request.args)})
 
-@api.route('/subflows', methods=['POST'])
-@login_required_api
-def execute_subflow():
+# @api.route('/subflows', methods=['POST'])
+# @login_required_api
+def execute_flow_by_add_inputs(request):
     """
     inputsを与えてexecute
     ファイルは必ずuploadするのでPathFileSourceでframeを作れる
@@ -220,33 +210,38 @@ def execute_subflow():
 
     upload_file_list = []
 
+    def get_frame_obj(frame_uuid):
+        """
+        指定したフレームからエンジンのFrameオブジェクトを作成して返す
+        """
+        # フレームを置き換える
+        frame = FrameModel.find_by_uuid(frame_uuid)
+        if frame is None:
+            # ライブラリにフレームが無い場合は従来のフォルダ内を探す
+            source = PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv')
+        else:
+            # ライブラリにフレームが存在する場合はライブラリから取得する
+            source = PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name)
+        return Frame(str(uuid.uuid4()), source)
+        
     for port in flow_json['ports'][0]:
-        frame_uuid = ''
-
         # frame（既にkskpに存在するデータソース）の場合
         if request.form.get(port['name']) is not None:
             # フレームを置き換える
             frame_uuid = request.form.get(port['name'])
-            inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
-            continue
+            inputs[port['name']] = get_frame_obj(frame_uuid)
 
         # 新たにkskpにアップロードする場合
         file = request.files.get(port['name'])
         if file is not None:
             # ファイルアップロードして、フレームを置き換える
             frame_uuid = upload_frame(file, '')['uuid']
-            inputs[port['name']] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , frame_uuid + '.csv'))
-
+            inputs[port['name']] = get_frame_obj(frame_uuid)
             # 使うかわからないけど、uploadしたファイルを覚えておく
             upload_file_list.append(frame_uuid)
-            continue
 
     # フローの実行
-    result = execute_flow(flow_uuid, None, False, inputs, args)
-
-    # 後片付け（一時的にアップロードしたファイルを削除する、でも削除するかどうか決めていないのでとりあえずコメントアウトする）
-    for file in upload_file_list:
-        os.remove(DATAFRAME_DIR_PATH.as_posix() + '/' + file + '.csv')
+    result = execute_flow(flow_uuid, None, False, None, inputs, args, flow_label=flow_json['label'])
 
     return result
 
@@ -444,15 +439,22 @@ def make_new_frame():
 
     if 'file' in request.files:
         if 'parent' in request.form and 'label' in request.form:
-            # parentとlabel属性があれば新形式のPOST /framesだとみなす
-            from .models.frame import Frame
-            new_frame = Frame(str(uuid.uuid4())
-                            , request.form.get('parent')
-                            , request.form.get('label')
-                            , request.files.get('file').stream
-                            , creator=session['user_id'])
-            set_file2(new_frame)
-            return jsonify({'success': True, 'data': new_frame.to_json()})
+            try:
+                # parentとlabel属性があれば新形式のPOST /framesだとみなす
+                new_frame = FrameModel(request.form.get('parent')
+                                     , request.form.get('label')
+                                     , request.files.get('file').stream
+                                     , creator=session['user_id']
+                                     , modifier=session['user_id'])
+                # documentレコードをDBに格納する
+                new_frame.save()
+                return jsonify({'success': True, 'data': new_frame.to_json()})
+            except Exception as e:
+                return jsonify({
+                                'success': False,
+                                'code'   : -1,
+                                'message': str(e)
+                                })
         else:
             # ファイルがPOSTで送信されてきたらアップロードだとみなす
             frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
@@ -471,9 +473,15 @@ def make_new_frame():
         if request.args.get('no_contents'):
             no_contents = True
 
-        result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents)
+        limit = int(request.args.get('limit')) if request.args.get('limit') else None
+
+        flow_json = fetch_flow_by_uuid(flow_uuid)
+
+        result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents, limit=limit, flow_label=flow_json['label'])
 
         return result
+    elif request.form.get('flow_uuid'):
+        return execute_flow_by_add_inputs(request)
     else:
         return jsonify({
                             'success': False,
@@ -485,23 +493,27 @@ import os
 import time
 
 @api.route('/frames/<frame_uuid>')
+@login_required_api
+@api_base
 def fetch_frame(frame_uuid):
     """
     指定したframeを直接UUIDで指定して取得する
     """
     # オフセットのデフォルトは最初から（なので０）
     offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-    # リミットのデフォルトは全行なのでNoneにしておく（０の場合は０行取得だから０は使えない）
     limit = int(request.args.get('limit')) if request.args.get('limit') else None
+    no_contents = True if request.args.get('no_contents') else False
 
-    # 先にLibraryテーブルから指定されたUUIDのフレームを探す
-    file_path = get_path(frame_uuid)
-    if file_path is None:
+    frame = FrameModel.find_by_uuid(frame_uuid)
+
+    if frame is None:
+        # ライブラリにフレームが無い場合は従来のフォルダ内を探す
         file_path = DATAFRAME_DIR_PATH / Path('%s.csv' % frame_uuid)
     else:
+        # ライブラリにフレームが存在する場合はライブラリから取得する
         limit = 999 if limit is None else limit
         no_contents = request.args.get('no_contents') is not None
-        file_path = Path(file_path)
+        file_path = frame.path_obj
 
     result = csv_to_frame(file_path, no_contents=no_contents, offset=offset, limit=limit)
 
@@ -512,43 +524,42 @@ def fetch_frame(frame_uuid):
             headers.append(column.replace('\n',''))
         result = headers
 
-    return jsonify({'success': True, 'data': result})
+    return result
 
 @api.route('/frames/<frame_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
 def update_frame(frame_uuid):
     """
     指定したframeのラベル名を変更する
     """
-    try:
-        from .models.frame import Frame
-        frame = Frame(frame_uuid
-                      , None
-                      , request.json['label']
-                      , None
-                      , modifier=2)
-        upd_file2(frame)
-        return jsonify({'success': True, 'data': frame.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
+    label = request.json['label']
+    modifier = session['user_id']
+    return FrameModel.update_data(frame_uuid, label, modifier)
 
 @api.route('/frames/<frame_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
 def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
     """
-    try:
-        del_file2(frame_uuid)
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
+    frame = FrameModel.find_by_uuid(frame_uuid)
+    if frame is None:
+        raise Exception('no frame exists.')
+    
+    # 削除しようとするframeが、フローで使用されている場合は例外を送出する
+    for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        if not flow_path.suffix == '.json':
+            continue
+        flow_uuid = flow_path.stem
+        using_frame_uuids = get_all_frame_uuid_in_frame(flow_uuid)
+        if frame_uuid in using_frame_uuids:
+            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow_uuid)
+
+    # フレームを削除する
+    frame.delete()
+    return frame
 
 def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     """
@@ -556,11 +567,12 @@ def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     詳細情報なども含んだframeを表すdictを返す
     """
     result = {}
-    contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
 
     if not no_contents:
+        contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
         result['contents'] = contents
-    result['numberOfLines'] = number_of_lines
+        # 行数は一旦返さないことにする
+        # result['numberOfLines'] = number_of_lines
     result['fileSize'] = os.path.getsize(file_path)
     result['lastModifiedAt'] = format_time(file_path)
 
@@ -599,23 +611,37 @@ def download_file():
     # JST = timezone(timedelta(hours=+9), 'JST')
     # date = datetime.now(JST)
 
-    # ダウンロードファイルの名前
-    if frame_uuid == 'テスト':
-        downloadFileName = frame_uuid  + '.' + ext
+
+    frame = FrameModel.find_by_uuid(frame_uuid)
+    file_path = frame.path if frame is not None else None
+
+    if file_path is None:
+        # ライブラリにフレームが無い場合は従来のフォルダ内を探す
+
+        # ダウンロードファイルの名前
+        if frame_uuid == 'テスト':
+            downloadFileName = frame_uuid  + '.' + ext
+        else:
+            downloadFileName = label + '.' + ext
+
+        # ダウンロード対象のファイルの名前
+        downloadFile = frame_uuid + '_sjis.' + ext
+        sjis_path = DATAFRAME_DIR_PATH / downloadFile
+        # sjis版がなかったらutf8版を落とす（今の所sjis版はオムロンさま専用なので）
+        if not sjis_path.exists():
+            downloadFile = frame_uuid + '.' + ext
+
+        return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
+                                   attachment_filename = downloadFileName, mimetype = 'text/csv')
     else:
-        downloadFileName = label + '.' + ext
+        # ライブラリにフレームが存在する場合はライブラリから取得する
+        dir_path = Path(api.root_path).parent / Path(os.path.dirname(file_path))
+        file_name = os.path.basename(file_path)
+        return send_from_directory(dir_path, file_name, as_attachment = True,
+                                   attachment_filename = file_name, mimetype = 'text/csv')
+        
 
-    # ダウンロード対象のファイルの名前
-    downloadFile = frame_uuid + '_sjis.' + ext
-    sjis_path = DATAFRAME_DIR_PATH / downloadFile
-    # sjis版がなかったらutf8版を落とす（今の所sjis版はオムロンさま専用なので）
-    if not sjis_path.exists():
-        downloadFile = frame_uuid + '.' + ext
-
-    return send_from_directory(DATAFRAME_DIR_PATH, downloadFile, as_attachment = True,
-                               attachment_filename = downloadFileName, mimetype = 'text/csv')
-
-def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
+def execute_flow(flow_uuid, step_paths, no_contents, limit=None, inputs={}, args={}, flow_label=None):
 
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
@@ -630,7 +656,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
                         })
     else:
         try:
-            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, inputs, args)
+            result_data, caches_data = execute_flow_internal(flow_uuid, step_paths, no_contents, limit, inputs, args, flow_label=flow_label)
             if not result_data:
                 return jsonify({
                                     'success': False,
@@ -645,7 +671,7 @@ def execute_flow(flow_uuid, step_paths, no_contents, inputs={}, args={}):
             return jsonify({
                                 'success': False,
                                 'code': -1,
-                                'message': repr(e)
+                                'message': str(e)
                             })
 
 @api.route('/jobs', methods=['GET'])
@@ -752,8 +778,6 @@ def delete_cache():
     flow_uuid = ofs[0]
     datum_id = ofs[1]
 
-    frame_name = DATAFRAME_DIR_PATH / ('caches_' + flow_uuid + '_' + datum_id + '.csv')
-
     p = FLOWS_DIR_PATH.joinpath(flow_uuid + '.json')
     j = json.loads(p.read_text(), encoding='utf-8')
 
@@ -764,11 +788,12 @@ def delete_cache():
             j['nodes'][i]['cacheCreatedAt'] = None
 
             # キャッシュを削除する（増え続けると困るので）
-            frame_path = DATAFRAME_DIR_PATH / (frame_uuid + '.csv')
-            frame_path.unlink()
-            sjis_path = DATAFRAME_DIR_PATH / (frame_uuid + '_sjis.csv')
-            if sjis_path.exists():
-                sjis_path.unlink()
+            frame = FrameModel.find_by_uuid(frame_uuid)
+            if frame is not None:
+                sjis_path = frame.path_obj.parent / (frame_uuid + '_sjis.csv')
+                if sjis_path.exists():
+                    sjis_path.unlink()
+                frame.delete()
 
     update_flow_by_uuid(p.stem, j)
 
@@ -905,7 +930,7 @@ def execute_fifo():
 
     t2 = time.time()
 
-    return jsonify({'success': True, 'speed': repr(t2 - t1)})
+    return jsonify({'success': True, 'speed': str(t2 - t1)})
 
 @api.route('/execute-direct')
 def execute_direct():
@@ -952,7 +977,7 @@ def execute_direct():
 
     t2 = time.time()
 
-    return jsonify({'success': True, 'speed': repr(t2 - t1)})
+    return jsonify({'success': True, 'speed': str(t2 - t1)})
 
 @api.route('/execute-direct2')
 def execute_direct2():
@@ -1001,7 +1026,7 @@ def execute_direct3():
 
     return jsonify({'success': True, 'data': 'execute-direct3'})
 
-def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs={}, args={}):
+def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, limit=None, inputs={}, args={}, flow_label=None):
     """
     指定されたファイル名を元にフローファイルを取得して、
     その結果をパースしてDataFrameの形にして返す
@@ -1009,22 +1034,85 @@ def execute_flow_internal(flow_uuid, step_paths=None, no_contents=False, inputs=
 
     now = datetime.now()
 
+
+    # フローの実行結果を格納するディレクトリパスを取得する
+    frame_folder_path_obj = get_frame_dir_path(session['user_id']).path_obj
+
+    # キャッシュフォルダを作成する
+    get_cache_dir_path(session['user_id'])
+
     @make_unfinished_history(now, session)
     @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from . import engine as e
-        data_path = '/kskp/data'
-        with open(f'{data_path}/flows/{flow_uuid}.json', 'r') as f:
-            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=f'{data_path}/frames', flows_path=f'{data_path}/flows', inputs=inputs, arguments=args)
-
+        # data_path = (DATAFRAME_DIR_PATH / 'data').as_posix()
+        with open(FLOWS_DIR_PATH.joinpath(f'{flow_uuid}.json'), 'r') as f:
+            return e.execute(flow_uuid, f.read(), step_paths=step_paths, frames_path=frame_folder_path_obj.as_posix(), flows_path=FLOWS_DIR_PATH.as_posix(), inputs=inputs, arguments=args)
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
+
+    def register_file_to_library(folder_uuid, uuid, label):
+        """
+        execute_flow_by_uuid()が出力した結果ファイルとキャッシュファイルをライブラリに登録する
+        ファイル名に用いているUUIDをライブラリエントリにも付番し、ライブラリに登録する
+        """
+        file_path_obj = Path.joinpath(frame_folder_path_obj, uuid + '.csv')
+        if Path(file_path_obj).is_file():
+            # 既に登録済みのuuidであれば登録処理をしない
+            # (lastsノードがキャッシュを出力する場合は、result['outputs]とresult['caches']の両方に同じファイル名が格納される)
+            if FrameModel.exists(uuid):
+                return
+            new_frame = FrameModel(folder_uuid,
+                                   label,
+                                   None,
+                                   creator=session['user_id'],
+                                   modifier=session['user_id'])
+            # フレームのuuidはエンジン内で付番されたUUIDとする
+            new_frame.uuid = uuid
+            new_frame.add_entry_from_path(file_path_obj.as_posix())
+
+    def register_sjis_file_to_library(folder_uuid, uuid, label):
+        """
+        execute_flow_by_uuid()が出力した_sjisファイルをライブラリに登録する
+        ファイル名にはUTF-8版と同じUUIDが_sjis版に使用されているため、ライブラリエントリには新たなUUIDを採番する
+        """
+        file_path_obj = Path.joinpath(frame_folder_path_obj, uuid + '_sjis.csv')
+        if Path(file_path_obj).is_file():
+            new_frame = FrameModel(folder_uuid,
+                                   label,
+                                   None,
+                                   creator=session['user_id'],
+                                   modifier=session['user_id'])
+            new_frame.add_entry_from_path(file_path_obj.as_posix())
+
+    # 出力されたデータフレームをライブラリに登録する
+    for key, value in result['outputs'].items():
+        if nodes_dict.get(key).get('label') is None:
+            # データフレームにlabel属性が定義されていない場合に備える
+            label = flow_label + '_' + nodes_dict.get(key).get('id')
+        else:
+            label = flow_label + '_' + nodes_dict.get(key).get('label')
+        register_file_to_library(FRAME_FOLDER_UUID, value.uuid, label)
+
+        # 出力された_sjisファイルをライブラリに登録する
+        register_sjis_file_to_library(FRAME_FOLDER_UUID, value.uuid, label + '_sjis')
+
+    # 出力されたキャッシュファイルをライブラリに登録する
+    for key, uuid in result['caches'].items():
+        if key is None or key.split('.')[1] is None:
+            label = flow_label + '_cache'
+        else:
+            label = flow_label + '_' + key.split('.')[1] + '_cache'
+        register_file_to_library(CACHE_FOLDER_UUID, uuid, label)
+
+        # 出力された_sjisファイルをライブラリに登録する
+        register_sjis_file_to_library(CACHE_FOLDER_UUID, uuid, label + '_sjis')
 
     # 結果の処理
     if no_contents:
         result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result['outputs'].items()]
     else:
-        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents} for key, value in result['outputs'].items()]
+        result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label'), 'contents':value.contents(limit)} for key, value in result['outputs'].items()]
 
     return result_list, result['caches']
 
@@ -1060,8 +1148,8 @@ def load_as_data_frame(path_obj, offset, limit):
     column_list = []
     with path_obj.open(encoding='utf-8') as f:
         n = 0
-        for line in f.readlines():
-            if n > limit:
+        for line in f:
+            if limit is not None and n > limit:
                 break
 
             if n == 0:
@@ -1144,7 +1232,19 @@ def visualizer():
     ### ここから
     # ここから
     new_inputs = {}
-    new_inputs['i'] = Frame(str(uuid.uuid4()), PathFileSource('csv', DATAFRAME_DIR_PATH , request.json.get('inputs')['i'] + '.csv'))
+
+    frame_uuid = request.json.get('inputs')['i']
+    frame = FrameModel.find_by_uuid(frame_uuid)
+    
+    if frame is None:
+        # ライブラリにフレームが無い場合は従来のフォルダ内を探す
+        source = PathFileSource('csv', DATAFRAME_DIR_PATH, request.json.get('inputs')['i'] + '.csv')
+    else:
+        # ライブラリにフレームが存在する場合はライブラリから取得する
+        source = PathFileSource('csv', Path(api.root_path).parent / frame.path_obj.parent, frame.path_obj.name)
+
+    new_inputs['i'] = Frame(str(uuid.uuid4()), source)
+
     command = internal_commands.get(request.args.get('from'))
     # 残りの２つの引数はsrcsとdsts
     new_step = Step(command, request.json.get('args'), {}, {})
@@ -1157,453 +1257,9 @@ def visualizer():
 
     # テーブルコマンド
     if request.args.get('from') == 'csvtohtmltable':
+        print('RESULT', result)
         return render_template("visualize_table.html", header=result['header'], reader=result['reader'])
 
     # bokehのコマンド
     return render_template("visualize_component.html", script=result['script'], div=result['div'])
 
-import pprint
-
-@api.route('/stores', methods=['GET'])
-def fecth_stores():
-    """
-    データストアの定義(雛形)の一覧を返却する
-    """
-    try:
-        stores = Store.find_all()
-        ret = []
-        for store in stores:
-            ret.append(store.to_json())
-
-        return jsonify({'success': True, 'data': ret})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                      })
-
-@api.route('/stores/<store_id>', methods=['GET'])
-def fecth_store(store_id):
-    """
-    データストアの定義(雛形)を返却する
-    """
-    try:
-        store = Store.find_by_id(store_id)
-        if store is None:
-            data = None
-        else:
-            data = store.to_json()
-
-        return jsonify({'success': True, 'data': data})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                      })
-
-@api.route('/stores', methods=['POST'])
-@login_required_api
-def make_new_store():
-    """
-    データストアの定義(雛形)を作成する
-    """
-    try:
-        new_store = Store.create(request.json['id']
-                                ,request.json['version']
-                                ,request.json['label']
-                                ,request.json['description']
-                                ,request.json['url']
-                                ,request.json['params']
-                                ,session['user_id'])
-        new_store.save()
-        return jsonify({'success': True, 'data': new_store.to_json()})    
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                      })
-
-@api.route('/stores/<store_id>', methods=['DELETE'])
-@login_required_api
-def delete_store(store_id):
-    """
-    データストアの定義(雛形)を削除する
-    """
-    try:
-        delete_store = Store(store_id)
-        delete_store.delete()
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-def _make_fetch_data(folder):
-    if folder is None:
-        data = None
-    else:
-        data = folder.to_json()
-        # folderPath属性を作成する
-        folder_list = folder.get_folder_path()
-        data['folderPath'] = []
-        for f in folder_list:
-            data['folderPath'].append(f)
-        # children属性を作成する
-        children = folder.get_children()
-        data['children'] = []
-        for child in children:
-            data['children'].append(child.to_json())
-    return data
-
-@api.route('/library', methods=['GET'])
-@login_required_api
-@update_navigation
-def fecth_library():
-    """
-    ルートデータストアを返却する
-    """
-    try:
-        root = get_root()
-        
-        # ルートフォルダが存在しない場合はルートフォルダを作成する
-        # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
-        if root is None:
-            new_root = Folder(str(uuid.uuid4())
-                            , None
-                            , 'ROOT_FOLDER'
-                            , creator=session['user_id'])
-            set_folder2(new_root)
-            # 作成したルートフォルダを取得し直す
-            root = get_root()
-
-        data = _make_fetch_data(root)
-        return jsonify({'success': True, 'data': data})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-
-@api.route('/folders/<folder_uuid>', methods=['GET'])
-@login_required_api
-@update_navigation
-def fetch_folder(folder_uuid):
-    """
-    フォルダを返却する
-    """
-    try:
-        folder = get_folder2(folder_uuid)
-        data = _make_fetch_data(folder)
-        return jsonify({'success': True, 'data': data})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-@api.route('/folders', methods=['POST'])
-@login_required_api
-def make_new_folder():
-    """
-    フォルダを作成する
-    """
-    try:
-        new_folder = Folder(str(uuid.uuid4())
-                          , request.json['parent']
-                          , request.json['label']
-                          , creator=session['user_id'])
-        set_folder2(new_folder)
-        return jsonify({'success': True, 'data': new_folder.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                      })
-
-@api.route('/folders/<folder_uuid>', methods=['PUT'])
-@login_required_api
-def update_folder(folder_uuid):
-    """
-    フォルダを修正する
-    """
-    try:
-        folder = Folder(folder_uuid
-                      , None
-                      , request.json['label']
-                      , modifier=session['user_id'])
-        upd_folder2(folder)
-        return jsonify({'success': True, 'data': folder.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-@api.route('/folders/<folder_uuid>', methods=['DELETE'])
-@login_required_api
-def delete_folder(folder_uuid):
-    """
-    フォルダを削除する
-    """
-    try:
-        del_folder2(folder_uuid)
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-
-@api.route('/remote-folders/<folder_uuid>', methods=['GET'])
-@login_required_api
-@update_navigation
-def fetch_remote_folder(folder_uuid):
-    """
-    リモートフォルダを返却する
-    """
-    try:
-        remote_folder = get_folder2(folder_uuid)
-        data = _make_fetch_data(remote_folder)
-        return jsonify({'success': True, 'data': data})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-@api.route('/remote-folders', methods=['POST'])
-@login_required_api
-def make_new_remote_folder():
-    """
-    リモートフォルダを作成する
-    """
-    try:
-        new_folder = RemoteFolder(str(uuid.uuid4())
-                                , request.json['parent']
-                                , request.json['label']
-                                , request.json['user']
-                                , request.json['password']
-                                , request.json['server']
-                                , request.json['port']
-                                , request.json['domain']
-                                , request.json['directory']
-                                , creator=session['user_id'])
-        set_folder2(new_folder)
-        return jsonify({'success': True, 'data': new_folder.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                      })
-
-@api.route('/remote-folders/<folder_uuid>', methods=['PUT'])
-@login_required_api
-def update_remote_folder(folder_uuid):
-    """
-    リモートフォルダを修正する
-    """
-    try:
-        new_label = request.json['label']
-        new_user = request.json['user']
-        new_password = request.json['password']
-        new_server = request.json['server']
-        new_port = request.json['port']
-        new_domain = request.json['domain']
-        new_directory = request.json['directory']
-
-        folder = RemoteFolder(folder_uuid
-                            , None
-                            , new_label
-                            , new_user
-                            , new_password
-                            , new_server
-                            , new_port
-                            , new_domain
-                            , new_directory
-                            , modifier=session['user_id'])
-        upd_folder2(folder)
-        return jsonify({'success': True, 'data': folder.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-@api.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
-@login_required_api
-def delete_remote_folder(folder_uuid):
-    """
-    リモートフォルダを削除する
-    """
-    try:
-        del_folder2(folder_uuid)
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-
-
-@api.route('/databases/<database_uuid>', methods=['GET'])
-@login_required_api
-@update_navigation
-def fetch_database(database_uuid):
-    """
-    データベースを返却する
-    """
-    try:
-        database = get_database(database_uuid)
-        return jsonify({'success': True, 'data': database})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-@api.route('/databases', methods=['POST'])
-@login_required_api
-def make_new_database():
-    """
-    データベースを作成する
-    """
-    try:
-        new_database= create_database(request.json, 1)
-        return jsonify({'success': True, 'data': new_database})    
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                      })
-
-@api.route('/databases/<database_uuid>', methods=['PUT'])
-@login_required_api
-def update_database(database_uuid):
-    """
-    データベースを修正する
-    """
-    try:
-        new_label = request.json['label']
-        database= rename_database_by_id(database_uuid, new_label)
-        return jsonify({'success': True, 'data': database})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-@api.route('/databases/<database_uuid>', methods=['DELETE'])
-@login_required_api
-def delete_database(database_uuid):
-    """
-    データベースを削除する
-    """
-    try:
-        delete_database_by_id(database_uuid)
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-
-@api.route('/documents/<doc_uuid>', methods=['GET'])
-@login_required_api
-def fetch_document(doc_uuid):
-    """
-    ドキュメントを返却する
-    """
-    try:
-        offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-        limit = int(request.args.get('limit')) if request.args.get('limit') else 100
-        no_contents = request.args.get('no_contents') is not None
-
-        file_path = Path(get_path(doc_uuid))
-        result = csv_to_frame(file_path, offset=offset, limit=limit)
-        return jsonify({'success': True, 'data': result})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-@api.route('/documents', methods=['POST'])
-@login_required_api
-def make_new_document():
-    """
-    ドキュメントを作成する
-    """
-    try:
-        new_doc = Document(str(uuid.uuid4())
-                         , request.form.get('parent')
-                         , request.form.get('label')
-                         , request.files.get('file').stream
-                         , creator=session['user_id'])
-        set_file2(new_doc)
-        return jsonify({'success': True, 'data': new_doc.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code': -1,
-                        'message': 'invalid json'
-                        })
-
-@api.route('/documents/<doc_uuid>', methods=['PUT'])
-@login_required_api
-def update_document(doc_uuid):
-    """
-    指定したdocumentのラベル名を変更する
-    """
-    try:
-        doc = Document(doc_uuid
-                     , None
-                     , request.json['label']
-                     , None
-                     , session['user_id'])
-        upd_file2(doc)
-        return jsonify({'success': True, 'data': doc.to_json()})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
-
-@api.route('/documents/<doc_uuid>', methods=['DELETE'])
-@login_required_api
-def delete_document(doc_uuid):
-    """
-    指定したdocumentを物理削除する
-    """
-    try:
-        del_file2(doc_uuid)
-        return jsonify({'success': True})
-    except Exception as e:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': repr(e)
-                        })
