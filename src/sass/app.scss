@@ -9,7 +9,23 @@
 //
 body {
   padding-top: 64px; //navigation-header-height
+  &.dialog{
+    padding-top: 0;
+    .inspector{
+      top: 0;
+    }
+    .inspector-container{
+      height: 100%;
+    }
+  }
 }
+
+#project_list,#flow_list,#library_list{
+  .container{
+    min-width: 800px;
+  }
+}
+
 
 .container{
   min-width: 1024px;

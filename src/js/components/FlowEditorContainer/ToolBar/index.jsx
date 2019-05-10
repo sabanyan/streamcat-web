@@ -21,7 +21,7 @@ import type { DataFrameStepModelProps } from '../../../model/Step/DataFrameStepM
 import Loader from '../../shared/Loader'
 import { RunResponseType } from '../../../types'
 import FileUploader from '../../shared/FileUploader'
-import type { UploadedFileType } from '../../../types'
+import type { LibraryListDataType, UploadedFileType } from '../../../types'
 import FlowUtil from '../../../utils/FlowUtil'
 import StringUtil from '../../../utils/StringUtil'
 import ErrorUtil from '../../../utils/ErrorUtil'
@@ -85,8 +85,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   onClickSort () {
-    this.props.addHistory()
     this.props.sortFlow()
+    this.props.addHistory()
   }
 
   save (): Promise {
@@ -126,17 +126,16 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 name: '開く',
                 primary: true,
                 onClick: () => {
-                  window.open('/library?project=' +
-                    window.navigationModel.project_uuid, '_blank')
+                  window.open('/library', '_blank')
                 },
               }],
           })
-          // cache 情報更新のため
-          this.updateCache()
-          this.props.executeFlow()
+          //現在、EXECUTE_FLOW_ACTIONは何もしないため 
+          //this.props.executeFlow()
         }
         this.loading = false
-        this.forceUpdate()
+        // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
+        this.flowUpdate()
       }, (error) => {
         this.loading = false
         this.forceUpdate()
@@ -144,7 +143,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     })
   }
 
-  updateCache() {
+  flowUpdate() {
     APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
       this.props.loadFlowJSON(json)
@@ -183,6 +182,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   //   this.forceUpdate()
   // }
 
+
   onClickDataSourceImport () {
 
     const self = this
@@ -190,60 +190,31 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.uploadedFile = null
     this.forceUpdate()
 
-    ModalUtil.registerModal({
-      id: Constants.modal.IMPORT_DATASOURCE, onClickDone: () => {
-
-        if (!this.uploadedFile) {
-          alert('ファイルを選択してください')
-          return
-        }
-
-        let parameters = {}
-
-        //データソースを追加
-
-        const label = this.uploadedFile.label
-        const uuid = this.uploadedFile.uuid
-        const props: DataFrameStepModelProps = {
-          id: label,
-          type: Constants.step.type.frame,
-          uuid: uuid,
-          label: label,
-          dataSource: Constants.data.dataSource.csv,
-          srcs: [],
-          dsts: [],
-        }
-
-        const add_step = new DataFrameStepModel(props)
-
-        self.props.addStep(add_step)
-
-        //ステップの選択をキャンセル
-        self.props.selectSteps()
-
-        //モーダルを閉じる
-        ModalUtil.closeModal(Constants.modal.IMPORT_DATASOURCE)
-      },
+    HttpUtil.windowOpen("library?dialog=true",(args)=>{
+      const selected_data:LibraryListDataType = args
+      let parameters = {}
+      //データソースを追加
+      const props: DataFrameStepModelProps = {
+        type: selected_data.type,
+        uuid: selected_data.uuid,
+        label: selected_data.label,
+        dataSource: Constants.data.dataSource.csv,
+        srcs: [],
+        dsts: [],
+      }
+      const add_step = new DataFrameStepModel(props)
+      this.props.addStep(add_step)
+      //ステップの選択をキャンセル
+      this.props.selectSteps()
+      this.props.addHistory()
     })
-
-    const content = <FileUploader accept={['text/csv']}
-                                  defaultLabel={'ファイルを選択してください'}
-                                  onChangeFile={(e) => this.onChangeFile(e)}/>
-
-    ModalUtil.emitModal({
-      id: Constants.modal.IMPORT_DATASOURCE,
-      visible: true,
-      content: content,
-      title: 'データソースの追加',
-    })
-
   }
 
   onChangeFile (e: SyntheticInputEvent<EventTarget>) {
     const selectedFiles: FileList = e.target.files
     if (selectedFiles) {
       const uploadFile: File = selectedFiles[0]
-      APIUtil.fileupload(uploadFile, uploadFile.name).then((response) => {
+      APIUtil.frameUpload(uploadFile, uploadFile.name).then((response) => {
         const {success} = response.data
         const json = response.data
         if (success) {
@@ -290,8 +261,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
   
     const note = new NoteStepModel(props)
-
     this.props.addStep(note)
+    this.props.addHistory()
+
   }
 
   render () {

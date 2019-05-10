@@ -1,55 +1,90 @@
 //@flow
 import React from 'react'
 import classnames from 'classnames'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import DataTable from '../../DataTable/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import style from '../style.scss'
-import Button from '../../Button/index'
-import DownloadButton from '../../Button/DownloadButton/index'
 import BaseInspector from '../BaseInspector'
-import type { StepModelType } from '../../../../types'
-import HttpUtil from '../../../../utils/HttpUtil'
-import Graph from '../../../../utils/Graph'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import CSVModel from '../../../../model/CSV/CSVModel'
-import StringUtil from '../../../../utils/StringUtil'
-import Inspector from '../index'
-import TabBar from '../../TabBar'
-import TabPanel from '../../TabBar/TabPanel'
-import TabList from '../../TabBar/TabList'
-import Tab from '../../TabBar/Tab'
+import type { LibraryListDataType } from '../../../../types'
+import moment from 'moment/moment'
+import Constants from '../../../../constants'
+import Button from '../../Button'
+import Resizer from '../Resizer'
 
 type Props = {
-  data: {};
+  data?: LibraryListDataType;
+  onClickDelete?: Function;
+  onClickApply?: Function;
+  onBlurTitle?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
-  constructor (props) {
+  constructor (props:Props) {
     super(props)
   }
+  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
+    if(this.props.onBlurTitle){
+      this.props.onBlurTitle(e)
+    }
+  }
   render () {
-
-    const {data} = this.props
+    const {data,onClickDelete,onClickApply} = this.props
     let content = null
-    if(data){
-      content = <div>
-          <div className={"mb-8px"}>
-            {Object.keys(data.data)[0]}
-          </div>
-          <div className={style.actions}>
+    let label = ""
 
-          </div>
-          <div className={style.full_hr}/>
-      </div>
+    let deleteButton
+    if(onClickDelete){
+      deleteButton = <Button danger={true}
+                                 onClick={() => onClickDelete(data)}>削除する</Button>
+    }
+    let applyButton
+    if(onClickApply){
+      applyButton = <Button primary={true}
+                             onClick={() => onClickApply(data)}>選択する</Button>
     }
 
-    return <div className={classnames(style.property,style.in)}>
-      <BaseInspector {...this.props}>
-      {content}
-    </BaseInspector>
-    </div>
+
+    if(data){
+      label = data.label
+      content = <div>
+          <div className={"mb-8px"}>
+            {data.label}
+          </div>
+          <div className={style.actions}>
+            {deleteButton}
+            {applyButton}
+          </div>
+          <div className={style.full_hr}/>
+          <div>
+            <label>名称</label>
+          </div>
+          <div>
+            {data.label}
+          </div>
+          <div>
+            <label>作成者</label>
+          </div>
+          <div>
+            {data.creator}
+          </div>
+          <div>
+            <label>作成日時</label>
+          </div>
+          <div>
+            {moment(data.createdAt).format(Constants.format.dateTime)}
+          </div>
+      </div>
+      return <div className={classnames(style.property,style.in,'inspector')}>
+        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+          {content}
+        </BaseInspector>
+      </div>
+    }else{
+      return <Resizer>
+        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+          {content}
+        </BaseInspector>
+      </Resizer>
+    }
+
   }
 
 }

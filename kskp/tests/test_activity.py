@@ -5,7 +5,7 @@ import uuid
 import tempfile
 import kskp.model as model
 from pathlib import Path
-from ..activity import (
+from ..utils.activity import (
     make_unfinished_history,
     make_finished_history
 )
@@ -57,7 +57,7 @@ class ActivityTest(unittest.TestCase):
             # mockでデコレータをテストする（実行履歴が作成される）
             unfinished_deco = make_unfinished_history(now, session)
             execute_flow = unfinished_deco(mock_func)
-            execute_flow(data_source_name)
+            execute_flow(flow_uuid=data_source_name, inputs={}, args={})
 
             # 作成されたファイルパス
             flow_path = model.make_flow_path(data_source_name)
@@ -110,12 +110,12 @@ class ActivityTest(unittest.TestCase):
             # 実行履歴を作成する
             unfinished_deco = make_unfinished_history(now, session)
             execute_flow = unfinished_deco(mock_func)
-            execute_flow(data_source_name)
+            execute_flow(flow_uuid=data_source_name, inputs={}, args={})
             # 実行履歴を更新
             # dataは更新していなくて、data作成中にFrameオブジェクトが使われているのでどうしようか考え中
             finished_deco = make_finished_history(now)
             execute_flow2 = finished_deco(mock_func_finished)
-            execute_flow2(data_source_name)
+            execute_flow2(flow_uuid=data_source_name, inputs={}, args={})
 
             # 作成されたファイルパス
             flow_path = model.make_flow_path(data_source_name)

@@ -30,6 +30,7 @@ const SELECT_STEPS_ACTION = 'select_steps_action'
 const ADD_SELECT_STEP_ACTION = 'add_select_step_action'
 const DELETE_SELECT_STEP_ACTION = 'delete_select_step_action'
 const DELETE_STEPS_ACTION = 'delete_steps_action'
+const DELETE_CACHE_ACTION = 'delete_cache_action'
 const CUT_STEPS_ACTION = 'cut_steps_action'
 const COPY_STEPS_ACTION = 'copy_steps_action'
 const PASTE_STEPS_ACTION = 'paste_steps_action'
@@ -45,7 +46,6 @@ const DRAGGING_ACTION = 'dragging_action'
 const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
-const ADD_NOTE_ACTION = 'add_memo_action'
 const UPDATE_CACHE_ACTION = 'update_cache_action'
 const graph: Graph = new Graph()
 
@@ -66,7 +66,7 @@ let initialState = {
   selected_data_source_detail: {}
 }
 
-const Application = (state = initialState, action: {}) => {
+const FlowEditorReducer = (state = initialState, action: {}) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
   //stateを一度ディープコピーしないとrenderされないためコピーする
   let newState = StateUtil.deepCopy(state)
@@ -83,6 +83,8 @@ const Application = (state = initialState, action: {}) => {
       newState.history.current = 0
       newState.history.nodes = [newState.nodes]
 
+      // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
+      newState.history = StateUtil.deepCopy(newState.history)
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
       Validator.isFlowModelSchema(newState)
       Validator.isGraphModelSchema(newState)
@@ -207,6 +209,9 @@ const Application = (state = initialState, action: {}) => {
           src_step_ids.forEach((id, index) => {
             const newPort = inPorts[index]
             let portName = newPort.name
+            if (add_step instanceof SubFlowStepModel) {
+              portName = newPort.nodeId
+            }
             if(portName === "*"){
               portName = "*1"
             }
@@ -225,9 +230,13 @@ const Application = (state = initialState, action: {}) => {
 
           })
           dst_step_ids.forEach((id, index) => {
-            const newPortName = outPorts[index]
-            add_step.dsts[newPortName.name] = id
-
+            const newPort = outPorts[index]
+            let portName = newPort.name
+            if (add_step instanceof SubFlowStepModel) {
+              portName = newPort.label
+            }
+            add_step.dsts[portName] = id
+            
             //dstsがあった場合は１つ目のポート名につなぐ
             //dstsがない場合は、デフォルト値（i）のポートにつなぐ
             const from: string = add_step.id
@@ -253,7 +262,7 @@ const Application = (state = initialState, action: {}) => {
           height: defaultNodeProps.height
         })
       }
-
+      
       newState.nodes.push(add_step)
       newState.graph = graph.getGraph(newState)
       break
@@ -284,7 +293,7 @@ const Application = (state = initialState, action: {}) => {
       action.step_ids.forEach((id) => {
         if (Graph.getNode(newState.nodes, id) instanceof DataFrameStepModel) {
           //削除対象のノードの親がある場合、親を調べる
-          if (graph.g.inEdges(id).length > 0) {
+          if (graph.g.inEdges(id) && graph.g.inEdges(id).length > 0) {
             const deleteTargetStepId = graph.g.inEdges(id)[0].v
             const deleteTargetStep = Graph.getNode(newState.nodes, deleteTargetStepId)
             if (deleteTargetStep instanceof CommandStepModel ||
@@ -387,12 +396,13 @@ const Application = (state = initialState, action: {}) => {
        return newState
      }
     case ADD_HISTORY_ACTION:{
-      let newState = StateUtil.deepCopy(state)
-
+      //let newState = StateUtil.deepCopy(state)
       const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
+      
       if(isSame){
         return newState
       }
+      
       if(newState.history.current != newState.history.nodes.length - 1){
         //前に戻っている状態で履歴が追加された場合は、
         //current以降の履歴は消す
@@ -407,7 +417,7 @@ const Application = (state = initialState, action: {}) => {
       return newState
     }
     case UNDO_ACTION:{
-      let newState = StateUtil.deepCopy(state)
+      let newState = StateUtil.deepCopy(state)    
       if(newState.history.current > 0){
         //一つ前に巻き戻し
         newState.history.current = newState.history.current - 1
@@ -464,6 +474,17 @@ const Application = (state = initialState, action: {}) => {
         })
         return newState
       }
+      break
+    }
+
+    case DELETE_CACHE_ACTION: {
+      const id = action.selected_step_id
+      let node = Graph.getNode(state.nodes, id)
+      if (node instanceof DataFrameStepModel) {
+        node.deleteCache()
+      }
+
+      newState.nodes = Graph.updateNode({nodes: state.nodes, key: id, new_node: node})
       break
     }
 
@@ -557,17 +578,6 @@ const Application = (state = initialState, action: {}) => {
       break
     }
 
-    case UPDATE_CACHE_ACTION: {
-      const updatedStep = action.step
-      newState.nodes = newState.nodes.map((node, index) => {
-        if(node.id == updatedStep.id) {
-          node.cacheCreatedAt = updatedStep.cacheCreatedAt
-          node.uuid = updatedStep.uuid
-          node.makeCache = updatedStep.makeCache
-        }
-        return node
-      })
-    }
     
     default:
       window.nodes = state.nodes
@@ -578,7 +588,7 @@ const Application = (state = initialState, action: {}) => {
 
 }
 
-export default Application
+export default FlowEditorReducer
 
 /**
  * エッジのつなぎ直し処理
@@ -833,6 +843,13 @@ export const deleteSelectStepAction = (selected_step_id: string) => {
   }
 }
 
+export const deleteCacheAction = (selected_step_id: string) => {
+  return {
+    type: DELETE_CACHE_ACTION,
+    selected_step_id: selected_step_id
+  }
+}
+
 /**
  * フローの実行
  * @param flowid
@@ -923,12 +940,5 @@ export const addNoteAction = (x:number, y:number) => {
     type: ADD_NOTE_ACTION,
     x: x,
     y: y
-  }
-}
-
-export const updateCacheAction = (step: StepModelType) => {
-  return {
-    type: UPDATE_CACHE_ACTION,
-    step: step
   }
 }

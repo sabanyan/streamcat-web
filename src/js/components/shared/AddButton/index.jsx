@@ -1,6 +1,6 @@
 //@flow
 import * as React from 'react'
-import style from './style.scss'
+import defaultStyle from './style.scss'
 import classnames from 'classnames'
 
 type Props = {
@@ -18,9 +18,10 @@ export default class AddButton extends React.Component<Props> {
   }
 
   render () {
-    const {onClick, children, className} = this.props
-    const iconClass = classnames('material-icons', [style.icon])
-    return <div className={style.addButton} onClick={onClick}>
+    const {onClick, children, name} = this.props
+    const style = (this.props.style) ? this.props.style : defaultStyle
+    const iconClass = classnames('material-icons', [defaultStyle.icon])
+    return <div className={style.addButton} onClick={onClick} name={name}>
       <i className={iconClass}>add_circle_outline</i>
       {children}
     </div>

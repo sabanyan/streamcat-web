@@ -1,6 +1,7 @@
 //@flow
 import * as React from 'react'
 import style from '../style.scss'
+import classnames from 'classnames'
 import InOutConnector from '../CommandInspector/InOutConnector/index'
 
 type Props = {
@@ -22,7 +23,7 @@ class BaseInspector extends React.Component<Props> {
           value: this.refs.title.value
         }
       }
-      this.props.onBlurTitle(e)
+      this.props.onBlurTitle(e,this.props)
     }
     if(this.props.onHide){
       this.props.onHide()
@@ -32,6 +33,7 @@ class BaseInspector extends React.Component<Props> {
   onChange(e) {
   
 
+<<<<<<< HEAD
   }
   render () {
 
@@ -43,6 +45,15 @@ class BaseInspector extends React.Component<Props> {
       labelContainer =  <input type="text" ref={"title"}
                                onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null}
                                onChange={(onChangeTitle)?(e)=>onChangeTitle(e):null}
+=======
+    const {header, label, children,onBlurTitle,subLabel} = this.props
+    const disabled = (!onBlurTitle)
+    let labelContainer,subLabelContainer
+    // FIXIT ロジクもう少し分かりやすく
+    if(!disabled && label !== undefined){
+      labelContainer =  <input type="text" ref={"title"}
+                               onBlur={(onBlurTitle)?(e)=>{onBlurTitle(e, this.props)}:null}
+>>>>>>> frontend_merge_test
                                className={style.label}
                                {...value}
                                disabled={disabled}></input>
@@ -53,7 +64,9 @@ class BaseInspector extends React.Component<Props> {
         </div>
     }
 
-    return <div className={style.property_container}>
+    const width = 100
+
+    return <div className={classnames(style.property_container,'inspector-container')}>
       <div className={style.property_header}>
         {header}
       </div>
