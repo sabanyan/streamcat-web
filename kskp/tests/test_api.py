@@ -9,9 +9,14 @@ from pathlib import Path
 from werkzeug.datastructures import Headers
 
 from kskp import app
+from .test_case_base import TestCaseBase
 import kskp.model as model
 
-class ApiTestCase(unittest.TestCase):
+class ApiTestCase(TestCaseBase):
+
+    # フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
+    INPUT_FRAME_UUID = '86365ce9-9b01-4ec3-b672-7739e8f1e507'
+
     def setUp(self):
         self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
         app.testing = True
@@ -19,9 +24,30 @@ class ApiTestCase(unittest.TestCase):
         with app.app_context():
             model.init_db()
 
+        # テスト用フレームをライブラリに登録する
+        input_frame_path = os.path.join('kskp/data/frames', self.INPUT_FRAME_UUID + '.csv')
+        self.save_frame_to_library(self.INPUT_FRAME_UUID, input_frame_path)
+
     def tearDown(self):
+        # テスト用フレームをライブラリから削除する
+        self.remove_frame_from_library(self.INPUT_FRAME_UUID)
+
         os.close(self.db_fd)
         os.unlink(app.config['DATABASE'])
+
+    @staticmethod
+    def remove_copy_flow_files(data_source_name, copy_flow_label, project_id):
+        """
+        テストで作成したフローのコピーファイルを削除する
+        """
+        for path in Path(app.config['FLOW_PATH']).iterdir():
+            if not path.suffix == '.json':
+                continue
+            with open(path) as f:
+                flow_json = json.load(f)
+                if flow_json['label'] == copy_flow_label and flow_json['projectId'] == project_id:
+                    path.unlink()
+                    break
 
     def test_new_project(self):
         """
@@ -219,6 +245,12 @@ class ApiTestCase(unittest.TestCase):
              project_id, project_uuid,
              new_flow_name, data_source_name, created_flow) = setUpFlow(self)
 
+        
+        copy_flow_label = new_flow_name + ' のコピー'
+
+        # 前のテストが失敗してフローのコピーが残っていればそれを削除する
+        ApiTestCase.remove_copy_flow_files(data_source_name, copy_flow_label, project_id)
+
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user1
@@ -237,18 +269,12 @@ class ApiTestCase(unittest.TestCase):
             result = json.loads(copy_response.get_data())
 
             # コピーされているかの確認
-            copy_flow_label = new_flow_name + ' のコピー'
             self.assertEqual(result['success'], True)
             self.assertEqual(result['data']['label'], copy_flow_label)
 
             # 後片付け
             os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
-            for path in Path(app.config['FLOW_PATH']).iterdir():
-                with open(path) as f:
-                    flow_json = json.load(f)
-                    if flow_json['label'] == copy_flow_label and flow_json['projectId'] == project_id:
-                        path.unlink()
-                        break
+            ApiTestCase.remove_copy_flow_files(data_source_name, copy_flow_label, project_id)
 
     def test_new_flow_for_copy_multi(self):
         """
@@ -261,6 +287,13 @@ class ApiTestCase(unittest.TestCase):
             (user1,
              project_id, project_uuid,
              new_flow_name, data_source_name, created_flow) = setUpFlow(self)
+
+        copy_flow_label_1 = new_flow_name + ' のコピー'
+        copy_flow_label_2 = new_flow_name + ' のコピー2'
+
+        # 前のテストが失敗してフローのコピーが残っていればそれを削除する
+        ApiTestCase.remove_copy_flow_files(data_source_name, copy_flow_label_1, project_id)
+        ApiTestCase.remove_copy_flow_files(data_source_name, copy_flow_label_2, project_id)
 
         with app.test_client() as client:
             with client.session_transaction() as session:
@@ -288,11 +321,9 @@ class ApiTestCase(unittest.TestCase):
             result_2 = json.loads(copy_response_2.get_data())
 
             # コピーされているかの確認
-            copy_flow_label_1 = new_flow_name + ' のコピー'
             self.assertEqual(result_1['success'], True)
             self.assertEqual(result_1['data']['label'], copy_flow_label_1)
 
-            copy_flow_label_2 = new_flow_name + ' のコピー2'
             self.assertEqual(result_2['success'], True)
             self.assertEqual(result_2['data']['label'], copy_flow_label_2)
 
@@ -300,6 +331,8 @@ class ApiTestCase(unittest.TestCase):
             os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
             for path in Path(app.config['FLOW_PATH']).iterdir():
                 with open(path) as f:
+                    if path.name == '.DS_Store':
+                        continue
                     flow_json = json.load(f)
                     if (flow_json['label'] == copy_flow_label_1 or flow_json['label'] == copy_flow_label_2) \
                         and flow_json['projectId'] == project_id:
@@ -1258,21 +1291,7 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        for path in Path(app.root_path + '/data/jobs/').iterdir():
-            job_data = json.loads(path.read_text())
-
-            if job_data['flow']['uuid'] == flow_uuid:
-                # 指定したflowでjobができているかのテスト
-                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-                self.assertEqual(job_data['state'], '実行完了')
-
-                # 作成したフレームの削除
-                for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    os.remove(frame_path)
-
-                # jobsの削除
-                os.remove(path)
+        self.remove_job_file_and_frame(flow_uuid)
 
     def test_execute_subflow_by_multi_csv_file_with_args(self):
         """
@@ -1328,18 +1347,7 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        for path in Path(app.root_path + '/data/jobs/').iterdir():
-            job_data = json.loads(path.read_text())
-            if job_data['flow']['uuid'] == flow_uuid:
-                # 指定したflowでjobができているかのテスト
-                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-                self.assertEqual(job_data['state'], '実行完了')
-                # 作成したFrameの削除
-                for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    os.remove(frame_path)
-                # jobsの削除
-                os.remove(path)
+        self.remove_job_file_and_frame(flow_uuid)
 
     def test_execute_subflow_by_multi_csv_file_with_args2(self):
         """
@@ -1396,21 +1404,13 @@ class ApiTestCase(unittest.TestCase):
         # 削除
         for lasts in result['name']:
             frame_uuid = lasts['uuid']
-            os.remove('kskp/data/frames/' + frame_uuid + '.csv')
+            from kskp.library import Frame as FrameModel
+            frame = FrameModel.find_by_uuid(frame_uuid)
+            if frame is not None:
+                frame.delete()
 
         # このテストで作成したjobsだけ削除する
-        for path in Path(app.root_path + '/data/jobs/').iterdir():
-            job_data = json.loads(path.read_text())
-            if job_data['flow']['uuid'] == flow_uuid:
-                # 指定したflowでjobができているかのテスト
-                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-                self.assertEqual(job_data['state'], '実行完了')
-                # 作成したFrameの削除
-                for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    # os.remove(frame_path)
-                # jobsの削除
-                os.remove(path)
+        self.remove_job_file_and_frame(flow_uuid)
 
     @unittest.skip
     def test_visualizers_csvtohtmltable(self):
@@ -1724,18 +1724,7 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
-        for path in Path(app.root_path + '/data/jobs/').iterdir():
-            job_data = json.loads(path.read_text())
-            if job_data['flow']['uuid'] == flow_uuid:
-                # 指定したflowでjobができているかのテスト
-                self.assertEqual(job_data['flow']['uuid'], flow_uuid)
-                self.assertEqual(job_data['state'], '実行完了')
-                # 作成したFrameの削除
-                for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    os.remove(frame_path)
-                # jobsの削除
-                os.remove(path)
+        self.remove_job_file_and_frame(flow_uuid)
 
     def test_execute_flow_limit(self):
         '''
@@ -1763,7 +1752,16 @@ class ApiTestCase(unittest.TestCase):
 
         # 削除
         # このテストで作成したjobsだけ削除する
+        self.remove_job_file_and_frame(flow_uuid)
+
+    def remove_job_file_and_frame(self, flow_uuid):
+        """
+        指定したflow_uuidのフローで作成されたjobsファイルとFrameを削除する
+        """
+        from kskp.library import Frame as FrameModel
         for path in Path(app.root_path + '/data/jobs/').iterdir():
+            if path.name == '.DS_Store':
+                continue
             job_data = json.loads(path.read_text())
             if job_data['flow']['uuid'] == flow_uuid:
                 # 指定したflowでjobができているかのテスト
@@ -1771,8 +1769,11 @@ class ApiTestCase(unittest.TestCase):
                 self.assertEqual(job_data['state'], '実行完了')
                 # 作成したFrameの削除
                 for data in job_data['data'].values():
-                    frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
-                    os.remove(frame_path)
+                    # frame_path = Path('kskp/data/frames/' + data['uuid'] + '.csv')
+                    # os.remove(frame_path)
+                    frame = FrameModel.find_by_uuid(data['uuid'])
+                    if frame is not None:
+                        frame.delete()
                 # jobsの削除
                 os.remove(path)
 
@@ -1805,6 +1806,8 @@ class FrameApiTestCase(unittest.TestCase):
         fetch_frame APIをテストする
         """
         with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = 'user1'
             response = client.get('/api/v0/frames/%s' % self.frame_uuid)
         result = json.loads(response.get_data())
 
@@ -2221,6 +2224,7 @@ class CacheApiTestCase(unittest.TestCase):
         # 後片付け
         # new_file_path.unlink()
         flow_path.unlink()
+
 
 if __name__ == '__main__':
     unittest.main()

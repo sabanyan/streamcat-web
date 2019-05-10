@@ -105,3 +105,10 @@ $kskp-dropdown-list-label-color: #8296A8;
   -ms-user-select: text;
   user-select: text;
 }
+
+.user-not-select{
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}

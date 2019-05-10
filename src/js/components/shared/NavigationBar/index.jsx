@@ -4,6 +4,7 @@ import classnames from 'classnames'
 import style from './style.scss'
 import type { NavigationModelProps } from '../../../model/Navigation/NavigationModel'
 import WebUtil from '../../../utils/WebUtil'
+import HttpUtil from '../../../utils/HttpUtil'
 
 type Props = {
   baseUrl: string,
@@ -30,6 +31,13 @@ export default class NavigationBar extends React.Component<Props> {
         this.hasFlow = true
       }
     }
+  }
+
+  componentDidMount(){
+    if(this.isDialog()){
+      document.body.classList.add('dialog')
+    }
+
   }
 
   renderProjectNavigationItem(){
@@ -77,7 +85,7 @@ export default class NavigationBar extends React.Component<Props> {
     const {baseUrl, navigation} = this.props
     if(!this.hasProject) return null
     return <li className="nav-item library">
-      <a className="nav-link" href={"/library?project=" + navigation.project_uuid}>
+      <a className="nav-link" href={"/library"}>
         <img className="icon" src={baseUrl + 'images/icon/library.svg'} />ライブラリ
       </a>
     </li>
@@ -103,15 +111,21 @@ export default class NavigationBar extends React.Component<Props> {
         {navigation.user_name}
       </a>
       <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-        <a href="/profile" className="dropdown-item">プロフィール設定</a>
-        <div className="dropdown-divider"></div>
+        {/*<a href="/profile" className="dropdown-item">プロフィール設定</a>*/}
+        {/*<div className="dropdown-divider"></div>*/}
         <a href="#" className="dropdown-item" onClick={this.onClickLogout}>ログアウト</a>
       </div>
     </li>
 
   }
 
+  isDialog(){
+    return (HttpUtil.getURLParam("dialog"))
+  }
+
   render () {
+    if(this.isDialog())return null
+
     const {baseUrl} = this.props
     return <nav className="navbar navbar-expand navbar-dark fixed-top">
       <a className="navbar-brand" href="#">

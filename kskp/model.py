@@ -9,6 +9,14 @@ from flask import g
 from . import app
 from . import auth
 from threading import Lock
+
+from .library import (
+    FRAME_FOLDER_UUID,
+    FRAME_FOLDER_LABEL,
+    CACHE_FOLDER_UUID,
+    CACHE_FOLDER_LABEL
+)
+
 lock = Lock()
 
 # app.config['DATABASE'] = app.root_path + '/data/kskp.db'
@@ -332,6 +340,8 @@ def generate_flow_name(project_id, flow_name, serial_number=1):
 
     for path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not path.suffix == '.json':
+                continue
             data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していないファイルは無視
@@ -363,6 +373,8 @@ def fetch_subflows_all_projects(request_args):
     subflow_list = []
     for path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not path.suffix == '.json':
+                continue
             data = json.loads(path.read_text())
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合
@@ -434,6 +446,8 @@ def get_flow_path_by_uuid(flow_uuid):
     指定したUUIDをファイル名にもつフローファイルのパスを返すヘルパー
     """
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+        if not flow_path.suffix == '.json':
+            continue
         if flow_path.stem == flow_uuid:
             return flow_path
 
@@ -495,6 +509,8 @@ def get_flow_paths_by_project_uuid(project_uuid):
 
     for flow_path in Path(app.config['FLOW_PATH']).iterdir():
         try:
+            if not flow_path.suffix == '.json':
+                continue
             data = json.loads(flow_path.read_text(encoding='utf-8'))
         except json.JSONDecodeError as e:
             # JSONのフォーマットに則していない場合は飛ばす
@@ -512,6 +528,37 @@ def make_flow_path(file_name):
     """
     return Path(app.config['FLOW_PATH']) / Path('%s.json' % file_name)
 
+def get_frame_dir_path(user_id):
+    # フレーム格納フォルダを取得する
+    return _get_or_make_dir_path(FRAME_FOLDER_UUID, FRAME_FOLDER_LABEL, user_id)
+
+def get_cache_dir_path(user_id):
+    # キャッシュ格納フォルダを取得する
+    return _get_or_make_dir_path(CACHE_FOLDER_UUID, CACHE_FOLDER_LABEL, user_id)
+
+def _get_or_make_dir_path(uuid, label, user_id):
+    from .library import Folder
+    from .lib import get_library
+    # 特定用途のフォルダのUUIDは決め打ちである
+    if Folder.exists(uuid):
+        folder = Folder.find_by_uuid(uuid)
+    else:
+        # フォルダが無い場合は作成する
+        root = get_library(user_id)
+        folder = Folder(root.uuid,
+                        label,
+                        user_id,
+                        user_id)
+        # Folderのコンストラクタで付番したUUIDを捨てて、特定用途のフォルダのUUIDを格納する
+        folder.uuid = uuid
+        folder.save()
+    return folder
+
+def get_all_frame_uuid_in_frame(flow_uuid):
+    """
+    指定するフローのJSONファイルにおいて、フレームノードで参照するフレームUUIDを全て取得する
+    """
+    return [node['uuid'] for id, node in get_flow_nodes_by_uuid(flow_uuid).items() if node['type'] == 'frame']
 
 def get_project_id_by_uuid(project_uuid):
     """
@@ -604,3 +651,4 @@ class User:
     def __init__(self, id, email):
         self.id = id
         self.email = email
+

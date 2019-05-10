@@ -1,3 +1,8 @@
+# import ptvsd
+# ptvsd.enable_attach(address = ('0.0.0.0', 3000))
+# ptvsd.wait_for_attach()
+# ptvsd.break_into_debugger()
+
 from flask import Flask, render_template, url_for, redirect, session, request
 from bokeh.resources import INLINE
 
@@ -10,10 +15,16 @@ app.config["JSON_SORT_KEYS"] = False
 
 from .auth import auth_bp, login_required
 from .api import api
+from .lib import lib
 from .model import *
 
 app.register_blueprint(auth_bp, url_prefix='/signup')
 app.register_blueprint(api, url_prefix='/api/v0')
+app.register_blueprint(lib, url_prefix='/api/v0')
+
+# flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
+from .utils.kskp_json_encoder import KSKPJSONEncoder
+app.json_encoder = KSKPJSONEncoder
 
 from .util_endpoints import endpoints
 app.register_blueprint(endpoints, url_prefix='/')
@@ -49,6 +60,14 @@ def library():
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
     return render_template('library.html',js_resources=js_resources,css_resources=css_resources)
+
+@app.route('/folders/<folder_uuid>', methods=['GET'])
+@login_required
+def folders(folder_uuid):
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    folder_uuid = folder_uuid.rsplit('?')[0]
+    return render_template('library.html',folder_uuid=folder_uuid,js_resources=js_resources,css_resources=css_resources)
 
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required

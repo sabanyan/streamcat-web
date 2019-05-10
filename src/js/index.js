@@ -3,7 +3,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { createStore, compose, applyMiddleware,combineReducers } from 'redux'
-import reducer from './modules/application'
+import flowEditorReducer from './modules/application'
+import libraryReducer from './modules/library'
+import flowListReducer from './modules/flowList'
 import thunk from 'redux-thunk'
 import {reducer as notificationsReducer} from 'reapop'
 import FlowEditorContainer from './components/FlowEditorContainer'
@@ -35,7 +37,9 @@ const createStoreWithMiddleware = compose(
 
 const store = createStoreWithMiddleware(combineReducers({
   notifications: notificationsReducer(defaultNotification),
-  reducer
+  flowEditorReducer,
+  libraryReducer,
+  flowListReducer
 }), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
 if (document.getElementById('flow_editor')) {
@@ -55,14 +59,18 @@ if (document.getElementById('project_list')) {
 }
 if (document.getElementById('flow_list')) {
   ReactDOM.render(
-    <FlowListContainer/>,
+    <Provider store={store}>
+      <FlowListContainer/>
+    </Provider>,
     document.getElementById('flow_list'),
   )
 }
 
 if (document.getElementById('library_list')) {
   ReactDOM.render(
-    <LibraryListContainer/>,
+    <Provider store={store}>
+      <LibraryListContainer/>
+    </Provider>,
     document.getElementById('library_list'),
   )
 }

@@ -31,6 +31,11 @@ class HTTPUtil {
     return "/" + path
   }
 
+  windowOpen(path:string,callBackApply:Function,option:string = 'width=1200,height=600'){
+    window.open("/"+path, 'child', option)
+    window['onCallbackApply'] = callBackApply
+  }
+
   get (path:string, data?:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.httpUrl(path)

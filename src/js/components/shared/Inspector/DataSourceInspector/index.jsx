@@ -2,6 +2,7 @@
 import React from 'react'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
+import SortUtil from '../../../../utils/SortUtil'
 import Operator from '../../Command/index'
 import BaseInspector from '../BaseInspector/index'
 import style from '../style.scss'
@@ -28,7 +29,6 @@ import { RunResponseType } from '../../../../types'
 import ErrorUtil from '../../../../utils/ErrorUtil'
 import Visualizer from '../../Visualizer'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
-
 
 type State = {
   dataFrameDetail?:DataFrameDetailType;
@@ -132,25 +132,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const getFrameHeaderURL = "frames/" + uuid
     APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
       const headers = response.data.data
-      let visualizers = this.props.mast.visualizers.sort((a, b) => {
-        // ある順序の基準において a が b より小
-        if (a.order < b.order) {
-          return -1;
-        }
-        //その順序の基準において a が b より大
-        if (a.order > b.order) {
-          return 1;
-        }
-        // a は b と等しいはず
-        return 0;
-      })
-
+      let visualizers = this.props.mast.visualizers
+      visualizers = SortUtil.getSortedContents(visualizers)
       let contents = []
       for (const v of visualizers) {
         const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
         contents.push({title: v.label,content:content,parentProps:this.props})
       }
- 
+
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
@@ -162,7 +151,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       })
       this.updateCache()
     })
-
   }
 
   updateCache() {
@@ -218,9 +206,12 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const flowOutChecked = this.refs.flowOut.checked
 
     let selected_step = this.getSelectedStep()
-
     //パラメーターを更新
-    const port = {name:selected_step.id,type: selected_step.type}
+    const port = {
+      label:selected_step.getLabel(),
+      nodeId: selected_step.id,
+      type: selected_step.type
+    }
 
     if (flowInChecked) {
       flow.setInPort(port)
@@ -260,9 +251,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
 }
 
-  onClickDeleteCache() {
-    let {selected_step_ids, nodes, notify,dismissNotify} = this.props
-
+  onClickDeleteCache() {  
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         this.deleteCache()
@@ -282,8 +271,10 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   deleteCache() {
-    const node = this.getSelectedStep()
-    const url = "caches?of=" + inject_flow_uuid + "." + node.id
+    const {selected_step_ids} = this.props
+    const id = selected_step_ids[0]
+    const url = "caches?of=" + inject_flow_uuid + "." + id
+ 
     APIUtil.delete(url).then((response)=>{
       if (!response.data.success) {
         notify({
@@ -295,7 +286,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         })
       }
       if (response.data.success) {
-        this.updateCache()
+        this.props.deleteCache(id)
       }
     })
   }
@@ -467,6 +458,27 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     newSelectedStep.label = e.target.value
     this.props.updateStep(newSelectedStep)
+    // 該当ステップがIn・OutPortの場合の処理
+    let flow:FlowModel = this.props.flow
+    const flowInChecked = (this.refs.flowIn) ? this.refs.flowIn.checked : null
+    const flowOutChecked = (this.refs.flowOut) ? this.refs.flowOut.checked : null
+    const id = selectedStep.id
+
+    if (flowInChecked || flowOutChecked) {  
+      if (flowInChecked) {
+        let inPort = flow.getInPortWithId(id)
+        inPort.label = newSelectedStep.label
+        flow.setInPort(inPort)
+      }
+  
+      if (flowOutChecked) {
+        let outPort = flow.getOutPortWithId(id)
+        outPort.label = newSelectedStep.label
+        flow.setOutPort(outPort)
+      }
+  
+      this.props.updateFlow(flow)
+    }
   }
 
 }

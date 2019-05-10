@@ -48,22 +48,48 @@ class APIUtil {
     return axios.put(url, data, merged_config)
   }
 
-  delete (path:string, data:{}, config:{}) {
+  delete (path:string, data?:{}, config?:{}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
     return axios.delete(url, data, merged_config)
   }
 
-  fileupload(file:File,fileName:string){
+  frameUpload(file:File,fileName:string,label:string,parentUUID:string){
+    const options = {
+      headers: { 'enctype': 'multipart/form-data' }
+    }
+
+    let formData:FormData = new FormData();
+    console.log(parentUUID)
+    console.log(label)
+    formData.append('file', file)
+    if(fileName){
+      formData.append('file_name', fileName)//TODO 将来的にはなくなる？？
+    }
+    if(label){
+      formData.append('label', label)
+    }
+    if(parentUUID){
+      formData.append('parent', parentUUID)
+    }
+
+    return this.post('frames', formData,options)
+  }
+  documentUpload(file:File,label:string,parentUUID:string){
     const options = {
       headers: { 'enctype': 'multipart/form-data' }
     }
 
     let formData:FormData = new FormData();
     formData.append('file', file)
-    formData.append('file_name', fileName)
+    if(label){
+      formData.append('label', label)
+    }
+    if(parentUUID){
+      formData.append('parent', parentUUID)
+    }
 
-    return this.post('frames', formData,options)
+    return this.post('documents', formData,options)
   }
 
 }

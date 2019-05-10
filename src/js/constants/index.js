@@ -42,6 +42,12 @@ const Constants = {
       width: (38 + 6 * 2) * 4,
       height: (38 + 6 * 2) / 2,
       padding: 15,
+    },
+    inspector: {
+      width: 400,
+      closingRatio: 0.3,
+      closedWidth: 24,
+      maxWidth: 800
     }
   },
   step:{
@@ -83,6 +89,10 @@ const Constants = {
     ADD_COMMAND: 'add_command',
     ADD_PROJECT: 'add_project',
     ADD_FLOW: 'add_flow',
+    ADD_FOLDER: 'add_folder',
+    ADD_DOCUMENT: 'add_document',
+    ADD_FRAME: 'add_frame',
+    RUN_FLOW: 'run_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
     CONFIRM: 'confirm',
@@ -145,6 +155,22 @@ const Constants = {
       regression:"回帰",
     }
   },
+  library:{
+    type:{
+      document: "document",
+      frame: "frame",
+      folder: "folder",
+      database: "database",
+      remoteFolder: "remote-folder"
+    },
+    mode: {
+      dialog: "dialog", //選択モード
+      list: "list" //通常モード
+    }
+  },
+  errorMessage:{
+    unhandledError: "予期せぬエラーが発生しました"
+  }
 
 }
 export default Constants

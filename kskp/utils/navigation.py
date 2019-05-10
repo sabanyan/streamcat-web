@@ -3,7 +3,7 @@ import functools
 from flask import (
     Blueprint, session, render_template, url_for, jsonify, request, redirect, flash
 )
-from . import model
+from .. import model
 
 def update_navigation(func):
     @functools.wraps(func)

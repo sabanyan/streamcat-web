@@ -1,6 +1,7 @@
 //@flow
 import Constants from '../constants'
 
+
 export default class ModalUtil {
   static getUDID () {
     return 'm' + Math.floor(Math.random() * 10000)

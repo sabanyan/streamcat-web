@@ -320,6 +320,8 @@ export default class Step extends React.Component<Props, State> {
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
 
+    let stepLabel = step.getLabel()
+
     if(flowIn || flowOut){
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
@@ -331,6 +333,7 @@ export default class Step extends React.Component<Props, State> {
       </g>
     }else if(this.isSubFlow(step)){
       icon = <SubFlowIcon hover={hover} selected={selected} filter={filter}/>
+      stepLabel = step.getLabel()
     }else if (this.isStep(step)) {
       //ステップ
       let command
@@ -338,6 +341,7 @@ export default class Step extends React.Component<Props, State> {
         this.props.mast.commands.forEach(c=>{if(c.id === step.commandId)command = c})
         icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter}/>
       }
+      stepLabel = step.getLabel()
     }else if (this.isDataFrame(step)) {
       //データソース
       const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
@@ -356,7 +360,7 @@ export default class Step extends React.Component<Props, State> {
       
     }
 
-    const stepLabel = step.getLabel()
+    
 
     let invalid_icon = null
     let error_icon = null
@@ -368,23 +372,21 @@ export default class Step extends React.Component<Props, State> {
     }
 
     return (
-      <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}
-         onMouseDown={(e) => this.handleMouseDown(e)}
-         onMouseOver={(e) => this.handleMouseOver(e)}
-         onMouseLeave={(e) => this.handleMouseLeave(e)}>
-        {icon}
+      <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}>
+        <g className={style.iconContainer} onMouseDown={(e) => this.handleMouseDown(e)}
+          onMouseOver={(e) => this.handleMouseOver(e)}
+          onMouseLeave={(e) => this.handleMouseLeave(e)}>
+          {icon}
+        </g>
         {invalid_icon}
         {error_icon}
-
-        <foreignObject {...TextStyle} transform={'translate(' + (-1 * TextStyle.width) + ',0)'}>
-          <div style={{display:"table",width:"100%",height:TextStyle.height,paddingRight: TextStyle.padding + "px"}}>
-          <p xmlns="http://www.w3.org/1999/xhtml" style={{display:"table-cell",verticalAlign:"middle",textAlign:"right",wordBreak:"break-all"}}>{stepLabel}</p>
-          </div>
-        </foreignObject>
-
-        {/*<text className="text" transform={'translate(' + (-8) + ',' +*/}
-        {/*(RectStyle.height / 2 + 6) + ')'} textAnchor="end"*/}
-              {/*fontSize={12} width={100} height={100}>{stepLabel}</text>*/}
+        <g className={style.labelContainer}>
+          <foreignObject {...TextStyle} transform={'translate(' + (-1 * TextStyle.width) + ',0)'}>
+            <div style={{display:"table",width:"100%",height:TextStyle.height,paddingRight: TextStyle.padding + "px"}}>
+            <p xmlns="http://www.w3.org/1999/xhtml" style={{display:"table-cell",verticalAlign:"middle",textAlign:"right",wordBreak:"break-all"}}>{stepLabel}</p>
+            </div>
+          </foreignObject>
+        </g>
       </g>
     )
   }
