@@ -33,19 +33,6 @@ class BaseInspector extends React.Component<Props> {
   onChange(e) {
   
 
-<<<<<<< HEAD
-  }
-  render () {
-
-    const {header, label, children,onBlurTitle,subLabel, onChangeTitle} = this.props
-    const disabled = (!onBlurTitle)
-    let labelContainer,subLabelContainer
-    let value = (onChangeTitle) ? {value :label} : {defaultValue : label}
-    if(!disabled && label !== undefined){
-      labelContainer =  <input type="text" ref={"title"}
-                               onBlur={(onBlurTitle)?(e)=>onBlurTitle(e):null}
-                               onChange={(onChangeTitle)?(e)=>onChangeTitle(e):null}
-=======
     const {header, label, children,onBlurTitle,subLabel} = this.props
     const disabled = (!onBlurTitle)
     let labelContainer,subLabelContainer
@@ -53,7 +40,6 @@ class BaseInspector extends React.Component<Props> {
     if(!disabled && label !== undefined){
       labelContainer =  <input type="text" ref={"title"}
                                onBlur={(onBlurTitle)?(e)=>{onBlurTitle(e, this.props)}:null}
->>>>>>> frontend_merge_test
                                className={style.label}
                                {...value}
                                disabled={disabled}></input>

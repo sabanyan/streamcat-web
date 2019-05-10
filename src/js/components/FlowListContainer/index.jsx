@@ -39,7 +39,6 @@ export default FlowListContainer = connect(
           dispatch(removeNotification(...args))
         },1000)
       },
-<<<<<<< HEAD
     })
     ModalUtil.emitModal({
       id: Constants.modal.CONFIRM,
@@ -103,8 +102,6 @@ export default FlowListContainer = connect(
   renderAll () {
     if (this.isEmptyFlowList()) {
       return this.renderEmptyState()
-=======
->>>>>>> frontend_merge_test
     }
   }
 )(FlowList)
