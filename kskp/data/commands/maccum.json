@@ -75,7 +75,8 @@
       "name": "precision",
       "type": "string",
       "label": "有効桁数",
-      "optional": true
+      "optional": true,
+      "default": 10
     }
   ],
   "ports": [

@@ -2,6 +2,7 @@
 import React from 'react'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
+import SortUtil from '../../../../utils/SortUtil'
 import Operator from '../../Command/index'
 import BaseInspector from '../BaseInspector/index'
 import style from '../style.scss'
@@ -80,7 +81,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
           loading: true
         })
 
-        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id
+        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id + "&no_contents=1"
         APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
@@ -131,9 +132,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     const getFrameHeaderURL = "frames/" + uuid
     APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
       const headers = response.data.data
-      const visualizers = this.props.mast.visualizers
-      const contents = ModalUtil.getContentsFrom(uuid, visualizers, {}, headers, this.props)
- 
+      let visualizers = this.props.mast.visualizers
+      visualizers = SortUtil.getSortedContents(visualizers)
+      let contents = []
+      for (const v of visualizers) {
+        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
+        contents.push({title: v.label,content:content,parentProps:this.props})
+      }
+
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
         visible: true,
@@ -145,7 +151,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       })
       this.updateCache()
     })
-
   }
 
   updateCache() {
@@ -234,14 +239,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   onChangeCacheCheck (e: Event) {
-  
+
     let selected_step = this.getSelectedStep()
     if(selected_step.isMakeCache()) {
       selected_step.setMakeCache(false)
     } else {
       selected_step.setMakeCache(true)
     }
-    
+
     let flow:FlowModel = this.props.flow
     this.props.updateFlow(flow)
 }
@@ -331,6 +336,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       }
     }
 
+
     const flow:FlowModel  = this.props.flow
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
@@ -416,7 +422,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
             {cacheCheckForm}
           </div>
           <div className={style.cache_delete}>
-            <Button  icon={'delete'} danger={true} 
+            <Button  icon={'delete'} danger={true}
               disabled={!selected_step.isCached()}
 
               onClick={(e) => {this.onClickDeleteCache()}}>

@@ -14,6 +14,7 @@ import Button from '../../../Button'
 import ModalUtil from '../../../../../utils/ModalUtil'
 import Constants from '../../../../../constants'
 import AddButton from '../../../AddButton'
+import {SortableContainer, SortableElement} from 'react-sortable-hoc';
 
 class InOutConnector extends React.Component{
 
@@ -94,18 +95,18 @@ class InOutConnector extends React.Component{
     if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
 
       addEdgeContainer = <AddButton onClick={()=>this.onClickAddEdge(selectedStep)}>入力を追加する</AddButton>
+      selectedStep.srcsOrder.forEach((key, index) => {
 
-      inEdgeSelect = Object.keys(selectedStep.srcs).map((key, index) => {
         let dataFrameId: string
         dataFrameId = selectedStep.srcs[key]
-        const portName = key
+        let portName = key
 
         const actionProps = {
           actionLabel:"削除",
           onClickAction:()=>this.deletePort(selectedStep,portName)
         }
 
-        return <div key={index} className={style.param}>
+        const item = <div key={index} className={style.param}>
           <DropDownList disabled={false}
                         key={"in_edge"}
                         onChange={(e, data, label) => this.onChangeInEdge(e, data, label)}
@@ -117,8 +118,22 @@ class InOutConnector extends React.Component{
           ></DropDownList>
 
         </div>
+        inEdgeSelect.push(item)
       })
     }
+    const SortableItem = SortableElement(({value}) => <li>{value}</li>);
+
+    const SortableList = SortableContainer(({items}) => {
+    return (
+        <ul className="inPorts">
+          {items.map((value, index) => (
+            <SortableItem key={`item-${index}`} index={index} value={value} />
+          ))}
+        </ul>
+      );
+    });
+
+     
 
 
 
@@ -131,7 +146,7 @@ class InOutConnector extends React.Component{
 
     return  <div className="kskp-form">
           <label>入力</label>
-          {inEdgeSelect}
+          <SortableList items={inEdgeSelect} onSortEnd={this.props.sortStepSrcEnd}/>
           {addEdgeContainer}
           <label>出力</label>
           {output}

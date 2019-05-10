@@ -1,6 +1,7 @@
 //@flow
 import Constants from '../constants'
 
+
 export default class ModalUtil {
   static getUDID () {
     return 'm' + Math.floor(Math.random() * 10000)
@@ -39,31 +40,6 @@ export default class ModalUtil {
 
   static closeModal (modalId:string) {
     ModalUtil.emitModal({id: modalId, visible: false})
-  }
-
-  static getContentsFrom(frame_uuid, visualizers, params, headers, parentProps, compare = (a,b) => ModalUtil.defaultCompare(a,b)) : [] {
-    let sortedVisualizers = visualizers.sort((a, b) => compare(a,b))
-
-    let contents = []
-    for (const v of sortedVisualizers) {
-      const content = {frame_uuid:frame_uuid, visualize:v, params:params, headers:headers}
-      contents.push({title: v.label,content:content,parentProps:parentProps})
-    }
-
-    return contents
-  }
-
-  static defaultCompare(a, b) {
-    // ある順序の基準において a が b より小
-    if (a.order < b.order) {
-      return -1;
-    }
-    //その順序の基準において a が b より大
-    if (a.order > b.order) {
-      return 1;
-    }
-    // a は b と等しいはず
-    return 0;
   }
 }
 

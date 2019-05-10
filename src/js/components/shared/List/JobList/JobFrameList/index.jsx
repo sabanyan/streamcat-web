@@ -4,6 +4,7 @@ import classnames from 'classnames'
 import style from '../style.scss'
 import Constants from '../../../../../constants'
 import ModalUtil from '../../../../../utils/ModalUtil'
+import SortUtil from '../../../../../utils/SortUtil'
 import DataTable from '../../../DataTable'
 import moment from 'moment'
 import APIUtil from '../../../../../utils/APIUtil'
@@ -72,8 +73,13 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
     const getFrameHeaderURL = "frames/" + uuid
     APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
       const headers = response.data.data
-      const visualizers = window.visualizers
-      const contents = ModalUtil.getContentsFrom(uuid, visualizers, {}, headers, this.props)
+      let visualizers = window.visualizers
+      visualizers = SortUtil.getSortedContents(visualizers)
+      let contents = []
+      for (const v of visualizers) {
+        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
+        contents.push({title: v.label,content:content,parentProps:this.props})
+      }
 
       ModalUtil.emitModal({
         id: Constants.preview.DATASOURCE,
