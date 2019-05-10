@@ -21,7 +21,7 @@
   ],
   "params": [
     {
-      "name": "offsrt",
+      "name": "offset",
       "type": "number",
       "label": "テーブル表示を行う開始行"
     },

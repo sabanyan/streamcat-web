@@ -117,9 +117,9 @@ export default class InputFlowForm extends React.Component<Props, State> {
       const inputVariableForm = this.renderFlowVariableForm(flow)
 
       return <div>
-        <label>入力ファイル</label>
+        <label className="inputFlow">入力フロー</label>
           {inputFlowForm}
-        <label>フロー変数</label>
+        <label className="inputVar">フロー変数</label>
           {inputVariableForm}
       </div>
     }

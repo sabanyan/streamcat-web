@@ -10,7 +10,8 @@
       "name": "hs",
       "type": "string",
       "label": "ハッシュサイズ",
-      "optional": true
+      "optional": true,
+      "default": 199999
     },
     {
       "name": "k",
@@ -82,7 +83,8 @@
       "name": "precision",
       "type": "string",
       "label": "有効桁数",
-      "optional": true
+      "optional": true,
+      "default": 10
     }
   ],
   "ports": [
