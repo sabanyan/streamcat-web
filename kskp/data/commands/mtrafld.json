@@ -16,13 +16,15 @@
       "name": "delim",
       "type": "string",
       "label": "トランザクション項目アイテムを区切る文字列",
-      "optional": true
+      "optional": true,
+      "default": " "
     },
     {
       "name": "delim2",
       "type": "string",
       "label": "項目名と値ペアを区切る文字列",
-      "optional": true
+      "optional": true,
+      "default": "="
     },
     {
       "name": "r",
