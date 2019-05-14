@@ -30,8 +30,8 @@ class BaseInspector extends React.Component<Props> {
     }
   }
 
-  onChange(e) {
-  
+
+  render () {
 
     const {header, label, children,onBlurTitle,subLabel} = this.props
     const disabled = (!onBlurTitle)
@@ -41,13 +41,13 @@ class BaseInspector extends React.Component<Props> {
       labelContainer =  <input type="text" ref={"title"}
                                onBlur={(onBlurTitle)?(e)=>{onBlurTitle(e, this.props)}:null}
                                className={style.label}
-                               {...value}
+                               defaultValue={label}
                                disabled={disabled}></input>
     }
     if(subLabel){
       subLabelContainer = <div>
-          {subLabel}
-        </div>
+        {subLabel}
+      </div>
     }
 
     const width = 100
