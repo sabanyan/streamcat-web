@@ -200,13 +200,13 @@ def execute_flow_by_add_inputs(request):
     inputsを与えてexecute
     ファイルは必ずuploadするのでPathFileSourceでframeを作れる
     """
-    flow_uuid = request.form.get('flow_uuid')
+    flow_uuid = request.json.get('flow_uuid')
     flow_json = fetch_flow_by_uuid(flow_uuid)
 
     # executeの引数
     # no_contentsも入れれるけど、今はまぁいいか
     inputs = {}
-    args = json.loads(request.form.get('args')) if request.form.get('args') else {}
+    args = json.loads(request.json.get('args')) if request.json.get('args') else {}
 
     upload_file_list = []
 
@@ -226,9 +226,9 @@ def execute_flow_by_add_inputs(request):
         
     for port in flow_json['ports'][0]:
         # frame（既にkskpに存在するデータソース）の場合
-        if request.form.get(port['name']) is not None:
+        if request.json.get(port['name']) is not None:
             # フレームを置き換える
-            frame_uuid = request.form.get(port['name'])
+            frame_uuid = request.json.get(port['name'])
             inputs[port['name']] = get_frame_obj(frame_uuid)
 
         # 新たにkskpにアップロードする場合
@@ -480,7 +480,7 @@ def make_new_frame():
         result = execute_flow(flow_uuid, step_paths=step_id, no_contents=no_contents, limit=limit, flow_label=flow_json['label'])
 
         return result
-    elif request.form.get('flow_uuid'):
+    elif request.json.get('flow_uuid'):
         return execute_flow_by_add_inputs(request)
     else:
         return jsonify({
