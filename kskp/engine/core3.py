@@ -443,11 +443,23 @@ class Job:
         result = {}
         for o_port in self.step.command_or_flow.o_ports:
             for o_k, o_v in output.items():
+
+                # 旧Portと新PortではIDのキーが異なっているので、
+                # betaでは旧Portのキーで統一することにした
+                if o_port.get('nodeId') is not None:
+                    o_port['name'] = o_port.get('nodeId')
+
                 if o_k == o_port['name']:
                     result[o_k] = o_v
 
             for job in self.jobs:
                 for c_k, c_v in job.inputs.items():
+
+                    # 旧Portと新PortではIDのキーが異なっているので、
+                    # betaでは旧Portのキーで統一することにした
+                    if o_port.get('nodeId') is not None:
+                        o_port['name'] = o_port.get('nodeId')
+
                     if c_k == o_port['name']:
                         result[c_k] = c_v
 
@@ -633,6 +645,12 @@ class Command:
 
     @property
     def out_key(self):
+
+        # 旧Portと新PortではIDのキーが異なっているので、
+        # betaでは旧Portのキーで統一することにした
+        if self.o_ports[0].get('nodeId') is not None:
+            return self.o_ports[0]['nodeId']
+
         return self.o_ports[0]['name']
 
 class UnixCommand(Command):
