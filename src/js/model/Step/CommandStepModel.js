@@ -82,9 +82,8 @@ export default class CommandStepModel extends BaseStepModel{
    * 入力ポートを追加できるか
    */
   addableInPort(){
-    const srcKeys = Object.keys(this.srcs)
-    const filterKeys = srcKeys.filter((key)=>{
-      return (key.indexOf("*") != -1)
+    const filterKeys = this.getCommand().getInPorts().filter((inPort)=>{
+      return (inPort.name.indexOf("*") != -1)
     })
     return (filterKeys.length)
   }

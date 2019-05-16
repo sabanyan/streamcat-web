@@ -93,17 +93,17 @@ class InOutConnector extends React.Component{
     let addEdgeContainer
     if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
 
-      addEdgeContainer = <AddButton onClick={()=>this.onClickAddEdge(selectedStep)}>入力を追加する</AddButton>
+      addEdgeContainer = (selectedStep.addableInPort()) ? <AddButton onClick={()=>this.onClickAddEdge(selectedStep)}>入力を追加する</AddButton> : null
 
       inEdgeSelect = Object.keys(selectedStep.srcs).map((key, index) => {
         let dataFrameId: string
         dataFrameId = selectedStep.srcs[key]
         const portName = key
 
-        const actionProps = {
+        const actionProps = (selectedStep.addableInPort()) ?{
           actionLabel:"削除",
           onClickAction:()=>this.deletePort(selectedStep,portName)
-        }
+        } : null
 
         return <div key={index} className={style.param}>
           <DropDownList disabled={false}
