@@ -571,7 +571,7 @@ export default class Library extends React.Component<Props, State> {
 
     let newUI = <div>
       {this.renderNewFolder()}
-      {this.renderNewDocument()}
+      {/*{this.renderNewDocument()}*/}
       {this.renderNewFrame()}
     </div>
 
