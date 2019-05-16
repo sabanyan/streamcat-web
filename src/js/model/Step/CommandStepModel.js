@@ -82,6 +82,7 @@ export default class CommandStepModel extends BaseStepModel{
    * 入力ポートを追加できるか
    */
   addableInPort(){
+    // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
     const filterKeys = this.getCommand().getInPorts().filter((inPort)=>{
       return (inPort.name.indexOf("*") != -1)
     })
