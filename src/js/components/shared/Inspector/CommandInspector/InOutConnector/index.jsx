@@ -94,7 +94,7 @@ class InOutConnector extends React.Component{
     let addEdgeContainer
     if(selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
 
-      addEdgeContainer = <AddButton onClick={()=>this.onClickAddEdge(selectedStep)}>入力を追加する</AddButton>
+      addEdgeContainer = (selectedStep.addableInPort()) ? <AddButton onClick={()=>this.onClickAddEdge(selectedStep)}>入力を追加する</AddButton> : null
       selectedStep.srcsOrder.forEach((key, index) => {
 
         let dataFrameId: string
