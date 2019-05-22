@@ -1,10 +1,48 @@
 {
   "id": "mfldname",
+  "rules" : {
+    "f" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^:,]+:[^:,]+(,[^:,]+:[^:,]+)*$|^$|^@\\[.+\\]$|^$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?:[^,:]+(,[1-9]?[0-9]+L?:[^,:]+)*$|^@\\[.+\\]$|^$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      },
+      "onlyOneInput" : {
+        "target" : ["nfni", "n"]
+      },
+      "presencesIfTargetIsNotInput": "n"
+    },
+    "n" : {
+      "onlyOneInput" : {
+        "target" : ["f"]
+      },
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$|^$",
+          "message" : "入力値が正しくありません。"
+        }
+      },
+      "presencesIfTargetIsNotInput": "f"
+    },
+    "nfni" : {
+      "onlyOneInput" : {
+        "target" : ["f"]
+      }
+    }
+  },
   "params": [
     {
       "name": "f",
       "type": "string",
-      "label": "旧項目→新項目へ変更する列名（旧項目名:旧項目名）"
+      "label": "旧項目→新項目へ変更する列名（旧項目名:新項目名）"
     },
     {
       "name": "n",
@@ -14,7 +52,7 @@
     {
       "name": "nfni",
       "type": "boolean",
-      "label": "入力データの1行目を項目名行とみなさない。このオプションが指定された場合は f=は利用できない。",
+      "label": "入力データの1行目を項目名行とみなさない。このオプションと [旧項目→新項目へ変更する列名（旧項目名:新項目名）]は併用できない。",
       "optional": true
     },
     {

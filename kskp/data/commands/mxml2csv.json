@@ -1,15 +1,23 @@
 {
   "id": "mxml2csv",
+  "rules" : {
+    "k" : {
+      "presence": {"allowEmpty": false}
+    },
+    "f" : {
+      "presence": {"allowEmpty": false}
+    }
+  },
   "params": [
     {
       "name": "k",
       "type": "string",
-      "label": "１行の単位となる要素のパス名(必須)"
+      "label": "１行の単位となる要素のパス名"
     },
     {
       "name": "f",
       "type": "string",
-      "label": "要素もしくは属性の指定(必須)"
+      "label": "要素もしくは属性の指定"
     },
     {
       "name": "nfn",
@@ -59,6 +67,6 @@
   "version": "0.7.0",
   "label": "xmlからcsv形式への変換",
   "classification": "data_format",
-  "description": "",
+  "description": "xml形式のデータをcsv形式のデータに変換する。",
   "url": "./static/pdf/mcmd/data_format/mxml2csv.pdf"
 }

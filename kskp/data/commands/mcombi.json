@@ -1,20 +1,68 @@
 {
   "id": "mcombi",
+  "rules" : {
+    "a" : {
+      "presencesIfTargetIsNotInput" : ["nfn", "nfno"],
+      "specifiedFormatIfTargetInput" : {
+        "target" : "a",
+        "pattern" : "^[^,]+$|^$",
+        "message" : "入力が正しくありません。"
+      }
+    },
+    "f" : {
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "k" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$|^$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "n" : {
+      "presence": {"allowEmpty": false},
+      "format" : {
+        "pattern": "^[1-9]?[0-9]*$|^@\\[.+\\]$",
+        "message": "1以上の整数を半角で入力してください"
+      }
+    }
+  },
   "params": [
     {
       "name": "a",
       "type": "string",
-      "label": "追加列名(必須)"
+      "label": "追加列名"
     },
     {
       "name": "f",
       "type": "string",
-      "label": "組み合わせ列名(必須)"
+      "label": "組み合わせ列名"
     },
     {
       "name": "n",
       "type": "string",
-      "label": "組み合わせ数(必須)"
+      "label": "組み合わせ数"
     },
     {
       "name": "s",
@@ -37,7 +85,7 @@
     {
       "name": "dup",
       "type": "boolean",
-      "label": "同一の値の組み合せも出力する",
+      "label": "同一の値の組み合わせも出力する",
       "optional": true
     },
     {
@@ -55,7 +103,7 @@
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -100,6 +148,6 @@
   "version": "0.7.0",
   "label": "組合せ計算",
   "classification": "value_crossing",
-  "description": "",
+  "description": "f=で指定した項目についてn=で指定した数の組み合わせを求め、a=で指定した項目名で出力する",
   "url": "./static/pdf/mcmd/value_crossing/mcombi.pdf"
 }
