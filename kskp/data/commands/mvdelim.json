@@ -1,15 +1,41 @@
 {
   "id": "mvdelim",
+  "rules" : {
+    "vf":{
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^:,]+(:[^:,]+)?(,[^:,]+(:[^:,]+)?)*$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : "A",
+            "pattern" : "^[^:,]+:[^:,]+(,[^:,]+:[^:,]+)*$|^@\\[.+\\]$",
+            "message" : "対象となる列名と新しい列名を、:(コロン)で区切って入力してください"
+          },
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^[1-9]?[0-9]+L?(:[^,:]+)?(,[1-9]?[0-9]+L?(:[^,:]+)?)*$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "v" : {
+      "presence": {"allowEmpty": false}
+    }
+  },
   "params": [
     {
       "name": "vf",
       "type": "string",
-      "label": "対象列名(必須)"
+      "label": "対象列名"
     },
     {
       "name": "v",
       "type": "string",
-      "label": "新しい区切り文字(必須)"
+      "label": "新しい区切り文字"
     },
     {
       "name": "A",
@@ -60,12 +86,6 @@
       "optional": true
     },
     {
-      "name": "q",
-      "type": "boolean",
-      "label": "自動並べ替えの無効化",
-      "optional": true
-    },
-    {
       "name": "tmpPath",
       "type": "string",
       "label": "作業ファイル格納パス名",
@@ -89,6 +109,6 @@
   "version": "0.7.0",
   "label": "ベクトル要素の区切り文字変更",
   "classification": "value_transform",
-  "description": "",
+  "description": "ベクトル型の要素を区切る文字列を変更もしくは削除する。",
   "url": "./static/pdf/mcmd/value_transform/mvdelim.pdf"
 }

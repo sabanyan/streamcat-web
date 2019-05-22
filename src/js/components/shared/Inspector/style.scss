@@ -316,3 +316,12 @@
   overflow: hidden;
   width: 100%;
 }
+
+ul,li {
+  list-style: none;
+  padding-inline-start: 0px;
+}
+
+li {
+  margin-bottom: 8px;
+}

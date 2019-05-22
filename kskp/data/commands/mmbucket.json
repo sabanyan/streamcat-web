@@ -1,21 +1,57 @@
 {
   "id": "mmbucket",
+  "rules": {
+    "f":{
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^:,]+:[^:,]+(,[^:,]+:[^:,]+)*$|^@\\[.+\\]$",
+          "message" : "対象となる列名と新しい列名を、:(コロン)で区切って入力してください"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?:[^,:]+(,[1-9]?[0-9]+L?:[^,:]+)*$|^@\\[.+\\]$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "n" : {
+      "presence": {"allowEmpty": false},
+      "format" : {
+        "pattern": "^[1-9]?[0-9]+(,[1-9]?[0-9]+)*$|^@\\[.+\\]$",
+        "message": "0以上の整数を半角で入力してください"
+      },
+      "lessValueListThanN" : {
+        "target" : "f",
+        "difference" : "0",
+        "justValue" : "1"
+      }
+    },
+    "bufcount" : {
+      "specifiedFormatIfTargetInput" : {
+        "target" : "bufcount",
+        "pattern": "^[1-9]?[0-9]*$|^0$|^$",
+        "message": "0以上の整数を半角で入力してください"
+      }
+    }
+  },
   "params": [
     {
       "name": "f",
       "type": "string",
-      "label": "対象列名(必須)"
+      "label": "対象列名"
     },
     {
       "name": "n",
       "type": "string",
-      "label": "行数(必須)"
+      "label": "行数"
     },
     {
       "name": "F",
       "type": "string",
-      "label": "出力形式",
-      "optional": true,
+      "label": "出力形式(パケットの名前の出力形式)",
       "default": 1
     },
     {
@@ -58,25 +94,25 @@
     {
       "name": "assert_nullkey",
       "type": "boolean",
-      "label": "キー項目に NULL 値が含まれているかどうかのチェックを行う",
+      "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullin",
       "type": "boolean",
-      "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
+      "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullout",
       "type": "boolean",
-      "label": "出力項目の NULL 値チェックを行う",
+      "label": "出力項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -121,6 +157,6 @@
   "version": "0.7.0",
   "label": "多次元行分割",
   "classification": "table_split",
-  "description": "",
+  "description": "f=で指定した複数の数値項目を次元とした件数均等化パケット分割を行う。",
   "url": "./static/pdf/mcmd/table_split/mmbucket.pdf"
 }

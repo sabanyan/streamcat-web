@@ -1,15 +1,34 @@
 {
   "id": "mcal",
+  "rules": {
+    "a": {
+      "presence": {"allowEmpty": false}
+    },
+    "c": {
+      "presence": {"allowEmpty": false}
+    }
+  },
   "params": [
     {
       "name": "a",
       "type": "string",
-      "label": "結果列名(必須)"
+      "label": "結果列名"
     },
     {
       "name": "c",
       "type": "string",
-      "label": "計算式(必須)"
+      "label": "計算式"
+    },
+    {
+      "name": "precision",
+      "type": "select",
+      "label": "有効桁数",
+      "options":{
+        "labels": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"],
+        "values": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
+      },
+      "optional": true,
+      "default": 10
     },
     {
       "name": "assert_diffSize",
@@ -20,13 +39,13 @@
     {
       "name": "assert_nullout",
       "type": "boolean",
-      "label": "出力項目の NULL 値チェックを行う",
+      "label": "出力項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -46,13 +65,6 @@
       "type": "string",
       "label": "作業ファイル格納パス名",
       "optional": true
-    },
-    {
-      "name": "precision",
-      "type": "string",
-      "label": "有効桁数",
-      "optional": true,
-      "default": 10
     }
   ],
   "ports": [
@@ -72,6 +84,6 @@
   "version": "0.7.0",
   "label": "計算",
   "classification": "calculation",
-  "description": "",
+  "description": "c=で計算式を入力し、a=で指定した項目名に出力する。",
   "url": "./static/pdf/mcmd/calculation/mcal.pdf"
 }
