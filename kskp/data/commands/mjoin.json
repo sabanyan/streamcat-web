@@ -1,10 +1,43 @@
 {
   "id": "mjoin",
+  "rules" : {
+    "k" : {
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$",
+          "message" : "入力が正しくありません"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "K" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$|^$",
+          "message" : "入力が正しくありません"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    }
+  },
   "params": [
     {
       "name": "k",
       "type": "string",
-      "label": "結合キー名(必須)"
+      "label": "結合キー名"
     },
     {
       "name": "f",
@@ -21,13 +54,13 @@
     {
       "name": "n",
       "type": "boolean",
-      "label": "参照データにない入力データを NULL 値として出力する",
+      "label": "参照データにない入力データをNULL値として出力する",
       "optional": true
     },
     {
       "name": "N",
       "type": "boolean",
-      "label": "入力データにない参照データを NULL 値として出力する",
+      "label": "入力データにない参照データをNULL値として出力する",
       "optional": true
     },
     {
@@ -39,25 +72,25 @@
     {
       "name": "assert_nullkey",
       "type": "boolean",
-      "label": "キー項目に NULL 値が含まれているかどうかのチェックを行う",
+      "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullin",
       "type": "boolean",
-      "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
+      "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullout",
       "type": "boolean",
-      "label": "出力項目の NULL 値チェックを行う",
+      "label": "出力項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -106,6 +139,6 @@
   "version": "0.7.0",
   "label": "結合",
   "classification": "table_join",
-  "description": "",
+  "description": "入力ファイルの項目値と参照ファイルの項目値を比較し、同じ値を持つf=で指定した参照ファイルの項目値を結合する。",
   "url": "./static/pdf/mcmd/table_join/mjoin.pdf"
 }

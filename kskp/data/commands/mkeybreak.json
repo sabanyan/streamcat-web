@@ -1,10 +1,58 @@
 {
   "id": "mkeybreak",
+  "rules" : {
+    "k" : {
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$",
+          "message" : "入力が正しくありません"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "s" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$|^$",
+          "message" : "入力が正しくありません"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "a" :{
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+,[^,]+$|^$|^@\\[.+\\]$",
+          "message" : "先端と終端の印を出力する項目名は２つかつ,(コンマ)で指定してください。"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?,[1-9]?[0-9]+L?$|^$|^@\\[.+\\]$",
+            "message" : "先端と終端の印を出力する項目名は２つかつ,(コンマ)で指定してください。"
+          }
+        ]
+      }
+    }
+  },
   "params": [
     {
       "name": "k",
       "type": "string",
-      "label": "集計キー列名(必須)"
+      "label": "集計キー列名"
     },
     {
       "name": "s",
@@ -27,19 +75,19 @@
     {
       "name": "assert_nullkey",
       "type": "boolean",
-      "label": "キー項目に NULL 値が含まれているかどうかのチェックを行う",
+      "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullout",
       "type": "boolean",
-      "label": "出力項目の NULL 値チェックを行う",
+      "label": "出力項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -84,6 +132,6 @@
   "version": "0.7.0",
   "label": "キーブレイク箇所",
   "classification": "table_grouping",
-  "description": "",
+  "description": "k=で指定した項目をキー項目について、先頭と終端に印をつける。",
   "url": "./static/pdf/mcmd/table_grouping/mkeybreak.pdf"
 }
