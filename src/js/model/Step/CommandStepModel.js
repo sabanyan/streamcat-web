@@ -6,13 +6,15 @@ import BaseModelProps from './BaseStepModel'
 import type { CommandModelType, CommandParamType } from '../../types'
 import CommandModel from '../Command/CommandModel'
 import validateJS from 'validate.js'
-
+import arrayMove from 'array-move'
+import loadash from 'lodash'
 
 type stepType = "command" | "frame"
 
 export type CommandStepModelProps = {
   ...BaseModelProps,
   srcs: {};
+  srcsOrder: [];
   dsts: {};
   args: {};
   commandId: string;
@@ -23,15 +25,20 @@ export type CommandStepModelProps = {
 
 export default class CommandStepModel extends BaseStepModel{
   srcs: {} = {}
+  srcsOrder: [] = []
   dsts: {} = {}
   args: {} = {}
   commandId: string
   constructor (props: CommandStepModelProps) {
     super(props)
     this.initialize(props,"srcs")
+    this.initialize(props,"srcsOrder")
     this.initialize(props,"dsts")
     this.initialize(props,"args")
     this.initialize(props,"commandId")
+    if (Object.keys(this.srcs) != 0 && this.srcsOrder.length == 0) {
+      this.srcsOrder = Object.keys(this.srcs)
+    }
   }
 
   getStep(nodes,key){
@@ -47,15 +54,24 @@ export default class CommandStepModel extends BaseStepModel{
    */
   deleteInPort(key){
     delete this.srcs[key]
+        // delete
+    let srcsOrder = []
+    this.srcsOrder.forEach((srcKey, index) => {
+      if (srcKey !== key) {
+        srcsOrder.push(srcKey)
+      }
+    })    
   }
 
   /**
    * 指定されたポートを削除する
    * @param key
    */
-  addInPort(key){
-    this.srcs[key] = null
+  addInPort(key, value){
+    this.srcs[key] = (value) ? value : null
+    this.srcsOrder.push(key)
   }
+
 
   /**
    * 指定されたポート名の最大値を求める
@@ -71,7 +87,6 @@ export default class CommandStepModel extends BaseStepModel{
     let max = 0
     filterKeys.forEach((key)=>{
       const value = key.replace("*","")
-      console.log(value)
       max = (value > max)?value:max
     })
 
@@ -127,6 +142,28 @@ export default class CommandStepModel extends BaseStepModel{
     }
 
     return this.label
+  }
+
+  onSortEnd(oldIndex, newIndex) {
+    this.srcsOrder = arrayMove(this.srcsOrder, oldIndex, newIndex)
+    // ソート後,連番をリーネムする。
+    let renamedSrcsOrder = []
+    let renaemdSrcs = {}
+    let portIndex = 1
+    this.srcsOrder.forEach((srcKey, index) => {
+      let temp = srcKey
+      if(temp.indexOf("*") == 0) {
+        temp = "*" + portIndex
+        portIndex++
+      }
+      // SrcsのKeyをリーネムする
+      renaemdSrcs[temp] = this.srcs[srcKey]
+      // SrcsOrderの連番をリーネムする
+      renamedSrcsOrder.push(temp)
+    })
+
+    this.srcs = renaemdSrcs
+    this.srcsOrder = renamedSrcsOrder
   }
 
 

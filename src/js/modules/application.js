@@ -21,6 +21,7 @@ import _ from 'lodash'
 import ZoomUtil from '../utils/ZoomUtil'
 import NoteStepModel from '../model/Step/NoteStepModel';
 
+
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
 const ADD_STEP_ACTION = 'add_step_action'
@@ -40,6 +41,7 @@ const REDO_ACTION = 'redo_action'
 const REFRESH_GRAPH_ACTION = 'refresh_graph_action'
 const EXECUTE_FLOW_ACTION = 'execute_flow_action'
 const SORT_FLOW_ACTION = 'sort_flow_action'
+const SORT_STEP_SRC_END_ACTION = 'sort_step_src_end_action'
 const SELECT_TAB_ACTION = 'select_tab_action'
 const DRAG_START_ACTION = 'drag_start_action'
 const DRAGGING_ACTION = 'dragging_action'
@@ -216,7 +218,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
               portName = "*1"
             }
 
-            add_step.srcs[portName] = id
+            add_step.addInPort(portName, id)
 
             //srcsがあった場合は１つ目のポート名につなぐ
             //srcsがない場合は、デフォルト値（i）のポートにつなぐ
@@ -578,6 +580,14 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       break
     }
 
+    case SORT_STEP_SRC_END_ACTION: {
+      newState.nodes.map((node, index) => {
+        if(node.id == state.selected_step_ids[0] && node.onSortEnd) {
+          node.onSortEnd(action.payload.oldIndex, action.payload.newIndex)
+        }   
+      })
+      break
+    }
     
     default:
       window.nodes = state.nodes
@@ -942,3 +952,14 @@ export const addNoteAction = (x:number, y:number) => {
     y: y
   }
 }
+
+export const sortStepSrcEndAction = (detail:{},mouseEvent:{}) => {
+  return {
+    type: SORT_STEP_SRC_END_ACTION,
+    payload: {
+      oldIndex : detail.oldIndex,
+      newIndex : detail.newIndex
+    }
+  }
+}
+
