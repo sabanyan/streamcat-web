@@ -1,10 +1,43 @@
 {
   "id": "mavg",
+  "rules": {
+    "f":{
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^:,]+(:[^:,]+)?(,[^:,]+(:[^:,]+)*)*$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^[1-9]?[0-9]+L?(:[^,:]+)?(,[1-9]?[0-9]+L?(:[^,:]+)?)*$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "k" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$|^$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    }
+  },
   "params": [
     {
       "name": "f",
       "type": "string",
-      "label": "対象列名(必須)"
+      "label": "対象列名"
     },
     {
       "name": "k",
@@ -13,9 +46,20 @@
       "optional": true
     },
     {
+      "name": "precision",
+      "type": "select",
+      "label": "有効桁数",
+      "options":{
+        "labels": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"],
+        "values": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
+      },
+      "optional": true,
+      "default": 10
+    },
+    {
       "name": "n",
       "type": "boolean",
-      "label": "NULL 値が 1 つでも含まれていると結果も NULL",
+      "label": "NULL値が1つでも含まれていると結果もNULL",
       "optional": true
     },
     {
@@ -27,25 +71,25 @@
     {
       "name": "assert_nullkey",
       "type": "boolean",
-      "label": "キー項目に NULL 値が含まれているかどうかのチェックを行う",
+      "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullin",
       "type": "boolean",
-      "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
+      "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullout",
       "type": "boolean",
-      "label": "出力項目の NULL 値チェックを行う",
+      "label": "出力項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -71,13 +115,6 @@
       "type": "string",
       "label": "作業ファイル格納パス名",
       "optional": true
-    },
-    {
-      "name": "precision",
-      "type": "string",
-      "label": "有効桁数",
-      "optional": true,
-      "default": 10
     }
   ],
   "ports": [
@@ -97,6 +134,6 @@
   "version": "0.7.0",
   "label": "平均",
   "classification": "table_grouping",
-  "description": "",
+  "description": "f=パラメータで指定した項目の平均値を計算する。",
   "url": "./static/pdf/mcmd/table_grouping/mavg.pdf"
 }

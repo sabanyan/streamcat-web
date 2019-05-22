@@ -1,15 +1,47 @@
 {
   "id": "mduprec",
+  "rules": {
+    "n":{
+      "specifiedFormatIfTargetInput" : {
+        "target" : "n",
+        "pattern": "^[1-9]?[0-9]*$|^0$|^@\\[.+\\]$|^$",
+        "message": "0以上の整数を半角で入力してください"
+      },
+      "presencesIfTargetIsNotInput": "f",
+      "onlyOneInput" : {
+        "target" : ["f"]
+      }
+    },
+    "f": {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+$|^$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?$|^@\\[.+\\]$|^$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      },
+      "presencesIfTargetIsNotInput": "n",
+      "onlyOneInput" : {
+        "target" : ["n"]
+      }
+    }
+  },
   "params": [
     {
       "name": "f",
       "type": "string",
-      "label": "指定列の値の回数分の複写を実行(nとどちらか必須)"
+      "label": "指定列の値の回数分の複写を実行"
     },
     {
       "name": "n",
       "type": "string",
-      "label": "各行の複写回数(fとどちらか必須)"
+      "label": "各行の複写回数"
     },
     {
       "name": "assert_diffSize",
@@ -20,13 +52,13 @@
     {
       "name": "assert_nullin",
       "type": "boolean",
-      "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
+      "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -65,6 +97,6 @@
   "version": "0.7.0",
   "label": "レコードの複写",
   "classification": "row_edit",
-  "description": "",
+  "description": "n=もしくはf=で指定しただけ、各レコードを複写する。",
   "url": "./static/pdf/mcmd/row_edit/mduprec.pdf"
 }

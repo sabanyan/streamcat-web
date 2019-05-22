@@ -1,26 +1,75 @@
 {
   "id": "mvjoin",
+  "rules" : {
+    "vf":{
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^:,]+(:[^:,]+)?(,[^:,]+(:[^:,]+)?)*$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : "A",
+            "pattern" : "^[^:,]+:[^:,]+(,[^:,]+:[^:,]+)*$|^@\\[.+\\]$",
+            "message" : "対象となる列名と新しい列名を、:(コロン)で区切って入力してください"
+          },
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^[1-9]?[0-9]+L?(:[^,:]+)?(,[1-9]?[0-9]+L?(:[^,:]+)?)*$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "K" : {
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$",
+          "message" : "入力が正しくありません"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "f" : {
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$",
+          "message" : "入力が正しくありません"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    }
+  },
   "params": [
     {
       "name": "vf",
       "type": "string",
-      "label": "結合キーとなるベクトル列名(必須)"
+      "label": "結合キーとなるベクトル列名"
     },
     {
       "name": "K",
       "type": "string",
-      "label": "参照ファイル上の結合キーとなるベクトル要素の列名(必須)"
+      "label": "参照ファイル上の結合キーとなるベクトル要素の列名"
     },
     {
       "name": "f",
       "type": "string",
-      "label": "結合ベクトル列名(必須)"
-    },
-    {
-      "name": "A",
-      "type": "boolean",
-      "label": "vf=で:(コロン) に続けて指定した項目名で、新たな項目が追加される。",
-      "optional": true
+      "label": "結合ベクトル列名"
     },
     {
       "name": "n",
@@ -29,9 +78,9 @@
       "optional": true
     },
     {
-      "name": "delim",
-      "type": "string",
-      "label": "ベクトル要素の区切り文字を指定",
+      "name": "A",
+      "type": "boolean",
+      "label": "vf=で:(コロン) に続けて指定した項目名で、新たな項目が追加される。",
       "optional": true
     },
     {
@@ -71,9 +120,9 @@
       "optional": true
     },
     {
-      "name": "q",
-      "type": "boolean",
-      "label": "自動並べ替えの無効化",
+      "name": "delim",
+      "type": "string",
+      "label": "ベクトル要素の区切り文字を指定",
       "optional": true
     },
     {
@@ -104,6 +153,6 @@
   "version": "0.7.0",
   "label": "ベクトル要素の参照結合",
   "classification": "table_join",
-  "description": "",
+  "description": "ベクトル要素をキーにして、参照ファイル上のベクトル型データを結合する。",
   "url": "./static/pdf/mcmd/table_join/mvjoin.pdf"
 }

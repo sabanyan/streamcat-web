@@ -1,5 +1,72 @@
 {
   "id": "mmvavg",
+  "rules":{
+    "t":{
+      "specifiedFormatIfTargetInput" : {
+        "target" : "t",
+        "pattern": "^[1-9]?[0-9]*$|^@\\[.+\\]$",
+        "message": "1以上の整数を半角で入力してください"
+       },
+       "raiseWarningTargetsSelected" : ["exp", "alpha"]
+    },
+    "alpha":{
+      "specifiedFormatIfTargetInput" : {
+        "target" : "alpha",
+        "pattern": "^(\\+|-)?[1-9]?[0-9]*(\\.[0-9]+)?$|^@\\[.+\\]$",
+        "message": "実数を半角で入力してください"
+       }
+    },
+    "skip":{
+      "specifiedFormatIfTargetInput" : {
+        "target" : "skip",
+        "pattern": "^(\\+|-)?[1-9]?[0-9]*$|^@\\[.+\\]$",
+        "message": "整数を半角で入力してください"
+       }
+    },
+    "s":{
+      "presencesIfTargetIsNotInput" : "q",
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$|^$",
+          "message" : "入力が正しくありません"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "f" : {
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$",
+          "message" : "入力が正しくありません"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "exp" : {
+      "presencesIfTargetIsInput": "alpha",
+      "onlyOneInput" : {
+        "target" : ["w"]
+      }
+    },
+    "w" : {
+      "onlyOneInput" : {
+        "target" : ["exp"]
+      }
+    }
+  },
   "params": [
     {
       "name": "s",
@@ -14,20 +81,43 @@
       "optional": true
     },
     {
-      "name": "n",
-      "type": "string",
-      "label": "Null データの場合は NULL にするフラグ",
-      "optional": true
-    },
-    {
       "name": "f",
       "type": "string",
-      "label": "移動平均を求める列名(必須)"
+      "label": "移動平均を求める列名(複数項目指定可)を指定する。"
     },
     {
       "name": "t",
       "type": "string",
-      "label": "移動平均を求める項目名リスト (複数項目指定可) を指定する。",
+      "label": "期間数を1以上の整数で指定する",
+      "optional": true
+    },
+    {
+      "name": "alpha",
+      "type": "string",
+      "label": "[指数平滑移動平均を求める。]が指定された時の平滑化係数を実数値で与える。省略時は alpha=2/(t=の値 +1)。",
+      "optional": true
+    },
+    {
+      "name": "skip",
+      "type": "string",
+      "label": "出力を抑制する最初の行数。デフォルト値: skip=(t=の値-1), -exp が指定された場合は skip=0",
+      "optional": true
+    },
+    {
+      "name": "precision",
+      "type": "select",
+      "label": "有効桁数",
+      "options":{
+        "labels": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"],
+        "values": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
+      },
+      "optional": true,
+      "default": 10
+    },
+    {
+      "name": "n",
+      "type": "boolean",
+      "label": "NULLデータの場合はNULLにするフラグ",
       "optional": true
     },
     {
@@ -43,18 +133,6 @@
       "optional": true
     },
     {
-      "name": "alpha",
-      "type": "string",
-      "label": "-exp が指定された時の平滑化係数を実数値で与える。省略時は alpha=2/(t=の値 +1)。",
-      "optional": true
-    },
-    {
-      "name": "skip",
-      "type": "string",
-      "label": "出力を抑制する最初の行数。デフォルト値: skip=(t=の値-1), -exp が指定された場合は skip=0",
-      "optional": true
-    },
-    {
       "name": "assert_diffSize",
       "type": "boolean",
       "label": "入力、出力件数比較を行う",
@@ -63,25 +141,25 @@
     {
       "name": "assert_nullkey",
       "type": "boolean",
-      "label": "キー項目に NULL 値が含まれているかどうかのチェックを行う",
+      "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullin",
       "type": "boolean",
-      "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
+      "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "assert_nullout",
       "type": "boolean",
-      "label": "出力項目の NULL 値チェックを行う",
+      "label": "出力項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -107,13 +185,6 @@
       "type": "string",
       "label": "作業ファイル格納パス名",
       "optional": true
-    },
-    {
-      "name": "precision",
-      "type": "string",
-      "label": "有効桁数",
-      "optional": true,
-      "default": 10
     }
   ],
   "ports": [
@@ -133,6 +204,6 @@
   "version": "0.7.0",
   "label": "移動平均の算出",
   "classification": "table_grouping",
-  "description": "",
+  "description": "単純移動平均(SMA)、線形荷重移動平均(WMA)、指数平滑移動平均(EMA)の3種を算出できる。",
   "url": "./static/pdf/mcmd/table_grouping/mmvavg.pdf"
 }
