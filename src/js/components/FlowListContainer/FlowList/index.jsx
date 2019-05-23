@@ -313,7 +313,8 @@ export default class FlowList extends React.Component<FlowListProps,State> {
       onClickDeleteParam={(param)=>this.onClickDeleteParam(param)}
       onClickDuplicate={(uuid)=>this.onClickDuplicate(uuid)}
       onBlurTitle={(e, props)=>this.onBlurTitle(e, props)}
-      onClickAddFlowParam={(e)=>this.onClickAddFlowParam(e)}/>
+      onClickAddFlowParam={(e)=>this.onClickAddFlowParam(e)}
+      onClickDelete={(e)=>this.onClickDelete(e)}/>
   }
   
   renderAll () {
