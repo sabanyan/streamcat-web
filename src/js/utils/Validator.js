@@ -311,22 +311,24 @@ class Validator {
     // }
     //---------------------------------------------
     ValidateJS.validators.raiseWarningTargetsSelected = function(value, options, key, attributes) {
-      var isTargetValueEmpty = false
+      var isError = false
       var errorMessage = []
       if(options && value){
+        var isAllOptionsSelected = true
         const command = CommandUtil.getCommand(attributes["_command_id"])
         let arrayOptions = Array.isArray(options) ? options : [options]
-
         arrayOptions.forEach((option)=>{
-          if(attributes[option]){
-            const label = CommandUtil.getCommandParamLabel(command, option)
-            errorMessage.push("[" +label + "] ")
-          }else{
-            isTargetValueEmpty = true
+          const label = CommandUtil.getCommandParamLabel(command, option)
+          errorMessage.push("[" +label + "] ")
+          if(!(attributes[option])){
+            isAllOptionsSelected = false
           }
         })
+        if(isAllOptionsSelected) {
+          isError = true
+        }
       }
-      return (isTargetValueEmpty != [])?errorMessage + "指定時に同時に指定することができません。":null
+      return (isError)?errorMessage + "指定時に同時に指定することができません。":null
     };
 
     //---------------------------------------------
@@ -352,7 +354,6 @@ class Validator {
     ValidateJS.validators.presencesIfSpecifiedValueInput = function(value, options, key, attributes) {
       if(options && options.target){
         // 対象のパラメータ入力の検知
-        console.log(options)
         const command = CommandUtil.getCommand(attributes["_command_id"])
         const label = CommandUtil.getCommandParamLabel(command, options.target)
         const matchingValue = (options.value).indexOf(attributes[options.target])
