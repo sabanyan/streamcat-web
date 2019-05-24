@@ -93,10 +93,6 @@ def execute_flow_internal(flow_uuid, step_ids=[], args={}, inputs={}):
     """
     エンジンの実行を行い、適切な形に直して返す
     """
-    # now = datetime.now()
-
-    # @make_unfinished_history(now, session)
-    # @make_finished_history(now)
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from kskp.engine import execute
         from kskp.engine import FlowJsonLink, FlowUuidLink
