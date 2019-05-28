@@ -1,15 +1,61 @@
 {
   "id": "mdelnull",
+  "rules" : {
+    "f" : {
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$",
+          "message" : "一項目のみ入力してください"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "k" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^,]+(,[^,]+)*$|^$",
+          "message" : "一項目のみ入力してください"
+        },
+        "specialRules" : [
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?)*$|^@\\[.+\\]$|^$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    },
+    "bufcount" : {
+      "specifiedFormatIfTargetInput" : {
+        "target" : "bufcount",
+        "pattern": "^[1-9]?[0-9]*$|^0$|^$",
+        "message": "0以上の整数を半角で入力してください"
+      }
+    }
+  },
   "params": [
     {
       "name": "f",
       "type": "string",
-      "label": "対象列名(必須)"
+      "label": "対象列名"
     },
     {
       "name": "k",
       "type": "string",
       "label": "削除する単位となるキー列名",
+      "optional": true
+    },
+    {
+      "name": "bufcount",
+      "type": "string",
+      "label": "バッファの数",
       "optional": true
     },
     {
@@ -31,12 +77,6 @@
       "optional": true
     },
     {
-      "name": "bufcount",
-      "type": "string",
-      "label": "バッファの数",
-      "optional": true
-    },
-    {
       "name": "assert_diffSize",
       "type": "boolean",
       "label": "入力、出力件数比較を行う",
@@ -45,13 +85,13 @@
     {
       "name": "assert_nullkey",
       "type": "boolean",
-      "label": "キー項目に NULL 値が含まれているかどうかのチェックを行う",
+      "label": "キー項目にNULL値が含まれているかどうかのチェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -100,6 +140,6 @@
   "version": "0.7.0",
   "label": "NULL行削除",
   "classification": "row_edit",
-  "description": "",
+  "description": "f=で指定した項目について、NULL値が含まれる行を削除もしくは選択する。",
   "url": "./static/pdf/mcmd/row_edit/mdelnull.pdf"
 }

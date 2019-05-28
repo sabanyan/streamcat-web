@@ -1,15 +1,38 @@
 {
   "id": "mvsort",
+  "rules" : {
+    "vf":{
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[^:,]+(:[^:,]+)?(%n|%r|%nr)?(,[^:,]+(:[^:,]+)?(%n|%r|%nr)?)*$",
+          "message" : "入力値が正しくありません。"
+        },
+        "specialRules" : [
+          {
+            "target" : "A",
+            "pattern" : "^[^:,]+:[^:,]+(%n|%r|%nr)?(,[^:,]+:[^:,]+)*(%n|%r|%nr)?$|^@\\[.+\\]$",
+            "message" : "対象となる列名と新しい列名を、:(コロン)で区切って入力してください"
+          },
+          {
+            "target" : ["x", "nfn"],
+            "pattern" : "^[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(%n|%r|%nr)?(,[1-9]?[0-9]+L?(-[1-9]?[0-9]+)?L?(%n|%r|%nr)?)*$|^[1-9]?[0-9]+L?(:[^,:]+(%n|%r|%nr)?)?(,[1-9]?[0-9]+L?(:[^,:]+)?(%n|%r|%nr)?)*$|^@\\[.+\\](%n|%r|%nr)?$",
+            "message" : "項目の指定は数値のみ可能です。"
+          }
+        ]
+      }
+    }
+  },
   "params": [
     {
       "name": "vf",
       "type": "string",
-      "label": "対象列名(必須)"
+      "label": "対象列名"
     },
     {
       "name": "A",
       "type": "boolean",
-      "label": "vf=で:(コロン) に続けて指定した項目名で、新たな項目が追加される。",
+      "label": "vf=で:(コロン)に続けて指定した項目名で、新たな項目が追加される。",
       "optional": true
     },
     {
@@ -55,12 +78,6 @@
       "optional": true
     },
     {
-      "name": "q",
-      "type": "boolean",
-      "label": "自動並べ替えの無効化",
-      "optional": true
-    },
-    {
       "name": "tmpPath",
       "type": "string",
       "label": "作業ファイル格納パス名",
@@ -84,6 +101,6 @@
   "version": "0.7.0",
   "label": "ベクトル要素のソート",
   "classification": "value_transform",
-  "description": "",
+  "description": "ベクトル型の項目をソートする。",
   "url": "./static/pdf/mcmd/value_transform/mvsort.pdf"
 }

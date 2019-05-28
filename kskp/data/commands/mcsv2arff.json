@@ -4,22 +4,22 @@
     {
       "name": "n",
       "type": "string",
-      "label": "数値列名(必須)"
+      "label": "数値列名"
     },
     {
       "name": "d",
       "type": "string",
-      "label": "カテゴリ列名(必須)"
+      "label": "カテゴリ列名"
     },
     {
       "name": "D",
       "type": "string",
-      "label": "日付列名リスト(必須)"
+      "label": "日付列名リスト"
     },
     {
       "name": "s",
       "type": "string",
-      "label": "文字列列名(必須)"
+      "label": "文字列列名"
     },
     {
       "name": "T",
@@ -30,13 +30,13 @@
     {
       "name": "assert_nullin",
       "type": "boolean",
-      "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
+      "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの 1 行目を項目名行とみなさない。",
+      "label": "入力データの1行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -81,6 +81,6 @@
   "version": "0.7.0",
   "label": "csvからarff形式への変換",
   "classification": "data_format",
-  "description": "",
+  "description": "csv形式のデータからarff形式(WEKA 用のデータフォーマット)のデータへ変換する。",
   "url": "./static/pdf/mcmd/data_format/mcsv2arff.pdf"
 }

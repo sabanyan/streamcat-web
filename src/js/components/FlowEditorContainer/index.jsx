@@ -25,6 +25,7 @@ import {
   setZoomAction,
   updateDataFrameDetailAction,
   addNoteAction,
+  sortStepSrcEndAction,
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -76,6 +77,7 @@ export type FlowEditorProps = {
   updateNotify: Function;
   dismissNotify: Function;
   addNote: Function;
+  sortStepSrcEndAction: Function;
 }
 
 export default FlowEditorContainer = connect(
@@ -188,6 +190,9 @@ export default FlowEditorContainer = connect(
       addNote(...args){
         dispatch(addNoteAction(...args))
       },
+      sortStepSrcEnd(...args){
+        dispatch(sortStepSrcEndAction(...args))
+      }
     }
   },
 )(FlowEditor)

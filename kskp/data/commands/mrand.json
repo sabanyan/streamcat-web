@@ -1,5 +1,47 @@
 {
   "id": "mrand",
+  "rules": {
+    "k":{
+      "format" : {
+        "pattern": "^[^,]+(,[^,]+)*$|^$",
+        "message": "入力が正しくありません。"
+      }
+    },
+    "max":{
+      "format" : {
+        "pattern": "^[1-9]?[0-9]*$|^$|^@\\[.+\\]$",
+        "message": "0以上の整数を半角で入力してください"
+      },
+      "compareNumbersLargerThan" : {
+        "target" : "min",
+        "message" : "minより数値が大きくなるよう入力してください。"
+      }
+    },
+    "min":{
+      "format" : {
+        "pattern": "^[1-9]?[0-9]*$|^$|^@\\[.+\\]$",
+        "message": "0以上の整数を半角で入力してください"
+      }
+    },
+    "a" : {
+      "presencesIfTargetIsNotInput" : ["nfn", "nfno"],
+      "specifiedFormatIfTargetInput" : {
+        "target" : "a",
+        "pattern" : "^[^,]+$|^$",
+        "message" : "入力が正しくありません。"
+      }
+    },
+    "int" : {
+      "presencesIfTargetIsInput": ["max", "min"]
+    },
+    "S" : {
+      "specifiedFormatIfTargetInput" : {
+        "target" : "S",
+        "pattern" : "^[1-9]?[0-9]*$|^$|^@\\[.+\\]$",
+        "message" : "入力が正しくありません。"
+      }
+    }
+  },
   "params": [
     {
       "name": "k",
@@ -15,13 +57,13 @@
     {
       "name": "max",
       "type": "string",
-      "label": "乱数の最大値、この値の指定時には-intも設定することが必須",
+      "label": "乱数の最大値",
       "optional": true
     },
     {
       "name": "min",
       "type": "string",
-      "label": "乱数の最小値、この値の指定時には-intも設定することが必須",
+      "label": "乱数の最小値",
       "optional": true
     },
     {
@@ -96,6 +138,6 @@
   "version": "0.7.0",
   "label": "擬似乱数",
   "classification": "col_edit",
-  "description": "",
+  "description": "擬似乱数を生成、a=で指定した項目名で出力する。",
   "url": "./static/pdf/mcmd/col_edit/mrand.pdf"
 }

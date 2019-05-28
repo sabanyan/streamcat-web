@@ -34,6 +34,10 @@ export default class SubFlowStepModel extends CommandStepModel{
 
     return this.label
   }
+
+  addableInPort(){
+    return null
+  }
   
   validate(){
     //必須バリデーション
