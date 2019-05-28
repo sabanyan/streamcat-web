@@ -96,8 +96,11 @@ $kskp-nav-background-color: #00469D;
 $kskp-preview-modal-header-background-color: #8296A8;
 $kskp-dropdown-list-label-border-color: #8296A8;
 $kskp-dropdown-list-label-color: #8296A8;
+$kskp-port-border-color: #B7C8D3;
+$kskp-port-label-color: darken(#B7C8D3,5%);
 //@import '../../node_modules/boiler_strap/sass/boilerstrap/mixins/customize_mixins';
 
+@import "tooltip";
 
 .user-select{
   -webkit-user-select: text;

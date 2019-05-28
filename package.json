@@ -30,6 +30,7 @@
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "devDependencies": {
     "axios": "^0.18.0",
+    "array-move": "^2.1.0",
     "babel-loader": "^7.1.4",
     "babel-preset-env": "^1.7.0",
     "babel-preset-flow": "^6.23.0",
@@ -45,6 +46,7 @@
     "jest": "^23.5.0",
     "node-sass": "^4.9.0",
     "react-test-renderer": "^16.4.2",
+    "react-sortable-hoc": "^1.9.1",
     "reapop": "^2.0.1",
     "reapop-theme-wybo": "^1.0.2",
     "sass-loader": "^7.0.1",

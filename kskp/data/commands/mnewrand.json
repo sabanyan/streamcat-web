@@ -1,10 +1,15 @@
 {
   "id": "mnewrand",
+  "rules" : {
+    "a" : {
+      "presence": {"allowEmpty": false}
+    }
+  },
   "params": [
     {
       "name": "a",
       "type": "string",
-      "label": "新規作成する連番行の項目名(必須)"
+      "label": "新規作成する連番行の項目名"
     },
     {
       "name": "max",
