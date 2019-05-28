@@ -8,6 +8,9 @@ from datetime import datetime, timedelta, timezone
 flow_obj_cache = {} # uuid: Jsonオブジェクト
 flows_cache = {} # uuid: Flowインスタンス
 
+# ライブラリ導入前のフレーム格納フォルダ
+OLD_FRAMES_PATH = 'kskp/data/frames/'
+
 def parse(flow_uuid, inputs={}, args={}):
     global flow_obj_cache
     global flows_cache
@@ -83,7 +86,7 @@ def parse_datum(node_obj):
         from ..library import Frame as FrameModule
         frame = FrameModule.find_by_uuid(frame_uuid)
         if frame is None:
-            frames_path = os.environ['KENG_FRAMES_PATH']
+            frames_path = OLD_FRAMES_PATH
             file_name = f'{frame_uuid}.{data_source}'
         else:
             frames_path = frame.path_obj.parent
