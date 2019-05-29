@@ -10,7 +10,7 @@ app.config["JSON_SORT_KEYS"] = False
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
 from kskp.web.views import visualize
-app.register_blueprint(visualize.mod, url_prefix='/')
+app.register_blueprint(visualize.mod)
 
 from .api import api
 from .frames import frame_api
