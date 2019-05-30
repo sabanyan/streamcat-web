@@ -1,20 +1,8 @@
 //@flow
 import React from 'react'
-import DataTable from '../../shared/DataTable'
-import {
-  Doughnut,
-  Pie,
-  Line,
-  Bar,
-  HorizontalBar,
-  Radar,
-  Polar,
-  Bubble,
-  Scatter,
-} from 'react-chartjs-2'
+import { Bar, Bubble, Doughnut, HorizontalBar, Line, Pie, Polar, Radar, Scatter, } from 'react-chartjs-2'
 import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
-import DownloadButton from '../Button/DownloadButton'
 import style from './style.scss'
 import DataPreviewInspector from '../Inspector/DataPreviewInspector'
 
@@ -45,8 +33,8 @@ export default class DataPreview extends React.Component<Props, State> {
 
   }
 
-  onChangePreviewInspector(type){
-    this.setState({type:type})
+  onChangePreviewInspector (type) {
+    this.setState({type: type})
   }
 
   render () {
@@ -94,12 +82,13 @@ export default class DataPreview extends React.Component<Props, State> {
         break
     }
 
-    return <div className={style.data_preview_container} style={{height:window.innerHeight}}>
-      <div className={style.data_preview_body} style={{height:window.innerHeight}}>
-          {chart}
+    return <div className={style.data_preview_container} style={{height: window.innerHeight}}>
+      <div className={style.data_preview_body} style={{height: window.innerHeight}}>
+        {chart}
       </div>
-      <div className={style.data_preview_property} style={{height:window.innerHeight}}>
-        <DataPreviewInspector chart_instance={this.state.chart_instance} onChange={(type)=>this.onChangePreviewInspector(type)} title={title}/>
+      <div className={style.data_preview_property} style={{height: window.innerHeight}}>
+        <DataPreviewInspector chart_instance={this.state.chart_instance}
+                              onChange={(type) => this.onChangePreviewInspector(type)} title={title} />
       </div>
     </div>
   }

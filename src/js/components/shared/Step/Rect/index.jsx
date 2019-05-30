@@ -12,7 +12,7 @@ type Props = {
   children: React.Node,
   filter: string,
   stroke: string,
-  style: {x:number,y:number,width:number,height:number,rx:number,ry:number},
+  style: { x: number, y: number, width: number, height: number, rx: number, ry: number },
   hover: boolean,
   selected: boolean
 }

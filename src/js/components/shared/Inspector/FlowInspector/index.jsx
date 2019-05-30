@@ -1,19 +1,15 @@
 //@flow
 import React from 'react'
-import classnames from 'classnames'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import style from '../style.scss'
 import Button from '../../Button/index'
 import BaseInspector from '../BaseInspector'
-import type { FlowListDataType, StepModelType } from '../../../../types'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import type { FlowModelProps } from '../../../../model/Flow/FlowModel'
+import type { FlowListDataType } from '../../../../types'
 import moment from 'moment/moment'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
 import InputFlowForm from '../../InputFlowForm'
-import FlowUtil from '../../../../utils/FlowUtil';
+import FlowUtil from '../../../../utils/FlowUtil'
 import Resizer from '../Resizer'
 
 type Props = {
@@ -37,14 +33,14 @@ class FlowInspector extends React.Component<Props> {
     })
   }
 
-  nullInspector(){
+  nullInspector () {
     return <Resizer>
       <BaseInspector {...this.props} >
       </BaseInspector>
     </Resizer>
   }
 
-  resetRunArgsValue() {
+  resetRunArgsValue () {
     const runArgs = this.props.runArgs
     runArgs.flows = runArgs.flows.map((f) => {
       f.uuid = null
@@ -76,8 +72,8 @@ class FlowInspector extends React.Component<Props> {
 
   run () {
     const {runArgs, notify, dismissNotify} = this.props
-     //TODO RunArgsのValidate 
-    
+    //TODO RunArgsのValidate
+
     FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then((response) => {
       this.resetRunArgsValue()
       if (response.data.success) {
@@ -127,7 +123,7 @@ class FlowInspector extends React.Component<Props> {
         <Button danger={true}
                 onClick={() => this.props.onClickDelete(uuid)}>削除する</Button>
       </div>
-      <div className={style.full_hr}/>
+      <div className={style.full_hr} />
       <div>
         <label>フロー名</label>
       </div>
@@ -155,7 +151,7 @@ class FlowInspector extends React.Component<Props> {
     </div>
 
     return <Resizer>
-      <BaseInspector key={uuid + "_" + label} label={label} {...this.props} >
+      <BaseInspector key={uuid + '_' + label} label={label} {...this.props} >
         {content}
       </BaseInspector>
     </Resizer>

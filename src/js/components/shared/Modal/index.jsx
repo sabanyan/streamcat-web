@@ -44,7 +44,7 @@ export default class Modal extends React.Component<Props, State> {
 
   constructor (props: Props) {
     super(props)
-    this.state = {visible: false, content: null,contents:null, title: this.props.title}
+    this.state = {visible: false, content: null, contents: null, title: this.props.title}
   }
 
   componentWillMount () {
@@ -130,7 +130,7 @@ export default class Modal extends React.Component<Props, State> {
 
   render () {
 
-    const done = (this.state.done)?this.state.done:this.props.done
+    const done = (this.state.done) ? this.state.done : this.props.done
     const {visible, title, content, contents, danger} = this.state
     const {preview, ok, close, footer, cancel, children, primary} = this.props
 
@@ -139,8 +139,8 @@ export default class Modal extends React.Component<Props, State> {
      */
     const backdrop = (visible) ? <div onClick={() => this.onClickBackdrop()}
                                       className={'modal-backdrop fade show' +
-                                      ((preview) ? ' preview' : '')}/> :
-      <div className="modal-backdrop fade" style={{pointerEvents: 'none'}}/>
+                                      ((preview) ? ' preview' : '')} /> :
+      <div className="modal-backdrop fade" style={{pointerEvents: 'none'}} />
 
     let buttons
 
@@ -165,7 +165,7 @@ export default class Modal extends React.Component<Props, State> {
         </Button>
         &nbsp;
         <Button danger={danger} primary={primary}
-          onClick={() => this.onClickDone()}>
+                onClick={() => this.onClickDone()}>
           {done}
         </Button>
       </div>
@@ -202,13 +202,12 @@ export default class Modal extends React.Component<Props, State> {
 
     if (preview) {
       modal = <PreviewModal id={id} title={title} footer={modal_footer}
-                            close_button={close_button} visible={visible} contents = {(visible)?contents:null}>
+                            close_button={close_button} visible={visible} contents={(visible) ? contents : null}>
       </PreviewModal>
-    }
-    else {
+    } else {
       modal = <StandardModal id={id} title={title} footer={modal_footer}
                              close_button={close_button} visible={visible}>
-        {(visible)?modal_body:null}
+        {(visible) ? modal_body : null}
       </StandardModal>
     }
 

@@ -1,11 +1,8 @@
 //@flow
-import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
 import Model from '../index'
-import CommandModel from '../Command/CommandModel'
-import type { CommandParamType } from '../../types'
-type stepType = "command" | "frame"
 
+type stepType = 'command' | 'frame'
 
 export type BaseModelProps = {
   id?: string;
@@ -28,23 +25,23 @@ export default class BaseStepModel extends Model {
 
   constructor (props: BaseModelProps) {
     super(props)
-    this.initialize(props,"id")
-    this.initialize(props,"type")
-    this.initialize(props,"label")
-    this.initialize(props,"invalid")
-    this.initialize(props,"error")
+    this.initialize(props, 'id')
+    this.initialize(props, 'type')
+    this.initialize(props, 'label')
+    this.initialize(props, 'invalid')
+    this.initialize(props, 'error')
     this.setPosition(props.position)
     this.setSize(props.size)
-    if(!this.id){
+    if (!this.id) {
       this.id = ModelUtil.getNewId(this.type)
     }
-    if(!this.label){
+    if (!this.label) {
       this.label = this.id
     }
   }
 
-  getLabel(){
-    if(this.label)return this.label
+  getLabel () {
+    if (this.label) return this.label
     this.label = this.id
     return this.id
   }

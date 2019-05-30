@@ -1,20 +1,20 @@
-'use strict';
+'use strict'
 
-var css = require('./lib/styles.css');
+var css = require('./lib/styles.css')
 
 // media breakpoint - small screen min width
-var smallScreenMin = 768;
+var smallScreenMin = 768
 
 // default className for NotificationsSystem component
-var notificationsSystemClassName = css['notifications-system'];
+var notificationsSystemClassName = css['notifications-system']
 
 // default className for NotificationsContainer component
 var notificationsContainerClassName = {
   main: css['notifications-container'],
-  position: function position(_position) {
-    return css['notifications-container--' + _position];
+  position: function position (_position) {
+    return css['notifications-container--' + _position]
   }
-};
+}
 
 // default transition for Notification component
 var notificationsContainerTransition = {
@@ -24,7 +24,7 @@ var notificationsContainerTransition = {
     enter: css['notification-wrapper-enter'],
     leave: css['notification-wrapper-leave']
   }
-};
+}
 
 // default className for Notification component
 var notificationClassName = {
@@ -37,25 +37,25 @@ var notificationClassName = {
   icon: 'fa ' + css['notification-icon'],
   imageContainer: css['notification-image-container'],
   image: css['notification-image'],
-  status: function status(_status) {
-    return css['notification--' + _status];
+  status: function status (_status) {
+    return css['notification--' + _status]
   },
   dismissible: css['notification--dismissible'],
-  buttons: function buttons(count) {
+  buttons: function buttons (count) {
     if (count === 0) {
-      return '';
+      return ''
     } else if (count === 1) {
-      return css['notification--buttons-1'];
+      return css['notification--buttons-1']
     } else if (count === 2) {
-      return css['notification--buttons-2'];
+      return css['notification--buttons-2']
     }
-    return css['notification-buttons'];
+    return css['notification-buttons']
   },
   closeButtonContainer: css['notification-close-button-container'],
   closeButton: 'fa ' + css['notification-close-button'],
   button: css['notification-button'],
   buttonText: css['notification-button-text']
-};
+}
 
 module.exports = {
   smallScreenMin: smallScreenMin,
@@ -69,4 +69,4 @@ module.exports = {
   notification: {
     className: notificationClassName
   }
-};
+}

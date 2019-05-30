@@ -2,8 +2,8 @@
 const Constants = {
   debug: false,
   default: {
-    uuid:{
-      v4Format:"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+    uuid: {
+      v4Format: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
     },
     node: {
       width: 38,
@@ -35,8 +35,8 @@ const Constants = {
       },
     },
     command: {
-      inputPortName:"i",
-      outputPortName:"i",
+      inputPortName: 'i',
+      outputPortName: 'i',
     },
     note: {
       width: (38 + 6 * 2) * 4,
@@ -50,26 +50,26 @@ const Constants = {
       maxWidth: 800
     }
   },
-  step:{
-    type:{
-      command:"command",
-      frame:"frame",
-      subflow:"flow",
-      note:"note"
+  step: {
+    type: {
+      command: 'command',
+      frame: 'frame',
+      subflow: 'flow',
+      note: 'note'
     }
   },
-  param:{
-    type:{
-      number:"number",
-      string:"string",
-      boolean:"boolean",
-      select:"select",
-      column:"column"
+  param: {
+    type: {
+      number: 'number',
+      string: 'string',
+      boolean: 'boolean',
+      select: 'select',
+      column: 'column'
     }
   },
-  data:{
-    dataSource:{
-      csv:"csv"
+  data: {
+    dataSource: {
+      csv: 'csv'
     }
   },
   api: {
@@ -103,9 +103,9 @@ const Constants = {
       message: 'message',
     },
   },
-  format:{
-    date: "YYYY-MM-DD",
-    dateTime: "YYYY-MM-DD HH:mm:ss"
+  format: {
+    date: 'YYYY-MM-DD',
+    dateTime: 'YYYY-MM-DD HH:mm:ss'
   },
   preview: {
     DATASOURCE: 'preview_datasource',
@@ -116,8 +116,8 @@ const Constants = {
     MODAL_ON_CLICK_OK: 'ModalOnClickDone',
     MODAL_ON_CLICK_DONE: 'ModalOnClickDone',
     MODAL_ON_CLICK_CANCEL: 'ModalOnClickCancel',
-    ON_CHANGE_FORM: "ON_CHANGE_FORM",
-    ON_SUBMIT_FORM: "ON_SUBMIT_FORM"
+    ON_CHANGE_FORM: 'ON_CHANGE_FORM',
+    ON_SUBMIT_FORM: 'ON_SUBMIT_FORM'
   },
   chart: {
     bar: 'bar',
@@ -130,46 +130,46 @@ const Constants = {
     radar: 'radar',
     scatter: 'scatter',
   },
-  lang:{
-    classification:{
-      subflow:"サブフロー",
-      calculation:"項目間の計算",
-      col_edit:"列に対する選択・加工",
-      data_format:"フォーマットの整形",
-      data_source:"データソース出力",
-      row_edit:"行に対する選択・加工",
-      row_sort:"行のソート",
-      table_grouping:"テーブルの集計",
-      table_join:"テーブルの結合",
-      table_split:"テーブルの分割",
-      validation:"データの整合性チェック",
-      value_crossing:"行と列に対する加工",
-      value_transform:"セルの値の変換",
-      data_mining:"データマイニング",
-      views:"グラフ描画",
-      graphviz:"グラフ構造の画像への変換",
-      classification:"分類",
-      clustering:"クラスタリング",
-      postprocess:"機械学習 後処理",
-      preprocess:"機械学習 前処理",
-      regression:"回帰",
+  lang: {
+    classification: {
+      subflow: 'サブフロー',
+      calculation: '項目間の計算',
+      col_edit: '列に対する選択・加工',
+      data_format: 'フォーマットの整形',
+      data_source: 'データソース出力',
+      row_edit: '行に対する選択・加工',
+      row_sort: '行のソート',
+      table_grouping: 'テーブルの集計',
+      table_join: 'テーブルの結合',
+      table_split: 'テーブルの分割',
+      validation: 'データの整合性チェック',
+      value_crossing: '行と列に対する加工',
+      value_transform: 'セルの値の変換',
+      data_mining: 'データマイニング',
+      views: 'グラフ描画',
+      graphviz: 'グラフ構造の画像への変換',
+      classification: '分類',
+      clustering: 'クラスタリング',
+      postprocess: '機械学習 後処理',
+      preprocess: '機械学習 前処理',
+      regression: '回帰',
     }
   },
-  library:{
-    type:{
-      document: "document",
-      frame: "frame",
-      folder: "folder",
-      database: "database",
-      remoteFolder: "remote-folder"
+  library: {
+    type: {
+      document: 'document',
+      frame: 'frame',
+      folder: 'folder',
+      database: 'database',
+      remoteFolder: 'remote-folder'
     },
     mode: {
-      dialog: "dialog", //選択モード
-      list: "list" //通常モード
+      dialog: 'dialog', //選択モード
+      list: 'list' //通常モード
     }
   },
-  errorMessage:{
-    unhandledError: "予期せぬエラーが発生しました"
+  errorMessage: {
+    unhandledError: '予期せぬエラーが発生しました'
   }
 
 }

@@ -5,7 +5,6 @@ import style from './style.scss'
 import projectListStyle from '../shared/List/ProjectList/style.scss'
 import APIUtil from '../../utils/APIUtil'
 import ProjectList from '../shared/List/ProjectList'
-import TextFieldWithButton from '../shared/TextFieldWithButton'
 import ProjectListHeader from '../shared/List/ProjectList/ProjectListHeader'
 import Loader from '../shared/Loader'
 import EmptyState from '../shared/EmptyState'
@@ -41,26 +40,25 @@ export default class ProjectListContainer extends React.Component {
     this.registerModal()
   }
 
-  clearKeyword(){
+  clearKeyword () {
     this.setState({
       keyword: '',
       selected_project: null
     })
-    const target = document.querySelector("input[type=text]")
-    if(target)target.value="";
+    const target = document.querySelector('input[type=text]')
+    if (target) target.value = ''
   }
 
   registerModal () {
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-        APIUtil.post('projects', {name: this.state.project_name}).
-          then((response) => {
-            ModalUtil.emitModal(
-              {id: Constants.modal.ADD_PROJECT, visible: false})
-            this.clearKeyword()
-            this.getProjectList()
-          })
+        APIUtil.post('projects', {name: this.state.project_name}).then((response) => {
+          ModalUtil.emitModal(
+            {id: Constants.modal.ADD_PROJECT, visible: false})
+          this.clearKeyword()
+          this.getProjectList()
+        })
       },
     })
   }
@@ -75,7 +73,7 @@ export default class ProjectListContainer extends React.Component {
   }
 
   renderProjectListHeader () {
-    return <ProjectListHeader/>
+    return <ProjectListHeader />
   }
 
   renderProjectList () {
@@ -91,7 +89,7 @@ export default class ProjectListContainer extends React.Component {
                           project={project}
                           href={'./flows?project=' + project.uuid}
                           selected={selected}
-                          onClickProject={(e,project)=>this.onClickProject(e,project)}>
+                          onClickProject={(e, project) => this.onClickProject(e, project)}>
       </ProjectList>
     })
   }
@@ -107,12 +105,12 @@ export default class ProjectListContainer extends React.Component {
 
   renderSearchBar () {
     return <div className={style.search_bar}>
-      <TextField placeholder={'プロジェクトを検索'} onChange={(e) => this.onChangeKeyword(e)}/>
+      <TextField placeholder={'プロジェクトを検索'} onChange={(e) => this.onChangeKeyword(e)} />
     </div>
   }
 
-  onClickProject(e,project){
-    this.setState({selected_project:project})
+  onClickProject (e, project) {
+    this.setState({selected_project: project})
   }
 
   onChangeKeyword (e) {
@@ -125,15 +123,15 @@ export default class ProjectListContainer extends React.Component {
     })
   }
 
-  onBlurTitle(e, props){
+  onBlurTitle (e, props) {
     const project = props.project
     if (project) {
-      APIUtil.put("projects/" + project.uuid,{
-        "new_name": e.target.value
-      }).then((response)=>{
+      APIUtil.put('projects/' + project.uuid, {
+        'new_name': e.target.value
+      }).then((response) => {
         this.getProjectList()
-      },(error)=>{
-  
+      }, (error) => {
+
       })
     }
   }
@@ -149,7 +147,7 @@ export default class ProjectListContainer extends React.Component {
           minlength: 5,
         }} placeholder={'プロジェクト名'}
                    onChange={(e, validation) => this.onChangeProjectName(e,
-                     validation)}/>
+                     validation)} />
       </div>,
     })
   }
@@ -159,7 +157,7 @@ export default class ProjectListContainer extends React.Component {
       id: Constants.modal.CONFIRM, onClickDone: () => {
         APIUtil.delete('projects/' + project_uuid).then((response) => {
           this.getProjectList()
-          this.setState({selected_project:null})
+          this.setState({selected_project: null})
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         })
       },
@@ -176,7 +174,7 @@ export default class ProjectListContainer extends React.Component {
   }
 
   isEmptyProjectList () {
-    if(!this.state.is_finished)return false
+    if (!this.state.is_finished) return false
     if (!Array.isArray(this.state.project_list) ||
       this.state.project_list.length === 0 || this.state.project_list ===
       null) {
@@ -186,7 +184,8 @@ export default class ProjectListContainer extends React.Component {
   }
 
   renderNewProject () {
-    return <a className={classnames(projectListStyle.project,projectListStyle.new)} href="#" onClick={(e) => this.onClickNew(e)}>
+    return <a className={classnames(projectListStyle.project, projectListStyle.new)} href="#"
+              onClick={(e) => this.onClickNew(e)}>
       <div className={projectListStyle.project_list}>
         <div className={projectListStyle.name}>
           <i className={classnames('material-icons', [projectListStyle.icon])}>add_circle_outline</i>
@@ -196,17 +195,17 @@ export default class ProjectListContainer extends React.Component {
     </a>
   }
 
-  renderInspector(){
+  renderInspector () {
     return <ProjectInspector project={this.state.selected_project}
-                             onClickDelete={(uuid)=>this.onClickDelete(uuid)}
-                             onBlurTitle={(e, props)=>this.onBlurTitle(e, props)}/>
+                             onClickDelete={(uuid) => this.onClickDelete(uuid)}
+                             onBlurTitle={(e, props) => this.onBlurTitle(e, props)} />
   }
 
   renderAll () {
     if (this.isEmptyProjectList()) {
       return this.renderEmptyState()
     }
-    if (!this.state.is_finished)return null
+    if (!this.state.is_finished) return null
     return <div>
       {this.renderSearchBar()}
       {this.renderProjectListHeader()}
@@ -219,9 +218,9 @@ export default class ProjectListContainer extends React.Component {
   render () {
     return <div className={style.inspector_list_container}>
       <div className={'container mt-40px'}>
-        <Loader absolute={true} visible={this.state.is_loading}/>
+        <Loader absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
-        <ModalManager/>
+        <ModalManager />
       </div>
     </div>
   }

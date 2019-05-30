@@ -3,13 +3,15 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  .data_table_body{
-    width: calc(100% - 400px)!important;
+
+  .data_table_body {
+    width: calc(100% - 400px) !important;
     overflow: scroll;
     display: flex;
     align-items: stretch;
   }
-  .data_table_property{
+
+  .data_table_property {
     width: 400px;
     display: flex;
     align-items: stretch;
