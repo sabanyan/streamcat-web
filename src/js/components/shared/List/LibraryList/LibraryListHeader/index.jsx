@@ -2,13 +2,11 @@
 import React from 'react'
 import style from '../style.scss'
 
-type Props = {
-
-}
+type Props = {}
 
 export default class LibraryListHeader extends React.Component<Props> {
 
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
 

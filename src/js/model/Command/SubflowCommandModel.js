@@ -10,47 +10,47 @@ export default class SubflowCommandModel extends Model {
   label: string
   nodes: [] = []
   params: [CommandParamType] = []
-  ports: [CommandPortType] = [[],[]]
+  ports: [CommandPortType] = [[], []]
   projectId: string
   projectName: string
   uuid: string
-  classification: string = "subflow"
+  classification: string = 'subflow'
 
   constructor (props: SubFlowCommandParamType) {
     super(props)
     this.id = props.uuid //サブフローのIDはUUIDとする
-    this.initialize(props,"createdAt")
-    this.initialize(props,"creator")
-    this.initialize(props,"description")
-    this.initialize(props,"label")
-    this.initialize(props,"nodes")
-    this.initialize(props,"params")
-    this.initialize(props,"ports")
-    this.initialize(props,"projectId")
-    this.initialize(props,"projectName")
-    this.initialize(props,"uuid")
+    this.initialize(props, 'createdAt')
+    this.initialize(props, 'creator')
+    this.initialize(props, 'description')
+    this.initialize(props, 'label')
+    this.initialize(props, 'nodes')
+    this.initialize(props, 'params')
+    this.initialize(props, 'ports')
+    this.initialize(props, 'projectId')
+    this.initialize(props, 'projectName')
+    this.initialize(props, 'uuid')
   }
 
-  getInPorts():[CommandPortType]{
+  getInPorts (): [CommandPortType] {
     return this.ports[0]
   }
 
-  getOutPorts():[CommandPortType]{
+  getOutPorts (): [CommandPortType] {
     return this.ports[1]
   }
 
-  getParams():[CommandParamType]{
+  getParams (): [CommandParamType] {
     return this.params
   }
 
-  getLabel() {
+  getLabel () {
     return this.label
   }
 
-  getParam(key:string):CommandParamType{
-    let result:CommandParamType = {}
-    this.params.find(param =>{
-      if(param.name === key)result = param
+  getParam (key: string): CommandParamType {
+    let result: CommandParamType = {}
+    this.params.find(param => {
+      if (param.name === key) result = param
     })
     return result
   }

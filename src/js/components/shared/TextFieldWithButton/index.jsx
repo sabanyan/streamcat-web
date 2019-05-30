@@ -16,16 +16,16 @@ type Props = {
 
 export default class TextFieldWithButton extends React.Component<Props> {
   static defaultProps = {
-    placeHolder: "",
-    onChange:{},
-    onClick:{},
+    placeHolder: '',
+    onChange: {},
+    onClick: {},
     children: null,
     disabled: false,
-    icon: "",
+    icon: '',
     danger: false
   }
 
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
 

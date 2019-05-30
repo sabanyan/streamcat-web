@@ -18,7 +18,7 @@ type Props = {
 export default class DataTable extends React.Component<Props> {
   render () {
 
-    let {json,title,uuid,selected_data_source_detail} = this.props
+    let {json, title, uuid, selected_data_source_detail} = this.props
     let tr
     let body_trs
     let tds
@@ -35,7 +35,7 @@ export default class DataTable extends React.Component<Props> {
     /**
      * ヘッダー行の設定
      */
-    json.labels.forEach((label:string, index:number) => {
+    json.labels.forEach((label: string, index: number) => {
       tds.push(<th key={'th_' + index}>{label}</th>)
     })
     body_trs.push(<tr key={'tr_th'}>{tds}</tr>)
@@ -52,17 +52,17 @@ export default class DataTable extends React.Component<Props> {
     /**
      * データ行の設定
      */
-    for (let row:number = 0; row < max_row; row++) {
+    for (let row: number = 0; row < max_row; row++) {
       tds = []
-      json.labels.map(function (label:string, col:number) {
+      json.labels.map(function (label: string, col: number) {
         if (json.datasets[col].label === label) {
           tds.push(<td key={'td_' + col}>{json.datasets[col].data[row]}</td>)
         }
       })
       body_trs.push(<tr key={'tr_' + row}>{tds}</tr>)
     }
-    return <div className={style.data_table_container} style={{height:window.innerHeight}}>
-      <div className={style.data_table_body} style={{height:window.innerHeight}}>
+    return <div className={style.data_table_container} style={{height: window.innerHeight}}>
+      <div className={style.data_table_body} style={{height: window.innerHeight}}>
         <table
           className="kskp-data-table table-bordered table table-striped">
           <thead>
@@ -75,8 +75,8 @@ export default class DataTable extends React.Component<Props> {
           </tbody>
         </table>
       </div>
-      <div className={style.data_table_property} style={{height:window.innerHeight}}>
-        <DataTableInspector title={title}　uuid={uuid} selected_data_source_detail={selected_data_source_detail} />
+      <div className={style.data_table_property} style={{height: window.innerHeight}}>
+        <DataTableInspector title={title} uuid={uuid} selected_data_source_detail={selected_data_source_detail} />
       </div>
     </div>
   }

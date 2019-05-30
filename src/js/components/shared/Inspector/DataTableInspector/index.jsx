@@ -15,19 +15,19 @@ type Props = {
 
 class DataTableInspector extends React.Component<Props> {
 
-  onClickCSVDownload(e:Event){
+  onClickCSVDownload (e: Event) {
     const {uuid} = this.props
     const param = {
-      type:"frame",
+      type: 'frame',
       uuid: uuid,
-      ext:"csv"
+      ext: 'csv'
     }
-    HttpUtil.get("files",param).then((response)=>{
-      let props:CSVModelProps = {
+    HttpUtil.get('files', param).then((response) => {
+      let props: CSVModelProps = {
         uuid: uuid,
         data: response.data,
       }
-      const csv:CSVModel = new CSVModel(props)
+      const csv: CSVModel = new CSVModel(props)
       csv.handleDownload()
     })
   }
@@ -39,9 +39,10 @@ class DataTableInspector extends React.Component<Props> {
     const lastModifiedAt = StringUtil.separate(this.props.selected_data_source_detail.lastModifiedAt)
     const content = <div>
       <div className={style.actions}>
-        <DownloadButton download="image.png" href={this.props.image_url} onClick={(e)=>this.onClickCSVDownload(e)}>CSVダウンロード</DownloadButton>
+        <DownloadButton download="image.png" href={this.props.image_url}
+                        onClick={(e) => this.onClickCSVDownload(e)}>CSVダウンロード</DownloadButton>
       </div>
-      <div className={style.full_hr}/>
+      <div className={style.full_hr} />
       <div className={style.overviews}>
         <div className={style.overview}>
           <div className={style.overview_label}>
@@ -78,7 +79,7 @@ class DataTableInspector extends React.Component<Props> {
       </div>
     </div>
 
-    return <BaseInspector header={""} label={title} {...this.props}>
+    return <BaseInspector header={''} label={title} {...this.props}>
       {content}
     </BaseInspector>
   }

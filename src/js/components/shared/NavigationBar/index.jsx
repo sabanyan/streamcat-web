@@ -12,35 +12,35 @@ type Props = {
 }
 
 export default class NavigationBar extends React.Component<Props> {
-  isLogin:boolean = false
-  hasProject:boolean = false
-  hasFlow:boolean = false
+  isLogin: boolean = false
+  hasProject: boolean = false
+  hasFlow: boolean = false
 
   constructor (props: Props) {
     super(props)
-    if(this.props.navigation){
-      if(props.navigation.user_id && props.navigation.user_name){
+    if (this.props.navigation) {
+      if (props.navigation.user_id && props.navigation.user_name) {
         this.isLogin = true
       }
-      if(props.navigation.project_uuid && props.navigation.project_name){
+      if (props.navigation.project_uuid && props.navigation.project_name) {
         this.hasProject = true
       }
-      if(props.navigation.flow_uuid && props.navigation.flow_name){
+      if (props.navigation.flow_uuid && props.navigation.flow_name) {
         this.hasFlow = true
       }
     }
   }
 
-  componentDidMount(){
-    if(this.isDialog()){
+  componentDidMount () {
+    if (this.isDialog()) {
       document.body.classList.add('dialog')
     }
 
   }
 
-  renderProjectNavigationItem(){
+  renderProjectNavigationItem () {
     const {baseUrl} = this.props
-    if(!this.isLogin) return null
+    if (!this.isLogin) return null
     return <li className="nav-item list">
       <a className="nav-link" href="/projects">
         <img className="icon" src={baseUrl + 'images/icon/list.svg'} />
@@ -48,58 +48,60 @@ export default class NavigationBar extends React.Component<Props> {
       </a>
     </li>
   }
-  renderProjectListNavigationItem(){
-    const {baseUrl,navigation} = this.props
-    if(!this.hasProject) return null
+
+  renderProjectListNavigationItem () {
+    const {baseUrl, navigation} = this.props
+    if (!this.hasProject) return null
     return <li className="nav-item project">
-      <a className="nav-link" href={"/flows?project=" + navigation.project_uuid}>
+      <a className="nav-link" href={'/flows?project=' + navigation.project_uuid}>
         <img className="icon" src={baseUrl + 'images/icon/folder.svg'} />
         {navigation.project_name}
       </a>
     </li>
   }
-  renderFlowListNavigationItem(){
-    const {baseUrl,navigation} = this.props
-    if(!this.hasFlow) return null
+
+  renderFlowListNavigationItem () {
+    const {baseUrl, navigation} = this.props
+    if (!this.hasFlow) return null
     return <li className="nav-item flow">
-      <a className="nav-link" href={"/flows/" + navigation.flow_uuid}>
+      <a className="nav-link" href={'/flows/' + navigation.flow_uuid}>
         <img className="icon" src={baseUrl + 'images/icon/flow.svg'} />
         {navigation.flow_name}
       </a>
     </li>
   }
 
-  renderLibraryNavigationItem(){
-    const {baseUrl,navigation} = this.props
-    if(!this.hasFlow) return null
+  renderLibraryNavigationItem () {
+    const {baseUrl, navigation} = this.props
+    if (!this.hasFlow) return null
     return <li className="nav-item designer">
-      <a className="nav-link" href={"/flows/" + navigation.flow_uuid}>
-      <img className="icon" src={baseUrl + 'images/icon/designer.svg'} />フローデザイナー
+      <a className="nav-link" href={'/flows/' + navigation.flow_uuid}>
+        <img className="icon" src={baseUrl + 'images/icon/designer.svg'} />フローデザイナー
       </a>
     </li>
   }
 
-  renderFlowDesignerNavigationItem() {
+  renderFlowDesignerNavigationItem () {
     const {baseUrl, navigation} = this.props
-    if(!this.hasProject) return null
+    if (!this.hasProject) return null
     return <li className="nav-item library">
-      <a className="nav-link" href={"/library"}>
+      <a className="nav-link" href={'/library'}>
         <img className="icon" src={baseUrl + 'images/icon/library.svg'} />ライブラリ
       </a>
     </li>
   }
 
-  onClickLogout(e:Event){
-    let logoutParam = "?session=off"
-    if(location.href.indexOf("?") !== -1){
-      logoutParam = logoutParam.replace("?","&")
+  onClickLogout (e: Event) {
+    let logoutParam = '?session=off'
+    if (location.href.indexOf('?') !== -1) {
+      logoutParam = logoutParam.replace('?', '&')
     }
     const url = location.href + logoutParam
     WebUtil.navigateURL(url)
     e.preventDefault()
   }
 
-  renderUserNavigationItem(){
+  renderUserNavigationItem () {
     const {baseUrl, navigation} = this.props
     if (!this.isLogin) return null
     return <li className="nav-item dropdown user">
@@ -117,18 +119,18 @@ export default class NavigationBar extends React.Component<Props> {
 
   }
 
-  isDialog(){
-    return (HttpUtil.getURLParam("dialog"))
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
   }
 
   render () {
-    if(this.isDialog())return null
+    if (this.isDialog()) return null
 
     const {baseUrl} = this.props
     return <nav className="navbar navbar-expand navbar-dark fixed-top">
       <a className="navbar-brand" href="#">
-        <img src={baseUrl+"images/logo.png"} height="30" className="d-inline-block align-top"
-             alt=""/>
+        <img src={baseUrl + 'images/logo.png'} height="30" className="d-inline-block align-top"
+             alt="" />
       </a>
       <div className="collapse navbar-collapse breadcrumb-navbar">
         <ul className="navbar-nav mr-auto">

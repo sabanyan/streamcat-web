@@ -67,8 +67,7 @@ export default class ProfileContainer extends React.Component<Props, State> {
     })
   }
 
-
-  onClickSave(){
+  onClickSave () {
     //ON_SUBMIT_FORMを呼び出すと、Fromコンポーネントの現在のステートを含むSubmitイベントが呼ばれる
     window.emitter.emit(Constants.event.ON_SUBMIT_FORM)
   }
@@ -77,28 +76,27 @@ export default class ProfileContainer extends React.Component<Props, State> {
     this.setState({selected_tab_id: tab_id})
   }
 
-  onSubmit(formState){
+  onSubmit (formState) {
     console.log(formState)
     this.setState({is_loading: true})
 
     const body = {
-      "profile":{
-        name:formState["name"],
-        email:formState["email"],
-        current_password:formState["current_password"],
-        new_password:formState["new_password"],
+      'profile': {
+        name: formState['name'],
+        email: formState['email'],
+        current_password: formState['current_password'],
+        new_password: formState['new_password'],
       },
-      "extension_tools":{
-        "grafana":{
-          id:formState["grafana_id"],
-          password:formState["grafana_password"],
-          url:formState["grafana_url"],
+      'extension_tools': {
+        'grafana': {
+          id: formState['grafana_id'],
+          password: formState['grafana_password'],
+          url: formState['grafana_url'],
         }
       }
     }
 
-
-    HttpUtil.put('profile/' + inject_user_id,body).then((response) => {
+    HttpUtil.put('profile/' + inject_user_id, body).then((response) => {
       const json = response.data
       console.log(json)
       this.setState(
@@ -110,7 +108,7 @@ export default class ProfileContainer extends React.Component<Props, State> {
   }
 
   render () {
-    if(!this.state.is_finished)return <div className={'container mt-40px'}>
+    if (!this.state.is_finished) return <div className={'container mt-40px'}>
       <Loader center={true} absolute={true} visible={this.state.is_loading} />
     </div>
 
@@ -122,54 +120,57 @@ export default class ProfileContainer extends React.Component<Props, State> {
       </div>
       <div className={style.property_body}>
         <div className={style.card}>
-        <Form onSubmit={(formState)=>this.onSubmit(formState)}>
-          <TabBar className={style.tabbar}>
-            <TabList>
-              <Tab className={style.tab} activeClassName={style.active} tab_id={0} selected_tab_id={selected_tab_id}
-                   onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>プロフィール</Tab>
-              <Tab className={style.tab} activeClassName={style.active} tab_id={1} selected_tab_id={selected_tab_id}
-                   onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>Grafana</Tab>
-            </TabList>
-          </TabBar>
-          <TabPanel tab_id={0} selected_tab_id={selected_tab_id}>
+          <Form onSubmit={(formState) => this.onSubmit(formState)}>
+            <TabBar className={style.tabbar}>
+              <TabList>
+                <Tab className={style.tab} activeClassName={style.active} tab_id={0} selected_tab_id={selected_tab_id}
+                     onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>プロフィール</Tab>
+                <Tab className={style.tab} activeClassName={style.active} tab_id={1} selected_tab_id={selected_tab_id}
+                     onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>Grafana</Tab>
+              </TabList>
+            </TabBar>
+            <TabPanel tab_id={0} selected_tab_id={selected_tab_id}>
               <div className={'mb-8px'}>
                 <label>ユーザ名</label>
-                <TextField placeholder={'ユーザ名'} defaultValue={profile.name}  useForm={true} formKey={"name"}/>
+                <TextField placeholder={'ユーザ名'} defaultValue={profile.name} useForm={true} formKey={'name'} />
               </div>
               <div className={'mb-8px'}>
                 <label>メールアドレス</label>
-                <TextField placeholder={'メールアドレス'} defaultValue={profile.email} type={"email"} useForm={true} formKey={"email"}/>
+                <TextField placeholder={'メールアドレス'} defaultValue={profile.email} type={'email'} useForm={true}
+                           formKey={'email'} />
               </div>
               <div className={'mb-8px'}>
                 <label>パスワード</label>
-                <TextField placeholder={'現在のパスワード'}  type={"password"} useForm={true} formKey={"current_password"}/>
+                <TextField placeholder={'現在のパスワード'} type={'password'} useForm={true} formKey={'current_password'} />
               </div>
               <div className={'mb-8px'}>
                 <label>新しいパスワード</label>
-                <TextField placeholder={'新しいパスワード'}  type={"password"} useForm={true} formKey={"new_password"}/>
+                <TextField placeholder={'新しいパスワード'} type={'password'} useForm={true} formKey={'new_password'} />
               </div>
               <div className={'text-right mt-20px'}>
                 <Button className={'mr-0'} onClick={this.onClickSave}>保存する</Button>
               </div>
-          </TabPanel>
-          <TabPanel tab_id={1} selected_tab_id={selected_tab_id}>
+            </TabPanel>
+            <TabPanel tab_id={1} selected_tab_id={selected_tab_id}>
               <div className={'mb-8px'}>
                 <label>URL</label>
-                <TextField className={'mb-0'} placeholder={'Grafana URL'} defaultValue={profile.grafana_url} useForm={true} formKey={"grafana_url"}/>
+                <TextField className={'mb-0'} placeholder={'Grafana URL'} defaultValue={profile.grafana_url}
+                           useForm={true} formKey={'grafana_url'} />
                 <small>grafana.com もしくは ホストしている指定のURLを入力してください</small>
               </div>
               <div className={'mb-8px'}>
                 <label>ID</label>
-                <TextField placeholder={'ID'} defaultValue={profile.grafana_id} useForm={true} formKey={"grafana_id"}/>
+                <TextField placeholder={'ID'} defaultValue={profile.grafana_id} useForm={true} formKey={'grafana_id'} />
               </div>
               <div className={'mb-8px'}>
                 <label>パスワード</label>
-                <TextField placeholder={'パスワード'} defaultValue={profile.grafana_password} type={"password"} useForm={true} formKey={"grafana_password"}/>
+                <TextField placeholder={'パスワード'} defaultValue={profile.grafana_password} type={'password'}
+                           useForm={true} formKey={'grafana_password'} />
               </div>
               <div className={'text-right mt-20px'}>
                 <Button className={'mr-0'} onClick={this.onClickSave}>保存する</Button>
               </div>
-          </TabPanel>
+            </TabPanel>
           </Form>
         </div>
       </div>

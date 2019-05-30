@@ -5,13 +5,13 @@ import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import * as React from 'react'
 import CommandModel from '../model/Command/CommandModel'
 
-export type StepModelType = CommandStepModel|SubFlowStepModel|DataFrameStepModel|NoteStepModel
+export type StepModelType = CommandStepModel | SubFlowStepModel | DataFrameStepModel | NoteStepModel
 export type CommandParamType = {
   label: string;
   name: string;
   optional?: boolean;
   type: string;
-  default?: string|number;
+  default?: string | number;
 }
 
 export type SubFlowCommandParamType = {
@@ -29,7 +29,7 @@ export type SubFlowCommandParamType = {
   uuid: string;
 }
 
-export type CommandModelType =  CommandModel | SubflowCommandModel;
+export type CommandModelType = CommandModel | SubflowCommandModel;
 
 export type SubFlowParamType = {
   name: string;
@@ -95,8 +95,8 @@ export type RunResponseNameType = {
   uuid: string
 }
 
-export type RunResponseType =  {
-  name:[RunResponseNameType];
+export type RunResponseType = {
+  name: [RunResponseNameType];
   success: boolean;
 }
 
@@ -117,7 +117,7 @@ export type DragType = {
   }
 }
 
-export type ToolBarButtonType={
+export type ToolBarButtonType = {
   onClick: Function;
   children: React.Node;
   disabled: boolean;
@@ -127,11 +127,11 @@ export type ToolBarButtonType={
 }
 
 export type ZoomToolBarButtonType = {
-  onClickZoomIn:Function;
-  onClickZoomOut:Function;
-  onClickDefaultZoom:Function;
-  disabled:boolean;
-  zoom:number;
+  onClickZoomIn: Function;
+  onClickZoomOut: Function;
+  onClickDefaultZoom: Function;
+  disabled: boolean;
+  zoom: number;
 }
 
 export type DownloadButtonType = {
@@ -149,7 +149,6 @@ export type DataFrameDetailType = {
   numberOfLines: string;
   lastModifiedAt: string;
 }
-
 
 export type BreadCrumbHistoryType = {
   id: string,

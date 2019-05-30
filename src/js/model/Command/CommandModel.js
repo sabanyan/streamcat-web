@@ -2,7 +2,7 @@
 import type { CommandParamType, CommandPortType } from '../../types'
 import Model from '../index'
 
-type stepType = "command" | "frame"
+type stepType = 'command' | 'frame'
 
 export type CommandModelProps = {
   classification: string;
@@ -21,42 +21,42 @@ export default class CommandModel extends Model {
   id: string
   label: string = null
   params: [CommandParamType] = []
-  ports: [CommandPortType] = [[],[]]
+  ports: [CommandPortType] = [[], []]
   rules: {} = {}
   version: string
 
   constructor (props: CommandModelProps) {
     super(props)
-    this.initialize(props,"classification")
-    this.initialize(props,"description")
-    this.initialize(props,"id")
-    this.initialize(props,"label")
-    this.initialize(props,"params")
-    this.initialize(props,"ports")
-    this.initialize(props,"version")
-    this.initialize(props,"rules")
+    this.initialize(props, 'classification')
+    this.initialize(props, 'description')
+    this.initialize(props, 'id')
+    this.initialize(props, 'label')
+    this.initialize(props, 'params')
+    this.initialize(props, 'ports')
+    this.initialize(props, 'version')
+    this.initialize(props, 'rules')
   }
 
-  getInPorts():[CommandPortType]{
+  getInPorts (): [CommandPortType] {
     return this.ports[0]
   }
 
-  getOutPorts():[CommandPortType]{
+  getOutPorts (): [CommandPortType] {
     return this.ports[1]
   }
 
-  getParams():[CommandParamType]{
+  getParams (): [CommandParamType] {
     return this.params
   }
 
-  getLabel() {
+  getLabel () {
     return this.label
   }
 
-  getParam(key:string):CommandParamType{
-    let result:CommandParamType = {}
-    this.params.find(param =>{
-      if(param.name === key)result = param
+  getParam (key: string): CommandParamType {
+    let result: CommandParamType = {}
+    this.params.find(param => {
+      if (param.name === key) result = param
     })
     return result
   }

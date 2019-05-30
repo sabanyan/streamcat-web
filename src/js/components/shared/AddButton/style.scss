@@ -1,15 +1,16 @@
 @import "../../../../sass/common";
 
-.addButton{
+.addButton {
   color: $primary-link-color;
   text-align: center;
   cursor: pointer;
-  &:hover{
-    color: darken($primary-link-color,10%);
+
+  &:hover {
+    color: darken($primary-link-color, 10%);
   }
 }
 
-.icon{
+.icon {
   font-size: 18px;
   position: relative;
   margin-right: 4px;

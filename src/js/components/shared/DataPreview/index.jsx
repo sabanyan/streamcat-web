@@ -33,8 +33,8 @@ export default class DataPreview extends React.Component<Props, State> {
 
   }
 
-  onChangePreviewInspector(type){
-    this.setState({type:type})
+  onChangePreviewInspector (type) {
+    this.setState({type: type})
   }
 
   render () {
@@ -82,12 +82,13 @@ export default class DataPreview extends React.Component<Props, State> {
         break
     }
 
-    return <div className={style.data_preview_container} style={{height:window.innerHeight}}>
-      <div className={style.data_preview_body} style={{height:window.innerHeight}}>
-          {chart}
+    return <div className={style.data_preview_container} style={{height: window.innerHeight}}>
+      <div className={style.data_preview_body} style={{height: window.innerHeight}}>
+        {chart}
       </div>
-      <div className={style.data_preview_property} style={{height:window.innerHeight}}>
-        <DataPreviewInspector chart_instance={this.state.chart_instance} onChange={(type)=>this.onChangePreviewInspector(type)} title={title}/>
+      <div className={style.data_preview_property} style={{height: window.innerHeight}}>
+        <DataPreviewInspector chart_instance={this.state.chart_instance}
+                              onChange={(type) => this.onChangePreviewInspector(type)} title={title} />
       </div>
     </div>
   }

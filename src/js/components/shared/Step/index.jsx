@@ -85,41 +85,36 @@ export default class Step extends React.Component<Props, State> {
       coords: null,
     })
 
-
     let step = this.props.model
     //選択イベントの呼び出し
     if (e.shiftKey) {
       if (!this.isSelected()) {
         this.props.addSelectStep(step.id)
-      }
-      else {
+      } else {
         this.props.deleteSelectStep(step.id)
       }
-    }
-    else {
+    } else {
       //一度選択状態をクリアする（#71）
       this.props.selectSteps()
 
       this.props.selectSteps([step])
 
-
       //データフレームの詳細を取得する
-      const selected_step:StepModelType = step//this.getSelectedStep()
+      const selected_step: StepModelType = step//this.getSelectedStep()
       if (selected_step instanceof DataFrameStepModel) {
-        if(selected_step.hasData()){
+        if (selected_step.hasData()) {
           //TODO 将来的にはページングなどの対応が必要
-          APIUtil.get("frames/" + selected_step.uuid + "?no_contents=1").then((response)=>{
+          APIUtil.get('frames/' + selected_step.uuid + '?no_contents=1').then((response) => {
             const json = response.data
             this.props.updateDataFrameDetail(json.data)
           })
-        }else{
+        } else {
           this.props.updateDataFrameDetail({})
         }
-      }else{
+      } else {
         this.props.updateDataFrameDetail({})
       }
     }
-
 
     document.removeEventListener('mousemove', mouseMoveEvent)
     document.removeEventListener('mouseup', mouseUpEvent)
@@ -155,8 +150,8 @@ export default class Step extends React.Component<Props, State> {
     //移動量から現在位置を割り出す
     const xDiff = coords_x - e.pageX
     const yDiff = coords_y - e.pageY
-    const new_x = this.props.position.x - ZoomUtil.zoomReverse(xDiff,zoom)
-    const new_y = this.props.position.y - ZoomUtil.zoomReverse(yDiff,zoom)
+    const new_x = this.props.position.x - ZoomUtil.zoomReverse(xDiff, zoom)
+    const new_y = this.props.position.y - ZoomUtil.zoomReverse(yDiff, zoom)
 
     //移動に応じてStepの位置を更新
     let step = this.props.model
@@ -192,8 +187,7 @@ export default class Step extends React.Component<Props, State> {
         this.props.addSelectStep(this.props.model.id)
       }
 
-    }
-    else {
+    } else {
       if (this.isSelected()) {
         this.props.deleteSelectStep(this.props.model.id)
       }
@@ -221,10 +215,10 @@ export default class Step extends React.Component<Props, State> {
       let ex = (end.x >= start.x) ? end.x : start.x
       let ey = (end.y >= start.y) ? end.y : start.y
 
-      sx = ZoomUtil.zoomReverse(sx,zoom)
-      sy = ZoomUtil.zoomReverse(sy,zoom)
-      ex = ZoomUtil.zoomReverse(ex,zoom)
-      ey = ZoomUtil.zoomReverse(ey,zoom)
+      sx = ZoomUtil.zoomReverse(sx, zoom)
+      sy = ZoomUtil.zoomReverse(sy, zoom)
+      ex = ZoomUtil.zoomReverse(ex, zoom)
+      ey = ZoomUtil.zoomReverse(ey, zoom)
 
       /**
        isIntersect = (
@@ -241,8 +235,7 @@ export default class Step extends React.Component<Props, State> {
 
       if (isIntersect) {
         return true
-      }
-      else {
+      } else {
         return false
       }
     }
@@ -250,7 +243,7 @@ export default class Step extends React.Component<Props, State> {
     return this.isSelected()
   }
 
-  isSelected ():boolean {
+  isSelected (): boolean {
     let selected = false
     this.props.selected_step_ids.map((id) => {
       if (id === this.props.model.id) {
@@ -260,19 +253,19 @@ export default class Step extends React.Component<Props, State> {
     return selected
   }
 
-  isStep (model: modelProps):boolean {
+  isStep (model: modelProps): boolean {
     return (model instanceof CommandStepModel)
   }
 
-  isDataFrame (model: modelProps):boolean {
+  isDataFrame (model: modelProps): boolean {
     return (model instanceof DataFrameStepModel)
   }
 
-  isSubFlow (model: modelProps):boolean {
+  isSubFlow (model: modelProps): boolean {
     return (model instanceof SubFlowStepModel)
   }
 
-  isNote (model: modelProps):boolean {
+  isNote (model: modelProps): boolean {
     return (model instanceof NoteStepModel)
   }
 
@@ -294,11 +287,11 @@ export default class Step extends React.Component<Props, State> {
 
   render () {
     const {x, y} = this.props.position
-    const {type,flow,invalid,error} = this.props
+    const {type, flow, invalid, error} = this.props
     const {ports} = this.props.flow
     let icon
 
-    let step:StepModelType = this.props.model
+    let step: StepModelType = this.props.model
 
     /**
      * STEPの種類に応じた見た目の設定
@@ -312,33 +305,32 @@ export default class Step extends React.Component<Props, State> {
     const hover = this.state.hover
     const selected = this.selectorIntersect()
 
-
     const flowIn = flow.hasInPortWithId(step.id)//(ports[0][step.id])
     const flowOut = flow.hasOutPortWithId(step.id)//(ports[1][step.id])
 
     let stepLabel = step.getLabel()
 
-    if(flowIn || flowOut){
+    if (flowIn || flowOut) {
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
               hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
               hover={hover} selected={selected} stroke={'#63CFFD'}
               filter={filter} style={RectStyle}>
-          <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#ccc"} fill={"#ccc"}/>
+          <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={'#ccc'} fill={'#ccc'} />
         </Rect>
       </g>
-    }else if(this.isSubFlow(step)){
-      icon = <SubFlowIcon hover={hover} selected={selected} filter={filter}/>
+    } else if (this.isSubFlow(step)) {
+      icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />
       stepLabel = step.getLabel()
-    }else if (this.isStep(step)) {
+    } else if (this.isStep(step)) {
       //ステップ
       let command
-      if(this.props.mast.commands){
-        this.props.mast.commands.forEach(c=>{if(c.id === step.commandId)command = c})
-        icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter}/>
+      if (this.props.mast.commands) {
+        this.props.mast.commands.forEach(c => {if (c.id === step.commandId) command = c})
+        icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter} />
       }
       stepLabel = step.getLabel()
-    }else if (this.isDataFrame(step)) {
+    } else if (this.isDataFrame(step)) {
       //データソース
       const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
       icon =
@@ -347,39 +339,47 @@ export default class Step extends React.Component<Props, State> {
               hover={hover} selected={selected} stroke={'#63CFFD'}
               filter={filter} style={RectStyle}>
           <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
-                    width={16} height={20}/>
+                    width={16} height={20} />
         </Rect>
-    }else if (this.isNote(step)) {
+    } else if (this.isNote(step)) {
       let model = step
-      icon = 
-      <Note hover={hover} selected={selected} model={step}></Note>
-      
-    }
+      icon =
+        <Note hover={hover} selected={selected} model={step}></Note>
 
-    
+    }
 
     let invalid_icon = null
     let error_icon = null
-    if((Object.keys(invalid).length)){
+    if ((Object.keys(invalid).length)) {
       invalid_icon = <ErrorIcon></ErrorIcon>
     }
-    if((Object.keys(error).length)){
+    if ((Object.keys(error).length)) {
       error_icon = <ErrorIcon></ErrorIcon>
     }
 
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}>
         <g className={style.iconContainer} onMouseDown={(e) => this.handleMouseDown(e)}
-          onMouseOver={(e) => this.handleMouseOver(e)}
-          onMouseLeave={(e) => this.handleMouseLeave(e)}>
+           onMouseOver={(e) => this.handleMouseOver(e)}
+           onMouseLeave={(e) => this.handleMouseLeave(e)}>
           {icon}
         </g>
         {invalid_icon}
         {error_icon}
         <g className={style.labelContainer}>
           <foreignObject {...TextStyle} transform={'translate(' + (-1 * TextStyle.width) + ',0)'}>
-            <div style={{display:"table",width:"100%",height:TextStyle.height,paddingRight: TextStyle.padding + "px"}}>
-            <p xmlns="http://www.w3.org/1999/xhtml" style={{display:"table-cell",verticalAlign:"middle",textAlign:"right",wordBreak:"break-all"}}>{stepLabel}</p>
+            <div style={{
+              display: 'table',
+              width: '100%',
+              height: TextStyle.height,
+              paddingRight: TextStyle.padding + 'px'
+            }}>
+              <p xmlns="http://www.w3.org/1999/xhtml" style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'right',
+                wordBreak: 'break-all'
+              }}>{stepLabel}</p>
             </div>
           </foreignObject>
         </g>

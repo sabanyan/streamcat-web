@@ -40,8 +40,8 @@ let FlowEditorContainer
 export type FlowEditorProps = {
   projectId: string,
   projectName: string,
-  graph: { width: number, height: number,edges:any[],nodes:any[] };
-  mast: { commands: any[],subflows: any[],visualizers: any[] };
+  graph: { width: number, height: number, edges: any[], nodes: any[] };
+  mast: { commands: any[], subflows: any[], visualizers: any[] };
   loadFlowJSON: Function;
   addMaster: Function;
   selectSteps: Function;
@@ -171,24 +171,24 @@ export default FlowEditorContainer = connect(
       setZoom (...args) {
         dispatch(setZoomAction(...args))
       },
-      updateDataFrameDetail(...args){
+      updateDataFrameDetail (...args) {
         dispatch(updateDataFrameDetailAction(...args))
       },
-      notify(...args){
+      notify (...args) {
         return dispatch(addNotification(...args))
       },
-      updateNotify(...args){
+      updateNotify (...args) {
         return dispatch(updateNotification(...args))
       },
-      dismissNotify(...args){
-        setTimeout(()=>{
+      dismissNotify (...args) {
+        setTimeout(() => {
           dispatch(removeNotification(...args))
-        },1000)
+        }, 1000)
       },
-      addNote(...args){
+      addNote (...args) {
         dispatch(addNoteAction(...args))
       },
-      sortStepSrcEnd(...args){
+      sortStepSrcEnd (...args) {
         dispatch(sortStepSrcEndAction(...args))
       }
     }

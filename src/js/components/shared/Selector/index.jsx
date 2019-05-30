@@ -19,7 +19,7 @@ class Selector extends React.Component<Props> {
     return <g>
       <path className={style.selector}
             d={'M' + sx + ',' + sy + ' ' + 'L' + ex + ',' + sy + ' ' + ex +
-            ',' + ey + ' ' + sx + ',' + ey + ' z'} fill="none"/>
+            ',' + ey + ' ' + sx + ',' + ey + ' z'} fill="none" />
     </g>
   }
 }

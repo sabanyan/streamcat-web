@@ -46,7 +46,7 @@ class ProjectInspector extends React.Component<Props> {
         <Button danger={true}
                 onClick={() => this.props.onClickDelete(uuid)}>削除する</Button>
       </div>
-      <div className={style.full_hr}/>
+      <div className={style.full_hr} />
       <div>
         <div>
           <label>プロジェクト名</label>
@@ -181,7 +181,7 @@ class ProjectInspector extends React.Component<Props> {
     </div>
 
     return <Resizer>
-      <BaseInspector key={uuid + "_" + name} label={name} {...this.props} >
+      <BaseInspector key={uuid + '_' + name} label={name} {...this.props} >
         {content}
       </BaseInspector>
     </Resizer>

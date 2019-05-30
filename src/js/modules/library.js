@@ -1,8 +1,7 @@
 //@flow
 import StateUtil from '../utils/State'
 
-let initialState = {
-}
+let initialState = {}
 
 const LibraryReducer = (state = initialState, action: {}) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
@@ -39,7 +38,6 @@ const LibraryReducer = (state = initialState, action: {}) => {
 }
 
 export default LibraryReducer
-
 
 ///**
 // * JSONの読み込み

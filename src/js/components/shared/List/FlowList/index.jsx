@@ -17,22 +17,22 @@ type Props = {
 
 export default class FlowList extends React.Component<Props> {
 
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
 
-  onClick(e:Event){
-    const {flow,onClickFlow} = this.props
-    if(onClickFlow){
-      onClickFlow(e,flow)
+  onClick (e: Event) {
+    const {flow, onClickFlow} = this.props
+    if (onClickFlow) {
+      onClickFlow(e, flow)
     }
   }
 
   render () {
-    const {icon, children, href,selected} = this.props
-    const flow:FlowListDataType = this.props.flow
+    const {icon, children, href, selected} = this.props
+    const flow: FlowListDataType = this.props.flow
 
-    return <div className={classnames(style.flow,{[style.selected]:selected})} onClick={(e)=>this.onClick(e)}>
+    return <div className={classnames(style.flow, {[style.selected]: selected})} onClick={(e) => this.onClick(e)}>
       <div className={style.flow_list}>
         <div className={style.name}>
           <i className={classnames('material-icons', [style.icon])}>description</i>
