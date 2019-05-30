@@ -3,10 +3,12 @@ import json
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, render_template
 from kskp.store import CommandLink
+from kskp.web.api.auth import login_required
 
 mod = Blueprint('visualize', __name__)
 
 @mod.route('/visualizers', methods=['POST'])
+@login_required
 def execute_visualizer():
     """
     ビジュアライズコマンドの実行

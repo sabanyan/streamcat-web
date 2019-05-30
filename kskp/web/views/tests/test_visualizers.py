@@ -35,7 +35,6 @@ class ApiVisualizersTestCase(unittest.TestCase):
         # フローを実行する
         with app.test_client() as client:
             with client.session_transaction() as session:
-                # まだ使っていない（login_required_apiを使っていないので）
                 session['user_id'] = '1'
 
             # apiを投げる
@@ -53,7 +52,7 @@ class ApiVisualizersTestCase(unittest.TestCase):
                                    content_type='application/json',
                                    data = json.dumps(data)
                                    )
-                                   
+
             # テスト
             # FIXIT?: render_templateのテスト方法がいまいちわからないので、
             # とりあえず200番が帰ってきていることをテストしている

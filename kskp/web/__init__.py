@@ -9,16 +9,18 @@ app.config['JSON_AS_ASCII'] = False
 app.config["JSON_SORT_KEYS"] = False
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 
+
 from kskp.web.views import visualize
 app.register_blueprint(visualize.mod)
 
-from .api import api
-from .frames import frame_api
 
 PREFIX = '/api/v0'
-
-app.register_blueprint(api, url_prefix=PREFIX)
-app.register_blueprint(frame_api, url_prefix=PREFIX)
+from kskp.web.api import basic
+from kskp.web.api import auth
+from kskp.web.api import frames
+app.register_blueprint(basic.mod, url_prefix=PREFIX)
+app.register_blueprint(auth.mod, url_prefix=PREFIX)
+app.register_blueprint(frames.mod, url_prefix=PREFIX)
 
 if __name__ == '__main__':
     app.run()

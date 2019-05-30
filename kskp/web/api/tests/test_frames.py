@@ -90,7 +90,6 @@ class ApiExecuteTestCase(unittest.TestCase):
         # フローを実行する
         with app.test_client() as client:
             with client.session_transaction() as session:
-                # まだ使っていない（login_required_apiを使っていないので）
                 session['user_id'] = '1'
 
             # apiを投げる

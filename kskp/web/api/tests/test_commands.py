@@ -19,7 +19,6 @@ class ApiTestCase(unittest.TestCase):
         # APIを投げる
         with app.test_client() as client:
             with client.session_transaction() as session:
-                # まだ使っていない（login_required_apiを使っていないので）
                 session['user_id'] = '1'
 
             # apiを投げる
