@@ -1,40 +1,42 @@
 @import "../../../../../sass/common";
 
 
-.flow_toolbar_button{
-  border:1px solid $kskp-toolbar-border;
+.flow_toolbar_button {
+  border: 1px solid $kskp-toolbar-border;
   border-radius: 4px;
   box-shadow: 0 1px 1px $kskp-toolbar-shadow;
   margin: 0 4px;
-  outline: none!important;
+  outline: none !important;
   cursor: pointer;
-  &:disabled{
+
+  &:disabled {
     cursor: default;
     opacity: 0.5;
   }
 }
 
-.paper_toolbar_button{
+.paper_toolbar_button {
   border-radius: 3px;
   margin: 0 4px;
-  outline: none!important;
+  outline: none !important;
   cursor: pointer;
   border: none;
   background: $kskp-paper-toolbar-background-color;
-  &:disabled{
+
+  &:disabled {
     cursor: default;
     opacity: 0.6;
   }
 }
 
 
-.text{
+.text {
   color: $kskp-text !important;
   font-size: 12px;
   display: inline-block;
 }
 
-.icon{
+.icon {
   display: inline-block;
   color: $kskp-text !important;
   font-size: 16px;
