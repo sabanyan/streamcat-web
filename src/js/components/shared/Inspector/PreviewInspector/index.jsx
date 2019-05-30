@@ -1,14 +1,10 @@
 //@flow
 import * as React from 'react'
 import BaseInspector from '../BaseInspector/index'
-import type {FlowEditorProps} from "../../../FlowEditorContainer/index";
+import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import style from './style.scss'
 import Button from '../../Button/index'
-import Constants from '../../../../constants/index'
-import type { CommandParamType, CommandPortType, StepModelType, SubFlowParamType } from '../../../../types/index'
-import CommandModel from '../../../../model/Command/CommandModel'
 import FlowModel from '../../../../model/Flow/FlowModel'
-import Loader from '../../Loader/index'
 import ParamUtil from '../../../../utils/ParamUtil'
 import ParamsForm from '../../ParamsForm'
 import classnames from 'classnames'

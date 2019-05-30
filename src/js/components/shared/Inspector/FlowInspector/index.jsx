@@ -1,19 +1,15 @@
 //@flow
 import React from 'react'
-import classnames from 'classnames'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import style from '../style.scss'
 import Button from '../../Button/index'
 import BaseInspector from '../BaseInspector'
-import type { FlowListDataType, StepModelType } from '../../../../types'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import type { FlowModelProps } from '../../../../model/Flow/FlowModel'
+import type { FlowListDataType } from '../../../../types'
 import moment from 'moment/moment'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
 import InputFlowForm from '../../InputFlowForm'
-import FlowUtil from '../../../../utils/FlowUtil';
+import FlowUtil from '../../../../utils/FlowUtil'
 import Resizer from '../Resizer'
 
 type Props = {

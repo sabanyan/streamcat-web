@@ -1,5 +1,4 @@
 //@flow
-import Constants from '../constants'
 
 export default class DetectUtil {
   static isMac ():boolean {

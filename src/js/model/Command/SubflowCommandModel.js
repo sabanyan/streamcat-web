@@ -1,6 +1,4 @@
 //@flow
-import Constants from '../../constants/index'
-import ModelUtil from '../../utils/ModelUtil'
 import Model from '../index'
 import { CommandParamType, CommandPortType, SubFlowCommandParamType } from '../../types'
 

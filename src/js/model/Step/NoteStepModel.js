@@ -1,6 +1,5 @@
 import type { BaseModelProps } from './BaseStepModel'
 import BaseStepModel from './BaseStepModel'
-import Constants from '../../constants';
 
 export type NoteStepModelProps = {
     ...BaseModelProps,

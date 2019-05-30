@@ -1,7 +1,6 @@
 import React from 'react'
 import AddButton from '../AddButton'
 import HttpUtil from '../../../utils/HttpUtil'
-import APIUtil from '../../../utils/APIUtil'
 import style from './style.scss'
 
 type Props = {

@@ -6,8 +6,6 @@ import Graph from '../../../../utils/Graph'
 import Button from '../../Button/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import Constants from '../../../../constants/index'
-import FlowUtil from '../../../../utils/FlowUtil'
-import StateUtil from '../../../../utils/State'
 import style from '../style.scss'
 
 type State = {

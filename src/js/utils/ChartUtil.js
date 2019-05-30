@@ -1,5 +1,4 @@
 //@flow
-import Constants from '../constants'
 
 type dataSetType = {
     label: string;
@@ -29,7 +28,7 @@ export default class ChartUtil {
     ]
     return colors[index % 12]
   }
-
+  
   static jsonToChart (json: {}):{datasets:[],labels:[]} {
 
     let data:{} = json

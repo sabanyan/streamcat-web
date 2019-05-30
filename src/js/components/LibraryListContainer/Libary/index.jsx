@@ -14,11 +14,7 @@ import LibraryListHeader from '../../shared/List/LibraryList/LibraryListHeader'
 import ModalUtil from '../../../utils/ModalUtil'
 import Constants from '../../../constants'
 import FileUploader from '../../shared/FileUploader'
-import type {
-  BreadCrumbHistoryType,
-  LibraryListDataType,
-  UploadedFileType,
-} from '../../../types'
+import type { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType, } from '../../../types'
 import BreadCrumb from '../../shared/BreadCrumb'
 import TextField from '../../shared/TextField'
 import ReactDomUtil from '../../../utils/ReactDomUtil'

@@ -1,7 +1,5 @@
 //@flow
 import * as React from 'react'
-import Constants from '../../../constants/index'
-import Button from '../Button'
 
 import NotificationsSystem from 'reapop'
 import theme from './NotificationTheme'
