@@ -20,18 +20,18 @@ export default class Loader extends React.Component<Props> {
     absolute: true,
     fixed: false,
     visible: false,
-    message: "",
+    message: '',
     whiteBackground: false,
     blackBackground: false,
   }
 
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
 
   render () {
 
-    const {center, absolute, fixed, visible, message,whiteBackground,blackBackground} = this.props
+    const {center, absolute, fixed, visible, message, whiteBackground, blackBackground} = this.props
 
     const loader_class = classnames({
       [style.center]: center,
@@ -41,20 +41,21 @@ export default class Loader extends React.Component<Props> {
       [style.offsetY]: (message),
       [style.white_text]: blackBackground,
       [style.black_text]: whiteBackground
-  })
+    })
 
     const bg_class = classnames({
       [style.white_background]: whiteBackground,
       [style.black_background]: blackBackground,
       [style.hidden]: !visible,
-     })
+    })
 
     return <div>
-      <div className={loader_class}><div className={style.loader}>
-      </div>
-      <div className={style.message}>
-        {message}
-      </div>
+      <div className={loader_class}>
+        <div className={style.loader}>
+        </div>
+        <div className={style.message}>
+          {message}
+        </div>
       </div>
       <div className={bg_class}></div>
     </div>

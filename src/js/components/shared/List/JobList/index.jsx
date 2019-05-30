@@ -1,7 +1,5 @@
 //@flow
 import * as React from 'react'
-import classnames from 'classnames'
-import style from './style.scss'
 import JobFrameList from './JobFrameList'
 
 type JobProps = {
@@ -13,8 +11,8 @@ type JobProps = {
   // uuid:{};
   // data:{};
   // errors:{};
-  type:string;
-  uuid:string;
+  type: string;
+  uuid: string;
 }
 
 type Props = {
@@ -28,14 +26,14 @@ type Props = {
 
 export default class JobList extends React.Component<Props> {
 
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
 
   render () {
-    const {icon, children, href, job, onClickJob,selected} = this.props
+    const {icon, children, href, job, onClickJob, selected} = this.props
     const {uuid} = job
 
-    return <JobFrameList uuid={uuid} job={job} onClickJob={onClickJob} selected={selected}/>
+    return <JobFrameList uuid={uuid} job={job} onClickJob={onClickJob} selected={selected} />
   }
 }

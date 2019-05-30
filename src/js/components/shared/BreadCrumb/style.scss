@@ -1,22 +1,26 @@
 @import "../../../../sass/common";
 
-.breadCrumb{
+.breadCrumb {
   list-style: none;
   padding: 0;
   margin: 16px;
-  li{
+
+  li {
     display: inline-block;
-    a{
+
+    a {
       display: inline-block;
     }
-    &:before{
+
+    &:before {
       content: '›';
       width: 30px;
       display: inline-block;
       text-align: center;
     }
-    &:first-child:before{
-      content: none!important;
+
+    &:first-child:before {
+      content: none !important;
     }
   }
 }

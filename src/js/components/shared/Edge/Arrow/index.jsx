@@ -1,6 +1,5 @@
 //@flow
 import React from 'react'
-import style from '../style.scss'
 
 type ArrowProps = {
   x: number; //矢印の先端座標

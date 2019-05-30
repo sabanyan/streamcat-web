@@ -1,13 +1,13 @@
 //@flow
-import React from 'react';
-import renderer from 'react-test-renderer';
+import React from 'react'
+import renderer from 'react-test-renderer'
 import Button from './index'
 
 it('renders correctly', () => {
   const tree = renderer
     .create(
-      <Button disabled={false} icon={"attachment"} danger={false}>アップロード</Button>
+      <Button disabled={false} icon={'attachment'} danger={false}>アップロード</Button>
     )
-    .toJSON();
-  expect(tree).toMatchSnapshot();
-});
+    .toJSON()
+  expect(tree).toMatchSnapshot()
+})

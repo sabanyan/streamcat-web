@@ -13,18 +13,17 @@ export default class ValidationForm extends React.Component<Props> {
     super(props)
   }
 
-  validate(){
+  validate () {
     const {rules} = this.props
-
 
   }
 
-  submit(){
-    const {submit,rules} = this.props
-    if(this.validate()){
+  submit () {
+    const {submit, rules} = this.props
+    if (this.validate()) {
 
     }
-    if(this.submit){
+    if (this.submit) {
       this.props.submit()
     }
   }

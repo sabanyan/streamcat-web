@@ -2,7 +2,7 @@
 import Model from '../index'
 
 export type VisualizeModelProps = {
-  classification : string,
+  classification: string,
   description: string,
   id: string,
   label: string,
@@ -13,27 +13,27 @@ export type VisualizeModelProps = {
 }
 
 export default class VisualizeModel<VisualizeModelProps> extends Model {
-  classification = ""
-  description = ""
-  id:string = ""
+  classification = ''
+  description = ''
+  id: string = ''
   order = -1
-  label:string = ""
-  params:[] = []
-  ports:[[],[]] = [[],[]]
-  url = ""
-  version = ""
+  label: string = ''
+  params: [] = []
+  ports: [[], []] = [[], []]
+  url = ''
+  version = ''
 
   constructor (props: VisualizeModelProps) {
     super()
-    this.initialize(props,"classification")
-    this.initialize(props,"description")
-    this.initialize(props,"id")
-    this.initialize(props,"order")
-    this.initialize(props,"label")
-    this.initialize(props,"params")
-    this.initialize(props,"ports")
-    this.initialize(props,"url")
-    this.initialize(props,"version")
+    this.initialize(props, 'classification')
+    this.initialize(props, 'description')
+    this.initialize(props, 'id')
+    this.initialize(props, 'order')
+    this.initialize(props, 'label')
+    this.initialize(props, 'params')
+    this.initialize(props, 'ports')
+    this.initialize(props, 'url')
+    this.initialize(props, 'version')
   }
 
 }

@@ -12,12 +12,12 @@ export default class SettingsButton extends React.Component<Props> {
     super(props)
   }
 
-  onClick(){
-    this.props.addSelectStep("flow")
+  onClick () {
+    this.props.addSelectStep('flow')
   }
 
   render () {
-    return <div className={style.settings} onClick={()=>this.onClick()}><SettingIcon/></div>
+    return <div className={style.settings} onClick={() => this.onClick()}><SettingIcon /></div>
   }
 
 }
