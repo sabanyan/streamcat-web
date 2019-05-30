@@ -3,15 +3,17 @@ import json
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify
 
+from .auth import login_required_api
 from .utils import (
     get_flow_nodes_by_uuid,
     fetch_flow_by_uuid,
     get_flow_path_by_uuid
 )
 
-frame_api = Blueprint('frames', __name__)
+mod = Blueprint('frames', __name__)
 
-@frame_api.route('/frames', methods=['GET', 'POST'])
+@mod.route('/frames', methods=['GET', 'POST'])
+@login_required_api
 def make_new_frames():
     """
     framesを生成する
