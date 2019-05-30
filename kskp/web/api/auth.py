@@ -17,8 +17,6 @@ from kskp.store import model
 
 mod = Blueprint('auth', __name__)
 
-CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
-
 FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
 STRETCH_COUNT = 100
 app.secret_key = '-jm624cqpry89e'
@@ -164,6 +162,7 @@ app.config.update(
     MAIL_USE_TLS=False,
     MAIL_USE_SSL=True
 )
+CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
 
 email_sender = Mail(app)
 
