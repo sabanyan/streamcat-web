@@ -235,7 +235,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             const newPort = outPorts[index]
             let portName = newPort.name
             if (add_step instanceof SubFlowStepModel) {
-              portName = newPort.label
+              portName = newPort.nodeId
             }
             add_step.dsts[portName] = id
             
