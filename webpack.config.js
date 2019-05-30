@@ -52,6 +52,20 @@ module.exports = (env) => {
         ],
       },
       resolve: {
+        alias: {
+          FlowEditorContainer: path.resolve(__dirname, './src/js/components/FlowEditorContainer/'),
+          FLowListContainer: path.resolve(__dirname, './src/js/components/FlowListContainer/'),
+          LibraryListContainer: path.resolve(__dirname, './src/js/components/LibraryListContainer/'),
+          ProfileContainer: path.resolve(__dirname, './src/js/components/ProfileContainer/'),
+          ProjectListContainer: path.resolve(__dirname, './src/js/components/ProjectListContainer/'),
+          Shared: path.resolve(__dirname, './src/js/components/shared/'),
+          Constants: path.resolve(__dirname, './src/js/constants/'),
+          Model: path.resolve(__dirname, './src/js/model/'),
+          Modules: path.resolve(__dirname, './src/js/modules/'),
+          Schema: path.resolve(__dirname, './src/js/schema/'),
+          Types: path.resolve(__dirname, './src/js/types/'),
+          Utils: path.resolve(__dirname, './src/js/utils/')
+        },
         modules: ['node_modules'],
         extensions: ['.js', '.jsx'],
       },
