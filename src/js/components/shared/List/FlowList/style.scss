@@ -1,38 +1,42 @@
 @import "../../../../../sass/common";
 
 
-.flow_list{
+.flow_list {
   position: relative;
   display: block;
   border-radius: 0;
   color: $kskp-text;
   background: #fff;
   padding: 16px;
-  &:hover{
+
+  &:hover {
     color: $kskp-text;
-    text-decoration: none!important;
+    text-decoration: none !important;
     opacity: 0.8;
   }
+
   cursor: pointer;
 }
 
-.selected{
-  .flow_list{
+.selected {
+  .flow_list {
     background: #fafafa;
   }
 }
 
-.new{
+.new {
   text-align: center;
-  .flow_list{
+
+  .flow_list {
     color: $kskp-list-link-color;
-    .icon{
+
+    .icon {
       color: $kskp-list-link-color;
     }
   }
 }
 
-.icon{
+.icon {
   color: $kskp-text;
   font-size: 18px;
   position: relative;
@@ -41,31 +45,36 @@
   padding-right: 8px;
 }
 
-.flow{
+.flow {
   display: block;
   border-top: 1px solid $kskp-list-border-color;
-  &:first-child,&:last-child{
+
+  &:first-child, &:last-child {
     border-bottom: 1px solid $kskp-list-border-color;
   }
 }
 
-.name{
+.name {
   display: inline-block;
   width: calc(100% - 20% - 200px - 80px);
 }
-.created_at{
+
+.created_at {
   display: inline-block;
   width: 200px;
 }
-.creator_name{
+
+.creator_name {
   display: inline-block;
   width: 20%;
 }
-.action{
+
+.action {
   display: inline-block;
   width: 80px;
   color: $kskp-list-link-color;
-  a{
+
+  a {
     color: $kskp-list-link-color;
   }
 }
