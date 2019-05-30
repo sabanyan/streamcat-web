@@ -135,15 +135,18 @@ class InOutConnector extends React.Component{
 
      
 
-
-
+    const subflow = selectedStep.getCommand()
+    const subflowOutPorts = subflow.getOutPorts()
     const output = Object.keys(selectedStep.dsts).map((key,index)=>{
       let dataFrameId: string
       dataFrameId = selectedStep.dsts[key]
       const node = FlowUtil.getNodeFromID(nodes,dataFrameId)
+      const subflowOutPort = subflowOutPorts.find((outPort) => {
+        return (outPort.nodeId == key)
+      })
       return <div key={index} className={style.outPort_}>
         <div className={style.outPort_Port}>
-          {key}
+          {(subflowOutPort) ? subflowOutPort.label : null}
         </div>
         <div className={style.outPort_Node}>
           {node.getLabel()}
