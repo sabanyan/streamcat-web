@@ -13,7 +13,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import CommandStepModel from '../model/Step/CommandStepModel'
 import ValidateJS from 'validate.js'
 import CommandUtil from './CommandUtil'
-import NoteStepModel from '../model/Step/NoteStepModel.js';
+import NoteStepModel from '../model/Step/NoteStepModel.js'
 
 class Validator {
   ajv:Ajv

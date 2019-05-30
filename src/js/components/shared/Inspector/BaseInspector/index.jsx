@@ -2,7 +2,6 @@
 import * as React from 'react'
 import style from '../style.scss'
 import classnames from 'classnames'
-import InOutConnector from '../CommandInspector/InOutConnector/index'
 
 type Props = {
   label?:string;

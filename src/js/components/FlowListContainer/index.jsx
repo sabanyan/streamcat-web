@@ -1,10 +1,7 @@
 import { connect } from 'react-redux'
 import FlowList from './FlowList'
-import { addNotification,updateNotification,removeNotification} from 'reapop';
-import {
-  selectFlowAction,
-  updateRunArgsAction,
-} from '../../modules/flowList'
+import { addNotification, removeNotification, updateNotification } from 'reapop'
+import { selectFlowAction, updateRunArgsAction, } from '../../modules/flowList'
 
 let FlowListContainer
 

@@ -6,15 +6,13 @@ import CommandStepModel from '../../../../../model/Step/CommandStepModel'
 import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
 import CommandModel from '../../../../../model/Command/CommandModel'
 import FlowUtil from '../../../../../utils/FlowUtil'
-import type { CommandPortType, StepModelType, SubFlowParamType } from '../../../../../types/index'
+import type { StepModelType } from '../../../../../types/index'
 import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
 import StateUtil from '../../../../../utils/State'
-import FlowModel from '../../../../../model/Flow/FlowModel'
-import Button from '../../../Button'
 import ModalUtil from '../../../../../utils/ModalUtil'
 import Constants from '../../../../../constants'
 import AddButton from '../../../AddButton'
-import {SortableContainer, SortableElement} from 'react-sortable-hoc';
+import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 
 class InOutConnector extends React.Component{
 

@@ -1,9 +1,7 @@
 //@flow
 import { connect } from 'react-redux'
 import * as React from 'react'
-import NavigationModel from '../../model/Navigation/NavigationModel'
-import type { DragType } from '../../types'
-import { addNotification,updateNotification,removeNotification} from 'reapop';
+import { addNotification, removeNotification, updateNotification } from 'reapop'
 import Library from './Libary'
 
 let LibraryContainer

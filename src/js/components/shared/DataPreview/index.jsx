@@ -1,20 +1,8 @@
 //@flow
 import React from 'react'
-import DataTable from '../../shared/DataTable'
-import {
-  Doughnut,
-  Pie,
-  Line,
-  Bar,
-  HorizontalBar,
-  Radar,
-  Polar,
-  Bubble,
-  Scatter,
-} from 'react-chartjs-2'
+import { Bar, Bubble, Doughnut, HorizontalBar, Line, Pie, Polar, Radar, Scatter, } from 'react-chartjs-2'
 import ChartUtil from '../../../utils/ChartUtil'
 import Constants from '../../../constants/index'
-import DownloadButton from '../Button/DownloadButton'
 import style from './style.scss'
 import DataPreviewInspector from '../Inspector/DataPreviewInspector'
 

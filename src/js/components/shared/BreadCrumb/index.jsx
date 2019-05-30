@@ -1,7 +1,6 @@
 //@flow
 import * as React from 'react'
 import style from './style.scss'
-import classnames from 'classnames'
 import type { BreadCrumbHistoryType } from '../../../types'
 
 type Props = {

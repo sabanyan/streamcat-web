@@ -1,7 +1,5 @@
 //@flow
 import React from 'react'
-import classnames from 'classnames'
-import style from './style.scss'
 import type { NavigationModelProps } from '../../../model/Navigation/NavigationModel'
 import WebUtil from '../../../utils/WebUtil'
 import HttpUtil from '../../../utils/HttpUtil'

@@ -2,11 +2,9 @@
 import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
-import type { FlowListDataType } from '../../../../types'
+import { LibraryListDataType } from '../../../../types'
 import Constants from '../../../../constants'
 import moment from 'moment/moment'
-import { LibraryListDataType } from '../../../../types'
-import FileIcon from '../../Icon/FileIcon'
 
 type Props = {
   icon?: string;

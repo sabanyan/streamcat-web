@@ -1,13 +1,10 @@
 //@flow
-import Constants from '../../constants/index'
-import ModelUtil from '../../utils/ModelUtil'
 import BaseStepModel from './BaseStepModel'
 import BaseModelProps from './BaseStepModel'
-import type { CommandModelType, CommandParamType } from '../../types'
+import type { CommandParamType } from '../../types'
 import CommandModel from '../Command/CommandModel'
 import validateJS from 'validate.js'
 import arrayMove from 'array-move'
-import loadash from 'lodash'
 
 type stepType = "command" | "frame"
 

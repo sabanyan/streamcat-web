@@ -5,11 +5,8 @@ import style from '../style.scss'
 import Constants from '../../../../../constants'
 import ModalUtil from '../../../../../utils/ModalUtil'
 import SortUtil from '../../../../../utils/SortUtil'
-import DataTable from '../../../DataTable'
 import moment from 'moment'
 import APIUtil from '../../../../../utils/APIUtil'
-import DataPreview from '../../../DataPreview'
-import ChartUtil from '../../../../../utils/ChartUtil'
 import Visualizer from '../../../Visualizer'
 
 type JobFrameProps = {

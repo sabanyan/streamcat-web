@@ -3,7 +3,6 @@ import React from 'react'
 import type { CommandParamType } from '../../../../types/index'
 import Param from '../index'
 //import classnames from 'classnames'
-import style from './style.scss'
 
 type Props = {
   param : CommandParamType;

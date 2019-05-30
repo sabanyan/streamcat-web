@@ -1,6 +1,5 @@
 //@flow
 import Constants from '../constants'
-import type { StepModelType } from '../types'
 import ErrorUtil from './ErrorUtil'
 
 export default class ModelUtil {

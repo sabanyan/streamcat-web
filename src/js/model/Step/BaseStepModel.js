@@ -1,9 +1,7 @@
 //@flow
-import Constants from '../../constants/index'
 import ModelUtil from '../../utils/ModelUtil'
 import Model from '../index'
-import CommandModel from '../Command/CommandModel'
-import type { CommandParamType } from '../../types'
+
 type stepType = "command" | "frame"
 
 

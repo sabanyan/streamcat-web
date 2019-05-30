@@ -6,7 +6,6 @@ import TabList from '../../TabBar/TabList'
 import Tab from '../../TabBar/Tab'
 import TabPanel from '../../TabBar/TabPanel'
 import style from '../style.scss'
-import Visualizer from '../../Visualizer'
 
 type Props = {
   id:string;

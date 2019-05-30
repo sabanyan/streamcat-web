@@ -2,12 +2,11 @@
 import Constants from '../constants'
 import type { CommandParamType, StepModelType, SubFlowParamType } from '../types'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
+import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import APIUtil from './APIUtil'
 import CommandStepModel from '../model/Step/CommandStepModel'
 import Validator from './Validator'
-import graph from './Graph'
-import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import ReactDomUtil from './ReactDomUtil'
 import ErrorUtil from './ErrorUtil'
 

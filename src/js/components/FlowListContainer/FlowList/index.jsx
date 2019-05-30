@@ -17,9 +17,7 @@ import TextField from '../../shared/TextField'
 import FileUploader from '../../shared/FileUploader'
 import { FlowListDataType } from '../../../types'
 import FlowInspector from '../../shared/Inspector/FlowInspector'
-import FlowUtil from '../../../utils/FlowUtil'
 import NotificationManager from '../../shared/NotificationManager'
-import ReactDomUtil from '../../../utils/ReactDomUtil'
 
 type State = {
   flow_list: [FlowListDataType];

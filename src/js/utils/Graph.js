@@ -7,7 +7,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
 import FlowModel from '../model/Flow/FlowModel'
 import FlowUtil from './FlowUtil'
-import NoteStepModel from '../model/Step/NoteStepModel';
+import NoteStepModel from '../model/Step/NoteStepModel'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,

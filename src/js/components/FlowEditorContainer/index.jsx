@@ -1,31 +1,31 @@
 //@flow
 import {
-  addStepAction,
-  updateStepAction,
-  updateFlowAction,
-  selectStepsAction,
-  addSelectStepAction,
-  deleteSelectStepAction,
-  cutStepsAction,
-  copyStepsAction,
-  pasteStepsAction,
   addHistoryAction,
-  undoAction,
-  redoAction,
-  deleteStepsAction,
-  deleteCacheAction,
   addMasterAction,
-  sortFlowAction,
-  executeFlowAction,
-  selectTabAction,
-  dragStartAction,
-  draggingAction,
-  dragEndAction,
-  loadFlowJSONAction,
-  setZoomAction,
-  updateDataFrameDetailAction,
   addNoteAction,
+  addSelectStepAction,
+  addStepAction,
+  copyStepsAction,
+  cutStepsAction,
+  deleteCacheAction,
+  deleteSelectStepAction,
+  deleteStepsAction,
+  dragEndAction,
+  draggingAction,
+  dragStartAction,
+  executeFlowAction,
+  loadFlowJSONAction,
+  pasteStepsAction,
+  redoAction,
+  selectStepsAction,
+  selectTabAction,
+  setZoomAction,
+  sortFlowAction,
   sortStepSrcEndAction,
+  undoAction,
+  updateDataFrameDetailAction,
+  updateFlowAction,
+  updateStepAction,
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -33,9 +33,7 @@ import * as React from 'react'
 import { FlowModelProps } from '../../model/Flow/FlowModel'
 import NavigationModel from '../../model/Navigation/NavigationModel'
 import type { DragType } from '../../types'
-import { DataFrameDetailType } from '../../types'
-import { addNotification,updateNotification,removeNotification} from 'reapop';
-import flowEditorReducer from '../../modules/application'
+import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 let FlowEditorContainer
 

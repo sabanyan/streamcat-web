@@ -5,9 +5,7 @@ import HttpUtil from '../../../utils/HttpUtil'
 import EmptyState from '../EmptyState'
 import Loader from '../Loader'
 import PreviewInspector from '../Inspector/PreviewInspector'
-import classnames from 'classnames'
 import style from './style.scss'
-import ParamUtil from '../../../utils/ParamUtil'
 
 type Props = {
   visualize: VisualizeModel,

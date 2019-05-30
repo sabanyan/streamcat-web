@@ -1,6 +1,5 @@
 //@flow
 import React from 'react'
-import classnames from 'classnames'
 import style from '../style.scss'
 
 type Props = {

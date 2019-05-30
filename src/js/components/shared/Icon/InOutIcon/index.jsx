@@ -1,6 +1,5 @@
 //@flow
 import React from 'react'
-import Icon from '../index'
 import type { IconProps } from '../index'
 import Constants from '../../../../constants'
 

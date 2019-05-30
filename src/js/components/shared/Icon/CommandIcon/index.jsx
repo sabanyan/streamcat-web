@@ -4,7 +4,6 @@ import Icon from '../index'
 import Rect from '../../Step/Rect'
 import * as Step from '../../Step'
 import CommandModel from '../../../../model/Command/CommandModel'
-import Constants from '../../../../constants'
 
 type Props = {
   command: CommandModel;

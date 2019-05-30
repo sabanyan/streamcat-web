@@ -9,7 +9,6 @@ import CommandStepModel from '../../../../model/Step/CommandStepModel'
 import Graph from '../../../../utils/Graph'
 import ModalUtil from '../../../../utils/ModalUtil'
 import Constants from '../../../../constants/index'
-import APIUtil from '../../../../utils/APIUtil'
 import SubFlowStepModel from '../../../../model/Step/SubFlowStepModel'
 
 class MultiInspector extends React.Component<FlowEditorProps> {

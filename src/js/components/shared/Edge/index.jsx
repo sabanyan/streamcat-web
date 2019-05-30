@@ -3,7 +3,6 @@ import React from 'react'
 import style from './style.scss'
 import Arrow from './Arrow'
 import Constants from '../../../constants'
-import Rect from '../Step/Rect'
 
 type EdgeProps = {
   label: string;

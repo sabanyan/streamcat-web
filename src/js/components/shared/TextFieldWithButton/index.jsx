@@ -1,6 +1,5 @@
 //@flow
 import * as React from 'react'
-import classnames from 'classnames'
 import style from './style.scss'
 import Button from '../Button'
 import TextField from '../TextField'

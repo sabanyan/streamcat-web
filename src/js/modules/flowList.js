@@ -1,6 +1,5 @@
 //@flow
 import StateUtil from '../utils/State'
-import _ from 'lodash'
 
 const SELECT_FLOW_ACTION = 'select_flow_action'
 const UPDATE_RUN_ARGS_ACTION = 'update_run_args_action'
