@@ -14,21 +14,20 @@ export type LibraryProps = {
 
 export default LibraryContainer = connect(
   state => {
-    return {
-    }
+    return {}
   },
   dispatch => {
     return {
-      notify(...args){
+      notify (...args) {
         return dispatch(addNotification(...args))
       },
-      updateNotify(...args){
+      updateNotify (...args) {
         return dispatch(updateNotification(...args))
       },
-      dismissNotify(...args){
-        setTimeout(()=>{
+      dismissNotify (...args) {
+        setTimeout(() => {
           dispatch(removeNotification(...args))
-        },1000)
+        }, 1000)
       },
     }
   },

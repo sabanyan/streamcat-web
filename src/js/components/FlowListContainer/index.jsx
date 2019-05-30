@@ -13,28 +13,28 @@ export type FlowListProps = {
 export default FlowListContainer = connect(
   state => {
     return {
-      flow : state.flowListReducer.flow,
-      runArgs : state.flowListReducer.runArgs
+      flow: state.flowListReducer.flow,
+      runArgs: state.flowListReducer.runArgs
     }
   },
   dispatch => {
     return {
-      selectFlow(...args){
+      selectFlow (...args) {
         return dispatch(selectFlowAction(...args))
       },
-      updateRunArgs(...args){
+      updateRunArgs (...args) {
         return dispatch(updateRunArgsAction(...args))
       },
-      notify(...args){
+      notify (...args) {
         return dispatch(addNotification(...args))
       },
-      updateNotify(...args){
+      updateNotify (...args) {
         return dispatch(updateNotification(...args))
       },
-      dismissNotify(...args){
-        setTimeout(()=>{
+      dismissNotify (...args) {
+        setTimeout(() => {
           dispatch(removeNotification(...args))
-        },1000)
+        }, 1000)
       },
     }
   }

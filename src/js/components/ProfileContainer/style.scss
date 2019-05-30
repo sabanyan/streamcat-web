@@ -1,13 +1,13 @@
 @import "../../../sass/common";
 
-.page_title{
+.page_title {
   color: $kskp-text;
   font-size: 20px;
   font-weight: bold;
   margin-bottom: 20px;
 }
 
-.card{
+.card {
   margin-bottom: 20px;
   max-width: 480px;
   padding: 32px;
@@ -16,8 +16,8 @@
   box-shadow: 0 1px 3px $kskp-property-shadow;
 }
 
-.property_body{
-  label{
+.property_body {
+  label {
     font-size: 14px;
     color: $kskp-text;
     padding: 8px 0 4px;

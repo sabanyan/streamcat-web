@@ -11,14 +11,17 @@
   opacity: 0;
   @extend .user-select;
   box-shadow: 0 1px 3px $kskp-property-shadow;
-  &.isClosed{
+
+  &.isClosed {
     background: #fafafa;
   }
-  &.willClosed{
+
+  &.willClosed {
     opacity: 0.5;
     pointer: col-resize;
   }
-  &.isDragging{
+
+  &.isDragging {
     @extend .user-not-select;
   }
 }
@@ -34,14 +37,14 @@
   overflow: scroll;
 }
 
-.property_header{
+.property_header {
   font-size: 18px;
   color: $kskp-text;
   background-color: $kskp-property-background-color;
-  border-bottom:1px solid $kskp-property-border-color;
+  border-bottom: 1px solid $kskp-property-border-color;
 }
 
-.property_label{
+.property_label {
   color: $kskp-text;
   font-size: 16px;
   padding: 0 0 8px;
@@ -49,7 +52,7 @@
   clear: both;
 }
 
-.property_name{
+.property_name {
   color: $kskp-text;
   font-size: 14px;
   padding: 0 0 8px;
@@ -57,12 +60,13 @@
   clear: both;
 }
 
-.property_body{
+.property_body {
   padding: 16px;
   padding-bottom: 64px;
   background-color: $kskp-property-background-color;
   min-height: 100%;
-  label{
+
+  label {
     font-size: 14px;
     color: $kskp-text;
     padding: 8px 0 4px;
@@ -75,28 +79,28 @@
   cursor: pointer;
 }
 
-.hr{
-  border-top:1px solid $kskp-property-border-color;
+.hr {
+  border-top: 1px solid $kskp-property-border-color;
   margin: 8px -8px 8px -8px;
   height: 8px;
 }
 
-.full_hr{
-  border-top:1px solid $kskp-property-border-color;
+.full_hr {
+  border-top: 1px solid $kskp-property-border-color;
   margin: 16px -16px 8px -16px;
   height: 8px;
 }
 
-.property_overview{
+.property_overview {
 }
 
-.overview{
+.overview {
   clear: both;
   display: block;
   overflow: hidden;
 }
 
-.overview_label{
+.overview_label {
   float: left;
   width: 120px;
   color: $kskp-property-overview-label-color;
@@ -104,68 +108,74 @@
   font-size: 14px;
 }
 
-.overview_value{
+.overview_value {
   float: left;
   width: calc(100% - 120px);
   text-align: left;
   color: $kskp-property-overview-value-color;
 }
 
-.flowInOut{
+.flowInOut {
   text-align: left;
-  label{
+
+  label {
     margin: 0;
     padding: 0;
   }
 }
 
-.flowCacheCheck{
+.flowCacheCheck {
   text-align: left;
-  label{
+
+  label {
     margin: 0;
     padding: 0;
   }
 }
 
-.output{
+.output {
   color: $kskp-text;
   padding-left: 12px;
 }
 
-.param{
+.param {
   padding-bottom: 8px;
-  &:last-of-type{
+
+  &:last-of-type {
     padding-bottom: 0;
   }
 }
 
-.label{
+.label {
   border: none;
   width: 100%;
   padding: 4px 0;
   position: relative;
   color: $kskp-text;
   border-bottom: 1px dotted transparent;
-  &:hover{
+
+  &:hover {
     border-bottom: 1px dotted $kskp-text;
     cursor: pointer;
   }
-  &:active,&:focus{
+
+  &:active, &:focus {
     border: inherit;
   }
-  &:disabled{
-    border:none!important;
+
+  &:disabled {
+    border: none !important;
     cursor: default;
   }
 }
 
-.left{
+.left {
   display: inline-block;
   float: left;
   width: calc(100% - 100px);
 }
 
-.right{
+.right {
   width: 100px;
   display: inline-block;
   text-align: right;
@@ -173,13 +183,13 @@
   padding-top: 4px;
 }
 
-.flow_param{
+.flow_param {
   clear: both;
   margin-bottom: 8px;
   overflow: scroll;
 }
 
-.new_flow_params{
+.new_flow_params {
   color: $primary-link-color;
   font-size: 14px;
   clear: both;
@@ -197,52 +207,57 @@
   padding-right: 8px;
 }
 
-.invalid_message{
+.invalid_message {
   padding-top: 4px;
   color: red;
   font-size: 12px;
 }
 
-.presence{
+.presence {
 
 }
 
-.presence label{
-  &:after{
+.presence label {
+  &:after {
     content: "*";
-    display:inline-block;
+    display: inline-block;
     color: red;
   }
 }
 
-.invalid input[type=text]{
-  background: lighten(#F51F28,40%);
+.invalid input[type=text] {
+  background: lighten(#F51F28, 40%);
 }
 
-.file_list_table{
+.file_list_table {
   width: 100%;
-  th{
+
+  th {
     color: $kskp-text;
     font-weight: normal;
-    border-bottom:1px solid $kskp-text;
+    border-bottom: 1px solid $kskp-text;
   }
-  th,td{
+
+  th, td {
     font-size: 14px;
   }
 }
 
-.activity{
+.activity {
   clear: both;
   width: 100%;
-  .activity_log{
+
+  .activity_log {
     font-size: 14px;
   }
-  .activity_user{
-    float:right;
+
+  .activity_user {
+    float: right;
     font-size: 12px;
     color: $kskp-text;
   }
-  .activity_time{
+
+  .activity_time {
     float: left;
     font-size: 12px;
     color: $kskp-text;
@@ -250,7 +265,7 @@
   }
 }
 
-.noDescription{
+.noDescription {
   color: $kskp-gray;
 }
 
@@ -281,9 +296,11 @@
 
 .outPort_ {
   margin-bottom: 8px;
-  &:last-of-type{
+
+  &:last-of-type {
     margin-bottom: 0;
   }
+
   position: relative;
   display: flex;
   border-radius: 4px;
@@ -317,7 +334,7 @@
   width: 100%;
 }
 
-ul,li {
+ul, li {
   list-style: none;
   padding-inline-start: 0px;
 }

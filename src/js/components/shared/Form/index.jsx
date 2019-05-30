@@ -5,12 +5,10 @@ import Constants from '../../../constants'
 //import style from './style.scss'
 
 type Props = {
-  onSubmit:Function;
+  onSubmit: Function;
 }
 
-type State = {
-
-}
+type State = {}
 
 export default class Form extends React.Component<Props> {
 
@@ -23,7 +21,7 @@ export default class Form extends React.Component<Props> {
         Object.keys(context).map((key) => {
           const data = context[key]
           //TODO 将来的には . でつなげたキーをオブジェクトの子に設定できるようにする
-          if (key.indexOf(".") !== -1) {
+          if (key.indexOf('.') !== -1) {
             this.setState({...this.state, ...context})
           } else {
             this.setState({...this.state, ...context})

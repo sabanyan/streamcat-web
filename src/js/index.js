@@ -28,24 +28,24 @@ const defaultNotification = {
   dismissAfter: 2000,
   allowHTML: true,
   closeButton: false
-};
+}
 
 // store
 const createStoreWithMiddleware = compose(
   applyMiddleware(thunk)
-)(createStore);
+)(createStore)
 
 const store = createStoreWithMiddleware(combineReducers({
   notifications: notificationsReducer(defaultNotification),
   flowEditorReducer,
   libraryReducer,
   flowListReducer
-}), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
+}), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
 
 if (document.getElementById('flow_editor')) {
   ReactDOM.render(
     <Provider store={store}>
-      <FlowEditorContainer/>
+      <FlowEditorContainer />
     </Provider>,
     document.getElementById('flow_editor'),
   )
@@ -53,14 +53,14 @@ if (document.getElementById('flow_editor')) {
 
 if (document.getElementById('project_list')) {
   ReactDOM.render(
-    <ProjectListContainer/>,
+    <ProjectListContainer />,
     document.getElementById('project_list'),
   )
 }
 if (document.getElementById('flow_list')) {
   ReactDOM.render(
     <Provider store={store}>
-      <FlowListContainer/>
+      <FlowListContainer />
     </Provider>,
     document.getElementById('flow_list'),
   )
@@ -69,20 +69,20 @@ if (document.getElementById('flow_list')) {
 if (document.getElementById('library_list')) {
   ReactDOM.render(
     <Provider store={store}>
-      <LibraryListContainer/>
+      <LibraryListContainer />
     </Provider>,
     document.getElementById('library_list'),
   )
 }
 if (document.getElementById('profile')) {
   ReactDOM.render(
-    <ProfileContainer navigation={this}/>,
+    <ProfileContainer navigation={this} />,
     document.getElementById('profile'),
   )
 }
 if (document.getElementById('navigation')) {
   ReactDOM.render(
-    <NavigationBar baseUrl={inject_static_url} navigation={this}/>,
+    <NavigationBar baseUrl={inject_static_url} navigation={this} />,
     document.getElementById('navigation'),
   )
 }

@@ -7,7 +7,7 @@ export default class State {
    * @param obj
    * @returns {Blob|ArrayBuffer|Array|Array.<T>|string|*}
    */
-  static deepCopy (obj:{}):any {
+  static deepCopy (obj: {}): any {
     return _.cloneDeep(obj)
   }
 }

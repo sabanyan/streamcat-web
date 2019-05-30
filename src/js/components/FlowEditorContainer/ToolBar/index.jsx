@@ -49,22 +49,27 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   /*
   *
   */
-  saveFlow() {
+  saveFlow () {
     const {flow, nodes, history, notify, dismissNotify} = this.props
     return FlowUtil.saveFlow(inject_flow_uuid, {
-                                label: flow.label,
-                                description: flow.description,
-                                params:flow.params,
-                                ports: flow.ports,
-                                nodes: nodes
-                                },
-                              notify,
-                              dismissNotify)
+        label: flow.label,
+        description: flow.description,
+        params: flow.params,
+        ports: flow.ports,
+        nodes: nodes
+      },
+      notify,
+      dismissNotify)
   }
 
   saveFlowPorts () {
     const {flow, notify, dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports: flow.ports,label: flow.label, description: flow.description,params:flow.params}, notify, dismissNotify)
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {
+      ports: flow.ports,
+      label: flow.label,
+      description: flow.description,
+      params: flow.params
+    }, notify, dismissNotify)
 
   }
 
@@ -132,12 +137,13 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     })
   }
 
-  flowUpdate() {
+  flowUpdate () {
     APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
       this.props.loadFlowJSON(json)
     })
   }
+
   //
   // showError(error){
   //   let errorBody
@@ -171,7 +177,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   //   this.forceUpdate()
   // }
 
-
   onClickDataSourceImport () {
 
     const self = this
@@ -179,8 +184,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.uploadedFile = null
     this.forceUpdate()
 
-    HttpUtil.windowOpen("library?dialog=true",(args)=>{
-      const selected_data:LibraryListDataType = args
+    HttpUtil.windowOpen('library?dialog=true', (args) => {
+      const selected_data: LibraryListDataType = args
       let parameters = {}
       //データソースを追加
       const props: DataFrameStepModelProps = {
@@ -229,26 +234,27 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   onClickDefaultZoom (e: Event) {
     this.props.setZoom({value: 100})
   }
-  onClickNote() {
 
-    let position = PositionUtil.getCenterPosition("#flow_editor>div")
+  onClickNote () {
+
+    let position = PositionUtil.getCenterPosition('#flow_editor>div')
     position = {
       x: ZoomUtil.zoomReverse(position.x, this.props.zoom),
       y: ZoomUtil.zoomReverse(position.y, this.props.zoom)
-         + Constants.default.step.height
-         + defaultGraphProps.rankSeparator
+        + Constants.default.step.height
+        + defaultGraphProps.rankSeparator
     }
 
     const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({...position}, this.props.nodes)
 
-    const props:NoteStepModelProps = {
-      type : Constants.step.type.note,
-      position : notOverlapNodePosition,
-      size : {width: 30, height: 20},
-      title: "新しいメモ",
-      content : "新しいメモ",
+    const props: NoteStepModelProps = {
+      type: Constants.step.type.note,
+      position: notOverlapNodePosition,
+      size: {width: 30, height: 20},
+      title: '新しいメモ',
+      content: '新しいメモ',
     }
-  
+
     const note = new NoteStepModel(props)
     this.props.addStep(note)
     this.props.addHistory()
@@ -266,14 +272,14 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     return <div>
       <div className={classnames(style.flow_toolbar)}>
         <Save disabled={false} icon={'&#xE2C2'}
-          onClick={(e) => this.onClickSave(e)}>保存</Save>
+              onClick={(e) => this.onClickSave(e)}>保存</Save>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(
                             e)}>データソースの追加</DataSourceImport>
-        
+
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
-        <Note disabled={false} icon={'comment'} onClick={()=>this.onClickNote()}>メモ</Note>
+        <Note disabled={false} icon={'comment'} onClick={() => this.onClickNote()}>メモ</Note>
         {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}
         {/*<DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>*/}
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
@@ -287,12 +293,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
               onClickZoomOut={(e) => this.onClickZoomOut(e)}
               onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
-              zoom={zoom}/>
+              zoom={zoom} />
         <Sort disabled={false} icon={'&#xE42A'}
               onClick={(e) => this.onClickSort(e)}>整列</Sort>
       </div>
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false}
-              visible={this.loading} message={this.loadingMessage}/>
+              visible={this.loading} message={this.loadingMessage} />
     </div>
   }
 }

@@ -1,17 +1,17 @@
 //@flow
 
 type dataSetType = {
-    label: string;
-    backgroundColor: string;
-    borderColor: string;
-    borderWidth: number,
-    hoverBackgroundColor: string;
-    hoverBorderColor: string;
-    data: any;
+  label: string;
+  backgroundColor: string;
+  borderColor: string;
+  borderWidth: number,
+  hoverBackgroundColor: string;
+  hoverBorderColor: string;
+  data: any;
 }
 
 export default class ChartUtil {
-  static color (index: number):string {
+  static color (index: number): string {
     const colors = [
       '#ff7f7f',
       '#ffff7f',
@@ -28,19 +28,19 @@ export default class ChartUtil {
     ]
     return colors[index % 12]
   }
-  
-  static jsonToChart (json: {}):{datasets:[],labels:[]} {
 
-    let data:{} = json
+  static jsonToChart (json: {}): { datasets: [], labels: [] } {
 
-    let labels:[] = []
-    let datasets:[] = []
+    let data: {} = json
 
-    labels = Object.keys(data).map((key:string,index:number):string => {
+    let labels: [] = []
+    let datasets: [] = []
+
+    labels = Object.keys(data).map((key: string, index: number): string => {
       return key
     })
 
-    datasets = Object.keys(data).map((key:string, index:number):dataSetType => {
+    datasets = Object.keys(data).map((key: string, index: number): dataSetType => {
       return {
         label: key,
         backgroundColor: ChartUtil.color(index),
@@ -100,7 +100,6 @@ export default class ChartUtil {
     //   datasets: datasets,
     //   labels: labels,
     // }
-
 
   }
 }
