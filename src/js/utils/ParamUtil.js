@@ -7,24 +7,24 @@ import ParamSelect from '../components/shared/Param/ParamSelect'
 import ParamNumber from '../components/shared/Param/ParamNumber'
 
 export default class ParamUtil {
-  static clearElement(element){
-    element.value = ""
+  static clearElement (element) {
+    element.value = ''
     element.checked = false
   }
 
-  static getArgsFromInputRefs(inputRefs:[]):{}{
+  static getArgsFromInputRefs (inputRefs: []): {} {
     let args = {}
     //モーダルで入力されたパラメータを取得
     inputRefs.map((inputRef) => {
-      switch (inputRef.param.type){
+      switch (inputRef.param.type) {
         case Constants.param.type.number:
-          args[inputRef.param.name] = (inputRef.element.value !== "")?parseInt(inputRef.element.value):null
+          args[inputRef.param.name] = (inputRef.element.value !== '') ? parseInt(inputRef.element.value) : null
           break
         case Constants.param.type.string:
           args[inputRef.param.name] = inputRef.element.value
           break
         case Constants.param.type.boolean:
-          args[inputRef.param.name] = (inputRef.element.checked)?true:false
+          args[inputRef.param.name] = (inputRef.element.checked) ? true : false
           break
         case Constants.param.type.select:
           args[inputRef.param.name] = this.getAllSelectedValue(inputRef.element)
@@ -38,19 +38,19 @@ export default class ParamUtil {
     return args
   }
 
-  static getArgValue(currentTarget:element):any {
-    const paramType = currentTarget.getAttribute("paramtype")
+  static getArgValue (currentTarget: element): any {
+    const paramType = currentTarget.getAttribute('paramtype')
     let value = null
 
-    switch (paramType){
+    switch (paramType) {
       case Constants.param.type.number:
-        value = (currentTarget.value !== "")?parseInt(currentTarget.value):null
+        value = (currentTarget.value !== '') ? parseInt(currentTarget.value) : null
         break
       case Constants.param.type.string:
         value = currentTarget.value
         break
       case Constants.param.type.boolean:
-        value = (currentTarget.checked)?true:false
+        value = (currentTarget.checked) ? true : false
         break
       case Constants.param.type.select:
         value = this.getAllSelectedValue(currentTarget)
@@ -59,33 +59,37 @@ export default class ParamUtil {
         value = this.getAllSelectedValue(currentTarget)
         break
     }
-    
+
     return value
   }
 
-  static getAllSelectedValue(element){
-    if(element.multiple){
-      return Array.from(element.selectedOptions).map(v=>v.value);
-    }else{
+  static getAllSelectedValue (element) {
+    if (element.multiple) {
+      return Array.from(element.selectedOptions).map(v => v.value)
+    } else {
       return element.value
     }
   }
-  
+
   // FIXIT: 
-  static getParamElement(param,onBuild,events,defaultValue,refValue,headers){
+  static getParamElement (param, onBuild, events, defaultValue, refValue, headers) {
     let paramElement
-    switch(param.type){
+    switch (param.type) {
       case Constants.param.type.number:
-        paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
+        paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
+                                    events={events} />
         break
       case Constants.param.type.string:
-        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
+        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
+                                    events={events} />
         break
       case Constants.param.type.boolean:
-        paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
+        paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
+                                     events={events} />
         break
       case Constants.param.type.select:
-        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} />
+        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
+                                    events={events} />
         break
 
       case Constants.param.type.column:
@@ -93,14 +97,17 @@ export default class ParamUtil {
         param.options = {
           labels: headers,
           values: headers,
-          multiple: (param.options.multiple)?true:false
+          multiple: (param.options.multiple) ? true : false
         }
-        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events}/>
+        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
+                                    events={events} />
         break
 
       default:
-      paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events} disabled={true}/>
-      break
+        paramElement =
+          <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events}
+                       disabled={true} />
+        break
     }
     return paramElement
   }

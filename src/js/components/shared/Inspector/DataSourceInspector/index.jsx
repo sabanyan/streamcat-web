@@ -3,44 +3,36 @@ import React from 'react'
 import Constants from '../../../../constants/index'
 import ModalUtil from '../../../../utils/ModalUtil'
 import SortUtil from '../../../../utils/SortUtil'
-import Operator from '../../Command/index'
 import BaseInspector from '../BaseInspector/index'
 import style from '../style.scss'
 import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import Button from '../../Button/index'
-import DataPreview from '../../DataPreview/index'
-import DropDownList from '../../DropDownList/index'
 import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
 import CommandSelector from '../../CommandSelector/index'
 import FlowModel from '../../../../model/Flow/FlowModel'
 import Graph from '../../../../utils/Graph'
 import APIUtil from '../../../../utils/APIUtil'
-import HttpUtil from '../../../../utils/HttpUtil'
-import type { DataFrameDetailType, StepModelType } from '../../../../types/index'
+import type { DataFrameDetailType } from '../../../../types/index'
 import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
 import CSVModel from '../../../../model/CSV/CSVModel'
 import Loader from '../../Loader/index'
 import FlowUtil from '../../../../utils/FlowUtil'
-import ChartUtil from '../../../../utils/ChartUtil'
-import DataTable from '../../DataTable/index'
 import StateUtil from '../../../../utils/State'
 import StringUtil from '../../../../utils/StringUtil'
-import { RunResponseType } from '../../../../types'
 import ErrorUtil from '../../../../utils/ErrorUtil'
 import Visualizer from '../../Visualizer'
 import ReactDomUtil from '../../../../utils/ReactDomUtil'
 
 type State = {
-  dataFrameDetail?:DataFrameDetailType;
+  dataFrameDetail?: DataFrameDetailType;
   loading: boolean;
 }
 
-class DataSourceInspector extends React.Component<FlowEditorProps,State> {
+class DataSourceInspector extends React.Component<FlowEditorProps, State> {
 
+  loading: boolean = false
 
-  loading:boolean = false
-
-  constructor (props:FlowEditorProps){
+  constructor (props: FlowEditorProps) {
     super(props)
     this.state = {
       loading: false
@@ -56,11 +48,10 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     })
   }
 
-  onClickPreview(e:Event) {
+  onClickPreview (e: Event) {
     const selected_step = this.getSelectedStep()
 
     let {nodes} = this.props
-
 
     FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
 
@@ -81,7 +72,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
           loading: true
         })
 
-        const getFramesURL = "frames?from=" + inject_flow_uuid + "." + selected_step.id + "&no_contents=1"
+        const getFramesURL = 'frames?from=' + inject_flow_uuid + '.' + selected_step.id + '&no_contents=1'
         APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
@@ -123,21 +114,22 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     })
   }
 
-  previewFromUUID(uuid:string,label:string){
+  previewFromUUID (uuid: string, label: string) {
     const {selected_data_source_detail} = this.props
     const selected_step = this.getSelectedStep()
 
     //ヘッダー情報の取得
 
-    const getFrameHeaderURL = "frames/" + uuid
-    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
+    const getFrameHeaderURL = 'frames/' + uuid
+    APIUtil.get(getFrameHeaderURL + '?header_only=1&offset=0&limit=1').then((response) => {
       const headers = response.data.data
       let visualizers = this.props.mast.visualizers
       visualizers = SortUtil.getSortedContents(visualizers)
       let contents = []
       for (const v of visualizers) {
-        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
-        contents.push({title: v.label,content:content,parentProps:this.props})
+        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}}
+                                    headers={headers} />
+        contents.push({title: v.label, content: content, parentProps: this.props})
       }
 
       ModalUtil.emitModal({
@@ -153,27 +145,27 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     })
   }
 
-  updateCache() {
+  updateCache () {
     APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
       this.props.loadFlowJSON(json)
     })
   }
 
-  onClickCSVDownload(e:Event){
+  onClickCSVDownload (e: Event) {
     const selected_step = this.getSelectedStep()
     const param = {
-        type:"frame",
-        uuid: selected_step.uuid,
-        ext:"csv",
-        label: selected_step.label
+      type: 'frame',
+      uuid: selected_step.uuid,
+      ext: 'csv',
+      label: selected_step.label
     }
-    APIUtil.get("files",param).then((response)=>{
-      let props:CSVModelProps = {
+    APIUtil.get('files', param).then((response) => {
+      let props: CSVModelProps = {
         uuid: selected_step.uuid,
         data: response.data,
       }
-      const csv:CSVModel = new CSVModel(props)
+      const csv: CSVModel = new CSVModel(props)
       csv.handleDownload()
     })
   }
@@ -183,7 +175,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         let {selected_step_ids, nodes} = this.props
-        const selected_step = Graph.getNode(nodes,selected_step_ids[0])
+        const selected_step = Graph.getNode(nodes, selected_step_ids[0])
         this.props.deleteSteps([selected_step.id])
         this.props.selectSteps()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
@@ -201,14 +193,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   }
 
   onChangeFlowInOut (e: Event) {
-    let flow:FlowModel = this.props.flow
+    let flow: FlowModel = this.props.flow
     const flowInChecked = this.refs.flowIn.checked
     const flowOutChecked = this.refs.flowOut.checked
 
     let selected_step = this.getSelectedStep()
     //パラメーターを更新
     const port = {
-      label:selected_step.getLabel(),
+      label: selected_step.getLabel(),
       nodeId: selected_step.id,
       type: selected_step.type
     }
@@ -228,12 +220,12 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     this.props.updateFlow(flow)
   }
 
-  getSelectedStep ():DataFrameStepModel {
+  getSelectedStep (): DataFrameStepModel {
     let {selected_step_ids, nodes} = this.props
-    return Graph.getNode(nodes,selected_step_ids[0])
+    return Graph.getNode(nodes, selected_step_ids[0])
   }
 
-  onHide(){
+  onHide () {
 //    this.saveNodes()
 //    this.saveFlowPorts()
   }
@@ -241,17 +233,17 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   onChangeCacheCheck (e: Event) {
 
     let selected_step = this.getSelectedStep()
-    if(selected_step.isMakeCache()) {
+    if (selected_step.isMakeCache()) {
       selected_step.setMakeCache(false)
     } else {
       selected_step.setMakeCache(true)
     }
 
-    let flow:FlowModel = this.props.flow
+    let flow: FlowModel = this.props.flow
     this.props.updateFlow(flow)
-}
+  }
 
-  onClickDeleteCache() {  
+  onClickDeleteCache () {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         this.deleteCache()
@@ -270,12 +262,12 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
     })
   }
 
-  deleteCache() {
+  deleteCache () {
     const {selected_step_ids} = this.props
     const id = selected_step_ids[0]
-    const url = "caches?of=" + inject_flow_uuid + "." + id
- 
-    APIUtil.delete(url).then((response)=>{
+    const url = 'caches?of=' + inject_flow_uuid + '.' + id
+
+    APIUtil.delete(url).then((response) => {
       if (!response.data.success) {
         notify({
           title: '実行エラー',
@@ -294,15 +286,16 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
   /**
    * データソースのIN/OUTを保存
    *  */
-  saveFlowPorts(){
-    const {flow,notify,dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
+  saveFlowPorts () {
+    const {flow, notify, dismissNotify} = this.props
+    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports: flow.ports}, notify, dismissNotify)
   }
 
-  saveNodes(){
+  saveNodes () {
     let {nodes} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
+    return FlowUtil.saveNodes(inject_flow_uuid, nodes)
   }
+
 //
 //  /**
 //   * データソースのIN/OUTを保存
@@ -332,41 +325,40 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
                         icon={'visibility'}>プレビュー</Button>
       if (selected_step.hasData()) {
         download = <Button onClick={(e) => this.onClickCSVDownload(e)}
-                          icon={'visibility'}>CSVダウンロード</Button>
+                           icon={'visibility'}>CSVダウンロード</Button>
       }
     }
 
-
-    const flow:FlowModel  = this.props.flow
+    const flow: FlowModel = this.props.flow
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
         <label><input type="checkbox" checked={flow.hasInPortWithId(selected_step.id)} ref={'flowIn'}
-               onChange={(e) => this.onChangeFlowInOut(e)} />
-        &nbsp;入力
+                      onChange={(e) => this.onChangeFlowInOut(e)} />
+          &nbsp;入力
         </label>
       </div>
       <div>
         <label><input type="checkbox" checked={flow.hasOutPortWithId(selected_step.id)}
-               ref={'flowOut'}
-               onChange={(e) => this.onChangeFlowInOut(e)} />
-        &nbsp;出力
+                      ref={'flowOut'}
+                      onChange={(e) => this.onChangeFlowInOut(e)} />
+          &nbsp;出力
         </label>
       </div>
     </div>
     const cacheCheckForm = <div>
       <div>
-        <label><input type="checkbox" checked={selected_step.makeCache?"checked":""}
-                ref={'cache'} disabled=""
-                onChange={(e) => this.onChangeCacheCheck(e)}/>
+        <label><input type="checkbox" checked={selected_step.makeCache ? 'checked' : ''}
+                      ref={'cache'} disabled=""
+                      onChange={(e) => this.onChangeCacheCheck(e)} />
         </label>
       </div>
     </div>
 
     let content
 
-    if(this.state.loading){
-      content = <Loader center={true} absolute={true} fixed={false} visible={true}/>
-    }else {
+    if (this.state.loading) {
+      content = <Loader center={true} absolute={true} fixed={false} visible={true} />
+    } else {
 
       const fileSize = StringUtil.convertToFileSize(this.props.selected_data_source_detail.fileSize)
       const lastModifiedAt = this.props.selected_data_source_detail.lastModifiedAt
@@ -378,7 +370,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
             <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
                     danger={true}>削除</Button>
           </div>
-          <div className={style.full_hr}/>
+          <div className={style.full_hr} />
           <div className={style.overviews}>
             <div className={style.overview}>
               <div className={style.overview_label}>
@@ -401,7 +393,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
                 作成者
               </div>
               <div className={style.overview_value}>
-                 {/*{property.overview.created_user_name || ""}*/}
+                {/*{property.overview.created_user_name || ""}*/}
               </div>
             </div>
             <div className={style.overview}>
@@ -416,16 +408,16 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         </div>
         <div className={style.cache}>
           <div className={style.cache_label}>
-          結果をキャッシュ
+            結果をキャッシュ
           </div>
           <div className={style.cache_value}>
             {cacheCheckForm}
           </div>
           <div className={style.cache_delete}>
-            <Button  icon={'delete'} danger={true}
-              disabled={!selected_step.isCached()}
+            <Button icon={'delete'} danger={true}
+                    disabled={!selected_step.isCached()}
 
-              onClick={(e) => {this.onClickDeleteCache()}}>
+                    onClick={(e) => {this.onClickDeleteCache()}}>
               キャッシュ削除
             </Button>
           </div>
@@ -436,47 +428,48 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
             {selected_step.cacheCreatedAt}
           </div>
         </div>
-        <div className={style.full_hr}/>
+        <div className={style.full_hr} />
         <CommandSelector numberOfInput={1} {...this.props} />
         {/*<div className={style.property_title}>*/}
-          {/*作成したフロー*/}
+        {/*作成したフロー*/}
         {/*</div>*/}
         {/*<div>*/}
-          {/*<DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />*/}
+        {/*<DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />*/}
         {/*</div>*/}
       </div>
     }
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector header={""}  label={selected_step.label} {...this.props} onBlurTitle={(e)=>this.onBlurTitle(e)} onHide={()=>this.onHide()}>
+    return <BaseInspector header={''} label={selected_step.label} {...this.props}
+                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}>
       {content}
     </BaseInspector>
   }
 
-  onBlurTitle(e:SyntheticInputEvent<EventTarget>){
+  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
     const selectedStep = this.getSelectedStep()
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     newSelectedStep.label = e.target.value
     this.props.updateStep(newSelectedStep)
     // 該当ステップがIn・OutPortの場合の処理
-    let flow:FlowModel = this.props.flow
+    let flow: FlowModel = this.props.flow
     const flowInChecked = (this.refs.flowIn) ? this.refs.flowIn.checked : null
     const flowOutChecked = (this.refs.flowOut) ? this.refs.flowOut.checked : null
     const id = selectedStep.id
 
-    if (flowInChecked || flowOutChecked) {  
+    if (flowInChecked || flowOutChecked) {
       if (flowInChecked) {
         let inPort = flow.getInPortWithId(id)
         inPort.label = newSelectedStep.label
         flow.setInPort(inPort)
       }
-  
+
       if (flowOutChecked) {
         let outPort = flow.getOutPortWithId(id)
         outPort.label = newSelectedStep.label
         flow.setOutPort(outPort)
       }
-  
+
       this.props.updateFlow(flow)
     }
   }

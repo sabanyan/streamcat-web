@@ -17,15 +17,15 @@ import Resizer from './Resizer'
 class Inspector extends React.Component<FlowEditorProps> {
 
   render () {
-    let {selected_step_ids,nodes} = this.props
+    let {selected_step_ids, nodes} = this.props
 
     let property
 
     if (selected_step_ids.length == 1) {
-      if(selected_step_ids[0] === "flow"){
-        property = <FlowSettingsInspector {...this.props}/>
-      }else{
-        const selected_step = Graph.getNode(nodes,selected_step_ids[0])
+      if (selected_step_ids[0] === 'flow') {
+        property = <FlowSettingsInspector {...this.props} />
+      } else {
+        const selected_step = Graph.getNode(nodes, selected_step_ids[0])
         if (selected_step instanceof DataFrameStepModel) {
           property = <DataSourceInspector {...this.props}></DataSourceInspector>
         } else if (selected_step instanceof CommandStepModel) {
@@ -35,7 +35,7 @@ class Inspector extends React.Component<FlowEditorProps> {
         }
       }
     } else if (!selected_step_ids.length) {
-      property = <FlowSettingsInspector {...this.props}/>
+      property = <FlowSettingsInspector {...this.props} />
     } else {
       property = <MultiInspector {...this.props}></MultiInspector>
     }

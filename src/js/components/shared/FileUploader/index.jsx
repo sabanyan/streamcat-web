@@ -15,11 +15,11 @@ type State = {
   selectedFiles: ?FileList
 }
 
-export default class FileUploader extends React.Component<Props,State> {
+export default class FileUploader extends React.Component<Props, State> {
 
   static defaultProps = {
     accept: [],
-    defaultLabel: "",
+    defaultLabel: '',
     disabled: false,
     onChangeFile: {},
     multiple: false
@@ -32,36 +32,38 @@ export default class FileUploader extends React.Component<Props,State> {
     }
   }
 
-  onClickButton(e:Event){
-    const element:HTMLElement = this.refs.file
+  onClickButton (e: Event) {
+    const element: HTMLElement = this.refs.file
     element.click()
   }
 
-  onChangeFile(e){
+  onChangeFile (e) {
     const {onChangeFile} = this.props
-    if(onChangeFile){
+    if (onChangeFile) {
       onChangeFile(e)
-      this.setState({selectedFiles:e.target.files})
+      this.setState({selectedFiles: e.target.files})
     }
   }
 
-  getSelectedLabel(){
+  getSelectedLabel () {
     const {defaultLabel} = this.props
     const {selectedFiles} = this.state
-    if(!selectedFiles)return defaultLabel
-    return Array.from(selectedFiles).map((file:File,index:number)=>{
-       return <div key={index} className={style.file}>{file.name}</div>
+    if (!selectedFiles) return defaultLabel
+    return Array.from(selectedFiles).map((file: File, index: number) => {
+      return <div key={index} className={style.file}>{file.name}</div>
     })
   }
 
   render () {
-    const {accept,defaultLabel,disabled,multiple} = this.props
+    const {accept, defaultLabel, disabled, multiple} = this.props
     const {selectedFiles} = this.state
     return <div>
       <div className={style.text}>{this.getSelectedLabel()}</div>
-      <Button onClick={(e)=>this.onClickButton(e)} disabled={disabled} icon={"attachment"} danger={false}>アップロード</Button>
-      <input type="file" ref={"file"} accept={accept.join(',')} multiple={multiple} className={style.input_file} onChange={(e)=>this.onChangeFile(e)} />
+      <Button onClick={(e) => this.onClickButton(e)} disabled={disabled} icon={'attachment'}
+              danger={false}>アップロード</Button>
+      <input type="file" ref={'file'} accept={accept.join(',')} multiple={multiple} className={style.input_file}
+             onChange={(e) => this.onChangeFile(e)} />
     </div>
   }
-  
+
 }

@@ -1,26 +1,19 @@
 //@flow
 import Constants from '../constants'
-import Graph, { defaultNodeProps, defaultGraphProps } from '../utils/Graph'
+import Graph, { defaultGraphProps, defaultNodeProps } from '../utils/Graph'
 import StateUtil from '../utils/State'
 import FlowModel from '../model/Flow/FlowModel'
-import NavigationModel from '../model/Navigation/NavigationModel'
+import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import DataFrameStepModel from '../model/Step/DataFrameStepModel'
 import CommandStepModel from '../model/Step/CommandStepModel'
 import type { CommandModelType, CommandPortType, StepModelType } from '../types'
-import CommandModel from '../model/Command/CommandModel'
+import { DataFrameDetailType } from '../types'
 import FlowUtil from '../utils/FlowUtil'
 import SubFlowStepModel from '../model/Step/SubFlowStepModel'
-import { DataFrameDetailType } from '../types'
-import Command from '../components/shared/Command'
-import ModelUtil from '../utils/ModelUtil'
-import Ajv from 'ajv'
 import Validator from '../utils/Validator'
-import Log from '../utils/Log'
-import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
 import _ from 'lodash'
 import ZoomUtil from '../utils/ZoomUtil'
-import NoteStepModel from '../model/Step/NoteStepModel';
-
+import NoteStepModel from '../model/Step/NoteStepModel'
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
@@ -145,15 +138,15 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             dx: totalDX / 2
           }
 
-          if(!src_step_ids.length){
+          if (!src_step_ids.length) {
             //入力がない場合、グラフの中央を基準にする
             const leftTopPosition = {
-              x: document.querySelector("#flow_editor>div").scrollLeft,
+              x: document.querySelector('#flow_editor>div').scrollLeft,
               y: window.pageYOffset
             }
             average = {
-              sx: ZoomUtil.zoomReverse(leftTopPosition.x + (window.innerWidth - 400) / 2,newState.zoom),
-              sy:  ZoomUtil.zoomReverse(leftTopPosition.y + (window.innerHeight - 60) / 2,newState.zoom),
+              sx: ZoomUtil.zoomReverse(leftTopPosition.x + (window.innerWidth - 400) / 2, newState.zoom),
+              sy: ZoomUtil.zoomReverse(leftTopPosition.y + (window.innerHeight - 60) / 2, newState.zoom),
               dx: totalDX / 2
             }
           }
@@ -172,10 +165,10 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
           })
 
           //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
-          const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({...add_step.position},newState.nodes)
+          const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({...add_step.position}, newState.nodes)
           const notOverlapOffsetX = notOverlapNodePosition.x - add_step.position.x
           const notOverlapOffsetY = notOverlapNodePosition.y - add_step.position.y
-          if(notOverlapOffsetX !==0 || notOverlapOffsetY !==0){
+          if (notOverlapOffsetX !== 0 || notOverlapOffsetY !== 0) {
             //再調整
             add_step.setFrame({
               x: notOverlapNodePosition.x,
@@ -202,8 +195,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
           let command: CommandModelType
           if (add_step instanceof SubFlowStepModel) {
             command = add_step.getCommand()
-          }
-          else if (add_step instanceof CommandStepModel) {
+          } else if (add_step instanceof CommandStepModel) {
             command = add_step.getCommand()
           }
           const inPorts: [CommandPortType] = command.getInPorts()
@@ -214,8 +206,8 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             if (add_step instanceof SubFlowStepModel) {
               portName = newPort.nodeId
             }
-            if(portName === "*"){
-              portName = "*1"
+            if (portName === '*') {
+              portName = '*1'
             }
 
             add_step.addInPort(portName, id)
@@ -238,7 +230,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
               portName = newPort.nodeId
             }
             add_step.dsts[portName] = id
-            
+
             //dstsがあった場合は１つ目のポート名につなぐ
             //dstsがない場合は、デフォルト値（i）のポートにつなぐ
             const from: string = add_step.id
@@ -264,14 +256,14 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
           height: defaultNodeProps.height
         })
       }
-      
+
       newState.nodes.push(add_step)
       newState.graph = graph.getGraph(newState)
       break
     }
     case UPDATE_STEP_ACTION: {
 
-      newState.nodes = rebuildNodesEdges(newState,action)
+      newState.nodes = rebuildNodesEdges(newState, action)
 
       //選択されているEdgeも更新する
       newState.selected_in_edges = graph.g.inEdges(state.selected_step_ids[0])
@@ -337,90 +329,89 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     //
     //   return newState
     // }
-     case PASTE_STEPS_ACTION:
-     {
-       let newState = StateUtil.deepCopy(state)
+    case PASTE_STEPS_ACTION: {
+      let newState = StateUtil.deepCopy(state)
 
-       const add_nodes = JSON.parse(action.paste_nodes)
+      const add_nodes = JSON.parse(action.paste_nodes)
 
-       //ペースト時に
-       //IDが新規に振られるので、旧のIDを新規のIDに置き換え
-       //コマンドのノード間の関連(srcs,dsts)を維持する
-       //let convertMap = {}
-       add_nodes.forEach((json)=>{
-         const cacheId = json.id
-         let label = (json.label)?json.label:cacheId
-         json.id = null
-         json.label = "コピー " + label
-         let newNode:StepModelType = FlowUtil.setModelType(json)
+      //ペースト時に
+      //IDが新規に振られるので、旧のIDを新規のIDに置き換え
+      //コマンドのノード間の関連(srcs,dsts)を維持する
+      //let convertMap = {}
+      add_nodes.forEach((json) => {
+        const cacheId = json.id
+        let label = (json.label) ? json.label : cacheId
+        json.id = null
+        json.label = 'コピー ' + label
+        let newNode: StepModelType = FlowUtil.setModelType(json)
 
-         //ノード本体をコピー
-         graph.addNode(newNode.id)
+        //ノード本体をコピー
+        graph.addNode(newNode.id)
 
-         //入力値をコピー
-         newNode = FlowUtil.copySrcs(newNode)
-         newNode = FlowUtil.copyPositionWithOffsetX(newNode)
-         let newDsts = {}
-         Object.keys(newNode.dsts).forEach((key)=>{
-           //出力先を作成し、接続先を変更する
-           const copiedStep:DataFrameStepModel = FlowUtil.getNodeFromID(newState.nodes,newNode.dsts[key])
-           const props:DataFrameStepModelProps = {
-             id: null,
-             type: Constants.step.type.frame,
-             uuid: null,
-             label: "コピー " + copiedStep.getLabel(),
-             dataSource: copiedStep.dataSource,
-             // srcs: newNode.id,
-             // dsts: [],
-             position: copiedStep.position
-           }
-           let add_step = new DataFrameStepModel(props)
-           add_step = FlowUtil.copyPositionWithOffsetX(add_step)
-           newState.nodes.push(add_step)
-           //ノード本体をコピー
-           graph.addNode(add_step.id)
-           newDsts[key] = add_step.id
-         })
-         //convertMap[cacheId] = newNode.id
-         newNode.dsts = {}
-         newState.nodes.push(newNode)
+        //入力値をコピー
+        newNode = FlowUtil.copySrcs(newNode)
+        newNode = FlowUtil.copyPositionWithOffsetX(newNode)
+        let newDsts = {}
+        Object.keys(newNode.dsts).forEach((key) => {
+          //出力先を作成し、接続先を変更する
+          const copiedStep: DataFrameStepModel = FlowUtil.getNodeFromID(newState.nodes, newNode.dsts[key])
+          const props: DataFrameStepModelProps = {
+            id: null,
+            type: Constants.step.type.frame,
+            uuid: null,
+            label: 'コピー ' + copiedStep.getLabel(),
+            dataSource: copiedStep.dataSource,
+            // srcs: newNode.id,
+            // dsts: [],
+            position: copiedStep.position
+          }
+          let add_step = new DataFrameStepModel(props)
+          add_step = FlowUtil.copyPositionWithOffsetX(add_step)
+          newState.nodes.push(add_step)
+          //ノード本体をコピー
+          graph.addNode(add_step.id)
+          newDsts[key] = add_step.id
+        })
+        //convertMap[cacheId] = newNode.id
+        newNode.dsts = {}
+        newState.nodes.push(newNode)
 
-         const action_step = _.cloneDeep(newNode)
-         action_step.dsts = newDsts
-         newState.nodes = rebuildNodesEdges(newState,{step:action_step})
+        const action_step = _.cloneDeep(newNode)
+        action_step.dsts = newDsts
+        newState.nodes = rebuildNodesEdges(newState, {step: action_step})
 
-       })
-       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
+      })
+      //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
 
-       newState.graph = graph.getGraph(newState)
+      newState.graph = graph.getGraph(newState)
 
-       window.nodes = newState.nodes
-       return newState
-     }
-    case ADD_HISTORY_ACTION:{
+      window.nodes = newState.nodes
+      return newState
+    }
+    case ADD_HISTORY_ACTION: {
       //let newState = StateUtil.deepCopy(state)
-      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
-      
-      if(isSame){
+      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history, newState.nodes)
+
+      if (isSame) {
         return newState
       }
-      
-      if(newState.history.current != newState.history.nodes.length - 1){
+
+      if (newState.history.current != newState.history.nodes.length - 1) {
         //前に戻っている状態で履歴が追加された場合は、
         //current以降の履歴は消す
-        newState.history.nodes = newState.history.nodes.slice(0,newState.history.current + 1)
+        newState.history.nodes = newState.history.nodes.slice(0, newState.history.current + 1)
         newState.history.nodes.push(newState.nodes)
         newState.history.current = newState.history.nodes.length - 1
-      }else{
+      } else {
         newState.history.nodes.push(newState.nodes)
         newState.history.current = newState.history.nodes.length - 1
       }
 
       return newState
     }
-    case UNDO_ACTION:{
-      let newState = StateUtil.deepCopy(state)    
-      if(newState.history.current > 0){
+    case UNDO_ACTION: {
+      let newState = StateUtil.deepCopy(state)
+      if (newState.history.current > 0) {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current - 1
         newState.nodes = state.history.nodes[newState.history.current]
@@ -430,10 +421,10 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       }
       return newState
     }
-    case REDO_ACTION:{
+    case REDO_ACTION: {
       let newState = StateUtil.deepCopy(state)
       const max = newState.history.nodes.length
-      if(newState.history.current < max){
+      if (newState.history.current < max) {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current + 1
         newState.nodes = state.history.nodes[newState.history.current]
@@ -582,13 +573,13 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
 
     case SORT_STEP_SRC_END_ACTION: {
       newState.nodes.map((node, index) => {
-        if(node.id == state.selected_step_ids[0] && node.onSortEnd) {
+        if (node.id == state.selected_step_ids[0] && node.onSortEnd) {
           node.onSortEnd(action.payload.oldIndex, action.payload.newIndex)
-        }   
+        }
       })
       break
     }
-    
+
     default:
       window.nodes = state.nodes
       return state
@@ -606,13 +597,13 @@ export default FlowEditorReducer
  * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
  * @returns {*}
  */
-function rebuildNodesEdges(newState,action){
+function rebuildNodesEdges (newState, action) {
   return newState.nodes.map((node, index) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
     if (node.id === action.step.id) {
       if (node instanceof CommandStepModel ||
         node instanceof SubFlowStepModel) {
-        if (!_.isEqual(node.srcs,action.step.srcs)) {
+        if (!_.isEqual(node.srcs, action.step.srcs)) {
           //ノードのつながりを削除
           Object.keys(node.srcs).forEach(portName => {
             const id = node.srcs[portName]
@@ -632,7 +623,7 @@ function rebuildNodesEdges(newState,action){
             }
           })
         }
-        if (!_.isEqual(node.dsts,action.step.dsts)) {
+        if (!_.isEqual(node.dsts, action.step.dsts)) {
           //ノードのつながりを削除
           Object.keys(node.dsts).forEach(portName => {
             const id = node.dsts[portName]
@@ -665,32 +656,32 @@ function rebuildNodesEdges(newState,action){
  * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
  * @returns {*}
  */
-function allRebuildNodesEdges(newState){
+function allRebuildNodesEdges (newState) {
   graph.removeAllEdges(newState.graph.edges)
   return newState.nodes.map((node, index) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
-      if (node instanceof CommandStepModel ||
-        node instanceof SubFlowStepModel) {
-        //ノードのつながりを再構築
-        Object.keys(node.srcs).forEach(portName => {
-          const id = node.srcs[portName]
-          const from = id
-          const to = node.id
-          if (Graph.getNode(newState.nodes, id)) {
-            graph.addEdge(from, to, Graph.edgeName(from, to, portName))
-          }
-        })
-        //ノードのつながりを再構築
-        Object.keys(node.dsts).forEach(portName => {
-          const id = node.dsts[portName]
-          const from = node.id
-          const to = id
-          if (Graph.getNode(newState.nodes, id)) {
-            graph.addEdge(from, to, Graph.edgeName(from, to, portName))
-          }
-        })
-      }
-      return node
+    if (node instanceof CommandStepModel ||
+      node instanceof SubFlowStepModel) {
+      //ノードのつながりを再構築
+      Object.keys(node.srcs).forEach(portName => {
+        const id = node.srcs[portName]
+        const from = id
+        const to = node.id
+        if (Graph.getNode(newState.nodes, id)) {
+          graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+        }
+      })
+      //ノードのつながりを再構築
+      Object.keys(node.dsts).forEach(portName => {
+        const id = node.dsts[portName]
+        const from = node.id
+        const to = id
+        if (Graph.getNode(newState.nodes, id)) {
+          graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+        }
+      })
+    }
+    return node
   })
 }
 
@@ -823,10 +814,10 @@ export const undoAction = () => {
  * @returns {{type: string, step: *}}
  */
 export const redoAction = () => {
-    return {
-      type: REDO_ACTION,
-    }
+  return {
+    type: REDO_ACTION,
   }
+}
 /**
  * ステップの選択
  * @param selected_steps
@@ -945,7 +936,7 @@ export const updateDataFrameDetailAction = (detail: DataFrameDetailType) => {
   }
 }
 
-export const addNoteAction = (x:number, y:number) => {
+export const addNoteAction = (x: number, y: number) => {
   return {
     type: ADD_NOTE_ACTION,
     x: x,
@@ -953,12 +944,12 @@ export const addNoteAction = (x:number, y:number) => {
   }
 }
 
-export const sortStepSrcEndAction = (detail:{},mouseEvent:{}) => {
+export const sortStepSrcEndAction = (detail: {}, mouseEvent: {}) => {
   return {
     type: SORT_STEP_SRC_END_ACTION,
     payload: {
-      oldIndex : detail.oldIndex,
-      newIndex : detail.newIndex
+      oldIndex: detail.oldIndex,
+      newIndex: detail.newIndex
     }
   }
 }

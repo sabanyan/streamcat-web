@@ -6,10 +6,9 @@ import TabList from '../../TabBar/TabList'
 import Tab from '../../TabBar/Tab'
 import TabPanel from '../../TabBar/TabPanel'
 import style from '../style.scss'
-import Visualizer from '../../Visualizer'
 
 type Props = {
-  id:string;
+  id: string;
   contents: [{}];
   close_button: React.Node;
   visible: boolean;
@@ -21,27 +20,27 @@ type State = {
   results: [{}]
 }
 
-export default class PreviewModal extends React.Component<Props,State> {
+export default class PreviewModal extends React.Component<Props, State> {
 
   constructor (props: Props) {
     super(props)
     this.state = {
-      selected_tab_id:0,
+      selected_tab_id: 0,
       results: []
     }
   }
 
-  onClickTab(e:Event,tab_id:number){
-    this.setState({selected_tab_id:tab_id})
+  onClickTab (e: Event, tab_id: number) {
+    this.setState({selected_tab_id: tab_id})
   }
 
-  saveResults(index:number, result:{}) {
+  saveResults (index: number, result: {}) {
     let results = this.state.results
     results[index] = result
-    this.setState({results:results})
+    this.setState({results: results})
   }
 
-  loadResults(index:number) {
+  loadResults (index: number) {
     let results = this.state.results
 
     return results[index]
@@ -59,21 +58,24 @@ export default class PreviewModal extends React.Component<Props,State> {
 
     const {selected_tab_id} = this.state
 
-    if(!contents)return null
+    if (!contents) return null
 
-    if(!Array.isArray(contents))contents = [contents]
+    if (!Array.isArray(contents)) contents = [contents]
 
     let tabs = []
     let tabPannels = []
 
     //順番を維持するためForEachでLoop
     contents.forEach((content, index) => {
-      let tab = <Tab key={"tab_" + index} width={"auto"} tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
-      let tabPannel = <TabPanel tab_id={index} selected_tab_id={selected_tab_id}><div>{content.content}</div></TabPanel>
+      let tab = <Tab key={'tab_' + index} width={'auto'} tab_id={index} selected_tab_id={selected_tab_id}
+                     onClickTab={(e, tab_id) => this.onClickTab(e, tab_id)}>{content.title}</Tab>
+      let tabPannel = <TabPanel tab_id={index} selected_tab_id={selected_tab_id}>
+        <div>{content.content}</div>
+      </TabPanel>
       tabs.push(tab)
       tabPannels.push(tabPannel)
     })
- 
+
     return <div className={modal_class} style={{display: 'block'}} id={id}>
       <div className="modal-dialog">
         <div className="modal-content">

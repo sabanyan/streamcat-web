@@ -17,7 +17,7 @@ class InspectorKnob extends React.Component<Props> {
       {[style.isClosed]: this.props.isClosed})}
                 onMouseMove={this.props.onMouseMove}
                 onMouseDown={this.props.onMouseDown}
-                onMouseUp={this.props.onMouseUp}/>
+                onMouseUp={this.props.onMouseUp} />
   }
 
 }

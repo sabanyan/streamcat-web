@@ -7,7 +7,7 @@ import SubFlowStepModel from '../model/Step/SubFlowStepModel'
 import ZoomUtil from './ZoomUtil'
 import FlowModel from '../model/Flow/FlowModel'
 import FlowUtil from './FlowUtil'
-import NoteStepModel from '../model/Step/NoteStepModel';
+import NoteStepModel from '../model/Step/NoteStepModel'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,
@@ -23,14 +23,14 @@ export const defaultGraphProps = {
 }
 
 type GraphType = {
-  nodes:{};
-  zoom:number;
+  nodes: {};
+  zoom: number;
 }
 
 class Graph {
 
   constructor () {
-    this.g = new dagre.graphlib.Graph({ multigraph: true })
+    this.g = new dagre.graphlib.Graph({multigraph: true})
     this.g.setGraph({
       marginx: defaultGraphProps.marginX,
       marginy: defaultGraphProps.marginY,
@@ -50,7 +50,7 @@ class Graph {
    * @param id
    * @param from_id
    */
-  addNode (id:string) {
+  addNode (id: string) {
     const self = this
     this.g.setNode(id, {
       label: id,
@@ -67,35 +67,35 @@ class Graph {
     // }
   }
 
-  outEdges (id:string) {
+  outEdges (id: string) {
     return this.g.outEdges(id)
   }
 
-  inEdges (id:string) {
+  inEdges (id: string) {
     return this.g.inEdges(id)
   }
 
-  nodeEdges (id:string) {
+  nodeEdges (id: string) {
     return this.g.nodeEdges(id)
   }
 
-  static edgeName(v:string,w:string,port_name:string){
-    return JSON.stringify({v:v,w:w,port_name:port_name})
+  static edgeName (v: string, w: string, port_name: string) {
+    return JSON.stringify({v: v, w: w, port_name: port_name})
   }
 
   /**
    * ノードの削除
    * @param id
    */
-  removeNode (nodes:[],id:string):[] {
+  removeNode (nodes: [], id: string): [] {
     const edges = this.g.nodeEdges(id)
-    if(Array.isArray(edges)){
-      edges.forEach((edge)=>{
+    if (Array.isArray(edges)) {
+      edges.forEach((edge) => {
         this.g.removeEdge(edge)
       })
     }
     this.g.removeNode(id)
-    return FlowUtil.removeNodeId(nodes,[id])
+    return FlowUtil.removeNodeId(nodes, [id])
   }
 
   /**
@@ -103,8 +103,8 @@ class Graph {
    * @param from_id
    * @param to_id
    */
-  addEdge (from_id:string, to_id:string, name:string) {
-    this.g.setEdge({v:from_id, w:to_id,name:name})
+  addEdge (from_id: string, to_id: string, name: string) {
+    this.g.setEdge({v: from_id, w: to_id, name: name})
   }
 
   /**
@@ -112,27 +112,27 @@ class Graph {
    * @param from_id
    * @param to_id
    */
-  removeEdge (from_id:string, to_id:string, name:string) {
-    this.g.removeEdge({v:from_id, w:to_id,name:name})
+  removeEdge (from_id: string, to_id: string, name: string) {
+    this.g.removeEdge({v: from_id, w: to_id, name: name})
   }
 
   /**
    * 全エッジの削除
    * @param edges
    */
-  removeAllEdges(edges:[]){
-    edges.forEach((edge)=>{
+  removeAllEdges (edges: []) {
+    edges.forEach((edge) => {
       const from = edge.v
       const to = edge.w
       const portName = edge.name
-      this.removeEdge(from, to,portName)
+      this.removeEdge(from, to, portName)
     })
   }
 
   /**
    * dagreによるレイアウト
    */
-  layout(){
+  layout () {
     dagre.layout(this.g)
   }
 
@@ -142,17 +142,22 @@ class Graph {
    */
 
   getGraph (GraphType) {
-    const {nodes,zoom} = GraphType
+    const {nodes, zoom} = GraphType
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
     if (nodes) {
       const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
       const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))
-      return {width: ZoomUtil.zoom(width,zoom), height: ZoomUtil.zoom(height,zoom),nodes:graph_nodes, edges: edges}
+      return {width: ZoomUtil.zoom(width, zoom), height: ZoomUtil.zoom(height, zoom), nodes: graph_nodes, edges: edges}
     }
 
-    return {width: ZoomUtil.zoom(graph.width,zoom), height: ZoomUtil.zoom(graph.height,zoom),nodes:graph_nodes, edges: edges}
+    return {
+      width: ZoomUtil.zoom(graph.width, zoom),
+      height: ZoomUtil.zoom(graph.height, zoom),
+      nodes: graph_nodes,
+      edges: edges
+    }
   }
 
   /**
@@ -160,15 +165,15 @@ class Graph {
    * @param nodes
    * @returns {*}
    */
-  refreshPosition (nodes:[]) {
+  refreshPosition (nodes: []) {
     const self = this
     this.layout()
-    this.g.nodes().forEach((v)=> {
+    this.g.nodes().forEach((v) => {
       let graph_node = self.g.node(v)
-      if(graph_node){
+      if (graph_node) {
         const key = graph_node.label //グラフ構造のlabelにidを設定しています
-        let node = Graph.getNode(nodes,key)
-        if(node) {
+        let node = Graph.getNode(nodes, key)
+        if (node) {
           node.setFrame({
             x: graph_node.x,
             y: graph_node.y,
@@ -187,8 +192,8 @@ class Graph {
    * @param key
    * @returns {*}
    */
-  static getNode(nodes:[],key:string){
-    let node = nodes.find((node)=>{
+  static getNode (nodes: [], key: string) {
+    let node = nodes.find((node) => {
       return node.id === key
     })
     return node
@@ -199,12 +204,12 @@ class Graph {
    * @returns {any[]}
    * @param parameters
    */
-  static updateNode(parameters:{nodes:[],key:string,new_node:any}){
+  static updateNode (parameters: { nodes: [], key: string, new_node: any }) {
     let {nodes, key, new_node} = parameters
-    let new_nodes = nodes.map((node:any)=>{
-      if(node.id === key){
+    let new_nodes = nodes.map((node: any) => {
+      if (node.id === key) {
         return new_node
-      }else{
+      } else {
         return node
       }
     })
@@ -217,8 +222,8 @@ class Graph {
    * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithIncludeKeys(nodes:[],keySet:any){
-    let node = nodes.filter((node)=>{
+  static getNewNodesWithIncludeKeys (nodes: [], keySet: any) {
+    let node = nodes.filter((node) => {
       return (key_set.has(node.id))
     })
     return node
@@ -230,8 +235,8 @@ class Graph {
    * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithExculudeKeys(nodes:[],keySet:Set){
-    let node = nodes.filter((node)=>{
+  static getNewNodesWithExculudeKeys (nodes: [], keySet: Set) {
+    let node = nodes.filter((node) => {
       return !(keySet.has(node.id))
     })
     return node
@@ -242,17 +247,17 @@ class Graph {
    * @param json
    * @returns {*}
    */
-  load (json:{}) {
+  load (json: {}) {
     const self = this
     let hasPosition = false
 
     if (!json.nodes) return new FlowModel()
 
     let newNodes = []
-    json.nodes.forEach((node)=>{
+    json.nodes.forEach((node) => {
       self.addNode(node.id)
       const type = node.type
-      switch(type){
+      switch (type) {
         //データフレーム
         case Constants.step.type.frame:
           const frame = node
@@ -267,10 +272,10 @@ class Graph {
             makeCache: frame.makeCache,
             cacheCreatedAt: frame.cacheCreatedAt
           }))
-          if(frame.position && frame.size){
+          if (frame.position && frame.size) {
             hasPosition = true
           }
-          break;
+          break
         case Constants.step.type.command:
         case Constants.step.type.subflow:
           //コマンド
@@ -287,11 +292,11 @@ class Graph {
             size: step.size,
           }
 
-          if(type === Constants.step.type.command){
+          if (type === Constants.step.type.command) {
             model.type = Constants.step.type.command
             model.commandId = step.commandId
             node = new CommandStepModel(model)
-          }else if(type === Constants.step.type.subflow){
+          } else if (type === Constants.step.type.subflow) {
             model.type = Constants.step.type.subflow
             model.uuid = step.uuid
             node = new SubFlowStepModel(model)
@@ -307,7 +312,7 @@ class Graph {
               const src = step.srcs[portName]
               const from = src
               const to = node.id
-              const label = Graph.edgeName(from,to,portName)//src
+              const label = Graph.edgeName(from, to, portName)//src
               self.addEdge(from, to, label)
             })
           }
@@ -316,14 +321,14 @@ class Graph {
               const dst = step.dsts[portName]
               const from = node.id
               const to = dst
-              const label = Graph.edgeName(from,to,portName)//dst
+              const label = Graph.edgeName(from, to, portName)//dst
               self.addEdge(from, to, label)
             })
           }
-          if(step.position && step.size){
+          if (step.position && step.size) {
             hasPosition = true
           }
-          break;
+          break
         case Constants.step.type.note:
           const note = node
 
@@ -340,12 +345,12 @@ class Graph {
           node = new NoteStepModel(model)
           newNodes.push(node)
 
-          break;
+          break
       }
     })
 
     json.nodes = newNodes
-    if(!hasPosition)this.refreshPosition(json.nodes)
+    if (!hasPosition) this.refreshPosition(json.nodes)
 
     return json
 

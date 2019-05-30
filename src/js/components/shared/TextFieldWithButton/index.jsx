@@ -1,6 +1,5 @@
 //@flow
 import * as React from 'react'
-import classnames from 'classnames'
 import style from './style.scss'
 import Button from '../Button'
 import TextField from '../TextField'
@@ -17,16 +16,16 @@ type Props = {
 
 export default class TextFieldWithButton extends React.Component<Props> {
   static defaultProps = {
-    placeHolder: "",
-    onChange:{},
-    onClick:{},
+    placeHolder: '',
+    onChange: {},
+    onClick: {},
     children: null,
     disabled: false,
-    icon: "",
+    icon: '',
     danger: false
   }
 
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
 

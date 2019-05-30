@@ -2,13 +2,12 @@
 import * as React from 'react'
 import style from '../style.scss'
 import classnames from 'classnames'
-import InOutConnector from '../CommandInspector/InOutConnector/index'
 
 type Props = {
-  label?:string;
-  subLabel?:string;
+  label?: string;
+  subLabel?: string;
   header?: string;
-  title?: (string|React.Node);
+  title?: (string | React.Node);
   children?: React.Node;
   onBlurTitle?: Function;
   onHide?: Function;
@@ -16,35 +15,34 @@ type Props = {
 
 class BaseInspector extends React.Component<Props> {
 
-  componentWillUnmount(){
-    if(this.props.onBlurTitle && this.refs["title"]){
+  componentWillUnmount () {
+    if (this.props.onBlurTitle && this.refs['title']) {
       const e = {
-        target:{
+        target: {
           value: this.refs.title.value
         }
       }
-      this.props.onBlurTitle(e,this.props)
+      this.props.onBlurTitle(e, this.props)
     }
-    if(this.props.onHide){
+    if (this.props.onHide) {
       this.props.onHide()
     }
   }
 
-
   render () {
 
-    const {header, label, children,onBlurTitle,subLabel} = this.props
+    const {header, label, children, onBlurTitle, subLabel} = this.props
     const disabled = (!onBlurTitle)
-    let labelContainer,subLabelContainer
+    let labelContainer, subLabelContainer
     // FIXIT ロジクもう少し分かりやすく
-    if(!disabled && label !== undefined){
-      labelContainer =  <input type="text" ref={"title"}
-                               onBlur={(onBlurTitle)?(e)=>{onBlurTitle(e, this.props)}:null}
-                               className={style.label}
-                               defaultValue={label}
-                               disabled={disabled}></input>
+    if (!disabled && label !== undefined) {
+      labelContainer = <input type="text" ref={'title'}
+                              onBlur={(onBlurTitle) ? (e) => {onBlurTitle(e, this.props)} : null}
+                              className={style.label}
+                              defaultValue={label}
+                              disabled={disabled}></input>
     }
-    if(subLabel){
+    if (subLabel) {
       subLabelContainer = <div>
         {subLabel}
       </div>
@@ -52,7 +50,7 @@ class BaseInspector extends React.Component<Props> {
 
     const width = 100
 
-    return <div className={classnames(style.property_container,'inspector-container')}>
+    return <div className={classnames(style.property_container, 'inspector-container')}>
       <div className={style.property_header}>
         {header}
       </div>
@@ -65,7 +63,6 @@ class BaseInspector extends React.Component<Props> {
       </div>
     </div>
   }
-
 
 }
 

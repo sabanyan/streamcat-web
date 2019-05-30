@@ -1,6 +1,6 @@
 @import "../../../../sass/common";
 
-.command{
+.command {
   display: block;
   height: auto;
   width: 100%;
@@ -9,33 +9,35 @@
   overflow: hidden;
   border-bottom: 1px dotted #ccc;
   padding: 4px 8px;
-  &:hover{
+
+  &:hover {
     transition: all 0.3s;
     background: $kskp-property-command-hover-background-color;
   }
 }
-.command_label_container{
+
+.command_label_container {
   padding: 6px 4px;
   float: left;
   display: inline-block;
   width: calc(100% - 60px);
 }
 
-.command_label{
+.command_label {
   color: $kskp-property-operator-label-color;
   font-size: 12px;
   font-weight: bold;
   line-height: 1em;
 }
 
-.command_description{
+.command_description {
   color: $kskp-property-operator-label-color;
-  padding-top:4px;
+  padding-top: 4px;
   text-overflow: ellipsis;
   font-size: 10px;
 }
 
-.command_icon{
+.command_icon {
   display: inline-block;
   width: 60px;
   height: 60px;
@@ -49,6 +51,6 @@
   float: left;
 }
 
-.show_detail{
+.show_detail {
   float: right;
 }

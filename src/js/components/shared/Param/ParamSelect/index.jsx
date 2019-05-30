@@ -6,9 +6,9 @@ import Param from '../index'
 import style from './style.scss'
 
 type Props = {
-  param : CommandParamType;
+  param: CommandParamType;
   onBuild?: Function;
-  defaultValue : any;
+  defaultValue: any;
   refValue?: any;
 }
 
@@ -20,23 +20,24 @@ export default class ParamSelect extends Param {
 
   render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
-    const {param,onBuild,events,defaultValue,refValue} = this.props
+    const {param, onBuild, events, defaultValue, refValue} = this.props
     let inputRef = refValue
-    if(onBuild){
-      inputRef = element => onBuild(param,element)
+    if (onBuild) {
+      inputRef = element => onBuild(param, element)
     }
 
     const labels = param.options.labels
     const values = param.options.values
     const multiple = param.options.multiple
 
-    const options = labels.map((label,index)=>{return <option value={values[index]}>{label}</option>})
+    const options = labels.map((label, index) => {return <option value={values[index]}>{label}</option>})
 
     return <div className={style.param}>
       <label className={style.label}>
         {param.label}
       </label>
-      <select name={param.name} defaultValue={defaultValue} ref={inputRef} className={"form-control"} multiple={multiple} paramtype={param.type} {...events} >
+      <select name={param.name} defaultValue={defaultValue} ref={inputRef} className={'form-control'}
+              multiple={multiple} paramtype={param.type} {...events} >
         {options}
       </select>
     </div>

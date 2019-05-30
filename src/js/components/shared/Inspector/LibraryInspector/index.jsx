@@ -17,67 +17,68 @@ type Props = {
 }
 
 class LibraryInspector extends React.Component<Props> {
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
   }
+
   onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
-    if(this.props.onBlurTitle){
+    if (this.props.onBlurTitle) {
       this.props.onBlurTitle(e)
     }
   }
+
   render () {
-    const {data,onClickDelete,onClickApply} = this.props
+    const {data, onClickDelete, onClickApply} = this.props
     let content = null
-    let label = ""
+    let label = ''
 
     let deleteButton
-    if(onClickDelete){
+    if (onClickDelete) {
       deleteButton = <Button danger={true}
-                                 onClick={() => onClickDelete(data)}>削除する</Button>
+                             onClick={() => onClickDelete(data)}>削除する</Button>
     }
     let applyButton
-    if(onClickApply){
+    if (onClickApply) {
       applyButton = <Button primary={true}
-                             onClick={() => onClickApply(data)}>選択する</Button>
+                            onClick={() => onClickApply(data)}>選択する</Button>
     }
 
-
-    if(data){
+    if (data) {
       label = data.label
       content = <div>
-          <div className={"mb-8px"}>
-            {data.label}
-          </div>
-          <div className={style.actions}>
-            {deleteButton}
-            {applyButton}
-          </div>
-          <div className={style.full_hr}/>
-          <div>
-            <label>名称</label>
-          </div>
-          <div>
-            {data.label}
-          </div>
-          <div>
-            <label>作成者</label>
-          </div>
-          <div>
-            {data.creator}
-          </div>
-          <div>
-            <label>作成日時</label>
-          </div>
-          <div>
-            {moment(data.createdAt).format(Constants.format.dateTime)}
-          </div>
+        <div className={'mb-8px'}>
+          {data.label}
+        </div>
+        <div className={style.actions}>
+          {deleteButton}
+          {applyButton}
+        </div>
+        <div className={style.full_hr} />
+        <div>
+          <label>名称</label>
+        </div>
+        <div>
+          {data.label}
+        </div>
+        <div>
+          <label>作成者</label>
+        </div>
+        <div>
+          {data.creator}
+        </div>
+        <div>
+          <label>作成日時</label>
+        </div>
+        <div>
+          {moment(data.createdAt).format(Constants.format.dateTime)}
+        </div>
       </div>
-      return <div className={classnames(style.property,style.in,'inspector')}>
+      return <div className={classnames(style.property, style.in, 'inspector')}>
         <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
       </div>
-    }else{
+    } else {
       return <Resizer>
         <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}

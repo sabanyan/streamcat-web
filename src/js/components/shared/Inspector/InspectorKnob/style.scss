@@ -1,17 +1,19 @@
-.inspector_knob{
+.inspector_knob {
   position: fixed;
   width: 10px;
   height: 100%;
   cursor: col-resize;
   margin-left: -5px;
-  &:hover{
+
+  &:hover {
   }
-  &:active{
+
+  &:active {
     cursor: col-resize;
   }
 }
 
-.isClosed{
+.isClosed {
   width: 24px;
   cursor: pointer;
 }

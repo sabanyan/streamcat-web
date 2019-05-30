@@ -1,22 +1,22 @@
 
-.invalid_message{
+.invalid_message {
   padding-top: 4px;
   color: red;
   font-size: 12px;
 }
 
-.presence{
+.presence {
 
 }
 
-.presence label{
-  &:after{
+.presence label {
+  &:after {
     content: "*";
-    display:inline-block;
+    display: inline-block;
     color: red;
   }
 }
 
-.invalid input[type=text]{
-  background: lighten(#F51F28,40%);
+.invalid input[type=text] {
+  background: lighten(#F51F28, 40%);
 }
