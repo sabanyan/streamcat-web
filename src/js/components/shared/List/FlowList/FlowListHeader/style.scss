@@ -1,6 +1,6 @@
 @import "../../../../../../sass/common";
 
-.flow_list_header{
+.flow_list_header {
   position: relative;
   display: block;
   color: $kskp-text;
@@ -8,20 +8,23 @@
   padding: 8px 16px;
 }
 
-.name{
+.name {
   padding-left: 24px;
   display: inline-block;
   width: calc(100% - 20% - 200px - 80px);
 }
-.created_at{
+
+.created_at {
   display: inline-block;
   width: 200px;
 }
-.creator_name{
+
+.creator_name {
   display: inline-block;
   width: 20%;
 }
-.action{
+
+.action {
   display: inline-block;
   width: 80px
 }

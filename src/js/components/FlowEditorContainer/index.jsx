@@ -1,31 +1,31 @@
 //@flow
 import {
-  addStepAction,
-  updateStepAction,
-  updateFlowAction,
-  selectStepsAction,
-  addSelectStepAction,
-  deleteSelectStepAction,
-  cutStepsAction,
-  copyStepsAction,
-  pasteStepsAction,
   addHistoryAction,
-  undoAction,
-  redoAction,
-  deleteStepsAction,
-  deleteCacheAction,
   addMasterAction,
-  sortFlowAction,
-  executeFlowAction,
-  selectTabAction,
-  dragStartAction,
-  draggingAction,
-  dragEndAction,
-  loadFlowJSONAction,
-  setZoomAction,
-  updateDataFrameDetailAction,
   addNoteAction,
+  addSelectStepAction,
+  addStepAction,
+  copyStepsAction,
+  cutStepsAction,
+  deleteCacheAction,
+  deleteSelectStepAction,
+  deleteStepsAction,
+  dragEndAction,
+  draggingAction,
+  dragStartAction,
+  executeFlowAction,
+  loadFlowJSONAction,
+  pasteStepsAction,
+  redoAction,
+  selectStepsAction,
+  selectTabAction,
+  setZoomAction,
+  sortFlowAction,
   sortStepSrcEndAction,
+  undoAction,
+  updateDataFrameDetailAction,
+  updateFlowAction,
+  updateStepAction,
 } from '../../modules/application'
 import FlowEditor from './FlowEditor'
 import { connect } from 'react-redux'
@@ -33,17 +33,15 @@ import * as React from 'react'
 import { FlowModelProps } from '../../model/Flow/FlowModel'
 import NavigationModel from '../../model/Navigation/NavigationModel'
 import type { DragType } from '../../types'
-import { DataFrameDetailType } from '../../types'
-import { addNotification,updateNotification,removeNotification} from 'reapop';
-import flowEditorReducer from '../../modules/application'
+import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 let FlowEditorContainer
 
 export type FlowEditorProps = {
   projectId: string,
   projectName: string,
-  graph: { width: number, height: number,edges:any[],nodes:any[] };
-  mast: { commands: any[],subflows: any[],visualizers: any[] };
+  graph: { width: number, height: number, edges: any[], nodes: any[] };
+  mast: { commands: any[], subflows: any[], visualizers: any[] };
   loadFlowJSON: Function;
   addMaster: Function;
   selectSteps: Function;
@@ -173,24 +171,24 @@ export default FlowEditorContainer = connect(
       setZoom (...args) {
         dispatch(setZoomAction(...args))
       },
-      updateDataFrameDetail(...args){
+      updateDataFrameDetail (...args) {
         dispatch(updateDataFrameDetailAction(...args))
       },
-      notify(...args){
+      notify (...args) {
         return dispatch(addNotification(...args))
       },
-      updateNotify(...args){
+      updateNotify (...args) {
         return dispatch(updateNotification(...args))
       },
-      dismissNotify(...args){
-        setTimeout(()=>{
+      dismissNotify (...args) {
+        setTimeout(() => {
           dispatch(removeNotification(...args))
-        },1000)
+        }, 1000)
       },
-      addNote(...args){
+      addNote (...args) {
         dispatch(addNoteAction(...args))
       },
-      sortStepSrcEnd(...args){
+      sortStepSrcEnd (...args) {
         dispatch(sortStepSrcEndAction(...args))
       }
     }

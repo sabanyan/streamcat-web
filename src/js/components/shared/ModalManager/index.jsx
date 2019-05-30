@@ -53,11 +53,11 @@ export default class ModalManager extends React.Component {
       <Modal key={Constants.modal.SHOW_MESSAGE}
              id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true}
              ok={true}>
-        <div ref={Constants.modal.property.SHOW_MESSAGE}/>
+        <div ref={Constants.modal.property.SHOW_MESSAGE} />
       </Modal>
       <Modal key={Constants.modal.CONFIRM}
              id={Constants.modal.CONFIRM} title="" dynamic={true}>
-        <div ref={Constants.modal.property.CONFIRM}/>
+        <div ref={Constants.modal.property.CONFIRM} />
       </Modal>
       <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT}
              title="新しいプロジェクトを始める" dynamic={true} done={'作成する'} primary={true}>
@@ -75,12 +75,12 @@ export default class ModalManager extends React.Component {
              title="CSVをアップロードする" dynamic={true} done={'追加する'} primary={true}>
       </Modal>
       <Modal key={Constants.modal.SHOW_RUN_RESULT} id={Constants.modal.SHOW_RUN_RESULT}
-             title="実行完了" dynamic={true} cancel={"OK"} done={'ライブラリを開く'} primary={true}>
+             title="実行完了" dynamic={true} cancel={'OK'} done={'ライブラリを開く'} primary={true}>
       </Modal>
       <Modal key={Constants.modal.SHOW_RUN_ERROR} id={Constants.modal.SHOW_RUN_ERROR}
              title="実行エラー" dynamic={true} ok={true}>
       </Modal>
-      <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW} 
+      <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW}
              title="選択されたフローを実行します" dynamic={true} footer={true}>
       </Modal>
     </div>

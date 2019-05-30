@@ -20,27 +20,27 @@ type State = {
   validation_messages: [];
 }
 
-export default class TextField extends React.Component<Props,State> {
+export default class TextField extends React.Component<Props, State> {
   static defaultProps = {
-    placeholder: "",
+    placeholder: '',
     onChange: null,
     rules: null,
-    defaultValue:"",
-    type: "text",
+    defaultValue: '',
+    type: 'text',
     useForm: false,
-    formKey: ""
+    formKey: ''
   }
 
-  constructor (props:Props) {
+  constructor (props: Props) {
     super(props)
     this.state = {
       validation: true,
       validation_messages: [],
     }
 
-    const {useForm,formKey,defaultValue} = props
+    const {useForm, formKey, defaultValue} = props
 
-    if(useForm){
+    if (useForm) {
       window.emitter.emit(Constants.event.ON_CHANGE_FORM,
         {[formKey]: defaultValue})
     }
@@ -51,7 +51,7 @@ export default class TextField extends React.Component<Props,State> {
    * @param rules
    * @returns {boolean}
    */
-  hasRules (rules:?{}) {
+  hasRules (rules: ?{}) {
     if (rules === {} || rules === null) {
       return false
     }
@@ -64,16 +64,16 @@ export default class TextField extends React.Component<Props,State> {
    * @param rules
    * @returns {*}
    */
-  validateField (e:SyntheticInputEvent<EventTarget>, rules:?{}) {
+  validateField (e: SyntheticInputEvent<EventTarget>, rules: ?{}) {
     let validation_messages = []
     if (!this.hasRules(rules)) {
       return validation_messages
     }
-    if(!rules)return null
+    if (!rules) return null
 
     //ToDo: validate.jsの処理と共通化する
 
-    Object.keys(rules).forEach((rule:string) => {
+    Object.keys(rules).forEach((rule: string) => {
       const value = rules[rule]
       switch (rule) {
         case 'required':
@@ -102,16 +102,16 @@ export default class TextField extends React.Component<Props,State> {
    * onChangeイベント,onChangeFormもここで処理
    * @param e
    */
-  onChange (e:SyntheticInputEvent<EventTarget>) {
-    const {onChange,useForm,rules,formKey} = this.props
-    if(!onChange && !useForm)return
+  onChange (e: SyntheticInputEvent<EventTarget>) {
+    const {onChange, useForm, rules, formKey} = this.props
+    if (!onChange && !useForm) return
     let validation_messages = this.validateField(e, rules)
     const validation = {
       validation: (!validation_messages.length),
       validation_messages: validation_messages,
     }
-    if(onChange)onChange(e, validation)
-    if(useForm){
+    if (onChange) onChange(e, validation)
+    if (useForm) {
       window.emitter.emit(Constants.event.ON_CHANGE_FORM,
         {[formKey]: e.target.value})
     }
@@ -124,11 +124,11 @@ export default class TextField extends React.Component<Props,State> {
    */
   renderValidationMessage () {
     const {validation_messages} = this.state
-    if(!validation_messages.length) return null
+    if (!validation_messages.length) return null
     const messages = validation_messages.map((message, index) => {
       return <li key={index} className={style.message}>{message}</li>
     })
-    const messageClass = classnames({[style.validation_messages]:(messages.length)})
+    const messageClass = classnames({[style.validation_messages]: (messages.length)})
     return <div>
       <ul className={messageClass}>
         {messages}
@@ -141,18 +141,18 @@ export default class TextField extends React.Component<Props,State> {
    * @returns {*}
    */
   render () {
-    const {placeholder,defaultValue,type} = this.props
+    const {placeholder, defaultValue, type} = this.props
     const {validation} = this.state
     const input_class = classnames('form-control', {
       [style.error]: !validation,
-      [this.props.className]:(this.props.className)
+      [this.props.className]: (this.props.className)
     })
 
     return <div>
       <input type={type} ref={'input'} className={input_class}
              placeholder={placeholder}
              onChange={(e) => this.onChange(e)}
-      defaultValue={defaultValue}></input>
+             defaultValue={defaultValue}></input>
       {this.renderValidationMessage()}
     </div>
   }

@@ -5,16 +5,13 @@ import style from '../style.scss'
 import Constants from '../../../../../constants'
 import ModalUtil from '../../../../../utils/ModalUtil'
 import SortUtil from '../../../../../utils/SortUtil'
-import DataTable from '../../../DataTable'
 import moment from 'moment'
 import APIUtil from '../../../../../utils/APIUtil'
-import DataPreview from '../../../DataPreview'
-import ChartUtil from '../../../../../utils/ChartUtil'
 import Visualizer from '../../../Visualizer'
 
 type JobFrameProps = {
-  type:string;
-  uuid:string;
+  type: string;
+  uuid: string;
   job: {};
   onClickJob: Function;
   selected: boolean;
@@ -24,36 +21,36 @@ type JobFrameState = {
   flowNames: {}
 }
 
-export default class JobFrameList extends React.Component<JobFrameProps,JobFrameState> {
+export default class JobFrameList extends React.Component<JobFrameProps, JobFrameState> {
 
-  constructor (props:JobFrameProps) {
+  constructor (props: JobFrameProps) {
     super(props)
     this.state = {
       flowNames: {}
     }
   }
 
-  getFlowName(uuid:string){
+  getFlowName (uuid: string) {
     let {flowNames} = this.state
 
     let flowName = flowNames[uuid]
-    if(flowName) return flowName
-    APIUtil.get('flows/' + uuid + "?navigation=off").then((response) => {
+    if (flowName) return flowName
+    APIUtil.get('flows/' + uuid + '?navigation=off').then((response) => {
       const json = response.data
       const label = json.data.label
       flowNames[uuid] = label
-      this.setState({flowNames:flowNames})
+      this.setState({flowNames: flowNames})
     })
   }
 
-  onClick(e:Event){
-    const {job,onClickJob} = this.props
-    if(onClickJob){
-      onClickJob(e,job)
+  onClick (e: Event) {
+    const {job, onClickJob} = this.props
+    if (onClickJob) {
+      onClickJob(e, job)
     }
   }
 
-  onClickName(e:Event,uuid:string,name:string){
+  onClickName (e: Event, uuid: string, name: string) {
 //    //TODO 将来的にはページングなどの対応が必要
 //    APIUtil.get("frames/"+uuid + "?offset=0&limit=1000").then((response)=>{
 //      const json = response.data
@@ -69,16 +66,16 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
 //      })
 //    })
 
-
-    const getFrameHeaderURL = "frames/" + uuid
-    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
+    const getFrameHeaderURL = 'frames/' + uuid
+    APIUtil.get(getFrameHeaderURL + '?header_only=1&offset=0&limit=1').then((response) => {
       const headers = response.data.data
       let visualizers = window.visualizers
       visualizers = SortUtil.getSortedContents(visualizers)
       let contents = []
       for (const v of visualizers) {
-        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
-        contents.push({title: v.label,content:content,parentProps:this.props})
+        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}}
+                                    headers={headers} />
+        contents.push({title: v.label, content: content, parentProps: this.props})
       }
 
       ModalUtil.emitModal({
@@ -92,24 +89,23 @@ export default class JobFrameList extends React.Component<JobFrameProps,JobFrame
       })
     })
 
-
     e.preventDefault()
   }
 
   render () {
-    const {uuid,job,selected} = this.props
+    const {uuid, job, selected} = this.props
 
-    const dataframe = Object.keys(job.data).map(d=>{
+    const dataframe = Object.keys(job.data).map(d => {
       return <div>
         <i className={classnames('material-icons', [style.icon])}>description</i>
-        <a href={"#"} onClick={(e)=>this.onClickName(e,job.data[d].uuid,d)}>{d}</a>
+        <a href={'#'} onClick={(e) => this.onClickName(e, job.data[d].uuid, d)}>{d}</a>
         {/*<div className={style.uuid}><small>{job.data[d].uuid}</small></div>*/}
       </div>
     })
 
     let executedAt = moment(job.executedAt).format(Constants.format.dateTime)
 
-    return <div className={classnames(style.job_list,{[style.selected]:selected})}  onClick={(e)=>this.onClick(e)}>
+    return <div className={classnames(style.job_list, {[style.selected]: selected})} onClick={(e) => this.onClick(e)}>
       <div className={style.executed_at}>{executedAt}</div>
       <div className={style.name}>
         {dataframe}

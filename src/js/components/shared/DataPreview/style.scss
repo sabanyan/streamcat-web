@@ -7,12 +7,14 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  .data_preview_body{
-    width: calc(100% - 400px)!important;
+
+  .data_preview_body {
+    width: calc(100% - 400px) !important;
     display: flex;
     align-items: stretch;
   }
-  .data_preview_property{
+
+  .data_preview_property {
     width: 400px;
     display: flex;
     align-items: stretch;
