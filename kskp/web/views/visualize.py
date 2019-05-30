@@ -1,7 +1,8 @@
+# 将来的にどうなるかわからないので、ひとまず他のrender_templateと隔離しておく
 import json
 
 from pathlib import Path
-from flask import Blueprint, jsonify, request, jsonify, render_template
+from flask import Blueprint, request, render_template
 from kskp.store import CommandLink
 from kskp.web.api.auth import login_required
 

@@ -370,6 +370,7 @@ class ApiExecuteTestCase(unittest.TestCase):
                                    data = json.dumps(data)
                                    )
 
+            print(response.get_data())
             result = json.loads(response.get_data())
             lasts = result['lasts']
 
