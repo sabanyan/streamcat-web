@@ -154,6 +154,7 @@ def signup():
 # 承認メール用スクリプト
 
 # flask_mail用の設定
+CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
 app.config.update(
     MAIL_SERVER='smtp.gmail.com',
     MAIL_PORT=465,
@@ -162,7 +163,6 @@ app.config.update(
     MAIL_USE_TLS=False,
     MAIL_USE_SSL=True
 )
-CONFIRM_EMAIL = 'flask.mail.testtest@gmail.com'
 
 email_sender = Mail(app)
 
