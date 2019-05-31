@@ -5,11 +5,6 @@ from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify
 
 from .auth import login_required_api
-from kskp.store import (
-    get_flow_nodes_by_uuid,
-    fetch_flow_by_uuid,
-    get_flow_path_by_uuid
-)
 
 mod = Blueprint('frames', __name__)
 
@@ -54,6 +49,7 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}):
     フローの実行を行う
     実行後の判定など
     """
+    from kskp.store import get_flow_path_by_uuid
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
     target_flow_file_path = get_flow_path_by_uuid(flow_uuid)
@@ -89,6 +85,8 @@ def execute_flow_internal(flow_uuid, step_ids=[], args={}, inputs={}):
     """
     エンジンの実行を行い、適切な形に直して返す
     """
+    from kskp.store import get_flow_nodes_by_uuid
+
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from kskp.engine import execute
         from kskp.engine import FlowJsonLink, FlowUuidLink
@@ -110,6 +108,8 @@ def execute_flow_by_add_inputs(request):
     inputsを与えてexecute
     """
     from kskp.engine import Folder
+    from kskp.store import fetch_flow_by_uuid
+
     folder = Folder(Path('kskp/data'))
 
     # プレビューとかすることがあるかもしれないから
@@ -147,3 +147,14 @@ def execute_flow_by_add_inputs(request):
     result = execute_flow(flow_uuid, step_ids, args, inputs)
 
     return result
+
+@mod.errorhandler(400)
+def handle_bad_request(error):
+    """
+    Bad Requestが起きた時にもJSONを返却するように
+    （request bodyのJSONが不正な場合を想定している）
+    """
+
+    # 返却するメッセージそのものは、ひとまずFlaskが標準で返しているものをそのまま返す
+    message = 'The browser (or proxy) sent a request that this server could not understand.'
+    return jsonify({'success': False, 'message': str(error)})
