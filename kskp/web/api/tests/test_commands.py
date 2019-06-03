@@ -14,7 +14,7 @@ class ApiTestCase(unittest.TestCase):
 
     def test_flow_execute(self):
         """
-        フロー一覧取得のテスト
+        コマンド一覧取得のテスト
         """
         # APIを投げる
         with app.test_client() as client:

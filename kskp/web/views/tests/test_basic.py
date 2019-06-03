@@ -3,6 +3,7 @@ import tempfile
 from flask import template_rendered
 from kskp.web import app
 from kskp.store import model
+from kskp.web.api.tests.utils import setUpUser, setUpProject
 
 class HtmlTestCase(unittest.TestCase):
     def setUp(self):
@@ -48,8 +49,10 @@ class HtmlTestCase(unittest.TestCase):
         """
         フロ一覧表示画面を表示するテスト
         """
-
-        self.assertRenderTemplate('/flows', 'flows.html')
+        # 仮のプロジェクト作成
+        with app.app_context():
+            (user1, project_id, project_uuid) = setUpProject(self)
+        self.assertRenderTemplate('/flows?project=%s' % project_uuid, 'flows.html')
 
 
     def test_flow_designer(self):
