@@ -24,6 +24,7 @@ app.config['FRAME_CHARACTER_CODE'] = 'utf8'
 # from .util_endpoints import endpoints
 # app.register_blueprint(endpoints, url_prefix='/')
 
+
 # render_template
 # 将来的にvisualizeどうなるかわからないので、とりあえず別に隔離しておく
 from .views import visualize

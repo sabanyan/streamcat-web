@@ -2,7 +2,8 @@
 import uuid
 import json
 from pathlib import Path
-from .test_basic import app, model
+from kskp.web import app
+from kskp.store import model
 
 def setUpClient(self):
     """
@@ -68,7 +69,7 @@ def create_data(file_path_obj, data=None):
     """
     import nysol.mcmd as nm
     from kskp.store import Library, FRAME_FOLDER_UUID
-    
+
     if data is not None:
         nm.mread(i=data, o=file_path_obj.as_posix()).run()
     frame = Library.save_frame(FRAME_FOLDER_UUID, str(uuid.uuid4()), file_path_obj)
