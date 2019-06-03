@@ -11,7 +11,7 @@
     }
   },
   "map" : {
-    "labe" : "name",
+    "label" : "name",
     "nodeId" : "name",
     "type" : "type"
   }

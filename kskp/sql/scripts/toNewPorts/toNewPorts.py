@@ -60,7 +60,7 @@ def isSameStructure(ports, structure):
   result = True
   for port in ports:
     for key in structure:
-      reuslt = key in port
+      result = key in port
       if result == False:
         return result
 
