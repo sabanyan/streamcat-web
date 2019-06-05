@@ -5,7 +5,7 @@ import time
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
-from kskp.store import Frame as FrameModel
+from kskp.store import FrameModel
 from kskp.web import app
 
 from .auth import login_required_api
@@ -274,8 +274,7 @@ def execute_flow_by_add_inputs(request):
     """
     inputsを与えてexecute
     """
-    from kskp.engine import Folder
-    from kskp.store import fetch_flow_by_uuid
+    from kskp.store import Folder, fetch_flow_by_uuid
 
     folder = Folder(Path('kskp/data'))
 

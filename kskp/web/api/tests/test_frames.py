@@ -260,7 +260,7 @@ class ApiExecuteTestCase(unittest.TestCase):
     def tearDown(self):
         pass
 
-    @unittest.skip
+    # @unittest.skip
     def test_flow_execute(self):
         """
         フロー実行のテスト
@@ -321,7 +321,7 @@ class ApiExecuteTestCase(unittest.TestCase):
         flow_path.unlink()
         frame_path.unlink()
 
-    @unittest.skip
+    # @unittest.skip
     def test_flow_preview(self):
         """
         フローをプレビュー実行する
@@ -409,7 +409,7 @@ class ApiExecuteTestCase(unittest.TestCase):
         flow_path.unlink()
         frame_path.unlink()
 
-    @unittest.skip
+    # @unittest.skip
     def test_flow_executea_add_inputs(self):
         """
         フロー一覧から実行のような、inputsやargsを外部から与えて実行するテスト
@@ -497,7 +497,7 @@ class ApiExecuteTestCase(unittest.TestCase):
         flow_path.unlink()
         frame_path.unlink()
 
-    @unittest.skip
+    # @unittest.skip
     def test_flow_executea_add_inputs_and_args(self):
         """
         フロー一覧から実行のような、inputsやargsを外部から与えて実行するテスト
@@ -579,7 +579,6 @@ class ApiExecuteTestCase(unittest.TestCase):
                                    data = json.dumps(data)
                                    )
 
-            print(response.get_data())
             result = json.loads(response.get_data())
             lasts = result['lasts']
 

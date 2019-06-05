@@ -15,7 +15,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 app.config['VISIBLE_COMMANDS_JSON'] = ['mcmd', 'kcmd', 'pcmd']
 
 # 文字コード指定用環境変数
-app.config['FRAME_CHARACTER_CODE'] = 'utf8'
+app.config['FRAME_CHARACTER_CODE'] = 'utf-8'
+# app.config['FRAME_CHARACTER_CODE'] = 'shift-jis'
+
+app.config['DATABASE'] = 'kskp/data/kskp.db'
+app.config['FLOW_PATH'] = 'kskp/data/flows'
 
 # flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
 # from .utils.kskp_json_encoder import KSKPJSONEncoder
