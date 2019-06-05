@@ -47,6 +47,12 @@ export default class PreviewModal extends React.Component<Props,State> {
     return results[index]
   }
 
+  componentWillReceiveProps(nextProps){
+    this.setState({
+      selected_tab_id:0
+    })
+  }
+
   render () {
     const {id, close_button, visible, title, footer} = this.props
     let {contents} = this.props
