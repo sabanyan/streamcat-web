@@ -8,6 +8,7 @@ import BaseInspector from '../BaseInspector/index'
 import style from '../style.scss'
 import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import Button from '../../Button/index'
+import DownloadButton from '../../Button/DownloadButton/index'
 import DataPreview from '../../DataPreview/index'
 import DropDownList from '../../DropDownList/index'
 import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
@@ -331,8 +332,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
       preview = <Button onClick={(e) => this.onClickPreview(e)}
                         icon={'visibility'}>プレビュー</Button>
       if (selected_step.hasData()) {
-        download = <Button onClick={(e) => this.onClickCSVDownload(e)}
-                          icon={'visibility'}>CSVダウンロード</Button>
+        const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
+        download = <DownloadButton href={href} icon={'visibility'}>CSVダウンロード</DownloadButton>
       }
     }
 
