@@ -15,3 +15,6 @@
             FLOW_UUID.json
     2. 以下のコマンドを実行します
         python toNewPorts -f FLOW_UUID
+
+
+    ※ ファイル自体を修正しますので、重要なFlowファイルはバックアップが必要です
