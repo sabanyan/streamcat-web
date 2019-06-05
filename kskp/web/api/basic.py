@@ -11,13 +11,14 @@ from .utils.navigation import update_navigation
 from kskp.store import (
     # data3.pyのFrameクラスと名称を被らないようにAS別名を付ける
     # (将来的にdata3.pyのFrameと統合したい)
-    Frame as FrameModel,
-    Folder,
+    FrameModel,
+    FolderModel,
     FRAME_FOLDER_UUID,
     CACHE_FOLDER_UUID
 )
 # from datetime import datetime, timezone, timedelta
 from kskp.store import *
+from kskp.web import app
 
 mod = Blueprint('api', __name__)
 
