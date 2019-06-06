@@ -186,6 +186,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps,State> {
         const selected_step = Graph.getNode(nodes,selected_step_ids[0])
         this.props.deleteSteps([selected_step.id])
         this.props.selectSteps()
+        this.props.addHistory()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
     })
