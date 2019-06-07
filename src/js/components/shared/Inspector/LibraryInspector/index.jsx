@@ -8,8 +8,13 @@ import moment from 'moment/moment'
 import Constants from '../../../../constants'
 import Button from '../../Button'
 import Resizer from '../Resizer'
+import ModalUtil from '../../../../utils/ModalUtil'
+import APIUtil from '../../../../utils/APIUtil'
+import SortUtil from '../../../../utils/SortUtil'
+import Visualizer from '../../../../components/shared/Visualizer'
 
 type Props = {
+  visualizers: [];
   data?: LibraryListDataType;
   onClickDelete?: Function;
   onClickApply?: Function;
@@ -25,11 +30,55 @@ class LibraryInspector extends React.Component<Props> {
       this.props.onBlurTitle(e)
     }
   }
+
+  componentWillMount () {
+    //モーダル処理の登録
+    ModalUtil.registerModal({
+      id: Constants.preview.DATASOURCE, onClickOK: () => {
+        ModalUtil.closeModal(Constants.preview.DATASOURCE)
+      },
+    })
+  }
+
+  onClickPreview(e) {
+    // dataがない（Null)の場合はPreviwボタンは表示しない（render)
+    const {data, visualizers} = this.props
+
+    if (!visualizers) {
+      return
+    }
+    const uuid = data.uuid
+    const getFrameHeaderURL = "frames/" + uuid
+    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
+      const headers = response.data.data
+      let sortedVisualizers = visualizers
+      sortedVisualizers = SortUtil.getSortedContents(sortedVisualizers)
+      let contents = []
+      for (const v of sortedVisualizers) {
+        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
+        contents.push({title: v.label,content:content,parentProps:this.props})
+      }
+
+      ModalUtil.emitModal({
+        id: Constants.preview.DATASOURCE,
+        visible: true,
+        contents: contents,
+        title: data.label
+      })
+      this.setState({
+        loading: false
+      })
+    })
+  }
+
   render () {
     const {data,onClickDelete,onClickApply} = this.props
     let content = null
     let label = ""
-
+    let preview = null
+    if (data && data.type === Constants.library.type.frame) {
+      preview = <Button onClick={(e) => this.onClickPreview(e)} icon={'visibility'}>プレビュー</Button>
+    }
     let deleteButton
     if(onClickDelete){
       deleteButton = <Button danger={true}
@@ -49,6 +98,7 @@ class LibraryInspector extends React.Component<Props> {
             {data.label}
           </div>
           <div className={style.actions}>
+            {preview}
             {deleteButton}
             {applyButton}
           </div>
