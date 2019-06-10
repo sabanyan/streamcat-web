@@ -1,0 +1,19 @@
+{
+  "structure" : {
+    "before" : {
+      "name": "対応するデータノードのid",
+      "type": "frame"
+    },
+    "after" : {
+      "label": "(任意のポート名)",
+      "nodeId": "対応するデータノードのid",
+      "type": "frame"
+    }
+  },
+  "map" : {
+    "label" : "name",
+    "nodeId" : "name",
+    "type" : "type"
+  }
+}
+
