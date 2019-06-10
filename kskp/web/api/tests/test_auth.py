@@ -15,7 +15,7 @@ class AuthTestCase(unittest.TestCase):
 
     def setUp(self):
         self.client = app.test_client()
-        self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
+        self.db_fd, os.environ['SQLITE_PATH'] = tempfile.mkstemp()
         app.testing = True
         self.client = app.test_client()
         with app.app_context():
@@ -23,7 +23,7 @@ class AuthTestCase(unittest.TestCase):
 
     def tearDown(self):
         os.close(self.db_fd)
-        os.unlink(app.config['DATABASE'])
+        os.unlink(os.environ['SQLITE_PATH'])
 
     # TODO: viewsの/projectsを追加したらコメントアウトしてテストする
     # def test_login_required_DO_LOGGING_IN(self):

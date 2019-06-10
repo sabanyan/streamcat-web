@@ -1,3 +1,4 @@
+import os
 import unittest
 import tempfile
 from flask import template_rendered
@@ -9,7 +10,7 @@ class HtmlTestCase(unittest.TestCase):
     def setUp(self):
         app.testing = True
         self.client = app.test_client()
-        self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
+        self.db_fd, os.environ['SQLITE_PATH'] = tempfile.mkstemp()
         with app.app_context():
             model.init_db()
         with self.client.session_transaction() as session:

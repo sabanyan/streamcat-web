@@ -7,7 +7,7 @@ from pathlib import Path
 
 from kskp.web import app
 # from .test_case_base import TestCaseBase
-from kskp.store import model
+from kskp.store import model, FLOW_PATH
 
 from .utils import setUpUser, setUpProject, setUpFlow, remove_copy_flow_files, create_data
 from kskp.store import Library
@@ -18,7 +18,7 @@ class ApiTestCase(unittest.TestCase):
     INPUT_FRAME_UUID = '86365ce9-9b01-4ec3-b672-7739e8f1e507'
 
     def setUp(self):
-        self.db_fd, app.config['DATABASE'] = tempfile.mkstemp()
+        self.db_fd, os.environ['SQLITE_PATH'] = tempfile.mkstemp()
         app.testing = True
         self.client = app.test_client()
         with app.app_context():
@@ -33,7 +33,7 @@ class ApiTestCase(unittest.TestCase):
         # self.remove_frame_from_library(self.INPUT_FRAME_UUID)
 
         os.close(self.db_fd)
-        os.unlink(app.config['DATABASE'])
+        os.unlink(os.environ['SQLITE_PATH'])
 
     def test_new_project(self):
         """
@@ -182,16 +182,15 @@ class ApiTestCase(unittest.TestCase):
             with client.session_transaction() as session:
                 session['user_id'] = user1
 
-            new_flow_name = '新しいフローです'
-            new_flow_data_source_name = str(uuid.uuid4())
-            new_flow_uuid = str(uuid.uuid4())
+            new_flow_name = str(uuid.uuid4())
+            new_frame_uuid = str(uuid.uuid4())
 
             # 必要最低限の項目だけを送る
             data_source = {
                 "id": "i",
                 "type": "frame",
                 "dataSource": "csv",
-                "uuid": new_flow_uuid,
+                "uuid": new_frame_uuid,
                 "label": "test"
             }
 
@@ -201,15 +200,11 @@ class ApiTestCase(unittest.TestCase):
                 'datasource': data_source
             }
 
-            flow_path = app.config['FLOW_PATH']
-            with tempfile.TemporaryDirectory() as temp_dir:
-                app.config['FLOW_PATH'] = temp_dir
-
-                endpoint = '/api/v0/flows'
-                response = client.post(endpoint,
-                    content_type='application/json',
-                    data=json.dumps(data)
-                    )
+            endpoint = '/api/v0/flows'
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data)
+                )
 
             result = json.loads(response.get_data())
 
@@ -219,11 +214,22 @@ class ApiTestCase(unittest.TestCase):
             self.assertEqual(result['data']['description'], "")
             self.assertEqual(result['data']['projectId'], result_project_id)
             self.assertEqual(result['data']['label'], new_flow_name)
-            self.assertEqual(result['data']['nodes'][0]['uuid'], new_flow_uuid)
+            self.assertEqual(result['data']['nodes'][0]['uuid'], new_frame_uuid)
             self.assertEqual(result['data']['nodes'][0]['label'], "test")
 
             # 後片付け
-            app.config['FLOW_PATH'] = flow_path
+            # uuidがわからないので、labelで判断して消している
+            # そのためにフローの名前はuuidで作っている
+            for flow_path in Path(FLOW_PATH).iterdir():
+                try:
+                    if not flow_path.suffix == '.json':
+                        continue
+                    data = json.loads(flow_path.read_text(encoding='utf-8'))
+                    if data['label'] == new_flow_name:
+                        flow_path.unlink()
+                        break
+                except json.JSONDecodeError as e:
+                    continue
 
     def test_new_flow_for_copy(self):
         """
@@ -266,7 +272,7 @@ class ApiTestCase(unittest.TestCase):
             self.assertEqual(result['data']['label'], copy_flow_label)
 
             # 後片付け
-            os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
+            os.remove(FLOW_PATH + '/' + data_source_name + '.json')
             remove_copy_flow_files(data_source_name, copy_flow_label, project_id)
 
     def test_new_flow_for_copy_multi(self):
@@ -322,8 +328,8 @@ class ApiTestCase(unittest.TestCase):
             self.assertEqual(result_2['data']['label'], copy_flow_label_2)
 
             # 後片付け
-            os.remove(app.config['FLOW_PATH'] + '/' + data_source_name + '.json')
-            for path in Path(app.config['FLOW_PATH']).iterdir():
+            os.remove(FLOW_PATH + '/' + data_source_name + '.json')
+            for path in Path(FLOW_PATH).iterdir():
                 with open(path) as f:
                     if path.name == '.DS_Store':
                         continue
@@ -347,8 +353,7 @@ class ApiTestCase(unittest.TestCase):
             with client.session_transaction() as session:
                 session['user_id'] = user1
 
-            new_flow_name = '新しいフローです'
-            new_flow_data_source_name = str(uuid.uuid4())
+            new_flow_name = str(uuid.uuid4())
 
             # 必要最低限の項目だけを送る
             self.assertIsNotNone(project_uuid)
@@ -358,15 +363,12 @@ class ApiTestCase(unittest.TestCase):
                 'name': new_flow_name
             }
 
-            flow_path = app.config['FLOW_PATH']
-            with tempfile.TemporaryDirectory() as temp_dir:
-                app.config['FLOW_PATH'] = temp_dir
 
-                endpoint = '/api/v0/flows'
-                response = client.post(endpoint,
-                    content_type='application/json',
-                    data=json.dumps(data)
-                    )
+            endpoint = '/api/v0/flows'
+            response = client.post(endpoint,
+                content_type='application/json',
+                data=json.dumps(data)
+                )
 
             result = json.loads(response.get_data())
 
@@ -377,7 +379,16 @@ class ApiTestCase(unittest.TestCase):
             self.assertEqual(result['data']['label'], new_flow_name)
 
             # 後片付け
-            app.config['FLOW_PATH'] = flow_path
+            for flow_path in Path(FLOW_PATH).iterdir():
+                try:
+                    if not flow_path.suffix == '.json':
+                        continue
+                    data = json.loads(flow_path.read_text(encoding='utf-8'))
+                    if data['label'] == new_flow_name:
+                        flow_path.unlink()
+                        break
+                except json.JSONDecodeError as e:
+                    continue
 
     def test_fetch_flow(self):
         """
@@ -786,7 +797,7 @@ class ApiTestCase(unittest.TestCase):
         datum_id = 'test'
         frame_uuid = create_data(Path('kskp/data/library/フロー実行キャッシュ') / 'test_data.csv', data)
 
-        flow_path = Path(app.config['FLOW_PATH']) / (data_source_name + '.json')
+        flow_path = Path(FLOW_PATH) / (data_source_name + '.json')
         flow_json = json.loads(flow_path.read_text(), encoding='utf-8')
         node = {
             "id": datum_id,
@@ -815,6 +826,6 @@ class ApiTestCase(unittest.TestCase):
         # jsonのuuidが書き換わっているかどうか
         flow_json = json.loads(flow_path.read_text(), encoding='utf-8')
         self.assertIsNone(flow_json['nodes'][0]['uuid'])
-        
+
         # 後片付け
         flow_path.unlink()

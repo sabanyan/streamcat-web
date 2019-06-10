@@ -1,5 +1,7 @@
 import unittest
 import json
+import os
+import tempfile
 from pathlib import Path
 from kskp.web import app
 from kskp.store import (
@@ -12,11 +14,13 @@ class FrameApoTestCase(unittest.TestCase):
     """
     実行以外のFramesAPIのテストを行う
     """
+
     def setUp(self):
-        pass
+        self.db_fd, os.environ['SQLITE_PATH'] = tempfile.mkstemp()
 
     def tearDown(self):
-        pass
+        os.close(self.db_fd)
+        os.unlink(os.environ['SQLITE_PATH'])
 
     def test_fetch_frame(self):
         """
