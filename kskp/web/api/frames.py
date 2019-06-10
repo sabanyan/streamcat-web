@@ -158,12 +158,14 @@ def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
     """
+    from kskp.store import get_all_frame_uuid_in_frame, FLOW_PATH
+
     frame = FrameModel.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
     # 削除しようとするframeが、フローで使用されている場合は例外を送出する
-    for flow_path in Path(app.config['FLOW_PATH']).iterdir():
+    for flow_path in Path(FLOW_PATH).iterdir():
         if not flow_path.suffix == '.json':
             continue
         flow_uuid = flow_path.stem
@@ -255,11 +257,11 @@ def execute_flow_internal(flow_uuid, step_ids=[], args={}, inputs={}):
     from kskp.store import get_flow_nodes_by_uuid
 
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
-        from kskp.engine import execute
-        from kskp.engine import FlowJsonLink, FlowUuidLink
+        from kskp.engine import execute,FlowJsonLink, FlowUuidLink
+        from kskp.store import FLOW_PATH
 
         # TODO:Flowがどこにあるべきか、取得方法を正式に決めないと。。。
-        link = FlowUuidLink(Path(app.config['FLOW_PATH']), flow_uuid, step_ids)
+        link = FlowUuidLink(Path(FLOW_PATH), flow_uuid, step_ids)
         return execute(link=link, args=args, inputs=inputs)
 
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)

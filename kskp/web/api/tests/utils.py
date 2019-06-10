@@ -3,7 +3,7 @@ import uuid
 import json
 from pathlib import Path
 from kskp.web import app
-from kskp.store import model
+from kskp.store import model, FLOW_PATH
 
 def setUpClient(self):
     """
@@ -53,7 +53,7 @@ def remove_copy_flow_files(data_source_name, copy_flow_label, project_id):
     """
     テストで作成したフローのコピーファイルを削除する
     """
-    for path in Path(app.config['FLOW_PATH']).iterdir():
+    for path in Path(FLOW_PATH).iterdir():
         if not path.suffix == '.json':
             continue
         with open(path) as f:
