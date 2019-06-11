@@ -26,13 +26,13 @@ import {
   updateDataFrameDetailAction,
   updateFlowAction,
   updateStepAction,
-} from '../../modules/application'
-import FlowEditor from './FlowEditor'
+} from 'Modules/application'
+import FlowEditor from 'FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
-import { FlowModelProps } from '../../model/Flow/FlowModel'
-import NavigationModel from '../../model/Navigation/NavigationModel'
-import type { DragType } from '../../types'
+import type { FlowModelProps } from 'Model/Flow/FlowModel'
+import NavigationModel from 'Model/Navigation/NavigationModel'
+import type { DragType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 let FlowEditorContainer
