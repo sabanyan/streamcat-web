@@ -1,5 +1,5 @@
 //@flow
-import Model from '../index'
+import Model from 'Model/index'
 
 export type FlowModelProps = {
   createdAt: ?string,
