@@ -1,6 +1,6 @@
 @import "../../../../../sass/common";
 
-.job_list_header{
+.job_list_header {
   position: relative;
   display: block;
   color: $kskp-text;
@@ -10,67 +10,74 @@
 }
 
 
-.job_list{
+.job_list {
   position: relative;
   display: block;
   border-top: 1px solid $kskp-list-border-color;
-  &:first-child,&:last-child{
+
+  &:first-child, &:last-child {
     border-bottom: 1px solid $kskp-list-border-color;
   }
+
   border-radius: 0;
   color: $kskp-text;
   background: #fff;
   padding: 16px;
   padding-left: 44px;
-  &:hover{
+
+  &:hover {
     color: $kskp-text;
-    text-decoration: none!important;
+    text-decoration: none !important;
     opacity: 0.8;
   }
+
   cursor: pointer;
 }
 
-.selected{
+.selected {
   background: #fafafa;
 }
 
-.icon{
+.icon {
   color: $kskp-text;
   font-size: 18px;
   position: relative;
   top: 2px;
-  padding-right:4px;
+  padding-right: 4px;
   display: inline-block;
 }
 
-.name{
-  display: inline-block!important;
+.name {
+  display: inline-block !important;
   width: calc(100% - 20% - 200px - 200px - 120px);
   vertical-align: top;
 }
-.executed_at{
+
+.executed_at {
   display: inline-block;
   width: 200px;
   vertical-align: top;
 }
-.flow_name{
+
+.flow_name {
   display: inline-block;
   vertical-align: top;
   width: 200px;
 }
-.executor_name{
+
+.executor_name {
   display: inline-block;
   vertical-align: top;
   width: 20%;
 }
 
-.status{
+.status {
   display: inline-block;
   vertical-align: top;
   width: 120px;
 }
 
-.uuid{
+.uuid {
   color: #dadada;
   line-height: 1em;
 }

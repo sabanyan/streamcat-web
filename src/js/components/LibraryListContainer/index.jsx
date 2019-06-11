@@ -1,9 +1,7 @@
 //@flow
 import { connect } from 'react-redux'
 import * as React from 'react'
-import NavigationModel from '../../model/Navigation/NavigationModel'
-import type { DragType } from '../../types'
-import { addNotification,updateNotification,removeNotification} from 'reapop';
+import { addNotification, removeNotification, updateNotification } from 'reapop'
 import Library from './Libary'
 
 let LibraryContainer
@@ -16,21 +14,20 @@ export type LibraryProps = {
 
 export default LibraryContainer = connect(
   state => {
-    return {
-    }
+    return {}
   },
   dispatch => {
     return {
-      notify(...args){
+      notify (...args) {
         return dispatch(addNotification(...args))
       },
-      updateNotify(...args){
+      updateNotify (...args) {
         return dispatch(updateNotification(...args))
       },
-      dismissNotify(...args){
-        setTimeout(()=>{
+      dismissNotify (...args) {
+        setTimeout(() => {
           dispatch(removeNotification(...args))
-        },1000)
+        }, 1000)
       },
     }
   },

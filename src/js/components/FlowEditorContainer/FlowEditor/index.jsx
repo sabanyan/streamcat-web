@@ -16,12 +16,9 @@ import Graph from '../../../utils/Graph'
 import ZoomUtil from '../../../utils/ZoomUtil'
 import CommandModel from '../../../model/Command/CommandModel'
 import Loader from '../../shared/Loader'
-import { DragType } from '../../../types'
-import Inspector from '../../shared/Inspector'
 import type { SubFlowParamType } from '../../../types'
+import Inspector from '../../shared/Inspector'
 import SubflowCommandModel from '../../../model/Command/SubflowCommandModel'
-import SettingIcon from '../../shared/Icon/SettingIcon'
-import SettingsButton from '../../shared/SettingsButton'
 import VisualizeModel from '../../../model/Visualize/VisualizeModel'
 import NotificationManager from '../../shared/NotificationManager'
 
@@ -29,7 +26,7 @@ type State = {}
 
 export default class FlowEditor extends React.Component<FlowEditorProps, State> {
 
-  loaded:boolean = false
+  loaded: boolean = false
 
   constructor (props: FlowEditorProps) {
     super(props)
@@ -41,7 +38,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       redirect: 'follow',
     }
 
-    const graph:Graph = new Graph()
+    const graph: Graph = new Graph()
 
     let preRequest = []
     let flowRequest = []
@@ -49,7 +46,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     window.emitter.removeListener(Constants.event.ON_LOAD_NAVIGATION)
     window.emitter.addListener(Constants.event.ON_LOAD_NAVIGATION,
       (context) => {
-        preRequest.push(APIUtil.get('flows?project='+window.navigationModel.project_uuid+'&navigation=off').then((response) => {
+        preRequest.push(APIUtil.get('flows?project=' + window.navigationModel.project_uuid + '&navigation=off').then((response) => {
           const json = response.data
           // const commands = json.data.map((command)=>{
           //   return new CommandModel(command)
@@ -61,7 +58,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
     preRequest.push(APIUtil.get('commands').then((response) => {
       const json = response.data
-      const commands = json.data.map((command)=>{
+      const commands = json.data.map((command) => {
         return new CommandModel(command)
       })
       window.commands = commands
@@ -69,10 +66,9 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     }).then((response) => {},
       (error) => {console.log(error)}))
 
-
     preRequest.push(APIUtil.get('visualizers').then((response) => {
       const json = response.data
-      const visualizers = json.data.map((visualize)=>{
+      const visualizers = json.data.map((visualize) => {
         return new VisualizeModel(visualize)
       })
       window.visualizers = visualizers
@@ -80,10 +76,9 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     }).then((response) => {},
       (error) => {console.log(error)}))
 
-
     preRequest.push(APIUtil.get('subflows').then((response) => {
       const json = response.data
-      const subflows = json.data.map((subflow:SubFlowParamType)=>{
+      const subflows = json.data.map((subflow: SubFlowParamType) => {
         return new SubflowCommandModel(subflow)
       })
       window.subflows = subflows
@@ -91,19 +86,19 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     }).then((response) => {},
       (error) => {console.log(error)}))
 
-    Promise.all(preRequest).then(()=>{
+    Promise.all(preRequest).then(() => {
       flowRequest.push(APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
         const json = response.data
         this.props.loadFlowJSON(json)
       }))
-    }).catch((error)=>{
+    }).catch((error) => {
       console.log(error)
     })
 
-    Promise.all(flowRequest).then(()=>{
+    Promise.all(flowRequest).then(() => {
       this.loaded = true
       this.forceUpdate()
-    }).catch((error)=>{
+    }).catch((error) => {
       console.log(error)
     })
 
@@ -116,8 +111,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
   }
 
-  renderSteps(){
-    let {nodes,selected_step_ids} = this.props
+  renderSteps () {
+    let {nodes, selected_step_ids} = this.props
     let steps = []
     if (Array.isArray(nodes)) {
       steps = nodes.map((step) => {
@@ -129,15 +124,15 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     return steps
   }
 
-  renderEdges(){
-    let {nodes,graph} = this.props
+  renderEdges () {
+    let {nodes, graph} = this.props
     let edges = []
 
     if (Array.isArray(graph.edges)) {
-      edges = graph.edges.map((edge, index)=> {
-        const v_node = Graph.getNode(nodes,edge.v)
-        const w_node = Graph.getNode(nodes,edge.w)
-        if(v_node && w_node){
+      edges = graph.edges.map((edge, index) => {
+        const v_node = Graph.getNode(nodes, edge.v)
+        const w_node = Graph.getNode(nodes, edge.w)
+        if (v_node && w_node) {
           const vx = v_node.position.x +
             Constants.default.datasource.width / 2
           const vy = v_node.position.y +
@@ -146,7 +141,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             Constants.default.operator.width / 2
           const wy = w_node.position.y +
             Constants.default.operator.height / 2
-          const name = edge.v + "->" + edge.w
+          const name = edge.v + '->' + edge.w
           return <Edge label={name} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
         }
       })
@@ -154,14 +149,14 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     return edges
   }
 
-  renderSelector(){
+  renderSelector () {
     let selector = null
-    const {drag,zoom} = this.props
+    const {drag, zoom} = this.props
     if (Object.keys(drag).length) {
-      selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x,zoom)}
-                           sy={ZoomUtil.zoomReverse(drag.start.y,zoom)}
-                           ex={ZoomUtil.zoomReverse(drag.end.x,zoom)}
-                           ey={ZoomUtil.zoomReverse(drag.end.y,zoom)} />
+      selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x, zoom)}
+                           sy={ZoomUtil.zoomReverse(drag.start.y, zoom)}
+                           ex={ZoomUtil.zoomReverse(drag.end.x, zoom)}
+                           ey={ZoomUtil.zoomReverse(drag.end.y, zoom)} />
     }
     return selector
   }
@@ -169,21 +164,22 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   render () {
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
-      <PaperZoom />
-      {/*<SettingsButton {...this.props}/>*/}
-      <ToolBar {...this.props} />
-      <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)} message={"フローを構築中です"}/>
-      <PaperScroller {...this.props}>
-        <Paper {...this.props}>
-          {this.renderEdges()}f
-          {this.renderSteps()}
-          {this.renderSelector()}
-        </Paper>
-      </PaperScroller>
-      <Inspector {...this.props} />
-      <ModalManager />
+        <PaperZoom />
+        {/*<SettingsButton {...this.props}/>*/}
+        <ToolBar {...this.props} />
+        <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)}
+                message={'フローを構築中です'} />
+        <PaperScroller {...this.props}>
+          <Paper {...this.props}>
+            {this.renderEdges()}f
+            {this.renderSteps()}
+            {this.renderSelector()}
+          </Paper>
+        </PaperScroller>
+        <Inspector {...this.props} />
+        <ModalManager />
         <NotificationManager />
-    </div>
+      </div>
     </div>
   }
 }
