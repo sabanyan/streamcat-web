@@ -2,7 +2,7 @@
 import { connect } from 'react-redux'
 import * as React from 'react'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
-import Library from './Libary'
+import Library from 'LibraryListContainer/Libary'
 
 let LibraryContainer
 
