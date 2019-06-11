@@ -25,6 +25,7 @@ import ReactDomUtil from '../../../utils/ReactDomUtil'
 import ErrorUtil from '../../../utils/ErrorUtil'
 import type { LibraryProps } from '../index'
 import HttpUtil from '../../../utils/HttpUtil'
+import VisualizeModel from '../../../model/Visualize/VisualizeModel'
 
 type Props = {
   ...LibraryProps
@@ -43,6 +44,7 @@ type State = {
   document_name: string;
   folder_name: string;
   mode: string;
+  visualizers: [];
 }
 
 export default class Library extends React.Component<Props, State> {
@@ -51,7 +53,6 @@ export default class Library extends React.Component<Props, State> {
     super(props)
 
     const mode = HttpUtil.getURLParam("dialog")?Constants.library.mode.dialog:Constants.library.mode.list
-
     //TODO ReduxのStoreで管理する
     this.state = {
       stores: [],
@@ -67,6 +68,17 @@ export default class Library extends React.Component<Props, State> {
       folder_name: "",
       mode: mode
     }
+    
+    // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
+    APIUtil.get('visualizers').then((response) => {
+      const json = response.data
+      const visualizers = json.data.map((visualize)=>{
+        return new VisualizeModel(visualize)
+      })
+      this.setState({
+        visualizers: visualizers
+      })
+    })
   }
 
   componentDidMount () {
@@ -417,7 +429,6 @@ export default class Library extends React.Component<Props, State> {
 
   onClickLibrary (
     e: SyntheticInputEvent<EventTarget>, library: LibraryListDataType) {
-    console.log(library)
     this.setState({selected_data: library})
   }
 
@@ -512,8 +523,8 @@ export default class Library extends React.Component<Props, State> {
     return <LibraryInspector data={data}
                              onClickDelete={onClickDelete}
                              onClickApply={onClickApply}
-                             onBlurTitle={(e) => this.onBlurTitle(e,
-                               data)}/>
+                             onBlurTitle={(e) => this.onBlurTitle(e,data)}
+                             visualizers={this.state.visualizers}/>
   }
 
   onClickApply(selected_data:LibraryListDataType){
