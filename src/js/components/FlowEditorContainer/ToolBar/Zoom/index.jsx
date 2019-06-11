@@ -1,8 +1,8 @@
 //@flow
 import React from 'react'
-import ToolBarButton from '../ToolBarButton'
+import ToolBarButton from 'FlowEditorContainer/ToolBar/ToolBarButton'
 import style from './style.scss'
-import type { ZoomToolBarButtonType } from '../../../../types'
+import type { ZoomToolBarButtonType } from 'Types/index'
 
 const Zoom = (props: ZoomToolBarButtonType) => {
   const {onClickZoomIn, onClickZoomOut, onClickDefaultZoom, disabled, zoom} = props

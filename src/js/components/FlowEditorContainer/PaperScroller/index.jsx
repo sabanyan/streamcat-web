@@ -1,11 +1,11 @@
 //@flow
 import * as React from 'react'
-import type { FlowEditorProps } from '../index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import DetectUtil from '../../../utils/DetectUtil'
-import Graph from '../../../utils/Graph'
-import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
-import CommandStepModel from '../../../model/Step/CommandStepModel'
+import DetectUtil from 'Utils/DetectUtil'
+import Graph from 'Utils/Graph'
+import SubFlowStepModel from 'Model/Step/SubFlowStepModel'
+import CommandStepModel from 'Model/Step/CommandStepModel'
 
 class PaperScroller extends React.Component<FlowEditorProps, State> {
   componentDidMount () {
