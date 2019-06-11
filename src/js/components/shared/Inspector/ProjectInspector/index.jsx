@@ -1,26 +1,8 @@
 //@flow
 import React from 'react'
-import classnames from 'classnames'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import DataTable from '../../DataTable/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
 import style from '../style.scss'
 import Button from '../../Button/index'
-import DownloadButton from '../../Button/DownloadButton/index'
 import BaseInspector from '../BaseInspector'
-import type { StepModelType } from '../../../../types'
-import HttpUtil from '../../../../utils/HttpUtil'
-import Graph from '../../../../utils/Graph'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import CSVModel from '../../../../model/CSV/CSVModel'
-import StringUtil from '../../../../utils/StringUtil'
-import Inspector from '../index'
-import TabBar from '../../TabBar'
-import TabPanel from '../../TabBar/TabPanel'
-import TabList from '../../TabBar/TabList'
-import Tab from '../../TabBar/Tab'
-import InspectorKnob from '../InspectorKnob'
 import Resizer from '../Resizer'
 
 type Props = {
@@ -64,7 +46,7 @@ class ProjectInspector extends React.Component<Props> {
         <Button danger={true}
                 onClick={() => this.props.onClickDelete(uuid)}>削除する</Button>
       </div>
-      <div className={style.full_hr}/>
+      <div className={style.full_hr} />
       <div>
         <div>
           <label>プロジェクト名</label>
@@ -199,7 +181,7 @@ class ProjectInspector extends React.Component<Props> {
     </div>
 
     return <Resizer>
-      <BaseInspector key={uuid + "_" + name} label={name} {...this.props} >
+      <BaseInspector key={uuid + '_' + name} label={name} {...this.props} >
         {content}
       </BaseInspector>
     </Resizer>

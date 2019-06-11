@@ -81,8 +81,7 @@ class Resizer extends React.Component<Props, State> {
     if (e.pageX > zeroPoint) {
       //閉じる
       this.setState({willClosed: true})
-    }
-    else {
+    } else {
       //広げる
       const newWidth = window.innerWidth - e.pageX
       if (newWidth >= Constants.default.inspector.width && newWidth <=

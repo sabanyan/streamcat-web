@@ -17,13 +17,13 @@ export default class Shadow extends React.Component {
         <filter id="default-shadow" x="-50%" y="-50%" width="200%"
                 height="200%">
           <feComponentTransfer in="SourceAlpha">
-            <feFuncR type="discrete" tableValues="0.4"/>
-            <feFuncG type="discrete" tableValues="0.4"/>
-            <feFuncB type="discrete" tableValues="0.4"/>
+            <feFuncR type="discrete" tableValues="0.4" />
+            <feFuncG type="discrete" tableValues="0.4" />
+            <feFuncB type="discrete" tableValues="0.4" />
           </feComponentTransfer>
-          <feGaussianBlur stdDeviation="3"/>
-          <feOffset dx="0" dy="1" result="shadow"/>
-          <feComposite in="SourceGraphic" in2="shadow" operator="over"/>
+          <feGaussianBlur stdDeviation="3" />
+          <feOffset dx="0" dy="1" result="shadow" />
+          <feComposite in="SourceGraphic" in2="shadow" operator="over" />
         </filter>
         {/*<filter id="selected-datasource-shadow" x="-50%" y="-50%" width="200%" height="200%">*/}
         {/*<feComponentTransfer in="SourceAlpha">*/}

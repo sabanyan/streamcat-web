@@ -1,6 +1,6 @@
 @import "../../../../sass/common";
 
-.empty_state{
+.empty_state {
   position: absolute;
   top: 64px + 80px;
   left: 50%;
@@ -10,26 +10,26 @@
   width: 320px;
 }
 
-.title{
+.title {
   text-align: center;
   font-size: 16px;
   font-weight: bold;
   color: $kskp-text;
 }
 
-.description{
+.description {
   margin-top: 8px;
   text-align: center;
   font-size: 14px;
   color: $kskp-text;
 }
 
-.children{
+.children {
   margin-top: 16px;
   text-align: center;
 }
 
-.icon_container{
+.icon_container {
   margin: 0 auto;
   margin-bottom: 24px;
   box-shadow: 0 0 20px $kskp-empty-state-shadow;
@@ -39,7 +39,7 @@
   border-radius: 160px;
 }
 
-.icon{
+.icon {
   position: relative;
   left: 50%;
   top: 50%;
@@ -50,6 +50,10 @@
 }
 
 @keyframes fadeIn {
-  0% {opacity: 0}
-  100% {opacity: 1}
+  0% {
+    opacity: 0
+  }
+  100% {
+    opacity: 1
+  }
 }

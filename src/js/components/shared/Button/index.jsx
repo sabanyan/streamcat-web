@@ -22,15 +22,19 @@ export default class Button extends React.Component<Props> {
   }
 
   render () {
-    const {onClick, children, disabled, icon, danger,className, primary} = this.props
+    const {onClick, children, disabled, icon, danger, className, primary} = this.props
     const iconClass = classnames('material-icons', [style.icon])
-    const buttonClass = classnames(style.button, {[style.danger]: danger,[className]:(className),[style.primary]:primary})
+    const buttonClass = classnames(style.button, {
+      [style.danger]: danger,
+      [className]: (className),
+      [style.primary]: primary
+    })
     const materialIcon = (icon)
       ? <i className={iconClass} dangerouslySetInnerHTML={{__html: icon}}></i>
       : null
     return <button type="button" className={buttonClass} disabled={disabled} onClick={onClick}>
       {materialIcon}
-      <div className={classnames({[style.whiteText]:primary,[style.text]:!primary})}>
+      <div className={classnames({[style.whiteText]: primary, [style.text]: !primary})}>
         {children}
       </div>
     </button>

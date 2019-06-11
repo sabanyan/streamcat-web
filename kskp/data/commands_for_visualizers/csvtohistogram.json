@@ -1,7 +1,7 @@
 {
   "version": "0.7.0",
   "id": "csvtohistogram",
-  "order": 200,
+  "order": 300,
   "label": "ヒストグラム",
   "classification": "visualize",
   "description": "csvファイルからヒストグラムを作成する",
@@ -41,12 +41,6 @@
       "type": "number",
       "label": "ビンの幅",
       "default": 20
-    },
-    {
-      "name": "density",
-      "type": "boolean",
-      "label": "密度推定を行う",
-      "default": false
     },
     {
       "name": "offset",

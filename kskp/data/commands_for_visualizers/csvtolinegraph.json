@@ -1,7 +1,7 @@
 {
   "version": "0.7.0",
   "id": "csvtolinegraph",
-  "order": 500,
+  "order": 200,
   "label": "折れ線グラフ（時系列データ用）",
   "classification": "visualize",
   "description": "csvファイルから折れ線グラフを作成する",
@@ -26,7 +26,7 @@
       "options":{
         "multiple": true
       },
-      "label": "時系列データの列を指定する。時系列データがなければ入力しない"
+      "label": "時系列データの列を指定する。"
     },
     {
       "name": "x_axis_column",

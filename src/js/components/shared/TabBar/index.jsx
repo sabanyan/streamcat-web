@@ -34,7 +34,7 @@ export default class TabBar extends React.Component {
     /**
      * 自動的に子要素に対して tab_id や key を追加する処理
      */
-    if(Array.isArray(this.props.children)){
+    if (Array.isArray(this.props.children)) {
       children = this.props.children.map((element) => {
         if (element.type === TabPanel) {
           return React.cloneElement(
@@ -44,10 +44,10 @@ export default class TabBar extends React.Component {
         }
         return element
       })
-    }else{
+    } else {
       children = this.props.children
     }
-    return <div className={classnames(style.tabbar,{[this.props.className]:(this.props.className)})}>
+    return <div className={classnames(style.tabbar, {[this.props.className]: (this.props.className)})}>
       {children}
     </div>
   }

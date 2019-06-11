@@ -1,6 +1,6 @@
 @import "../../../../sass/common";
 
-.property_title{
+.property_title {
   color: $kskp-text;
   font-size: 16px;
   padding: 12px 0;
@@ -9,28 +9,30 @@
 }
 
 
-.command_selector_container{
+.command_selector_container {
   height: 480px;
   overflow: scroll;
-  border:1px solid #ccc;
+  border: 1px solid #ccc;
 }
 
-.command_separator{
+.command_separator {
   background-color: $kskp-property-command-separator-background-color;
   color: $kskp-property-command-separator-color;
   border-top: 1px solid $kskp-property-command-separator-background-color;
   margin-left: -8px;
   padding: 2px 12px+12px;
   font-size: 14px;
-  &:first-child{
+
+  &:first-child {
     margin-top: 0;
   }
-  &:last-child{
+
+  &:last-child {
     margin-bottom: 0;
   }
 }
 
-.command_not_found{
+.command_not_found {
   padding-top: 8px;
   color: $kskp-text;
   font-size: 14px;

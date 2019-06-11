@@ -22,54 +22,54 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
   //   });
   // }
   //
-  pasteSteps(){
-     navigator.clipboard.readText().then((data)=>{
-       this.props.pasteSteps(data)
-     }, (err)=> {
-       alert("クリップボードが利用できません")
-     });
+  pasteSteps () {
+    navigator.clipboard.readText().then((data) => {
+      this.props.pasteSteps(data)
+    }, (err) => {
+      alert('クリップボードが利用できません')
+    })
   }
 
-   getCopyNodes():string{
-     const {selected_step_ids,nodes} = this.props
-     return JSON.stringify(selected_step_ids.map((id)=>{
-       return Graph.getNode(nodes,id)
-     }))
-   }
+  getCopyNodes (): string {
+    const {selected_step_ids, nodes} = this.props
+    return JSON.stringify(selected_step_ids.map((id) => {
+      return Graph.getNode(nodes, id)
+    }))
+  }
 
   /**
    * コピー可能なステップの判断（コマンド or サブフロー を1つのみ）
    * @returns {boolean}
    */
-   copyableStep(){
-     const {selected_step_ids} = this.props
+  copyableStep () {
+    const {selected_step_ids} = this.props
 
-     if(selected_step_ids.length !== 1)return false
+    if (selected_step_ids.length !== 1) return false
 
-     const targetNode =  Graph.getNode(nodes,selected_step_ids[0])
+    const targetNode = Graph.getNode(nodes, selected_step_ids[0])
 
-     if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
-       return true
-     }
+    if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
+      return true
+    }
     return false
   }
 
-   copySteps(){
-     if(!this.copyableStep()){
-       navigator.clipboard.writeText("")
-       return
-     }
+  copySteps () {
+    if (!this.copyableStep()) {
+      navigator.clipboard.writeText('')
+      return
+    }
 
-     const {selected_step_ids} = this.props
-     const copyData = this.getCopyNodes()
-     navigator.clipboard.writeText(copyData).then(()=> {
-       this.props.copySteps(selected_step_ids)
-     }, (err)=> {
-       alert("クリップボードが利用できません")
-     });
-   }
+    const {selected_step_ids} = this.props
+    const copyData = this.getCopyNodes()
+    navigator.clipboard.writeText(copyData).then(() => {
+      this.props.copySteps(selected_step_ids)
+    }, (err) => {
+      alert('クリップボードが利用できません')
+    })
+  }
 
-  deleteSteps(){
+  deleteSteps () {
     const {selected_step_ids} = this.props
     this.props.deleteSteps(selected_step_ids)
   }
@@ -91,15 +91,14 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
         return
       }
       if (e.metaKey && e.shiftKey && e.key === 'z') {
-        if(!redoDisabled)this.props.redo()
+        if (!redoDisabled) this.props.redo()
         return
       }
       if (e.metaKey && e.key === 'z') {
-        if(!undoDisabled)this.props.undo()
+        if (!undoDisabled) this.props.undo()
         return
       }
-    }
-    else {
+    } else {
       if (e.ctrlKey && e.key === 'c') {
         this.copySteps()
         return
@@ -109,11 +108,11 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
         return
       }
       if (e.ctrlKey && e.shiftKey && e.key === 'z') {
-        if(!redoDisabled)this.props.redo()
+        if (!redoDisabled) this.props.redo()
         return
       }
       if (e.ctrlKey && e.key === 'z') {
-        if(!undoDisabled)this.props.undo()
+        if (!undoDisabled) this.props.undo()
         return
       }
     }
