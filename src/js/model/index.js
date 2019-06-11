@@ -5,5 +5,4 @@ export default class Model {
       if (props[key]) this[key] = props[key]
     }
   }
-
 }
