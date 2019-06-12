@@ -1,9 +1,9 @@
 //@flow
 import * as React from 'react'
-import Constants from '../../../constants/index'
-import StandardModal from './Standard'
-import PreviewModal from './Preview'
-import Button from '../Button'
+import Constants from 'Constants/index'
+import StandardModal from 'Shared/Modal/Standard'
+import PreviewModal from 'Shared/Modal/Preview'
+import Button from 'Shared/Button'
 
 type Props = {
   id: string,

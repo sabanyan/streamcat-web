@@ -1,11 +1,11 @@
 import React from 'react'
-import type { NoteDetailType } from '../../../../types/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
+import type { NoteDetailType } from 'Types/index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import BaseInspector from '../BaseInspector/index'
-import Graph from '../../../../utils/Graph'
-import Button from '../../Button/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import Constants from '../../../../constants/index'
+import Graph from 'Utils/Graph'
+import Button from 'Shared/Button/index'
+import ModalUtil from 'Utils/ModalUtil'
+import Constants from 'Constants/index'
 import style from '../style.scss'
 
 type State = {

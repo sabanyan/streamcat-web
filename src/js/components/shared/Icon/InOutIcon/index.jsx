@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
-import type { IconProps } from '../index'
-import Constants from '../../../../constants'
+import type { IconProps } from 'Shared/Icon'
+import Constants from 'Constants/index'
 
 type InOutIconProps = {
   ...IconProps,

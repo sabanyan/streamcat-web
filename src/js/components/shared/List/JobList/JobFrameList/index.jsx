@@ -2,12 +2,12 @@
 import * as React from 'react'
 import classnames from 'classnames'
 import style from '../style.scss'
-import Constants from '../../../../../constants'
-import ModalUtil from '../../../../../utils/ModalUtil'
-import SortUtil from '../../../../../utils/SortUtil'
+import Constants from 'Constants/index'
+import ModalUtil from 'Utils/ModalUtil'
+import SortUtil from 'Utils/SortUtil'
 import moment from 'moment'
-import APIUtil from '../../../../../utils/APIUtil'
-import Visualizer from '../../../Visualizer'
+import APIUtil from 'Utils/APIUtil'
+import Visualizer from 'Shared/Visualizer'
 
 type JobFrameProps = {
   type: string;

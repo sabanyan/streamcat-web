@@ -1,20 +1,18 @@
 //@flow
 import * as React from 'react'
 import style from '../../style.scss'
-import DropDownList from '../../../DropDownList/index'
-import CommandStepModel from '../../../../../model/Step/CommandStepModel'
-import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
-import CommandModel from '../../../../../model/Command/CommandModel'
-import FlowUtil from '../../../../../utils/FlowUtil'
-import type { CommandPortType, StepModelType, SubFlowParamType } from '../../../../../types/index'
-import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
-import StateUtil from '../../../../../utils/State'
-import FlowModel from '../../../../../model/Flow/FlowModel'
-import Button from '../../../Button'
-import ModalUtil from '../../../../../utils/ModalUtil'
-import Constants from '../../../../../constants'
-import AddButton from '../../../AddButton'
-import {SortableContainer, SortableElement} from 'react-sortable-hoc';
+import DropDownList from 'Shared/DropDownList/index'
+import CommandStepModel from 'Model/Step/CommandStepModel'
+import SubFlowStepModel from 'Model/Step/SubFlowStepModel'
+import CommandModel from 'Model/Command/CommandModel'
+import FlowUtil from 'Utils/FlowUtil'
+import type { StepModelType } from 'Types/index'
+import DataFrameStepModel from 'Model/Step/DataFrameStepModel'
+import StateUtil from 'Utils/State'
+import ModalUtil from 'Utils/ModalUtil'
+import Constants from 'Constants/index'
+import AddButton from 'Shared/AddButton'
+import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 
 class InOutConnector extends React.Component{
 

@@ -1,11 +1,11 @@
 //@flow
 import React from 'react'
-import Constants from '../../../../constants/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
+import Constants from 'Constants/index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import inspectorStyle from '../style.scss'
-import style from '../../DataPreview/style.scss'
-import DownloadButton from '../../Button/DownloadButton/index'
-import BaseInspector from '../BaseInspector'
+import style from 'Shared/DataPreview/style.scss'
+import DownloadButton from 'Shared/Button/DownloadButton/index'
+import BaseInspector from 'Shared/Inspector/BaseInspector'
 
 type Props = {
   ...FlowEditorProps,

@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import Icon from '../index'
+import Icon from 'Shared/Icon'
 
 class FileIcon extends React.Component {
   render () {

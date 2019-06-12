@@ -1,8 +1,8 @@
 //@flow
 import React from 'react'
 import Icon from '../index'
-import Rect from '../../Step/Rect'
-import * as Step from '../../Step'
+import Rect from 'Shared/Step/Rect'
+import * as Step from 'Shared/Step'
 
 class SubFlowIcon extends React.Component {
   render () {

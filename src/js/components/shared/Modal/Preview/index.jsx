@@ -1,10 +1,10 @@
 //@flow
 import * as React from 'react'
 import classnames from 'classnames'
-import TabBar from '../../TabBar'
-import TabList from '../../TabBar/TabList'
-import Tab from '../../TabBar/Tab'
-import TabPanel from '../../TabBar/TabPanel'
+import TabBar from 'Shared/TabBar'
+import TabList from 'Shared/TabBar/TabList'
+import Tab from 'Shared/TabBar/Tab'
+import TabPanel from 'Shared/TabBar/TabPanel'
 import style from '../style.scss'
 
 type Props = {

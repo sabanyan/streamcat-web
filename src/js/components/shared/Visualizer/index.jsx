@@ -1,10 +1,10 @@
 //@flow
 import * as React from 'react'
-import VisualizeModel from '../../../model/Visualize/VisualizeModel'
-import HttpUtil from '../../../utils/HttpUtil'
-import EmptyState from '../EmptyState'
-import Loader from '../Loader'
-import PreviewInspector from '../Inspector/PreviewInspector'
+import VisualizeModel from 'Model/Visualize/VisualizeModel'
+import HttpUtil from 'Utils/HttpUtil'
+import EmptyState from 'Shared/EmptyState'
+import Loader from 'Shared/Loader'
+import PreviewInspector from 'Shared/Inspector/PreviewInspector'
 import style from './style.scss'
 
 type Props = {

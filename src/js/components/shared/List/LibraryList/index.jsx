@@ -2,8 +2,8 @@
 import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
-import { LibraryListDataType } from '../../../../types'
-import Constants from '../../../../constants'
+import { LibraryListDataType } from 'Types/index'
+import Constants from 'Constants/index'
 import moment from 'moment/moment'
 
 type Props = {

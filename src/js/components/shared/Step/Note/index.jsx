@@ -1,7 +1,7 @@
 import * as React from 'react'
-import Constants from '../../../../constants'
-import { StepModelType } from '../../../../types/index'
-import StringUtil from '../../../../utils/StringUtil'
+import Constants from 'Constants'
+import { StepModelType } from 'Types/index'
+import StringUtil from 'Utils/StringUtil'
 
 type Props = {
   hover: boolean,

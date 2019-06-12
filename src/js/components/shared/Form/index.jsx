@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import Constants from '../../../constants'
+import Constants from 'Constants/index'
 //import classnames from 'classnames'
 //import style from './style.scss'
 

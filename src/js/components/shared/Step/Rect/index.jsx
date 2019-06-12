@@ -1,7 +1,6 @@
 //@flow
 import * as React from 'react'
-import { render } from 'react-dom'
-import Constants from '../../../../constants'
+import Constants from 'Constants'
 
 type Props = {
   selectedOutlineColor: string,

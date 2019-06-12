@@ -1,12 +1,12 @@
 //@flow
 import React from 'react'
 import style from '../style.scss'
-import DownloadButton from '../../Button/DownloadButton/index'
-import BaseInspector from '../BaseInspector'
-import HttpUtil from '../../../../utils/HttpUtil'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import CSVModel from '../../../../model/CSV/CSVModel'
-import StringUtil from '../../../../utils/StringUtil'
+import DownloadButton from 'Shared/Button/DownloadButton/index'
+import BaseInspector from 'Shared/Inspector/BaseInspector'
+import HttpUtil from 'Utils/HttpUtil'
+import type { CSVModelProps } from 'Model/CSV/CSVModel'
+import CSVModel from 'Model/CSV/CSVModel'
+import StringUtil from 'Utils/StringUtil'
 
 type Props = {
   uuid: string,

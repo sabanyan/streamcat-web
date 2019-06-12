@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
-import ParamUtil from '../../../utils/ParamUtil'
-import CommandModel from '../../../model/Command/CommandModel'
+import ParamUtil from 'Utils/ParamUtil'
+import CommandModel from 'Model/Command/CommandModel'
 import type { CommandParamType } from '../../../types'
 import classnames from 'classnames'
 import style from './style.scss'

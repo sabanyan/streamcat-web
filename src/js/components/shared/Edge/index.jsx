@@ -1,8 +1,8 @@
 //@flow
 import React from 'react'
 import style from './style.scss'
-import Arrow from './Arrow'
-import Constants from '../../../constants'
+import Arrow from 'Shared/Edge/Arrow'
+import Constants from 'Constants/index'
 
 type EdgeProps = {
   label: string;

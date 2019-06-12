@@ -1,15 +1,15 @@
 //@flow
 import React from 'react'
-import BaseInspector from '../BaseInspector/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import Button from '../../Button/index'
-import CommandSelector from '../../CommandSelector/index'
-import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
-import CommandStepModel from '../../../../model/Step/CommandStepModel'
-import Graph from '../../../../utils/Graph'
-import ModalUtil from '../../../../utils/ModalUtil'
-import Constants from '../../../../constants/index'
-import SubFlowStepModel from '../../../../model/Step/SubFlowStepModel'
+import BaseInspector from 'Shared/Inspector/BaseInspector/index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import Button from 'Shared/Button/index'
+import CommandSelector from 'Shared/CommandSelector/index'
+import DataFrameStepModel from 'Model/Step/DataFrameStepModel'
+import CommandStepModel from 'Model/Step/CommandStepModel'
+import Graph from 'Utils/Graph'
+import ModalUtil from 'Utils/ModalUtil'
+import Constants from 'Constants/index'
+import SubFlowStepModel from 'Model/Step/SubFlowStepModel'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
   onClickDelete (e: Event) {
