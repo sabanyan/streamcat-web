@@ -1,9 +1,9 @@
 //@flow
 import React from 'react'
-import Icon from '../index'
-import Rect from '../../Step/Rect'
-import * as Step from '../../Step'
-import CommandModel from '../../../../model/Command/CommandModel'
+import Icon from 'Shared/Icon'
+import Rect from 'Shared/Step/Rect'
+import * as Step from 'Shared/Step'
+import CommandModel from 'Model/Command/CommandModel'
 
 type Props = {
   command: CommandModel;

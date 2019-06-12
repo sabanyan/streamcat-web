@@ -1,8 +1,8 @@
 //@flow
 import React from 'react'
-import type { NavigationModelProps } from '../../../model/Navigation/NavigationModel'
-import WebUtil from '../../../utils/WebUtil'
-import HttpUtil from '../../../utils/HttpUtil'
+import type { NavigationModelProps } from 'Model/Navigation/NavigationModel'
+import WebUtil from 'Utils/WebUtil'
+import HttpUtil from 'Utils/HttpUtil'
 
 type Props = {
   baseUrl: string,

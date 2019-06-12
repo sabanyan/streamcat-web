@@ -1,7 +1,7 @@
 //@flow
 import * as React from 'react'
 import style from './style.scss'
-import type { BreadCrumbHistoryType } from '../../../types'
+import type { BreadCrumbHistoryType } from 'Types/index'
 
 type Props = {
   history?: [BreadCrumbHistoryType]

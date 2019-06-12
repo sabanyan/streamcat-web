@@ -1,6 +1,5 @@
 //@flow
 import React from 'react'
-import { render } from 'react-dom'
 
 export default class Shadow extends React.Component {
   constructor (props) {

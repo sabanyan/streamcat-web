@@ -2,11 +2,11 @@
 import React from 'react'
 //import classnames from 'classnames'
 import style from './style.scss'
-import Command from '../Command/index'
-import type { FlowEditorProps } from '../../FlowEditorContainer/index'
-import TextField from '../TextField/index'
-import Constants from '../../../constants/index'
-import type { CommandModelType } from '../../../types'
+import Command from 'Shared/Command/index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import TextField from 'Shared/TextField/index'
+import Constants from 'Constants/index'
+import type { CommandModelType } from 'Types/index'
 
 type CommandSelectorProps = {
   ...FlowEditorProps,

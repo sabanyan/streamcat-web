@@ -2,7 +2,7 @@
 import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
-import Constants from '../../../constants'
+import Constants from 'Constants/index'
 
 type Props = {
   placeholder?: string;

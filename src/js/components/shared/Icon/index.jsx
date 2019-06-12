@@ -1,6 +1,6 @@
 //@flow
 import * as React from 'react'
-import Constants from '../../../constants'
+import Constants from 'Constants/index'
 import style from './style.scss'
 
 export type IconProps = {
