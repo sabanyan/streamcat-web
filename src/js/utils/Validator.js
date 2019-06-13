@@ -1,19 +1,19 @@
 //@flow
 import Ajv from 'ajv/lib/ajv'
-import FlowModelSchema from '../schema/flow/FlowModelSchema.json'
-import GraphModelSchema from '../schema/graph/GraphModelSchema.json'
-import CommandStepModelSchema from '../schema/steps/CommandStepModelSchema.json'
-import DataFrameStepModelSchema from '../schema/steps/DataFrameStepModelSchema.json'
-import SubFlowCommandModeSchema from '../schema/steps/SubFlowStepModelSchema.json'
-import NoteStepModelSchema from '../schema/steps/NoteStepModelSchema.json'
+import FlowModelSchema from 'Schema/flow/FlowModelSchema.json'
+import GraphModelSchema from 'Schema/graph/GraphModelSchema.json'
+import CommandStepModelSchema from 'Schema/steps/CommandStepModelSchema.json'
+import DataFrameStepModelSchema from 'Schema/steps/DataFrameStepModelSchema.json'
+import SubFlowCommandModeSchema from 'Schema/steps/SubFlowStepModelSchema.json'
+import NoteStepModelSchema from 'Schema/steps/NoteStepModelSchema.json'
 
 import Log from './Log'
-import DataFrameStepModel from '../model/Step/DataFrameStepModel'
-import SubFlowStepModel from '../model/Step/SubFlowStepModel'
-import CommandStepModel from '../model/Step/CommandStepModel'
+import DataFrameStepModel from 'Model/Step/DataFrameStepModel'
+import SubFlowStepModel from 'Model/Step/SubFlowStepModel'
+import CommandStepModel from 'Model/Step/CommandStepModel'
 import ValidateJS from 'validate.js'
-import CommandUtil from './CommandUtil'
-import NoteStepModel from '../model/Step/NoteStepModel.js'
+import CommandUtil from 'Utils/CommandUtil'
+import NoteStepModel from 'Model/Step/NoteStepModel.js'
 
 class Validator {
   ajv: Ajv
