@@ -3,11 +3,10 @@ import React from 'react'
 import BaseInspector from 'Shared/Inspector/BaseInspector/index'
 import style from '../style.scss'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
-import Button from 'Shared/Button/index'
+import { AddButton, Button } from 'Shared/Input'
 import ModalUtil from 'Utils/ModalUtil'
 import Constants from 'Constants/index'
 import type { SubFlowParamType } from 'Types/index'
-import AddButton from 'Shared/AddButton'
 import CommandSelector from 'Shared/CommandSelector'
 
 class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {

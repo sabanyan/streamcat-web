@@ -2,7 +2,7 @@
 import React from 'react'
 //import classnames from 'classnames'
 import style from './style.scss'
-import Button from 'Shared/Button'
+import { Button } from 'Shared/Input'
 
 type Props = {
   onChangeFile?: Function;

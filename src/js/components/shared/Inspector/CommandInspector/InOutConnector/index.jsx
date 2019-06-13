@@ -9,7 +9,7 @@ import type { StepModelType } from 'Types/index'
 import StateUtil from 'Utils/State'
 import ModalUtil from 'Utils/ModalUtil'
 import Constants from 'Constants/index'
-import AddButton from 'Shared/AddButton'
+import { AddButton } from 'Shared/Input'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 
 class InOutConnector extends React.Component{

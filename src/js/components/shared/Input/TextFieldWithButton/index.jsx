@@ -1,8 +1,7 @@
 //@flow
 import * as React from 'react'
 import style from './style.scss'
-import Button from 'Shared/Button'
-import TextField from 'Shared/TextField'
+import { Button, TextField } from 'Shared/Input'
 
 type Props = {
   placeholder?: string;

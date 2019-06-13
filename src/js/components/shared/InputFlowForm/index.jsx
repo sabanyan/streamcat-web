@@ -1,5 +1,5 @@
 import React from 'react'
-import AddButton from 'Shared/AddButton'
+import { AddButton } from 'Shared/Input'
 import HttpUtil from 'Utils/HttpUtil'
 import style from './style.scss'
 

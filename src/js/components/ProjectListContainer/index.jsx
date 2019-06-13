@@ -8,11 +8,11 @@ import ProjectList from 'Shared/List/ProjectList'
 import ProjectListHeader from 'Shared/List/ProjectList/ProjectListHeader'
 import Loader from 'Shared/Loader'
 import EmptyState from 'Shared/EmptyState'
-import Button from 'Shared/Button'
+import { Button, TextField } from 'Shared/Input'
 import ModalManager from 'Shared/ModalManager'
 import Constants from 'Constants/index'
 import ModalUtil from 'Utils/ModalUtil'
-import TextField from 'Shared/TextField'
+
 import ProjectInspector from 'Shared/Inspector/ProjectInspector'
 
 /**

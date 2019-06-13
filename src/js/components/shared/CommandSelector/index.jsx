@@ -4,9 +4,9 @@ import React from 'react'
 import style from './style.scss'
 import Command from 'Shared/Command/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
-import TextField from 'Shared/TextField/index'
 import Constants from 'Constants/index'
 import type { CommandModelType } from 'Types/index'
+import { TextField } from 'Shared/Input'
 
 type CommandSelectorProps = {
   ...FlowEditorProps,
