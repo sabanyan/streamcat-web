@@ -2,7 +2,7 @@
 import React from 'react'
 import style from './style.scss'
 import HttpUtil from 'Utils/HttpUtil'
-import ModalManager from 'Shared/ModalManager'
+import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
 import Loader from 'Shared/Loader'
 import { Button, TextField } from 'Shared/Input'

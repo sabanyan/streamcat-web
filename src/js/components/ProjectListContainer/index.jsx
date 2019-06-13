@@ -9,7 +9,7 @@ import ProjectListHeader from 'Shared/List/ProjectList/ProjectListHeader'
 import Loader from 'Shared/Loader'
 import EmptyState from 'Shared/EmptyState'
 import { Button, TextField } from 'Shared/Input'
-import ModalManager from 'Shared/ModalManager'
+import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
 import ModalUtil from 'Utils/ModalUtil'
 
