@@ -2,7 +2,7 @@
 import * as React from 'react'
 import style from '../style.scss'
 import classnames from 'classnames'
-import InspectorKnob from 'Shared/Inspector/InspectorKnob'
+import { InspectorKnob } from 'Shared/Inspector'
 import Constants from 'Constants/index'
 
 let mouseMoveEvent

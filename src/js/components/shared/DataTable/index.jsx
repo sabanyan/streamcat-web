@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
 import style from './style.scss'
-import DataTableInspector from 'Shared/Inspector/DataTableInspector'
+import { DataTableInspector } from 'Shared/Inspector'
 
 type Props = {
   json: {

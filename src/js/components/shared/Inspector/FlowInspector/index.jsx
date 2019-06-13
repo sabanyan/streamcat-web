@@ -4,13 +4,11 @@ import Constants from 'Constants/index'
 import ModalUtil from 'Utils/ModalUtil'
 import style from '../style.scss'
 import { Button } from 'Shared/Input'
-import BaseInspector from 'Shared/Inspector/BaseInspector'
+import { BaseInspector, InputFlowForm, Resizer } from 'Shared/Inspector'
 import type { FlowListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import ReactDomUtil from 'Utils/ReactDomUtil'
-import InputFlowForm from 'Shared/InputFlowForm'
 import FlowUtil from 'Utils/FlowUtil'
-import Resizer from 'Shared/Inspector/Resizer'
 
 type Props = {
   project: {};

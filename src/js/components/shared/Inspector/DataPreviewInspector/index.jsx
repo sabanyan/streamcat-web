@@ -5,7 +5,7 @@ import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import inspectorStyle from '../style.scss'
 import style from 'Shared/DataPreview/style.scss'
 import { DownloadButton } from 'Shared/Input'
-import BaseInspector from 'Shared/Inspector/BaseInspector'
+import { BaseInspector } from 'Shared/Inspector'
 
 type Props = {
   ...FlowEditorProps,

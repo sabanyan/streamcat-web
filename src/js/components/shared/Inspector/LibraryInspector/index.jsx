@@ -2,12 +2,11 @@
 import React from 'react'
 import classnames from 'classnames'
 import style from '../style.scss'
-import BaseInspector from 'Shared/Inspector/BaseInspector'
+import { BaseInspector, Resizer } from 'Shared/Inspector'
 import type { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
 import { Button } from 'Shared/Input'
-import Resizer from 'Shared/Inspector/Resizer'
 
 type Props = {
   data?: LibraryListDataType;

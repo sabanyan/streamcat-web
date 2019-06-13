@@ -15,7 +15,7 @@ import EmptyState from 'Shared/EmptyState'
 import { Button, TextField } from 'Shared/Input'
 import FileUploader from 'Shared/FileUploader'
 import type { FlowListDataType } from 'Types/index'
-import FlowInspector from 'Shared/Inspector/FlowInspector'
+import { FlowInspector } from 'Shared/Inspector'
 import NotificationManager from 'Shared/NotificationManager'
 
 type State = {

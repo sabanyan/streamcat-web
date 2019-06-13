@@ -13,7 +13,7 @@ import ModalManager from 'Shared/ModalManager'
 import Constants from 'Constants/index'
 import ModalUtil from 'Utils/ModalUtil'
 
-import ProjectInspector from 'Shared/Inspector/ProjectInspector'
+import { ProjectInspector } from 'Shared/Inspector'
 
 /**
  * ======================================================

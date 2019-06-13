@@ -4,7 +4,7 @@ import { VisualizeModel } from 'Model/index'
 import HttpUtil from 'Utils/HttpUtil'
 import EmptyState from 'Shared/EmptyState'
 import Loader from 'Shared/Loader'
-import PreviewInspector from 'Shared/Inspector/PreviewInspector'
+import { PreviewInspector } from 'Shared/Inspector'
 import style from './style.scss'
 
 type Props = {
