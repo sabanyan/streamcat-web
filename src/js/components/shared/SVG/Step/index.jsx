@@ -1,19 +1,13 @@
 //@flow
 import React from 'react'
 import Constants from 'Constants/index'
-import FileIcon from 'Shared/Icon/FileIcon'
+import { CommandIcon, ErrorIcon, InOutIcon, Note, Rect, SubFlowIcon } from 'Shared/SVG'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
-import Rect from 'Shared/Step/Rect'
-import SubFlowIcon from 'Shared/Icon/SubFlowIcon'
 import style from './style.scss'
 import ZoomUtil from 'Utils/ZoomUtil'
-import InOutIcon from 'Shared/Icon/InOutIcon'
 import type { StepModelType } from 'Types/index'
-import CommandIcon from 'Shared/Icon/CommandIcon'
 import APIUtil from 'Utils/APIUtil'
-import ErrorIcon from 'Shared/Icon/ErrorIcon'
-import Note from 'Shared/Step/Note'
 
 let mouseMoveEvent
 let mouseUpEvent

@@ -6,11 +6,10 @@ import style from './style.scss'
 import classnames from 'classnames'
 import type { CommandStepModelProps } from 'Model/Step/CommandStepModel'
 import CommandModel from 'Model/Command/CommandModel'
-import CommandIcon from 'Shared/Icon/CommandIcon'
+import { CommandIcon, SubFlowIcon } from 'Shared/SVG'
 import type { CommandModelType, CommandParamType, CommandPortType } from 'Types/index'
 import WebUtil from 'Utils/WebUtil'
 import ParamUtil from 'Utils/ParamUtil'
-import SubFlowIcon from 'Shared/Icon/SubFlowIcon'
 
 type Props = {
   command: CommandModelType;

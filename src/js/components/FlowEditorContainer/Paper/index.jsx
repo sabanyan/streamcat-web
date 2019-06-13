@@ -1,6 +1,6 @@
 //@flow
 import * as React from 'react'
-import Index from 'Shared/Shadow'
+import Index from 'Shared/SVG/Shadow'
 import Constants from 'Constants/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'

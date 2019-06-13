@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import SettingIcon from 'Shared/Icon/SettingIcon'
+import { SettingIcon } from 'Shared/SVG'
 //import classnames from 'classnames'
 import style from './style.scss'
 
