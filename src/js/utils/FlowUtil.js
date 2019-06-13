@@ -1,14 +1,14 @@
 //@flow
-import Constants from '../constants'
-import type { CommandParamType, StepModelType, SubFlowParamType } from '../types'
-import SubFlowStepModel from '../model/Step/SubFlowStepModel'
-import type { DataFrameStepModelProps } from '../model/Step/DataFrameStepModel'
-import DataFrameStepModel from '../model/Step/DataFrameStepModel'
-import APIUtil from './APIUtil'
-import CommandStepModel from '../model/Step/CommandStepModel'
-import Validator from './Validator'
-import ReactDomUtil from './ReactDomUtil'
-import ErrorUtil from './ErrorUtil'
+import Constants from 'Constants/index'
+import type { CommandParamType, StepModelType, SubFlowParamType } from 'Types/index'
+import SubFlowStepModel from 'Model/Step/SubFlowStepModel'
+import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
+import DataFrameStepModel from 'Model/Step/DataFrameStepModel'
+import APIUtil from 'Utils/APIUtil'
+import CommandStepModel from 'Model/Step/CommandStepModel'
+import Validator from 'Utils/Validator'
+import ReactDomUtil from 'Utils/ReactDomUtil'
+import ErrorUtil from 'Utils/ErrorUtil'
 
 export default class FlowUtil {
 

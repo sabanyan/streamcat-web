@@ -1,9 +1,9 @@
 //@flow
-import CommandStepModel from '../model/Step/CommandStepModel'
-import SubFlowStepModel from '../model/Step/SubFlowStepModel'
-import DataFrameStepModel from '../model/Step/DataFrameStepModel'
+import CommandStepModel from 'Model/Step/CommandStepModel'
+import SubFlowStepModel from 'Model/Step/SubFlowStepModel'
+import DataFrameStepModel from 'Model/Step/DataFrameStepModel'
 import * as React from 'react'
-import CommandModel from '../model/Command/CommandModel'
+import CommandModel from 'Model/Command/CommandModel'
 
 export type StepModelType = CommandStepModel | SubFlowStepModel | DataFrameStepModel | NoteStepModel
 export type CommandParamType = {

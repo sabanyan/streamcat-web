@@ -1,5 +1,5 @@
 //@flow
-import StateUtil from '../utils/State'
+import StateUtil from 'Utils/State'
 
 let initialState = {}
 
