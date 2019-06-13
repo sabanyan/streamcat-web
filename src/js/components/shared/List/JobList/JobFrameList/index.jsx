@@ -7,7 +7,7 @@ import ModalUtil from 'Utils/ModalUtil'
 import SortUtil from 'Utils/SortUtil'
 import moment from 'moment'
 import APIUtil from 'Utils/APIUtil'
-import Visualizer from 'Shared/Visualizer'
+import { Visualizer } from 'Shared/Visualizer'
 
 type JobFrameProps = {
   type: string;
