@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import Icon from 'Shared/Icon'
+import Icon from 'Shared/SVG/Icon'
 
 class OperatorIcon extends React.Component {
   render () {

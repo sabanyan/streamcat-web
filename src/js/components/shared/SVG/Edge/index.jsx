@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
 import style from './style.scss'
-import Arrow from 'Shared/Edge/Arrow'
+import { Arrow } from 'Shared/SVG'
 import Constants from 'Constants/index'
 
 type EdgeProps = {
