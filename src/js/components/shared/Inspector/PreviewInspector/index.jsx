@@ -1,12 +1,11 @@
 //@flow
 import * as React from 'react'
-import BaseInspector from 'Shared/Inspector/BaseInspector/index'
+import { BaseInspector, ParamsForm } from 'Shared/Inspector'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
 import { Button } from 'Shared/Input'
 import FlowModel from 'Model/Flow/FlowModel'
 import ParamUtil from 'Utils/ParamUtil'
-import ParamsForm from 'Shared/ParamsForm'
 import classnames from 'classnames'
 
 type PreviewInspectorProps = {

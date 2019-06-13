@@ -1,11 +1,10 @@
 //@flow
 import * as React from 'react'
-import BaseInspector from 'Shared/Inspector/BaseInspector/index'
+import { BaseInspector, InOutConnector, ParamsForm } from 'Shared/Inspector'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from '../style.scss'
 import { Button } from 'Shared/Input'
 import { CommandStepModel, SubflowCommandModel } from 'Model/index'
-import { InOutConnector } from 'Shared/Inspector'
 import Constants from 'Constants/index'
 import Graph from 'Utils/Graph'
 import type { CommandParamType, StepModelType } from 'Types/index'
@@ -16,7 +15,6 @@ import Loader from 'Shared/Loader/index'
 import ModalUtil from 'Utils/ModalUtil'
 import ParamUtil from 'Utils/ParamUtil'
 import StateUtil from 'Utils/State'
-import ParamsForm from 'Shared/ParamsForm'
 
 type CommandInspectorProps = {
   ...FlowEditorProps,

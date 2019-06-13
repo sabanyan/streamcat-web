@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import BaseInspector from 'Shared/Inspector/BaseInspector/index'
+import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { AddButton, Button } from 'Shared/Input'

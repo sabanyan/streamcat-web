@@ -1,7 +1,7 @@
 import React from 'react'
 import type { NoteDetailType } from 'Types/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
-import BaseInspector from '../BaseInspector/index'
+import { BaseInspector } from 'Shared/Inspector'
 import Graph from 'Utils/Graph'
 import { Button } from 'Shared/Input'
 import ModalUtil from 'Utils/ModalUtil'
