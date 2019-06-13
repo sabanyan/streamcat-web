@@ -1,6 +1,6 @@
 //@flow
 import * as React from 'react'
-import VisualizeModel from 'Model/Visualize/VisualizeModel'
+import { VisualizeModel } from 'Model/index'
 import HttpUtil from 'Utils/HttpUtil'
 import EmptyState from 'Shared/EmptyState'
 import Loader from 'Shared/Loader'

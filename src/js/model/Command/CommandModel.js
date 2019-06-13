@@ -1,6 +1,6 @@
 //@flow
 import type { CommandParamType, CommandPortType } from 'Types/index'
-import Model from 'Model/index'
+import { Model } from 'Model/index'
 
 type stepType = 'command' | 'frame'
 

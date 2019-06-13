@@ -1,5 +1,5 @@
 //@flow
-import BaseStepModel from 'Model/Step/BaseStepModel'
+import { BaseStepModel } from 'Model/index'
 import BaseModelProps from 'Model/Step/BaseStepModel'
 import type { CommandParamType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
