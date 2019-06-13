@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
-import type { CommandParamType } from '../../../../types/index'
-import Param from '../index'
+import type { CommandParamType } from 'Types/index'
+import { Param } from 'Shared/Inspector'
 //import classnames from 'classnames'
 import style from './style.scss'
 

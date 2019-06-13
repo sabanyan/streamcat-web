@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
-import type { CommandParamType } from '../../../../types/index'
-import Param from '../index'
+import type { CommandParamType } from 'Types/index'
+import { Param } from 'Shared/Inspector'
 //import classnames from 'classnames'
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
   refValue?: any;
 }
 
-export default class ParamString extends Param {
+export default class ParamNumber extends Param {
   constructor (props: Props) {
     super(props)
   }
@@ -30,7 +30,7 @@ export default class ParamString extends Param {
         {label}
       </label>
       <input name={param.name} type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue}
-             ref={inputRef} disabled={disabled} paramtype={param.type}  {...events} ></input>
+             ref={inputRef} disabled={disabled} paramtype={param.type} {...events} ></input>
     </div>
   }
 

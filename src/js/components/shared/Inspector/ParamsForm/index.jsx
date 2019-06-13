@@ -2,7 +2,7 @@
 import React from 'react'
 import ParamUtil from 'Utils/ParamUtil'
 import CommandModel from 'Model/Command/CommandModel'
-import type { CommandParamType } from '../../../types'
+import type { CommandParamType } from 'Types/index'
 import classnames from 'classnames'
 import style from './style.scss'
 
