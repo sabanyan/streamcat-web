@@ -19,7 +19,7 @@ import FlowUtil from 'Utils/FlowUtil'
 import StateUtil from 'Utils/State'
 import StringUtil from 'Utils/StringUtil'
 import ErrorUtil from 'Utils/ErrorUtil'
-import Visualizer from 'Shared/Visualizer'
+import { Visualizer } from 'Shared/Visualizer'
 import ReactDomUtil from 'Utils/ReactDomUtil'
 
 type State = {
