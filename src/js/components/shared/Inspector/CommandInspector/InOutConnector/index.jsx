@@ -1,7 +1,7 @@
 //@flow
 import * as React from 'react'
 import style from '../../style.scss'
-import DropDownList from 'Shared/DropDownList/index'
+import { AddButton } from 'Shared/Input'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
 import CommandModel from 'Model/Command/CommandModel'
 import FlowUtil from 'Utils/FlowUtil'
@@ -9,7 +9,6 @@ import type { StepModelType } from 'Types/index'
 import StateUtil from 'Utils/State'
 import ModalUtil from 'Utils/ModalUtil'
 import Constants from 'Constants/index'
-import { AddButton } from 'Shared/Input'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 
 class InOutConnector extends React.Component{
