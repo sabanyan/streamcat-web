@@ -3,7 +3,7 @@ import * as React from 'react'
 import Constants from 'Constants/index'
 import StandardModal from 'Shared/Modal/Standard'
 import PreviewModal from 'Shared/Modal/Preview'
-import Button from 'Shared/Button'
+import { Button } from 'Shared/Input'
 
 type Props = {
   id: string,

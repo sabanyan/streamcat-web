@@ -4,7 +4,7 @@ import Constants from 'Constants/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import inspectorStyle from '../style.scss'
 import style from 'Shared/DataPreview/style.scss'
-import DownloadButton from 'Shared/Button/DownloadButton/index'
+import { DownloadButton } from 'Shared/Input'
 import BaseInspector from 'Shared/Inspector/BaseInspector'
 
 type Props = {

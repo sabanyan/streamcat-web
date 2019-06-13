@@ -2,7 +2,7 @@
 import React from 'react'
 import BaseInspector from 'Shared/Inspector/BaseInspector/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
-import Button from 'Shared/Button/index'
+import { Button } from 'Shared/Input'
 import CommandSelector from 'Shared/CommandSelector/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
 import Graph from 'Utils/Graph'
