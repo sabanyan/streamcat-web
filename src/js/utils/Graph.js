@@ -1,13 +1,10 @@
 //@flow
 import dagre from 'dagre'
 import Constants from 'Constants/index'
-import CommandStepModel from 'Model/Step/CommandStepModel'
-import DataFrameStepModel from 'Model/Step/DataFrameStepModel'
-import SubFlowStepModel from 'Model/Step/SubFlowStepModel'
+import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
 import ZoomUtil from 'Utils/ZoomUtil'
 import FlowModel from 'Model/Flow/FlowModel'
 import FlowUtil from 'Utils/FlowUtil'
-import NoteStepModel from 'Model/Step/NoteStepModel'
 
 export const defaultNodeProps = {
   width: Constants.default.node.width,

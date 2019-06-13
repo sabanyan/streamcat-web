@@ -9,16 +9,12 @@ import Zoom from 'FlowEditorContainer/ToolBar/Zoom'
 import style from './style.scss'
 import classnames from 'classnames'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
-import DataFrameStepModel from 'Model/Step/DataFrameStepModel'
+import { DataFrameStepModel } from 'Model/index'
 import APIUtil from 'Utils/APIUtil'
 import HttpUtil from 'Utils/HttpUtil'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import Loader from 'Shared/Loader'
-import type {
-  LibraryListDataType,
-  UploadedFileType,
-  RunResponseType,
-} from 'Types/index'
+import type { LibraryListDataType, RunResponseType, UploadedFileType, } from 'Types/index'
 import FlowUtil from 'Utils/FlowUtil'
 import Undo from 'FlowEditorContainer/ToolBar/Undo'
 import Redo from 'FlowEditorContainer/ToolBar/Redo'

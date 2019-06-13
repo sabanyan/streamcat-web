@@ -19,7 +19,7 @@ import Loader from 'Shared/Loader'
 import type { SubFlowParamType } from 'Types/index'
 import Inspector from 'Shared/Inspector'
 import SubflowCommandModel from 'Model/Command/SubflowCommandModel'
-import VisualizeModel from 'Model/Visualize/VisualizeModel'
+import { VisualizeModel } from 'Model/index'
 import NotificationManager from 'Shared/NotificationManager'
 
 type State = {}

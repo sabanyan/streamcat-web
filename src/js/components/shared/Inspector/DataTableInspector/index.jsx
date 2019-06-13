@@ -5,7 +5,7 @@ import DownloadButton from 'Shared/Button/DownloadButton/index'
 import BaseInspector from 'Shared/Inspector/BaseInspector'
 import HttpUtil from 'Utils/HttpUtil'
 import type { CSVModelProps } from 'Model/CSV/CSVModel'
-import CSVModel from 'Model/CSV/CSVModel'
+import { CSVModel } from 'Model/index'
 import StringUtil from 'Utils/StringUtil'
 
 type Props = {

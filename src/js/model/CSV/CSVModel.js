@@ -1,5 +1,5 @@
 //@flow
-import Model from 'Model/index'
+import { Model } from 'Model/index'
 
 export type CSVModelProps = {
   data: string;
