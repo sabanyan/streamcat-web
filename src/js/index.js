@@ -11,10 +11,10 @@ import { reducer as notificationsReducer } from 'reapop'
 import FlowEditorContainer from 'FlowEditorContainer/index'
 import EventEmitter from 'eventemitter3'
 import ProjectListContainer from 'ProjectListContainer/index'
-import FlowListContainer from 'FlowListContainer/index'
-import LibraryListContainer from 'Shared/LibraryListContainer'
+import FlowListContainer from 'FLowListContainer/index'
+import LibraryListContainer from 'LibraryListContainer/index'
 import NavigationBar from 'Shared/NavigationBar'
-import ProfileContainer from './components/ProfileContainer'
+import ProfileContainer from 'ProfileContainer/index'
 
 window.emitter = new EventEmitter()
 
