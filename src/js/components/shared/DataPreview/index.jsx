@@ -4,7 +4,7 @@ import { Bar, Bubble, Doughnut, HorizontalBar, Line, Pie, Polar, Radar, Scatter,
 import ChartUtil from 'Utils/ChartUtil'
 import Constants from 'Constants/index'
 import style from './style.scss'
-import DataPreviewInspector from 'Shared/Inspector/DataPreviewInspector'
+import { DataPreviewInspector } from 'Shared/Inspector'
 
 type State = {
   json?: any,//TODO resetting

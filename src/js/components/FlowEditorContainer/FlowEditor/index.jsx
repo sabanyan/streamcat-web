@@ -17,9 +17,8 @@ import ZoomUtil from 'Utils/ZoomUtil'
 import CommandModel from 'Model/Command/CommandModel'
 import Loader from 'Shared/Loader'
 import type { SubFlowParamType } from 'Types/index'
-import Inspector from 'Shared/Inspector'
-import SubflowCommandModel from 'Model/Command/SubflowCommandModel'
-import { VisualizeModel } from 'Model/index'
+import { Inspector } from 'Shared/Inspector'
+import { SubflowCommandModel, VisualizeModel } from 'Model/index'
 import NotificationManager from 'Shared/NotificationManager'
 
 type State = {}

@@ -2,7 +2,7 @@
 import React from 'react'
 import style from '../style.scss'
 import { Button } from 'Shared/Input'
-import BaseInspector from 'Shared/Inspector/BaseInspector'
+import { BaseInspector } from 'Shared/Inspector'
 import Resizer from '../Resizer'
 
 type Props = {

@@ -2,7 +2,7 @@
 import React from 'react'
 import style from '../style.scss'
 import { DownloadButton } from 'Shared/Input'
-import BaseInspector from 'Shared/Inspector/BaseInspector'
+import { BaseInspector } from 'Shared/Inspector'
 import HttpUtil from 'Utils/HttpUtil'
 import type { CSVModelProps } from 'Model/CSV/CSVModel'
 import { CSVModel } from 'Model/index'
