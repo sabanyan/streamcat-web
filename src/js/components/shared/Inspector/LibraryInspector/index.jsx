@@ -12,6 +12,7 @@ import ModalUtil from '../../../../utils/ModalUtil'
 import APIUtil from '../../../../utils/APIUtil'
 import SortUtil from '../../../../utils/SortUtil'
 import Visualizer from '../../../../components/shared/Visualizer'
+import HttpUtil from '../../../../utils/HttpUtil'
 
 type Props = {
   visualizers: [];
@@ -71,6 +72,10 @@ class LibraryInspector extends React.Component<Props> {
     })
   }
 
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
+
   render () {
     const {data,onClickDelete,onClickApply} = this.props
     let content = null
@@ -89,9 +94,8 @@ class LibraryInspector extends React.Component<Props> {
       applyButton = <Button primary={true}
                              onClick={() => onClickApply(data)}>選択する</Button>
     }
-
-
-    if(data){
+    let inspectorPreperty = (this.isDialog()) ? style.property_dialog : style.property
+    if (data) {
       label = data.label
       content = <div>
           <div className={"mb-8px"}>
@@ -122,16 +126,20 @@ class LibraryInspector extends React.Component<Props> {
             {moment(data.createdAt).format(Constants.format.dateTime)}
           </div>
       </div>
-      return <div className={classnames(style.property,style.in,'inspector')}>
+
+      
+      return <div className={classnames(inspectorPreperty, style.in, 'inspector')}>
         <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
       </div>
     }else{
       return <Resizer>
-        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
-          {content}
-        </BaseInspector>
+        <div className={classnames(inspectorPreperty, style.in, 'inspector')}>
+          <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+            {content}
+          </BaseInspector>
+          </div>
       </Resizer>
     }
 

@@ -572,6 +572,10 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
+
   renderAll () {
     if (!this.state.is_finished) {
       return null
@@ -598,9 +602,12 @@ export default class Library extends React.Component<Props, State> {
   }
 
   render () {
+
+    let containerClassName = (this.isDialog()) ? 'container' : 'container mt-40px'
+
     return <div className={style.inspector_list_container}>
-      <div className={'container mt-40px'}>
-        <Loader center={true} absolute={true} visible={this.state.is_loading}/>
+      <div className={containerClassName}>
+        <Loader center={true} absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
         <ModalManager/>
         <NotificationManager/>
