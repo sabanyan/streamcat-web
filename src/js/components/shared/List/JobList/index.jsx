@@ -1,6 +1,6 @@
 //@flow
 import * as React from 'react'
-import JobFrameList from 'Shared/List/JobList/JobFrameList'
+import {JobFrameList} from 'Shared/List'
 
 type JobProps = {
   // executedAt: string;

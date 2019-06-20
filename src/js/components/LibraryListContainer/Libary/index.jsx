@@ -9,8 +9,8 @@ import EmptyState from 'Shared/EmptyState'
 import { LibraryInspector } from 'Shared/Inspector'
 import NotificationManager from 'Shared/NotificationManager'
 import APIUtil from 'Utils/APIUtil'
-import LibraryList from 'Shared/List/LibraryList'
-import LibraryListHeader from 'Shared/List/LibraryList/LibraryListHeader'
+import {LibraryListRow} from 'Shared/List'
+import {LibraryListHeader} from 'Shared/List'
 import ModalUtil from 'Utils/ModalUtil'
 import Constants from 'Constants/index'
 import { FileUploader, TextField } from 'Shared/Input'
@@ -392,7 +392,7 @@ export default class Library extends React.Component<Props, State> {
 
     return this.state.libraryChildren.map((child, index) => {
       const selected = (this.state.selected_data === child)
-      return <LibraryList libraryChild={child} selected={selected}
+      return <LibraryListRow libraryChild={child} selected={selected}
                           onClick={(e, library) => this.onClickLibrary(e,
                             library)}
                           href={'/folders/' + child.uuid + dialogOption} />
