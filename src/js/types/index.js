@@ -104,6 +104,11 @@ export type UploadedFileType = {
   label?: string
 }
 
+export type HistoryType = {
+  current: number,
+  nodes: []
+}
+
 export type DragType = {
   start: {
     x: number,
