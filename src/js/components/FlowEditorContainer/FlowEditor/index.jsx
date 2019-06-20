@@ -4,7 +4,7 @@ import Paper from 'FlowEditorContainer/Paper'
 import PaperScroller from 'FlowEditorContainer/PaperScroller'
 import { Edge, Selector, Step } from 'Shared/SVG'
 import PaperZoom from 'FlowEditorContainer/PaperZoom'
-import ToolBar from 'FlowEditorContainer/ToolBar'
+import ToolBar from 'FlowEditorContainer/ToolBar/Core'
 import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
@@ -157,7 +157,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-    const {flow, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo} = this.props;
+    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo} = this.props;
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
@@ -177,13 +177,25 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
                  redo={redo}/>
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)}
                 message={'フローを構築中です'} />
-        <PaperScroller {...this.props}>
+        <PaperScroller
+            pasteSteps={pasteSteps}
+            copySteps={copySteps}
+            deleteSteps={deleteSteps}
+            selectSteps={selectSteps}
+            dragStart={dragStart}
+            redo={redo}
+            undo={undo}
+            selected_step_ids={selected_step_ids}
+            nodes={nodes}
+            history={history}
+            drag={drag}
+        >
           <Paper {...this.props}>
             {this.renderEdges()}f
             {this.renderSteps()}
             {this.renderSelector()}
           </Paper>
-        </PaperScroller>
+        </>
         <Inspector {...this.props} />
         <ModalManager />
         <NotificationManager />

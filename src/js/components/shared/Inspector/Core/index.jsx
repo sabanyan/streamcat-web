@@ -1,12 +1,12 @@
 //@flow
 import React from 'react'
 import {
-  CommandInspector,
-  DataSourceInspector,
-  FlowSettingsInspector,
-  MultiInspector,
-  NoteInspector,
-  Resizer
+    CommandInspector,
+    DataSourceInspector,
+    FlowSettingsInspector,
+    MultiInspector,
+    NoteInspector,
+    Resizer
 } from 'Shared/Inspector'
 import classnames from 'classnames'
 import style from '../style.scss'
