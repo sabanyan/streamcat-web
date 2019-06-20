@@ -104,6 +104,12 @@ export type UploadedFileType = {
   label?: string
 }
 
+export type MastType =  {
+  commands: any[],
+  subflows: any[],
+  visualizers: any[]
+}
+
 export type HistoryType = {
   current: number,
   nodes: []
