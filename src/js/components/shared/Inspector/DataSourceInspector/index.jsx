@@ -21,7 +21,7 @@ import { CommandSelector } from "FlowEditorContainer/Command";
 import FlowModel from 'Model/Flow/FlowModel'
 import type { DataFrameDetailType } from 'Types/index'
 import type { CSVModelProps } from 'Model/CSV/CSVModel'
-import {Loader} from 'Shared/Base'
+import { Loader } from 'Shared/Base'
 import { Visualizer } from 'Shared/Visualizer'
 
 type State = {
