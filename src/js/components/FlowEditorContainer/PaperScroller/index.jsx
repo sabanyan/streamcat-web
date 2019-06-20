@@ -5,7 +5,7 @@ import style from './style.scss'
 import { GraphUtil } from 'Utils/index'
 import { CommandStepModel, SubFlowStepModel } from 'Model/index'
 
-class PaperScroller extends React.Component<FlowEditorProps, StateUtil> {
+class PaperScroller extends React.Component<PaperScrollerProps> {
   componentDidMount () {
   }
 
