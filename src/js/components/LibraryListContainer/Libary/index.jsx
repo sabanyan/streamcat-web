@@ -13,6 +13,7 @@ import Constants from 'Constants/index'
 import { FileUploader, TextField } from 'Shared/Input'
 import type { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType } from 'Types/index'
 import type { LibraryProps } from 'LibraryListContainer/index'
+import { VisualizeModel } from "Model/index";
 
 type Props = {
   ...LibraryProps

@@ -5,7 +5,7 @@ import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { Button } from 'Shared/Input'
 import { CommandSelector } from "FlowEditorContainer/Command";
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
-import { Graph, ModalUtil } from 'Utils/index'
+import { GraphUtil, ModalUtil } from 'Utils/index'
 import Constants from 'Constants/index'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
@@ -35,7 +35,7 @@ class MultiInspector extends React.Component<FlowEditorProps> {
     let cnt = 0
     let hasMixedCommand = false //コマンドが混ざって選択されている場合
     selected_step_ids.forEach((id) => {
-      const node = Graph.getNode(nodes, id)
+      const node = GraphUtil.getNode(nodes, id)
       if (node instanceof DataFrameStepModel) {
         cnt++
       } else if (node instanceof SubFlowStepModel) {

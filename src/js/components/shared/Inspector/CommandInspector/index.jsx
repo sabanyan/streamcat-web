@@ -6,7 +6,7 @@ import style from '../style.scss'
 import { Button } from 'Shared/Input'
 import { CommandStepModel, SubflowCommandModel } from 'Model/index'
 import Constants from 'Constants/index'
-import { APIUtil, Graph, ModalUtil, ParamUtil, StateUtil } from 'Utils/index'
+import { APIUtil, GraphUtil, ModalUtil, ParamUtil, StateUtil } from 'Utils/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
 import FlowModel from 'Model/Flow/FlowModel'
@@ -50,7 +50,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
   getSelectedStep () {
     let {selected_step_ids, nodes} = this.props
-    return Graph.getNode(nodes, selected_step_ids[0])
+    return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
   onHide () {
