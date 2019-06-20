@@ -1,7 +1,7 @@
 //@flow
 import * as React from 'react'
 import style from '../../style.scss'
-import { AddButton } from 'Shared/Input'
+import { AddButton, DropDownList } from 'Shared/Input'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
 import CommandModel from 'Model/Command/CommandModel'
 import FlowUtil from 'Utils/FlowUtil'
@@ -128,7 +128,7 @@ class InOutConnector extends React.Component{
       );
     });
 
-     
+
 
     const subflow = selectedStep.getCommand()
     const subflowOutPorts = subflow.getOutPorts()

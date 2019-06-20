@@ -4,14 +4,14 @@ import style from './style.scss'
 import HttpUtil from 'Utils/HttpUtil'
 import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
-import Loader from 'Shared/Loader'
+import Loader from 'Shared/Base/Loader'
 import { Button, TextField } from 'Shared/Input'
 
-import TabBar from 'Shared/TabBar'
-import TabList from 'Shared/TabBar/TabList'
-import Tab from 'Shared/TabBar/Tab'
-import TabPanel from 'Shared/TabBar/TabPanel'
-import Form from 'Shared/Form'
+import TabBar from 'Shared/Base/TabBar'
+import TabList from 'Shared/Base/TabBar/TabList'
+import Tab from 'Shared/Base/TabBar/Tab'
+import TabPanel from 'Shared/Base/TabBar/TabPanel'
+import Form from 'Shared/Base/Form'
 /**
  * ======================================================
  *                      NOT USE REDUX
