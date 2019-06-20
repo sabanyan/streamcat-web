@@ -1,16 +1,13 @@
 //@flow
 import Constants from 'Constants/index'
 import Graph, { defaultGraphProps, defaultNodeProps } from 'Utils/Graph'
-import StateUtil from 'Utils/State'
+import { FlowUtil, StateUtil, Validator, ZoomUtil } from 'Utils/index'
 import FlowModel from 'Model/Flow/FlowModel'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
 import type { CommandModelType, CommandPortType, StepModelType } from '../types'
 import { DataFrameDetailType } from 'Types/index'
-import FlowUtil from 'Utils/FlowUtil'
-import Validator from 'Utils/Validator'
 import _ from 'lodash'
-import ZoomUtil from 'Utils/ZoomUtil'
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'

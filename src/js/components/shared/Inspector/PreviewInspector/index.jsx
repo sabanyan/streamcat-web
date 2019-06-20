@@ -5,7 +5,7 @@ import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
 import { Button } from 'Shared/Input'
 import FlowModel from 'Model/Flow/FlowModel'
-import ParamUtil from 'Utils/ParamUtil'
+import { ParamUtil } from 'Utils/index'
 import classnames from 'classnames'
 
 type PreviewInspectorProps = {

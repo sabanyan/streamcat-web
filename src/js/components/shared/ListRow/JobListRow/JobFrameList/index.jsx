@@ -3,10 +3,8 @@ import * as React from 'react'
 import classnames from 'classnames'
 import style from '../style.scss'
 import Constants from 'Constants/index'
-import ModalUtil from 'Utils/ModalUtil'
-import SortUtil from 'Utils/SortUtil'
+import { APIUtil, ModalUtil, SortUtil } from 'Utils/index'
 import moment from 'moment'
-import APIUtil from 'Utils/APIUtil'
 import { Visualizer } from 'Shared/Visualizer'
 
 type JobFrameProps = {

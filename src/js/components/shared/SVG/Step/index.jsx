@@ -5,9 +5,8 @@ import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, Note, Rect, SubFlowIcon } 
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import ZoomUtil from 'Utils/ZoomUtil'
+import { APIUtil, ZoomUtil } from 'Utils/index'
 import type { StepModelType } from 'Types/index'
-import APIUtil from 'Utils/APIUtil'
 
 let mouseMoveEvent
 let mouseUpEvent

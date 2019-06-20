@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
 import style from './style.scss'
-import HttpUtil from 'Utils/HttpUtil'
+import { HttpUtil } from 'Utils/index'
 import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
 import Loader from 'Shared/Base/Loader'

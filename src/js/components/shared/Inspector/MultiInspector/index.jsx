@@ -5,8 +5,7 @@ import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { Button } from 'Shared/Input'
 import { CommandSelector } from "FlowEditorContainer/Command";
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
-import Graph from 'Utils/Graph'
-import ModalUtil from 'Utils/ModalUtil'
+import { Graph, ModalUtil } from 'Utils/index'
 import Constants from 'Constants/index'
 
 class MultiInspector extends React.Component<FlowEditorProps> {

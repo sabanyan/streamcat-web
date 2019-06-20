@@ -1,18 +1,18 @@
 //@flow
 import React from 'react'
 import {
-  CommandInspector,
-  DataSourceInspector,
-  FlowSettingsInspector,
-  MultiInspector,
-  NoteInspector,
-  Resizer
+    CommandInspector,
+    DataSourceInspector,
+    FlowSettingsInspector,
+    MultiInspector,
+    NoteInspector,
+    Resizer
 } from 'Shared/Inspector'
 import classnames from 'classnames'
 import style from '../style.scss'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
-import Graph from 'Utils/Graph'
+import { Graph } from 'Utils/index'
 
 class Inspector extends React.Component<FlowEditorProps> {
 
