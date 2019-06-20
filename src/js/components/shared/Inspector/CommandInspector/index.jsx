@@ -10,7 +10,7 @@ import { APIUtil, Graph, ModalUtil, ParamUtil, StateUtil } from 'Utils/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
 import FlowModel from 'Model/Flow/FlowModel'
-import Loader from 'Shared/Base/Loader/index'
+import {Loader} from 'Shared/Base'
 
 type CommandInspectorProps = {
   ...FlowEditorProps,

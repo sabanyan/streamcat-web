@@ -2,8 +2,8 @@
 import * as React from 'react'
 import { VisualizeModel } from 'Model/index'
 import { HttpUtil } from 'Utils/index'
-import EmptyState from 'Shared/Base/EmptyState'
-import Loader from 'Shared/Base/Loader'
+import {EmptyState} from 'Shared/Base'
+import {Loader} from 'Shared/Base'
 import { PreviewInspector } from 'Shared/Inspector'
 import style from './style.scss'
 
