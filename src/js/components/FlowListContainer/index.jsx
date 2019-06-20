@@ -19,21 +19,21 @@ export default FlowListContainer = connect(
   },
   dispatch => {
     return {
-      selectFlow (...args) {
-        return dispatch(selectFlowAction(...args))
+      selectFlow (flow) {
+        return dispatch(selectFlowAction(flow))
       },
-      updateRunArgs (...args) {
-        return dispatch(updateRunArgsAction(...args))
+      updateRunArgs (runArgs) {
+        return dispatch(updateRunArgsAction(runArgs))
       },
-      notify (...args) {
-        return dispatch(addNotification(...args))
+      notify (context:{}) {
+        return dispatch(addNotification(context))
       },
-      updateNotify (...args) {
-        return dispatch(updateNotification(...args))
+      updateNotify (context:{}) {
+        return dispatch(updateNotification(context))
       },
-      dismissNotify (...args) {
+      dismissNotify (id:string) {
         setTimeout(() => {
-          dispatch(removeNotification(...args))
+          dispatch(removeNotification(id))
         }, 1000)
       },
     }
