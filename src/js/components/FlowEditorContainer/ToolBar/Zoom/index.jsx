@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import ToolBarButton from 'FlowEditorContainer/ToolBar/ToolBarButton'
+import { ToolBarButton } from 'FlowEditorContainer/ToolBar'
 import style from './style.scss'
 import type { ZoomToolBarButtonType } from 'Types/index'
 
