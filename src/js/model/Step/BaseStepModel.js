@@ -1,6 +1,6 @@
 //@flow
 import ModelUtil from 'Utils/ModelUtil'
-import { Model } from 'Model/index'
+import Model from "Model/Core";
 
 type stepType = 'command' | 'frame'
 
