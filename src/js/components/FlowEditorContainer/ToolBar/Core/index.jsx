@@ -1,22 +1,14 @@
 //@flow
 import React from 'react'
 import Constants from 'Constants/index'
-import Save from 'FlowEditorContainer/ToolBar/Save'
-import Run from 'FlowEditorContainer/ToolBar/Run'
-import Sort from 'FlowEditorContainer/ToolBar/Sort'
-import DataSourceImport from 'FlowEditorContainer/ToolBar/DataSourceImport'
-import Zoom from 'FlowEditorContainer/ToolBar/Zoom'
+import { DataSourceImport, Note, Redo, Undo, Run, Save, Sort, Zoom } from 'FlowEditorContainer/ToolBar'
 import style from './style.scss'
 import classnames from 'classnames'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
 import { DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { APIUtil, FlowUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { Loader } from 'Shared/Base'
-import type { LibraryListDataType, RunResponseType, UploadedFileType, } from 'Types/index'
-import Undo from 'FlowEditorContainer/ToolBar/Undo'
-import Redo from 'FlowEditorContainer/ToolBar/Redo'
-import Note from 'FlowEditorContainer/ToolBar/Note'
+import type { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType, } from 'Types/index'
 import { NoteStepModelProps } from 'Model/Step/NoteStepModel'
 import { defaultGraphProps } from 'Utils/GraphUtil'
 import type { FlowModelProps } from "Model/Flow/FlowModel";
@@ -24,7 +16,7 @@ import type { FlowModelProps } from "Model/Flow/FlowModel";
 type ToolBarProps = {
   flow: FlowModelProps;
   nodes: [];
-  history: [];
+  history: HistoryType;
   notify: Function;
   dismissNotify: Function;
   addStep: Function;
