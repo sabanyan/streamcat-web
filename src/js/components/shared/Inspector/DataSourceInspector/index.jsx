@@ -179,6 +179,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
         const selected_step = Graph.getNode(nodes, selected_step_ids[0])
         this.props.deleteSteps([selected_step.id])
         this.props.selectSteps()
+        this.props.addHistory()
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
     })
@@ -325,8 +326,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
       preview = <Button onClick={(e) => this.onClickPreview(e)}
                         icon={'visibility'}>プレビュー</Button>
       if (selected_step.hasData()) {
-        download = <Button onClick={(e) => this.onClickCSVDownload(e)}
-                           icon={'visibility'}>CSVダウンロード</Button>
+        const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
+        download = <DownloadButton href={href} icon={'visibility'}>CSVダウンロード</DownloadButton>
       }
     }
 

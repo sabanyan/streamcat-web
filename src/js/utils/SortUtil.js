@@ -1,6 +1,6 @@
-export default class ModalUtil {
-  static getSortedContents (contents: [], compare = (a, b) => ModalUtil.defaultCompare(a, b)): [] {
-    return contents.sort((a, b) => compare(a, b))
+export default class SortUtil { 
+    static getSortedContents(contents:[], compare = (a,b) => SortUtil.defaultCompare(a,b)) : [] {
+      return contents.sort((a, b) => compare(a,b))
   }
 
   static defaultCompare (a, b) {
