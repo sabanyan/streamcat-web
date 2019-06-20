@@ -18,7 +18,7 @@ import Undo from 'FlowEditorContainer/ToolBar/Undo'
 import Redo from 'FlowEditorContainer/ToolBar/Redo'
 import Note from 'FlowEditorContainer/ToolBar/Note'
 import NoteStepModel, { NoteStepModelProps } from 'Model/Step/NoteStepModel'
-import { defaultGraphProps } from 'Utils/Graph'
+import { defaultGraphProps } from 'Utils/GraphUtil'
 
 type ToolBarProps = {
   ...FlowEditorProps

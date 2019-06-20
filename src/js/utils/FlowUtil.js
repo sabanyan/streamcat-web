@@ -3,7 +3,7 @@ import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType, SubFlowParamType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
-import { APIUtil, ErrorUtil, ReactDomUtil, Validator } from 'Utils/index'
+import { APIUtil, ErrorUtil, ReactDomUtil, ValidatorUtil } from 'Utils/index'
 
 export default class FlowUtil {
 
@@ -244,7 +244,7 @@ export default class FlowUtil {
    */
   static saveNodes (flowUUID: string, nodes: [], notify?: Function, dismissNotify?: Function): any {
     //validation
-    Validator.nodesValidate(nodes)
+    ValidatorUtil.nodesValidate(nodes)
 
     let saveNotify
     if (notify) {
@@ -338,7 +338,7 @@ export default class FlowUtil {
 
   static saveFlow (flowUUID: string, {label, description, params, ports, nodes}, notify: Function, dismissNotify: Function): any {
     //validation
-    Validator.nodesValidate(nodes)
+    ValidatorUtil.nodesValidate(nodes)
 
     let putBody = {}
     if (label) putBody['label'] = label

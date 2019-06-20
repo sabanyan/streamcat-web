@@ -23,7 +23,7 @@ type GraphType = {
   zoom: number;
 }
 
-class Graph {
+class GraphUtil {
 
   constructor () {
     this.g = new dagre.graphlib.Graph({multigraph: true})
@@ -55,11 +55,11 @@ class Graph {
     })
     // if (Array.isArray(from_id)) {
     //   from_id.forEach((fid) => {
-    //     self.addEdge(fid, id,Graph.edgeName(fid,id))
+    //     self.addEdge(fid, id,GraphUtil.edgeName(fid,id))
     //   })
     // }
     // else if (from_id) {
-    //   this.addEdge(from_id, id,Graph.edgeName(from_id,id))
+    //   this.addEdge(from_id, id,GraphUtil.edgeName(from_id,id))
     // }
   }
 
@@ -168,7 +168,7 @@ class Graph {
       let graph_node = self.g.node(v)
       if (graph_node) {
         const key = graph_node.label //グラフ構造のlabelにidを設定しています
-        let node = Graph.getNode(nodes, key)
+        let node = GraphUtil.getNode(nodes, key)
         if (node) {
           node.setFrame({
             x: graph_node.x,
@@ -308,7 +308,7 @@ class Graph {
               const src = step.srcs[portName]
               const from = src
               const to = node.id
-              const label = Graph.edgeName(from, to, portName)//src
+              const label = GraphUtil.edgeName(from, to, portName)//src
               self.addEdge(from, to, label)
             })
           }
@@ -317,7 +317,7 @@ class Graph {
               const dst = step.dsts[portName]
               const from = node.id
               const to = dst
-              const label = Graph.edgeName(from, to, portName)//dst
+              const label = GraphUtil.edgeName(from, to, portName)//dst
               self.addEdge(from, to, label)
             })
           }
@@ -353,4 +353,4 @@ class Graph {
   }
 }
 
-export default Graph
+export default GraphUtil
