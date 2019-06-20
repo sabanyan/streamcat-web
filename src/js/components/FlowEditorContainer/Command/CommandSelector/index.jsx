@@ -2,7 +2,7 @@
 import React from 'react'
 //import classnames from 'classnames'
 import style from './style.scss'
-import { Command } from 'Shared/Command'
+import { Command } from 'FlowEditorContainer/Command'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import Constants from 'Constants/index'
 import type { CommandModelType } from 'Types/index'

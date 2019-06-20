@@ -7,6 +7,7 @@ export {default as ErrorIcon} from './Icon/ErrorIcon'
 export {default as InOutIcon} from './Icon/InOutIcon'
 export {default as SettingIcon} from './Icon/SettingIcon'
 export {default as SubFlowIcon} from './Icon/SubFlowIcon'
+export {default as Selector} from './Selector'
 
 export {default as Edge} from './Edge'
 export {default as Arrow} from './Edge/Arrow'

@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
 import style from './style.scss'
-import TabPanel from 'Shared/TabBar/TabPanel'
+import TabPanel from 'Shared/Base/TabBar/TabPanel'
 import classnames from 'classnames'
 
 /*

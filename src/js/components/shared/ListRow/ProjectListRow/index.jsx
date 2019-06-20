@@ -17,7 +17,7 @@ type Props = {
   href: string;
 }
 
-export default class ProjectList extends React.Component<Props> {
+export default class ProjectListRow extends React.Component<Props> {
 
   constructor (props) {
     super(props)

@@ -15,7 +15,7 @@ type Props = {
   onClickFlow: Function;
 }
 
-export default class FlowList extends React.Component<Props> {
+export default class FlowListRow extends React.Component<Props> {
 
   constructor (props: Props) {
     super(props)

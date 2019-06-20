@@ -1,6 +1,6 @@
 //@flow
 import * as React from 'react'
-import {JobFrameList} from 'Shared/List'
+import { JobFrameList } from 'Shared/ListRow'
 
 type JobProps = {
   // executedAt: string;
@@ -24,7 +24,7 @@ type Props = {
   selected: boolean;
 }
 
-export default class JobList extends React.Component<Props> {
+export default class JobListRow extends React.Component<Props> {
 
   constructor (props: Props) {
     super(props)

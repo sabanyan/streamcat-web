@@ -15,7 +15,7 @@ type Props = {
   onClick: Function;
 }
 
-export default class LibraryList extends React.Component<Props> {
+export default class LibraryListRow extends React.Component<Props> {
 
   constructor (props: Props) {
     super(props)

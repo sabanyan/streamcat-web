@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
 import ReactDOM from 'react-dom'
-import NavigationBar from 'Shared/NavigationBar'
+import NavigationBar from 'Shared/Base/NavigationBar'
 import Constants from 'Constants/index'
 import Model from "Model/Core";
 

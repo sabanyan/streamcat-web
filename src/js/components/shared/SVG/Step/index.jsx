@@ -1,7 +1,7 @@
 //@flow
 import React from 'react'
 import Constants from 'Constants/index'
-import { CommandIcon, ErrorIcon, InOutIcon, Note, Rect, SubFlowIcon,FileIcon } from 'Shared/SVG'
+import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, Note, Rect, SubFlowIcon } from 'Shared/SVG'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'

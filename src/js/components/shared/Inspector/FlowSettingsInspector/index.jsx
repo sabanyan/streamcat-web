@@ -7,7 +7,7 @@ import { AddButton, Button } from 'Shared/Input'
 import ModalUtil from 'Utils/ModalUtil'
 import Constants from 'Constants/index'
 import type { SubFlowParamType } from 'Types/index'
-import CommandSelector from 'Shared/Command/CommandSelector'
+import { CommandSelector } from "FlowEditorContainer/Command";
 
 class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
   paramRefs: [] = []
