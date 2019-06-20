@@ -9,7 +9,7 @@ import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import { APIUtil, Graph, ZoomUtil } from 'Utils/index'
+import { APIUtil, GraphUtil, ZoomUtil } from 'Utils/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { Loader } from 'Shared/Base'
 import type { SubFlowParamType } from 'Types/index'
@@ -33,7 +33,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       redirect: 'follow',
     }
 
-    const graph: Graph = new Graph()
+    const graph: GraphUtil = new GraphUtil()
 
     let preRequest = []
     let flowRequest = []
@@ -125,8 +125,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
     if (Array.isArray(graph.edges)) {
       edges = graph.edges.map((edge, index) => {
-        const v_node = Graph.getNode(nodes, edge.v)
-        const w_node = Graph.getNode(nodes, edge.w)
+        const v_node = GraphUtil.getNode(nodes, edge.v)
+        const w_node = GraphUtil.getNode(nodes, edge.w)
         if (v_node && w_node) {
           const vx = v_node.position.x +
             Constants.default.datasource.width / 2

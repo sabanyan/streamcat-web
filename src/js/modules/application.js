@@ -2,7 +2,7 @@
 import Constants from 'Constants/index'
 import { GraphUtil } from 'Utils'
 import { defaultGraphProps, defaultNodeProps } from 'Utils/GraphUtil'
-import { FlowUtil, StateUtil, Validator, ZoomUtil } from 'Utils/index'
+import { FlowUtil, StateUtil, ValidatorUtil, ZoomUtil } from 'Utils/index'
 import FlowModel from 'Model/Flow/FlowModel'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
@@ -37,7 +37,7 @@ const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
 const UPDATE_CACHE_ACTION = 'update_cache_action'
-const graph: Graph = new Graph()
+const graph: GraphUtil = new GraphUtil()
 
 let initialState = {
   selected_step_ids: [],
@@ -76,10 +76,10 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history)
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
-      Validator.isFlowModelSchema(newState)
-      Validator.isGraphModelSchema(newState)
-      Validator.isNodesSchema(newState)
-      Validator.nodesValidate(newState.nodes)
+      ValidatorUtil.isFlowModelSchema(newState)
+      ValidatorUtil.isGraphModelSchema(newState)
+      ValidatorUtil.isNodesSchema(newState)
+      ValidatorUtil.nodesValidate(newState.nodes)
       break
     }
     case ADD_MASTER_ACTION: {

@@ -2,7 +2,7 @@
 import * as React from 'react'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import { Graph } from 'Utils/index'
+import { GraphUtil } from 'Utils/index'
 import { CommandStepModel, SubFlowStepModel } from 'Model/index'
 
 class PaperScroller extends React.Component<FlowEditorProps, StateUtil> {
@@ -31,7 +31,7 @@ class PaperScroller extends React.Component<FlowEditorProps, StateUtil> {
   getCopyNodes (): string {
     const {selected_step_ids, nodes} = this.props
     return JSON.stringify(selected_step_ids.map((id) => {
-      return Graph.getNode(nodes, id)
+      return GraphUtil.getNode(nodes, id)
     }))
   }
 
@@ -44,7 +44,7 @@ class PaperScroller extends React.Component<FlowEditorProps, StateUtil> {
 
     if (selected_step_ids.length !== 1) return false
 
-    const targetNode = Graph.getNode(nodes, selected_step_ids[0])
+    const targetNode = GraphUtil.getNode(nodes, selected_step_ids[0])
 
     if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
       return true

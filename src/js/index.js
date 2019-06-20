@@ -13,7 +13,7 @@ import EventEmitter from 'eventemitter3'
 import ProjectListContainer from 'ProjectListContainer/index'
 import FlowListContainer from 'FLowListContainer/index'
 import LibraryListContainer from 'LibraryListContainer/index'
-import {NavigationBar} from 'Shared/Base'
+import { NavigationBar } from 'Shared/Base'
 import ProfileContainer from 'ProfileContainer/index'
 
 window.emitter = new EventEmitter()

@@ -1,18 +1,18 @@
 //@flow
 import React from 'react'
 import {
-    CommandInspector,
-    DataSourceInspector,
-    FlowSettingsInspector,
-    MultiInspector,
-    NoteInspector,
-    Resizer
+  CommandInspector,
+  DataSourceInspector,
+  FlowSettingsInspector,
+  MultiInspector,
+  NoteInspector,
+  Resizer
 } from 'Shared/Inspector'
 import classnames from 'classnames'
 import style from '../style.scss'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
-import { Graph } from 'Utils/index'
+import { GraphUtil } from 'Utils/index'
 
 class Inspector extends React.Component<FlowEditorProps> {
 
@@ -25,7 +25,7 @@ class Inspector extends React.Component<FlowEditorProps> {
       if (selected_step_ids[0] === 'flow') {
         property = <FlowSettingsInspector {...this.props} />
       } else {
-        const selected_step = Graph.getNode(nodes, selected_step_ids[0])
+        const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
         if (selected_step instanceof DataFrameStepModel) {
           property = <DataSourceInspector {...this.props}></DataSourceInspector>
         } else if (selected_step instanceof CommandStepModel) {

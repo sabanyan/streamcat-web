@@ -5,7 +5,7 @@ import {
   APIUtil,
   ErrorUtil,
   FlowUtil,
-  Graph,
+  GraphUtil,
   ModalUtil,
   ReactDomUtil,
   SortUtil,
@@ -15,7 +15,7 @@ import {
 import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
-import { Button } from 'Shared/Input'
+import { Button, DownloadButton } from 'Shared/Input'
 import { CSVModel, DataFrameStepModel } from 'Model/index'
 import { CommandSelector } from "FlowEditorContainer/Command";
 import FlowModel from 'Model/Flow/FlowModel'
@@ -176,7 +176,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         let {selected_step_ids, nodes} = this.props
-        const selected_step = Graph.getNode(nodes, selected_step_ids[0])
+        const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
         this.props.deleteSteps([selected_step.id])
         this.props.selectSteps()
         this.props.addHistory()
@@ -224,7 +224,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
 
   getSelectedStep (): DataFrameStepModel {
     let {selected_step_ids, nodes} = this.props
-    return Graph.getNode(nodes, selected_step_ids[0])
+    return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
   onHide () {
