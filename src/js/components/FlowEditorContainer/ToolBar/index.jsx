@@ -19,9 +19,22 @@ import Redo from 'FlowEditorContainer/ToolBar/Redo'
 import Note from 'FlowEditorContainer/ToolBar/Note'
 import { NoteStepModelProps } from 'Model/Step/NoteStepModel'
 import { defaultGraphProps } from 'Utils/GraphUtil'
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
 type ToolBarProps = {
-  ...FlowEditorProps
+  flow: FlowModelProps;
+  nodes: [];
+  history: [];
+  notify: Function;
+  dismissNotify: Function;
+  addStep: Function;
+  addHistory: Function;
+  sortFlow: Function;
+  loadFlowJSON: Function;
+  selectSteps: Function;
+  setZoom: Function;
+  undo: Function;
+  redo: Function;
 }
 
 export default class ToolBar extends React.Component<ToolBarProps> {
@@ -35,16 +48,11 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   onClickSave () {
-    //this.saveFlowPorts()
-    //this.saveNodes()
     this.saveFlow()
   }
 
-  /*
-  *
-  */
   saveFlow () {
-    const {flow, nodes, history, notify, dismissNotify} = this.props
+    const {flow, nodes, notify, dismissNotify} = this.props
     return FlowUtil.saveFlow(inject_flow_uuid, {
         label: flow.label,
         description: flow.description,
@@ -68,7 +76,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   saveNodes () {
-    let {nodes, history, notify, dismissNotify} = this.props
+    let {nodes, notify, dismissNotify} = this.props
     return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
   }
 
@@ -78,7 +86,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   save (): Promise {
-    let {nodes, projectId, projectName, notify, dismissNotify, history} = this.props
+    let {nodes, notify, dismissNotify} = this.props
     return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
   }
 
@@ -231,16 +239,17 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   onClickNote () {
 
+    const {zoom,nodes} = this.props;
     let position = PositionUtil.getCenterPosition('#flow_editor>div')
     position = {
-      x: ZoomUtil.zoomReverse(position.x, this.props.zoom),
-      y: ZoomUtil.zoomReverse(position.y, this.props.zoom)
+      x: ZoomUtil.zoomReverse(position.x, zoom),
+      y: ZoomUtil.zoomReverse(position.y, zoom)
       + Constants.default.step.height
       + defaultGraphProps.rankSeparator,
     }
 
     const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition(
-      {...position}, this.props.nodes)
+      {...position}, nodes)
 
     const props: NoteStepModelProps = {
       type: Constants.step.type.note,
@@ -257,10 +266,10 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   render () {
-    const {zoom} = this.props
+    const {zoom , history} = this.props
 
-    const current = this.props.history.current
-    const max = this.props.history.nodes.length
+    const current = history.current
+    const max = history.nodes.length
 
     const redoDisabled = !(current + 1 < max)
     const undoDisabled = !(current - 1 >= 0)
@@ -271,19 +280,14 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(
                             e)}>データソースの追加</DataSourceImport>
-
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
         <Note disabled={false} icon={'comment'}
               onClick={() => this.onClickNote()}>メモ</Note>
-        {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}
-        {/*<DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>*/}
-        {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
         <Undo disabled={undoDisabled} icon={'undo'}
               onClick={() => this.props.undo()}>もとに戻す</Undo>
         <Redo disabled={redoDisabled} icon={'redo'}
               onClick={() => this.props.redo()}>繰り返す</Redo>
-
       </div>
       <div className={classnames(style.paper_toolbar)}>
         <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
