@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import ParamUtil from 'Utils/ParamUtil'
+import { ParamUtil } from 'Utils/index'
 import CommandModel from 'Model/Command/CommandModel'
 import type { CommandParamType } from 'Types/index'
 import classnames from 'classnames'

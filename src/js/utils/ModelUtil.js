@@ -1,6 +1,6 @@
 //@flow
 import Constants from 'Constants/index'
-import ErrorUtil from 'Utils/ErrorUtil'
+import { ErrorUtil } from 'Utils/index'
 
 export default class ModelUtil {
   /**

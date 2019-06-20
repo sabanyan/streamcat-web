@@ -1,7 +1,7 @@
 //@flow
 import _ from 'lodash'
 
-export default class State {
+export default class StateUtil {
   /**
    * DeepCopy
    * @param obj

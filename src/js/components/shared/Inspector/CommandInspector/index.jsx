@@ -6,15 +6,11 @@ import style from '../style.scss'
 import { Button } from 'Shared/Input'
 import { CommandStepModel, SubflowCommandModel } from 'Model/index'
 import Constants from 'Constants/index'
-import Graph from 'Utils/Graph'
+import { APIUtil, Graph, ModalUtil, ParamUtil, StateUtil } from 'Utils/index'
 import type { CommandParamType, StepModelType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
-import APIUtil from 'Utils/APIUtil'
 import FlowModel from 'Model/Flow/FlowModel'
 import Loader from 'Shared/Base/Loader/index'
-import ModalUtil from 'Utils/ModalUtil'
-import ParamUtil from 'Utils/ParamUtil'
-import StateUtil from 'Utils/State'
 
 type CommandInspectorProps = {
   ...FlowEditorProps,

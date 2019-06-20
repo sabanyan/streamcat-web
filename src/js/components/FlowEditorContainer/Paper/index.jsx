@@ -4,7 +4,7 @@ import Index from 'Shared/SVG/Shadow'
 import Constants from 'Constants/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import ZoomUtil from 'Utils/ZoomUtil'
+import { ZoomUtil } from 'Utils/index'
 
 class Paper extends React.Component<FlowEditorProps> {
   render () {

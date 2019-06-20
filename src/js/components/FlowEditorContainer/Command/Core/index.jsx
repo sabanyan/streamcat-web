@@ -8,8 +8,7 @@ import type { CommandStepModelProps } from 'Model/Step/CommandStepModel'
 import CommandModel from 'Model/Command/CommandModel'
 import { CommandIcon, SubFlowIcon } from 'Shared/SVG'
 import type { CommandModelType, CommandParamType, CommandPortType } from 'Types/index'
-import WebUtil from 'Utils/WebUtil'
-import ParamUtil from 'Utils/ParamUtil'
+import { ParamUtil, WebUtil } from 'Utils/index'
 
 type Props = {
   command: CommandModelType;

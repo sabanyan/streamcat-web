@@ -7,10 +7,9 @@ import DataFrameStepModelSchema from 'Schema/steps/DataFrameStepModelSchema.json
 import SubFlowCommandModeSchema from 'Schema/steps/SubFlowStepModelSchema.json'
 import NoteStepModelSchema from 'Schema/steps/NoteStepModelSchema.json'
 
-import Log from './Log'
+import { CommandUtil, Log } from 'Utils/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
 import ValidateJS from 'validate.js'
-import CommandUtil from 'Utils/CommandUtil'
 import NoteStepModel from 'Model/Step/NoteStepModel.js'
 
 class Validator {

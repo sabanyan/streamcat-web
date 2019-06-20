@@ -3,10 +3,7 @@ import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType, SubFlowParamType } from 'Types/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
-import APIUtil from 'Utils/APIUtil'
-import Validator from 'Utils/Validator'
-import ReactDomUtil from 'Utils/ReactDomUtil'
-import ErrorUtil from 'Utils/ErrorUtil'
+import { APIUtil, ErrorUtil, ReactDomUtil, Validator } from 'Utils/index'
 
 export default class FlowUtil {
 

@@ -1,5 +1,5 @@
 //@flow
-import StateUtil from 'Utils/State'
+import { StateUtil } from 'Utils/index'
 
 const SELECT_FLOW_ACTION = 'select_flow_action'
 const UPDATE_RUN_ARGS_ACTION = 'update_run_args_action'

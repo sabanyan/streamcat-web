@@ -1,8 +1,17 @@
 //@flow
 import React from 'react'
 import Constants from 'Constants/index'
-import ModalUtil from 'Utils/ModalUtil'
-import SortUtil from 'Utils/SortUtil'
+import {
+  APIUtil,
+  ErrorUtil,
+  FlowUtil,
+  Graph,
+  ModalUtil,
+  ReactDomUtil,
+  SortUtil,
+  StateUtil,
+  StringUtil
+} from 'Utils/index'
 import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
@@ -10,17 +19,10 @@ import { Button } from 'Shared/Input'
 import { CSVModel, DataFrameStepModel } from 'Model/index'
 import { CommandSelector } from "FlowEditorContainer/Command";
 import FlowModel from 'Model/Flow/FlowModel'
-import Graph from 'Utils/Graph'
-import APIUtil from 'Utils/APIUtil'
 import type { DataFrameDetailType } from 'Types/index'
 import type { CSVModelProps } from 'Model/CSV/CSVModel'
 import Loader from 'Shared/Base/Loader/index'
-import FlowUtil from 'Utils/FlowUtil'
-import StateUtil from 'Utils/State'
-import StringUtil from 'Utils/StringUtil'
-import ErrorUtil from 'Utils/ErrorUtil'
 import { Visualizer } from 'Shared/Visualizer'
-import ReactDomUtil from 'Utils/ReactDomUtil'
 
 type State = {
   dataFrameDetail?: DataFrameDetailType;

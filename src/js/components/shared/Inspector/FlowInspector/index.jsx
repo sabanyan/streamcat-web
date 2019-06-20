@@ -1,14 +1,12 @@
 //@flow
 import React from 'react'
 import Constants from 'Constants/index'
-import ModalUtil from 'Utils/ModalUtil'
+import { FlowUtil, ModalUtil, ReactDomUtil } from 'Utils/index'
 import style from '../style.scss'
 import { Button } from 'Shared/Input'
 import { BaseInspector, InputFlowForm, Resizer } from 'Shared/Inspector'
 import type { FlowListDataType } from 'Types/index'
 import moment from 'moment/moment'
-import ReactDomUtil from 'Utils/ReactDomUtil'
-import FlowUtil from 'Utils/FlowUtil'
 
 type Props = {
   project: {};
