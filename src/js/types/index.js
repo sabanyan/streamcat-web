@@ -1,5 +1,5 @@
 //@flow
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
+import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubflowCommandModel, SubFlowStepModel } from 'Model/index'
 import * as React from 'react'
 import CommandModel from 'Model/Command/CommandModel'
 
