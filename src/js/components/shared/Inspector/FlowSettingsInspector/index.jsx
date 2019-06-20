@@ -9,7 +9,7 @@ import Constants from 'Constants/index'
 import type { SubFlowParamType } from 'Types/index'
 import { CommandSelector } from "FlowEditorContainer/Command";
 
-class FlowSettingsInspector extends React.Component<FlowEditorProps, StateUtil> {
+class FlowSettingsInspector extends React.Component<FlowEditorProps> {
   paramRefs: [] = []
   loading: boolean = false
 
