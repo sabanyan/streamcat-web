@@ -157,11 +157,24 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
+    const {flow, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo} = this.props;
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
         {/*<SettingsButton {...this.props}/>*/}
-        <ToolBar {...this.props} />
+        <ToolBar flow={flow}
+                 nodes={nodes}
+                 history={history}
+                 notify={notify}
+                 dismissNotify={dismissNotify}
+                 addStep={addStep}
+                 addHistory={addHistory}
+                 sortFlow={sortFlow}
+                 loadFlowJSON={loadFlowJSON}
+                 selectSteps={selectSteps}
+                 setZoom={setZoom}
+                 undo={undo}
+                 redo={redo}/>
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)}
                 message={'フローを構築中です'} />
         <PaperScroller {...this.props}>
