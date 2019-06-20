@@ -6,10 +6,20 @@ import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { AddButton, Button } from 'Shared/Input'
 import { ModalUtil } from 'Utils/index'
 import Constants from 'Constants/index'
-import type { SubFlowParamType } from 'Types/index'
+import type { MastType, SubFlowParamType } from 'Types/index'
 import { CommandSelector } from "FlowEditorContainer/Command";
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
-class FlowSettingsInspector extends React.Component<FlowEditorProps> {
+type FlowSettingsInspectorProps = {
+  mast: MastType;
+  selected_step_ids: [];
+  addStep: Function;
+  selectSteps: Function;
+  flow: FlowModelProps;
+  updateFlow: Function;
+}
+
+class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> {
   paramRefs: [] = []
   loading: boolean = false
 
@@ -22,7 +32,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps> {
   }
 
   onHide (e: Event) {
-    const {flow, notify, dismissNotify} = this.props
+    const {flow} = this.props
     const {label} = this.props.flow
 
     const beforeFlow = Object.assign({}, {...flow})
@@ -156,7 +166,13 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps> {
       {inputParamsContainer}
       {addFlowParams}
       <div className={style.full_hr} />
-      <CommandSelector numberOfInput={0} {...this.props} />
+      <CommandSelector
+          mast={mast}
+          numberOfInput={0}
+          selected_step_ids={selected_step_ids}
+          addStep={addStep}
+          selectSteps={selectSteps}
+      />
     </BaseInspector>
   }
 }
