@@ -3,7 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import NavigationBar from 'Shared/NavigationBar'
 import Constants from 'Constants/index'
-import { Model } from 'Model/index'
+import Model from "Model/Core";
 
 export type NavigationModelProps = {
   flow_name: string;

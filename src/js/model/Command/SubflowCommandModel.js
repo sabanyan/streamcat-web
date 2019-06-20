@@ -1,6 +1,6 @@
 //@flow
 import { CommandParamType, CommandPortType, SubFlowCommandParamType } from 'Types/index'
-import { Model } from 'Model/index'
+import Model from "Model/Core";
 
 export default class SubflowCommandModel extends Model {
   id: string
