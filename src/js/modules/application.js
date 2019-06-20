@@ -385,9 +385,13 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     }
     case ADD_HISTORY_ACTION: {
       //let newState = StateUtil.deepCopy(state)
-      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history, newState.nodes)
-
-      if (isSame) {
+      // #issue 188の対応
+      // 親・子関係のコマンド（c）、データフレーム（d）がある場合、　n番目のヒストリで
+      // dを削除したら、n-1番目のヒストリのcのdstもなくなる
+      newState.history = StateUtil.deepCopy(newState.history)
+      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
+      
+      if(isSame){
         return newState
       }
 

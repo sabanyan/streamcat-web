@@ -128,24 +128,44 @@ class InOutConnector extends React.Component{
 
 
 
-    const subflow = selectedStep.getCommand()
-    const subflowOutPorts = subflow.getOutPorts()
-    const output = Object.keys(selectedStep.dsts).map((key,index)=>{
-      let dataFrameId: string
-      dataFrameId = selectedStep.dsts[key]
-      const node = FlowUtil.getNodeFromID(nodes,dataFrameId)
-      const subflowOutPort = subflowOutPorts.find((outPort) => {
-        return (outPort.nodeId == key)
+    let output = null
+    if(selectedStep instanceof SubFlowStepModel) {
+      const subflow = selectedStep.getCommand()
+      const subflowOutPorts = subflow.getOutPorts()
+      output = Object.keys(selectedStep.dsts).map((key,index)=>{
+        let dataFrameId: string
+        dataFrameId = selectedStep.dsts[key]
+        const node = FlowUtil.getNodeFromID(nodes,dataFrameId)
+        const subflowOutPort = subflowOutPorts.find((outPort) => {
+          return (outPort.nodeId == key)
+        })
+        return <div key={index} className={style.outPort_}>
+          <div className={style.outPort_Port}>
+            {(subflowOutPort) ? subflowOutPort.label : null}
+          </div>
+          <div className={style.outPort_Node}>
+            {node.getLabel()}
+          </div>
+        </div>
       })
-      return <div key={index} className={style.outPort_}>
-        <div className={style.outPort_Port}>
-          {(subflowOutPort) ? subflowOutPort.label : null}
+    } else if (selectedStep instanceof CommandStepModel) {
+      const commandStep = selectedStep
+      const commandStepDsts = commandStep.dsts
+      output = Object.keys(commandStepDsts).map((key,index)=>{
+        let dataFrameId: string
+        dataFrameId = commandStepDsts[key]
+        const node = FlowUtil.getNodeFromID(nodes,dataFrameId)
+        return <div key={index} className={style.outPort_}>
+          <div className={style.outPort_Port}>
+            {key}
+          </div>
+          <div className={style.outPort_Node}>
+            {node.getLabel()}
+          </div>
         </div>
-        <div className={style.outPort_Node}>
-          {node.getLabel()}
-        </div>
-      </div>
-    })
+      })
+    }
+    
 
     return  <div className="kskp-form">
           <label>入力</label>
