@@ -4,8 +4,7 @@ import classnames from 'classnames'
 import style from './style.scss'
 import projectListStyle from 'Shared/List/ProjectList/style.scss'
 import APIUtil from 'Utils/APIUtil'
-import ProjectList from 'Shared/List/ProjectList'
-import ProjectListHeader from 'Shared/List/ProjectList/ProjectListHeader'
+import {ProjectListRow} from 'Shared/List'
 import Loader from 'Shared/Loader'
 import EmptyState from 'Shared/EmptyState'
 import { Button, TextField } from 'Shared/Input'
@@ -85,12 +84,12 @@ export default class ProjectListContainer extends React.Component {
       return (project.name.indexOf(keyword) != -1) ? true : false
     }).map((project) => {
       const selected = (this.state.selected_project === project)
-      return <ProjectList key={project.uuid}
+      return <ProjectListRow key={project.uuid}
                           project={project}
                           href={'./flows?project=' + project.uuid}
                           selected={selected}
                           onClickProject={(e, project) => this.onClickProject(e, project)}>
-      </ProjectList>
+      </ProjectListRow>
     })
   }
 
