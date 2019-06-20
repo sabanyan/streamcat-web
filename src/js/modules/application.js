@@ -1,6 +1,7 @@
 //@flow
 import Constants from 'Constants/index'
-import Graph, { defaultGraphProps, defaultNodeProps } from 'Utils/Graph'
+import { GraphUtil } from 'Utils'
+import { defaultGraphProps, defaultNodeProps } from 'Utils/GraphUtil'
 import { FlowUtil, StateUtil, Validator, ZoomUtil } from 'Utils/index'
 import FlowModel from 'Model/Flow/FlowModel'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
@@ -105,7 +106,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         let totalSY = 0
 
         src_step_ids.forEach((id: string) => {
-          const target: StepModelType = Graph.getNode(state.nodes, id)
+          const target: StepModelType = GraphUtil.getNode(state.nodes, id)
           totalSX = totalSX + target.position.x
           totalSY = totalSY + target.position.y
         })
@@ -174,14 +175,14 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
 
           //先行して設置されている接続先のノードの位置調整
           dst_step_ids.map((id, index) => {
-            let new_node = Graph.getNode(state.nodes, id)
+            let new_node = GraphUtil.getNode(state.nodes, id)
             new_node.setFrame({
               x: add_step.position.x - average.dx + index * (defaultNodeProps.width + defaultGraphProps.nodeSeparator + notOverlapOffsetX),
               y: add_step.position.y + defaultNodeProps.height + defaultGraphProps.rankSeparator,
               width: defaultNodeProps.width,
               height: defaultNodeProps.height
             })
-            newState.nodes = Graph.updateNode({nodes: state.nodes, key: id, new_node: new_node})
+            newState.nodes = GraphUtil.updateNode({nodes: state.nodes, key: id, new_node: new_node})
           })
           //出力先ステップの位置調整
 
@@ -214,7 +215,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             if (add_step.srcs !== undefined || add_step.srcs !== {}) {
               inputPortName = Object.keys(add_step.srcs)[0]
             }
-            graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+            graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName))
 
           })
           dst_step_ids.forEach((id, index) => {
@@ -233,7 +234,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             if (add_step.dsts !== undefined || add_step.dsts !== {}) {
               outputPortName = Object.keys(add_step.dsts)[0]
             }
-            graph.addEdge(from, to, Graph.edgeName(from, to, outputPortName))
+            graph.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortName))
           })
         } else {
           add_step.srcs = {}
@@ -279,11 +280,11 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       //ただしsrcが別のデータフレームを複数出力している場合があるので、
       //一つでもデータフレームが残っていると削除は行わない
       action.step_ids.forEach((id) => {
-        if (Graph.getNode(newState.nodes, id) instanceof DataFrameStepModel) {
+        if (GraphUtil.getNode(newState.nodes, id) instanceof DataFrameStepModel) {
           //削除対象のノードの親がある場合、親を調べる
           if (graph.g.inEdges(id) && graph.g.inEdges(id).length > 0) {
             const deleteTargetStepId = graph.g.inEdges(id)[0].v
-            const deleteTargetStep = Graph.getNode(newState.nodes, deleteTargetStepId)
+            const deleteTargetStep = GraphUtil.getNode(newState.nodes, deleteTargetStepId)
             if (deleteTargetStep instanceof CommandStepModel ||
               deleteTargetStep instanceof SubFlowStepModel) {
               //親のコマンドの出力先が対象のデータフレームだけの場合親を削除
@@ -301,7 +302,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         deleteKeySet.add(id)
       })
 
-      newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes, deleteKeySet)
+      newState.nodes = GraphUtil.getNewNodesWithExculudeKeys(newState.nodes, deleteKeySet)
       newState.graph = graph.getGraph(newState)
 
       //削除後は非選択状態にする
@@ -315,7 +316,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     //     newState.nodes = graph.removeNode(newState.nodes,[id])
     //     deleteKeySet.add(id)
     //   })
-    //   newState.nodes = Graph.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
+    //   newState.nodes = GraphUtil.getNewNodesWithExculudeKeys(newState.nodes,deleteKeySet)
     //   newState.graph = graph.getGraph(newState)
     //
     //   //削除後は非選択状態にする
@@ -466,12 +467,12 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
 
     case DELETE_CACHE_ACTION: {
       const id = action.selected_step_id
-      let node = Graph.getNode(state.nodes, id)
+      let node = GraphUtil.getNode(state.nodes, id)
       if (node instanceof DataFrameStepModel) {
         node.deleteCache()
       }
 
-      newState.nodes = Graph.updateNode({nodes: state.nodes, key: id, new_node: node})
+      newState.nodes = GraphUtil.updateNode({nodes: state.nodes, key: id, new_node: node})
       break
     }
 
@@ -603,8 +604,8 @@ function rebuildNodesEdges (newState, action) {
             const id = node.srcs[portName]
             const from = id
             const to = node.id
-            if (Graph.getNode(newState.nodes, id)) {
-              graph.removeEdge(from, to, Graph.edgeName(from, to, portName))
+            if (GraphUtil.getNode(newState.nodes, id)) {
+              graph.removeEdge(from, to, GraphUtil.edgeName(from, to, portName))
             }
           })
           //ノードのつながりを再構築
@@ -612,8 +613,8 @@ function rebuildNodesEdges (newState, action) {
             const id = action.step.srcs[portName]
             const from = id
             const to = action.step.id
-            if (Graph.getNode(newState.nodes, id)) {
-              graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+            if (GraphUtil.getNode(newState.nodes, id)) {
+              graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName))
             }
           })
         }
@@ -623,8 +624,8 @@ function rebuildNodesEdges (newState, action) {
             const id = node.dsts[portName]
             const from = node.id
             const to = id
-            if (Graph.getNode(newState.nodes, id)) {
-              graph.removeEdge(from, to, Graph.edgeName(from, to, portName))
+            if (GraphUtil.getNode(newState.nodes, id)) {
+              graph.removeEdge(from, to, GraphUtil.edgeName(from, to, portName))
             }
           })
           //ノードのつながりを再構築
@@ -632,8 +633,8 @@ function rebuildNodesEdges (newState, action) {
             const id = action.step.dsts[portName]
             const from = action.step.id
             const to = id
-            if (Graph.getNode(newState.nodes, id)) {
-              graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+            if (GraphUtil.getNode(newState.nodes, id)) {
+              graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName))
             }
           })
         }
@@ -661,8 +662,8 @@ function allRebuildNodesEdges (newState) {
         const id = node.srcs[portName]
         const from = id
         const to = node.id
-        if (Graph.getNode(newState.nodes, id)) {
-          graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+        if (GraphUtil.getNode(newState.nodes, id)) {
+          graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName))
         }
       })
       //ノードのつながりを再構築
@@ -670,8 +671,8 @@ function allRebuildNodesEdges (newState) {
         const id = node.dsts[portName]
         const from = node.id
         const to = id
-        if (Graph.getNode(newState.nodes, id)) {
-          graph.addEdge(from, to, Graph.edgeName(from, to, portName))
+        if (GraphUtil.getNode(newState.nodes, id)) {
+          graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName))
         }
       })
     }

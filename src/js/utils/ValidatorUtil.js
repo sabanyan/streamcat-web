@@ -7,12 +7,12 @@ import DataFrameStepModelSchema from 'Schema/steps/DataFrameStepModelSchema.json
 import SubFlowCommandModeSchema from 'Schema/steps/SubFlowStepModelSchema.json'
 import NoteStepModelSchema from 'Schema/steps/NoteStepModelSchema.json'
 
-import { CommandUtil, Log } from 'Utils/index'
+import { CommandUtil, LogUtil } from 'Utils/index'
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
 import ValidateJS from 'validate.js'
 import NoteStepModel from 'Model/Step/NoteStepModel.js'
 
-class Validator {
+class ValidatorUtil {
   ajv: Ajv
 
   constructor () {
@@ -557,7 +557,7 @@ class Validator {
   schemaValidate (schema, state) {
     const valid = this.ajv.validate(schema, state)
     if (!valid) {
-      Log.error(this.ajv.errorsText() + ' by ' + schema.$id, state)
+      LogUtil.error(this.ajv.errorsText() + ' by ' + schema.$id, state)
       return false
     }
     return true
@@ -601,4 +601,4 @@ class Validator {
   }
 }
 
-export default new Validator()
+export default new ValidatorUtil()
