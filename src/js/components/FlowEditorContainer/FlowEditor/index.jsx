@@ -195,7 +195,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             {this.renderSteps()}
             {this.renderSelector()}
           </Paper>
-        </>
+        </PaperScroller>
         <Inspector {...this.props} />
         <ModalManager />
         <NotificationManager />

@@ -32,7 +32,7 @@ import { connect } from 'react-redux'
 import * as React from 'react'
 import type { FlowModelProps } from 'Model/Flow/FlowModel'
 import NavigationModel from 'Model/Navigation/NavigationModel'
-import type { DataFrameDetailType, DragType, StepModelType } from 'Types/index'
+import type { DataFrameDetailType, DragType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 let FlowEditorContainer
@@ -41,9 +41,10 @@ export type FlowEditorProps = {
   projectId: string,
   projectName: string,
   graph: { width: number, height: number, edges: any[], nodes: any[] };
-  mast: { commands: any[], subflows: any[], visualizers: any[] };
+  mast: MastType;
   loadFlowJSON: Function;
   addMaster: Function;
+  addStep: Function;
   selectSteps: Function;
   addSelectStep: Function;
   cutSteps: Function;

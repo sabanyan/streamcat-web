@@ -17,13 +17,20 @@ import { GraphUtil } from 'Utils/index'
 class Inspector extends React.Component<FlowEditorProps> {
 
   render () {
-    let {selected_step_ids, nodes} = this.props
+      let {selected_step_ids, nodes, mast, selected_tab_id, addStep, selectSteps, flow, updateFlow} = this.props
 
-    let property
+      let property
 
-    if (selected_step_ids.length == 1) {
-      if (selected_step_ids[0] === 'flow') {
-        property = <FlowSettingsInspector {...this.props} />
+      if (selected_step_ids.length == 1) {
+          if (selected_step_ids[0] === 'flow') {
+              property = <FlowSettingsInspector
+                  mast={mast}
+                  selected_step_ids={selected_tab_id}
+                  addStep={addStep}
+                  selectSteps={selectSteps}
+                  flow={flow}
+                  updateFlow={updateFlow}
+              />
       } else {
         const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
         if (selected_step instanceof DataFrameStepModel) {
