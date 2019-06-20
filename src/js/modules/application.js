@@ -736,8 +736,8 @@ export const updateStepAction = (step: StepModelType) => {
 
 /**
  * フローの更新
- * @param step
- * @returns {{type: string, step: *}}
+ * @param flow
+ * @returns {{type: string, flow: *}}
  */
 export const updateFlowAction = flow => {
   return {
