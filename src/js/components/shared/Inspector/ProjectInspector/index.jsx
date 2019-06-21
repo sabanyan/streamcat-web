@@ -1,8 +1,8 @@
 //@flow
 import React from 'react'
 import style from '../style.scss'
-import Button from '../../Button/index'
-import BaseInspector from '../BaseInspector'
+import { Button } from 'Shared/Input'
+import { BaseInspector } from 'Shared/Inspector'
 import Resizer from '../Resizer'
 
 type Props = {

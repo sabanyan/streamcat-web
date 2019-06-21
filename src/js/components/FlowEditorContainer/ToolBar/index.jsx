@@ -1,30 +1,24 @@
 //@flow
 import React from 'react'
-import Constants from '../../../constants'
-import Save from './Save'
-import Run from './Run'
-import Sort from './Sort'
-import DataSourceImport from './DataSourceImport'
-import Zoom from './Zoom'
+import Constants from 'Constants/index'
+import Save from 'FlowEditorContainer/ToolBar/Save'
+import Run from 'FlowEditorContainer/ToolBar/Run'
+import Sort from 'FlowEditorContainer/ToolBar/Sort'
+import DataSourceImport from 'FlowEditorContainer/ToolBar/DataSourceImport'
+import Zoom from 'FlowEditorContainer/ToolBar/Zoom'
 import style from './style.scss'
 import classnames from 'classnames'
-import type { DataFrameStepModelProps } from '../../../model/Step/DataFrameStepModel'
-import DataFrameStepModel from '../../../model/Step/DataFrameStepModel'
-import APIUtil from '../../../utils/APIUtil'
-import HttpUtil from '../../../utils/HttpUtil'
-import type { FlowEditorProps } from '../index'
-import Loader from '../../shared/Loader'
-import type { LibraryListDataType, UploadedFileType } from '../../../types'
-import { RunResponseType } from '../../../types'
-import FlowUtil from '../../../utils/FlowUtil'
-import Undo from './Undo'
-import Redo from './Redo'
-import ReactDomUtil from '../../../utils/ReactDomUtil'
-import Note from './Note'
-import NoteStepModel, { NoteStepModelProps } from '../../../model/Step/NoteStepModel'
-import PositionUtil from '../../../utils/PositionUtil'
-import { defaultGraphProps } from '../../../utils/Graph'
-import ZoomUtil from '../../../utils/ZoomUtil'
+import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
+import { DataFrameStepModel, NoteStepModel } from 'Model/index'
+import { APIUtil, FlowUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { Loader } from 'Shared/Base'
+import type { LibraryListDataType, RunResponseType, UploadedFileType, } from 'Types/index'
+import Undo from 'FlowEditorContainer/ToolBar/Undo'
+import Redo from 'FlowEditorContainer/ToolBar/Redo'
+import Note from 'FlowEditorContainer/ToolBar/Note'
+import { NoteStepModelProps } from 'Model/Step/NoteStepModel'
+import { defaultGraphProps } from 'Utils/GraphUtil'
 
 type ToolBarProps = {
   ...FlowEditorProps
@@ -56,7 +50,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         description: flow.description,
         params: flow.params,
         ports: flow.ports,
-        nodes: nodes
+        nodes: nodes,
       },
       notify,
       dismissNotify)
@@ -68,7 +62,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       ports: flow.ports,
       label: flow.label,
       description: flow.description,
-      params: flow.params
+      params: flow.params,
     }, notify, dismissNotify)
 
   }
@@ -241,11 +235,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     position = {
       x: ZoomUtil.zoomReverse(position.x, this.props.zoom),
       y: ZoomUtil.zoomReverse(position.y, this.props.zoom)
-        + Constants.default.step.height
-        + defaultGraphProps.rankSeparator
+      + Constants.default.step.height
+      + defaultGraphProps.rankSeparator,
     }
 
-    const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({...position}, this.props.nodes)
+    const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition(
+      {...position}, this.props.nodes)
 
     const props: NoteStepModelProps = {
       type: Constants.step.type.note,
@@ -279,7 +274,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
-        <Note disabled={false} icon={'comment'} onClick={() => this.onClickNote()}>メモ</Note>
+        <Note disabled={false} icon={'comment'}
+              onClick={() => this.onClickNote()}>メモ</Note>
         {/*<Suspend disabled={true} icon={'&#xE034'}>実行中止</Suspend>*/}
         {/*<DryRun disabled={true} icon={"&#xE044"}>ドライラン</DryRun>*/}
         {/*<Download disabled={true} icon={"&#xE2C4"}>ダウンロード</Download>*/}
@@ -293,12 +289,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
               onClickZoomOut={(e) => this.onClickZoomOut(e)}
               onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
-              zoom={zoom} />
+              zoom={zoom}/>
         <Sort disabled={false} icon={'&#xE42A'}
               onClick={(e) => this.onClickSort(e)}>整列</Sort>
       </div>
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false}
-              visible={this.loading} message={this.loadingMessage} />
+              visible={this.loading} message={this.loadingMessage}/>
     </div>
   }
 }

@@ -1,17 +1,15 @@
 //@flow
 import React from 'react'
-import BaseInspector from '../BaseInspector/index'
+import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import Button from '../../Button/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import Constants from '../../../../constants'
-import type { SubFlowParamType } from '../../../../types'
-import AddButton from '../../AddButton'
-import CommandSelector from '../../CommandSelector'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { AddButton, Button } from 'Shared/Input'
+import { ModalUtil } from 'Utils/index'
+import Constants from 'Constants/index'
+import type { SubFlowParamType } from 'Types/index'
+import { CommandSelector } from "FlowEditorContainer/Command";
 
-class FlowSettingsInspector extends React.Component<FlowEditorProps, State> {
-
+class FlowSettingsInspector extends React.Component<FlowEditorProps, StateUtil> {
   paramRefs: [] = []
   loading: boolean = false
 

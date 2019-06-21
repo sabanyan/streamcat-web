@@ -1,15 +1,12 @@
 //@flow
 import React from 'react'
-import BaseInspector from '../BaseInspector/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import Button from '../../Button/index'
-import CommandSelector from '../../CommandSelector/index'
-import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
-import CommandStepModel from '../../../../model/Step/CommandStepModel'
-import Graph from '../../../../utils/Graph'
-import ModalUtil from '../../../../utils/ModalUtil'
-import Constants from '../../../../constants/index'
-import SubFlowStepModel from '../../../../model/Step/SubFlowStepModel'
+import { BaseInspector } from 'Shared/Inspector'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { Button } from 'Shared/Input'
+import { CommandSelector } from "FlowEditorContainer/Command";
+import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
+import { GraphUtil, ModalUtil } from 'Utils/index'
+import Constants from 'Constants/index'
 
 class MultiInspector extends React.Component<FlowEditorProps> {
   onClickDelete (e: Event) {
@@ -38,7 +35,7 @@ class MultiInspector extends React.Component<FlowEditorProps> {
     let cnt = 0
     let hasMixedCommand = false //コマンドが混ざって選択されている場合
     selected_step_ids.forEach((id) => {
-      const node = Graph.getNode(nodes, id)
+      const node = GraphUtil.getNode(nodes, id)
       if (node instanceof DataFrameStepModel) {
         cnt++
       } else if (node instanceof SubFlowStepModel) {

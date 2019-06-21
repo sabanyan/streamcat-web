@@ -2,18 +2,15 @@
 import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
-import projectListStyle from '../shared/List/ProjectList/style.scss'
-import APIUtil from '../../utils/APIUtil'
-import ProjectList from '../shared/List/ProjectList'
-import ProjectListHeader from '../shared/List/ProjectList/ProjectListHeader'
-import Loader from '../shared/Loader'
-import EmptyState from '../shared/EmptyState'
-import Button from '../shared/Button'
-import ModalManager from '../shared/ModalManager'
-import Constants from '../../constants'
-import ModalUtil from '../../utils/ModalUtil'
-import TextField from '../shared/TextField'
-import ProjectInspector from '../shared/Inspector/ProjectInspector'
+import projectListStyle from 'Shared/ListRow/ProjectListRow/style.scss'
+import { APIUtil, ModalUtil } from 'Utils/index'
+import { ProjectListHeader, ProjectListRow } from 'Shared/ListRow'
+import { EmptyState, Loader } from 'Shared/Base'
+import { Button, TextField } from 'Shared/Input'
+import { ModalManager } from 'Shared/Modal'
+import Constants from 'Constants/index'
+
+import { ProjectInspector } from 'Shared/Inspector'
 
 /**
  * ======================================================
@@ -85,12 +82,12 @@ export default class ProjectListContainer extends React.Component {
       return (project.name.indexOf(keyword) != -1) ? true : false
     }).map((project) => {
       const selected = (this.state.selected_project === project)
-      return <ProjectList key={project.uuid}
+      return <ProjectListRow key={project.uuid}
                           project={project}
                           href={'./flows?project=' + project.uuid}
                           selected={selected}
                           onClickProject={(e, project) => this.onClickProject(e, project)}>
-      </ProjectList>
+      </ProjectListRow>
     })
   }
 

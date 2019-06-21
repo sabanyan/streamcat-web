@@ -1,26 +1,21 @@
 //@flow
 import React from 'react'
-import Paper from '../Paper'
-import PaperScroller from '../PaperScroller'
-import Step from '../../shared/Step'
-import PaperZoom from '../PaperZoom'
-import ToolBar from '../ToolBar'
-import ModalManager from '../../shared/ModalManager'
-import Constants from '../../../constants/index'
-import type { FlowEditorProps } from '../index'
-import Edge from '../../shared/Edge'
-import Selector from '../../shared/Selector'
+import Paper from 'FlowEditorContainer/Paper'
+import PaperScroller from 'FlowEditorContainer/PaperScroller'
+import { Edge, Selector, Step } from 'Shared/SVG'
+import PaperZoom from 'FlowEditorContainer/PaperZoom'
+import ToolBar from 'FlowEditorContainer/ToolBar'
+import { ModalManager } from 'Shared/Modal'
+import Constants from 'Constants/index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import APIUtil from '../../../utils/APIUtil'
-import Graph from '../../../utils/Graph'
-import ZoomUtil from '../../../utils/ZoomUtil'
-import CommandModel from '../../../model/Command/CommandModel'
-import Loader from '../../shared/Loader'
-import type { SubFlowParamType } from '../../../types'
-import Inspector from '../../shared/Inspector'
-import SubflowCommandModel from '../../../model/Command/SubflowCommandModel'
-import VisualizeModel from '../../../model/Visualize/VisualizeModel'
-import NotificationManager from '../../shared/NotificationManager'
+import { APIUtil, GraphUtil, ZoomUtil } from 'Utils/index'
+import CommandModel from 'Model/Command/CommandModel'
+import { Loader } from 'Shared/Base'
+import type { SubFlowParamType } from 'Types/index'
+import { Inspector } from 'Shared/Inspector'
+import { SubflowCommandModel, VisualizeModel } from 'Model/index'
+import { NotificationManager } from 'Shared/Notification'
 
 type State = {}
 
@@ -38,7 +33,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       redirect: 'follow',
     }
 
-    const graph: Graph = new Graph()
+    const graph: GraphUtil = new GraphUtil()
 
     let preRequest = []
     let flowRequest = []
@@ -130,8 +125,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
     if (Array.isArray(graph.edges)) {
       edges = graph.edges.map((edge, index) => {
-        const v_node = Graph.getNode(nodes, edge.v)
-        const w_node = Graph.getNode(nodes, edge.w)
+        const v_node = GraphUtil.getNode(nodes, edge.v)
+        const w_node = GraphUtil.getNode(nodes, edge.w)
         if (v_node && w_node) {
           const vx = v_node.position.x +
             Constants.default.datasource.width / 2

@@ -1,10 +1,7 @@
 //@flow
-import Constants from '../constants'
-import ParamString from '../components/shared/Param/ParamString'
-import ParamBoolean from '../components/shared/Param/ParamBoolean'
+import Constants from 'Constants/index'
+import { ParamBoolean, ParamNumber, ParamSelect, ParamString } from 'Shared/Inspector'
 import * as React from 'react'
-import ParamSelect from '../components/shared/Param/ParamSelect'
-import ParamNumber from '../components/shared/Param/ParamNumber'
 
 export default class ParamUtil {
   static clearElement (element) {

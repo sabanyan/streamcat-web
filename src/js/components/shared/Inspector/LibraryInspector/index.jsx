@@ -2,16 +2,13 @@
 import React from 'react'
 import classnames from 'classnames'
 import style from '../style.scss'
-import BaseInspector from '../BaseInspector'
-import type { LibraryListDataType } from '../../../../types'
+import { BaseInspector, Resizer } from 'Shared/Inspector'
+import type { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
-import Constants from '../../../../constants'
-import Button from '../../Button'
-import Resizer from '../Resizer'
-import ModalUtil from '../../../../utils/ModalUtil'
-import APIUtil from '../../../../utils/APIUtil'
-import SortUtil from '../../../../utils/SortUtil'
-import Visualizer from '../../../../components/shared/Visualizer'
+import Constants from 'Constants/index'
+import { Button } from 'Shared/Input'
+import { APIUtil, ModalUtil, SortUtil } from "Utils/index";
+import Visualizer from "Shared/Visualizer/Core";
 
 type Props = {
   visualizers: [];
