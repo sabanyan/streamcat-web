@@ -1,16 +1,12 @@
 //@flow
 import React from 'react'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
+import Constants from 'Constants/index'
+import { FlowUtil, ModalUtil, ReactDomUtil } from 'Utils/index'
 import style from '../style.scss'
-import Button from '../../Button/index'
-import BaseInspector from '../BaseInspector'
-import type { FlowListDataType } from '../../../../types'
+import { Button } from 'Shared/Input'
+import { BaseInspector, InputFlowForm, Resizer } from 'Shared/Inspector'
+import type { FlowListDataType } from 'Types/index'
 import moment from 'moment/moment'
-import ReactDomUtil from '../../../../utils/ReactDomUtil'
-import InputFlowForm from '../../InputFlowForm'
-import FlowUtil from '../../../../utils/FlowUtil'
-import Resizer from '../Resizer'
 
 type Props = {
   project: {};
@@ -123,7 +119,7 @@ class FlowInspector extends React.Component<Props> {
         <Button danger={true}
                 onClick={() => this.props.onClickDelete(uuid)}>削除する</Button>
       </div>
-      <div className={style.full_hr} />
+      <div className={style.full_hr}/>
       <div>
         <label>フロー名</label>
       </div>

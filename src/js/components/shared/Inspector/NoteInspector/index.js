@@ -1,11 +1,10 @@
 import React from 'react'
-import type { NoteDetailType } from '../../../../types/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import BaseInspector from '../BaseInspector/index'
-import Graph from '../../../../utils/Graph'
-import Button from '../../Button/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import Constants from '../../../../constants/index'
+import type { NoteDetailType } from 'Types/index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { BaseInspector } from 'Shared/Inspector'
+import { GraphUtil, ModalUtil } from 'Utils/index'
+import { Button } from 'Shared/Input'
+import Constants from 'Constants/index'
 import style from '../style.scss'
 
 type State = {
@@ -23,7 +22,7 @@ class NoteInspector extends React.Component<FlowEditorProps, State> {
 
   getSelectedStep (): StepModelType {
     let {selected_step_ids, nodes} = this.props
-    return Graph.getNode(nodes, selected_step_ids[0])
+    return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
   onClickDelete (e: Event) {

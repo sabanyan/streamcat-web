@@ -1,23 +1,16 @@
 //@flow
 import * as React from 'react'
-import BaseInspector from '../BaseInspector/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
+import { BaseInspector, InOutConnector, ParamsForm } from 'Shared/Inspector'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from '../style.scss'
-import Button from '../../Button/index'
-import CommandStepModel from '../../../../model/Step/CommandStepModel'
-import InOutConnector from './InOutConnector/index'
-import Constants from '../../../../constants/index'
-import Graph from '../../../../utils/Graph'
-import type { CommandParamType, StepModelType } from '../../../../types/index'
-import CommandModel from '../../../../model/Command/CommandModel'
-import APIUtil from '../../../../utils/APIUtil'
-import FlowModel from '../../../../model/Flow/FlowModel'
-import Loader from '../../Loader/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import ParamUtil from '../../../../utils/ParamUtil'
-import StateUtil from '../../../../utils/State'
-import SubflowCommandModel from '../../../../model/Command/SubflowCommandModel'
-import ParamsForm from '../../ParamsForm'
+import { Button } from 'Shared/Input'
+import { CommandStepModel, SubflowCommandModel } from 'Model/index'
+import Constants from 'Constants/index'
+import { APIUtil, GraphUtil, ModalUtil, ParamUtil, StateUtil } from 'Utils/index'
+import type { CommandParamType, StepModelType } from 'Types/index'
+import CommandModel from 'Model/Command/CommandModel'
+import FlowModel from 'Model/Flow/FlowModel'
+import { Loader } from 'Shared/Base'
 
 type CommandInspectorProps = {
   ...FlowEditorProps,
@@ -57,7 +50,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
   getSelectedStep () {
     let {selected_step_ids, nodes} = this.props
-    return Graph.getNode(nodes, selected_step_ids[0])
+    return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
   onHide () {

@@ -1,11 +1,8 @@
 //@flow
 import * as React from 'react'
 import classnames from 'classnames'
-import TabBar from '../../TabBar'
-import TabList from '../../TabBar/TabList'
-import Tab from '../../TabBar/Tab'
-import TabPanel from '../../TabBar/TabPanel'
-import style from '../style.scss'
+import { Tab, TabBar, TabList, TabPanel } from 'Shared/Base'
+import style from '../Core/style.scss'
 
 type Props = {
   id: string;

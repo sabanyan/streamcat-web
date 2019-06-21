@@ -1,7 +1,6 @@
 //@flow
-import ModalUtil from './ModalUtil'
-import Constants from '../constants'
-import StringUtil from './StringUtil'
+import { ModalUtil, StringUtil } from 'Utils/index'
+import Constants from 'Constants/index'
 import React from 'react'
 
 export default class ErrorUtil {

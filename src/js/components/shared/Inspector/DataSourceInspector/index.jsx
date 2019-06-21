@@ -1,28 +1,28 @@
 //@flow
 import React from 'react'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import SortUtil from '../../../../utils/SortUtil'
-import BaseInspector from '../BaseInspector/index'
+import Constants from 'Constants/index'
+import {
+  APIUtil,
+  ErrorUtil,
+  FlowUtil,
+  GraphUtil,
+  ModalUtil,
+  ReactDomUtil,
+  SortUtil,
+  StateUtil,
+  StringUtil
+} from 'Utils/index'
+import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import Button from '../../Button/index'
-import DownloadButton from '../../Button/DownloadButton/index'
-import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
-import CommandSelector from '../../CommandSelector/index'
-import FlowModel from '../../../../model/Flow/FlowModel'
-import Graph from '../../../../utils/Graph'
-import APIUtil from '../../../../utils/APIUtil'
-import type { DataFrameDetailType } from '../../../../types/index'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import CSVModel from '../../../../model/CSV/CSVModel'
-import Loader from '../../Loader/index'
-import FlowUtil from '../../../../utils/FlowUtil'
-import StateUtil from '../../../../utils/State'
-import StringUtil from '../../../../utils/StringUtil'
-import ErrorUtil from '../../../../utils/ErrorUtil'
-import Visualizer from '../../Visualizer'
-import ReactDomUtil from '../../../../utils/ReactDomUtil'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { Button, DownloadButton } from 'Shared/Input'
+import { CSVModel, DataFrameStepModel } from 'Model/index'
+import { CommandSelector } from "FlowEditorContainer/Command";
+import FlowModel from 'Model/Flow/FlowModel'
+import type { DataFrameDetailType } from 'Types/index'
+import type { CSVModelProps } from 'Model/CSV/CSVModel'
+import { Loader } from 'Shared/Base'
+import { Visualizer } from 'Shared/Visualizer'
 
 type State = {
   dataFrameDetail?: DataFrameDetailType;
@@ -176,7 +176,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         let {selected_step_ids, nodes} = this.props
-        const selected_step = Graph.getNode(nodes, selected_step_ids[0])
+        const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
         this.props.deleteSteps([selected_step.id])
         this.props.selectSteps()
         this.props.addHistory()
@@ -224,7 +224,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
 
   getSelectedStep (): DataFrameStepModel {
     let {selected_step_ids, nodes} = this.props
-    return Graph.getNode(nodes, selected_step_ids[0])
+    return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
   onHide () {

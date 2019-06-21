@@ -1,38 +1,38 @@
 //@flow
 import {
-  addHistoryAction,
-  addMasterAction,
-  addNoteAction,
-  addSelectStepAction,
-  addStepAction,
-  copyStepsAction,
-  cutStepsAction,
-  deleteCacheAction,
-  deleteSelectStepAction,
-  deleteStepsAction,
-  dragEndAction,
-  draggingAction,
-  dragStartAction,
-  executeFlowAction,
-  loadFlowJSONAction,
-  pasteStepsAction,
-  redoAction,
-  selectStepsAction,
-  selectTabAction,
-  setZoomAction,
-  sortFlowAction,
-  sortStepSrcEndAction,
-  undoAction,
-  updateDataFrameDetailAction,
-  updateFlowAction,
-  updateStepAction,
-} from '../../modules/application'
-import FlowEditor from './FlowEditor'
+    addHistoryAction,
+    addMasterAction,
+    addNoteAction,
+    addSelectStepAction,
+    addStepAction,
+    copyStepsAction,
+    cutStepsAction,
+    deleteCacheAction,
+    deleteSelectStepAction,
+    deleteStepsAction,
+    dragEndAction,
+    draggingAction,
+    dragStartAction,
+    executeFlowAction,
+    loadFlowJSONAction,
+    pasteStepsAction,
+    redoAction,
+    selectStepsAction,
+    selectTabAction,
+    setZoomAction,
+    sortFlowAction,
+    sortStepSrcEndAction,
+    undoAction,
+    updateDataFrameDetailAction,
+    updateFlowAction,
+    updateStepAction,
+} from 'Modules/application'
+import FlowEditor from 'FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
-import { FlowModelProps } from '../../model/Flow/FlowModel'
-import NavigationModel from '../../model/Navigation/NavigationModel'
-import type { DragType } from '../../types'
+import type { FlowModelProps } from 'Model/Flow/FlowModel'
+import NavigationModel from 'Model/Navigation/NavigationModel'
+import type { DragType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 let FlowEditorContainer
