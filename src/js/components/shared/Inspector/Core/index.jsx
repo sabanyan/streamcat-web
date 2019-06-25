@@ -17,7 +17,7 @@ import { GraphUtil } from 'Utils/index'
 class Inspector extends React.Component<FlowEditorProps> {
 
   render () {
-      let {selected_step_ids, nodes, mast, selected_tab_id, addStep, selectSteps, flow, updateFlow, notify, dismissNotify, selected_data_source_detail, loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep} = this.props
+      let {selected_step_ids, nodes, mast, selected_tab_id, addStep, selectSteps, flow, updateFlow, notify, dismissNotify, selected_data_source_detail, loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd} = this.props
 
       let property
 
@@ -53,7 +53,16 @@ class Inspector extends React.Component<FlowEditorProps> {
               updateStep={updateStep}
           />
         } else if (selected_step instanceof CommandStepModel) {
-          property = <CommandInspector {...this.props}></CommandInspector>
+          property = <CommandInspector
+              selected_step_ids={selected_step_ids}
+              mast={mast}
+              nodes={nodes}
+              updateStep={updateStep}
+              addHistory={addHistory}
+              selectSteps={selectSteps}
+              deleteSteps={deleteSteps}
+              sortStepSrcEnd={sortStepSrcEnd}
+          />
         } else if (selected_step instanceof NoteStepModel) {
           property = <NoteInspector {...this.props}></NoteInspector>
         }
