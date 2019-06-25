@@ -120,13 +120,13 @@ class LibraryInspector extends React.Component<Props> {
           </div>
       </div>
       return <div className={classnames(style.property, style.in, 'inspector')}>
-        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+        <BaseInspector onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
       </div>
     } else {
       return <Resizer>
-        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+        <BaseInspector onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
       </Resizer>

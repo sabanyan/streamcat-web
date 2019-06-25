@@ -31,7 +31,7 @@ class FlowInspector extends React.Component<Props> {
 
   nullInspector () {
     return <Resizer>
-      <BaseInspector {...this.props} >
+      <BaseInspector>
       </BaseInspector>
     </Resizer>
   }
@@ -147,7 +147,7 @@ class FlowInspector extends React.Component<Props> {
     </div>
 
     return <Resizer>
-      <BaseInspector key={uuid + '_' + label} label={label} {...this.props} >
+      <BaseInspector key={uuid + '_' + label} label={label}>
         {content}
       </BaseInspector>
     </Resizer>

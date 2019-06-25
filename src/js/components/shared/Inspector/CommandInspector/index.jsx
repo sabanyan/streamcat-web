@@ -216,7 +216,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
     // FIXIT onBlurTitle to onChange #164
     return <BaseInspector key={selected_step.id} header={''} label={label} subLabel={subLabel}
-                          name={selected_step.id} {...this.props} onHide={() => this.onHide()}
+                          name={selected_step.id} onHide={() => this.onHide()}
                           onBlurTitle={(e) => this.onBlurTitle(e)}>
       {content}
     </BaseInspector>
