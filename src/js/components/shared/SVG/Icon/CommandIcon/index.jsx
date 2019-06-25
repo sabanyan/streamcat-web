@@ -109,7 +109,7 @@ class CommandIcon extends React.Component<Props> {
             hoverFillColor={'#FFF6E4'} selectedFillColor={'#FFF6E4'}
             hover={this.props.hover} selected={this.props.selected} stroke={'#FFB300'}
             filter={this.props.filter} style={{...Step.RectStyle, rx: 12, ry: 12}}>
-        <Icon {...this.props} fillColor={'#F4B63F'} width={22} height={22} paddingLeft={8} paddingTop={7.5}>
+        <Icon fillColor={'#F4B63F'} width={22} height={22} paddingLeft={8} paddingTop={7.5}>
           {path}
         </Icon>
       </Rect>
