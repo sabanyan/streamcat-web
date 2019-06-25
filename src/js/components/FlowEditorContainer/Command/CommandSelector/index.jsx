@@ -14,6 +14,7 @@ type CommandSelectorProps = {
     selected_step_ids: [];
     addStep: Function;
     selectSteps: Function;
+    addHistory: Function;
 }
 
 export default class CommandSelector extends React.Component<CommandSelectorProps> {
@@ -55,7 +56,7 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
   }
 
   render () {
-    const {numberOfInput,selected_step_ids,addStep,selectSteps} = this.props
+    const {numberOfInput, selected_step_ids, addStep, selectSteps, addHistory} = this.props
     const {keyword} = this.state
     const isNoKeyword = (keyword.length == 0)
     let noOperators = true
@@ -103,6 +104,7 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
           addStep={addStep}
           selectSteps={selectSteps}
           key={index}
+          addHistory={addHistory}
       />)
         beforeCommand = command
     })
