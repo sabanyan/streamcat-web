@@ -12,9 +12,13 @@ import style from './style.scss'
 import { APIUtil, GraphUtil, ZoomUtil } from 'Utils/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { Loader } from 'Shared/Base'
-import type { SubFlowParamType } from 'Types/index'
+import type { StepModelType, SubFlowParamType } from 'Types/index'
 import { Inspector } from 'Shared/Inspector'
-import { SubflowCommandModel, VisualizeModel } from 'Model/index'
+import {
+  DataFrameStepModel,
+  SubflowCommandModel,
+  VisualizeModel
+} from 'Model/index'
 import { NotificationManager } from 'Shared/Notification'
 
 type State = {}
@@ -136,14 +140,20 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             Constants.default.operator.width / 2
           const wy = w_node.position.y +
             Constants.default.operator.height / 2
-          const name = edge.v + '->' + edge.w
-          return <Edge label={name} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
+          let srcLabel;
+
+          //出力先ノードがDataFrameの場合のみ出力もとにラベルを付与する
+          if(w_node instanceof DataFrameStepModel){
+            srcLabel = JSON.parse(edge.name).port_name;
+          }
+
+          return <Edge srcLabel={srcLabel} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
         }
       })
     }
     return edges
   }
-
+  
   renderSelector () {
     let selector = null
     const {drag, zoom} = this.props

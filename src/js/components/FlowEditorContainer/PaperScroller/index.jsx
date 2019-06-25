@@ -2,7 +2,7 @@
 import * as React from 'react'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import { GraphUtil } from 'Utils/index'
+import { GraphUtil,DetectUtil } from 'Utils/index'
 import { CommandStepModel, SubFlowStepModel } from 'Model/index'
 
 class PaperScroller extends React.Component<FlowEditorProps, StateUtil> {
