@@ -107,13 +107,30 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   renderSteps () {
-    let {nodes, selected_step_ids} = this.props
+    let {nodes, selected_step_ids, invalid, mast, zoom, drag, addSelectStep, deleteSelectStep, updateDataFrameDetail, updateStep} = this.props
     let steps = []
     if (Array.isArray(nodes)) {
       steps = nodes.map((step) => {
         let selected = (step.id === selected_step_ids[0])
-        return <Step key={step.id} {...step} model={step} {...this.props}
-                     selected={selected} />
+        return <Step key={step.id}
+                     model={step}
+                     position={position}
+                     type={type}
+                     selected={selected}
+                     text={text}
+                     invalid={invalid}
+                     error={error}
+                     mast={mast}
+                     flow={flow}
+                     selected_step_ids={selected_step_ids}
+                     zoom={zoom}
+                     drag={drag}
+                     addSelectStep={addSelectStep}
+                     deleteSelectStep={deleteSelectStep}
+                     selectSteps={selectSteps}
+                     updateDataFrameDetail={updateDataFrameDetail}
+                     updateStep={updateStep}
+        />
       })
     }
     return steps
