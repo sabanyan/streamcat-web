@@ -157,7 +157,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, deleteCache, updateStep, sortStepSrcEnd} = this.props;
+    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
@@ -193,8 +193,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             history={history}
             drag={drag}
         >
-          <Paper {...this.props}>
-            {this.renderEdges()}f
+          <Paper graph={graph} zoom={zoom}>
+            {this.renderEdges()}
             {this.renderSteps()}
             {this.renderSelector()}
           </Paper>
