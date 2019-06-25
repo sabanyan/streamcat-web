@@ -13,11 +13,33 @@ import style from '../style.scss'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
+import type { DataFrameDetailType, MastType } from "Types/index";
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
-class Inspector extends React.Component<FlowEditorProps> {
+type InspectorProps = {
+    selected_step_ids: [];
+    nodes: [];
+    mast: MastType;
+    selected_tab_id: string;
+    addStep:Function;
+    selectSteps:Function;
+    flow:FlowModelProps;
+    updateFlow:Function;
+    notify:Function;
+    dismissNotify:Function;
+    selected_data_source_detail:DataFrameDetailType;
+    loadFlowJSON:Function;
+    deleteSteps:Function;
+    addHistory:Function;
+    deleteCache:Function;
+    updateStep:Function;
+    sortStepSrcEnd:Function;
+}
+
+class Inspector extends React.Component<InspectorProps> {
 
   render () {
-      let {selected_step_ids, nodes, mast, selected_tab_id, addStep, selectSteps, flow, updateFlow, notify, dismissNotify, selected_data_source_detail, loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd} = this.props
+      let {selected_step_ids, nodes, mast, addStep, selectSteps, flow, updateFlow, notify, dismissNotify, selected_data_source_detail, loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd} = this.props
 
       let property
 

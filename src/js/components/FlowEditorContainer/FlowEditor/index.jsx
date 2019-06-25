@@ -157,8 +157,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-      const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd} = this.props;
-      return <div className={style.flow_editor_container}>
+    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, deleteCache, updateStep, sortStepSrcEnd} = this.props;
+    return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
         {/*<SettingsButton {...this.props}/>*/}
@@ -199,7 +199,25 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             {this.renderSelector()}
           </Paper>
         </PaperScroller>
-        <Inspector {...this.props} />
+        <Inspector
+            selected_step_ids={selected_step_ids}
+            nodes={nodes}
+            mast={mast}
+            selected_tab_id={selected_tab_id}
+            addStep={addStep}
+            selectSteps={selectSteps}
+            flow={flow}
+            updateFlow={updateFlow}
+            notify={notify}
+            dismissNotify={dismissNotify}
+            selected_data_source_detail={selected_data_source_detail}
+            loadFlowJSON={loadFlowJSON}
+            deleteSteps={deleteSteps}
+            addHistory={addHistory}
+            deleteCache={deleteCache}
+            updateStep={updateStep}
+            sortStepSrcEnd={sortStepSrcEnd}
+        />
         <ModalManager />
         <NotificationManager />
       </div>
