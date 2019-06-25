@@ -17,6 +17,7 @@ type FlowSettingsInspectorProps = {
   selectSteps: Function;
   flow: FlowModelProps;
   updateFlow: Function;
+  addHistory: Function;
 }
 
 class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> {
@@ -122,7 +123,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   }
 
   render () {
-    const {flow, mast, addStep, selectSteps, selected_step_ids} = this.props
+    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory} = this.props
     if (!flow) return null
     const {params} = flow
 
@@ -172,6 +173,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
           selected_step_ids={selected_step_ids}
           addStep={addStep}
           selectSteps={selectSteps}
+          addHistory={addHistory}
       />
     </BaseInspector>
   }

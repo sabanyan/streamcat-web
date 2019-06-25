@@ -15,6 +15,7 @@ type Props = {
   selected_step_ids: string[];
   addStep: Function;
   selectSteps: Function;
+  addHistory: Function;
 }
 
 export default class Command extends React.Component<Props> {

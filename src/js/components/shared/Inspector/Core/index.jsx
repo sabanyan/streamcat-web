@@ -17,7 +17,7 @@ import { GraphUtil } from 'Utils/index'
 class Inspector extends React.Component<FlowEditorProps> {
 
   render () {
-      let {selected_step_ids, nodes, mast, selected_tab_id, addStep, selectSteps, flow, updateFlow} = this.props
+      let {selected_step_ids, nodes, mast, selected_tab_id, addStep, selectSteps, flow, updateFlow, notify, dismissNotify, selected_data_source_detail, loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep} = this.props
 
       let property
 
@@ -25,16 +25,33 @@ class Inspector extends React.Component<FlowEditorProps> {
           if (selected_step_ids[0] === 'flow') {
               property = <FlowSettingsInspector
                   mast={mast}
-                  selected_step_ids={selected_tab_id}
+                  selected_step_ids={selected_step_ids}
                   addStep={addStep}
                   selectSteps={selectSteps}
                   flow={flow}
                   updateFlow={updateFlow}
+                  addHistory={addHistory}
               />
       } else {
         const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
         if (selected_step instanceof DataFrameStepModel) {
-          property = <DataSourceInspector {...this.props}></DataSourceInspector>
+          property = <DataSourceInspector
+              nodes={nodes}
+              notify={notify}
+              dismissNotify={dismissNotify}
+              selected_data_source_detail={selected_data_source_detail}
+              mast={mast}
+              loadFlowJSON={loadFlowJSON}
+              deleteSteps={deleteSteps}
+              selectSteps={selectSteps}
+              addHistory={addHistory}
+              flow={flow}
+              updateFlow={updateFlow}
+              selected_step_ids={selected_step_ids}
+              deleteCache={deleteCache}
+              addStep={addStep}
+              updateStep={updateStep}
+          />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector {...this.props}></CommandInspector>
         } else if (selected_step instanceof NoteStepModel) {
