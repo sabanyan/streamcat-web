@@ -171,3 +171,10 @@ export type RunArgsType = {
   flows: [];
   variables: [];
 }
+
+export type GraphType = {
+  width: number;
+  height: number;
+  edges: any[];
+  nodes: any[];
+}
