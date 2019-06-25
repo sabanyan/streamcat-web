@@ -60,11 +60,18 @@ export default class Rect extends React.Component<Props> {
       >
       </rect>
     }
+    const {style} = this.props;
 
     return <g>
       {outline}
       <rect filter={filter}
-            className="body" {...this.props.style}
+            className="body"
+            x={style.x}
+            y={style.y}
+            width={style.width}
+            height={style.height}
+            rx={style.rx}
+            ry={style.ry}
             fill={fillColor}
             stroke={this.props.stroke}>
       </rect>
