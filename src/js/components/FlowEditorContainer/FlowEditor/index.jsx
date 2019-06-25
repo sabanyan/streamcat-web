@@ -12,7 +12,7 @@ import style from './style.scss'
 import { APIUtil, GraphUtil, ZoomUtil } from 'Utils/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { Loader } from 'Shared/Base'
-import type { SubFlowParamType } from 'Types/index'
+import type { StepModelType, SubFlowParamType } from 'Types/index'
 import { Inspector } from 'Shared/Inspector'
 import { SubflowCommandModel, VisualizeModel } from 'Model/index'
 import { NotificationManager } from 'Shared/Notification'
@@ -107,19 +107,20 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   renderSteps () {
-    let {nodes, selected_step_ids, invalid, mast, zoom, drag, addSelectStep, deleteSelectStep, updateDataFrameDetail, updateStep} = this.props
+    let {nodes, selected_step_ids, invalid, mast, zoom, drag, addSelectStep, deleteSelectStep, updateDataFrameDetail, updateStep, position, type, text, error, flow, selectSteps} = this.props
     let steps = []
     if (Array.isArray(nodes)) {
-      steps = nodes.map((step) => {
+      steps = nodes.map((step: StepModelType) => {
         let selected = (step.id === selected_step_ids[0])
-        return <Step key={step.id}
+        return <Step
+                     key={step.id}
                      model={step}
-                     position={position}
-                     type={type}
+                     position={step.position}
+                     type={step.type}
                      selected={selected}
-                     text={text}
-                     invalid={invalid}
-                     error={error}
+                     text={step.text}
+                     invalid={step.invalid}
+                     error={step.error}
                      mast={mast}
                      flow={flow}
                      selected_step_ids={selected_step_ids}
