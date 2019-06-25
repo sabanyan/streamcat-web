@@ -106,11 +106,15 @@ class Inspector extends React.Component<InspectorProps> {
           addHistory={addHistory}
       />
     } else {
-      property = <MultiInspector {...this.props}></MultiInspector>
+      property = <MultiInspector
+          deleteSteps={deleteSteps}
+          selectSteps={selectSteps}
+          nodes={nodes}
+          mast={mast}
+          selected_step_ids={selected_step_ids}
+          addStep={addStep}
+          addHistory={addHistory}/>
     }
-
-    const property_class = classnames(style.property, style.in)
-
     return <Resizer>
       {property}
     </Resizer>
