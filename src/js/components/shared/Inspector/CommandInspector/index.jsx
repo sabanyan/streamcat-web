@@ -7,14 +7,22 @@ import { Button } from 'Shared/Input'
 import { CommandStepModel, SubflowCommandModel } from 'Model/index'
 import Constants from 'Constants/index'
 import { APIUtil, GraphUtil, ModalUtil, ParamUtil, StateUtil } from 'Utils/index'
-import type { CommandParamType, StepModelType } from 'Types/index'
+import type { CommandParamType, MastType, StepModelType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
 import FlowModel from 'Model/Flow/FlowModel'
 import { Loader } from 'Shared/Base'
 
 type CommandInspectorProps = {
-  ...FlowEditorProps,
-  children?: React.Node
+  selected_step_ids: [];
+  mast: MastType;
+  nodes: [];
+  updateStep: Function;
+  addHistory: Function;
+  selectSteps: Function;
+  deleteSteps: Function;
+  updateStep: Function;
+  children?: React.Node;
+  sortStepSrcEnd: Function;
 }
 
 class CommandInspector extends React.Component<CommandInspectorProps> {
@@ -133,6 +141,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   }
 
   render () {
+    const {selectedStep, updateStep, sortStepSrcEnd} = this.props;
     const {commands, subflows} = this.props.mast
     let selected_step: StepModelType = this.getSelectedStep()
     let inputForm = []
@@ -189,9 +198,15 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       content = <div>
         {subFlowLink}
         <div className={style.full_hr} />
-        <InOutConnector {...this.props} onChangeInEdge={(e, data) => this.onChangeInEdge(e, data)}
-                        onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)} selectedStep={selected_step}
-                        selectedSubFlow={this.selectedSubFlow} />
+        <InOutConnector
+            selectedStep={selectedStep}
+            updateStep={updateStep}
+            nodes={nodes}
+            sortStepSrcEnd={sortStepSrcEnd}
+            onChangeInEdge={(e, data) => this.onChangeInEdge(e, data)}
+            onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)} selectedStep={selected_step}
+            selectedSubFlow={this.selectedSubFlow}
+        />
         {form}
         <div className={style.full_hr} />
         {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
