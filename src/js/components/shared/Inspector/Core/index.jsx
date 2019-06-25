@@ -64,11 +64,25 @@ class Inspector extends React.Component<FlowEditorProps> {
               sortStepSrcEnd={sortStepSrcEnd}
           />
         } else if (selected_step instanceof NoteStepModel) {
-          property = <NoteInspector {...this.props}></NoteInspector>
+          property = <NoteInspector
+              selected_step_ids={selected_step_ids}
+              nodes={nodes}
+              selectSteps={selectSteps}
+              updateStep={updateStep}
+              deleteSteps={deleteSteps}
+          />
         }
       }
     } else if (!selected_step_ids.length) {
-      property = <FlowSettingsInspector {...this.props} />
+      property = <FlowSettingsInspector
+          mast={mast}
+          selected_step_ids={selected_step_ids}
+          addStep={addStep}
+          selectSteps={selectSteps}
+          flow={flow}
+          updateFlow={updateFlow}
+          addHistory={addHistory}
+      />
     } else {
       property = <MultiInspector {...this.props}></MultiInspector>
     }
