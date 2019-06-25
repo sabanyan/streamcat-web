@@ -90,7 +90,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
     const property_class = classnames(style.property, style.in)
 
     return <div className={property_class}>
-      <BaseInspector key={0} header={''} label={label} subLabel={''} {...this.props} >
+      <BaseInspector key={0} header={''} label={label} subLabel={''}>
         {content}
       </BaseInspector>
     </div>
