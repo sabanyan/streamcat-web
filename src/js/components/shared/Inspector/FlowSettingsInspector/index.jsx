@@ -122,7 +122,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   }
 
   render () {
-    const {flow} = this.props
+    const {flow, mast, addStep, selectSteps, selected_step_ids} = this.props
     if (!flow) return null
     const {params} = flow
 

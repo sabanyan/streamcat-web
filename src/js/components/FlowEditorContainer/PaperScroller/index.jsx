@@ -1,7 +1,7 @@
 //@flow
 import * as React from 'react'
 import style from './style.scss'
-import { GraphUtil } from 'Utils/index'
+import { GraphUtil, DetectUtil } from 'Utils/index'
 import { CommandStepModel, SubFlowStepModel } from 'Model/index'
 import type { DragType, HistoryType } from "Types/index";
 
@@ -11,6 +11,9 @@ type PaperScrollerProps = {
   deleteSteps: Function;
   selectSteps: Function;
   dragStart: Function;
+  dragging: Function;
+  dragEnd: Function;
+  addHistory: Function;
   redo: Function;
   undo: Function;
   selected_step_ids:[];
