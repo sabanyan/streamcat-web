@@ -331,7 +331,7 @@ export default class FlowList extends React.Component<FlowListProps, State> {
       <div className={'container mt-40px'}>
         <Loader absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
-        <ModalManager {...this.props} />
+        <ModalManager/>
         <NotificationManager />
       </div>
     </div>
