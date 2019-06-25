@@ -1,5 +1,6 @@
 {
   "id": "mcut",
+    
   "rules": {
     "f":{
       "presence": {"allowEmpty": false},
@@ -18,6 +19,7 @@
       }
     }
   },
+
   "params": [
     {
       "name": "f",
@@ -45,13 +47,13 @@
     {
       "name": "assert_nullin",
       "type": "boolean",
-      "label": "入力項目のf=またはvf=で指定された項目のNULL値チェックを行う",
+      "label": "入力項目の f=または vf=で指定された項目の NULL 値チェックを行う",
       "optional": true
     },
     {
       "name": "nfn",
       "type": "boolean",
-      "label": "入力データの1行目を項目名行とみなさない。",
+      "label": "入力データの 1 行目を項目名行とみなさない。",
       "optional": true
     },
     {
@@ -90,6 +92,6 @@
   "version": "0.7.0",
   "label": "列選択",
   "classification": "col_edit",
-  "description": "f=にて指定した項目を選択（削除）する。",
+  "description": "",
   "url": "./static/pdf/mcmd/col_edit/mcut.pdf"
 }
