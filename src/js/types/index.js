@@ -165,3 +165,9 @@ export type BreadCrumbHistoryType = {
   url: string,
   current: boolean,
 }
+
+export type RunArgsType = {
+  flow_uuid: string;
+  flows: [];
+  variables: [];
+}

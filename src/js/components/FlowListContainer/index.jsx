@@ -2,12 +2,19 @@ import { connect } from 'react-redux'
 import FlowList from 'FLowListContainer/FlowList'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 import { selectFlowAction, updateRunArgsAction, } from 'Modules/flowList'
+import type { FlowModelProps } from "Model/Flow/FlowModel";
+import type { RunArgsType } from "Types/index";
 
 let FlowListContainer
 
 export type FlowListProps = {
   notify: Function;
-  dissmissNotify: Function;
+  updateNotify: Function;
+  dismissNotify: Function;
+  flow: FlowModelProps;
+  runArgs: RunArgsType;
+  selectFlow: Function;
+  updateRunArgs: Function;
 }
 
 export default FlowListContainer = connect(
