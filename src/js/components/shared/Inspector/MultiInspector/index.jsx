@@ -20,7 +20,7 @@ type MultiInspectorProps = {
   addHistory: Function;
 }
 
-class MultiInspector extends React.Component<FlowEditorProps> {
+class MultiInspector extends React.Component<MultiInspectorProps> {
   onClickDelete (e: Event) {
 
     ModalUtil.registerModal({
