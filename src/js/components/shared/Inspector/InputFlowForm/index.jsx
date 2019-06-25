@@ -2,14 +2,20 @@ import React from 'react'
 import { AddButton } from 'Shared/Input'
 import { HttpUtil } from 'Utils/index'
 import style from './style.scss'
+import type { FlowModelProps } from "Model/Flow/FlowModel";
+import type { RunArgsType } from "Types/index";
 
-type Props = {}
+type InputFlowFormProps = {
+  runArgs: RunArgsType;
+  updateRunArgs: Function;
+  flow: FlowModelProps
+}
 
 type State = {
   inputDatas: [],
 }
 
-export default class InputFlowForm extends React.Component<Props, State> {
+export default class InputFlowForm extends React.Component<InputFlowFormProps, State> {
   constructor (props) {
     super(props)
   }

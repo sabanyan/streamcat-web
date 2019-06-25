@@ -302,13 +302,20 @@ export default class FlowList extends React.Component<FlowListProps, State> {
   }
 
   renderInspector () {
+    const {runArgs, updateRunArgs, flow, notify, dismissNotify} = this.props;
     return <FlowInspector
-      {...this.props}
-      onClickDeleteParam={(param) => this.onClickDeleteParam(param)}
-      onClickDuplicate={(uuid) => this.onClickDuplicate(uuid)}
-      onBlurTitle={(e, props) => this.onBlurTitle(e, props)}
-      onClickAddFlowParam={(e) => this.onClickAddFlowParam(e)}
-      onClickDelete={(e) => this.onClickDelete(e)} />
+        onClickDelete={(e) => this.onClickDelete(e)}
+        onClickDuplicate={(uuid) => this.onClickDuplicate(uuid)}
+        onBlurTitle={(e, props) => this.onBlurTitle(e, props)}
+        runArgs={runArgs}
+        updateRunArgs={updateRunArgs}
+        flow={flow}
+        notify={notify}
+        dismissNotify={dismissNotify}/>
+
+        // FlowInspector側で未使用のため削除
+        // onClickDeleteParam={(param) => this.onClickDeleteParam(param)}
+        // onClickAddFlowParam={(e) => this.onClickAddFlowParam(e)}
   }
 
   renderAll () {
@@ -326,7 +333,6 @@ export default class FlowList extends React.Component<FlowListProps, State> {
   }
 
   render () {
-
     return <div className={style.inspector_list_container}>
       <div className={'container mt-40px'}>
         <Loader absolute={true} visible={this.state.is_loading} />
