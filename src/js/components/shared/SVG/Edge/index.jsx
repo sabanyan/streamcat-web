@@ -3,9 +3,11 @@ import React from 'react'
 import style from './style.scss'
 import { Arrow } from 'Shared/SVG'
 import Constants from 'Constants/index'
+import { StringUtil } from "Utils/index";
+import { TextStyle } from "Shared/SVG/Step/Note";
 
 type EdgeProps = {
-  label: string;
+  srcLabel: string;
   vx: number;
   vy: number;
   wx: number;
@@ -19,7 +21,12 @@ type RectProps = {
   height: number;
 }
 
-// ref:https://www.s-projects.net/point-to-angle.html
+/**
+ * 二点間の角度の計算
+ * ref:https://www.s-projects.net/point-to-angle.html
+ * @param edge
+ * @returns {number}
+ */
 const getArrowAngle = (edge: EdgeProps) => {
   return Math.round(Math.atan2(edge.wy - edge.vy, edge.wx - edge.vx) / Math.PI * 180) - 90
 }
@@ -85,35 +92,39 @@ const edgeOfRect = (rect: RectProps, deg) => {
 }
 
 const Edge = (props: EdgeProps) => {
-  const {label, vx, vy, wx, wy} = props
+  const {srcLabel, vx, vy, wx, wy} = props
 
   let port = null
+  // 矢印を回転させるための角度計算(transformで使用）
   const arrowAngle = getArrowAngle(props)
+  // 線をRectの縁に沿うようにレンダリングするための角度計算
   const rectOfEdgeAngle = getRectOfEdgeAngle(props)
 
-  const rect = {
+  const dstRect = {
     x: wx,
     y: wy,
     width: Constants.default.step.width + Constants.default.step.borderWidth * 2,
     height: Constants.default.step.height + Constants.default.step.borderWidth * 2
   }
-  const arrowPosition = edgeOfRect(rect, rectOfEdgeAngle)
-
-  if (Constants.debug) {
-
-    // const offset_x = ((vx - wx) >= 0) ? -1 * Constants.default.step.width / 2 - 10 : 1 * Constants.default.step.width / 2 + 10
-    // const offset_y = ((vy - wy) >= 0) ? -1 * Constants.default.step.height / 2 - 10 : 1 * Constants.default.step.height / 2 + 10
-    // const text_x = vx + offset_x //(wx-vx)/2 + vx + offset_x
-    // const text_y = vy + offset_y //(wy-vy)/2 + vy + offset_y
-
-    //center
-    const text_x = (wx - vx) / 2 + vx
-    const text_y = (wy - vy) / 2 + vy
-
-    port =
-      <text className="text" transform={'translate(' + text_x + ',' + text_y + ')'} fontSize={12} textAnchor={'middle'}
-            width={100}>{label}</text>
+  let width = StringUtil.getTextWidth(srcLabel, TextStyle.fontSize)
+  const srcMarginOffsetWidth = width;
+  const srcMarginOffsetHeight = 10;
+  const srcRect = {
+    x: vx,
+    y: vy,
+    width: Constants.default.step.width + Constants.default.step.borderWidth * 2 + srcMarginOffsetWidth,
+    height: Constants.default.step.height + Constants.default.step.borderWidth * 2+ srcMarginOffsetHeight
   }
+
+  const arrowPosition = edgeOfRect(dstRect, rectOfEdgeAngle)
+  const srcPosition = edgeOfRect(srcRect, rectOfEdgeAngle + 180)
+
+  const text_x = srcPosition.x
+  const text_y = srcPosition.y
+  port = <g transform={'translate(' + 0 + ',' + 5 + ')'}>
+    <text className={style.portLabel} transform={'translate(' + text_x + ',' + text_y + ')'} fontSize={12} textAnchor={'middle'}
+          width={100}>{srcLabel}</text>
+  </g>
 
   return <g>
     <path className={style.edge}
