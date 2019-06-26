@@ -52,7 +52,7 @@
       "name": "F",
       "type": "string",
       "label": "出力形式(パケットの名前の出力形式)",
-      "default": 1
+      "default": "1"
     },
     {
       "name": "k",
@@ -83,7 +83,7 @@
       "type": "string",
       "label": "バッファの数",
       "optional": true,
-      "default": 10
+      "default": "10"
     },
     {
       "name": "assert_diffSize",

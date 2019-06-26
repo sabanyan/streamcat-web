@@ -5,6 +5,7 @@ import type { CommandParamType } from '../../types'
 import CommandModel from '../Command/CommandModel'
 import validateJS from 'validate.js'
 import arrayMove from 'array-move'
+import Constants from '../../constants'
 
 type stepType = 'command' | 'frame'
 
@@ -37,6 +38,24 @@ export default class CommandStepModel extends BaseStepModel {
     if (Object.keys(this.srcs) != 0 && this.srcsOrder.length == 0) {
       this.srcsOrder = Object.keys(this.srcs)
     }
+    this.initCommandArgs()
+  }
+
+  initCommandArgs() {
+    // SubflowStepModelがCommandStepModelを継承する場合があるため
+    if (!(this.type === Constants.step.type.command)) {
+      return
+    }
+    const command: CommandModel = this.getCommand()
+    if (!command || !(command.params) || !(Array.isArray(command.params))) {
+      return
+    }
+    command.params.map((param) => {
+      // default値がある場合、設定する
+      if(param.default && !(this.args[param.name])) {
+        this.args[param.name] = param.default
+      }
+    })
   }
 
   getStep (nodes, key) {
