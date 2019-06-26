@@ -84,7 +84,7 @@
       "type": "string",
       "label": "ずらす回数",
       "optional": true,
-      "default": 1
+      "default": "1"
     },
     {
       "name": "r",
