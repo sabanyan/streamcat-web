@@ -52,7 +52,7 @@ export default class CommandStepModel extends BaseStepModel {
     }
     command.params.map((param) => {
       // default値がある場合、設定する
-      if(param.default && !(this.args[param.name])) {
+      if(param.default && !(this.args[param.name]) && !(this.args[param.name] === "")) {
         this.args[param.name] = param.default
       }
     })
