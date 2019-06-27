@@ -11,6 +11,7 @@ export {default as Selector} from './Selector'
 
 export {default as Edge} from './Edge'
 export {default as Arrow} from './Edge/Arrow'
+export {default as Port} from './Edge/Port'
 
 export {default as Shadow} from './Shadow'
 export {default as FileIcon} from './Icon/FileIcon'
