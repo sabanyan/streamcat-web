@@ -29,7 +29,8 @@
   },
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "devDependencies": {
-    "@types/react": "^16.8.19",
+    "@types/classnames": "^2.2.8",
+    "@types/react": "^16.8.22",
     "@types/react-dom": "^16.8.4",
     "array-move": "^2.1.0",
     "axios": "^0.18.0",

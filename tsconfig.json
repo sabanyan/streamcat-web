@@ -12,8 +12,8 @@
       "strictNullChecks": true,              /* nullable型以外でnullを許容しない */
       "allowSyntheticDefaultImports": true,
       /* Additional Checks */
-      "noUnusedLocals": true,                /* 未使用の変数を許容しない */
-      "noUnusedParameters": true,            /* 未使用の変数を許容しない */
+      "noUnusedLocals": false,                /* 未使用の変数を許容しない */
+      "noUnusedParameters": false,            /* 未使用の変数を許容しない */
       "noImplicitReturns": true,             /* メソッド内で返り値の型があっているかをチェック */
 
       /* Alias Path */
