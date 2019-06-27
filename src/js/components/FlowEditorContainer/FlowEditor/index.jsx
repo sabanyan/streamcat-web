@@ -15,9 +15,10 @@ import { Loader } from 'Shared/Base'
 import type { StepModelType, SubFlowParamType } from 'Types/index'
 import { Inspector } from 'Shared/Inspector'
 import {
-  DataFrameStepModel,
-  SubflowCommandModel,
-  VisualizeModel
+    CommandStepModel,
+    DataFrameStepModel,
+    SubflowCommandModel,
+    VisualizeModel
 } from 'Model/index'
 import { NotificationManager } from 'Shared/Notification'
 
@@ -140,14 +141,18 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             Constants.default.operator.width / 2
           const wy = w_node.position.y +
             Constants.default.operator.height / 2
-          let srcLabel;
-
+          let outPortLabel;
+          let inPortLabel;
           //出力先ノードがDataFrameの場合のみ出力もとにラベルを付与する
           if(w_node instanceof DataFrameStepModel){
-            srcLabel = JSON.parse(edge.name).port_name;
+            outPortLabel = JSON.parse(edge.name).port_name;
+          }
+          //入力元ノードがDataFrameの場合のみ出力もとにラベルを付与する
+          if(w_node instanceof CommandStepModel){
+              inPortLabel = JSON.parse(edge.name).port_name;
           }
 
-          return <Edge srcLabel={srcLabel} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
+          return <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
         }
       })
     }

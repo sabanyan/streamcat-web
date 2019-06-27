@@ -1,13 +1,14 @@
 //@flow
 import React from 'react'
 import style from './style.scss'
-import { Arrow } from 'Shared/SVG'
+import { Arrow, Port } from 'Shared/SVG'
 import Constants from 'Constants/index'
 import { StringUtil } from "Utils/index";
 import { TextStyle } from "Shared/SVG/Step/Note";
 
 type EdgeProps = {
-  srcLabel: string;
+  outPortLabel: string;
+  inPortLabel: string;
   vx: number;
   vy: number;
   wx: number;
@@ -92,7 +93,7 @@ const edgeOfRect = (rect: RectProps, deg) => {
 }
 
 const Edge = (props: EdgeProps) => {
-  const {srcLabel, vx, vy, wx, wy} = props
+  const {outPortLabel, inPortLabel, vx, vy, wx, wy} = props
 
   let port = null
   // 矢印を回転させるための角度計算(transformで使用）
@@ -100,31 +101,68 @@ const Edge = (props: EdgeProps) => {
   // 線をRectの縁に沿うようにレンダリングするための角度計算
   const rectOfEdgeAngle = getRectOfEdgeAngle(props)
 
-  const dstRect = {
+  // 矢印の位置計算
+  const arrowRect = {
     x: wx,
     y: wy,
     width: Constants.default.step.width + Constants.default.step.borderWidth * 2,
     height: Constants.default.step.height + Constants.default.step.borderWidth * 2
   }
-  let width = StringUtil.getTextWidth(srcLabel, TextStyle.fontSize)
-  const srcMarginOffsetWidth = width;
-  const srcMarginOffsetHeight = 10;
-  const srcRect = {
+  const arrowPosition = edgeOfRect(arrowRect, rectOfEdgeAngle)
+
+  // ポートのラベルの位置計算（ラベルの長さに応じた調整付き）
+  let offsetWidth = StringUtil.getTextWidth(outPortLabel, TextStyle.fontSize);
+  let offsetHeight = 10;
+  const outPortRect = {
     x: vx,
     y: vy,
-    width: Constants.default.step.width + Constants.default.step.borderWidth * 2 + srcMarginOffsetWidth,
-    height: Constants.default.step.height + Constants.default.step.borderWidth * 2+ srcMarginOffsetHeight
+    width: Constants.default.step.width + Constants.default.step.borderWidth * 2 + offsetWidth,
+    height: Constants.default.step.height + Constants.default.step.borderWidth * 2 + offsetHeight
   }
+    offsetWidth = StringUtil.getTextWidth(inPortLabel, TextStyle.fontSize);
+  const inPortRect = {
+    x: wx,
+    y: wy,
+    width: Constants.default.step.width + Constants.default.step.borderWidth * 2 + offsetWidth,
+    height: Constants.default.step.height + Constants.default.step.borderWidth * 2 + offsetHeight
+  }
+  const inPortPosition = edgeOfRect(inPortRect, rectOfEdgeAngle)
+  const outPortPosition = edgeOfRect(outPortRect, rectOfEdgeAngle + 180)
 
-  const arrowPosition = edgeOfRect(dstRect, rectOfEdgeAngle)
-  const srcPosition = edgeOfRect(srcRect, rectOfEdgeAngle + 180)
+  // ポートアイコンの位置計算
+  offsetWidth = 6
+  offsetHeight = 6
+  const outPortIconRect = {
+      x: vx,
+      y: vy - 4.5,
+      width: Constants.default.step.width + Constants.default.step.borderWidth * 2 - offsetWidth,
+      height: Constants.default.step.height + Constants.default.step.borderWidth * 2 - offsetHeight
+  }
+  const inPortIconRect = {
+      x: wx,
+      y: wy - 4.5,
+      width: Constants.default.step.width + Constants.default.step.borderWidth * 2 - offsetWidth,
+      height: Constants.default.step.height + Constants.default.step.borderWidth * 2 - offsetHeight
+  }
+  const inPortIconPosition = edgeOfRect(inPortIconRect, rectOfEdgeAngle)
+  const outPortIconPosition = edgeOfRect(outPortIconRect, rectOfEdgeAngle + 180)
 
-  const text_x = srcPosition.x
-  const text_y = srcPosition.y
-  port = <g transform={'translate(' + 0 + ',' + 5 + ')'}>
-    <text className={style.portLabel} transform={'translate(' + text_x + ',' + text_y + ')'} fontSize={12} textAnchor={'middle'}
-          width={100}>{srcLabel}</text>
-  </g>
+  let outPort;
+  let inPort;
+  if(outPortLabel){
+    outPort = <g transform={'translate(' + 0 + ',' + 5 + ')'}>
+        <Port x={outPortIconPosition.x} y={outPortIconPosition.y}/>
+      <text fill={'#777'} className={style.portLabel} transform={'translate(' + outPortPosition.x + ',' + outPortPosition.y + ')'} fontSize={12} textAnchor={'middle'}
+            width={100}>{outPortLabel}</text>
+    </g>
+  }
+  if(inPortLabel){
+    inPort = <g transform={'translate(' + 0 + ',' + 5 + ')'}>
+        <Port x={inPortIconPosition.x} y={inPortIconPosition.y}/>
+      <text fill={'#777'} className={style.portLabel} transform={'translate(' + inPortPosition.x + ',' + inPortPosition.y + ')'} fontSize={12} textAnchor={'middle'}
+            >{inPortLabel}</text>
+    </g>
+  }
 
   return <g>
     <path className={style.edge}
@@ -133,7 +171,8 @@ const Edge = (props: EdgeProps) => {
           d={'M' + vx + ',' + vy + ' ' + 'L' + arrowPosition.x + ',' + arrowPosition.y} />
     <Arrow x={arrowPosition.x} y={arrowPosition.y} width={6} height={6} angle={arrowAngle} className={style.edge} />
     <Arrow x={arrowPosition.x} y={arrowPosition.y} width={6} height={6} angle={arrowAngle} className={style.base} />
-    {port}
+    {outPort}
+    {inPort}
   </g>
 }
 
