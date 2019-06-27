@@ -4,7 +4,7 @@ import Paper from 'FlowEditorContainer/Paper'
 import PaperScroller from 'FlowEditorContainer/PaperScroller'
 import { Edge, Selector, Step } from 'Shared/SVG'
 import PaperZoom from 'FlowEditorContainer/PaperZoom'
-import ToolBar from 'FlowEditorContainer/ToolBar'
+import ToolBar from 'FlowEditorContainer/ToolBar/Core'
 import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
@@ -112,13 +112,31 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   renderSteps () {
-    let {nodes, selected_step_ids} = this.props
+    let {nodes, selected_step_ids, invalid, mast, zoom, drag, addSelectStep, deleteSelectStep, updateDataFrameDetail, updateStep, position, type, text, error, flow, selectSteps} = this.props
     let steps = []
     if (Array.isArray(nodes)) {
-      steps = nodes.map((step) => {
+      steps = nodes.map((step: StepModelType) => {
         let selected = (step.id === selected_step_ids[0])
-        return <Step key={step.id} {...step} model={step} {...this.props}
-                     selected={selected} />
+        return <Step
+                     key={step.id}
+                     model={step}
+                     position={step.position}
+                     type={step.type}
+                     selected={selected}
+                     text={step.text}
+                     invalid={step.invalid}
+                     error={step.error}
+                     mast={mast}
+                     flow={flow}
+                     selected_step_ids={selected_step_ids}
+                     zoom={zoom}
+                     drag={drag}
+                     addSelectStep={addSelectStep}
+                     deleteSelectStep={deleteSelectStep}
+                     selectSteps={selectSteps}
+                     updateDataFrameDetail={updateDataFrameDetail}
+                     updateStep={updateStep}
+        />
       })
     }
     return steps
@@ -172,21 +190,67 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
+    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
         {/*<SettingsButton {...this.props}/>*/}
-        <ToolBar {...this.props} />
+        <ToolBar flow={flow}
+                 nodes={nodes}
+                 history={history}
+                 notify={notify}
+                 dismissNotify={dismissNotify}
+                 addStep={addStep}
+                 addHistory={addHistory}
+                 sortFlow={sortFlow}
+                 loadFlowJSON={loadFlowJSON}
+                 selectSteps={selectSteps}
+                 setZoom={setZoom}
+                 undo={undo}
+                 redo={redo}/>
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)}
                 message={'フローを構築中です'} />
-        <PaperScroller {...this.props}>
-          <Paper {...this.props}>
-            {this.renderEdges()}f
+        <PaperScroller
+            pasteSteps={pasteSteps}
+            copySteps={copySteps}
+            deleteSteps={deleteSteps}
+            selectSteps={selectSteps}
+            dragStart={dragStart}
+            dragging={dragging}
+            dragEnd={dragEnd}
+            addHistory={addHistory}
+            redo={redo}
+            undo={undo}
+            selected_step_ids={selected_step_ids}
+            nodes={nodes}
+            history={history}
+            drag={drag}
+        >
+          <Paper graph={graph} zoom={zoom}>
+            {this.renderEdges()}
             {this.renderSteps()}
             {this.renderSelector()}
           </Paper>
         </PaperScroller>
-        <Inspector {...this.props} />
+        <Inspector
+            selected_step_ids={selected_step_ids}
+            nodes={nodes}
+            mast={mast}
+            selected_tab_id={selected_tab_id}
+            addStep={addStep}
+            selectSteps={selectSteps}
+            flow={flow}
+            updateFlow={updateFlow}
+            notify={notify}
+            dismissNotify={dismissNotify}
+            selected_data_source_detail={selected_data_source_detail}
+            loadFlowJSON={loadFlowJSON}
+            deleteSteps={deleteSteps}
+            addHistory={addHistory}
+            deleteCache={deleteCache}
+            updateStep={updateStep}
+            sortStepSrcEnd={sortStepSrcEnd}
+        />
         <ModalManager />
         <NotificationManager />
       </div>

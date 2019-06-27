@@ -6,10 +6,21 @@ import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { AddButton, Button } from 'Shared/Input'
 import { ModalUtil } from 'Utils/index'
 import Constants from 'Constants/index'
-import type { SubFlowParamType } from 'Types/index'
+import type { MastType, SubFlowParamType } from 'Types/index'
 import { CommandSelector } from "FlowEditorContainer/Command";
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
-class FlowSettingsInspector extends React.Component<FlowEditorProps, StateUtil> {
+type FlowSettingsInspectorProps = {
+  mast: MastType;
+  selected_step_ids: [];
+  addStep: Function;
+  selectSteps: Function;
+  flow: FlowModelProps;
+  updateFlow: Function;
+  addHistory: Function;
+}
+
+class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> {
   paramRefs: [] = []
   loading: boolean = false
 
@@ -22,7 +33,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, StateUtil> 
   }
 
   onHide (e: Event) {
-    const {flow, notify, dismissNotify} = this.props
+    const {flow} = this.props
     const {label} = this.props.flow
 
     const beforeFlow = Object.assign({}, {...flow})
@@ -112,7 +123,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, StateUtil> 
   }
 
   render () {
-    const {flow} = this.props
+    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory} = this.props
     if (!flow) return null
     const {params} = flow
 
@@ -148,7 +159,7 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, StateUtil> 
     }
     addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
 
-    return <BaseInspector header={''} label={this.props.flow.label} {...this.props}
+    return <BaseInspector header={''} label={this.props.flow.label}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8}
@@ -156,7 +167,14 @@ class FlowSettingsInspector extends React.Component<FlowEditorProps, StateUtil> 
       {inputParamsContainer}
       {addFlowParams}
       <div className={style.full_hr} />
-      <CommandSelector numberOfInput={0} {...this.props} />
+      <CommandSelector
+          mast={mast}
+          numberOfInput={0}
+          selected_step_ids={selected_step_ids}
+          addStep={addStep}
+          selectSteps={selectSteps}
+          addHistory={addHistory}
+      />
     </BaseInspector>
   }
 }

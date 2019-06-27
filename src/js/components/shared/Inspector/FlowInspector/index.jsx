@@ -5,14 +5,19 @@ import { FlowUtil, ModalUtil, ReactDomUtil } from 'Utils/index'
 import style from '../style.scss'
 import { Button } from 'Shared/Input'
 import { BaseInspector, InputFlowForm, Resizer } from 'Shared/Inspector'
-import type { FlowListDataType } from 'Types/index'
+import type { FlowListDataType, RunArgsType } from 'Types/index'
 import moment from 'moment/moment'
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
 type Props = {
-  project: {};
   onClickDelete: Function;
   onClickDuplicate: Function;
   onBlurTitle: Function;
+  runArgs: RunArgsType;
+  updateRunArgs: Function;
+  flow: FlowModelProps;
+  notify: Function;
+  dismissNotify: Function;
 }
 
 class FlowInspector extends React.Component<Props> {
@@ -31,8 +36,7 @@ class FlowInspector extends React.Component<Props> {
 
   nullInspector () {
     return <Resizer>
-      <BaseInspector {...this.props} >
-      </BaseInspector>
+      <BaseInspector/>
     </Resizer>
   }
 
@@ -51,9 +55,11 @@ class FlowInspector extends React.Component<Props> {
   }
 
   onClickRun () {
+
+    const {runArgs, updateRunArgs, flow} = this.props;
     this.resetRunArgsValue()
 
-    let content = <InputFlowForm {...this.props} />
+    let content = <InputFlowForm runArgs={runArgs} updateRunArgs={updateRunArgs} flow={flow}/>
 
     ModalUtil.emitModal({
       id: Constants.modal.RUN_FLOW,
@@ -147,7 +153,7 @@ class FlowInspector extends React.Component<Props> {
     </div>
 
     return <Resizer>
-      <BaseInspector key={uuid + '_' + label} label={label} {...this.props} >
+      <BaseInspector key={uuid + '_' + label} label={label}>
         {content}
       </BaseInspector>
     </Resizer>
