@@ -509,10 +509,10 @@ class Job:
     def replace_arg(self, v, args):
         res = v
         if isinstance(v, str):
-            r = re.search(r'@\[(\S*?)\]', v)
-            if r is not None:
-                for g in r.groups():
-                    res = v.replace(f'@[{g}]', args[g])
+            for r in re.finditer(r'@\[(\S*?)\]', v):
+                if r is not None:
+                    for g in r.groups():
+                        res = res.replace(f'@[{g}]', args[g])
         return res
 
     def inputs_of(self, job):

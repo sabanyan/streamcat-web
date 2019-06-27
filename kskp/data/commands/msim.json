@@ -40,6 +40,7 @@
       "type": "select",
       "label": "類似度名を指定",
       "options":{
+        "multiple": true,
         "labels": ["共分散","普偏共分散","ピアソンの積率相関係数","スピアマンの順位相関係数","ケンドールの順位相関係数","ユークリッド距離(数値)","コサイン","都市ブロック距離","ハミング距離","カイ2乗値","ファイ係数","ジャックカード係数","支持度","リフト値","最大確信度","最小確信度","yuleの連関係数(Q)","yuleの連関係数(Y)","kappa","oddsRatio","最大conviction","最小conviction"],
         "values": ["covar","ucovar","pearson","spearman","kendall","euclid","cosine","cityblock","hamming","chi","phi","jaccard","support","lift","confMax","confMin","yuleQ","yuleY","kappa","oddsRatio","convMax","convMin"]
       }
@@ -79,7 +80,7 @@
       "type": "string",
       "label": "バッファの数",
       "optional": true,
-      "default": 10
+      "default": "10"
     },
     {
       "name": "precision",
@@ -90,7 +91,7 @@
         "values": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16"]
       },
       "optional": true,
-      "default": 10
+      "default": "10"
     },
     {
       "name": "assert_diffSize",
