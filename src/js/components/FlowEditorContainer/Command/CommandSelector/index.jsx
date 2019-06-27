@@ -5,12 +5,16 @@ import style from './style.scss'
 import { Command } from 'FlowEditorContainer/Command'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import Constants from 'Constants/index'
-import type { CommandModelType } from 'Types/index'
+import type { CommandModelType, MastType } from 'Types/index'
 import { TextField } from 'Shared/Input'
 
 type CommandSelectorProps = {
-  ...FlowEditorProps,
-  numberOfInput: number
+    mast: MastType;
+    numberOfInput: number;
+    selected_step_ids: [];
+    addStep: Function;
+    selectSteps: Function;
+    addHistory: Function;
 }
 
 export default class CommandSelector extends React.Component<CommandSelectorProps> {
@@ -52,7 +56,7 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
   }
 
   render () {
-    const {mast, numberOfInput} = this.props
+    const {numberOfInput, selected_step_ids, addStep, selectSteps, addHistory} = this.props
     const {keyword} = this.state
     const isNoKeyword = (keyword.length == 0)
     let noOperators = true
@@ -94,8 +98,15 @@ export default class CommandSelector extends React.Component<CommandSelectorProp
         if (!label) label = command.classification
         operatorsContainer.push(<div key={command.id} className={style.command_separator}>{label}</div>)
       }
-      operatorsContainer.push(<Command command={command} {...this.props} key={index} />)
-      beforeCommand = command
+      operatorsContainer.push(<Command
+          command={command}
+          selected_step_ids={selected_step_ids}
+          addStep={addStep}
+          selectSteps={selectSteps}
+          key={index}
+          addHistory={addHistory}
+      />)
+        beforeCommand = command
     })
 
     let commandSelector

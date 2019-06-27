@@ -43,7 +43,7 @@ export default class SubFlowStepModel extends CommandStepModel {
     Object.keys(this.args).map(key => {
       let command: SubflowCommandModel = this.getCommand()
       const value = this.args[key]
-      const param: CommandParamType = command.getParam(key)
+      //const param: CommandParamType = command.getParam(key)
       // if(!param.optional){
       //   if(value === "" || value === null){
       //     this.invalid[key] = "入力が必須の項目です"

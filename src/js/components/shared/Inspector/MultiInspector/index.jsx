@@ -7,8 +7,20 @@ import { CommandSelector } from "FlowEditorContainer/Command";
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
 import { GraphUtil, ModalUtil } from 'Utils/index'
 import Constants from 'Constants/index'
+import type { MastType } from "Types/index";
 
-class MultiInspector extends React.Component<FlowEditorProps> {
+type MultiInspectorProps = {
+  deleteSteps: Function;
+  selectSteps: Function;
+  nodes: [];
+  mast: MastType;
+  selected_step_ids: [];
+  addStep: Function;
+  selectSteps: Function;
+  addHistory: Function;
+}
+
+class MultiInspector extends React.Component<MultiInspectorProps> {
   onClickDelete (e: Event) {
 
     ModalUtil.registerModal({
@@ -49,12 +61,19 @@ class MultiInspector extends React.Component<FlowEditorProps> {
   }
 
   render () {
+    const {mast,selected_step_ids,addStep,selectSteps,addHistory} = this.props;
     const numberOfSelectedDataSources = this.getNumberOfSelectedDataSources()
 
     let commandSelector
     if (numberOfSelectedDataSources) {
       commandSelector = <div>
-        <CommandSelector numberOfInput={numberOfSelectedDataSources} {...this.props} />
+        <CommandSelector
+            mast={mast}
+            numberOfInput={numberOfSelectedDataSources}
+            selected_step_ids={selected_step_ids}
+            addStep={addStep}
+            selectSteps={selectSteps}
+            addHistory={addHistory}/>
       </div>
     }
 

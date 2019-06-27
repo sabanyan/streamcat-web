@@ -2,14 +2,25 @@
 import * as React from 'react'
 import style from '../../style.scss'
 import { AddButton, DropDownList } from 'Shared/Input'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
+import { CommandStepModel, DataFrameStepModel, FlowModel, SubFlowStepModel } from 'Model/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { FlowUtil, ModalUtil, StateUtil } from 'Utils/index'
 import type { StepModelType } from 'Types/index'
 import Constants from 'Constants/index'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 
-class InOutConnector extends React.Component{
+type InOutConnectorProps = {
+  selectedStep: Function;
+  updateStep: Function;
+  nodes: [];
+  selectedStep: Function;
+  sortStepSrcEnd: Function;
+  onChangeInEdge: Function;
+  onChangeOutEdge: Function;
+  selectedSubFlow: FlowModel;
+}
+
+class InOutConnector extends React.Component<InOutConnectorProps>{
 
   onChangeInEdge(e,data,label){
     const {selectedStep} = this.props
@@ -70,8 +81,7 @@ class InOutConnector extends React.Component{
   }
 
   render () {
-    const {nodes,onChangeInEdge,onChangeOutEdge,selectedStep,mast} = this.props
-    const {selected_in_edges,selected_out_edges} = this.props
+    const {nodes,selectedStep} = this.props
     //すべてのデータフレーム先をリスト化
 
     let dataFrameOnlyNodes:[DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
