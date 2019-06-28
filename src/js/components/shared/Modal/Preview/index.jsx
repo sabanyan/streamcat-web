@@ -6,6 +6,7 @@ import TabList from '../../TabBar/TabList'
 import Tab from '../../TabBar/Tab'
 import TabPanel from '../../TabBar/TabPanel'
 import style from '../style.scss'
+import HttpUtil from '../../../../utils/HttpUtil'
 import Visualizer from '../../Visualizer'
 
 type Props = {
@@ -47,15 +48,21 @@ export default class PreviewModal extends React.Component<Props,State> {
     return results[index]
   }
 
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
+
   render () {
     const {id, close_button, visible, title, footer} = this.props
     let {contents} = this.props
     const results = this.state.results
-
-    const modal_class = classnames('modal fade preview top', {
+    const className = (this.isDialog()) ? 'modal fade previewDialog top' : 'modal fade preview top';
+    const modal_class = classnames(className, {
       'show in': visible,
       'none-pointer-events': !visible,
     })
+
+    
 
     const {selected_tab_id} = this.state
 
