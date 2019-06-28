@@ -7,7 +7,7 @@ import type { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
 import { Button } from 'Shared/Input'
-import { APIUtil, ModalUtil, SortUtil } from "Utils/index";
+import { APIUtil, ModalUtil, SortUtil, HttpUtil  } from "Utils/index";
 import Visualizer from "Shared/Visualizer/Core";
 
 type Props = {
@@ -69,6 +69,10 @@ class LibraryInspector extends React.Component<Props> {
     })
   }
 
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
+
   render () {
     const {data, onClickDelete, onClickApply} = this.props
     let content = null
@@ -87,7 +91,11 @@ class LibraryInspector extends React.Component<Props> {
       applyButton = <Button primary={true}
                             onClick={() => onClickApply(data)}>選択する</Button>
     }
+<<<<<<< HEAD
 
+=======
+    let inspectorPreperty = (this.isDialog()) ? style.property_dialog : style.property
+>>>>>>> ae44a2ec419d695a89977a7157d47ae6dd3aef45
     if (data) {
       label = data.label
       content = <div>
@@ -119,16 +127,31 @@ class LibraryInspector extends React.Component<Props> {
             {moment(data.createdAt).format(Constants.format.dateTime)}
           </div>
       </div>
+<<<<<<< HEAD
       return <div className={classnames(style.property, style.in, 'inspector')}>
         <BaseInspector onBlurTitle={(e) => this.onBlurTitle(e)}>
+=======
+
+      
+      return <div className={classnames(inspectorPreperty, style.in, 'inspector')}>
+        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+>>>>>>> ae44a2ec419d695a89977a7157d47ae6dd3aef45
           {content}
         </BaseInspector>
       </div>
     } else {
       return <Resizer>
+<<<<<<< HEAD
         <BaseInspector onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
+=======
+        <div className={classnames(inspectorPreperty, style.in, 'inspector')}>
+          <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+            {content}
+          </BaseInspector>
+          </div>
+>>>>>>> ae44a2ec419d695a89977a7157d47ae6dd3aef45
       </Resizer>
     }
 
