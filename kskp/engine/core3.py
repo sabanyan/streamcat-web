@@ -5287,6 +5287,52 @@ class Utf8ToCp932(NmCmd):
         self.name = 'Utf8ToCp932'
         self.description = 'Windowsファイル（Shift-JIS拡張 CP932、CRLF改行コード）へ変換したデータを出力する。'
 
+
+class NmRunfunc(MCommandNew):
+    """
+    runfunc使用コマンドのスーパークラス
+    ２つ以上のoutputのコマンドには対応していない
+    """
+    def __init__(self):
+        super().__init__(nm.runfunc)
+
+    def command_args(self, args, inputs):
+        from kskp.engine.commands.pcmd import selectrows
+
+        args_for_nysol = args
+        args_for_nysol = self.set_method(args_for_nysol)
+        process_flow = None
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        return args_for_nysol, process_flow
+
+    def source(self, args, inputs):
+        args, process_flow = self.command_args(args, inputs)
+        return RunfuncSource('csv', self.nysol_mod, args, process_flow)
+
+    def set_method(self, args):
+        """
+        for override
+        """
+        pass
+
+class SelectRows(NmRunfunc):
+    def __init__(self):
+        super().__init__()
+
+    def set_method(self, args):
+        # 基本的に、メソッドをimportして'func'というキーで関数を格納する
+        from kskp.engine.commands.pcmd import selectrows
+        args.update({'func': selectrows})
+        return args
+
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -5413,7 +5459,6 @@ commands = {
     # デモ専用コマンド
     'sml_modeling': SmlModeling(),
 
-    # O社向けコマンド
     'check_duplicate_rows': CheckDuplicateRows(),
     'merge_FS': MergeFS(),
     'merge_ibutsu': MergeIbutsu(),
@@ -5425,7 +5470,12 @@ commands = {
     'windows_cp932_csv_read': WinCp932Read(),
     'columns_to_rows': ColumnsToRows(),
     'groupby_columns': GroupbyColumns(),
-    'utf8_to_cp932': Utf8ToCp932()
+    'utf8_to_cp932': Utf8ToCp932(),
+
+    # runfunc用コマンド
+    'selectrows': SelectRows(),
+
+    # テスト用コマンド
 }
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
