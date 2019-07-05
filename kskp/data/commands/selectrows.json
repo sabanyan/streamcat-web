@@ -21,7 +21,7 @@
   "params": [
     {
       "name": "n",
-      "type": "number",
+      "type": "string",
       "label": "取得行数"
     }
   ],
