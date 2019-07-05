@@ -5293,14 +5293,15 @@ class NmRunfunc(MCommandNew):
     runfunc使用コマンドのスーパークラス
     ２つ以上のoutputのコマンドには対応していない
     """
-    def __init__(self):
+    def __init__(self, func):
         super().__init__(nm.runfunc)
+        self.func = func
 
     def command_args(self, args, inputs):
         from kskp.engine.commands.pcmd import selectrows
 
         args_for_nysol = args
-        args_for_nysol.update({'func': self.get_func()})
+        args_for_nysol.update({'func': self.func})
         process_flow = None
 
         input_i = inputs['i']
@@ -5327,17 +5328,17 @@ class NmRunfuncMultiOut(NmRunfunc):
     runfunc使用コマンドのスーパークラス
     ２つのoutputのコマンド用
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, func):
+        super().__init__(func)
         self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
         self.u_file_path = str(uuid.uuid4()) + '.csv'
-        self.u_dir_path = 'kskp/data/frames/'
+        self.u_dir_path = 'kskp/data/tmp/'
 
     def command_args(self, args, inputs):
         from kskp.engine.commands.pcmd import selectrows
 
         args_for_nysol = args
-        args_for_nysol.update({'func': self.get_func()})
+        args_for_nysol.update({'func': self.func})
         args_for_nysol.update({'u': self.u_dir_path + self.u_file_path})
         process_flow = None
 
@@ -5362,7 +5363,7 @@ class NmRunfuncMultiOut(NmRunfunc):
                 if source.args.get('u'): source.args.pop('u')
             else:
                 source = self.source(args, inputs, multi_out = True)
-                source.args.update({'o': 'kskp/data/frames/' + str(uuid.uuid4()) + '.csv'})
+                source.args.update({'o': 'kskp/data/tmp/' + str(uuid.uuid4()) + '.csv'})
 
             for input in inputs.values():
                 if isinstance(input.source, PathFileSource):
@@ -5385,29 +5386,20 @@ class NmRunfuncMultiOut(NmRunfunc):
         return result
 
 
-class SelectRows(NmRunfunc):
+class One_output_runfunc(NmRunfunc):
     """
     1つの出力用のコマンド
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, func):
+        super().__init__(func)
 
-    def get_func(self):
-        from kskp.engine.commands.pcmd import selectrows
-        return selectrows
-
-class Test_multi_out(NmRunfuncMultiOut):
+class Two_output_runfunc(NmRunfuncMultiOut):
     """
     ２つのoutputのテストコマンド
     不一致の方のパラメータのキー名は u にすること
     """
-    def __init__(self):
-        super().__init__()
-
-    def get_func(self):
-        from kskp.engine.commands.pcmd import test
-        return test
-
+    def __init__(self, func):
+        super().__init__(func)
 
 commands = {
     # MCDM
@@ -5549,11 +5541,17 @@ commands = {
     'utf8_to_cp932': Utf8ToCp932(),
 
     # runfunc用コマンド
-    'selectrows': SelectRows(),
-
-    # テスト用コマンド
-    'test': Test_multi_out(),
+    # outputが１つのコマンド
+    'selectrows': One_output_runfunc(selectrows),
+    # outputが２つのコマンド
+    'test': Two_output_runfunc(test),
 }
+# runfunc用の関数のimport
+from kskp.engine.commands.pcmd import (
+    test,
+    selectrows
+)
+
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
     'csvtolinegraph': CsvToLineGraphCommand(),
