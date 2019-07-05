@@ -154,12 +154,22 @@ class RunfuncSource(NysolPythonSource):
     正直NysolPythonSourceのサブクラスでいいかわからないが、あまり時間をかけたくないので楽しました。。。
     """
     def __init__(self, source_type, mod, args, process_flow=None, stdout_param=None, multi_out=False):
-        """ argsいらんかもな、そのままmodに全部持っておけるので """
         super().__init__(source_type, mod, args, process_flow, stdout_param, multi_out)
 
     def make_mod(self, mod, args):
-        func = args.pop('func')
+        func = args.get('func')
         return mod(func, args)
+
+    @property
+    def nysol_module(self):
+        f = self.process_flow
+        if self.multi_out:
+            f <<= self.make_mod(self.mod, self.args)
+            f.run()
+            f = nm.m2tee(i=self.args['u'])
+        else:
+            f <<= self.make_mod(self.mod, self.args)
+        return f
 
 class FileSource(Source):
     """

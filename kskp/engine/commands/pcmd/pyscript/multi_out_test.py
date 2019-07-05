@@ -72,19 +72,32 @@ def writeline(gen_reader, args):
     ｎ番目の行まで出す
     '''
     fd = sys.stdout if args.get('o') is None else open(args['o'], 'w')
+    fd_u = open(args['u'], 'w') if args.get('u') is not None else None
+    header = True
+
     with fd as out_file:
         writer = csv.writer(out_file, delimiter=',', quotechar='"', strict=True)
+        writer_u = csv.writer(fd_u, delimiter=',', quotechar='"', strict=True) if fd_u is not None else None
         for RowNo,line in enumerate(gen_reader):
+            if header:
+                writer.writerow(line)
+                if writer_u is not None:
+                    writer_u.writerow(line)
+                header = False
+                continue
+
             if RowNo <= int(args['n']):
                 writer.writerow(line)
-
+            else:
+                if writer_u is not None:
+                    writer_u.writerow(line)
 # def main(args):
 #     n=args['n']
 #     reader = filereader_gen()
 #     writeline(reader,n)
 
 # エラー出力確認したくてメッセージ入れたがでてない
-def selectrows(args):
+def test(args):
     try:
         sys.stderr.write(str("mainにいるよ\n"))
         # n=args['n']

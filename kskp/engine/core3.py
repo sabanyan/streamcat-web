@@ -230,7 +230,7 @@ def get_type_of_how_to_cache(command_obj):
         # TODO: 存在しないコマンドが指定されるのは例外なので何か適切なエラー返さないと
         return 'error'
 
-    if isinstance(cmd_obj, NmCmd):
+    if isinstance(cmd_obj, NmCmd) or isinstance(cmd_obj, NmRunfunc):
         return 'unix_command'
     elif isinstance(cmd_obj, MCommandNew):
         return 'mcmd'
@@ -5300,7 +5300,7 @@ class NmRunfunc(MCommandNew):
         from kskp.engine.commands.pcmd import selectrows
 
         args_for_nysol = args
-        args_for_nysol = self.set_method(args_for_nysol)
+        args_for_nysol.update({'func': self.get_func()})
         process_flow = None
 
         input_i = inputs['i']
@@ -5312,25 +5312,101 @@ class NmRunfunc(MCommandNew):
 
         return args_for_nysol, process_flow
 
-    def source(self, args, inputs):
+    def source(self, args, inputs, multi_out=False):
         args, process_flow = self.command_args(args, inputs)
-        return RunfuncSource('csv', self.nysol_mod, args, process_flow)
+        return RunfuncSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
 
-    def set_method(self, args):
+    def get_func(self):
         """
         for override
         """
         pass
 
+class NmRunfuncMultiOut(NmRunfunc):
+    """
+    runfunc使用コマンドのスーパークラス
+    ２つのoutputのコマンド用
+    """
+    def __init__(self):
+        super().__init__()
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.u_file_path = str(uuid.uuid4()) + '.csv'
+        self.u_dir_path = 'kskp/data/frames/'
+
+    def command_args(self, args, inputs):
+        from kskp.engine.commands.pcmd import selectrows
+
+        args_for_nysol = args
+        args_for_nysol.update({'func': self.get_func()})
+        args_for_nysol.update({'u': self.u_dir_path + self.u_file_path})
+        process_flow = None
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        return args_for_nysol, process_flow
+
+    def execute(self, args, inputs):
+        result = {}
+        for o_port in self.o_ports:
+            source = None
+            frame = None
+
+            # Source作成
+            if o_port['name'] == 'o':
+                source = self.source(args, inputs)
+                if source.args.get('u'): source.args.pop('u')
+            else:
+                source = self.source(args, inputs, multi_out = True)
+                source.args.update({'o': 'kskp/data/frames/' + str(uuid.uuid4()) + '.csv'})
+
+            for input in inputs.values():
+                if isinstance(input.source, PathFileSource):
+                    source.deletable_uuids.append(input.uuid)
+                elif isinstance(input.source, UnixCommandSource) or \
+                     isinstance(input.source, PandasSource) or \
+                     isinstance(input.source, NysolPythonSource):
+                    source.deletable_uuids = input.source.deletable_uuids
+                    source.deletable_uuids.append(input.uuid)
+
+            # キャッシュ判定
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , source)
+
+            result[o_port['name']] = frame
+
+        return result
+
+
 class SelectRows(NmRunfunc):
+    """
+    1つの出力用のコマンド
+    """
     def __init__(self):
         super().__init__()
 
-    def set_method(self, args):
-        # 基本的に、メソッドをimportして'func'というキーで関数を格納する
+    def get_func(self):
         from kskp.engine.commands.pcmd import selectrows
-        args.update({'func': selectrows})
-        return args
+        return selectrows
+
+class Test_multi_out(NmRunfuncMultiOut):
+    """
+    ２つのoutputのテストコマンド
+    不一致の方のパラメータのキー名は u にすること
+    """
+    def __init__(self):
+        super().__init__()
+
+    def get_func(self):
+        from kskp.engine.commands.pcmd import test
+        return test
 
 
 commands = {
@@ -5476,6 +5552,7 @@ commands = {
     'selectrows': SelectRows(),
 
     # テスト用コマンド
+    'test': Test_multi_out(),
 }
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
