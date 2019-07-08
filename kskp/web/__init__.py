@@ -17,8 +17,8 @@ os.environ['DATABASE_URI'] = 'sqlite:///' + os.environ['SQLITE_PATH']
 os.environ['FRAME_CHARACTER_CODE'] = 'utf-8'
 
 # flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
-# from .utils.kskp_json_encoder import KSKPJSONEncoder
-# app.json_encoder = KSKPJSONEncoder
+from .api.utils.kskp_json_encoder import KSKPJSONEncoder
+app.json_encoder = KSKPJSONEncoder
 #
 # from .util_endpoints import endpoints
 # app.register_blueprint(endpoints, url_prefix='/')
@@ -37,9 +37,10 @@ app.register_blueprint(auth.mod, url_prefix='/signup')
 PREFIX = '/api/v0'
 from .api import basic
 from .api import frames
+from .api import lib
 app.register_blueprint(basic.mod, url_prefix=PREFIX)
 app.register_blueprint(frames.mod, url_prefix=PREFIX)
-
+app.register_blueprint(lib.mod, url_prefix=PREFIX)
 
 def main():
     app.run()
