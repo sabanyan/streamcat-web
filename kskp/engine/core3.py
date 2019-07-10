@@ -5295,7 +5295,48 @@ class NmRunfunc(MCommandNew):
     """
     def __init__(self, func):
         super().__init__(nm.runfunc)
-        self.func = func
+        self.func = self.make_wrapped_func(func)
+
+    def make_wrapped_func(self, original_func):
+        """
+        渡されてきた関数をKSKP独自コマンドとして使えるように、
+        ラップして新しい関数を作って返す
+
+        渡されてくる関数は(args, in_fd, out_fd)という引数の形式である必要がある
+        argsは画面から渡されるオプション情報のdict
+        in_fd/out_fdはそれぞれ、読込先/書込先のファイルディスクリプタ
+        """
+
+        def wrapped_func(args):
+            """
+            β版の仕様として、NysolPythonSourceにキーワード引数として渡すために、
+            本来はinputsとして入っている読込元(=入力元)情報をargsにコピーしている。
+
+            つまり、この関数が呼ばれた時のargsの中身は、
+            {
+                'i': <<入力先のパス(ない場合もある)>>,
+                'o': <<出力先のパス(ない場合もある)>>,
+                <<その他、'f'とか'c'とか、通常のnysol_pythonに渡すオプションたち>>
+            }
+            という感じになっている。
+
+            したがって、args['i']/args['o']があれば、それをパスとしてopenしてfdとする。
+            なければ、それぞれsys.stdin/sys.stdoutをfdとして使う。
+            """
+
+            if 'i' in args:
+                in_fd = open(args['i'], 'r')
+            else:
+                in_fd = sys.stdin
+
+            if 'o' in args:
+                out_fd = open(args['o'], 'w')
+            else:
+                out_fd = sys.stdout
+
+            original_func(args, in_fd, out_fd)            
+
+        return wrapped_func
 
     def command_args(self, args, inputs):
         from kskp.engine.commands.pcmd import selectrows
@@ -5400,6 +5441,12 @@ class Two_output_runfunc(NmRunfuncMultiOut):
     """
     def __init__(self, func):
         super().__init__(func)
+
+# runfunc用の関数のimport
+from kskp.engine.commands.pcmd import (
+    test,
+    selectrows,    
+)
 
 commands = {
     # MCDM
@@ -5542,15 +5589,10 @@ commands = {
 
     # runfunc用コマンド
     # outputが１つのコマンド
-    'selectrows': One_output_runfunc(selectrows),
+    'selectrows': One_output_runfunc(selectrows),    
     # outputが２つのコマンド
     'test': Two_output_runfunc(test),
 }
-# runfunc用の関数のimport
-from kskp.engine.commands.pcmd import (
-    test,
-    selectrows
-)
 
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
