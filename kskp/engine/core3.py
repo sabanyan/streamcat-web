@@ -5446,7 +5446,7 @@ class Two_output_runfunc(NmRunfuncMultiOut):
 from kskp.engine.commands.pcmd import (
     test,
     selectrows,    
-    select_csv,
+    plaintext2csv,
 )
 
 commands = {
@@ -5591,7 +5591,7 @@ commands = {
     # runfunc用コマンド
     # outputが１つのコマンド
     'selectrows': One_output_runfunc(selectrows),    
-    'select_csv': One_output_runfunc(select_csv.main),   
+    'plaintext2csv': One_output_runfunc(plaintext2csv.main), 
     # outputが２つのコマンド
     'test': Two_output_runfunc(test),
 }
