@@ -1,0 +1,128 @@
+{
+  "id": "select_csv",
+  "rules" : {
+    "field" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[1-9].[0-9]*$|^[1-9]$|^@\\[.+\\]$|^$",
+          "message" : "1以上の整数を半角で入力してください"
+        }
+      }
+    },
+    "attr" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+        "pattern" : "^[1-9][0-9]*$|^[1-9][0-9]*-[1-9][0-9]*$",
+        "message" : "行番号の指定は、1以上の整数で、範囲を指定する場合は−(ハイフン）区切りで入力してください" 
+        }
+      }
+    },
+    "observe" : {
+      "presence": {"allowEmpty": false},
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[1-9].[0-9]*$|^[1-9]$|^@\\[.+\\]$|^$",
+          "message" : "1以上の整数を半角で入力してください"
+        }
+      },
+      "compareNumbersLargerThan" : {
+        "target" : "field",
+        "message":"観測値は列名行より下に設定してください"
+      }
+    },
+    "except_chr" : {
+      "onlyOneInput" : {
+        "target" : ["except_null"]
+      },
+      "presencesIfTargetIsInput" : ["except_end_range","except_end_null","except_end_chr"]
+    },
+    "except_null" : {
+      "onlyOneInput" : {
+        "target" : ["except_chr"]
+      },
+      "presencesIfTargetIsInput" : ["except_end_range","except_end_null","except_end_chr"]
+    },
+    "except_end_chr" : {
+      "onlyOneInput" : {
+        "target" : ["except_end_range","except_end_null"]
+      }
+    },
+    "except_end_range" : {
+      "checkSeveralSpecifiedFormats" : {
+        "defaultRule" : {
+          "pattern" : "^[1-9].[0-9]*$|^[1-9]$|^@\\[.+\\]$|^$",
+          "message" : "1以上の整数を半角で入力してください"
+        }
+      },
+      "onlyOneInput" : {
+        "target" : ["except_end_chr","except_end_null"]
+      }
+    },
+    "except_end_null" : {
+      "onlyOneInput" : {
+        "target" : ["except_end_chr","except_end_range"]
+      }
+    }
+  },
+  "params" : [
+    {
+      "name" : "field",
+      "type" : "string",
+      "label" : "列名行(1始まり行番号)"
+    },
+    {
+      "name" : "attr",
+      "type" : "string",
+      "label" : "列属性(1始まり行番号範囲)"
+    },
+    {
+      "name" : "observe",
+      "type" : "string",
+      "label" : "観測値開始行(1始まり行番号)"
+    },
+    {
+      "name" : "except_chr",
+      "type" : "string",
+      "label" : "不要行開始条件：文字列で指定(正規表現)"
+    },
+    {
+      "name" : "except_null",
+      "type" : "boolean",
+      "label" : "不要行開始条件：空行指定"
+    },
+    {
+      "name" : "except_end_chr",
+      "type" : "string",
+      "label" : "不要行終了条件：文字列指定(正規表現)"
+    },
+    {
+      "name" : "except_end_range",
+      "type" : "string",
+      "label" : "不要行終了条件：固定行数指定"
+    },
+    {
+      "name" : "except_end_null",
+      "type" : "boolean",
+      "label" : "不要行終了条件：空行指定"
+    }
+  ],
+  "ports": [
+    [
+      {
+        "name": "i",
+        "type": "frame"
+      }
+    ],
+    [
+      {
+        "name": "o",
+        "type": "frame"
+      }
+    ]
+  ],
+  "version": "0.3",
+  "label": "CSV要素の行単位抽出",
+  "classification": "row_edit",
+  "description": "プレーンテキストからCSV(列名、観測値)と属性を分離する。行の条件指定により、観測値範囲のクレンジングができる。",
+  "url": ""
+}
