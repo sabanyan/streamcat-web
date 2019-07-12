@@ -1,5 +1,5 @@
 {
-  "id": "select_csv",
+  "id": "plaintext2csv",
   "rules" : {
     "field" : {
       "checkSeveralSpecifiedFormats" : {
@@ -33,14 +33,12 @@
     "except_chr" : {
       "onlyOneInput" : {
         "target" : ["except_null"]
-      },
-      "presencesIfTargetIsInput" : ["except_end_range","except_end_null","except_end_chr"]
+      }
     },
     "except_null" : {
       "onlyOneInput" : {
         "target" : ["except_chr"]
-      },
-      "presencesIfTargetIsInput" : ["except_end_range","except_end_null","except_end_chr"]
+      }
     },
     "except_end_chr" : {
       "onlyOneInput" : {
@@ -68,42 +66,42 @@
     {
       "name" : "field",
       "type" : "string",
-      "label" : "列名行(1始まり行番号)"
+      "label" : "列名【行位置】:1始まりの行番号"
     },
     {
       "name" : "attr",
       "type" : "string",
-      "label" : "列属性(1始まり行番号範囲)"
+      "label" : "属性【行範囲】:1始まり行番号範囲 (例:1-2)"
     },
     {
       "name" : "observe",
       "type" : "string",
-      "label" : "観測値開始行(1始まり行番号)"
+      "label" : "観測値【開始行】:1始まり行番号"
     },
     {
       "name" : "except_chr",
       "type" : "string",
-      "label" : "不要行開始条件：文字列で指定(正規表現)"
-    },
-    {
-      "name" : "except_null",
-      "type" : "boolean",
-      "label" : "不要行開始条件：空行指定"
+      "label" : "不要行条件【開始】：文字列の場合(正規表現)"
     },
     {
       "name" : "except_end_chr",
       "type" : "string",
-      "label" : "不要行終了条件：文字列指定(正規表現)"
+      "label" : "不要行条件【終了】：文字列の場合(正規表現)"
     },
     {
       "name" : "except_end_range",
       "type" : "string",
-      "label" : "不要行終了条件：固定行数指定"
+      "label" : "不要行条件【終了】：開始からの固定行の場合"
+    },
+    {
+      "name" : "except_null",
+      "type" : "boolean",
+      "label" : "不要行条件【開始】：空行で始まる"
     },
     {
       "name" : "except_end_null",
       "type" : "boolean",
-      "label" : "不要行終了条件：空行指定"
+      "label" : "不要行条件【終了】：空行で終わる"
     }
   ],
   "ports": [
@@ -123,6 +121,6 @@
   "version": "0.3",
   "label": "CSV要素の行単位抽出",
   "classification": "row_edit",
-  "description": "プレーンテキストからCSV(列名、観測値)と属性を分離する。行の条件指定により、観測値範囲のクレンジングができる。",
+  "description": "プレーンテキストからCSV(列名、観測値)と属性を分離する。開始終了条件指定により不要行を削除できる。",
   "url": ""
 }

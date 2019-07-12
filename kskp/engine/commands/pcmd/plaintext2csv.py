@@ -119,10 +119,14 @@ def check_args(args):
      ただし、属性範囲指定と観測値開始指定の比較はコマンドJSONの機能では不可能なためやっていない。
      （2−3のようなハイフン区切りをパースして条件をつくることができない）
     """
+    # 指定判断の正規表現文字列
+    re_Natural = '^[1-9][0-9]*$'
+    re_natural_range = '^[1-9][0-9]*(-[1-9][0-9]*)?$'
+
     observe = args.get('observe')
     if observe is None:
         raise Exception(ErrMsg['1'])
-    elif re.search('^[1-9][0-9]*$',observe):
+    elif re.search(re_Natural,observe):
         args['observe'] = int(observe)
     else:
         raise Exception(ErrMsg['1'])
@@ -130,7 +134,7 @@ def check_args(args):
     field = args.get('field')
     if field is None:
         pass
-    elif re.search('^[0-9]*$',field):
+    elif re.search(re_Natural,field):
         if int(field) >= args['observe']:
             raise Exception(ErrMsg['3'])
         else:
@@ -141,12 +145,12 @@ def check_args(args):
     attr = args.get('attr')
     if not attr:
         pass
-    elif re.search('^[1-9][0-9]*(-[1-9][0-9]*)?$',attr):
+    elif re.search(re_natural_range,attr):
         attr = list(map(int,attr.split("-")))
         if max(attr) >= args['observe']:
             raise Exception(ErrMsg['5'])
         else:
-            args['attr']=attr #リストを代入している
+            args['attr'] = attr #リストを代入している
     else:
         raise Exception(ErrMsg['4'])
 
@@ -178,7 +182,7 @@ def check_args(args):
     except_end_range = args.get('except_end_range')
     if except_end_range is None:
         pass
-    elif re.search('^[1-9][0-9]*$',except_end_range):
+    elif re.search(re_Natural,except_end_range):
         args['except_end_range'] = int(except_end_range)
     else:
         raise Exception(ErrMsg['9'])
