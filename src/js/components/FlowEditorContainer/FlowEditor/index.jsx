@@ -196,6 +196,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
         <PaperZoom />
         {/*<SettingsButton {...this.props}/>*/}
         <ToolBar flow={flow}
+                 zoom={zoom}
                  nodes={nodes}
                  history={history}
                  notify={notify}
