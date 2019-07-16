@@ -1,0 +1,18 @@
+@import "../../../../sass/common";
+
+.flow_editor {
+  //-ms-user-select: none; /* IE 10+ */
+  //-moz-user-select: -moz-none;
+  //-khtml-user-select: none;
+  //-webkit-user-select: none;
+  user-select: none;
+  background: $kskp-paper-background-color;
+}
+
+.flow_editor_container {
+  overflow-x: scroll;
+}
+
+body {
+  background: $kskp-paper-background-color;
+}

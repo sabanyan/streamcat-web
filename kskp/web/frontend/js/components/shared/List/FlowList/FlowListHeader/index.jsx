@@ -1,0 +1,28 @@
+//@flow
+import React from 'react'
+import style from './style.scss'
+
+type FlowListHeaderProps = {
+  flow_list_header: string;
+  name: string;
+  creator_name: string;
+  created_at: string;
+  action: string;
+}
+
+export default class FlowListHeader extends React.Component {
+
+  constructor (props) {
+    super(props)
+  }
+
+  render () {
+    return <div className={style.flow_list_header}>
+      <div className={style.name}>名前</div>
+      <div className={style.creator_name}>作成者</div>
+      <div className={style.created_at}>作成日時</div>
+      <div className={style.action}></div>
+    </div>
+  }
+
+}

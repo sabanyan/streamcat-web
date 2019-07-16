@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="15px" viewBox="0 0 16 15" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>iconbox</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="kskp_beta_flow_designer" transform="translate(-1382.000000, -25.000000)" fill="#FFFFFF" fill-rule="nonzero">
+            <g id="box" transform="translate(1382.000000, 25.000000)">
+                <path d="M3.275,0 C2.7156248,0 2.2437504,0.3187504 1.925,0.8 L0.15,3.675 C0.0687504,3.8343752 0,4.1593752 0,4.4 L0,12.8 C0,13.6812504 0.7187504,14.4 1.6,14.4 L14.4,14.4 C15.2812504,14.4 16,13.6812504 16,12.8 L16,4.4 C16,4.1593752 15.9312504,3.8343752 15.85,3.675 L14.075,0.8 C13.7562504,0.3187504 13.2843752,0 12.725,0 L3.275,0 Z M3.125,1.6 L7.2,1.6 L7.2,4 L1.75,4 L3.125,1.6 Z M8.8,1.6 L12.875,1.6 L14.25,4 L8.8,4 L8.8,1.6 Z M5.6,5.6 L10.4,5.6 C10.8812504,5.6 11.2,5.9187504 11.2,6.4 C11.2,6.8812504 10.8812504,7.2 10.4,7.2 L5.6,7.2 C5.1187504,7.2 4.8,6.8812504 4.8,6.4 C4.8,5.9187504 5.1187504,5.6 5.6,5.6 Z" id="Shape"></path>
+            </g>
+        </g>
+    </g>
+</svg>

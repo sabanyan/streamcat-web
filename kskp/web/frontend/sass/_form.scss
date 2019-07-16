@@ -1,0 +1,24 @@
+.kskp-form{
+  .custom-control{
+    &.custom-radio,&.custom-checkbox{
+      line-height: 1.5em;
+    }
+  }
+  .custom-radio,.custom-checkbox{
+    .custom-control-indicator{
+      background-color: $kskp-form-background-color;
+    }
+    .custom-control-input:checked ~ .custom-control-indicator{
+      background-color: $kskp-form-radio-indicator-color;
+      color: #fff;
+    }
+  }
+  .input-group-addon{
+    background: #fff;
+  }
+  .input-group{
+    input[type=text]{
+      border-left:none;
+    }
+  }
+}
