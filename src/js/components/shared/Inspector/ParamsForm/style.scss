@@ -3,6 +3,7 @@
   padding-top: 4px;
   color: red;
   font-size: 12px;
+  float: left;
 }
 
 .presence {
@@ -19,4 +20,41 @@
 
 .invalid input[type=text] {
   background: lighten(#F51F28, 40%);
+}
+.left {
+  display: inline-block;
+  float: left;
+  padding: 5px;
+  width: calc(100% - 100px);
+}
+
+.right {
+  width: 100px;
+  display: inline-block;
+  text-align: right;
+  float: right;
+  padding: 5px;
+}
+
+.center {
+  width: 100px;
+  display: inline-block;
+  text-align: left;
+  float: left;
+  padding-top: 4px;
+}
+
+.topRight {
+  width: 100px;
+  display: inline-block;
+  text-align: right;
+  float: right;
+  padding: 5px;
+  padding-top: 40px;
+}
+
+.addButton {
+  width: 100%;
+  float: left;
+  text-align: center;
 }

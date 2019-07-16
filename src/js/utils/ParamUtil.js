@@ -69,24 +69,25 @@ export default class ParamUtil {
   }
 
   // FIXIT: 
-  static getParamElement (param, onBuild, events, defaultValue, refValue, headers) {
+  static getParamElement (param, onBuild, events, defaultValue, refValue, headers, noLabel?) {
+
     let paramElement
     switch (param.type) {
       case Constants.param.type.number:
         paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={events} noLabel={noLabel}/>
         break
       case Constants.param.type.string:
         paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={events} noLabel={noLabel}/>
         break
       case Constants.param.type.boolean:
         paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                     events={events} />
+                                     events={events} noLabel={noLabel}/>
         break
       case Constants.param.type.select:
         paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={events}  noLabel={noLabel}/>
         break
 
       case Constants.param.type.column:
@@ -97,13 +98,13 @@ export default class ParamUtil {
           multiple: (param.options.multiple) ? true : false
         }
         paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={events}  noLabel={noLabel} />
         break
 
       default:
         paramElement =
           <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events}
-                       disabled={true} />
+                       disabled={true}  noLabel={noLabel}/>
         break
     }
     return paramElement
