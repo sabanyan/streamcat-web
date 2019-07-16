@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<form action="/signup/confirm" method="POST">
+  <p>メールアドレスを入力してください</p>
+  <input type="text" name="email">
+  <input type="submit" value="send">
+</form>
+{% endblock %}
