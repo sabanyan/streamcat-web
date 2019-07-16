@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='iconfont/material-icons.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fontawesome.all.min.css') }}" />
+    <title>{% block title %}{% endblock %}</title>
+    {% endblock %}
+</head>
+<body>
+{% if css_resources and js_resources %}
+{{ css_resources | safe }}
+{{ js_resources | safe }}
+{% endif %}
+{% include "common/navbar.html" %}
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul class=flashes>
+{% for message in messages %}
+  <li>{{ message }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+{% block content %}{% endblock %}
+{% include "common/script.html" %}
+<a id="csv_download" download="download"></a>
+<div class="modal" style="display: none" id="error_modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">スクリプトエラー</div>
+            </div>
+            <div class="modal-body">
+                <div class="">
+                    申し訳ございません、動作中にエラーが発生しました。<br>
+                    「更新する」ボタンでブラウザを更新してください。
+                </div>
+                <div id="error_modal_content" class="modal-script-error-text"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="pull-right">
+                    <a href="javascript:$('#error_modal_bg,#error_modal').hide()" class="btn btn-outline btn-sm">続行する</a>
+                </div>
+                <div class="pull-right">
+                    <a href="javascript:location.reload(true)" class="btn btn-primary btn-sm">更新する</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-backdrop" id="error_modal_bg" style="display: none"></div>
+<script src="{{ url_for('static', filename='js/common.js') }}"></script>
+<script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.2.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+{% block footer_scripts %}{% endblock %}
+</body>
+</html>

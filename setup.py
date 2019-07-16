@@ -7,5 +7,14 @@ setup(
     install_requires=[
         'flask',
         'flask_mail',
+        'sqlalchemy',
+        'flask_sqlalchemy',
+        'numpy',
+        'scipy',
+        'pandas',
+        'sklearn',
+        'holoviews',
+        'bokeh',
+        'ptvsd'
     ],
 )
