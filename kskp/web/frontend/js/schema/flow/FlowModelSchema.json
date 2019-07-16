@@ -1,0 +1,66 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "FlowModelSchema.json",
+  "type": "object",
+  "required": [
+    "flow"
+  ],
+  "properties": {
+    "flow": {
+      "$id": "#/properties/flow",
+      "type": "object",
+      "required": [
+        "createdAt",
+        "creator",
+        "description",
+        "label",
+        "nodes",
+        "params",
+        "ports"
+      ],
+      "properties": {
+        "createdAt": {
+          "$id": "#/properties/flow/properties/createdAt",
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "creator": {
+          "$id": "#/properties/flow/properties/creator",
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "description": {
+          "$id": "#/properties/flow/properties/description",
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "label": {
+          "$id": "#/properties/flow/properties/label",
+          "type": "string",
+          "pattern": "^(.*)$"
+        },
+        "nodes": {
+          "$id": "#/properties/flow/properties/nodes",
+          "type": "array"
+        },
+        "params": {
+          "$id": "#/properties/flow/properties/params",
+          "type": "array",
+          "items": {
+            "$id": "#/properties/flow/properties/params/items",
+            "type": "object"
+          }
+        },
+        "ports": {
+          "$id": "#/properties/flow/properties/ports",
+          "type": "array",
+          "items": {
+            "$id": "#/properties/flow/properties/ports/items",
+            "type": "array"
+          }
+        }
+      }
+    }
+  }
+}

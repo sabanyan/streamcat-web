@@ -1,0 +1,83 @@
+@import "../../../../../sass/common";
+
+.job_list_header {
+  position: relative;
+  display: block;
+  color: $kskp-text;
+  font-size: 16px;
+  padding: 16px;
+  padding-left: 44px;
+}
+
+
+.job_list {
+  position: relative;
+  display: block;
+  border-top: 1px solid $kskp-list-border-color;
+
+  &:first-child, &:last-child {
+    border-bottom: 1px solid $kskp-list-border-color;
+  }
+
+  border-radius: 0;
+  color: $kskp-text;
+  background: #fff;
+  padding: 16px;
+  padding-left: 44px;
+
+  &:hover {
+    color: $kskp-text;
+    text-decoration: none !important;
+    opacity: 0.8;
+  }
+
+  cursor: pointer;
+}
+
+.selected {
+  background: #fafafa;
+}
+
+.icon {
+  color: $kskp-text;
+  font-size: 18px;
+  position: relative;
+  top: 2px;
+  padding-right: 4px;
+  display: inline-block;
+}
+
+.name {
+  display: inline-block !important;
+  width: calc(100% - 20% - 200px - 200px - 120px);
+  vertical-align: top;
+}
+
+.executed_at {
+  display: inline-block;
+  width: 200px;
+  vertical-align: top;
+}
+
+.flow_name {
+  display: inline-block;
+  vertical-align: top;
+  width: 200px;
+}
+
+.executor_name {
+  display: inline-block;
+  vertical-align: top;
+  width: 20%;
+}
+
+.status {
+  display: inline-block;
+  vertical-align: top;
+  width: 120px;
+}
+
+.uuid {
+  color: #dadada;
+  line-height: 1em;
+}

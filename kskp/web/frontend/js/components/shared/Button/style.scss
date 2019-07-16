@@ -1,0 +1,71 @@
+@import "../../../../sass/common";
+
+.button {
+  display: inline-block;
+  border: 1px solid $kskp-button-border;
+  border-radius: 4px;
+  box-shadow: 0 1px 1px $kskp-button-shadow;
+  margin: 0 8px 0 0;
+  outline: none !important;
+  cursor: pointer;
+  min-width: 80px;
+  min-height: 30px;
+  padding: 1px 7px 2px;
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  &.danger {
+    border: 1px solid $kskp-danger;
+
+    .text, .icon {
+      color: $kskp-danger !important;
+    }
+  }
+
+  &:hover {
+    background-color: darken($kskp-button-background, 5%);
+    border: 1px solid lighten($kskp-button-border, 5%);
+    transition: all 0.3s;
+  }
+
+  &.primary {
+    border: 1px solid darken($kskp-dark-gray, 5%);
+    background: $kskp-dark-gray;
+    color: #fff !important;
+  }
+
+  &.primary:hover {
+    background-color: darken($kskp-dark-gray, 5%);
+    border: 1px solid lighten($kskp-dark-gray, 5%);
+    transition: all 0.3s;
+  }
+}
+
+.text {
+  top: -2px;
+  position: relative;
+  color: $kskp-text !important;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.whiteText {
+  top: -2px;
+  position: relative;
+  color: #fff;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.icon {
+  display: inline-block;
+  color: $kskp-text !important;
+  font-size: 16px;
+  line-height: 1em;
+  padding-right: 4px;
+  position: relative;
+  top: 3px;
+}
