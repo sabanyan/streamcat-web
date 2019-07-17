@@ -261,7 +261,7 @@ def execute_flow_internal(flow_uuid, step_ids=[], args={}, inputs={}):
         from kskp.store import FLOW_PATH
 
         # TODO:Flowがどこにあるべきか、取得方法を正式に決めないと。。。
-        link = FlowUuidLink(Path(FLOW_PATH), flow_uuid, step_ids)
+        link = FlowUuidLink(flow_uuid, step_ids)
         return execute(link=link, args=args, inputs=inputs)
 
     result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)

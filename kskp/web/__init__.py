@@ -46,5 +46,5 @@ app.register_blueprint(lib.mod, url_prefix=PREFIX)
 def main():
     app.run()
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
