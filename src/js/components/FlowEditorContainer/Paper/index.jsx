@@ -1,12 +1,18 @@
 //@flow
 import * as React from 'react'
-import Index from '../../shared/Shadow'
-import Constants from '../../../constants/index'
-import type { FlowEditorProps } from '../index'
+import Index from 'Shared/SVG/Shadow'
+import Constants from 'Constants/index'
 import style from './style.scss'
-import ZoomUtil from '../../../utils/ZoomUtil'
+import { ZoomUtil } from 'Utils/index'
+import type { GraphType } from "Types/index";
 
-class Paper extends React.Component<FlowEditorProps> {
+type PaperProps = {
+  zoom : number;
+  graph: GraphType;
+  children: React.Node;
+}
+
+class Paper extends React.Component<PaperProps> {
   render () {
 
     const {zoom, graph} = this.props

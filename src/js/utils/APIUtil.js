@@ -1,6 +1,6 @@
 //@flow
 import axios from 'axios'
-import NavigationModel from '../model/Navigation/NavigationModel'
+import NavigationModel from 'Model/Navigation/NavigationModel'
 
 class APIUtil {
   constructor () {

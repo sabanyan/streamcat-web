@@ -1,12 +1,11 @@
 //@flow
 import * as React from 'react'
-import BaseInspector from '../BaseInspector/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
+import { BaseInspector, ParamsForm } from 'Shared/Inspector'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import Button from '../../Button/index'
-import FlowModel from '../../../../model/Flow/FlowModel'
-import ParamUtil from '../../../../utils/ParamUtil'
-import ParamsForm from '../../ParamsForm'
+import { Button } from 'Shared/Input'
+import FlowModel from 'Model/Flow/FlowModel'
+import { ParamUtil } from 'Utils/index'
 import classnames from 'classnames'
 
 type PreviewInspectorProps = {
@@ -91,7 +90,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
     const property_class = classnames(style.property, style.in)
 
     return <div className={property_class}>
-      <BaseInspector key={0} header={''} label={label} subLabel={''} {...this.props} >
+      <BaseInspector key={0} header={''} label={label} subLabel={''}>
         {content}
       </BaseInspector>
     </div>

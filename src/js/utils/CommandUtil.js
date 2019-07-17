@@ -1,7 +1,7 @@
 //@flow
 
-import type { CommandParamType } from '../types'
-import CommandModel from '../model/Command/CommandModel'
+import type { CommandParamType } from 'Types/index'
+import CommandModel from 'Model/Command/CommandModel'
 
 export default class CommandUtil {
   static getCommand (id: string): CommandModel {

@@ -1,6 +1,5 @@
 {
   "id": "mcut",
-    
   "rules": {
     "f":{
       "presence": {"allowEmpty": false},
@@ -19,7 +18,6 @@
       }
     }
   },
-
   "params": [
     {
       "name": "f",

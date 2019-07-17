@@ -2,8 +2,8 @@
 import * as React from 'react'
 import style from '../style.scss'
 import classnames from 'classnames'
-import InspectorKnob from '../InspectorKnob'
-import Constants from '../../../../constants'
+import { InspectorKnob } from 'Shared/Inspector'
+import Constants from 'Constants/index'
 
 let mouseMoveEvent
 let mouseUpEvent

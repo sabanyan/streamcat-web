@@ -1,9 +1,7 @@
 //@flow
-import CommandStepModel from '../model/Step/CommandStepModel'
-import SubFlowStepModel from '../model/Step/SubFlowStepModel'
-import DataFrameStepModel from '../model/Step/DataFrameStepModel'
+import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubflowCommandModel, SubFlowStepModel } from 'Model/index'
 import * as React from 'react'
-import CommandModel from '../model/Command/CommandModel'
+import CommandModel from 'Model/Command/CommandModel'
 
 export type StepModelType = CommandStepModel | SubFlowStepModel | DataFrameStepModel | NoteStepModel
 export type CommandParamType = {
@@ -106,6 +104,17 @@ export type UploadedFileType = {
   label?: string
 }
 
+export type MastType =  {
+  commands: any[],
+  subflows: any[],
+  visualizers: any[]
+}
+
+export type HistoryType = {
+  current: number,
+  nodes: []
+}
+
 export type DragType = {
   start: {
     x: number,
@@ -155,4 +164,17 @@ export type BreadCrumbHistoryType = {
   label: string,
   url: string,
   current: boolean,
+}
+
+export type RunArgsType = {
+  flow_uuid: string;
+  flows: [];
+  variables: [];
+}
+
+export type GraphType = {
+  width: number;
+  height: number;
+  edges: any[];
+  nodes: any[];
 }
