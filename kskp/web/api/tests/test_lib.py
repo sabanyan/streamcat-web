@@ -4,13 +4,13 @@ import json
 import pprint
 from pathlib import Path
 from kskp.web import app
-from kskp.store import session as ss
+from kskp.store import ss
 from kskp.store import StoreModel as Store
 from kskp.store import Library
 
 class DataStoreTestCase(unittest.TestCase):
 
-    # @unittest.skip
+    @unittest.skip
     def test_create_fetchall_delete_stores(self):
         """
         fetch_stores APIをテストする
@@ -79,7 +79,7 @@ class DataStoreTestCase(unittest.TestCase):
             response = client.delete('/api/v0/stores/%s' % expected_result[1]['id'])
             result = json.loads(response.get_data())
 
-    # @unittest.skip
+    @unittest.skip
     def test_create_fetch_delete_store(self):
         """
         create_store APIをテストする
@@ -148,7 +148,7 @@ class DataStoreTestCase(unittest.TestCase):
 
 class LibraryTestCase(unittest.TestCase):
 
-    # @unittest.skip
+    @unittest.skip
     def test_get_root(self):
         """
         ルートフォルダがある場合にGET /libraryを実行した場合
@@ -192,7 +192,7 @@ class LibraryTestCase(unittest.TestCase):
         # # Delete /folders apiが正常終了することを検証する
         # self.assertEqual(result['success'], True)
 
-    # @unittest.skip
+    @unittest.skip
     def test_get_root2(self):
         """
         ルートフォルダが無い場合にGET /libraryを実行した場合
@@ -227,7 +227,7 @@ class LibraryTestCase(unittest.TestCase):
         # # Delete /folders apiが正常終了することを検証する
         # self.assertEqual(result['success'], True)
 
-    # @unittest.skip
+    @unittest.skip
     def test_get_folder(self):
         # ルートフォルダを取得する(GET /library)
         with app.test_client() as client:
@@ -264,7 +264,7 @@ class LibraryTestCase(unittest.TestCase):
         # # Delete /folders apiが正常終了することを検証する
         # self.assertEqual(result['success'], True)
 
-    # @unittest.skip
+    @unittest.skip
     def test_get_no_folder(self):
         # 存在しないフォルダを取得しようとして失敗する(GET /folders)
         with app.test_client() as client:

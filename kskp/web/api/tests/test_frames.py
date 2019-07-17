@@ -7,7 +7,8 @@ from kskp.web import app
 from kskp.store import (
     Library,
     FRAME_FOLDER_UUID,
-    CACHE_FOLDER_UUID
+    CACHE_FOLDER_UUID,
+    STORE_DIR
 )
 
 class FrameApoTestCase(unittest.TestCase):
@@ -38,7 +39,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         with app.test_client() as client:
@@ -72,7 +73,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         with app.test_client() as client:
@@ -106,7 +107,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         with app.test_client() as client:
@@ -142,7 +143,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         with app.test_client() as client:
@@ -169,7 +170,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         with app.test_client() as client:
@@ -204,7 +205,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         with app.test_client() as client:
@@ -282,7 +283,7 @@ class ApiExecuteTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -341,7 +342,7 @@ class ApiExecuteTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -461,7 +462,7 @@ class ApiExecuteTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # フローの実行
@@ -558,7 +559,7 @@ class ApiExecuteTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = Path('kskp/data') / 'test_data.csv'
+        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         args = {
