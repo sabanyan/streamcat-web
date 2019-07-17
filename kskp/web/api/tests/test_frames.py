@@ -8,7 +8,8 @@ from kskp.store import (
     Library,
     FRAME_FOLDER_UUID,
     CACHE_FOLDER_UUID,
-    STORE_DIR
+    STORE_DIR,
+    FLOW_PATH
 )
 
 class FrameApoTestCase(unittest.TestCase):
@@ -297,7 +298,7 @@ class ApiExecuteTestCase(unittest.TestCase):
 
         flow_json = json.loads(json.dumps(self.flow_json))
         flow_json['nodes'].append(input_node)
-        flow_path = Path('kskp/data/flows/test.json')
+        flow_path = Path(FLOW_PATH) / 'test.json'
         flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
 
         # フローを実行する
@@ -383,7 +384,7 @@ class ApiExecuteTestCase(unittest.TestCase):
         flow_json['nodes'].append(input_node)
         flow_json['nodes'].append(add_cmd)
         flow_json['nodes'].append(add_datum)
-        flow_path = Path('kskp/data/flows/test.json')
+        flow_path = Path(FLOW_PATH) / 'test.json'
         flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
 
         # フローの実行
@@ -450,7 +451,7 @@ class ApiExecuteTestCase(unittest.TestCase):
         flow_json['ports'][0].append(input_port)
         flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
-        flow_path = Path('kskp/data/flows/test.json')
+        flow_path = Path(FLOW_PATH) / 'test.json'
         flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
 
         # テストフレーム作成
@@ -547,7 +548,7 @@ class ApiExecuteTestCase(unittest.TestCase):
                 node['args']['f'] = f'@[{arg_for_param}]'
                 break
 
-        flow_path = Path('kskp/data/flows/test.json')
+        flow_path = Path(FLOW_PATH) / 'test.json'
         flow_path.write_text(json.dumps(flow_json, ensure_ascii=False, indent=2), encoding='utf-8')
 
         # テストフレーム作成
