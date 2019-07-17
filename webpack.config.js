@@ -45,6 +45,11 @@ module.exports = (env) => {
             exclude: /node_modules/,
           },
           {
+            test: /\.tsx?$/,
+            use: ['babel-loader','ts-loader'],
+            exclude: /node_modules/,
+          },
+          {
             test: /\.s?css$/,
             use: ['style-loader', 'css-loader?modules', 'sass-loader'],
             exclude: /node_modules/,
@@ -67,7 +72,7 @@ module.exports = (env) => {
           Utils: path.resolve(__dirname, './src/js/utils/')
         },
         modules: ['node_modules'],
-        extensions: ['.js', '.jsx'],
+        extensions: ['.js', '.jsx','.ts','.tsx'],
       },
       plugins: [
         new webpack.DllReferencePlugin({
