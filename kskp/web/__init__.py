@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from kskp.store import STORE_DIR
 
 app = Flask('kskp.web')
 # コマンド一覧で表示させるコマンドのリスト
@@ -10,7 +11,7 @@ app.config['JSON_AS_ASCII'] = False
 app.config['JSON_SORT_KEYS'] = False
 
 # DB設定（現在はSQlite）
-os.environ['SQLITE_PATH'] = 'kskp/data/kskp.db'
+os.environ['SQLITE_PATH'] = (STORE_DIR / 'kskp.db').as_posix()
 os.environ['DATABASE_URI'] = 'sqlite:///' + os.environ['SQLITE_PATH']
 
 # 文字コード設定（とりあえず標準はutf-8で）

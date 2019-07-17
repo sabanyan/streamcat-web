@@ -10,7 +10,7 @@ from kskp.web import app
 from kskp.store import model, FLOW_PATH
 
 from .utils import setUpUser, setUpProject, setUpFlow, remove_copy_flow_files, create_data
-from kskp.store import Library
+from kskp.store import Library, STORE_DIR
 
 class ApiTestCase(unittest.TestCase):
 
@@ -795,7 +795,7 @@ class ApiTestCase(unittest.TestCase):
             ['B', 1, 50]
         ]
         datum_id = 'test'
-        frame_uuid = create_data(Path('kskp/data/library/フロー実行キャッシュ') / 'test_data.csv', data)
+        frame_uuid = create_data((STORE_DIR / 'frames/csv/フロー実行キャッシュ/test_data.csv'), data)
 
         flow_path = Path(FLOW_PATH) / (data_source_name + '.json')
         flow_json = json.loads(flow_path.read_text(), encoding='utf-8')

@@ -1,0 +1,64 @@
+{
+  "label": "テストフロ",
+  "params": [],
+  "description": "",
+  "ports": [
+    [],
+    []
+  ],
+  "nodes": [
+    {
+      "type": "frame",
+      "id": "d1",
+      "label": "出力結果",
+      "uuid": null,
+      "dataSource": "csv"
+    },
+    {
+      "type": "command",
+      "id": "c1",
+      "label": "c1",
+      "srcs": {
+        "i": "i"
+      },
+      "dsts": {
+        "o": "d1"
+      },
+      "args": {
+        "f": "0,1",
+        "x": true
+      },
+      "commandId": "mcut"
+    },
+    {
+      "id": "i",
+      "type": "frame",
+      "label": "テストデータ",
+      "uuid": "1fc45253-3c1c-4335-9d12-9102cac0c479",
+      "dataSource": "csv"
+    },
+    {
+      "type": "command",
+      "id": "c2",
+      "label": "c2",
+      "srcs": {
+        "i": "d1"
+      },
+      "dsts": {
+        "o": "d2"
+      },
+      "args": {
+        "f": "顧客",
+        "v": "A"
+      },
+      "commandId": "mselstr"
+    },
+    {
+      "type": "frame",
+      "id": "d2",
+      "label": "d2",
+      "uuid": null,
+      "dataSource": "csv"
+    }
+  ]
+}
