@@ -1,7 +1,7 @@
 import unittest
 import json
 from pathlib import Path
-from kskp.web import app
+from kskp.web.backend import app
 
 class ApiTestCase(unittest.TestCase):
 

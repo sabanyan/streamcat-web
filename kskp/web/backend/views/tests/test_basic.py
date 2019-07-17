@@ -2,9 +2,9 @@ import os
 import unittest
 import tempfile
 from flask import template_rendered
-from kskp.web import app
+from kskp.web.backend import app
 from kskp.store import model
-from kskp.web.api.tests.utils import setUpUser, setUpProject
+from kskp.web.backend.api.tests.utils import setUpUser, setUpProject
 
 class HtmlTestCase(unittest.TestCase):
     def setUp(self):

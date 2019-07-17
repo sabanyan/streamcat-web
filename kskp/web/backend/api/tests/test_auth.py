@@ -2,8 +2,8 @@ import unittest
 import tempfile
 import os
 from flask import template_rendered
-from kskp.web import app
-import kskp.web.api.auth as auth
+from kskp.web.backend import app
+import kskp.web.backend.api.auth as auth
 from kskp.store import model
 
 class AuthTestCase(unittest.TestCase):

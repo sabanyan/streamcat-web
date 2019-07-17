@@ -2,7 +2,7 @@
 from bokeh.resources import INLINE
 from flask import render_template, redirect, session, request, Blueprint, url_for
 
-from kskp.web.api.auth import login_required
+from kskp.web.backend.api.auth import login_required
 
 mod = Blueprint('basic_template', __name__)
 
