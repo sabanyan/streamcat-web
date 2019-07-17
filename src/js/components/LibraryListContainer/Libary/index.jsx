@@ -2,26 +2,18 @@
 import React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
-import libraryListStyle from '../../shared/List/LibraryList/style.scss'
-import ModalManager from '../../shared/ModalManager'
-import Loader from '../../shared/Loader'
-import EmptyState from '../../shared/EmptyState'
-import LibraryInspector from '../../shared/Inspector/LibraryInspector'
-import NotificationManager from '../../shared/NotificationManager'
-import APIUtil from '../../../utils/APIUtil'
-import LibraryList from '../../shared/List/LibraryList'
-import LibraryListHeader from '../../shared/List/LibraryList/LibraryListHeader'
-import ModalUtil from '../../../utils/ModalUtil'
-import Constants from '../../../constants'
-import FileUploader from '../../shared/FileUploader'
-import type { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType, } from '../../../types'
-import BreadCrumb from '../../shared/BreadCrumb'
-import TextField from '../../shared/TextField'
-import ReactDomUtil from '../../../utils/ReactDomUtil'
-import ErrorUtil from '../../../utils/ErrorUtil'
-import type { LibraryProps } from '../index'
-import HttpUtil from '../../../utils/HttpUtil'
-import VisualizeModel from '../../../model/Visualize/VisualizeModel'
+import libraryListStyle from 'Shared/ListRow/LibraryListRow/style.scss'
+import { ModalManager } from 'Shared/Modal'
+import { BreadCrumb, EmptyState, Loader } from 'Shared/Base'
+import { LibraryInspector } from 'Shared/Inspector'
+import { NotificationManager } from 'Shared/Notification'
+import { APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil } from 'Utils/index'
+import { LibraryListHeader, LibraryListRow } from 'Shared/ListRow'
+import Constants from 'Constants/index'
+import { FileUploader, TextField } from 'Shared/Input'
+import type { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType } from 'Types/index'
+import type { LibraryProps } from 'LibraryListContainer/index'
+import { VisualizeModel } from "Model/index";
 
 type Props = {
   ...LibraryProps
@@ -246,6 +238,17 @@ export default class Library extends React.Component<Props, State> {
             folderPath: json.folderPath,
             currentFolderUUID: inject_folder_uuid,
           })
+        } else {
+          APIUtil.get('awss3s/' + inject_folder_uuid).then((response) => {
+            const json = response.data.data
+            if (response.data.success) {
+              this.setState({
+                libraryChildren: json.children,
+                folderPath: json.folderPath,
+                currentFolderUUID: inject_folder_uuid,
+              })
+            }
+          })
         }
       })
     } else {
@@ -405,7 +408,7 @@ export default class Library extends React.Component<Props, State> {
 
     return this.state.libraryChildren.map((child, index) => {
       const selected = (this.state.selected_data === child)
-      return <LibraryList libraryChild={child} selected={selected}
+      return <LibraryListRow libraryChild={child} selected={selected}
                           onClick={(e, library) => this.onClickLibrary(e,
                             library)}
                           href={'/folders/' + child.uuid + dialogOption} />
@@ -564,6 +567,9 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
   renderAll () {
     if (!this.state.is_finished) {
       return null
@@ -590,8 +596,10 @@ export default class Library extends React.Component<Props, State> {
   }
 
   render () {
+    let containerClassName = (this.isDialog()) ? 'container' : 'container mt-40px'
+
     return <div className={style.inspector_list_container}>
-      <div className={'container mt-40px'}>
+      <div className={containerClassName}>
         <Loader center={true} absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
         <ModalManager />

@@ -1,8 +1,8 @@
 //@flow
-import BaseStepModel from './BaseStepModel'
-import BaseModelProps from './BaseStepModel'
-import type { CommandParamType } from '../../types'
-import CommandModel from '../Command/CommandModel'
+import { BaseStepModel } from 'Model/index'
+import BaseModelProps from 'Model/Step/BaseStepModel'
+import type { CommandParamType } from 'Types/index'
+import CommandModel from 'Model/Command/CommandModel'
 import validateJS from 'validate.js'
 import arrayMove from 'array-move'
 import Constants from '../../constants'

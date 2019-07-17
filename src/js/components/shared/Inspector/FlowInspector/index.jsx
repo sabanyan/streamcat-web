@@ -1,22 +1,23 @@
 //@flow
 import React from 'react'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
+import Constants from 'Constants/index'
+import { FlowUtil, ModalUtil, ReactDomUtil } from 'Utils/index'
 import style from '../style.scss'
-import Button from '../../Button/index'
-import BaseInspector from '../BaseInspector'
-import type { FlowListDataType } from '../../../../types'
+import { Button } from 'Shared/Input'
+import { BaseInspector, InputFlowForm, Resizer } from 'Shared/Inspector'
+import type { FlowListDataType, RunArgsType } from 'Types/index'
 import moment from 'moment/moment'
-import ReactDomUtil from '../../../../utils/ReactDomUtil'
-import InputFlowForm from '../../InputFlowForm'
-import FlowUtil from '../../../../utils/FlowUtil'
-import Resizer from '../Resizer'
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
 type Props = {
-  project: {};
   onClickDelete: Function;
   onClickDuplicate: Function;
   onBlurTitle: Function;
+  runArgs: RunArgsType;
+  updateRunArgs: Function;
+  flow: FlowModelProps;
+  notify: Function;
+  dismissNotify: Function;
 }
 
 class FlowInspector extends React.Component<Props> {
@@ -35,8 +36,7 @@ class FlowInspector extends React.Component<Props> {
 
   nullInspector () {
     return <Resizer>
-      <BaseInspector {...this.props} >
-      </BaseInspector>
+      <BaseInspector/>
     </Resizer>
   }
 
@@ -55,9 +55,11 @@ class FlowInspector extends React.Component<Props> {
   }
 
   onClickRun () {
+
+    const {runArgs, updateRunArgs, flow} = this.props;
     this.resetRunArgsValue()
 
-    let content = <InputFlowForm {...this.props} />
+    let content = <InputFlowForm runArgs={runArgs} updateRunArgs={updateRunArgs} flow={flow}/>
 
     ModalUtil.emitModal({
       id: Constants.modal.RUN_FLOW,
@@ -123,7 +125,7 @@ class FlowInspector extends React.Component<Props> {
         <Button danger={true}
                 onClick={() => this.props.onClickDelete(uuid)}>削除する</Button>
       </div>
-      <div className={style.full_hr} />
+      <div className={style.full_hr}/>
       <div>
         <label>フロー名</label>
       </div>
@@ -151,7 +153,7 @@ class FlowInspector extends React.Component<Props> {
     </div>
 
     return <Resizer>
-      <BaseInspector key={uuid + '_' + label} label={label} {...this.props} >
+      <BaseInspector key={uuid + '_' + label} label={label}>
         {content}
       </BaseInspector>
     </Resizer>

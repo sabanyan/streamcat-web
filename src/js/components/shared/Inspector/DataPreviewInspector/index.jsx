@@ -1,11 +1,11 @@
 //@flow
 import React from 'react'
-import Constants from '../../../../constants/index'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
+import Constants from 'Constants/index'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import inspectorStyle from '../style.scss'
-import style from '../../DataPreview/style.scss'
-import DownloadButton from '../../Button/DownloadButton/index'
-import BaseInspector from '../BaseInspector'
+import style from 'Shared/Visualizer/DataPreview/style.scss'
+import { DownloadButton } from 'Shared/Input'
+import { BaseInspector } from 'Shared/Inspector'
 
 type Props = {
   ...FlowEditorProps,
@@ -70,7 +70,7 @@ class DataPreviewInspector extends React.Component<Props, State> {
       </div>
     </div>
 
-    return <BaseInspector header={''} label={title} {...this.props}>
+    return <BaseInspector header={''} label={title}>
       {content}
     </BaseInspector>
   }

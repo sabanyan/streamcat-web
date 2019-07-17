@@ -1,0 +1,32 @@
+@import "../../../../../sass/common";
+
+
+.flow_toolbar {
+  position: fixed;
+  width: 100%;
+  top: 80px;
+  left: 0;
+  text-align: center;
+}
+
+.paper_toolbar {
+  position: fixed;
+  bottom: 40px;
+  left: 40px;
+}
+
+.internal_error_body {
+  background: #fafafa;
+  border: 1px solid #333;
+  font-size: 14px;
+  overflow: scroll;
+  max-height: 320px;
+  width: 100%;
+  padding: 8px 12px;
+  user-select: text;
+  margin-top: 12px;
+}
+
+.internal_error_message {
+  color: $kskp-danger;
+}

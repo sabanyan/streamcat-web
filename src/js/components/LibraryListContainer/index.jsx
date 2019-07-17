@@ -2,7 +2,7 @@
 import { connect } from 'react-redux'
 import * as React from 'react'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
-import Library from './Libary'
+import Library from 'LibraryListContainer/Libary'
 
 let LibraryContainer
 
@@ -18,15 +18,15 @@ export default LibraryContainer = connect(
   },
   dispatch => {
     return {
-      notify (...args) {
-        return dispatch(addNotification(...args))
+      notify (context:{}) {
+        return dispatch(addNotification(context))
       },
-      updateNotify (...args) {
-        return dispatch(updateNotification(...args))
+      updateNotify (context:{}) {
+        return dispatch(updateNotification(context))
       },
-      dismissNotify (...args) {
+      dismissNotify (id:string) {
         setTimeout(() => {
-          dispatch(removeNotification(...args))
+          dispatch(removeNotification(id))
         }, 1000)
       },
     }

@@ -1,13 +1,29 @@
 //@flow
 import * as React from 'react'
-import type { FlowEditorProps } from '../index'
 import style from './style.scss'
-import DetectUtil from '../../../utils/DetectUtil'
-import Graph from '../../../utils/Graph'
-import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
-import CommandStepModel from '../../../model/Step/CommandStepModel'
+import { GraphUtil, DetectUtil } from 'Utils/index'
+import { CommandStepModel, SubFlowStepModel } from 'Model/index'
+import type { DragType, HistoryType } from "Types/index";
 
-class PaperScroller extends React.Component<FlowEditorProps, State> {
+type PaperScrollerProps = {
+  pasteSteps: Function;
+  copySteps: Function;
+  deleteSteps: Function;
+  selectSteps: Function;
+  dragStart: Function;
+  dragging: Function;
+  dragEnd: Function;
+  addHistory: Function;
+  redo: Function;
+  undo: Function;
+  selected_step_ids:[];
+  nodes:[];
+  history: HistoryType;
+  drag: DragType;
+  children: React.Node;
+}
+
+class PaperScroller extends React.Component<PaperScrollerProps> {
   componentDidMount () {
   }
 
@@ -33,7 +49,7 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
   getCopyNodes (): string {
     const {selected_step_ids, nodes} = this.props
     return JSON.stringify(selected_step_ids.map((id) => {
-      return Graph.getNode(nodes, id)
+      return GraphUtil.getNode(nodes, id)
     }))
   }
 
@@ -46,7 +62,7 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
 
     if (selected_step_ids.length !== 1) return false
 
-    const targetNode = Graph.getNode(nodes, selected_step_ids[0])
+    const targetNode = GraphUtil.getNode(nodes, selected_step_ids[0])
 
     if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
       return true
