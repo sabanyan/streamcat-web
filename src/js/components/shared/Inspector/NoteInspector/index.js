@@ -1,5 +1,5 @@
 import React from 'react'
-import type { NoteDetailType } from 'Types/index'
+import type { NoteDetailType, StepModelType } from 'Types/index'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { BaseInspector } from 'Shared/Inspector'
 import { GraphUtil, ModalUtil } from 'Utils/index'
@@ -14,7 +14,15 @@ type State = {
   content: ref;
 }
 
-class NoteInspector extends React.Component<FlowEditorProps, State> {
+type NoteInspectorProps = {
+  selected_step_ids: [];
+  nodes: [];
+  selectSteps: Function;
+  updateStep: Function;
+  deleteSteps: Function;
+}
+
+class NoteInspector extends React.Component<NoteInspectorProps, State> {
 
   constructor (props: FlowEditorProps) {
     super(props)
@@ -71,21 +79,26 @@ class NoteInspector extends React.Component<FlowEditorProps, State> {
     const noteContent = selected_step.content
     let content = <div className="property_body">
       <div>
-        <input type="text" className={'mb-8px'} placeholder={'新しいメモのタイトル'}
-               className={'form-control'} rows={8}
-               defaultValue={noteTitle} onChange={(e) => {this.onTitleChange(e)}}>
+        <input type="text"
+               className={'form-control mb-8px'}
+               placeholder={'新しいメモのタイトル'}
+               defaultValue={noteTitle}
+               onChange={(e) => {this.onTitleChange(e)}}>
         </input>
-        <hr className={style.full_hr}></hr>
-        <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'}
-                  defaultValue={noteContent} rows={8} onChange={(e) => {this.onContentChange(e)}}></textarea>
-        <hr className={style.full_hr}></hr>
+        <hr className={style.full_hr}/>
+        <textarea className={'mb-8px form-control'}
+                  placeholder={'フローの説明'}
+                  defaultValue={noteContent}
+                  rows={8}
+                  onChange={(e) => {this.onContentChange(e)}}/>
+        <hr className={style.full_hr}/>
         <Button onClick={(e) => this.onClickDelete(e)} danger={true}>
           削除
         </Button>
       </div>
     </div>
 
-    return <BaseInspector header={''} label={selected_step.label} {...this.props} style={style}>
+    return <BaseInspector header={''} label={selected_step.label} style={style}>
       {content}
     </BaseInspector>
   }

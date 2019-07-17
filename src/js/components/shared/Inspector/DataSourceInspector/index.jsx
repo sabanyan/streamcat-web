@@ -19,17 +19,39 @@ import { Button, DownloadButton } from 'Shared/Input'
 import { CSVModel, DataFrameStepModel } from 'Model/index'
 import { CommandSelector } from "FlowEditorContainer/Command";
 import FlowModel from 'Model/Flow/FlowModel'
-import type { DataFrameDetailType } from 'Types/index'
+import type { DataFrameDetailType, MastType } from 'Types/index'
 import type { CSVModelProps } from 'Model/CSV/CSVModel'
 import { Loader } from 'Shared/Base'
 import { Visualizer } from 'Shared/Visualizer'
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
 type State = {
   dataFrameDetail?: DataFrameDetailType;
   loading: boolean;
 }
 
-class DataSourceInspector extends React.Component<FlowEditorProps, State> {
+type DataSourceInspectorProps = {
+  nodes: [];
+  notify: Function;
+  dismissNotify: Function;
+  selected_data_source_detail: DataFrameDetailType;
+  mast: MastType;
+  loadFlowJSON: Function;
+  deleteSteps: Function;
+  selectSteps: Function;
+  addHistory: Function;
+  flow: FlowModelProps;
+  updateFlow: Function;
+  selected_step_ids: [];
+  deleteCache: Function;
+  updateFlow: Function;
+  nodes: [];
+  addStep: Function;
+  updateStep: Function;
+  updateFlow: Function;
+}
+
+class DataSourceInspector extends React.Component<DataSourceInspectorProps, State> {
 
   loading: boolean = false
 
@@ -317,6 +339,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
 //  }
 
   render () {
+    const {mast, addStep, selectSteps, selected_step_ids, addHistory} = this.props;
     let step_text
     let dataSource
     let preview
@@ -431,7 +454,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
           </div>
         </div>
         <div className={style.full_hr} />
-        <CommandSelector numberOfInput={1} {...this.props} />
+        <CommandSelector
+            mast={mast}
+            numberOfInput={1}
+            selected_step_ids={selected_step_ids}
+            addStep={addStep}
+            selectSteps={selectSteps}
+            addHistory={addHistory}
+        />
         {/*<div className={style.property_title}>*/}
         {/*作成したフロー*/}
         {/*</div>*/}
@@ -442,7 +472,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
     }
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector header={''} label={selected_step.label} {...this.props}
+    return <BaseInspector header={''} label={selected_step.label}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}>
       {content}
     </BaseInspector>

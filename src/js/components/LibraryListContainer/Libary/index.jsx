@@ -238,6 +238,17 @@ export default class Library extends React.Component<Props, State> {
             folderPath: json.folderPath,
             currentFolderUUID: inject_folder_uuid,
           })
+        } else {
+          APIUtil.get('awss3s/' + inject_folder_uuid).then((response) => {
+            const json = response.data.data
+            if (response.data.success) {
+              this.setState({
+                libraryChildren: json.children,
+                folderPath: json.folderPath,
+                currentFolderUUID: inject_folder_uuid,
+              })
+            }
+          })
         }
       })
     } else {
@@ -556,6 +567,9 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
   renderAll () {
     if (!this.state.is_finished) {
       return null
@@ -582,8 +596,10 @@ export default class Library extends React.Component<Props, State> {
   }
 
   render () {
+    let containerClassName = (this.isDialog()) ? 'container' : 'container mt-40px'
+
     return <div className={style.inspector_list_container}>
-      <div className={'container mt-40px'}>
+      <div className={containerClassName}>
         <Loader center={true} absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
         <ModalManager />

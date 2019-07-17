@@ -2,6 +2,7 @@
 import * as React from 'react'
 import classnames from 'classnames'
 import { Tab, TabBar, TabList, TabPanel } from 'Shared/Base'
+import { HttpUtil } from 'Utils/index'
 import style from '../Core/style.scss'
 
 type Props = {
@@ -48,16 +49,22 @@ export default class PreviewModal extends React.Component<Props, State> {
       selected_tab_id:0
     })
   }
+  
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
 
   render () {
     const {id, close_button, visible, title, footer} = this.props
     let {contents} = this.props
     const results = this.state.results
-
-    const modal_class = classnames('modal fade preview top', {
+    const className = (this.isDialog()) ? 'modal fade previewDialog top' : 'modal fade preview top';
+    const modal_class = classnames(className, {
       'show in': visible,
       'none-pointer-events': !visible,
     })
+
+    
 
     const {selected_tab_id} = this.state
 
