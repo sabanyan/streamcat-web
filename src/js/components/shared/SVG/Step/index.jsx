@@ -6,13 +6,13 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel }
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
 import { APIUtil, ZoomUtil } from 'Utils/index'
-import type { StepModelType } from 'Types/index'
+import type { DragType, MastType, StepModelType } from 'Types/index'
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
 let mouseMoveEvent
 let mouseUpEvent
 
-type Props = {
-  ...FlowEditorProps,
+type StepProps = {
   model: StepModelType;
   position: { x: number, y: number };
   type: string;
@@ -20,6 +20,17 @@ type Props = {
   text: string;
   invalid: {};
   error: {};
+  mast: MastType;
+  text: string;
+  flow: FlowModelProps;
+  selected_step_ids: [];
+  zoom: number;
+  drag: DragType;
+  addSelectStep: Function;
+  deleteSelectStep: Function;
+  selectSteps: Function;
+  updateDataFrameDetail: Function;
+  updateStep: Function;
 }
 
 type State = {
@@ -28,7 +39,7 @@ type State = {
   hover: boolean
 }
 
-export default class Step extends React.Component<Props, State> {
+export default class Step extends React.Component<StepProps, State> {
 
   constructor (props: Props) {
     super(props)

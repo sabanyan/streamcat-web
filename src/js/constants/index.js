@@ -1,6 +1,5 @@
 //@flow
 const Constants = {
-  debug: false,
   default: {
     uuid: {
       v4Format: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'

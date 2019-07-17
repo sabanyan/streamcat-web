@@ -104,6 +104,17 @@ export type UploadedFileType = {
   label?: string
 }
 
+export type MastType =  {
+  commands: any[],
+  subflows: any[],
+  visualizers: any[]
+}
+
+export type HistoryType = {
+  current: number,
+  nodes: []
+}
+
 export type DragType = {
   start: {
     x: number,
@@ -153,4 +164,17 @@ export type BreadCrumbHistoryType = {
   label: string,
   url: string,
   current: boolean,
+}
+
+export type RunArgsType = {
+  flow_uuid: string;
+  flows: [];
+  variables: [];
+}
+
+export type GraphType = {
+  width: number;
+  height: number;
+  edges: any[];
+  nodes: any[];
 }

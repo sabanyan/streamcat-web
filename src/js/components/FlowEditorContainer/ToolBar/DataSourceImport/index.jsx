@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import ToolBarButton from 'FlowEditorContainer/ToolBar/ToolBarButton'
+import { ToolBarButton } from 'FlowEditorContainer/ToolBar'
 import type { ToolBarButtonType } from 'Types/index'
 
 const DataSourceImport = (props: ToolBarButtonType) => {

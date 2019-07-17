@@ -7,7 +7,7 @@ export type IconProps = {
   fillColor: string;
   height: number;
   width: number;
-  padding: number;
+  padding?: number;
   paddingLeft?: number;
   paddingTop?: number;
   children: React.Node;
@@ -23,10 +23,17 @@ class Icon extends React.Component<IconProps> {
 
   render () {
     const {paddingLeft, paddingTop, padding} = this.props
-    let paddingX = padding
-    let paddingY = padding
-    if (paddingLeft !== undefined) paddingX = paddingLeft
-    if (paddingTop !== undefined) paddingY = paddingTop
+
+    let paddingX;
+    let paddingY;
+
+    if(padding){
+      paddingX = padding;
+      paddingY = padding;
+    }
+
+    if (paddingLeft) paddingX = paddingLeft
+    if (paddingTop) paddingY = paddingTop
 
     return <g transform={'translate(' + paddingX + ',' + paddingY + ')'}>
       <svg className={style.icon} fill={this.props.fillColor} preserveAspectRatio="xMidYMin" height={32} width={32}

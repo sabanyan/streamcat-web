@@ -1,11 +1,29 @@
 //@flow
 import * as React from 'react'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
-import { GraphUtil } from 'Utils/index'
+import { GraphUtil, DetectUtil } from 'Utils/index'
 import { CommandStepModel, SubFlowStepModel } from 'Model/index'
+import type { DragType, HistoryType } from "Types/index";
 
-class PaperScroller extends React.Component<FlowEditorProps, StateUtil> {
+type PaperScrollerProps = {
+  pasteSteps: Function;
+  copySteps: Function;
+  deleteSteps: Function;
+  selectSteps: Function;
+  dragStart: Function;
+  dragging: Function;
+  dragEnd: Function;
+  addHistory: Function;
+  redo: Function;
+  undo: Function;
+  selected_step_ids:[];
+  nodes:[];
+  history: HistoryType;
+  drag: DragType;
+  children: React.Node;
+}
+
+class PaperScroller extends React.Component<PaperScrollerProps> {
   componentDidMount () {
   }
 
