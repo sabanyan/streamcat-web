@@ -204,7 +204,7 @@ def download_file():
             return path
 
         try:
-            dir_path = Path(mod.root_path).parent.parent / Path('data')
+            dir_path = Path(STORE_DIR) / 'frames/csv'
             file_name = os.path.basename(file_path)
 
             # 文字コードの指定があれば、その文字コードのファイルを作り、
@@ -221,6 +221,7 @@ def download_file():
 
             return send_from_directory(dir_path, file_name, as_attachment = True,
                                        attachment_filename = label, mimetype = 'text/csv')
+
         except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -244,7 +245,7 @@ def delete_cache():
     flow_uuid = ofs[0]
     datum_id = ofs[1]
 
-    p = Path(mod.root_path).parent.parent / 'data/flows' / (flow_uuid + '.json')
+    p = Path(FLOW_PATH) / (flow_uuid + '.json')
     j = json.loads(p.read_text(), encoding='utf-8')
 
     for i, node in enumerate(j['nodes']):

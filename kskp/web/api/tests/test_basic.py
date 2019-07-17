@@ -766,7 +766,7 @@ class ApiTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_uuid = create_data(Path('kskp/data') / 'test_data.csv', data)
+        frame_uuid = create_data(STORE_DIR / 'frames/csv/test_data.csv', data)
 
         with app.test_client() as client:
             response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
