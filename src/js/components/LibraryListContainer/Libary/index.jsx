@@ -238,6 +238,17 @@ export default class Library extends React.Component<Props, State> {
             folderPath: json.folderPath,
             currentFolderUUID: inject_folder_uuid,
           })
+        } else {
+          APIUtil.get('awss3s/' + inject_folder_uuid).then((response) => {
+            const json = response.data.data
+            if (response.data.success) {
+              this.setState({
+                libraryChildren: json.children,
+                folderPath: json.folderPath,
+                currentFolderUUID: inject_folder_uuid,
+              })
+            }
+          })
         }
       })
     } else {
