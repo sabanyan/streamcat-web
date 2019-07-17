@@ -3,7 +3,7 @@ import json
 
 from pathlib import Path
 from flask import Blueprint, request, render_template
-from kskp.web.api.auth import login_required
+from kskp.web.backend.api.auth import login_required
 
 mod = Blueprint('visualize', __name__)
 

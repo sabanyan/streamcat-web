@@ -12,7 +12,7 @@ from flask import (
 )
 from flask_mail import Mail, Message
 
-from kskp.web import app
+from kskp.web.backend import app
 from kskp.store import model
 
 mod = Blueprint('auth', __name__)

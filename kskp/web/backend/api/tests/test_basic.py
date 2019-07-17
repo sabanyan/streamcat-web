@@ -5,7 +5,7 @@ import json
 import uuid
 from pathlib import Path
 
-from kskp.web import app
+from kskp.web.backend import app
 # from .test_case_base import TestCaseBase
 from kskp.store import model, FLOW_PATH
 

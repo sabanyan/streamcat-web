@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
 from kskp.store import FrameModel
-from kskp.web import app
+from kskp.web.backend import app
 
 from .auth import login_required_api
 from .utils import api_base

@@ -3,7 +3,7 @@ import json
 import os
 import tempfile
 from pathlib import Path
-from kskp.web import app
+from kskp.web.backend import app
 from kskp.store import (
     Library,
     FRAME_FOLDER_UUID,

@@ -3,7 +3,7 @@ import os
 import json
 import pprint
 from pathlib import Path
-from kskp.web import app
+from kskp.web.backend import app
 from kskp.store import ss
 from kskp.store import StoreModel as Store
 from kskp.store import Library

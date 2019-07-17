@@ -2,7 +2,7 @@
 import uuid
 import json
 from pathlib import Path
-from kskp.web import app
+from kskp.web.backend import app
 from kskp.store import model, FLOW_PATH
 
 def setUpClient(self):

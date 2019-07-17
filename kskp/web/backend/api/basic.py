@@ -8,7 +8,7 @@ from flask import Blueprint, request, session, jsonify, send_from_directory, ren
 from .auth import login_required_api
 from .utils.navigation import update_navigation
 from kskp.store import *
-from kskp.web import app
+from kskp.web.backend import app
 
 mod = Blueprint('api', __name__)
 
