@@ -5,7 +5,7 @@ import time
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
-from kskp.store import FrameModel
+from kskp.store import Frame
 from kskp.web.backend import app
 
 from .auth import login_required_api
@@ -25,7 +25,7 @@ def fetch_frame(frame_uuid):
     limit = int(request.args.get('limit')) if request.args.get('limit') else 999
     no_contents = True if request.args.get('no_contents') else False
 
-    frame = FrameModel.find_by_uuid(frame_uuid)
+    frame = Frame.find_by_uuid(frame_uuid)
     result = csv_to_frame(frame.path_obj, no_contents=no_contents, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
@@ -148,7 +148,7 @@ def update_frame(frame_uuid):
     """
     label = request.json['label']
     modifier = session['user_id']
-    FrameModel.update_data(frame_uuid, label, modifier)
+    Frame.update_data(frame_uuid, label, modifier)
     return
 
 @mod.route('/frames/<frame_uuid>', methods=['DELETE'])
@@ -160,7 +160,7 @@ def delete_frame(frame_uuid):
     """
     from kskp.store import get_all_frame_uuid_in_frame, FLOW_PATH
 
-    frame = FrameModel.find_by_uuid(frame_uuid)
+    frame = Frame.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
