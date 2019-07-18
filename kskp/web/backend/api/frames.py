@@ -278,8 +278,6 @@ def execute_flow_by_add_inputs(request):
     """
     from kskp.store import Folder, fetch_flow_by_uuid
 
-    folder = Folder(Path('kskp/data'))
-
     # プレビューとかすることがあるかもしれないから
     step_ids = []
 
@@ -297,7 +295,7 @@ def execute_flow_by_add_inputs(request):
         if request.json.get(port['nodeId']) is not None:
             # フレームを置き換える
             frame_uuid = request.json.get(port['nodeId'])
-            inputs[port['nodeId']] = folder.load(frame_uuid)
+            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
             continue
 
         # 新たにkskpにアップロードする場合
@@ -305,7 +303,7 @@ def execute_flow_by_add_inputs(request):
         if file is not None:
             # ファイルアップロードして、フレームを置き換える
             frame_uuid = upload_frame(file, '')['uuid']
-            inputs[port['nodeId']] = folder.load(frame_uuid)
+            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
 
             # 使うかわからないけど、uploadしたファイルを覚えておく
             upload_file_list.append(frame_uuid)

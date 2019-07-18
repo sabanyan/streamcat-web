@@ -4,9 +4,9 @@ from .utils.navigation import update_navigation
 from .utils.api_base import api_base
 from kskp.store import (
     StoreModel as Store,
-    Datum as Datum,
-    FolderModel as Folder,
-    Frame as Frame
+    Datum,
+    Folder,
+    Frame
 )
 
 mod = Blueprint('lib', __name__)
