@@ -182,7 +182,7 @@ def download_file():
     label = request.args.get('label')
     ext = request.args.get('ext')
 
-    frame = FrameModel.find_by_uuid(frame_uuid)
+    frame = Frame.find_by_uuid(frame_uuid)
     file_path = frame.path if frame is not None else None
 
     character_code = os.getenv('FRAME_CHARACTER_CODE', 'utf-8')
@@ -255,7 +255,7 @@ def delete_cache():
             j['nodes'][i]['cacheCreatedAt'] = None
 
             # キャッシュを削除する（増え続けると困るので）
-            frame = FrameModel.find_by_uuid(frame_uuid)
+            frame = Frame.find_by_uuid(frame_uuid)
             if frame is not None:
                 frame.delete()
 

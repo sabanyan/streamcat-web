@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask.json import JSONEncoder
 from kskp.store import StoreModel as Store
-from kskp.store import DatumModel as Datum
+from kskp.store import Datum as Datum
 
 class KSKPJSONEncoder(JSONEncoder):
     """

@@ -569,16 +569,16 @@ class LibraryTestCase(unittest.TestCase):
 
     @unittest.skip
     def test_delete_using_frame(self):
-        from kskp.store import FrameModel
+        from kskp.store import Frame
         input_frame_uuid = '1ac6c925-391c-40cf-97fb-54ce59a1a151'
 
 
-        if not FrameModel.exists(input_frame_uuid):
+        if not Frame.exists(input_frame_uuid):
             # test_frame.csvをライブラリに登録する
-            root = FrameModel.find_root()
+            root = Frame.find_root()
 
             # streamをNoneにしているので、saveしても、self.stream.readでエラーが出る
-            input_frame = FrameModel(root.uuid, 'test_frame.csv', None)
+            input_frame = Frame(root.uuid, 'test_frame.csv', None)
             input_frame.uuid = input_frame_uuid
             input_frame.path = 'kskp/data/library/test_frame.csv'
             input_frame.save()
@@ -825,10 +825,10 @@ class ExecuteTestCase(unittest.TestCase):
         flow_uuid = '168d23c2-f835-4392-ba0e-76e94a08b719'
 
         # 入力フレームをライブラリに登録する
-        from kskp.store import FrameModel
-        if not FrameModel.exists(input_frame_uuid):
-            root = FrameModel.find_root()
-            input_frame = FrameModel(root.uuid, 'test_frame.csv', None, 1)
+        from kskp.store import Frame
+        if not Frame.exists(input_frame_uuid):
+            root = Frame.find_root()
+            input_frame = Frame(root.uuid, 'test_frame.csv', None, 1)
             input_frame.uuid = input_frame_uuid
             input_frame.add_entry_from_path(os.path.join(app.root_path + '/data/library'))
 
@@ -845,8 +845,8 @@ class ExecuteTestCase(unittest.TestCase):
         # 出力結果がライブラリに登録されることを検証する
         frame_uuid_d1 = result['name'][0]['uuid']
         frame_uuid_d3 = result['name'][1]['uuid']
-        self.assertTrue(FrameModel.exists(frame_uuid_d1))
-        self.assertTrue(FrameModel.exists(frame_uuid_d3))
+        self.assertTrue(Frame.exists(frame_uuid_d1))
+        self.assertTrue(Frame.exists(frame_uuid_d3))
 
         # 削除
         # このテストで作成したjobsだけ削除する
