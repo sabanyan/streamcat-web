@@ -43,6 +43,10 @@ app.register_blueprint(basic.mod, url_prefix=PREFIX)
 app.register_blueprint(frames.mod, url_prefix=PREFIX)
 app.register_blueprint(lib.mod, url_prefix=PREFIX)
 
+# static用
+from kskp.web.frontend import mod
+app.register_blueprint(mod)
+
 def main():
     app.run()
 
