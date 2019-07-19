@@ -9,7 +9,7 @@ module.exports = (env) => {
       mode: mode,
       entry: './web/frontend/js/common.js',
       output: {
-        path: `${__dirname}/web/frontend/kskp/static/js`,
+        path: `${__dirname}/web/backend/static/js`,
         filename: 'common.js',
       },
       module: {
@@ -34,7 +34,7 @@ module.exports = (env) => {
       // メインとなるJavaScriptファイル（エントリーポイント）ls
       entry: './web/frontend/js/index.js',
       output: {
-        path: `${__dirname}/web/kskp/static/js`,
+        path: `${__dirname}/web/backend/static/js`,
         filename: 'app.js',
       },
       module: {
@@ -61,7 +61,7 @@ module.exports = (env) => {
           /**
            * manifestファイルをロードして渡す
            */
-          manifest: require(`./web/kskp/static/js/dist/vendor-manifest.json`),
+          manifest: require(`./web/backend/static/js/dist/vendor-manifest.json`),
         }),
       ],
       performance: {hints: false}
@@ -70,7 +70,7 @@ module.exports = (env) => {
       mode: mode,
       entry: './web/frontend/sass/app.scss',
       output: {
-        path: `${__dirname}/kskp/static/css`,
+        path: `${__dirname}/web/backend/static/css`,
         filename: 'app.css',
       },
       module: {
