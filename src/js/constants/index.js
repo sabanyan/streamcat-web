@@ -63,7 +63,8 @@ const Constants = {
       string: 'string',
       boolean: 'boolean',
       select: 'select',
-      column: 'column'
+      column: 'column',
+      list: 'list'
     }
   },
   data: {
