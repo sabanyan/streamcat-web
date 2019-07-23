@@ -3,11 +3,8 @@
 .addButton {
   color: $primary-link-color;
   text-align: center;
-  cursor: pointer;
+  
 
-  &:hover {
-    color: darken($primary-link-color, 10%);
-  }
 }
 
 .icon {
@@ -15,4 +12,8 @@
   position: relative;
   margin-right: 4px;
   top: 3px;
+  cursor: pointer;
+  &:hover {
+    color: darken($primary-link-color, 10%);
+  }
 }
