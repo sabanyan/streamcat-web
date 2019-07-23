@@ -51,10 +51,17 @@ export default class CommandStepModel extends BaseStepModel {
       return
     }
     command.params.map((param) => {
+      // 必須項目で空白（””）が許される場合
+      if(command.rules[param.name] 
+        && command.rules[param.name]["presence"]
+        && command.rules[param.name]["presence"]["allowEmpty"] === true
+        && !(this.args[param.name])) {
+          this.args[param.name] = ""
+      }
       // default値がある場合、設定する
       if(param.default && !(this.args[param.name]) && !(this.args[param.name] === "")) {
         this.args[param.name] = param.default
-      }
+      } 
     })
   }
 
@@ -186,6 +193,11 @@ export default class CommandStepModel extends BaseStepModel {
     this.invalid = {}
     //必須バリデーション
     let command: CommandModel = this.getCommand()
+
+    if (!command) {
+      return
+    }
+   
     Object.keys(command.getParams()).map(key => {
       const param: CommandParamType = command.getParam(key)
       const value = this.args[key]
