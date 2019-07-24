@@ -218,12 +218,12 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}):
     フローの実行を行う
     実行後の判定など
     """
-    from kskp.store import get_flow_path_by_uuid
+    from kskp.store import Library
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
-    target_flow_file_path = get_flow_path_by_uuid(flow_uuid)
+    target_flow = Library.load_flow(flow_uuid)
 
-    if not target_flow_file_path:
+    if not target_flow:
         # ファイルが存在しないときはここを通る
         return jsonify({
                             'success': False,
