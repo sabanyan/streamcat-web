@@ -6,7 +6,10 @@ from kskp.store import (
     StoreModel as Store,
     Datum,
     Folder,
-    Frame
+    Frame,
+    Flow,
+    AwsS3,
+    ChildrenGetter
 )
 
 mod = Blueprint('lib', __name__)
@@ -61,8 +64,12 @@ def _convert_type(datum):
         return Folder.convert_to_folder(datum)
     elif datum.type == Datum.FRAME_TYPE:
         return Frame.convert_to_frame(datum)
+    elif datum.type == Datum.FLOW_TYPE:
+        return Flow.convert_to_flow(datum)
+    elif datum.type == Datum.AWSS3_TYPE:
+        return AwsS3.convert_to_awss3(datum)
     else:
-        raise Exception('Undefined type of datum is found!')
+        raise Exception('Undefined type of datum(%s) is found!' % datum.type)
 
 def _jsonify_folder(folder):
     """
@@ -72,12 +79,14 @@ def _jsonify_folder(folder):
         raise Exception('The folder argument must not be None.')
 
     # フォルダ直下のフォルダとデータベースとドキュメントを取得する
-    children = Datum.find_by_parent_uuid(folder.uuid)
+    # children = Datum.find_by_parent_uuid(folder.uuid)
+    childrenGetter = ChildrenGetter()
+    children = childrenGetter.execute(session['user_id'], folder)
 
     # children属性を作成する
     data = folder.to_json()
     data['children'] = [_convert_type(child) for child in children]
-
+    
     # folderPath属性を作成する
     folder_list = folder.get_folder_path()
     data['folderPath'] = [folder for folder in folder_list]
@@ -93,8 +102,7 @@ def get_library(user_id):
     if root is None:
         new_root = Folder(parent_uuid=None,
                           label='ROOT_FOLDER',
-                          creator=user_id,
-                          modifier=user_id)
+                          creator=user_id)
         # folderレコードをDBに格納する
         new_root.save()
         root = new_root
@@ -131,8 +139,7 @@ def make_new_folder():
     """
     new_folder = Folder(request.json['parent'],
                         request.json['label'],
-                        creator=session['user_id'],
-                        modifier=session['user_id'])
+                        creator=session['user_id'])
     new_folder.save()
     return new_folder
 
@@ -156,6 +163,59 @@ def delete_folder(folder_uuid):
     """
     folder = Folder.find_by_uuid(folder_uuid)
     folder.delete()
+
+@mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fetch_awss3_folder(awss3_uuid):
+    """
+    AWS S3フォルダを返却する
+    """
+    folder = AwsS3.find_by_uuid(awss3_uuid)
+    return _jsonify_folder(folder)
+
+@mod.route('/awss3s', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_awss3_folder():
+    """
+    AWS S3フォルダを作成する
+    """
+    new_folder = AwsS3(request.json['parent'],
+                       request.json['label'],
+                       request.json['bucket'],
+                       creator=session['user_id'])
+    # AwsS3レコードをDBに格納する
+    new_folder.save()
+    return new_folder.to_json()
+
+@mod.route('/awss3s/<awss3_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_awss3_folder(awss3_uuid):
+    """
+    AWS S3フォルダを修正する
+    """
+    label = request.json['label']
+    bucket_name = request.json['bucket']
+    modifier = session['user_id']
+    return AwsS3.update_data(awss3_uuid, label, bucket_name, modifier)
+
+
+@mod.route('/awss3s/<awss3_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def delete_awss3_folder(awss3_uuid):
+    """
+    AWS S3フォルダを削除する
+    """
+    # AWS S3ディレクトリ直下のファイルをDBから登録解除する
+    pass
+    folder = AwsS3.find_by_uuid(awss3_uuid)
+    # AWS S3 folderレコードをDBから削除する
+    folder.delete()
+
 
 # @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
 # @login_required_api
