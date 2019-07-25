@@ -5,7 +5,7 @@ import time
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
-from kskp.store import Frame
+from kskp.store import Frame, Flow
 from kskp.web.backend import app
 
 from .auth import login_required_api
@@ -148,8 +148,8 @@ def update_frame(frame_uuid):
     """
     label = request.json['label']
     modifier = session['user_id']
-    Frame.update_data(frame_uuid, label, modifier)
-    return
+    return Frame.update_data(frame_uuid, label, modifier)
+    
 
 @mod.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api
@@ -175,7 +175,7 @@ def delete_frame(frame_uuid):
 
     # フレームを削除する
     frame.delete()
-    return
+    return frame
 
 @mod.route('/frames', methods=['GET', 'POST'])
 @login_required_api
@@ -187,7 +187,25 @@ def make_new_frames():
     ・フローのアップロード（未実装）
     """
     step_ids = []
-    if 'from' in request.args:
+
+    if 'file' in request.files:
+        if 'parent' in request.form and 'label' in request.form:
+            try:
+                # parentとlabel属性があれば新形式のPOST /framesだとみなす
+                new_frame = Frame(request.form.get('parent')
+                                , request.form.get('label')
+                                , request.files.get('file').stream
+                                , creator=session['user_id'])
+                # documentレコードをDBに格納する
+                new_frame.save()
+                return jsonify({'success': True, 'data': new_frame.to_json()})
+            except Exception as e:
+                return jsonify({
+                                'success': False,
+                                'code'   : -1,
+                                'message': str(e)
+                                })
+    elif 'from' in request.args:
         if '.' in request.args['from']:
             # プレビュー
 
@@ -218,17 +236,17 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}):
     フローの実行を行う
     実行後の判定など
     """
-    from kskp.store import get_flow_path_by_uuid
+    # from kskp.store import get_flow_path_by_uuid
     # 指定されたIDのフローが存在するかどうかをチェックする
     # まずは、フローファイル一覧を取得する
-    target_flow_file_path = get_flow_path_by_uuid(flow_uuid)
+    # target_flow_file_path = get_flow_path_by_uuid(flow_uuid)
 
-    if not target_flow_file_path:
+    if not Flow.exists(flow_uuid):
         # ファイルが存在しないときはここを通る
         return jsonify({
                             'success': False,
                             'code': -1,
-                            'message': 'flow does not exist'
+                            'message': 'flow does not exist in DB'
                         })
 
     try:
@@ -276,17 +294,19 @@ def execute_flow_by_add_inputs(request):
     """
     inputsを与えてexecute
     """
-    from kskp.store import Folder, fetch_flow_by_uuid
+    from kskp.store import Library, fetch_flow_by_uuid
 
     # プレビューとかすることがあるかもしれないから
     step_ids = []
 
     flow_uuid = request.json.get('flow_uuid')
-    flow_json = fetch_flow_by_uuid(flow_uuid)
+    # flow_json = fetch_flow_by_uuid(flow_uuid)
+    flow = Flow.find_by_uuid(flow_uuid)
+    flow_json = flow.flow_data
 
     # executeの引数
     inputs = {}
-    args = json.loads(request.json.get('args')) if request.json.get('args') else {}
+    args = request.json.get('args') if request.json.get('args') else {}
 
     upload_file_list = []
 
@@ -295,15 +315,16 @@ def execute_flow_by_add_inputs(request):
         if request.json.get(port['nodeId']) is not None:
             # フレームを置き換える
             frame_uuid = request.json.get(port['nodeId'])
-            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
+            inputs[port['nodeId']] = Library.load_frame(frame_uuid)
             continue
 
         # 新たにkskpにアップロードする場合
         file = request.files.get(port['nodeId'])
         if file is not None:
             # ファイルアップロードして、フレームを置き換える
+            from kskp.web.backend.api.basic import upload_frame
             frame_uuid = upload_frame(file, '')['uuid']
-            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
+            inputs[port['nodeId']] = Library.load_frame(frame_uuid)
 
             # 使うかわからないけど、uploadしたファイルを覚えておく
             upload_file_list.append(frame_uuid)

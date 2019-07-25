@@ -105,15 +105,12 @@ def get_password_hash(user_id, password):
     """
     パスワードのハッシュを作成する
     """
-
     salt = get_salt(user_id)
     current_hash = b''
     password_bytes = bytes(password, encoding='utf-8')
-
     for _ in range(1, STRETCH_COUNT):
         hash_target = current_hash + password_bytes + salt
         current_hash = bytes(hashlib.sha256(hash_target).hexdigest(), 'ascii')
-
     return str(current_hash, encoding='utf-8')
 
 def get_salt(user_id):

@@ -1,0 +1,181 @@
+import os
+import json
+import unittest
+import pprint
+from pathlib import Path
+
+from kskp.web.backend import app
+
+class TestCaseBase(unittest.TestCase):
+    """
+    各テストケースで使用する前処理と共通関数を定義する
+    """
+
+    # テストで使用するユーザのID
+    USER_ID = 1
+        
+    @classmethod
+    def setUpClass(cls):
+        # ユーザを作成する
+        from kskp.store import create_user
+        with app.app_context():
+            create_user('anonymous@aaa.bbb', '', 'user1', '')
+        # SQLAlchemyで使用するテーブルが存在しない場合は作成する
+        from kskp.store import BaseModel
+        from kskp.store import engine
+        BaseModel.metadata.create_all(bind=engine, checkfirst=True)
+        # ルートデータストアを作成する
+        from kskp.store import Library
+        Library._get_library(user_id=1)
+
+    @classmethod
+    def tearDownClass(cls):
+        # ライブラリフォルダを削除する
+        from kskp.store import Datum
+        library_path = Path(app.root_path).parent.parent.parent / Datum.find_root().path
+        import shutil
+        shutil.rmtree(library_path.as_posix())
+        # Sessionを閉じる
+        from kskp.store import engine, ss as session
+        session.close()
+        # スキーマを破棄する
+        from sqlalchemy import DDL
+        engine.execute(DDL('DROP SCHEMA IF EXISTS %s CASCADE' % os.environ['KSKP_POSTGRESQL_SCHEMA_NAME']))
+
+    def save_frame_to_library(self, frame_uuid, frame_file_path):
+        """
+        指定したパスのフレームを、指定したUUIDでライブラリに登録する
+        """
+        # from kskp.store import get_frame_dir_path
+        from kskp.web.backend.api.lib import get_library
+        # テストで用いるテスト用フレームをライブラリに登録する
+        from kskp.store import Frame
+        if not Frame.exists(frame_uuid):
+            # テストで用いるテスト用フレームをライブラリに登録する
+            # frame_folder = get_frame_dir_path(user_id=self.USER_ID)
+            frame_folder = get_library(user_id=self.USER_ID)
+            class_name = self.__class__.__name__
+            new_frame = Frame(frame_folder.uuid, 'テスト用フレーム(%s)' % class_name, None)
+            new_frame.uuid = frame_uuid
+            new_frame.add_entry_from_path(frame_file_path)
+
+    def remove_frame_from_library(self, frame_uuid):
+        """
+        指定したUUIDのフレームをライブラリから削除する
+        (実ファイルは削除しない)
+        """
+        from kskp.store import Frame
+        frame = Frame.find_by_uuid(frame_uuid)
+        if frame is not None:
+            frame.remove_reference_only()
+
+    def save_flow_to_library(self, flow_uuid, flow_file_path):
+        """
+        指定したパスのフローを、指定したUUIDでライブラリに登録する
+        """
+        from kskp.store import get_flow_dir_path
+        # テストで用いるテスト用フローをライブラリに登録する
+        from kskp.store import Flow
+        if not Flow.exists(flow_uuid):
+            # テストで用いるテスト用フローをライブラリに登録する
+            flow_folder = get_flow_dir_path(user_id=self.USER_ID)
+            class_name = self.__class__.__name__
+            # フローJSONファイルからフローデータを取得する
+            import pathlib
+            flow_path = pathlib.Path(app.root_path).parent / flow_file_path
+            flow_data = json.loads(flow_path.read_text(encoding='utf-8'))
+            # フローオブジェクトを作成する
+            test_flow = Flow(flow_folder.uuid, 'テストフロー！(%s)' % class_name, flow_data, self.USER_ID)
+            # フローをライブラリに保存する
+            test_flow.uuid = flow_uuid
+            test_flow.save()
+
+
+    def remove_flow_from_library(self, flow_uuid):
+        """
+        指定したUUIDのフローをライブラリから削除する
+        (もちろん登録元フローファイルは削除されない)
+        """
+        from kskp.store import Flow
+        flow = Flow.find_by_uuid(flow_uuid)
+        if flow is not None:
+            flow.delete()
+
+
+    def get_uri(self, uri, user_id):
+        """
+        URIをGETする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user_id
+            response = client.get(uri)
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        self.assertTrue(result['success'], 'GET %s is failed. %s' % (uri, error_detail))
+        return result
+
+    def post_uri(self, uri, json_data, user_id):
+        """
+        URIへPOSTする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user_id
+            response = client.post(uri,
+                                   content_type='application/json',
+                                   data=json.dumps(json_data))
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        self.assertTrue(result['success'], 'POST %s is failed. %s' % (uri, error_detail))
+        return result
+
+    def post_frames(self, label, parent_uuid, frame_stream, user_id):
+        """
+        URI(/api/v0/frames)へPOSTする
+        指定するストリームをフレームデータとしてアップロードする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user_id
+            response = client.post('/api/v0/frames',
+                                   content_type='multipart/form-data',
+                                   data={
+                                        'label' : label,
+                                        'parent': parent_uuid,
+                                        'file'  : frame_stream
+                                        }
+                                  )
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        self.assertTrue(result['success'], 'POST %s is failed. %s' % ('/api/v0/frames', error_detail))
+        return result
+
+    def put_uri(self, uri, json_data, user_id):
+        """
+        URIへPUTする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user_id
+            response = client.put(uri,
+                                  content_type='application/json',
+                                  data=json.dumps(json_data))
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        self.assertTrue(result['success'], 'PUT %s is failed. %s' % (uri, error_detail))
+        return result
+
+    def delete_uri(self, uri, user_id):
+        """
+        URIへDELETEする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user_id
+            response = client.delete(uri)
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
+        return result
+        

@@ -4,7 +4,6 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import (
     Library,
-    FRAME_FOLDER_UUID,
     STORE_DIR
 )
 
