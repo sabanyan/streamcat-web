@@ -39,7 +39,7 @@ def library():
     css_resources = INLINE.render_css()
     return render_template('library.html',js_resources=js_resources,css_resources=css_resources)
 
-@mod.route('/folders/<folder_uuid>', methods=['GET'])
+@mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
 @login_required
 def folders(folder_uuid):
     js_resources = INLINE.render_js()

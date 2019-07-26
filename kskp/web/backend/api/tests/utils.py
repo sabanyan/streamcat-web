@@ -68,9 +68,10 @@ def create_data(file_path_obj, data=None):
     frameのuuidが返る
     """
     import nysol.mcmd as nm
-    from kskp.store import Library, FRAME_FOLDER_UUID
+    from kskp.store import Library
 
     if data is not None:
         nm.mread(i=data, o=file_path_obj.as_posix()).run()
-    frame = Library.save_frame(FRAME_FOLDER_UUID, str(uuid.uuid4()), file_path_obj)
+    root = Library.load_root()
+    frame = Library.save_frame(root.uuid, str(uuid.uuid4()), file_path_obj)
     return frame.uuid

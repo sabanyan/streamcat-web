@@ -2,6 +2,9 @@
 
 FROM centos:7
 
+# Set root password
+RUN echo "kspasskp" | passwd --stdin root
+
 RUN groupadd -g 1000 kskp
 RUN useradd -rm -d /home/kskp -s /bin/bash -g kskp -u 1000 -p kspasskp kskp
 USER kskp
@@ -18,6 +21,7 @@ ENV LANG en_US.utf8
 ENV PYTHONIOENCODING utf-8
 
 RUN yum install -y sqlite-*
+RUN yum install -y postgresql-devel
 
 ENV PYENV_ROOT /usr/local/pyenv
 ENV PATH "${PYENV_ROOT}/shims:${PYENV_ROOT}/bin:${PATH}"
@@ -35,8 +39,27 @@ RUN pip install --upgrade pip
 # Install samba packages
 RUN yum install -y samba-client samba-winbind cifs-utils
 
+# Install Go lang for goofys
+RUN yum install -y epel-release
+RUN yum install -y golang
+
+# Install goofys, The AWS S3 mount packege
+RUN yum install -y fuse
+# 手動で、sudo chgrp kskp /dev/fuse しておいてね
+# ⬇こんな事言われてしまいます、、、
+# /usr/bin/chgrp: cannot access ‘/dev/fuse’: No such file or directory
+RUN yum install -y git
+RUN go get github.com/kahing/goofys
+RUN go install github.com/kahing/goofys
+RUN cp /root/go/bin/goofys /usr/local/bin
+
+# AWS keys of kskp user
+ENV AWS_ACCESS_KEY_ID AKIAY2HAWKVRAU3IKV4L
+ENV AWS_SECRET_ACCESS_KEY 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
+ENV AWS_DEFAULT_REGION ap-northeast-1
+
 # Add privilage for mount command
-RUN echo "kskp ALL=(ALL) NOPASSWD: /usr/bin/mount,/usr/sbin/mount.cifs,/usr/bin/umount" >> /etc/sudoers
+RUN echo "kskp ALL=(ALL) NOPASSWD: /usr/bin/mount,/usr/sbin/mount.cifs,/usr/bin/umount,/usr/local/bin/goofys" >> /etc/sudoers
 
 USER kskp
 COPY ./kskp /home/kskp/kskp
@@ -53,7 +76,7 @@ RUN pip install -e /home/kskp/kskp-data-store
 ENV FLASK_APP kskp/web/backend
 RUN pip install -e /home/kskp
 
-# COPY ./kskp/config/small.cfg /home/kskp/kskp/settings.cfg
+### COPY ./kskp/config/small.cfg /home/kskp/kskp/settings.cfg
 
 
 
