@@ -187,7 +187,32 @@ def make_new_frames():
     ・フローのアップロード（未実装）
     """
     step_ids = []
-    if 'from' in request.args:
+
+    print('files', request.files)
+    print('forms', request.form)
+
+    if 'file' in request.files:
+        if 'parent' in request.form and 'label' in request.form:
+            try:
+                # parentとlabel属性があれば新形式のPOST /framesだとみなす
+                new_frame = Frame(request.form.get('parent')
+                                     , request.form.get('label')
+                                     , request.files.get('file').stream
+                                     , creator=session['user_id'])
+                # documentレコードをDBに格納する
+                new_frame.save()
+                return jsonify({'success': True, 'data': new_frame.to_json()})
+            except Exception as e:
+                return jsonify({
+                                'success': False,
+                                'code'   : -1,
+                                'message': str(e)
+                                })
+        else:
+            # ファイルがPOSTで送信されてきたらアップロードだとみなす
+            frame = upload_frame(request.files.get('file'), request.form.get('file_name'))
+            return jsonify({'success': True, "data": frame})
+    elif 'from' in request.args:
         if '.' in request.args['from']:
             # プレビュー
 

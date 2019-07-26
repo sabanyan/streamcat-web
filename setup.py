@@ -15,6 +15,6 @@ setup(
         'sklearn',
         'holoviews',
         'bokeh',
-        'ptvsd'
+        'ptvsd', 'psycopg2-binary'
     ],
 )

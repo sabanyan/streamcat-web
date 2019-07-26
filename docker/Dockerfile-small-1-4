@@ -27,10 +27,10 @@ RUN pyenv global 3.6.0
 
 RUN pip install --upgrade pip
 
-COPY ./nysol-2.4-0.x86_64.rpm /home/kskp/nysol-2.4-0.x86_64.rpm
+# COPY ./nysol-2.4-0.x86_64.rpm /home/kskp/nysol-2.4-0.x86_64.rpm
 # for Nysol
-RUN yum install -y sudo gem
-RUN rpm -ih /home/kskp/nysol-2.4-0.x86_64.rpm
+# RUN yum install -y sudo gem
+# RUN rpm -ih /home/kskp/nysol-2.4-0.x86_64.rpm
 
 # Install samba packages
 RUN yum install -y samba-client samba-winbind cifs-utils
@@ -45,15 +45,15 @@ COPY ./setup.py /home/kskp/setup.py
 
 USER root
 
-RUN git clone -b for_beta https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-flow-engine.git /home/kskp/kskp-flow-engine
-RUN git clone -b for_beta https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-data-store.git /home/kskp/kskp-data-store
+RUN git clone -b develop_refactor https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-flow-engine.git /home/kskp/kskp-flow-engine
+RUN git clone -b develop_refactor2 https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-data-store.git /home/kskp/kskp-data-store
 RUN pip install -e /home/kskp/kskp-flow-engine
 RUN pip install -e /home/kskp/kskp-data-store
 
-ENV FLASK_APP kskp
+ENV FLASK_APP kskp/web/backend
 RUN pip install -e /home/kskp
 
-COPY ./kskp/config/small.cfg /home/kskp/kskp/settings.cfg
+# COPY ./kskp/config/small.cfg /home/kskp/kskp/settings.cfg
 
 
 

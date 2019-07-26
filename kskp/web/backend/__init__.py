@@ -47,8 +47,8 @@ app.register_blueprint(lib.mod, url_prefix=PREFIX)
 from kskp.web.frontend import mod
 app.register_blueprint(mod)
 
-def main():
-    app.run()
+def run():
+    app.run(debug=True)
 
 # if __name__ == '__main__':
 #     main()
