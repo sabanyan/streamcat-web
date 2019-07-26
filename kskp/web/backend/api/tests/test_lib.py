@@ -723,6 +723,7 @@ class AwsS3TestCase(TestCaseBase):
     #     # Delete /folders apiが正常終了することを検証する
     #     self.assertEqual(result['success'], True)
 
+@unittest.skip
 class ExecuteTestCase(TestCaseBase):
     def test_execute_flow(self):
         """

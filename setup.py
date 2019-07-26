@@ -8,13 +8,14 @@ setup(
         'flask',
         'flask_mail',
         'sqlalchemy',
-        'flask_sqlalchemy',
+        'psycopg2',
         'numpy',
         'scipy',
         'pandas',
         'sklearn',
         'holoviews',
         'bokeh',
-        'ptvsd'
+        'ptvsd',
+        'awscli'
     ],
 )
