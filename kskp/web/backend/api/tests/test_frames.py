@@ -29,9 +29,11 @@ class FrameApoTestCase(unittest.TestCase):
         """
         rootFolderを削除する
         """
+        from kskp.store import FLOW_FOLDER_UUID
+        Library.delete_folder(FLOW_FOLDER_UUID)
         root.delete()
 
-    @unittest.skip
+    # @unittest.skip
     def test_fetch_frame(self):
         """
         fetch_frame APIをテストする
@@ -65,7 +67,7 @@ class FrameApoTestCase(unittest.TestCase):
 
         Library.delete_frame(frame_uuid)
 
-    @unittest.skip
+    # @unittest.skip
     def test_fetch_frame_no_contents(self):
         """
         fetch_frame APIをテストする
@@ -100,7 +102,7 @@ class FrameApoTestCase(unittest.TestCase):
 
         Library.delete_frame(frame_uuid)
 
-    @unittest.skip
+    # @unittest.skip
     def test_fetch_frame_offset_and_limit(self):
         """
         fetch_frame APIをテストする
@@ -205,7 +207,7 @@ class FrameApoTestCase(unittest.TestCase):
 
         Library.delete_frame(frame_uuid)
 
-    @unittest.skip
+    # @unittest.skip
     def test_delete_frame(self):
         """
         delete_frame APIをテストする
