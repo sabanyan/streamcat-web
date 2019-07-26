@@ -3,14 +3,15 @@ import os
 import json
 import pprint
 from pathlib import Path
+
 from kskp.web.backend import app
 from kskp.store import ss
 from kskp.store import StoreModel as Store
-from kskp.store import Library
+from kskp.store import Datum, Frame, AwsS3
+from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
-class DataStoreTestCase(unittest.TestCase):
+class DataStoreTestCase(TestCaseBase):
 
-    @unittest.skip
     def test_create_fetchall_delete_stores(self):
         """
         fetch_stores APIをテストする
@@ -35,9 +36,7 @@ class DataStoreTestCase(unittest.TestCase):
         ss.commit()
 
         # GET /stores
-        with app.test_client() as client:
-            response = client.get('/api/v0/stores')
-            result = json.loads(response.get_data())
+        result = self.get_uri('/api/v0/stores', self.USER_ID)
 
         # 期待するAPIの戻り値
         expected_result = [
@@ -68,18 +67,12 @@ class DataStoreTestCase(unittest.TestCase):
         ]
 
         # storesテーブルに設定した値をGET /stores apiで取得できることを検証する
-        self.assertEqual(result['success'], True)
         self.assertEqual(result['data'], expected_result)
 
         # DELETE /stores
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 'user1'
-            response = client.delete('/api/v0/stores/%s' % expected_result[0]['id'])
-            response = client.delete('/api/v0/stores/%s' % expected_result[1]['id'])
-            result = json.loads(response.get_data())
+        self.delete_uri('/api/v0/stores/%s' % expected_result[0]['id'], self.USER_ID)
+        self.delete_uri('/api/v0/stores/%s' % expected_result[1]['id'], self.USER_ID)
 
-    @unittest.skip
     def test_create_fetch_delete_store(self):
         """
         create_store APIをテストする
@@ -98,75 +91,41 @@ class DataStoreTestCase(unittest.TestCase):
                          'label': 'ディレクトリパス'},
                         {'name' : 'dummy',
                          'type' : 'int',
-                         'label': 'テスト用ダミー'}
+                         'label': 'テスト用ダミー'}                         
                     ]
                }
 
         # POST /stores
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 'user1'
-            response = client.post('/api/v0/stores',
-                                    content_type='application/json',
-                                    data=json.dumps(data))
-            result = json.loads(response.get_data())
+        result = self.post_uri('/api/v0/stores', data, self.USER_ID)
 
         # POST /stores　apiが正常終了することを検証する
         expected_result = data
-        self.assertEqual(result['success'], True)
         self.assertEqual(result['data'], expected_result)
 
         # GET /stores
-        with app.test_client() as client:
-            response = client.get('/api/v0/stores/%s' % expected_result['id'])
-            result = json.loads(response.get_data())
+        result = self.get_uri('/api/v0/stores/%s' % expected_result['id'], self.USER_ID)
 
         # POST /storesした値をGET /stores apiで取得できることを検証する
-        self.assertEqual(result['success'], True)
         self.assertEqual(result['data'], data)
 
         # DELETE /stores
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 'user1'
-            response = client.delete('/api/v0/stores/%s' % expected_result['id'])
-            result = json.loads(response.get_data())
-
-        # DELETE /stores apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        result = self.delete_uri('/api/v0/stores/%s' % expected_result['id'], self.USER_ID)
 
         # GET /stores
-        with app.test_client() as client:
-            response = client.get('/api/v0/stores/%s' % expected_result['id'])
-            result = json.loads(response.get_data())
+        with self.assertRaises(AssertionError) as e:
+            result = self.get_uri('/api/v0/stores/%s' % expected_result['id'], self.USER_ID)
 
-        # DELETE /storesした値をGET /stores apiで取得できないことを検証する
-        self.assertEqual(result['success'], False)
-        self.assertEqual(result['code'], -1)
-        self.assertEqual(result['message'], 'No store is found by designated store id')
-
-
-class LibraryTestCase(unittest.TestCase):
-
-    @unittest.skip
+class LibraryTestCase(TestCaseBase):
     def test_get_root(self):
         """
         ルートフォルダがある場合にGET /libraryを実行した場合
         """
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            # ルートフォルダを作成する
-            response = client.get('/api/v0/library')
-            result = json.loads(response.get_data())
+        # ルートフォルダを作成する
+        result = self.get_uri('/api/v0/library', self.USER_ID)
 
-            # ルートフォルダを取得する(GET /library)
-            response = client.get('/api/v0/library')
-            result = json.loads(response.get_data())
-            root_uuid = result['data']['uuid']
-
-        # POST /library apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        # ルートフォルダを取得する(GET /library)
+        result = self.get_uri('/api/v0/library', self.USER_ID)
+        root_uuid = result['data']['uuid']
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['type'], 'folder')
@@ -174,40 +133,19 @@ class LibraryTestCase(unittest.TestCase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/data/library'))
+        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
 
         # ルートフォルダを削除する(DELETE /folders)
+        # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
 
-        # 2019/07/08現在、削除処理はうまく動かない
-        # DB処理を行おうとすると、Init Libraryが走る
-        # その時点で、root_folder以下にフロー実行結果ディレクトリとキャッシュ用ディレクトリが作成されるので、
-        # root_folderを削除できない（folderやframeが存在するフォルダは削除できない
-
-        # with app.test_client() as client:
-        #     with client.session_transaction() as session:
-        #         session['user_id'] = '1'
-        #     response = client.delete('/api/v0/folders/' + root_uuid)
-        #     result = json.loads(response.get_data())
-        #
-        # # Delete /folders apiが正常終了することを検証する
-        # self.assertEqual(result['success'], True)
-
-    @unittest.skip
     def test_get_root2(self):
         """
         ルートフォルダが無い場合にGET /libraryを実行した場合
         (無い場合はルートフォルダを自動作成することを確認する)
         """
         # ルートフォルダを取得する(GET /library)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.get('/api/v0/library')
-            result = json.loads(response.get_data())
-            root_uuid = result['data']['uuid']
-
-        # POST /library apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        result = self.get_uri('/api/v0/library', self.USER_ID)
+        root_uuid = result['data']['uuid']
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['type'], 'folder')
@@ -215,37 +153,18 @@ class LibraryTestCase(unittest.TestCase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/data/library'))
+        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
 
         # ルートフォルダを削除する(DELETE /folders)
-        # with app.test_client() as client:
-        #     with client.session_transaction() as session:
-        #         session['user_id'] = '1'
-        #     response = client.delete('/api/v0/folders/' + root_uuid)
-        #     result = json.loads(response.get_data())
-        #
-        # # Delete /folders apiが正常終了することを検証する
-        # self.assertEqual(result['success'], True)
+        # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
 
-    @unittest.skip
     def test_get_folder(self):
         # ルートフォルダを取得する(GET /library)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.get('/api/v0/library')
-            result = json.loads(response.get_data())
-            root_uuid = result['data']['uuid']
-
-            # POST /library apiが正常終了することを検証する
-            self.assertEqual(result['success'], True)
-
-            # ルートフォルダを取得する(GET /folders)
-            response = client.get('/api/v0/folders/' + root_uuid)
-            result = json.loads(response.get_data())
-
-        # POST /folders apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        result = self.get_uri('/api/v0/library', self.USER_ID)
+        root_uuid = result['data']['uuid']
+        
+        # ルートフォルダを取得する(GET /folders)
+        result = self.get_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], root_uuid)
@@ -255,63 +174,28 @@ class LibraryTestCase(unittest.TestCase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # ルートフォルダを削除する(DELETE /folders)
-        # with app.test_client() as client:
-        #     with client.session_transaction() as session:
-        #         session['user_id'] = '1'
-        #     response = client.delete('/api/v0/folders/' + root_uuid)
-        #     result = json.loads(response.get_data())
-        #
-        # # Delete /folders apiが正常終了することを検証する
-        # self.assertEqual(result['success'], True)
+        # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
 
-    @unittest.skip
     def test_get_no_folder(self):
         # 存在しないフォルダを取得しようとして失敗する(GET /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.get('/api/v0/folders/' + '00000000-0000-0000-0000-000000000000')
-            result = json.loads(response.get_data())
+        with self.assertRaises(AssertionError) as e:
+            self.get_uri('/api/v0/folders/' + '00000000-0000-0000-0000-000000000000', self.USER_ID)
 
-        # POST /folders apiが異常終了することを検証する
-        self.assertEqual(result['success'], False)
-        self.assertEqual(result['code'], -1)
-        self.assertEqual(result['message'], 'no folder is found by designated id.')
-
-    @unittest.skip
     def test_update_folder(self):
         # フォルダを作成する(POST /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
+        folder_uuid = Datum.find_root().uuid
 
-            # ParentがNoneなので、rootディレクトリが作成される。
-            # しかしInit Libraryの時点でroot_directoryは存在しているので、作成できない
-            response = client.post('/api/v0/folders',
-                                    content_type='application/json',
-                                    data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
-            result = json.loads(response.get_data())
+        # 親フォルダがない場合はデフォルトパスとする
+        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
 
-            folder_uuid = result['data']['uuid']
-
-            # POST /folders apiが正常終了することを検証する
-            self.assertEqual(result['success'], True)
-
-            # 親フォルダがない場合はデフォルトパスとする
-            self.assertTrue(os.path.isdir('kskp/data/library'))
-
-            # フレームのラベル名を変更する(PUT /frames)
-            response = client.put('/api/v0/folders/' + folder_uuid,
-                content_type='application/json',
-                data=json.dumps({'label' : ' NEW FOLDER '})
-            )
-            result = json.loads(response.get_data())
+        # フレームのラベル名を変更する(PUT /frames)
+        result = self.put_uri('/api/v0/folders/' + folder_uuid, {'label' : ' NEW FOLDER '}, self.USER_ID)
 
         # 期待するAPIの戻り値
         expected_result = {
              'label'    : ' NEW FOLDER '
             ,'type'     : 'folder'
-            ,'creator'  : '開発用'
+            ,'creator'  : '開発者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -324,219 +208,100 @@ class LibraryTestCase(unittest.TestCase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/data/ NEW FOLDER '))
+        self.assertTrue(os.path.isdir('kskp/store/frames/ NEW FOLDER '))
 
         # フォルダを削除する(DELETE /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/folders/' + folder_uuid)
-            result = json.loads(response.get_data())
+        # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
-        # Delete /folders apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
-
-    @unittest.skip
     def test_create_get_frame(self):
         # フォルダを作成する(POST /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.post('/api/v0/folders',
-                                    content_type='application/json',
-                                    data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
-            result = json.loads(response.get_data())
-            folder_uuid = result['data']['uuid']
-
-        # POST /folders apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER_ID)
+        # folder_uuid = result['data']['uuid']
+        folder_uuid = Datum.find_root().uuid
 
         # アップロード用に一時ファイルを作成する
         import io
         f = (io.BytesIO(b"xyzxyzxyzxyz"), 'foo.csv')
 
         # フレームを作成する(POST /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.post('/api/v0/frames',
-                content_type='multipart/form-data',
-                data={
-                    'label' : '新しいフレームファイル?',
-                    'parent': folder_uuid,
-                    'file'  : f
-                }
-            )
-            result = json.loads(response.get_data())
-            frame_uuid = result['data']['uuid']
-
-        # POST /frames apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        result = self.post_frames('新しいフレームファイル?', folder_uuid, f, self.USER_ID)
+        frame_uuid = result['data']['uuid']
 
         # フレームに対応するファイルが存在することを検証する
-        self.assertTrue(os.path.isfile('kskp/data/library/新しいフレームファイル?'))
+        self.assertTrue(os.path.isfile('kskp/store/frames/csv/新しいフレームファイル?'))
 
         # フレームを取得する(GET /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.get('/api/v0/frames/' + frame_uuid)
-            result = json.loads(response.get_data())
-
-        # GET /frames apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
-
+        self.get_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
+            
         # 中のファイルを削除する(DELETE /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/frames/' + frame_uuid)
-            result = json.loads(response.get_data())
-
-        # Delete /frames apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
 
         # フォルダを削除する(DELETE /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/folders/' + folder_uuid)
-            result = json.loads(response.get_data())
+        # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
-        # Delete /folders apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
-
-    @unittest.skip
     def test_create_delete_frame(self):
         # フォルダを作成する(POST /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.post('/api/v0/folders',
-                                    content_type='application/json',
-                                    data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
-            result = json.loads(response.get_data())
-            folder_uuid = result['data']['uuid']
-
-        # POST /folders apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER_ID)
+        # folder_uuid = result['data']['uuid']
+        folder_uuid = Datum.find_root().uuid
 
         # アップロード用に一時ファイルを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
 
         # フレームデータを作成する(POST /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.post('/api/v0/frames',
-                content_type='multipart/form-data',
-                data={
-                    'label' : '新しいフレームファイル!',
-                    'parent': folder_uuid,
-                    'file'  : f
-                }
-            )
-            result = json.loads(response.get_data())
-            frame_uuid = result['data']['uuid']
+        result = self.post_frames('新しいフレームファイル!', folder_uuid, f, self.USER_ID)
+        frame_uuid = result['data']['uuid']
 
+        # Post /frames apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        
         # 期待するAPIの戻り値
         expected_result = {
              'label'    : '新しいフレームファイル!'
             ,'type'     : 'frame'
-            ,'creator'  : '開発用'
+            ,'creator'  : '開発者'
         }
 
-        # Post /frames apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
         # Post /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
         self.assertEqual(result['data']['label'], expected_result['label'])
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
 
         # 中のファイルごとフォルダを削除しようとする(DELETE /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/folders/' + folder_uuid)
-            result = json.loads(response.get_data())
-
-        # 削除しようとすると異常終了することを検証する
-        self.assertEqual(result['success'], False)
+        with self.assertRaises(AssertionError) as e:
+            self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
         # 中のファイルを削除する(DELETE /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/frames/' + frame_uuid)
-            result = json.loads(response.get_data())
-
-        # Delete /frames apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
 
         # フォルダを削除する(DELETE /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/folders/' + folder_uuid)
-            result = json.loads(response.get_data())
+        # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
-        # Delete /folders apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
-
-    @unittest.skip
     def test_update_frame(self):
         # フォルダを作成する(POST /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.post('/api/v0/folders',
-                                    content_type='application/json',
-                                    data=json.dumps({"label" : "新しいフォルダ", "parent": None}))
-            result = json.loads(response.get_data())
-            folder_uuid = result['data']['uuid']
-
-        # POST /folders apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER_ID)
+        # folder_uuid = result['data']['uuid']
+        folder_uuid = Datum.find_root().uuid
 
         # アップロード用に一時ファイルを作成する
         import io
         f = (io.BytesIO(b"thisisaframefile"), 'aaa.csv')
 
         # フレームデータを作成する(POST /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.post('/api/v0/frames',
-                content_type='multipart/form-data',
-                data={
-                    'label' : 'フレームファイルAA',
-                    'parent': folder_uuid,
-                    'file'  : f
-                }
-            )
-            result = json.loads(response.get_data())
-            frame_uuid = result['data']['uuid']
+        result = self.post_frames('フレームファイルAA', folder_uuid, f, self.USER_ID)
+        frame_uuid = result['data']['uuid']
 
         # フレームのラベル名を変更する(PUT /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.put('/api/v0/frames/' + frame_uuid,
-                content_type='application/json',
-                data=json.dumps({'label' : ' F L A M E-F I L E '})
-            )
-            result = json.loads(response.get_data())
+        result = self.put_uri('/api/v0/frames/' + frame_uuid, {'label' : ' F L A M E-F I L E '}, self.USER_ID)
 
         # 期待するAPIの戻り値
         expected_result = {
              'label'    : ' F L A M E-F I L E '
             ,'type'     : 'frame'
-            ,'creator'  : '開発用'
+            ,'creator'  : '開発者'
         }
 
-        # PUT /frames apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
         # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
         self.assertNotEqual(result['data']['uuid'], None)
         self.assertEqual(result['data']['label'], expected_result['label'])
@@ -545,52 +310,196 @@ class LibraryTestCase(unittest.TestCase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フレームに対応するファイルが存在することを検証する
-        self.assertTrue(os.path.isfile('kskp/data/library/ F L A M E-F I L E '))
+        self.assertTrue(os.path.isfile('kskp/store/frames/ NEW FOLDER / F L A M E-F I L E '))
 
         # 中のファイルを削除する(DELETE /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/frames/' + frame_uuid)
-            result = json.loads(response.get_data())
-
-        # Delete /frames apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
 
         # フォルダを削除する(DELETE /folders)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/folders/' + folder_uuid)
-            result = json.loads(response.get_data())
+        # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
-        # Delete /folders apiが正常終了することを検証する
-        self.assertEqual(result['success'], True)
+class AwsS3TestCase(TestCaseBase):
+    def test_create_get_awss3(self):
+        root_uuid = Datum.find_root().uuid
 
-    @unittest.skip
-    def test_delete_using_frame(self):
-        from kskp.store import Frame
-        input_frame_uuid = '1ac6c925-391c-40cf-97fb-54ce59a1a151'
+        # AWS S3フォルダを作成する(POST /awss3s)
+        data = {
+            'parent': root_uuid,
+            'label' : 'Amazonに感謝',
+            'bucket': 'kskp-test'
+        }
+        result = self.post_uri('/api/v0/awss3s', data, self.USER_ID)
+
+        # POST /awss3sの戻り値が正しいことを検証する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['type'], 'awss3')
+        self.assertEqual(result['data']['label'], 'Amazonに感謝')
+        self.assertEqual(result['data']['bucket'], 'kskp-test')
+        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        awss3_uuid = result['data']['uuid']
+        awss3 = AwsS3.find_by_uuid(awss3_uuid)
+
+        # S3マウント用フォルダが作成されていることを検証する
+        self.assertTrue(os.path.isdir(awss3.path))
+
+        # S3フォルダを取得する(GET /awss3s)
+        result = self.get_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
+
+        # GET /awss3sの戻り値が正しいことを検証する
+        self.assertEqual(result['data']['uuid'], awss3_uuid)
+        self.assertEqual(result['data']['type'], 'awss3')
+        self.assertEqual(result['data']['label'], 'Amazonに感謝')
+        self.assertEqual(result['data']['bucket'], 'kskp-test')
+        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertIsNotNone(result['data']['children'])
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
+        self.assertEqual(result['data']['folderPath'][1]['uuid'], awss3_uuid)
+        self.assertEqual(result['data']['folderPath'][1]['label'], 'Amazonに感謝')
+
+        # S3フォルダがマウントされていることを検証する
+        self.assertTrue(Datum.is_mount(Path(awss3.path)))
+
+        # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
+        awss3_path = awss3.path
+        self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
+
+        # S3マウント用フォルダが削除されていることを検証する
+        self.assertFalse(os.path.exists(awss3_path))
+
+    def test_update_awss3(self):
+        root_uuid = Datum.find_root().uuid
+        
+        # AWS S3フォルダを作成する(POST /awss3s)
+        data = {
+            'parent': root_uuid,
+            'label' : 'Appleに感謝',
+            'bucket': 'kskp-test'
+        }
+        result = self.post_uri('/api/v0/awss3s', data, self.USER_ID)
+
+        awss3_uuid = result['data']['uuid']
+        awss3 = AwsS3.find_by_uuid(awss3_uuid)
+
+        # S3フォルダのラベルを更新する(PUT /awss3s)
+        update_data = {
+            'label' : '大根の卸金が欲しい',
+            'bucket': 'abc'
+        }
+        result = self.put_uri('/api/v0/awss3s/' + awss3_uuid, update_data, self.USER_ID)
+
+        # PUT /awss3sの戻り値が正しいことを検証する
+        self.assertEqual(result['data']['uuid'], awss3_uuid)
+        self.assertEqual(result['data']['type'], 'awss3')
+        self.assertEqual(result['data']['label'], '大根の卸金が欲しい')
+        self.assertEqual(result['data']['bucket'], 'abc')
+        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
+        awss3_path = awss3.path
+        self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
+
+        # S3マウント用フォルダが削除されていることを検証する
+        self.assertFalse(os.path.exists(awss3_path))
+
+    def test_remount_awss3(self):
+        root_uuid = Datum.find_root().uuid
+
+        # AWS S3フォルダを作成する(POST /awss3s)
+        data = {
+            'parent': root_uuid,
+            'label' : 'Googleに感謝',
+            'bucket': 'kskp-test'
+        }
+        result = self.post_uri('/api/v0/awss3s', data, self.USER_ID)
+
+        awss3_uuid = result['data']['uuid']
+        awss3 = AwsS3.find_by_uuid(awss3_uuid)
+
+        # KSKPの外部からUnmountをする
+        import shlex
+        import subprocess
+        import time
+        time.sleep(1)
+        ret = subprocess.run(shlex.split('/sbin/umount kskp/store/frames/csv/Googleに感謝'), 
+                             stdout=subprocess.PIPE, 
+                             stderr=subprocess.PIPE)
+        # umountコマンドの正常終了を確認する
+        self.assertEqual(ret.returncode, 0)
+
+        # AwsS3.pathプロパティへのアクセスでremount処理が走る
+        tmp_var = awss3.path
+
+        # S3フォルダがマウントされていることを検証する
+        self.assertTrue(Datum.is_mount(Path(awss3.path)))     
+
+        # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
+        awss3_path = awss3.path
+        self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
+
+        # S3マウント用フォルダが削除されていることを検証する
+        self.assertFalse(os.path.exists(awss3_path))
+
+    def test_mount_under_mount_awss3(self):
+        root_uuid = Datum.find_root().uuid
+
+        # AWS S3フォルダを作成する(POST /awss3s)
+        data = {
+            'parent': root_uuid,
+            'label' : 'Facebookに感謝',
+            'bucket': 'kskp-test'
+        }
+        result = self.post_uri('/api/v0/awss3s', data, self.USER_ID)
+        awss3_uuid = result['data']['uuid']
+        awss3 = AwsS3.find_by_uuid(awss3_uuid)
+
+        # AWS S3フォルダの下にAWS S3フォルダを作成しようとする(POST /awss3s)
+        data = {
+            'parent': awss3_uuid,
+            'label' : 'Microsoftにさようなら',
+            'bucket': 'kskp-test'
+        }
+        # S3フォルダの下にS3フォルダを作成することはできない
+        with self.assertRaises(AssertionError) as e:
+            result = self.post_uri('/api/v0/awss3s', data, self.USER_ID)
+
+        # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
+        awss3_path = awss3.path
+        self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
+
+        # S3マウント用フォルダが削除されていることを検証する
+        self.assertFalse(os.path.exists(awss3_path))
 
 
-        if not Frame.exists(input_frame_uuid):
-            # test_frame.csvをライブラリに登録する
-            root = Frame.find_root()
 
-            # streamをNoneにしているので、saveしても、self.stream.readでエラーが出る
-            input_frame = Frame(root.uuid, 'test_frame.csv', None)
-            input_frame.uuid = input_frame_uuid
-            input_frame.path = 'kskp/data/library/test_frame.csv'
-            input_frame.save()
+    # def test_delete_using_frame(self):
+    #     from ..library import Frame
+    #     input_frame_uuid = '1ac6c925-391c-40cf-97fb-54ce59a1a151'
 
-        # フレームを削除する(DELETE /frames)
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
-            response = client.delete('/api/v0/frames/' + input_frame_uuid)
-            result = json.loads(response.get_data())
+    #     if not Frame.exists(input_frame_uuid):
+    #         # ルートフォルダを取得する(GET /library)
+    #         result = self.get_uri('/api/v0/library', 1)
+    #         root_uuid = result['data']['uuid']
 
-        self.assertFalse(result['success'])
+    #         # test_frame.csvをライブラリに登録する
+    #         input_frame = Frame(root_uuid, 'test_frame.csv', None)
+    #         input_frame.uuid = input_frame_uuid
+    #         input_frame.add_entry_from_path('kskp/data/library/test_frame.csv')
+
+    #     # フレームを削除する(DELETE /frames)
+    #     self.delete_uri('/api/v0/frames/' + input_frame_uuid, 1)
+
+    #     # ルートフォルダを削除する(DELETE /folders)
+    #     self.delete_uri('/api/v0/folders/' + root_uuid, 1)
+
+
+
+
+
 
     # def test_create_get_document(self):
     #     # フォルダを作成する(POST /folders)
@@ -634,7 +543,7 @@ class LibraryTestCase(unittest.TestCase):
     #             session['user_id'] = '1'
     #         response = client.get('/api/v0/documents/' + doc_uuid)
     #         result = json.loads(response.get_data())
-
+        
     #     # GET /documents apiが正常終了することを検証する
     #     self.assertEqual(result['success'], True)
 
@@ -814,45 +723,69 @@ class LibraryTestCase(unittest.TestCase):
     #     # Delete /folders apiが正常終了することを検証する
     #     self.assertEqual(result['success'], True)
 
-class ExecuteTestCase(unittest.TestCase):
-
-    @unittest.skip
+@unittest.skip
+class ExecuteTestCase(TestCaseBase):
     def test_execute_flow(self):
         """
         フローの実行結果がライブラリに登録されることを検証する
         """
-        input_frame_uuid = '1ac6c925-391c-40cf-97fb-54ce59a1a151'
-        flow_uuid = '168d23c2-f835-4392-ba0e-76e94a08b719'
+        input_frame_uuid = 'aca1c51f-ee97-43ca-bc6e-cd151220c518'
+        input_frame_uuid2 = '1ac6c925-391c-40cf-97fb-54ce59a1a151'
+        subflow_uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
+
+
+        from kskp.web.backend.api.lib import get_library
+
+        # ルートストアフォルダを取得する(無ければ作成する)
+        root = get_library(self.USER_ID)
 
         # 入力フレームをライブラリに登録する
-        from kskp.store import Frame
-        if not Frame.exists(input_frame_uuid):
-            root = Frame.find_root()
-            input_frame = Frame(root.uuid, 'test_frame.csv', None, 1)
-            input_frame.uuid = input_frame_uuid
-            input_frame.add_entry_from_path(os.path.join(app.root_path + '/data/library'))
+        self.save_frame_to_library(input_frame_uuid, 'kskp/tests/frames/test_frame1.csv')
+        self.save_frame_to_library(input_frame_uuid2, 'kskp/tests/frames/test_frame2.csv')
+
+        # テスト用フローをライブラリに保存する
+        from kskp.store import Flow
+        # フローJSONファイルからフローデータを取得する
+        flow_path = Path(app.root_path) / 'api/tests/flows/168d23c2-f835-4392-ba0e-76e94a08b719.json'
+        flow_data = json.loads(flow_path.read_text(encoding='utf-8'))
+        # フローオブジェクトを作成する
+        test_flow = Flow(root.uuid, 'テストフロー', flow_data, self.USER_ID)
+        # フローをライブラリに保存する
+        test_flow.save()
+
+        if not Flow.exists(subflow_uuid):
+            # テスト用フローから呼ばれるサブフローをライブラリに保存する
+            subflow_path = Path(app.root_path) / 'api/tests/flows/833fdb62-2bb6-4a77-a0e1-77941ad951a3.json'
+            subflow_data = json.loads(subflow_path.read_text(encoding='utf-8'))
+            # サブフローオブジェクトを作成する
+            test_subflow = Flow(root.uuid, 'テストサブフロー', subflow_data, self.USER_ID)
+            # サブフローをライブラリに保存する
+            test_subflow.uuid = subflow_uuid
+            test_subflow.save()
 
         # 実行
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 1
-            response = client.get('/api/v0/frames?from=%s' % flow_uuid)
-            result = json.loads(response.get_data())
-
-        # フローの実行が正常終了することを検証する
-        self.assertEqual(result['success'], True)
+        result = self.get_uri('/api/v0/frames?from=%s' % test_flow.uuid, self.USER_ID)
 
         # 出力結果がライブラリに登録されることを検証する
         frame_uuid_d1 = result['name'][0]['uuid']
         frame_uuid_d3 = result['name'][1]['uuid']
         self.assertTrue(Frame.exists(frame_uuid_d1))
         self.assertTrue(Frame.exists(frame_uuid_d3))
-
+        
         # 削除
         # このテストで作成したjobsだけ削除する
-        from .test_api import ApiTestCase
-        apiTestCase = ApiTestCase("test_new_project")
-        apiTestCase.remove_job_file_and_frame(flow_uuid)
+        from .test_api import ExecApiTestCase
+        apiTestCase = ExecApiTestCase("test_execute_flow")
+        apiTestCase.remove_job_file_and_frame(test_flow.uuid)
+        # フレームを削除する -> sqlalchemy.orm.exc.DetachedInstanceErrorがでてしまう
+        # input_frame.delete()
+        # サブフローを削除する -> sqlalchemy.orm.exc.DetachedInstanceErrorがでてしまう
+        # test_subflow.delete()
+        # フローを削除する
+        test_flow.delete()
+
+    def test_execute_flow_using_frame_on_s3(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
