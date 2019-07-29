@@ -3,7 +3,7 @@ import uuid
 import json
 from pathlib import Path
 from kskp.web.backend import app
-from kskp.store import model, FLOW_PATH
+from kskp.store import model
 
 def setUpClient(self):
     """
@@ -47,20 +47,6 @@ def setUpFlow(self):
     created_flow = model.create_flow(data, user1, data_source_name)
 
     return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
-
-
-def remove_copy_flow_files(data_source_name, copy_flow_label, project_id):
-    """
-    テストで作成したフローのコピーファイルを削除する
-    """
-    for path in Path(FLOW_PATH).iterdir():
-        if not path.suffix == '.json':
-            continue
-        with open(path) as f:
-            flow_json = json.load(f)
-            if flow_json['label'] == copy_flow_label and flow_json['projectId'] == project_id:
-                path.unlink()
-                break
 
 def create_data(file_path_obj, data=None):
     """

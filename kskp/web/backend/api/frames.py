@@ -5,7 +5,7 @@ import time
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
-from kskp.store import Frame, Flow
+from kskp.store import Frame, Flow, Folder
 from kskp.web.backend import app
 
 from .auth import login_required_api
@@ -158,20 +158,17 @@ def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
     """
-    from kskp.store import get_all_frame_uuid_in_frame, FLOW_PATH
+    from kskp.store import get_all_frame_uuid_in_frame, Flow
 
     frame = Frame.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
     # 削除しようとするframeが、フローで使用されている場合は例外を送出する
-    for flow_path in Path(FLOW_PATH).iterdir():
-        if not flow_path.suffix == '.json':
-            continue
-        flow_uuid = flow_path.stem
-        using_frame_uuids = get_all_frame_uuid_in_frame(flow_uuid)
+    for flow in Flow.find_all_flows():
+        using_frame_uuids = get_all_frame_uuid_in_frame(flow.uuid)
         if frame_uuid in using_frame_uuids:
-            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow_uuid)
+            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.uuid)
 
     # フレームを削除する
     frame.delete()
@@ -276,9 +273,7 @@ def execute_flow_internal(flow_uuid, step_ids=[], args={}, inputs={}):
 
     def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
         from kskp.engine import execute,FlowJsonLink, FlowUuidLink
-        from kskp.store import FLOW_PATH
 
-        # TODO:Flowがどこにあるべきか、取得方法を正式に決めないと。。。
         link = FlowUuidLink(flow_uuid, step_ids)
         return execute(link=link, args=args, inputs=inputs)
 
@@ -300,9 +295,7 @@ def execute_flow_by_add_inputs(request):
     step_ids = []
 
     flow_uuid = request.json.get('flow_uuid')
-    # flow_json = fetch_flow_by_uuid(flow_uuid)
-    flow = Flow.find_by_uuid(flow_uuid)
-    flow_json = flow.flow_data
+    flow_json = fetch_flow_by_uuid(flow_uuid)
 
     # executeの引数
     inputs = {}
@@ -315,7 +308,10 @@ def execute_flow_by_add_inputs(request):
         if request.json.get(port['nodeId']) is not None:
             # フレームを置き換える
             frame_uuid = request.json.get(port['nodeId'])
-            inputs[port['nodeId']] = Library.load_frame(frame_uuid)
+            # ※Folderのload_frameとLibraryのload_frameは別物なので、Library.load_frameでは代用はできない
+            # Folder.load_frame　・・・　uuidからframeを取得し、それをm2teeを使ってnysol_moduleを返す
+            # Library.load_frame ・・・ uuidからframeを取得し、Frameオブジェクトを返す
+            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
             continue
 
         # 新たにkskpにアップロードする場合
@@ -324,7 +320,7 @@ def execute_flow_by_add_inputs(request):
             # ファイルアップロードして、フレームを置き換える
             from kskp.web.backend.api.basic import upload_frame
             frame_uuid = upload_frame(file, '')['uuid']
-            inputs[port['nodeId']] = Library.load_frame(frame_uuid)
+            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
 
             # 使うかわからないけど、uploadしたファイルを覚えておく
             upload_file_list.append(frame_uuid)

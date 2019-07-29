@@ -1,4 +1,5 @@
 import unittest
+import copy
 import json
 import os
 import tempfile
@@ -6,8 +7,7 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import (
     Library,
-    STORE_DIR,
-    FLOW_PATH
+    STORE_DIR
 )
 
 root = Library.load_root()
@@ -304,9 +304,9 @@ class FrameApoTestCase(unittest.TestCase):
           "dataSource": "csv"
         }
 
-        flow_json = json.loads(json.dumps(self.flow_json))
+        flow_json = self.flow_json
         flow_json['nodes'].append(input_node)
-        flow = Library.save_flow(root.uuid, 'test', json.dumps(flow_json))
+        flow = Library.save_flow(root.uuid, 'test', flow_json)
 
         # フローを実行する
         with app.test_client() as client:
@@ -390,7 +390,7 @@ class FrameApoTestCase(unittest.TestCase):
         flow_json['nodes'].append(input_node)
         flow_json['nodes'].append(add_cmd)
         flow_json['nodes'].append(add_datum)
-        flow = Library.save_flow(root.uuid, 'test', json.dumps(flow_json))
+        flow = Library.save_flow(root.uuid, 'test', flow_json)
 
         # フローの実行
         with app.test_client() as client:
@@ -451,11 +451,11 @@ class FrameApoTestCase(unittest.TestCase):
             'type':'frame'
         }
 
-        flow_json = json.loads(json.dumps(self.flow_json))
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
         flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
-        flow = Library.save_flow(root.uuid, 'test', json.dumps(flow_json))
+        flow = Library.save_flow(root.uuid, 'test', flow_json)
 
         # テストフレーム作成
         csv_data = [
@@ -472,7 +472,6 @@ class FrameApoTestCase(unittest.TestCase):
         # フローの実行
         with app.test_client() as client:
             with client.session_transaction() as session:
-                # まだ使っていない（login_required_apiを使っていないので）
                 session['user_id'] = '1'
 
             # apiを投げる
@@ -549,7 +548,7 @@ class FrameApoTestCase(unittest.TestCase):
             if node['id'] == 'c1':
                 node['args']['f'] = f'@[{arg_for_param}]'
                 break
-        flow = Library.save_flow(root.uuid, 'test', json.dumps(flow_json))
+        flow = Library.save_flow(root.uuid, 'test', flow_json)
 
         # テストフレーム作成
         csv_data = [
@@ -575,7 +574,7 @@ class FrameApoTestCase(unittest.TestCase):
 
             # apiを投げる
             data = {
-                'args': json.dumps(args),
+                'args': args,
                 'flow_uuid': flow.uuid,
                 'i': frame_uuid
             }
