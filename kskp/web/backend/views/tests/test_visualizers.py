@@ -7,6 +7,8 @@ from kskp.store import (
     STORE_DIR
 )
 
+root = Library.load_root()
+
 class ApiVisualizersTestCase(unittest.TestCase):
     """
     ビジュアライズのエンドポイントのテスト
@@ -70,5 +72,5 @@ def create_data(file_path_obj, data=None):
 
     if data is not None:
         nm.mread(i=data, o=file_path_obj.as_posix()).run()
-    frame = Library.save_frame(FRAME_FOLDER_UUID, str(uuid.uuid4()), file_path_obj)
+    frame = Library.save_frame(root.uuid, str(uuid.uuid4()), file_path_obj)
     return frame.uuid
