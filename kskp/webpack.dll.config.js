@@ -12,7 +12,7 @@ module.exports = (env) => {
         vendor: ['react', 'react-dom', 'react-redux', 'classnames', 'dagre', 'react-chartjs-2', 'eventemitter3', 'moment']
       },
       output: {
-        path: `${__dirname}/kskp/static/js`,
+        path: `${__dirname}/web/frontend/static/js`,
         filename: '[name].js',
         /**
          * output.library
@@ -28,7 +28,7 @@ module.exports = (env) => {
            * manifestファイルの出力先
            * [name]の部分はentryの名前に変換される
            */
-          path: path.join(__dirname, '/kskp/static/js/dist', '[name]-manifest.json'),
+          path: path.join(__dirname, '/web/frontend/static/js/dist', '[name]-manifest.json'),
           /**
            * name
            * どの空間（global変数）にdll bundleがあるか
