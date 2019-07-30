@@ -102,7 +102,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       this.run().then((response) => {
         if (response.data.success) {
           const json: RunResponseType = response.data
-          const result = json.name.map((n) => {
+          const result = json.lasts.map((n) => {
             return <li>{n.id}</li>
           })
           const content = <div>
