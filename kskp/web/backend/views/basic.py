@@ -22,8 +22,26 @@ def projects():
 @mod.route('/flows', methods=['GET', 'POST'])
 @login_required
 def flows():
-    from kskp.store import fetch_flows_by_project_uuid
-    return render_template('flows.html', flows=fetch_flows_by_project_uuid(request.args.get('project')),project_uuid=request.args.get('project'))
+    from kskp.store import Datum, Flow
+    
+    flow_list = []
+    parent_uuid = request.args.get('project')
+
+    # projectが指定されていない場合は空のフロー一覧を返す
+    if parent_uuid is None:
+        return flow_list
+
+    data = Datum.find_by_parent_uuid(parent_uuid)
+
+    for datum in data:
+        if datum.type != Datum.FLOW_TYPE:
+            continue
+        flow = Flow.convert_to_flow(datum)
+        flow_data = flow.flow_data
+        flow_data['uuid'] = flow.uuid
+        flow_list.append(flow_data)
+
+    return render_template('flows.html', flows=flow_list, project_uuid=request.args.get('project'))
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required

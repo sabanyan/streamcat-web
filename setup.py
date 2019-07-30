@@ -11,11 +11,13 @@ setup(
         'psycopg2',
         'numpy',
         'scipy',
-        'pandas',
+        'pandas==0.24.2',
         'sklearn',
         'holoviews',
         'bokeh',
         'ptvsd',
-        'awscli'
+        'awscli',
+        'matplotlib',
+        'watchdog'
     ],
 )
