@@ -397,7 +397,6 @@ class FlowApiTestCase(TestCaseBase):
             endpoint = '/api/v0/flows/%s' % test_flow_uuid
             response = client.get(endpoint)
             result = json.loads(response.get_data())
-            # flow_path = model.get_flow_path_by_uuid(data_source_name)
 
         self.assertEqual(result['success'], True)
 
@@ -691,7 +690,7 @@ class CacheApiTestCase(TestCaseBase):
         from kskp.store import Datum, Flow, Frame
 
         root = Datum.find_root()
-        
+
         datum_id = 'test'
         user_id = 1
 

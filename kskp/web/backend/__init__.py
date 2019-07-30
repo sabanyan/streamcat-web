@@ -3,6 +3,7 @@ from flask import Flask
 from kskp.store import STORE_DIR
 
 app = Flask('kskp.web.backend')
+app.secret_key = '-jm624cqpry89e'
 # コマンド一覧で表示させるコマンドのリスト
 app.config['VISIBLE_COMMANDS_JSON'] = ['mcmd', 'kcmd', 'pcmd']
 # jsonify関数を使うときにUTF-8として返却できるようにするための設定
@@ -50,5 +51,5 @@ app.register_blueprint(mod)
 def run():
     app.run(debug=True)
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()

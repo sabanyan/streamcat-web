@@ -62,19 +62,15 @@ ENV AWS_DEFAULT_REGION ap-northeast-1
 RUN echo "kskp ALL=(ALL) NOPASSWD: /usr/bin/mount,/usr/sbin/mount.cifs,/usr/bin/umount,/usr/local/bin/goofys" >> /etc/sudoers
 
 USER kskp
-COPY ./kskp /home/kskp/kskp
+RUN mkdir /home/kskp/kskp-web
 
-COPY ./setup.py /home/kskp/setup.py
+COPY ./kskp /home/kskp/kskp-web/kskp
+COPY ./setup.py /home/kskp/kskp-web/setup.py
 
 USER root
 
-RUN git clone -b develop_refactor https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-flow-engine.git /home/kskp/kskp-flow-engine
-RUN git clone -b develop_refactor2 https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-data-store.git /home/kskp/kskp-data-store
-RUN pip install -e /home/kskp/kskp-flow-engine
-RUN pip install -e /home/kskp/kskp-data-store
-
 ENV FLASK_APP kskp/web/backend
-RUN pip install -e /home/kskp
+RUN pip install -e /home/kskp/kskp-web
 
 ### COPY ./kskp/config/small.cfg /home/kskp/kskp/settings.cfg
 
@@ -90,7 +86,17 @@ RUN pip install nysol
 RUN yum install -y epel-release
 RUN yum install -y nkf --enablerepo=epel
 
-WORKDIR /home/kskp
+USER kskp
+
+RUN git clone -b develop_refactor https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-flow-engine.git /home/kskp/kskp-flow-engine
+RUN git clone -b develop_refactor https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-data-store.git /home/kskp/kskp-data-store
+
+USER root
+
+RUN pip install -e /home/kskp/kskp-flow-engine
+RUN pip install -e /home/kskp/kskp-data-store
 
 USER kskp
+WORKDIR /home/kskp/kskp-web
+
 CMD flask run -h 0.0.0.0 -p ${PORT:-5000}
