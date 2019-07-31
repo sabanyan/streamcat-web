@@ -25,5 +25,4 @@ def execute_visualizer():
     except:
         return render_template('visualize/table.html', header=[], reader=[])
 
-    # TODO: tableコマンド以外はまだkskp-data-storeに追加していない
-    return render_template('visualize/component.html', script=result['script'], dic=result['div'])
+    return render_template('visualize/component.html', script=result['script'], div=result['div'])
