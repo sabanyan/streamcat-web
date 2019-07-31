@@ -31,10 +31,11 @@ RUN pyenv global 3.6.0
 
 RUN pip install --upgrade pip
 
-# COPY ./nysol-2.4-0.x86_64.rpm /home/kskp/nysol-2.4-0.x86_64.rpm
+# mchkcsvなどnysol_pythonに存在しないmコマンドもあるためNYSOLも必要
+COPY ./nysol-2.4-0.x86_64.rpm /home/kskp/nysol-2.4-0.x86_64.rpm
 # for Nysol
-# RUN yum install -y sudo gem
-# RUN rpm -ih /home/kskp/nysol-2.4-0.x86_64.rpm
+RUN yum install -y sudo gem
+RUN rpm -ih /home/kskp/nysol-2.4-0.x86_64.rpm
 
 # Install samba packages
 RUN yum install -y samba-client samba-winbind cifs-utils

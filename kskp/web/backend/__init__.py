@@ -4,6 +4,7 @@ from kskp.store import STORE_DIR
 
 app = Flask('kskp.web.backend')
 app.secret_key = '-jm624cqpry89e'
+
 # コマンド一覧で表示させるコマンドのリスト
 app.config['VISIBLE_COMMANDS_JSON'] = ['mcmd', 'kcmd', 'pcmd']
 # jsonify関数を使うときにUTF-8として返却できるようにするための設定
@@ -17,6 +18,7 @@ os.environ['DATABASE_URI'] = 'sqlite:///' + os.environ['SQLITE_PATH']
 
 # 文字コード設定（とりあえず標準はutf-8で）
 os.environ['FRAME_CHARACTER_CODE'] = 'utf-8'
+# os.environ['FRAME_CHARACTER_CODE'] = 'cp932'
 
 # flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
 from .api.utils.kskp_json_encoder import KSKPJSONEncoder
