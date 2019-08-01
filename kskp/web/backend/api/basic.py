@@ -141,7 +141,7 @@ def fecth_flows():
         return flow_list
 
     data = Datum.find_by_parent_uuid(parent_uuid)
-    
+
     for datum in data:
         if datum.type != Datum.FLOW_TYPE:
             continue
@@ -185,7 +185,7 @@ def update_flow(flow_uuid):
     # 同じキーが含まれる場合は新しいもので上書きされる
     flow = Flow.find_by_uuid(flow_uuid)
     flow_data = flow.flow_data
-    flow_label = flow.label     
+    flow_label = flow.label
 
     flow_data.update(request.json)
     # 変更を保存する
@@ -287,7 +287,11 @@ def download_file():
             tmpなので、今の所はdbには登録しない。
             デフォルトはutf-8の形式
             """
-            path = Path(mod.root_path).parent.parent / Path('data/tmp') / str(uuid.uuid4())
+            tmp_dir = Path(STORE_DIR) / Path('download_tmp')
+            if not tmp_dir.exists():
+                tmp_dir.mkdir()
+
+            path = tmp_dir / str(uuid.uuid4())
             with open(path, 'w', encoding=encoding, newline=newline) as f:
                 with open(origin_file_path, encoding='utf-8') as origin_f:
                     f.write(origin_f.read())
