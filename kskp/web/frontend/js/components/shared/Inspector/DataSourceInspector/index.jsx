@@ -99,8 +99,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
-            const uuid = response.data.name[0].uuid
-            const label = response.data.name[0].id
+            const uuid = response.data.lasts[0].uuid
+            const label = response.data.lasts[0].id
             this.previewFromUUID(uuid, label)
           } else {
             this.props.notify({
