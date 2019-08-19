@@ -1,0 +1,39 @@
+[ignore]
+<PROJECT_ROOT>/node_modules/.*
+<PROJECT_ROOT>/public/.*
+<PROJECT_ROOT>/kskp/.*
+<PROJECT_ROOT>/dist/.*
+<PROJECT_ROOT>/src/lib/.*
+<PROJECT_ROOT>webpack.config.js
+[include]
+
+[libs]
+./src/lib/libdefs.js
+[lints]
+
+[options]
+#ref:https://github.com/facebook/flow/issues/338
+module.file_ext=.js
+module.file_ext=.jsx
+module.file_ext=.json
+module.file_ext=.css
+module.file_ext=.less
+module.file_ext=.scss
+#ref:https://flow.org/en/docs/config/options/
+module.system.node.resolve_dirname=node_modules
+
+#ref:https://qiita.com/nju33/items/720e5cca222c8ab3dd4f
+module.name_mapper='^FlowEditorContainer/\(.*\)$' -> '<PROJECT_ROOT>/src/js/components/FlowEditorContainer/\1'
+module.name_mapper='^FlowListContainer/\(.*\)$' -> '<PROJECT_ROOT>/src/js/components/FlowListContainer/\1'
+module.name_mapper='^LibraryListContainer/\(.*\)$' -> '<PROJECT_ROOT>/src/js/components/LibraryListContainer/\1'
+module.name_mapper='^ProfileContainer/\(.*\)$' -> '<PROJECT_ROOT>/src/js/components/ProfileContainer/\1'
+module.name_mapper='^ProjectListContainer/\(.*\)$' -> '<PROJECT_ROOT>/src/js/components/ProjectListContainer/\1'
+module.name_mapper='^Shared/\(.*\)$' -> '<PROJECT_ROOT>/src/js/components/shared/\1'
+module.name_mapper='^Constants/\(.*\)$' -> '<PROJECT_ROOT>/src/js/constants/\1'
+module.name_mapper='^Model/\(.*\)$' -> '<PROJECT_ROOT>/src/js/model/\1'
+module.name_mapper='^Modules/\(.*\)$' -> '<PROJECT_ROOT>/src/js/modules/\1'
+module.name_mapper='^Schema/\(.*\)$' -> '<PROJECT_ROOT>/src/js/schema/\1'
+module.name_mapper='^Types/\(.*\)$' -> '<PROJECT_ROOT>/src/js/types/\1'
+module.name_mapper='^Utils/\(.*\)$' -> '<PROJECT_ROOT>/src/js/utils/\1'
+
+[strict]
