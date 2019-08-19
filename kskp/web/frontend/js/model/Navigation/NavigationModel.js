@@ -1,9 +1,9 @@
 //@flow
 import React from 'react'
 import ReactDOM from 'react-dom'
-import NavigationBar from '../../components/shared/NavigationBar'
-import Model from '../index'
-import Constants from '../../constants'
+import { NavigationBar } from 'Shared/Base'
+import Constants from 'Constants/index'
+import Model from "Model/Core";
 
 export type NavigationModelProps = {
   flow_name: string;

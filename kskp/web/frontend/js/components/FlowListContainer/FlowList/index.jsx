@@ -3,21 +3,16 @@ import React from 'react'
 import type { FlowListProps } from '../index'
 import classnames from 'classnames'
 import style from './style.scss'
-import flowListStyle from '../../shared/List/FlowList/style.scss'
-import APIUtil from '../../../utils/APIUtil'
-import FlowListRow from '../../shared/List/FlowList'
-import FlowListHeader from '../../shared/List/FlowList/FlowListHeader'
-import ModalManager from '../../shared/ModalManager'
-import Constants from '../../../constants'
-import ModalUtil from '../../../utils/ModalUtil'
-import Loader from '../../shared/Loader'
-import EmptyState from '../../shared/EmptyState'
-import Button from '../../shared/Button'
-import TextField from '../../shared/TextField'
-import FileUploader from '../../shared/FileUploader'
-import { FlowListDataType } from '../../../types'
-import FlowInspector from '../../shared/Inspector/FlowInspector'
-import NotificationManager from '../../shared/NotificationManager'
+import flowListStyle from 'Shared/ListRow/FlowListRow/style.scss'
+import { APIUtil, ModalUtil } from 'Utils/index'
+import { FlowListHeader, FlowListRow } from 'Shared/ListRow'
+import { ModalManager } from 'Shared/Modal'
+import Constants from 'Constants/index'
+import { EmptyState, Loader } from 'Shared/Base'
+import { Button, FileUploader, TextField } from 'Shared/Input'
+import type { FlowListDataType } from 'Types/index'
+import { FlowInspector } from 'Shared/Inspector'
+import { NotificationManager } from 'Shared/Notification'
 
 type State = {
   flow_list: [FlowListDataType];
@@ -89,8 +84,16 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     //this.setState({is_loading: true})
     APIUtil.get('flows', {project: inject_project_uuid}).then((response) => {
       const json = response.data
+      let selected_flow = this.state.selected_flow
+      if (selected_flow) {
+        selected_flow = json.data.find((flow) => {
+          return (flow.uuid === selected_flow.uuid)
+        })
+      }
       this.setState(
-        {is_loading: false, is_finished: true, flow_list: json.data})
+        {is_loading: false, is_finished: true, flow_list: json.data, selected_flow: selected_flow}, () => {
+          this.forceUpdate()
+        })
     })
   }
 
@@ -273,8 +276,7 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     })
   }
 
-  onBlurTitle (e, props) {
-    const flow = props.flow
+  onBlurTitle (e, flow) {
     if (flow) {
       APIUtil.put('flows/' + flow.uuid, {
         label: e.target.value
@@ -307,13 +309,20 @@ export default class FlowList extends React.Component<FlowListProps, State> {
   }
 
   renderInspector () {
+    const {runArgs, updateRunArgs, flow, notify, dismissNotify} = this.props;
     return <FlowInspector
-      {...this.props}
-      onClickDeleteParam={(param) => this.onClickDeleteParam(param)}
-      onClickDuplicate={(uuid) => this.onClickDuplicate(uuid)}
-      onBlurTitle={(e, props) => this.onBlurTitle(e, props)}
-      onClickAddFlowParam={(e) => this.onClickAddFlowParam(e)}
-      onClickDelete={(e) => this.onClickDelete(e)} />
+        onClickDelete={(e) => this.onClickDelete(e)}
+        onClickDuplicate={(uuid) => this.onClickDuplicate(uuid)}
+        onBlurTitle={(e, props) => this.onBlurTitle(e, props)}
+        runArgs={runArgs}
+        updateRunArgs={updateRunArgs}
+        flow={this.state.selected_flow}
+        notify={notify}
+        dismissNotify={dismissNotify}/>
+
+        // FlowInspector側で未使用のため削除
+        // onClickDeleteParam={(param) => this.onClickDeleteParam(param)}
+        // onClickAddFlowParam={(e) => this.onClickAddFlowParam(e)}
   }
 
   renderAll () {
@@ -331,12 +340,11 @@ export default class FlowList extends React.Component<FlowListProps, State> {
   }
 
   render () {
-
     return <div className={style.inspector_list_container}>
       <div className={'container mt-40px'}>
         <Loader absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
-        <ModalManager {...this.props} />
+        <ModalManager/>
         <NotificationManager />
       </div>
     </div>

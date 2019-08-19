@@ -1,8 +1,7 @@
 //@flow
-import type { CommandStepModelProps } from './CommandStepModel'
-import CommandStepModel from './CommandStepModel'
-import type { CommandParamType } from '../../types'
-import SubflowCommandModel from '../Command/SubflowCommandModel'
+import type { CommandStepModelProps } from 'Model/Step/CommandStepModel'
+import { CommandStepModel, SubflowCommandModel } from 'Model/index'
+import type { CommandParamType } from 'Types/index'
 
 export type SubFlowStepModelProps = {
   ...CommandStepModelProps,

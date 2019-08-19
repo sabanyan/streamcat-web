@@ -1,8 +1,8 @@
 //@flow
-import BaseStepModel from './BaseStepModel'
-import BaseModelProps from './BaseStepModel'
-import type { CommandParamType } from '../../types'
-import CommandModel from '../Command/CommandModel'
+import { BaseStepModel } from 'Model/index'
+import BaseModelProps from 'Model/Step/BaseStepModel'
+import type { CommandParamType } from 'Types/index'
+import CommandModel from 'Model/Command/CommandModel'
 import validateJS from 'validate.js'
 import arrayMove from 'array-move'
 import Constants from '../../constants'
@@ -51,10 +51,17 @@ export default class CommandStepModel extends BaseStepModel {
       return
     }
     command.params.map((param) => {
-      // default値がある場合、設定する
-      if(param.default && !(this.args[param.name]) && !(this.args[param.name] === "")) {
-        this.args[param.name] = param.default
+      // 必須項目で空白（””）が許される場合
+      if(command.rules[param.name] 
+        && command.rules[param.name]["presence"]
+        && command.rules[param.name]["presence"]["allowEmpty"] === true
+        && !(this.args[param.name])) {
+          this.args[param.name] = ""
       }
+      // default値がある場合、設定する
+      if(param.default && typeof (this.args[param.name]) === "undefined" && !(this.args[param.name] === "")) {
+        this.args[param.name] = param.default
+      } 
     })
   }
 
@@ -186,6 +193,12 @@ export default class CommandStepModel extends BaseStepModel {
     this.invalid = {}
     //必須バリデーション
     let command: CommandModel = this.getCommand()
+    // commandが存在しない場合、フローが見えない事象があるため、
+    // commandが存在しなくても処理が止まらなくする
+    if (!command) {
+      return
+    }
+
     Object.keys(command.getParams()).map(key => {
       const param: CommandParamType = command.getParam(key)
       const value = this.args[key]

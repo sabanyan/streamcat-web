@@ -1,35 +1,57 @@
 //@flow
 import React from 'react'
-import Constants from '../../../../constants/index'
-import ModalUtil from '../../../../utils/ModalUtil'
-import SortUtil from '../../../../utils/SortUtil'
-import BaseInspector from '../BaseInspector/index'
+import Constants from 'Constants/index'
+import {
+  APIUtil,
+  ErrorUtil,
+  FlowUtil,
+  GraphUtil,
+  ModalUtil,
+  ReactDomUtil,
+  SortUtil,
+  StateUtil,
+  StringUtil
+} from 'Utils/index'
+import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
-import type { FlowEditorProps } from '../../../FlowEditorContainer/index'
-import Button from '../../Button/index'
-import DownloadButton from '../../Button/DownloadButton/index'
-import DataFrameStepModel from '../../../../model/Step/DataFrameStepModel'
-import CommandSelector from '../../CommandSelector/index'
-import FlowModel from '../../../../model/Flow/FlowModel'
-import Graph from '../../../../utils/Graph'
-import APIUtil from '../../../../utils/APIUtil'
-import type { DataFrameDetailType } from '../../../../types/index'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import CSVModel from '../../../../model/CSV/CSVModel'
-import Loader from '../../Loader/index'
-import FlowUtil from '../../../../utils/FlowUtil'
-import StateUtil from '../../../../utils/State'
-import StringUtil from '../../../../utils/StringUtil'
-import ErrorUtil from '../../../../utils/ErrorUtil'
-import Visualizer from '../../Visualizer'
-import ReactDomUtil from '../../../../utils/ReactDomUtil'
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { Button, DownloadButton } from 'Shared/Input'
+import { CSVModel, DataFrameStepModel } from 'Model/index'
+import { CommandSelector } from "FlowEditorContainer/Command";
+import FlowModel from 'Model/Flow/FlowModel'
+import type { DataFrameDetailType, MastType } from 'Types/index'
+import type { CSVModelProps } from 'Model/CSV/CSVModel'
+import { Loader } from 'Shared/Base'
+import { Visualizer } from 'Shared/Visualizer'
+import type { FlowModelProps } from "Model/Flow/FlowModel";
 
 type State = {
   dataFrameDetail?: DataFrameDetailType;
   loading: boolean;
 }
 
-class DataSourceInspector extends React.Component<FlowEditorProps, State> {
+type DataSourceInspectorProps = {
+  nodes: [];
+  notify: Function;
+  dismissNotify: Function;
+  selected_data_source_detail: DataFrameDetailType;
+  mast: MastType;
+  loadFlowJSON: Function;
+  deleteSteps: Function;
+  selectSteps: Function;
+  addHistory: Function;
+  flow: FlowModelProps;
+  updateFlow: Function;
+  selected_step_ids: [];
+  deleteCache: Function;
+  updateFlow: Function;
+  nodes: [];
+  addStep: Function;
+  updateStep: Function;
+  updateFlow: Function;
+}
+
+class DataSourceInspector extends React.Component<DataSourceInspectorProps, State> {
 
   loading: boolean = false
 
@@ -77,8 +99,8 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
         APIUtil.get(getFramesURL).then((response) => {
           this.props.dismissNotify(previewNotify.id)
           if (response.data.success) {
-            const uuid = response.data.lasts[0].uuid
-            const label = response.data.lasts[0].id
+            const uuid = response.data.name[0].uuid
+            const label = response.data.name[0].id
             this.previewFromUUID(uuid, label)
           } else {
             this.props.notify({
@@ -176,7 +198,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         let {selected_step_ids, nodes} = this.props
-        const selected_step = Graph.getNode(nodes, selected_step_ids[0])
+        const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
         this.props.deleteSteps([selected_step.id])
         this.props.selectSteps()
         this.props.addHistory()
@@ -224,7 +246,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
 
   getSelectedStep (): DataFrameStepModel {
     let {selected_step_ids, nodes} = this.props
-    return Graph.getNode(nodes, selected_step_ids[0])
+    return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
   onHide () {
@@ -317,6 +339,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
 //  }
 
   render () {
+    const {mast, addStep, selectSteps, selected_step_ids, addHistory} = this.props;
     let step_text
     let dataSource
     let preview
@@ -431,7 +454,14 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
           </div>
         </div>
         <div className={style.full_hr} />
-        <CommandSelector numberOfInput={1} {...this.props} />
+        <CommandSelector
+            mast={mast}
+            numberOfInput={1}
+            selected_step_ids={selected_step_ids}
+            addStep={addStep}
+            selectSteps={selectSteps}
+            addHistory={addHistory}
+        />
         {/*<div className={style.property_title}>*/}
         {/*作成したフロー*/}
         {/*</div>*/}
@@ -442,7 +472,7 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
     }
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector header={''} label={selected_step.label} {...this.props}
+    return <BaseInspector header={''} label={selected_step.label}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}>
       {content}
     </BaseInspector>
@@ -453,27 +483,6 @@ class DataSourceInspector extends React.Component<FlowEditorProps, State> {
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     newSelectedStep.label = e.target.value
     this.props.updateStep(newSelectedStep)
-    // 該当ステップがIn・OutPortの場合の処理
-    let flow: FlowModel = this.props.flow
-    const flowInChecked = (this.refs.flowIn) ? this.refs.flowIn.checked : null
-    const flowOutChecked = (this.refs.flowOut) ? this.refs.flowOut.checked : null
-    const id = selectedStep.id
-
-    if (flowInChecked || flowOutChecked) {
-      if (flowInChecked) {
-        let inPort = flow.getInPortWithId(id)
-        inPort.label = newSelectedStep.label
-        flow.setInPort(inPort)
-      }
-
-      if (flowOutChecked) {
-        let outPort = flow.getOutPortWithId(id)
-        outPort.label = newSelectedStep.label
-        flow.setOutPort(outPort)
-      }
-
-      this.props.updateFlow(flow)
-    }
   }
 
 }

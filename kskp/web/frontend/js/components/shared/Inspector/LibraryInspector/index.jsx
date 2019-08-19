@@ -2,16 +2,13 @@
 import React from 'react'
 import classnames from 'classnames'
 import style from '../style.scss'
-import BaseInspector from '../BaseInspector'
-import type { LibraryListDataType } from '../../../../types'
+import { BaseInspector, Resizer } from 'Shared/Inspector'
+import type { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
-import Constants from '../../../../constants'
-import Button from '../../Button'
-import Resizer from '../Resizer'
-import ModalUtil from '../../../../utils/ModalUtil'
-import APIUtil from '../../../../utils/APIUtil'
-import SortUtil from '../../../../utils/SortUtil'
-import Visualizer from '../../Visualizer'
+import Constants from 'Constants/index'
+import { Button } from 'Shared/Input'
+import { APIUtil, ModalUtil, SortUtil, HttpUtil  } from "Utils/index";
+import Visualizer from "Shared/Visualizer/Core";
 
 type Props = {
   visualizers: [];
@@ -72,6 +69,10 @@ class LibraryInspector extends React.Component<Props> {
     })
   }
 
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
+
   render () {
     const {data, onClickDelete, onClickApply} = this.props
     let content = null
@@ -90,7 +91,7 @@ class LibraryInspector extends React.Component<Props> {
       applyButton = <Button primary={true}
                             onClick={() => onClickApply(data)}>選択する</Button>
     }
-
+    let inspectorPreperty = (this.isDialog()) ? style.property_dialog : style.property
     if (data) {
       label = data.label
       content = <div>
@@ -123,13 +124,13 @@ class LibraryInspector extends React.Component<Props> {
           </div>
       </div>
       return <div className={classnames(style.property, style.in, 'inspector')}>
-        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+        <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
       </div>
     } else {
       return <Resizer>
-        <BaseInspector {...this.props} onBlurTitle={(e) => this.onBlurTitle(e)}>
+        <BaseInspector onBlurTitle={(e) => this.onBlurTitle(e)}>
           {content}
         </BaseInspector>
       </Resizer>

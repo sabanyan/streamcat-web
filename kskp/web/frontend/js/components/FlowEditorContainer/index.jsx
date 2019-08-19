@@ -26,13 +26,13 @@ import {
   updateDataFrameDetailAction,
   updateFlowAction,
   updateStepAction,
-} from '../../modules/application'
-import FlowEditor from './FlowEditor'
+} from 'Modules/application'
+import FlowEditor from 'FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
-import { FlowModelProps } from '../../model/Flow/FlowModel'
-import NavigationModel from '../../model/Navigation/NavigationModel'
-import type { DragType } from '../../types'
+import type { FlowModelProps } from 'Model/Flow/FlowModel'
+import NavigationModel from 'Model/Navigation/NavigationModel'
+import type { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 let FlowEditorContainer
@@ -40,10 +40,11 @@ let FlowEditorContainer
 export type FlowEditorProps = {
   projectId: string,
   projectName: string,
-  graph: { width: number, height: number, edges: any[], nodes: any[] };
-  mast: { commands: any[], subflows: any[], visualizers: any[] };
+  graph: GraphType;
+  mast: MastType;
   loadFlowJSON: Function;
   addMaster: Function;
+  addStep: Function;
   selectSteps: Function;
   addSelectStep: Function;
   cutSteps: Function;
@@ -102,94 +103,96 @@ export default FlowEditorContainer = connect(
   },
   dispatch => {
     return {
-      loadFlowJSON (...args) {
-        dispatch(loadFlowJSONAction(...args))
+      loadFlowJSON (context: {}) {
+        dispatch(loadFlowJSONAction(context))
       },
-      addMaster (...args) {
-        dispatch(addMasterAction(...args))
+      addMaster (context: {}) {
+        dispatch(addMasterAction(context))
       },
-      addStep (...args) {
-        dispatch(addStepAction(...args))
+      addStep (add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) {
+        dispatch(addStepAction(add_step,src_step_ids,dst_step_ids))
       },
-      updateStep (...args) {
-        dispatch(updateStepAction(...args))
+      updateStep (step: StepModelType) {
+        dispatch(updateStepAction(step))
       },
-      updateFlow (...args) {
-        dispatch(updateFlowAction(...args))
+      updateFlow (flow) {
+        dispatch(updateFlowAction(flow))
       },
-      selectSteps (...args) {
-        dispatch(selectStepsAction(...args))
+      selectSteps (selected_steps: []) {
+        dispatch(selectStepsAction(selected_steps))
       },
-      addSelectStep (...args) {
-        dispatch(addSelectStepAction(...args))
+      addSelectStep (selected_step_id: string) {
+        dispatch(addSelectStepAction(selected_step_id))
       },
-      deleteSelectStep (...args) {
-        dispatch(deleteSelectStepAction(...args))
+      deleteSelectStep (selected_step_id: string) {
+        dispatch(deleteSelectStepAction(selected_step_id))
       },
-      deleteSteps (...args) {
-        dispatch(deleteStepsAction(...args))
+      deleteSteps (step_ids: []) {
+        dispatch(deleteStepsAction(step_ids))
       },
-      deleteCache (...args) {
-        dispatch(deleteCacheAction(...args))
+      deleteCache (selected_step_id: string) {
+        dispatch(deleteCacheAction(selected_step_id))
       },
-      cutSteps (...args) {
-        dispatch(cutStepsAction(...args))
+      cutSteps (step_ids: []) {
+        dispatch(cutStepsAction(step_ids))
       },
-      copySteps (...args) {
-        dispatch(copyStepsAction(...args))
+      copySteps (step_ids: []) {
+        dispatch(copyStepsAction(step_ids))
       },
-      pasteSteps (...args) {
-        dispatch(pasteStepsAction(...args))
+      pasteSteps (paste_nodes: []) {
+        dispatch(pasteStepsAction(paste_nodes))
       },
-      addHistory (...args) {
-        dispatch(addHistoryAction(...args))
+      addHistory () {
+        dispatch(addHistoryAction())
       },
-      undo (...args) {
-        dispatch(undoAction(...args))
+      undo () {
+        dispatch(undoAction())
       },
-      redo (...args) {
-        dispatch(redoAction(...args))
+      redo () {
+        dispatch(redoAction())
       },
-      sortFlow (...args) {
-        dispatch(sortFlowAction(...args))
+      sortFlow () {
+        dispatch(sortFlowAction())
       },
-      executeFlow (...args) {
-        dispatch(executeFlowAction(...args))
+      executeFlow (flowid: string) {
+        // flowidは未使用
+        dispatch(executeFlowAction(flowid))
       },
-      selectTab (...args) {
-        dispatch(selectTabAction(...args))
+      selectTab (tab_id: string) {
+        dispatch(selectTabAction(tab_id))
       },
-      dragStart (...args) {
-        dispatch(dragStartAction(...args))
+      dragStart (x: number, y: number) {
+        dispatch(dragStartAction(x,y))
       },
-      dragging (...args) {
-        dispatch(draggingAction(...args))
+      dragging (x: number, y: number) {
+        dispatch(draggingAction(x,y))
       },
-      dragEnd (...args) {
-        dispatch(dragEndAction(...args))
+      dragEnd (x: number, y: number) {
+        dispatch(dragEndAction(x,y))
       },
-      setZoom (...args) {
-        dispatch(setZoomAction(...args))
+      setZoom ({offset, value}) {
+        dispatch(setZoomAction({offset, value}))
       },
-      updateDataFrameDetail (...args) {
-        dispatch(updateDataFrameDetailAction(...args))
+      updateDataFrameDetail (detail: DataFrameDetailType) {
+        dispatch(updateDataFrameDetailAction(detail))
       },
-      notify (...args) {
-        return dispatch(addNotification(...args))
+      notify (context:{}) {
+        return dispatch(addNotification(context))
       },
-      updateNotify (...args) {
-        return dispatch(updateNotification(...args))
+      updateNotify (context:{}) {
+        return dispatch(updateNotification(context))
       },
-      dismissNotify (...args) {
+      dismissNotify (id:string) {
         setTimeout(() => {
-          dispatch(removeNotification(...args))
+          dispatch(removeNotification(id))
         }, 1000)
       },
-      addNote (...args) {
-        dispatch(addNoteAction(...args))
+      addNote (x: number, y: number) {
+        dispatch(addNoteAction(x,y))
       },
-      sortStepSrcEnd (...args) {
-        dispatch(sortStepSrcEndAction(...args))
+      sortStepSrcEnd (detail: {}, mouseEvent: {}) {
+        // mouseEventは未使用
+        dispatch(sortStepSrcEndAction(detail,mouseEvent))
       }
     }
   },

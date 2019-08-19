@@ -1,13 +1,29 @@
 //@flow
 import * as React from 'react'
-import type { FlowEditorProps } from '../index'
 import style from './style.scss'
-import DetectUtil from '../../../utils/DetectUtil'
-import Graph from '../../../utils/Graph'
-import SubFlowStepModel from '../../../model/Step/SubFlowStepModel'
-import CommandStepModel from '../../../model/Step/CommandStepModel'
+import { GraphUtil, DetectUtil } from 'Utils/index'
+import { CommandStepModel, SubFlowStepModel } from 'Model/index'
+import type { DragType, HistoryType } from "Types/index";
 
-class PaperScroller extends React.Component<FlowEditorProps, State> {
+type PaperScrollerProps = {
+  pasteSteps: Function;
+  copySteps: Function;
+  deleteSteps: Function;
+  selectSteps: Function;
+  dragStart: Function;
+  dragging: Function;
+  dragEnd: Function;
+  addHistory: Function;
+  redo: Function;
+  undo: Function;
+  selected_step_ids:[];
+  nodes:[];
+  history: HistoryType;
+  drag: DragType;
+  children: React.Node;
+}
+
+class PaperScroller extends React.Component<PaperScrollerProps> {
   componentDidMount () {
   }
 
@@ -33,7 +49,7 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
   getCopyNodes (): string {
     const {selected_step_ids, nodes} = this.props
     return JSON.stringify(selected_step_ids.map((id) => {
-      return Graph.getNode(nodes, id)
+      return GraphUtil.getNode(nodes, id)
     }))
   }
 
@@ -46,7 +62,7 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
 
     if (selected_step_ids.length !== 1) return false
 
-    const targetNode = Graph.getNode(nodes, selected_step_ids[0])
+    const targetNode = GraphUtil.getNode(nodes, selected_step_ids[0])
 
     if (targetNode instanceof SubFlowStepModel || targetNode instanceof CommandStepModel) {
       return true
@@ -124,12 +140,18 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
 
   onMouseDown (e: { _dispatchListeners: { length: number }, pageX: number, pageY: number, shiftKey: boolean }) {
     if (this.isOnClickPaper(e) && !e.shiftKey) {
+      // 規定の要素からのカーソル座標値を求めるためには
+      // https://qiita.com/yukiB/items/cc533fbbf3bb8372a924
+      const target_rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - target_rect.left;
+      const y = e.clientY - target_rect.top;
+
       this.props.selectSteps()
-      this.props.dragStart(e.pageX, e.pageY)
+      this.props.dragStart(x, y)
       this.setState({
         coords: {
-          x: e.pageX,
-          y: e.pageY,
+          x: x,
+          y: y,
         },
       })
     }
@@ -137,14 +159,22 @@ class PaperScroller extends React.Component<FlowEditorProps, State> {
 
   onMouseMove (e: MouseEvent) {
     if (this.props.drag.start) {
-      this.props.dragging(e.pageX, e.pageY)
+      const target_rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - target_rect.left;
+      const y = e.clientY - target_rect.top;
+
+      this.props.dragging(x, y)
     }
   }
 
   onMouseUp (e: MouseEvent) {
     if (this.isOnClickPaper(e)) {
       if (this.props.drag.end) {
-        this.props.dragEnd(e.pageX, e.pageY)
+        const target_rect = e.currentTarget.getBoundingClientRect();
+        const x = e.clientX - target_rect.left;
+        const y = e.clientY - target_rect.top;
+
+        this.props.dragEnd(x, y)
       }
       this.props.addHistory()
     }

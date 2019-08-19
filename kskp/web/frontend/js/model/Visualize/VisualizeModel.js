@@ -1,5 +1,5 @@
 //@flow
-import Model from '../index'
+import Model from "Model/Core";
 
 export type VisualizeModelProps = {
   classification: string,

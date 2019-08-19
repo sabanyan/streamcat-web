@@ -3,7 +3,7 @@ import * as React from 'react'
 import style from '../style.scss'
 import classnames from 'classnames'
 
-type Props = {
+type BaseInspectorProps = {
   label?: string;
   subLabel?: string;
   header?: string;
@@ -13,7 +13,7 @@ type Props = {
   onHide?: Function;
 }
 
-class BaseInspector extends React.Component<Props> {
+class BaseInspector extends React.Component<BaseInspectorProps> {
 
   componentWillUnmount () {
     if (this.props.onBlurTitle && this.refs['title']) {
@@ -36,7 +36,8 @@ class BaseInspector extends React.Component<Props> {
     let labelContainer, subLabelContainer
     // FIXIT ロジクもう少し分かりやすく
     if (!disabled && label !== undefined) {
-      labelContainer = <input type="text" ref={'title'}
+      labelContainer = <input key={label}
+                              type="text" ref={'title'}
                               onBlur={(onBlurTitle) ? (e) => {onBlurTitle(e, this.props)} : null}
                               className={style.label}
                               defaultValue={label}

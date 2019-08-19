@@ -1,5 +1,5 @@
 //@flow
-import Constants from '../constants'
+import Constants from 'Constants/index'
 
 export default class ModalUtil {
   static getUDID () {
