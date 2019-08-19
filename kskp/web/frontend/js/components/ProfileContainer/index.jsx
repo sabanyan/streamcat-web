@@ -1,18 +1,11 @@
 //@flow
 import React from 'react'
 import style from './style.scss'
-import HttpUtil from '../../utils/HttpUtil'
-import ModalManager from '../shared/ModalManager'
-import Constants from '../../constants'
-import Loader from '../shared/Loader'
-import Button from '../shared/Button'
-import TextField from '../shared/TextField'
-
-import TabBar from '../shared/TabBar'
-import TabList from '../shared/TabBar/TabList'
-import Tab from '../shared/TabBar/Tab'
-import TabPanel from '../shared/TabBar/TabPanel'
-import Form from '../shared/Form'
+import { HttpUtil } from 'Utils/index'
+import { ModalManager } from 'Shared/Modal'
+import Constants from 'Constants/index'
+import { Form, Loader, Tab, TabBar, TabList, TabPanel } from 'Shared/Base'
+import { Button, TextField } from 'Shared/Input'
 /**
  * ======================================================
  *                      NOT USE REDUX

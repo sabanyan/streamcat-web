@@ -1,6 +1,6 @@
 import * as React from 'react'
-import ToolBarButton from '../ToolBarButton'
-import type { ToolBarButtonType } from '../../../../types'
+import { ToolBarButton } from 'FlowEditorContainer/ToolBar'
+import type { ToolBarButtonType } from 'Types/index'
 
 const Note = (props: ToolBarButtonType) => {
   const {onClick, children, disabled, icon} = props

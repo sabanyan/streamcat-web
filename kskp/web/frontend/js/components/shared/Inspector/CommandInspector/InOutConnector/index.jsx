@@ -1,22 +1,26 @@
 //@flow
 import * as React from 'react'
 import style from '../../style.scss'
-import DropDownList from '../../../DropDownList/index'
-import CommandStepModel from '../../../../../model/Step/CommandStepModel'
-import SubFlowStepModel from '../../../../../model/Step/SubFlowStepModel'
-import CommandModel from '../../../../../model/Command/CommandModel'
-import FlowUtil from '../../../../../utils/FlowUtil'
-import type { CommandPortType, StepModelType, SubFlowParamType } from '../../../../../types/index'
-import DataFrameStepModel from '../../../../../model/Step/DataFrameStepModel'
-import StateUtil from '../../../../../utils/State'
-import FlowModel from '../../../../../model/Flow/FlowModel'
-import Button from '../../../Button'
-import ModalUtil from '../../../../../utils/ModalUtil'
-import Constants from '../../../../../constants'
-import AddButton from '../../../AddButton'
-import {SortableContainer, SortableElement} from 'react-sortable-hoc';
+import { AddButton, DropDownList } from 'Shared/Input'
+import { CommandStepModel, DataFrameStepModel, FlowModel, SubFlowStepModel } from 'Model/index'
+import CommandModel from 'Model/Command/CommandModel'
+import { FlowUtil, ModalUtil, StateUtil } from 'Utils/index'
+import type { StepModelType } from 'Types/index'
+import Constants from 'Constants/index'
+import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 
-class InOutConnector extends React.Component{
+type InOutConnectorProps = {
+  selectedStep: Function;
+  updateStep: Function;
+  nodes: [];
+  selectedStep: Function;
+  sortStepSrcEnd: Function;
+  onChangeInEdge: Function;
+  onChangeOutEdge: Function;
+  selectedSubFlow: FlowModel;
+}
+
+class InOutConnector extends React.Component<InOutConnectorProps>{
 
   onChangeInEdge(e,data,label){
     const {selectedStep} = this.props
@@ -77,8 +81,7 @@ class InOutConnector extends React.Component{
   }
 
   render () {
-    const {nodes,onChangeInEdge,onChangeOutEdge,selectedStep,mast} = this.props
-    const {selected_in_edges,selected_out_edges} = this.props
+    const {nodes,selectedStep} = this.props
     //すべてのデータフレーム先をリスト化
 
     let dataFrameOnlyNodes:[DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
@@ -133,7 +136,7 @@ class InOutConnector extends React.Component{
       );
     });
 
-     
+
 
     let output = null
     if(selectedStep instanceof SubFlowStepModel) {

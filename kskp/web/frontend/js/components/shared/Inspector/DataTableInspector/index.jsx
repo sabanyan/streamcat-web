@@ -1,12 +1,11 @@
 //@flow
 import React from 'react'
 import style from '../style.scss'
-import DownloadButton from '../../Button/DownloadButton/index'
-import BaseInspector from '../BaseInspector'
-import HttpUtil from '../../../../utils/HttpUtil'
-import type { CSVModelProps } from '../../../../model/CSV/CSVModel'
-import CSVModel from '../../../../model/CSV/CSVModel'
-import StringUtil from '../../../../utils/StringUtil'
+import { DownloadButton } from 'Shared/Input'
+import { BaseInspector } from 'Shared/Inspector'
+import { HttpUtil, StringUtil } from 'Utils/index'
+import type { CSVModelProps } from 'Model/CSV/CSVModel'
+import { CSVModel } from 'Model/index'
 
 type Props = {
   uuid: string,
@@ -79,7 +78,7 @@ class DataTableInspector extends React.Component<Props> {
       </div>
     </div>
 
-    return <BaseInspector header={''} label={title} {...this.props}>
+    return <BaseInspector header={''} label={title}>
       {content}
     </BaseInspector>
   }
