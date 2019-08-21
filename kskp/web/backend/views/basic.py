@@ -69,3 +69,11 @@ def folders(folder_uuid):
 @login_required
 def profile():
     return render_template('profile.html', user_id=session['user_id'])
+
+# 開発用画面
+# TODO: 将来、見れる権限の検討が必要かも
+@mod.route('/dev', methods=['GET', 'PUT'])
+@login_required
+def dev():
+    return render_template('dev/dev.html')
+
