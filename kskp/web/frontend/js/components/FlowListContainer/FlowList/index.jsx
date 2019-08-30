@@ -227,8 +227,6 @@ export default class FlowList extends React.Component<FlowListProps, State> {
                    onChange={(e, validation) => this.onChangeFlowName(e,
                      validation)} />
         <div className={'mt-8px'} />
-        <FileUploader accept={['text/csv']} defaultLabel={'ファイルを選択してください'}
-                      onChangeFile={(e) => this.onChangeFile(e)} />
       </div>,
     })
   }
