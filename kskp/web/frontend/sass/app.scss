@@ -1,0 +1,114 @@
+@import "../../../node_modules/bootstrap/scss/bootstrap";
+@import "common";
+@import "list";
+@import "form";
+@import "nav";
+@import "modal";
+@import "margins";
+//@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
+//
+body {
+  padding-top: 64px; //navigation-header-height
+  &.dialog{
+    padding-top: 0;
+    .inspector{
+      top: 0;
+    }
+    .inspector-container{
+      height: 100%;
+    }
+  }
+}
+
+#project_list,#flow_list,#library_list{
+  .container{
+    min-width: 800px;
+  }
+}
+
+
+.container{
+  min-width: 1024px;
+}
+
+input::placeholder {
+  color: #cacaca!important;
+}
+
+.none-pointer-events{
+  pointer-events: none;
+  *{
+    pointer-events: none;
+  }
+}
+
+.kskp-list-link{
+  cursor: pointer;
+  color: $kskp-list-link-color!important;
+}
+
+.kskp-canvas-tool, .kskp-property {
+  position: fixed;
+}
+
+.kskp-visualization {
+  height: 100%;
+  .kskp-visualization-container {
+    height: 100%;
+    float: left;
+    width: calc(100% - 400px);
+    .kskp-visualization-header {
+      padding: 18px;
+      width: 100%;
+      height: 66px;
+      background: #fff;
+      .icon {
+
+      }
+      .title {
+        font-size: 18px;
+        font-weight: bold;
+        position: relative;
+        top: -6px;
+        padding-left: 16px;
+      }
+    }
+    .kskp-visualization-body {
+      padding: 16px;
+      width: 100%;
+      height: calc(100% - 66px);
+      background: #F4F4F4;
+    }
+  }
+  .kskp-visualization-property {
+    height: 100%;
+    width: 400px;
+    float: right;
+    background: #FFFFFF;
+    .kskp-visualization-property-header {
+      padding: 16px;
+    }
+    .kskp-visualization-property-body {
+      padding: 16px;
+    }
+  }
+}
+
+.s-tbl {
+	border-collapse: collapse;
+}
+.s-tbl th, .s-tbl td {
+	border: 1px solid #c0c0c0;
+  padding: 5px 10px;
+}
+.s-tbl tr:nth-child(odd) {
+	background: #e0e0e0;
+}
+
+body, html {
+  height: 100%;
+}
+
+#content, #visualization {
+  height: 100%;
+}

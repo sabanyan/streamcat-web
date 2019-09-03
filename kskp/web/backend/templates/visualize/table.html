@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="visualize">
+  <table class="s-tbl">
+  <TR>
+    {% for head in header %}
+    <TH style="white-space: nowrap;">{{ head }}</TH>
+    {% endfor %}
+  </TR>
+
+  {% for row in reader %}
+  <TR>
+    {% for datum in row %}
+    <TD style="white-space: nowrap;">{{ datum }}</TD>
+    {% endfor %}
+  </TR>
+  {% endfor %}
+
+  </table>
+</div>
+{% endblock %}

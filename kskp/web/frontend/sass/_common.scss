@@ -1,0 +1,117 @@
+//@import '../../node_modules/boiler_strap/sass/boilerstrap/variables/customize_variables';
+//$gray-100: #f8f9fa !default;
+//$gray-200: #e9ecef !default;
+//$gray-300: #dee2e6 !default;
+//$gray-400: #ced4da !default;
+//$gray-500: #adb5bd !default;
+//$gray-600: #868e96 !default;
+//$gray-700: #495057 !default;
+//$gray-800: #343a40 !default;
+//$gray-900: #212529 !default;
+//
+//$primary:       #6DCEFD !default;
+//$secondary:     #CBCCCB !default;
+//$success:       #8DC35D !default;
+//$info:          #8DC35D !default;
+//$warning:       #E8BC47 !default;
+//$danger:        #DE1117 !default;
+//$light:         $gray-100 !default;
+//$dark:          #2C4B6E;
+//
+//$link-color:    #5BC9FF !default;
+//
+//$border-radius-base: 2px !default;
+//$border-radius-large: 4px !default;
+//$border-radius-small: 1px !default;
+//
+//$input-border-color: #DDE1E7 !default;
+//
+//$font-family-sans-serif: "Roboto Slab", Garamond, "Times New Roman", "Hiragino Mincho Pro", "HiraMinProN-W3", "游明朝", "Yu Mincho", "游明朝体", "YuMincho", "ヒラギノ明朝 Pro W3", "HGS明朝E", "ＭＳ Ｐ明朝", "MS PMincho", serif !default;
+//$font-family-serif: Avenir, "Open Sans", "Helvetica Neue", Helvetica, Arial, Verdana, Roboto, "ヒラギノ角ゴ Pro W3", "Hiragino Kaku Gothic Pro", "游ゴシック", "Yu Gothic", "游ゴシック体", "YuGothic", "Meiryo UI", "メイリオ", Meiryo, "ＭＳ Ｐゴシック", "MS PGothic", sans-serif !default;
+//$font-family-base: $font-family-serif !default;
+//$line-height-base: 1.4142 !default;
+
+//@import '../../node_modules/boiler_strap/sass/boilerstrap/variables/variables';
+
+/**
+  独自の変数定義
+ */
+
+$kskp-text:#606C7A;
+$kskp-head:#4E5967;
+$kskp-dark-gray: #4E5967;
+$kskp-gray: #91A1B3;
+$kskp-light-gray: #aabcd1;
+$kskp-orange: #FC9E28;
+$kskp-light-orange: #FFF6E4;
+$kskp-danger: #DF635C;
+
+$kskp-primary: #00469D;
+$kskp-button-border: #879AB1;
+$kskp-empty-state-shadow: rgba(0,0,0,0.2);
+$kskp-button-shadow: rgba(0,0,0,0.2);
+$kskp-button-background: #fff;
+$kskp-toolbar-border: #879AB1;
+$kskp-toolbar-shadow: rgba(0,0,0,0.2);
+$kskp-paper-toolbar-background-color: rgba(255,255,255,0.6);
+
+$kskp-paper-background-color: #EDF1F3;
+
+$primary-link-color: #61B8E2;
+$primary-border-color: #61B8E2;
+
+$kskp-list-border-color: #E5E5E5;
+$kskp-list-dotted-border-color: $kskp-list-border-color;
+$kskp-list-icon-color: $kskp-gray;
+$kskp-list-accessory-color: $kskp-gray;
+$kskp-list-link-color: $primary-link-color;
+$kskp-list-link-background-color: #FFFFFF;
+
+$kskp-section-color: #9FACBA;
+$kskp-section-background-color: #F2F2F2;
+
+$kskp-operator-border-color: $kskp-gray;
+$kskp-operator-text-color: $kskp-gray;
+
+$kskp-form-background-color: #fff;
+$kskp-form-radio-indicator-color: #43AB4C;
+
+$kskp-property-action-border-color: $kskp-text;
+$kskp-property-action-text-color: $kskp-text;
+$kskp-property-overview-label-color: #AFC1D4;
+$kskp-property-overview-value-color: #AFC1D4;
+$kskp-property-background-color: #FFFFFF;
+$kskp-property-shadow: rgba(0,0,0,0.2);
+$kskp-property-border-color: #E8E8E8;
+$kskp-property-operator-border-color: $kskp-orange;
+$kskp-property-operator-background-color: $kskp-light-orange;
+$kskp-property-operator-icon-color: $kskp-orange;
+$kskp-property-operator-label-color: $kskp-text;
+$kskp-property-command-separator-background-color: #00469D;
+$kskp-property-command-separator-color: #fff;
+$kskp-property-command-hover-background-color: lighten($kskp-light-gray,20%);
+
+$kskp-nav-active-border-color: #63CFFD;
+$kskp-nav-background-color: #00469D;
+$kskp-preview-modal-header-background-color: #8296A8;
+$kskp-dropdown-list-label-border-color: #8296A8;
+$kskp-dropdown-list-label-color: #8296A8;
+$kskp-port-border-color: #B7C8D3;
+$kskp-port-label-color: darken(#B7C8D3,5%);
+//@import '../../node_modules/boiler_strap/sass/boilerstrap/mixins/customize_mixins';
+
+@import "tooltip";
+
+.user-select{
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+.user-not-select{
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
