@@ -221,6 +221,9 @@ def fetch_subflows():
         subflow_data['uuid'] = subflow.uuid
         # 親フォルダのラベルを取得する
         parent = Datum.find_parent(subflow.uuid)
+        # 親フォルダのないサブフローは取得しない
+        if parent is None:
+            continue
         if parent.type == Datum.FOLDER_TYPE:
             parent_label = Folder.convert_to_folder(parent).label
             subflow_data['projectName'] = parent_label
