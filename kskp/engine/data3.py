@@ -79,17 +79,16 @@ class NysolPythonSource(Source):
         self.stdout_param = stdout_param # str(出力文字列)
         self.multi_out = multi_out # bool
 
+    def make_mod(self, mod, args):
+        """
+        nysol_modを完成させる
+        """
+        return mod(args)
+
     @property
     def nysol_module(self):
         f = self.process_flow
-        f <<= self.mod(self.args)
-        # nm.cmdで2つ出力するコマンドは存在しないことを前提（現状は）
-        # 自作コマンドに柔軟性を持たせるなら、2つ出力することもありそうだが、
-        # nm.cmdで2つの出力を出すことは現状できなさそうなので、基本的には1つという仕様にする？（nysol_pythonがupdateすれば別
-        # 2つ出力をキャッチできたとして、3つ以上はどうなるんだという話になるので、
-        # やっぱり出力は基本的に1つに仕様を固定しておくべきかも。
-        # oとuの2つを出力できるmcmdが特殊ということにしておく？
-        # それならmulti_outを持っておきたくないが、ここでredirectする以上は仕方がない。
+        f <<= self.make_mod(self.mod, self.args)
         return f.redirect('u') if self.multi_out else f
 
     def save(self, stdout):
@@ -107,10 +106,7 @@ class NysolPythonSource(Source):
                 # という前提で書いているので、uを直接指定している。
                 # u以外で指定しなければいけない時がくることはあるのか・・・？
                 args.update({'u': stdout}) if self.multi_out else args.update({'o': stdout})
-
-            mod = self.mod(args)
-            self.process_flow <<= mod
-
+            self.process_flow <<= self.make_mod(self.mod, args)
             # 環境変数を設定する
             # os.environ['KG_TmpPath'] = '/home/kskp/kskp/data/tmp'
             # デフォルトの4倍で設定する
@@ -124,8 +120,8 @@ class NysolPythonSource(Source):
             # with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=res):
             #     self.process_flow.run()
             with io.StringIO() as messages_mem:
-                with RedirectStdStreams(stdout=open(os.devnull, 'w'), stderr=messages_mem):
-                    self.process_flow.run()
+                with RedirectStdStreams(stderr=messages_mem):
+                    self.process_flow.run(msg="on")
 
                     messages = messages_mem.getvalue()
 
@@ -148,6 +144,32 @@ class NysolPythonSource(Source):
     def dtor(self):
         pass
 
+class RunfuncSource(NysolPythonSource):
+    """
+    runfuncで使う用のSource
+    nysol_moduleを完成させるときに、関数とargsの2つを引数のとるので
+    それに対応するために作成
+    isinstanceで、NysolPythonSourceとして引っかかって欲しいので継承している。
+
+    正直NysolPythonSourceのサブクラスでいいかわからないが、あまり時間をかけたくないので楽しました。。。
+    """
+    def __init__(self, source_type, mod, args, process_flow=None, stdout_param=None, multi_out=False):
+        super().__init__(source_type, mod, args, process_flow, stdout_param, multi_out)
+
+    def make_mod(self, mod, args):
+        func = args.get('func')
+        return mod(func, args)
+
+    @property
+    def nysol_module(self):
+        f = self.process_flow
+        if self.multi_out:
+            f <<= self.make_mod(self.mod, self.args)
+            f.run()
+            f = nm.m2tee(i=self.args['u'])
+        else:
+            f <<= self.make_mod(self.mod, self.args)
+        return f
 
 class FileSource(Source):
     """

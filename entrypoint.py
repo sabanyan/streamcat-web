@@ -1,0 +1,3 @@
+import kskp
+
+kskp.main()

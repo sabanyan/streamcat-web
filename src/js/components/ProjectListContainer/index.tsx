@@ -1,5 +1,4 @@
-//@flow
-import React from 'react'
+import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
 import projectListStyle from 'Shared/ListRow/ProjectListRow/style.scss'
@@ -18,17 +17,38 @@ import { ProjectInspector } from 'Shared/Inspector'
  * ======================================================
  */
 
-export default class ProjectListContainer extends React.Component {
+export interface Props {
 
-  constructor (props) {
+}
+
+export interface State {
+  project_list: [],
+  keyword: string,
+  is_loading: boolean,
+  is_finished: boolean,
+  project_name: string,
+  selected_project: {} | null
+}
+
+export interface Project {
+  created_at: string
+  creator_id: number
+  creator_name: string
+  name: string;
+  uuid: string;
+}
+
+export default class ProjectListContainer extends React.Component<Props,State> {
+
+  constructor (props:Props) {
     super(props)
     this.state = {
       project_list: [],
       keyword: '',
       is_loading: false,
       is_finished: false,
-      project_name: null,
-      selected_project: null
+      project_name: "",
+      selected_project: {}
     }
   }
 
@@ -42,7 +62,7 @@ export default class ProjectListContainer extends React.Component {
       keyword: '',
       selected_project: null
     })
-    const target = document.querySelector('input[type=text]')
+    const target:HTMLInputElement | null = document.querySelector('input[type=text]')
     if (target) target.value = ''
   }
 
@@ -75,12 +95,12 @@ export default class ProjectListContainer extends React.Component {
 
   renderProjectList () {
     const {keyword} = this.state
-    return this.state.project_list.filter((project) => {
+    return this.state.project_list.filter((project:Project) => {
       if (keyword === '') {
         return true
       }
       return (project.name.indexOf(keyword) != -1) ? true : false
-    }).map((project) => {
+    }).map((project:Project) => {
       const selected = (this.state.selected_project === project)
       return <ProjectListRow key={project.uuid}
                           project={project}
@@ -93,9 +113,9 @@ export default class ProjectListContainer extends React.Component {
 
   renderEmptyState () {
     return <EmptyState
-      icon={'add'}
-      title={'プロジェクトがありません'}
-      description={'プロジェクトを作成すると、フローを作成することができるようになります。'}>
+        icon={'add'}
+        title={'プロジェクトがありません'}
+        description={'プロジェクトを作成すると、フローを作成することができるようになります。'}>
       <Button onClick={(e) => this.onClickNew(e)}>作成する</Button>
     </EmptyState>
   }
@@ -125,10 +145,10 @@ export default class ProjectListContainer extends React.Component {
     if (project) {
       APIUtil.put('projects/' + project.uuid, {
         'new_name': e.target.value
-      }).then((response) => {
+      }).then(() => {
         this.getProjectList()
       }, (error) => {
-
+        console.log(error)
       })
     }
   }
@@ -143,8 +163,7 @@ export default class ProjectListContainer extends React.Component {
           required: true,
           minlength: 5,
         }} placeholder={'プロジェクト名'}
-                   onChange={(e, validation) => this.onChangeProjectName(e,
-                     validation)} />
+                   onChange={(e) => this.onChangeProjectName(e)} />
       </div>,
     })
   }
@@ -152,7 +171,7 @@ export default class ProjectListContainer extends React.Component {
   onClickDelete (project_uuid) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        APIUtil.delete('projects/' + project_uuid).then((response) => {
+        APIUtil.delete('projects/' + project_uuid).then(() => {
           this.getProjectList()
           this.setState({selected_project: null})
           ModalUtil.closeModal(Constants.modal.CONFIRM)
