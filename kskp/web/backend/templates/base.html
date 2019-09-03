@@ -7,9 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('front_static.static', filename='iconfont/material-icons.css') }}" />
     <link rel="stylesheet" href="{{ url_for('front_static.static', filename='css/fontawesome.all.min.css') }}" />
     <title>{% block title %}{% endblock %}</title>
-    <script src="https://cdn.pydata.org/bokeh/release/bokeh-1.3.1.min.js"></script>
-    <script src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.3.1.min.js"></script>
-    <script src="https://cdn.pydata.org/bokeh/release/bokeh-tables-1.3.1.min.js"></script>
+    <script src="{{ url_for('front_static.static', filename='js/bokeh-1.3.1.min.js') }}"></script>
+    <script src="{{ url_for('front_static.static', filename='js/bokeh-tables-1.3.1.min.js') }}"></script>
+    <script src="{{ url_for('front_static.static', filename='js/bokeh-widgets-1.3.1.min.js') }}"></script>
     {% endblock %}
 </head>
 <body>
