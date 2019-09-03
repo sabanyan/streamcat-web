@@ -146,8 +146,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     let selected_step: StepModelType = this.getSelectedStep()
     let inputForm = []
     let subFlowLink, content, label, subLabel
-    let events = {onChange: (e) => this.onArgChange(e),
-                  onUpdate: (getNewStep) => this.update(getNewStep)}
+    let events = {}
     if (selected_step.type === Constants.step.type.command) {
       //指定されたステップの元コマンドを取得
       const command: CommandModel = selected_step.getCommand()
@@ -160,8 +159,13 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const params: [CommandParamType] = command.params
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
-
-      inputForm = <ParamsForm params={params} args={args} command={command} invalids={invalids} events={events} />
+      inputForm = <ParamsForm 
+                    params={params}
+                    args={args} 
+                    command={command} 
+                    invalids={invalids} 
+                    onChange={(e) => this.onArgChange(e)}
+                    onUpdate={(getNewStep) => this.update(getNewStep)} />
     } else if (selected_step.type === Constants.step.type.subflow) {
       const subflowCommand: SubflowCommandModel = selected_step.getCommand()
       label = selected_step.getLabel()
@@ -172,7 +176,13 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} events={events} />
+      inputForm = <ParamsForm 
+                    params={params} 
+                    args={args} 
+                    command={null} 
+                    invalids={invalids} 
+                    onChange={(e) => this.onArgChange(e)}
+                    onUpdate={(getNewStep) => this.update(getNewStep)} />
 
       subFlowLink = <a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
     }

@@ -6,6 +6,8 @@ import type { CommandParamType } from 'Types/index'
 import { AddButton, Button } from 'Shared/Input'
 import classnames from 'classnames'
 import style from './style.scss'
+import Constants from 'Constants/index'
+import { ParamBoolean, ParamNumber, ParamSelect, ParamString, ParamList } from 'Shared/Inspector'
 
 type Props = {
   params: [CommandParamType];//パラメーター定義
@@ -14,7 +16,8 @@ type Props = {
   command: CommandModel;
   invalids: {};
   onBuild: Function;
-  events: {};
+  onChange: Function;
+  onUpdate: Function;
 }
 
 export default class ParamsForm extends React.Component<Props> {
@@ -81,49 +84,29 @@ export default class ParamsForm extends React.Component<Props> {
     return null
   }
 
-  onClickAddParamRow(e, param, v) {
-    const { events } = this.props
- 
-    if (v && Array.isArray(v) && events && events.onUpdate) {
-      events.onUpdate((step) => {
-        if (step.args) {
-          v.push("")
-          step.args[param.name] = v
-        }
-        return step
-      })
-    }
+  onArgChange(e, param, argIndex?, elementIndex?) {
+    
   }
 
-  onChangeParamRow(e, param, index) {
-    const { events } = this.props
-    if (param && param.multipleRow && events && events.onUpdate) {
-      events.onUpdate((step) => {
-        if (step.args) {
-          step.args[param.name][index] = e.currentTarget.value
-        }
-        return step
-      })
+  // fixit：今後、Utilに書き換え検討
+  getParamElement(param, value) {
+    const {onUpdate} = this.props
+    let paramElement
+
+    switch(param.type) {
+      case Constants.param.type.list:
+        paramElement = <ParamList 
+                        param={param}
+                        arg={value}
+                        onUpdate={onUpdate}></ParamList>
+        break
     }
+
+    return paramElement
   }
 
-  onClickDeleteParamRow(param, v, index) {
-    const { events } = this.props
-    if (events && events.onUpdate) {
-      events.onUpdate((step) => {
-        if (step.args) {
-          step.args[param.name] = step.args[param.name].filter((value, filterIndex) => {
-            return (filterIndex !== index)
-          })
-          step.invalidMessage = [""]
-        }
-        return step
-      })
-    }
-  }
-  
   render () {
-    const {params, args, invalids, command, onBuild, events, headers} = this.props
+    const {params, args, invalids, command, onBuild, onChange, onUpdate, headers} = this.props
     let isPresence = false
 
     //パラメータフォームの作成
@@ -131,58 +114,32 @@ export default class ParamsForm extends React.Component<Props> {
 
       //入力値 or 初期値を取得する
       let value = this.getDefaultValueOrArgsValue(args, param)
+
       //必須
       if (command) {
         isPresence = this.isPresence(command, param)
       }
       //型に種別に応じたDOMElementの取得
-      let paramElement
-      //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
-      let paramElements = []
       let addButton = null
-      if (param.multipleRow) {
-        if (!value) {
-          value = [""]
-        }
-        if (!(Array.isArray(value))) {
-          value = [value]
-        }
-        value.forEach((v, index) => {
-          let newEvent = {
-            onChange : (e) => this.onChangeParamRow(e, param, index)
-          }
-          let noLabel = (index == 0) ? false : true
-          paramElement = <div key={"param" + index}>
-            <div  className={style.left}>
-              {ParamUtil.getParamElement(param, onBuild, newEvent, v, param.name, headers, noLabel)}
-            </div>
-            <div className={(index === 0) ? style.topRight : style.right}>
-              <Button danger={true} onClick={() => this.onClickDeleteParamRow(param, v, index)}>削除</Button>
-            </div>
-          </div>
-        
-          paramElements.push(paramElement)
-        })
-        addButton = <div className={style.addButton}>
-          <AddButton onClick={(e) => this.onClickAddParamRow(e, param, value)}></AddButton>
-        </div>
+      let paramElement
+      // fixit: 8~9月、要Refactor
+      if (param.type == Constants.param.type.list) {
+        paramElement = this.getParamElement(param,value)
       } else {
-        paramElement = ParamUtil.getParamElement(param, onBuild, events, value, param.name, headers) 
-        paramElements.push(paramElement)
+        paramElement = ParamUtil.getParamElement(param, onBuild, onChange, value, param.name, headers)
       }
+     
       //入力エラーメッセージ
       const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
 
-      return <React.Fragment>
-        <div key={index} className={classnames('mb-8px', {
+      return <div key={param.name + index} className={classnames('mb-8px', {
           [style.presence]: isPresence,
           [style.invalid]: (invalidMessageEelement)
         })}>
-          {paramElements}
+          {paramElement}
           {invalidMessageEelement}
           {addButton}
         </div>
-      </React.Fragment>
     })
 
     return paramsForm

@@ -30,7 +30,7 @@ export default class ParamSelect extends Param {
     const values = param.options.values
     const multiple = param.options.multiple
 
-    const options = labels.map((label, index) => {return <option value={values[index]}>{label}</option>})
+    const options = labels.map((label, index) => {return <option key={label+index} value={values[index]}>{label}</option>})
 
     return <div className={style.param}>
       <label className={style.label}>

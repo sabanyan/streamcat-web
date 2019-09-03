@@ -230,7 +230,7 @@ def get_type_of_how_to_cache(command_obj):
         # TODO: 存在しないコマンドが指定されるのは例外なので何か適切なエラー返さないと
         return 'error'
 
-    if isinstance(cmd_obj, NmCmd):
+    if isinstance(cmd_obj, NmCmd) or isinstance(cmd_obj, NmRunfunc):
         return 'unix_command'
     elif isinstance(cmd_obj, MCommandNew):
         return 'mcmd'
@@ -5287,6 +5287,168 @@ class Utf8ToCp932(NmCmd):
         self.name = 'Utf8ToCp932'
         self.description = 'Windowsファイル（Shift-JIS拡張 CP932、CRLF改行コード）へ変換したデータを出力する。'
 
+
+class NmRunfunc(MCommandNew):
+    """
+    runfunc使用コマンドのスーパークラス
+    ２つ以上のoutputのコマンドには対応していない
+    """
+    def __init__(self, func):
+        super().__init__(nm.runfunc)
+        self.func = self.make_wrapped_func(func)
+
+    def make_wrapped_func(self, original_func):
+        """
+        渡されてきた関数をKSKP独自コマンドとして使えるように、
+        ラップして新しい関数を作って返す
+
+        渡されてくる関数は(args, in_fd, out_fd)という引数の形式である必要がある
+        argsは画面から渡されるオプション情報のdict
+        in_fd/out_fdはそれぞれ、読込先/書込先のファイルディスクリプタ
+        """
+
+        def wrapped_func(args):
+            """
+            β版の仕様として、NysolPythonSourceにキーワード引数として渡すために、
+            本来はinputsとして入っている読込元(=入力元)情報をargsにコピーしている。
+
+            つまり、この関数が呼ばれた時のargsの中身は、
+            {
+                'i': <<入力先のパス(ない場合もある)>>,
+                'o': <<出力先のパス(ない場合もある)>>,
+                <<その他、'f'とか'c'とか、通常のnysol_pythonに渡すオプションたち>>
+            }
+            という感じになっている。
+
+            したがって、args['i']/args['o']があれば、それをパスとしてopenしてfdとする。
+            なければ、それぞれsys.stdin/sys.stdoutをfdとして使う。
+            """
+
+            if 'i' in args:
+                in_fd = open(args['i'], 'r')
+            else:
+                in_fd = sys.stdin
+
+            if 'o' in args:
+                out_fd = open(args['o'], 'w')
+            else:
+                out_fd = sys.stdout
+
+            original_func(args, in_fd, out_fd)            
+
+        return wrapped_func
+
+    def command_args(self, args, inputs):
+        from kskp.engine.commands.pcmd import selectrows
+
+        args_for_nysol = args
+        args_for_nysol.update({'func': self.func})
+        process_flow = None
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        return args_for_nysol, process_flow
+
+    def source(self, args, inputs, multi_out=False):
+        args, process_flow = self.command_args(args, inputs)
+        return RunfuncSource('csv', self.nysol_mod, args, process_flow, multi_out=multi_out)
+
+    def get_func(self):
+        """
+        for override
+        """
+        pass
+
+class NmRunfuncMultiOut(NmRunfunc):
+    """
+    runfunc使用コマンドのスーパークラス
+    ２つのoutputのコマンド用
+    """
+    def __init__(self, func):
+        super().__init__(func)
+        self.o_ports = [{'name': 'o', 'type': 'frame'}, {'name': 'u', 'type': 'frame'}]
+        self.u_file_path = str(uuid.uuid4()) + '.csv'
+        self.u_dir_path = 'kskp/data/tmp/'
+
+    def command_args(self, args, inputs):
+        from kskp.engine.commands.pcmd import selectrows
+
+        args_for_nysol = args
+        args_for_nysol.update({'func': self.func})
+        args_for_nysol.update({'u': self.u_dir_path + self.u_file_path})
+        process_flow = None
+
+        input_i = inputs['i']
+        if isinstance(input_i.source, PathFileSource):
+            input_i.command_to_file()
+            args_for_nysol.update({'i': input_i.source.fullpath.as_posix()})
+        elif isinstance(input_i.source, NysolPythonSource):
+            process_flow = input_i.source.nysol_module
+
+        return args_for_nysol, process_flow
+
+    def execute(self, args, inputs):
+        result = {}
+        for o_port in self.o_ports:
+            source = None
+            frame = None
+
+            # Source作成
+            if o_port['name'] == 'o':
+                source = self.source(args, inputs)
+                if source.args.get('u'): source.args.pop('u')
+            else:
+                source = self.source(args, inputs, multi_out = True)
+                source.args.update({'o': 'kskp/data/tmp/' + str(uuid.uuid4()) + '.csv'})
+
+            for input in inputs.values():
+                if isinstance(input.source, PathFileSource):
+                    source.deletable_uuids.append(input.uuid)
+                elif isinstance(input.source, UnixCommandSource) or \
+                     isinstance(input.source, PandasSource) or \
+                     isinstance(input.source, NysolPythonSource):
+                    source.deletable_uuids = input.source.deletable_uuids
+                    source.deletable_uuids.append(input.uuid)
+
+            # キャッシュ判定
+            if len(self.caches) > 0 and self.caches.get(o_port['name']) is not None:
+                frame = Frame(self.caches.get(o_port['name']) , source)
+                # frame.is_temp = False
+            else:
+                frame = Frame(str(uuid.uuid4()) , source)
+
+            result[o_port['name']] = frame
+
+        return result
+
+
+class One_output_runfunc(NmRunfunc):
+    """
+    1つの出力用のコマンド
+    """
+    def __init__(self, func):
+        super().__init__(func)
+
+class Two_output_runfunc(NmRunfuncMultiOut):
+    """
+    ２つのoutputのテストコマンド
+    不一致の方のパラメータのキー名は u にすること
+    """
+    def __init__(self, func):
+        super().__init__(func)
+
+# runfunc用の関数のimport
+from kskp.engine.commands.pcmd import (
+    test,
+    selectrows,    
+    plaintext2csv,
+)
+
 commands = {
     # MCDM
     'mcsv2arff': Mcsv2arff(),
@@ -5413,7 +5575,6 @@ commands = {
     # デモ専用コマンド
     'sml_modeling': SmlModeling(),
 
-    # O社向けコマンド
     'check_duplicate_rows': CheckDuplicateRows(),
     'merge_FS': MergeFS(),
     'merge_ibutsu': MergeIbutsu(),
@@ -5425,8 +5586,16 @@ commands = {
     'windows_cp932_csv_read': WinCp932Read(),
     'columns_to_rows': ColumnsToRows(),
     'groupby_columns': GroupbyColumns(),
-    'utf8_to_cp932': Utf8ToCp932()
+    'utf8_to_cp932': Utf8ToCp932(),
+
+    # runfunc用コマンド
+    # outputが１つのコマンド
+    'selectrows': One_output_runfunc(selectrows),    
+    'plaintext2csv': One_output_runfunc(plaintext2csv.main), 
+    # outputが２つのコマンド
+    'test': Two_output_runfunc(test),
 }
+
 internal_commands = {
     'csvtohtmltable': CsvToHtmlTableCommand(),
     'csvtolinegraph': CsvToLineGraphCommand(),
