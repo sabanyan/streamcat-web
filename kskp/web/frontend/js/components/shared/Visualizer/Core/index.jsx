@@ -63,17 +63,16 @@ export default class Visualizer extends React.Component<Props, State> {
 
     this.setState({is_loading: true})
     HttpUtil.post('visualizers?from=' + visualize.id, body).then((res) => {
-      this.setState({args: args, html: res.data, is_loading: false}, () => {
-        // 結果を保存
-        if (this.props.onSaveResult) {
-          const index = this.props.index
-          const result = {
-            html: this.state.html,
-            args: this.state.args
-          }
-          this.props.onSaveResult(index, result)
+      // 結果を保存
+      if (this.props.onSaveResult) {
+        const index = this.props.index
+        const result = {
+          html: res.data,
+          args: args
         }
-      })
+        this.props.onSaveResult(index, result)
+      }
+      this.setState({args: args, html: res.data, is_loading: false})
     }).catch((error) => {
       if (error) {
         this.setState({is_loading: false})
