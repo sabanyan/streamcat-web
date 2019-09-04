@@ -150,8 +150,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       visualizers = SortUtil.getSortedContents(visualizers)
       let contents = []
       for (const v of visualizers) {
-        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}}
-                                    headers={headers} />
+        const content = {frame_uuid:uuid, visualize:v, headers:headers}
         contents.push({title: v.label, content: content, parentProps: this.props})
       }
 
