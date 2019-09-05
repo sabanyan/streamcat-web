@@ -185,7 +185,11 @@ def update_flow(flow_uuid):
     # 同じキーが含まれる場合は新しいもので上書きされる
     flow = Flow.find_by_uuid(flow_uuid)
     flow_data = flow.flow_data
-    flow_label = flow.label
+    # フローエディタで指定するラベル名をフローのラベル名とする
+    if 'label' not in request.json or request.json['label'] == '':
+        flow_label = flow.label
+    else:
+        flow_label = request.json['label']
 
     flow_data.update(request.json)
     # 変更を保存する
