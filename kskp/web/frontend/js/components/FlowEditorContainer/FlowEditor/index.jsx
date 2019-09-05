@@ -190,7 +190,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
+    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
@@ -245,6 +245,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             notify={notify}
             dismissNotify={dismissNotify}
             selected_data_source_detail={selected_data_source_detail}
+            updateDataFrameDetail={updateDataFrameDetail}
             loadFlowJSON={loadFlowJSON}
             deleteSteps={deleteSteps}
             addHistory={addHistory}
