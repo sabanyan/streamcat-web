@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<script src="{{ url_for('front_static.static', filename='js/jquery-3.2.1.min.js') }}"></script>
+
+<style>
+    form {
+        width : 100%;
+        height : 800px;
+        text-align: center
+    }
+    .jsonBody {
+        width : 90%;
+        height : 70%;
+        
+    }
+
+    .inputUUID {
+        margin: 10px;
+        width: 700px;
+    }
+</style>
+<p>開発用のページです。</p>
+<p>主な機能</p>
+<p>・入力されたUUIDのフローに対してAPI(Get, Put)のリクエスト</p>
+<div>
+    <label>
+        <span>1. 読み込み、または修正対象を選択する : </span>
+        <select name="selectedTarget">
+            <option value="flow" selected>flow</option>
+        </select>
+    </label>
+    <label>
+        <span>2. FlowUUIDを入力後、GETボタンを押す : </span>
+        <input type="text" name="flowUUID" class="inputUUID">
+    </label>
+</div>
+
+<form action="/signup/confirm" method="POST">
+    <p>Json</p>
+    <textarea name="jsonTextArea" class="jsonBody" wrap="soft"></textarea>
+    <label>
+        <p>API 転送</p>
+        <input id="getButton" type="button" value="GET" onclick="APIHandler('GET')"> 
+        <input id="putButton" type="button" value="PUT" onclick="APIHandler('PUT')">
+    </label>
+</form>
+
+
+<script>
+const TARGET_FLOW = 'flow'
+const METHOD_GET = 'GET'
+const METHOD_PUT = 'PUT'
+
+let readInput
+let update
+$(document).ready(function() {
+    $.extend({
+        "put" : function (url, data, success, error) {
+            error = error || function() {}; 
+            return $.ajax({
+                "url" : url,
+                "data" : data,
+                "success" : success,
+                "type" : "PUT",
+                "cache" : false,
+                "error" : error,
+                "dataType" : "json",
+                "contentType": "application/json"
+            });
+	    }
+    });
+
+    readInput = () => {
+        return {
+            selectedTarget : $('select[name=selectedTarget').val(),
+            selectedAPIMethod : $('select[name=selectedAPIMethod').val(),
+            flowUUID : $('input[name=flowUUID').val(),
+            jsonBody : $('textarea[name=jsonTextArea').val()
+        }
+    }
+
+    update = (json) => {
+        $('textarea[name=jsonTextArea').val(json)
+    }
+
+    $('input#sendButton').on('click', function() {
+        const input = readInput()
+        switch(input.selectedTarget) {
+            case TARGET_FLOW    :
+                flowHandler(input.selectedAPIMethod);
+                break;
+            
+                default:
+                    break;
+        }
+    });
+})
+
+function APIHandler(method) {
+    const input = readInput()
+    if( window.confirm('更新します。よろしいですか？') ){
+		// OK
+        switch(method) {
+                case METHOD_GET    :
+                    if (input.selectedTarget === "flow") GET_FLOW();
+                    break;
+
+                case METHOD_PUT    :
+                    if (input.selectedTarget === "flow") PUT_FLOW();
+                    break;
+
+                    default:
+                        break;
+        }
+    }else{
+		// キャンセル
+	}
+}
+
+function GET_FLOW() {
+    const input = readInput()
+    const url = '/api/v0/flows/' + input.flowUUID
+
+    $.ajax({
+       url : url,
+       type: 'get',
+    }).done(function( data, textStatus, jqXHR ) {
+        //成功
+        if (data.data) {
+            console.log(data.data)
+            update(JSON.stringify(data.data, null,  "\t"))
+        }
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        //失敗
+        console.log(jqXHR, textStatus, errorThrown)
+        alert("エラーが起きました。（詳細はconsole.log参照）")
+    }).always(function( jqXHR, textStatus) {
+        //通信完了
+    });
+}
+
+function PUT_FLOW() {
+    const input = readInput()
+    const url = '/api/v0/flows/' + input.flowUUID
+    const putBody = input.jsonBody
+    console.log(putBody)
+    $.put(url, putBody, function(data, text_status) { 
+        // 成功した場合
+        if (data.data) {
+            console.log(data.data)
+            update(JSON.stringify(data.data, null,  "\t"))
+            alert("更新しました")
+        }
+    }, function(request, text_status, error_thrown) {
+        // 失敗した場合
+        console.log(request, text_status, error_thrown)
+        alert("エラーが起きました。（詳細はconsole.log参照）")
+    });
+}
+</script>
+{% endblock %}

@@ -557,6 +557,10 @@ export default class Library extends React.Component<Props, State> {
     e: SyntheticInputEvent<EventTarget>, selected_data: LibraryListDataType) {
 
     // Label の修正
+    if (!selected_data) {
+      return
+    }
+    
     const uuid = selected_data.uuid
     const libraryType = selected_data.type
 
