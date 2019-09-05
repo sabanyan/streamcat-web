@@ -160,6 +160,7 @@ const Constants = {
       frame: 'frame',
       folder: 'folder',
       database: 'database',
+      flow: 'flow',
       remoteFolder: 'remote-folder'
     },
     mode: {

@@ -493,6 +493,8 @@ export default class Library extends React.Component<Props, State> {
         return APIUtil.delete('databases/' + uuid)
       case Constants.library.type.remoteFolder:
         return APIUtil.delete('remote-folders/' + uuid)
+      case Constants.library.type.flow:
+        return APIUtil.delete('flows/' + uuid)
     }
   }
 
