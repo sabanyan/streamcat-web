@@ -100,7 +100,10 @@ export default class Library extends React.Component<Props, State> {
         const parentUUID = this.state.currentFolderUUID
         APIUtil.documentUpload(file, label, parentUUID).then((response) => {
           this.completeUploaded(response)
-          ModalUtil.closeModal(Constants.modal.ADD_DOCUMENT)
+          this.setState({document_name:null, upload_file: null}, () => {
+            ModalUtil.closeModal(Constants.modal.ADD_DOCUMENT)
+          })
+          
         }, () => {
           this.unhandledNotify()
         })
@@ -123,7 +126,9 @@ export default class Library extends React.Component<Props, State> {
         const parentUUID = this.state.currentFolderUUID
         APIUtil.frameUpload(file, fileName, label, parentUUID).then((response) => {
           this.completeUploaded(response)
-          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+          this.setState({frame_name:null, upload_file: null}, () => {
+            ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+          })
         }, () => {
           this.unhandledNotify('アップロードエラー')
         })
@@ -143,7 +148,10 @@ export default class Library extends React.Component<Props, State> {
         }
         APIUtil.post('folders', body).then((response) => {
           this.completeAddedFolder(response)
-          ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
+          this.setState({folder_name: null}, () => {
+            ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
+          })
+          
         }, () => {
           this.unhandledNotify('フォルダ作成エラー')
         })
@@ -493,6 +501,8 @@ export default class Library extends React.Component<Props, State> {
         return APIUtil.delete('databases/' + uuid)
       case Constants.library.type.remoteFolder:
         return APIUtil.delete('remote-folders/' + uuid)
+      case Constants.library.type.flow:
+        return APIUtil.delete('flows/' + uuid)
     }
   }
 
@@ -557,6 +567,10 @@ export default class Library extends React.Component<Props, State> {
     e: SyntheticInputEvent<EventTarget>, selected_data: LibraryListDataType) {
 
     // Label の修正
+    if (!selected_data) {
+      return
+    }
+    
     const uuid = selected_data.uuid
     const libraryType = selected_data.type
 
