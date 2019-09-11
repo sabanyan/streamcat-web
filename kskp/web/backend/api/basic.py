@@ -305,7 +305,10 @@ def download_file():
             return path
 
         try:
-            dir_path = Path(STORE_DIR) / 'frames/csv'
+            # dir_path = Path(STORE_DIR) / 'frames/csv'
+            # from kskp.store import Datum
+            dir_path = Path(os.path.dirname(Datum._to_abs_path(file_path)))
+
             file_name = os.path.basename(file_path)
 
             # 文字コードの指定があれば、その文字コードのファイルを作り、
