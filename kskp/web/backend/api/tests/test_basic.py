@@ -16,6 +16,10 @@ from kskp.web.backend import app
 from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR
 from kskp.web.backend.api.tests.utils import create_data
 
+# 
+# クラス毎にテストケースを実行してください。
+# このファイルのテストケースを一括で実行するとTearDown()でエラーになります！
+# 
 
 class ProjectApiTestCase(TestCaseBase):
 
@@ -67,7 +71,7 @@ class ProjectApiTestCase(TestCaseBase):
         self.assertIsNotNone(result['id'])
         self.assertEqual(result['parent_id'], root_flow_folder.id)
         self.assertIsNotNone(result['uuid'])
-        self.assertEqual(result['path'], 'kskp/store/frames/csv/フロー/プロジェクトです')
+        self.assertEqual(result['path'], (Path(root_flow_folder.path) / 'プロジェクトです').as_posix())
         self.assertEqual(result['type'], 'folder')
         self.assertEqual(json.loads(result['data']), {'label':project_name})
         self.assertEqual(result['creator'], user_id)

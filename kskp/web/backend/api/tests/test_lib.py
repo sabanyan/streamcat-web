@@ -7,7 +7,7 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import ss
 from kskp.store import StoreModel as Store
-from kskp.store import Datum, Frame, AwsS3
+from kskp.store import Datum, Frame, AwsS3, STORE_DIR
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
 class DataStoreTestCase(TestCaseBase):
@@ -133,7 +133,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
+        self.assertTrue(os.path.isdir(STORE_DIR.parent))
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
@@ -153,7 +153,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
+        self.assertTrue(os.path.isdir(STORE_DIR.parent))
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
@@ -183,13 +183,13 @@ class LibraryTestCase(TestCaseBase):
 
     def test_update_folder(self):
         # フォルダを作成する(POST /folders)
-        folder_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
 
         # 親フォルダがない場合はデフォルトパスとする
-        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
+        # self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
 
         # フレームのラベル名を変更する(PUT /frames)
-        result = self.put_uri('/api/v0/folders/' + folder_uuid, {'label' : ' NEW FOLDER '}, self.USER_ID)
+        result = self.put_uri('/api/v0/folders/' + root.uuid, {'label' : ' NEW FOLDER '}, self.USER_ID)
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -208,7 +208,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/store/frames/ NEW FOLDER '))
+        self.assertTrue(os.path.isdir((STORE_DIR.parent / ' NEW FOLDER ').as_posix()))
 
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
@@ -217,18 +217,18 @@ class LibraryTestCase(TestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER_ID)
         # folder_uuid = result['data']['uuid']
-        folder_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
 
         # アップロード用に一時ファイルを作成する
         import io
         f = (io.BytesIO(b"xyzxyzxyzxyz"), 'foo.csv')
 
         # フレームを作成する(POST /frames)
-        result = self.post_frames('新しいフレームファイル?', folder_uuid, f, self.USER_ID)
+        result = self.post_frames('新しいフレームファイル?', root.uuid, f, self.USER_ID)
         frame_uuid = result['data']['uuid']
 
         # フレームに対応するファイルが存在することを検証する
-        self.assertTrue(os.path.isfile('kskp/store/frames/csv/新しいフレームファイル?'))
+        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / '新しいフレームファイル?').as_posix()))
 
         # フレームを取得する(GET /frames)
         self.get_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
@@ -282,14 +282,14 @@ class LibraryTestCase(TestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER_ID)
         # folder_uuid = result['data']['uuid']
-        folder_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
 
         # アップロード用に一時ファイルを作成する
         import io
         f = (io.BytesIO(b"thisisaframefile"), 'aaa.csv')
 
         # フレームデータを作成する(POST /frames)
-        result = self.post_frames('フレームファイルAA', folder_uuid, f, self.USER_ID)
+        result = self.post_frames('フレームファイルAA', root.uuid, f, self.USER_ID)
         frame_uuid = result['data']['uuid']
 
         # フレームのラベル名を変更する(PUT /frames)
@@ -310,7 +310,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フレームに対応するファイルが存在することを検証する
-        self.assertTrue(os.path.isfile('kskp/store/frames/ NEW FOLDER / F L A M E-F I L E '))
+        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / ' F L A M E-F I L E ').as_posix()))
 
         # 中のファイルを削除する(DELETE /frames)
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
