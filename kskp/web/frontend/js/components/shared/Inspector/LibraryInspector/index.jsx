@@ -53,7 +53,7 @@ class LibraryInspector extends React.Component<Props> {
       sortedVisualizers = SortUtil.getSortedContents(sortedVisualizers)
       let contents = []
       for (const v of sortedVisualizers) {
-        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}} headers={headers}/>
+        const content = {frame_uuid:uuid, visualize:v, headers:headers}
         contents.push({title: v.label,content:content,parentProps:this.props})
       }
 

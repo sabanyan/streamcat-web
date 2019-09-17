@@ -35,7 +35,9 @@ export default class Visualizer extends React.Component<Props, State> {
   componentWillMount () {
     const result = this.props.result
     if (result) {
-      this.setState({})
+      this.setState({args: result.args, html: result.html, is_loading: false}, () => {
+        this.forceUpdate()
+      })
     } else if (this.props.visualize) {
       const args = this.getDefaultArgs(this.props.visualize.params)
       this.visualizeRequest(this.props.visualize, args)
@@ -61,16 +63,16 @@ export default class Visualizer extends React.Component<Props, State> {
 
     this.setState({is_loading: true})
     HttpUtil.post('visualizers?from=' + visualize.id, body).then((res) => {
-      this.setState({html: res.data, is_loading: false})
       // 結果を保存
       if (this.props.onSaveResult) {
         const index = this.props.index
         const result = {
-          html: this.state.html,
-          args: this.state.args
+          html: res.data,
+          args: args
         }
         this.props.onSaveResult(index, result)
       }
+      this.setState({args: args, html: res.data, is_loading: false})
     }).catch((error) => {
       if (error) {
         this.setState({is_loading: false})

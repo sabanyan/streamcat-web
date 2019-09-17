@@ -150,8 +150,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       visualizers = SortUtil.getSortedContents(visualizers)
       let contents = []
       for (const v of visualizers) {
-        const content = <Visualizer key={v.order + uuid} frame_uuid={uuid} visualize={v} params={{}}
-                                    headers={headers} />
+        const content = {frame_uuid:uuid, visualize:v, headers:headers}
         contents.push({title: v.label, content: content, parentProps: this.props})
       }
 
@@ -303,6 +302,16 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       }
       if (response.data.success) {
         this.props.deleteCache(id)
+        const selected_step = this.getSelectedStep()
+        if (selected_step.hasData()) {
+          //TODO 将来的にはページングなどの対応が必要
+          APIUtil.get('frames/' + selected_step.uuid + '?no_contents=1').then((response) => {
+            const json = response.data
+            this.props.updateDataFrameDetail(json.data)
+          })
+        } else {
+          this.props.updateDataFrameDetail({})
+        }
       }
     })
   }

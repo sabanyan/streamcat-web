@@ -89,8 +89,8 @@ RUN yum install -y nkf --enablerepo=epel
 
 USER kskp
 
-RUN git clone -b develop_refactor https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-flow-engine.git /home/kskp/kskp-flow-engine
-RUN git clone -b develop_refactor https://71325e784a7a08c905b5a3425d70aa391dc50753:x-oauth-basic@github.com/ksk-anl/kskp-data-store.git /home/kskp/kskp-data-store
+RUN git clone https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-flow-engine.git /home/kskp/kskp-flow-engine
+RUN git clone https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-data-store.git /home/kskp/kskp-data-store
 
 USER root
 
