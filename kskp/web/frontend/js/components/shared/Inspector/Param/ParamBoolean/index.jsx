@@ -18,6 +18,22 @@ export default class ParamBoolean extends Param {
     super(props)
   }
 
+  onChange(e) {
+    const props = this.props
+    if (!props) {
+      return
+    }
+
+    const {events, param} = props
+    const {onBooleanArgsChange, onChange} = events
+    if (onChange) {
+      onChange(e)
+    } else if (onBooleanArgsChange) {
+      const value = e.currentTarget.checked
+      onBooleanArgsChange(e, param,value)
+    }
+  }
+
   render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
     const {param, onBuild, events, defaultValue, refValue} = this.props
@@ -25,11 +41,10 @@ export default class ParamBoolean extends Param {
     if (onBuild) {
       inputRef = element => onBuild(param, element)
     }
-
     return <div className={style.param}>
       <label className={style.label}>
         <input name={param.name} className={style.checkbox} type="checkbox" ref={inputRef} checked={defaultValue}
-               paramtype={param.type}  {...events} />
+               paramtype={param.type} onChange={(e) => this.onChange(e)} />
         {param.label}
       </label>
     </div>
