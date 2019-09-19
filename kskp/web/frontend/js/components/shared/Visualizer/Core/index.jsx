@@ -118,12 +118,23 @@ export default class Visualizer extends React.Component<Props, State> {
     s.remove()
   }
 
+  onBoleanArgsChange(e, param, value) {
+    if (!this || !this.state || !param) {
+      return
+    }
+    let args = this.state.args
+    args[param.name] = value
+    this.setState({args:args})
+  }
+
   render () {
     const {visualize, headers, frame_uuid} = this.props
     const args = this.state.args
     const is_loading = this.state.is_loading
     const html = this.state.html
-
+    const events = {
+      onBooleanArgsChange : this.onBoleanArgsChange.bind(this)
+    }
     if (is_loading) {
       return <Loader center={true} visible={true} />
     }
@@ -132,7 +143,7 @@ export default class Visualizer extends React.Component<Props, State> {
         <EmptyState title={'表示することができません'} description={'条件を変更して反映ボタンを押してください'} icon={'cloud_off'} />
         <PreviewInspector key={'perview_' + visualize.label + frame_uuid} headers={headers}
                           onSave={(args) => this.onSave(args)} params={visualize.params} args={args}
-                          label={visualize.label} />
+                          label={visualize.label} events={events} />
       </div>
 
     }
@@ -142,7 +153,7 @@ export default class Visualizer extends React.Component<Props, State> {
         <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
       </div>
       <PreviewInspector headers={headers} onSave={(args) => this.onSave(args)} params={visualize.params} args={args}
-                        label={visualize.label} />
+                        label={visualize.label} events={events} />
     </div>
   }
 
