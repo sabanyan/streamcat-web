@@ -221,6 +221,9 @@ def fetch_subflows():
         subflow_data['uuid'] = subflow.uuid
         # 親フォルダのラベルを取得する
         parent = Datum.find_parent(subflow.uuid)
+        # 親フォルダのないサブフローは取得しない
+        if parent is None:
+            continue
         if parent.type == Datum.FOLDER_TYPE:
             parent_label = Folder.convert_to_folder(parent).label
             subflow_data['projectName'] = parent_label
@@ -302,7 +305,10 @@ def download_file():
             return path
 
         try:
-            dir_path = Path(STORE_DIR) / 'frames/csv'
+            # dir_path = Path(STORE_DIR) / 'frames/csv'
+            # from kskp.store import Datum
+            dir_path = Path(os.path.dirname(Datum._to_abs_path(file_path)))
+
             file_name = os.path.basename(file_path)
 
             # 文字コードの指定があれば、その文字コードのファイルを作り、

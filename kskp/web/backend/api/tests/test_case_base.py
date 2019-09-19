@@ -31,8 +31,8 @@ class TestCaseBase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         # ライブラリフォルダを削除する
-        from kskp.store import Datum
-        library_path = Path(app.root_path).parent.parent.parent / Datum.find_root().path
+        from kskp.store import Datum, STORE_DIR
+        library_path = STORE_DIR.parent / Datum.find_root().path
         import shutil
         shutil.rmtree(library_path.as_posix())
         # Sessionを閉じる
