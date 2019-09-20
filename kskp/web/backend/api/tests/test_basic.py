@@ -505,6 +505,48 @@ class FlowApiTestCase(TestCaseBase):
         # 新しい内容も入っている
         self.assertEqual(result['data']['b'], new_item)
 
+    def test_move_flow(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1C", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # フローを作成する(POST /flows)
+        data_source = {
+            "id": "i",
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": None,
+            "label": "test"
+        }
+        data1 = {
+            'project_uuid': root.uuid,
+            'name': 'フロー1C',
+            'datasource': data_source
+        }
+        result = self.post_uri('/api/v0/flows', data1, self.USER_ID)
+        flow_uuid = result['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/flows/%s' % flow_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : 'フロー1C'
+            ,'type'     : 'flow'
+            ,'creator'  : '開発者'
+        }
+
+        # PUT /frames apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /frames apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], flow_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
 
     def test_delete_flow(self):
         """

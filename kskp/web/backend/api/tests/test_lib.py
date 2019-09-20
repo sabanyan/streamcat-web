@@ -185,11 +185,12 @@ class LibraryTestCase(TestCaseBase):
         # フォルダを作成する(POST /folders)
         root = Datum.find_root()
 
-        # 親フォルダがない場合はデフォルトパスとする
-        # self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
+        # フォルダを作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": root.uuid}, self.USER_ID)
+        folder_uuid = result['data']['uuid']
 
         # フレームのラベル名を変更する(PUT /frames)
-        result = self.put_uri('/api/v0/folders/' + root.uuid, {'label' : ' NEW FOLDER '}, self.USER_ID)
+        result = self.put_uri('/api/v0/folders/' + folder_uuid, {'label' : ' NEW FOLDER '}, self.USER_ID)
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -208,10 +209,92 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir((STORE_DIR.parent / ' NEW FOLDER ').as_posix()))
+        self.assertTrue(os.path.isdir((STORE_DIR.parent / root.path / ' NEW FOLDER ').as_posix()))
 
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
+
+    def test_move_folder(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動元フォルダを作成する(POST /folders)
+        folder_src = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER_ID)
+        folder_src_uuid = folder_src['data']['uuid']
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ2", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/folders/%s' % folder_src_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '新しいフォルダ1'
+            ,'type'     : 'folder'
+            ,'creator'  : '開発者'
+        }
+
+        # PUT /folders apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], folder_src_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダに対応するディレクトリが存在することを検証する
+        self.assertTrue(os.path.isdir((STORE_DIR.parent / root.path / '新しいフォルダ2' / '新しいフォルダ1').as_posix()))
+
+    def test_move_folder2(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動元フォルダを作成する(POST /folders)
+        folder_src = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER_ID)
+        folder_src_uuid = folder_src['data']['uuid']
+
+        # 移動元フォルダ内にフォルダを作成する
+        folder_src_1 = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1_1", "parent": folder_src_uuid}, self.USER_ID)
+        folder_src_uuid_1 = folder_src_1['data']['uuid']
+
+        # 上記フォルダ内にフレームを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1', folder_src_uuid_1, f, self.USER_ID)
+        frame_uuid_1= result['data']['uuid']
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ2a", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/folders/%s' % folder_src_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '新しいフォルダ1'
+            ,'type'     : 'folder'
+            ,'creator'  : '開発者'
+        }
+
+        # PUT /folders apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], folder_src_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダに対応するディレクトリが存在することを検証する
+        dst_folder_path = STORE_DIR.parent /root.path / '新しいフォルダ2a'
+        self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1'))
+        self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1' / '新しいフォルダ1_1'))
+        self.assertTrue(os.path.isfile(dst_folder_path/ '新しいフォルダ1' / '新しいフォルダ1_1' / 'フレームファイル_1'))
 
     def test_create_get_frame(self):
         # フォルダを作成する(POST /folders)
@@ -317,6 +400,43 @@ class LibraryTestCase(TestCaseBase):
 
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
+
+    def test_move_frame(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # フレームを作成する(POST /frames)
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummyB.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1B', root.uuid, f, self.USER_ID)
+        frame_uuid = result['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/frames/%s' % frame_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : 'フレームファイル_1B'
+            ,'type'     : 'frame'
+            ,'creator'  : '開発者'
+        }
+
+        # PUT /frames apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /frames apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], frame_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダに対応するディレクトリが存在することを検証する
+        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / '新しいフォルダ1B' / 'フレームファイル_1B').as_posix()))
 
 class AwsS3TestCase(TestCaseBase):
     def test_create_get_awss3(self):
