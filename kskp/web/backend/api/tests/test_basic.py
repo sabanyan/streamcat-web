@@ -473,7 +473,6 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['success'], True)
         self.assertEqual(result['data'], [])
 
-
     def test_update_flow(self):
         """
         update_flow APIをテストする
@@ -505,6 +504,7 @@ class FlowApiTestCase(TestCaseBase):
         # 新しい内容も入っている
         self.assertEqual(result['data']['b'], new_item)
 
+
     def test_move_flow(self):
         # ルートを取得する
         root = Datum.find_root()
@@ -513,22 +513,10 @@ class FlowApiTestCase(TestCaseBase):
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1C", "parent": root.uuid}, self.USER_ID)
         folder_dst_uuid = folder_dst['data']['uuid']
 
-        # フローを作成する(POST /flows)
-        data_source = {
-            "id": "i",
-            "type": "frame",
-            "dataSource": "csv",
-            "uuid": None,
-            "label": "test"
-        }
-        data1 = {
-            'project_uuid': root.uuid,
-            'name': 'フロー1C',
-            'datasource': data_source
-        }
-        result = self.post_uri('/api/v0/flows', data1, self.USER_ID)
-        flow_uuid = result['data']['uuid']
-
+        # ユーザとプロジェクトを作る
+        with app.app_context():
+            flow_uuid = setUpFlow(self)
+            
         # 移動元から移動先へフォルダを移動する
         result = self.put_uri('/api/v0/flows/%s' % flow_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
 
@@ -543,7 +531,6 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['success'], True)
         # PUT /frames apiの戻り値が正しいことを検証する(createdAtは検証できない)
         self.assertEqual(result['data']['uuid'], flow_uuid)
-        self.assertEqual(result['data']['label'], expected_result['label'])
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
         self.assertNotEqual(result['data']['createdAt'], None)
