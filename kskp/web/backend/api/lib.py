@@ -148,11 +148,27 @@ def make_new_folder():
 @api_base
 def update_folder(folder_uuid):
     """
-    フォルダを修正する
+    フォルダのラベルを修正する、またはフォルダを移動する
     """
-    label = request.json['label']
-    modifier = session['user_id']
-    return Folder.update_data(folder_uuid, label, modifier)
+    if ('label'  not in request.json or request.json['label']  == '') and \
+       ('parent' not in request.json or request.json['parent'] == ''):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif 'label' in request.json and 'parent' in request.json:
+        raise Exception('labelとはparent属性は同時に指定できません')
+        
+    if 'label' in request.json and request.json['label'] != '':
+        # フォルダのラベルを修正する
+        label = request.json['label']
+        modifier = session['user_id']
+        return Folder.update_data(folder_uuid, label, modifier)
+    elif 'parent' in request.json and request.json['parent'] != '':
+        # フォルダを移動する
+        new_parent = request.json['parent']
+        modifier = session['user_id']
+        folder = Folder.find_by_uuid(folder_uuid)
+        return folder.move(new_parent, modifier)
+    else:
+        raise Exception('update_folder parameter error!')
 
 @mod.route('/folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api

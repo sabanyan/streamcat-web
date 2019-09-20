@@ -179,22 +179,37 @@ def fetch_flow(flow_uuid):
 @api_base
 def update_flow(flow_uuid):
     """
-    指定されたフローを更新する
+    フローのラベルを修正する、またはフローを移動する
     """
-    # 指定したフローの内容を渡されたdataの内容と結合する
-    # 同じキーが含まれる場合は新しいもので上書きされる
-    flow = Flow.find_by_uuid(flow_uuid)
-    flow_data = flow.flow_data
-    # フローエディタで指定するラベル名をフローのラベル名とする
-    if 'label' not in request.json or request.json['label'] == '':
-        flow_label = flow.label
-    else:
-        flow_label = request.json['label']
+    if ('label'  not in request.json or request.json['label']  == '') and \
+       ('parent' not in request.json or request.json['parent'] == ''):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif 'label' in request.json and 'parent' in request.json:
+        raise Exception('labelとはparent属性は同時に指定できません')
+        
+    if 'label' in request.json and request.json['label'] != '':
+        # 指定したフローの内容を渡されたdataの内容と結合する
+        # 同じキーが含まれる場合は新しいもので上書きされる
+        flow = Flow.find_by_uuid(flow_uuid)
+        flow_data = flow.flow_data
+        # フローエディタで指定するラベル名をフローのラベル名とする
+        if 'label' not in request.json or request.json['label'] == '':
+            flow_label = flow.label
+        else:
+            flow_label = request.json['label']
 
-    flow_data.update(request.json)
-    # 変更を保存する
-    Flow.update_data(flow_uuid, flow_label, flow_data, session['user_id'])
-    return flow_data
+        flow_data.update(request.json)
+        # 変更を保存する
+        return Flow.update_data(flow_uuid, flow_label, flow_data, session['user_id'])
+    elif 'parent' in request.json and request.json['parent'] != '':
+        # frameを移動する
+        new_parent = request.json['parent']
+        modifier = session['user_id']
+        flow = Flow.find_by_uuid(flow_uuid)
+        return flow.move(new_parent, modifier)
+    else:
+        raise Exception('update_flow parameter error!')
+
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
