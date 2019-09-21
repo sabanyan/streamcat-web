@@ -73,7 +73,7 @@ class ProjectApiTestCase(TestCaseBase):
         self.assertIsNotNone(result['uuid'])
         self.assertEqual(result['path'], (Path(root_flow_folder.path) / 'プロジェクトです').as_posix())
         self.assertEqual(result['type'], 'folder')
-        self.assertEqual(json.loads(result['data']), {'label':project_name})
+        self.assertEqual(result['label'], project_name)
         self.assertEqual(result['creator'], user_id)
         self.assertEqual(result['modifier'], user_id)
         self.assertIsNotNone(result['created_at'])
