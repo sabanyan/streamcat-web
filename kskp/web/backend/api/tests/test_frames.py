@@ -178,7 +178,7 @@ class FrameApiTestCase(TestCaseBase):
 
         frame = Library.load_frame(frame_uuid)
         # data列にラベルがあるらしい、requestのjsonがそのまま入っているのでjson.loadsする
-        self.assertEqual(json.loads(frame.data), data)
+        self.assertEqual(frame.data, data)
         self.assertEqual(frame.modifier, 100)
 
 
