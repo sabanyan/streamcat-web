@@ -344,7 +344,7 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['data']['description'],'')
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], 'user1')
         self.assertIsNotNone(result['data']['createdAt'])
 
 
@@ -369,7 +369,7 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['data']['description'],'')
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], 'user1')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # 同じフローを2回コピーする
@@ -381,7 +381,7 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result2['data']['description'],'')
         self.assertEqual(result2['data']['params'], [])
         self.assertEqual(result2['data']['ports'], [[],[]])
-        self.assertEqual(result2['data']['creator'], '開発者')
+        self.assertEqual(result2['data']['creator'], 'user1')
         self.assertIsNotNone(result2['data']['createdAt'])
 
 
@@ -524,7 +524,7 @@ class FlowApiTestCase(TestCaseBase):
         expected_result = {
              'label'    : 'フロー1C'
             ,'type'     : 'flow'
-            ,'creator'  : '開発者'
+            ,'creator'  : 'user1'
         }
 
         # PUT /frames apiが正常終了することを検証する

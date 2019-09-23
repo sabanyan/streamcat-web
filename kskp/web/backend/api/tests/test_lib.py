@@ -196,7 +196,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : ' NEW FOLDER '
             ,'type'     : 'folder'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -233,7 +233,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'folder'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -278,7 +278,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'folder'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -343,7 +343,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : '新しいフレームファイル!'
             ,'type'     : 'frame'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # Post /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -382,7 +382,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : ' F L A M E-F I L E '
             ,'type'     : 'frame'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -423,7 +423,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : 'フレームファイル_1B'
             ,'type'     : 'frame'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # PUT /frames apiが正常終了することを検証する
@@ -457,7 +457,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         awss3_uuid = result['data']['uuid']
@@ -474,7 +474,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertIsNotNone(result['data']['children'])
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
@@ -520,7 +520,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], '大根の卸金が欲しい')
         self.assertEqual(result['data']['bucket'], 'abc')
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
