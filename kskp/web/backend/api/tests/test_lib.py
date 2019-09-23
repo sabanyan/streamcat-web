@@ -440,7 +440,9 @@ class LibraryTestCase(TestCaseBase):
 
 class AwsS3TestCase(TestCaseBase):
     def test_create_get_awss3(self):
-        root_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
 
         # AWS S3フォルダを作成する(POST /awss3s)
         data = {
@@ -462,7 +464,7 @@ class AwsS3TestCase(TestCaseBase):
         awss3 = AwsS3.find_by_uuid(awss3_uuid)
 
         # S3マウント用フォルダが作成されていることを検証する
-        self.assertTrue(os.path.isdir(awss3.path))
+        self.assertTrue(os.path.isdir((STORE_DIR.parent / awss3.path).as_posix()))
 
         # S3フォルダを取得する(GET /awss3s)
         result = self.get_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
@@ -481,17 +483,19 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][1]['label'], 'Amazonに感謝')
 
         # S3フォルダがマウントされていることを検証する
-        self.assertTrue(Datum.is_mount(Path(awss3.path)))
+        self.assertTrue(Datum.is_mount(STORE_DIR.parent / awss3.path))
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = awss3.path
+        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_update_awss3(self):
-        root_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
         
         # AWS S3フォルダを作成する(POST /awss3s)
         data = {
@@ -520,14 +524,16 @@ class AwsS3TestCase(TestCaseBase):
         self.assertIsNotNone(result['data']['createdAt'])
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = awss3.path
+        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_remount_awss3(self):
-        root_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
 
         # AWS S3フォルダを作成する(POST /awss3s)
         data = {
@@ -545,7 +551,8 @@ class AwsS3TestCase(TestCaseBase):
         import subprocess
         import time
         time.sleep(1)
-        ret = subprocess.run(shlex.split('/sbin/umount kskp/store/frames/csv/Googleに感謝'), 
+        awss3_abs_path = (STORE_DIR.parent / root_path / 'Googleに感謝').as_posix()
+        ret = subprocess.run(shlex.split(f'/sbin/umount {awss3_abs_path}'), 
                              stdout=subprocess.PIPE, 
                              stderr=subprocess.PIPE)
         # umountコマンドの正常終了を確認する
@@ -555,17 +562,19 @@ class AwsS3TestCase(TestCaseBase):
         tmp_var = awss3.path
 
         # S3フォルダがマウントされていることを検証する
-        self.assertTrue(Datum.is_mount(Path(awss3.path)))     
+        self.assertTrue(Datum.is_mount(STORE_DIR.parent / awss3.path))
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = awss3.path
+        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_mount_under_mount_awss3(self):
-        root_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
 
         # AWS S3フォルダを作成する(POST /awss3s)
         data = {
@@ -588,7 +597,7 @@ class AwsS3TestCase(TestCaseBase):
             result = self.post_uri('/api/v0/awss3s', data, self.USER_ID)
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = awss3.path
+        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
