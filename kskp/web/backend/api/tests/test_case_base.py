@@ -57,7 +57,7 @@ class TestCaseBase(unittest.TestCase):
             class_name = self.__class__.__name__
             new_frame = Frame(frame_folder.uuid, 'テスト用フレーム(%s)' % class_name, None)
             new_frame.uuid = frame_uuid
-            new_frame.add_entry_from_path(frame_file_path)
+            new_frame.add_entry_from_path(Path(frame_file_path))
 
     def remove_frame_from_library(self, frame_uuid):
         """
