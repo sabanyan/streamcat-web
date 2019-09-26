@@ -63,7 +63,7 @@ def get_projects():
         proj['creator_id'] = folder.creator
         creator = get_user_by_id(folder.creator)
         proj['creator_name'] = creator['name'] if creator is not None else ''
-        proj['created_at'] = folder.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        proj['created_at'] = folder.created_at_str
         projects.append(proj)
 
     return projects
