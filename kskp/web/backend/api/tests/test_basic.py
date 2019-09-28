@@ -144,6 +144,9 @@ class ProjectApiTestCase(TestCaseBase):
 
 
 class FrameApiTestCase(TestCaseBase):
+
+    TESTDATA_DIR = STORE_DIR.parent / Library.load_root().path
+
     def setUp(self):
         app.testing = True
 
@@ -194,17 +197,50 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_uuid = create_data(Path(app.root_path) / 'api/tests/frames/test_data.csv', data)
+        frame_uuid = create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
 
         with app.test_client() as client:
             response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
 
         # ResourceWarningが出てしまうが、特に問題ありません。
-        assert True
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.mimetype, 'text/csv')
+        self.assertEqual(response.data,
+                         b'\xe9\xa1\xa7\xe5\xae\xa2,\xe6\x95\xb0\xe9\x87\x8f,'
+                         b'\xe9\x87\x91\xe9\xa1\x8d\nA,1,10\nA,2,20\nB,1,30\nB,3,40\nB,1,50\n')
 
         # 後片付け
         Library.delete_frame(frame_uuid)
 
+    def test_download_file_sjis(self):
+         # テストデータ作成
+        data = [
+            ['顧客', '数量', '金額'],
+            ['A', 1, 10],
+            ['A', 2, 20],
+            ['B', 1, 30],
+            ['B', 3, 40],
+            ['B', 1, 50]
+        ]
+        frame_uuid = create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
+
+        # S_JISに変換してダウンロードするため、環境変数を設定する
+        os.environ['FRAME_CHARACTER_CODE'] = 'cp932'
+
+        with app.test_client() as client:
+            response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
+
+        pprint.pprint(response.data)
+
+        # ResourceWarningが出てしまうが、特に問題ありません。
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.mimetype, 'text/csv')
+        self.assertEqual(response.data,
+                         b'\x8c\xda\x8bq,\x90\x94\x97\xca,\x8b\xe0\x8az\r\n'
+                         b'A,1,10\r\nA,2,20\r\nB,1,30\r\nB,3,40\r\nB,1,50\r\n')
+
+        # 後片付け
+        Library.delete_frame(frame_uuid)       
 
 class FlowApiTestCase(TestCaseBase):
 
