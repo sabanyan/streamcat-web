@@ -518,7 +518,9 @@ def create_data(file_path_obj, data=None):
     if data is not None:
         nm.mread(i=data, o=file_path_obj.as_posix()).run()
     
-    frame = Library.save_frame(root.uuid, str(uuid.uuid4()), Path(Datum._to_rel_path(file_path_obj)))
+    frame = Library.save_frame(root.uuid,
+                               str(uuid.uuid4()),
+                               Path(Datum._to_rel_path(file_path_obj.as_posix())))
     return frame.uuid
 
 def delete_flow(uuid):
