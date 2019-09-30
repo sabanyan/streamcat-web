@@ -16,6 +16,10 @@ from kskp.web.backend import app
 from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR
 from kskp.web.backend.api.tests.utils import create_data
 
+# 
+# クラス毎にテストケースを実行してください。
+# このファイルのテストケースを一括で実行するとTearDown()でエラーになります！
+# 
 
 class ProjectApiTestCase(TestCaseBase):
 
@@ -67,9 +71,9 @@ class ProjectApiTestCase(TestCaseBase):
         self.assertIsNotNone(result['id'])
         self.assertEqual(result['parent_id'], root_flow_folder.id)
         self.assertIsNotNone(result['uuid'])
-        self.assertEqual(result['path'], 'kskp/store/frames/csv/フロー/プロジェクトです')
+        self.assertEqual(result['path'], (Path(root_flow_folder.path) / 'プロジェクトです').as_posix())
         self.assertEqual(result['type'], 'folder')
-        self.assertEqual(json.loads(result['data']), {'label':project_name})
+        self.assertEqual(result['label'], project_name)
         self.assertEqual(result['creator'], user_id)
         self.assertEqual(result['modifier'], user_id)
         self.assertIsNotNone(result['created_at'])
@@ -140,6 +144,9 @@ class ProjectApiTestCase(TestCaseBase):
 
 
 class FrameApiTestCase(TestCaseBase):
+
+    TESTDATA_DIR = STORE_DIR.parent / Library.load_root().path
+
     def setUp(self):
         app.testing = True
 
@@ -190,17 +197,50 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_uuid = create_data(Path(app.root_path) / 'api/tests/frames/test_data.csv', data)
+        frame_uuid = create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
 
         with app.test_client() as client:
             response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
 
         # ResourceWarningが出てしまうが、特に問題ありません。
-        assert True
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.mimetype, 'text/csv')
+        self.assertEqual(response.data,
+                         b'\xe9\xa1\xa7\xe5\xae\xa2,\xe6\x95\xb0\xe9\x87\x8f,'
+                         b'\xe9\x87\x91\xe9\xa1\x8d\nA,1,10\nA,2,20\nB,1,30\nB,3,40\nB,1,50\n')
 
         # 後片付け
         Library.delete_frame(frame_uuid)
 
+    def test_download_file_sjis(self):
+         # テストデータ作成
+        data = [
+            ['顧客', '数量', '金額'],
+            ['A', 1, 10],
+            ['A', 2, 20],
+            ['B', 1, 30],
+            ['B', 3, 40],
+            ['B', 1, 50]
+        ]
+        frame_uuid = create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
+
+        # S_JISに変換してダウンロードするため、環境変数を設定する
+        os.environ['FRAME_CHARACTER_CODE'] = 'cp932'
+
+        with app.test_client() as client:
+            response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
+
+        pprint.pprint(response.data)
+
+        # ResourceWarningが出てしまうが、特に問題ありません。
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.mimetype, 'text/csv')
+        self.assertEqual(response.data,
+                         b'\x8c\xda\x8bq,\x90\x94\x97\xca,\x8b\xe0\x8az\r\n'
+                         b'A,1,10\r\nA,2,20\r\nB,1,30\r\nB,3,40\r\nB,1,50\r\n')
+
+        # 後片付け
+        Library.delete_frame(frame_uuid)       
 
 class FlowApiTestCase(TestCaseBase):
 
@@ -340,7 +380,7 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['data']['description'],'')
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], 'user1')
         self.assertIsNotNone(result['data']['createdAt'])
 
 
@@ -365,7 +405,7 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['data']['description'],'')
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], 'user1')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # 同じフローを2回コピーする
@@ -377,7 +417,7 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result2['data']['description'],'')
         self.assertEqual(result2['data']['params'], [])
         self.assertEqual(result2['data']['ports'], [[],[]])
-        self.assertEqual(result2['data']['creator'], '開発者')
+        self.assertEqual(result2['data']['creator'], 'user1')
         self.assertIsNotNone(result2['data']['createdAt'])
 
 
@@ -469,7 +509,6 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['success'], True)
         self.assertEqual(result['data'], [])
 
-
     def test_update_flow(self):
         """
         update_flow APIをテストする
@@ -501,6 +540,36 @@ class FlowApiTestCase(TestCaseBase):
         # 新しい内容も入っている
         self.assertEqual(result['data']['b'], new_item)
 
+
+    def test_move_flow(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1C", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # ユーザとプロジェクトを作る
+        with app.app_context():
+            flow_uuid = setUpFlow(self)
+            
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/flows/%s' % flow_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : 'フロー1C'
+            ,'type'     : 'flow'
+            ,'creator'  : 'user1'
+        }
+
+        # PUT /frames apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /frames apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], flow_uuid)
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
 
     def test_delete_flow(self):
         """

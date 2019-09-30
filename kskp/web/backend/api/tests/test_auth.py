@@ -45,10 +45,9 @@ class AuthTestCase(unittest.TestCase):
     #             self.assertEqual(template.name, 'login.html')
 
     def test_authenticate(self):
-        '''
+        """
         ユーザ認証のテスト
-        '''
-
+        """
         email = 'dev@kskp.io'
         name = '開発者'
         password = '1bdae10ff4532d6bd4c23d54cae62fa4f636b19cf5e3e8f83432a90aea99f33f'

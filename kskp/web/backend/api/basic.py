@@ -63,7 +63,7 @@ def get_projects():
         proj['creator_id'] = folder.creator
         creator = get_user_by_id(folder.creator)
         proj['creator_name'] = creator['name'] if creator is not None else ''
-        proj['created_at'] = folder.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        proj['created_at'] = folder.created_at_str
         projects.append(proj)
 
     return projects
@@ -179,22 +179,31 @@ def fetch_flow(flow_uuid):
 @api_base
 def update_flow(flow_uuid):
     """
-    指定されたフローを更新する
+    フローのラベルを修正する、またはフローを移動する
     """
-    # 指定したフローの内容を渡されたdataの内容と結合する
-    # 同じキーが含まれる場合は新しいもので上書きされる
-    flow = Flow.find_by_uuid(flow_uuid)
-    flow_data = flow.flow_data
-    # フローエディタで指定するラベル名をフローのラベル名とする
-    if 'label' not in request.json or request.json['label'] == '':
-        flow_label = flow.label
+    if 'parent' in request.json:
+        if 'label' in request.json:
+            raise Exception('labelとはparent属性は同時に指定できません')
+        # frameを移動する
+        new_parent = request.json['parent']
+        modifier = session['user_id']
+        flow = Flow.find_by_uuid(flow_uuid)
+        return flow.move(new_parent, modifier)
     else:
-        flow_label = request.json['label']
+        # 指定したフローの内容を渡されたdataの内容と結合する
+        # 同じキーが含まれる場合は新しいもので上書きされる
+        flow = Flow.find_by_uuid(flow_uuid)
+        flow_data = flow.flow_data
+        # フローエディタで指定するラベル名をフローのラベル名とする
+        if 'label' not in request.json or request.json['label'] == '':
+            flow_label = flow.label
+        else:
+            flow_label = request.json['label']
 
-    flow_data.update(request.json)
-    # 変更を保存する
-    Flow.update_data(flow_uuid, flow_label, flow_data, session['user_id'])
-    return flow_data
+        flow_data.update(request.json)
+        # 変更を保存する
+        Flow.update_data(flow_uuid, flow_label, flow_data, session['user_id'])
+        return flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
@@ -221,6 +230,9 @@ def fetch_subflows():
         subflow_data['uuid'] = subflow.uuid
         # 親フォルダのラベルを取得する
         parent = Datum.find_parent(subflow.uuid)
+        # 親フォルダのないサブフローは取得しない
+        if parent is None:
+            continue
         if parent.type == Datum.FOLDER_TYPE:
             parent_label = Folder.convert_to_folder(parent).label
             subflow_data['projectName'] = parent_label
@@ -270,64 +282,71 @@ def upload_frame(file, file_name):
 
 @mod.route('/files')
 def download_file():
-    # 現在typeは未使用
-    type = request.args.get('type')
+    # 現在type, labelは未使用
+    # type = request.args.get('type')
     frame_uuid = request.args.get('uuid')
-    label = request.args.get('label')
+    # label = request.args.get('label')
     ext = request.args.get('ext')
 
     frame = Frame.find_by_uuid(frame_uuid)
-    file_path = frame.path if frame is not None else None
+    frame_path = frame.path if frame is not None else None
+
+    if frame_path is None:
+        raise Exception('cannot find frame')
 
     character_code = os.getenv('FRAME_CHARACTER_CODE', 'utf-8')
+    frame_label = frame.label
 
-    if file_path is None:
-        raise Exception('cannot find frame')
-    else:
+    def make_tmpfile_for_charactor_change(origin_file_path, encoding='utf-8', newline='\n'):
+        """
+        文字コード変更用のファイルを作り、そのパスを返す
+        tmpなので、今の所はdbには登録しない。
+        デフォルトはutf-8の形式
+        """
+        root_path = Datum.find_root().path
+        tmp_dir = STORE_DIR.parent / root_path / 'download_tmp'
+        if not tmp_dir.exists():
+            tmp_dir.mkdir()
 
-        def make_tmpfile_for_charactor_change(origin_file_path, encoding='utf-8', newline='\n'):
-            """
-            文字コード変更用のファイルを作り、そのパスを返す
-            tmpなので、今の所はdbには登録しない。
-            デフォルトはutf-8の形式
-            """
-            tmp_dir = Path(STORE_DIR) / Path('download_tmp')
-            if not tmp_dir.exists():
-                tmp_dir.mkdir()
+        path = tmp_dir / str(uuid.uuid4())
+        with open(path, 'w', encoding=encoding, newline=newline) as f:
+            with open(origin_file_path, encoding='utf-8') as origin_f:
+                f.write(origin_f.read())
+        return path
 
-            path = tmp_dir / str(uuid.uuid4())
-            with open(path, 'w', encoding=encoding, newline=newline) as f:
-                with open(origin_file_path, encoding='utf-8') as origin_f:
-                    f.write(origin_f.read())
-            return path
+    try:
+        dir_path = (STORE_DIR.parent / frame_path.parent).as_posix()
+        frame_name = frame_path.name
 
-        try:
-            dir_path = Path(STORE_DIR) / 'frames/csv'
-            file_name = os.path.basename(file_path)
+        # 文字コードの指定があれば、その文字コードのファイルを作り、
+        # そのあとに出来上がったファイルをダウンロードする
+        #
+        # 2019/6/28現在の一時的な仕様は下記の通り
+        # 1. 現状kskp/data/tmpディレクトリに作成される
+        # 2. tmpディレクトリ内に作成されたファイルは残ったまま
+        # 3. 環境変数でダウンロードするファイルの文字コードを制御している
+        if character_code == 'cp932':
+            encode_file_path = make_tmpfile_for_charactor_change(STORE_DIR.parent / frame_path, 'cp932', '\r\n')
+            dir_path = os.path.dirname(encode_file_path.as_posix())
+            frame_name = os.path.basename(encode_file_path.as_posix())
 
-            # 文字コードの指定があれば、その文字コードのファイルを作り、
-            # そのあとに出来上がったファイルをダウンロードする
-            #
-            # 2019/6/28現在の一時的な仕様は下記の通り
-            # 1. 現状kskp/data/tmpディレクトリに作成される
-            # 2. tmpディレクトリ内に作成されたファイルは残ったまま
-            # 3. 環境変数でダウンロードするファイルの文字コードを制御している
-            if character_code == 'cp932':
-                encode_file_path = make_tmpfile_for_charactor_change(file_path, 'cp932', '\r\n')
-                dir_path = os.path.dirname(encode_file_path.as_posix())
-                file_name = os.path.basename(encode_file_path.as_posix())
+        # ダウンロードファイルの拡張子を設定する
+        if not frame_label.endswith('.csv') and not frame_label.endswith('.txt'):
+            if ext is None or ext == '':
+                frame_label = frame_label + '.csv'
+            else:
+                frame_label = frame_label + '.' + ext
 
-            return send_from_directory(dir_path, file_name, as_attachment = True,
-                                       attachment_filename = label, mimetype = 'text/csv')
-
-        except Exception as e:
-                import traceback
-                traceback.print_exc()
-                return jsonify({
-                                    'success': False,
-                                    'code': -1,
-                                    'message': str(e)
-                                })
+        return send_from_directory(dir_path, frame_name, as_attachment = True,
+                                    attachment_filename = frame_label, mimetype = 'text/csv')
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+                            'success': False,
+                            'code': -1,
+                            'message': str(e)
+                        })
 
 
 @mod.route('/caches', methods=['DELETE'])
