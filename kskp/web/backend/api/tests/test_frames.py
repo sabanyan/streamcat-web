@@ -6,32 +6,35 @@ import tempfile
 from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import (
+    Datum,
     Library,
     STORE_DIR
 )
+from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
 root = Library.load_root()
+root_path = root.path
 
-class FrameApoTestCase(unittest.TestCase):
+class FrameApiTestCase(TestCaseBase):
     """
     実行以外のFramesAPIのテストを行う
     """
 
-    def setUp(self):
-        app.config['SECRET_KEY'] = 'sekrit!'
-        self.client = app.test_client()
+    # def setUp(self):
+    #     app.config['SECRET_KEY'] = 'sekrit!'
+    #     self.client = app.test_client()
 
-    def tearDown(self):
-        pass
+    # def tearDown(self):
+    #     pass
 
-    @classmethod
-    def tearDownClass(cls):
-        """
-        rootFolderを削除する
-        """
-        from kskp.store import FLOW_FOLDER_UUID
-        Library.delete_folder(FLOW_FOLDER_UUID)
-        root.delete()
+    # @classmethod
+    # def tearDownClass(cls):
+    #     """
+    #     rootFolderを削除する
+    #     """
+    #     from kskp.store import FLOW_FOLDER_UUID
+    #     Library.delete_folder(FLOW_FOLDER_UUID)
+    #     root.delete()
 
     # @unittest.skip
     def test_fetch_frame(self):
@@ -50,14 +53,10 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 'user1'
-            response = client.get('/api/v0/frames/%s' % frame_uuid)
-        result = json.loads(response.get_data())
+        result = self.get_uri('/api/v0/frames/%s' % frame_uuid, self.USER_ID)
 
         self.assertEqual(result['success'], True)
         # 中身をテストしてもいいけど面倒臭いので、Noneじゃないことだけテストする
@@ -65,7 +64,6 @@ class FrameApoTestCase(unittest.TestCase):
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
-        Library.delete_frame(frame_uuid)
 
     # @unittest.skip
     def test_fetch_frame_no_contents(self):
@@ -85,14 +83,10 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 'user1'
-            response = client.get('/api/v0/frames/%s?no_contents=1' % frame_uuid)
-        result = json.loads(response.get_data())
+        result = self.get_uri('/api/v0/frames/%s?no_contents=1' % frame_uuid, self.USER_ID)
 
         self.assertEqual(result['success'], True)
         # no_contentsをつけているのでNoneのはず
@@ -100,7 +94,6 @@ class FrameApoTestCase(unittest.TestCase):
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
-        Library.delete_frame(frame_uuid)
 
     # @unittest.skip
     def test_fetch_frame_offset_and_limit(self):
@@ -120,14 +113,10 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 'user1'
-            response = client.get('/api/v0/frames/%s?offset=2&limit=1' % frame_uuid)
-        result = json.loads(response.get_data())
+        result = self.get_uri('/api/v0/frames/%s?offset=2&limit=1' % frame_uuid, self.USER_ID)
 
         correct = {'顧客': ['B'], '数量': ['1'], '金額\n': ['30\n']}
 
@@ -137,7 +126,6 @@ class FrameApoTestCase(unittest.TestCase):
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
-        Library.delete_frame(frame_uuid)
 
     # @unittest.skip
     def test_fetch_frame_header_only(self):
@@ -157,19 +145,14 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 'user1'
-            response = client.get('/api/v0/frames/%s?header_only=1' % frame_uuid)
-        result = json.loads(response.get_data())
+        result = self.get_uri('/api/v0/frames/%s?header_only=1' % frame_uuid, self.USER_ID)
 
         self.assertEqual(result['success'], True)
         self.assertEqual(result['data'], ['顧客', '数量', '金額'])
 
-        Library.delete_frame(frame_uuid)
 
     # @unittest.skip
     def test_update_frame(self):
@@ -185,27 +168,19 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
-        with app.test_client() as client:
-            data = {
-                'label': '変更後'
-            }
-            with client.session_transaction() as session:
-                session['user_id'] = 100
-            response = client.put('/api/v0/frames/%s' % frame_uuid,
-                                  content_type = 'application/json',
-                                  data = json.dumps(data))
+        data = {
+            'label': '変更後'
+        }
+        self.put_uri('/api/v0/frames/%s' % frame_uuid, data, 100)
 
-        result = json.loads(response.get_data())
-        self.assertEqual(result['success'], True)
         frame = Library.load_frame(frame_uuid)
         # data列にラベルがあるらしい、requestのjsonがそのまま入っているのでjson.loadsする
-        self.assertEqual(json.loads(frame.data), data)
+        self.assertEqual(frame.data, data)
         self.assertEqual(frame.modifier, 100)
 
-        Library.delete_frame(frame_uuid)
 
     # @unittest.skip
     def test_delete_frame(self):
@@ -221,15 +196,11 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = 100
-            response = client.delete('/api/v0/frames/%s' % frame_uuid)
+        result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER_ID)
 
-        result = json.loads(response.get_data())
         self.assertEqual(result['success'], True)
         # 消えているかのテスト
         self.assertIsNone(Library.load_frame(frame_uuid))
@@ -292,7 +263,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -308,30 +279,17 @@ class FrameApoTestCase(unittest.TestCase):
         flow_json['nodes'].append(input_node)
         flow = Library.save_flow(root.uuid, 'test', flow_json)
 
-        # フローを実行する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
+        # フローの実行
+        result = self.get_uri(f'/api/v0/frames?from={flow.uuid}', self.USER_ID)
+        lasts = result['lasts']
 
-            # apiを投げる
-            response = client.get(f'/api/v0/frames?from={flow.uuid}')
-            result = json.loads(response.get_data())
-            lasts = result['lasts']
+        # DBにframeデータが生成されているか
+        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
 
-            # テスト
-            self.assertEqual(result['success'], True)
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(lasts[0]['label'], '出力結果')
 
-            # DBにframeデータが生成されているか
-            self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
-
-            # ラベルとIDチェック
-            self.assertEqual(lasts[0]['id'], 'd1')
-            self.assertEqual(lasts[0]['label'], '出力結果')
-
-            # 後片付け
-            delete_flow(flow.uuid)
-            Library.delete_frame(frame_uuid)
-            Library.delete_frame(lasts[0]['uuid'])
 
     # @unittest.skip
     def test_flow_preview(self):
@@ -349,7 +307,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -391,33 +349,18 @@ class FrameApoTestCase(unittest.TestCase):
         flow_json['nodes'].append(add_cmd)
         flow_json['nodes'].append(add_datum)
         flow = Library.save_flow(root.uuid, 'test', flow_json)
-
+        
         # フローの実行
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                # まだ使っていない（login_required_apiを使っていないので）
-                session['user_id'] = '1'
+        result = self.get_uri(f'/api/v0/frames?from={flow.uuid}.d1', self.USER_ID)
+        lasts = result['lasts']
 
-            # apiを投げる
-            # プレビュー実行なのでfrom=flowuuid.datum_idの形式で投げている
-            response = client.get(f'/api/v0/frames?from={flow.uuid}.d1')
-            result = json.loads(response.get_data())
-            lasts = result['lasts']
+        # DBにframeデータが生成されているか
+        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
 
-            # テスト
-            self.assertEqual(result['success'], True)
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(lasts[0]['label'], '出力結果')
 
-            # DBにframeデータが生成されているか
-            self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
-
-            # ラベルとIDチェック
-            self.assertEqual(lasts[0]['id'], 'd1')
-            self.assertEqual(lasts[0]['label'], '出力結果')
-
-            # 後片付け
-            delete_flow(flow.uuid)
-            Library.delete_frame(frame_uuid)
-            Library.delete_frame(lasts[0]['uuid'])
 
     # @unittest.skip
     def test_flow_executea_add_inputs(self):
@@ -466,43 +409,25 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # フローの実行
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = '1'
+        data = {
+            'args': {},
+            'flow_uuid':flow.uuid,
+            'i': frame_uuid
+        }
+        result = self.post_uri('/api/v0/frames', data, self.USER_ID)
+        lasts = result['lasts']
 
-            # apiを投げる
-            data = {
-                'args': {},
-                'flow_uuid':flow.uuid,
-                'i': frame_uuid
-            }
+        # DBにframeデータが生成されているか
+        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
 
-            response = client.post('/api/v0/frames',
-                                   content_type='application/json',
-                                   data = json.dumps(data)
-                                   )
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(lasts[0]['label'], '出力結果')
 
-            result = json.loads(response.get_data())
-            lasts = result['lasts']
-
-            # テスト
-            self.assertEqual(result['success'], True)
-
-            # DBにframeデータが生成されているか
-            self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
-
-            # ラベルとIDチェック
-            self.assertEqual(lasts[0]['id'], 'd1')
-            self.assertEqual(lasts[0]['label'], '出力結果')
-
-            # 後片付け
-            delete_flow(flow.uuid)
-            Library.delete_frame(frame_uuid)
-            Library.delete_frame(lasts[0]['uuid'])
 
     # @unittest.skip
     def test_flow_executea_add_inputs_and_args(self):
@@ -559,7 +484,7 @@ class FrameApoTestCase(unittest.TestCase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / 'frames/csv/test_data.csv'
+        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         args = {
@@ -567,40 +492,20 @@ class FrameApoTestCase(unittest.TestCase):
         }
 
         # フローの実行
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                # まだ使っていない（login_required_apiを使っていないので）
-                session['user_id'] = '1'
+        data = {
+            'args': args,
+            'flow_uuid': flow.uuid,
+            'i': frame_uuid
+        }
+        result = self.post_uri('/api/v0/frames', data, self.USER_ID)
+        lasts = result['lasts']
 
-            # apiを投げる
-            data = {
-                'args': args,
-                'flow_uuid': flow.uuid,
-                'i': frame_uuid
-            }
+        # DBにframeデータが生成されているか
+        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
 
-            response = client.post('/api/v0/frames',
-                                   content_type='application/json',
-                                   data = json.dumps(data)
-                                   )
-
-            result = json.loads(response.get_data())
-            lasts = result['lasts']
-
-            # テスト
-            self.assertEqual(result['success'], True)
-
-            # DBにframeデータが生成されているか
-            self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
-
-            # ラベルとIDチェック
-            self.assertEqual(lasts[0]['id'], 'd1')
-            self.assertEqual(lasts[0]['label'], '出力結果')
-
-            # 後片付け
-            delete_flow(flow.uuid)
-            Library.delete_frame(frame_uuid)
-            Library.delete_frame(lasts[0]['uuid'])
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(lasts[0]['label'], '出力結果')
 
 def create_data(file_path_obj, data=None):
     """
@@ -612,7 +517,10 @@ def create_data(file_path_obj, data=None):
 
     if data is not None:
         nm.mread(i=data, o=file_path_obj.as_posix()).run()
-    frame = Library.save_frame(root.uuid, str(uuid.uuid4()), file_path_obj)
+    
+    frame = Library.save_frame(root.uuid,
+                               str(uuid.uuid4()),
+                               Path(Datum._to_rel_path(file_path_obj.as_posix())))
     return frame.uuid
 
 def delete_flow(uuid):

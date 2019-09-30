@@ -26,7 +26,7 @@ def fetch_frame(frame_uuid):
     no_contents = True if request.args.get('no_contents') else False
 
     frame = Frame.find_by_uuid(frame_uuid)
-    result = csv_to_frame(frame.path_obj, no_contents=no_contents, offset=offset, limit=limit)
+    result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
         # headerのカラムに改行コードが含まれているケースの対応
@@ -39,7 +39,7 @@ def fetch_frame(frame_uuid):
 
     return result
 
-def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
+def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
     """
     指定されたCSVファイルを読み込んで、
     詳細情報なども含んだframeを表すdictを返す
@@ -54,12 +54,12 @@ def csv_to_frame(file_path, no_contents=False, offset=0, limit=None):
     result = {}
 
     if not no_contents:
-        contents, number_of_lines = load_as_data_frame(file_path, offset, limit)
+        contents, number_of_lines = frame.load_as_data_frame(offset, limit)
         result['contents'] = contents
         # 行数は一旦返さないことにする
         # result['numberOfLines'] = number_of_lines
-    result['fileSize'] = os.path.getsize(file_path)
-    result['lastModifiedAt'] = format_time(file_path)
+    result['fileSize'] = frame.file_size
+    result['lastModifiedAt'] = frame.modified_at_str
 
     return result
 
@@ -144,12 +144,27 @@ def replace_column_name(column_list):
 @api_base
 def update_frame(frame_uuid):
     """
-    指定したframeのラベル名を変更する
+    frameのラベルを修正する、またはframeを移動する
     """
-    label = request.json['label']
-    modifier = session['user_id']
-    return Frame.update_data(frame_uuid, label, modifier)
-
+    if ('label'  not in request.json or request.json['label']  == '') and \
+       ('parent' not in request.json or request.json['parent'] == ''):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif 'label' in request.json and 'parent' in request.json:
+        raise Exception('labelとはparent属性は同時に指定できません')
+        
+    if 'label' in request.json and request.json['label'] != '':
+        # frameのラベルを修正する
+        label = request.json['label']
+        modifier = session['user_id']
+        return Frame.update_data(frame_uuid, label, modifier)
+    elif 'parent' in request.json and request.json['parent'] != '':
+        # frameを移動する
+        new_parent = request.json['parent']
+        modifier = session['user_id']
+        frame = Frame.find_by_uuid(frame_uuid)
+        return frame.move(new_parent, modifier)
+    else:
+        raise Exception('update_frame parameter error!')
 
 @mod.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api

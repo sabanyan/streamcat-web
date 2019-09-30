@@ -7,7 +7,7 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import ss
 from kskp.store import StoreModel as Store
-from kskp.store import Datum, Frame, AwsS3
+from kskp.store import Datum, Frame, AwsS3, STORE_DIR
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
 class DataStoreTestCase(TestCaseBase):
@@ -133,7 +133,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
+        self.assertTrue(os.path.isdir(STORE_DIR.parent))
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
@@ -153,7 +153,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
+        self.assertTrue(os.path.isdir(STORE_DIR.parent))
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
@@ -183,10 +183,11 @@ class LibraryTestCase(TestCaseBase):
 
     def test_update_folder(self):
         # フォルダを作成する(POST /folders)
-        folder_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
 
-        # 親フォルダがない場合はデフォルトパスとする
-        self.assertTrue(os.path.isdir('kskp/store/frames/csv'))
+        # フォルダを作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": root.uuid}, self.USER_ID)
+        folder_uuid = result['data']['uuid']
 
         # フレームのラベル名を変更する(PUT /frames)
         result = self.put_uri('/api/v0/folders/' + folder_uuid, {'label' : ' NEW FOLDER '}, self.USER_ID)
@@ -195,7 +196,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : ' NEW FOLDER '
             ,'type'     : 'folder'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -208,27 +209,109 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir('kskp/store/frames/ NEW FOLDER '))
+        self.assertTrue(os.path.isdir((STORE_DIR.parent / root.path / ' NEW FOLDER ').as_posix()))
 
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
+
+    def test_move_folder(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動元フォルダを作成する(POST /folders)
+        folder_src = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER_ID)
+        folder_src_uuid = folder_src['data']['uuid']
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ2", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/folders/%s' % folder_src_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '新しいフォルダ1'
+            ,'type'     : 'folder'
+            ,'creator'  : '管理者'
+        }
+
+        # PUT /folders apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], folder_src_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダに対応するディレクトリが存在することを検証する
+        self.assertTrue(os.path.isdir((STORE_DIR.parent / root.path / '新しいフォルダ2' / '新しいフォルダ1').as_posix()))
+
+    def test_move_folder2(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動元フォルダを作成する(POST /folders)
+        folder_src = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER_ID)
+        folder_src_uuid = folder_src['data']['uuid']
+
+        # 移動元フォルダ内にフォルダを作成する
+        folder_src_1 = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1_1", "parent": folder_src_uuid}, self.USER_ID)
+        folder_src_uuid_1 = folder_src_1['data']['uuid']
+
+        # 上記フォルダ内にフレームを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1', folder_src_uuid_1, f, self.USER_ID)
+        frame_uuid_1= result['data']['uuid']
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ2a", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/folders/%s' % folder_src_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '新しいフォルダ1'
+            ,'type'     : 'folder'
+            ,'creator'  : '管理者'
+        }
+
+        # PUT /folders apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], folder_src_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダに対応するディレクトリが存在することを検証する
+        dst_folder_path = STORE_DIR.parent /root.path / '新しいフォルダ2a'
+        self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1'))
+        self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1' / '新しいフォルダ1_1'))
+        self.assertTrue(os.path.isfile(dst_folder_path/ '新しいフォルダ1' / '新しいフォルダ1_1' / 'フレームファイル_1'))
 
     def test_create_get_frame(self):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER_ID)
         # folder_uuid = result['data']['uuid']
-        folder_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
 
         # アップロード用に一時ファイルを作成する
         import io
         f = (io.BytesIO(b"xyzxyzxyzxyz"), 'foo.csv')
 
         # フレームを作成する(POST /frames)
-        result = self.post_frames('新しいフレームファイル?', folder_uuid, f, self.USER_ID)
+        result = self.post_frames('新しいフレームファイル?', root.uuid, f, self.USER_ID)
         frame_uuid = result['data']['uuid']
 
         # フレームに対応するファイルが存在することを検証する
-        self.assertTrue(os.path.isfile('kskp/store/frames/csv/新しいフレームファイル?'))
+        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / '新しいフレームファイル?').as_posix()))
 
         # フレームを取得する(GET /frames)
         self.get_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
@@ -260,7 +343,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : '新しいフレームファイル!'
             ,'type'     : 'frame'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # Post /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -282,14 +365,14 @@ class LibraryTestCase(TestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER_ID)
         # folder_uuid = result['data']['uuid']
-        folder_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
 
         # アップロード用に一時ファイルを作成する
         import io
         f = (io.BytesIO(b"thisisaframefile"), 'aaa.csv')
 
         # フレームデータを作成する(POST /frames)
-        result = self.post_frames('フレームファイルAA', folder_uuid, f, self.USER_ID)
+        result = self.post_frames('フレームファイルAA', root.uuid, f, self.USER_ID)
         frame_uuid = result['data']['uuid']
 
         # フレームのラベル名を変更する(PUT /frames)
@@ -299,7 +382,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : ' F L A M E-F I L E '
             ,'type'     : 'frame'
-            ,'creator'  : '開発者'
+            ,'creator'  : '管理者'
         }
 
         # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -310,7 +393,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フレームに対応するファイルが存在することを検証する
-        self.assertTrue(os.path.isfile('kskp/store/frames/ NEW FOLDER / F L A M E-F I L E '))
+        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / ' F L A M E-F I L E ').as_posix()))
 
         # 中のファイルを削除する(DELETE /frames)
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
@@ -318,9 +401,48 @@ class LibraryTestCase(TestCaseBase):
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
+    def test_move_frame(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # フレームを作成する(POST /frames)
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummyB.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1B', root.uuid, f, self.USER_ID)
+        frame_uuid = result['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/frames/%s' % frame_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : 'フレームファイル_1B'
+            ,'type'     : 'frame'
+            ,'creator'  : '管理者'
+        }
+
+        # PUT /frames apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /frames apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], frame_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダに対応するディレクトリが存在することを検証する
+        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / '新しいフォルダ1B' / 'フレームファイル_1B').as_posix()))
+
 class AwsS3TestCase(TestCaseBase):
     def test_create_get_awss3(self):
-        root_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
 
         # AWS S3フォルダを作成する(POST /awss3s)
         data = {
@@ -335,14 +457,14 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         awss3_uuid = result['data']['uuid']
         awss3 = AwsS3.find_by_uuid(awss3_uuid)
 
         # S3マウント用フォルダが作成されていることを検証する
-        self.assertTrue(os.path.isdir(awss3.path))
+        self.assertTrue(os.path.isdir((STORE_DIR.parent / awss3.path).as_posix()))
 
         # S3フォルダを取得する(GET /awss3s)
         result = self.get_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
@@ -352,7 +474,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertIsNotNone(result['data']['children'])
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
@@ -361,17 +483,19 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][1]['label'], 'Amazonに感謝')
 
         # S3フォルダがマウントされていることを検証する
-        self.assertTrue(Datum.is_mount(Path(awss3.path)))
+        self.assertTrue(Datum.is_mount(STORE_DIR.parent / awss3.path))
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = awss3.path
+        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_update_awss3(self):
-        root_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
         
         # AWS S3フォルダを作成する(POST /awss3s)
         data = {
@@ -396,18 +520,20 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], '大根の卸金が欲しい')
         self.assertEqual(result['data']['bucket'], 'abc')
-        self.assertEqual(result['data']['creator'], '開発者')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = awss3.path
+        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_remount_awss3(self):
-        root_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
 
         # AWS S3フォルダを作成する(POST /awss3s)
         data = {
@@ -425,7 +551,8 @@ class AwsS3TestCase(TestCaseBase):
         import subprocess
         import time
         time.sleep(1)
-        ret = subprocess.run(shlex.split('/sbin/umount kskp/store/frames/csv/Googleに感謝'), 
+        awss3_abs_path = (STORE_DIR.parent / root_path / 'Googleに感謝').as_posix()
+        ret = subprocess.run(shlex.split(f'/sbin/umount {awss3_abs_path}'), 
                              stdout=subprocess.PIPE, 
                              stderr=subprocess.PIPE)
         # umountコマンドの正常終了を確認する
@@ -435,17 +562,19 @@ class AwsS3TestCase(TestCaseBase):
         tmp_var = awss3.path
 
         # S3フォルダがマウントされていることを検証する
-        self.assertTrue(Datum.is_mount(Path(awss3.path)))     
+        self.assertTrue(Datum.is_mount(STORE_DIR.parent / awss3.path))
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = awss3.path
+        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_mount_under_mount_awss3(self):
-        root_uuid = Datum.find_root().uuid
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
 
         # AWS S3フォルダを作成する(POST /awss3s)
         data = {
@@ -468,7 +597,7 @@ class AwsS3TestCase(TestCaseBase):
             result = self.post_uri('/api/v0/awss3s', data, self.USER_ID)
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = awss3.path
+        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する

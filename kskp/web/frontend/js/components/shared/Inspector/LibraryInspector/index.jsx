@@ -123,11 +123,12 @@ class LibraryInspector extends React.Component<Props> {
             {moment(data.createdAt).format(Constants.format.dateTime)}
           </div>
       </div>
-      return <div className={classnames(style.property, style.in, 'inspector')}>
-        <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
-          {content}
-        </BaseInspector>
-      </div>
+      
+      return <Resizer>
+          <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
+            {content}
+          </BaseInspector>
+      </Resizer>  
     } else {
       return <Resizer>
         <BaseInspector onBlurTitle={(e) => this.onBlurTitle(e)}>
