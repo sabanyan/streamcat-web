@@ -183,7 +183,7 @@ def delete_frame(frame_uuid):
     for flow in Flow.find_all_flows():
         using_frame_uuids = get_all_frame_uuid_in_frame(flow.uuid)
         if frame_uuid in using_frame_uuids:
-            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.uuid)
+            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
 
     # フレームを削除する
     frame.delete()
