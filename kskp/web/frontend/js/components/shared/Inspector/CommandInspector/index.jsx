@@ -155,13 +155,15 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       //コマンドのラベルを取得
       subLabel = command.label
       this.inputRefs = []
-
+      
+      const groups:[] = (command.groups) ? command.groups : null
       const params: [CommandParamType] = command.params
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
+      console.log(groups)
 
       inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids={invalids}
-                              events={events} />
+                              events={events} groups={groups}/>
 
     } else if (selected_step.type === Constants.step.type.subflow) {
       const subflowCommand: SubflowCommandModel = selected_step.getCommand()
@@ -174,7 +176,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const invalids: {} = selected_step.invalid
 
       inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids={invalids}
-                              events={events} />
+                              events={events} groups={groups}/>
 
       subFlowLink = <a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
     }
