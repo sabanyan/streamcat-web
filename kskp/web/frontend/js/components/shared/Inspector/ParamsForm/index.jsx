@@ -10,6 +10,7 @@ type Props = {
   params: [CommandParamType];//パラメーター定義
   headers?: [];//カラム情報
   args: {};//入力値
+  groups?:[];
   command: CommandModel;
   invalids: {};
   onBuild: Function;
@@ -80,37 +81,65 @@ export default class ParamsForm extends React.Component<Props> {
     return null
   }
 
-  render () {
-    const {params, args, invalids, command, onBuild, events, headers} = this.props
-    let isPresence = false
+  renderGroup(key, label) {
+    return <div key={key} className={style.group}>
+      {label}
+    </div>
+  }
 
-    //パラメータフォームの作成
-    const paramsForm = params.map((param, index) => {
+  renderParam(param, key) {
+    const {args, command, invalids, onBuild, events, headers} = this.props
+    let isPresence = (command) ? this.isPresence(command, param) : false
+    const value = this.getDefaultValueOrArgsValue(args, param)
+    const paramElement = ParamUtil.getParamElement(param, onBuild, events, value, param.name, headers)
+    const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
 
-      //入力値 or 初期値を取得する
-      const value = this.getDefaultValueOrArgsValue(args, param)
 
-      //必須
-      if (command) {
-        isPresence = this.isPresence(command, param)
+    return <div key={key} className={classnames('mb-8px', {
+      [style.presence]: isPresence,
+      [style.invalid]: (invalidMessageEelement)
+    })}>
+      {paramElement}
+      {invalidMessageEelement}
+    </div>
+  }
+
+  renderParamsForm(params, groups) {
+    let paramsForm = []
+  
+    try {      
+      if(!params) throw "params is undefined in renderParamsForm"
+      if (groups) {
+        groups.forEach(group => {
+          paramsForm.push(this.renderGroup(group.name + "_start", group.label))
+          group.params.forEach((paramName, index) => {
+            const param = params.find(p => p.name == paramName)
+            if (!param) throw "[Error] undefined params.name in Group"
+            const paramForm = this.renderParam(param, group.name + index)
+            paramsForm.push(paramForm)
+            params = params.filter(p => p.name !== paramName)
+          })
+        })
+      }
+      if (params) {
+        params.forEach((param, index) => {
+          const paramForm = this.renderParam(param, index)
+          paramsForm.push(paramForm)
+        })
       }
 
-      //型に種別に応じたDOMElementの取得
-      let paramElement
-      //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
+    } catch(e) {
+      console.log(e)
+    }
 
-      paramElement = ParamUtil.getParamElement(param, onBuild, events, value, param.name, headers)
-      //入力エラーメッセージ
-      const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
+    return paramsForm
+  }
 
-      return <div key={index} className={classnames('mb-8px', {
-        [style.presence]: isPresence,
-        [style.invalid]: (invalidMessageEelement)
-      })}>
-        {paramElement}
-        {invalidMessageEelement}
-      </div>
-    })
+  render () {
+    const {params, groups} = this.props
+
+    //パラメータフォームの作成
+    const paramsForm = this.renderParamsForm(params, groups)
 
     return paramsForm
   }

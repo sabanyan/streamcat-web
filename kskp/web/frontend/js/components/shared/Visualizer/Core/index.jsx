@@ -142,18 +142,18 @@ export default class Visualizer extends React.Component<Props, State> {
       return <div>
         <EmptyState title={'表示することができません'} description={'条件を変更して反映ボタンを押してください'} icon={'cloud_off'} />
         <PreviewInspector key={'perview_' + visualize.label + frame_uuid} headers={headers}
+                          groups={visualize.groups}
                           onSave={(args) => this.onSave(args)} params={visualize.params} args={args}
                           label={visualize.label} events={events} />
       </div>
 
     }
-
     return <div>
       <div className={style.visualizeContainer}>
         <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
       </div>
       <PreviewInspector headers={headers} onSave={(args) => this.onSave(args)} params={visualize.params} args={args}
-                        label={visualize.label} events={events} />
+                        groups={visualize.groups} label={visualize.label} events={events} />
     </div>
   }
 

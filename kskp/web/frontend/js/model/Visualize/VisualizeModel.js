@@ -7,6 +7,7 @@ export type VisualizeModelProps = {
   id: string,
   label: string,
   params: [],
+  groups: [],
   ports: [],
   url: string,
   version: string,
@@ -19,6 +20,7 @@ export default class VisualizeModel<VisualizeModelProps> extends Model {
   order = -1
   label: string = ''
   params: [] = []
+  groups: [] = []
   ports: [[], []] = [[], []]
   url = ''
   version = ''
@@ -31,6 +33,7 @@ export default class VisualizeModel<VisualizeModelProps> extends Model {
     this.initialize(props, 'order')
     this.initialize(props, 'label')
     this.initialize(props, 'params')
+    this.initialize(props, 'groups')
     this.initialize(props, 'ports')
     this.initialize(props, 'url')
     this.initialize(props, 'version')
