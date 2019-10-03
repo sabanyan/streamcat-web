@@ -7,7 +7,7 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import ss
 from kskp.store import StoreModel as Store
-from kskp.store import Datum, Frame, AwsS3, STORE_DIR
+from kskp.store import Datum, Frame, AwsS3, Database, STORE_DIR
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
 class DataStoreTestCase(TestCaseBase):
@@ -604,6 +604,160 @@ class AwsS3TestCase(TestCaseBase):
         self.assertFalse(os.path.exists(awss3_path))
 
 
+
+class DatabaseTestCase(TestCaseBase):
+    def test_create_get_database(self):
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
+
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root_uuid,
+            "label"    : "データベースストア！",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER_ID)
+
+        # POST /databasesの戻り値が正しいことを検証する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['type'], 'database')
+        self.assertEqual(result['data']['label'], 'データベースストア！')
+        self.assertEqual(result['data']['dbms'], 'postgresql')
+        self.assertEqual(result['data']['hostname'], 'db')
+        self.assertEqual(result['data']['port'], 5432)
+        self.assertEqual(result['data']['database'], 'kskp')
+        self.assertEqual(result['data']['user_id'], 'postgres')
+        self.assertEqual(result['data']['password'], '')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        database_uuid = result['data']['uuid']
+        database = Database.find_by_uuid(database_uuid)
+
+        # Databaseを取得する(GET /databases)
+        result = self.get_uri('/api/v0/databases/' + database_uuid, self.USER_ID)
+
+        # GET /databasesの戻り値が正しいことを検証する
+        self.assertEqual(result['data']['uuid'], database_uuid)
+        self.assertEqual(result['data']['type'], 'database')
+        self.assertEqual(result['data']['label'], 'データベースストア！')
+        self.assertEqual(result['data']['dbms'], 'postgresql')
+        self.assertEqual(result['data']['hostname'], 'db')
+        self.assertEqual(result['data']['port'], 5432)
+        self.assertEqual(result['data']['database'], 'kskp')
+        self.assertEqual(result['data']['user_id'], 'postgres')
+        self.assertEqual(result['data']['password'], '')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # Databaseを削除(unmount)する(DELETE /databases)
+        self.delete_uri('/api/v0/databases/' + database_uuid, self.USER_ID)
+
+    def test_update_database(self):
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
+        
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root_uuid,
+            "label"    : "データベースストア！",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER_ID)
+
+        database_uuid = result['data']['uuid']
+        database = Database.find_by_uuid(database_uuid)
+
+        # Databaseのラベルを更新する(PUT /databases)
+        update_data = {
+            "label"    : "データベースストア?",
+            "dbms"     : "oracle",
+            "hostname" : "localhost",
+            "port"     : 1192,
+            "database" : "kskp!",
+            "user_id"  : "tiger",
+            "password" : "scott"
+        }
+        result = self.put_uri('/api/v0/databases/' + database_uuid, update_data, self.USER_ID)
+
+        # PUT /databasesの戻り値が正しいことを検証する
+        self.assertEqual(result['data']['uuid'], database_uuid)
+        self.assertEqual(result['data']['type'], 'database')
+        self.assertEqual(result['data']['label'], 'データベースストア?')
+        self.assertEqual(result['data']['dbms'], 'oracle')
+        self.assertEqual(result['data']['hostname'], 'localhost')
+        self.assertEqual(result['data']['port'], 1192)
+        self.assertEqual(result['data']['database'], 'kskp!')
+        self.assertEqual(result['data']['user_id'], 'tiger')
+        self.assertEqual(result['data']['password'], 'scott')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # Databaseを削除(unmount)する(DELETE /databases)
+        self.delete_uri('/api/v0/databases/' + database_uuid, self.USER_ID)
+
+    def test_move_database(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root.uuid,
+            "label"    : "データベースストア！?",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER_ID)
+        database_uuid = result['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/databases/%s' % database_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+            "label"    : "データベースストア！?",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : "",
+            'type'     : 'database',
+            'creator'  : '管理者'
+        }
+
+        # PUT /databases apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], database_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['dbms'], expected_result['dbms'])
+        self.assertEqual(result['data']['hostname'], expected_result['hostname'])
+        self.assertEqual(result['data']['port'], expected_result['port'])
+        self.assertEqual(result['data']['database'], expected_result['database'])
+        self.assertEqual(result['data']['user_id'], expected_result['user_id'])
+        self.assertEqual(result['data']['password'], expected_result['password'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
 
     # def test_delete_using_frame(self):
     #     from ..library import Frame
