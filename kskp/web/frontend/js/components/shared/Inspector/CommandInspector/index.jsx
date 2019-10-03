@@ -137,8 +137,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   update (getNewStep: Function) {
     let selectedStep = this.getSelectedStep()
     const newStep = getNewStep(selectedStep)
-    console.log("update")
-    console.log(newStep)
     this.props.updateStep(newStep)
   }
 
