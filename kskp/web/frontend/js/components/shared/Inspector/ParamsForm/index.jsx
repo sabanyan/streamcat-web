@@ -29,14 +29,12 @@ export default class ParamsForm extends React.Component<Props> {
    * @param param
    * @returns {*}
    */
-  getDefaultValueOrArgsValue (args: {}, param: CommandParamType) {
-    let value = args[param.name]
-    //入力値 or 初期値を取得する
-    if (value === undefined) {
-      if (param.default !== undefined) {
-        value = param.default
-      }
-    }
+  getDefaultValueOrArgsValue (args: {} | [], param: CommandParamType) {
+    let value = undefined
+    if (Array.isArray(param)) value = []
+    if (param.default !== undefined) value = param.default
+    if (args[param.name]) value = args[param.name]    
+ 
     return value
   }
 
@@ -137,8 +135,8 @@ export default class ParamsForm extends React.Component<Props> {
 
   render () {
     const {params, groups} = this.props
-
     //パラメータフォームの作成
+
     const paramsForm = this.renderParamsForm(params, groups)
 
     return paramsForm
