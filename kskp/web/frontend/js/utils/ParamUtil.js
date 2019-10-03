@@ -78,21 +78,19 @@ export default class ParamUtil {
     switch (param.type) {
       case Constants.param.type.number:
         paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={{onChange:onChange}} />
         break
       case Constants.param.type.string:
         paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={onChange} />
+                                    events={{onChange:onChange}} />
         break
       case Constants.param.type.boolean:
         paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                     events={events} />
+                                    events={{onChange:onChange}} />
         break
       case Constants.param.type.select:
-        
-
         paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={onChange} />
+                                    events={{onChange:onChange}} />
         break
 
       case Constants.param.type.column:
@@ -103,7 +101,7 @@ export default class ParamUtil {
           multiple: (param.options.multiple) ? true : false
         }
         paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={onChange} />
+                                    events={{onChange:onChange}} />
         break
 
       case Constants.param.type.list:
@@ -112,7 +110,7 @@ export default class ParamUtil {
 
       default:
         paramElement =
-          <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events}
+          <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={{onChange:onChange}}
                        disabled={true} />
         break
     }
