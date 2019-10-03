@@ -18,19 +18,19 @@
 
       /* Alias Path */
       "paths": {// WebPackのAlias設定も忘れずに
-        "Components/*": ["src/js/components/*"],
-        "FlowEditorContainer/*": ["src/js/components/FlowEditorContainer/*"],
-        "FLowListContainer/*": ["src/js/components/FlowListContainer/*"],
-        "LibraryListContainer/*": ["src/js/components/LibraryListContainer/*"],
-        "ProfileContainer/*": ["src/js/components/ProfileContainer/*"],
-        "ProjectListContainer/*": ["src/js/components/ProjectListContainer/*"],
-        "Shared/*": ["src/js/components/shared/*"],
-        "Constants/*": ["src/js/constants/*"],
-        "Model/*": ["src/js/model/*"],
-        "Modules/*": ["src/js/modules/*"],
-        "Schema/*": ["src/js/schema/*"],
-        "Types/*": ["src/js/types/*"],
-        "Utils/*": ["src/js/utils/*"]
+        "Components/*": ["./web/frontend/js/components/*"],
+        "FlowEditorContainer/*": ["./web/frontend/js/components/FlowEditorContainer/*"],
+        "FLowListContainer/*": ["./web/frontend/js/components/FlowListContainer/*"],
+        "LibraryListContainer/*": ["./web/frontend/js/components/LibraryListContainer/*"],
+        "ProfileContainer/*": ["./web/frontend/js/components/ProfileContainer/*"],
+        "ProjectListContainer/*": ["./web/frontend/js/components/ProjectListContainer/*"],
+        "Shared/*": ["./web/frontend/js/components/shared/*"],
+        "Constants/*": ["./web/frontend/js/constants/*"],
+        "Model/*": ["./web/frontend/js/model/*"],
+        "Modules/*": ["./web/frontend/js/modules/*"],
+        "Schema/*": ["./web/frontend/js/schema/*"],
+        "Types/*": ["./web/frontend/js/types/*"],
+        "Utils/*": ["./web/frontend/js/utils/*"]
       },
 
       /* Module Resolution Options */
@@ -42,6 +42,6 @@
       "build",
       "scripts",
       "webpack",
-      "jest",
+      "jest"
     ]
 }

@@ -137,6 +137,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   update (getNewStep: Function) {
     let selectedStep = this.getSelectedStep()
     const newStep = getNewStep(selectedStep)
+    console.log("update")
+    console.log(newStep)
     this.props.updateStep(newStep)
   }
 
@@ -146,7 +148,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     let selected_step: StepModelType = this.getSelectedStep()
     let inputForm = []
     let subFlowLink, content, label, subLabel
-    let events = {onChange: (e) => this.onArgChange(e)}
+    let events = {
+      onChange: (e) => this.onArgChange(e),
+      onUpdate: (getNewStep) => this.update(getNewStep)
+    }
     if (selected_step.type === Constants.step.type.command) {
       //指定されたステップの元コマンドを取得
       const command: CommandModel = selected_step.getCommand()
@@ -160,7 +165,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const params: [CommandParamType] = command.params
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
-      console.log(groups)
 
       inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids={invalids}
                               events={events} groups={groups}/>
