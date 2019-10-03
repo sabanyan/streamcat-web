@@ -10,6 +10,8 @@ from kskp.store import (
     Frame,
     Flow,
     AwsS3,
+    Database,
+    DbConnInfo,
     ChildrenGetter
 )
 
@@ -410,6 +412,91 @@ def delete_awss3_folder(awss3_uuid):
     # AWS S3 folderレコードをDBから削除する
     folder.delete()
 
+@mod.route('/databases/<database_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fetch_database(database_uuid):
+    """
+    データベースを返却する
+    """
+    database = Database.find_by_uuid(database_uuid)
+    return database
+
+@mod.route('/databases', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_database():
+    """
+    データベースを作成する
+    """
+    db_conn_info = DbConnInfo(
+        request.json['dbms'],
+        request.json['hostname'],
+        request.json['port'],
+        request.json['database'],
+        request.json['user_id'],
+        request.json['password'])
+
+    # 接続情報に漏れがあれば例外を送出する
+    db_conn_info.valid_or_raise()
+
+    new_database = Database(request.json['parent'],
+                            request.json['label'],
+                            db_conn_info,
+                            creator=session['user_id'])
+    new_database.save()
+    return new_database.to_json()
+
+@mod.route('/databases/<database_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_database(database_uuid):
+    """
+    データベースを修正する、またはデータベースを移動する
+    """
+    if ('label'  not in request.json or request.json['label']  == '') and \
+       ('parent' not in request.json or request.json['parent'] == ''):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif 'label' in request.json and 'parent' in request.json:
+        raise Exception('labelとはparent属性は同時に指定できません')
+
+    if 'label' in request.json and request.json['label'] != '':
+        # データベースを修正する
+        db_conn_info = DbConnInfo(
+            request.json['dbms'],
+            request.json['hostname'],
+            request.json['port'],
+            request.json['database'],
+            request.json['user_id'],
+            request.json['password'])
+
+        # 接続情報に漏れがあれば例外を送出する
+        db_conn_info.valid_or_raise()
+
+        label = request.json['label']
+        modifier = session['user_id']
+        return Database.update_data(database_uuid, label, db_conn_info, modifier)
+    elif 'parent' in request.json and request.json['parent'] != '':
+        # データベースを移動する
+        new_parent = request.json['parent']
+        modifier = session['user_id']
+        database = Database.find_by_uuid(database_uuid)
+        return database.move(new_parent, modifier)
+    else:
+        raise Exception('update_folder parameter error!')
+
+@mod.route('/databases/<database_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def delete_database(database_uuid):
+    """
+    データベースを削除する
+    """
+    database = Database.find_by_uuid(database_uuid)
+    # DatabaseレコードをDBから削除する
+    database.delete()
+
 
 # @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
 # @login_required_api
@@ -561,103 +648,6 @@ def delete_awss3_folder(awss3_uuid):
 #         folder.umount()
 #         # フォルダに紐づくディレクトリを削除する
 #         folder.remove_dir()
-
-#         return jsonify({'success': True})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
-
-
-# @mod.route('/databases/<database_uuid>', methods=['GET'])
-# @login_required_api
-# @update_navigation
-# def fetch_database(database_uuid):
-#     """
-#     データベースを返却する
-#     """
-#     try:
-#         # database = get_database(database_uuid)
-#         # return jsonify({'success': True, 'data': database})
-
-#         database = DatabaseStore.find_by_uuid(database_uuid)
-#         return jsonify({'success': True, 'data': database.to_json()})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
-
-# @mod.route('/databases', methods=['POST'])
-# @login_required_api
-# def make_new_database():
-#     """
-#     データベースを作成する
-#     """
-#     try:
-#         # new_database= create_database(request.json, 1)
-#         # return jsonify({'success': True, 'data': new_database})
-
-#         new_database = DatabaseStore()
-#         # ここでDBに接続する
-#         new_database.connect()
-#         # databaseレコードをDBに格納する
-#         new_database.save()
-
-#         return jsonify({'success': True, 'data': new_database.to_json()})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                       })
-
-# @mod.route('/databases/<database_uuid>', methods=['PUT'])
-# @login_required_api
-# def update_database(database_uuid):
-#     """
-#     データベースを修正する
-#     """
-#     try:
-#         # new_label = request.json['label']
-#         # database= rename_database_by_id(database_uuid, new_label)
-#         # return jsonify({'success': True, 'data': database})
-
-#         database = DatabaseStore()
-
-#         # 接続文字列を変更する場合は、DBに再接続する
-#         reconnecting = database.connectionString != request.json['connectionString']
-
-#         if reconnecting:
-#             database.disconnect()
-#         database.update_data()
-#         if reconnecting:
-#             database.connect()
-
-#         return jsonify({'success': True, 'data': database.to_json()})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
-
-# @mod.route('/databases/<database_uuid>', methods=['DELETE'])
-# @login_required_api
-# def delete_database(database_uuid):
-#     """
-#     データベースを削除する
-#     """
-#     try:
-#         # delete_database_by_id(database_uuid)
-#         # return jsonify({'success': True})
-
-#         database = DatabaseStore.find_by_uuid(database_uuid)
-#         database.delete()
-#         database.disconnect()
 
 #         return jsonify({'success': True})
 #     except Exception as e:
