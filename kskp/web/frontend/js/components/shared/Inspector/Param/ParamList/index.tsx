@@ -193,7 +193,8 @@ export default class ParamList extends  React.Component<Props>{
         }
 
         if(arg && Array.isArray(arg)) {
-            arg.push(param.default[0])
+            let newElement = StateUtil.deepCopy(param.default[0])
+            arg.push(newElement)
         }
         onUpdate((step) => {
             if (step.args) {
