@@ -28,3 +28,9 @@ class ApiTestCase(unittest.TestCase):
 
             # テスト
             self.assertEqual(result['success'], True)
+
+    def test_get_commands(self):
+        """
+        オプション指定が正常に機能することを確認する
+        """
+        pass

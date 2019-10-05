@@ -31,7 +31,7 @@ def fetch_frame(frame_uuid):
     if request.args.get('header_only') == '1':
         # headerのカラムに改行コードが含まれているケースの対応
         if result.get('contents') is None:
-            raise Exception('not use "no_contenst" in query parameter')
+            raise Exception('not use "no_contents" in query parameter')
         headers = []
         for column in result['contents']:
             headers.append(column.replace('\n',''))
