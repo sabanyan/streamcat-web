@@ -21,6 +21,7 @@ export default class CommandModel extends Model {
   id: string
   label: string = null
   params: [CommandParamType] = []
+  groups: []
   ports: [CommandPortType] = [[], []]
   rules: {} = {}
   version: string
@@ -32,6 +33,7 @@ export default class CommandModel extends Model {
     this.initialize(props, 'id')
     this.initialize(props, 'label')
     this.initialize(props, 'params')
+    this.initialize(props, 'groups')
     this.initialize(props, 'ports')
     this.initialize(props, 'version')
     this.initialize(props, 'rules')

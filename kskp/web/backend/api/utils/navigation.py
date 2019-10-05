@@ -13,9 +13,14 @@ def update_navigation(func):
 
         data = json.loads(func(**kwargs).data.decode())
 
+        if session['user_id'] is None or session['user_id'] =='':
+            user_name = ''
+        else:
+            user_name =  model.get_user_by_id(session['user_id'])['name']
+
         navigation = {
             'user_id': session['user_id'],
-            'user_name': model.get_user_by_id(session['user_id'])['name'],
+            'user_name': user_name,
             'project_uuid': '',
             'project_name': '',
             'flow_uuid': '',
