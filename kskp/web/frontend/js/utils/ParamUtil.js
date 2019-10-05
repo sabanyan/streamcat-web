@@ -1,6 +1,6 @@
 //@flow
 import Constants from 'Constants/index'
-import { ParamBoolean, ParamNumber, ParamSelect, ParamString } from 'Shared/Inspector'
+import { ParamBoolean, ParamNumber, ParamSelect, ParamString, ParamList } from 'Shared/Inspector'
 import * as React from 'react'
 
 export default class ParamUtil {
@@ -29,6 +29,9 @@ export default class ParamUtil {
         case Constants.param.type.column:
           args[inputRef.param.name] = this.getAllSelectedValue(inputRef.element)
           break
+        case Constants.param.type.list:
+          break
+          
       }
       ParamUtil.clearElement(inputRef.element)
     })
@@ -71,22 +74,23 @@ export default class ParamUtil {
   // FIXIT: 
   static getParamElement (param, onBuild, events, defaultValue, refValue, headers) {
     let paramElement
+    const {onChange, onUpdate} = events
     switch (param.type) {
       case Constants.param.type.number:
         paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={{onChange:onChange}} />
         break
       case Constants.param.type.string:
         paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={{onChange:onChange}} />
         break
       case Constants.param.type.boolean:
         paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                     events={events} />
+                                    events={{onChange:onChange}} />
         break
       case Constants.param.type.select:
         paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={{onChange:onChange}} />
         break
 
       case Constants.param.type.column:
@@ -97,12 +101,16 @@ export default class ParamUtil {
           multiple: (param.options.multiple) ? true : false
         }
         paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+                                    events={{onChange:onChange}} />
+        break
+
+      case Constants.param.type.list:
+        paramElement = <ParamList param={param} arg={defaultValue} onUpdate={onUpdate}></ParamList>
         break
 
       default:
         paramElement =
-          <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events}
+          <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={{onChange:onChange}}
                        disabled={true} />
         break
     }

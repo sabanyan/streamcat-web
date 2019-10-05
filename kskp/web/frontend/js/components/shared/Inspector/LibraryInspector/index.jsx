@@ -6,7 +6,7 @@ import { BaseInspector, Resizer } from 'Shared/Inspector'
 import type { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
-import { Button } from 'Shared/Input'
+import { Button, DownloadButton } from 'Shared/Input'
 import { APIUtil, ModalUtil, SortUtil, HttpUtil  } from "Utils/index";
 import Visualizer from "Shared/Visualizer/Core";
 
@@ -78,8 +78,12 @@ class LibraryInspector extends React.Component<Props> {
     let content = null
     let label = ""
     let preview = null
-    if (data && data.type === Constants.library.type.frame) {
+    let  download = null
+    if (data && data.label && data.type === Constants.library.type.frame) {
       preview = <Button onClick={(e) => this.onClickPreview(e)} icon={'visibility'}>プレビュー</Button>
+      // csv download
+      const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
+      download = <DownloadButton href={href} icon={'visibility'}>CSVダウンロード</DownloadButton>
     }
     let deleteButton
     if (onClickDelete) {
@@ -100,8 +104,9 @@ class LibraryInspector extends React.Component<Props> {
           </div>
           <div className={style.actions}>
             {preview}
+            {download}
             {deleteButton}
-            {applyButton}
+            {applyButton} 
           </div>
           <div className={style.full_hr}/>
           <div>

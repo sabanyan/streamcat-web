@@ -30,7 +30,7 @@ export default class ParamSelect extends Param {
     const values = param.options.values
     const multiple = param.options.multiple
 
-    const options = labels.map((label, index) => {return <option value={values[index]}>{label}</option>})
+    const options = labels.map((label, index) => {return <option key={values[index]} value={values[index]}>{label}</option>})
 
     // selectのmultiple属性がtrueの場合、valueはArrayになる必要がある。＃217
     let value = defaultValue

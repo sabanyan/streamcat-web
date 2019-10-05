@@ -1,0 +1,47 @@
+{
+    "compilerOptions": {
+      /* Basic Options */
+      "baseUrl": "./", 
+      "target": "ES2015",                    /* ｔｓを書くときにどのversionのESが対象か: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017','ES2018' or 'ESNEXT'. */
+      "module": "es2015",                    /* どのversionのESを生成するか: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
+      "jsx": "react",                     /* reactを書くときに必要, 'react-native', or 'react'. */
+      
+      /* Strict Type-Checking Options */
+      "strict": true,                        /* すべての strict タイプ・オプション(noImplicitAny, strictNullChecks, noImplicitThis(thisの型チェック), alwaysStrict(strictモードのjs出力)) を 有効化する */
+      "noImplicitAny": false,                 /* any型の使用不可 */
+      "strictNullChecks": true,              /* nullable型以外でnullを許容しない */
+      "allowSyntheticDefaultImports": true,
+      /* Additional Checks */
+      "noUnusedLocals": false,                /* 未使用の変数を許容しない */
+      "noUnusedParameters": false,            /* 未使用の変数を許容しない */
+      "noImplicitReturns": true,             /* メソッド内で返り値の型があっているかをチェック */
+
+      /* Alias Path */
+      "paths": {// WebPackのAlias設定も忘れずに
+        "Components/*": ["./web/frontend/js/components/*"],
+        "FlowEditorContainer/*": ["./web/frontend/js/components/FlowEditorContainer/*"],
+        "FLowListContainer/*": ["./web/frontend/js/components/FlowListContainer/*"],
+        "LibraryListContainer/*": ["./web/frontend/js/components/LibraryListContainer/*"],
+        "ProfileContainer/*": ["./web/frontend/js/components/ProfileContainer/*"],
+        "ProjectListContainer/*": ["./web/frontend/js/components/ProjectListContainer/*"],
+        "Shared/*": ["./web/frontend/js/components/shared/*"],
+        "Constants/*": ["./web/frontend/js/constants/*"],
+        "Model/*": ["./web/frontend/js/model/*"],
+        "Modules/*": ["./web/frontend/js/modules/*"],
+        "Schema/*": ["./web/frontend/js/schema/*"],
+        "Types/*": ["./web/frontend/js/types/*"],
+        "Utils/*": ["./web/frontend/js/utils/*"]
+      },
+
+      /* Module Resolution Options */
+      "moduleResolution": "node",            /* http://js.studio-kingdom.com/typescript/handbook/module_resolution 参照 */
+      "esModuleInterop": true                /* ESModuleと同じ動作をする. */
+    },
+    "exclude": [
+      "node_modules",
+      "build",
+      "scripts",
+      "webpack",
+      "jest"
+    ]
+}

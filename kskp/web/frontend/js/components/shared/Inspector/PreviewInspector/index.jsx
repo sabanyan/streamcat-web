@@ -49,7 +49,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
   }
 
   render () {
-    const {params, args, label, headers, events} = this.props
+    const {params, args, groups, label, headers, events} = this.props
     let inputForm = []
     let subFlowLink, content, subLabel
 
@@ -66,7 +66,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
     const invalids: {} = {}
     inputForm =
       <ParamsForm headers={headers} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
-                  onBuild={(param, element) => this.onBuild(param, element)} events={events}/>
+                  onBuild={(param, element) => this.onBuild(param, element)} events={events} groups={groups}/>
 
     let form
 

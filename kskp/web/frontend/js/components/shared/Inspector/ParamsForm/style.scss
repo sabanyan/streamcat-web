@@ -1,3 +1,5 @@
+@import "../../../../../sass/common";
+
 
 .invalid_message {
   padding-top: 4px;
@@ -19,4 +21,13 @@
 
 .invalid input[type=text] {
   background: lighten(#F51F28, 40%);
+}
+
+.group {
+  border-top: 1px solid $kskp-property-border-color;
+  background: $kskp-primary;
+  color: #fff;
+  margin: 16px -16px 16px -16px;
+  padding: 4px 16px 4px 16px;
+  height: 30px;
 }
