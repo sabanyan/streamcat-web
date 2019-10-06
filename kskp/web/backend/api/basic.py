@@ -7,7 +7,7 @@ from pathlib import Path
 from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
 from .utils.navigation import update_navigation
-from .utils.api_base import api_base
+from .utils import api_base, lock_required
 from kskp.store import *
 from kskp.web.backend import app
 
@@ -176,6 +176,7 @@ def fetch_flow(flow_uuid):
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
+@lock_required
 @api_base
 def update_flow(flow_uuid):
     """
@@ -207,6 +208,7 @@ def update_flow(flow_uuid):
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
+@lock_required
 @api_base
 def delete_flow(flow_uuid):
     """

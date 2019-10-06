@@ -1,5 +1,6 @@
 from flask import jsonify
 import functools
+from kskp.store import LockedDatumException
 
 def api_base(func):
     """
@@ -14,6 +15,12 @@ def api_base(func):
                 return jsonify({'success': True})
             else:
                 return jsonify({'success': True, 'data': result})
+        except LockedDatumException as e:
+            return jsonify({
+                            'success': False,
+                            'code'   : -2,
+                            'message': str(e)
+                        })
         except Exception as e:
             return jsonify({
                             'success': False,
