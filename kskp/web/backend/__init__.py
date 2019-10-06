@@ -50,6 +50,10 @@ app.register_blueprint(lib.mod, url_prefix=PREFIX)
 from kskp.web.frontend import mod
 app.register_blueprint(mod)
 
+# LockManagerオブジェクト
+from kskp.store import LockManager
+lock_manager = LockManager()
+
 def run():
     app.run(debug=True)
 
