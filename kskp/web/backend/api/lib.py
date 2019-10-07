@@ -10,6 +10,7 @@ from kskp.store import (
     Frame,
     Flow,
     AwsS3,
+    Database,
     ChildrenGetter
 )
 
@@ -246,6 +247,8 @@ def _convert_type(datum):
         return Flow.convert_to_flow(datum)
     elif datum.type == Datum.AWSS3_TYPE:
         return AwsS3.convert_to_awss3(datum)
+    elif datum.type == Datum.DATABASE_TYPE:
+        return Database.convert_to_database(datum)
     else:
         raise Exception('Undefined type of datum(%s) is found!' % datum.type)
 
