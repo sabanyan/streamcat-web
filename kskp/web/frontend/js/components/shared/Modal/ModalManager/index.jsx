@@ -71,6 +71,9 @@ export default class ModalManager extends React.Component {
       <Modal key={Constants.modal.ADD_DATABASE} id={Constants.modal.ADD_DATABASE}
               title="データベースを追加する" dynamic={true} done={'追加する'} primary={true}>
       </Modal>
+      <Modal key={Constants.modal.EDIT_DATABASE} id={Constants.modal.EDIT_DATABASE}
+              title="データベースを編集する" dynamic={true} done={'編集する'} primary={true}>
+      </Modal>
       <Modal key={Constants.modal.ADD_DOCUMENT} id={Constants.modal.ADD_DOCUMENT}
              title="資料をアップロードする" dynamic={true} done={'追加する'} primary={true}>
       </Modal>

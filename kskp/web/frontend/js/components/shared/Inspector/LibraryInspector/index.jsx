@@ -69,12 +69,17 @@ class LibraryInspector extends React.Component<Props> {
     })
   }
 
+  onClickEdit(e) {
+    const {data, onClickEdit} = this.props
+    onClickEdit(data)
+  }
+
   isDialog () {
     return (HttpUtil.getURLParam('dialog'))
   }
 
   render () {
-    const {data, onClickDelete, onClickApply} = this.props
+    const {data, onClickDelete, onClickApply, onClickEdit} = this.props
     let content = null
     let label = ""
     let preview = null
@@ -83,8 +88,11 @@ class LibraryInspector extends React.Component<Props> {
     }
     let deleteButton
     if (onClickDelete) {
-      deleteButton = <Button danger={true}
-                             onClick={() => onClickDelete(data)}>削除する</Button>
+      deleteButton = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
+    }
+    let editButton = null
+    if (onClickEdit && data && data.type === Constants.library.type.database) {
+      editButton = <Button onClick={(e) => this.onClickEdit(e)} icon={'create'}>編集する</Button>
     }
     let applyButton
     if (onClickApply) {
@@ -100,6 +108,7 @@ class LibraryInspector extends React.Component<Props> {
           </div>
           <div className={style.actions}>
             {preview}
+            {editButton}
             {deleteButton}
             {applyButton}
           </div>

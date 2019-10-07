@@ -65,6 +65,7 @@ export default class Library extends React.Component<Props, State> {
       document_name: '',
       folder_name: '',
       database:this.getIntialDatabase(),
+      edit_databse:this.getIntialDatabase(),
       mode: mode,
     }
     
@@ -276,6 +277,33 @@ export default class Library extends React.Component<Props, State> {
         database:this.getIntialDatabase()
       }, () => {
       ModalUtil.closeModal(Constants.modal.ADD_DATABASE)
+      this.fetchFolder()
+    })
+    
+  }
+
+  completeEditDatabase (response: any) {
+    const json = response.data.data
+    if (!response.data.success) {
+      this.props.notify({
+        title: 'データベース作成エラー',
+        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
+      })
+    } else {
+      this.props.notify({
+        title: 'データベースを作成しました',
+        message: this.state.edit_database.label + 'を編集しました',
+        status: 'success'
+      })
+    }
+    this.setState({
+        is_loading: false, 
+        edit_database:this.getIntialDatabase()
+      }, () => {
+      ModalUtil.closeModal(Constants.modal.EDIT_DATABASE)
       this.fetchFolder()
     })
     
@@ -682,23 +710,25 @@ export default class Library extends React.Component<Props, State> {
     const data: LibraryListDataType = this.state.selected_data
     let onClickDelete = null
     let onClickApply = null
+    let onClickEdit = null
 
     switch (this.state.mode) {
       case Constants.library.mode.dialog:
         if (data && data.type === Constants.library.type.frame) {
-          onClickApply = (data) => this.onClickApply(
-            data)
+          onClickApply = (data) => this.onClickApply(data)
         }
         break
       case Constants.library.mode.list:
-        onClickDelete = (data) => this.onClickDelete(
-          data)
+          onClickDelete = (data) => this.onClickDelete(data)
+          if (data && data.type === Constants.library.type.database) {
+            onClickEdit = (data) => this.onClickEditDatabase(data)
+          }
         break
     }
-
     return <LibraryInspector data={data}
                              onClickDelete={onClickDelete}
                              onClickApply={onClickApply}
+                             onClickEdit={onClickEdit}
                              onBlurTitle={(e) => this.onBlurTitle(e,data)}
                              visualizers={this.state.visualizers}/>
   }
@@ -708,6 +738,110 @@ export default class Library extends React.Component<Props, State> {
       window.opener.onCallbackApply(selected_data)
     }
     window.close()
+  }
+
+  onClickEditDatabase (data) {
+    if (data.type !== Constants.library.type.database) {
+      return
+    }
+    const rules = this.getDataBaseRules()
+    const params = [
+      {
+        "name": "label",
+        "type": "string",
+        "label": "Label",
+        "default": data.label
+      },
+      {
+        "name": "dbms",
+        "type": "select",
+        "label": "DBMS",
+        "options":{
+          "labels": ["PostgresSQL"],
+          "values": ["postgresql"]
+        },
+        "default": data.dbms
+      },
+      {
+        "name": "hostname",
+        "type": "string",
+        "label": "ホスト名",
+        "default": data.hostname
+      },
+      {
+        "name": "port",
+        "type": "number",
+        "label": "ポート番号",
+        "default": data.port
+      },
+      {
+        "name": "database",
+        "type": "string",
+        "label": "データベース名",
+        "default": data.database
+      },
+      {
+        "name": "user_id",
+        "type": "string",
+        "label": "ユーザID",
+        "default": data.user_id
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "label": "パスワード",
+        "default": data.password
+      }    
+    ]
+    this.setState({
+      edit_database: {
+        "label"   :data.label,
+        "dbms"    :data.dbms,
+        "hostname":data.hostname,
+        "port"    :data.port,
+        "database":data.database,
+        "user_id" :data.user_id,
+        "password":data.password
+      }
+    }, () => {
+      const events = {onChange:(e, param) => this.onChangeEditDatabase(e,param)}
+      const paramsForm = <ParamsForm params={params} args={{}} invalids={{}} rules={rules} events={events}></ParamsForm>
+      
+      ModalUtil.registerModal({
+        id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
+          this.editLibraryChild(data)
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        },
+      })
+      ModalUtil.emitModal({
+        id: Constants.modal.EDIT_DATABASE,
+        visible: true,
+        done: '編集する',
+        danger: true,
+        content: paramsForm
+      })
+    })
+  }
+
+  onChangeEditDatabase(e, param) {
+    try {
+      let value = e.target.value
+      let database = this.state.edit_database
+      database[param.name] = value
+      this.setState({
+        edit_database:database
+      })
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
+  editLibraryChild(data) {
+    APIUtil.put('databases/' + data.uuid, this.state.edit_database).then((response) => {
+      this.completeEditDatabase(response)
+    }, () => {
+      this.unhandledNotify('フォルダ作成エラー')
+    })
   }
 
   renderBreadCrumb () {
@@ -737,7 +871,6 @@ export default class Library extends React.Component<Props, State> {
 
   onBlurTitle (
     e: SyntheticInputEvent<EventTarget>, selected_data: LibraryListDataType) {
-
     // Label の修正
     if (!selected_data) {
       return
@@ -752,12 +885,24 @@ export default class Library extends React.Component<Props, State> {
       return
     }
 
-    const body = {
-      label : e.target.value
+    let body = {
+      label : e.target.value,
     }
-
+    if (selected_data.type === Constants.library.type.database) {
+      body = {
+        label : e.target.value,
+        dbms : selected_data.dbms,
+        hostname : selected_data.hostname,
+        port : selected_data.port,
+        database: selected_data.database,
+        user_id: selected_data.user_id,
+        password: selected_data.password
+      }
+    }
+  
     APIUtil.put(endPoint + uuid, body).then((response) => {
       if (response.data.success) {
+        
         const resultLabel = response.data.data.label
         let selected_data = this.state.selected_data
 
@@ -799,6 +944,7 @@ export default class Library extends React.Component<Props, State> {
         endPoint = 'folders/'
         break
       case Constants.library.type.database:
+        endPoint = 'databases/'
         break
       case Constants.library.type.remoteFolder:
         break
