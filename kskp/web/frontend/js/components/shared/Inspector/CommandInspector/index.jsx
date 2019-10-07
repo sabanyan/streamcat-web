@@ -160,7 +160,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids={invalids}
+      inputForm = <ParamsForm params={params} args={args} invalids={invalids} rules={command.rules} invalids={invalids}
                               events={events} />
 
     } else if (selected_step.type === Constants.step.type.subflow) {
@@ -173,7 +173,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids={invalids}
+      inputForm = <ParamsForm params={params} args={args} invalids={invalids} invalids={invalids}
                               events={events} />
 
       subFlowLink = <a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>

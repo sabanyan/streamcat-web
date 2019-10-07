@@ -36,6 +36,7 @@ export default class ParamsForm extends React.Component<Props> {
         value = param.default
       }
     }
+
     return value
   }
 
@@ -45,14 +46,12 @@ export default class ParamsForm extends React.Component<Props> {
    * @param param
    * @returns {boolean}
    */
-  isPresence (command: CommandModel, param: CommandParamType) {
+  isPresence (rules: {}, param: CommandParamType) {
     let isPresence = false
-    if (command) {
-      if (command.rules &&
-        command.rules[param.name] &&
-        command.rules[param.name]['presence']) {
+    if (rules &&
+      rules[param.name] &&
+      rules[param.name]['presence']) {
         isPresence = true
-      }
     }
     return isPresence
   }
@@ -81,20 +80,15 @@ export default class ParamsForm extends React.Component<Props> {
   }
 
   render () {
-    const {params, args, invalids, command, onBuild, events, headers} = this.props
-    let isPresence = false
-
+    const {params, args, invalids, rules, onBuild, events, headers} = this.props
+  
     //パラメータフォームの作成
     const paramsForm = params.map((param, index) => {
 
       //入力値 or 初期値を取得する
       const value = this.getDefaultValueOrArgsValue(args, param)
-
-      //必須
-      if (command) {
-        isPresence = this.isPresence(command, param)
-      }
-
+      // 必須マーク
+      const isPresence = this.isPresence(rules, param)
       //型に種別に応じたDOMElementの取得
       let paramElement
       //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも

@@ -18,6 +18,15 @@ export default class ParamSelect extends Param {
     super(props)
   }
 
+  onChange(e) {
+    const {param, events} = this.props
+
+    if (events && events.onChange) {
+      const onChange = events.onChange
+      onChange(e, param)
+    }
+  }
+
   render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
     const {param, onBuild, events, defaultValue, refValue} = this.props
@@ -43,10 +52,9 @@ export default class ParamSelect extends Param {
         {param.label}
       </label>
       <select name={param.name} defaultValue={value} ref={inputRef} className={'form-control'}
-              multiple={multiple} paramtype={param.type} {...events} >
+              multiple={multiple} paramtype={param.type} onChange={(e) => this.onChange(e)} >
         {options}
       </select>
     </div>
   }
-
 }
