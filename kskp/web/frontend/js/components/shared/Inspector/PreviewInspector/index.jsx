@@ -65,7 +65,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps> {
     // const args:{} = args
     const invalids: {} = {}
     inputForm =
-      <ParamsForm headers={headers} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
+      <ParamsForm headers={headers} params={params} args={args} invalids={invalids}  invalids={invalids}
                   onBuild={(param, element) => this.onBuild(param, element)} events={events}/>
 
     let form
