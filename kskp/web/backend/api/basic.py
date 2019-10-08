@@ -21,7 +21,7 @@ def new_project():
     新しいプロジェクトを作成するAPI
     """
     # ルートフローフォルダが無ければ作成する
-    root_flow_folder = get_flow_dir_path(session['user_id'])
+    root_flow_folder = Library.load_flow_folder(session['user_id'])
     root_flow_folder_uuid = root_flow_folder.uuid
 
     # 新しいフローフォルダを作成する

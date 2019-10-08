@@ -23,10 +23,10 @@ class TestCaseBase(unittest.TestCase):
         # SQLAlchemyで使用するテーブルが存在しない場合は作成する
         from kskp.store import BaseModel
         from kskp.store import engine
-        BaseModel.metadata.create_all(bind=engine, checkfirst=True)
         # ルートデータストアを作成する
         from kskp.store import Library
-        Library._get_library(user_id=1)
+        Library._init_library_folders()
+        BaseModel.metadata.create_all(bind=engine, checkfirst=True)
 
     @classmethod
     def tearDownClass(cls):
