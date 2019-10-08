@@ -18,6 +18,7 @@ setup(
         'ptvsd',
         'awscli',
         'matplotlib',
-        'watchdog'
+        'watchdog',
+        'ordered-set'
     ],
 )
