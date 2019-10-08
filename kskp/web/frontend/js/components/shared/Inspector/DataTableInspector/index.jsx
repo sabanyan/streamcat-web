@@ -61,7 +61,7 @@ class DataTableInspector extends React.Component<Props> {
         </div>
         <div className={style.overview}>
           <div className={style.overview_label}>
-            作成日
+            作成日時
           </div>
           <div className={style.overview_value}>
             {lastModifiedAt} {/*{property.overview.created_at || ""}*/}

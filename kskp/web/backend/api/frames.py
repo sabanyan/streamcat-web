@@ -31,7 +31,7 @@ def fetch_frame(frame_uuid):
     if request.args.get('header_only') == '1':
         # headerのカラムに改行コードが含まれているケースの対応
         if result.get('contents') is None:
-            raise Exception('not use "no_contenst" in query parameter')
+            raise Exception('not use "no_contents" in query parameter')
         headers = []
         for column in result['contents']:
             headers.append(column.replace('\n',''))
@@ -183,7 +183,7 @@ def delete_frame(frame_uuid):
     for flow in Flow.find_all_flows():
         using_frame_uuids = get_all_frame_uuid_in_frame(flow.uuid)
         if frame_uuid in using_frame_uuids:
-            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.uuid)
+            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
 
     # フレームを削除する
     frame.delete()
