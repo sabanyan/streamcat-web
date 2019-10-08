@@ -145,7 +145,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     const {commands, subflows} = this.props.mast
     let selected_step: StepModelType = this.getSelectedStep()
     let inputForm = []
-    let subFlowLink, content, label, subLabel
+    let subFlowLink, content, label, subLabel, groups
     let events = {
       onChange: (e) => this.onArgChange(e),
       onUpdate: (getNewStep) => this.update(getNewStep)
@@ -159,7 +159,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       subLabel = command.label
       this.inputRefs = []
       
-      const groups:[] = (command.groups) ? command.groups : null
+      groups = (command.groups) ? command.groups : null
       const params: [CommandParamType] = command.params
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
