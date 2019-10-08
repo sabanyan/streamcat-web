@@ -374,7 +374,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   renderNewFolder () {
-    return this.renderNew((e) => this.onClickNewFolder(e), 'ディレクトリを作成する')
+    return this.renderNew((e) => this.onClickNewFolder(e), 'フォルダを作成する')
   }
 
   renderNewDatabase () {
