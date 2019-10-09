@@ -1,20 +1,20 @@
-//@flow
 import React from 'react'
-import { ParamUtil } from 'Utils/index'
+import {ParamString, ParamBoolean, ParamSelect, ParamList } from 'Shared/Inspector/index'
 import CommandModel from 'Model/Command/CommandModel'
-import type { CommandParamType } from 'Types/index'
+import { CommandParamType } from 'Types/index'
+import Constants from 'Constants/index'
 import classnames from 'classnames'
 import style from './style.scss'
 
 type Props = {
-  params: [CommandParamType];//パラメーター定義
-  headers?: [];//カラム情報
+  params: CommandParamType[];//パラメーター定義
+  groups?:[];　//パラメータのグルプ定義
   args: {};//入力値
-  groups?:[];
-  command: CommandModel;
-  invalids: {};
-  onBuild: Function;
-  events: {};
+  invalids: {}; // Validationチェック内容
+  command?: CommandModel;
+  headers?: string[];//カラム情報
+  // event
+  onChange: Function; // onChange(e:event, param:CommandParamType, value:any)
 }
 
 export default class ParamsForm extends React.Component<Props> {
@@ -30,7 +30,7 @@ export default class ParamsForm extends React.Component<Props> {
    * @returns {*}
    */
   getDefaultValueOrArgsValue (args: {} | [], param: CommandParamType) {
-    let value = undefined
+    let value:any = undefined
     if (Array.isArray(param)) value = []
     if (param.default !== undefined) value = param.default
     if (args[param.name]) value = args[param.name]    
@@ -79,6 +79,40 @@ export default class ParamsForm extends React.Component<Props> {
     return null
   }
 
+  getParamElement(param:CommandParamType, disabled:boolean=false,label?:string,value?:any, onChange?:Function, headers?:string[]) {
+    let paramElement:any
+    try {
+      switch (param.type) {
+        case Constants.param.type.number  :
+        case Constants.param.type.string  :
+          paramElement = <ParamString label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+          break
+        case Constants.param.type.boolean :
+          paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+          break
+        case Constants.param.type.select  :
+          paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+          break
+        case Constants.param.type.column  :
+          //カラム情報を付与
+          param.options = {
+            labels: headers,
+            values: headers,
+            multiple: (param.options.multiple) ? true : false
+          }
+          paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+          break
+        case Constants.param.type.list    :
+          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+          break
+      }
+    } catch(e) {
+      console.log(e)
+    }
+
+    return paramElement
+  }
+
   renderGroup(key, label) {
     return <div key={key} className={style.group}>
       {label}
@@ -86,12 +120,11 @@ export default class ParamsForm extends React.Component<Props> {
   }
 
   renderParam(param, key) {
-    const {args, command, invalids, onBuild, events, headers} = this.props
+    const {args, command, invalids, onChange, headers} = this.props
     let isPresence = (command) ? this.isPresence(command, param) : false
     const value = this.getDefaultValueOrArgsValue(args, param)
-    const paramElement = ParamUtil.getParamElement(param, onBuild, events, value, param.name, headers)
+    const paramElement = this.getParamElement(param, false, param.label, value, onChange, headers)
     const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
-
 
     return <div key={key} className={classnames('mb-8px', {
       [style.presence]: isPresence,
@@ -103,7 +136,7 @@ export default class ParamsForm extends React.Component<Props> {
   }
 
   renderParamsForm(params, groups) {
-    let paramsForm = []
+    let paramsForm:JSX.Element[] = []
   
     try {      
       if(!params) throw "params is undefined in renderParamsForm"

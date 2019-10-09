@@ -39,9 +39,8 @@ export default class ParamUtil {
   }
 
   static getArgValue (currentTarget: element): any {
-    const paramType = currentTarget.getAttribute('paramtype')
+    const paramType = currentTarget.dataset['paramtype']
     let value = null
-
     switch (paramType) {
       case Constants.param.type.number:
         value = (currentTarget.value !== '') ? parseInt(currentTarget.value) : null
@@ -75,45 +74,49 @@ export default class ParamUtil {
   static getParamElement (param, onBuild, events, defaultValue, refValue, headers) {
     let paramElement
     const {onChange, onUpdate} = events
+
     switch (param.type) {
-      case Constants.param.type.number:
-        paramElement = <ParamNumber param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={events} />
+      case Constants.param.type.number  :
+        paramElement = <ParamNumber param={param} defaultValue={defaultValue} 
+                                    onBuild={onBuild} refValue={refValue}
+                                    onChange={onChange} />
         break
-      case Constants.param.type.string:
-        paramElement = <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={onChange} />
+      case Constants.param.type.string  :
+        paramElement = <ParamString label={param.label} param={param} defaultValue={defaultValue}  
+                                    onBuild={onBuild} refValue={refValue}
+                                    onChange={onChange} />
         break
-      case Constants.param.type.boolean:
-        paramElement = <ParamBoolean param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                     events={events} />
+      case Constants.param.type.boolean :
+        paramElement = <ParamBoolean param={param} defaultValue={defaultValue} 
+                                     onBuild={onBuild} refValue={refValue}
+                                     onChange={onChange} />
         break
-      case Constants.param.type.select:
-        
+      case Constants.param.type.select  :
+        paramElement = <ParamSelect param={param} defaultValue={defaultValue} 
+                                    onBuild={onBuild} refValue={refValue} 
+                                    onChange={onChange} />
+        break
 
-        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={onChange} />
-        break
-
-      case Constants.param.type.column:
+      case Constants.param.type.column  :
         //カラム情報を付与
         param.options = {
           labels: headers,
           values: headers,
           multiple: (param.options.multiple) ? true : false
         }
-        paramElement = <ParamSelect param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild}
-                                    events={onChange} />
+        paramElement = <ParamSelect label={param.label} param={param} defaultValue={defaultValue} 
+                                    refValue={refValue} onBuild={onBuild}
+                                    onChange={onChange} />
         break
 
-      case Constants.param.type.list:
-        paramElement = <ParamList param={param} arg={defaultValue} onUpdate={onUpdate}></ParamList>
+      case Constants.param.type.list    :
+        paramElement = <ParamList label={param.label} param={param} arg={defaultValue} onUpdate={onUpdate}></ParamList>
         break
 
       default:
-        paramElement =
-          <ParamString param={param} defaultValue={defaultValue} refValue={refValue} onBuild={onBuild} events={events}
-                       disabled={true} />
+        paramElement = <ParamString label={param.label} param={param} defaultValue={defaultValue} 
+                                    refValue={refValue} onBuild={onBuild}
+                                    onChange={onChange} disabled={true} />
         break
     }
     return paramElement
