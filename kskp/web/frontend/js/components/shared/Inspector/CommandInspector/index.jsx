@@ -33,7 +33,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
   constructor (props: CommandInspectorProps) {
     super(props)
-    this.inputRefs = []
   }
 
   componentWillMount () {
@@ -62,15 +61,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   }
 
   onHide () {
-    //this.updateArgs()
-    //this.saveNodes()
-  }
-
-  updateArgs () {
-    let selected_step = this.getSelectedStep()
-    selected_step.args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
-    this.props.updateStep(selected_step)
-    this.props.addHistory()
+    //this.props.addHistory()
   }
 
   deleteStep () {
@@ -78,17 +69,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     this.props.deleteSteps([selected_step.id])
     this.props.selectSteps()
   }
-
-//    saveNodes(){
-//      let {nodes,history} = this.props
-//
-//      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history,nodes)
-//      if(isSame)return
-//
-//      return FlowUtil.saveNodes(inject_flow_uuid,nodes).then(()=>{
-//        this.props.addHistory()
-//      })
-//    }
 
   onClickDelete (e: Event) {
     ModalUtil.registerModal({
@@ -118,18 +98,14 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     console.log(data)
   }
 
-  onBuild (param, element) {
-    if (element) this.inputRefs.push({param: param, element: element})
-  }
-
-  onArgChange (e: Event) {
-    const argName = e.currentTarget.name
-
+  onArgChange (e, param, value) {
     this.update((step) => {
       if (step.args) {
-        let v = ParamUtil.getArgValue(e.currentTarget)
-        step.args[argName] = v
+        step.args[param.name] = value
       }
+      console.log("step")
+      console.log(value)
+      console.log(step)
       return step
     })
   }
@@ -137,8 +113,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   update (getNewStep: Function) {
     let selectedStep = this.getSelectedStep()
     const newStep = getNewStep(selectedStep)
-    console.log("update")
-    console.log(newStep)
     this.props.updateStep(newStep)
   }
 
@@ -147,11 +121,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     const {commands, subflows} = this.props.mast
     let selected_step: StepModelType = this.getSelectedStep()
     let inputForm = []
-    let subFlowLink, content, label, subLabel
-    let events = {
-      onChange: (e) => this.onArgChange(e),
-      onUpdate: (getNewStep) => this.update(getNewStep)
-    }
+    let subFlowLink, content, label, subLabel, groups
+
     if (selected_step.type === Constants.step.type.command) {
       //指定されたステップの元コマンドを取得
       const command: CommandModel = selected_step.getCommand()
@@ -161,13 +132,13 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       subLabel = command.label
       this.inputRefs = []
       
-      const groups:[] = (command.groups) ? command.groups : null
+      groups = (command.groups) ? command.groups : null
       const params: [CommandParamType] = command.params
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
       inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids={invalids}
-                              events={events} groups={groups}/>
+                              onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
 
     } else if (selected_step.type === Constants.step.type.subflow) {
       const subflowCommand: SubflowCommandModel = selected_step.getCommand()
@@ -180,7 +151,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const invalids: {} = selected_step.invalid
 
       inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids={invalids}
-                              events={events} groups={groups}/>
+                              onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
 
       subFlowLink = <a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
     }

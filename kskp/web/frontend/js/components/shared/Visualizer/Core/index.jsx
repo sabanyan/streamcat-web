@@ -55,7 +55,8 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   visualizeRequest (visualize: VisualizeModel, args: {}) {
-
+    console.log("VR")
+    console.log(args)
     const uuid = this.props.frame_uuid
     const body = {'args': args, 'inputs': {'i': uuid}}
     // 現在Limitはクエリパラメーターではなく、Bodyのargs{limit:}を使ってるため
@@ -92,9 +93,10 @@ export default class Visualizer extends React.Component<Props, State> {
     return ''
   }
 
-  onSave (args: {}) {
-    this.setState({args: args})
-    this.visualizeRequest(this.props.visualize, args)
+  apply (args: {}) {
+    this.setState({args: args}, () => {
+      this.visualizeRequest(this.props.visualize, this.state.args)
+    })
   }
 
   componentDidUpdate () {
@@ -132,9 +134,7 @@ export default class Visualizer extends React.Component<Props, State> {
     const args = this.state.args
     const is_loading = this.state.is_loading
     const html = this.state.html
-    const events = {
-      onBooleanArgsChange : this.onBoleanArgsChange.bind(this)
-    }
+
     if (is_loading) {
       return <Loader center={true} visible={true} />
     }
@@ -143,8 +143,8 @@ export default class Visualizer extends React.Component<Props, State> {
         <EmptyState title={'表示することができません'} description={'条件を変更して反映ボタンを押してください'} icon={'cloud_off'} />
         <PreviewInspector key={'perview_' + visualize.label + frame_uuid} headers={headers}
                           groups={visualize.groups}
-                          onSave={(args) => this.onSave(args)} params={visualize.params} args={args}
-                          label={visualize.label} events={events} />
+                          onApply={(args) => this.apply(args)} params={visualize.params} args={args}
+                          label={visualize.label} />
       </div>
 
     }
@@ -152,8 +152,8 @@ export default class Visualizer extends React.Component<Props, State> {
       <div className={style.visualizeContainer}>
         <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
       </div>
-      <PreviewInspector headers={headers} onSave={(args) => this.onSave(args)} params={visualize.params} args={args}
-                        groups={visualize.groups} label={visualize.label} events={events} />
+      <PreviewInspector headers={headers} onApply={(args) => this.apply(args)} params={visualize.params} args={args}
+                        groups={visualize.groups} label={visualize.label} />
     </div>
   }
 
