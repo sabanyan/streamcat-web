@@ -108,7 +108,7 @@ export default class Library extends React.Component<Props, State> {
     ModalUtil.registerModal({
       id: Constants.modal.ADD_DOCUMENT, onClickDone: () => {
         if (!this.state.document_name) {
-          alert('資料名を入力してください')
+          alert('資料名を入力してくsださい')
           return false
         }
         if (!this.state.upload_file) {
@@ -132,26 +132,23 @@ export default class Library extends React.Component<Props, State> {
     })
     ModalUtil.registerModal({
       id: Constants.modal.ADD_FOLDER, onClickDone: () => {
-        if (!this.state.document_name) {
-          alert('資料名を入力してください')
-          return false
-        }
-        if (!this.state.upload_file) {
-          alert('ファイルを選択してください')
+        if (!this.state.folder_name) {
+          alert('ファルダ名を入力してください')
+          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
           return false
         }
         this.setState({is_loading: true, selected_data: null})
-        const file: File = this.state.upload_file.file
-        const label = this.state.document_name
-        const parentUUID = this.state.currentFolderUUID
-        APIUtil.documentUpload(file, label, parentUUID).then((response) => {
-          this.completeUploaded(response)
-          this.setState({document_name:null, upload_file: null}, () => {
-            ModalUtil.closeModal(Constants.modal.ADD_DOCUMENT)
-          })
-          
+        const body = {
+          'label': this.state.folder_name,
+          'parent': this.state.currentFolderUUID,
+        }
+        APIUtil.post('folders', body).then((response) => {
+          this.completeAddedFolder(response)
+          this.setState({folder_name: null}, () => {
+            ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
+          })    
         }, () => {
-          this.unhandledNotify()
+          this.unhandledNotify('フォルダ作成エラー')
         })
       },
     })
@@ -214,7 +211,7 @@ export default class Library extends React.Component<Props, State> {
           APIUtil.post('databases', body).then((response) => {
             this.completeAddedDatabase(response)
           }, () => {
-            this.unhandledNotify('フォルダ作成エラー')
+            this.unhandledNotify('データベース作成エラー')
           })
         } catch (e) {
           console.log(e)
