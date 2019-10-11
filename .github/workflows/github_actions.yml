@@ -1,0 +1,62 @@
+name: KSKP-test
+
+on: [push]
+  branches:
+    - develop-actions
+
+jobs:
+  build:
+    runs-on: centos-latest
+
+    steps:
+      - name: Set up pre-install
+        run: |
+          yum -y install git docker
+          git clone git://github.com/nodenv/nodenv.git ~/.nodenv
+          git clone git:/github.com/nodenv/node-build.git ~/.nodenv/plugins/node-build
+          echo "export PATH="#HOME/.nodenv/bin:$PATH"" >> ~/.bash_profile
+          echo "eval "$(nodenv init -"" >> ~/.bash_profile
+          source ~/.bash_profile
+
+          nodenv install 8.12.0
+          nodenv global 8.12.0
+      - name: Set up and run kskp
+        run: |
+          if test [ ! -e kskp-data-store ] -o [ ! -e kskp-flow-engine ] -o [ ! -e kskp-web ]; then
+            git clone https://github.com/ksk-anl/kskp-data-store
+            git clone https://github.com/ksk-anl/kskp-flow-engine
+            git clone https://github.com/ksk-anl/kskp-web
+
+            cd ./kskp-data-store/
+            git checkout -b develop-actions origin/develop-actions
+            cd ../kskp-flow-engine/
+            git checkout -b develop-actions origin/develop-actions
+            cd ../kskp-web/
+            git checkout -b develop-actions origin/develop-actions
+
+            cd kskp
+            npm install
+            npm run dll
+            npm run build
+
+            cd ..
+            docker build -f docker/Dockerfile -t kskp .
+            docker run --name postgres-kskp -e POSTGRES_DB=kskp 5432:5432 -d postgres
+
+            cd ..
+            docker run --privileged -e FLASK_ENV=devolopment -e FLASK_DEBUG=1 -e "TZ=Asia/Tokyo" -p 5000:5000 -v "(pwd)"/:/home/kskp --link postgres:db == name kskp kskp
+          else
+            cd ./kskp-data-store/
+            git pull
+            git checkout -b develop-actions
+            cd ../kskp-flow-engine/
+            git pull
+            git checkout -b develop-actions
+            cd ../kskp-web/
+            git pull
+            git checkout -b develop-actions
+
+            cd kskp
+            docker start postgres-kskp
+            docker start -i kskp
+          fi
