@@ -50,9 +50,12 @@ app.register_blueprint(lib.mod, url_prefix=PREFIX)
 from kskp.web.frontend import mod
 app.register_blueprint(mod)
 
-# LockManagerオブジェクト
+# LockManagerオブジェクトを作成する
+from flask import session
 from kskp.store import LockManager
-lock_manager = LockManager()
+app.config['LOCK_MANAGER'] = LockManager()
+# sessionを31日間保持する場合はTrue
+# session.permanent = True
 
 def run():
     app.run(debug=True)

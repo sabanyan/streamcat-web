@@ -3,6 +3,7 @@ from .auth import login_required_api
 from .utils.navigation import update_navigation
 from .utils.api_base import api_base
 from pathlib import Path
+from kskp.web.backend import app
 from kskp.store import (
     StoreModel as Store,
     Datum,
@@ -304,10 +305,10 @@ def make_new_lock():
     """
     ロックを獲得する
     """
-    from kskp.web.backend import lock_manager
-    if request.json is None or 'uuid' not in request.json:
+    if request.json is None or 'target' not in request.json:
         raise Exception('ロック対象データのuuidを指定してください')
-    lock = lock_manager.lock(request.json['uuid'], creator=session['user_id'])
+    lock_manager = app.config['LOCK_MANAGER'] 
+    lock = lock_manager.lock(request.json['target'], creator=session['user_id'])
     return lock.to_json()
 
 @mod.route('/locks/<lock_uuid>', methods=['DELETE'])
@@ -317,7 +318,7 @@ def delete_lock(lock_uuid):
     """
     ロックを解除する
     """
-    from kskp.web.backend import lock_manager
+    lock_manager = app.config['LOCK_MANAGER'] 
     lock_manager.unlock(lock_uuid)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
