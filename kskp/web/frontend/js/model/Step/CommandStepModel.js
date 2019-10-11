@@ -38,31 +38,32 @@ export default class CommandStepModel extends BaseStepModel {
     if (Object.keys(this.srcs) != 0 && this.srcsOrder.length == 0) {
       this.srcsOrder = Object.keys(this.srcs)
     }
-    this.initCommandArgs()
+    this.args = this.initArgs(props.args)
   }
 
-  initCommandArgs() {
-    // SubflowStepModelがCommandStepModelを継承する場合があるため
-    if (!(this.type === Constants.step.type.command)) {
-      return
+  initArgs(args:{}) {
+    let result = args
+    try {
+      const command = this.getCommand()
+      if (!command) throw "command is undefined in CommandStepModel"
+      if (!command.params) throw "command.params is undefined in CommandStepModel"
+      const params = command.params
+      const rules = (command.rules) ? command.rules : {}
+      params.map((param:CommandParamType) => {
+        // 1.ルールの適用
+        const rule = rules[param.name]
+        // rule: 必須項目で空白（""）が許される場合
+        if (rule && rule["presence"] && ["presence"]["allowEmpty"] === true) result[param.name] = ""
+        // 2.default値の適用
+        if (param.default) result[param.name] = param.default
+        // 3.保存されたユーザー入力値の適用
+        if (args[param.name]) result[param.name] = args[param.name]
+      })
+    } catch(e) {
+      console.log(e)
     }
-    const command: CommandModel = this.getCommand()
-    if (!command || !(command.params) || !(Array.isArray(command.params))) {
-      return
-    }
-    command.params.map((param) => {
-      // 必須項目で空白（””）が許される場合
-      if(command.rules[param.name] 
-        && command.rules[param.name]["presence"]
-        && command.rules[param.name]["presence"]["allowEmpty"] === true
-        && !(this.args[param.name])) {
-          this.args[param.name] = ""
-      }
-      // default値がある場合、設定する
-      if(param.default && typeof (this.args[param.name]) === "undefined" && !(this.args[param.name] === "")) {
-        this.args[param.name] = param.default
-      } 
-    })
+  
+    return result
   }
 
   getStep (nodes, key) {

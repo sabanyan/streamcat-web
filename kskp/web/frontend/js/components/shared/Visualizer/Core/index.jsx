@@ -27,36 +27,50 @@ export default class Visualizer extends React.Component<Props, State> {
     this.inputRefs = []
     this.state = {
       html: (props.result) ? props.result.html : null,
-      args: (props.result) ? props.result.args : {},
+      args: (props.result) ? props.result.args : this.initArgs(props.visualize, {}),
       is_loading: (props.result) ? false : true
     }
   }
 
-  componentWillMount () {
-    const result = this.props.result
-    if (result) {
-      this.setState({args: result.args, html: result.html, is_loading: false}, () => {
-        this.forceUpdate()
+  initArgs(visualize: VisualizeModel, args:{}) {
+    let result = args
+    try {
+      const command = visualize
+      if (!command) throw "command is undefined in Visualizer"
+      if (!command.params) throw "command.params is undefined in Visualizer"
+      const params = command.params
+      const rules = (command.rules) ? command.rules : {}
+      params.map((param:CommandParamType) => {
+        // 1.ルールの適用
+        const rule = rules[param.name]
+        // rule: 必須項目で空白（""）が許される場合
+        if (rule && rule["presence"] && ["presence"]["allowEmpty"] === true) result[param.name] = ""
+        // 2.default値の適用
+        if (param.default) result[param.name] = param.default
+        // 3.保存されたユーザー入力値の適用
+        if (args[param.name]) result[param.name] = args[param.name]
       })
-    } else if (this.props.visualize) {
-      const args = this.getDefaultArgs(this.props.visualize.params)
-      this.visualizeRequest(this.props.visualize, args)
+    } catch(e) {
+      console.log(e)
     }
+  
+    return result
   }
 
-  getDefaultArgs (params: []) {
-    let args = {}
-    params.map((param) => {
-      if (param.default) {
-        args[param.name] = param.default
-      }
+  componentWillMount () {
+    const {result, visualize} = this.props
+    const args = this.state.args
+    this.setState({
+      html: (result) ? result.html : null, 
+      args: (result) ? result.args : this.initArgs(visualize, args), 
+      is_loading: false
+    }, () => {
+      if (result) this.forceUpdate()
+      if (!result) this.visualizeRequest(visualize, this.state.args)
     })
-    return args
   }
 
   visualizeRequest (visualize: VisualizeModel, args: {}) {
-    console.log("VR")
-    console.log(args)
     const uuid = this.props.frame_uuid
     const body = {'args': args, 'inputs': {'i': uuid}}
     // 現在Limitはクエリパラメーターではなく、Bodyのargs{limit:}を使ってるため

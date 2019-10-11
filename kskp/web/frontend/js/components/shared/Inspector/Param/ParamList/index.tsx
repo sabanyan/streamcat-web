@@ -65,7 +65,7 @@ export default class ParamList extends  React.Component<Props, State>{
 
     onDeleteElement(e, param, argIndex) {
         try {
-            //e.preventDefault()
+            e.preventDefault()
             const {onChange} = this.props
             if(this.state.currentValue.length <= 1) {
                 return
