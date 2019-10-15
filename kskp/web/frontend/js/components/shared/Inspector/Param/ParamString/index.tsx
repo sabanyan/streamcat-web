@@ -23,12 +23,28 @@ export default class ParamString extends React.Component<Props> {
         const {param, onChange} = this.props
         let value = e.currentTarget.value
         // ParamNumber 対応
-        //if (param.type === Constants.param.type.number && value !== '') value = parseInt(value) 
+        if (param.type === Constants.param.type.number && value !== '') value = parseInt(value) 
         if (onChange) onChange(e, param, value)
     } catch(e) {
         console.log(e)
     }
   }
+
+  renderDescription() {
+    let result = undefined
+    try {
+      const {param} = this.props
+      if (param.description) {
+        result = param.description
+      }
+    } catch(e) {
+      console.log(e)
+    }
+
+    return <p className={style.description}>
+      {result}
+    </p>
+  }  
 
   //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
   render () {
@@ -36,7 +52,7 @@ export default class ParamString extends React.Component<Props> {
     const {onChange} = this.props
 
     let isDisabled = (disabled) ? true : false
-    let labelContainer = (label) ? <label>{label}</label> : null
+    let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null
     let currentValue = (value) ? value : ''
 
     return <div className={style.param}>
