@@ -55,9 +55,9 @@ RUN go install github.com/kahing/goofys
 RUN cp /root/go/bin/goofys /usr/local/bin
 
 # AWS keys of kskp user
-ENV AWS_ACCESS_KEY_ID AKIAY2HAWKVRAU3IKV4L
-ENV AWS_SECRET_ACCESS_KEY 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
-ENV AWS_DEFAULT_REGION ap-northeast-1
+# ENV AWS_ACCESS_KEY_ID
+# ENV AWS_SECRET_ACCESS_KEY
+# ENV AWS_DEFAULT_REGION
 
 # Add privilage for mount command
 RUN echo "kskp ALL=(ALL) NOPASSWD: /usr/bin/mount,/usr/sbin/mount.cifs,/usr/bin/umount,/usr/local/bin/goofys" >> /etc/sudoers
