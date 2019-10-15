@@ -15,6 +15,7 @@ import classnames from 'classnames'
 type Props = {
     param: CommandParamType;
     value:Array<CommandParamType>;
+    label?:string;
 
     onChange:Function; // OnChange(e, param, value)
 }
@@ -166,7 +167,7 @@ export default class ParamList extends  React.Component<Props, State>{
         </React.Fragment>
     }    
 
-    renderElements(param:CommandParamType, arg:Array<CommandParamType>, onChange:Function):JSX.Element | null {
+    renderElements(param:CommandParamType, arg:Array<CommandParamType>, onChange:Function) {
         let paramElements:Array<JSX.Element> = []
         let labels:Array<JSX.Element> = []
 
@@ -191,8 +192,7 @@ export default class ParamList extends  React.Component<Props, State>{
             </div>)
         })
         
-        return <div>
-            <label>{param.label}</label>
+        return <React.Fragment>
             <div className={style.labelContainer}>
             {labels}
             </div>
@@ -200,7 +200,7 @@ export default class ParamList extends  React.Component<Props, State>{
             //pressDelay={100}
             items={paramElements}
             onSortEnd={(value, e) => this.onSortEnd(value, e)}/>
-        </div>
+        </React.Fragment>
     }
 
     onAddElement(e) {
@@ -222,12 +222,31 @@ export default class ParamList extends  React.Component<Props, State>{
         return <AddButton onClick={(e) => this.onAddElement(e)}></AddButton>
     }
 
+    renderDescription() {
+        let result = undefined
+        try {
+          const {param} = this.props
+          if (param.description) {
+            result = param.description
+          }
+        } catch(e) {
+          console.log(e)
+        }
+    
+        return <p className={style.description}>
+          {result}
+        </p>
+      }  
+
     render() {
-        const {param, onChange} = this.props
+        const {param, label, onChange} = this.props
+
+        let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null
         const listElements = this.renderElements(param, this.state.currentValue, onChange)
         const addButton = this.addButton()
 
         return <div key={param.name} className={style.paramElements}>
+            {labelContainer}
             {listElements}
             {addButton}
         </div>

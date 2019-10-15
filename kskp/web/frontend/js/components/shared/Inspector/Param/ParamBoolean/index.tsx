@@ -27,6 +27,22 @@ export default class ParamBoolean extends React.Component<Props> {
     }
   }
 
+  renderDescription() {
+    let result = undefined
+    try {
+      const {param} = this.props
+      if (param.description) {
+        result = param.description
+      }
+    } catch(e) {
+      console.log(e)
+    }
+
+    return <p className={style.description}>
+      {result}
+    </p>
+  }  
+
   render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
     const {label,param, disabled, value} = this.props
@@ -34,7 +50,8 @@ export default class ParamBoolean extends React.Component<Props> {
 
     const isDisabled = (disabled) ? true : false
     const isChecked = (value) ? true : false
-
+    let labelContainer = (label) ? <React.Fragment>{label}{this.renderDescription()}</React.Fragment> : null
+ 
     return <div className={style.param}>
       <label className={style.label}>
         <input 
@@ -45,7 +62,7 @@ export default class ParamBoolean extends React.Component<Props> {
           checked={isChecked}
           disabled={isDisabled}
           onChange={(e) => this.onChange(e)} />
-        {label}
+        {labelContainer}
       </label>
     </div>
   }
