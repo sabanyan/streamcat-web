@@ -97,14 +97,15 @@ export default class ParamList extends  React.Component<Props, State>{
         }
     }
 
-    onChangeContent(e, param:CommandParamType, elementValue:any, element:CommandParamType, argIndex:number) {
+    onChangeContent(e, element:CommandParamType, elementValue:any, argIndex:number) {
         try {
-            const {onChange} = this.props
-            this.state.currentValue[argIndex][element.name] = elementValue
+            const {param, onChange} = this.props
+            let arg = this.state.currentValue
+            arg[argIndex][element.name] = elementValue
             this.setState({
-                currentValue : this.state.currentValue
+                currentValue : arg
             }, () => {
-                onChange(e, param, elementValue)
+                onChange(e, param, this.state.currentValue)
             })
         } catch(e) {
             console.log(e)
@@ -156,7 +157,7 @@ export default class ParamList extends  React.Component<Props, State>{
                 value = arg[argIndex][element.name]
             } 
             ele = <div key={argIndex + element.name + index} className={style.paramElementArg}>
-                {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, param, elementValue, element, argIndex)})}
+                {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, element, elementValue, argIndex)})}
             </div>
             elements.push(ele)
         })
