@@ -51,18 +51,33 @@ export default class ParamSelect extends React.Component<Props> {
   onClear(e, multiple:boolean) {
     try {
       const {param, onChange} = this.props
-      let value 
-      if (multiple) {
-        value = []
-      } else {
-        value = undefined
-      }
+      let value
+      if (param.default) value = param.default
+      else if (multiple) value = []
+      else value = undefined
+
       if (onChange) onChange(e, param, value)
     } catch(e) {
       console.log(e)
     }
   }
 
+  renderDescription() {
+    let result = undefined
+    try {
+      const {param} = this.props
+      if (param.description) {
+        result = param.description
+      }
+    } catch(e) {
+      console.log(e)
+    }
+
+    return <p className={style.description}>
+      {result}
+    </p>
+  } 
+  
   render () {
     const {label,param, disabled, value} = this.props
     const {onChange} = this.props
@@ -72,7 +87,7 @@ export default class ParamSelect extends React.Component<Props> {
     const multiple = param.options.multiple
     const options = labels.map((label, index) => {return <option key={values[index]} value={values[index]}>{label}</option>})
     const isDisabled = (disabled) ? true : false
-    const labelContainer = (label) ? <label>{label}</label> : null
+    let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null
     let selectedValue = value
     // set unslected value if the value is undefined
     if (!multiple && selectedValue === undefined) {

@@ -1,3 +1,5 @@
+@import "../../../../../../sass/common";
+
 .param {
   margin: 0;
     i {
@@ -37,3 +39,10 @@
   color: red;
 }
 
+.description {
+  white-space: pre-wrap;
+  color: lighten($kskp-text,15%);
+  font-size: 13px;
+  padding: 0px 8px 0px 8px;
+  margin: 0;
+}
