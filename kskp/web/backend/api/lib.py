@@ -11,7 +11,9 @@ from kskp.store import (
     Flow,
     AwsS3,
     Database,
-    DbConnInfo,
+    DatabaseConn,
+    RemoteFolder,
+    RemoteFolderConn,
     ChildrenGetter
 )
 
@@ -432,7 +434,7 @@ def make_new_database():
     """
     データベースを作成する
     """
-    db_conn_info = DbConnInfo(
+    database_conn = DatabaseConn(
         request.json['dbms'],
         request.json['hostname'],
         request.json['port'],
@@ -441,11 +443,11 @@ def make_new_database():
         request.json['password'])
 
     # 接続情報に漏れがあれば例外を送出する
-    db_conn_info.valid_or_raise()
+    database_conn.valid_or_raise()
 
     new_database = Database(request.json['parent'],
                             request.json['label'],
-                            db_conn_info,
+                            database_conn,
                             creator=session['user_id'])
     new_database.save()
     return new_database.to_json()
@@ -465,7 +467,7 @@ def update_database(database_uuid):
 
     if 'label' in request.json and request.json['label'] != '':
         # データベースを修正する
-        db_conn_info = DbConnInfo(
+        database_conn = DatabaseConn(
             request.json['dbms'],
             request.json['hostname'],
             request.json['port'],
@@ -474,11 +476,11 @@ def update_database(database_uuid):
             request.json['password'])
 
         # 接続情報に漏れがあれば例外を送出する
-        db_conn_info.valid_or_raise()
+        database_conn.valid_or_raise()
 
         label = request.json['label']
         modifier = session['user_id']
-        return Database.update_data(database_uuid, label, db_conn_info, modifier)
+        return Database.update_data(database_uuid, label, database_conn, modifier)
     elif 'parent' in request.json and request.json['parent'] != '':
         # データベースを移動する
         new_parent = request.json['parent']
@@ -486,7 +488,7 @@ def update_database(database_uuid):
         database = Database.find_by_uuid(database_uuid)
         return database.move(new_parent, modifier)
     else:
-        raise Exception('update_folder parameter error!')
+        raise Exception('update_database parameter error!')
 
 @mod.route('/databases/<database_uuid>', methods=['DELETE'])
 @login_required_api
@@ -500,164 +502,91 @@ def delete_database(database_uuid):
     database.delete()
 
 
-# @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
-# @login_required_api
-# @update_navigation
-# def fetch_remote_folder(folder_uuid):
-#     """
-#     リモートフォルダを返却する
-#     """
-#     try:
-#         # remote_folder = get_folder2(folder_uuid)
-#         # data = _make_fetch_data(remote_folder)
-#         # return jsonify({'success': True, 'data': data})
+@mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fetch_remote_folder(folder_uuid):
+    """
+    リモートフォルダを返却する
+    """
+    folder = RemoteFolder.find_by_uuid(folder_uuid)
+    return _jsonify_folder(folder)
 
-#         folder = RemoteFolderStore.find_by_uuid(folder_uuid)
 
-#         # フォルダ直下のフォルダとデータベースとドキュメントを取得する
-#         childrenGetter = FolderChildrenGetter()
-#         children = childrenGetter.execute(None, folder)
+@mod.route('/remote-folders', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_remote_folder():
+    """
+    リモートフォルダを作成する
+    """
+    remote_folder_conn = RemoteFolderConn(
+        request.json['protocol'],
+        request.json['hostname'],
+        request.json['domain'],
+        request.json['directory'],
+        request.json['user_id'],
+        request.json['password'])
 
-#         # children属性を作成する
-#         data = folder.to_json()
-#         for child in children:
-#             data['children'].append(child.to_json())
+    # 接続情報に漏れがあれば例外を送出する
+    remote_folder_conn.valid_or_raise()
 
-#         # folderPath属性を作成する
-#         folder_list = folder.get_folder_path()
-#         data['folderPath'] = []
-#         for f in folder_list:
-#             data['folderPath'].append(f)
+    new_folder = RemoteFolder(request.json['parent'],
+                              request.json['label'],
+                              remote_folder_conn,
+                              creator=session['user_id'])
+    new_folder.save()
+    return new_folder
 
-#         return jsonify({'success': True, 'data': data})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
+@mod.route('/remote-folders/<folder_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_remote_folder(folder_uuid):
+    """
+    リモートフォルダを修正する、またはリモートフォルダを移動する
+    """
+    if ('label'  not in request.json or request.json['label']  == '') and \
+       ('parent' not in request.json or request.json['parent'] == ''):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif 'label' in request.json and 'parent' in request.json:
+        raise Exception('labelとはparent属性は同時に指定できません')
 
-# @mod.route('/remote-folders', methods=['POST'])
-# @login_required_api
-# def make_new_remote_folder():
-#     """
-#     リモートフォルダを作成する
-#     """
-#     try:
-#         # new_folder = RemoteFolder(str(uuid.uuid4())
-#         #                         , request.json['parent']
-#         #                         , request.json['label']
-#         #                         , request.json['user']
-#         #                         , request.json['password']
-#         #                         , request.json['server']
-#         #                         , request.json['port']
-#         #                         , request.json['domain']
-#         #                         , request.json['directory']
-#         #                         , creator=session['user_id'])
-#         # set_folder2(new_folder)
-#         # return jsonify({'success': True, 'data': new_folder.to_json()})
+    if 'label' in request.json and request.json['label'] != '':
+        # リモートフォルダを修正する
+        remote_folder_conn = RemoteFolderConn(
+            request.json['protocol'],
+            request.json['hostname'],
+            request.json['domain'],
+            request.json['directory'],
+            request.json['user_id'],
+            request.json['password'])
 
-#         new_folder = RemoteFolderStore(request.json['parent']
-#                                      , request.json['label']
-#                                      , request.json['user']
-#                                      , request.json['password']
-#                                      , request.json['server']
-#                                      , request.json['port']
-#                                      , request.json['domain']
-#                                      , request.json['directory']
-#                                      , creator=session['user_id']
-#                                      , modifier=session['user_id'])
+        # 接続情報に漏れがあれば例外を送出する
+        remote_folder_conn.valid_or_raise()
 
-#         # フォルダに紐付くディレクトリ(path列で指定されるディレクトリ)がなければ作成する
-#         new_folder.make_dir()
-#         # ここでリモートディレクトリをマウントする
-#         new_folder.mount()
-#         # remote-folderレコードをDBに格納する
-#         new_folder.save()
-#         # リモートディレクトリ直下のファイルをDBに登録する
-#         pass
+        label = request.json['label']
+        modifier = session['user_id']
+        return RemoteFolder.update_data(folder_uuid, label, remote_folder_conn, modifier)
+    elif 'parent' in request.json and request.json['parent'] != '':
+        # リモートフォルダを移動する
+        new_parent = request.json['parent']
+        modifier = session['user_id']
+        folder = RemoteFolder.find_by_uuid(folder_uuid)
+        return folder.move(new_parent, modifier)
+    else:
+        raise Exception('update_remote_folder parameter error!')
 
-#         return jsonify({'success': True, 'data': new_folder.to_json()})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                       })
-
-# @mod.route('/remote-folders/<folder_uuid>', methods=['PUT'])
-# @login_required_api
-# def update_remote_folder(folder_uuid):
-#     """
-#     リモートフォルダを修正する
-#     """
-#     try:
-#         # new_label = request.json['label']
-#         # new_user = request.json['user']
-#         # new_password = request.json['password']
-#         # new_server = request.json['server']
-#         # new_port = request.json['port']
-#         # new_domain = request.json['domain']
-#         # new_directory = request.json['directory']
-
-#         # folder = RemoteFolder(folder_uuid
-#         #                     , None
-#         #                     , new_label
-#         #                     , new_user
-#         #                     , new_password
-#         #                     , new_server
-#         #                     , new_port
-#         #                     , new_domain
-#         #                     , new_directory
-#         #                     , modifier=session['user_id'])
-#         # upd_folder2(folder)
-#         # return jsonify({'success': True, 'data': folder.to_json()})
-
-#         folder = RemoteFolderStore(request.json['parent']
-#                                  , request.json['label']
-#                                  , request.json['user']
-#                                  , request.json['password']
-#                                  , request.json['server']
-#                                  , request.json['port']
-#                                  , request.json['domain']
-#                                  , request.json['directory']
-#                                  , modifier=session['user_id'])
-#         folder.update_data()
-#         return jsonify({'success': True, 'data': folder.to_json()})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
-
-# @mod.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
-# @login_required_api
-# def delete_remote_folder(folder_uuid):
-#     """
-#     リモートフォルダを削除する
-#     """
-#     try:
-#         # del_folder2(folder_uuid)
-#         # return jsonify({'success': True})
-
-#         # リモートディレクトリ直下のファイルをDBから登録解除する
-#         pass
-#         folder = RemoteFolderStore.find_by_uuid(folder_uuid)
-#         # remote-folderレコードをDBから削除する
-#         folder.delete()
-#         # ここでリモートディレクトリをマウント解除する
-#         folder.umount()
-#         # フォルダに紐づくディレクトリを削除する
-#         folder.remove_dir()
-
-#         return jsonify({'success': True})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
+@mod.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def delete_remote_folder(folder_uuid):
+    """
+    リモートフォルダを削除する
+    """
+    folder = RemoteFolder.find_by_uuid(folder_uuid)
+    # リモートフォルダレコードをDBから削除する
+    folder.delete()
 
 
 # @mod.route('/documents/<doc_uuid>', methods=['GET'])
