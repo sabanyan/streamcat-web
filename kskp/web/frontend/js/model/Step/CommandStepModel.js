@@ -1,11 +1,9 @@
 //@flow
 import { BaseStepModel } from 'Model/index'
-import BaseModelProps from 'Model/Step/BaseStepModel'
 import type { CommandParamType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
 import validateJS from 'validate.js'
 import arrayMove from 'array-move'
-import Constants from '../../constants'
 
 type stepType = 'command' | 'frame'
 
@@ -42,7 +40,7 @@ export default class CommandStepModel extends BaseStepModel {
   }
 
   initArgs(args:{}) {
-    let result = args
+    let result = {}
     try {
       const command = this.getCommand()
       if (!command) throw "command is undefined in CommandStepModel"
