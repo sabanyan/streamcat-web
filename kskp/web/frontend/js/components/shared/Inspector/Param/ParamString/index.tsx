@@ -24,6 +24,7 @@ export default class ParamString extends React.Component<Props> {
         let value = e.currentTarget.value
         // ParamNumber 対応
         if (param.type === Constants.param.type.number && value !== '') value = parseInt(value) 
+        if (!value) value = ""
         if (onChange) onChange(e, param, value)
     } catch(e) {
         console.log(e)
@@ -53,7 +54,7 @@ export default class ParamString extends React.Component<Props> {
 
     let isDisabled = (disabled) ? true : false
     let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null
-    let currentValue = (value) ? value : ''
+    let currentValue = (value) ? value : ""
 
     return <div className={style.param}>
       {labelContainer}
