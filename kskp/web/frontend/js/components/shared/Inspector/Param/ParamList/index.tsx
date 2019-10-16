@@ -71,7 +71,7 @@ export default class ParamList extends  React.Component<Props, State>{
             if(this.state.currentValue.length <= 1) {
                 return
             }
-            let newValue = this.state.currentValue.filter((element, index) => {index !== argIndex})
+            let newValue = this.state.currentValue.filter((element, index) => index !== argIndex)
             ModalUtil.registerModal({
                 id: Constants.modal.CONFIRM, 
                 onClickDone: () => {
