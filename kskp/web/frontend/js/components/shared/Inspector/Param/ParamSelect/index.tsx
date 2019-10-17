@@ -85,6 +85,7 @@ export default class ParamSelect extends React.Component<Props> {
     const labels = param.options.labels
     const values = param.options.values
     const multiple = param.options.multiple
+
     const options = labels.map((label, index) => {return <option key={values[index]} value={values[index]}>{label}</option>})
     const isDisabled = (disabled) ? true : false
     let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null

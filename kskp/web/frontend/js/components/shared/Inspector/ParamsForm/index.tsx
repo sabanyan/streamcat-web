@@ -93,12 +93,12 @@ export default class ParamsForm extends React.Component<Props> {
           param.options = {
             labels: headers,
             values: headers,
-            multiple: (param.options.multiple) ? true : false
+            multiple: (param.options && param.options.multiple) ? true : false
           }
           paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
         case Constants.param.type.list    :
-          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value} onChange={onChange} headers={headers} />
           break
       }
     } catch(e) {
@@ -149,6 +149,7 @@ export default class ParamsForm extends React.Component<Props> {
       }
       if (params) {
         params.forEach((param, index) => {
+          console.log(param)
           const paramForm = this.renderParam(param, index)
           paramsForm.push(paramForm)
         })

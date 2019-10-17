@@ -1,6 +1,6 @@
 //@flow
 import * as React from 'react'
-import { BaseInspector, ParamsForm } from 'Shared/Inspector'
+import { BaseInspector, ParamsForm, Resizer} from 'Shared/Inspector'
 import { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
 import { Button } from 'Shared/Input'
@@ -87,11 +87,13 @@ class PreviewInspector extends React.Component<PreviewInspectorProps, State> {
 
     const property_class = classnames(style.property, style.in)
 
-    return <div className={property_class}>
+    return <Resizer>
+    <div className={property_class}>
       <BaseInspector key={0} header={''} label={label} subLabel={''}>
         {content}
       </BaseInspector>
     </div>
+    </Resizer>
   }
 
 }
