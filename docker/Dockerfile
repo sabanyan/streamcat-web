@@ -87,6 +87,10 @@ RUN pip install nysol
 RUN yum install -y epel-release
 RUN yum install -y nkf --enablerepo=epel
 
+# install ORACLE client
+ADD https://download.oracle.com/otn_software/linux/instantclient/193000/oracle-instantclient19.3-basiclite-19.3.0.0.0-1.x86_64.rpm /home/kskp/kskp-web
+RUN yum install -y /home/kskp/kskp-web/oracle-instantclient19.3-basiclite-19.3.0.0.0-1.x86_64.rpm
+
 USER kskp
 
 RUN git clone https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-flow-engine.git /home/kskp/kskp-flow-engine
