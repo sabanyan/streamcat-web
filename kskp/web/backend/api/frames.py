@@ -221,11 +221,22 @@ def make_new_frames():
         if '.' in request.args['from']:
             # プレビュー
 
-            # ドットで区切って、具体的に一つだけstepを指定することができる
-            # TODO: 後々この部分は文法を拡張していく予定
+            # ドットで区切って、具体的に一つだけstepを指定することができる            
             froms = request.args['from'].split('.')
             flow_uuid = froms[0]
-            step_ids.append(froms[1])
+
+
+            ## APIのURL文字列から、フロー実行時の取得対象となるポイントを抜き出す ##
+
+            # ドットでポイント指定が終了してしまったらエラー
+            if len(froms[1]) == 0:
+                return jsonify({
+                    'success': False,
+                    'code'   : -1,
+                    'message': 'URL(実行結果の指定方法)が不正です'
+                })
+
+            step_ids = parse_step_ids(froms[1])            
         else:
             # 普通の実行
             flow_uuid = request.args['from']
@@ -242,6 +253,30 @@ def make_new_frames():
                             'code': -1,
                             'message': 'invalid json'
                         })
+
+
+def parse_step_ids(points_str):
+    """
+    APIのURL文字列から、フロー実行時の取得対象となるポイントを取り出す
+
+    具体的には、/frames?from=<flow_uuid>.<step_ids>の形式のAPIでの
+    <step_ids>の部分をパースする
+    """
+
+    # ドットのすぐ後がカッコで囲まれていれば、複数のポイント指定とみなす
+    # それ以外は実行結果となるポイントを1つだけ指定できる
+    if points_str[0] == '(' and points_str[-1] == ')':
+        # point_idのリストとしてパース
+
+        # カッコを取り除き、カンマで区切って返す
+        # whitespaceは許さない
+        points_str = points_str.replace('(', '', 1)
+        points_str = points_str.replace(')', '', 1)
+        return points_str.split(',')
+    else:
+        # それ以外(そのままpoint_idとみなす)
+        return [points_str]
+        
 
 def execute_flow(flow_uuid, step_ids, args={}, inputs={}):
     """

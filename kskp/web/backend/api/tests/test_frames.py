@@ -506,7 +506,14 @@ class FrameApiTestCase(TestCaseBase):
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
         self.assertEqual(lasts[0]['label'], '出力結果')
-
+    
+    def test_parse_step_ids(self):
+        from kskp.web.backend.api.frames import parse_step_ids
+        self.assertEqual(parse_step_ids('abc'), ['abc'])
+        self.assertEqual(parse_step_ids('(abc)'), ['abc'])
+        self.assertEqual(parse_step_ids('(abc,def)'), ['abc', 'def'])
+        
+    
 def create_data(file_path_obj, data=None):
     """
     テストデータ作成用
@@ -522,6 +529,7 @@ def create_data(file_path_obj, data=None):
                                str(uuid.uuid4()),
                                Path(Datum._to_rel_path(file_path_obj.as_posix())))
     return frame.uuid
+
 
 def delete_flow(uuid):
     """
