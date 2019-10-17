@@ -16,12 +16,16 @@ type Props = {
     param: CommandParamType;
     value:Array<CommandParamType>;
     label?:string;
+    headers?:string[];
 
     onChange:Function; // OnChange(e, param, value)
 }
 
 type State = {
     currentValue:Array<CommandParamType>;
+    addable: boolean,
+    deleteable: boolean,
+    draggable: boolean
 }
 
 const SortableItem = SortableElement(({value}) => <li>{value}</li>);
@@ -45,8 +49,17 @@ export default class ParamList extends  React.Component<Props, State>{
     }
 
     componentWillMount() {
+        const {param} = this.props
+
+        let isAddable = (param.options && 'addable' in param.options && param.options.addable === false) ? false : true
+        let isDeletable = (param.options && 'addable' in param.options && param.options.deletable === false) ? false : true
+        let isDraggable = (param.options && 'addable' in param.options && param.options.draggable === false) ? false : true
+
         this.setState({
-            currentValue : this.props.value
+            currentValue : this.props.value,
+            addable: isAddable,
+            deleteable: isDeletable,
+            draggable: isDraggable
         })
     }
 
@@ -131,8 +144,10 @@ export default class ParamList extends  React.Component<Props, State>{
               param.options = {
                 labels: headers,
                 values: headers,
-                multiple: (param.options.multiple) ? true : false
+                multiple: (param.options && param.options.multiple) ? true : false
               }
+              console.log("select")
+              console.log(param)
               paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
               break
           }
@@ -145,6 +160,7 @@ export default class ParamList extends  React.Component<Props, State>{
 
     renderElement(param:CommandParamType, argIndex:number, arg:Array<CommandParamType>):JSX.Element {
         let elements:Array<JSX.Element> = []
+        const {headers} = this.props
         if (!(param.elements) || !(Array.isArray(param.elements))) {
             return <div>
                 {elements}
@@ -157,7 +173,7 @@ export default class ParamList extends  React.Component<Props, State>{
                 value = arg[argIndex][element.name]
             } 
             ele = <div key={argIndex + element.name + index} className={style.paramElementArg}>
-                {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, element, elementValue, argIndex)})}
+                {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, element, elementValue, argIndex)}, headers)}
             </div>
             elements.push(ele)
         })
@@ -168,7 +184,7 @@ export default class ParamList extends  React.Component<Props, State>{
         </React.Fragment>
     }    
 
-    renderElements(param:CommandParamType, arg:Array<CommandParamType>, onChange:Function) {
+    renderElements(param:CommandParamType, arg:Array<CommandParamType>) {
         let paramElements:Array<JSX.Element> = []
         let labels:Array<JSX.Element> = []
 
@@ -188,19 +204,17 @@ export default class ParamList extends  React.Component<Props, State>{
 
         arg.forEach((element, index) => {
             let paramElement = this.renderElement(param, index, arg)
-            paramElements.push(<div key={element.name + index} className={style.paramElements}>
+            paramElements.push(<div key={index} className={style.paramElements}>
                 {paramElement}
             </div>)
         })
-        
+       
+        let contents = (this.state.draggable) ? <SortableList items={paramElements} onSortEnd={(value, e) => this.onSortEnd(value, e)}/> : paramElements
         return <React.Fragment>
             <div className={style.labelContainer}>
-            {labels}
+                {labels}
             </div>
-            <SortableList
-            //pressDelay={100}
-            items={paramElements}
-            onSortEnd={(value, e) => this.onSortEnd(value, e)}/>
+            {contents}
         </React.Fragment>
     }
 
@@ -243,8 +257,8 @@ export default class ParamList extends  React.Component<Props, State>{
         const {param, label, onChange} = this.props
 
         let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null
-        const listElements = this.renderElements(param, this.state.currentValue, onChange)
-        const addButton = this.addButton()
+        const listElements = this.renderElements(param, this.state.currentValue)
+        const addButton = (this.state.addable) ? this.addButton() : null
 
         return <div key={param.name} className={style.paramElements}>
             {labelContainer}

@@ -12,17 +12,18 @@
     clear:both;
     font-size: 12px; 
     label:nth-child(1) {
-        width:80px;
+        width:30%;
       }
     
       label:nth-child(n + 2) {
-        width:100px;  
+        width:50%;  
         margin: 0px 0px 0px 5px;
       }
 }
 
 .paramElements {
     width   : 100%;
+    
     
     .paramElements {
         border-radius: 4px;
@@ -32,18 +33,20 @@
     }
 
     .paramElementArg:nth-child(1) {
-        width: 70px;
-        float: left;  
+        width: 30%;
+        float: left;
+ 
     }
 
     .paramElementArg:nth-child(n + 2) {
-        width: 190px;
+        width: 50%;
         float: left;
         margin: 0px 4px 0px 4px;
+
     }
 
     button {
-        width: 50px;
+        width: 10%;
         float: right;
         margin: 3px 3px 0px 3px;
     }
