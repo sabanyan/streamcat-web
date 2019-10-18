@@ -245,12 +245,15 @@ def fetch_commands():
     コマンド定義の一覧を返す
     """
 
-    from kskp.store import CommandsPathFileSource, CommandsPathLink
+    from kskp.store import CommandsPathFileSource, CommandsPathFileSource2, CommandsPathLink
 
     commands_list = []
     for visible_command in app.config['VISIBLE_COMMANDS_JSON']:
         link = CommandsPathLink(CommandsPathFileSource(visible_command))
         commands_list.extend(link.resolve())
+
+    link2 = CommandsPathLink(CommandsPathFileSource2('multi_in'))
+    commands_list.extend(link2.resolve())
 
     return jsonify({'success': True, 'data': commands_list})
 
