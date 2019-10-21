@@ -146,8 +146,6 @@ export default class ParamList extends  React.Component<Props, State>{
                 values: headers,
                 multiple: (param.options && param.options.multiple) ? true : false
               }
-              console.log("select")
-              console.log(param)
               paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
               break
           }

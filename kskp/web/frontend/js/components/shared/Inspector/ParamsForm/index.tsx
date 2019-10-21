@@ -149,7 +149,6 @@ export default class ParamsForm extends React.Component<Props> {
       }
       if (params) {
         params.forEach((param, index) => {
-          console.log(param)
           const paramForm = this.renderParam(param, index)
           paramsForm.push(paramForm)
         })
