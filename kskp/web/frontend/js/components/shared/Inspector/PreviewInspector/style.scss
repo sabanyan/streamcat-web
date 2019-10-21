@@ -3,15 +3,25 @@
 
 
 .property {
-  position: fixed;
-  width: 400px;
-  right: -400px;
-  top: 55px;
+  bottom: 9px;
+  position: relative;
   height: 100%;
   transition: opacity 0.2s linear, right 0.2s ease-in;
   opacity: 0;
   box-shadow: 0 1px 3px $kskp-property-shadow;
   @extend .user-select;
+
+  /*
+  position: fixed;
+  width: 400px;
+  right: -400px;
+  
+  height: 100%;
+  transition: opacity 0.2s linear, right 0.2s ease-in;
+  opacity: 0;
+  box-shadow: 0 1px 3px $kskp-property-shadow;
+  @extend .user-select;
+  */
 }
 
 .in {
