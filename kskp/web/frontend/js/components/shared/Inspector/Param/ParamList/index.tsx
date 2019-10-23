@@ -24,7 +24,7 @@ type Props = {
 type State = {
     currentValue:Array<CommandParamType>;
     addable: boolean,
-    deleteable: boolean,
+    deletable: boolean,
     draggable: boolean
 }
 
@@ -51,14 +51,14 @@ export default class ParamList extends  React.Component<Props, State>{
     componentWillMount() {
         const {param} = this.props
 
-        let isAddable = (param.options && 'addable' in param.options && param.options.addable === false) ? false : true
-        let isDeletable = (param.options && 'addable' in param.options && param.options.deletable === false) ? false : true
-        let isDraggable = (param.options && 'addable' in param.options && param.options.draggable === false) ? false : true
+        let isAddable = (param.options && 'visiable_button_add' in param.options && param.options.visiable_button_add === false) ? false : true
+        let isDeletable = (param.options && 'visiable_button_delete' in param.options && param.options.visiable_button_delete === false) ? false : true
+        let isDraggable = (param.options && 'draggable' in param.options && param.options.draggable === false) ? false : true
 
         this.setState({
             currentValue : this.props.value,
             addable: isAddable,
-            deleteable: isDeletable,
+            deletable: isDeletable,
             draggable: isDraggable
         })
     }
@@ -170,15 +170,20 @@ export default class ParamList extends  React.Component<Props, State>{
             if(arg && arg[argIndex]) {
                 value = arg[argIndex][element.name]
             } 
-            ele = <div key={argIndex + element.name + index} className={style.paramElementArg}>
+            let className = style.paramElementArg
+            if (element.type === Constants.param.type.select || element.type === Constants.param.type.column) {
+                className = classnames(style.paramElementArg, style.select)
+            }
+            ele = <div key={argIndex + element.name + index} className={className}>
                 {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, element, elementValue, argIndex)}, headers)}
             </div>
             elements.push(ele)
         })
        
+        const deleteButton = (this.state.deletable) ? <Button danger={true} onClick={(e) => {this.onDeleteElement(e, param, argIndex)}}>削除</Button> : null
         return <React.Fragment>
             {elements}
-            <Button danger={true} onClick={(e) => {this.onDeleteElement(e, param, argIndex)}}>削除</Button>
+            {deleteButton}
         </React.Fragment>
     }    
 
@@ -199,10 +204,15 @@ export default class ParamList extends  React.Component<Props, State>{
             let label = (element.label) ? element.label : element.name
             labels.push(<label key={label + index}>{label}</label>)
         })
+        labels.push(<label key={"dummy"}></label>)
+        let className = style.paramElements
+        if (this.state.deletable === false) {
+            className = style.paramElementsNoButton
+        }
 
         arg.forEach((element, index) => {
             let paramElement = this.renderElement(param, index, arg)
-            paramElements.push(<div key={index} className={style.paramElements}>
+            paramElements.push(<div key={index} className={className}>
                 {paramElement}
             </div>)
         })
@@ -258,7 +268,7 @@ export default class ParamList extends  React.Component<Props, State>{
         const listElements = this.renderElements(param, this.state.currentValue)
         const addButton = (this.state.addable) ? this.addButton() : null
 
-        return <div key={param.name} className={style.paramElements}>
+        return <div key={param.name} className={style.elements}>
             {labelContainer}
             {listElements}
             {addButton}
