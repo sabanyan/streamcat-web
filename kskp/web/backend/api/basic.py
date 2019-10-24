@@ -184,7 +184,7 @@ def update_flow(flow_uuid):
     if 'parent' in request.json:
         if 'label' in request.json:
             raise Exception('labelとはparent属性は同時に指定できません')
-        # frameを移動する
+        # flowを移動する
         new_parent = request.json['parent']
         modifier = session['user_id']
         flow = Flow.find_by_uuid(flow_uuid)
