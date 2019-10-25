@@ -140,7 +140,7 @@ export default class ParamsForm extends React.Component<Props> {
           paramsForm.push(this.renderGroup(group.name + "_start", group.label))
           group.params.forEach((paramName, index) => {
             const param = params.find(p => p.name == paramName)
-            if (!param) throw "[Error] undefined params.name in Group"
+            if (!param) throw "[Error] undefined params.name " + param.name + " in Group "
             const paramForm = this.renderParam(param, group.name + index)
             paramsForm.push(paramForm)
             params = params.filter(p => p.name !== paramName)

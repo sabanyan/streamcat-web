@@ -359,7 +359,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
                         icon={'visibility'}>プレビュー</Button>
       if (selected_step.hasData()) {
         const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
-        download = <DownloadButton href={href} icon={'visibility'}>CSVダウンロード</DownloadButton>
+        download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
       }
     }
 
