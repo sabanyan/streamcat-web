@@ -178,7 +178,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.uploadedFile = null
     this.forceUpdate()
 
-    HttpUtil.windowOpen('library?dialog=true', (args) => {
+    HttpUtil.windowOpen('library?dialog=true&mode=frame_select', (args) => {
       const selected_data: LibraryListDataType = args
       let parameters = {}
       //データソースを追加
@@ -270,8 +270,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         <Save disabled={false} icon={'&#xE2C2'}
               onClick={(e) => this.onClickSave(e)}>保存</Save>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
-                          onClick={(e) => this.onClickDataSourceImport(
-                            e)}>データソースの追加</DataSourceImport>
+                          onClick={(e) => this.onClickDataSourceImport(e)}>データソースの追加</DataSourceImport>
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
         <Note disabled={false} icon={'comment'}

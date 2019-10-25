@@ -40,7 +40,9 @@ export default class Library extends React.Component<Props, State> {
   constructor (props: Props) {
     super(props)
 
-    const mode = HttpUtil.getURLParam("dialog")?Constants.library.mode.dialog:Constants.library.mode.list
+    const is_dialog = HttpUtil.getURLParam("dialog") ? true : false 
+    const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list
+    
     //TODO ReduxのStoreで管理する
     this.state = {
       stores: [],
@@ -54,6 +56,7 @@ export default class Library extends React.Component<Props, State> {
       frame_name: '',
       document_name: '',
       folder_name: '',
+      is_dialog: is_dialog,
       mode: mode
     }
     
@@ -103,7 +106,6 @@ export default class Library extends React.Component<Props, State> {
           this.setState({document_name:null, upload_file: null}, () => {
             ModalUtil.closeModal(Constants.modal.ADD_DOCUMENT)
           })
-          
         }, () => {
           this.unhandledNotify()
         })
@@ -151,7 +153,6 @@ export default class Library extends React.Component<Props, State> {
           this.setState({folder_name: null}, () => {
             ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
           })
-          
         }, () => {
           this.unhandledNotify('フォルダ作成エラー')
         })
@@ -314,9 +315,7 @@ export default class Library extends React.Component<Props, State> {
       visible: true,
       done: '追加する',
       content: <div>
-        <TextField placeholder={'名称'}
-                   onChange={(e, validation) => this.onChangeFrameName(e,
-                     validation)} />
+        <TextField placeholder={'名称'} onChange={(e, validation) => this.onChangeFrameName(e, validation)} />
         <div className={'mt-8px'} />
         <FileUploader accept={['text/csv']} onChangeFile={(e) => this.onChangeFile(e)} />
       </div>,
@@ -330,9 +329,7 @@ export default class Library extends React.Component<Props, State> {
       visible: true,
       done: '追加する',
       content: <div>
-        <TextField placeholder={'フォルダ名'}
-                   onChange={(e, validation) => this.onChangeFolderName(e,
-                     validation)} />
+        <TextField placeholder={'フォルダ名'} onChange={(e, validation) => this.onChangeFolderName(e,validation)} />
       </div>,
     })
     e.preventDefault()
@@ -373,46 +370,57 @@ export default class Library extends React.Component<Props, State> {
     e.preventDefault()
   }
 
+  onClickSelectDestination (e) {
+    if (window.opener || !window.opener.closed) {
+      window.opener.onCallbackApply(this.state.currentFolderUUID)
+    }
+    window.close()
+  }
+
   renderNewFolder () {
-    return this.renderNew((e) => this.onClickNewFolder(e), 'フォルダを作成する')
+    return this.renderButton((e) => this.onClickNewFolder(e), 'フォルダを作成する', 'add_circle_outline')
   }
 
   renderNewDatabase () {
-    return this.renderNew((e) => this.onClickNewDatabase(e), 'データベースを追加する')
+    return this.renderButton((e) => this.onClickNewDatabase(e), 'データベースを追加する', 'add_circle_outline')
   }
 
   renderNewDocument () {
-    return this.renderNew((e) => this.onClickNewDocument(e), '資料をアップロードする')
+    return this.renderButton((e) => this.onClickNewDocument(e), '資料をアップロードする', 'add_circle_outline')
   }
 
   renderNewFrame () {
-    return this.renderNew((e) => this.onClickNewFrame(e), 'CSVをアップロードする')
+    return this.renderButton((e) => this.onClickNewFrame(e), 'CSVをアップロードする', 'add_circle_outline')
   }
 
   renderNewRemoteFolder () {
-    return this.renderNew((e) => this.onClickNewRemoteFolder(e), 'ファイルサーバを追加する')
+    return this.renderButton((e) => this.onClickNewRemoteFolder(e), 'ファイルサーバを追加する', 'add_circle_outline')
   }
 
-  renderNew (onClick: Function, title: string) {
+  renderSelectDestination () {
+    return this.renderButton((e) => this.onClickSelectDestination(e), '移動する', 'input')
+  }
+
+  renderButton (onClick: Function, title: string, icon: string) {
     return <a
       className={classnames(libraryListStyle.library, libraryListStyle.new)}
       href="#" onClick={(e) => onClick(e)}>
       <div className={libraryListStyle.library_list}>
         <div className={libraryListStyle.name}>
-          <i className={classnames('material-icons',
-            [libraryListStyle.icon])}>add_circle_outline</i>
+          <i className={classnames('material-icons', [libraryListStyle.icon])}>{icon}</i>
           {title}
         </div>
       </div>
     </a>
   }
+  
 
   renderLibrariesHeader () {
     return <LibraryListHeader />
   }
 
   renderLibraries () {
-    const dialogOption = (this.state.mode === Constants.library.mode.dialog) ? '?dialog=true' : ''
+    let dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
 
     return this.state.libraryChildren.map((child, index) => {
       const selected = (this.state.selected_data === child)
@@ -506,27 +514,70 @@ export default class Library extends React.Component<Props, State> {
     }
   }
 
+  onClickMove (e) {
+    const selected_data = this.state.selected_data
+    try {
+      HttpUtil.windowOpen('library?dialog=true&mode=folder_select', (folder_uuid) => {
+        const type = selected_data.type
+        const uuid = selected_data.uuid
+        const data = {
+          parent : folder_uuid
+        }
+
+        let result
+        switch (type) {
+          case Constants.library.type.folder:
+            result = APIUtil.put('folders/' + uuid, data)
+            break;
+          case Constants.library.type.flow:
+            result = APIUtil.put('flows/' + uuid, data)
+            break;
+          case Constants.library.type.frame:
+            result = APIUtil.put('frames/' + uuid, data)
+            break;
+          case Constants.library.type.document:
+            result = APIUtil.put('documents/' + uuid, data)
+            break;
+          case Constants.library.type.database:
+            result = APIUtil.put('databases/' + uuid, data)
+            break;
+          case Constants.library.type.remoteFolder:
+            result = APIUtil.put('remote-folders/' + uuid, data)
+            break;
+        }
+        result.then((response) => {
+          this.fetchFolder()
+        })
+      })
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
   renderInspector () {
     const data: LibraryListDataType = this.state.selected_data
     let onClickDelete = null
     let onClickApply = null
+    let onClickMove = null
 
     switch (this.state.mode) {
-      case Constants.library.mode.dialog:
+      case Constants.library.mode.frame_select:
         if (data && data.type === Constants.library.type.frame) {
-          onClickApply = (data) => this.onClickApply(
-            data)
+          onClickApply = (data) => this.onClickApply(data)
         }
         break
+      case Constants.library.mode.folder_select:
+        break
       case Constants.library.mode.list:
-        onClickDelete = (data) => this.onClickDelete(
-          data)
+        onClickDelete = (data) => this.onClickDelete(data)
+        onClickMove = (data) => this.onClickMove(data)
         break
     }
 
     return <LibraryInspector data={data}
                              onClickDelete={onClickDelete}
                              onClickApply={onClickApply}
+                             onClickMove={onClickMove}
                              onBlurTitle={(e) => this.onBlurTitle(e,data)}
                              visualizers={this.state.visualizers}/>
   }
@@ -668,12 +719,17 @@ export default class Library extends React.Component<Props, State> {
       {this.renderNewFrame()}
     </div>
 
+    let selectUI = <div>
+      {this.renderSelectDestination()}
+    </div>
+
     return <div>
       {this.renderBreadCrumb()}
       {this.renderLibrariesHeader()}
       {this.renderLibraries()}
       {this.renderInspector()}
       {(this.state.mode === Constants.library.mode.list) ? newUI : null}
+      {(this.state.mode === Constants.library.mode.folder_select) ? selectUI : null}
       {/*{this.renderNewDatabase()}*/}
       {/*{this.renderNewRemoteFolder()}*/}
     </div>

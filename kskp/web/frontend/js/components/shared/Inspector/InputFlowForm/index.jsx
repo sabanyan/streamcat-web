@@ -22,7 +22,7 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
 
   onClickInput (e) {
     const name = e.currentTarget.getAttribute('name')
-    HttpUtil.windowOpen('library?dialog=true', (args) => {
+    HttpUtil.windowOpen('library?dialog=true&mode=frame_select', (args) => {
       const selected_data: LibraryListDataType = args
       const uuid = selected_data.uuid
 
