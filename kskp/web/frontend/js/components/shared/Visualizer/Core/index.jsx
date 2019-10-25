@@ -147,28 +147,23 @@ export default class Visualizer extends React.Component<Props, State> {
     const {visualize, headers, frame_uuid} = this.props
     const args = this.state.args
     const is_loading = this.state.is_loading
-    const html = this.state.html
 
-    if (is_loading) {
-      return <Loader center={true} visible={true} />
-    }
-    if (!this.state.html) {
-      return <div>
-        <EmptyState title={'表示することができません'} description={'条件を変更して反映ボタンを押してください'} icon={'cloud_off'} />
-        <PreviewInspector key={'perview_' + visualize.label + frame_uuid} headers={headers}
-                          groups={visualize.groups}
-                          onApply={(args) => this.apply(args)} params={visualize.params} args={args}
-                          label={visualize.label} />
-      </div>
+    if (is_loading) return <Loader center={true} visible={true} />
 
-    }
-    return <div>
-      <div className={style.visualizeContainer}>
-        <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
-      </div>
-      <PreviewInspector headers={headers} onApply={(args) => this.apply(args)} params={visualize.params} args={args}
-                        groups={visualize.groups} label={visualize.label} />
+    let content
+    if (!this.state.html) content = <EmptyState title={'表示することができません'} description={'条件を変更して反映ボタンを押してください'} icon={'cloud_off'} />
+    if (this.state.html) content = <div className={style.visualizeContainer}>
+      <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
     </div>
-  }
 
+    return <div>
+      {content}
+      <PreviewInspector headers={headers}
+                        onApply={(args) => this.apply(args)}
+                        params={visualize.params}
+                        args={args}
+                        groups={visualize.groups}
+                        label={visualize.label} />
+    </div> 
+  }
 }
