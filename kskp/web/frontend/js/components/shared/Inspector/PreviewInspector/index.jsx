@@ -73,6 +73,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps, State> {
     const content = <div>
       <div>
         <div className={style.full_hr} />
+        <Button onClick={(e) => this.onClickApply(e)}>表示</Button>
         <div>
           <div className="kskp-form"></div>
           <ParamsForm 
@@ -82,7 +83,6 @@ class PreviewInspector extends React.Component<PreviewInspectorProps, State> {
         </div>
       </div>
       <div className={style.full_hr} />
-      <Button onClick={(e) => this.onClickApply(e)}>反映</Button>
     </div>
 
     const property_class = classnames(style.property, style.in)
