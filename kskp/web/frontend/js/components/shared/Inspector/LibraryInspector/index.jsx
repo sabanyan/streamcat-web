@@ -88,7 +88,7 @@ class LibraryInspector extends React.Component<Props> {
     }
 
     // move button
-    if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する　</Button>
+    if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
 
     // delete button
     if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
@@ -99,8 +99,8 @@ class LibraryInspector extends React.Component<Props> {
     return <React.Fragment>
       {preview}
       {download}
-      {del}
       {move}
+      {del}
       {apply}
     </React.Fragment>
   }

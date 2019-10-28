@@ -12,3 +12,29 @@
   box-shadow: 0 1px 3px $kskp-property-shadow;
   z-index: 1;
 }
+
+.property_dialog {
+  position: fixed;
+  width: 400px;
+  right: -400px;
+  top: 0px;
+  height: 100%;
+  transition: opacity 0.2s linear, right 0.2s ease-in;
+  transition: width 0.1s;
+  opacity: 0;
+  @extend .user-select;
+  box-shadow: 0 1px 3px $kskp-property-shadow;
+
+  &.isClosed {
+    background: #fafafa;
+  }
+
+  &.willClosed {
+    opacity: 0.5;
+    pointer: col-resize;
+  }
+
+  &.isDragging {
+    @extend .user-not-select;
+  }
+}

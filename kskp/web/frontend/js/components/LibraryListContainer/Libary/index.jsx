@@ -546,7 +546,17 @@ export default class Library extends React.Component<Props, State> {
             break;
         }
         result.then((response) => {
-          this.fetchFolder()
+          if (response.data.success) {
+            this.fetchFolder()
+          } else {
+            this.props.notify({
+              title: "ライブラリー移動エラー",
+              message: response.data.message,
+              status: 'error',
+              dismissAfter: 0,
+              closeButton: true
+            })
+          }
         })
       })
     } catch(e) {
@@ -597,7 +607,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   makeHistory (folderPath: []): [BreadCrumbHistoryType] {
-    const dialogOption = (this.state.mode === Constants.library.mode.dialog) ? '?dialog=true' : ''
+    const dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
 
     const history = folderPath.map((path, index) => {
       return {
