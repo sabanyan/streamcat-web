@@ -119,7 +119,7 @@ def _make_archive(file_paths):
 
 @mod.route('/flow_files', methods=['POST'])
 @login_required_api
-@api_base
+# @api_base
 def upload_flow():
     import json
 
@@ -150,34 +150,40 @@ def upload_flow():
     # label.txtからuuidとlabelの対応を取得する
     for file in extracted_files:
         if file.name == 'labels.txt':
-            with file.open('r') as f:
-                while True:
-                    # uuidを読み込む
-                    uuid = f.read(36).rstrip('\n')
-                    if not uuid:
-                        break
-                    # カンマを読み込む
-                    f.read(1)
-                    # ラベル名を読み込む
-                    label = f.readline().rstrip('\n')
-                    labels[uuid] = label
-            break
+            try:
+                with file.open('r') as f:
+                    while True:
+                        # uuidを読み込む
+                        uuid = f.read(36).rstrip('\n')
+                        if not uuid:
+                            break
+                        # カンマを読み込む
+                        f.read(1)
+                        # ラベル名を読み込む
+                        label = f.readline().rstrip('\n')
+                        labels[uuid] = label
+                break
+            except Exception as e:
+                raise Exception(f'ERROR! at {file.name} : {str(e)}')
 
     # ライブラリに登録する
     for file in extracted_files:
-        if file.suffix == '.csv':
-            with file.open('rb') as f:
-                frame = Frame(frame_folder_uuid, labels[file.stem], f, creator)
-                uuids[file.stem] = frame.uuid
-                frame.save()
-        elif file.suffix == '.json':
-            with file.open('r') as f:
-                d = f.read()
-                flow_data = json.loads(d)
-            flow = Flow(flow_folder_uuid, labels[file.stem], flow_data, creator)
-            flow_uuids[file.stem] = flow.uuid
-            uuids[file.stem] = flow.uuid
-            flow.save()
+        try:
+            if file.suffix == '.csv':
+                with file.open('rb') as f:
+                    frame = Frame(frame_folder_uuid, labels[file.stem], f, creator)
+                    uuids[file.stem] = frame.uuid
+                    frame.save()
+            elif file.suffix == '.json':
+                with file.open('r') as f:
+                    d = f.read()
+                    flow_data = json.loads(d)
+                flow = Flow(flow_folder_uuid, labels[file.stem], flow_data, creator)
+                flow_uuids[file.stem] = flow.uuid
+                uuids[file.stem] = flow.uuid
+                flow.save()
+        except Exception as e:
+            raise Exception(f'ERROR! at {file.name} : {str(e)}')
 
     # Flowの参照uuidを変更する
     for new_flow_uuid in flow_uuids.values():
