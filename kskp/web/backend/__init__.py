@@ -16,10 +16,6 @@ app.config['JSON_SORT_KEYS'] = False
 os.environ['SQLITE_PATH'] = (STORE_DIR.parent / 'kskp.db').as_posix()
 os.environ['DATABASE_URI'] = 'sqlite:///' + os.environ['SQLITE_PATH']
 
-# 文字コード設定（とりあえず標準はutf-8で）
-os.environ['FRAME_CHARACTER_CODE'] = 'utf-8'
-# os.environ['FRAME_CHARACTER_CODE'] = 'cp932'
-
 # flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
 from .api.utils.kskp_json_encoder import KSKPJSONEncoder
 app.json_encoder = KSKPJSONEncoder
