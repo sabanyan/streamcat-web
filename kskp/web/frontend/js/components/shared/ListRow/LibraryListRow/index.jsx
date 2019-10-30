@@ -47,11 +47,12 @@ export default class LibraryListRow extends React.Component<Props> {
     </svg>
 
     let icon = <i className={classnames('material-icons', [style.icon])}>warning</i>
-
+    console.log(type)
     switch (type) {
       case Constants.library.type.document:
         icon = <i className={classnames('material-icons',[style.icon])}>description</i>
         break
+      case Constants.library.type.flow:
       case Constants.library.type.frame:
         icon = <i className={classnames('material-icons',[style.icon])}>description</i>
         break
