@@ -220,12 +220,7 @@ export default class Library extends React.Component<Props, State> {
         }
       },
     })
-    ModalUtil.registerModal({
-      id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
-        this.editLibraryChild(data)
-        ModalUtil.closeModal(Constants.modal.CONFIRM)
-      },
-    })
+
   }
 
   unhandledNotify (title: string) {
@@ -299,8 +294,7 @@ export default class Library extends React.Component<Props, State> {
       })
     } else {
       this.props.notify({
-        title: 'データベースを作成しました',
-        message: this.state.edit_database.label + 'を編集しました',
+        title: 'データベースを編集しました', message: this.state.database.label + 'を編集しました',
         status: 'success'
       })
     }
@@ -551,9 +545,13 @@ export default class Library extends React.Component<Props, State> {
 
   onClickNewDatabase (e: SyntheticInputEvent<EventTarget>) {
     const params = this.getDataBaseParams()
+    let database = {}
+    params.map(param => {
+      if (param.default) database[param.name] = param.default
+    })
     const rules = this.getDataBaseRules()
     this.setState({
-      database : {}
+      database : database
     }, () => {
       const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules}  onChange={(e, param, value) => this.onChangeDatabase(e, param, value)}></ParamsForm>
     
@@ -839,7 +837,12 @@ export default class Library extends React.Component<Props, State> {
       }
     }, () => {
       const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules} onChange={(e, param, value) => this.onChangeEditDatabase(e,param,value)} ></ParamsForm>
-      
+      ModalUtil.registerModal({
+        id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
+          this.editLibraryChild(data)
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        },
+      })
       ModalUtil.emitModal({
         id: Constants.modal.EDIT_DATABASE,
         visible: true,
@@ -857,6 +860,7 @@ export default class Library extends React.Component<Props, State> {
       this.setState({
         database:database
       }, () => {
+        const rules = this.getDataBaseRules()
         const params = this.getDataBaseParams()
         const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules} onChange={(e, param, value) => this.onChangeEditDatabase(e,param,value)} ></ParamsForm>
         ModalUtil.emitModal({
@@ -873,10 +877,10 @@ export default class Library extends React.Component<Props, State> {
   }
 
   editLibraryChild(data) {
-    APIUtil.put('databases/' + data.uuid, this.state.edit_database).then((response) => {
+    APIUtil.put('databases/' + data.uuid, this.state.database).then((response) => {
       this.completeEditDatabase(response)
     }, () => {
-      this.unhandledNotify('フォルダ作成エラー')
+      this.unhandledNotify('データベース修正エラー')
     })
   }
 
