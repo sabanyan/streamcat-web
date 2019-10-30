@@ -7,7 +7,7 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import ss
 from kskp.store import StoreModel as Store
-from kskp.store import Datum, Frame, AwsS3, STORE_DIR
+from kskp.store import Datum, Mountable, Frame, AwsS3, Database, RemoteFolder, STORE_DIR
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
 class DataStoreTestCase(TestCaseBase):
@@ -483,7 +483,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][1]['label'], 'Amazonに感謝')
 
         # S3フォルダがマウントされていることを検証する
-        self.assertTrue(Datum.is_mount(STORE_DIR.parent / awss3.path))
+        self.assertTrue(Mountable.is_mount(STORE_DIR.parent / awss3.path))
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
         awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
@@ -562,7 +562,7 @@ class AwsS3TestCase(TestCaseBase):
         tmp_var = awss3.path
 
         # S3フォルダがマウントされていることを検証する
-        self.assertTrue(Datum.is_mount(STORE_DIR.parent / awss3.path))
+        self.assertTrue(Mountable.is_mount(STORE_DIR.parent / awss3.path))
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
         awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
@@ -604,6 +604,160 @@ class AwsS3TestCase(TestCaseBase):
         self.assertFalse(os.path.exists(awss3_path))
 
 
+
+class DatabaseTestCase(TestCaseBase):
+    def test_create_get_database(self):
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
+
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root_uuid,
+            "label"    : "リモートフォルダ",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER_ID)
+
+        # POST /databasesの戻り値が正しいことを検証する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['type'], 'database')
+        self.assertEqual(result['data']['label'], 'リモートフォルダ')
+        self.assertEqual(result['data']['dbms'], 'postgresql')
+        self.assertEqual(result['data']['hostname'], 'db')
+        self.assertEqual(result['data']['port'], 5432)
+        self.assertEqual(result['data']['database'], 'kskp')
+        self.assertEqual(result['data']['user_id'], 'postgres')
+        self.assertEqual(result['data']['password'], '')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        database_uuid = result['data']['uuid']
+        database = Database.find_by_uuid(database_uuid)
+
+        # Databaseを取得する(GET /databases)
+        result = self.get_uri('/api/v0/databases/' + database_uuid, self.USER_ID)
+
+        # GET /databasesの戻り値が正しいことを検証する
+        self.assertEqual(result['data']['uuid'], database_uuid)
+        self.assertEqual(result['data']['type'], 'database')
+        self.assertEqual(result['data']['label'], 'リモートフォルダ')
+        self.assertEqual(result['data']['dbms'], 'postgresql')
+        self.assertEqual(result['data']['hostname'], 'db')
+        self.assertEqual(result['data']['port'], 5432)
+        self.assertEqual(result['data']['database'], 'kskp')
+        self.assertEqual(result['data']['user_id'], 'postgres')
+        self.assertEqual(result['data']['password'], '')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # Databaseを削除(unmount)する(DELETE /databases)
+        self.delete_uri('/api/v0/databases/' + database_uuid, self.USER_ID)
+
+    def test_update_database(self):
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
+        
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root_uuid,
+            "label"    : "リモートフォルダ",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER_ID)
+
+        database_uuid = result['data']['uuid']
+        database = Database.find_by_uuid(database_uuid)
+
+        # Databaseのラベルを更新する(PUT /databases)
+        update_data = {
+            "label"    : "データベースストア?",
+            "dbms"     : "oracle",
+            "hostname" : "localhost",
+            "port"     : 1192,
+            "database" : "kskp!",
+            "user_id"  : "tiger",
+            "password" : "scott"
+        }
+        result = self.put_uri('/api/v0/databases/' + database_uuid, update_data, self.USER_ID)
+
+        # PUT /databasesの戻り値が正しいことを検証する
+        self.assertEqual(result['data']['uuid'], database_uuid)
+        self.assertEqual(result['data']['type'], 'database')
+        self.assertEqual(result['data']['label'], 'データベースストア?')
+        self.assertEqual(result['data']['dbms'], 'oracle')
+        self.assertEqual(result['data']['hostname'], 'localhost')
+        self.assertEqual(result['data']['port'], 1192)
+        self.assertEqual(result['data']['database'], 'kskp!')
+        self.assertEqual(result['data']['user_id'], 'tiger')
+        self.assertEqual(result['data']['password'], 'scott')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # Databaseを削除(unmount)する(DELETE /databases)
+        self.delete_uri('/api/v0/databases/' + database_uuid, self.USER_ID)
+
+    def test_move_database(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root.uuid,
+            "label"    : "リモートフォルダ?",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER_ID)
+        database_uuid = result['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/databases/%s' % database_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+            "label"    : "リモートフォルダ?",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : "",
+            'type'     : 'database',
+            'creator'  : '管理者'
+        }
+
+        # PUT /databases apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], database_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['dbms'], expected_result['dbms'])
+        self.assertEqual(result['data']['hostname'], expected_result['hostname'])
+        self.assertEqual(result['data']['port'], expected_result['port'])
+        self.assertEqual(result['data']['database'], expected_result['database'])
+        self.assertEqual(result['data']['user_id'], expected_result['user_id'])
+        self.assertEqual(result['data']['password'], expected_result['password'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
 
     # def test_delete_using_frame(self):
     #     from ..library import Frame
@@ -851,6 +1005,161 @@ class AwsS3TestCase(TestCaseBase):
 
     #     # Delete /folders apiが正常終了することを検証する
     #     self.assertEqual(result['success'], True)
+
+class RemoteFolderTestCase(TestCaseBase):
+
+    def test_create_get_folders(self):
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
+
+        # RemoteFolderを作成する(POST /remote-folders)
+        data = {
+            "parent"   : root_uuid,
+            "label"    : "リモートフォルダ",
+            "protocol" : "smb",
+            "hostname" : "kskds-HP-Workstation-z620.local",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            "user_id"  : "ksk-ds",
+            "password" : "kskanalytics"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER_ID)
+
+        # POST /remote-foldersの戻り値が正しいことを検証する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['type'], 'rfolder')
+        self.assertEqual(result['data']['label'], 'リモートフォルダ')
+        self.assertEqual(result['data']['protocol'], 'smb')
+        self.assertEqual(result['data']['hostname'], 'kskds-HP-Workstation-z620.local')
+        self.assertEqual(result['data']['domain'], 'WORKGROUP')
+        self.assertEqual(result['data']['directory'], 'share')
+        self.assertEqual(result['data']['user_id'], 'ksk-ds')
+        self.assertEqual(result['data']['password'], 'kskanalytics')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        folder_uuid = result['data']['uuid']
+        folder = RemoteFolder.find_by_uuid(folder_uuid)
+
+        # RemoteFolderを取得する(GET /remote-folders)
+        result = self.get_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
+
+        # GET /remote-foldersの戻り値が正しいことを検証する
+        self.assertEqual(result['data']['uuid'], folder_uuid)
+        self.assertEqual(result['data']['type'], 'rfolder')
+        self.assertEqual(result['data']['label'], 'リモートフォルダ')
+        self.assertEqual(result['data']['protocol'], 'smb')
+        self.assertEqual(result['data']['hostname'], 'kskds-HP-Workstation-z620.local')
+        self.assertEqual(result['data']['domain'], 'WORKGROUP')
+        self.assertEqual(result['data']['directory'], 'share')
+        self.assertEqual(result['data']['user_id'], 'ksk-ds')
+        self.assertEqual(result['data']['password'], 'kskanalytics')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # RemoteFolderを削除(unmount)する(DELETE /remote-folders)
+        self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
+
+    def test_update_folders(self):
+        root = Datum.find_root()
+        root_uuid = root.uuid
+        root_path = root.path
+        
+        # RemoteFolderを作成する(POST /remote-folders)
+        data = {
+            "parent"   : root_uuid,
+            "label"    : "リモートフォルダ!",
+            "protocol" : "smb",
+            "hostname" : "kskds-HP-Workstation-z620.local",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            "user_id"  : "ksk-ds",
+            "password" : "kskanalytics"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER_ID)
+
+        folder_uuid = result['data']['uuid']
+        folder = RemoteFolder.find_by_uuid(folder_uuid)
+
+        # RemoteFolderのラベルを更新する(PUT /remote-folders)
+        update_data = {
+            "label"    : "リモートフォルダ!?",
+            "protocol" : "smb",
+            "hostname" : "192.168.0.5",
+            "domain"   : "MyDomain2",
+            "directory": "share2",
+            "user_id"  : "user2",
+            "password" : ""
+        }
+        result = self.put_uri('/api/v0/remote-folders/' + folder_uuid, update_data, self.USER_ID)
+
+        # PUT /remote-foldersの戻り値が正しいことを検証する
+        self.assertEqual(result['data']['uuid'], folder_uuid)
+        self.assertEqual(result['data']['type'], 'rfolder')
+        self.assertEqual(result['data']['label'], 'リモートフォルダ!?')
+        self.assertEqual(result['data']['protocol'], 'smb')
+        self.assertEqual(result['data']['hostname'], '192.168.0.5')
+        self.assertEqual(result['data']['domain'], 'MyDomain2')
+        self.assertEqual(result['data']['directory'], 'share2')
+        self.assertEqual(result['data']['user_id'], 'user2')
+        self.assertEqual(result['data']['password'], '')
+        self.assertEqual(result['data']['creator'], '管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # RemoteFolderを削除(unmount)する(DELETE /remote-folders)
+        self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
+
+    @unittest.skip
+    def test_move_folders(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # 移動先フォルダを作成する(POST /folders)
+        folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1C", "parent": root.uuid}, self.USER_ID)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # RemoteFolderを作成する(POST /remote-folders)
+        data = {
+            "parent"   : root.uuid,
+            "label"    : "リモートフォルダ",
+            "protocol" : "smb",
+            "hostname" : "kskds-HP-Workstation-z620.local",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            "user_id"  : "ksk-ds",
+            "password" : "kskanalytics"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER_ID)
+        folder_uuid = result['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/remote-folders/%s' % folder_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+            "label"    : "リモートフォルダ",
+            "protocol" : "smb",
+            "hostname" : "192.168.0.3",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            "user_id"  : "user1",
+            "password" : "pass",
+            "type"     : "rfolder"
+        }
+
+        # PUT /remote-folders apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], folder_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['protocol'], expected_result['protocol'])
+        self.assertEqual(result['data']['hostname'], expected_result['hostname'])
+        self.assertEqual(result['data']['domain'], expected_result['domain'])
+        self.assertEqual(result['data']['directory'], expected_result['directory'])
+        self.assertEqual(result['data']['user_id'], expected_result['user_id'])
+        self.assertEqual(result['data']['password'], expected_result['password'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
 
 @unittest.skip
 class ExecuteTestCase(TestCaseBase):

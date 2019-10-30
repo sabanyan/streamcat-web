@@ -413,7 +413,7 @@ class FlowApiTestCase(TestCaseBase):
 
         # コピーされていることを検証する
         self.assertEqual(result2['data']['projectId'], None)
-        self.assertEqual(result2['data']['label'], test_flow_label + ' のコピー2')
+        self.assertEqual(result2['data']['label'], test_flow_label + ' のコピー_2')
         self.assertEqual(result2['data']['description'],'')
         self.assertEqual(result2['data']['params'], [])
         self.assertEqual(result2['data']['ports'], [[],[]])

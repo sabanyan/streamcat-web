@@ -70,14 +70,15 @@ class LibraryInspector extends React.Component<Props> {
     })
   }
 
-  isDialog () {
-    return (HttpUtil.getURLParam('dialog'))
+  onClickEdit(e) {
+    const {data, onClickEdit} = this.props
+    onClickEdit(data)
   }
 
   renderButtons() {
-    const {data, onClickDelete, onClickApply, onClickMove} = this.props
+    const {data, onClickDelete, onClickApply, onClickMove, onClickEdit} = this.props
 
-    let preview, download, del, apply, move
+    let preview, download, del, apply, move, edit
 
     // preview button
     // download button
@@ -90,6 +91,11 @@ class LibraryInspector extends React.Component<Props> {
     // move button
     if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
 
+    // edit
+    if (onClickEdit && data && data.type === Constants.library.type.database){
+      edit = <Button onClick={(e) => this.onClickEdit(e)} icon={'create'}>編集する</Button>
+    } 
+    
     // delete button
     if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
   
@@ -100,14 +106,14 @@ class LibraryInspector extends React.Component<Props> {
       {preview}
       {download}
       {move}
+      {edit}
       {del}
       {apply}
     </React.Fragment>
   }
 
   render () {
-    const {data, onClickDelete, onClickApply} = this.props
-    let inspectorPreperty = (this.isDialog()) ? style.property_dialog : style.property
+    const {data} = this.props
     let content = null
     let label = ""
     if (data) {

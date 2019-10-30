@@ -92,6 +92,8 @@ const Constants = {
     ADD_FOLDER: 'add_folder',
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
+    ADD_DATABASE: 'add_database',
+    EDIT_DATABASE: 'edit_database',
     RUN_FLOW: 'run_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
