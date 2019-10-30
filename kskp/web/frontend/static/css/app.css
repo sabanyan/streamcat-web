@@ -6554,7 +6554,7 @@ a.text-dark:hover, a.text-dark:focus {
 .modal .modal-content {
   border: none; }
   .modal .modal-content .modal-body {
-    max-height: 420px;
+    max-height: 700px;
     overflow: scroll; }
 
 .modal .modal-header {

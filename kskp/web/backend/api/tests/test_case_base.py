@@ -16,6 +16,8 @@ class TestCaseBase(unittest.TestCase):
         
     @classmethod
     def setUpClass(cls):
+        from kskp.store import Library
+        Library._init_library_folders()
         # ユーザを作成する
         from kskp.store import create_user
         with app.app_context():
@@ -25,8 +27,7 @@ class TestCaseBase(unittest.TestCase):
         from kskp.store import engine
         # ルートデータストアを作成する
         from kskp.store import Library
-        Library._init_library_folders()
-        BaseModel.metadata.create_all(bind=engine, checkfirst=True)
+        Library.load_root(creator=1)
 
     @classmethod
     def tearDownClass(cls):
@@ -34,7 +35,7 @@ class TestCaseBase(unittest.TestCase):
         from kskp.store import Datum, STORE_DIR
         library_path = STORE_DIR.parent / Datum.find_root().path
         import shutil
-        shutil.rmtree(library_path.as_posix())
+        # shutil.rmtree(library_path.as_posix())
         # Sessionを閉じる
         from kskp.store import engine, ss as session
         session.close()
