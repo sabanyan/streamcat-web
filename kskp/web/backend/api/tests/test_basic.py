@@ -154,6 +154,7 @@ class FrameApiTestCase(TestCaseBase):
         self.frame_uuid = str(uuid.uuid4())
         csv_contents = 'a,b,c\n1,2,3\n0,1,2'
         self.path = app.root_path / Path('api/tests/frames/%s.csv' % self.frame_uuid)
+        os.makedirs(self.path.parent, exist_ok=True)
         self.path.write_text(csv_contents, encoding='utf-8')
 
 
