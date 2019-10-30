@@ -495,8 +495,8 @@ export default class Library extends React.Component<Props, State> {
         "type": "select",
         "label": "DBMS",
         "options":{
-          "labels": ["PostgresSQL"],
-          "values": ["postgresql"]
+          "labels": ["PostgreSQL", "ORACLE"],
+          "values": ["postgresql", "oracle"]
         },
         "default": "postgresql"
       },
