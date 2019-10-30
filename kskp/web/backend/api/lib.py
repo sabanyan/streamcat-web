@@ -119,7 +119,7 @@ def _make_archive(file_paths):
 
 @mod.route('/flow_files', methods=['POST'])
 @login_required_api
-# @api_base
+@api_base
 def upload_flow():
     import json
 
@@ -169,6 +169,9 @@ def upload_flow():
     # ライブラリに登録する
     for file in extracted_files:
         try:
+            if file.name.startswith('.'):
+                # macOSのtarで作成した圧縮ファイルには.テキストのメタファイルがある
+                continue
             if file.suffix == '.csv':
                 with file.open('rb') as f:
                     frame = Frame(frame_folder_uuid, labels[file.stem], f, creator)
@@ -190,6 +193,13 @@ def upload_flow():
         flow = Flow.find_by_uuid(new_flow_uuid)
         for old_uuid, new_uuid in uuids.items():
             flow.replace_uuid(old_uuid, new_uuid, creator)
+
+    # 展開したファイルを削除する
+    for file in extracted_files:
+        tar_dir_path = file.parent
+        break
+    import shutil
+    shutil.rmtree(tar_dir_path)
 
 def _extract_archive(stream):
     import tarfile
