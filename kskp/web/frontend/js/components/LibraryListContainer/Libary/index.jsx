@@ -220,6 +220,12 @@ export default class Library extends React.Component<Props, State> {
         }
       },
     })
+    ModalUtil.registerModal({
+      id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
+        this.editLibraryChild(data)
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
   }
 
   unhandledNotify (title: string) {
@@ -451,13 +457,23 @@ export default class Library extends React.Component<Props, State> {
     e.preventDefault()
   }
 
-  onChangeDatabase(e, param) {
+  onChangeDatabase(e, param, value) {
     try {
-      let value = e.target.value
       let database = this.state.database
       database[param.name] = value
       this.setState({
         database:database
+      }, () => {
+        const params = this.getDataBaseParams()
+        const rules = this.getDataBaseRules()
+        const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules}  onChange={(e, param, value) => this.onChangeDatabase(e, param, value)}></ParamsForm>
+        ModalUtil.emitModal({
+          id: Constants.modal.ADD_DATABASE,
+          visible: true,
+          done: '追加する',
+          dynamic: true,
+          content: paramsForm,
+        })
       })
     } catch(e) {
       console.log(e)
@@ -536,14 +552,18 @@ export default class Library extends React.Component<Props, State> {
   onClickNewDatabase (e: SyntheticInputEvent<EventTarget>) {
     const params = this.getDataBaseParams()
     const rules = this.getDataBaseRules()
-    const events = {onChange:(e, param) => this.onChangeDatabase(e,param)}
-    const paramsForm = <ParamsForm params={params} args={{}} invalids={{}} rules={rules} events={events}></ParamsForm>
+    this.setState({
+      database : {}
+    }, () => {
+      const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules}  onChange={(e, param, value) => this.onChangeDatabase(e, param, value)}></ParamsForm>
     
-    ModalUtil.emitModal({
-      id: Constants.modal.ADD_DATABASE,
-      visible: true,
-      done: '追加する',
-      content: paramsForm,
+      ModalUtil.emitModal({
+        id: Constants.modal.ADD_DATABASE,
+        visible: true,
+        done: '追加する',
+        dynamic: true,
+        content: paramsForm,
+      })
     })
     e.preventDefault()
   }
@@ -806,56 +826,9 @@ export default class Library extends React.Component<Props, State> {
       return
     }
     const rules = this.getDataBaseRules()
-    const params = [
-      {
-        "name": "label",
-        "type": "string",
-        "label": "Label",
-        "default": data.label
-      },
-      {
-        "name": "dbms",
-        "type": "select",
-        "label": "DBMS",
-        "options":{
-          "labels": ["PostgreSQL", "ORACLE"],
-          "values": ["postgresql", "oracle"]
-        },
-        "default": data.dbms
-      },
-      {
-        "name": "hostname",
-        "type": "string",
-        "label": "ホスト名",
-        "default": data.hostname
-      },
-      {
-        "name": "port",
-        "type": "number",
-        "label": "ポート番号",
-        "default": data.port
-      },
-      {
-        "name": "database",
-        "type": "string",
-        "label": "データベース名",
-        "default": data.database
-      },
-      {
-        "name": "user_id",
-        "type": "string",
-        "label": "ユーザID",
-        "default": data.user_id
-      },
-      {
-        "name": "password",
-        "type": "string",
-        "label": "パスワード",
-        "default": data.password
-      }    
-    ]
+    const params = this.getDataBaseParams()
     this.setState({
-      edit_database: {
+      database: {
         "label"   :data.label,
         "dbms"    :data.dbms,
         "hostname":data.hostname,
@@ -865,15 +838,8 @@ export default class Library extends React.Component<Props, State> {
         "password":data.password
       }
     }, () => {
-      const events = {onChange:(e, param) => this.onChangeEditDatabase(e,param)}
-      const paramsForm = <ParamsForm params={params} args={{}} invalids={{}} rules={rules} events={events}></ParamsForm>
+      const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules} onChange={(e, param, value) => this.onChangeEditDatabase(e,param,value)} ></ParamsForm>
       
-      ModalUtil.registerModal({
-        id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
-          this.editLibraryChild(data)
-          ModalUtil.closeModal(Constants.modal.CONFIRM)
-        },
-      })
       ModalUtil.emitModal({
         id: Constants.modal.EDIT_DATABASE,
         visible: true,
@@ -884,13 +850,22 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
-  onChangeEditDatabase(e, param) {
+  onChangeEditDatabase(e, param, value) {
     try {
-      let value = e.target.value
-      let database = this.state.edit_database
+      let database = this.state.database
       database[param.name] = value
       this.setState({
-        edit_database:database
+        database:database
+      }, () => {
+        const params = this.getDataBaseParams()
+        const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules} onChange={(e, param, value) => this.onChangeEditDatabase(e,param,value)} ></ParamsForm>
+        ModalUtil.emitModal({
+          id: Constants.modal.EDIT_DATABASE,
+          visible: true,
+          done: '編集する',
+          danger: true,
+          content: paramsForm
+        })
       })
     } catch(e) {
       console.log(e)
@@ -1066,7 +1041,6 @@ export default class Library extends React.Component<Props, State> {
 
   render () {
     let containerClassName = (this.isDialog()) ? 'container' : 'container mt-40px'
-
     return <div className={style.inspector_list_container}>
       <div className={containerClassName}>
         <Loader center={true} absolute={true} visible={this.state.is_loading} />
