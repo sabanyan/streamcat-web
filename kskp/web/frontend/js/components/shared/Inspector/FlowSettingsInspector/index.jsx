@@ -49,6 +49,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     let params = []
     this.paramRefs.forEach(elem => {
       let param: SubFlowParamType = {}
+      param['label'] = elem.value
       param['name'] = elem.value
       param['type'] = 'string'
       params.push(param)
@@ -65,7 +66,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   onClickAddFlowParam () {
     let {flow} = this.props
     const name = this.setNewParamName('new_param', 1)
-    flow.params.push({name: name, type: 'string'})
+    flow.params.push({label:name, name: name, type: 'string'})
     this.props.updateFlow(flow)
   }
 
