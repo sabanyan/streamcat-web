@@ -4,6 +4,7 @@ import style from '../style.scss'
 import classnames from 'classnames'
 import { InspectorKnob } from 'Shared/Inspector'
 import Constants from 'Constants/index'
+import { HttpUtil  } from "Utils/index";
 
 let mouseMoveEvent
 let mouseUpEvent
@@ -91,6 +92,10 @@ class Resizer extends React.Component<Props, State> {
     }
   }
 
+  isDialog () {
+    return (HttpUtil.getURLParam('dialog'))
+  }
+
   render () {
     const {children} = this.props
     const {width, isClosed, isDragging, willClosed} = this.state
@@ -99,7 +104,9 @@ class Resizer extends React.Component<Props, State> {
       childrendElement = null
     }
 
-    return <div className={classnames(style.property, style.in,
+    let styleName = (this.isDialog()) ? style.property_dialog : style.property
+
+    return <div className={classnames(styleName, style.in,
       {
         [style.isClosed]: isClosed,
         [style.isDragging]: isDragging,
