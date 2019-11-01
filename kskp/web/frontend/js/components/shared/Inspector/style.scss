@@ -58,7 +58,7 @@
 }
 
 .property_container {
-  height: calc(100% - 64px);
+  height: 100%;
   width: 100%;
   overflow: scroll;
 }
@@ -88,7 +88,7 @@
 
 .property_body {
   padding: 16px;
-  padding-bottom: 64px;
+  padding-bottom: 128px;
   background-color: $kskp-property-background-color;
   min-height: 100%;
 
@@ -367,4 +367,19 @@ ul, li {
 
 li {
   margin-bottom: 8px;
+}
+
+.actions {
+
+  button {
+    margin-top : 5px;
+    margin-right : 5px;
+  }
+
+  a {
+    margin-top : 5px;
+    margin-right : 5px;
+    position: relative;
+    top: -1px;
+  }
 }

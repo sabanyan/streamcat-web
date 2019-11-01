@@ -16,6 +16,15 @@ export default class ParamNumber extends Param {
     super(props)
   }
 
+  onChange(e) {
+    const {param, events} = this.props
+
+    if (events && events.onChange) {
+      const onChange = events.onChange
+      onChange(e, param)
+    }
+  }
+
   render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
     const {param, onBuild, events, defaultValue, refValue, disabled} = this.props
@@ -30,7 +39,7 @@ export default class ParamNumber extends Param {
         {label}
       </label>
       <input name={param.name} type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue}
-             ref={inputRef} disabled={disabled} paramtype={param.type} {...events} ></input>
+             ref={inputRef} disabled={disabled} paramtype={param.type} onChange={(e) => this.onChange(e)} ></input>
     </div>
   }
 

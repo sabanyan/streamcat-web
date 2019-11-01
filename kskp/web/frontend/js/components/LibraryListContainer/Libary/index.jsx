@@ -5,7 +5,7 @@ import style from './style.scss'
 import libraryListStyle from 'Shared/ListRow/LibraryListRow/style.scss'
 import { ModalManager } from 'Shared/Modal'
 import { BreadCrumb, EmptyState, Loader } from 'Shared/Base'
-import { LibraryInspector } from 'Shared/Inspector'
+import { LibraryInspector, ParamsForm } from 'Shared/Inspector'
 import { NotificationManager } from 'Shared/Notification'
 import { APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil } from 'Utils/index'
 import { LibraryListHeader, LibraryListRow } from 'Shared/ListRow'
@@ -35,12 +35,24 @@ type State = {
   visualizers: [];
 }
 
+type Database = {
+  label: stirng;
+  DBMS: string;
+  host: string;
+  port: string;
+  database: string;
+  user_id: string;
+  user_password: stirng;
+}
+
 export default class Library extends React.Component<Props, State> {
 
   constructor (props: Props) {
     super(props)
 
-    const mode = HttpUtil.getURLParam("dialog")?Constants.library.mode.dialog:Constants.library.mode.list
+    const is_dialog = HttpUtil.getURLParam("dialog") ? true : false 
+    const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list
+    
     //TODO ReduxのStoreで管理する
     this.state = {
       stores: [],
@@ -54,7 +66,10 @@ export default class Library extends React.Component<Props, State> {
       frame_name: '',
       document_name: '',
       folder_name: '',
-      mode: mode
+      is_dialog: is_dialog,
+      database:this.getIntialDatabase(),
+      edit_databse:this.getIntialDatabase(),
+      mode: mode,
     }
     
     // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
@@ -67,6 +82,15 @@ export default class Library extends React.Component<Props, State> {
         visualizers: visualizers
       })
     })
+  }
+
+  getIntialDatabase() {
+    return {
+      dbms:this.getDataBaseParams()[1].default,
+      database:"",
+      user_id:"",
+      password:""
+    }
   }
 
   componentDidMount () {
@@ -87,7 +111,7 @@ export default class Library extends React.Component<Props, State> {
     ModalUtil.registerModal({
       id: Constants.modal.ADD_DOCUMENT, onClickDone: () => {
         if (!this.state.document_name) {
-          alert('資料名を入力してください')
+          alert('資料名を入力してくsださい')
           return false
         }
         if (!this.state.upload_file) {
@@ -103,9 +127,30 @@ export default class Library extends React.Component<Props, State> {
           this.setState({document_name:null, upload_file: null}, () => {
             ModalUtil.closeModal(Constants.modal.ADD_DOCUMENT)
           })
-          
         }, () => {
           this.unhandledNotify()
+        })
+      },
+    })
+    ModalUtil.registerModal({
+      id: Constants.modal.ADD_FOLDER, onClickDone: () => {
+        if (!this.state.folder_name) {
+          alert('ファルダ名を入力してください')
+          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+          return false
+        }
+        this.setState({is_loading: true, selected_data: null})
+        const body = {
+          'label': this.state.folder_name,
+          'parent': this.state.currentFolderUUID,
+        }
+        APIUtil.post('folders', body).then((response) => {
+          this.completeAddedFolder(response)
+          this.setState({folder_name: null}, () => {
+            ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
+          })    
+        }, () => {
+          this.unhandledNotify('フォルダ作成エラー')
         })
       },
     })
@@ -135,28 +180,47 @@ export default class Library extends React.Component<Props, State> {
       },
     })
     ModalUtil.registerModal({
-      id: Constants.modal.ADD_FOLDER, onClickDone: () => {
-        if (!this.state.folder_name) {
-          alert('ファルダ名を入力してください')
-          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
-          return false
-        }
-        this.setState({is_loading: true, selected_data: null})
-        const body = {
-          'label': this.state.folder_name,
-          'parent': this.state.currentFolderUUID,
-        }
-        APIUtil.post('folders', body).then((response) => {
-          this.completeAddedFolder(response)
-          this.setState({folder_name: null}, () => {
-            ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
+      id: Constants.modal.ADD_DATABASE, onClickDone: () => {
+        try {
+          const database = this.state.database
+          if (!database.label) {
+            alert("Labelを入力してください")
+            return
+          }
+          if (!database.dbms) {
+            alert("DBMSを入力してください")
+            return
+          }
+          if (!database.hostname) {
+            alert("ホスト名を入力してください")
+            return
+          }
+          if (!database.port) {
+            alert("ポート名を入力してください")
+            return
+          }
+  
+          const body = {
+            label:this.state.database.label,
+            parent:this.state.currentFolderUUID,
+            dbms:this.state.database.dbms,
+            hostname:this.state.database.hostname,
+            port:Number(this.state.database.port),
+            database:this.state.database.database,
+            user_id:this.state.database.user_id,
+            password:this.state.database.password
+          }
+          APIUtil.post('databases', body).then((response) => {
+            this.completeAddedDatabase(response)
+          }, () => {
+            this.unhandledNotify('データベース作成エラー')
           })
-          
-        }, () => {
-          this.unhandledNotify('フォルダ作成エラー')
-        })
+        } catch (e) {
+          console.log(e)
+        }
       },
     })
+
   }
 
   unhandledNotify (title: string) {
@@ -189,6 +253,59 @@ export default class Library extends React.Component<Props, State> {
       })
     }
     this.fetchFolder()
+  }
+
+  completeAddedDatabase (response: any) {
+    const json = response.data.data
+    if (!response.data.success) {
+      this.props.notify({
+        title: 'データベース作成エラー',
+        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
+      })
+    } else {
+      this.props.notify({
+        title: 'データベースを作成しました',
+        message: this.state.database.label + 'を作成しました',
+        status: 'success'
+      })
+    }
+    this.setState({
+        is_loading: false, 
+        database:this.getIntialDatabase()
+      }, () => {
+      ModalUtil.closeModal(Constants.modal.ADD_DATABASE)
+      this.fetchFolder()
+    })
+    
+  }
+
+  completeEditDatabase (response: any) {
+    const json = response.data.data
+    if (!response.data.success) {
+      this.props.notify({
+        title: 'データベース作成エラー',
+        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
+      })
+    } else {
+      this.props.notify({
+        title: 'データベースを編集しました', message: this.state.database.label + 'を編集しました',
+        status: 'success'
+      })
+    }
+    this.setState({
+        is_loading: false, 
+        edit_database:this.getIntialDatabase()
+      }, () => {
+      ModalUtil.closeModal(Constants.modal.EDIT_DATABASE)
+      this.fetchFolder()
+    })
+    
   }
 
   completeUploaded (response: any) {
@@ -314,9 +431,7 @@ export default class Library extends React.Component<Props, State> {
       visible: true,
       done: '追加する',
       content: <div>
-        <TextField placeholder={'名称'}
-                   onChange={(e, validation) => this.onChangeFrameName(e,
-                     validation)} />
+        <TextField placeholder={'名称'} onChange={(e, validation) => this.onChangeFrameName(e, validation)} />
         <div className={'mt-8px'} />
         <FileUploader accept={['text/csv']} onChangeFile={(e) => this.onChangeFile(e)} />
       </div>,
@@ -330,25 +445,123 @@ export default class Library extends React.Component<Props, State> {
       visible: true,
       done: '追加する',
       content: <div>
-        <TextField placeholder={'フォルダ名'}
-                   onChange={(e, validation) => this.onChangeFolderName(e,
-                     validation)} />
+        <TextField placeholder={'フォルダ名'} onChange={(e, validation) => this.onChangeFolderName(e,validation)} />
       </div>,
     })
     e.preventDefault()
   }
 
-  onClickNewDatabase (e: SyntheticInputEvent<EventTarget>) {
-    this.setState({is_loading: true, selected_data: null})
-    const body = {
-      'label': 'データベース1',
-      'parent': this.state.currentFolderUUID,
-      'dbms': 'ORACLE',
-      'connectionString': 'data source=myDB;user id=user01;password=pass01;',
+  onChangeDatabase(e, param, value) {
+    try {
+      let database = this.state.database
+      database[param.name] = value
+      this.setState({
+        database:database
+      }, () => {
+        const params = this.getDataBaseParams()
+        const rules = this.getDataBaseRules()
+        const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules}  onChange={(e, param, value) => this.onChangeDatabase(e, param, value)}></ParamsForm>
+        ModalUtil.emitModal({
+          id: Constants.modal.ADD_DATABASE,
+          visible: true,
+          done: '追加する',
+          dynamic: true,
+          content: paramsForm,
+        })
+      })
+    } catch(e) {
+      console.log(e)
     }
-    APIUtil.post('databases', body).then((response) => {
-      const json = response.data.data
-      this.setState({is_loading: false})
+  }
+
+  getDataBaseRules() {
+    const rules = {
+      "label" : {
+        "presence":{"allowEmpty": false}
+      },
+      "dbms"  : {
+        "presence":{"allowEmpty": false}
+      },
+      "hostname"  : {
+        "presence":{"allowEmpty": false}
+      },
+      "port"  : {
+        "presence":{"allowEmpty": false}
+      }
+    }
+    return rules
+  }
+  getDataBaseParams() {
+    const params = [
+      {
+        "name": "label",
+        "type": "string",
+        "label": "Label"
+      },
+      {
+        "name": "dbms",
+        "type": "select",
+        "label": "DBMS",
+        "options":{
+          "labels": ["PostgreSQL", "ORACLE"],
+          "values": ["postgresql", "oracle"]
+        },
+        "default": "postgresql"
+      },
+      {
+        "name": "hostname",
+        "type": "string",
+        "label": "ホスト名",
+        "default": ""
+      },
+      {
+        "name": "port",
+        "type": "number",
+        "label": "ポート番号",
+        "default": ""
+      },
+      {
+        "name": "database",
+        "type": "string",
+        "label": "データベース名",
+        "default": ""
+      },
+      {
+        "name": "user_id",
+        "type": "string",
+        "label": "ユーザID",
+        "default": ""
+      },
+      {
+        "name": "password",
+        "type": "string",
+        "label": "パスワード",
+        "default": ""
+      }    
+    ]
+    
+    return params
+  }
+
+  onClickNewDatabase (e: SyntheticInputEvent<EventTarget>) {
+    const params = this.getDataBaseParams()
+    let database = {}
+    params.map(param => {
+      if (param.default) database[param.name] = param.default
+    })
+    const rules = this.getDataBaseRules()
+    this.setState({
+      database : database
+    }, () => {
+      const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules}  onChange={(e, param, value) => this.onChangeDatabase(e, param, value)}></ParamsForm>
+    
+      ModalUtil.emitModal({
+        id: Constants.modal.ADD_DATABASE,
+        visible: true,
+        done: '追加する',
+        dynamic: true,
+        content: paramsForm,
+      })
     })
     e.preventDefault()
   }
@@ -373,46 +586,57 @@ export default class Library extends React.Component<Props, State> {
     e.preventDefault()
   }
 
+  onClickSelectDestination (e) {
+    if (window.opener || !window.opener.closed) {
+      window.opener.onCallbackApply(this.state.currentFolderUUID)
+    }
+    window.close()
+  }
+
   renderNewFolder () {
-    return this.renderNew((e) => this.onClickNewFolder(e), 'フォルダを作成する')
+    return this.renderButton((e) => this.onClickNewFolder(e), 'フォルダを作成する', 'add_circle_outline')
   }
 
   renderNewDatabase () {
-    return this.renderNew((e) => this.onClickNewDatabase(e), 'データベースを追加する')
+    return this.renderButton((e) => this.onClickNewDatabase(e), 'データベースを追加する', 'add_circle_outline')
   }
 
   renderNewDocument () {
-    return this.renderNew((e) => this.onClickNewDocument(e), '資料をアップロードする')
+    return this.renderButton((e) => this.onClickNewDocument(e), '資料をアップロードする', 'add_circle_outline')
   }
 
   renderNewFrame () {
-    return this.renderNew((e) => this.onClickNewFrame(e), 'CSVをアップロードする')
+    return this.renderButton((e) => this.onClickNewFrame(e), 'CSVをアップロードする', 'add_circle_outline')
   }
 
   renderNewRemoteFolder () {
-    return this.renderNew((e) => this.onClickNewRemoteFolder(e), 'ファイルサーバを追加する')
+    return this.renderButton((e) => this.onClickNewRemoteFolder(e), 'ファイルサーバを追加する', 'add_circle_outline')
   }
 
-  renderNew (onClick: Function, title: string) {
+  renderSelectDestination () {
+    return this.renderButton((e) => this.onClickSelectDestination(e), '移動する', 'input')
+  }
+
+  renderButton (onClick: Function, title: string, icon: string) {
     return <a
       className={classnames(libraryListStyle.library, libraryListStyle.new)}
       href="#" onClick={(e) => onClick(e)}>
       <div className={libraryListStyle.library_list}>
         <div className={libraryListStyle.name}>
-          <i className={classnames('material-icons',
-            [libraryListStyle.icon])}>add_circle_outline</i>
+          <i className={classnames('material-icons', [libraryListStyle.icon])}>{icon}</i>
           {title}
         </div>
       </div>
     </a>
   }
+  
 
   renderLibrariesHeader () {
     return <LibraryListHeader />
   }
 
   renderLibraries () {
-    const dialogOption = (this.state.mode === Constants.library.mode.dialog) ? '?dialog=true' : ''
+    let dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
 
     return this.state.libraryChildren.map((child, index) => {
       const selected = (this.state.selected_data === child)
@@ -506,27 +730,84 @@ export default class Library extends React.Component<Props, State> {
     }
   }
 
+  onClickMove (e) {
+    const selected_data = this.state.selected_data
+    try {
+      HttpUtil.windowOpen('library?dialog=true&mode=folder_select', (folder_uuid) => {
+        const type = selected_data.type
+        const uuid = selected_data.uuid
+        const data = {
+          parent : folder_uuid
+        }
+
+        let result
+        switch (type) {
+          case Constants.library.type.folder:
+            result = APIUtil.put('folders/' + uuid, data)
+            break;
+          case Constants.library.type.flow:
+            result = APIUtil.put('flows/' + uuid, data)
+            break;
+          case Constants.library.type.frame:
+            result = APIUtil.put('frames/' + uuid, data)
+            break;
+          case Constants.library.type.document:
+            result = APIUtil.put('documents/' + uuid, data)
+            break;
+          case Constants.library.type.database:
+            result = APIUtil.put('databases/' + uuid, data)
+            break;
+          case Constants.library.type.remoteFolder:
+            result = APIUtil.put('remote-folders/' + uuid, data)
+            break;
+        }
+        result.then((response) => {
+          if (response.data.success) {
+            this.fetchFolder()
+          } else {
+            this.props.notify({
+              title: "ライブラリー移動エラー",
+              message: response.data.message,
+              status: 'error',
+              dismissAfter: 0,
+              closeButton: true
+            })
+          }
+        })
+      })
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
   renderInspector () {
     const data: LibraryListDataType = this.state.selected_data
     let onClickDelete = null
     let onClickApply = null
+    let onClickMove = null
+    let onClickEdit = null
 
     switch (this.state.mode) {
-      case Constants.library.mode.dialog:
+      case Constants.library.mode.frame_select:
         if (data && data.type === Constants.library.type.frame) {
-          onClickApply = (data) => this.onClickApply(
-            data)
+          onClickApply = (data) => this.onClickApply(data)
         }
         break
+      case Constants.library.mode.folder_select:
+        break
       case Constants.library.mode.list:
-        onClickDelete = (data) => this.onClickDelete(
-          data)
+        onClickDelete = (data) => this.onClickDelete(data)
+        onClickMove = (data) => this.onClickMove(data)
+        if (data && data.type === Constants.library.type.database) {
+          onClickEdit = (data) => this.onClickEditDatabase(data)
+        }
         break
     }
-
     return <LibraryInspector data={data}
                              onClickDelete={onClickDelete}
                              onClickApply={onClickApply}
+                             onClickMove={onClickMove}
+                             onClickEdit={onClickEdit}
                              onBlurTitle={(e) => this.onBlurTitle(e,data)}
                              visualizers={this.state.visualizers}/>
   }
@@ -538,6 +819,71 @@ export default class Library extends React.Component<Props, State> {
     window.close()
   }
 
+  onClickEditDatabase (data) {
+    if (data.type !== Constants.library.type.database) {
+      return
+    }
+    const rules = this.getDataBaseRules()
+    const params = this.getDataBaseParams()
+    this.setState({
+      database: {
+        "label"   :data.label,
+        "dbms"    :data.dbms,
+        "hostname":data.hostname,
+        "port"    :data.port,
+        "database":data.database,
+        "user_id" :data.user_id,
+        "password":data.password
+      }
+    }, () => {
+      const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules} onChange={(e, param, value) => this.onChangeEditDatabase(e,param,value)} ></ParamsForm>
+      ModalUtil.registerModal({
+        id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
+          this.editLibraryChild(data)
+          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        },
+      })
+      ModalUtil.emitModal({
+        id: Constants.modal.EDIT_DATABASE,
+        visible: true,
+        done: '編集する',
+        danger: true,
+        content: paramsForm
+      })
+    })
+  }
+
+  onChangeEditDatabase(e, param, value) {
+    try {
+      let database = this.state.database
+      database[param.name] = value
+      this.setState({
+        database:database
+      }, () => {
+        const rules = this.getDataBaseRules()
+        const params = this.getDataBaseParams()
+        const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules} onChange={(e, param, value) => this.onChangeEditDatabase(e,param,value)} ></ParamsForm>
+        ModalUtil.emitModal({
+          id: Constants.modal.EDIT_DATABASE,
+          visible: true,
+          done: '編集する',
+          danger: true,
+          content: paramsForm
+        })
+      })
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
+  editLibraryChild(data) {
+    APIUtil.put('databases/' + data.uuid, this.state.database).then((response) => {
+      this.completeEditDatabase(response)
+    }, () => {
+      this.unhandledNotify('データベース修正エラー')
+    })
+  }
+
   renderBreadCrumb () {
     if (Array.isArray(this.state.folderPath)) {
       return <BreadCrumb history={this.makeHistory(this.state.folderPath)} />
@@ -546,7 +892,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   makeHistory (folderPath: []): [BreadCrumbHistoryType] {
-    const dialogOption = (this.state.mode === Constants.library.mode.dialog) ? '?dialog=true' : ''
+    const dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
 
     const history = folderPath.map((path, index) => {
       return {
@@ -565,7 +911,6 @@ export default class Library extends React.Component<Props, State> {
 
   onBlurTitle (
     e: SyntheticInputEvent<EventTarget>, selected_data: LibraryListDataType) {
-
     // Label の修正
     if (!selected_data) {
       return
@@ -580,12 +925,24 @@ export default class Library extends React.Component<Props, State> {
       return
     }
 
-    const body = {
-      label : e.target.value
+    let body = {
+      label : e.target.value,
     }
-
+    if (selected_data.type === Constants.library.type.database) {
+      body = {
+        label : e.target.value,
+        dbms : selected_data.dbms,
+        hostname : selected_data.hostname,
+        port : selected_data.port,
+        database: selected_data.database,
+        user_id: selected_data.user_id,
+        password: selected_data.password
+      }
+    }
+  
     APIUtil.put(endPoint + uuid, body).then((response) => {
       if (response.data.success) {
+        
         const resultLabel = response.data.data.label
         let selected_data = this.state.selected_data
 
@@ -627,6 +984,7 @@ export default class Library extends React.Component<Props, State> {
         endPoint = 'folders/'
         break
       case Constants.library.type.database:
+        endPoint = 'databases/'
         break
       case Constants.library.type.remoteFolder:
         break
@@ -666,6 +1024,11 @@ export default class Library extends React.Component<Props, State> {
       {this.renderNewFolder()}
       {/*{this.renderNewDocument()}*/}
       {this.renderNewFrame()}
+      {this.renderNewDatabase()}
+    </div>
+
+    let selectUI = <div>
+      {this.renderSelectDestination()}
     </div>
 
     return <div>
@@ -674,6 +1037,7 @@ export default class Library extends React.Component<Props, State> {
       {this.renderLibraries()}
       {this.renderInspector()}
       {(this.state.mode === Constants.library.mode.list) ? newUI : null}
+      {(this.state.mode === Constants.library.mode.folder_select) ? selectUI : null}
       {/*{this.renderNewDatabase()}*/}
       {/*{this.renderNewRemoteFolder()}*/}
     </div>
@@ -681,7 +1045,6 @@ export default class Library extends React.Component<Props, State> {
 
   render () {
     let containerClassName = (this.isDialog()) ? 'container' : 'container mt-40px'
-
     return <div className={style.inspector_list_container}>
       <div className={containerClassName}>
         <Loader center={true} absolute={true} visible={this.state.is_loading} />
@@ -692,3 +1055,4 @@ export default class Library extends React.Component<Props, State> {
     </div>
   }
 }
+

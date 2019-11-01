@@ -184,7 +184,7 @@ def update_flow(flow_uuid):
     if 'parent' in request.json:
         if 'label' in request.json:
             raise Exception('labelとはparent属性は同時に指定できません')
-        # frameを移動する
+        # flowを移動する
         new_parent = request.json['parent']
         modifier = session['user_id']
         flow = Flow.find_by_uuid(flow_uuid)
@@ -244,11 +244,26 @@ def fetch_commands():
     """
     コマンド定義の一覧を返す
     """
-
+    visible_commands_json = []
+    if len(request.args) == 0 or request.args.get('all') == 'on':
+        visible_commands_json.append('mcmd')
+        visible_commands_json.append('kcmd')
+        visible_commands_json.append('pcmd')
+        visible_commands_json.append('scmd')
+    else:
+        if request.args.get('mcmd') == 'on':
+            visible_commands_json.append('mcmd') 
+        if request.args.get('kcmd') == 'on':
+            visible_commands_json.append('kcmd') 
+        if request.args.get('pcmd') == 'on':
+            visible_commands_json.append('pcmd') 
+        if request.args.get('scmd') == 'on':
+            visible_commands_json.append('scmd') 
+    
     from kskp.store import CommandsPathFileSource, CommandsPathLink
 
     commands_list = []
-    for visible_command in app.config['VISIBLE_COMMANDS_JSON']:
+    for visible_command in visible_commands_json:
         link = CommandsPathLink(CommandsPathFileSource(visible_command))
         commands_list.extend(link.resolve())
 

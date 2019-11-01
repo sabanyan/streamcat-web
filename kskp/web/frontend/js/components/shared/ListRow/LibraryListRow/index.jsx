@@ -46,23 +46,27 @@ export default class LibraryListRow extends React.Component<Props> {
       </g>
     </svg>
 
+    let icon = <i className={classnames('material-icons', [style.icon])}>warning</i>
     switch (type) {
       case Constants.library.type.document:
-        return <i className={classnames('material-icons',
-          [style.icon])}>description</i>
+        icon = <i className={classnames('material-icons',[style.icon])}>description</i>
+        break
+      case Constants.library.type.flow:
       case Constants.library.type.frame:
-        return <i className={classnames('material-icons',
-          [style.icon])}>description</i>
+        icon = <i className={classnames('material-icons',[style.icon])}>description</i>
+        break
       case Constants.library.type.folder:
-        return <i className={classnames('material-icons',
-          [style.icon])}>folder</i>
+        icon = <i className={classnames('material-icons',[style.icon])}>folder</i>
+        break
       case Constants.library.type.database:
-        return database
+        icon = database
+        break
       case Constants.library.type.remoteFolder:
-        return <i className={classnames('material-icons',
-          [style.icon])}>dns</i>
+        icon = <i className={classnames('material-icons',[style.icon])}>dns</i>
+        break
     }
-    return null
+
+    return icon
   }
 
   canUseHref (libraryChild) {
@@ -93,5 +97,4 @@ export default class LibraryListRow extends React.Component<Props> {
       </div>
     </div>
   }
-
 }

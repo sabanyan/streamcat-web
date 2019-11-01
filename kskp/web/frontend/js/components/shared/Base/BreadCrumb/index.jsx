@@ -22,9 +22,9 @@ export default class BreadCrumb extends React.Component<Props> {
 
     const breadCrumbElements = history.map((h: BreadCrumbHistoryType) => {
       if (h.url && !h.current) {
-        return <li><a href={h.url}>{h.label}</a></li>
+        return <li key={h.label}><a href={h.url}>{h.label}</a></li>
       }
-      return <li><span>{h.label}</span></li>
+      return <li key={h.label}><span>{h.label}</span></li>
     })
 
     return <ul className={style.breadCrumb}>{breadCrumbElements}</ul>

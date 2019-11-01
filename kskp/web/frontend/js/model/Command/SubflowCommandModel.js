@@ -29,6 +29,18 @@ export default class SubflowCommandModel extends Model {
     this.initialize(props, 'projectId')
     this.initialize(props, 'projectName')
     this.initialize(props, 'uuid')
+    this.init()
+  }
+
+  init() {
+    if (this.params) {
+      this.params = this.params.map(param => {
+        if (!param.label) {
+          param['label'] = param.name
+        }
+        return param
+      })
+    }
   }
 
   getInPorts (): [CommandPortType] {

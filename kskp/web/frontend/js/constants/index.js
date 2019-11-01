@@ -92,6 +92,8 @@ const Constants = {
     ADD_FOLDER: 'add_folder',
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
+    ADD_DATABASE: 'add_database',
+    EDIT_DATABASE: 'edit_database',
     RUN_FLOW: 'run_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
@@ -165,6 +167,8 @@ const Constants = {
       remoteFolder: 'remote-folder'
     },
     mode: {
+      frame_select: 'frame_select',
+      folder_select: 'folder_select',
       dialog: 'dialog', //選択モード
       list: 'list' //通常モード
     }
