@@ -17,7 +17,7 @@ jobs:
           python-version: 3.6
       - name: Set up kskp(Continuous Integration)
         run: |
-          yum -y install git docker
+          sudo apt-get -y install git docker
           git clone git://github.com/nodenv/nodenv.git ~/.nodenv
           git clone git://github.com/nodenv/node-build.git ~/.nodenv/plugins/node-build
           echo 'export PATH="$HOME/.nodenv/bin:$PATH"' >> ~/.bash_profile
