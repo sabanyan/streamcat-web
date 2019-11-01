@@ -25,6 +25,7 @@ jobs:
           source ~/.bash_profile
           nodenv install 8.12.0
           nodenv global 8.12.0
+          cd ../
           mkdir kskp
           cd kskp
           git clone https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-flow-engine.git
