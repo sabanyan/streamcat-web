@@ -281,20 +281,6 @@ def fetch_visualizers():
 
     return jsonify({'success': True, 'data': link.resolve()})
 
-def upload_frame(file, file_name):
-    """
-    CSVをアップロードする
-    TODO: テスト未実施
-    """
-    frame_uuid = str(uuid.uuid4())
-
-    from werkzeug.utils import secure_filename
-    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
-    file.save(file_path.as_posix())
-    file.close()
-
-    return {"uuid": frame_uuid, "label": file_name}
-
 @mod.route('/files')
 def download_file():
     # 現在type, labelは未使用
