@@ -29,6 +29,7 @@ jobs:
             echo "---------------------"
             ls
             echo "---------------------"
+            docker images
             docker ps -a
             docker run postgres-kskp
             docker run -i -d kskp
