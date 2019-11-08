@@ -15,6 +15,7 @@ class APIUtil {
 
   setWindowNavigation (response: any) {
     if (response.data.navigation) {
+      response.data.navigation.showCommandPalette = true  // default      
       new NavigationModel(response.data.navigation)
     }
   }

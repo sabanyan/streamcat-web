@@ -190,10 +190,18 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
-    return <div className={style.flow_editor_container}>
+    const {
+      flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, 
+      deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, 
+      sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, 
+      dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, 
+      updateDataFrameDetail, deleteCache, updateStep, 
+      sortStepSrcEnd, graph, zoom, showCommandPalette
+    } = this.props
+
+    return <div className={style.flow_editor_container} style={{top:style.flow_editor_container.top+64}}>
       <div className={style.flow_editor}>
-        <PaperZoom />
+        {/* <PaperZoom /> */}
         {/*<SettingsButton {...this.props}/>*/}
         <ToolBar flow={flow}
                  zoom={zoom}
@@ -208,7 +216,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
                  selectSteps={selectSteps}
                  setZoom={setZoom}
                  undo={undo}
-                 redo={redo}/>
+                 redo={redo}
+                 showCommandPalette={showCommandPalette}/>
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)}
                 message={'フローを構築中です'} />
         <PaperScroller

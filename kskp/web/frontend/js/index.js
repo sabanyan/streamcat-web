@@ -82,7 +82,7 @@ if (document.getElementById('profile')) {
 }
 if (document.getElementById('navigation')) {
   ReactDOM.render(
-    <NavigationBar baseUrl={inject_static_url} navigation={this} />,
+    <NavigationBar baseUrl={inject_static_url} />,
     document.getElementById('navigation'),
   )
 }

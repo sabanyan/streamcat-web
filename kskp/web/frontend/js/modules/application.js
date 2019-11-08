@@ -53,7 +53,8 @@ let initialState = {
   drag: {},
   selected_in_edges: [],
   selected_out_edges: [],
-  selected_data_source_detail: {}
+  selected_data_source_detail: {},
+  showCommandPalette: true
 }
 
 const FlowEditorReducer = (state = initialState, action: {}) => {

@@ -27,6 +27,8 @@ type ToolBarProps = {
   setZoom: Function;
   undo: Function;
   redo: Function;
+
+  showCommandPalette: Boolean;
 }
 
 export default class ToolBar extends React.Component<ToolBarProps> {
@@ -265,8 +267,14 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
     const redoDisabled = !(current + 1 < max)
     const undoDisabled = !(current - 1 >= 0)
+
+    let styleToolbar    
+    if (this.props.showCommandPalette) {
+      styleToolbar = {top: 144}
+    }
+
     return <div>
-      <div className={classnames(style.flow_toolbar)}>
+      <div className={classnames(style.flow_toolbar)} style={styleToolbar}>
         <Save disabled={false} icon={'&#xE2C2'}
               onClick={(e) => this.onClickSave(e)}>保存</Save>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}

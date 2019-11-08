@@ -99,6 +99,7 @@ export default FlowEditorContainer = connect(
       flow: state.flowEditorReducer.flow,
       originalFlow: state.flowEditorReducer.originalFlow,
       navigation: state.flowEditorReducer.navigation,
+      showCommandPalette: state.flowEditorReducer.showCommandPalette
     }
   },
   dispatch => {
