@@ -25,7 +25,10 @@ jobs:
           ls
           echo "---------------------"
           if [ "${POSTGRES_CID}" -a "${KSKP_CID}" ]; then
-            cd kskp-test/kskp-web
+            cd kskp-web
+            echo "---------------------"
+            ls
+            echo "---------------------"
             npm start
             docker run postgres-kskp
             docker run -i -d kskp
