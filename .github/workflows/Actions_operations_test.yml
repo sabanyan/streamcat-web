@@ -32,6 +32,7 @@ jobs:
             docker images
             docker ps -a
             touch aaa
+            
             docker run postgres-kskp
             docker run -i -d kskp
           else
