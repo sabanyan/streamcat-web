@@ -19,7 +19,7 @@ jobs:
         run: |
           POSTGRES_CID=$(docker ps -a -f name=postgres-kskp)
           KSKP_CID=$(docker ps -a -f name=kskp)
-          if [ "${POSTGRES_CID" -a "${KSKP_CID" ]; then
+          if [ "${POSTGRES_CID}" -a "${KSKP_CID}" ]; then
             cd kskp-web
             npm start
             docker run postgres-kskp
