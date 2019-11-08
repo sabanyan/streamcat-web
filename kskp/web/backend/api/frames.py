@@ -305,7 +305,10 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}, preview_args={}):
 def format_result(result, flow_uuid):
     from kskp.store import get_flow_nodes_by_uuid
     nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
-    return [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
+
+    # TODO: ここでは、出力フレームのUUIDは返さずに、実行ログのUUIDを返すようにする予定
+    # return [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
+    return [{'id':key, 'uuid':'', 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
 
 def format_preview(result):
     return [{'id':key, 'contents': value} for key, value in result.items()]
