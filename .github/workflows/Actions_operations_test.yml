@@ -29,7 +29,6 @@ jobs:
             echo "---------------------"
             ls
             echo "---------------------"
-            npm start
             docker run postgres-kskp
             docker run -i -d kskp
           else
