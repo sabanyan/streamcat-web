@@ -265,9 +265,7 @@ def make_new_previews():
     """
     if 'from' not in request.args:
         raise Exception('from引数を指定してください')
-    if 'args' not in request.json:
-        raise Exception('args属性を指定してください')
-    
+
     step_ids = []
     if '.' in request.args['from']:
         froms = request.args['from'].split('.')
@@ -276,7 +274,7 @@ def make_new_previews():
     else:
         flow_uuid = request.args['from']
 
-    preview_args = request.json.get('args')
+    preview_args = request.json
 
     result = execute_flow(flow_uuid, step_ids, preview_args=preview_args)
     result = format_preview(result)
