@@ -221,7 +221,7 @@ def create_frame():
         inputs = _make_flow_inputs(flow_uuid, request)
         # フローの実行
         result = execute_flow(flow_uuid, step_ids=[], args=args, inputs=inputs)
-        result = format_result(result, flow_uuid)
+        result = format_result(result)
         return jsonify({'success': True, 'lasts': result})
     
     else:
@@ -253,8 +253,8 @@ def make_new_frames():
         # 普通の実行
         flow_uuid = request.args['from']
         
-    result = execute_flow(flow_uuid, step_ids=step_ids)
-    result = format_result(result, flow_uuid)
+    activity = execute_flow(flow_uuid, step_ids=step_ids)
+    result = format_result(activity)
     return jsonify({'success': True, 'lasts': result})
 
 @mod.route('/previews', methods=['GET'])
@@ -276,8 +276,8 @@ def make_new_previews():
 
     preview_args = request.json
 
-    result = execute_flow(flow_uuid, step_ids, preview_args=preview_args)
-    result = format_preview(result)
+    activity = execute_flow(flow_uuid, step_ids, preview_args=preview_args)
+    result = format_preview(activity)
     return jsonify({'success': True, 'lasts': result})
 
 def execute_flow(flow_uuid, step_ids, args={}, inputs={}, preview_args={}):
@@ -287,29 +287,26 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}, preview_args={}):
     """
     if not Flow.exists(flow_uuid):
         # ファイルが存在しないときはここを通る
-        raise Exception('low does not exist in DB')
+        raise Exception('flow does not exist in DB')
     try:
         from kskp.engine import execute, FlowJsonLink, FlowUuidLink
         link = FlowUuidLink(flow_uuid, step_ids, preview_args)
-        result = execute(link=link, args=args, inputs=inputs)
-        if not result:
-            raise Exception('result is empty.')
-        return result
+        activity = execute(link=link, args=args, inputs=inputs)
+        if not activity:
+            raise Exception('activity is None.')
+        return activity
     except Exception as e:
         import traceback
         traceback.print_exc()
         raise Exception(str(e))
 
-def format_result(result, flow_uuid):
-    from kskp.store import get_flow_nodes_by_uuid
-    nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
+def format_result(activity):
+    from kskp.store import Activity
+    return [{'id':point.id, 'uuid':frame_uuid, 'label':point.label} for point, frame_uuid in activity.result.items()]
 
-    # TODO: ここでは、出力フレームのUUIDは返さずに、実行ログのUUIDを返すようにする予定
-    # return [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
-    return [{'id':key, 'uuid':'', 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
-
-def format_preview(result):
-    return [{'id':key, 'contents': value} for key, value in result.items()]
+def format_preview(activity):
+    from kskp.store import Activity
+    return [{'id':point.id, 'contents': preview} for point, preview in activity.result.items()]
 
 def _make_flow_inputs(flow_uuid, request):
     """
