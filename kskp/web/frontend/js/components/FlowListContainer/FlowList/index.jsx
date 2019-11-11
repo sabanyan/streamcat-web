@@ -13,7 +13,8 @@ import { Button, FileUploader, TextField } from 'Shared/Input'
 import type { FlowListDataType } from 'Types/index'
 import { FlowInspector } from 'Shared/Inspector'
 import { NotificationManager } from 'Shared/Notification'
-
+import { LocksModel } from 'Model/index'
+import axios from 'axios'
 type State = {
   flow_list: [FlowListDataType];
   keyword: string;
@@ -184,7 +185,12 @@ export default class FlowList extends React.Component<FlowListProps, State> {
 
   onClickFlow (e, flow) {
     this.setState({selected_flow: flow})
-    this.props.selectFlow(flow)
+    // 本当に存在するフローなのか確認
+    APIUtil.get('flows/' + flow.uuid).then((response) => {
+      this.props.selectFlow(flow)
+    }, (err) => {
+      console.log(err)
+    })
   }
 
   onChangeKeyword (e: SyntheticInputEvent<EventTarget>) {
@@ -255,12 +261,41 @@ export default class FlowList extends React.Component<FlowListProps, State> {
   }
 
   onClickDelete (flow_uuid: string) {
+    const {notify} = this.props
+ 
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        APIUtil.delete('flows/' + flow_uuid).then((response) => {
-          this.getFlowList()
-          ModalUtil.closeModal(Constants.modal.CONFIRM)
+        // 1. LockIdを取得する。
+        let body = {target: flow_uuid}
+        let locks = new LocksModel(body)
+        APIUtil.post('locks', body).then((response) => {
+          let locksModel = locks.Parse(response)
+          let lockId = locksModel.getLockId()
+          if (lockId) {
+            //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
+            axios.delete('api/v0/flows/' + flow_uuid,{data:{lock:lockId}})
+            .then((response) => {
+              APIUtil.post('delete-locks/' + lockId).then((response) => {
+                this.getFlowList()
+              })
+            }, (err) => {
+              APIUtil.post('delete-locks/' + lockId).then((response) => {
+                this.getFlowList()
+              })
+            })
+          } else {
+            // lockが出来なかった場合
+            notify({
+              title: '削除エラー',
+              message: locksModel.getErrorMessage(),
+              status: 'error',
+              dismissAfter: 0,
+              closeButton: true
+            })
+          }
         })
+        // 2. 取得したLockIdで削除する
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
     })
     ModalUtil.emitModal({
