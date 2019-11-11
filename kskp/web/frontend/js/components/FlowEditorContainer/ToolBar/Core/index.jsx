@@ -44,7 +44,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   saveFlow () {
-    const {flow, nodes, notify, dismissNotify} = this.props
+    const {flow, nodes, locks, notify, dismissNotify} = this.props
     return FlowUtil.saveFlow(inject_flow_uuid, {
         label: flow.label,
         description: flow.description,
@@ -52,6 +52,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         ports: flow.ports,
         nodes: nodes,
       },
+      locks,
       notify,
       dismissNotify)
   }
@@ -92,7 +93,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.loadingMessage = ''
 
     this.forceUpdate()
-    this.save().then(() => {
+    let result = this.saveFlow()
+    if (!result) {
+      this.loading = false
+      return
+    }
+    result.then(() => {
       this.run().then((response) => {
         if (response.data.success) {
           const json: RunResponseType = response.data

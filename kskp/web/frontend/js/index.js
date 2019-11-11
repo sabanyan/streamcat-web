@@ -3,9 +3,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { applyMiddleware, combineReducers, compose, createStore } from 'redux'
-import flowEditorReducer from 'Modules/application'
-import libraryReducer from 'Modules/library'
-import flowListReducer from 'Modules/flowList'
 import thunk from 'redux-thunk'
 import { reducer as notificationsReducer } from 'reapop'
 import FlowEditorContainer from 'FlowEditorContainer/index'
@@ -15,11 +12,9 @@ import FlowListContainer from 'FlowListContainer/index'
 import LibraryListContainer from 'LibraryListContainer/index'
 import { NavigationBar } from 'Shared/Base'
 import ProfileContainer from 'ProfileContainer/index'
+import {flowEditorReducer, libraryReducer, flowListReducer, apiReducer} from 'Modules/index'
 
 window.emitter = new EventEmitter()
-
-//let appStore = createStore(reducer, window.__REDUX_DEVTOOLS_EXTENSION__ &&
-//  window.__REDUX_DEVTOOLS_EXTENSION__())
 
 // default value for notifications
 const defaultNotification = {
@@ -39,7 +34,8 @@ const store = createStoreWithMiddleware(combineReducers({
   notifications: notificationsReducer(defaultNotification),
   flowEditorReducer,
   libraryReducer,
-  flowListReducer
+  flowListReducer,
+  apiReducer
 }), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())
 
 if (document.getElementById('flow_editor')) {

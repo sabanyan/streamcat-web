@@ -37,6 +37,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       credentials: 'include',
       redirect: 'follow',
     }
+    this.handleLeavePage = this.handleLeavePage.bind(this) 
 
     const graph: GraphUtil = new GraphUtil()
 
@@ -109,6 +110,29 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     // (json: any) { //マスタ追加 self.props.addMaster({operators: json.data})
     // }).catch((err) => { console.log(err) alert("クライアントでエラーが発生しました") })
 
+  }
+
+  componentWillMount() {
+    const {POST_LOCKS} = this.props
+    POST_LOCKS(inject_flow_uuid)
+    //GET_FLOW(inject_flow_uuid, false, true)
+  }
+
+  componentDidMount() {
+    window.addEventListener('beforeunload', this.handleLeavePage);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('beforeunload', this.handleLeavePage);
+  }
+
+
+  handleLeavePage(e) {
+    const {locks} = this.props
+    if (locks.lastData && locks.lastData.lockId) {
+      let lockId = locks.lastData.lockId
+      navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+    }
   }
 
   renderSteps () {
@@ -190,13 +214,14 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-    const {flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
+    const {flow, locks, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
         {/*<SettingsButton {...this.props}/>*/}
         <ToolBar flow={flow}
                  zoom={zoom}
+                 locks={locks}
                  nodes={nodes}
                  history={history}
                  notify={notify}
