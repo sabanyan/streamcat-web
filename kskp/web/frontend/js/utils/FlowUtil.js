@@ -343,11 +343,13 @@ export default class FlowUtil {
     ValidatorUtil.nodesValidate(nodes)
 
     let putBody = {}
+    let flow = {}
     if (label) putBody['label'] = label
-    if (description) putBody['description'] = description
-    if (params) putBody['params'] = params
-    if (ports) putBody['ports'] = ports
-    if (ports) putBody['nodes'] = nodes
+    if (description) flow['description'] = description
+    if (params) flow['params'] = params
+    if (ports) flow['ports'] = ports
+    if (ports) flow['nodes'] = nodes
+    putBody['flow'] = flow
 
     let saveNotify
     if (notify) {
