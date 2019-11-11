@@ -311,7 +311,12 @@ def make_new_lock():
     lock = lock_manager.lock(request.json['target'], creator=session['user_id'])
     return lock.to_json()
 
-@mod.route('/locks/<lock_uuid>', methods=['DELETE'])
+"""
+frontendのNavagator.sendBeacon()に対応するため、下記のように変更
+methods: DELETE => POST
+url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
+"""
+@mod.route('/delete-locks/<lock_uuid>', methods=['POST'])
 @login_required_api
 @api_base
 def delete_lock(lock_uuid):
