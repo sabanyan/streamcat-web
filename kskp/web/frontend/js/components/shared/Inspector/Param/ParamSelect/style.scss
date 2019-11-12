@@ -1,5 +1,28 @@
-.param {
+@import "../../../../../../sass/common";
 
+.param {
+  margin: 0;
+  
+    i {
+      float:right;
+      color:gray;
+      margin: 10px 0px 0px 0px;
+      padding: 2px;
+      font-size: 12px;
+      text-align: center;
+      cursor: pointer;
+      outline: none;
+      border: none;
+      border-radius: 15px;
+    }
+
+    i:hover {
+      background-color:  lightgray;
+    }
+
+    i:active {
+      transform: translateY(4px);
+    }
 }
 
 .label {
@@ -15,4 +38,12 @@
 
 .required {
   color: red;
+}
+
+.description {
+  white-space: pre-wrap;
+  color: lighten($kskp-text,15%);
+  font-size: 13px;
+  padding: 0px 8px 0px 8px;
+  margin: 0;
 }

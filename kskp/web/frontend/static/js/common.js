@@ -79,7 +79,7 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\n\nwindow.onerror = function (message, source, lineno, colno, error) {\n\n  var modalElem = document.getElementById('error_modal');\n  var modalContentElem = document.getElementById('error_modal_content');\n  var backdropElem = document.getElementById('error_modal_bg');\n  modalContentElem.textContent = message;\n  modalElem.style.display = 'block';\n  backdropElem.style.display = 'block';\n};\n\n//# sourceURL=webpack:///./web/frontend/js/common.js?");
+eval("\n\nwindow.onerror = function (message, source, lineno, colno, error) {\n\n  var modalElem = document.getElementById('error_modal');\n  var modalContentElem = document.getElementById('error_modal_content');\n  var backdropElem = document.getElementById('error_modal_bg');\n  //modalContentElem.textContent = message\n  //modalElem.style.display = 'block'\n  //backdropElem.style.display = 'block'\n};\n\n//# sourceURL=webpack:///./web/frontend/js/common.js?");
 
 /***/ })
 

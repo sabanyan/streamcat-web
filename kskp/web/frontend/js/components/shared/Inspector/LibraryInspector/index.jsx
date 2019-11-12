@@ -15,6 +15,7 @@ type Props = {
   data?: LibraryListDataType;
   onClickDelete?: Function;
   onClickApply?: Function;
+  onClickMove?: Function;
   onBlurTitle?: Function;
 }
 
@@ -69,33 +70,52 @@ class LibraryInspector extends React.Component<Props> {
     })
   }
 
-  isDialog () {
-    return (HttpUtil.getURLParam('dialog'))
+  onClickEdit(e) {
+    const {data, onClickEdit} = this.props
+    onClickEdit(data)
+  }
+
+  renderButtons() {
+    const {data, onClickDelete, onClickApply, onClickMove, onClickEdit} = this.props
+
+    let preview, download, del, apply, move, edit
+
+    // preview button
+    // download button
+    if (data && data.label && data.type === Constants.library.type.frame) {
+      preview = <Button onClick={(e) => this.onClickPreview(e)} icon={'visibility'}>プレビュー</Button>
+      const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
+      download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
+    }
+
+    // move button
+    if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
+
+    // edit
+    if (onClickEdit && data && data.type === Constants.library.type.database){
+      edit = <Button onClick={(e) => this.onClickEdit(e)} icon={'create'}>編集する</Button>
+    } 
+    
+    // delete button
+    if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
+  
+    // apply button
+    if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
+    
+    return <React.Fragment>
+      {preview}
+      {download}
+      {move}
+      {edit}
+      {del}
+      {apply}
+    </React.Fragment>
   }
 
   render () {
-    const {data, onClickDelete, onClickApply} = this.props
+    const {data} = this.props
     let content = null
     let label = ""
-    let preview = null
-    let  download = null
-    if (data && data.label && data.type === Constants.library.type.frame) {
-      preview = <Button onClick={(e) => this.onClickPreview(e)} icon={'visibility'}>プレビュー</Button>
-      // csv download
-      const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
-      download = <DownloadButton href={href} icon={'visibility'}>CSVダウンロード</DownloadButton>
-    }
-    let deleteButton
-    if (onClickDelete) {
-      deleteButton = <Button danger={true}
-                             onClick={() => onClickDelete(data)}>削除する</Button>
-    }
-    let applyButton
-    if (onClickApply) {
-      applyButton = <Button primary={true}
-                            onClick={() => onClickApply(data)}>選択する</Button>
-    }
-    let inspectorPreperty = (this.isDialog()) ? style.property_dialog : style.property
     if (data) {
       label = data.label
       content = <div>
@@ -103,10 +123,7 @@ class LibraryInspector extends React.Component<Props> {
             {data.label}
           </div>
           <div className={style.actions}>
-            {preview}
-            {download}
-            {deleteButton}
-            {applyButton} 
+            {this.renderButtons()}
           </div>
           <div className={style.full_hr}/>
           <div>

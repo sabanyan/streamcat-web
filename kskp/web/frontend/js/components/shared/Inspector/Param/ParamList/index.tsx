@@ -1,7 +1,10 @@
 import * as React from 'react'
 import { CommandParamType } from 'Types/index'
 import { AddButton, Button} from 'Shared/Input'
-import { ParamString2 as ParamString } from 'Shared/Inspector'
+// 循環参照されるため一個一個Importする（ParamBoolean, ParamString, ParamSelect)
+import { default as ParamBoolean } from '../ParamBoolean/index'
+import { default as ParamString } from '../ParamString/index'
+import { default as ParamSelect } from '../ParamSelect/index'
 import Constants from 'Constants/index'
 import { ParamUtil, ModalUtil, StateUtil } from 'Utils/index'
 import style from './style.scss'
@@ -11,9 +14,18 @@ import classnames from 'classnames'
 
 type Props = {
     param: CommandParamType;
-    arg:Array<CommandParamType>;
+    value:Array<CommandParamType>;
+    label?:string;
+    headers?:string[];
 
-    onUpdate(newStep:Function):void
+    onChange:Function; // OnChange(e, param, value)
+}
+
+type State = {
+    currentValue:Array<CommandParamType>;
+    addable: boolean,
+    deletable: boolean,
+    draggable: boolean
 }
 
 const SortableItem = SortableElement(({value}) => <li>{value}</li>);
@@ -30,124 +42,152 @@ const SortableList = SortableContainer(
         );
 });
     
-export default class ParamList extends  React.Component<Props>{
-    currentArg:Array<any>;
+export default class ParamList extends  React.Component<Props, State>{
 
     constructor(props:Props) {
         super(props)
-        this.currentArg = props.arg
     }
 
-    onSortEnd({oldIndex, newIndex, collection, isKeySorting}, e, param, arg, onUpdate) {
-        if (!onUpdate || !arg) {
-            return
-        }
-        let newArg = arrayMove(arg, oldIndex, newIndex)
-        onUpdate((step) => {
-            step.args[param.name] = newArg
+    componentWillMount() {
+        const {param} = this.props
 
-            return step
+        let isAddable = (param.options && 'visiable_button_add' in param.options && param.options.visiable_button_add === false) ? false : true
+        let isDeletable = (param.options && 'visiable_button_delete' in param.options && param.options.visiable_button_delete === false) ? false : true
+        let isDraggable = (param.options && 'draggable' in param.options && param.options.draggable === false) ? false : true
+
+        this.setState({
+            currentValue : this.props.value,
+            addable: isAddable,
+            deletable: isDeletable,
+            draggable: isDraggable
         })
+    }
+
+    onSortEnd({oldIndex, newIndex, collection, isKeySorting}, e) {
+        try {
+            const {param, onChange} = this.props
+            let newValue = arrayMove(this.state.currentValue, oldIndex, newIndex)
+            this.setState({
+                currentValue:newValue
+            }, () => {
+                onChange(e, param, this.state.currentValue)
+            })
+        } catch(e) {
+            console.log(e)
+        }
     }
 
     onDeleteElement(e, param, argIndex) {
-        e.preventDefault()
-        const {onUpdate} = this.props
-        if(!onUpdate) {
-            return
-        }
-        
-        ModalUtil.registerModal({
-            id: Constants.modal.CONFIRM, 
-            onClickDone: () => {
-                onUpdate((step) => {
-                    if (step.args[param.name].length > 1) {
-                        const args = step.args[param.name].filter((value, filterIndex) => {
-                            return (filterIndex !== argIndex)
-                        })
-                        step.args[param.name] = args
-                        step.invalidMessage = [""]
-                    }
-                    return step
-                })
-                ModalUtil.closeModal(Constants.modal.CONFIRM)
-            },
-        })
-        ModalUtil.emitModal({
-            id: Constants.modal.CONFIRM,
-            visible: true,
-            done: '削除する',
-            danger: true,
-            content: <div>
-              削除しますか？
-            </div>,
-        })
-    }
-
-    onChangeContent(e, param:CommandParamType, element:CommandParamType, argIndex:number) {
-        const {onUpdate} = this.props
-       
-        if(!onUpdate) {
-            return
-        }
-        onUpdate((step) => {
-            if (step.args) {
-                if (!(step.args[param.name])) {
-                    step.args[param.name] = [{}]
-                }
-                step.args[param.name][argIndex][element.name] = e.currentTarget.value
+        try {
+            e.preventDefault()
+            const {onChange} = this.props
+            if(this.state.currentValue.length <= 1) {
+                return
             }
-            return step
-        })
+            let newValue = this.state.currentValue.filter((element, index) => index !== argIndex)
+            ModalUtil.registerModal({
+                id: Constants.modal.CONFIRM, 
+                onClickDone: () => {
+                    this.setState({
+                        currentValue:newValue
+                    }, () => {
+                        onChange(e, param, newValue)
+                    })
+                    ModalUtil.closeModal(Constants.modal.CONFIRM)
+                },
+            })
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM,
+                visible: true,
+                done: '削除する',
+                danger: true,
+                content: <div>
+                  削除しますか？
+                </div>,
+            })
+        } catch(e) {
+            console.log(e)
+        }
     }
 
-    renderInput(param:CommandParamType, classname:string, onChange:any, value?:string, disabled?:boolean) {
-        return <input 
-          name={param.name} 
-          type="text" 
-          className="form-control" 
-          placeholder={param.name}
-          onChange={onChange}
-          value={value}
-          disabled={disabled}
-        ></input>
+    onChangeContent(e, element:CommandParamType, elementValue:any, argIndex:number) {
+        try {
+            const {param, onChange} = this.props
+            let arg = this.state.currentValue
+            arg[argIndex][element.name] = elementValue
+            this.setState({
+                currentValue : arg
+            }, () => {
+                onChange(e, param, this.state.currentValue)
+            })
+        } catch(e) {
+            console.log(e)
+        }    
     }
+
+    getParamElement(param:CommandParamType, disabled:boolean=false,label?:string,value?:any, onChange?:Function, headers?:string[]) {
+        let paramElement:any
+        try {
+          switch (param.type) {
+            case Constants.param.type.number  :
+            case Constants.param.type.string  :
+              paramElement = <ParamString label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+              break
+            case Constants.param.type.boolean :
+              paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+              break
+            case Constants.param.type.select  :
+              paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+              break
+            case Constants.param.type.column  :
+              //カラム情報を付与
+              param.options = {
+                labels: headers,
+                values: headers,
+                multiple: (param.options && param.options.multiple) ? true : false
+              }
+              paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+              break
+          }
+        } catch(e) {
+          console.log(e)
+        }
+
+        return paramElement
+      }
 
     renderElement(param:CommandParamType, argIndex:number, arg:Array<CommandParamType>):JSX.Element {
         let elements:Array<JSX.Element> = []
+        const {headers} = this.props
         if (!(param.elements) || !(Array.isArray(param.elements))) {
             return <div>
                 {elements}
             </div>
         }
-        const {onUpdate} = this.props
-
         param.elements.forEach((element:CommandParamType, index:number) => {
             let ele:JSX.Element
             let value
             if(arg && arg[argIndex]) {
                 value = arg[argIndex][element.name]
             } 
-            ele = 
-                <div key={argIndex + element.name + index}>
-                    <ParamString
-                        param={element}
-                        value={value}
-                        onUpdate={onUpdate}
-                        onChange={(e) => {this.onChangeContent(e, param, element, argIndex)}}
-                    ></ParamString>
-                </div>
-
+            let className = style.paramElementArg
+            if (element.type === Constants.param.type.select || element.type === Constants.param.type.column) {
+                className = classnames(style.paramElementArg, style.select)
+            }
+            ele = <div key={argIndex + element.name + index} className={className}>
+                {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, element, elementValue, argIndex)}, headers)}
+            </div>
             elements.push(ele)
         })
-    
+       
+        const deleteButton = (this.state.deletable) ? <Button danger={true} onClick={(e) => {this.onDeleteElement(e, param, argIndex)}}>削除</Button> : null
         return <React.Fragment>
             {elements}
-            <Button danger={true} onClick={(e) => {this.onDeleteElement(e, param, argIndex)}}>削除</Button>
+            {deleteButton}
         </React.Fragment>
     }    
 
-    renderElements(param:CommandParamType, arg:Array<any>, onUpdate:Function):JSX.Element | null {
+    renderElements(param:CommandParamType, arg:Array<CommandParamType>) {
         let paramElements:Array<JSX.Element> = []
         let labels:Array<JSX.Element> = []
 
@@ -164,57 +204,72 @@ export default class ParamList extends  React.Component<Props>{
             let label = (element.label) ? element.label : element.name
             labels.push(<label key={label + index}>{label}</label>)
         })
+        labels.push(<label key={"dummy"}></label>)
+        let className = style.paramElements
+        if (this.state.deletable === false) {
+            className = style.paramElementsNoButton
+        }
 
         arg.forEach((element, index) => {
             let paramElement = this.renderElement(param, index, arg)
-            paramElements.push(<div key={element.name + index} className={style.paramElement}>
+            paramElements.push(<div key={index} className={className}>
                 {paramElement}
             </div>)
         })
-        
-        return <div>
-            <label>{param.label}</label>
+       
+        let contents = (this.state.draggable) ? <SortableList items={paramElements} onSortEnd={(value, e) => this.onSortEnd(value, e)}/> : paramElements
+        return <React.Fragment>
             <div className={style.labelContainer}>
-            {labels}
+                {labels}
             </div>
-            <SortableList
-            //pressDelay={100}
-            items={paramElements}
-            onSortEnd={(value, e) => this.onSortEnd(value, e, param, arg, onUpdate)}/>
-        </div>
+            {contents}
+        </React.Fragment>
     }
 
-    onAddElement(e,param,arg,onUpdate) {
-        if(!onUpdate) {
-            return
+    onAddElement(e) {
+        try {
+            const {param, onChange} = this.props
+            let newValue = this.state.currentValue
+            newValue.push(StateUtil.deepCopy(param.default[0]))
+            this.setState({
+                currentValue: newValue
+            }, () => {
+                onChange(e, param, this.state.currentValue)
+            })
+        } catch (e) {
+            console.log(e)
         }
-        if(!param || !(param.elements)) {
-            return
-        }
-
-        if(arg && Array.isArray(arg)) {
-            let newElement = StateUtil.deepCopy(param.default[0])
-            arg.push(newElement)
-        }
-        onUpdate((step) => {
-            if (step.args) {
-                step.args[param.name] = arg
-            }
-            return step
-        })
     }
 
-    addButton(param, arg, onUpdate):JSX.Element {
-        return <AddButton onClick={(e) => this.onAddElement(e,param,arg,onUpdate)}></AddButton>
+    addButton():JSX.Element {
+        return <AddButton onClick={(e) => this.onAddElement(e)}></AddButton>
     }
+
+    renderDescription() {
+        let result = undefined
+        try {
+          const {param} = this.props
+          if (param.description) {
+            result = param.description
+          }
+        } catch(e) {
+          console.log(e)
+        }
+    
+        return <p className={style.description}>
+          {result}
+        </p>
+      }  
 
     render() {
-        const {param,arg,onUpdate} = this.props
-        let currentArg = StateUtil.deepCopy(arg)
-        const listElements = this.renderElements(param, currentArg, onUpdate)
-        const addButton = this.addButton(param,currentArg,onUpdate)
-       
-        return <div key={param.name} className={style.paramElements}>
+        const {param, label, onChange} = this.props
+
+        let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null
+        const listElements = this.renderElements(param, this.state.currentValue)
+        const addButton = (this.state.addable) ? this.addButton() : null
+
+        return <div key={param.name} className={style.elements}>
+            {labelContainer}
             {listElements}
             {addButton}
         </div>
