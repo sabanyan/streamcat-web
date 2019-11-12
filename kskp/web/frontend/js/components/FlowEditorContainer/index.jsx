@@ -65,6 +65,7 @@ export type FlowEditorProps = {
   selected_step_ids: string[];
   selected_tab_id: string;
   children: React.Node;
+  locks: locksModel;
   dragStart: Function;
   dragging: Function;
   dragEnd: Function;

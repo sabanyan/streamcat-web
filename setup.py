@@ -18,6 +18,7 @@ setup(
         'ptvsd',
         'awscli',
         'matplotlib',
-        'watchdog'
+        'watchdog',
+        'cx_Oracle'
     ],
 )

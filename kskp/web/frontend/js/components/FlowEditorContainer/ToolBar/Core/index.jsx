@@ -39,48 +39,18 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     super(props)
   }
 
-  onClickSave () {
+  onClickSave() {
     this.saveFlow()
   }
 
   saveFlow () {
-    const {flow, nodes, locks, notify, dismissNotify} = this.props
-    return FlowUtil.saveFlow(inject_flow_uuid, {
-        label: flow.label,
-        description: flow.description,
-        params: flow.params,
-        ports: flow.ports,
-        nodes: nodes,
-      },
-      locks,
-      notify,
-      dismissNotify)
-  }
-
-  saveFlowPorts () {
-    const {flow, notify, dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {
-      ports: flow.ports,
-      label: flow.label,
-      description: flow.description,
-      params: flow.params,
-    }, notify, dismissNotify)
-
-  }
-
-  saveNodes () {
-    let {nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
+    const {flow, locks, notify, dismissNotify} = this.props
+    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, notify, dismissNotify)
   }
 
   onClickSort () {
     this.props.sortFlow()
     this.props.addHistory()
-  }
-
-  save (): Promise {
-    let {nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
   }
 
   run () {
@@ -124,8 +94,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 },
               }],
           })
-          //現在、EXECUTE_FLOW_ACTIONは何もしないため 
-          //this.props.executeFlow()
         }
         this.loading = false
         // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
@@ -144,39 +112,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     })
   }
 
-  //
-  // showError(error){
-  //   let errorBody
-  //   if(error.data["message"]){
-  //     errorBody = <div className={style.internal_error_body}>
-  //       {error.data["message"]}
-  //     </div>
-  //   }else{
-  //     errorBody = <div className={style.internal_error_body}><div>
-  //       <strong>
-  //         {error.request.statusText}
-  //       </strong>
-  //     </div>
-  //       {StringUtil.stripHtmlToText(error.request.responseText)}
-  //     </div>
-  //   }
-  //
-  //   const content = <div>
-  //     <div>フローの実行中にエラーが発生しました。</div>
-  //     {errorBody}
-  //   </div>
-  //   ModalUtil.registerModal({
-  //     id: Constants.modal.SHOW_RUN_ERROR
-  //   })
-  //   ModalUtil.emitModal({
-  //     id: Constants.modal.SHOW_RUN_ERROR,
-  //     visible: true,
-  //     content: content
-  //   })
-  //   this.loading  = false
-  //   this.forceUpdate()
-  // }
-
   onClickDataSourceImport () {
 
     const self = this
@@ -184,7 +119,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.uploadedFile = null
     this.forceUpdate()
 
-    HttpUtil.windowOpen('library?dialog=true', (args) => {
+    HttpUtil.windowOpen('library?dialog=true&mode=frame_select', (args) => {
       const selected_data: LibraryListDataType = args
       let parameters = {}
       //データソースを追加
@@ -276,8 +211,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         <Save disabled={false} icon={'&#xE2C2'}
               onClick={(e) => this.onClickSave(e)}>保存</Save>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
-                          onClick={(e) => this.onClickDataSourceImport(
-                            e)}>データソースの追加</DataSourceImport>
+                          onClick={(e) => this.onClickDataSourceImport(e)}>データソースの追加</DataSourceImport>
         <Run disabled={false} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
         <Note disabled={false} icon={'comment'}

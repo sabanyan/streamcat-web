@@ -4,7 +4,7 @@ import type { FlowListProps } from '../index'
 import classnames from 'classnames'
 import style from './style.scss'
 import flowListStyle from 'Shared/ListRow/FlowListRow/style.scss'
-import { APIUtil, ModalUtil } from 'Utils/index'
+import { APIUtil, ModalUtil, FlowUtil } from 'Utils/index'
 import { FlowListHeader, FlowListRow } from 'Shared/ListRow'
 import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
@@ -310,14 +310,46 @@ export default class FlowList extends React.Component<FlowListProps, State> {
   }
 
   onBlurTitle (e, flow) {
-    if (flow) {
-      APIUtil.put('flows/' + flow.uuid, {
-        label: e.target.value
-      }).then((response) => {
-        this.getFlowList()
-      }, (error) => {
+    try {
+      const {notify} = this.props
+      const label = e.currentTarget.value
 
+      if (!label) throw "undefined label"
+      if (!flow) throw "undefined flow"
+      
+      flow.label = label
+      let body = {target: flow.uuid}
+      let locks = new LocksModel(body)
+      
+      axios.post('/api/v0/locks', body).then((response) => {
+        let locksModel = locks.Parse(response)
+        let lockId = locksModel.getLockId()
+        if (lockId) {
+          axios.put('/api/v0/flows/' + flow.uuid, {
+            label: label,
+            flow : flow,
+            lock : lockId
+          }).then((response) => {
+            navigator.sendBeacon('/api/v0/delete-locks/' + lockId).then(() => {
+              this.getFlowList()
+            })
+          }, (error) => {
+            navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+            console.log(error)
+          })
+        } else {
+          // lockが出来なかった場合
+          notify({
+            title: '保存エラー',
+            message: locksModel.getErrorMessage(),
+            status: 'error',
+            dismissAfter: 3,
+            closeButton: true
+          })
+        }
       })
+    } catch(e) {
+      console.log(e)
     }
   }
 

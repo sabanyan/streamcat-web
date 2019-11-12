@@ -13,8 +13,8 @@ export default class LibraryListHeader extends React.Component<Props> {
   render () {
     return <div className={style.job_list_header}>
       <div className={style.name}>名前</div>
-      <div className={style.executor_name}>実行ユーザー</div>
-      <div className={style.executed_at}>実行日時</div>
+      <div className={style.executor_name}>作成者</div>
+      <div className={style.executed_at}>作成日時</div>
     </div>
   }
 
