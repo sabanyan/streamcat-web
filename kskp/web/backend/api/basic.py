@@ -259,9 +259,8 @@ def fetch_commands():
             visible_commands_json.append('pcmd') 
         if request.args.get('scmd') == 'on':
             visible_commands_json.append('scmd') 
-    
-    from kskp.store import CommandsPathFileSource, CommandsPathLink
 
+    from kskp.store.commands import CommandsPathLink, CommandsPathFileSource
     commands_list = []
     for visible_command in visible_commands_json:
         link = CommandsPathLink(CommandsPathFileSource(visible_command))
@@ -275,7 +274,7 @@ def fetch_visualizers():
     ビジュアライズ用コマンド定義の一覧を返す
     """
 
-    from kskp.store import CommandsPathFileSource, CommandsPathLink
+    from kskp.store.commands import CommandsPathLink, CommandsPathFileSource
 
     link = CommandsPathLink(CommandsPathFileSource('visualizers'))
 

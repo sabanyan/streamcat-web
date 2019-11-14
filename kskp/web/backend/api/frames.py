@@ -289,8 +289,9 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}, preview_args={}):
         # ファイルが存在しないときはここを通る
         raise Exception('flow does not exist in DB')
     try:
-        from kskp.engine import execute, FlowJsonLink, FlowUuidLink
-        link = FlowUuidLink(flow_uuid, step_ids, preview_args)
+        from kskp.engine import execute, FlowJsonLink, FlowUuidLink, FlowLinkContext
+        context = FlowLinkContext(flow_uuid)
+        link = FlowUuidLink(flow_uuid, context, step_ids, preview_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
             raise Exception('activity is None.')
