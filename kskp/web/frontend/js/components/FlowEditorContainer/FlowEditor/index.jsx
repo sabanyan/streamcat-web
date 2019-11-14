@@ -266,6 +266,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             addStep={addStep}
             selectSteps={selectSteps}
             flow={flow}
+            locks={locks}
             updateFlow={updateFlow}
             notify={notify}
             dismissNotify={dismissNotify}
