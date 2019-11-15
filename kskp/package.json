@@ -53,6 +53,7 @@
     "react-test-renderer": "^16.4.2",
     "reapop": "^2.0.1",
     "reapop-theme-wybo": "^1.0.2",
+    "redux-devtools-extension": "^2.13.8",
     "sass-loader": "^7.0.1",
     "style-loader": "^0.21.0",
     "ts-loader": "^6.0.4",

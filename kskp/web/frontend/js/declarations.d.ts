@@ -7,4 +7,6 @@ declare interface Window {
     commands: {}
     visualizers : {}
     subflows : {}
+    emitter : any
+    __REDUX_DEVTOOLS_EXTENSION__ : any
 }

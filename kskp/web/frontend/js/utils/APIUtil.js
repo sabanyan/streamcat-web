@@ -7,10 +7,12 @@ class APIUtil {
     //default config
     this.config = {}
 
+    /**
     axios.interceptors.response.use((response) => {
       this.setWindowNavigation(response)
       return response
     })
+     */
   }
 
   setWindowNavigation (response: any) {

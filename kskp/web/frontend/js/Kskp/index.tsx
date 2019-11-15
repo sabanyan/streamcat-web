@@ -11,10 +11,11 @@ export enum ViewId {
     Flow_List,
     Library_List,
     Profile,
-    Project_List
+    Project_List,
+    Undefined,
 }
 
-function Kskp(props:Props) {
+export function Kskp(props:Props) {
     const {viewId} = props
     let result:any = null
 
@@ -48,5 +49,3 @@ function Kskp(props:Props) {
         return result
     } 
 }
-
-export default Kskp
