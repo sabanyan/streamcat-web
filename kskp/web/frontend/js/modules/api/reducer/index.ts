@@ -9,30 +9,17 @@ type State = {
     navigation  : DataState,
     libraries   : DataState,
     stores      : DataState,
-    locks       : DataState
+    locks       : DataState,
 }
 
 type DataState = {
     isFetching  : boolean,
-    shouldUpdate: boolean,
     lastData    : any | null
-    response    : Response | null
-}
-
-type Response = {
-    config?: {}
-    data?: {success:boolean, data:any}
-    headers?: {},
-    request?: {},
-    status: number,
-    statusText: string
 }
 
 const initialDataState:DataState = {
     isFetching  : false,
-    shouldUpdate: true,
-    lastData    : null,
-    response    : null
+    lastData    : null
 }
 
 const initalState:State = {
@@ -49,11 +36,15 @@ const initalState:State = {
 const apiReducer = (oldState:State = initalState, action:any) => {
     let newState:State = oldState
     try {
-        let array = action.type.split('_')
-        let key = array[1]
+        let array   = action.type.split('_')
+        let method  = array[0]
+        let key     = array[1]
+        let status  = array[2]
+        
         let newDataState
         let data
-        switch(action.type) {
+
+        switch(method) {
             // GET
                 // Flows
                 case API.FLOWS.GET.REQUEST       :
@@ -75,7 +66,6 @@ const apiReducer = (oldState:State = initalState, action:any) => {
                 case API.COMMANDS.GET.FAILURE :
                     newState = handleFailure(newState, API.COMMANDS.KEY)
                     throw action.err
-                    break;
                 // Visualizers
                 case API.VISUALIZERS.GET.REQUEST    :
                     newState = handleRequest(newState, API.VISUALIZERS.KEY)
@@ -86,7 +76,6 @@ const apiReducer = (oldState:State = initalState, action:any) => {
                 case API.VISUALIZERS.GET.FAILURE :
                     newState = handleFailure(newState, API.VISUALIZERS.KEY)
                     throw action.err
-                    break;
                 // Subflows
                 case API.SUBFLOWS.GET.REQUEST    :
                     newState = handleRequest(newState, API.SUBFLOWS.KEY)

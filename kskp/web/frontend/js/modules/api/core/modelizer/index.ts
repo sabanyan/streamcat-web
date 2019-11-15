@@ -1,19 +1,19 @@
 import {VisualizeModel, LocksModel, FlowModel} from "Model/index";
-import { API } from '../core/index'
+import ApiConstants from '../constants/index'
 
-export function Modelizer(data, API_DATA_KEY) {
+export default function Modelizer(data, API_DATA_KEY) {
     let result = data
     try {
         switch (API_DATA_KEY) {
-            case API.VISUALIZERS.KEY    :
+            case ApiConstants.VISUALIZERS.KEY    :
                 result = data.map((visualize)=>{
                     return new VisualizeModel(visualize)
                 })
                 break;
-            case API.FLOWS.KEY          :
+            case ApiConstants.FLOWS.KEY          :
                 result = new FlowModel(data)
                 break;
-            case API.LOCKS.KEY          :
+            case ApiConstants.LOCKS.KEY          :
                 result = new LocksModel(data)
                 break;
         }    
