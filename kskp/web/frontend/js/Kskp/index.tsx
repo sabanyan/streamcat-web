@@ -1,9 +1,13 @@
 import * as React from 'react'
 import style from './style.scss'
 import {FlowEditorContainer, FlowListContainer, ProfileContainer, ProjectListContainer, LibraryListContainer} from 'Components/index';
+import NavigationBar from 'Components/shared/Base/NavigationBar/index';
 
 export type Props = {
     viewId:ViewId
+}
+
+export type State = {
 }
 
 export enum ViewId {
@@ -15,11 +19,17 @@ export enum ViewId {
     Undefined,
 }
 
-export function Kskp(props:Props) {
-    const {viewId} = props
-    let result:any = null
+export class Kskp extends React.Component<Props, State> {
 
-    try {
+    componentWillMount() {
+
+    }
+
+    renderNav() {
+
+    }
+
+    renderView (viewId:ViewId) {
         let viewComponent:any = null
         switch(viewId) {
             case ViewId.Flow_Editor     : viewComponent = <FlowEditorContainer/>
@@ -36,16 +46,29 @@ export function Kskp(props:Props) {
                 default:
                     break;
         }
-        
-        result = <div className={style.kskp}>
-            <div className={style.nav}></div>
-            <div className={style.view}>
-                {viewComponent}
+
+        return viewComponent
+    }
+
+    render () {
+        const {viewId} = this.props
+        let result:any = null
+        try {
+            const viewComponent = this.renderView(viewId)
+
+            result = <div className={style.kskp}>
+                <div className={style.nav}>
+                    
+                </div>
+                <div className={style.view}>
+                    {viewComponent}
+                </div>
             </div>
-        </div>
-    } catch(e) {
-        console.log(e)
-    } finally {
-        return result
-    } 
+        } catch(e) {
+            console.log(e)
+        } finally {
+            return result
+        } 
+    }
+    
 }

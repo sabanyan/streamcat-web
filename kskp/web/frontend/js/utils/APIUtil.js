@@ -47,8 +47,6 @@ class APIUtil {
     }
 
     let formData: FormData = new FormData()
-    console.log(parentUUID)
-    console.log(label)
     formData.append('file', file)
     if (fileName) {
       formData.append('file_name', fileName)//TODO 将来的にはなくなる？？

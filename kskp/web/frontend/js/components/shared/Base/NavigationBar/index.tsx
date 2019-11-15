@@ -5,8 +5,6 @@ import { HttpUtil, WebUtil } from 'Utils/index'
 
 type Props = {
   baseUrl: string,
-  logoUrl: string,
-  projectUrl: string,
   navigation: NavigationModelProps
 }
 
@@ -31,10 +29,11 @@ export default class NavigationBar extends React.Component<Props> {
   }
 
   componentDidMount () {
+    /*
     if (this.isDialog()) {
       document.body.classList.add('dialog')
     }
-
+    */
   }
 
   renderProjectNavigationItem () {
