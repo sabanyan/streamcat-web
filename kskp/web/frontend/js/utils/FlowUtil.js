@@ -236,118 +236,18 @@ export default class FlowUtil {
     return result
   }
 
-  /**
-   * フローの保存
-   * @param flowUUID
-   * @param nodes
-   * @param projectId
-   * @param projectName
-   * @returns {Promise<any>}
-   */
-  static saveNodes (flowUUID: string, nodes: [], notify?: Function, dismissNotify?: Function): any {
-    //validation
-    ValidatorUtil.nodesValidate(nodes)
-
-    let saveNotify
-    if (notify) {
-      saveNotify = notify({
-        title: 'フロー保存中',
-        message: 'フローのノードを保存しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
-    }
-
-    return new Promise((resolve, reject) => {
-      APIUtil.put('flows/' + flowUUID, {nodes: nodes}).then((response) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        resolve(response)
-      }, (error) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
-      })
-    })
-  }
-
-  /**
-   * フローの保存
-   * @param flowUUID
-   * @param label
-   * @param description
-   * @param params
-   * @param ports
-   * @returns {Promise<any>}
-   */
-  static saveFlowSettings (flowUUID: string, {label, description, params, ports}, notify: Function, dismissNotify: Function): any {
-    let putBody = {}
-    if (label) putBody['label'] = label
-    if (description) putBody['description'] = description
-    if (params) putBody['params'] = params
-    if (ports) putBody['ports'] = ports
-
-    let saveNotify
-    if (notify) {
-      saveNotify = notify({
-        title: 'フロー保存中',
-        message: 'フローの設定を保存しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
-    }
-
-    return new Promise((resolve, reject) => {
-      APIUtil.put('flows/' + flowUUID, putBody).then((response) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        resolve(response)
-      }, (error) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
-      })
-    })
-  }
-
   static saveFlow (flowUUID: string, {label, description, params, ports, nodes}, notify: Function, dismissNotify: Function): any {
     //validation
     ValidatorUtil.nodesValidate(nodes)
 
     let putBody = {}
+    let flow = {}
     if (label) putBody['label'] = label
-    if (description) putBody['description'] = description
-    if (params) putBody['params'] = params
-    if (ports) putBody['ports'] = ports
-    if (ports) putBody['nodes'] = nodes
+    if (description) flow['description'] = description
+    if (params) flow['params'] = params
+    if (ports) flow['ports'] = ports
+    if (ports) flow['nodes'] = nodes
+    putBody['flow'] = flow
 
     let saveNotify
     if (notify) {

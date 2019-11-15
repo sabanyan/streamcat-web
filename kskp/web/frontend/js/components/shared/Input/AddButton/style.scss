@@ -4,7 +4,8 @@
   color: $primary-link-color;
   text-align: center;
   cursor: pointer;
-
+  margin: 5px;
+  padding: 5px;
   &:hover {
     color: darken($primary-link-color, 10%);
   }

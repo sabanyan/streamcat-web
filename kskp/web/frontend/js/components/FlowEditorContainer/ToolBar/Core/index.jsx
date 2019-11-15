@@ -39,7 +39,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     super(props)
   }
 
-  onClickSave () {
+  onClickSave() {
     this.saveFlow()
   }
 
@@ -56,30 +56,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       dismissNotify)
   }
 
-  saveFlowPorts () {
-    const {flow, notify, dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {
-      ports: flow.ports,
-      label: flow.label,
-      description: flow.description,
-      params: flow.params,
-    }, notify, dismissNotify)
-
-  }
-
-  saveNodes () {
-    let {nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
-  }
-
   onClickSort () {
     this.props.sortFlow()
     this.props.addHistory()
-  }
-
-  save (): Promise {
-    let {nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
   }
 
   run () {
@@ -92,7 +71,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.loadingMessage = ''
 
     this.forceUpdate()
-    this.save().then(() => {
+    this.saveFlow().then(() => {
       this.run().then((response) => {
         if (response.data.success) {
           const json: RunResponseType = response.data
@@ -118,8 +97,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 },
               }],
           })
-          //現在、EXECUTE_FLOW_ACTIONは何もしないため 
-          //this.props.executeFlow()
         }
         this.loading = false
         // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
@@ -137,39 +114,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       this.props.loadFlowJSON(json)
     })
   }
-
-  //
-  // showError(error){
-  //   let errorBody
-  //   if(error.data["message"]){
-  //     errorBody = <div className={style.internal_error_body}>
-  //       {error.data["message"]}
-  //     </div>
-  //   }else{
-  //     errorBody = <div className={style.internal_error_body}><div>
-  //       <strong>
-  //         {error.request.statusText}
-  //       </strong>
-  //     </div>
-  //       {StringUtil.stripHtmlToText(error.request.responseText)}
-  //     </div>
-  //   }
-  //
-  //   const content = <div>
-  //     <div>フローの実行中にエラーが発生しました。</div>
-  //     {errorBody}
-  //   </div>
-  //   ModalUtil.registerModal({
-  //     id: Constants.modal.SHOW_RUN_ERROR
-  //   })
-  //   ModalUtil.emitModal({
-  //     id: Constants.modal.SHOW_RUN_ERROR,
-  //     visible: true,
-  //     content: content
-  //   })
-  //   this.loading  = false
-  //   this.forceUpdate()
-  // }
 
   onClickDataSourceImport () {
 

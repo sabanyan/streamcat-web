@@ -200,7 +200,7 @@ def update_flow(flow_uuid):
         else:
             flow_label = request.json['label']
 
-        flow_data.update(request.json)
+        flow_data.update(request.json['flow'])
         # 変更を保存する
         Flow.update_data(flow_uuid, flow_label, flow_data, session['user_id'])
         return flow_data
