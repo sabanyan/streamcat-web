@@ -65,8 +65,8 @@ export default class CommandModel extends Model {
 
   isInPortsAddable():boolean {
     let result = false
-    const inPorts = this.getInPorts()
-    if (inPorts[0].name === '*') result = true
+    const ports = this.getInPorts()
+    if (ports[0] && ports[0].name === '*') result = true
 
     return result
   }
@@ -74,7 +74,7 @@ export default class CommandModel extends Model {
   isOutPortsAddable():boolean {
     let result = false
     const ports = this.getOutPorts()
-    if (ports[0].name === '*') result = true
+    if (ports[0] && ports[0].name === '*') result = true
 
     return result
   }

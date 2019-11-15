@@ -44,8 +44,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   saveFlow () {
-    const {flow, locks, notify, dismissNotify} = this.props
-    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, notify, dismissNotify)
+    const {flow, locks, nodes, notify, dismissNotify} = this.props
+    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, nodes, notify, dismissNotify)
   }
 
   onClickSort () {
