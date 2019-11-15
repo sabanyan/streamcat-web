@@ -58,6 +58,7 @@ module.exports = (env) => {
       },
       resolve: {
         alias: {
+          Components: path.resolve(__dirname, './web/frontend/js/components/'),
           FlowEditorContainer: path.resolve(__dirname, './web/frontend/js/components/FlowEditorContainer/'),
           FlowListContainer: path.resolve(__dirname, './web/frontend/js/components/FlowListContainer/'),
           LibraryListContainer: path.resolve(__dirname, './web/frontend/js/components/LibraryListContainer/'),
