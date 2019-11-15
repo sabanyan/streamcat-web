@@ -236,27 +236,41 @@ export default class FlowUtil {
     return result
   }
 
-  static saveFlow (flowUUID: string, {label, description, params, ports, nodes}, notify: Function, dismissNotify: Function): any {
+  static saveFlow (flowUUID: string, flowModel, locksModel, notify: Function, dismissNotify: Function): any {
     //validation
     ValidatorUtil.nodesValidate(nodes)
 
-    let putBody = {}
     let flow = {}
-    if (label) putBody['label'] = label
-    if (description) flow['description'] = description
-    if (params) flow['params'] = params
-    if (ports) flow['ports'] = ports
-    if (ports) flow['nodes'] = nodes
-    putBody['flow'] = flow
+    if (flowModel.label)       flow['label']       = flowModel.label
+    if (flowModel.description) flow['description'] = flowModel.description
+    if (flowModel.params)      flow['params']      = flowModel.params
+    if (flowModel.ports)       flow['ports']       = flowModel.ports
+    if (flowModel.nodes)       flow['nodes']       = flowModel.nodes
+
+    let putBody = {
+      label :flowModel.label,
+      flow  :flow,
+      lock  :(locksModel && locksModel.lastData && locksModel.lastData.lockId) ? locksModel.lastData.lockId : undefined
+    }
 
     let saveNotify
     if (notify) {
-      saveNotify = notify({
-        title: 'フロー保存中',
-        message: 'フローの設定を保存しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
+      if (locksModel && locksModel.lastData && locksModel.lastData.error) {
+        saveNotify = notify({
+          title: 'フロー保存エラー',
+          message: locksModel.lastData.error.message,
+          status: 'loading',
+          dismissAfter: 0
+        })
+        return false
+      } else {
+        saveNotify = notify({
+          title: 'フロー保存中',
+          message: 'フローの設定を保存しています',
+          status: 'loading',
+          dismissAfter: 0
+        })
+      }
     }
 
     return new Promise((resolve, reject) => {

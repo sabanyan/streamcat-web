@@ -44,16 +44,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   saveFlow () {
-    const {flow, nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveFlow(inject_flow_uuid, {
-        label: flow.label,
-        description: flow.description,
-        params: flow.params,
-        ports: flow.ports,
-        nodes: nodes,
-      },
-      notify,
-      dismissNotify)
+    const {flow, locks, notify, dismissNotify} = this.props
+    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, notify, dismissNotify)
   }
 
   onClickSort () {
@@ -71,7 +63,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.loadingMessage = ''
 
     this.forceUpdate()
-    this.saveFlow().then(() => {
+    let result = this.saveFlow()
+    if (!result) {
+      this.loading = false
+      return
+    }
+    result.then(() => {
       this.run().then((response) => {
         if (response.data.success) {
           const json: RunResponseType = response.data
