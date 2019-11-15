@@ -585,6 +585,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       window.nodes = state.nodes
       return state
   }
+  
   window.nodes = newState.nodes
   return newState
 

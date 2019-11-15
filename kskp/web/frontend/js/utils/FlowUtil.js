@@ -236,7 +236,7 @@ export default class FlowUtil {
     return result
   }
 
-  static saveFlow (flowUUID: string, flowModel, locksModel, notify: Function, dismissNotify: Function): any {
+  static saveFlow (flowUUID: string, flowModel, locksModel, nodes:{}, notify: Function, dismissNotify: Function): any {
     //validation
     ValidatorUtil.nodesValidate(nodes)
 
@@ -245,7 +245,7 @@ export default class FlowUtil {
     if (flowModel.description) flow['description'] = flowModel.description
     if (flowModel.params)      flow['params']      = flowModel.params
     if (flowModel.ports)       flow['ports']       = flowModel.ports
-    if (flowModel.nodes)       flow['nodes']       = flowModel.nodes
+    if (flowModel.nodes)       flow['nodes']       = nodes
 
     let putBody = {
       label :flowModel.label,
