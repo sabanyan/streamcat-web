@@ -1,24 +1,10 @@
 //@flow
 import axios from 'axios'
-import NavigationModel from 'Model/Navigation/NavigationModel'
 
 class APIUtil {
   constructor () {
     //default config
     this.config = {}
-
-    /**
-    axios.interceptors.response.use((response) => {
-      this.setWindowNavigation(response)
-      return response
-    })
-     */
-  }
-
-  setWindowNavigation (response: any) {
-    if (response.data.navigation) {
-      new NavigationModel(response.data.navigation)
-    }
   }
 
   mergeConfig (config?: {}) {

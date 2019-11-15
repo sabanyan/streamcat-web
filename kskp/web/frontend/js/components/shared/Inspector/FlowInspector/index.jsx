@@ -98,8 +98,7 @@ class FlowInspector extends React.Component<Props> {
               name: '開く',
               primary: true,
               onClick: () => {
-                window.open('/library?project=' +
-                  window.navigationModel.project_uuid, '_blank')
+                window.open('/library')
               },
             }],
         })
