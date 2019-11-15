@@ -397,6 +397,54 @@ def delete_cache():
 
     return jsonify({'success': True})
 
+@mod.route('/navigation', methods=['GET'])
+@login_required_api
+def get_navigation():
+
+    navigation = {
+        'user_id': '',
+        'user_name': '',
+        'project_uuid': '',
+        'project_name': '',
+        'flow_uuid': '',
+        'flow_name': ''
+    }
+
+    flow_uuid = request.args.get('flow_uuid')
+    project_uuid = request.args.get('project_uuid')
+
+
+    if session['user_id'] is not None and session['user_id'] !='':
+        navigation['user_id'] = session['user_id']
+        navigation['user_name'] = model.get_user_by_id(session['user_id'])['name']
+
+    if flow_uuid is not None :
+        if Flow.exists(flow_uuid):
+            flow = Flow.find_by_uuid(flow_uuid)
+            parent_datum = Datum.find_parent(flow_uuid)
+            parent = Folder.convert_to_folder(parent_datum)
+            navigation['project_uuid'] = parent.uuid
+            navigation['project_name'] = parent.label
+            navigation['flow_uuid'] = flow_uuid
+            navigation['flow_name'] = flow.label
+        else:
+            # この分岐に入るのは、お救いフローフォルダである
+            flow = model.fetch_flow_by_uuid(flow_uuid)
+            project = model.fecth_project(flow['projectId'])
+            print(project)
+            navigation['project_uuid'] = porject.uuid
+            navigation['project_name'] = project.label
+            navigation['flow_uuid'] = flow.uuid
+            navigation['flow_name'] = flow.label
+        
+    # プロジェクトが指定された場合
+    elif project_uuid is not None:
+        project = Folder.find_by_uuid(project_uuid)
+        navigation['project_uuid'] = project.uuid
+        navigation['project_name'] = project.label
+
+    return jsonify({'success': False, 'data': navigation})
+
 @mod.errorhandler(400)
 def handle_bad_request(error):
     """
