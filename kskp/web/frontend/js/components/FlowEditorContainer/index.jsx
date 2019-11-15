@@ -31,7 +31,6 @@ import FlowEditor from 'FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
 import type { FlowModelProps } from 'Model/Flow/FlowModel'
-import NavigationModel from 'Model/Navigation/NavigationModel'
 import type { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 import {API} from 'Modules/api/index'
@@ -72,7 +71,6 @@ export type FlowEditorProps = {
   setZoom: Function;
   zoom: number;
   flow: FlowModelProps;
-  navigation: NavigationModel;
   drag: DragType;
   notify: Function;
   updateNotify: Function;

@@ -1,6 +1,6 @@
 //@flow
 import React from 'react'
-import type { NavigationModelProps } from 'Model/Navigation/NavigationModel'
+import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import { HttpUtil, WebUtil } from 'Utils/index'
 
 type Props = {
@@ -90,7 +90,7 @@ export default class NavigationBar extends React.Component<Props> {
     </li>
   }
 
-  onClickLogout (e: Event) {
+  onClickLogout (e) {
     let logoutParam = '?session=off'
     if (location.href.indexOf('?') !== -1) {
       logoutParam = logoutParam.replace('?', '&')
@@ -112,7 +112,7 @@ export default class NavigationBar extends React.Component<Props> {
       <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
         {/*<a href="/profile" className="dropdown-item">プロフィール設定</a>*/}
         {/*<div className="dropdown-divider"></div>*/}
-        <a href="#" className="dropdown-item" onClick={this.onClickLogout}>ログアウト</a>
+        <a href="#" className="dropdown-item" onClick={(e) => this.onClickLogout(e)}>ログアウト</a>
       </div>
     </li>
 

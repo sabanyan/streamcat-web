@@ -44,19 +44,6 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     let preRequest = []
     let flowRequest = []
 
-    window.emitter.removeListener(Constants.event.ON_LOAD_NAVIGATION)
-    window.emitter.addListener(Constants.event.ON_LOAD_NAVIGATION,
-      (context) => {
-        preRequest.push(APIUtil.get('flows?project=' + window.navigationModel.project_uuid + '&navigation=off').then((response) => {
-          const json = response.data
-          // const commands = json.data.map((command)=>{
-          //   return new CommandModel(command)
-          // })
-          // this.props.addMaster({commands: commands})
-        }).then((response) => {},
-          (error) => {console.log(error)}))
-      })
-
     preRequest.push(APIUtil.get('commands').then((response) => {
       const json = response.data
       const commands = json.data.map((command) => {
