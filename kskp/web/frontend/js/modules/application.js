@@ -187,22 +187,21 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
           //出力先ステップの位置調整
 
           //コマンドのポート名に合わせて srcs,dsts のキー値を指定する
-          let command: CommandModelType
+          let isAddable = false
+          let command
           if (add_step instanceof SubFlowStepModel) {
             command = add_step.getCommand()
           } else if (add_step instanceof CommandStepModel) {
             command = add_step.getCommand()
+            isAddable = command.isInPortsAddable()
           }
           const inPorts: [CommandPortType] = command.getInPorts()
           const outPorts: [CommandPortType] = command.getOutPorts()
           src_step_ids.forEach((id, index) => {
             const newPort = inPorts[index]
-            let portName = newPort.name
+            let portName = isAddable ? '*' + index : newPort.name
             if (add_step instanceof SubFlowStepModel) {
               portName = newPort.nodeId
-            }
-            if (portName === '*') {
-              portName = '*1'
             }
 
             add_step.addInPort(portName, id)
