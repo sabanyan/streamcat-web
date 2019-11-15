@@ -310,16 +310,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   saveFlow() {
-    const {flow, nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveFlow(inject_flow_uuid, {
-      label: flow.label,
-      description: flow.description,
-      params: flow.params,
-      ports: flow.ports,
-      nodes: nodes,
-    },
-    notify,
-    dismissNotify)
+    const {flow, locks, notify, dismissNotify} = this.props
+    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, notify, dismissNotify)
   }
 
   render () {

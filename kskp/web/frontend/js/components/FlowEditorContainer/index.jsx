@@ -34,6 +34,7 @@ import type { FlowModelProps } from 'Model/Flow/FlowModel'
 import NavigationModel from 'Model/Navigation/NavigationModel'
 import type { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
+import {API} from 'Modules/api/index'
 
 let FlowEditorContainer
 
@@ -64,6 +65,7 @@ export type FlowEditorProps = {
   selected_step_ids: string[];
   selected_tab_id: string;
   children: React.Node;
+  locks: locksModel;
   dragStart: Function;
   dragging: Function;
   dragEnd: Function;
@@ -77,6 +79,13 @@ export type FlowEditorProps = {
   dismissNotify: Function;
   addNote: Function;
   sortStepSrcEndAction: Function;
+  GET_FLOW: Function;
+  GET_COMMANDS: Function;
+  GET_VISUALIZERS: Function; 
+  GET_SUBFLOWS: Function;
+  PUT_FLOWS: Function; 
+  POST_LOCKS: Function; 
+  DELETE_LOCKS: Function;
 }
 
 export default FlowEditorContainer = connect(
@@ -97,12 +106,22 @@ export default FlowEditorContainer = connect(
       selected_out_edges: state.flowEditorReducer.selected_out_edges,
       zoom: state.flowEditorReducer.zoom,
       flow: state.flowEditorReducer.flow,
+      locks: state.apiReducer.locks,
       originalFlow: state.flowEditorReducer.originalFlow,
       navigation: state.flowEditorReducer.navigation,
     }
   },
   dispatch => {
     return {
+      PUT_FLOWS (flowUUID:string, body: {label: string, flow: any, lock: string}) {
+        dispatch(API.PUT.Flows(flowUUID, body))
+      },
+      POST_LOCKS (flowUUID:string) {
+        dispatch(API.POST.Locks(flowUUID))
+      },
+      DELETE_LOCKS (lockUUID:string) {
+        dispatch(API.DELETE.Locks(lockUUID))
+      },
       loadFlowJSON (context: {}) {
         dispatch(loadFlowJSONAction(context))
       },
