@@ -303,11 +303,11 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}, preview_args={}):
 
 def format_result(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'uuid':frame_uuid, 'label':point.label} for point, frame_uuid in activity.result.items()]
+    return [{'id':point.id, 'uuid':frame_uuid, 'label':point.label} for point, frame_uuid in activity.result]
 
 def format_preview(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'contents': preview} for point, preview in activity.result.items()]
+    return [{'id':point.id, 'contents': preview} for point, preview in activity.result]
 
 def _make_flow_inputs(flow_uuid, request):
     """
