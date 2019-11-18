@@ -220,7 +220,7 @@ def create_frame():
         args = request.json.get('args') if request.json.get('args') else {}
         inputs = _make_flow_inputs(flow_uuid, request)
         # フローの実行
-        result = execute_flow(flow_uuid, step_ids=[], args=args, inputs=inputs)
+        result = execute_flow(flow_uuid, args=args, inputs=inputs)
         result = format_result(result)
         return jsonify({'success': True, 'lasts': result})
     
@@ -253,7 +253,7 @@ def make_new_frames():
         # 普通の実行
         flow_uuid = request.args['from']
         
-    activity = execute_flow(flow_uuid, step_ids=step_ids)
+    activity = execute_flow(flow_uuid)
     result = format_result(activity)
     return jsonify({'success': True, 'lasts': result})
 
@@ -276,11 +276,11 @@ def make_new_previews():
 
     preview_args = request.json
 
-    activity = execute_flow(flow_uuid, step_ids, preview_args=preview_args)
+    activity = execute_flow(flow_uuid, preview_args=preview_args)
     result = format_preview(activity)
     return jsonify({'success': True, 'lasts': result})
 
-def execute_flow(flow_uuid, step_ids, args={}, inputs={}, preview_args={}):
+def execute_flow(flow_uuid, args={}, inputs={}, preview_args={}):
     """
     フローの実行を行う
     実行後の判定など
@@ -291,7 +291,7 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}, preview_args={}):
     try:
         from kskp.engine import execute, FlowJsonLink, FlowUuidLink, FlowLinkContext
         context = FlowLinkContext(flow_uuid)
-        link = FlowUuidLink(flow_uuid, context, step_ids, preview_args)
+        link = FlowUuidLink(flow_uuid, context, preview_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
             raise Exception('activity is None.')
@@ -303,11 +303,11 @@ def execute_flow(flow_uuid, step_ids, args={}, inputs={}, preview_args={}):
 
 def format_result(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'uuid':frame_uuid, 'label':point.label} for point, frame_uuid in activity.result.items()]
+    return [{'id':point.id, 'uuid':frame_uuid, 'label':point.label} for point, frame_uuid in activity.result]
 
 def format_preview(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'contents': preview} for point, preview in activity.result.items()]
+    return [{'id':point.id, 'contents': preview} for point, preview in activity.result]
 
 def _make_flow_inputs(flow_uuid, request):
     """
