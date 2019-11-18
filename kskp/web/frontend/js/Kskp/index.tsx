@@ -49,7 +49,7 @@ class app extends React.Component<Props, State> {
             this.setState({
                 nav : this.props.navigation.lastData
             }, () => {
-                console.log(this.state.nav)
+                //console.log(this.state.nav)
             })
         } catch(e) {
             console.log("e")
