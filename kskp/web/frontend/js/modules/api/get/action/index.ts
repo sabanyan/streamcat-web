@@ -8,6 +8,8 @@ export function FlowsRequest(projectUUID:string, withoutNav?:boolean) {
         withoutNav  : withoutNav   
     }
 }
+export function FlowsSuccess(res){return {type : API.FLOWS.ACTION.GET.SUCCESS, res : res}}
+export function FlowsFailure(err){return {type : API.FLOWS.ACTION.GET.FAILURE, err : err}}
 
 export function FlowRequest(flowUUID:string, withoutNav?:boolean, withLock?:boolean) {
     return {
@@ -17,9 +19,9 @@ export function FlowRequest(flowUUID:string, withoutNav?:boolean, withLock?:bool
         withLock : withLock
     }
 }
+export function FlowSuccess(res){return {type : API.FLOW.ACTION.GET.SUCCESS, res : res}}
+export function FlowFailure(err){return {type : API.FLOW.ACTION.GET.FAILURE, err : err}}
 
-export function FlowsSuccess(res){return {type : API.FLOWS.ACTION.GET.SUCCESS, res : res}}
-export function FlowsFailure(err){return {type : API.FLOWS.ACTION.GET.FAILURE, err : err}}
 
 // Commands
 export function CommandsRequest() {return {type : API.COMMANDS.ACTION.GET.REQUEST}} 

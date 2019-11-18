@@ -25,23 +25,22 @@ import {
   undoAction,
   updateDataFrameDetailAction,
   updateFlowAction,
-  updateStepAction,
-} from 'Modules/application'
+  updateStepAction
+ } from 'Modules/application'
 import FlowEditor from 'FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
-import type { FlowModelProps } from 'Model/Flow/FlowModel'
-import type { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
+import { FlowModelProps } from 'Model/Flow/FlowModel'
+import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 import {API} from 'Modules/api/index'
+import {LocksModel} from 'Model/index'
 
-let FlowEditorContainer
 
 export type FlowEditorProps = {
   projectId: string,
   projectName: string,
-  graph: GraphType;
-  mast: MastType;
+  graph: any;
   loadFlowJSON: Function;
   addMaster: Function;
   addStep: Function;
@@ -63,8 +62,8 @@ export type FlowEditorProps = {
   nodes: {};
   selected_step_ids: string[];
   selected_tab_id: string;
-  children: React.Node;
-  locks: locksModel;
+  children: React.ReactNode;
+  locks: LocksModel;
   dragStart: Function;
   dragging: Function;
   dragEnd: Function;
@@ -78,15 +77,12 @@ export type FlowEditorProps = {
   addNote: Function;
   sortStepSrcEndAction: Function;
   GET_FLOW: Function;
-  GET_COMMANDS: Function;
-  GET_VISUALIZERS: Function; 
-  GET_SUBFLOWS: Function;
-  PUT_FLOWS: Function; 
+  PUT_FLOW: Function; 
   POST_LOCKS: Function; 
   DELETE_LOCKS: Function;
 }
 
-export default FlowEditorContainer = connect(
+const FlowEditorContainer = connect(
   state => {
     return {
       projectId: state.flowEditorReducer.projectId,
@@ -110,15 +106,19 @@ export default FlowEditorContainer = connect(
     }
   },
   dispatch => {
+    
     return {
-      PUT_FLOWS (flowUUID:string, body: {label: string, flow: any, lock: string}) {
-        dispatch(API.PUT.Flows(flowUUID, body))
+      GET_FLOW (flowUUID:string, onSuccess?:Function) {
+        dispatch(API.GET.Flow(flowUUID, onSuccess))
       },
-      POST_LOCKS (flowUUID:string) {
-        dispatch(API.POST.Locks(flowUUID))
+      PUT_FLOW (flowUUID:string, flow, lockUUID, onSuccess?:Function) {
+        dispatch(API.PUT.Flow(flowUUID, flow, lockUUID, onSuccess))
       },
-      DELETE_LOCKS (lockUUID:string) {
-        dispatch(API.DELETE.Locks(lockUUID))
+      POST_LOCKS (flowUUID:string, onSuccess?:Function) {
+        dispatch(API.POST.Locks(flowUUID, onSuccess))
+      },
+      DELETE_LOCKS (lockUUID:string, onSuccess?:Function) {
+        dispatch(API.DELETE.Locks(lockUUID, onSuccess))
       },
       loadFlowJSON (context: {}) {
         dispatch(loadFlowJSONAction(context))
@@ -214,3 +214,5 @@ export default FlowEditorContainer = connect(
     }
   },
 )(FlowEditor)
+
+export default FlowEditorContainer

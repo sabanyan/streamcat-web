@@ -4,10 +4,10 @@ import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import { HttpUtil, WebUtil } from 'Utils/index'
 
 type Props = {
-  baseUrl: string,
   navigation: NavigationModelProps
 }
 
+const baseUrl = "/front_static/"
 export default class NavigationBar extends React.Component<Props> {
   isLogin: boolean = false
   hasProject: boolean = false
@@ -37,7 +37,7 @@ export default class NavigationBar extends React.Component<Props> {
   }
 
   renderProjectNavigationItem () {
-    const {baseUrl} = this.props
+    //const {baseUrl} = this.props
     if (!this.isLogin) return null
     return <li className="nav-item list">
       <a className="nav-link" href="/projects">
@@ -48,7 +48,7 @@ export default class NavigationBar extends React.Component<Props> {
   }
 
   renderProjectListNavigationItem () {
-    const {baseUrl, navigation} = this.props
+    const {navigation} = this.props
     if (!this.hasProject) return null
     return <li className="nav-item project">
       <a className="nav-link" href={'/flows?project=' + navigation.project_uuid}>
@@ -59,7 +59,7 @@ export default class NavigationBar extends React.Component<Props> {
   }
 
   renderFlowListNavigationItem () {
-    const {baseUrl, navigation} = this.props
+    const {navigation} = this.props
     if (!this.hasFlow) return null
     return <li className="nav-item flow">
       <a className="nav-link" href={'/flows/' + navigation.flow_uuid}>
@@ -70,7 +70,7 @@ export default class NavigationBar extends React.Component<Props> {
   }
 
   renderLibraryNavigationItem () {
-    const {baseUrl, navigation} = this.props
+    const {navigation} = this.props
     if (!this.hasFlow) return null
     return <li className="nav-item designer">
       <a className="nav-link" href={'/flows/' + navigation.flow_uuid}>
@@ -80,7 +80,7 @@ export default class NavigationBar extends React.Component<Props> {
   }
 
   renderFlowDesignerNavigationItem () {
-    const {baseUrl, navigation} = this.props
+    const {navigation} = this.props
     if (!this.hasProject) return null
     return <li className="nav-item library">
       <a className="nav-link" href={'/library'}>
@@ -100,7 +100,7 @@ export default class NavigationBar extends React.Component<Props> {
   }
 
   renderUserNavigationItem () {
-    const {baseUrl, navigation} = this.props
+    const {navigation} = this.props
     if (!this.isLogin) return null
     return <li className="nav-item dropdown user">
       <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
@@ -123,8 +123,9 @@ export default class NavigationBar extends React.Component<Props> {
 
   render () {
     if (this.isDialog()) return null
+    //const {baseUrl} = this.props
+    
 
-    const {baseUrl} = this.props
     return <nav className="navbar navbar-expand navbar-dark fixed-top">
       <a className="navbar-brand" href="#">
         <img src={baseUrl + 'images/logo.png'} height="30" className="d-inline-block align-top"

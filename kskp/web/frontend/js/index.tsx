@@ -22,17 +22,17 @@ if (document.getElementById('project_list')) {
 
 if (document.getElementById('flow_list')) {
   elementId = 'flow_list'
-  viewId = ViewId.Project_List
+  viewId = ViewId.Flow_List
 }
 
 if (document.getElementById('library_list')) {
-  elementId = 'flow_list'
-  viewId = ViewId.Project_List
+  elementId = 'library_list'
+  viewId = ViewId.Library_List
 }
 
 if (document.getElementById('profile')) {
-  elementId = 'flow_list'
-  viewId = ViewId.Project_List
+  elementId = 'profile'
+  viewId = ViewId.Profile
 }
 
 ReactDOM.render(

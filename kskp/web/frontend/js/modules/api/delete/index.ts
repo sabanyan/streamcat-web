@@ -1,27 +1,17 @@
-import {API} from 'Modules/api/core/index'
-import * as DELETE from './action/index'
-import axios from 'axios'
+import {ApiBase, ApiConstants} from 'Modules/api/core/index'
+import * as Action from './action/index'
 
 // DELETE
-export function Locks(lockUUID:string) {
-    return (dispatch, getState) => {
-        dispatch(DELETE.LocksRequest(lockUUID))
-        let locks = getState().apiReducer.locks
-        if (locks && locks.lastData && locks.lastData.lockId) {
-            let uuid = locks.lastData.lockId
-            console.log(uuid)
-        }
-        /*
-
-        let url = API.LOCKS.URL + '/'+ lockUUID
-        url = "zzzzzzzzzzzss"
-
-        return axios.delete(url)
-            .then(res =>
-                dispatch(DELETE.LocksSuccess(res))
-            ).catch(err => 
-                dispatch(DELETE.LocksFailure(err))
-            )
-        */
+export function Locks(lockUUID:string, onSuccess?:Function, url:string=ApiConstants.LOCKS.URL.SERVICE) {
+    const result_url = url + '/' + lockUUID
+    const onRequest = (dispatch, getState) => {
+        dispatch(Action.LocksRequest(lockUUID))
     }
+
+    const onThen = (res, dispatch, getState) => {
+        dispatch(Action.LocksSuccess(res))
+        if (onSuccess) onSuccess(res, getState)
+    }
+    
+    ApiBase.request(ApiConstants.METHOD.DELETE, url, undefined, onRequest, onThen)
 }

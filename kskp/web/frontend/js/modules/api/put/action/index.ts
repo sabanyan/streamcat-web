@@ -1,12 +1,12 @@
-import {API} from 'Modules/api/core/index'
+import {ApiConstants} from 'Modules/api/core/index'
 
 // Flows
 export function FlowsRequest(flowUUID:string, body:{label:string, flow:{}, lock:string}) {
     return {
-        type        : API.FLOWS.PUT.REQUEST,
+        type        : ApiConstants.FLOW.ACTION.PUT.REQUEST,
         flowUUID    : flowUUID,
         body  : body
     }
 }
-export function FlowsSuccess(res){return {type : API.FLOWS.PUT.SUCCESS, res : res}}
-export function FlowsFailure(err){return {type : API.FLOWS.PUT.FAILURE, err : err}}
+export function FlowsSuccess(res){return {type : ApiConstants.FLOW.ACTION.PUT.SUCCESS, res : res}}
+export function FlowsFailure(err){return {type : ApiConstants.FLOW.ACTION.PUT.FAILURE, err : err}}
