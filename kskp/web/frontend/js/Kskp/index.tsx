@@ -2,12 +2,19 @@ import * as React from 'react'
 import style from './style.scss'
 import {FlowEditorContainer, FlowListContainer, ProfileContainer, ProjectListContainer, LibraryListContainer} from 'Components/index';
 import NavigationBar from 'Components/shared/Base/NavigationBar/index';
+import { connect } from 'react-redux'
+import {API, DataState} from 'Modules/api/index'
+import { NavigationModel} from 'Model/index';
 
 export type Props = {
-    viewId:ViewId
+    viewId  :ViewId
+    navigation :DataState
+    // Function
+    GET_NAVI :Function
 }
 
 export type State = {
+    nav : NavigationModel
 }
 
 export enum ViewId {
@@ -19,14 +26,42 @@ export enum ViewId {
     Undefined,
 }
 
-export class Kskp extends React.Component<Props, State> {
+class app extends React.Component<Props, State> {
+
+    constructor(props:Props) {
+        super(props)
+
+        this.onNavUpdated.bind(this)
+    }
+
+    init() {
+        // preload
+        
+    }
 
     componentWillMount() {
+        const {GET_NAVI} = this.props
+        GET_NAVI(inject_flow_uuid, inject_project_uuid, (res, getState) => this.onNavUpdated(res, getState))
+    }
 
+    onNavUpdated(res, getState) {
+        try {
+            this.setState({
+                nav : this.props.navigation.lastData
+            }, () => {
+                console.log(this.state.nav)
+            })
+        } catch(e) {
+            console.log("e")
+        }
     }
 
     renderNav() {
-
+        if (this.state && this.props.navigation) {
+            return <NavigationBar navigation={this.state.nav}/>
+        }
+        
+        return null
     }
 
     renderView (viewId:ViewId) {
@@ -54,14 +89,12 @@ export class Kskp extends React.Component<Props, State> {
         const {viewId} = this.props
         let result:any = null
         try {
-            const viewComponent = this.renderView(viewId)
-
             result = <div className={style.kskp}>
                 <div className={style.nav}>
-                    
+                    {this.renderNav()}
                 </div>
                 <div className={style.view}>
-                    {viewComponent}
+                    {this.renderView(viewId)}
                 </div>
             </div>
         } catch(e) {
@@ -72,3 +105,17 @@ export class Kskp extends React.Component<Props, State> {
     }
     
 }
+
+const mapStateToProps = state => ({
+    navigation: state.apiReducer.navigation,
+})
+const mapDispatchToProps = dispatch => {
+    return {
+      // dispatching plain actions
+      GET_NAVI(flow_uuid, project_uuid, onSuccess?:Function) {
+          dispatch(API.GET.Navigation(flow_uuid, project_uuid, onSuccess))
+      }
+    }
+  }
+
+export const Kskp = connect(mapStateToProps, mapDispatchToProps)(app)

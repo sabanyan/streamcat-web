@@ -2,6 +2,7 @@ import { applyMiddleware, combineReducers, compose, createStore } from 'redux'
 import thunk from 'redux-thunk'
 import {flowEditorReducer, libraryReducer, flowListReducer, apiReducer} from 'Modules/index'
 import { reducer as notificationsReducer } from 'reapop'
+import { composeWithDevTools } from 'redux-devtools-extension';
 
 
 // default value for notifications
@@ -20,7 +21,12 @@ const reducers = combineReducers({
     flowListReducer,
     apiReducer
 })
-const middleWares = applyMiddleware(thunk, window.__REDUX_DEVTOOLS_EXTENSION__)
-const store = createStore(reducers, middleWares)
+
+const enhancers = composeWithDevTools(
+    applyMiddleware(thunk),
+    // other store enhancers if any
+  )
+
+const store = createStore(reducers,  enhancers)
 
 export default store

@@ -100,8 +100,9 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   componentWillMount() {
-    const {POST_LOCKS} = this.props
-    POST_LOCKS(inject_flow_uuid)
+    const {POST_LOCKS, GET_FLOW} = this.props
+    GET_FLOW(inject_flow_uuid)
+    //POST_LOCKS(inject_flow_uuid)
     //GET_FLOW(inject_flow_uuid, false, true)
   }
 

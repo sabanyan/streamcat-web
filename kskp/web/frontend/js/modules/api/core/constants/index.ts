@@ -16,6 +16,19 @@ const ApiConstants = {
                 REQUEST : 'get_flows_request',
                 SUCCESS : 'get_flows_success',
                 FAILURE : 'get_flows_failure'
+            }
+        }
+    },
+    FLOW : {
+        KEY     : 'flow',
+        URL     : {
+            SERVICE : '/api/v0/flows'
+        },
+        ACTION  : {
+            GET     : {
+                REQUEST : 'get_flows_request',
+                SUCCESS : 'get_flows_success',
+                FAILURE : 'get_flows_failure'
             },
             PUT     : {
                 REQUEST : 'put_flows_request',
@@ -99,15 +112,15 @@ const ApiConstants = {
         }    
     },
     NAVIGATION : {
-        KEY     : 'locks',
+        KEY     : 'navigation',
         URL     : {
-            SERVICE:'/api/v0/navigion'
+            SERVICE:'/api/v0/navigation'
         },
         ACTION  : {
             GET     : {
-                REQUEST : 'get_locks_request',
-                SUCCESS : 'get_locks_success',
-                FAILURE : 'get_locks_failure'
+                REQUEST : 'get_navigation_request',
+                SUCCESS : 'get_navigation_success',
+                FAILURE : 'get_navigation_failure'
             }
         }
     }
