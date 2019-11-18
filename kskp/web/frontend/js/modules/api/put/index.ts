@@ -18,5 +18,5 @@ export function Flow(flowUUID:string, flow:FlowModel, lockUUID:string, onSuccess
         if (onSuccess) onSuccess(res, getState)
     }
 
-    ApiBase.request(ApiConstants.METHOD.POST, url, data, undefined, onThen)
+    return ApiBase.request(ApiConstants.METHOD.POST, url, data, undefined, onThen)
 }

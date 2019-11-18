@@ -7,12 +7,12 @@ import PaperZoom from 'FlowEditorContainer/PaperZoom'
 import ToolBar from 'FlowEditorContainer/ToolBar/Core'
 import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
 import { APIUtil, GraphUtil, ZoomUtil } from 'Utils/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { Loader } from 'Shared/Base'
-import type { StepModelType, SubFlowParamType } from 'Types/index'
+import { StepModelType, SubFlowParamType } from 'Types/index'
 import { Inspector } from 'Shared/Inspector'
 import {
     CommandStepModel,
@@ -39,8 +39,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     }
     this.handleLeavePage = this.handleLeavePage.bind(this) 
 
-    const graph: GraphUtil = new GraphUtil()
-
+    
     let preRequest = []
     let flowRequest = []
 
@@ -90,20 +89,11 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       console.log(error)
     })
 
-    //
-    // fetch("http://" + Constants.api.host + "/api/v0-1/operators",
-    // option).then(function (response) { if (response.ok) { return
-    // response.json() } else { alert("サーバでエラーが発生しました") } }).then(function
-    // (json: any) { //マスタ追加 self.props.addMaster({operators: json.data})
-    // }).catch((err) => { console.log(err) alert("クライアントでエラーが発生しました") })
-
   }
 
   componentWillMount() {
-    const {POST_LOCKS, GET_FLOW} = this.props
-    GET_FLOW(inject_flow_uuid)
-    //POST_LOCKS(inject_flow_uuid)
-    //GET_FLOW(inject_flow_uuid, false, true)
+    const {POST_LOCKS} = this.props
+    POST_LOCKS(inject_flow_uuid)
   }
 
   componentDidMount() {
@@ -116,7 +106,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
 
   handleLeavePage(e) {
-    const {locks} = this.props
+    const {locks, } = this.props
     if (locks.lastData && locks.lastData.lockId) {
       let lockId = locks.lastData.lockId
       navigator.sendBeacon('/api/v0/delete-locks/' + lockId)

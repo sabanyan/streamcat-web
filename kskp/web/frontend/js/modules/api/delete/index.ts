@@ -13,5 +13,5 @@ export function Locks(lockUUID:string, onSuccess?:Function, url:string=ApiConsta
         if (onSuccess) onSuccess(res, getState)
     }
     
-    ApiBase.request(ApiConstants.METHOD.DELETE, url, undefined, onRequest, onThen)
+    return ApiBase.request(ApiConstants.METHOD.DELETE, url, undefined, onRequest, onThen)
 }

@@ -6,11 +6,11 @@ export function request(method, url, data, onRequest?:Function, onThen?:Function
     switch (method) {
         case ApiConstants.METHOD.GET   : result = doGet(url, data, onRequest, onThen, onCatch)
             break;
-        case ApiConstants.METHOD.GET   : result = doPut(url, data,  onRequest, onThen, onCatch)
+        case ApiConstants.METHOD.PUT   : result = doPut(url, data,  onRequest, onThen, onCatch)
             break;
-        case ApiConstants.METHOD.GET   : result = doPost(url, data,  onRequest, onThen, onCatch)
+        case ApiConstants.METHOD.POST   : result = doPost(url, data,  onRequest, onThen, onCatch)
             break;
-        case ApiConstants.METHOD.GET   : result = doDelete(url, data,  onRequest, onThen, onCatch)
+        case ApiConstants.METHOD.DELETE   : result = doDelete(url, data,  onRequest, onThen, onCatch)
             break;
 
             default:

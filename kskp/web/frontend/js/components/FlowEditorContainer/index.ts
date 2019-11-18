@@ -27,7 +27,7 @@ import {
   updateFlowAction,
   updateStepAction
  } from 'Modules/application'
-import FlowEditor from 'FlowEditorContainer/FlowEditor'
+import FlowEditor from 'Components/FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
 import { FlowModelProps } from 'Model/Flow/FlowModel'
@@ -110,6 +110,15 @@ const FlowEditorContainer = connect(
     return {
       GET_FLOW (flowUUID:string, onSuccess?:Function) {
         dispatch(API.GET.Flow(flowUUID, onSuccess))
+      },
+      GET_SUBFLOWS (onSuccess?:Function) {
+        dispatch(API.GET.Subflows(onSuccess))
+      },
+      GET_VISUALIZERS (onSuccess?:Function) {
+        dispatch(API.GET.Subflows(onSuccess))
+      },
+      GET_COMMANDS (onSuccess?:Function) {
+        dispatch(API.GET.Commands(onSuccess))
       },
       PUT_FLOW (flowUUID:string, flow, lockUUID, onSuccess?:Function) {
         dispatch(API.PUT.Flow(flowUUID, flow, lockUUID, onSuccess))

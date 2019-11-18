@@ -6,8 +6,8 @@ import axios from 'axios'
 
 export function Navigation(flow_uuid?:string, project_uuid?:string, onSuccess?:Function, url:string=ApiConstants.NAVIGATION.URL.SERVICE) {
         let data = {
-            flow_uuid       : flow_uuid,
-            project_uuid    : project_uuid
+            flow_uuid       : (flow_uuid && flow_uuid !== '') ?  flow_uuid : undefined,
+            project_uuid    : (project_uuid  && project_uuid !== '') ? project_uuid : undefined
         }
         const onThen = (res, dispatch, getState) => {
             dispatch(Action.NavigationSuccess(res))
@@ -28,7 +28,7 @@ export function Flows(projectUUID:string, onSuccess?:Function, url:string=ApiCon
             if (onSuccess) onSuccess(res, getState)
         }
 
-        ApiBase.request(ApiConstants.METHOD.GET, url, data, undefined, onThen)
+        return ApiBase.request(ApiConstants.METHOD.GET, url, data, undefined, onThen)
 }
 
 export function Flow(flowUUID:string, onSuccess?:Function, url:string=ApiConstants.FLOWS.URL.SERVICE) {
@@ -74,7 +74,7 @@ export function Commands(onSuccess?:Function, url:string=ApiConstants.COMMANDS.U
         if (onSuccess) onSuccess(res, getState)
     }
 
-    ApiBase.request(ApiConstants.METHOD.GET, url, undefined, undefined, onThen)
+    return ApiBase.request(ApiConstants.METHOD.GET, url, undefined, undefined, onThen)
 }
 
 export function Visulizers(onSuccess?:Function, url:string=ApiConstants.VISUALIZERS.URL.SERVICE) {
@@ -83,7 +83,7 @@ export function Visulizers(onSuccess?:Function, url:string=ApiConstants.VISUALIZ
         if (onSuccess) onSuccess(res, getState)
     }
 
-    ApiBase.request(ApiConstants.METHOD.GET, url, undefined, undefined, onThen)
+    return ApiBase.request(ApiConstants.METHOD.GET, url, undefined, undefined, onThen)
 }
 
 export function Subflows(onSuccess?:Function, url:string=ApiConstants.SUBFLOWS.URL.SERVICE) {
@@ -92,5 +92,5 @@ export function Subflows(onSuccess?:Function, url:string=ApiConstants.SUBFLOWS.U
         if (onSuccess) onSuccess(res, getState)
     }
 
-    ApiBase.request(ApiConstants.METHOD.GET, url, undefined, undefined, onThen)
+    return ApiBase.request(ApiConstants.METHOD.GET, url, undefined, undefined, onThen)
 }
