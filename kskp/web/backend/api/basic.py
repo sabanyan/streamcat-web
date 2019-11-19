@@ -443,7 +443,7 @@ def get_navigation():
         navigation['project_uuid'] = project.uuid
         navigation['project_name'] = project.label
 
-    return jsonify({'success': False, 'data': navigation})
+    return jsonify({'success': True, 'data': navigation})
 
 @mod.errorhandler(400)
 def handle_bad_request(error):
