@@ -6,9 +6,9 @@ export function request(method, url, data, onRequest?:Function, onThen?:Function
     switch (method) {
         case ApiConstants.METHOD.GET   : result = doGet(url, data, onRequest, onThen, onCatch)
             break;
-        case ApiConstants.METHOD.PUT   : result = doPut(url, data,  onRequest, onThen, onCatch)
+        case ApiConstants.METHOD.PUT   : result = doPut(url, data, {},  onRequest, onThen, onCatch)
             break;
-        case ApiConstants.METHOD.POST   : result = doPost(url, data,  onRequest, onThen, onCatch)
+        case ApiConstants.METHOD.POST   : result = doPost(url, data, {}, onRequest, onThen, onCatch)
             break;
         case ApiConstants.METHOD.DELETE   : result = doDelete(url, data,  onRequest, onThen, onCatch)
             break;
@@ -22,7 +22,7 @@ export function request(method, url, data, onRequest?:Function, onThen?:Function
 
 export function doGet (url:string, data?:{}, onRequest?:Function, onThen?:Function, onCatch?:Function) {
     return (dispatch, getState) => {
-        if(onRequest) (dispatch, getState) => onRequest(dispatch, getState)
+        if(onRequest) onRequest(dispatch, getState)
 
         return axios.get(url, (data)?{params: data}:{})
             .then((res) => {if(onThen) onThen(res, dispatch, getState)})
@@ -32,7 +32,7 @@ export function doGet (url:string, data?:{}, onRequest?:Function, onThen?:Functi
 
 export function doPost (url:string, data:{}, config:{}={}, onRequest?:Function, onThen?:Function, onCatch?:Function) {
     return (dispatch, getState) => {
-        if(onRequest) (dispatch, getState) => onRequest(dispatch, getState)
+        if(onRequest) onRequest(dispatch, getState)
         return axios.post(url, data, config)
             .then((res) => {if(onThen) onThen(res, dispatch, getState)})
             .catch((err) => {if(onCatch) onCatch(err, dispatch, getState)})
@@ -41,7 +41,7 @@ export function doPost (url:string, data:{}, config:{}={}, onRequest?:Function, 
 
 export function doPut (url:string, data:{}, config:{}={}, onRequest?:Function, onThen?:Function, onCatch?:Function) {
     return (dispatch, getState) => {
-        if(onRequest) (dispatch, getState) => onRequest(dispatch, getState)
+        if(onRequest) onRequest(dispatch, getState)
         return axios.put(url, data, config)
             .then((res) => {if(onThen) onThen(res, dispatch, getState)})
             .catch((err) => {if(onCatch) onCatch(err, dispatch, getState)})
@@ -50,7 +50,7 @@ export function doPut (url:string, data:{}, config:{}={}, onRequest?:Function, o
 
 export function doDelete (url:string, data?:{}, onRequest?:Function, onThen?:Function, onCatch?:Function) {
     return (dispatch, getState) => {
-        if(onRequest) (dispatch, getState) => onRequest(dispatch, getState)
+        if(onRequest) onRequest(dispatch, getState)
         return axios.delete(url, (data)?{params: data}:{})
             .then((res) => {if(onThen) onThen(res, dispatch, getState)})
             .catch((err) => {if(onCatch) onCatch(err, dispatch, getState)})
