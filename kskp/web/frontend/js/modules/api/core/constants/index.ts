@@ -26,14 +26,14 @@ const ApiConstants = {
         },
         ACTION  : {
             GET     : {
-                REQUEST : 'get_flows_request',
-                SUCCESS : 'get_flows_success',
-                FAILURE : 'get_flows_failure'
+                REQUEST : 'get_flow_request',
+                SUCCESS : 'get_flow_success',
+                FAILURE : 'get_flow_failure'
             },
             PUT     : {
-                REQUEST : 'put_flows_request',
-                SUCCESS : 'put_flows_success',
-                FAILURE : 'put_flows_failure'
+                REQUEST : 'put_flow_request',
+                SUCCESS : 'put_flow_success',
+                FAILURE : 'put_flow_failure'
             }
         }
     },
