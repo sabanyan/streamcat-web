@@ -4,7 +4,7 @@ import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import { HttpUtil, WebUtil } from 'Utils/index'
 
 type Props = {
-  navigation: NavigationModelProps
+  navigation?: NavigationModelProps
 }
 
 const baseUrl = "/front_static/"
@@ -15,18 +15,13 @@ export default class NavigationBar extends React.Component<Props> {
 
   constructor (props: Props) {
     super(props)
-    if (this.props.navigation) {
-      if (props.navigation.user_id && props.navigation.user_name) {
-        this.isLogin = true
-      }
-      if (props.navigation.project_uuid && props.navigation.project_name) {
-        this.hasProject = true
-      }
-      if (props.navigation.flow_uuid && props.navigation.flow_name) {
-        this.hasFlow = true
-      }
-    }
+
   }
+
+  componentWillMount () {
+ 
+  }
+
 
   componentDidMount () {
     /*
@@ -49,7 +44,7 @@ export default class NavigationBar extends React.Component<Props> {
 
   renderProjectListNavigationItem () {
     const {navigation} = this.props
-    if (!this.hasProject) return null
+    if (!this.hasProject || !navigation) return null
     return <li className="nav-item project">
       <a className="nav-link" href={'/flows?project=' + navigation.project_uuid}>
         <img className="icon" src={baseUrl + 'images/icon/folder.svg'} />
@@ -60,7 +55,7 @@ export default class NavigationBar extends React.Component<Props> {
 
   renderFlowListNavigationItem () {
     const {navigation} = this.props
-    if (!this.hasFlow) return null
+    if (!this.hasFlow || !navigation) return null
     return <li className="nav-item flow">
       <a className="nav-link" href={'/flows/' + navigation.flow_uuid}>
         <img className="icon" src={baseUrl + 'images/icon/flow.svg'} />
@@ -71,7 +66,7 @@ export default class NavigationBar extends React.Component<Props> {
 
   renderLibraryNavigationItem () {
     const {navigation} = this.props
-    if (!this.hasFlow) return null
+    if (!this.hasFlow || !navigation) return null
     return <li className="nav-item designer">
       <a className="nav-link" href={'/flows/' + navigation.flow_uuid}>
         <img className="icon" src={baseUrl + 'images/icon/designer.svg'} />フローデザイナー
@@ -101,7 +96,7 @@ export default class NavigationBar extends React.Component<Props> {
 
   renderUserNavigationItem () {
     const {navigation} = this.props
-    if (!this.isLogin) return null
+    if (!this.isLogin || !navigation) return null
     return <li className="nav-item dropdown user">
       <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
          aria-haspopup="true" aria-expanded="false">
@@ -124,7 +119,19 @@ export default class NavigationBar extends React.Component<Props> {
   render () {
     if (this.isDialog()) return null
     //const {baseUrl} = this.props
-    
+
+    const props = this.props
+    if (props.navigation) {
+      if (props.navigation.user_id && props.navigation.user_name) {
+        this.isLogin = true
+      }
+      if (props.navigation.project_uuid && props.navigation.project_name) {
+        this.hasProject = true
+      }
+      if (props.navigation.flow_uuid && props.navigation.flow_name) {
+        this.hasFlow = true
+      }
+    }
 
     return <nav className="navbar navbar-expand navbar-dark fixed-top">
       <a className="navbar-brand" href="#">

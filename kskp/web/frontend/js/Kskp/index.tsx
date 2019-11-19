@@ -2,6 +2,7 @@ import * as React from 'react'
 import style from './style.scss'
 import {FlowEditorContainer, FlowListContainer, ProfileContainer, ProjectListContainer, LibraryListContainer} from 'Components/index';
 import NavigationBar from 'Components/shared/Base/NavigationBar/index';
+import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import { connect } from 'react-redux'
 import {API, DataState} from 'Modules/api/index'
 import { NavigationModel} from 'Model/index';
@@ -48,20 +49,19 @@ class app extends React.Component<Props, State> {
         try {
             this.setState({
                 nav : this.props.navigation.lastData
-            }, () => {
-                //console.log(this.state.nav)
             })
         } catch(e) {
-            console.log("e")
+            console.log(e)
         }
     }
 
     renderNav() {
-        if (this.state && this.props.navigation) {
-            return <NavigationBar navigation={this.state.nav}/>
-        }
-        
-        return null
+        let nav:NavigationModelProps | undefined
+        if (this.state && this.state.nav) {
+            nav = this.state.nav
+        } 
+
+        return <NavigationBar navigation={nav}/>
     }
 
     renderView (viewId:ViewId) {
