@@ -199,7 +199,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   render () {
-    const {zoom , history} = this.props
+    const {zoom , history, disabled} = this.props
 
     const current = history.current
     const max = history.nodes.length
@@ -208,7 +208,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     const undoDisabled = !(current - 1 >= 0)
     return <div>
       <div className={classnames(style.flow_toolbar)}>
-        <Save disabled={false} icon={'&#xE2C2'}
+        <Save disabled={disabled} icon={'&#xE2C2'}
               onClick={(e) => this.onClickSave(e)}>保存</Save>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(e)}>データソースの追加</DataSourceImport>
