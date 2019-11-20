@@ -22,40 +22,22 @@ import {
 } from 'Model/index'
 import { NotificationManager } from 'Shared/Notification'
 
-type State = {}
+type State = {
+  isLoading : boolean
+}
 
 export default class FlowEditor extends React.Component<FlowEditorProps, State> {
-
-  loaded: boolean = false
 
   constructor (props: FlowEditorProps) {
     super(props)
 
-    let option = {
-      method: 'GET',
-      mode: 'same-origin',
-      credentials: 'include',
-      redirect: 'follow',
+    this.state = {
+      isLoading : true
     }
     this.handleLeavePage = this.handleLeavePage.bind(this) 
 
-    const graph: GraphUtil = new GraphUtil()
-
     let preRequest = []
     let flowRequest = []
-
-    window.emitter.removeListener(Constants.event.ON_LOAD_NAVIGATION)
-    window.emitter.addListener(Constants.event.ON_LOAD_NAVIGATION,
-      (context) => {
-        preRequest.push(APIUtil.get('flows?project=' + window.navigationModel.project_uuid + '&navigation=off').then((response) => {
-          const json = response.data
-          // const commands = json.data.map((command)=>{
-          //   return new CommandModel(command)
-          // })
-          // this.props.addMaster({commands: commands})
-        }).then((response) => {},
-          (error) => {console.log(error)}))
-      })
 
     preRequest.push(APIUtil.get('commands').then((response) => {
       const json = response.data
@@ -90,26 +72,21 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     Promise.all(preRequest).then(() => {
       flowRequest.push(APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
         const json = response.data
-        this.props.loadFlowJSON(json)
+        this.props.loadFlowJSON(json, this.onLoaded).then(() => {
+          this.setState({
+            isLoading : false
+          })
+        })
       }))
     }).catch((error) => {
       console.log(error)
     })
 
     Promise.all(flowRequest).then(() => {
-      this.loaded = true
-      this.forceUpdate()
+
     }).catch((error) => {
       console.log(error)
     })
-
-    //
-    // fetch("http://" + Constants.api.host + "/api/v0-1/operators",
-    // option).then(function (response) { if (response.ok) { return
-    // response.json() } else { alert("サーバでエラーが発生しました") } }).then(function
-    // (json: any) { //マスタ追加 self.props.addMaster({operators: json.data})
-    // }).catch((err) => { console.log(err) alert("クライアントでエラーが発生しました") })
-
   }
 
   componentWillMount() {
@@ -215,6 +192,9 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
   render () {
     const {flow, locks, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
+
+    const isLoading = (!this.state || this.state.isLoading) ? true : false   
+    
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
@@ -233,8 +213,10 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
                  selectSteps={selectSteps}
                  setZoom={setZoom}
                  undo={undo}
-                 redo={redo}/>
-        <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={!(this.loaded)}
+                 redo={redo}
+                 disabled={isLoading}
+                 />
+        <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
                 message={'フローを構築中です'} />
         <PaperScroller
             pasteSteps={pasteSteps}

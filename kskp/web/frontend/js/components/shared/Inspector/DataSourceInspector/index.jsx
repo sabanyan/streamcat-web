@@ -315,7 +315,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render () {
-    const {mast, addStep, selectSteps, selected_step_ids, addHistory} = this.props;
+    const {mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail} = this.props;
     let step_text
     let dataSource
     let preview
@@ -361,8 +361,11 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       content = <Loader center={true} absolute={true} fixed={false} visible={true} />
     } else {
 
-      const fileSize = StringUtil.convertToFileSize(this.props.selected_data_source_detail.fileSize)
-      const lastModifiedAt = this.props.selected_data_source_detail.lastModifiedAt
+      
+      let fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0
+      fileSize = StringUtil.convertToFileSize(fileSize)
+      let lastModifiedAt = selected_data_source_detail ? selected_data_source_detail.lastModifiedAt : ""
+      
       content = <div>
         <div className={style.property_overview}>
           <div className={style.actions}>

@@ -62,16 +62,15 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
   let newState = StateUtil.deepCopy(state)
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
-      let {context} = action
-      const loadedJson = graph.load(context.data)
-      newState.originalFlow = {...loadedJson}
-      newState.flow = new FlowModel(loadedJson)
-      newState.nodes = loadedJson.nodes
-      newState.project = {id: loadedJson.projectId}
+      let {context, onSuccess} = action
+      const flowJson = graph.load(context.data)
+      newState.originalFlow = {...flowJson}
+      newState.flow = new FlowModel(flowJson)
+      newState.nodes = flowJson.nodes
       newState.graph = graph.getGraph(newState)
 
       newState.history.current = 0
-      newState.history.nodes = [newState.nodes]
+      newState.history.nodes = [{...newState.nodes}]
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history)
@@ -706,10 +705,15 @@ export const addStepAction = (add_step: StepModelType, src_step_ids: [] = [], ds
  * @param context
  * @returns {{type: string, context: *}}
  */
-export const loadFlowJSONAction = (context: {}) => {
-  return {
-    type: LOAD_FLOW_JSON_ACTION,
-    context: context,
+export function loadFlowJSONAction(context: {}){
+  return (dispatch, getState) => {
+    return Promise.resolve().then(() => {
+      const { flowEditorReducer} = getState()
+      return dispatch({
+        type      : LOAD_FLOW_JSON_ACTION,
+        context   : context
+      })
+    })
   }
 }
 

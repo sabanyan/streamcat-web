@@ -123,7 +123,7 @@ export default FlowEditorContainer = connect(
         dispatch(API.DELETE.Locks(lockUUID))
       },
       loadFlowJSON (context: {}) {
-        dispatch(loadFlowJSONAction(context))
+        return dispatch(loadFlowJSONAction(context))
       },
       addMaster (context: {}) {
         dispatch(addMasterAction(context))
