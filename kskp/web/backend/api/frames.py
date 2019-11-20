@@ -307,7 +307,7 @@ def format_result(activity):
 
 def format_preview(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'contents': preview} for point, preview in activity.result]
+    return [{'id':point.id, 'args':{'column_names': preview.column_names}, 'contents': preview} for point, preview in activity.result]
 
 def _make_flow_inputs(flow_uuid, request):
     """
