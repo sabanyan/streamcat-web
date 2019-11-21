@@ -46,27 +46,24 @@ class LibraryInspector extends React.Component<Props> {
     if (!visualizers) {
       return
     }
-    const uuid = data.uuid
-    const getFrameHeaderURL = "frames/" + uuid
-    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
-      const headers = response.data.data
-      let sortedVisualizers = visualizers
-      sortedVisualizers = SortUtil.getSortedContents(sortedVisualizers)
-      let contents = []
-      for (const v of sortedVisualizers) {
-        const content = {frame_uuid:uuid, visualize:v}
-        contents.push({title: v.label,content:content,parentProps:this.props})
-      }
 
-      ModalUtil.emitModal({
-        id: Constants.preview.DATASOURCE,
-        visible: true,
-        contents: contents,
-        title: data.label
-      })
-      this.setState({
-        loading: false
-      })
+    // vizs
+    const uuid = data.uuid
+    let sortedVisualizers = visualizers
+    sortedVisualizers = SortUtil.getSortedContents(sortedVisualizers)
+    let contents = []
+    for (const v of sortedVisualizers) {
+      const content = {frame_uuid:uuid, visualize:v}
+      contents.push({title: v.label,content:content,parentProps:this.props})
+    }
+    ModalUtil.emitModal({
+      id: Constants.preview.DATASOURCE,
+      visible: true,
+      contents: contents,
+      title: data.label
+    })
+    this.setState({
+      loading: false
     })
   }
 
