@@ -1,16 +1,16 @@
 //@flow
 import * as React from 'react'
 import { VisualizeModel } from 'Model/index'
-import { HttpUtil } from 'Utils/index'
+import { APIUtil } from 'Utils/index'
 import { EmptyState, Loader } from 'Shared/Base'
 import { PreviewInspector } from 'Shared/Inspector'
 import style from './style.scss'
 
 type Props = {
   visualize: VisualizeModel,
-  params: VisualizeParams;
+  flow_uuid: string;
+  steps: string;
   frame_uuid: string;
-  headers: []
 }
 
 type State = {
@@ -20,16 +20,18 @@ type State = {
 }
 
 export default class Visualizer extends React.Component<Props, State> {
-  inputRefs: any[]
 
   constructor (props: Props) {
     super(props)
-    this.inputRefs = []
+    const initialArgs = this.initArgs(props.visualize, {})
+
     this.state = {
+      headers : [],
       html: (props.result) ? props.result.html : null,
-      args: (props.result) ? props.result.args : this.initArgs(props.visualize, {}),
+      args: (props.result) ? props.result.args : initialArgs,
       is_loading: (props.result) ? false : true
     }
+
   }
 
   initArgs(visualize: VisualizeModel, args:{}) {
@@ -53,7 +55,7 @@ export default class Visualizer extends React.Component<Props, State> {
     } catch(e) {
       console.log(e)
     }
-  
+
     return result
   }
 
@@ -63,35 +65,89 @@ export default class Visualizer extends React.Component<Props, State> {
     this.setState({
       html: (result) ? result.html : null, 
       args: (result) ? result.args : this.initArgs(visualize, args), 
-      is_loading: false
+      is_loading: true
     }, () => {
-      if (result) this.forceUpdate()
-      if (!result) this.visualizeRequest(visualize, this.state.args)
+      if (result) {
+        this.setState({
+          is_loading : false
+        })
+      } 
+      if (!result) {
+        this.requestHeaders().then(() => {
+          this.requestVisualize()
+        })
+      }
     })
   }
 
-  visualizeRequest (visualize: VisualizeModel, args: {}) {
-    const uuid = this.props.frame_uuid
-    const body = {'args': args, 'inputs': {'i': uuid}}
-    // 現在Limitはクエリパラメーターではなく、Bodyのargs{limit:}を使ってるため
-    //const limit = this.getLimitWhenCsvToHTMLTable(visualize.id)
+  getRequest (args) {
+    const {flow_uuid, steps, frame_uuid, visualize} = this.props
+    let url, body
+
+    if (flow_uuid && steps[0]) {
+      url   = 'vizs?from=' + flow_uuid
+      let stepId = steps[0].id
+      body  = {}
+      body[stepId] = {
+        "args"  : {
+          "visualizer" : visualize.id,
+          ...args
+        }
+      }
+    } else if (frame_uuid) {
+      url = 'vizs/' + frame_uuid
+      body = {
+        "args" : {
+          "visualizer" : visualize.id,
+          ...args
+        }
+      }
+    }
+
+    return {
+      url   : url,
+      body  : body
+    }
+  }
+
+  requestHeaders () {
+    const args = {
+      "visualizer"  : "csvtohtmltable",
+      "offset"      : 0,
+      "limit:"      : 0
+    }
+
+    const {url, body} = this.getRequest(args)
+    return APIUtil.post(url, body)
+    .then((res) => {
+      const lasts = res.data.lasts
+      const headers = lasts[0].args.column_names
+      this.setState({
+        headers : headers
+      })
+    }).catch((error) => {
+      console.log(error)
+    })
+  }
+
+  requestVisualize () {
+    const {flow_uuid, steps, frame_uuid, onSaveResult, index} = this.props
+    const {url, body} = this.getRequest()
+    const args = this.state.args
 
     this.setState({is_loading: true})
-    HttpUtil.post('visualizers?from=' + visualize.id, body).then((res) => {
-      // 結果を保存
-      if (this.props.onSaveResult) {
-        const index = this.props.index
-        const result = {
-          html: res.data,
-          args: args
-        }
-        this.props.onSaveResult(index, result)
+    APIUtil.post(url, body).then((res) => {
+      const lasts = res.data.lasts
+      const contents = lasts[0].contents
+      const headers = lasts[0].args.column_names
+      const result = {
+        html: contents,
+        args: args
       }
-      this.setState({args: args, html: res.data, is_loading: false})
+      this.props.onSaveResult(index, result)
+      this.setState({headers: headers, args: args, html: contents, is_loading: false})
     }).catch((error) => {
-      if (error) {
-        this.setState({is_loading: false})
-      }
+      this.setState({is_loading: false})
     })
   }
 
@@ -109,7 +165,7 @@ export default class Visualizer extends React.Component<Props, State> {
 
   apply (args: {}) {
     this.setState({args: args}, () => {
-      this.visualizeRequest(this.props.visualize, this.state.args)
+      this.requestVisualize()
     })
   }
 
@@ -143,25 +199,33 @@ export default class Visualizer extends React.Component<Props, State> {
     this.setState({args:args})
   }
 
+  renderContents() {
+    let result
+    if (!this.state || !this.state.html) {
+      result = <EmptyState title={'表示することができません'} description={'条件を変更して反映ボタンを押してください'} icon={'cloud_off'} />
+    } else {
+      result = <div className={style.visualizeContainer}>
+        <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
+      </div>
+    }
+
+    return result
+  }
+
   render () {
-    const {visualize, headers, frame_uuid} = this.props
+
+    const {visualize} = this.props
     const args = this.state.args
     const is_loading = this.state.is_loading
 
     if (is_loading) return <Loader center={true} visible={true} />
 
-    let content
-    if (!this.state.html) content = <EmptyState title={'表示することができません'} description={'条件を変更して反映ボタンを押してください'} icon={'cloud_off'} />
-    if (this.state.html) content = <div className={style.visualizeContainer}>
-      <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
-    </div>
-
     return <div>
-      {content}
-      <PreviewInspector headers={headers}
+      {this.renderContents()}
+      <PreviewInspector headers={this.state.headers}
                         onApply={(args) => this.apply(args)}
                         params={visualize.params}
-                        args={args}
+                        args={this.state.args}
                         groups={visualize.groups}
                         label={visualize.label} />
     </div> 

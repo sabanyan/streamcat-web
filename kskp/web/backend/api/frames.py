@@ -257,7 +257,7 @@ def make_new_frames():
     result = format_result(activity)
     return jsonify({'success': True, 'lasts': result})
 
-@mod.route('/previews', methods=['GET'])
+@mod.route('/vizs', methods=['POST'])
 @login_required_api
 def make_new_previews():
     """
