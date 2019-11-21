@@ -67,16 +67,16 @@ export default class Visualizer extends React.Component<Props, State> {
       args: (result) ? result.args : this.initArgs(visualize, args), 
       is_loading: true
     }, () => {
-      if (result) {
-        this.setState({
-          is_loading : false
-        })
-      } 
-      if (!result) {
-        this.requestHeaders().then(() => {
+      this.requestHeaders().then(() => {
+        if (result) {
+          this.setState({
+            is_loading : false
+          })
+        } 
+        if (!result) {
           this.requestVisualize()
-        })
-      }
+        }
+      })
     })
   }
 
@@ -108,7 +108,6 @@ export default class Visualizer extends React.Component<Props, State> {
       url   : url,
       body  : body
     }
-    console.log(result)
     return result
   }
 
