@@ -11,7 +11,7 @@ import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
 
 import { ProjectInspector } from 'Shared/Inspector'
-
+import {API} from 'Modules/api/index'
 /**
  * ======================================================
  *                      NOT USE REDUX
@@ -30,6 +30,10 @@ export default class ProjectListContainer extends React.Component {
       project_name: null,
       selected_project: null
     }
+  }
+
+  componentWillMount() {
+    API.GET.Navigation()
   }
 
   componentDidMount () {

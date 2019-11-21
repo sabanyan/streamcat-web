@@ -330,9 +330,8 @@ export default class FlowList extends React.Component<FlowListProps, State> {
             flow : flow,
             lock : lockId
           }).then((response) => {
-            navigator.sendBeacon('/api/v0/delete-locks/' + lockId).then(() => {
-              this.getFlowList()
-            })
+            navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+            this.getFlowList()
           }, (error) => {
             navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
             console.log(error)

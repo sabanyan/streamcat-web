@@ -1,22 +1,10 @@
 //@flow
 import axios from 'axios'
-import NavigationModel from 'Model/Navigation/NavigationModel'
 
 class APIUtil {
   constructor () {
     //default config
     this.config = {}
-
-    axios.interceptors.response.use((response) => {
-      this.setWindowNavigation(response)
-      return response
-    })
-  }
-
-  setWindowNavigation (response: any) {
-    if (response.data.navigation) {
-      new NavigationModel(response.data.navigation)
-    }
   }
 
   mergeConfig (config?: {}) {
@@ -59,8 +47,6 @@ class APIUtil {
     }
 
     let formData: FormData = new FormData()
-    console.log(parentUUID)
-    console.log(label)
     formData.append('file', file)
     if (fileName) {
       formData.append('file_name', fileName)//TODO 将来的にはなくなる？？
