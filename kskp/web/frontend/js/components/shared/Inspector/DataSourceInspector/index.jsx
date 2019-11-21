@@ -138,7 +138,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   previewFromUUID (uuid: string, label: string) {
-    const {selected_data_source_detail} = this.props
+    const {selected_data_source_detail, flow} = this.props
     const selected_step = this.getSelectedStep()
 
     //ヘッダー情報の取得
@@ -148,9 +148,13 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       const headers = response.data.data
       let visualizers = this.props.mast.visualizers
       visualizers = SortUtil.getSortedContents(visualizers)
+      const flow_uuid = inject_flow_uuid
+      const steps = [selected_step]
       let contents = []
+      console.log("preview from uuid")
+      console.log(selected_step)
       for (const v of visualizers) {
-        const content = {frame_uuid:uuid, visualize:v, headers:headers}
+        const content = {flow_uuid:flow_uuid, steps:steps, visualize:v}
         contents.push({title: v.label, content: content, parentProps: this.props})
       }
 
