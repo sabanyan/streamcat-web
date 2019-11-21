@@ -351,15 +351,20 @@ class FrameApiTestCase(TestCaseBase):
         flow = Library.save_flow(root.uuid, 'test', flow_json)
         
         # フローの実行
-        result = self.get_uri(f'/api/v0/frames?from={flow.uuid}.d1', self.USER_ID)
+        vis_args = { "d1" : 
+                        {"args" :
+                            {"visualizer" : "csvtohtmltable",
+                             "offset" : 0,
+                             "limit"  : 100
+                            }
+                        }
+                    }
+        result = self.post_uri(f'/api/v0/vizs?from={flow.uuid}', vis_args, self.USER_ID)
         lasts = result['lasts']
-
-        # DBにframeデータが生成されているか
-        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
 
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
-        self.assertEqual(lasts[0]['label'], '出力結果')
+        self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
 
 
     # @unittest.skip

@@ -603,8 +603,6 @@ class AwsS3TestCase(TestCaseBase):
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
 
-
-
 class DatabaseTestCase(TestCaseBase):
     def test_create_get_database(self):
         root = Datum.find_root()

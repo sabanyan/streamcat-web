@@ -191,43 +191,52 @@ def delete_frame(frame_uuid):
 
 @mod.route('/frames', methods=['POST'])
 @login_required_api
-@frame_api_base
 def create_frame():
-    if 'file' in request.files:
-        # 
-        # Frameをアップロードする
-        # 
-        if request.files.get('file') is None:
-            raise Exception('No frame file found.')
-        if 'parent' not in request.form:
-            raise Exception('No parent is designated.')
-        if 'label' not in request.form:
-            raise Exception('No label is designated.')
-        
-        # parentとlabel属性があれば新形式のPOST /framesだとみなす
-        new_frame = Frame(request.form.get('parent')
-                        , request.form.get('label')
-                        , request.files.get('file').stream
-                        , creator=session['user_id'])
-        # documentレコードをDBに格納する
-        new_frame.save()
-        return new_frame
+    try:
+        if 'file' in request.files:
+            # 
+            # Frameをアップロードする
+            # 
+            if request.files.get('file') is None:
+                raise Exception('No frame file found.')
+            if 'parent' not in request.form:
+                raise Exception('No parent is designated.')
+            if 'label' not in request.form:
+                raise Exception('No label is designated.')
+            
+            # parentとlabel属性があれば新形式のPOST /framesだとみなす
+            new_frame = Frame(request.form.get('parent')
+                            , request.form.get('label')
+                            , request.files.get('file').stream
+                            , creator=session['user_id'])
+            # documentレコードをDBに格納する
+            new_frame.save()
+            return jsonify({'success': True, 'data': new_frame})
 
-    elif request.json.get('flow_uuid'):
-        # 
-        # フロー一覧から実行する
-        # 
-        flow_uuid = request.json.get('flow_uuid')
-        args = request.json.get('args') if request.json.get('args') else {}
-        inputs = _make_flow_inputs(flow_uuid, request)
-        # フローの実行
-        flow = Flow.find_by_uuid(flow_uuid)
-        result = execute_flow(flow, args=args, inputs=inputs)
-        result = format_result(result)
-        return result
+        elif request.json.get('flow_uuid'):
+            # 
+            # フロー一覧から実行する
+            # 
+            flow_uuid = request.json.get('flow_uuid')
+            args = request.json.get('args') if request.json.get('args') else {}
+            inputs = _make_flow_inputs(flow_uuid, request)
+            # フローの実行
+            flow = Flow.find_by_uuid(flow_uuid)
+            result = execute_flow(flow, args=args, inputs=inputs)
+            result = format_result(result)
+            return jsonify({'success': True, 'lasts': result})
+        
+        else:
+            raise Exception('引数等の指定が誤っています')
     
-    else:
-        raise Exception('引数等の指定が誤っています')
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+                        'success': False,
+                        'code'   : -1,
+                        'message': str(e)
+                      })
 
 @mod.route('/frames', methods=['GET'])
 @login_required_api
@@ -311,7 +320,7 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
 
 def format_result(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'uuid':frame_uuid, 'label':point.label} for point, frame_uuid in activity.result]
+    return [{'id':point.id, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.result]
 
 def format_vis(activity):
     from kskp.store import Activity
@@ -321,7 +330,7 @@ def _make_flow_inputs(flow_uuid, request):
     """
     inputsを作成する
     """
-    from kskp.store import Library, fetch_flow_by_uuid
+    from kskp.store import Library, NysolModule, fetch_flow_by_uuid
 
     flow_json = fetch_flow_by_uuid(flow_uuid)
 
@@ -336,7 +345,8 @@ def _make_flow_inputs(flow_uuid, request):
             # ※Folderのload_frameとLibraryのload_frameは別物なので、Library.load_frameでは代用はできない
             # Folder.load_frame　・・・　uuidからframeを取得し、それをm2teeを使ってnysol_moduleを返す
             # Library.load_frame ・・・ uuidからframeを取得し、Frameオブジェクトを返す
-            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
+            cmd = Folder.load_frame(frame_uuid)
+            inputs[port['nodeId']] = NysolModule(cmd)
             continue
 
         # 新たにkskpにアップロードする場合
@@ -345,7 +355,8 @@ def _make_flow_inputs(flow_uuid, request):
             # ファイルアップロードして、フレームを置き換える
             # from kskp.web.backend.api.basic import upload_frame
             frame_uuid = _upload_frame(file, '')['uuid']
-            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
+            cmd = Folder.load_frame(frame_uuid)
+            inputs[port['nodeId']] = NysolModule(cmd)
             continue
 
     return inputs
