@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask.json import JSONEncoder
 from kskp.store import StoreModel as Store
-from kskp.store import Preview
+from kskp.store import Vis
 from kskp.core import Datum as Datum
 
 class KSKPJSONEncoder(JSONEncoder):
@@ -11,7 +11,7 @@ class KSKPJSONEncoder(JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Store):
             return obj.to_json()
-        elif isinstance(obj, Preview):
+        elif isinstance(obj, Vis):
             return obj.to_html()
         elif isinstance(obj, Datum):
             return obj.to_json()

@@ -292,10 +292,10 @@ class FrameApiTestCase(TestCaseBase):
 
 
     # @unittest.skip
-    def test_flow_preview(self):
+    def test_flow_vis(self):
         """
-        フローをプレビュー実行する
-                        　↓プレビュー
+        フローをVis実行する
+                        　↓Vis
         フロー：i -> c1 -> d1 -> c2 -> d2
         """
         # テストフレーム作成
