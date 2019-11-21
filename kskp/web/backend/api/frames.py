@@ -9,7 +9,7 @@ from kskp.store import Frame, Flow, Folder
 from kskp.web.backend import app
 
 from .auth import login_required_api
-from .utils import api_base
+from .utils import api_base, frame_api_base
 
 mod = Blueprint('frames', __name__)
 
@@ -191,6 +191,7 @@ def delete_frame(frame_uuid):
 
 @mod.route('/frames', methods=['POST'])
 @login_required_api
+@frame_api_base
 def create_frame():
     if 'file' in request.files:
         # 
@@ -210,7 +211,7 @@ def create_frame():
                         , creator=session['user_id'])
         # documentレコードをDBに格納する
         new_frame.save()
-        return jsonify({'success': True, 'data': new_frame})
+        return new_frame
 
     elif request.json.get('flow_uuid'):
         # 
@@ -220,19 +221,17 @@ def create_frame():
         args = request.json.get('args') if request.json.get('args') else {}
         inputs = _make_flow_inputs(flow_uuid, request)
         # フローの実行
-        result = execute_flow(flow_uuid, args=args, inputs=inputs)
+        flow = Flow.find_by_uuid(flow_uuid)
+        result = execute_flow(flow, args=args, inputs=inputs)
         result = format_result(result)
-        return jsonify({'success': True, 'lasts': result})
+        return result
     
     else:
-        return jsonify({
-                        'success': False,
-                        'code'   : -1,
-                        'message': '引数等の指定が誤っています'
-                    })
+        raise Exception('引数等の指定が誤っています')
 
 @mod.route('/frames', methods=['GET'])
 @login_required_api
+@frame_api_base
 def make_new_frames():
     """
     フローを実行してフレームを取得する
@@ -243,7 +242,7 @@ def make_new_frames():
         raise Exception('No frame parameter is designated')
 
     if '.' in request.args['from']:
-        # プレビュー
+        # Vis
         # ドットで区切って、具体的に一つだけstepを指定することができる
         # TODO: 後々この部分は文法を拡張していく予定
         froms = request.args['from'].split('.')
@@ -252,49 +251,58 @@ def make_new_frames():
     else:
         # 普通の実行
         flow_uuid = request.args['from']
-        
-    activity = execute_flow(flow_uuid)
-    result = format_result(activity)
-    return jsonify({'success': True, 'lasts': result})
 
-@mod.route('/previews', methods=['GET'])
+    flow = Flow.find_by_uuid(flow_uuid)     
+    activity = execute_flow(flow)
+    return format_result(activity)
+
+@mod.route('/vizs/<frame_uuid>', methods=['POST'])
 @login_required_api
-def make_new_previews():
+@frame_api_base
+def fetch_vis(frame_uuid):
     """
-    プレビューデータを取得する
+    指定したframeのVisデータを直接UUIDで指定して取得する
+    """
+    vis_args = {"d" : request.json}
+
+    import uuid
+    from kskp.store import Datum, DataSource
+    from kskp.store.commands import LoaderCommand
+    from kskp.engine import Step
+    parent_folder = Datum.find_parent(frame_uuid)
+    loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
+    datasource = DataSource(None, 'tmp_source', parent_folder, loader_step, session['user_id'])
+    activity = execute_flow(datasource, vis_args=vis_args)
+    return format_vis(activity)
+
+@mod.route('/vizs', methods=['POST'])
+@login_required_api
+@frame_api_base
+def make_new_viss():
+    """
+    Visデータを取得する
     """
     if 'from' not in request.args:
         raise Exception('from引数を指定してください')
 
-    step_ids = []
-    if '.' in request.args['from']:
-        froms = request.args['from'].split('.')
-        flow_uuid = froms[0]
-        step_ids.append(froms[1])
-    else:
-        flow_uuid = request.args['from']
+    flow_uuid = request.args['from']
+    vis_args = request.json
 
-    preview_args = request.json
+    flow = Flow.find_by_uuid(flow_uuid)
+    activity = execute_flow(flow, vis_args=vis_args)
+    return format_vis(activity)
 
-    activity = execute_flow(flow_uuid, preview_args=preview_args)
-    result = format_preview(activity)
-    return jsonify({'success': True, 'lasts': result})
-
-def execute_flow(flow_uuid, args={}, inputs={}, preview_args={}):
+def execute_flow(flow, args={}, inputs={}, vis_args={}):
     """
-    フローの実行を行う
-    実行後の判定など
+    指定されたフローを実行し実行結果を取得する
     """
-    if not Flow.exists(flow_uuid):
-        # ファイルが存在しないときはここを通る
-        raise Exception('flow does not exist in DB')
     try:
-        from kskp.engine import execute, FlowJsonLink, FlowUuidLink, FlowLinkContext
-        context = FlowLinkContext(flow_uuid)
-        link = FlowUuidLink(flow_uuid, context, preview_args)
+        from kskp.engine import execute, FlowJsonLink, FlowLinkContext
+        context = FlowLinkContext(flow.uuid)
+        link = FlowJsonLink(flow.label, flow.flow_data, context, vis_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
-            raise Exception('activity is None.')
+            raise Exception('実行結果は出力されませんでした')
         return activity
     except Exception as e:
         import traceback
@@ -305,9 +313,9 @@ def format_result(activity):
     from kskp.store import Activity
     return [{'id':point.id, 'uuid':frame_uuid, 'label':point.label} for point, frame_uuid in activity.result]
 
-def format_preview(activity):
+def format_vis(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'args':{'column_names': preview.column_names}, 'contents': preview} for point, preview in activity.result]
+    return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.result]
 
 def _make_flow_inputs(flow_uuid, request):
     """
