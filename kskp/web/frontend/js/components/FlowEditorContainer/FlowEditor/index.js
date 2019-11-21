@@ -7,12 +7,12 @@ import PaperZoom from 'FlowEditorContainer/PaperZoom'
 import ToolBar from 'FlowEditorContainer/ToolBar/Core'
 import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
 import { APIUtil, GraphUtil, ZoomUtil } from 'Utils/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { Loader } from 'Shared/Base'
-import type { StepModelType, SubFlowParamType } from 'Types/index'
+import { StepModelType, SubFlowParamType } from 'Types/index'
 import { Inspector } from 'Shared/Inspector'
 import {
     CommandStepModel,
@@ -92,7 +92,6 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   componentWillMount() {
     const {POST_LOCKS} = this.props
     POST_LOCKS(inject_flow_uuid)
-    //GET_FLOW(inject_flow_uuid, false, true)
   }
 
   componentDidMount() {
@@ -105,7 +104,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
 
   handleLeavePage(e) {
-    const {locks} = this.props
+    const {locks, } = this.props
     if (locks.lastData && locks.lastData.lockId) {
       let lockId = locks.lastData.lockId
       navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
