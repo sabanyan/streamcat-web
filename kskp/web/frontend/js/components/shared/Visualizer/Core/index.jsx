@@ -120,6 +120,7 @@ export default class Visualizer extends React.Component<Props, State> {
     const {url, body} = this.getRequest(args)
     return APIUtil.post(url, body)
     .then((res) => {
+      if (!res.data.success) throw res.data.message
       const lasts = res.data.lasts
       const headers = lasts[0].args.column_names
       this.setState({
@@ -136,19 +137,25 @@ export default class Visualizer extends React.Component<Props, State> {
     const args = this.state.args
 
     this.setState({is_loading: true})
-    APIUtil.post(url, body).then((res) => {
-      const lasts = res.data.lasts
-      const contents = lasts[0].contents
-      const headers = lasts[0].args.column_names
-      const result = {
-        html: contents,
-        args: args
-      }
-      this.props.onSaveResult(index, result)
-      this.setState({headers: headers, args: args, html: contents, is_loading: false})
-    }).catch((error) => {
-      this.setState({is_loading: false})
-    })
+    try {
+      APIUtil.post(url, body).then((res) => {
+        if (!res.data.success) throw res.data.message
+
+        const lasts = res.data.lasts
+        const contents = lasts[0].contents
+        const headers = lasts[0].args.column_names
+        const result = {
+          html: contents,
+          args: args
+        }
+        this.props.onSaveResult(index, result)
+        this.setState({headers: headers, args: args, html: contents, is_loading: false})
+      }).catch((error) => {
+        this.setState({is_loading: false})
+      })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   /**

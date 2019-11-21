@@ -75,100 +75,62 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const selected_step = this.getSelectedStep()
 
     let {nodes} = this.props
-
+    let previewNotify
     FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
-
-      //すでにデータが存在している場合
-      if (selected_step.hasData()) {
+      previewNotify = this.props.notify({
+        title: 'プレビュー結果を取得中',
+        message: 'プレビュー結果を取得しています',
+        status: 'loading',
+        dismissAfter: 0
+      })
+      this.setState({
+        loading: true
+      }, () => {
+        if (previewNotify) this.props.dismissNotify(previewNotify.id)
+        this.preview()
         this.setState({
-          loading: true
+          loading: false
         })
-        this.previewFromUUID(selected_step.uuid, selected_step.label)
-      } else {
-        const previewNotify = this.props.notify({
-          title: 'プレビュー結果を取得中',
-          message: 'プレビュー結果を取得しています',
-          status: 'loading',
-          dismissAfter: 0
-        })
-        this.setState({
-          loading: true
-        })
-
-        const getFramesURL = 'frames?from=' + inject_flow_uuid + '.' + selected_step.id + '&no_contents=1'
-        APIUtil.get(getFramesURL).then((response) => {
-          this.props.dismissNotify(previewNotify.id)
-          if (response.data.success) {
-            const uuid = response.data.lasts[0].uuid
-            const label = response.data.lasts[0].id
-            this.previewFromUUID(uuid, label)
-          } else {
-            this.props.notify({
-              title: 'プレビューエラー',
-              message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-              status: 'error',
-              dismissAfter: 0,
-              closeButton: true
-            })
-            this.loading = false
-            this.forceUpdate()
-          }
-          this.setState({
-            loading: false
-          })
-        }, (error) => {
-          this.props.dismissNotify(previewNotify.id)
-          if (!response.data.success) {
-            this.props.notify({
-              title: 'プレビューエラー',
-              message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-              status: 'error',
-              dismissAfter: 0,
-              closeButton: true
-            })
-            this.loading = false
-            this.forceUpdate()
-          }
-          this.setState({
-            loading: false
-          })
-        })
-      }
-    })
-  }
-
-  previewFromUUID (uuid: string, label: string) {
-    const {selected_data_source_detail, flow} = this.props
-    const selected_step = this.getSelectedStep()
-
-    //ヘッダー情報の取得
-
-    const getFrameHeaderURL = 'frames/' + uuid
-    APIUtil.get(getFrameHeaderURL + '?header_only=1&offset=0&limit=1').then((response) => {
-      const headers = response.data.data
-      let visualizers = this.props.mast.visualizers
-      visualizers = SortUtil.getSortedContents(visualizers)
-      const flow_uuid = inject_flow_uuid
-      const steps = [selected_step]
-      let contents = []
-      console.log("preview from uuid")
-      console.log(selected_step)
-      for (const v of visualizers) {
-        const content = {flow_uuid:flow_uuid, steps:steps, visualize:v}
-        contents.push({title: v.label, content: content, parentProps: this.props})
-      }
-
-      ModalUtil.emitModal({
-        id: Constants.preview.DATASOURCE,
-        visible: true,
-        contents: contents,
-        title: label
+      })
+    }, (error) => {
+      if (previewNotify) this.props.dismissNotify(previewNotify.id)
+      this.props.notify({
+        title: 'プレビューエラー',
+        message: error.message,
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
       })
       this.setState({
         loading: false
       })
-      this.updateCache()
     })
+  }
+
+  preview () {
+
+    const selected_step = this.getSelectedStep()
+    const label = selected_step.label
+    // vizs
+    let visualizers = this.props.mast.visualizers
+    visualizers = SortUtil.getSortedContents(visualizers)
+    const flow_uuid = inject_flow_uuid
+    const steps = [selected_step]
+    let contents = []
+    for (const v of visualizers) {
+      const content = {flow_uuid:flow_uuid, steps:steps, visualize:v}
+      contents.push({title: v.label, content: content, parentProps: this.props})
+    }
+    ModalUtil.emitModal({
+      id: Constants.preview.DATASOURCE,
+      visible: true,
+      contents: contents,
+      title: label
+    })
+    this.setState({
+      loading: false
+    })
+    this.updateCache()
   }
 
   updateCache () {
