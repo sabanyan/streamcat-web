@@ -104,10 +104,12 @@ export default class Visualizer extends React.Component<Props, State> {
       }
     }
 
-    return {
+    const result = {
       url   : url,
       body  : body
     }
+    console.log(result)
+    return result
   }
 
   requestHeaders () {
@@ -133,8 +135,9 @@ export default class Visualizer extends React.Component<Props, State> {
 
   requestVisualize () {
     const {flow_uuid, steps, frame_uuid, onSaveResult, index} = this.props
-    const {url, body} = this.getRequest()
     const args = this.state.args
+    const {url, body} = this.getRequest(args)
+   
 
     this.setState({is_loading: true})
     try {
