@@ -62,4 +62,20 @@ export default class CommandModel extends Model {
     })
     return result
   }
+
+  isInPortsAddable():boolean {
+    let result = false
+    const ports = this.getInPorts()
+    if (ports[0] && ports[0].name === '*') result = true
+
+    return result
+  }
+
+  isOutPortsAddable():boolean {
+    let result = false
+    const ports = this.getOutPorts()
+    if (ports[0] && ports[0].name === '*') result = true
+
+    return result
+  }
 }
