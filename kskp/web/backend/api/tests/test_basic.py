@@ -791,6 +791,83 @@ class CacheApiTestCase(TestCaseBase):
 
         self.delete_uri('/api/v0/caches?of=%s.%s' % (test_flow.uuid, datum_id), user_id)
 
+class NavigationApiTestCase(TestCaseBase):
+
+    def test_get_navigation(self):
+        from kskp.store import Datum, Flow, Frame
+        
+        root = Datum.find_root()
+
+        datum_id = 'test'
+        user_id = 1
+
+        # project_uuidなし, flow_uuidなし
+        uri = '/api/v0/navigation'
+        result = self.get_uri(uri, user_id)
+        data = result['data']
+        self.assertIsNotNone(data['user_id'])
+        self.assertIsNotNone(data['user_name'])
+        self.assertEqual(data['project_uuid'], '')
+        self.assertEqual(data['project_name'], '')
+        self.assertEqual(data['flow_uuid'], '')
+        self.assertEqual(data['flow_name'], '')
+
+        # テスト用フローデータを作成する
+        flow_data = {
+            'projectId': None,
+            'label': 'テストフローです',
+            'ports': [[],[]],
+            'params': [],
+            'description': ""
+        }
+        node = {
+            "id": datum_id,
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": "",
+            "cacheCreatedAt": '2019/01/01'
+        }
+        flow_data['nodes']=[]
+        flow_data['nodes'].append(node)
+
+        test_flow = Flow(root.uuid, 'テストフローです', flow_data, user_id)
+        test_flow.save()
+
+        flow_uuid = test_flow.uuid
+        # project_uuidなし, flow_uuidあり
+        uri = '/api/v0/navigation?flow_uuid=' + flow_uuid
+        result = self.get_uri(uri, user_id)
+        data = result['data']
+        self.assertIsNotNone(data['user_id'])
+        self.assertIsNotNone(data['user_name'])
+        self.assertIsNotNone(data['project_uuid'])
+        self.assertIsNotNone(data['project_name'])
+        self.assertIsNotNone(data['flow_uuid'])
+        self.assertIsNotNone(data['flow_name'])
+
+
+        project_uuid = data['project_uuid']
+        # project_uuidあり, flow_uuidなし
+        uri = '/api/v0/navigation?project_uuid=' + project_uuid
+        result = self.get_uri(uri, user_id)
+        data = result['data']
+        self.assertIsNotNone(data['user_id'])
+        self.assertIsNotNone(data['user_name'])
+        self.assertIsNotNone(data['project_uuid'])
+        self.assertIsNotNone(data['project_name'])
+        self.assertEqual(data['flow_uuid'], '')
+        self.assertEqual(data['flow_name'], '')
+
+        # project_uuidあり, flow_uuidあり
+        uri = '/api/v0/navigation?project_uuid=' + project_uuid + '&flow_uuid=' + flow_uuid
+        result = self.get_uri(uri, user_id)
+        data = result['data']
+        self.assertIsNotNone(data['user_id'])
+        self.assertIsNotNone(data['user_name'])
+        self.assertIsNotNone(data['project_uuid'])
+        self.assertIsNotNone(data['project_name'])
+        self.assertIsNotNone(data['flow_uuid'])
+        self.assertIsNotNone(data['flow_name'])
 
 def setUpUser(self):
     user1 = 1

@@ -39,7 +39,7 @@ type InspectorProps = {
 class Inspector extends React.Component<InspectorProps> {
 
   render () {
-      let {selected_step_ids, nodes, mast, addStep, selectSteps, flow, updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail, loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd} = this.props
+      let {selected_step_ids, locks, nodes, mast, addStep, selectSteps, flow, updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail, loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd} = this.props
 
       let property
 
@@ -64,6 +64,7 @@ class Inspector extends React.Component<InspectorProps> {
               selected_data_source_detail={selected_data_source_detail}
               updateDataFrameDetail={updateDataFrameDetail}
               mast={mast}
+              locks={locks}
               loadFlowJSON={loadFlowJSON}
               deleteSteps={deleteSteps}
               selectSteps={selectSteps}

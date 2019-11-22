@@ -32,7 +32,7 @@ module.exports = (env) => {
       // development に設定するとソースマップ有効でJSファイルが出力される
       mode: mode,
       // メインとなるJavaScriptファイル（エントリーポイント）ls
-      entry: './web/frontend/js/index.js',
+      entry: ['babel-polyfill','./web/frontend/js/index.tsx'],
       output: {
         path: `${__dirname}/web/frontend/static/js`,
         filename: 'app.js',
@@ -58,6 +58,7 @@ module.exports = (env) => {
       },
       resolve: {
         alias: {
+          Components: path.resolve(__dirname, './web/frontend/js/components/'),
           FlowEditorContainer: path.resolve(__dirname, './web/frontend/js/components/FlowEditorContainer/'),
           FlowListContainer: path.resolve(__dirname, './web/frontend/js/components/FlowListContainer/'),
           LibraryListContainer: path.resolve(__dirname, './web/frontend/js/components/LibraryListContainer/'),

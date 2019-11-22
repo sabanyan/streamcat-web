@@ -3,6 +3,7 @@ from .auth import login_required_api
 from .utils.navigation import update_navigation
 from .utils.api_base import api_base
 from pathlib import Path
+from kskp.web.backend import app
 from kskp.store import (
     StoreModel as Store,
     Datum,
@@ -154,6 +155,34 @@ def fecth_library():
     """
     root = get_library(session['user_id'])
     return _jsonify_folder(root)
+
+@mod.route('/locks', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_lock():
+    """
+    ロックを獲得する
+    """
+    if request.json is None or 'target' not in request.json:
+        raise Exception('ロック対象データのuuidを指定してください')
+    lock_manager = app.config['LOCK_MANAGER'] 
+    lock = lock_manager.lock(request.json['target'], creator=session['user_id'])
+    return lock.to_json()
+
+"""
+frontendのNavagator.sendBeacon()に対応するため、下記のように変更
+methods: DELETE => POST
+url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
+"""
+@mod.route('/delete-locks/<lock_uuid>', methods=['POST'])
+@login_required_api
+@api_base
+def delete_lock(lock_uuid):
+    """
+    ロックを解除する
+    """
+    lock_manager = app.config['LOCK_MANAGER'] 
+    lock_manager.unlock(lock_uuid)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
