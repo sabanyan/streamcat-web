@@ -108,26 +108,29 @@ const FlowEditorContainer = connect(
   dispatch => {
     
     return {
+      POST_VIZS_FROM_FLOW (flowUUID:string, stepIds:string[], vizId?:string, args?:{}) {
+        //return dispatch(API.POST.VIZS_FROM_FLOW(flowUUID, stepIds, vizId, args))
+      },
       GET_FLOW (flowUUID:string, onSuccess?:Function) {
-        dispatch(API.GET.Flow(flowUUID, onSuccess))
+        //dispatch(API.GET.Flow(flowUUID, onSuccess))
       },
       GET_SUBFLOWS (onSuccess?:Function) {
-        dispatch(API.GET.Subflows(onSuccess))
+        //dispatch(API.GET.Subflows(onSuccess))
       },
       GET_VISUALIZERS (onSuccess?:Function) {
-        dispatch(API.GET.Subflows(onSuccess))
+        //dispatch(API.GET.Subflows(onSuccess))
       },
       GET_COMMANDS (onSuccess?:Function) {
-        dispatch(API.GET.Commands(onSuccess))
+        //dispatch(API.GET.Commands(onSuccess))
       },
       PUT_FLOW (flowUUID:string, flow, lockUUID, onSuccess?:Function) {
-        dispatch(API.PUT.Flow(flowUUID, flow, lockUUID, onSuccess))
+        //dispatch(API.PUT.Flow(flowUUID, flow, lockUUID, onSuccess))
       },
       POST_LOCKS (flowUUID:string, onSuccess?:Function) {
-        dispatch(API.POST.Locks(flowUUID, onSuccess))
+        //dispatch(API.POST.Locks(flowUUID, onSuccess))
       },
       DELETE_LOCKS (lockUUID:string, onSuccess?:Function) {
-        dispatch(API.DELETE.Locks(lockUUID, onSuccess))
+        //dispatch(API.DELETE.Locks(lockUUID, onSuccess))
       },
       loadFlowJSON (context: {}) {
         return dispatch(loadFlowJSONAction(context))

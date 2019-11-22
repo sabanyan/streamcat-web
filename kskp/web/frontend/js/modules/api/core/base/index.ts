@@ -39,6 +39,15 @@ export function doPost (url:string, data:{}, config:{}={}, onRequest?:Function, 
     }
 }
 
+
+export function get (url:string, queryParam:{}) {
+    return axios.get(url, (queryParam)?{params: queryParam}:{})
+}
+
+export function post (url:string, data:{}, config:{}={}) {
+        return axios.post(url, data, config)
+}
+
 export function doPut (url:string, data:{}, config:{}={}, onRequest?:Function, onThen?:Function, onCatch?:Function) {
     return (dispatch, getState) => {
         if(onRequest) onRequest(dispatch, getState)

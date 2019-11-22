@@ -190,7 +190,10 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-    const {flow, locks, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
+    const {flow, locks, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps,
+       nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps,
+       setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail,
+        updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom, POST_VIZS_FROM_FLOW } = this.props;
 
     const isLoading = (!this.state || this.state.isLoading) ? true : false   
     
@@ -259,6 +262,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             deleteCache={deleteCache}
             updateStep={updateStep}
             sortStepSrcEnd={sortStepSrcEnd}
+            POST_VIZS_FROM_FLOW={POST_VIZS_FROM_FLOW}
         />
         <ModalManager />
         <NotificationManager />
