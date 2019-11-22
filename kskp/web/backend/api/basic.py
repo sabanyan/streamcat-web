@@ -350,6 +350,7 @@ def download_file():
 
 @mod.route('/caches', methods=['DELETE'])
 @login_required_api
+@api_base
 def delete_cache():
     """
     キャッシュを削除する
@@ -364,20 +365,21 @@ def delete_cache():
     flow = Flow.find_by_uuid(flow_uuid)
     j = flow.flow_data
 
+    cache_uuids = []
     for i, node in enumerate(j['nodes']):
         if node['id'] == datum_id:
             frame_uuid = j['nodes'][i]['uuid']
             j['nodes'][i]['uuid'] = None
             j['nodes'][i]['cacheCreatedAt'] = None
-
-            # キャッシュを削除する（増え続けると困るので）
-            frame = Frame.find_by_uuid(frame_uuid)
-            if frame is not None:
-                frame.delete()
+            cache_uuids.append(frame_uuid)
 
     Flow.update_data(flow_uuid, flow.label, j, session['user_id'])
 
-    return jsonify({'success': True})
+    # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
+    for cache_uuid in cache_uuids:
+        cache = Frame.find_by_uuid(cache_uuid)
+        if cache is not None:
+            cache.delete()
 
 @mod.errorhandler(400)
 def handle_bad_request(error):

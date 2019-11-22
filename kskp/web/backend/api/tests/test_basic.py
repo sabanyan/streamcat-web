@@ -765,7 +765,8 @@ class CacheApiTestCase(TestCaseBase):
         user_id = 1
 
         # キャッシュと見立てるフレームを作成する
-        cache = Frame(root.uuid, 'キャッシュです', None, user_id)
+        cache = Frame(root.uuid, 'キャッシュです', io.BytesIO(b'0000'), user_id)
+        cache.save()
 
         # テスト用フローデータを作成する
         flow_data = {
