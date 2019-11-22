@@ -145,9 +145,8 @@ def fecth_flows():
     for datum in data:
         if datum.type != Datum.FLOW_TYPE:
             continue
-        flow = Flow.convert_to_flow(datum)
-        flow_data = flow.flow_data
-        flow_data['uuid'] = flow.uuid
+        flow_data = datum.data2['flow']
+        flow_data['uuid'] = datum.uuid
         flow_list.append(flow_data)
 
     # resque_flow_folder = get_resque_flow_dir_path(session['user_id'])
