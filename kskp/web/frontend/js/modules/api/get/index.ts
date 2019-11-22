@@ -9,12 +9,8 @@ export function Navigation(flow_uuid?:string, project_uuid?:string, onSuccess?:F
             flow_uuid       : (flow_uuid && flow_uuid !== '') ?  flow_uuid : undefined,
             project_uuid    : (project_uuid  && project_uuid !== '') ? project_uuid : undefined
         }
-        const onThen = (res, dispatch, getState) => {
-            dispatch(Action.NavigationSuccess(res))
-            if (onSuccess) onSuccess(res, getState)
-        }
 
-        return ApiBase.request(ApiConstants.METHOD.GET, url, data, undefined, onThen)
+        return ApiBase.get(url, data)
 }
 
 export function Flows(projectUUID:string, onSuccess?:Function, url:string=ApiConstants.FLOWS.URL.SERVICE) {

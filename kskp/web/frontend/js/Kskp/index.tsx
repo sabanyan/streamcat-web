@@ -4,18 +4,15 @@ import {FlowEditorContainer, FlowListContainer, ProfileContainer, ProjectListCon
 import NavigationBar from 'Components/shared/Base/NavigationBar/index';
 import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import { connect } from 'react-redux'
-import {API, DataState} from 'Modules/api/index'
+import {API} from 'Modules/api/index'
 import { NavigationModel} from 'Model/index';
 
 export type Props = {
     viewId  :ViewId
-    navigation :DataState
-    // Function
-    GET_NAVI :Function
 }
 
 export type State = {
-    nav : NavigationModel
+    nav?: NavigationModel
 }
 
 export enum ViewId {
@@ -27,32 +24,20 @@ export enum ViewId {
     Undefined,
 }
 
-class app extends React.Component<Props, State> {
+export class Kskp extends React.Component<Props, State> {
 
     constructor(props:Props) {
         super(props)
-
-        this.onNavUpdated.bind(this)
-    }
-
-    init() {
-        // preload
-        
     }
 
     componentWillMount() {
-        const {GET_NAVI} = this.props
-        GET_NAVI(inject_flow_uuid, inject_project_uuid, (res, getState) => this.onNavUpdated(res, getState))
-    }
-
-    onNavUpdated(res, getState) {
-        try {
-            this.setState({
-                nav : this.props.navigation.lastData
+        API.REQUEST.GET.Navigation(inject_flow_uuid, inject_project_uuid)
+            .then((res) => {
+                this.setState({
+                   nav : API.PARSE.GET.Navigation(res)
+                })
             })
-        } catch(e) {
-            console.log(e)
-        }
+       
     }
 
     renderNav() {
@@ -103,19 +88,4 @@ class app extends React.Component<Props, State> {
             return result
         } 
     }
-    
 }
-
-const mapStateToProps = state => ({
-    navigation: state.apiReducer.navigation,
-})
-const mapDispatchToProps = dispatch => {
-    return {
-      // dispatching plain actions
-      GET_NAVI(flow_uuid, project_uuid, onSuccess?:Function) {
-          dispatch(API.GET.Navigation(flow_uuid, project_uuid, onSuccess))
-      }
-    }
-  }
-
-export const Kskp = connect(mapStateToProps, mapDispatchToProps)(app)
