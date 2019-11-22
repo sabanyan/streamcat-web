@@ -25,23 +25,22 @@ import {
   undoAction,
   updateDataFrameDetailAction,
   updateFlowAction,
-  updateStepAction,
-} from 'Modules/application'
-import FlowEditor from 'FlowEditorContainer/FlowEditor'
+  updateStepAction
+ } from 'Modules/application'
+import FlowEditor from 'Components/FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
-import type { FlowModelProps } from 'Model/Flow/FlowModel'
-import NavigationModel from 'Model/Navigation/NavigationModel'
-import type { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
+import { FlowModelProps } from 'Model/Flow/FlowModel'
+import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
+import {API} from 'Modules/api/index'
+import {LocksModel} from 'Model/index'
 
-let FlowEditorContainer
 
 export type FlowEditorProps = {
   projectId: string,
   projectName: string,
-  graph: GraphType;
-  mast: MastType;
+  graph: any;
   loadFlowJSON: Function;
   addMaster: Function;
   addStep: Function;
@@ -63,23 +62,27 @@ export type FlowEditorProps = {
   nodes: {};
   selected_step_ids: string[];
   selected_tab_id: string;
-  children: React.Node;
+  children: React.ReactNode;
+  locks: LocksModel;
   dragStart: Function;
   dragging: Function;
   dragEnd: Function;
   setZoom: Function;
   zoom: number;
   flow: FlowModelProps;
-  navigation: NavigationModel;
   drag: DragType;
   notify: Function;
   updateNotify: Function;
   dismissNotify: Function;
   addNote: Function;
   sortStepSrcEndAction: Function;
+  GET_FLOW: Function;
+  PUT_FLOW: Function; 
+  POST_LOCKS: Function; 
+  DELETE_LOCKS: Function;
 }
 
-export default FlowEditorContainer = connect(
+const FlowEditorContainer = connect(
   state => {
     return {
       projectId: state.flowEditorReducer.projectId,
@@ -97,14 +100,37 @@ export default FlowEditorContainer = connect(
       selected_out_edges: state.flowEditorReducer.selected_out_edges,
       zoom: state.flowEditorReducer.zoom,
       flow: state.flowEditorReducer.flow,
+      locks: state.apiReducer.locks,
       originalFlow: state.flowEditorReducer.originalFlow,
       navigation: state.flowEditorReducer.navigation,
     }
   },
   dispatch => {
+    
     return {
+      GET_FLOW (flowUUID:string, onSuccess?:Function) {
+        dispatch(API.GET.Flow(flowUUID, onSuccess))
+      },
+      GET_SUBFLOWS (onSuccess?:Function) {
+        dispatch(API.GET.Subflows(onSuccess))
+      },
+      GET_VISUALIZERS (onSuccess?:Function) {
+        dispatch(API.GET.Subflows(onSuccess))
+      },
+      GET_COMMANDS (onSuccess?:Function) {
+        dispatch(API.GET.Commands(onSuccess))
+      },
+      PUT_FLOW (flowUUID:string, flow, lockUUID, onSuccess?:Function) {
+        dispatch(API.PUT.Flow(flowUUID, flow, lockUUID, onSuccess))
+      },
+      POST_LOCKS (flowUUID:string, onSuccess?:Function) {
+        dispatch(API.POST.Locks(flowUUID, onSuccess))
+      },
+      DELETE_LOCKS (lockUUID:string, onSuccess?:Function) {
+        dispatch(API.DELETE.Locks(lockUUID, onSuccess))
+      },
       loadFlowJSON (context: {}) {
-        dispatch(loadFlowJSONAction(context))
+        return dispatch(loadFlowJSONAction(context))
       },
       addMaster (context: {}) {
         dispatch(addMasterAction(context))
@@ -197,3 +223,5 @@ export default FlowEditorContainer = connect(
     }
   },
 )(FlowEditor)
+
+export default FlowEditorContainer

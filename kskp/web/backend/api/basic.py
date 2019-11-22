@@ -7,7 +7,7 @@ from pathlib import Path
 from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
 from .utils.navigation import update_navigation
-from .utils.api_base import api_base
+from .utils import api_base, lock_required
 from kskp.store import *
 from kskp.web.backend import app
 
@@ -175,6 +175,7 @@ def fetch_flow(flow_uuid):
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
+@lock_required
 @api_base
 def update_flow(flow_uuid):
     """
@@ -199,13 +200,14 @@ def update_flow(flow_uuid):
         else:
             flow_label = request.json['label']
 
-        flow_data.update(request.json)
+        flow_data.update(request.json['flow'])
         # 変更を保存する
         Flow.update_data(flow_uuid, flow_label, flow_data, session['user_id'])
         return flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
+@lock_required
 @api_base
 def delete_flow(flow_uuid):
     """
@@ -380,6 +382,54 @@ def delete_cache():
         cache = Frame.find_by_uuid(cache_uuid)
         if cache is not None:
             cache.delete()
+
+@mod.route('/navigation', methods=['GET'])
+@login_required_api
+def get_navigation():
+
+    navigation = {
+        'user_id': '',
+        'user_name': '',
+        'project_uuid': '',
+        'project_name': '',
+        'flow_uuid': '',
+        'flow_name': ''
+    }
+
+    flow_uuid = request.args.get('flow_uuid')
+    project_uuid = request.args.get('project_uuid')
+
+
+    if session['user_id'] is not None and session['user_id'] !='':
+        navigation['user_id'] = session['user_id']
+        navigation['user_name'] = model.get_user_by_id(session['user_id'])['name']
+
+    if flow_uuid is not None :
+        if Flow.exists(flow_uuid):
+            flow = Flow.find_by_uuid(flow_uuid)
+            parent_datum = Datum.find_parent(flow_uuid)
+            parent = Folder.convert_to_folder(parent_datum)
+            navigation['project_uuid'] = parent.uuid
+            navigation['project_name'] = parent.label
+            navigation['flow_uuid'] = flow_uuid
+            navigation['flow_name'] = flow.label
+        else:
+            # この分岐に入るのは、お救いフローフォルダである
+            flow = model.fetch_flow_by_uuid(flow_uuid)
+            project = model.fecth_project(flow['projectId'])
+            print(project)
+            navigation['project_uuid'] = porject.uuid
+            navigation['project_name'] = project.label
+            navigation['flow_uuid'] = flow.uuid
+            navigation['flow_name'] = flow.label
+        
+    # プロジェクトが指定された場合
+    elif project_uuid is not None:
+        project = Folder.find_by_uuid(project_uuid)
+        navigation['project_uuid'] = project.uuid
+        navigation['project_name'] = project.label
+
+    return jsonify({'success': True, 'data': navigation})
 
 @mod.errorhandler(400)
 def handle_bad_request(error):
