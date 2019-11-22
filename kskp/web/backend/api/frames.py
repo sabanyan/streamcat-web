@@ -308,7 +308,7 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
     try:
         from kskp.engine import execute, FlowJsonLink, FlowLinkContext
         context = FlowLinkContext(flow.uuid)
-        link = FlowJsonLink(flow.label, flow.flow_data, context, vis_args)
+        link = FlowJsonLink(flow, context, vis_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
             raise Exception('実行結果は出力されませんでした')
