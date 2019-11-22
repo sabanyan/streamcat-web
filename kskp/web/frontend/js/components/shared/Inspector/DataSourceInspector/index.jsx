@@ -24,6 +24,7 @@ import type { CSVModelProps } from 'Model/CSV/CSVModel'
 import { Loader } from 'Shared/Base'
 import { Visualizer } from 'Shared/Visualizer'
 import type { FlowModelProps } from "Model/Flow/FlowModel";
+import {API} from 'Modules/api/index'
 
 type State = {
   dataFrameDetail?: DataFrameDetailType;
@@ -72,41 +73,14 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   onClickPreview (e: Event) {
+    const flow_uuid = inject_flow_uuid
     const selected_step = this.getSelectedStep()
-    let {flow, nodes, notify, dismissNotify} = this.props
-    const previewNotify
-    this.saveFlow().then(() => {
-
-      //すでにデータが存在している場合
-      if (selected_step.hasData()) {
-        this.setState({
-          loading: true
-        })
-        this.preview()
-      } else {
-        previewNotify = this.props.notify({
-          title: 'プレビュー結果を取得中',
-          message: 'プレビュー結果を取得しています',
-          status: 'loading',
-          dismissAfter: 0
-        })
-        this.setState({
-          loading: false
-        })
-      }
-    }, (error) => {
-      if (previewNotify) this.props.dismissNotify(previewNotify.id)
-      this.props.notify({
-        title: 'プレビューエラー',
-        message: error.message,
-        status: 'error',
-        dismissAfter: 0,
-        closeButton: true
-      })
-      this.setState({
-        loading: false
-      })
-    })
+    const stepIds = [selected_step.id]
+    
+    API.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
+      .then((res)=> {
+        console.log(res)
+      })  
   }
 
   preview () {

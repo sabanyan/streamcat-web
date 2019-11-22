@@ -1,5 +1,3 @@
-import { Vizs } from '../../post/index';
-
 const ApiConstants = {
     METHOD  : {
         GET   : 'get',
