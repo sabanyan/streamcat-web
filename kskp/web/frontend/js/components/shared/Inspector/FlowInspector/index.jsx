@@ -80,7 +80,7 @@ class FlowInspector extends React.Component<Props> {
       this.resetRunArgsValue()
       if (response.data.success) {
         const json: RunResponseType = response.data
-        const result = json.name.map((n, index) => {
+        const result = json.lasts.map((n, index) => {
           return <li key={index}>{n.id}</li>
         })
         const content = <div>
@@ -98,8 +98,7 @@ class FlowInspector extends React.Component<Props> {
               name: '開く',
               primary: true,
               onClick: () => {
-                window.open('/library?project=' +
-                  window.navigationModel.project_uuid, '_blank')
+                window.open('/library')
               },
             }],
         })

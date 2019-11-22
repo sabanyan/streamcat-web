@@ -39,47 +39,18 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     super(props)
   }
 
-  onClickSave () {
+  onClickSave() {
     this.saveFlow()
   }
 
   saveFlow () {
-    const {flow, nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveFlow(inject_flow_uuid, {
-        label: flow.label,
-        description: flow.description,
-        params: flow.params,
-        ports: flow.ports,
-        nodes: nodes,
-      },
-      notify,
-      dismissNotify)
-  }
-
-  saveFlowPorts () {
-    const {flow, notify, dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {
-      ports: flow.ports,
-      label: flow.label,
-      description: flow.description,
-      params: flow.params,
-    }, notify, dismissNotify)
-
-  }
-
-  saveNodes () {
-    let {nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
+    const {flow, locks, nodes, notify, dismissNotify} = this.props
+    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, nodes, notify, dismissNotify)
   }
 
   onClickSort () {
     this.props.sortFlow()
     this.props.addHistory()
-  }
-
-  save (): Promise {
-    let {nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid, nodes, notify, dismissNotify)
   }
 
   run () {
@@ -92,7 +63,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.loadingMessage = ''
 
     this.forceUpdate()
-    this.save().then(() => {
+    let result = this.saveFlow()
+    if (!result) {
+      this.loading = false
+      return
+    }
+    result.then(() => {
       this.run().then((response) => {
         if (response.data.success) {
           const json: RunResponseType = response.data
@@ -118,8 +94,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 },
               }],
           })
-          //現在、EXECUTE_FLOW_ACTIONは何もしないため 
-          //this.props.executeFlow()
         }
         this.loading = false
         // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
@@ -137,39 +111,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       this.props.loadFlowJSON(json)
     })
   }
-
-  //
-  // showError(error){
-  //   let errorBody
-  //   if(error.data["message"]){
-  //     errorBody = <div className={style.internal_error_body}>
-  //       {error.data["message"]}
-  //     </div>
-  //   }else{
-  //     errorBody = <div className={style.internal_error_body}><div>
-  //       <strong>
-  //         {error.request.statusText}
-  //       </strong>
-  //     </div>
-  //       {StringUtil.stripHtmlToText(error.request.responseText)}
-  //     </div>
-  //   }
-  //
-  //   const content = <div>
-  //     <div>フローの実行中にエラーが発生しました。</div>
-  //     {errorBody}
-  //   </div>
-  //   ModalUtil.registerModal({
-  //     id: Constants.modal.SHOW_RUN_ERROR
-  //   })
-  //   ModalUtil.emitModal({
-  //     id: Constants.modal.SHOW_RUN_ERROR,
-  //     visible: true,
-  //     content: content
-  //   })
-  //   this.loading  = false
-  //   this.forceUpdate()
-  // }
 
   onClickDataSourceImport () {
 
@@ -258,7 +199,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   render () {
-    const {zoom , history} = this.props
+    const {zoom , history, disabled} = this.props
 
     const current = history.current
     const max = history.nodes.length
@@ -267,7 +208,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     const undoDisabled = !(current - 1 >= 0)
     return <div>
       <div className={classnames(style.flow_toolbar)}>
-        <Save disabled={false} icon={'&#xE2C2'}
+        <Save disabled={disabled} icon={'&#xE2C2'}
               onClick={(e) => this.onClickSave(e)}>保存</Save>
         <DataSourceImport disabled={false} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(e)}>データソースの追加</DataSourceImport>
