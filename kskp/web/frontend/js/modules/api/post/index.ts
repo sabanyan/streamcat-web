@@ -1,23 +1,41 @@
 import {ApiConstants, ApiBase} from 'Modules/api/core/index'
 import * as Action from './action/index'
 
-
-export function Locks(flowUUID:string, onSuccess?:Function, url:string=ApiConstants.LOCKS.URL.SERVICE) {
+export function Locks(flowUUID:string, url:string=ApiConstants.LOCKS.URL.SERVICE) {
     const data = {target:flowUUID}
     
-    const onRequest = (dispatch, getState) => {
-        dispatch(Action.LocksRequest(flowUUID))
-    }
-
-    const onThen = (res, dispatch, getState) => {
-        dispatch(Action.LocksSuccess(res))
-        if (onSuccess) onSuccess(res, getState)
-    }
-
-    return ApiBase.request(ApiConstants.METHOD.POST, url, data, onRequest, onThen)
+    return ApiBase.post(url, data)
 }
 
-export function Vizs(flowUUID?:string, stpeIds?:string[], frameUUID?:string, url:string=ApiConstants.VIZS.URL.SERVICE) {
-
-    
+const defaultArgs = {
+    "visualizer"  : "csvtohtmltable",
+    "offset"      : 0,
+    "limit:"      : 0
 }
+const defaultVizId = "csvtohtmltable"
+
+export function VIZS_FROM_FLOW(flowUUID:string, stepIds:string[], vizId:string=defaultVizId, args:{}=defaultArgs, url:string=ApiConstants.VIZS.URL.SERVICE) {
+    url   = 'vizs?from=' + flowUUID
+    let data = {}
+    stepIds.forEach((stepId, index) => {
+        data[stepId] = {
+            "args" : {
+                "visualizer" : vizId,
+                ...args
+            }
+        }
+    })
+
+    return ApiBase.post(url, data)
+}
+
+export function VIZS_FROM_FRAME(frameUUID:string, args:{}=defaultArgs, vizId:string=defaultVizId,  url:string=ApiConstants.VIZS.URL.SERVICE) {
+    url   = 'vizs?from=' + frameUUID
+    let data = {
+        "visualizer" : vizId,
+        ...args
+    }
+
+    return ApiBase.post(url, data)
+}
+
