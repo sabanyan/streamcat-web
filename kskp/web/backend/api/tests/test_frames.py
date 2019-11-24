@@ -344,7 +344,7 @@ class FrameApiTestCase(TestCaseBase):
           "dataSource": "csv"
         }
 
-        flow_json = json.loads(json.dumps(self.flow_json))
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['nodes'].append(input_node)
         flow_json['nodes'].append(add_cmd)
         flow_json['nodes'].append(add_datum)
@@ -466,7 +466,7 @@ class FrameApiTestCase(TestCaseBase):
             'type':'frame'
         }
 
-        flow_json = json.loads(json.dumps(self.flow_json))
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
         flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
@@ -511,6 +511,54 @@ class FrameApiTestCase(TestCaseBase):
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
         self.assertEqual(lasts[0]['label'], '出力結果')
+
+    def test_empty_vizs(self):
+        """
+        offset=limit=0を指定してヘッダ行だけを取得する
+        """
+        # テストフレーム作成
+        csv_data = [
+            ['顧客', '数量', '金額'],
+            ['A', 1, 10],
+            ['A', 2, 20],
+            ['B', 1, 30],
+            ['B', 3, 40],
+            ['B', 1, 50]
+        ]
+        frame_path = STORE_DIR.parent / root_path / 'test_data_3.csv'
+        frame_uuid = create_data(frame_path, csv_data)
+
+        # テストフローの作成
+        input_node = {
+          "id": "i",
+          "type": "frame",
+          "label": "テストデータ",
+          "uuid": frame_uuid,
+          "dataSource": "csv"
+        }
+
+        flow_json = copy.deepcopy(self.flow_json)
+        flow_json['nodes'].append(input_node)
+        flow = Library.save_flow(root.uuid, 'test', flow_json)
+        # Visデータのポイント引数の作成
+        data = {
+			"d1" : {
+                "args" : {
+                    "visualizer" : "csvtohtmltable",
+                    "offset" : 0,
+                    "limit"  : 0
+                }
+			}
+        }
+
+        # Visの取得
+        result = self.post_uri(f'/api/v0/vizs?from={flow.uuid}', data, self.USER_ID)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
+        self.assertIsNotNone(lasts[0].get('contents'))
 
 def create_data(file_path_obj, data=None):
     """
