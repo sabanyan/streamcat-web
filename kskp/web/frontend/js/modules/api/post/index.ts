@@ -14,7 +14,7 @@ const defaultArgs = {
 const defaultVizId = "csvtohtmltable"
 
 export function VIZS_FROM_FLOW(flowUUID:string, stepIds:string[], vizId:string=defaultVizId, args:{}=defaultArgs, url:string=ApiConstants.VIZS.URL.SERVICE) {
-    url   = 'vizs?from=' + flowUUID
+    url   = url + '?from=' + flowUUID
     let data = {}
     stepIds.forEach((stepId, index) => {
         data[stepId] = {
@@ -29,7 +29,7 @@ export function VIZS_FROM_FLOW(flowUUID:string, stepIds:string[], vizId:string=d
 }
 
 export function VIZS_FROM_FRAME(frameUUID:string, args:{}=defaultArgs, vizId:string=defaultVizId,  url:string=ApiConstants.VIZS.URL.SERVICE) {
-    url   = 'vizs/' + frameUUID
+    url   = url + '/' + frameUUID
     let data = {
         "visualizer" : vizId,
         ...args
