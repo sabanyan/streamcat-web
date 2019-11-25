@@ -77,8 +77,20 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       const flow_uuid = inject_flow_uuid
       const selected_step = this.getSelectedStep()
       const stepIds = [selected_step.id]
-  
-      this.preview(selected_step.label, flow_uuid, stepIds)
+      this.setState({
+        loading: true
+      }, () => {
+        const result = this.saveFlow()
+        if (!result) {
+          this.setState({
+            loading: false
+          })
+          return
+        }
+        result.then(() => {
+          this.preview(selected_step.label, flow_uuid, stepIds)
+        })
+      })
     } catch(e) {
       console.log(e)
     }
