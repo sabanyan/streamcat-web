@@ -33,9 +33,8 @@ import * as React from 'react'
 import { FlowModelProps } from 'Model/Flow/FlowModel'
 import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
-import {API} from 'Modules/api/index'
-import {LocksModel} from 'Model/index'
-
+import {apiActions} from 'Modules/api/index'
+import { LocksModel } from 'Model/index';
 
 export type FlowEditorProps = {
   projectId: string,
@@ -69,17 +68,21 @@ export type FlowEditorProps = {
   dragEnd: Function;
   setZoom: Function;
   zoom: number;
+  history: any;
+  mast: any;
+  position: any;
   flow: FlowModelProps;
   drag: DragType;
+  selected_data_source_detail: Function;
+  sortStepSrcEnd: Function;
+  deleteSelectStep: Function;
   notify: Function;
   updateNotify: Function;
   dismissNotify: Function;
   addNote: Function;
   sortStepSrcEndAction: Function;
-  GET_FLOW: Function;
-  PUT_FLOW: Function; 
-  POST_LOCKS: Function; 
-  DELETE_LOCKS: Function;
+  newLocks: Function;
+  updateLocks: Function;
 }
 
 const FlowEditorContainer = connect(
@@ -108,29 +111,11 @@ const FlowEditorContainer = connect(
   dispatch => {
     
     return {
-      POST_VIZS_FROM_FLOW (flowUUID:string, stepIds:string[], vizId?:string, args?:{}) {
-        //return dispatch(API.POST.VIZS_FROM_FLOW(flowUUID, stepIds, vizId, args))
+      newLocks (flowUUID:string) {
+        return dispatch(apiActions.NewLocks(flowUUID))
       },
-      GET_FLOW (flowUUID:string, onSuccess?:Function) {
-        //dispatch(API.GET.Flow(flowUUID, onSuccess))
-      },
-      GET_SUBFLOWS (onSuccess?:Function) {
-        //dispatch(API.GET.Subflows(onSuccess))
-      },
-      GET_VISUALIZERS (onSuccess?:Function) {
-        //dispatch(API.GET.Subflows(onSuccess))
-      },
-      GET_COMMANDS (onSuccess?:Function) {
-        //dispatch(API.GET.Commands(onSuccess))
-      },
-      PUT_FLOW (flowUUID:string, flow, lockUUID, onSuccess?:Function) {
-        //dispatch(API.PUT.Flow(flowUUID, flow, lockUUID, onSuccess))
-      },
-      POST_LOCKS (flowUUID:string, onSuccess?:Function) {
-        //dispatch(API.POST.Locks(flowUUID, onSuccess))
-      },
-      DELETE_LOCKS (lockUUID:string, onSuccess?:Function) {
-        //dispatch(API.DELETE.Locks(lockUUID, onSuccess))
+      updateLocks (locks:LocksModel) {
+        return dispatch(apiActions.UpdateLocks(locks))
       },
       loadFlowJSON (context: {}) {
         return dispatch(loadFlowJSONAction(context))

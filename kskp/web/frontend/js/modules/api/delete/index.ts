@@ -1,5 +1,4 @@
 import {ApiBase, ApiConstants} from 'Modules/api/core/index'
-import * as Action from './action/index'
 
 // DELETE
 export function Locks(lockUUID:string, url:string=ApiConstants.LOCKS.URL.SERVICE) {
