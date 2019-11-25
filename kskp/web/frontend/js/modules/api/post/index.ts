@@ -1,10 +1,9 @@
 import {ApiConstants, ApiBase} from 'Modules/api/core/index'
-import * as Action from './action/index'
 
-export function Locks(flowUUID:string, url:string=ApiConstants.LOCKS.URL.SERVICE) {
+export function LOCKS(flowUUID:string, url:string=ApiConstants.LOCKS.URL.SERVICE) {
     const data = {target:flowUUID}
     
-    return ApiBase.post(url, data)
+    return ApiBase.Post(url, data)
 }
 
 const defaultArgs = {
@@ -26,7 +25,7 @@ export function VIZS_FROM_FLOW(flowUUID:string, stepIds:string[], vizId:string=d
         }
     })
 
-    return ApiBase.post(url, data)
+    return ApiBase.Post(url, data)
 }
 
 export function VIZS_FROM_FRAME(frameUUID:string, args:{}=defaultArgs, vizId:string=defaultVizId,  url:string=ApiConstants.VIZS.URL.SERVICE) {
@@ -36,6 +35,6 @@ export function VIZS_FROM_FRAME(frameUUID:string, args:{}=defaultArgs, vizId:str
         ...args
     }
 
-    return ApiBase.post(url, data)
+    return ApiBase.Post(url, data)
 }
 

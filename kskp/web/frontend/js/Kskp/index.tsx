@@ -31,10 +31,10 @@ export class Kskp extends React.Component<Props, State> {
     }
 
     componentWillMount() {
-        API.REQUEST.GET.Navigation(inject_flow_uuid, inject_project_uuid)
+        API.REQUEST.GET.NAVIGATION(inject_flow_uuid, inject_project_uuid)
             .then((res) => {
                 this.setState({
-                   nav : API.PARSE.GET.Navigation(res)
+                   nav : API.PARSE.GET.NAVIGATION(res)
                 })
             })
        
