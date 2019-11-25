@@ -20,7 +20,6 @@ const apiReducer = (oldState:State = initalState, action:any) => {
 
         switch(action.type) {
             case "NEW_LOCKS"       :
-   
                 newState = {...newState, locks : new LocksModel(action.target)}
                 break;
             case "UPDATE_LOCKS"    :
