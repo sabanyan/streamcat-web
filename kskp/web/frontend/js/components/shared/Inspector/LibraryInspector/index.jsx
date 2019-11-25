@@ -62,6 +62,7 @@ class LibraryInspector extends React.Component<Props> {
     let headers = []
     API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
       .then((res) => {
+          if (!res.data.success) throw res.data.message
           const lasts = res.data.lasts
           const headers = lasts[0].args.column_names
           // vizs

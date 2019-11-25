@@ -29,8 +29,8 @@ export default class Visualizer extends React.Component<Props, State> {
 
     this.state = {
       headers : [],
-      html: (props.result) ? props.result.html : null,
-      args: (props.result) ? props.result.args : initialArgs,
+      html: null,
+      args: initialArgs,
       is_loading: (props.result) ? false : true
     }
 
@@ -65,18 +65,23 @@ export default class Visualizer extends React.Component<Props, State> {
     const {result, visualize} = this.props
     const args = this.state.args
     this.setState({
-      html: (result) ? result.html : null, 
-      args: (result) ? result.args : this.initArgs(visualize, args), 
       is_loading: true
     }, () => {
       if (result) {
         this.setState({
+          html : result.html,
+          args : result.args,
           is_loading : false
         })
-      } 
-      if (!result) {
+      } else {
         this.requestVisualize()
+          .then(() => {
+            this.setState({
+              is_loading : false
+            })
+          })
       }
+      
     })
   }
 
@@ -112,27 +117,24 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   requestVisualize () {
-    const {flow_uuid, stepIds, frame_uuid, onSaveResult, index} = this.props
+    const {index} = this.props
     const args = this.state.args
     const {url, body} = this.getRequest(args)
-   
-
-    this.setState({is_loading: true})
     try {
-      APIUtil.post(url, body).then((res) => {
+      return APIUtil.post(url, body).then((res) => {
+        if (!res.data.lasts) throw "undefined res.data.lasts"
         if (!res.data.success) throw res.data.message
 
         const lasts = res.data.lasts
         const contents = lasts[0].contents
-        const headers = lasts[0].args.column_names
         const result = {
           html: contents,
           args: args
         }
         this.props.onSaveResult(index, result)
-        this.setState({headers: headers, args: args, html: contents, is_loading: false})
+        this.setState({args: args, html: contents})
       }).catch((error) => {
-        this.setState({is_loading: false})
+        console.log(error)
       })
     } catch (e) {
       console.log(e)
@@ -152,8 +154,11 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   apply (args: {}) {
-    this.setState({args: args}, () => {
+    this.setState({args: args, is_loading: true}, () => {
       this.requestVisualize()
+        .then(() => {
+          this.setState({is_loading: false})
+        })
     })
   }
 
@@ -205,7 +210,6 @@ export default class Visualizer extends React.Component<Props, State> {
     const {visualize, headers} = this.props
     const args = this.state.args
     const is_loading = this.state.is_loading
-    console.log(headers)
     const result_headers = headers ? headers : []
     if (is_loading) return <Loader center={true} visible={true} />
  
