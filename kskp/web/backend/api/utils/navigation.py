@@ -35,10 +35,10 @@ def update_navigation(func):
         # フローが指定された場合
         if 'flow' in request.args or 'flow_uuid' in kwargs:
             flow_uuid = request.args['flow'] if 'flow' in request.args else kwargs['flow_uuid']
-            flow = Flow.find_by_uuid(flow_uuid)
             parent = Datum.find_parent(flow_uuid)
             navigation['project_uuid'] = parent.uuid
             navigation['project_name'] = parent.label
+            flow = Flow.find_by_uuid(flow_uuid)
             navigation['flow_uuid'] = flow_uuid
             navigation['flow_name'] = flow.label
 
