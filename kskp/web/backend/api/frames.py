@@ -5,7 +5,7 @@ import time
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
-from kskp.store import Frame, Flow, Folder
+from kskp.store import Datum, Frame, Flow, Folder
 from kskp.web.backend import app
 
 from .auth import login_required_api
@@ -63,43 +63,43 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
 
     return result
 
-def load_as_data_frame(path_obj, offset, limit):
-    """
-    CSVの文字列を受け取り、
-    いわゆるデータフレームの形式にして返す
-    TODO: offsetはつかってない
-    """
-    result_text = ''
-    result_data = {}
-    column_list = []
-    with path_obj.open(encoding='utf-8') as f:
-        n = 0
-        limit_count = 0
+# def load_as_data_frame(path_obj, offset, limit):
+#     """
+#     CSVの文字列を受け取り、
+#     いわゆるデータフレームの形式にして返す
+#     TODO: offsetはつかってない
+#     """
+#     result_text = ''
+#     result_data = {}
+#     column_list = []
+#     with path_obj.open(encoding='utf-8') as f:
+#         n = 0
+#         limit_count = 0
 
-        for line in f:
-            if limit is not None and limit_count == limit:
-                break
+#         for line in f:
+#             if limit is not None and limit_count == limit:
+#                 break
 
-            if n == 0:
-                # 一行目はヘッダとみなす
-                # 重複文字があればインデックスをつける
-                column_list = replace_column_name(line.split(','))
-                for column_name in column_list:
-                    result_data[column_name] = []
-            else:
-                if offset < n:
-                    for idx, column_data in enumerate(line.split(',')):
-                        result_data[column_list[idx]].append(column_data)
-                    limit_count += 1
-            n += 1
+#             if n == 0:
+#                 # 一行目はヘッダとみなす
+#                 # 重複文字があればインデックスをつける
+#                 column_list = replace_column_name(line.split(','))
+#                 for column_name in column_list:
+#                     result_data[column_name] = []
+#             else:
+#                 if offset < n:
+#                     for idx, column_data in enumerate(line.split(',')):
+#                         result_data[column_list[idx]].append(column_data)
+#                     limit_count += 1
+#             n += 1
 
-    if n == 0:
-        raise Exception('空のCSVを読み込みました。コマンド実行時にエラーが発生した可能性があります。')
+#     if n == 0:
+#         raise Exception('空のCSVを読み込みました。コマンド実行時にエラーが発生した可能性があります。')
 
-    result_len = n
+#     result_len = n
 
-    # 行数も返すように変更
-    return result_data, result_len
+#     # 行数も返すように変更
+#     return result_data, result_len
 
 def replace_column_name(column_list):
     """
@@ -340,13 +340,11 @@ def _make_flow_inputs(flow_uuid, request):
     for port in flow_json['ports'][0]:
         # frame（既にkskpに存在するデータソース）の場合
         if request.json.get(port['nodeId']) is not None:
-            # フレームを置き換える
+            # フレームのUUIDを取得する
             frame_uuid = request.json.get(port['nodeId'])
-            # ※Folderのload_frameとLibraryのload_frameは別物なので、Library.load_frameでは代用はできない
-            # Folder.load_frame　・・・　uuidからframeを取得し、それをm2teeを使ってnysol_moduleを返す
-            # Library.load_frame ・・・ uuidからframeを取得し、Frameオブジェクトを返す
-            cmd = Folder.load_frame(frame_uuid)
-            inputs[port['nodeId']] = NysolModule(cmd)
+            # 指定したuuidのframeを取得する
+            nysol_module = _load_frame(frame_uuid)
+            inputs[port['nodeId']] = nysol_module
             continue
 
         # 新たにkskpにアップロードする場合
@@ -355,11 +353,21 @@ def _make_flow_inputs(flow_uuid, request):
             # ファイルアップロードして、フレームを置き換える
             # from kskp.web.backend.api.basic import upload_frame
             frame_uuid = _upload_frame(file, '')['uuid']
-            cmd = Folder.load_frame(frame_uuid)
-            inputs[port['nodeId']] = NysolModule(cmd)
+            # 指定したuuidのframeを取得する
+            nysol_module = _load_frame(frame_uuid)
+            inputs[port['nodeId']] = nysol_module
             continue
 
     return inputs
+
+def _load_frame(frame_uuid):
+    # Loaderを用いて指定したuuidのframeを取得する
+    from kskp.store.commands import CommandLink
+    loader = CommandLink('loader').resolve()
+    result = loader.run({'uuid':frame_uuid}, {'store':Folder(None, '')})
+    # NYSOLコマンドを返す
+    nysol_module = result['o']
+    return nysol_module
 
 def _upload_frame(file, file_name):
     """

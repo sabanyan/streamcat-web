@@ -179,4 +179,18 @@ class TestCaseBase(unittest.TestCase):
         error_detail = result['message'] if 'message' in result else ''
         self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
         return result
-        
+
+    def delete_uri_with_json(self, uri, json_data, user_id):
+        """
+        URIへDELETEする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user_id
+            response = client.delete(uri,
+                                     content_type='application/json',
+                                     data=json.dumps(json_data))
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
+        return result
