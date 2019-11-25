@@ -41,3 +41,6 @@ export function VIZS_FROM_FRAME(res:RESPONSE_VIZS_FROM_FRAME) {
         return result
     }
 }
+
+
+// Locks
