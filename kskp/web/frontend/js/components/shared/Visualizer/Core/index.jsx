@@ -202,15 +202,16 @@ export default class Visualizer extends React.Component<Props, State> {
 
   render () {
 
-    const {visualize} = this.props
+    const {visualize, headers} = this.props
     const args = this.state.args
     const is_loading = this.state.is_loading
-
+    console.log(headers)
+    const result_headers = headers ? headers : []
     if (is_loading) return <Loader center={true} visible={true} />
-
+ 
     return <div>
       {this.renderContents()}
-      <PreviewInspector headers={this.state.headers}
+      <PreviewInspector headers={result_headers}
                         onApply={(args) => this.apply(args)}
                         params={visualize.params}
                         args={this.state.args}

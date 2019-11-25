@@ -9,6 +9,7 @@ import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
 import { APIUtil, ModalUtil, SortUtil, HttpUtil  } from "Utils/index";
 import Visualizer from "Shared/Visualizer/Core";
+import {API} from 'Modules/api/index'
 
 type Props = {
   visualizers: [];
@@ -43,28 +44,50 @@ class LibraryInspector extends React.Component<Props> {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
     const {data, visualizers} = this.props
 
-    if (!visualizers) {
-      return
+    try {
+      if (!visualizers) "visualizers are not defined"
+      // vizs
+      this.setState({
+        loading:true
+      }, () => {
+        this.preview(data.label, data.uuid)
+      })
+    } catch(e) {
+      console.log(e)
     }
+  }
 
-    // vizs
-    const uuid = data.uuid
-    let sortedVisualizers = visualizers
-    sortedVisualizers = SortUtil.getSortedContents(sortedVisualizers)
-    let contents = []
-    for (const v of sortedVisualizers) {
-      const content = {frame_uuid:uuid, visualize:v}
-      contents.push({title: v.label,content:content,parentProps:this.props})
-    }
-    ModalUtil.emitModal({
-      id: Constants.preview.DATASOURCE,
-      visible: true,
-      contents: contents,
-      title: data.label
-    })
-    this.setState({
-      loading: false
-    })
+  preview (preview_label, frame_uuid:string) {
+    // headers
+    let headers = []
+    API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
+      .then((res) => {
+          const lasts = res.data.lasts
+          const headers = lasts[0].args.column_names
+          // vizs
+          let visualizers = this.props.mast.visualizers
+          visualizers = SortUtil.getSortedContents(visualizers)
+          
+          let contents = []
+          for (const v of visualizers) {
+            const content = {frame_uuid:frame_uuid, visualize:v, headers:headers}
+            contents.push({title: v.label, content: content, parentProps: this.props})
+          }
+          ModalUtil.emitModal({
+            id: Constants.preview.DATASOURCE,
+            visible: true,
+            contents: contents,
+            title: preview_label
+          })
+      }, (err) => {
+        console.log(err)
+      })
+      .then(() => {
+        this.setState({
+          loading: false
+        })
+      })
+
   }
 
   onClickEdit(e) {
