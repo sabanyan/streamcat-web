@@ -9,6 +9,7 @@ import * as PARSE_PUT from './put/parser/index'
 import * as PARSE_POST from './post/parser/index'
 //import * as PARSE_DELETE from './delete/parser/index'
 
+import * as apiActions_ from './reducer/thunks/index'
 
 export const apiReducer = apiReducer_
 export const API = {
@@ -26,4 +27,4 @@ export const API = {
     }
 }
 
-export {State, DataState} from './reducer/index'
+export const apiActions = apiActions_

@@ -15,7 +15,7 @@ type RESPONSE_NAVIGATION = {
     }
 }
 
-export function Navigation(res:RESPONSE_NAVIGATION):NavigationModel | undefined {
+export function NAVIGATION(res:RESPONSE_NAVIGATION):NavigationModel | undefined {
     let result
     try {
         result = new NavigationModel(res.data.data)
@@ -25,3 +25,4 @@ export function Navigation(res:RESPONSE_NAVIGATION):NavigationModel | undefined 
         return result
     }   
 }
+

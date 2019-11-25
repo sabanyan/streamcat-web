@@ -250,15 +250,15 @@ export default class FlowUtil {
     let putBody = {
       label :flowModel.label,
       flow  :flow,
-      lock  :(locksModel && locksModel.lastData && locksModel.lastData.lockId) ? locksModel.lastData.lockId : undefined
+      lock  :(locksModel && locksModel.lockId) ? locksModel.lockId : undefined
     }
 
     let saveNotify
     if (notify) {
-      if (locksModel && locksModel.lastData && locksModel.lastData.error) {
+      if (locksModel && locksModel.error) {
         saveNotify = notify({
           title: 'フロー保存エラー',
-          message: locksModel.lastData.error.message,
+          message: locksModel.error.message,
           status: 'loading',
           dismissAfter: 0
         })

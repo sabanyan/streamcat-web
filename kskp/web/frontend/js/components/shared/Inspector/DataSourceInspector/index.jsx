@@ -77,36 +77,43 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const selected_step = this.getSelectedStep()
     const stepIds = [selected_step.id]
     
-    API.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
-      .then((res)=> {
+    // headers
+    API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
+      .then((res) => {
         console.log(res)
-      })  
+      }) 
   }
 
-  preview () {
+  preview (flow_uuid:string, stepIds:string[]) {
+    // headers
+    let headers = []
+    API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
+      .then((res) => {
+          console.log(res)
+          // vizs
+          let visualizers = this.props.mast.visualizers
+          visualizers = SortUtil.getSortedContents(visualizers)
+          let contents = []
+          for (const v of visualizers) {
+            const content = {flow_uuid:flow_uuid, steps:steps, visualize:v, headers:headers}
+            contents.push({title: v.label, content: content, parentProps: this.props})
+          }
+          ModalUtil.emitModal({
+            id: Constants.preview.DATASOURCE,
+            visible: true,
+            contents: contents,
+            title: label
+          })
+      }, (err) => {
+        console.log(err)
+      })
+      .then(() => {
+        this.setState({
+          loading: false
+        })
+        this.updateCache()
+      })
 
-    const selected_step = this.getSelectedStep()
-    const label = selected_step.label
-    // vizs
-    let visualizers = this.props.mast.visualizers
-    visualizers = SortUtil.getSortedContents(visualizers)
-    const flow_uuid = inject_flow_uuid
-    const steps = [selected_step]
-    let contents = []
-    for (const v of visualizers) {
-      const content = {flow_uuid:flow_uuid, steps:steps, visualize:v}
-      contents.push({title: v.label, content: content, parentProps: this.props})
-    }
-    ModalUtil.emitModal({
-      id: Constants.preview.DATASOURCE,
-      visible: true,
-      contents: contents,
-      title: label
-    })
-    this.setState({
-      loading: false
-    })
-    this.updateCache()
   }
 
   updateCache () {

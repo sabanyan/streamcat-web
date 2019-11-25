@@ -24,8 +24,8 @@ export default class LocksModel {
         message : string | undefined;
     } | undefined
     
-    constructor(props:Props) {
-        this.target = props.target
+    constructor(flowUUID:string) {
+        this.target = flowUUID
     }
     
     Parse(data:post_locks_response):LocksModel {
@@ -51,6 +51,10 @@ export default class LocksModel {
 
     getLockId():undefined | string {
         return this.lockId
+    }
+
+    setLockId(lockId:string) {
+        this.lockId = lockId
     }
 
     getErrorMessage():undefined | string {
