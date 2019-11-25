@@ -47,11 +47,11 @@ export default class PreviewModal extends React.Component<Props, State> {
 
   renderTabContent(index) {
     const contents = this.props.contents
-    const {flow_uuid, steps, frame_uuid, visualize} = contents[index].content
+    const {flow_uuid, stepIds, frame_uuid,  visualize, headers} = contents[index].content
     const result = this.state.results[index]
 
     return <Visualizer key={visualize.id}
-      flow_uuid={flow_uuid} steps={steps} frame_uuid={frame_uuid} visualize={visualize} 
+      flow_uuid={flow_uuid} stepIds={stepIds} frame_uuid={frame_uuid} visualize={visualize} headers={headers}
       onSaveResult={(index, result) => {this.saveResults(index, result)}}
       index={index} result={result} />
   }

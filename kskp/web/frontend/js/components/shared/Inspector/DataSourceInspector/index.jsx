@@ -78,13 +78,12 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const stepIds = [selected_step.id]
     
     // headers
-    API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
-      .then((res) => {
-        console.log(res)
-      }) 
+    this.preview(flow_uuid, stepIds)
   }
 
   preview (flow_uuid:string, stepIds:string[]) {
+    const selected_step = this.getSelectedStep()
+    const label = selected_step.label
     // headers
     let headers = []
     API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
@@ -95,7 +94,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           visualizers = SortUtil.getSortedContents(visualizers)
           let contents = []
           for (const v of visualizers) {
-            const content = {flow_uuid:flow_uuid, steps:steps, visualize:v, headers:headers}
+            const content = {flow_uuid:flow_uuid, stepIds:stepIds, visualize:v, headers:headers}
             contents.push({title: v.label, content: content, parentProps: this.props})
           }
           ModalUtil.emitModal({
