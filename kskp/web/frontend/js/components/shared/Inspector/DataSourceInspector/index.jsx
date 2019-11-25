@@ -73,36 +73,38 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   onClickPreview (e: Event) {
-    const flow_uuid = inject_flow_uuid
-    const selected_step = this.getSelectedStep()
-    const stepIds = [selected_step.id]
-    
-    // headers
-    this.preview(flow_uuid, stepIds)
+    try {
+      const flow_uuid = inject_flow_uuid
+      const selected_step = this.getSelectedStep()
+      const stepIds = [selected_step.id]
+  
+      this.preview(selected_step.label, flow_uuid, stepIds)
+    } catch(e) {
+      console.log(e)
+    }
   }
 
-  preview (flow_uuid:string, stepIds:string[]) {
-    const selected_step = this.getSelectedStep()
-    const label = selected_step.label
+  preview (preview_label, flow_uuid:string, stepIds:string[]) {
     // headers
     let headers = []
     API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
       .then((res) => {
-          console.log(res)
-          // vizs
-          let visualizers = this.props.mast.visualizers
-          visualizers = SortUtil.getSortedContents(visualizers)
-          let contents = []
-          for (const v of visualizers) {
-            const content = {flow_uuid:flow_uuid, stepIds:stepIds, visualize:v, headers:headers}
-            contents.push({title: v.label, content: content, parentProps: this.props})
-          }
-          ModalUtil.emitModal({
-            id: Constants.preview.DATASOURCE,
-            visible: true,
-            contents: contents,
-            title: label
-          })
+        const lasts = res.data.lasts
+        const headers = lasts[0].args.column_names
+        // vizs
+        let visualizers = this.props.mast.visualizers
+        visualizers = SortUtil.getSortedContents(visualizers)
+        let contents = []
+        for (const v of visualizers) {
+          const content = {flow_uuid:flow_uuid, stepIds:stepIds, visualize:v, headers:headers}
+          contents.push({title: v.label, content: content, parentProps: this.props})
+        }
+        ModalUtil.emitModal({
+          id: Constants.preview.DATASOURCE,
+          visible: true,
+          contents: contents,
+          title: preview_label
+        })
       }, (err) => {
         console.log(err)
       })
@@ -112,7 +114,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         })
         this.updateCache()
       })
-
   }
 
   updateCache () {
