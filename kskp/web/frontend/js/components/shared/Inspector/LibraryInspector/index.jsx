@@ -50,14 +50,14 @@ class LibraryInspector extends React.Component<Props> {
       this.setState({
         loading:true
       }, () => {
-        this.preview(data.label, data.uuid)
+        this.preview(visualizers, data.label, data.uuid)
       })
     } catch(e) {
       console.log(e)
     }
   }
 
-  preview (preview_label, frame_uuid:string) {
+  preview (visualizers, preview_label, frame_uuid:string) {
     // headers
     let headers = []
     API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
@@ -66,7 +66,6 @@ class LibraryInspector extends React.Component<Props> {
           const lasts = res.data.lasts
           const headers = lasts[0].args.column_names
           // vizs
-          let visualizers = this.props.mast.visualizers
           visualizers = SortUtil.getSortedContents(visualizers)
           
           let contents = []

@@ -31,8 +31,10 @@ export function VIZS_FROM_FLOW(flowUUID:string, stepIds:string[], vizId:string=d
 export function VIZS_FROM_FRAME(frameUUID:string, args:{}=defaultArgs, vizId:string=defaultVizId,  url:string=ApiConstants.VIZS.URL.SERVICE) {
     url   = url + '/' + frameUUID
     let data = {
-        "visualizer" : vizId,
-        ...args
+        "args"  : {
+            "visualizer" : vizId,
+            ...args
+        }
     }
 
     return ApiBase.Post(url, data)
