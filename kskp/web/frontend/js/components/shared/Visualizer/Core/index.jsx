@@ -5,12 +5,14 @@ import { APIUtil } from 'Utils/index'
 import { EmptyState, Loader } from 'Shared/Base'
 import { PreviewInspector } from 'Shared/Inspector'
 import style from './style.scss'
+import {API} from 'Modules/api/index'
 
 type Props = {
   visualize: VisualizeModel,
   flow_uuid: string;
-  steps: string;
+  stepIds: string[];
   frame_uuid: string;
+  headers: string[];
 }
 
 type State = {
@@ -67,26 +69,24 @@ export default class Visualizer extends React.Component<Props, State> {
       args: (result) ? result.args : this.initArgs(visualize, args), 
       is_loading: true
     }, () => {
-      this.requestHeaders().then(() => {
-        if (result) {
-          this.setState({
-            is_loading : false
-          })
-        } 
-        if (!result) {
-          this.requestVisualize()
-        }
-      })
+      if (result) {
+        this.setState({
+          is_loading : false
+        })
+      } 
+      if (!result) {
+        this.requestVisualize()
+      }
     })
   }
 
   getRequest (args) {
-    const {flow_uuid, steps, frame_uuid, visualize} = this.props
+    const {flow_uuid, stepIds, frame_uuid, visualize} = this.props
     let url, body
 
-    if (flow_uuid && steps[0]) {
+    if (flow_uuid && stepIds[0]) {
       url   = 'vizs?from=' + flow_uuid
-      let stepId = steps[0].id
+      let stepId = stepIds[0]
       body  = {}
       body[stepId] = {
         "args"  : {
@@ -111,29 +111,8 @@ export default class Visualizer extends React.Component<Props, State> {
     return result
   }
 
-  requestHeaders () {
-    const args = {
-      "visualizer"  : "csvtohtmltable",
-      "offset"      : 0,
-      "limit:"      : 0
-    }
-
-    const {url, body} = this.getRequest(args)
-    return APIUtil.post(url, body)
-    .then((res) => {
-      if (!res.data.success) throw res.data.message
-      const lasts = res.data.lasts
-      const headers = lasts[0].args.column_names
-      this.setState({
-        headers : headers
-      })
-    }).catch((error) => {
-      console.log(error)
-    })
-  }
-
   requestVisualize () {
-    const {flow_uuid, steps, frame_uuid, onSaveResult, index} = this.props
+    const {flow_uuid, stepIds, frame_uuid, onSaveResult, index} = this.props
     const args = this.state.args
     const {url, body} = this.getRequest(args)
    
