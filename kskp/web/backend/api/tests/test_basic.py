@@ -142,7 +142,6 @@ class ProjectApiTestCase(TestCaseBase):
         # フォルダが消えていることを確認する
         self.assertFalse(Folder.exists(folder.uuid))
 
-
 class FrameApiTestCase(TestCaseBase):
 
     TESTDATA_DIR = STORE_DIR.parent / Library.load_root().path
