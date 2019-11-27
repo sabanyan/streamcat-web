@@ -91,11 +91,12 @@ export default class ParamSelect extends React.Component<Props> {
     let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null
     let selectedValue = value
     // set unslected value if the value is undefined
-    if (!multiple && selectedValue === undefined) {
+    if (!multiple && !selectedValue) {
+      options.unshift(<option key={-1} value={""}>{""}</option>)
       selectedValue = ""
-      options.unshift(<option key={0} value={""}>{""}</option>)
-    } 
-    if (multiple && selectedValue === undefined) selectedValue = []
+    } else if (multiple && !selectedValue){
+      selectedValue = []
+    }
 
     return <div className={style.param}>
       {labelContainer}
