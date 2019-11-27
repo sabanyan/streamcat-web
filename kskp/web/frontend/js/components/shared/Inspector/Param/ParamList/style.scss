@@ -1,6 +1,8 @@
 @import "../../../../../../sass/common";
 
 .description {
+    width: 100%;
+    word-wrap: normal;
     white-space: pre-wrap;
     color: lighten($kskp-text, 15%);
     font-size: 13px;
