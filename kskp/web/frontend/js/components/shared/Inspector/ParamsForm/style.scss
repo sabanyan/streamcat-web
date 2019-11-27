@@ -23,6 +23,7 @@
   background: lighten(#F51F28, 40%);
 }
 
+
 .group {
   border-top: 1px solid $kskp-property-border-color;
   background: $kskp-primary;
@@ -30,4 +31,12 @@
   margin: 16px -16px 16px -16px;
   padding: 4px 16px 4px 16px;
   height: 30px;
+}
+
+.description {
+  white-space: pre-wrap;
+  color: lighten($kskp-text, 15%);
+  font-size: 13px;
+  padding: 0px 8px 0px 8px;
+  margin: 0;
 }
