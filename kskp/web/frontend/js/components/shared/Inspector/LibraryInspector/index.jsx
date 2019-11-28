@@ -87,7 +87,6 @@ class LibraryInspector extends React.Component<Props> {
           loading: false
         })
       })
-
   }
 
   onClickEdit(e) {
