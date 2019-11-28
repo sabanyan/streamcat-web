@@ -76,7 +76,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     try {
       const flow_uuid = inject_flow_uuid
       const selected_step = this.getSelectedStep()
-      const stepIds = [selected_step.id]
+      let stepIds = []
+      stepIds.push(selected_step.id)
       const visualizers = this.props.mast.visualizers
       this.setState({
         loading: true
@@ -94,7 +95,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           } else {
             this.previewFromFlow(visualizers, selected_step.getLabel(), flow_uuid, stepIds)
           }
-          this.preview(selected_step.label, flow_uuid, stepIds)
         })
       })
     } catch(e) {
@@ -102,9 +102,10 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     }
   }
 
-  previewFromFlow (preview_label, flow_uuid:string, stepIds:string[]) {
+  previewFromFlow (visualizers, preview_label, flow_uuid:string, stepIds:string[]) {
     // headers
     let headers = []
+    
     API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
       .then((res) => {
         const lasts = res.data.lasts
