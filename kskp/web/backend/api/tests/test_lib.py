@@ -1005,6 +1005,9 @@ class DatabaseTestCase(TestCaseBase):
     #     # Delete /folders apiが正常終了することを検証する
     #     self.assertEqual(result['success'], True)
 
+# 
+# テスト実行時にmountコマンドの実行に必要なPasswordが聞かれます
+# 
 class RemoteFolderTestCase(TestCaseBase):
 
     def test_create_get_folders(self):
@@ -1109,7 +1112,7 @@ class RemoteFolderTestCase(TestCaseBase):
         # RemoteFolderを削除(unmount)する(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
 
-    @unittest.skip
+    @unittest.skip('moveするにはpoth列とlabel列の名称を一致させるという縛りを破るしかない。縛りを破る予定だが今はテストをスキップ')
     def test_move_folders(self):
         # ルートを取得する
         root = Datum.find_root()
