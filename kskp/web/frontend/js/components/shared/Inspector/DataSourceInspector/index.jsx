@@ -77,6 +77,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       const flow_uuid = inject_flow_uuid
       const selected_step = this.getSelectedStep()
       const stepIds = [selected_step.id]
+      const visualizers = this.props.mast.visualizers
       this.setState({
         loading: true
       }, () => {
@@ -88,6 +89,11 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           return
         }
         result.then(() => {
+          if (selected_step.hasData()) {
+            this.previewFromFrame(visualizers, selected_step.getLabel(), selected_step.uuid)
+          } else {
+            this.previewFromFlow(visualizers, selected_step.getLabel(), flow_uuid, stepIds)
+          }
           this.preview(selected_step.label, flow_uuid, stepIds)
         })
       })
@@ -96,7 +102,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     }
   }
 
-  preview (preview_label, flow_uuid:string, stepIds:string[]) {
+  previewFromFlow (preview_label, flow_uuid:string, stepIds:string[]) {
     // headers
     let headers = []
     API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
@@ -104,7 +110,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         const lasts = res.data.lasts
         const headers = lasts[0].args.column_names
         // vizs
-        let visualizers = this.props.mast.visualizers
         visualizers = SortUtil.getSortedContents(visualizers)
         let contents = []
         for (const v of visualizers) {
@@ -125,6 +130,37 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           loading: false
         })
         this.updateCache()
+      })
+  }
+
+  previewFromFrame (visualizers, preview_label, frame_uuid:string) {
+    // headers
+    let headers = []
+    API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
+      .then((res) => {
+          if (!res.data.success) throw res.data.message
+          const lasts = res.data.lasts
+          const headers = lasts[0].args.column_names
+          // vizs
+          visualizers = SortUtil.getSortedContents(visualizers)
+          let contents = []
+          for (const v of visualizers) {
+            const content = {frame_uuid:frame_uuid, visualize:v, headers:headers}
+            contents.push({title: v.label, content: content, parentProps: this.props})
+          }
+          ModalUtil.emitModal({
+            id: Constants.preview.DATASOURCE,
+            visible: true,
+            contents: contents,
+            title: preview_label
+          })
+      }, (err) => {
+        console.log(err)
+      })
+      .then(() => {
+        this.setState({
+          loading: false
+        })
       })
   }
 
