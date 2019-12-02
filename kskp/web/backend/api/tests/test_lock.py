@@ -55,21 +55,6 @@ class LockFlowTestCase(TestCaseBase):
             d = {'label': 'ラベル', 'flow': data1, 'lock': lock_uuid}
         return self.put_uri(f'/api/v0/flows/{flow_uuid}', d, self.USER_ID)
 
-    def delete_uri_with_json(self, uri, json_data, user_id):
-        """
-        URIへDELETEする
-        """
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user_id
-            response = client.delete(uri,
-                                     content_type='application/json',
-                                     data=json.dumps(json_data))
-            result = json.loads(response.get_data())
-        error_detail = result['message'] if 'message' in result else ''
-        self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
-        return result
-
     def post_locks(self, uri, json_data, user_id):
         """
         URIへPOSTする
@@ -139,7 +124,7 @@ class LockFlowTestCase(TestCaseBase):
                                             {'lock' : lock_uuid},
                                             self.USER_ID)
         # フローのロックを解除する
-        result = self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER_ID)
+        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
 
     # @unittest.skip
     def test_conflict(self):
@@ -176,7 +161,7 @@ class LockFlowTestCase(TestCaseBase):
         self.assertEqual(result['code'], -2)
 
         # フローのロックを解除する
-        result = self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER_ID)
+        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
 
         # ロックの取得を諦めないぞ
         result = self.post_locks('/api/v0/locks', {'target' : flow_uuid1}, self.USER_ID)
@@ -184,7 +169,7 @@ class LockFlowTestCase(TestCaseBase):
         lock_uuid = result['data']['uuid']
 
         # フローのロックを解除する
-        result = self.delete_uri(f'/api/v0/locks/{lock_uuid}', self.USER_ID)
+        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
 
     @unittest.skip
     def test_simulutaneous_lock(self):

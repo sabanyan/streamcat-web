@@ -438,6 +438,7 @@ class LibraryTestCase(TestCaseBase):
         # フォルダに対応するディレクトリが存在することを検証する
         self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / '新しいフォルダ1B' / 'フレームファイル_1B').as_posix()))
 
+@unittest.skip('ASW S3のIDとアカウントが必要')
 class AwsS3TestCase(TestCaseBase):
     def test_create_get_awss3(self):
         root = Datum.find_root()
