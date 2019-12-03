@@ -13,7 +13,7 @@ from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 from kskp.store import model
 from kskp.store import ss
 from kskp.web.backend import app
-from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR
+from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR, FLOW_PATH
 from kskp.web.backend.api.tests.utils import create_data
 
 # 
@@ -617,6 +617,13 @@ class FlowApiTestCase(TestCaseBase):
             created_flow['ports'][0] = {"name": "i","type": "frame"}
             created_flow['ports'][1] = {"name": "o","type": "frame"}
             # フローを更新
+            def make_flow_path(file_name):
+                """
+                フローファイルのパス作成用ヘルパー
+                """
+
+                return Path(FLOW_PATH) / Path('%s.json' % file_name)
+
             flow_path = model.make_flow_path(flow1_datasource_name)
             model.write_data_to_json(flow_path, created_flow)
 
