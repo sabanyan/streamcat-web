@@ -39,7 +39,9 @@ type InspectorProps = {
 class Inspector extends React.Component<InspectorProps> {
 
   render () {
-      let {selected_step_ids, locks, nodes, mast, addStep, selectSteps, flow, updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail, loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd} = this.props
+      let {selected_step_ids, locks, nodes, mast, addStep, selectSteps, flow, updateFlow, notify,
+          dismissNotify, selected_data_source_detail, updateDataFrameDetail, loadFlowJSON, deleteSteps,
+          addHistory, deleteCache, updateStep, sortStepSrcEnd, disabled} = this.props
 
       let property
 
@@ -75,6 +77,7 @@ class Inspector extends React.Component<InspectorProps> {
               deleteCache={deleteCache}
               addStep={addStep}
               updateStep={updateStep}
+              disabled={disabled}
           />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector

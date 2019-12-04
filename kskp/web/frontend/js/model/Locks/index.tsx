@@ -53,6 +53,10 @@ export default class LocksModel {
         return this.lockId
     }
 
+    hasLock():boolean {
+        return (this.lockId) ? true : false
+    }
+
     getErrorMessage():undefined | string {
         let result:any = undefined
         if (this.error && this.error.message) result = this.error.message
