@@ -4,7 +4,6 @@
 
 {% block content %}
 <script src="{{ url_for('front_static.static', filename='js/jquery-3.2.1.min.js') }}"></script>
-
 <style>
     form {
         width : 100%;
@@ -102,7 +101,7 @@ $(document).ready(function() {
 function APIHandler(method) {
     const input = readInput()
     if( window.confirm('更新します。よろしいですか？') ){
-		// OK
+        // OK
         switch(method) {
                 case METHOD_GET    :
                     if (input.selectedTarget === "flow") GET_FLOW();
@@ -144,15 +143,69 @@ function GET_FLOW() {
 
 function PUT_FLOW() {
     const input = readInput()
-    const url = '/api/v0/flows/' + input.flowUUID
-    const putBody = input.jsonBody
-    console.log(putBody)
+    const flowUUID = input.flowUUID
+    const flowJSON = JSON.parse(input.jsonBody)
+    let putBody = {
+                "label" : flowJSON.label,
+                "flow"  : input.jsonBody,
+
+            }
+
+
+    // Lock
+    const lockUrl  = '/api/v0/locks'
+    const lockBody = {
+        "target" : input.flowUUID
+    }
+    $.ajax({
+       url : lockUrl,
+       type: 'post',
+       data: JSON.stringify(lockBody),
+       contentType: 'application/JSON',
+       dataType: 'JSON',
+       scriptCharset: 'utf-8',
+    }).done(function( data, textStatus, jqXHR ) {
+        //成功
+        
+        let lockUUID
+        if (data.success && data.data) {
+            lockUUID = data.data.uuid
+            console.log("Lock Id " + lockUUID + " を取得しました。")
+            let putBody = {
+                "label" : flowJSON.label,
+                "flow"  : {...flowJSON},
+                "lock"  : lockUUID
+            }
+            console.log("putbody")
+            console.log(putBody)
+            REQUEST_PUT_FLOW(flowUUID, JSON.stringify(putBody), lockUUID)
+        }　else {
+            console.log(data)
+            if (data.message) alert(data.message)
+        }
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        //失敗
+        console.log(jqXHR, textStatus, errorThrown)
+        alert("エラーが起きました。（詳細はconsole.log参照）")
+    }).always(function( jqXHR, textStatus) {
+        //通信完了
+    });
+}
+
+function REQUEST_PUT_FLOW(flowUUID, putBody, lockUUID) {
+    const url = '/api/v0/flows/' + flowUUID
+
     $.put(url, putBody, function(data, text_status) { 
         // 成功した場合
-        if (data.data) {
+        if (data.data && data.success) {
+            console.log("PUT FLOW 更新しました")
             console.log(data.data)
+            REQUEST_DELETE_LOCKS(lockUUID)
             update(JSON.stringify(data.data, null,  "\t"))
             alert("更新しました")
+        } else {
+            console.log(data)
+            if (data.message) alert(data.message)
         }
     }, function(request, text_status, error_thrown) {
         // 失敗した場合
@@ -160,5 +213,29 @@ function PUT_FLOW() {
         alert("エラーが起きました。（詳細はconsole.log参照）")
     });
 }
+
+function REQUEST_DELETE_LOCKS(lockUUID) {
+    const url = '/api/v0/delete-locks/' + lockUUID
+    $.ajax({
+       url : url,
+       type: 'post',
+    }).done(function( data, textStatus, jqXHR ) {
+        //成功
+        
+        if (data.success) {
+            console.log("Lock Id " + lockUUID + " を解除しました。")
+        } else {
+            console.log(data)
+            if (data.message) alert(data.message)
+        }
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        //失敗
+        console.log(jqXHR, textStatus, errorThrown)
+        alert("エラーが起きました。（詳細はconsole.log参照）")
+    }).always(function( jqXHR, textStatus) {
+        //通信完了
+    });
+}
+
 </script>
 {% endblock %}

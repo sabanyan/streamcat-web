@@ -1,6 +1,8 @@
 @import "../../../../../../sass/common";
 
 .description {
+    width: 100%;
+    word-wrap: normal;
     white-space: pre-wrap;
     color: lighten($kskp-text, 15%);
     font-size: 13px;
@@ -56,8 +58,8 @@
     
     .paramElements {
         border: 1px solid #CED4DA;
-        padding : 4px;
-        height: 48px;
+        padding : 7px;
+        height: 55px;
         margin-top: 10px;
 
         .select {

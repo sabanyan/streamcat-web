@@ -3,6 +3,7 @@ from .auth import login_required_api
 from .utils.navigation import update_navigation
 from .utils.api_base import api_base
 from pathlib import Path
+from kskp.web.backend import app
 from kskp.store import (
     StoreModel as Store,
     Datum,
@@ -17,200 +18,36 @@ from kskp.store import (
     ChildrenGetter
 )
 
-
 mod = Blueprint('lib', __name__)
 
-@mod.route('/flow_files/<flow_uuid>', methods=['GET'])
+@mod.route('/flow_files/<uuid>', methods=['GET'])
 @login_required_api
-def download_flow(flow_uuid):
-    """
-    フローとフローに紐づくサブフローとフレームを取得する
-    """
-    import os
-    import json
-
-    (frame_uuids, flow_uuids) = _get_flow(flow_uuid)
-
-    tmp_dir = Path('/tmp')
-    archive_name = Flow.find_by_uuid(flow_uuid).label + '.tgz'
-    uuid_label_pairs = {}
-    frame_paths = []
-    flow_paths  = []
-
-    from kskp.store import STORE_DIR
-    for frame_uuid in frame_uuids:
-        frame = Frame.find_by_uuid(frame_uuid)
-        tmp_frame_link = tmp_dir / (frame.uuid + '.csv')
-        if not tmp_frame_link.exists():
-            os.symlink(STORE_DIR.parent / frame.path, tmp_frame_link)
-        frame_paths.append(tmp_frame_link)
-        uuid_label_pairs[frame.uuid] = frame.label
-
-    for flow_uuid in flow_uuids:
-        flow = Flow.find_by_uuid(flow_uuid)
-        flow_path = tmp_dir / (flow.uuid + '.json')
-        with flow_path.open('w') as f:
-            f.write(json.dumps(flow.flow_data, indent=2, ensure_ascii=False))
-        flow_paths.append(flow_path)
-        uuid_label_pairs[flow.uuid] = flow.label
-
-    # uuidとlabelの対応表をファイルに出力する
-    labels_path = tmp_dir / 'labels.txt'
-    with labels_path.open('w') as f:
-        for uuid, label in uuid_label_pairs.items():
-            f.write(uuid)
-            f.write(',')
-            f.write(label)
-            f.write('\n')
-
-    # アーカイブファイルを作成する
-    frame_paths.extend(flow_paths)
-    frame_paths.append(labels_path)
-    archive_path = _make_archive(frame_paths)
-
-    # アーカイブしたファイルを削除する
-    for frame_path in frame_paths:
-        if frame_path.exists():
-            frame_path.unlink()
+def download_flow(uuid):
+    from kskp.store import FlowDumper
+    flow_dumper = FlowDumper()
+    (archive_path, archive_name) = flow_dumper.dump_archive(uuid)
 
     # アーカイブファイルを返す
     ret = send_from_directory(archive_path.parent, archive_path.name, as_attachment = True,
-                              attachment_filename = archive_name, mimetype = 'application/x-tar')
+                              attachment_filename = archive_name + '.tgz', mimetype = 'application/x-tar')
     archive_path.unlink()
     return ret
 
-def _get_flow(flow_uuid, frames=[], flows=[]):
-    flow = Flow.find_by_uuid(flow_uuid)
-    flows.append(flow_uuid)
-
-    src_frame_uuids = flow.get_src_frame_uuids()
-    cache_frame_uuids = flow.get_cache_frame_uuids()
-    sub_flow_uuids = flow.get_sub_flow_uuids()
-
-    for src_frame_uuid in src_frame_uuids:
-        if src_frame_uuid not in frames:
-            frames.append(src_frame_uuid)
-
-    for cache_frame_uuid in cache_frame_uuids:
-        if cache_frame_uuid not in frames:
-            frames.append(cache_frame_uuid)
-
-    for sub_flow_uuid in sub_flow_uuids:
-        if sub_flow_uuid not in flows:
-            _get_flow(sub_flow_uuid, frames, flows)
-
-    return (frames, flows)
-
-def _make_archive(file_paths):
-    # 圧縮ファイル名
-    import uuid
-    tar_file_path = Path('/tmp') / (str(uuid.uuid4()) + '.tgz')
-
-    # 圧縮処理
-    import tarfile
-    # シンボリックリンクはリンク先ファイルを圧縮する
-    archive = tarfile.open(tar_file_path, mode='w:gz', dereference=True)
-    for file_path in file_paths:
-        archive.add(file_path, arcname=file_path.name, recursive=False)
-    archive.close()
-
-    return tar_file_path
-
-
 @mod.route('/flow_files', methods=['POST'])
 @login_required_api
-@api_base
+@api_base  
 def upload_flow():
     import json
-
     if 'file' not in request.files or request.files.get('file') is None:
         raise Exception('No archive file found.')
 
     creator = session['user_id']
-
-    extracted_files = _extract_archive(request.files.get('file').stream)
-
-    # フレームの移行先フォルダを作成する
     root = get_library(creator)
-    frame_folder = Folder(root.uuid, 'FromOtherServer', creator)
-    frame_folder_uuid = frame_folder.uuid
-    frame_folder.save()
-
-    # フローの移行先フォルダを作成する
-    from kskp.store import Library
-    folder = Library.load_flow_folder(creator)
-    flow_folder = Folder(folder.uuid, 'FromOtherServer', creator)
-    flow_folder_uuid = flow_folder.uuid
-    flow_folder.save()
-
-    flow_uuids  = {}
-    uuids = {}
-    labels = {}
-
-    # label.txtからuuidとlabelの対応を取得する
-    for file in extracted_files:
-        if file.name == 'labels.txt':
-            try:
-                with file.open('r') as f:
-                    while True:
-                        # uuidを読み込む
-                        uuid = f.read(36).rstrip('\n')
-                        if not uuid:
-                            break
-                        # カンマを読み込む
-                        f.read(1)
-                        # ラベル名を読み込む
-                        label = f.readline().rstrip('\n')
-                        labels[uuid] = label
-                break
-            except Exception as e:
-                raise Exception(f'ERROR! at {file.name} : {str(e)}')
-
-    # ライブラリに登録する
-    for file in extracted_files:
-        try:
-            if file.name.startswith('.'):
-                # macOSのtarで作成した圧縮ファイルには.テキストのメタファイルがある
-                continue
-            if file.suffix == '.csv':
-                with file.open('rb') as f:
-                    frame = Frame(frame_folder_uuid, labels[file.stem], f, creator)
-                    uuids[file.stem] = frame.uuid
-                    frame.save()
-            elif file.suffix == '.json':
-                with file.open('r') as f:
-                    d = f.read()
-                    flow_data = json.loads(d)
-                flow = Flow(flow_folder_uuid, labels[file.stem], flow_data, creator)
-                flow_uuids[file.stem] = flow.uuid
-                uuids[file.stem] = flow.uuid
-                flow.save()
-        except Exception as e:
-            raise Exception(f'ERROR! at {file.name} : {str(e)}')
-
-    # Flowの参照uuidを変更する
-    for new_flow_uuid in flow_uuids.values():
-        flow = Flow.find_by_uuid(new_flow_uuid)
-        for old_uuid, new_uuid in uuids.items():
-            flow.replace_uuid(old_uuid, new_uuid, creator)
-
-    # 展開したファイルを削除する
-    for file in extracted_files:
-        tar_dir_path = file.parent
-        break
-    import shutil
-    shutil.rmtree(tar_dir_path)
-
-def _extract_archive(stream):
-    import tarfile
-
-    # 展開処理
-    import uuid
-    tar_dir_path = Path('/tmp') / str(uuid.uuid4())
-
-    with tarfile.open(fileobj=stream, mode='r|gz') as tar:
-        tar.extractall(tar_dir_path)
-        return [tar_dir_path / member.name for member in tar.getmembers()]
+    stream = request.files.get('file').stream
+    
+    from kskp.store import FlowDumper
+    flow_dumper = FlowDumper()
+    flow_dumper.restore_archive(root.uuid, stream, creator)
 
 @mod.route('/stores', methods=['GET'])
 @api_base
@@ -318,6 +155,34 @@ def fecth_library():
     """
     root = get_library(session['user_id'])
     return _jsonify_folder(root)
+
+@mod.route('/locks', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_lock():
+    """
+    ロックを獲得する
+    """
+    if request.json is None or 'target' not in request.json:
+        raise Exception('ロック対象データのuuidを指定してください')
+    lock_manager = app.config['LOCK_MANAGER'] 
+    lock = lock_manager.lock(request.json['target'], creator=session['user_id'])
+    return lock.to_json()
+
+"""
+frontendのNavagator.sendBeacon()に対応するため、下記のように変更
+methods: DELETE => POST
+url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
+"""
+@mod.route('/delete-locks/<lock_uuid>', methods=['POST'])
+@login_required_api
+@api_base
+def delete_lock(lock_uuid):
+    """
+    ロックを解除する
+    """
+    lock_manager = app.config['LOCK_MANAGER'] 
+    lock_manager.unlock(lock_uuid)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api

@@ -73,10 +73,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   onClickPreview (e: Event) {
     const selected_step = this.getSelectedStep()
-
-    let {nodes} = this.props
-
-    FlowUtil.saveNodes(inject_flow_uuid, nodes).then(() => {
+    let {flow, nodes, notify, dismissNotify} = this.props
+    this.saveFlow().then(() => {
 
       //すでにデータが存在している場合
       if (selected_step.hasData()) {
@@ -248,11 +246,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
-  onHide () {
-//    this.saveNodes()
-//    this.saveFlowPorts()
-  }
-
   onChangeCacheCheck (e: Event) {
 
     let selected_step = this.getSelectedStep()
@@ -316,39 +309,13 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     })
   }
 
-  /**
-   * データソースのIN/OUTを保存
-   *  */
-  saveFlowPorts () {
-    const {flow, notify, dismissNotify} = this.props
-    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports: flow.ports}, notify, dismissNotify)
+  saveFlow() {
+    const {flow, locks, nodes, notify, dismissNotify} = this.props
+    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, nodes, notify, dismissNotify)
   }
-
-  saveNodes () {
-    let {nodes} = this.props
-    return FlowUtil.saveNodes(inject_flow_uuid, nodes)
-  }
-
-//
-//  /**
-//   * データソースのIN/OUTを保存
-//   *  */
-//  saveFlowPorts(){
-//    const {flow,notify,dismissNotify} = this.props
-//    FlowUtil.saveFlowSettings(inject_flow_uuid, {ports:flow.ports}, notify, dismissNotify)
-//  }
-//
-//  saveNodes(){
-//    let {nodes,history} = this.props
-//    const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(history,nodes)
-//    if(isSame){
-//      return
-//    }
-//    return FlowUtil.saveNodes(inject_flow_uuid,nodes)
-//  }
 
   render () {
-    const {mast, addStep, selectSteps, selected_step_ids, addHistory} = this.props;
+    const {mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail} = this.props;
     let step_text
     let dataSource
     let preview
@@ -394,8 +361,11 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       content = <Loader center={true} absolute={true} fixed={false} visible={true} />
     } else {
 
-      const fileSize = StringUtil.convertToFileSize(this.props.selected_data_source_detail.fileSize)
-      const lastModifiedAt = this.props.selected_data_source_detail.lastModifiedAt
+      
+      let fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0
+      fileSize = StringUtil.convertToFileSize(fileSize)
+      let lastModifiedAt = selected_data_source_detail ? selected_data_source_detail.lastModifiedAt : ""
+      
       content = <div>
         <div className={style.property_overview}>
           <div className={style.actions}>
@@ -471,18 +441,12 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
             selectSteps={selectSteps}
             addHistory={addHistory}
         />
-        {/*<div className={style.property_title}>*/}
-        {/*作成したフロー*/}
-        {/*</div>*/}
-        {/*<div>*/}
-        {/*<DropDownList list={[{name: 'サブフロー1', value: '1', object: {}}]} />*/}
-        {/*</div>*/}
       </div>
     }
 
     // FIXIT onBlurTitle to onChange #164
     return <BaseInspector header={''} label={selected_step.label}
-                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}>
+                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => {}}>
       {content}
     </BaseInspector>
   }
