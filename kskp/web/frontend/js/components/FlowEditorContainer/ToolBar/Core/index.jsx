@@ -210,11 +210,11 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       <div className={classnames(style.flow_toolbar)}>
         <Save disabled={disabled} icon={'&#xE2C2'}
               onClick={(e) => this.onClickSave(e)}>保存</Save>
-        <DataSourceImport disabled={false} icon={'&#xE2C2'}
+        <DataSourceImport disabled={disabled} icon={'&#xE2C2'}
                           onClick={(e) => this.onClickDataSourceImport(e)}>データソースの追加</DataSourceImport>
-        <Run disabled={false} icon={'&#xE037'}
+        <Run disabled={disabled} icon={'&#xE037'}
              onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
-        <Note disabled={false} icon={'comment'}
+        <Note disabled={disabled} icon={'comment'}
               onClick={() => this.onClickNote()}>メモ</Note>
         <Undo disabled={undoDisabled} icon={'undo'}
               onClick={() => this.props.undo()}>もとに戻す</Undo>
@@ -226,7 +226,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
               onClickZoomOut={(e) => this.onClickZoomOut(e)}
               onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
               zoom={zoom}/>
-        <Sort disabled={false} icon={'&#xE42A'}
+        <Sort disabled={disabled} icon={'&#xE42A'}
               onClick={(e) => this.onClickSort(e)}>整列</Sort>
       </div>
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false}
