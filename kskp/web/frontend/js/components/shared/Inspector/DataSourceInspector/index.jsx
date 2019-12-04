@@ -315,7 +315,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render () {
-    const {mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail} = this.props;
+    const {mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled} = this.props;
     let step_text
     let dataSource
     let preview
@@ -323,7 +323,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const selected_step = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
       preview = <Button onClick={(e) => this.onClickPreview(e)}
-                        icon={'visibility'}>プレビュー</Button>
+                        icon={'visibility'} disabled={disabled}>プレビュー</Button>
       if (selected_step.hasData()) {
         const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
         download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
