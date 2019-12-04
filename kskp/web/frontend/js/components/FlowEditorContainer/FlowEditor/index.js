@@ -90,8 +90,17 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   componentWillMount() {
-    const {POST_LOCKS} = this.props
-    POST_LOCKS(inject_flow_uuid)
+    const {POST_LOCKS, notify} = this.props
+    POST_LOCKS(inject_flow_uuid, () => {
+      if (!this.hasLock()) {
+        notify({
+          title: '警告：読取専用フロー',
+          message: 'このフローはすでに編集中のため、編集権限が取得できませんでした。',
+          status: 'warning',
+          dismissAfter: 0
+        })
+      }
+    })
   }
 
   componentDidMount() {
@@ -104,7 +113,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
 
   handleLeavePage(e) {
-    const {locks, } = this.props
+    const {locks} = this.props
     if (locks.lastData && locks.lastData.lockId) {
       let lockId = locks.lastData.lockId
       navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
@@ -189,11 +198,16 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     return selector
   }
 
+  hasLock() {
+    const {locks} = this.props
+    return (locks && locks.lastData && locks.lastData.hasLock()) ? true : false
+  }
+
   render () {
     const {flow, locks, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
-
     const isLoading = (!this.state || this.state.isLoading) ? true : false   
-    
+    const disabled = (isLoading || !locks || !locks.lastData || !locks.lastData.hasLock()) ? true : false
+
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
@@ -213,7 +227,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
                  setZoom={setZoom}
                  undo={undo}
                  redo={redo}
-                 disabled={isLoading}
+                 disabled={disabled}
                  />
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
                 message={'フローを構築中です'} />
@@ -259,6 +273,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             deleteCache={deleteCache}
             updateStep={updateStep}
             sortStepSrcEnd={sortStepSrcEnd}
+            disabled={disabled}
         />
         <ModalManager />
         <NotificationManager />
