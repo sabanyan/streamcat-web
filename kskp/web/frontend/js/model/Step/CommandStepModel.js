@@ -87,7 +87,7 @@ export default class CommandStepModel extends BaseStepModel {
   }
 
   /**
-   * 指定されたポートを削除する
+   * 指定されたポートを追加する
    * @param key
    */
   addInPort (key, value) {
