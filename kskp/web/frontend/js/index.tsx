@@ -10,6 +10,10 @@ window.emitter = new EventEmitter()
 let elementId = ''
 let viewId:ViewId = ViewId.Undefined
 
+if (document.getElementById('base')) {
+  elementId = 'base'
+}
+
 if (document.getElementById('flow_editor')){
   elementId = 'flow_editor'
   viewId = ViewId.Flow_Editor
