@@ -89,9 +89,15 @@ export default class Visualizer extends React.Component<Props, State> {
       }
       this.setState({args: args, html: res.data, is_loading: false})
     }).catch((error) => {
-      if (error) {
-        this.setState({is_loading: false})
+      if (this.props.onSaveResult) {
+        const index = this.props.index
+        const result = {
+          html: null,
+          args: args
+        }
+        this.props.onSaveResult(index, result)
       }
+      this.setState({args: args, html: null, is_loading: false})
     })
   }
 
