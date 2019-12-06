@@ -18,7 +18,7 @@ jobs:
         run: |
           sudo apt-get -y install git docker
           docker pull kskpdev/nysol_python
-          sudo ./kskp-cli/install.sh
+          sudo sh ./kskp-cli/install.sh
           kskp install develop
           docker start kskp
           docker exec -it develop_kskp-ap_1 /bin/bash
