@@ -3,7 +3,7 @@ name: KSKP-test
 on:
   push:
     branches:
-      - develop_github_actions
+      - develop_github_actions_moto
 
 jobs:
   build:
