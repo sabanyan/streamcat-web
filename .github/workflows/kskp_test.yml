@@ -22,7 +22,7 @@ jobs:
           cd kskp-cli
           echo "-----"
           ls
-          sudo sh install.sh
+          sudo bash install.sh
           kskp install develop
           docker start kskp
           docker exec -it develop_kskp-ap_1 /bin/bash
