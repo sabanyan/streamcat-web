@@ -306,9 +306,8 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
     指定されたフローを実行し実行結果を取得する
     """
     try:
-        from kskp.engine import execute, FlowJsonLink, FlowLinkContext
-        context = FlowLinkContext(flow.uuid)
-        link = FlowJsonLink(flow, context, vis_args)
+        from kskp.engine import execute, FlowJsonLink
+        link = FlowJsonLink(flow, vis_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
             raise Exception('実行結果は出力されませんでした')
