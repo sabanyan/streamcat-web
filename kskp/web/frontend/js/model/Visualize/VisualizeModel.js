@@ -41,4 +41,8 @@ export default class VisualizeModel<VisualizeModelProps> extends Model {
     this.initialize(props, 'version')
   }
 
+  parseHeader(res:{}) {
+  
+  }
+
 }

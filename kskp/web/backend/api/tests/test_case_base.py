@@ -33,7 +33,7 @@ class TestCaseBase(unittest.TestCase):
     def tearDownClass(cls):
         # ライブラリフォルダを削除する
         from kskp.store import Datum, STORE_DIR
-        library_path = STORE_DIR.parent / Datum.find_root().path
+        library_path = STORE_DIR / Datum.find_root().path
         import shutil
         # shutil.rmtree(library_path.as_posix())
         # Sessionを閉じる
