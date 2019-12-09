@@ -216,7 +216,13 @@ class FrameApiTestCase(TestCaseBase):
       "description": "",
       "ports": [
         [],
-        []
+        [
+            {
+            "type": "frame", 
+            "label": "d1", 
+            "nodeId": "d1"
+            }
+        ]
       ],
       "nodes": [
         {
