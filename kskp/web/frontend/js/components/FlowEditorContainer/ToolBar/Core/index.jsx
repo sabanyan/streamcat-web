@@ -80,12 +80,19 @@ export default class ToolBar extends React.Component<ToolBarProps> {
             <ul>{result}</ul>
           </div>
 
-          this.props.notify({
+          let notifyId = this.props.notify({
             title: 'フロー実行完了',
             message: ReactDomUtil.renderToString(content),
             status: 'success',
             dismissAfter: 0,
             buttons: [
+              {
+                name: '閉じる',
+                primary: true,
+                onClick: () => {
+                  this.props.dismissNotify(notifyId)
+                },
+              },
               {
                 name: '開く',
                 primary: true,
