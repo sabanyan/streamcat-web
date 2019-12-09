@@ -339,6 +339,20 @@ export default class Library extends React.Component<Props, State> {
         upload_file: {
           file: uploadFile,
         },
+      }, () => {
+        if (uploadFile && uploadFile.name) {
+          let defaultFileName = uploadFile.name.split('.')[0]
+          ModalUtil.emitModal({
+            id: Constants.modal.ADD_FRAME,
+            visible: true,
+            done: '追加する',
+            content: <div>
+              <TextField  key={uploadFile.name} placeholder={'名称'} defaultValue={defaultFileName} onChange={(e, validation) => this.onChangeFrameName(e, validation)} />
+              <div className={'mt-8px'} />
+              <FileUploader accept={['text/csv']} onChangeFile={(e) => this.onChangeFile(e)} />
+            </div>,
+          })
+        }
       })
     }
   }
