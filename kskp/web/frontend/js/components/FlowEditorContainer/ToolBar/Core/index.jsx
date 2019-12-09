@@ -55,7 +55,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   run () {
     let {notify, dismissNotify} = this.props
-    return FlowUtil.runNodes(inject_flow_uuid, notify, dismissNotify)
+    const runArgs = {
+      'flow_uuid': inject_flow_uuid,
+      'flows': [],
+      'variables': []
+    }
+    return FlowUtil.runWithArgs(runArgs, notify, dismissNotify)
   }
 
   onClickProjectRun () {

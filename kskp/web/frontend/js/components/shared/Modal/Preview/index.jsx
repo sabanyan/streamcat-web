@@ -47,11 +47,12 @@ export default class PreviewModal extends React.Component<Props, State> {
 
   renderTabContent(index) {
     const contents = this.props.contents
-    const {frame_uuid, headers, params, visualize} = contents[index].content
+    const {flow_uuid, stepIds, frame_uuid,  visualize, headers} = contents[index].content
     const result = this.state.results[index]
 
-    return <Visualizer key={frame_uuid + '_' + index} frame_uuid={frame_uuid} visualize={visualize} 
-      params={params} headers={headers} onSaveResult={(index, result) => {this.saveResults(index, result)}}
+    return <Visualizer key={this.props.title + index}
+      flow_uuid={flow_uuid} stepIds={stepIds} frame_uuid={frame_uuid} visualize={visualize} headers={headers}
+      onSaveResult={(index, result) => {this.saveResults(index, result)}}
       index={index} result={result} />
   }
 
@@ -59,11 +60,9 @@ export default class PreviewModal extends React.Component<Props, State> {
     this.setState({
       selected_tab_id:0,
       results: []
-    }, () => {
-      this.forceUpdate()
     })
   }
-  
+
   isDialog () {
     return (HttpUtil.getURLParam('dialog'))
   }

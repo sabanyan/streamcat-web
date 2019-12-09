@@ -145,9 +145,8 @@ def fecth_flows():
     for datum in data:
         if datum.type != Datum.FLOW_TYPE:
             continue
-        flow = Flow.convert_to_flow(datum)
-        flow_data = flow.flow_data
-        flow_data['uuid'] = flow.uuid
+        flow_data = datum.data2['flow']
+        flow_data['uuid'] = datum.uuid
         flow_list.append(flow_data)
 
     # resque_flow_folder = get_resque_flow_dir_path(session['user_id'])
@@ -261,9 +260,8 @@ def fetch_commands():
             visible_commands_json.append('pcmd') 
         if request.args.get('scmd') == 'on':
             visible_commands_json.append('scmd') 
-    
-    from kskp.store import CommandsPathFileSource, CommandsPathLink
 
+    from kskp.depo.commands import CommandsPathLink, CommandsPathFileSource
     commands_list = []
     for visible_command in visible_commands_json:
         link = CommandsPathLink(CommandsPathFileSource(visible_command))
@@ -277,25 +275,11 @@ def fetch_visualizers():
     ビジュアライズ用コマンド定義の一覧を返す
     """
 
-    from kskp.store import CommandsPathFileSource, CommandsPathLink
+    from kskp.depo.commands import CommandsPathLink, CommandsPathFileSource
 
     link = CommandsPathLink(CommandsPathFileSource('visualizers'))
 
     return jsonify({'success': True, 'data': link.resolve()})
-
-def upload_frame(file, file_name):
-    """
-    CSVをアップロードする
-    TODO: テスト未実施
-    """
-    frame_uuid = str(uuid.uuid4())
-
-    from werkzeug.utils import secure_filename
-    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
-    file.save(file_path.as_posix())
-    file.close()
-
-    return {"uuid": frame_uuid, "label": file_name}
 
 @mod.route('/files')
 def download_file():
@@ -321,7 +305,7 @@ def download_file():
         デフォルトはutf-8の形式
         """
         root_path = Datum.find_root().path
-        tmp_dir = STORE_DIR.parent / root_path / 'download_tmp'
+        tmp_dir = STORE_DIR / root_path / 'download_tmp'
         if not tmp_dir.exists():
             tmp_dir.mkdir()
 
@@ -332,7 +316,7 @@ def download_file():
         return path
 
     try:
-        dir_path = (STORE_DIR.parent / frame_path.parent).as_posix()
+        dir_path = (STORE_DIR / frame_path.parent).as_posix()
         frame_name = frame_path.name
 
         # 文字コードの指定があれば、その文字コードのファイルを作り、
@@ -343,7 +327,7 @@ def download_file():
         # 2. tmpディレクトリ内に作成されたファイルは残ったまま
         # 3. 環境変数でダウンロードするファイルの文字コードを制御している
         if character_code == 'cp932':
-            encode_file_path = make_tmpfile_for_charactor_change(STORE_DIR.parent / frame_path, 'cp932', '\r\n')
+            encode_file_path = make_tmpfile_for_charactor_change(STORE_DIR / frame_path, 'cp932', '\r\n')
             dir_path = os.path.dirname(encode_file_path.as_posix())
             frame_name = os.path.basename(encode_file_path.as_posix())
 
@@ -368,6 +352,7 @@ def download_file():
 
 @mod.route('/caches', methods=['DELETE'])
 @login_required_api
+@api_base
 def delete_cache():
     """
     キャッシュを削除する
@@ -382,24 +367,26 @@ def delete_cache():
     flow = Flow.find_by_uuid(flow_uuid)
     j = flow.flow_data
 
+    cache_uuids = []
     for i, node in enumerate(j['nodes']):
         if node['id'] == datum_id:
             frame_uuid = j['nodes'][i]['uuid']
             j['nodes'][i]['uuid'] = None
             j['nodes'][i]['cacheCreatedAt'] = None
-
-            # キャッシュを削除する（増え続けると困るので）
-            frame = Frame.find_by_uuid(frame_uuid)
-            if frame is not None:
-                frame.delete()
+            cache_uuids.append(frame_uuid)
 
     Flow.update_data(flow_uuid, flow.label, j, session['user_id'])
 
-    return jsonify({'success': True})
+    # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
+    for cache_uuid in cache_uuids:
+        cache = Frame.find_by_uuid(cache_uuid)
+        if cache is not None:
+            cache.delete()
 
 @mod.route('/navigation', methods=['GET'])
 @login_required_api
 def get_navigation():
+    from kskp.store import model
 
     navigation = {
         'user_id': '',

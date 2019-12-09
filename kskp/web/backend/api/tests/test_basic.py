@@ -13,7 +13,7 @@ from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 from kskp.store import model
 from kskp.store import ss
 from kskp.web.backend import app
-from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR, FLOW_PATH
+from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR
 from kskp.web.backend.api.tests.utils import create_data
 
 # 
@@ -142,10 +142,9 @@ class ProjectApiTestCase(TestCaseBase):
         # フォルダが消えていることを確認する
         self.assertFalse(Folder.exists(folder.uuid))
 
-
 class FrameApiTestCase(TestCaseBase):
 
-    TESTDATA_DIR = STORE_DIR.parent / Library.load_root().path
+    TESTDATA_DIR = STORE_DIR / Library.load_root().path
 
     def setUp(self):
         app.testing = True
@@ -338,9 +337,8 @@ class FlowApiTestCase(TestCaseBase):
                 'name': new_flow_name
             }
 
-            # flow_path = app.config['FLOW_PATH']
             with tempfile.TemporaryDirectory() as temp_dir:
-                app.config['FLOW_PATH'] = temp_dir
+                # app.config['FLOW_PATH'] = temp_dir
 
                 endpoint = '/api/v0/flows'
                 response = client.post(endpoint,
@@ -518,6 +516,10 @@ class FlowApiTestCase(TestCaseBase):
         with app.app_context():
             test_flow_uuid = setUpFlow(self)
 
+        # 削除前にフローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':test_flow_uuid}, self.USER_ID)
+        lock_uuid = result['data']['uuid']
+
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
@@ -528,8 +530,9 @@ class FlowApiTestCase(TestCaseBase):
             response = client.put(endpoint,
                 content_type='application/json',
                 data=json.dumps({
-                    'b': new_item,
-                    'label': updated_flow_name
+                    'flow': {'label': updated_flow_name, 'b':new_item},
+                    'label': updated_flow_name,
+                    'lock' : lock_uuid
                 })
             )
             result = json.loads(response.get_data())
@@ -541,6 +544,8 @@ class FlowApiTestCase(TestCaseBase):
         # 新しい内容も入っている
         self.assertEqual(result['data']['b'], new_item)
 
+        # ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
 
     def test_move_flow(self):
         # ルートを取得する
@@ -553,9 +558,13 @@ class FlowApiTestCase(TestCaseBase):
         # ユーザとプロジェクトを作る
         with app.app_context():
             flow_uuid = setUpFlow(self)
-            
+
+        # 削除前にフローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER_ID)
+        lock_uuid = result['data']['uuid']
+
         # 移動元から移動先へフォルダを移動する
-        result = self.put_uri('/api/v0/flows/%s' % flow_uuid, {"parent": folder_dst_uuid}, self.USER_ID)
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', {"parent":folder_dst_uuid, 'lock':lock_uuid}, self.USER_ID)
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -572,6 +581,9 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['data']['creator'], expected_result['creator'])
         self.assertNotEqual(result['data']['createdAt'], None)
 
+        # ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
+
     def test_delete_flow(self):
         """
         delete_flow APIをテストする
@@ -583,23 +595,20 @@ class FlowApiTestCase(TestCaseBase):
         # APIを投げる前はフローは存在するはず
         self.assertTrue(Flow.exists(test_flow_uuid))
 
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = self.USER_ID
-            endpoint = '/api/v0/flows/%s' % test_flow_uuid
-            response = client.delete(endpoint)
-            result = json.loads(response.get_data())
-        # 結果のチェック
-        self.assertEqual(result['success'], True)
+        # 削除前にフローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':test_flow_uuid}, self.USER_ID)
+        lock_uuid = result['data']['uuid']
 
-        # with app.app_context():
-        #     self.assertFalse(model.make_flow_path(data_source_name).exists())
+        # フローを削除する
+        self.delete_uri_with_json(f'/api/v0/flows/{test_flow_uuid}', {'lock':lock_uuid}, self.USER_ID)
+            
+        # ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
 
         # フローは削除されていること
         self.assertFalse(Flow.exists(test_flow_uuid))
 
-
+    @unittest.skip('とりあえず手動でテストする')
     def test_fetch_subflows(self):
         """
         fetch_subflows APIをテストする
@@ -621,7 +630,6 @@ class FlowApiTestCase(TestCaseBase):
                 """
                 フローファイルのパス作成用ヘルパー
                 """
-
                 return Path(FLOW_PATH) / Path('%s.json' % file_name)
 
             flow_path = model.make_flow_path(flow1_datasource_name)

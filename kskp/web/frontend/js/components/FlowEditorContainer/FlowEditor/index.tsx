@@ -21,6 +21,7 @@ import {
     VisualizeModel
 } from 'Model/index'
 import { NotificationManager } from 'Shared/Notification'
+import {API} from 'Modules/api/index'
 
 type State = {
   isLoading : boolean
@@ -36,8 +37,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     }
     this.handleLeavePage = this.handleLeavePage.bind(this) 
 
-    let preRequest = []
-    let flowRequest = []
+    let preRequest:any = []
+    let flowRequest:any = []
 
     preRequest.push(APIUtil.get('commands').then((response) => {
       const json = response.data
@@ -72,7 +73,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     Promise.all(preRequest).then(() => {
       flowRequest.push(APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
         const json = response.data
-        this.props.loadFlowJSON(json, this.onLoaded).then(() => {
+        this.props.loadFlowJSON(json).then(() => {
           this.setState({
             isLoading : false
           })
@@ -90,8 +91,14 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   componentWillMount() {
-    const {POST_LOCKS} = this.props
-    POST_LOCKS(inject_flow_uuid)
+    const {locks, newLocks, updateLocks} = this.props
+    newLocks(inject_flow_uuid)
+      .then(() => {
+        API.REQUEST.POST.LOCKS(inject_flow_uuid)
+          .then((res) => {
+            this.props.locks.Parse(res)
+          })
+      })
   }
 
   componentDidMount() {
@@ -104,16 +111,16 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
 
   handleLeavePage(e) {
-    const {locks, } = this.props
-    if (locks.lastData && locks.lastData.lockId) {
-      let lockId = locks.lastData.lockId
+    const {locks} = this.props
+    if (locks && locks.lockId) {
+      let lockId = locks.lockId
       navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
     }
   }
 
   renderSteps () {
-    let {nodes, selected_step_ids, invalid, mast, zoom, drag, addSelectStep, deleteSelectStep, updateDataFrameDetail, updateStep, position, type, text, error, flow, selectSteps} = this.props
-    let steps = []
+    let {nodes, selected_step_ids, mast, zoom, drag, addSelectStep, deleteSelectStep, updateDataFrameDetail, updateStep, flow, selectSteps} = this.props
+    let steps:any = []
     if (Array.isArray(nodes)) {
       steps = nodes.map((step: StepModelType) => {
         let selected = (step.id === selected_step_ids[0])
@@ -144,10 +151,10 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
   renderEdges () {
     let {nodes, graph} = this.props
-    let edges = []
+    let edges:any = []
 
     if (Array.isArray(graph.edges)) {
-      edges = graph.edges.map((edge, index) => {
+      graph.edges.forEach((edge, index) => {
         const v_node = GraphUtil.getNode(nodes, edge.v)
         const w_node = GraphUtil.getNode(nodes, edge.w)
         if (v_node && w_node) {
@@ -170,7 +177,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
               inPortLabel = JSON.parse(edge.name).port_name;
           }
 
-          return <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
+          let e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
+          edges.push(e) 
         }
       })
     }
@@ -178,7 +186,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
   
   renderSelector () {
-    let selector = null
+    let selector:any = null
     const {drag, zoom} = this.props
     if (Object.keys(drag).length) {
       selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x, zoom)}
@@ -190,8 +198,10 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   render () {
-    const {flow, locks, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps, nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps, setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail, updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
-
+    const {flow, locks, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps,
+       nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps,
+       setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail,
+        updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
     const isLoading = (!this.state || this.state.isLoading) ? true : false   
     
     return <div className={style.flow_editor_container}>
@@ -258,7 +268,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             addHistory={addHistory}
             deleteCache={deleteCache}
             updateStep={updateStep}
-            sortStepSrcEnd={sortStepSrcEnd}
+            sortStepSrcEnd={sortStepSrcEnd}å
         />
         <ModalManager />
         <NotificationManager />
