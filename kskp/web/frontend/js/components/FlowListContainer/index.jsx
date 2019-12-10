@@ -31,10 +31,10 @@ export default FlowListContainer = connect(
   dispatch => {
     return {
       POST_LOCKS (flowUUID:string) {
-        dispatch(API.POST.Locks(flowUUID))
+        //dispatch(API.POST.Locks(flowUUID))
       },
       DELETE_LOCKS (lockUUID:string) {
-        dispatch(API.DELETE.Locks(lockUUID))
+        //dispatch(API.DELETE.Locks(lockUUID))
       },
       selectFlow (flow) {
         return dispatch(selectFlowAction(flow))

@@ -133,7 +133,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir(STORE_DIR.parent))
+        self.assertTrue(os.path.isdir(STORE_DIR))
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
@@ -153,7 +153,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir(STORE_DIR.parent))
+        self.assertTrue(os.path.isdir(STORE_DIR))
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER_ID)
@@ -209,7 +209,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir((STORE_DIR.parent / root.path / ' NEW FOLDER ').as_posix()))
+        self.assertTrue(os.path.isdir((STORE_DIR / root.path / ' NEW FOLDER ').as_posix()))
 
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
@@ -246,7 +246,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isdir((STORE_DIR.parent / root.path / '新しいフォルダ2' / '新しいフォルダ1').as_posix()))
+        self.assertTrue(os.path.isdir((STORE_DIR / root.path / '新しいフォルダ2' / '新しいフォルダ1').as_posix()))
 
     def test_move_folder2(self):
         # ルートを取得する
@@ -291,7 +291,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
-        dst_folder_path = STORE_DIR.parent /root.path / '新しいフォルダ2a'
+        dst_folder_path = STORE_DIR /root.path / '新しいフォルダ2a'
         self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1'))
         self.assertTrue(os.path.isdir(dst_folder_path / '新しいフォルダ1' / '新しいフォルダ1_1'))
         self.assertTrue(os.path.isfile(dst_folder_path/ '新しいフォルダ1' / '新しいフォルダ1_1' / 'フレームファイル_1'))
@@ -311,7 +311,7 @@ class LibraryTestCase(TestCaseBase):
         frame_uuid = result['data']['uuid']
 
         # フレームに対応するファイルが存在することを検証する
-        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / '新しいフレームファイル?').as_posix()))
+        self.assertTrue(os.path.isfile((STORE_DIR / root.path / '新しいフレームファイル?').as_posix()))
 
         # フレームを取得する(GET /frames)
         self.get_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
@@ -393,7 +393,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フレームに対応するファイルが存在することを検証する
-        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / ' F L A M E-F I L E ').as_posix()))
+        self.assertTrue(os.path.isfile((STORE_DIR / root.path / ' F L A M E-F I L E ').as_posix()))
 
         # 中のファイルを削除する(DELETE /frames)
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
@@ -436,7 +436,7 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # フォルダに対応するディレクトリが存在することを検証する
-        self.assertTrue(os.path.isfile((STORE_DIR.parent / root.path / '新しいフォルダ1B' / 'フレームファイル_1B').as_posix()))
+        self.assertTrue(os.path.isfile((STORE_DIR / root.path / '新しいフォルダ1B' / 'フレームファイル_1B').as_posix()))
 
 @unittest.skip('ASW S3のIDとアカウントが必要')
 class AwsS3TestCase(TestCaseBase):
@@ -465,7 +465,7 @@ class AwsS3TestCase(TestCaseBase):
         awss3 = AwsS3.find_by_uuid(awss3_uuid)
 
         # S3マウント用フォルダが作成されていることを検証する
-        self.assertTrue(os.path.isdir((STORE_DIR.parent / awss3.path).as_posix()))
+        self.assertTrue(os.path.isdir((STORE_DIR / awss3.path).as_posix()))
 
         # S3フォルダを取得する(GET /awss3s)
         result = self.get_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
@@ -484,10 +484,10 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['folderPath'][1]['label'], 'Amazonに感謝')
 
         # S3フォルダがマウントされていることを検証する
-        self.assertTrue(Mountable.is_mount(STORE_DIR.parent / awss3.path))
+        self.assertTrue(Mountable.is_mount(STORE_DIR / awss3.path))
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
+        awss3_path = (STORE_DIR / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
@@ -525,7 +525,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertIsNotNone(result['data']['createdAt'])
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
+        awss3_path = (STORE_DIR / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
@@ -552,7 +552,7 @@ class AwsS3TestCase(TestCaseBase):
         import subprocess
         import time
         time.sleep(1)
-        awss3_abs_path = (STORE_DIR.parent / root_path / 'Googleに感謝').as_posix()
+        awss3_abs_path = (STORE_DIR / root_path / 'Googleに感謝').as_posix()
         ret = subprocess.run(shlex.split(f'/sbin/umount {awss3_abs_path}'), 
                              stdout=subprocess.PIPE, 
                              stderr=subprocess.PIPE)
@@ -563,10 +563,10 @@ class AwsS3TestCase(TestCaseBase):
         tmp_var = awss3.path
 
         # S3フォルダがマウントされていることを検証する
-        self.assertTrue(Mountable.is_mount(STORE_DIR.parent / awss3.path))
+        self.assertTrue(Mountable.is_mount(STORE_DIR / awss3.path))
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
+        awss3_path = (STORE_DIR / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
@@ -598,13 +598,11 @@ class AwsS3TestCase(TestCaseBase):
             result = self.post_uri('/api/v0/awss3s', data, self.USER_ID)
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
-        awss3_path = (STORE_DIR.parent / awss3.path).as_posix()
+        awss3_path = (STORE_DIR / awss3.path).as_posix()
         self.delete_uri('/api/v0/awss3s/' + awss3_uuid, self.USER_ID)
 
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
-
-
 
 class DatabaseTestCase(TestCaseBase):
     def test_create_get_database(self):
@@ -1007,6 +1005,9 @@ class DatabaseTestCase(TestCaseBase):
     #     # Delete /folders apiが正常終了することを検証する
     #     self.assertEqual(result['success'], True)
 
+# 
+# テスト実行時にmountコマンドの実行に必要なPasswordが聞かれます
+# 
 class RemoteFolderTestCase(TestCaseBase):
 
     def test_create_get_folders(self):
@@ -1111,7 +1112,7 @@ class RemoteFolderTestCase(TestCaseBase):
         # RemoteFolderを削除(unmount)する(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
 
-    @unittest.skip
+    @unittest.skip('moveするにはpoth列とlabel列の名称を一致させるという縛りを破るしかない。縛りを破る予定だが今はテストをスキップ')
     def test_move_folders(self):
         # ルートを取得する
         root = Datum.find_root()

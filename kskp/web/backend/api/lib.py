@@ -169,6 +169,16 @@ def make_new_lock():
     lock = lock_manager.lock(request.json['target'], creator=session['user_id'])
     return lock.to_json()
 
+@mod.route('/delete-locks', methods=['POST'])
+@login_required_api
+@api_base
+def delete_all_locks():
+    """
+    全てのロックを解除する
+    """
+    lock_manager = app.config['LOCK_MANAGER'] 
+    lock_manager.unlock_all()
+
 """
 frontendのNavagator.sendBeacon()に対応するため、下記のように変更
 methods: DELETE => POST

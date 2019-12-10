@@ -24,6 +24,7 @@ import type { CSVModelProps } from 'Model/CSV/CSVModel'
 import { Loader } from 'Shared/Base'
 import { Visualizer } from 'Shared/Visualizer'
 import type { FlowModelProps } from "Model/Flow/FlowModel";
+import {API} from 'Modules/api/index'
 
 type State = {
   dataFrameDetail?: DataFrameDetailType;
@@ -72,97 +73,96 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   onClickPreview (e: Event) {
-    const selected_step = this.getSelectedStep()
-    let {flow, nodes, notify, dismissNotify} = this.props
-    this.saveFlow().then(() => {
-
-      //すでにデータが存在している場合
-      if (selected_step.hasData()) {
-        this.setState({
-          loading: true
-        })
-        this.previewFromUUID(selected_step.uuid, selected_step.label)
-      } else {
-        const previewNotify = this.props.notify({
-          title: 'プレビュー結果を取得中',
-          message: 'プレビュー結果を取得しています',
-          status: 'loading',
-          dismissAfter: 0
-        })
-        this.setState({
-          loading: true
-        })
-
-        const getFramesURL = 'frames?from=' + inject_flow_uuid + '.' + selected_step.id + '&no_contents=1'
-        APIUtil.get(getFramesURL).then((response) => {
-          this.props.dismissNotify(previewNotify.id)
-          if (response.data.success) {
-            const uuid = response.data.lasts[0].uuid
-            const label = response.data.lasts[0].id
-            this.previewFromUUID(uuid, label)
+    try {
+      const flow_uuid = inject_flow_uuid
+      const selected_step = this.getSelectedStep()
+      let stepIds = []
+      stepIds.push(selected_step.id)
+      const visualizers = this.props.mast.visualizers
+      this.setState({
+        loading: true
+      }, () => {
+        const result = this.saveFlow()
+        if (!result) {
+          this.setState({
+            loading: false
+          })
+          return
+        }
+        result.then(() => {
+          if (selected_step.hasData()) {
+            this.previewFromFrame(visualizers, selected_step.getLabel(), selected_step.uuid)
           } else {
-            this.props.notify({
-              title: 'プレビューエラー',
-              message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-              status: 'error',
-              dismissAfter: 0,
-              closeButton: true
-            })
-            this.loading = false
-            this.forceUpdate()
+            this.previewFromFlow(visualizers, selected_step.getLabel(), flow_uuid, stepIds)
           }
-          this.setState({
-            loading: false
-          })
-        }, (error) => {
-          this.props.dismissNotify(previewNotify.id)
-          if (!response.data.success) {
-            this.props.notify({
-              title: 'プレビューエラー',
-              message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-              status: 'error',
-              dismissAfter: 0,
-              closeButton: true
-            })
-            this.loading = false
-            this.forceUpdate()
-          }
-          this.setState({
-            loading: false
-          })
         })
-      }
-    })
+      })
+    } catch(e) {
+      console.log(e)
+    }
   }
 
-  previewFromUUID (uuid: string, label: string) {
-    const {selected_data_source_detail} = this.props
-    const selected_step = this.getSelectedStep()
-
-    //ヘッダー情報の取得
-
-    const getFrameHeaderURL = 'frames/' + uuid
-    APIUtil.get(getFrameHeaderURL + '?header_only=1&offset=0&limit=1').then((response) => {
-      const headers = response.data.data
-      let visualizers = this.props.mast.visualizers
-      visualizers = SortUtil.getSortedContents(visualizers)
-      let contents = []
-      for (const v of visualizers) {
-        const content = {frame_uuid:uuid, visualize:v, headers:headers}
-        contents.push({title: v.label, content: content, parentProps: this.props})
-      }
-
-      ModalUtil.emitModal({
-        id: Constants.preview.DATASOURCE,
-        visible: true,
-        contents: contents,
-        title: label
+  previewFromFlow (visualizers, preview_label, flow_uuid:string, stepIds:string[]) {
+    // headers
+    let headers = []
+    
+    API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
+      .then((res) => {
+        const lasts = res.data.lasts
+        const headers = lasts[0].args.column_names
+        // vizs
+        visualizers = SortUtil.getSortedContents(visualizers)
+        let contents = []
+        for (const v of visualizers) {
+          const content = {flow_uuid:flow_uuid, stepIds:stepIds, visualize:v, headers:headers}
+          contents.push({title: v.label, content: content, parentProps: this.props})
+        }
+        ModalUtil.emitModal({
+          id: Constants.preview.DATASOURCE,
+          visible: true,
+          contents: contents,
+          title: preview_label
+        })
+      }, (err) => {
+        console.log(err)
       })
-      this.setState({
-        loading: false
+      .then(() => {
+        this.setState({
+          loading: false
+        })
+        this.updateCache()
       })
-      this.updateCache()
-    })
+  }
+
+  previewFromFrame (visualizers, preview_label, frame_uuid:string) {
+    // headers
+    let headers = []
+    API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
+      .then((res) => {
+          if (!res.data.success) throw res.data.message
+          const lasts = res.data.lasts
+          const headers = lasts[0].args.column_names
+          // vizs
+          visualizers = SortUtil.getSortedContents(visualizers)
+          let contents = []
+          for (const v of visualizers) {
+            const content = {frame_uuid:frame_uuid, visualize:v, headers:headers}
+            contents.push({title: v.label, content: content, parentProps: this.props})
+          }
+          ModalUtil.emitModal({
+            id: Constants.preview.DATASOURCE,
+            visible: true,
+            contents: contents,
+            title: preview_label
+          })
+      }, (err) => {
+        console.log(err)
+      })
+      .then(() => {
+        this.setState({
+          loading: false
+        })
+      })
   }
 
   updateCache () {

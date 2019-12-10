@@ -5,11 +5,11 @@ import time
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
-from kskp.store import Frame, Flow, Folder
+from kskp.store import Datum, Frame, Flow, Folder
 from kskp.web.backend import app
 
 from .auth import login_required_api
-from .utils import api_base
+from .utils import api_base, frame_api_base
 
 mod = Blueprint('frames', __name__)
 
@@ -63,43 +63,43 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
 
     return result
 
-def load_as_data_frame(path_obj, offset, limit):
-    """
-    CSVの文字列を受け取り、
-    いわゆるデータフレームの形式にして返す
-    TODO: offsetはつかってない
-    """
-    result_text = ''
-    result_data = {}
-    column_list = []
-    with path_obj.open(encoding='utf-8') as f:
-        n = 0
-        limit_count = 0
+# def load_as_data_frame(path_obj, offset, limit):
+#     """
+#     CSVの文字列を受け取り、
+#     いわゆるデータフレームの形式にして返す
+#     TODO: offsetはつかってない
+#     """
+#     result_text = ''
+#     result_data = {}
+#     column_list = []
+#     with path_obj.open(encoding='utf-8') as f:
+#         n = 0
+#         limit_count = 0
 
-        for line in f:
-            if limit is not None and limit_count == limit:
-                break
+#         for line in f:
+#             if limit is not None and limit_count == limit:
+#                 break
 
-            if n == 0:
-                # 一行目はヘッダとみなす
-                # 重複文字があればインデックスをつける
-                column_list = replace_column_name(line.split(','))
-                for column_name in column_list:
-                    result_data[column_name] = []
-            else:
-                if offset < n:
-                    for idx, column_data in enumerate(line.split(',')):
-                        result_data[column_list[idx]].append(column_data)
-                    limit_count += 1
-            n += 1
+#             if n == 0:
+#                 # 一行目はヘッダとみなす
+#                 # 重複文字があればインデックスをつける
+#                 column_list = replace_column_name(line.split(','))
+#                 for column_name in column_list:
+#                     result_data[column_name] = []
+#             else:
+#                 if offset < n:
+#                     for idx, column_data in enumerate(line.split(',')):
+#                         result_data[column_list[idx]].append(column_data)
+#                     limit_count += 1
+#             n += 1
 
-    if n == 0:
-        raise Exception('空のCSVを読み込みました。コマンド実行時にエラーが発生した可能性があります。')
+#     if n == 0:
+#         raise Exception('空のCSVを読み込みました。コマンド実行時にエラーが発生した可能性があります。')
 
-    result_len = n
+#     result_len = n
 
-    # 行数も返すように変更
-    return result_data, result_len
+#     # 行数も返すように変更
+#     return result_data, result_len
 
 def replace_column_name(column_list):
     """
@@ -189,158 +189,198 @@ def delete_frame(frame_uuid):
     frame.delete()
     return frame
 
-@mod.route('/frames', methods=['GET', 'POST'])
+@mod.route('/frames', methods=['POST'])
 @login_required_api
-def make_new_frames():
-    """
-    framesを生成する
-    生成方法は以下の通り
-    ・フローの実行
-    ・フローのアップロード（未実装）
-    """
-    step_ids = []
-
-    if 'file' in request.files:
-        if 'parent' in request.form and 'label' in request.form:
-            try:
-                # parentとlabel属性があれば新形式のPOST /framesだとみなす
-                new_frame = Frame(request.form.get('parent')
-                                , request.form.get('label')
-                                , request.files.get('file').stream
-                                , creator=session['user_id'])
-                # documentレコードをDBに格納する
-                new_frame.save()
-                return jsonify({'success': True, 'data': new_frame.to_json()})
-            except Exception as e:
-                return jsonify({
-                                'success': False,
-                                'code'   : -1,
-                                'message': str(e)
-                                })
-    elif 'from' in request.args:
-        if '.' in request.args['from']:
-            # プレビュー
-
-            # ドットで区切って、具体的に一つだけstepを指定することができる
-            # TODO: 後々この部分は文法を拡張していく予定
-            froms = request.args['from'].split('.')
-            flow_uuid = froms[0]
-            step_ids.append(froms[1])
-        else:
-            # 普通の実行
-            flow_uuid = request.args['from']
-
-        result = execute_flow(flow_uuid, step_ids=step_ids)
-
-        return result
-    elif request.json.get('flow_uuid'):
-        # 一覧より実行
-        return execute_flow_by_add_inputs(request)
-    else:
-        return jsonify({
-                            'success': False,
-                            'code': -1,
-                            'message': 'invalid json'
-                        })
-
-def execute_flow(flow_uuid, step_ids, args={}, inputs={}):
-    """
-    フローの実行を行う
-    実行後の判定など
-    """
-
-    if not Flow.exists(flow_uuid):
-        # ファイルが存在しないときはここを通る
-        return jsonify({
-                            'success': False,
-                            'code': -1,
-                            'message': 'flow does not exist in DB'
-                        })
-
+def create_frame():
     try:
-        result = execute_flow_internal(flow_uuid, step_ids, args, inputs)
-        if not result:
-            return jsonify({
-                                'success': False,
-                                'code': -1,
-                                'message': 'result is empty.'
-                               })
-        else:
+        if 'file' in request.files:
+            # 
+            # Frameをアップロードする
+            # 
+            if request.files.get('file') is None:
+                raise Exception('No frame file found.')
+            if 'parent' not in request.form:
+                raise Exception('No parent is designated.')
+            if 'label' not in request.form:
+                raise Exception('No label is designated.')
+            
+            # parentとlabel属性があれば新形式のPOST /framesだとみなす
+            new_frame = Frame(request.form.get('parent')
+                            , request.form.get('label')
+                            , request.files.get('file').stream
+                            , creator=session['user_id'])
+            # documentレコードをDBに格納する
+            new_frame.save()
+            return jsonify({'success': True, 'data': new_frame})
+
+        elif request.json.get('flow_uuid'):
+            # 
+            # フロー一覧から実行する
+            # 
+            flow_uuid = request.json.get('flow_uuid')
+            args = request.json.get('args') if request.json.get('args') else {}
+            inputs = _make_flow_inputs(flow_uuid, request)
+            # フローの実行
+            flow = Flow.find_by_uuid(flow_uuid)
+            result = execute_flow(flow, args=args, inputs=inputs)
+            result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
+        
+        else:
+            raise Exception('引数等の指定が誤っています')
+    
     except Exception as e:
         import traceback
         traceback.print_exc()
         return jsonify({
-                            'success': False,
-                            'code': -1,
-                            'message': repr(e)
-                        })
+                        'success': False,
+                        'code'   : -1,
+                        'message': str(e)
+                      })
 
-def execute_flow_internal(flow_uuid, step_ids=[], args={}, inputs={}):
+@mod.route('/frames', methods=['GET'])
+@login_required_api
+@frame_api_base
+def make_new_frames():
     """
-    エンジンの実行を行い、適切な形に直して返す
+    フローを実行してフレームを取得する
     """
-    from kskp.store import get_flow_nodes_by_uuid
-
-    def execute_flow_by_uuid(flow_uuid, inputs={}, args={}):
-        from kskp.engine import execute,FlowJsonLink, FlowUuidLink
-
-        link = FlowUuidLink(flow_uuid, step_ids)
-        return execute(link=link, args=args, inputs=inputs)
-
-    result = execute_flow_by_uuid(flow_uuid=flow_uuid, inputs=inputs, args=args)
-    nodes_dict = get_flow_nodes_by_uuid(flow_uuid)
-
-    # 結果の処理
-    result_list = [{'id':key, 'uuid':value.uuid, 'label':nodes_dict.get(key).get('label')} for key, value in result.items()]
-
-    return result_list
-
-def execute_flow_by_add_inputs(request):
-    """
-    inputsを与えてexecute
-    """
-    from kskp.store import Library, fetch_flow_by_uuid
-
-    # プレビューとかすることがあるかもしれないから
     step_ids = []
 
-    flow_uuid = request.json.get('flow_uuid')
+    if 'from' not in request.args:
+        raise Exception('No frame parameter is designated')
+
+    if '.' in request.args['from']:
+        # Vis
+        # ドットで区切って、具体的に一つだけstepを指定することができる
+        # TODO: 後々この部分は文法を拡張していく予定
+        froms = request.args['from'].split('.')
+        flow_uuid = froms[0]
+        step_ids.append(froms[1])
+    else:
+        # 普通の実行
+        flow_uuid = request.args['from']
+
+    flow = Flow.find_by_uuid(flow_uuid)     
+    activity = execute_flow(flow)
+    return format_result(activity)
+
+@mod.route('/vizs/<frame_uuid>', methods=['POST'])
+@login_required_api
+@frame_api_base
+def fetch_vis(frame_uuid):
+    """
+    指定したframeのVisデータを直接UUIDで指定して取得する
+    """
+    vis_args = {"d" : request.json}
+
+    import uuid
+    from kskp.store import Datum, DataSource
+    from kskp.depo.std.commands import LoaderCommand
+    from kskp.engine import Step
+    parent_folder = Datum.find_parent(frame_uuid)
+    loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
+    datasource = DataSource(None, 'tmp_source', parent_folder, loader_step, session['user_id'])
+    activity = execute_flow(datasource, vis_args=vis_args)
+    return format_vis(activity)
+
+@mod.route('/vizs', methods=['POST'])
+@login_required_api
+@frame_api_base
+def make_new_viss():
+    """
+    Visデータを取得する
+    """
+    if 'from' not in request.args:
+        raise Exception('from引数を指定してください')
+
+    flow_uuid = request.args['from']
+    vis_args = request.json
+
+    flow = Flow.find_by_uuid(flow_uuid)
+    activity = execute_flow(flow, vis_args=vis_args)
+    return format_vis(activity)
+
+def execute_flow(flow, args={}, inputs={}, vis_args={}):
+    """
+    指定されたフローを実行し実行結果を取得する
+    """
+    try:
+        from kskp.engine import execute, FlowJsonLink
+        link = FlowJsonLink(flow, vis_args)
+        activity = execute(link=link, args=args, inputs=inputs)
+        if not activity:
+            raise Exception('実行結果は出力されませんでした')
+        return activity
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise Exception(str(e))
+
+def format_result(activity):
+    from kskp.store import Activity
+    return [{'id':point.id, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.result]
+
+def format_vis(activity):
+    from kskp.store import Activity
+    return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.result]
+
+def _make_flow_inputs(flow_uuid, request):
+    """
+    inputsを作成する
+    """
+    from kskp.store import Library, NysolModule, fetch_flow_by_uuid
+
     flow_json = fetch_flow_by_uuid(flow_uuid)
 
     # executeの引数
     inputs = {}
-    args = request.json.get('args') if request.json.get('args') else {}
-
-    upload_file_list = []
 
     for port in flow_json['ports'][0]:
         # frame（既にkskpに存在するデータソース）の場合
         if request.json.get(port['nodeId']) is not None:
-            # フレームを置き換える
+            # フレームのUUIDを取得する
             frame_uuid = request.json.get(port['nodeId'])
-            # ※Folderのload_frameとLibraryのload_frameは別物なので、Library.load_frameでは代用はできない
-            # Folder.load_frame　・・・　uuidからframeを取得し、それをm2teeを使ってnysol_moduleを返す
-            # Library.load_frame ・・・ uuidからframeを取得し、Frameオブジェクトを返す
-            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
+            # 指定したuuidのframeを取得する
+            nysol_module = _load_frame(frame_uuid)
+            inputs[port['nodeId']] = nysol_module
             continue
 
         # 新たにkskpにアップロードする場合
         file = request.files.get(port['nodeId'])
         if file is not None:
             # ファイルアップロードして、フレームを置き換える
-            from kskp.web.backend.api.basic import upload_frame
-            frame_uuid = upload_frame(file, '')['uuid']
-            inputs[port['nodeId']] = Folder.load_frame(frame_uuid)
-
-            # 使うかわからないけど、uploadしたファイルを覚えておく
-            upload_file_list.append(frame_uuid)
+            # from kskp.web.backend.api.basic import upload_frame
+            frame_uuid = _upload_frame(file, '')['uuid']
+            # 指定したuuidのframeを取得する
+            nysol_module = _load_frame(frame_uuid)
+            inputs[port['nodeId']] = nysol_module
             continue
 
-    # フローの実行
-    result = execute_flow(flow_uuid, step_ids, args, inputs)
+    return inputs
 
-    return result
+def _load_frame(frame_uuid):
+    # Loaderを用いて指定したuuidのframeを取得する
+    from kskp.depo.std.commands import CommandLink
+    loader = CommandLink('loader').resolve()
+    result = loader.run({'uuid':frame_uuid}, {'store':Folder(None, '')})
+    # NYSOLコマンドを返す
+    nysol_module = result['o']
+    return nysol_module
+
+def _upload_frame(file, file_name):
+    """
+    CSVをアップロードする
+    TODO: テスト未実施
+    """
+    frame_uuid = str(uuid.uuid4())
+
+    from werkzeug.utils import secure_filename
+    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
+    file.save(file_path.as_posix())
+    file.close()
+
+    return {"uuid": frame_uuid, "label": file_name}
 
 @mod.errorhandler(400)
 def handle_bad_request(error):
