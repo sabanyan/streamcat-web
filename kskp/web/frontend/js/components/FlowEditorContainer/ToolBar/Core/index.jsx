@@ -55,7 +55,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   run () {
     let {notify, dismissNotify} = this.props
-    return FlowUtil.runNodes(inject_flow_uuid, notify, dismissNotify)
+    const runArgs = {
+      'flow_uuid': inject_flow_uuid,
+      'flows': [],
+      'variables': []
+    }
+    return FlowUtil.runWithArgs(runArgs, notify, dismissNotify)
   }
 
   onClickProjectRun () {
@@ -80,12 +85,19 @@ export default class ToolBar extends React.Component<ToolBarProps> {
             <ul>{result}</ul>
           </div>
 
-          this.props.notify({
+          let notifyId = this.props.notify({
             title: 'フロー実行完了',
             message: ReactDomUtil.renderToString(content),
             status: 'success',
             dismissAfter: 0,
             buttons: [
+              {
+                name: '閉じる',
+                primary: true,
+                onClick: () => {
+                  this.props.dismissNotify(notifyId)
+                },
+              },
               {
                 name: '開く',
                 primary: true,
