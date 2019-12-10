@@ -706,9 +706,12 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
+
   deleteLibraryChild (selected_data: LibraryListDataType) {
     this.setState({is_loading: true})
-    this.deleteLibraryListData(selected_data.type, selected_data.uuid).then((response) => {
+    let result = this.deleteLibraryListData(selected_data.type, selected_data.uuid)
+    if (!result) return
+    result.then((response) => {
       this.setState({is_loading: false})
       if (!response.data.success) {
         this.props.notify({
@@ -743,8 +746,43 @@ export default class Library extends React.Component<Props, State> {
       case Constants.library.type.remoteFolder:
         return APIUtil.delete('remote-folders/' + uuid)
       case Constants.library.type.flow:
-        return APIUtil.delete('flows/' + uuid)
+        // FIX IT: Flowの削除 
+        this.deleteFlow(uuid)
     }
+  }
+
+  deleteFlow(flow_uuid) {
+    const {notify} = this.props
+ 
+    // 1. LockIdを取得する。
+    let body = {target: flow_uuid}
+    let locks = new LocksModel(body)
+    APIUtil.post('locks', body).then((response) => {
+      let locksModel = locks.Parse(response)
+      let lockId = locksModel.getLockId()
+      if (lockId) {
+        //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
+        axios.delete('/api/v0/flows/' + flow_uuid,{data:{lock:lockId}})
+        .then((response) => {
+          APIUtil.post('delete-locks/' + lockId).then((response) => {
+            this.fetchFolder()
+          })
+        }, (err) => {
+          APIUtil.post('delete-locks/' + lockId).then((response) => {
+            this.fetchFolder()
+          })
+        })
+      } else {
+        // lockが出来なかった場合
+        notify({
+          title: '削除エラー',
+          message: locksModel.getErrorMessage(),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }
+    })
   }
 
   editFlow(flow_uuid, parent_uuid) {
