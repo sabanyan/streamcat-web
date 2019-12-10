@@ -335,13 +335,14 @@ export default class Library extends React.Component<Props, State> {
     const selectedFiles: FileList = e.target.files
     if (selectedFiles) {
       const uploadFile: File = selectedFiles[0]
+      let defaultFileName = uploadFile.name.split('.')[0]
       this.setState({
         upload_file: {
           file: uploadFile,
         },
+        frame_name: defaultFileName
       }, () => {
         if (uploadFile && uploadFile.name) {
-          let defaultFileName = uploadFile.name.split('.')[0]
           ModalUtil.emitModal({
             id: Constants.modal.ADD_FRAME,
             visible: true,
