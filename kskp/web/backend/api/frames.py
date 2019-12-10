@@ -276,7 +276,7 @@ def fetch_vis(frame_uuid):
 
     import uuid
     from kskp.store import Datum, DataSource
-    from kskp.depo.commands import LoaderCommand
+    from kskp.depo.std.commands import LoaderCommand
     from kskp.engine import Step
     parent_folder = Datum.find_parent(frame_uuid)
     loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
@@ -361,7 +361,7 @@ def _make_flow_inputs(flow_uuid, request):
 
 def _load_frame(frame_uuid):
     # Loaderを用いて指定したuuidのframeを取得する
-    from kskp.depo.commands import CommandLink
+    from kskp.depo.std.commands import CommandLink
     loader = CommandLink('loader').resolve()
     result = loader.run({'uuid':frame_uuid}, {'store':Folder(None, '')})
     # NYSOLコマンドを返す
