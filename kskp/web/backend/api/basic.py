@@ -277,7 +277,7 @@ def fetch_visualizers():
 
     from kskp.depo.commands import CommandsPathLink, CommandsPathFileSource
 
-    link = CommandsPathLink(CommandsPathFileSource('visualizers'))
+    link = CommandsPathLink(CommandsPathFileSource('vcmd'))
 
     return jsonify({'success': True, 'data': link.resolve()})
 
