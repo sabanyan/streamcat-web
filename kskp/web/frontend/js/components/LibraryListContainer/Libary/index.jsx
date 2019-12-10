@@ -14,6 +14,8 @@ import { FileUploader, TextField } from 'Shared/Input'
 import type { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType } from 'Types/index'
 import type { LibraryProps } from 'LibraryListContainer/index'
 import { VisualizeModel } from "Model/index";
+import { LocksModel } from 'Model/index'
+import axios from 'axios'
 
 type Props = {
   ...LibraryProps
@@ -745,6 +747,37 @@ export default class Library extends React.Component<Props, State> {
     }
   }
 
+  editFlow(flow_uuid, parent_uuid) {
+    const {notify} = this.props
+    let body = {target: flow_uuid}
+    let locks = new LocksModel(body)
+    axios.post('/api/v0/locks', body).then((response) => {
+      let locksModel = locks.Parse(response)
+      let lockId = locksModel.getLockId()
+      if (lockId) {
+        axios.put('/api/v0/flows/' + flow_uuid, {
+          parent: parent_uuid,
+          lock  : lockId
+        }).then((response) => {
+          navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+          this.fetchFolder()
+        }, (error) => {
+          navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+          console.log(error)
+        })
+      } else {
+        // lockが出来なかった場合
+        notify({
+          title: "ライブラリー移動エラー",
+          message: response.data.message,
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }
+    })
+  }
+
   onClickMove (e) {
     const selected_data = this.state.selected_data
     try {
@@ -761,7 +794,7 @@ export default class Library extends React.Component<Props, State> {
             result = APIUtil.put('folders/' + uuid, data)
             break;
           case Constants.library.type.flow:
-            result = APIUtil.put('flows/' + uuid, data)
+            result = this.editFlow(uuid, folder_uuid)
             break;
           case Constants.library.type.frame:
             result = APIUtil.put('frames/' + uuid, data)
@@ -776,6 +809,7 @@ export default class Library extends React.Component<Props, State> {
             result = APIUtil.put('remote-folders/' + uuid, data)
             break;
         }
+        if (!result) return
         result.then((response) => {
           if (response.data.success) {
             this.fetchFolder()
