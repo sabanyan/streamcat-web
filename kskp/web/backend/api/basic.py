@@ -261,7 +261,7 @@ def fetch_commands():
         if request.args.get('scmd') == 'on':
             visible_commands_json.append('scmd') 
 
-    from kskp.depo.commands import CommandsPathLink, CommandsPathFileSource
+    from kskp.depo.std.commands import CommandsPathLink, CommandsPathFileSource
     commands_list = []
     for visible_command in visible_commands_json:
         link = CommandsPathLink(CommandsPathFileSource(visible_command))
@@ -275,7 +275,7 @@ def fetch_visualizers():
     ビジュアライズ用コマンド定義の一覧を返す
     """
 
-    from kskp.depo.commands import CommandsPathLink, CommandsPathFileSource
+    from kskp.depo.std.commands import CommandsPathLink, CommandsPathFileSource
 
     link = CommandsPathLink(CommandsPathFileSource('vcmd'))
 
