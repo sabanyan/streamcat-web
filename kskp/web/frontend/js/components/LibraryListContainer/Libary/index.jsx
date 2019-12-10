@@ -14,6 +14,8 @@ import { FileUploader, TextField } from 'Shared/Input'
 import type { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType } from 'Types/index'
 import type { LibraryProps } from 'LibraryListContainer/index'
 import { VisualizeModel } from "Model/index";
+import { LocksModel } from 'Model/index'
+import axios from 'axios'
 
 type Props = {
   ...LibraryProps
@@ -335,10 +337,25 @@ export default class Library extends React.Component<Props, State> {
     const selectedFiles: FileList = e.target.files
     if (selectedFiles) {
       const uploadFile: File = selectedFiles[0]
+      let defaultFileName = uploadFile.name.split('.')[0]
       this.setState({
         upload_file: {
           file: uploadFile,
         },
+        frame_name: defaultFileName
+      }, () => {
+        if (uploadFile && uploadFile.name) {
+          ModalUtil.emitModal({
+            id: Constants.modal.ADD_FRAME,
+            visible: true,
+            done: '追加する',
+            content: <div>
+              <TextField  key={uploadFile.name} placeholder={'名称'} defaultValue={defaultFileName} onChange={(e, validation) => this.onChangeFrameName(e, validation)} />
+              <div className={'mt-8px'} />
+              <FileUploader accept={['text/csv']} onChangeFile={(e) => this.onChangeFile(e)} />
+            </div>,
+          })
+        }
       })
     }
   }
@@ -689,9 +706,12 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
+
   deleteLibraryChild (selected_data: LibraryListDataType) {
     this.setState({is_loading: true})
-    this.deleteLibraryListData(selected_data.type, selected_data.uuid).then((response) => {
+    let result = this.deleteLibraryListData(selected_data.type, selected_data.uuid)
+    if (!result) return
+    result.then((response) => {
       this.setState({is_loading: false})
       if (!response.data.success) {
         this.props.notify({
@@ -726,8 +746,74 @@ export default class Library extends React.Component<Props, State> {
       case Constants.library.type.remoteFolder:
         return APIUtil.delete('remote-folders/' + uuid)
       case Constants.library.type.flow:
-        return APIUtil.delete('flows/' + uuid)
+        // FIX IT: Flowの削除 
+        this.deleteFlow(uuid)
     }
+  }
+
+  deleteFlow(flow_uuid) {
+    const {notify} = this.props
+ 
+    // 1. LockIdを取得する。
+    let body = {target: flow_uuid}
+    let locks = new LocksModel(body)
+    APIUtil.post('locks', body).then((response) => {
+      let locksModel = locks.Parse(response)
+      let lockId = locksModel.getLockId()
+      if (lockId) {
+        //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
+        axios.delete('/api/v0/flows/' + flow_uuid,{data:{lock:lockId}})
+        .then((response) => {
+          APIUtil.post('delete-locks/' + lockId).then((response) => {
+            this.fetchFolder()
+          })
+        }, (err) => {
+          APIUtil.post('delete-locks/' + lockId).then((response) => {
+            this.fetchFolder()
+          })
+        })
+      } else {
+        // lockが出来なかった場合
+        notify({
+          title: '削除エラー',
+          message: locksModel.getErrorMessage(),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }
+    })
+  }
+
+  editFlow(flow_uuid, parent_uuid) {
+    const {notify} = this.props
+    let body = {target: flow_uuid}
+    let locks = new LocksModel(body)
+    axios.post('/api/v0/locks', body).then((response) => {
+      let locksModel = locks.Parse(response)
+      let lockId = locksModel.getLockId()
+      if (lockId) {
+        axios.put('/api/v0/flows/' + flow_uuid, {
+          parent: parent_uuid,
+          lock  : lockId
+        }).then((response) => {
+          navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+          this.fetchFolder()
+        }, (error) => {
+          navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+          console.log(error)
+        })
+      } else {
+        // lockが出来なかった場合
+        notify({
+          title: "ライブラリー移動エラー",
+          message: response.data.message,
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }
+    })
   }
 
   onClickMove (e) {
@@ -746,7 +832,7 @@ export default class Library extends React.Component<Props, State> {
             result = APIUtil.put('folders/' + uuid, data)
             break;
           case Constants.library.type.flow:
-            result = APIUtil.put('flows/' + uuid, data)
+            result = this.editFlow(uuid, folder_uuid)
             break;
           case Constants.library.type.frame:
             result = APIUtil.put('frames/' + uuid, data)
@@ -761,6 +847,7 @@ export default class Library extends React.Component<Props, State> {
             result = APIUtil.put('remote-folders/' + uuid, data)
             break;
         }
+        if (!result) return
         result.then((response) => {
           if (response.data.success) {
             this.fetchFolder()
