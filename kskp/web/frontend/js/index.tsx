@@ -7,7 +7,7 @@ import { ViewId, Kskp } from './Kskp/index';
 
 window.emitter = new EventEmitter()
 
-let elementId = ''
+let elementId:string | null = null
 let viewId:ViewId = ViewId.Undefined
 
 if (document.getElementById('base')) {
@@ -39,9 +39,11 @@ if (document.getElementById('profile')) {
   viewId = ViewId.Profile
 }
 
-ReactDOM.render(
-  <Provider store={store}>
-    <Kskp viewId={viewId}/>
-  </Provider>,
-  document.getElementById(elementId),
-)
+if (elementId) {
+  ReactDOM.render(
+    <Provider store={store}>
+      <Kskp viewId={viewId}/>
+    </Provider>,
+    document.getElementById(elementId),
+  )
+}

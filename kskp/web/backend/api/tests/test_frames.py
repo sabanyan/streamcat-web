@@ -53,7 +53,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s' % frame_uuid, self.USER_ID)
@@ -83,7 +83,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?no_contents=1' % frame_uuid, self.USER_ID)
@@ -113,7 +113,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?offset=2&limit=1' % frame_uuid, self.USER_ID)
@@ -145,7 +145,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?header_only=1' % frame_uuid, self.USER_ID)
@@ -168,7 +168,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         data = {
@@ -196,7 +196,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER_ID)
@@ -216,7 +216,13 @@ class FrameApiTestCase(TestCaseBase):
       "description": "",
       "ports": [
         [],
-        []
+        [
+            {
+            "type": "frame", 
+            "label": "d1", 
+            "nodeId": "d1"
+            }
+        ]
       ],
       "nodes": [
         {
@@ -263,7 +269,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -292,10 +298,10 @@ class FrameApiTestCase(TestCaseBase):
 
 
     # @unittest.skip
-    def test_flow_preview(self):
+    def test_flow_vis(self):
         """
-        フローをプレビュー実行する
-                        　↓プレビュー
+        フローをVis実行する
+                        　↓Vis
         フロー：i -> c1 -> d1 -> c2 -> d2
         """
         # テストフレーム作成
@@ -307,7 +313,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -344,22 +350,27 @@ class FrameApiTestCase(TestCaseBase):
           "dataSource": "csv"
         }
 
-        flow_json = json.loads(json.dumps(self.flow_json))
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['nodes'].append(input_node)
         flow_json['nodes'].append(add_cmd)
         flow_json['nodes'].append(add_datum)
         flow = Library.save_flow(root.uuid, 'test', flow_json)
         
         # フローの実行
-        result = self.get_uri(f'/api/v0/frames?from={flow.uuid}.d1', self.USER_ID)
+        vis_args = { "d1" : 
+                        {"args" :
+                            {"visualizer" : "csvtohtmltable",
+                             "offset" : 0,
+                             "limit"  : 100
+                            }
+                        }
+                    }
+        result = self.post_uri(f'/api/v0/vizs?from={flow.uuid}', vis_args, self.USER_ID)
         lasts = result['lasts']
-
-        # DBにframeデータが生成されているか
-        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
 
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
-        self.assertEqual(lasts[0]['label'], '出力結果')
+        self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
 
 
     # @unittest.skip
@@ -409,7 +420,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # フローの実行
@@ -461,7 +472,7 @@ class FrameApiTestCase(TestCaseBase):
             'type':'frame'
         }
 
-        flow_json = json.loads(json.dumps(self.flow_json))
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
         flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
@@ -484,7 +495,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         args = {
@@ -506,6 +517,54 @@ class FrameApiTestCase(TestCaseBase):
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
         self.assertEqual(lasts[0]['label'], '出力結果')
+
+    def test_empty_vizs(self):
+        """
+        offset=limit=0を指定してヘッダ行だけを取得する
+        """
+        # テストフレーム作成
+        csv_data = [
+            ['顧客', '数量', '金額'],
+            ['A', 1, 10],
+            ['A', 2, 20],
+            ['B', 1, 30],
+            ['B', 3, 40],
+            ['B', 1, 50]
+        ]
+        frame_path = STORE_DIR / root_path / 'test_data_3.csv'
+        frame_uuid = create_data(frame_path, csv_data)
+
+        # テストフローの作成
+        input_node = {
+          "id": "i",
+          "type": "frame",
+          "label": "テストデータ",
+          "uuid": frame_uuid,
+          "dataSource": "csv"
+        }
+
+        flow_json = copy.deepcopy(self.flow_json)
+        flow_json['nodes'].append(input_node)
+        flow = Library.save_flow(root.uuid, 'test', flow_json)
+        # Visデータのポイント引数の作成
+        data = {
+			"d1" : {
+                "args" : {
+                    "visualizer" : "csvtohtmltable",
+                    "offset" : 0,
+                    "limit"  : 0
+                }
+			}
+        }
+
+        # Visの取得
+        result = self.post_uri(f'/api/v0/vizs?from={flow.uuid}', data, self.USER_ID)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
+        self.assertIsNotNone(lasts[0].get('contents'))
 
 def create_data(file_path_obj, data=None):
     """

@@ -85,8 +85,9 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   onDeleteParam (param) {
     let {flow} = this.props
     const newParams = flow.params.filter(p => {
-      return (p !== param)
+      return (p.name !== param.name)
     })
+    
     flow.params = newParams
     this.props.updateFlow(flow)
   }
@@ -131,7 +132,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     let inputParams, inputParamsContainer, addFlowParams
     this.paramRefs = []
     inputParams = params.map((param, index) => {
-      return <div key={index + 'param'} className={style.flow_param}>
+      return <div key={param.name} className={style.flow_param}>
         <div className={style.left}>
           <input ref={(ref) => {
             //render時にrefがnullのケースでcallされる場合があるので、

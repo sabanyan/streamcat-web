@@ -1,4 +1,3 @@
-
 const ApiConstants = {
     METHOD  : {
         GET   : 'get',
@@ -121,6 +120,19 @@ const ApiConstants = {
                 REQUEST : 'get_navigation_request',
                 SUCCESS : 'get_navigation_success',
                 FAILURE : 'get_navigation_failure'
+            }
+        }
+    },
+    VIZS : {
+        KEY : 'vizs',
+        URL : {
+            SERVICE:'/api/v0/vizs'
+        },
+        ACTION : {
+            POST : {
+                REQUEST : 'post_vizs_request',
+                SUCCESS : 'post_vizs_request',
+                FAILURE : 'post_vizs_request'
             }
         }
     }
