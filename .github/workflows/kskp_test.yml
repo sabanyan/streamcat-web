@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop_github_actions
+      - develop
 jobs:
   build:
     runs-on: ubuntu-latest
