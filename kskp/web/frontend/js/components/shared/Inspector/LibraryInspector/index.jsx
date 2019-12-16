@@ -7,7 +7,7 @@ import type { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
-import { APIUtil, ModalUtil, SortUtil, HttpUtil  } from "Utils/index";
+import { APIUtil, ModalUtil, SortUtil, HttpUtil, ErrorUtil, ReactDomUtil} from "Utils/index";
 import Visualizer from "Shared/Visualizer/Core";
 import {API} from 'Modules/api/index'
 
@@ -59,10 +59,11 @@ class LibraryInspector extends React.Component<Props> {
 
   preview (visualizers, preview_label, frame_uuid:string) {
     // headers
-    let headers = []
-    API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
+    const {notify, dissmissNotify} = this.props
+   
+      API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
       .then((res) => {
-          if (!res.data.success) throw res.data.message
+          if (!res.data.success) throw res
           const lasts = res.data.lasts
           const headers = lasts[0].args.column_names
           // vizs
@@ -79,12 +80,18 @@ class LibraryInspector extends React.Component<Props> {
             contents: contents,
             title: preview_label
           })
-      }, (err) => {
-        console.log(err)
-      })
-      .then(() => {
+          
+      }).catch(response => {
+        notify({
+          title: "プレビュー実行エラー",
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }).then(() => {
         this.setState({
-          loading: false
+          loading:false
         })
       })
   }
