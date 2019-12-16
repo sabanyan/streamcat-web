@@ -19,18 +19,9 @@ jobs:
         run: |
           sudo apt-get -y install git docker build-essential checkinstall
           git clone -b github_actions https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-cli.git
-          ls 
           cd kskp-cli
-          echo "--------"
-          ls
-          echo "--------"
-          echo "check shell"
-          echo $SHELL
-          echo "--------"
-          chmod u+x ./install.sh
-          echo "--------"
-          source <(sudo ./install.sh)
-          echo "--------"
+          ln -sf $(pwd)/kskp /usr/local/bin/kskp
+          source <(echo 'export KSKP_CLI='`pwd`)
           kskp install develop
 
       - name: test KSKP-Web
