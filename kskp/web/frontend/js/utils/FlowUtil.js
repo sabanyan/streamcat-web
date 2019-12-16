@@ -273,29 +273,17 @@ export default class FlowUtil {
       }
     }
 
-    return new Promise((resolve, reject) => {
-      APIUtil.put('flows/' + flowUUID, putBody).then((response) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        resolve(response)
-      }, (error) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
+    return APIUtil.put('flows/' + flowUUID, putBody)
+    .then((response) => {
+      if (dismissNotify) dismissNotify(saveNotify.id)
+      if (!response.data.success) throw ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response))
+    }).catch((message) => {
+      notify({
+        title: '実行エラー',
+        message: message,
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
       })
     })
   }

@@ -73,7 +73,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   onClickPreview (e: Event) {
-    try {
       const flow_uuid = inject_flow_uuid
       const selected_step = this.getSelectedStep()
       let stepIds = []
@@ -82,32 +81,25 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       this.setState({
         loading: true
       }, () => {
-        const result = this.saveFlow()
-        if (!result) {
-          this.setState({
-            loading: false
+        this.saveFlow()
+          .then(() => {
+            if (selected_step.hasData()) {
+              this.previewFromFrame(visualizers, selected_step.getLabel(), selected_step.uuid)
+            } else {
+              this.previewFromFlow(visualizers, selected_step.getLabel(), flow_uuid, stepIds)
+            }
           })
-          return
-        }
-        result.then(() => {
-          if (selected_step.hasData()) {
-            this.previewFromFrame(visualizers, selected_step.getLabel(), selected_step.uuid)
-          } else {
-            this.previewFromFlow(visualizers, selected_step.getLabel(), flow_uuid, stepIds)
-          }
-        })
       })
-    } catch(e) {
-      console.log(e)
-    }
   }
 
+  
   previewFromFlow (visualizers, preview_label, flow_uuid:string, stepIds:string[]) {
-    // headers
-    let headers = []
+    const {notify} = this.props
     
+    // viz headers 取得
     API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
       .then((res) => {
+        if (!res.data.success) throw res
         const lasts = res.data.lasts
         const headers = lasts[0].args.column_names
         // vizs
@@ -123,8 +115,15 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           contents: contents,
           title: preview_label
         })
-      }, (err) => {
-        console.log(err)
+      })
+      .catch(response => {
+        notify({
+          title: "プレビュー実行エラー",
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
       })
       .then(() => {
         this.setState({
@@ -135,11 +134,12 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   previewFromFrame (visualizers, preview_label, frame_uuid:string) {
-    // headers
-    let headers = []
+    const {notify} = this.props
+    
+    // viz headers 取得
     API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
       .then((res) => {
-          if (!res.data.success) throw res.data.message
+          if (!res.data.success) throw res
           const lasts = res.data.lasts
           const headers = lasts[0].args.column_names
           // vizs
@@ -155,13 +155,21 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
             contents: contents,
             title: preview_label
           })
-      }, (err) => {
-        console.log(err)
+      })
+      .catch(response => {
+        notify({
+          title: "プレビュー実行エラー",
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
       })
       .then(() => {
         this.setState({
           loading: false
         })
+        this.updateCache()
       })
   }
 
