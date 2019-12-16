@@ -18,7 +18,7 @@ jobs:
         shell: bash
         run: |
           sudo apt-get -y install git docker
-          git clone https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-cli.git
+          git clone -b github_actions https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-cli.git
           ls 
           cd kskp-cli
           echo "--------"
