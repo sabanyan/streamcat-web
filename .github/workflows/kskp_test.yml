@@ -32,6 +32,10 @@ jobs:
           source <(sudo ./install.sh)
           echo "--------"
           kskp install develop
+
+      - name: test KSKP-Web
+        shell: bash
+        run: |
           docker start develop_kskp-ap_1
           docker exec develop_kskp-ap_1 /bin/bash -c ' \
           python -m unittest kskp.web.backend.api.tests.test_auth && \
