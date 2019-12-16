@@ -74,13 +74,16 @@ class LibraryInspector extends React.Component<Props> {
             const content = {frame_uuid:frame_uuid, visualize:v, headers:headers}
             contents.push({title: v.label, content: content, parentProps: this.props})
           }
-          ModalUtil.emitModal({
-            id: Constants.preview.DATASOURCE,
-            visible: true,
-            contents: contents,
-            title: preview_label
-          })
-          
+          const sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
+          (async () => {
+            await sleep(1000);
+            ModalUtil.emitModal({
+              id: Constants.preview.DATASOURCE,
+              visible: true,
+              contents: contents,
+              title: preview_label
+            })
+          })();
       }).catch(response => {
         notify({
           title: "プレビュー実行エラー",
