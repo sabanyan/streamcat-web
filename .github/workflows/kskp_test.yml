@@ -5,6 +5,7 @@ on:
     branches:
       - develop_github_actions
       - develop
+      - master
 jobs:
   build:
     runs-on: ubuntu-latest
