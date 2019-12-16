@@ -33,7 +33,8 @@ jobs:
           echo "--------"
           kskp install develop
           docker start develop_kskp-ap_1
-          docker exec -it develop_kskp-ap_1 /bin/bash
-          python -m unittest kskp.backend.api.tests.test_auth
-          python -m unittest kskp.web.backend.api.tests.test_lib.DataStoreTestCase
+          docker exec -it develop_kskp-ap_1 /bin/bash -c ' \
+          python -m unittest kskp.web.backend.api.tests.test_auth && \
+          python -m unittest kskp.web.backend.api.tests.test_lib.DataStoreTestCase && \
           python -m unittest kskp.web.backend.api.tests.test_lib.LibraryTestCase
+          '
