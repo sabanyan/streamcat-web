@@ -21,9 +21,14 @@ jobs:
           git clone https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-cli.git
           ls 
           cd kskp-cli
-          echo "-----"
+          echo "--------"
           ls
-          sudo sh ./install.sh
+          echo "--------"
+          echo "check shell"
+          echo $SHELL
+          echo "--------"
+          chmod u+x ./install.sh
+          sudo ./install.sh
           kskp install develop
           docker start kskp
           docker exec -it develop_kskp-ap_1 /bin/bash
