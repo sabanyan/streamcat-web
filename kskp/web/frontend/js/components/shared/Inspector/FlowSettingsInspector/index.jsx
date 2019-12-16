@@ -132,7 +132,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     let inputParams, inputParamsContainer, addFlowParams
     this.paramRefs = []
     inputParams = params.map((param, index) => {
-      return <div key={param.name} className={style.flow_param}>
+      return <div key={index} className={style.flow_param}>
         <div className={style.left}>
           <input ref={(ref) => {
             //render時にrefがnullのケースでcallされる場合があるので、
