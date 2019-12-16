@@ -91,7 +91,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           })
       })
   }
-
   
   previewFromFlow (visualizers, preview_label, flow_uuid:string, stepIds:string[]) {
     const {notify} = this.props
@@ -109,12 +108,16 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           const content = {flow_uuid:flow_uuid, stepIds:stepIds, visualize:v, headers:headers}
           contents.push({title: v.label, content: content, parentProps: this.props})
         }
-        ModalUtil.emitModal({
-          id: Constants.preview.DATASOURCE,
-          visible: true,
-          contents: contents,
-          title: preview_label
-        })
+        const sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
+        (async () => {
+          await sleep(1000);
+          ModalUtil.emitModal({
+            id: Constants.preview.DATASOURCE,
+            visible: true,
+            contents: contents,
+            title: preview_label
+          })
+        })();
       })
       .catch(response => {
         notify({
@@ -149,12 +152,17 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
             const content = {frame_uuid:frame_uuid, visualize:v, headers:headers}
             contents.push({title: v.label, content: content, parentProps: this.props})
           }
-          ModalUtil.emitModal({
-            id: Constants.preview.DATASOURCE,
-            visible: true,
-            contents: contents,
-            title: preview_label
-          })
+          const sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
+          (async () => {
+            await sleep(1000);
+            ModalUtil.emitModal({
+              id: Constants.preview.DATASOURCE,
+              visible: true,
+              contents: contents,
+              title: preview_label
+            })
+          })();
+          
       })
       .catch(response => {
         notify({
