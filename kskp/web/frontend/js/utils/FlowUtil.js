@@ -254,51 +254,33 @@ export default class FlowUtil {
     }
 
     let saveNotify
-    if (notify) {
-      if (locksModel && locksModel.error) {
-        saveNotify = notify({
-          title: 'フロー保存エラー',
-          message: locksModel.error.message,
-          status: 'loading',
-          dismissAfter: 0
-        })
-        return false
-      } else {
-        saveNotify = notify({
-          title: 'フロー保存中',
-          message: 'フローの設定を保存しています',
-          status: 'loading',
-          dismissAfter: 0
-        })
-      }
-    }
-
-    return new Promise((resolve, reject) => {
-      APIUtil.put('flows/' + flowUUID, putBody).then((response) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        resolve(response)
-      }, (error) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
-      })
+    saveNotify = notify({
+      title: 'フロー保存中',
+      message: 'フローの設定を保存しています',
+      status: 'loading',
+      dismissAfter: 0
     })
-  }
+
+
+    return APIUtil.put('flows/' + flowUUID, putBody)
+    .catch((message) => {
+      console.log(message)
+    })
+    .then((response) => {
+      if (dismissNotify) dismissNotify(saveNotify.id)
+      if (locksModel && locksModel.error) throw locksModel.error.message
+      if (!response.data.success) throw ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response))
+    }).catch((message) => {
+      notify({
+        title: 'フロー保存エラー',
+        message: message,
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
+      })
+      reject(message)
+    })
+}
 
   // static copyStep(step:StepModelType):StepModelType{
   // }
