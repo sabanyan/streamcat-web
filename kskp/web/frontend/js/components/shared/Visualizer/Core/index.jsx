@@ -33,7 +33,7 @@ export default class Visualizer extends React.Component<Props, State> {
       headers : [],
       html: null,
       args: initialArgs,
-      is_loading: (props.result) ? false : true
+      is_loading: true
     }
 
   }
@@ -64,27 +64,30 @@ export default class Visualizer extends React.Component<Props, State> {
   }
   
   componentDidMount () {
-    const {result, visualize} = this.props
-    const args = this.state.args
-    this.setState({
-      is_loading: true
-    }, () => {
-      if (result) {
-        this.setState({
-          html : result.html,
-          args : result.args,
-          is_loading : false
-        })
-      } else {
-        this.requestVisualize()
-          .then(() => {
-            this.setState({
-              is_loading : false
-            })
+    const sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
+    (async () => {
+      await sleep(1000);
+      const {result, visualize} = this.props
+      const args = this.state.args
+      this.setState({
+        is_loading: true
+      }, () => {
+        if (result) {
+          this.setState({
+            html : result.html,
+            args : result.args,
+            is_loading : false
           })
-      }
-      
-    })
+        } else {
+          this.requestVisualize()
+            .then(() => {
+              this.setState({
+                is_loading : false
+              })
+            })
+        }
+      })
+    })();
   }
 
   componentDidUpdate () {
