@@ -868,6 +868,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   renderInspector () {
+    const {notify, dissmissNotify} = this.props
     const data: LibraryListDataType = this.state.selected_data
     let onClickDelete = null
     let onClickApply = null
@@ -896,7 +897,10 @@ export default class Library extends React.Component<Props, State> {
                              onClickMove={onClickMove}
                              onClickEdit={onClickEdit}
                              onBlurTitle={(e) => this.onBlurTitle(e,data)}
-                             visualizers={this.state.visualizers}/>
+                             visualizers={this.state.visualizers}
+                             notify={notify}
+                             dissmissNotify={dissmissNotify}
+                             />
   }
 
   onClickApply (selected_data: LibraryListDataType) {
