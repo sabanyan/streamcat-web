@@ -95,7 +95,11 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
               contents: contents,
               title: selected_step.getLabel()
             })
-        }).then( () => {
+        })
+        .catch((message) => {
+          console.log(message)
+        })
+        .then(() => {
             this.setState({
               loading: false
             })
