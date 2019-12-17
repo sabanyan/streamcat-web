@@ -42,7 +42,8 @@ class LibraryInspector extends React.Component<Props> {
 
   onClickPreview(e) {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
-    const {data, visualizers} = this.props
+    let {data, visualizers} = this.props
+    visualizers = SortUtil.getSortedContents(visualizers)
 
     try {
       if (!visualizers) "visualizers are not defined"
@@ -50,51 +51,24 @@ class LibraryInspector extends React.Component<Props> {
       this.setState({
         loading:true
       }, () => {
-        this.preview(visualizers, data.label, data.uuid)
+        let contents = []
+        for (const v of visualizers) {
+          let content = {frame_uuid:data.uuid, visualize:v}
+          contents.push({title: v.label, content: content, parentProps: this.props})
+        }
+    
+        ModalUtil.emitModal({
+          id: Constants.preview.DATASOURCE,
+          visible: true,
+          contents: contents,
+          title: data.label
+        })
       })
     } catch(e) {
       console.log(e)
     }
   }
 
-  preview (visualizers, preview_label, frame_uuid:string) {
-    // headers
-    const {notify, dissmissNotify} = this.props
-   
-      API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
-      .then((res) => {
-          if (!res.data.success) throw res
-          const lasts = res.data.lasts
-          const headers = lasts[0].args.column_names
-          // vizs
-          visualizers = SortUtil.getSortedContents(visualizers)
-          
-          let contents = []
-          for (const v of visualizers) {
-            const content = {frame_uuid:frame_uuid, visualize:v, headers:headers}
-            contents.push({title: v.label, content: content, parentProps: this.props})
-          }
-          ModalUtil.emitModal({
-            id: Constants.preview.DATASOURCE,
-            visible: true,
-            contents: contents,
-            title: preview_label
-          })
-          
-      }).catch(response => {
-        notify({
-          title: "プレビュー実行エラー",
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-      }).then(() => {
-        this.setState({
-          loading:false
-        })
-      })
-  }
 
   onClickEdit(e) {
     const {data, onClickEdit} = this.props

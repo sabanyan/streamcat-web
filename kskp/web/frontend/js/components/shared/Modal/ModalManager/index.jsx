@@ -37,6 +37,7 @@ export default class ModalManager extends React.Component {
   }
 
   render () {
+       const {notify, dismissNotify} = this.props
 
     return <div>
       <Modal key={Constants.modal.ADD_COMMAND}
@@ -48,7 +49,9 @@ export default class ModalManager extends React.Component {
       </Modal>
       <Modal key={Constants.preview.DATASOURCE}
              id={Constants.preview.DATASOURCE} title="プレビュー" dynamic={true}
-             preview={true} footer={false}>
+             preview={true} footer={false}
+             notify={notify}
+             dismissNotify={dismissNotify}>
       </Modal>
       <Modal key={Constants.modal.SHOW_MESSAGE}
              id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true}
