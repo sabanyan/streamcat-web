@@ -25,7 +25,8 @@ export default class PreviewModal extends React.Component<Props, State> {
     super(props)
     this.state = {
       selected_tab_id: 0,
-      results: []
+      results: [],
+      headers: []
     }
   }
 
@@ -33,10 +34,10 @@ export default class PreviewModal extends React.Component<Props, State> {
     this.setState({selected_tab_id: tab_id})
   }
 
-  saveResults (index: number, result: {}) {
+  saveResults (index: number, result: {}, headers=[]) {
     let results = this.state.results
     results[index] = result
-    this.setState({results: results})
+    this.setState({results: results, headers: headers})
   }
 
   loadResults (index: number) {
@@ -46,14 +47,18 @@ export default class PreviewModal extends React.Component<Props, State> {
   }
 
   renderTabContent(index) {
+    const {notify, dismissNotify} = this.props
     const contents = this.props.contents
-    const {flow_uuid, stepIds, frame_uuid,  visualize, headers} = contents[index].content
+    const {flow_uuid, stepIds, frame_uuid,  visualize} = contents[index].content
     const result = this.state.results[index]
 
     return <Visualizer key={this.props.title + index}
-      flow_uuid={flow_uuid} stepIds={stepIds} frame_uuid={frame_uuid} visualize={visualize} headers={headers}
-      onSaveResult={(index, result) => {this.saveResults(index, result)}}
-      index={index} result={result} />
+      flow_uuid={flow_uuid} stepIds={stepIds} frame_uuid={frame_uuid} visualize={visualize} headers={this.state.headers}
+      onSaveResult={(index, result, headers) => {this.saveResults(index, result, headers)}}
+      index={index} result={result}
+      notify={notify}
+      dismissNotify={dismissNotify}
+      />
   }
 
   componentWillReceiveProps(nextProps){
