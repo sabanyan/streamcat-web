@@ -62,8 +62,8 @@ export default class Visualizer extends React.Component<Props, State> {
 
     return result
   }
-
-  componentWillMount () {
+  
+  componentDidMount () {
     const {result, visualize} = this.props
     const args = this.state.args
     this.setState({
