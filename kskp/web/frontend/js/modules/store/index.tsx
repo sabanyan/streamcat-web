@@ -27,6 +27,6 @@ const enhancers = composeWithDevTools(
     // other store enhancers if any
   )
 
-const store = createStore(reducers,  enhancers)
+const store = createStore(reducers, enhancers)
 
 export default store

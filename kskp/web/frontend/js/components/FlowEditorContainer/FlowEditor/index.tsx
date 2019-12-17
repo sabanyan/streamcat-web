@@ -270,10 +270,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             updateStep={updateStep}
             sortStepSrcEnd={sortStepSrcEnd}å
         />
-        <ModalManager
-            notify={notify}
-            dismissNotify={dismissNotify}
-        />
+
         <NotificationManager />
       </div>
     </div>
