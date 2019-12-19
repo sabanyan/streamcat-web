@@ -6,9 +6,14 @@ import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import { connect } from 'react-redux'
 import {API} from 'Modules/api/index'
 import { NavigationModel} from 'Model/index';
+import { ModalManager } from 'Shared/Modal'
+import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 export type Props = {
     viewId  :ViewId
+
+    notify : Function;
+    dismissNotify : Function;
 }
 
 export type State = {
@@ -24,7 +29,7 @@ export enum ViewId {
     Undefined,
 }
 
-export class Kskp extends React.Component<Props, State> {
+class ViewSwitcher extends React.Component<Props, State> {
 
     constructor(props:Props) {
         super(props)
@@ -72,6 +77,7 @@ export class Kskp extends React.Component<Props, State> {
 
     render () {
         const {viewId} = this.props
+        const {notify, dismissNotify} = this.props
         let result:any = null
         try {
             result = <div className={style.kskp}>
@@ -80,6 +86,10 @@ export class Kskp extends React.Component<Props, State> {
                 </div>
                 <div className={style.view}>
                     {this.renderView(viewId)}
+                    <ModalManager
+                        notify={notify}
+                        dismissNotify={dismissNotify}
+                    />
                 </div>
             </div>
         } catch(e) {
@@ -89,3 +99,24 @@ export class Kskp extends React.Component<Props, State> {
         } 
     }
 }
+
+export const Kskp = connect(
+    state => {
+        return {}
+    },
+    dispatch => {
+        return {
+            notify (context:{}) {
+                return dispatch(addNotification(context))
+            },
+            updateNotify (context:{}) {
+                return dispatch(updateNotification(context))
+            },
+            dismissNotify (id:string) {
+                setTimeout(() => {
+                    dispatch(removeNotification(id))
+                }, 1000)
+            }
+        }
+    }
+)(ViewSwitcher)

@@ -1135,12 +1135,17 @@ export default class Library extends React.Component<Props, State> {
   }
 
   render () {
+    const {notify, dissmissNotify} = this.props
+
     let containerClassName = (this.isDialog()) ? 'container' : 'container mt-40px'
     return <div className={style.inspector_list_container}>
       <div className={containerClassName}>
         <Loader center={true} absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
-        <ModalManager />
+        <ModalManager
+          notify={notify}
+          dissmissNotify={dissmissNotify}
+        />
         <NotificationManager />
       </div>
     </div>
