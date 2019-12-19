@@ -261,29 +261,25 @@ export default class FlowUtil {
       dismissAfter: 0
     })
 
-
     return APIUtil.put('flows/' + flowUUID, putBody)
-    .catch((message) => {
-      console.log(message)
-    })
-    .then((response) => {
-      if (dismissNotify) dismissNotify(saveNotify.id)
-      if (locksModel && locksModel.error) throw locksModel.error.message
-      if (!response.data.success) throw ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response))
-    }).catch((message) => {
-      notify({
-        title: 'フロー保存エラー',
-        message: message,
-        status: 'error',
-        dismissAfter: 0,
-        closeButton: true
+      .catch((message) => {
+        console.log(message)
       })
-      reject(message)
-    })
-}
-
-  // static copyStep(step:StepModelType):StepModelType{
-  // }
+      .then((response) => {
+        if (dismissNotify) dismissNotify(saveNotify.id)
+        if (locksModel && locksModel.error) throw locksModel.error.message
+        if (!response.data.success) throw ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response))
+      }).catch((message) => {
+        notify({
+          title: 'フロー保存エラー',
+          message: message,
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+        reject(message)
+      })
+  }
 
   /**
    * Srcsをコピーする
