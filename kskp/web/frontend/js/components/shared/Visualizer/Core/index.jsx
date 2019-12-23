@@ -63,31 +63,27 @@ export default class Visualizer extends React.Component<Props, State> {
     return result
   }
   
-  componentDidMount () {
-    const sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
-    (async () => {
-      await sleep(1000);
-      const {result, visualize} = this.props
-      const args = this.state.args
-      this.setState({
-        is_loading: true
-      }, () => {
-        if (result) {
-          this.setState({
-            html : result.html,
-            args : result.args,
-            is_loading : false
-          })
-        } else {
-          this.requestVisualize()
-            .then(() => {
-              this.setState({
-                is_loading : false
-              })
+  componentWillMount () {
+    const {result, visualize} = this.props
+    const args = this.state.args
+    this.setState({
+      is_loading: true
+    }, () => {
+      if (result) {
+        this.setState({
+          html : result.html,
+          args : result.args,
+          is_loading : false
+        })
+      } else {
+        this.requestVisualize()
+          .then(() => {
+            this.setState({
+              is_loading : false
             })
-        }
-      })
-    })();
+          })
+      }
+    })
   }
 
   componentDidUpdate () {

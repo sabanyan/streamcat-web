@@ -48,7 +48,7 @@ export default class ModalManager extends React.Component {
              done={'追加する'}>
       </Modal>
       <Modal key={Constants.preview.DATASOURCE}
-             id={Constants.preview.DATASOURCE} title="プレビュー" dynamic={true}
+             id={Constants.preview.DATASOURCE} dynamic={true}
              preview={true} footer={false}
              notify={notify}
              dismissNotify={dismissNotify}>
