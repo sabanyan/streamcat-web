@@ -52,10 +52,12 @@ export default class PreviewModal extends React.Component<Props, State> {
     const {notify, dismissNotify, title} = this.props
     const contents = this.props.contents
     const {flow_uuid, stepIds, frame_uuid,  visualize} = contents[index].content
+    const {id} = contents[index]
+
     const result = this.state.results[index]
 
     if (title) {
-      return <Visualizer key={title + index}
+      return <Visualizer key={id + index}
       flow_uuid={flow_uuid} stepIds={stepIds} frame_uuid={frame_uuid} visualize={visualize} headers={this.state.headers}
       onSaveResult={(index, result, headers) => {this.saveResults(index, result, headers)}}
       index={index} result={result}

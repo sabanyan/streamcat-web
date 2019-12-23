@@ -44,6 +44,8 @@ class LibraryInspector extends React.Component<Props> {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
     let {data, visualizers} = this.props
     visualizers = SortUtil.getSortedContents(visualizers)
+    
+    let id = data.uuid
 
     try {
       if (!visualizers) "visualizers are not defined"
@@ -54,7 +56,7 @@ class LibraryInspector extends React.Component<Props> {
         let contents = []
         for (const v of visualizers) {
           let content = {frame_uuid:data.uuid, visualize:v}
-          contents.push({title: v.label, content: content, parentProps: this.props})
+          contents.push({title: v.label, content: content, parentProps: this.props, id:id})
         }
     
         ModalUtil.emitModal({
