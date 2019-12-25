@@ -19,6 +19,7 @@ setup(
         'awscli',
         'matplotlib',
         'watchdog',
+        'chardet',
         'cx_Oracle'
     ],
 )

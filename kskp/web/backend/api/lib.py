@@ -191,7 +191,7 @@ def delete_lock(lock_uuid):
     """
     ロックを解除する
     """
-    lock_manager = app.config['LOCK_MANAGER'] 
+    lock_manager = app.config['LOCK_MANAGER']
     lock_manager.unlock(lock_uuid)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
