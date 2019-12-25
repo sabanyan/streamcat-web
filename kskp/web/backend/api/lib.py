@@ -177,7 +177,7 @@ def delete_all_locks():
     全てのロックを解除する
     """
     lock_manager = app.config['LOCK_MANAGER'] 
-    lock_manager.unlock_all()
+    return lock_manager.unlock_all()
 
 """
 frontendのNavagator.sendBeacon()に対応するため、下記のように変更
@@ -192,7 +192,7 @@ def delete_lock(lock_uuid):
     ロックを解除する
     """
     lock_manager = app.config['LOCK_MANAGER'] 
-    lock_manager.unlock(lock_uuid)
+    return lock_manager.unlock(lock_uuid)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
