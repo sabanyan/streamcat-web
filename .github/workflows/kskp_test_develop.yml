@@ -23,10 +23,6 @@ jobs:
           cd kskp-cli
           sudo ln -sf $(pwd)/kskp /usr/local/bin/kskp
           source <(echo 'export KSKP_CLI='`pwd`)
-
-      - name: build kskp develop
-        shell: bash
-        run: |
           kskp install develop
           docker start develop_kskp-ap_1
 
