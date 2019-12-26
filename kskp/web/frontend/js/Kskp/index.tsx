@@ -7,6 +7,8 @@ import style from './style.scss'
 import { NavigationModel } from 'Model/index';
 import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import NavigationBar from 'Components/shared/Base/NavigationBar/index';
+import { ModalManager } from 'Shared/Modal'
+import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 import {
     FlowEditorContainer, FlowListContainer, ProjectListContainer, LibraryListContainer,
@@ -15,6 +17,9 @@ import {
 
 export type Props = {
     viewId: ViewId
+
+    notify : Function;
+    dismissNotify : Function;
 }
 
 export type State = {
@@ -30,7 +35,7 @@ export enum ViewId {
     Undefined = -1,
 }
 
-export class Kskp extends React.Component<Props, State> {
+class ViewSwitcher extends React.Component<Props, State> {
 
     constructor(props:Props) {
         super(props)
@@ -40,7 +45,7 @@ export class Kskp extends React.Component<Props, State> {
         API.REQUEST.GET.NAVIGATION(inject_flow_uuid, inject_project_uuid)
             .then((res) => {
                 this.setState({
-                   nav: API.PARSE.GET.NAVIGATION(res)
+                   nav: API.RESPONSE.PARSE.GET.NAVIGATION(res)
                 })
             })       
     }
@@ -83,12 +88,16 @@ export class Kskp extends React.Component<Props, State> {
     }
 
     render() {
-        const { viewId } = this.props
+        const { viewId, notify, dismissNotify } = this.props
         let result: any = null
         try {
             result = <div className={style.kskp}>
                 {this.renderNavigationBar()}
-                {this.renderView(viewId)}           
+                {this.renderView(viewId)}
+                <ModalManager
+                        notify={notify}
+                        dismissNotify={dismissNotify}
+                    />           
             </div>
         } catch(e) {
             console.log(e)
@@ -97,3 +106,24 @@ export class Kskp extends React.Component<Props, State> {
         } 
     }
 }
+
+export const Kskp = connect(
+    state => {
+        return {}
+    },
+    dispatch => {
+        return {
+            notify (context:{}) {
+                return dispatch(addNotification(context))
+            },
+            updateNotify (context:{}) {
+                return dispatch(updateNotification(context))
+            },
+            dismissNotify (id:string) {
+                setTimeout(() => {
+                    dispatch(removeNotification(id))
+                }, 1000)
+            }
+        }
+    }
+)(ViewSwitcher)

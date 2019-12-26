@@ -75,109 +75,37 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   onClickPreview (e: Event) {
       const flow_uuid = inject_flow_uuid
       const selected_step = this.getSelectedStep()
+      let id = selected_step.id
       let stepIds = []
-      stepIds.push(selected_step.id)
-      const visualizers = this.props.mast.visualizers
+      stepIds.push(id)
+      let visualizers = this.props.mast.visualizers
+      visualizers = SortUtil.getSortedContents(visualizers)
       this.setState({
         loading: true
       }, () => {
         this.saveFlow()
           .then(() => {
-            if (selected_step.hasData()) {
-              this.previewFromFrame(visualizers, selected_step.getLabel(), selected_step.uuid)
-            } else {
-              this.previewFromFlow(visualizers, selected_step.getLabel(), flow_uuid, stepIds)
+            let contents = []
+            for (const v of visualizers) {
+              let content = {flow_uuid:flow_uuid, stepIds:stepIds, frame_uuid:selected_step.uuid, visualize:v}
+              contents.push({title: v.label, content: content, id:id})
             }
-          })
-      })
-  }
-  
-  previewFromFlow (visualizers, preview_label, flow_uuid:string, stepIds:string[]) {
-    const {notify} = this.props
-    
-    // viz headers 取得
-    API.REQUEST.POST.VIZS_FROM_FLOW(flow_uuid, stepIds)
-      .then((res) => {
-        if (!res.data.success) throw res
-        const lasts = res.data.lasts
-        const headers = lasts[0].args.column_names
-        // vizs
-        visualizers = SortUtil.getSortedContents(visualizers)
-        let contents = []
-        for (const v of visualizers) {
-          const content = {flow_uuid:flow_uuid, stepIds:stepIds, visualize:v, headers:headers}
-          contents.push({title: v.label, content: content, parentProps: this.props})
-        }
-        const sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
-        (async () => {
-          await sleep(1000);
-          ModalUtil.emitModal({
-            id: Constants.preview.DATASOURCE,
-            visible: true,
-            contents: contents,
-            title: preview_label
-          })
-        })();
-      })
-      .catch(response => {
-        notify({
-          title: "プレビュー実行エラー",
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-      })
-      .then(() => {
-        this.setState({
-          loading: false
-        })
-        this.updateCache()
-      })
-  }
-
-  previewFromFrame (visualizers, preview_label, frame_uuid:string) {
-    const {notify} = this.props
-    
-    // viz headers 取得
-    API.REQUEST.POST.VIZS_FROM_FRAME(frame_uuid)
-      .then((res) => {
-          if (!res.data.success) throw res
-          const lasts = res.data.lasts
-          const headers = lasts[0].args.column_names
-          // vizs
-          visualizers = SortUtil.getSortedContents(visualizers)
-          let contents = []
-          for (const v of visualizers) {
-            const content = {frame_uuid:frame_uuid, visualize:v, headers:headers}
-            contents.push({title: v.label, content: content, parentProps: this.props})
-          }
-          const sleep = msec => new Promise(resolve => setTimeout(resolve, msec));
-          (async () => {
-            await sleep(1000);
             ModalUtil.emitModal({
               id: Constants.preview.DATASOURCE,
               visible: true,
               contents: contents,
-              title: preview_label
+              title: selected_step.getLabel()
             })
-          })();
-          
-      })
-      .catch(response => {
-        notify({
-          title: "プレビュー実行エラー",
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
         })
-      })
-      .then(() => {
-        this.setState({
-          loading: false
+        .catch((message) => {
+          console.log(message)
         })
-        this.updateCache()
+        .then(() => {
+            this.setState({
+              loading: false
+            })
+            this.updateCache()
+        })
       })
   }
 

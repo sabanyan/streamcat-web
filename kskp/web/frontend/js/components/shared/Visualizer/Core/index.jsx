@@ -1,7 +1,7 @@
 //@flow
 import * as React from 'react'
 import { VisualizeModel } from 'Model/index'
-import { APIUtil } from 'Utils/index'
+import { APIUtil, ReactDomUtil, ErrorUtil } from 'Utils/index'
 import { EmptyState, Loader } from 'Shared/Base'
 import { PreviewInspector } from 'Shared/Inspector'
 import style from './style.scss'
@@ -13,6 +13,8 @@ type Props = {
   stepIds: string[];
   frame_uuid: string;
   headers: string[];
+  notify: Function;
+  dissmissNotify: Function;
 }
 
 type State = {
@@ -31,7 +33,7 @@ export default class Visualizer extends React.Component<Props, State> {
       headers : [],
       html: null,
       args: initialArgs,
-      is_loading: (props.result) ? false : true
+      is_loading: true
     }
 
   }
@@ -60,7 +62,7 @@ export default class Visualizer extends React.Component<Props, State> {
 
     return result
   }
-
+  
   componentWillMount () {
     const {result, visualize} = this.props
     const args = this.state.args
@@ -81,8 +83,28 @@ export default class Visualizer extends React.Component<Props, State> {
             })
           })
       }
-      
     })
+  }
+
+  componentDidUpdate () {
+    //visualizeRequestで取得したhtml内のscriptがrenderされた後にscriptを再取得
+    const scripts = $('.visualize-component').find('script')
+    if (scripts[0]) {
+      //再度appendし直してjsを実行させる
+      this.innerHTMLScriptReLaunch(scripts[0])
+    }
+  }
+
+  /**
+   * innerHTMLのscriptをappendし直して実行させる
+   * @param script
+   */
+  innerHTMLScriptReLaunch (script) {
+    var s = document.createElement('script')
+    script.src ? (s.src = script.src) : (s.innerHTML = script.innerHTML)
+    s.async = false
+    document.head.append(s)
+    s.remove()
   }
 
   getRequest (args) {
@@ -117,28 +139,31 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   requestVisualize () {
-    const {index} = this.props
+    const {index, notify, dissmissNotify} = this.props
     const args = this.state.args
     const {url, body} = this.getRequest(args)
-    try {
-      return APIUtil.post(url, body).then((res) => {
-        if (!res.data.lasts) throw "undefined res.data.lasts"
-        if (!res.data.success) throw res.data.message
 
-        const lasts = res.data.lasts
-        const contents = lasts[0].contents
-        const result = {
-          html: contents,
-          args: args
-        }
-        this.props.onSaveResult(index, result)
-        this.setState({args: args, html: contents})
-      }).catch((error) => {
-        console.log(error)
+    return APIUtil.post(url, body).then((res) => {
+      if (!res.data.success) throw res
+
+      const lasts = res.data.lasts
+      const headers = lasts[0].args.column_names
+      const contents = lasts[0].contents
+      const result = {
+        html: contents,
+        args: args
+      }
+      this.props.onSaveResult(index, result, headers)
+      this.setState({args: args, html: contents})
+    }).catch((response) => {
+      notify({
+        title: "プレビュー実行エラー",
+        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
       })
-    } catch (e) {
-      console.log(e)
-    }
+    })
   }
 
   /**
@@ -160,27 +185,6 @@ export default class Visualizer extends React.Component<Props, State> {
           this.setState({is_loading: false})
         })
     })
-  }
-
-  componentDidUpdate () {
-    //visualizeRequestで取得したhtml内のscriptがrenderされた後にscriptを再取得
-    const scripts = $('.visualize-component').find('script')
-    if (scripts[0]) {
-      //再度appendし直してjsを実行させる
-      this.innerHTMLScriptReLaunch(scripts[0])
-    }
-  }
-
-  /**
-   * innerHTMLのscriptをappendし直して実行させる
-   * @param script
-   */
-  innerHTMLScriptReLaunch (script) {
-    var s = document.createElement('script')
-    script.src ? (s.src = script.src) : (s.innerHTML = script.innerHTML)
-    s.async = false
-    document.head.append(s)
-    s.remove()
   }
 
   onBoleanArgsChange(e, param, value) {
