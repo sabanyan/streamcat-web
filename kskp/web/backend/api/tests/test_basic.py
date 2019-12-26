@@ -202,8 +202,10 @@ class FrameApiTestCase(TestCaseBase):
         with app.test_client() as client:
             response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
 
-        # ResourceWarningが出てしまうが、特に問題ありません。
         self.assertEqual(response.status_code, 200)
+        # GET /filesの@login_required_apiを解除すればテストはパスするが、解除したまま忘れてしまうリスクもあるしで悩ましい
+        self.assertFalse('not authorized' in str(response.data), 'GET /filesの認証を解除しないとテストできないです')
+        # ResourceWarningが出てしまうが、特に問題ありません。
         self.assertEqual(response.mimetype, 'text/csv')
         self.assertEqual(response.data,
                          b'\xe9\xa1\xa7\xe5\xae\xa2,\xe6\x95\xb0\xe9\x87\x8f,'
@@ -230,10 +232,9 @@ class FrameApiTestCase(TestCaseBase):
         with app.test_client() as client:
             response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
 
-        pprint.pprint(response.data)
-
-        # ResourceWarningが出てしまうが、特に問題ありません。
         self.assertEqual(response.status_code, 200)
+        self.assertFalse('not authorized' in str(response.data), 'GET /filesの認証を解除しないとテストできないです')
+        # ResourceWarningが出てしまうが、特に問題ありません。
         self.assertEqual(response.mimetype, 'text/csv')
         self.assertEqual(response.data,
                          b'\x8c\xda\x8bq,\x90\x94\x97\xca,\x8b\xe0\x8az\r\n'
