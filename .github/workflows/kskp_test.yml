@@ -25,7 +25,7 @@ jobs:
           sudo ln -sf $(pwd)/kskp /usr/local/bin/kskp
           source <(echo 'export KSKP_CLI='`pwd`)
 
-  test master:
+  test_master:
     name: test master branch
     runs-on: ubuntu-latest
     needs: build
@@ -60,10 +60,10 @@ jobs:
           python -m unittest kskp.web.backend.api.tests.test_lib.LibraryTestCase
           '
 
-  test develop:
+  test_develop:
     name: test develop branch
     runs-on: ubuntu-latest
-    needs: build
+    needs:
       - develop
       - develop_github_actions
 
