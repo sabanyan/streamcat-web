@@ -78,26 +78,25 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   onLoad() {
-    const { result, headers } = this.props
-
+    const {result, visualize} = this.props
+    const args = this.state.args
     this.setState({
-      isLoading: false,
-      headers: headers
+      isLoading: true
     }, () => {
       if (result) {
         this.setState({
-          html: result.html,
-          args: result.args,
-          isLoading: false
+          html : result.html,
+          args : result.args,
+          isLoading : false
         })
       } else {
         this.requestVisualize()
-        .then(() => {
-          this.setState({
-            isLoading: false
+          .then(() => {
+            this.setState({
+              isLoading : false
+            })
           })
-        })
-      } 
+      }
     })
   }
 
@@ -129,13 +128,15 @@ export default class Visualizer extends React.Component<Props, State> {
       })
       .catch((error) => {
         this.clear()
-        notify({
-          title: error.title,
-          message: error.message,
-          status: (error.messageStatus) ? error.messageStatus : "error",
-          dismissAfter: 0,
-          closeButton: true
-        })
+        if (error.message !== "VisualizeInitException") {
+          notify({
+            title: error.title,
+            message: error.message,
+            status: (error.messageStatus) ? error.messageStatus : "error",
+            dismissAfter: 0,
+            closeButton: true
+          })
+        }  
         console.log(error)
       })
   }
@@ -193,8 +194,8 @@ export default class Visualizer extends React.Component<Props, State> {
 
   renderContents() {
     let result
-    if (!this.state || !this.state.html) {
-      result = <EmptyState title={'表示することができません'} description={'条件を変更して反映ボタンを押してください'} icon={'cloud_off'} />
+    if (!this.state.html) {
+      result = <EmptyState title={'表示することができません'} description={'条件を変更して表示ボタンを押してください'} icon={'cloud_off'} />
     } else {
       result = <div className={style.visualizeContainer}>
         <div dangerouslySetInnerHTML={{__html: this.state.html}}></div>
