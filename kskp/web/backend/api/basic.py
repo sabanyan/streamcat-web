@@ -318,14 +318,17 @@ def download_file():
         """
         指定されたファイルの文字コードと改行コードを変換する
         """
-        with file_path.open(encoding=source_encoding, newline=source_newline) as f:
+        with file_path.open(encoding=source_encoding, newline=source_newline, errors='replace') as f:
             for line in f:
                 if source_encoding == target_encoding and source_newline == target_newline:
                     # 変換処理が必要ない場合は処理を軽くする
                     yield line
                 else:
+                    # 変換できない文字があれば、
+                    # UTF-8への変換の場合は�(U+FFFD)に置き換える
+                    # CP932への変換の場合は?(3F)に置き換える
                     line = line.rstrip(source_newline) + target_newline
-                    yield line.encode(target_encoding)
+                    yield line.encode(target_encoding, errors='replace')
 
     def error(message):
         return jsonify({'success':False, 'code':-1, 'message': message})
@@ -349,7 +352,7 @@ def download_file():
     # 環境変数からダウンロードファイルの文字コード設定値を取得する
     # (設定値がない場合は'UTF-8'とする)
     target_encoding = os.getenv('FRAME_CHARACTER_CODE', 'UTF-8')
-    target_newline = '\r\n' if target_encoding == 'cp932' else '\n'
+    target_newline = '\r\n' if target_encoding in ('cp932', 'CP932') else '\n'
 
     # ダウンロードファイルのサイズを計算する
     if source_encoding == target_encoding and source_newline == target_newline:
@@ -371,7 +374,7 @@ def download_file():
     # frameを返す
     # ・文字コード変換と改行コード変換をしながら返す
     # ・Streamで返すため一時ファイルは作成されない
-    # ・文字コード変換に失敗したらダウンロードは失敗する
+    # ・変換に失敗した文字は代替する文字に置き換える
     from flask import Response
     try:
         response = Response(convert(frame_path, source_encoding, source_newline, target_encoding, target_newline))
