@@ -39,7 +39,7 @@ class ViewSwitcher extends React.Component<Props, State> {
         API.REQUEST.GET.NAVIGATION(inject_flow_uuid, inject_project_uuid)
             .then((res) => {
                 this.setState({
-                   nav : API.PARSE.GET.NAVIGATION(res)
+                   nav : API.RESPONSE.PARSE.GET.NAVIGATION(res)
                 })
             })
        

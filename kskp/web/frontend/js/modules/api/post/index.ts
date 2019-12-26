@@ -13,7 +13,23 @@ const defaultArgs = {
 }
 const defaultVizId = "csvtohtmltable"
 
-export function VIZS_FROM_FLOW(flowUUID:string, stepIds:string[], vizId:string=defaultVizId, args:{}=defaultArgs, url:string=ApiConstants.VIZS.URL.SERVICE) {
+export function VIZS(flowUUID:string|undefined, stepIds:string[]|undefined, frameUUID:string|undefined, vizId:string, args:{}) {
+    
+    let result
+    if (flowUUID && stepIds) {
+        result = VIZS_FROM_FLOW(flowUUID, stepIds, vizId, args)
+    } else if (frameUUID) {
+        result = VIZS_FROM_FRAME(frameUUID, vizId, args)
+    } else {
+        result = new Promise((resolve, reject) => {
+            reject("API POST /VIZ unsupported parameter error")
+        })
+    }
+
+    return result
+}
+
+function VIZS_FROM_FLOW(flowUUID:string, stepIds:string[], vizId:string=defaultVizId, args:{}=defaultArgs, url:string=ApiConstants.VIZS.URL.SERVICE) {
     url   = url + '?from=' + flowUUID
     let data = {}
     stepIds.forEach((stepId, index) => {
@@ -28,7 +44,7 @@ export function VIZS_FROM_FLOW(flowUUID:string, stepIds:string[], vizId:string=d
     return ApiBase.Post(url, data)
 }
 
-export function VIZS_FROM_FRAME(frameUUID:string, args:{}=defaultArgs, vizId:string=defaultVizId,  url:string=ApiConstants.VIZS.URL.SERVICE) {
+function VIZS_FROM_FRAME(frameUUID:string, vizId:string=defaultVizId, args:{}=defaultArgs,  url:string=ApiConstants.VIZS.URL.SERVICE) {
     url   = url + '/' + frameUUID
     let data = {
         "args"  : {

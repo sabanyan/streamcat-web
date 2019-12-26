@@ -19,11 +19,13 @@ export const API = {
         POST    : REQUEST_POST,
         DELETE  : REQUEST_DELETE,
     },
-    PARSE : {
-        GET     : PARSE_GET,
-        PUT     : PARSE_PUT,
-        POST    : PARSE_POST,
-       // DELETE  : PARSE_DELETE
+    RESPONSE: {
+        PARSE : {
+            GET     : PARSE_GET,
+            PUT     : PARSE_PUT,
+            POST    : PARSE_POST,
+           // DELETE  : PARSE_DELETE
+        }
     }
 }
 

@@ -1,6 +1,6 @@
-import {NavigationModel} from "Model/index";
-// Navigation
+import { NavigationModel } from "Model/index";
 
+// Navigation
 type RESPONSE_NAVIGATION = {
     data : {
         success : boolean,
