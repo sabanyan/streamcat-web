@@ -24,13 +24,36 @@ jobs:
           cd kskp-cli
           sudo ln -sf $(pwd)/kskp /usr/local/bin/kskp
           source <(echo 'export KSKP_CLI='`pwd`)
-          kskp install develop
 
-      - name: test KSKP-Web
+      - name: Install docker image(develop branch)
         shell: bash
+        uses: [develop, develop_github_actions]
         run: |
+          kskp install develop
           docker start develop_kskp-ap_1
+
+      - name: Install docker image(master branch)
+        shell: bash
+        uses: master
+        run: |
+          kskp install master
+          docker start master_kskp-ap_1
+
+      - name: test KSKP-Web(develop branch)
+        shell: bash
+        uses: [develop, develop_github_actions]
+        run: |
           docker exec develop_kskp-ap_1 /bin/bash -c ' \
+          python -m unittest kskp.web.backend.api.tests.test_auth && \
+          python -m unittest kskp.web.backend.api.tests.test_lib.DataStoreTestCase && \
+          python -m unittest kskp.web.backend.api.tests.test_lib.LibraryTestCase
+          '
+
+      - name: test KSKP-Web(master branch)
+        shell: bash
+        uses: master
+        run: |
+          docker exec master_kskp-ap_1 /bin/bash -c ' \
           python -m unittest kskp.web.backend.api.tests.test_auth && \
           python -m unittest kskp.web.backend.api.tests.test_lib.DataStoreTestCase && \
           python -m unittest kskp.web.backend.api.tests.test_lib.LibraryTestCase
