@@ -1,11 +1,8 @@
 name: KSKP-Test_schedule_action
 
 on:
-  push:
-    branches:
-      - schedule_action
   schedule:
-    - cron: "25 * * * *"
+    - cron: "30 * * * *"
 
 jobs:
   build:
