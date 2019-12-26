@@ -1,0 +1,39 @@
+name: KSKP-Test
+
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python3.6
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.6
+      - name: Set up kskp(Continuous Integration)
+        shell: bash
+        run: |
+          sudo apt-get -y install git docker build-essential checkinstall
+          git clone -b github_actions https://df86786e5c82ad6f92312b83afb0107529f7ea68:x-oauth-basic@github.com/ksk-anl/kskp-cli.git
+          cd kskp-cli
+          sudo ln -sf $(pwd)/kskp /usr/local/bin/kskp
+          source <(echo 'export KSKP_CLI='`pwd`)
+
+      - name: build kskp master
+        shell: bash
+        run: |
+          kskp install master
+          docker start master_kskp-ap_1
+
+      - name: test KSKP-Web
+        shell: bash
+        run: |
+          docker exec master_kskp-ap_1 /bin/bash -c ' \
+          python -m unittest kskp.web.backend.api.tests.test_auth && \
+          python -m unittest kskp.web.backend.api.tests.test_lib.DataStoreTestCase && \
+          python -m unittest kskp.web.backend.api.tests.test_lib.LibraryTestCase
+          '
