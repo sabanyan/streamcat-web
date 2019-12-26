@@ -5,7 +5,8 @@ on:
     branches:
       - schedule_action
   schedule:
-    - cron: "0 8 * * *"
+    - cron: "*/10 8 * * *"
+
 jobs:
   build:
     runs-on: ubuntu-latest
