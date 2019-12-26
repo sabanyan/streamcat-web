@@ -47,7 +47,6 @@ jobs:
 
       - name: Install docker image(master branch)
         shell: bash
-        uses: master
         run: |
           kskp install master
           docker start master_kskp-ap_1
