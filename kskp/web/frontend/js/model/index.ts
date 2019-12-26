@@ -11,6 +11,7 @@ export {default as NoteStepModel} from './Step/NoteStepModel'
 export {default as SubFlowStepModel} from './Step/SubFlowStepModel'
 export {default as VisualizeModel} from './Visualize/VisualizeModel'
 export {default as LocksModel} from './Locks/index'
+export {default as MessageModel} from './Message/index'
 
 // Props
 export {default as DataFrameStepModelProps } from './Step/DataFrameStepModel'
