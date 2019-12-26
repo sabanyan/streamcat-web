@@ -7,8 +7,8 @@ import { ViewId, Kskp } from './Kskp/index';
 
 window.emitter = new EventEmitter()
 
-let elementId:string | null = null
-let viewId:ViewId = ViewId.Undefined
+let elementId: string | null = null
+let viewId: ViewId = ViewId.Undefined
 
 if (document.getElementById('base')) {
   elementId = 'base'

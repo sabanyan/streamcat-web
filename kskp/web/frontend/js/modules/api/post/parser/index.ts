@@ -1,3 +1,5 @@
+import {MessageModel} from 'Model/index'
+
 // Vizs
 type RESPONSE_VIZS = {
     id      : string,
@@ -6,41 +8,31 @@ type RESPONSE_VIZS = {
     },
     contents    : string
 }
-type RESPONSE_VIZS_FROM_FLOW = {
+
+type RESPONSE = {
     data: {
-        success   : boolean
-        lasts     : RESPONSE_VIZS[]
+        success     : boolean
+        lasts       : RESPONSE_VIZS[]
+        message?    : string
+        code?       : number
     }
 }
 
-type RESPONSE_VIZS_FROM_FRAME = {
-    data: {
-        success   : boolean
-        lasts     : RESPONSE_VIZS
+export function VIZS(res:RESPONSE) {
+
+    if (!res.data.success) {
+        if (res.data.message === "None") {
+            // パラメーターが指定されていない時
+            throw new MessageModel({title: "情報", messageStatus: "info", code: res.data.code, message: "適切なパラメーターを指定してください。"})
+        } else {
+            // 
+            throw new MessageModel({title: "描画エラー", messageStatus: "error", code: res.data.code, message:res.data.message})
+        }
     }
-}
 
-export function VIZS_FROM_FLOW(res:RESPONSE_VIZS_FROM_FLOW) {
-    let result:any = null
-    try {
-        result.headers  = res.data.lasts
-    } catch(e) {
-        console.log(e)
-    } finally {
-        return result
+    if (!res.data.lasts) {
+        throw new MessageModel({title:"Jsonエラー", messageStatus: "error", code:res.data.code, message:res.data.message})
     }
+
+    return res.data.lasts
 }
-
-export function VIZS_FROM_FRAME(res:RESPONSE_VIZS_FROM_FRAME) {
-    let result:any = null
-    try {
-        result.headers  = res.data.lasts
-    } catch(e) {
-        console.log(e)
-    } finally {
-        return result
-    }
-}
-
-
-// Locks
