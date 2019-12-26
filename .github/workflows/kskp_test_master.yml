@@ -1,4 +1,4 @@
-name: KSKP-Test
+name: KSKP-Test_master
 
 on:
   push:
