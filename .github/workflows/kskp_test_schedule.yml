@@ -2,7 +2,7 @@ name: KSKP-Test_schedule_action
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: '*/5 * * * *'
 
 jobs:
   build:
