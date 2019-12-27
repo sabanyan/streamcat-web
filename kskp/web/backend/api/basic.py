@@ -387,14 +387,15 @@ def delete_cache():
 @login_required_api
 def get_navigation():
     from kskp.store import model
-
+        
     navigation = {
         'user_id': '',
         'user_name': '',
         'project_uuid': '',
         'project_name': '',
         'flow_uuid': '',
-        'flow_name': ''
+        'flow_name': '',
+        'depo_name': os.environ['KSKP_DEPO']
     }
 
     flow_uuid = request.args.get('flow_uuid')

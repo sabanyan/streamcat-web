@@ -13,6 +13,7 @@ export {default as VisualizeModel} from './Visualize/VisualizeModel'
 export {default as LocksModel} from './Locks/index'
 
 // Props
-export {default as DataFrameStepModelProps } from './Step/DataFrameStepModel'
-export {default as NoteStepModelProps} from './Step/NoteStepModel'
-export {default as FlowModelProps} from './Flow/FlowModel'
+export {Props as DataFrameStepModelProps } from './Step/DataFrameStepModel'
+export {Props as NoteStepModelProps} from './Step/NoteStepModel'
+export {Props as FlowModelProps} from './Flow/FlowModel'
+export {Props as NavigationModelProps} from './Navigation/NavigationModel'

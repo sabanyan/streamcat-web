@@ -15,7 +15,6 @@ export default class NavigationBar extends React.Component<Props> {
 
   constructor (props: Props) {
     super(props)
-
   }
 
   componentWillMount () {
@@ -97,6 +96,14 @@ export default class NavigationBar extends React.Component<Props> {
   renderUserNavigationItem () {
     const {navigation} = this.props
     if (!this.isLogin || !navigation) return null
+  
+    let depoName
+    if (navigation.depo_name !== 'master') {
+      depoName = <div className="dropdown-item">
+        <b>{navigation.depo_name}</b>
+      </div>
+    }
+
     return <li className="nav-item dropdown user">
       <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
          aria-haspopup="true" aria-expanded="false">
@@ -104,8 +111,9 @@ export default class NavigationBar extends React.Component<Props> {
         {navigation.user_name}
       </a>
       <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-        {/*<a href="/profile" className="dropdown-item">プロフィール設定</a>*/}
-        {/*<div className="dropdown-divider"></div>*/}
+        {/*<a href="/profile" className="dropdown-item">プロフィール設定</a>*/}        
+        {depoName}
+        <div className="dropdown-divider"></div>
         <a href="#" className="dropdown-item" onClick={(e) => this.onClickLogout(e)}>ログアウト</a>
       </div>
     </li>
