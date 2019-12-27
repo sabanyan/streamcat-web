@@ -7,11 +7,13 @@ export function LOCKS(flowUUID:string, url:string=ApiConstants.LOCKS.URL.SERVICE
 }
 
 export function VIZS(flowUUID:string|null, stepIds:string[]|null, frameUUID:string|null, vizId:string, args:{}, url:string=ApiConstants.VIZS.URL.SERVICE) {
-    let result = new Promise((resolve, reject) => {reject("unextpected paramter error is occured while requsting API POST /VIZ")})
+    let result:Promise<any>|null = null
     if (flowUUID && stepIds) {
         result = VIZS_FROM_FLOW(flowUUID, stepIds, vizId, args, url)
     } else if (frameUUID) {
         result = VIZS_FROM_FRAME(frameUUID, vizId, args, url)
+    } else {
+        result = new Promise((resolve, reject) => {reject("unextpected paramter error is occured while requsting API POST /VIZ")})
     }
 
     return result
