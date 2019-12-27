@@ -99,8 +99,11 @@ export default class NavigationBar extends React.Component<Props> {
   
     let depoName
     if (navigation.depo_name !== 'master') {
-      depoName = <div className="dropdown-item">
-        <b>{navigation.depo_name}</b>
+      depoName = <div>
+        <div className="dropdown-item">
+          <b>{navigation.depo_name}</b>
+        </div>
+        <div className="dropdown-divider"></div>
       </div>
     }
 
@@ -112,8 +115,7 @@ export default class NavigationBar extends React.Component<Props> {
       </a>
       <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
         {/*<a href="/profile" className="dropdown-item">プロフィール設定</a>*/}        
-        {depoName}
-        <div className="dropdown-divider"></div>
+        {depoName}        
         <a href="#" className="dropdown-item" onClick={(e) => this.onClickLogout(e)}>ログアウト</a>
       </div>
     </li>
