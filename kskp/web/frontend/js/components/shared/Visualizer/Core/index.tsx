@@ -2,6 +2,7 @@ import * as React from 'react'
 
 import { API } from 'Modules/api/index'
 import { CommandParamType } from 'Types/index'
+import { StateUtil } from 'Utils/index';
 import style from './style.scss'
 
 import { VisualizeModel, MessageModel } from 'Model/index';
@@ -49,13 +50,14 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   initArgs(visualize: VisualizeModel, args:{}) {
-    let result = args
+    let result = {}
     try {
-      const command = visualize
+      const command = {...visualize}
       if (!command) throw "command is undefined in Visualizer"
       if (!command.params) throw "command.params is undefined in Visualizer"
-      const params = command.params
+      const params = StateUtil.deepCopy(command.params)
       const rules = (command.rules) ? command.rules : {}
+      
       params.map((param:CommandParamType) => {
         // 1.ルールの適用
         const rule = rules[param.name]
@@ -83,6 +85,7 @@ export default class Visualizer extends React.Component<Props, State> {
     this.setState({
       isLoading: true
     }, () => {
+      // 保存された結果がある場合、
       if (result) {
         this.setState({
           html : result.html,
@@ -90,21 +93,20 @@ export default class Visualizer extends React.Component<Props, State> {
           isLoading : false
         })
       } else {
-        this.requestVisualize()
+        // 保存された結果がない場合、
+        this.setState({
+          html : null,
+          args : this.initArgs(visualize, {})
+        }, () => {
+          this.requestVisualize()
           .then(() => {
             this.setState({
               isLoading : false
             })
           })
+        })
       }
     })
-  }
-
-  clear() {
-    const { visualize } = this.props
-  
-    const initialArgs = this.initArgs(visualize, {})
-    this.setState({args: initialArgs, html: null})
   }
 
   requestVisualize () {
@@ -126,18 +128,21 @@ export default class Visualizer extends React.Component<Props, State> {
         onSaveResult(index, result, headers)
         this.setState({args: args, html: contents})
       })
-      .catch((error) => {
-        this.clear()
-        if (error.message !== "VisualizeInitException") {
+      .catch((exception) => {
+        this.setState({
+          html: null,
+          args: this.initArgs(visualize, {})
+        })
+        if (exception.message !== "VisualizeInitException") {
           notify({
-            title: error.title,
-            message: error.message,
-            status: (error.messageStatus) ? error.messageStatus : "error",
+            title: exception.title,
+            message: exception.message,
+            status: (exception.messageStatus) ? exception.messageStatus : "error",
             dismissAfter: 0,
             closeButton: true
           })
         }  
-        console.log(error)
+        console.log(exception)
       })
   }
 
