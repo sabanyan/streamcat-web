@@ -8022,6 +8022,18 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 
 /***/ }),
 
+/***/ "./web/frontend/js/modules/api/core/url/index.tsx":
+/*!********************************************************!*\
+  !*** ./web/frontend/js/modules/api/core/url/index.tsx ***!
+  \********************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nvar baseUrl = \"/api/v0\";\nvar URL = exports.URL = {\n    GET: {\n        flows: baseUrl + \"/flows\",\n        commands: baseUrl + \"/commands\",\n        visualizers: baseUrl + \"/visualizers\",\n        subflows: baseUrl + \"/subflows\",\n        libraries: baseUrl + \"/libraries\",\n        navigation: baseUrl + \"/navagation\"\n    },\n    PUT: {\n        flows: baseUrl + \"/flows\"\n    },\n    POST: {\n        locks: baseUrl + \"/locks\",\n        vizs: baseUrl + \"/vizs\"\n    },\n    DELETE: {\n        locks: baseUrl + \"/locks\"\n    }\n};\n\n//# sourceURL=webpack:///./web/frontend/js/modules/api/core/url/index.tsx?");
+
+/***/ }),
+
 /***/ "./web/frontend/js/modules/api/delete/index.ts":
 /*!*****************************************************!*\
   !*** ./web/frontend/js/modules/api/delete/index.ts ***!
@@ -8090,7 +8102,7 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nexports.VIZS = VIZS;\n\nvar _index = __webpack_require__(/*! Model/index */ \"./web/frontend/js/model/index.ts\");\n\nfunction VIZS(res) {\n    if (!res.data.success) {\n        if (res.data.message === \"VisualizeInitException\") {\n            // パラメーターが指定されていない時\n            throw new _index.MessageModel({ title: \"情報\", messageStatus: \"info\", code: res.data.code, message: \"VisualizeInitException\" });\n        } else {\n            // \n            throw new _index.MessageModel({ title: \"描画エラー\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n        }\n    } else if (!res.data.lasts) {\n        throw new _index.MessageModel({ title: \"Json解析エラー\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n    }\n    return res.data.lasts;\n}\n\n//# sourceURL=webpack:///./web/frontend/js/modules/api/post/parser/index.ts?");
+eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nexports.VIZS = VIZS;\nexports.LOCKS = LOCKS;\n\nvar _index = __webpack_require__(/*! Model/index */ \"./web/frontend/js/model/index.ts\");\n\nfunction VIZS(res) {\n    if (!res.data.success) {\n        if (res.data.message !== \"VisualizeInitException\") {\n            throw new _index.MessageModel({ title: \"POST /vizs Exception\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n        }\n    } else if (!res.data.lasts) {\n        throw new _index.MessageModel({ title: \"POST /vizs JSON Parsing Exception\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n    }\n    return res.data.lasts;\n}\nfunction LOCKS(res) {\n    if (!res.data.success) {\n        throw new _index.MessageModel({ title: \"POST /locks Exception\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n    } else if (!res.data.data) {\n        throw new _index.MessageModel({ title: \"POST /locks JSON Parsing Exception\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n    }\n    return res.data.data;\n}\n\n//# sourceURL=webpack:///./web/frontend/js/modules/api/post/parser/index.ts?");
 
 /***/ }),
 
@@ -8102,7 +8114,7 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nexports.Flow = Flow;\n\nvar _index = __webpack_require__(/*! Modules/api/core/index */ \"./web/frontend/js/modules/api/core/index.ts\");\n\n// PUT\nfunction Flow(flowUUID, flow, lockUUID) {\n    var url = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : _index.ApiConstants.FLOWS.URL.SERVICE;\n\n    var data = {\n        label: flow.label,\n        flow: flow,\n        lock: lockUUID\n    };\n    var result_url = url + '/' + flowUUID;\n    return _index.ApiBase.Put(result_url, data);\n}\n\n//# sourceURL=webpack:///./web/frontend/js/modules/api/put/index.ts?");
+eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nexports.Flow = Flow;\n\nvar _index = __webpack_require__(/*! Modules/api/core/index */ \"./web/frontend/js/modules/api/core/index.ts\");\n\nvar _index2 = __webpack_require__(/*! Modules/api/core/url/index */ \"./web/frontend/js/modules/api/core/url/index.tsx\");\n\nfunction Flow(props) {\n    var data = {\n        label: props.flow.label,\n        flow: props.flow,\n        lock: props.lockUUID\n    };\n    var url = props.url ? props.url : _index2.URL.PUT.flows;\n    var resultUrl = url + '/' + props.flowUUID;\n    return _index.ApiBase.Put(resultUrl, data);\n}\n\n//# sourceURL=webpack:///./web/frontend/js/modules/api/put/index.ts?");
 
 /***/ }),
 
