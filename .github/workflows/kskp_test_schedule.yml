@@ -2,12 +2,11 @@ name: KSKP-Test_schedule_action
 
 on:
   schedule:
-    - cron: "30 * * * *"
+    - cron: "*/5 * * * *"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Set up kskp(Continuous Integration)
         shell: bash
