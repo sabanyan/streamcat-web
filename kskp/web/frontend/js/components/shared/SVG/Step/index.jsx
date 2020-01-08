@@ -41,7 +41,7 @@ type State = {
 
 export default class Step extends React.Component<StepProps, State> {
 
-  constructor (props: Props) {
+  constructor(props: Props) {
     super(props)
     this.state = {
       filter: 'url(#default-shadow)',
@@ -55,33 +55,31 @@ export default class Step extends React.Component<StepProps, State> {
    * mouse down ステップ選択処理
    * @param e
    */
-  handleMouseDown (e: MouseEvent) {
+  handleMouseDown(e: MouseEvent) {
+    //mousemoveイベントでハンドリング
+    // fix #195
+    if (e.button === 0) this.onMouseLeftDown(e)
+  }
 
-    this.updateStep(e)
-
-    //mousedownされた位置の一時保存
+  onMouseLeftDown(e) {
     this.setState({
       coords: {
         x: e.pageX,
         y: e.pageY,
       },
     })
-    //mousemoveイベントでハンドリング
-    // fix #195
-    if (e.button === 0 ){
-      mouseMoveEvent = (e: MouseEvent) => this.handleMouseMove(e)
-      mouseUpEvent = (e: MouseEvent) => this.handleMouseUp(e)
-      document.addEventListener('mousemove', mouseMoveEvent, false)
-      document.addEventListener('mouseup', mouseUpEvent, false)
-    }
+
+    mouseMoveEvent = (e: MouseEvent) => this.handleMouseMove(e)
+    mouseUpEvent = (e: MouseEvent) => this.handleMouseUp(e)
+    document.addEventListener('mousemove', mouseMoveEvent, false)
+    document.addEventListener('mouseup', mouseUpEvent, false)
   }
 
   /**
    * mouse up
    * @param e
    */
-  handleMouseUp (e: MouseEvent) {
-    this.updateStep(e)
+  handleMouseUp(e: MouseEvent) {
 
     //一時保存された位置のクリア
     this.setState({
@@ -99,7 +97,6 @@ export default class Step extends React.Component<StepProps, State> {
     } else {
       //一度選択状態をクリアする（#71）
       this.props.selectSteps()
-
       this.props.selectSteps([step])
 
       //データフレームの詳細を取得する
@@ -127,9 +124,14 @@ export default class Step extends React.Component<StepProps, State> {
    * mouse move ステップのドラッグ処理
    * @param e
    */
-  handleMouseMove (e: MouseEvent) {
+  handleMouseMove(e: MouseEvent) {
 
-    this.updateStep(e)
+    const { selected_step_ids, model } = this.props
+    if (selected_step_ids.length > 1) {
+      this.moveSteps(e)
+    } else {
+      this.updateStep(e)
+    }
 
     //一時保存された位置を更新
     this.setState({
@@ -141,18 +143,20 @@ export default class Step extends React.Component<StepProps, State> {
   }
 
   moveSteps(e) {
-    const {zoom} = this.props
-    
-    let x = ZoomUtil.zoomReverse(e.pageX, zoom)
-    let y = ZoomUtil.zoomReverse(e.pageY, zoom)
+    const { zoom, model, selected_step_ids } = this.props
 
-    this.props.moveSteps(x,y )
+    if (selected_step_ids.includes(model.id)) {
+      let x = ZoomUtil.zoomReverse(e.pageX, zoom)
+      let y = ZoomUtil.zoomReverse(e.pageY, zoom)
+  
+      this.props.moveSteps(x, y, model)
+    }
   }
 
-  updateStep (e: MouseEvent) {
-    const {zoom, selected_step_ids} = this.props
+  updateStep(e: MouseEvent) {
+    const { zoom, selected_step_ids } = this.props
 
-    if(selected_step_ids.length > 1) {
+    if (selected_step_ids.length > 1) {
       this.moveSteps(e)
       return
     }
@@ -172,7 +176,7 @@ export default class Step extends React.Component<StepProps, State> {
 
     //移動に応じてStepの位置を更新
     let step = this.props.model
-    step.setPosition({x: new_x, y: new_y})
+    step.setPosition({ x: new_x, y: new_y })
     this.props.updateStep(step)
   }
 
@@ -180,7 +184,7 @@ export default class Step extends React.Component<StepProps, State> {
    * mouse over ホバー処理
    * @param e
    */
-  handleMouseOver (e: MouseEvent) {
+  handleMouseOver(e: MouseEvent) {
     //SVGに影をつける
     this.setState({
       hover: true,
@@ -191,14 +195,14 @@ export default class Step extends React.Component<StepProps, State> {
    * mouse leave ホバー終了処理
    * @param e
    */
-  handleMouseLeave (e: MouseEvent) {
+  handleMouseLeave(e: MouseEvent) {
     //SVGの影をクリア
     this.setState({
       hover: false,
     })
   }
 
-  componentDidUpdate () {
+  componentDidUpdate() {
     if (this.selectorIntersect()) {
       if (!this.isSelected()) {
         this.props.addSelectStep(this.props.model.id)
@@ -214,8 +218,8 @@ export default class Step extends React.Component<StepProps, State> {
   /**
    * 範囲選択との衝突判定
    */
-  selectorIntersect () {
-    const {zoom} = this.props
+  selectorIntersect() {
+    const { zoom } = this.props
     const operator = {
       x: this.props.position.x,
       y: this.props.position.y,
@@ -223,7 +227,7 @@ export default class Step extends React.Component<StepProps, State> {
       height: Constants.default.step.height,
     }
 
-    const {start, end} = this.props.drag
+    const { start, end } = this.props.drag
     if (start && end) {
       //ref:http://gyabo.sakura.ne.jp/tips/rect.html
 
@@ -260,7 +264,7 @@ export default class Step extends React.Component<StepProps, State> {
     return this.isSelected()
   }
 
-  isSelected (): boolean {
+  isSelected(): boolean {
     let selected = false
     this.props.selected_step_ids.map((id) => {
       if (id === this.props.model.id) {
@@ -270,23 +274,23 @@ export default class Step extends React.Component<StepProps, State> {
     return selected
   }
 
-  isStep (model: modelProps): boolean {
+  isStep(model: modelProps): boolean {
     return (model instanceof CommandStepModel)
   }
 
-  isDataFrame (model: modelProps): boolean {
+  isDataFrame(model: modelProps): boolean {
     return (model instanceof DataFrameStepModel)
   }
 
-  isSubFlow (model: modelProps): boolean {
+  isSubFlow(model: modelProps): boolean {
     return (model instanceof SubFlowStepModel)
   }
 
-  isNote (model: modelProps): boolean {
+  isNote(model: modelProps): boolean {
     return (model instanceof NoteStepModel)
   }
 
-  getFilter () {
+  getFilter() {
     // let filter = this.state.filter;
     // const step = this.props.model;
     // if (this.selectorIntersect()) {
@@ -302,10 +306,10 @@ export default class Step extends React.Component<StepProps, State> {
     return filter
   }
 
-  render () {
-    const {x, y} = this.props.position
-    const {type, flow, invalid, error} = this.props
-    const {ports} = this.props.flow
+  render() {
+    const { x, y } = this.props.position
+    const { type, flow, invalid, error } = this.props
+    const { ports } = this.props.flow
     let icon
 
     let step: StepModelType = this.props.model
@@ -330,9 +334,9 @@ export default class Step extends React.Component<StepProps, State> {
     if (flowIn || flowOut) {
       icon = <g>
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
-              hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
-              hover={hover} selected={selected} stroke={'#63CFFD'}
-              filter={filter} style={RectStyle}>
+          hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
+          hover={hover} selected={selected} stroke={'#63CFFD'}
+          filter={filter} style={RectStyle}>
           <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={'#ccc'} fill={'#ccc'} />
         </Rect>
       </g>
@@ -343,20 +347,20 @@ export default class Step extends React.Component<StepProps, State> {
       //ステップ
       let command
       if (this.props.mast.commands) {
-        this.props.mast.commands.forEach(c => {if (c.id === step.commandId) command = c})
+        this.props.mast.commands.forEach(c => { if (c.id === step.commandId) command = c })
         icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter} />
       }
       stepLabel = step.getLabel()
     } else if (this.isDataFrame(step)) {
       //データソース
-      const stroke = (!step.hasData()) ? {stroke: '#CCCCCC'} : {}
+      const stroke = (!step.hasData()) ? { stroke: '#CCCCCC' } : {}
       icon =
         <Rect padding={5} selectedOutlineColor={'#93DFFF'} fillColor={'#FFFFFF'}
-              hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
-              hover={hover} selected={selected} stroke={'#63CFFD'}
-              filter={filter} style={RectStyle}>
+          hoverFillColor={'#E8F8FF'} selectedFillColor={'#E8F8FF'}
+          hover={hover} selected={selected} stroke={'#63CFFD'}
+          filter={filter} style={RectStyle}>
           <FileIcon fillColor={(step.hasData()) ? '#63CFFD' : '#CCCCCC'}
-                    width={16} height={20} />
+            width={16} height={20} />
         </Rect>
     } else if (this.isNote(step)) {
       let model = step
@@ -377,8 +381,8 @@ export default class Step extends React.Component<StepProps, State> {
     return (
       <g className={style.operator} transform={'translate(' + x + ',' + y + ')'}>
         <g className={style.iconContainer} onMouseDown={(e) => this.handleMouseDown(e)}
-           onMouseOver={(e) => this.handleMouseOver(e)}
-           onMouseLeave={(e) => this.handleMouseLeave(e)}>
+          onMouseOver={(e) => this.handleMouseOver(e)}
+          onMouseLeave={(e) => this.handleMouseLeave(e)}>
           {icon}
         </g>
         {invalid_icon}

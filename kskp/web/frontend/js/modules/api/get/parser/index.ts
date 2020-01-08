@@ -18,7 +18,7 @@ type RESPONSE_NAVIGATION = {
 export function NAVIGATION(res:RESPONSE_NAVIGATION):NavigationModel | undefined {
     let result
     try {
-        result = new NavigationModel(res.data.data)
+        if (res.data.data) result = new NavigationModel(res.data.data)
     } catch(e) {
         console.log(e)
     } finally {
