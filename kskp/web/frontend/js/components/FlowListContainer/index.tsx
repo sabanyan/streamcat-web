@@ -2,53 +2,44 @@ import { connect } from 'react-redux'
 import FlowList from 'FlowListContainer/FlowList'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 import { selectFlowAction, updateRunArgsAction, } from 'Modules/flowList'
-import type { FlowModelProps } from "Model/Flow/FlowModel";
-import type { RunArgsType } from "Types/index";
-import {API} from 'Modules/api/index'
+import { FlowModelProps } from "Model/Flow/FlowModel";
+import { RunArgsType } from "Types/index";
 
 let FlowListContainer
 
 export type FlowListProps = {
+  flow: FlowModelProps;
+  runArgs: RunArgsType;
+
   notify: Function;
   updateNotify: Function;
   dismissNotify: Function;
-  flow: FlowModelProps;
-  runArgs: RunArgsType;
   selectFlow: Function;
   updateRunArgs: Function;
-  POST_LOCKS: Function; 
-  DELETE_LOCKS: Function;
 }
 
 export default FlowListContainer = connect(
   state => {
     return {
       flow: state.flowListReducer.flow,
-      runArgs: state.flowListReducer.runArgs,
-      locks: state.apiReducer.locks
+      runArgs: state.flowListReducer.runArgs
     }
   },
   dispatch => {
     return {
-      POST_LOCKS (flowUUID:string) {
-        //dispatch(API.POST.Locks(flowUUID))
-      },
-      DELETE_LOCKS (lockUUID:string) {
-        //dispatch(API.DELETE.Locks(lockUUID))
-      },
-      selectFlow (flow) {
+      selectFlow(flow) {
         return dispatch(selectFlowAction(flow))
       },
-      updateRunArgs (runArgs) {
+      updateRunArgs(runArgs) {
         return dispatch(updateRunArgsAction(runArgs))
       },
-      notify (context:{}) {
+      notify(context: {}) {
         return dispatch(addNotification(context))
       },
-      updateNotify (context:{}) {
+      updateNotify(context: {}) {
         return dispatch(updateNotification(context))
       },
-      dismissNotify (id:string) {
+      dismissNotify(id: string) {
         setTimeout(() => {
           dispatch(removeNotification(id))
         }, 1000)

@@ -1,32 +1,37 @@
-//@flow
 import React from 'react'
-import type { FlowListProps } from '../index'
-import classnames from 'classnames'
+import axios from 'axios'
+
+import { API } from 'Modules/api/index'
 import style from './style.scss'
+
+
+import { FlowListProps } from '../index'
+import { FlowListDataType } from 'Types/index'
+import classnames from 'classnames'
 import flowListStyle from 'Shared/ListRow/FlowListRow/style.scss'
-import { APIUtil, ModalUtil, FlowUtil } from 'Utils/index'
+import { APIUtil, ModalUtil } from 'Utils/index'
 import { FlowListHeader, FlowListRow } from 'Shared/ListRow'
 import { ModalManager } from 'Shared/Modal'
 import Constants from 'Constants/index'
 import { EmptyState, Loader } from 'Shared/Base'
-import { Button, FileUploader, TextField } from 'Shared/Input'
-import type { FlowListDataType } from 'Types/index'
+import { Button, TextField } from 'Shared/Input'
 import { FlowInspector } from 'Shared/Inspector'
 import { NotificationManager } from 'Shared/Notification'
-import { LocksModel } from 'Model/index'
-import axios from 'axios'
+import { UploadedFileType } from 'Types/index'
+
 type State = {
-  flow_list: [FlowListDataType];
+  flow_list: FlowListDataType[];
   keyword: string;
   is_loading: boolean;
   is_finished: boolean;
   flow_name: string,
-  upload_file: UploadedFileType
+  upload_file: UploadedFileType,
+  selected_flow: any
 }
 
 export default class FlowList extends React.Component<FlowListProps, State> {
 
-  constructor (props: FlowListProps) {
+  constructor(props: FlowListProps) {
     super(props)
     this.state = {
       flow_list: [],
@@ -39,27 +44,27 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     }
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.getFlowList()
     this.registerModal()
   }
 
-  clearKeyword () {
+  clearKeyword() {
     this.setState({
       keyword: '',
       selected_flow: null
     })
 
-    const target = document.querySelector('input[type=text]')
+    const target: any = document.querySelector('input[type=text]')
     if (target) target.value = ''
   }
 
-  registerModal () {
+  registerModal() {
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.modal.ADD_FLOW, onClickDone: () => {
-        const {flow_name} = this.state
-        const {uuid, label} = this.state.upload_file
+        const { flow_name } = this.state
+        const { uuid, label } = this.state.upload_file
         if (!flow_name) {
           alert('フロー名を入力してください')
           return false
@@ -77,13 +82,14 @@ export default class FlowList extends React.Component<FlowListProps, State> {
           this.clearKeyword()
           this.getFlowList()
         })
+        return true
       },
     })
   }
 
-  getFlowList () {
+  getFlowList() {
     //this.setState({is_loading: true})
-    APIUtil.get('flows', {project: inject_project_uuid}).then((response) => {
+    APIUtil.get('flows', { project: inject_project_uuid }).then((response) => {
       const json = response.data
       let selected_flow = this.state.selected_flow
       if (selected_flow) {
@@ -92,18 +98,18 @@ export default class FlowList extends React.Component<FlowListProps, State> {
         })
       }
       this.setState(
-        {is_loading: false, is_finished: true, flow_list: json.data, selected_flow: selected_flow}, () => {
+        { is_loading: false, is_finished: true, flow_list: json.data, selected_flow: selected_flow }, () => {
           this.forceUpdate()
         })
     })
   }
 
-  renderFlowListHeader () {
+  renderFlowListHeader() {
     return <FlowListHeader />
   }
 
-  renderFlowList () {
-    const {keyword} = this.state
+  renderFlowList() {
+    const { keyword } = this.state
     return this.state.flow_list.filter((flow: FlowListDataType) => {
       if (keyword === '') {
         return true
@@ -112,16 +118,16 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     }).map((flow, index) => {
       const selected = (this.state.selected_flow === flow)
       return <FlowListRow key={index}
-                          flow={flow}
-                          href={'./flows/' + flow.uuid}
-                          selected={selected}
-                          onClickFlow={(e, flow) => this.onClickFlow(e, flow)}>
+        flow={flow}
+        href={'./flows/' + flow.uuid}
+        selected={selected}
+        onClickFlow={(e, flow) => this.onClickFlow(e, flow)}>
         {/*<a href="#" onClick={() => this.onClickDelete(flow.uuid)}>削除</a>*/}
       </FlowListRow>
     })
   }
 
-  renderEmptyState () {
+  renderEmptyState() {
     return <EmptyState
       icon={'add'}
       title={'フローがありません'}
@@ -130,14 +136,14 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     </EmptyState>
   }
 
-  onClickAddFlowParam () {
+  onClickAddFlowParam() {
     let flow = this.state.selected_flow
     const name = this.setNewParamName('new_param', 1)
-    flow.params.push({name: name, type: 'string'})
+    flow.params.push({ name: name, type: 'string' })
     this.forceUpdate()
   }
 
-  setNewParamName (name: string, cnt: number): string {
+  setNewParamName(name: string, cnt: number): string {
     let flow = this.state.selected_flow
 
     const findResult = flow.params.find(param => {
@@ -149,7 +155,7 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     return name + cnt
   }
 
-  onClickDeleteParam (param) {
+  onClickDeleteParam(param) {
 
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -168,7 +174,7 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     })
   }
 
-  onDeleteParam (param) {
+  onDeleteParam(param) {
     let flow = this.state.selected_flow
     const newParams = flow.params.filter(p => {
       return (p !== param)
@@ -177,14 +183,14 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     this.forceUpdate()
   }
 
-  renderSearchBar () {
+  renderSearchBar() {
     return <div className={style.search_bar}>
       <TextField placeholder={'フローを検索'} onChange={(e) => this.onChangeKeyword(e)} />
     </div>
   }
 
-  onClickFlow (e, flow) {
-    this.setState({selected_flow: flow})
+  onClickFlow(e, flow) {
+    this.setState({ selected_flow: flow })
     // 本当に存在するフローなのか確認
     APIUtil.get('flows/' + flow.uuid).then((response) => {
       this.props.selectFlow(flow)
@@ -193,22 +199,20 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     })
   }
 
-  onChangeKeyword (e: SyntheticInputEvent<EventTarget>) {
-    this.setState({keyword: e.target.value})
+  onChangeKeyword(e: any) {
+    this.setState({ keyword: e.target.value })
   }
 
-  onChangeFlowName (e: SyntheticInputEvent<EventTarget>) {
-    this.setState({
-      flow_name: e.target.value,
-    })
+  onChangeFlowName(e: any) {
+    this.setState({ flow_name: e.target.value })
   }
 
-  onChangeFile (e: SyntheticInputEvent<EventTarget>) {
+  onChangeFile(e: any) {
     const selectedFiles: FileList = e.target.files
     if (selectedFiles) {
       const uploadFile: File = selectedFiles[0]
       APIUtil.frameUpload(uploadFile, uploadFile.name).then((response) => {
-        const {success} = response.data
+        const { success } = response.data
         const json = response.data
         if (success) {
           this.setState({
@@ -223,21 +227,20 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     }
   }
 
-  onClickNew (e: SyntheticInputEvent<EventTarget>) {
+  onClickNew(e: any) {
     ModalUtil.emitModal({
       id: Constants.modal.ADD_FLOW,
       visible: true,
       done: '作成する',
       content: <div>
         <TextField placeholder={'フロー名'}
-                   onChange={(e, validation) => this.onChangeFlowName(e,
-                     validation)} />
+          onChange={(e, validation) => this.onChangeFlowName(e)} />
         <div className={'mt-8px'} />
       </div>,
     })
   }
 
-  onClickDuplicate (flow_uuid: string) {
+  onClickDuplicate(flow_uuid: string) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         const data = {
@@ -260,41 +263,34 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     })
   }
 
-  onClickDelete (flow_uuid: string) {
-    const {notify} = this.props
- 
+  onClickDelete(flow_uuid: string) {
+    const { notify } = this.props
+
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        // 1. LockIdを取得する。
-        let body = {target: flow_uuid}
-        let locks = new LocksModel(body)
-        APIUtil.post('locks', body).then((response) => {
-          let locksModel = locks.Parse(response)
-          let lockId = locksModel.getLockId()
-          if (lockId) {
-            //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
-            axios.delete('api/v0/flows/' + flow_uuid,{data:{lock:lockId}})
-            .then((response) => {
-              APIUtil.post('delete-locks/' + lockId).then((response) => {
-                this.getFlowList()
-              })
-            }, (err) => {
-              APIUtil.post('delete-locks/' + lockId).then((response) => {
-                this.getFlowList()
-              })
-            })
-          } else {
-            // lockが出来なかった場合
-            notify({
-              title: '削除エラー',
-              message: locksModel.getErrorMessage(),
-              status: 'error',
-              dismissAfter: 0,
-              closeButton: true
-            })
-          }
+
+        const promisedTask = API.request.doDelete.flow
+        const promisedProps = {
+          flowUUID: flow_uuid
+        }
+        API.do.lockedDo(
+          flow_uuid,
+          API.request.doDelete.flow,
+          promisedProps
+        )
+        .then(() => {
+          this.getFlowList()
         })
-        // 2. 取得したLockIdで削除する
+        .catch((err) => {
+          notify({
+            title: '削除エラー',
+            message: err,
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+          console.log(err)
+        })
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
     })
@@ -309,50 +305,42 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     })
   }
 
-  onBlurTitle (e, flow) {
+  onBlurTitle(e, flow) {
+    const { notify } = this.props
     try {
-      const {notify} = this.props
       const label = e.currentTarget.value
-
       if (!label) throw "undefined label"
       if (!flow) throw "undefined flow"
-      
+
       flow.label = label
-      let body = {target: flow.uuid}
-      let locks = new LocksModel(body)
-      
-      axios.post('/api/v0/locks', body).then((response) => {
-        let locksModel = locks.Parse(response)
-        let lockId = locksModel.getLockId()
-        if (lockId) {
-          axios.put('/api/v0/flows/' + flow.uuid, {
-            label: label,
-            flow : flow,
-            lock : lockId
-          }).then((response) => {
-            navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
-            this.getFlowList()
-          }, (error) => {
-            navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
-            console.log(error)
-          })
-        } else {
-          // lockが出来なかった場合
-          notify({
-            title: '保存エラー',
-            message: locksModel.getErrorMessage(),
-            status: 'error',
-            dismissAfter: 3,
-            closeButton: true
-          })
-        }
+      const promisedTask = API.request.doPut.flow
+      const promisedProps = {
+        flowUUID: flow.uuid,
+        flow: flow
+      }
+      API.do.lockedDo(
+        flow.uuid,
+        promisedTask,
+        promisedProps
+      )
+      .then(() => {
+        this.getFlowList()
       })
-    } catch(e) {
+      .catch(e => {
+        notify({
+          title: e.title,
+          message: e.message,
+          status: 'error',
+          dismissAfter: -1,
+          closeButton: true
+        })
+      })
+    } catch (e) {
       console.log(e)
     }
   }
 
-  isEmptyFlowList () {
+  isEmptyFlowList() {
     if (!this.state.is_finished) return false
     if (!Array.isArray(this.state.flow_list) || this.state.flow_list.length === 0 || this.state.flow_list === null) {
       return true
@@ -360,9 +348,9 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     return false
   }
 
-  renderNewFlow () {
+  renderNewFlow() {
     return <a className={classnames(flowListStyle.flow, flowListStyle.new)} href="#"
-              onClick={(e) => this.onClickNew(e)}>
+      onClick={(e) => this.onClickNew(e)}>
       <div className={flowListStyle.flow_list}>
         <div className={flowListStyle.name}>
           <i className={classnames('material-icons', [flowListStyle.icon])}>add_circle_outline</i>
@@ -372,24 +360,24 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     </a>
   }
 
-  renderInspector () {
-    const {runArgs, updateRunArgs, flow, notify, dismissNotify} = this.props;
+  renderInspector() {
+    const { runArgs, updateRunArgs, flow, notify, dismissNotify } = this.props;
     return <FlowInspector
-        onClickDelete={(e) => this.onClickDelete(e)}
-        onClickDuplicate={(uuid) => this.onClickDuplicate(uuid)}
-        onBlurTitle={(e, props) => this.onBlurTitle(e, props)}
-        runArgs={runArgs}
-        updateRunArgs={updateRunArgs}
-        flow={this.state.selected_flow}
-        notify={notify}
-        dismissNotify={dismissNotify}/>
+      onClickDelete={(e) => this.onClickDelete(e)}
+      onClickDuplicate={(uuid) => this.onClickDuplicate(uuid)}
+      onBlurTitle={(e, props) => this.onBlurTitle(e, props)}
+      runArgs={runArgs}
+      updateRunArgs={updateRunArgs}
+      flow={this.state.selected_flow}
+      notify={notify}
+      dismissNotify={dismissNotify} />
 
-        // FlowInspector側で未使用のため削除
-        // onClickDeleteParam={(param) => this.onClickDeleteParam(param)}
-        // onClickAddFlowParam={(e) => this.onClickAddFlowParam(e)}
+    // FlowInspector側で未使用のため削除
+    // onClickDeleteParam={(param) => this.onClickDeleteParam(param)}
+    // onClickAddFlowParam={(e) => this.onClickAddFlowParam(e)}
   }
 
-  renderAll () {
+  renderAll() {
     if (this.isEmptyFlowList()) {
       return this.renderEmptyState()
     }
@@ -403,12 +391,12 @@ export default class FlowList extends React.Component<FlowListProps, State> {
     </div>
   }
 
-  render () {
+  render() {
     return <div className={style.inspector_list_container}>
       <div className={'container mt-40px'}>
         <Loader absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
-        <ModalManager/>
+        <ModalManager />
         <NotificationManager />
       </div>
     </div>
