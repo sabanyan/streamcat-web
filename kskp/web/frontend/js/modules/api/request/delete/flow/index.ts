@@ -4,10 +4,10 @@ import { Url, LockUUID } from "Modules/api/core/types/request";
 import axios from 'axios'
 
 type Props = Url & LockUUID & {
-    flowUUID:string
+    flowUUID: string
 }
 // DELETE
-export function flow(props:Props) {
+export function flow(props: Props) {
     const url = (props.url) ? props.url : URL.DELETE.flow
     const result_url = url + '/' + props.flowUUID
     const data = {

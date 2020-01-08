@@ -13,7 +13,7 @@ export function navigation(props: Props) {
         flow_uuid: (flowUUID && flowUUID !== '') ? flowUUID : undefined,
         project_uuid: (projectUUID && projectUUID !== '') ? projectUUID : undefined
     }
-    const requestUrl = (url) ? url : URL.GET.navigation 
+    const requestUrl = (url) ? url : URL.GET.navigation
 
     return ApiBase.Get(requestUrl, data)
 }
