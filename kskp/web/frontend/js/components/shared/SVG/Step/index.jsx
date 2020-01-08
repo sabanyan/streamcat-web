@@ -140,8 +140,22 @@ export default class Step extends React.Component<StepProps, State> {
     })
   }
 
-  updateStep (e: MouseEvent) {
+  moveSteps(e) {
     const {zoom} = this.props
+    
+    let x = ZoomUtil.zoomReverse(e.pageX, zoom)
+    let y = ZoomUtil.zoomReverse(e.pageY, zoom)
+
+    this.props.moveSteps(x,y )
+  }
+
+  updateStep (e: MouseEvent) {
+    const {zoom, selected_step_ids} = this.props
+
+    if(selected_step_ids.length > 1) {
+      this.moveSteps(e)
+      return
+    }
     let coords_x = e.pageX
     let coords_y = e.pageY
 

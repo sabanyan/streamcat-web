@@ -25,7 +25,8 @@ import {
   undoAction,
   updateDataFrameDetailAction,
   updateFlowAction,
-  updateStepAction
+  updateStepAction,
+  moveStepsAction
  } from 'Modules/application'
 import FlowEditor from 'Components/FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
@@ -83,6 +84,7 @@ export type FlowEditorProps = {
   sortStepSrcEndAction: Function;
   newLocks: Function;
   updateLocks: Function;
+  moveSteps: Function;
 }
 
 const FlowEditorContainer = connect(
@@ -207,6 +209,9 @@ const FlowEditorContainer = connect(
       sortStepSrcEnd (detail: {}, mouseEvent: {}) {
         // mouseEventは未使用
         dispatch(sortStepSrcEndAction(detail,mouseEvent))
+      },
+      moveSteps(x:number, y:number) {
+        dispatch(moveStepsAction(x,y))
       }
     }
   },
