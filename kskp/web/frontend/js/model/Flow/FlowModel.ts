@@ -1,0 +1,163 @@
+import Constants from 'Constants/index';
+
+import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
+
+export type FlowModelProps = {
+  createdAt?: string
+  creator?: string
+  label: string
+  nodes: any[]
+  params: []
+  ports: [[], []]
+  projectId?: number
+  description: string
+}
+
+export default class FlowModel {
+  createdAt?: string
+  creator?: string
+  label: string = ""
+  nodes: any[] = []
+  params: [] = []
+  ports: [any[], any[]] = [[], []]
+  projectId?: number
+  description: string = ""
+
+  constructor(props?: FlowModelProps) {
+    if (!props) return
+    this.createdAt = props.createdAt
+    this.creator = props.creator
+    this.label = props.label
+    this.nodes = this.toNodeModels(props.nodes)
+    this.params = props.params
+    this.ports = props.ports
+    this.projectId = props.projectId
+    this.description = props.description
+  }
+
+  toNodeModels(nodes: any[]) {
+    let results: any[] = []
+    nodes.forEach((node, index) => {
+      const baseProps = {
+        id: node.id,
+        type: node.type,
+        label: node.label,
+        position: node.position,
+        size: node.size
+      }
+      let model
+      let props
+      switch (node.type) {
+        case Constants.step.type.frame:
+          props = {
+            ...baseProps,
+            uuid: node.uuid,
+            dataSource: Constants.data.dataSource.csv,
+            makeCache: node.makeCache,
+            cacheCreatedAt: node.cacheCreatedAt
+          }
+          break;
+        case Constants.step.type.command:
+        case Constants.step.type.subflow:
+          props = {
+            ...baseProps,
+            name: node.name,
+            srcs: node.srcs,
+            dsts: node.dsts,
+            args: node.args
+          }
+          if (node.type === Constants.step.type.command) {
+            props.commandId = node.commandId
+            model = new CommandStepModel(props)
+          } else if (node.type === Constants.step.type.subflow) {
+            props.uuid = node.uuid
+            model = new SubFlowStepModel(props)
+          }
+
+          break;
+        case Constants.step.type.note:
+          props = {
+            ...baseProps,
+            name: node.name,
+            title: node.title,
+            content: node.content
+          }
+          model = new NoteStepModel(props)
+          break;
+        default:
+          break;
+      }
+      if (model) results.push(model)
+    })
+
+    return results
+  }
+
+  getInPorts() {
+    return this.ports[0]
+  }
+
+  getOutPorts() {
+    return this.ports[1]
+  }
+
+  getInPortWithId(id: string) {
+    const inPorts = this.getInPorts()
+    return inPorts.find((port) => {
+      return (port.nodeId === id)
+    })
+  }
+
+  getOutPortWithId(id: string) {
+    const inPorts = this.getOutPorts()
+    return inPorts.find((port) => {
+      return (port.nodeId === id)
+    })
+  }
+
+  hasInPortWithId(id: string) {
+    return (this.getInPortWithId(id)) ? true : false
+  }
+
+  hasOutPortWithId(id: string) {
+    return (this.getOutPortWithId(id)) ? true : false
+  }
+
+  deletePortWithId(type: number, id: string) {
+    let targetPorts = (type === 0) ? this.getInPorts() : this.getOutPorts()
+    this.ports[type] = targetPorts.filter((port) => {
+      return (port.nodeId !== id)
+    })
+  }
+
+  deleteInPortWithId(id: string) {
+    this.deletePortWithId(0, id)
+  }
+
+  deleteOutPortWithId(id: string) {
+    this.deletePortWithId(1, id)
+  }
+
+  setPort(type: number, port) {
+    let targetPorts = (type === 0) ? this.getInPorts() : this.getOutPorts()
+    let hasUpdate = false
+    this.ports[type] = targetPorts.map((p) => {
+      if (p.nodeId === port.nodeId) {
+        //ポートを更新
+        hasUpdate = true
+        return port
+      }
+      return p
+    })
+    //ポートを追加
+    if (!hasUpdate) this.ports[type].push(port)
+  }
+
+  setInPort(port: []) {
+    this.setPort(0, port)
+  }
+
+  setOutPort(port: []) {
+    this.setPort(1, port)
+  }
+}
