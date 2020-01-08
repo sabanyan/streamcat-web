@@ -254,8 +254,28 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   saveFlow() {
-    const {flow, locks, nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, nodes, notify, dismissNotify)
+    const { flow, lockUUID, notify } = this.props
+
+    return API.do.checkDo(
+      () => {
+        return (lockUUID) ? true : false
+      },
+      API.request.doPut.flow,
+      {
+        flowUUID: flow.uuid,
+        flow: flow,
+        lockUUID: lockUUID
+      }
+    )
+    .catch(e => {
+      notify({
+        title: e.title,
+        message: e.message,
+        status: e.messageStatus,
+        dismissAfter: -1,
+        closeButton: true
+      })
+    })
   }
 
   render () {

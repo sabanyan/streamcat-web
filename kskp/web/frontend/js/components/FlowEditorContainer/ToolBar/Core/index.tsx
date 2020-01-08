@@ -1,22 +1,26 @@
-//@flow
 import React from 'react'
 import Constants from 'Constants/index'
 import { DataSourceImport, Note, Redo, Undo, Run, Save, Sort, Zoom } from 'FlowEditorContainer/ToolBar'
 import style from './style.scss'
 import classnames from 'classnames'
-import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
-import { DataFrameStepModel, NoteStepModel } from 'Model/index'
+import { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
+import { DataFrameStepModel, NoteStepModel, MessageModel } from 'Model/index';
 import { APIUtil, FlowUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index'
 import { Loader } from 'Shared/Base'
-import type { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType, } from 'Types/index'
+import { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType } from 'Types/index'
 import { NoteStepModelProps } from 'Model/Step/NoteStepModel'
 import { defaultGraphProps } from 'Utils/GraphUtil'
-import type { FlowModelProps } from "Model/Flow/FlowModel";
+import { FlowModelProps } from "Model/Flow/FlowModel";
+import { API } from 'Modules/api/index'
 
 type ToolBarProps = {
   flow: FlowModelProps;
   nodes: [];
   history: HistoryType;
+  zoom: number;
+  lockUUID?: string;
+  disabled?: boolean;
+
   notify: Function;
   dismissNotify: Function;
   addStep: Function;
@@ -32,10 +36,10 @@ type ToolBarProps = {
 export default class ToolBar extends React.Component<ToolBarProps> {
 
   loading: boolean = false
-  loadingMessage: string
+  loadingMessage: string = ""
   uploadedFile: UploadedFileType = null
 
-  constructor (props: ToolBarProps) {
+  constructor(props: ToolBarProps) {
     super(props)
   }
 
@@ -43,18 +47,48 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.saveFlow()
   }
 
-  saveFlow () {
-    const {flow, locks, nodes, notify, dismissNotify} = this.props
-    return FlowUtil.saveFlow(inject_flow_uuid, flow, locks, nodes, notify, dismissNotify)
+  saveFlow() {
+    const { flow, lockUUID, notify, dismissNotify } = this.props
+
+    let saveNotify = notify({
+      title: 'フロー保存中',
+      message: 'フローの設定を保存しています',
+      status: 'loading',
+      dismissAfter: 0,
+    })
+
+    return API.do.checkDo(
+      () => {
+        return (lockUUID) ? true : false
+      },
+      API.request.doPut.flow,
+      {
+        flowUUID: inject_flow_uuid,
+        flow: flow,
+        lockUUID: lockUUID
+      }
+    )
+      .then((r) => {
+        dismissNotify(saveNotify.id)
+      })
+      .catch(e => {
+        notify({
+          title: e.title,
+          message: e.message,
+          status: e.messageStatus,
+          dismissAfter: -1,
+          closeButton: true
+        })
+      })
   }
 
-  onClickSort () {
+  onClickSort() {
     this.props.sortFlow()
     this.props.addHistory()
   }
 
-  run () {
-    let {notify, dismissNotify} = this.props
+  run() {
+    let { notify, dismissNotify } = this.props
     const runArgs = {
       'flow_uuid': inject_flow_uuid,
       'flows': [],
@@ -63,7 +97,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     return FlowUtil.runWithArgs(runArgs, notify, dismissNotify)
   }
 
-  onClickProjectRun () {
+  onClickProjectRun() {
     this.loading = true
     this.loadingMessage = ''
 
@@ -117,14 +151,14 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     })
   }
 
-  flowUpdate () {
+  flowUpdate() {
     APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
       this.props.loadFlowJSON(json)
     })
   }
 
-  onClickDataSourceImport () {
+  onClickDataSourceImport() {
 
     const self = this
 
@@ -151,12 +185,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     })
   }
 
-  onChangeFile (e: SyntheticInputEvent<EventTarget>) {
+  onChangeFile(e: any) {
     const selectedFiles: FileList = e.target.files
     if (selectedFiles) {
       const uploadFile: File = selectedFiles[0]
       APIUtil.frameUpload(uploadFile, uploadFile.name).then((response) => {
-        const {success} = response.data
+        const { success } = response.data
         const json = response.data
         if (success) {
           this.uploadedFile = {
@@ -170,36 +204,36 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
   }
 
-  onClickZoomIn (e: Event) {
-    this.props.setZoom({offset: 10})
+  onClickZoomIn(e: Event) {
+    this.props.setZoom({ offset: 10 })
   }
 
-  onClickZoomOut (e: Event) {
-    this.props.setZoom({offset: -10})
+  onClickZoomOut(e: Event) {
+    this.props.setZoom({ offset: -10 })
   }
 
-  onClickDefaultZoom (e: Event) {
-    this.props.setZoom({value: 100})
+  onClickDefaultZoom(e: Event) {
+    this.props.setZoom({ value: 100 })
   }
 
-  onClickNote () {
+  onClickNote() {
 
-    const {zoom,nodes} = this.props;
+    const { zoom, nodes } = this.props;
     let position = PositionUtil.getCenterPosition('#flow_editor>div')
     position = {
       x: ZoomUtil.zoomReverse(position.x, zoom),
       y: ZoomUtil.zoomReverse(position.y, zoom)
-      + Constants.default.step.height
-      + defaultGraphProps.rankSeparator,
+        + Constants.default.step.height
+        + defaultGraphProps.rankSeparator,
     }
 
     const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition(
-      {...position}, nodes)
+      { ...position }, nodes)
 
     const props: NoteStepModelProps = {
       type: Constants.step.type.note,
       position: notOverlapNodePosition,
-      size: {width: 30, height: 20},
+      size: { width: 30, height: 20 },
       title: '新しいメモ',
       content: '新しいメモ',
     }
@@ -210,8 +244,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   }
 
-  render () {
-    const {zoom , history, disabled} = this.props
+  render() {
+    const { zoom, history, disabled } = this.props
 
     const current = history.current
     const max = history.nodes.length
@@ -221,28 +255,28 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     return <div>
       <div className={classnames(style.flow_toolbar)}>
         <Save disabled={disabled} icon={'&#xE2C2'}
-              onClick={(e) => this.onClickSave(e)}>保存</Save>
+          onClick={(e) => this.onClickSave()}>保存</Save>
         <DataSourceImport disabled={disabled} icon={'&#xE2C2'}
-                          onClick={(e) => this.onClickDataSourceImport(e)}>データソースの追加</DataSourceImport>
+          onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport>
         <Run disabled={disabled} icon={'&#xE037'}
-             onClick={(e) => this.onClickProjectRun(e)}>このフローを実行</Run>
+          onClick={(e) => this.onClickProjectRun()}>このフローを実行</Run>
         <Note disabled={disabled} icon={'comment'}
-              onClick={() => this.onClickNote()}>メモ</Note>
+          onClick={() => this.onClickNote()}>メモ</Note>
         <Undo disabled={undoDisabled} icon={'undo'}
-              onClick={() => this.props.undo()}>もとに戻す</Undo>
+          onClick={() => this.props.undo()}>もとに戻す</Undo>
         <Redo disabled={redoDisabled} icon={'redo'}
-              onClick={() => this.props.redo()}>繰り返す</Redo>
+          onClick={() => this.props.redo()}>繰り返す</Redo>
       </div>
       <div className={classnames(style.paper_toolbar)}>
         <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
-              onClickZoomOut={(e) => this.onClickZoomOut(e)}
-              onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
-              zoom={zoom}/>
+          onClickZoomOut={(e) => this.onClickZoomOut(e)}
+          onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
+          zoom={zoom} />
         <Sort disabled={disabled} icon={'&#xE42A'}
-              onClick={(e) => this.onClickSort(e)}>整列</Sort>
+          onClick={(e) => this.onClickSort()}>整列</Sort>
       </div>
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false}
-              visible={this.loading} message={this.loadingMessage}/>
+        visible={this.loading} message={this.loadingMessage} />
     </div>
   }
 }

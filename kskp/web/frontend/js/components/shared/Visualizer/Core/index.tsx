@@ -112,11 +112,16 @@ export default class Visualizer extends React.Component<Props, State> {
   requestVisualize () {
     const { index, flow_uuid, stepIds, frame_uuid, visualize } = this.props
     const { onSaveResult, notify } = this.props
-
-    return API.REQUEST.POST.VIZS(flow_uuid, stepIds, frame_uuid, visualize.id, this.state.args)
+    return API.request.doPost.vizs({
+      flowUUID : flow_uuid,
+      stepIds : stepIds,
+      frameUUID : frame_uuid,
+      vizId : visualize.id,
+      args : this.state.args
+    })
       .then((res) => {
         // JSON Parser
-        let json = API.RESPONSE.PARSE.POST.VIZS(res)
+        let json = API.response.post.vizs(res)
         // TODO: 将来はModel
         let headers = json[0].args.column_names
         let contents = json[0].contents
