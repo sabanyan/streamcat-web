@@ -119,7 +119,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   }
 
   renderSteps () {
-    let {nodes, selected_step_ids, mast, zoom, drag, addSelectStep, deleteSelectStep, updateDataFrameDetail, updateStep, flow, selectSteps} = this.props
+    let {nodes, selected_step_ids, mast, zoom, drag, addSelectStep, deleteSelectStep, updateDataFrameDetail, updateStep, flow, selectSteps, moveSteps} = this.props
     let steps:any = []
     if (Array.isArray(nodes)) {
       steps = nodes.map((step: StepModelType) => {
@@ -143,6 +143,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
                      selectSteps={selectSteps}
                      updateDataFrameDetail={updateDataFrameDetail}
                      updateStep={updateStep}
+                     moveSteps={moveSteps}
         />
       })
     }
