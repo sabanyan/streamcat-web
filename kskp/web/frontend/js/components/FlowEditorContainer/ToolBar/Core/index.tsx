@@ -48,7 +48,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   saveFlow() {
-    const { flow, lockUUID, notify, dismissNotify } = this.props
+    const { flow, nodes, lockUUID, notify, dismissNotify } = this.props
 
     let saveNotify = notify({
       title: 'フロー保存中',
@@ -56,6 +56,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       status: 'loading',
       dismissAfter: 0,
     })
+
+    flow.nodes = nodes
 
     return API.do.checkDo(
       () => {

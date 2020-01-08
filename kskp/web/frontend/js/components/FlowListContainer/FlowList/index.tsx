@@ -283,9 +283,9 @@ export default class FlowList extends React.Component<FlowListProps, State> {
         })
         .catch((err) => {
           notify({
-            title: '削除エラー',
-            message: err,
-            status: 'error',
+            title: err.title,
+            message: err.message,
+            status: err.messageStatus,
             dismissAfter: 0,
             closeButton: true
           })

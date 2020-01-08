@@ -250,6 +250,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         })
       }
 
+      newState.flow.nodes.push(add_step)
       newState.nodes.push(add_step)
       newState.graph = graph.getGraph(newState)
       break

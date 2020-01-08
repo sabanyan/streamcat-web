@@ -1,7 +1,7 @@
 
 const baseUrl = "/api/v0"
 export const URL = {
-    GET : {
+    GET: {
         flows: baseUrl + "/flows",
         commands: baseUrl + "/commands",
         visualizers: baseUrl + "/visualizers",
@@ -9,14 +9,14 @@ export const URL = {
         libraries: baseUrl + "/libraries",
         navigation: baseUrl + "/navigation"
     },
-    PUT : {
+    PUT: {
         flows: baseUrl + "/flows"
     },
-    POST : {
+    POST: {
         locks: baseUrl + "/locks",
         vizs: baseUrl + "/vizs"
     },
-    DELETE : {
+    DELETE: {
         locks: baseUrl + "/delete-locks",
         flow: baseUrl + "/flows"
     }
