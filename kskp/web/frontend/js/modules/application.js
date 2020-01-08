@@ -585,13 +585,12 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       const { x, y, step } = action
       const { selected_step_ids, nodes } = newState
 
-      if (selected_step_ids.length > 0) {
-        const step = nodes.find(node => {
-          return node.id === selected_step_ids[0]
-        })
-        if (step) {
+      if (selected_step_ids.length > 0 && step) {
           const dx = (step.position.x - x)
           const dy = (step.position.y - y)
+
+          console.log(x,y)
+          console.log(dx,dy)
   
           nodes.map((node, index) => {
             if (selected_step_ids.includes(node.id)) {
@@ -600,7 +599,6 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             }
           })
           newState.graph = graph.getGraph(newState)
-        }
       }
 
       break;

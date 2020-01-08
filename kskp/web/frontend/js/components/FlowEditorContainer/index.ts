@@ -210,8 +210,8 @@ const FlowEditorContainer = connect(
         // mouseEventは未使用
         dispatch(sortStepSrcEndAction(detail,mouseEvent))
       },
-      moveSteps(x:number, y:number) {
-        dispatch(moveStepsAction(x,y))
+      moveSteps(x:number, y:number, model) {
+        dispatch(moveStepsAction(x,y,model))
       }
     }
   },
