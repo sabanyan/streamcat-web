@@ -1,8 +1,10 @@
 
 import * as Request from './request/index'
-import * as ResponseParser from './response/index'
+import * as Response from './response/index'
+import * as do_ from './do/index'
 
 export const API = {
-    Request: Request,
-    Parse: Response
+    request: Request,
+    response: Response,
+    do: do_
 }

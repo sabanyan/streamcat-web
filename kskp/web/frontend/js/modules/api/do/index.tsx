@@ -1,36 +1,21 @@
 import { API } from 'Modules/api/index'
+import { MessageModel } from 'Model/index';
 
-import { Response } from '../core/index'
-import { LockResponse } from '../post/parser'
+export function lockedDo(flowUUID, promisedTask: Function, promisedProps: {}) {
 
+    return API.request.doPost.locks({ flowUUID: flowUUID })
+        .then(async (res) => {
+            const locksData = API.response.post.locks(res)
+            const lockUUID = locksData.uuid
+            const props = { ...promisedProps, lockUUID: lockUUID }
 
-export function ExclusiveDo(flowUUID, promisedTask:Function, promisedProps:{}) {
-    let lockUUID: string | null = null
-
-    return API.REQUEST.POST.LOCKS(flowUUID)
-        .then((res: Response<LockResponse>) => {
-            lockUUID = API.RESPONSE.PARSE.POST.LOCKS(res).uuid
-            promisedProps = {"lockUUID":lockUUID, ...promisedProps}
-            task()
-            
-
-            API.REQUEST.DELETE.Locks(lockUUID)
+            await promisedTask(props)
+            await API.request.doDelete.locks({ lockUUID: lockUUID })
         })
 }
 
-export function PutFlow(flowUUID, task:Promise<any>) {
-    let lockUUID: string | null = null
+export function checkDo(isValid: Function, promisedTask: Function, promisedProps: {}) {
+    if (!isValid()) throw new MessageModel()
 
-    return API.REQUEST.POST.LOCKS(flowUUID)
-        .then((res: Response<LockResponse>) => {
-            lockUUID = API.RESPONSE.PARSE.POST.LOCKS(res).uuid
-            API.REQUEST.PUT.Flow(flowUUID, null, lockUUID)
-
-            API.REQUEST.DELETE.Locks(lockUUID)
-        })
+    return promisedTask(promisedProps)
 }
-
-new Promise((resolve, reject) => {
-
-})
-ExclusiveDo("", API.REQUEST.PUT.Flow())

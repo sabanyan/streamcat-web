@@ -7,7 +7,7 @@ export const URL = {
         visualizers: baseUrl + "/visualizers",
         subflows: baseUrl + "/subflows",
         libraries: baseUrl + "/libraries",
-        navigation: baseUrl + "/navagation"
+        navigation: baseUrl + "/navigation"
     },
     PUT : {
         flows: baseUrl + "/flows"
@@ -17,6 +17,7 @@ export const URL = {
         vizs: baseUrl + "/vizs"
     },
     DELETE : {
-        locks: baseUrl + "/locks"
+        locks: baseUrl + "/delete-locks",
+        flow: baseUrl + "/flows"
     }
 }

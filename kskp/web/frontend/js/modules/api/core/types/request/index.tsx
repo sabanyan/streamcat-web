@@ -1,5 +1,5 @@
 export type Url = {
-    url: string | undefined
+    url?: string
 }
 
 export type LockUUID = {

@@ -3,8 +3,8 @@ import { URL } from 'Modules/api/core/url/index';
 import { Url } from "Modules/api/core/types/request";
 
 type Props = Url & {
-    flowUUID?: string
-    projectUUID?: string
+    flowUUID: string | undefined
+    projectUUID: string | undefined
 }
 
 export function navigation(props: Props) {

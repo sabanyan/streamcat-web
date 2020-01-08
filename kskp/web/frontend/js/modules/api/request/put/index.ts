@@ -1,1 +1,1 @@
-export { flow } from './flows/index'
+export { flow } from './flow/index'
