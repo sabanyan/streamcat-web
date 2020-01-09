@@ -11,7 +11,8 @@ export default class Error {
     message?: string
     messageStatus?: string 
 
-    constructor(props:Props) {
+    constructor(props?:Props) {
+        if(!props) return
         this.title  = props.title
         this.code   = props.code
         this.message = props.message
