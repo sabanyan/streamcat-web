@@ -251,6 +251,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         })
       }
 
+      newState.flow.nodes.push(add_step)
       newState.nodes.push(add_step)
       newState.graph = graph.getGraph(newState)
       break
@@ -588,9 +589,6 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       if (selected_step_ids.length > 0 && step) {
           const dx = (step.position.x - x)
           const dy = (step.position.y - y)
-
-          console.log(x,y)
-          console.log(dx,dy)
   
           nodes.map((node, index) => {
             if (selected_step_ids.includes(node.id)) {

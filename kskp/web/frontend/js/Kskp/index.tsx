@@ -18,8 +18,8 @@ import {
 export type Props = {
     viewId: ViewId
 
-    notify : Function;
-    dismissNotify : Function;
+    notify: Function;
+    dismissNotify: Function;
 }
 
 export type State = {
@@ -37,44 +37,46 @@ export enum ViewId {
 
 class ViewSwitcher extends React.Component<Props, State> {
 
-    constructor(props:Props) {
+    constructor(props: Props) {
         super(props)
     }
 
     componentWillMount() {
-        API.REQUEST.GET.NAVIGATION(inject_flow_uuid, inject_project_uuid)
+        API.request.doGet.navigation({ flowUUID: inject_flow_uuid, projectUUID: inject_project_uuid })
             .then((res) => {
                 this.setState({
-                   nav: API.RESPONSE.PARSE.GET.NAVIGATION(res)
+                    nav: API.response.get.navigation(res)
                 })
-            })       
+            }, (err) => {
+                console.log(err)
+            })
     }
 
     renderNavigationBar() {
         let nav: NavigationModelProps | undefined
         if (this.state && this.state.nav) {
             nav = this.state.nav
-        } 
+        }
 
         return (
             <div className={style.nav}>
-                <NavigationBar navigation={nav}/>
+                <NavigationBar navigation={nav} />
             </div>
         )
     }
 
-    renderView (viewId: ViewId) {
-        let viewComponent: any = null        
-        switch(viewId) {
-            case ViewId.Flow_Editor : viewComponent = <FlowEditorContainer/>
+    renderView(viewId: ViewId) {
+        let viewComponent: any = null
+        switch (viewId) {
+            case ViewId.Flow_Editor: viewComponent = <FlowEditorContainer />
                 break;
-            case ViewId.Flow_List   : viewComponent = <FlowListContainer/>
+            case ViewId.Flow_List: viewComponent = <FlowListContainer />
                 break;
-            case ViewId.Library_List: viewComponent = <LibraryListContainer/>
+            case ViewId.Library_List: viewComponent = <LibraryListContainer />
                 break;
-            case ViewId.Profile     : viewComponent = <ProfileContainer/>
+            case ViewId.Profile: viewComponent = <ProfileContainer />
                 break;
-            case ViewId.Project_List: viewComponent = <ProjectListContainer/>
+            case ViewId.Project_List: viewComponent = <ProjectListContainer />
                 break;
             default:
                 break;
@@ -95,15 +97,15 @@ class ViewSwitcher extends React.Component<Props, State> {
                 {this.renderNavigationBar()}
                 {this.renderView(viewId)}
                 <ModalManager
-                        notify={notify}
-                        dismissNotify={dismissNotify}
-                    />           
+                    notify={notify}
+                    dismissNotify={dismissNotify}
+                />
             </div>
-        } catch(e) {
+        } catch (e) {
             console.log(e)
         } finally {
             return result
-        } 
+        }
     }
 }
 
@@ -113,13 +115,13 @@ export const Kskp = connect(
     },
     dispatch => {
         return {
-            notify (context:{}) {
+            notify(context: {}) {
                 return dispatch(addNotification(context))
             },
-            updateNotify (context:{}) {
+            updateNotify(context: {}) {
                 return dispatch(updateNotification(context))
             },
-            dismissNotify (id:string) {
+            dismissNotify(id: string) {
                 setTimeout(() => {
                     dispatch(removeNotification(id))
                 }, 1000)
