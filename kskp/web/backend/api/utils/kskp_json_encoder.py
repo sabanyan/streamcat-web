@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask.json import JSONEncoder
 from kskp.store import StoreModel as Store
-from kskp.store import Vis
+from kskp.store import Vis, User, Group
 from kskp.core import Datum as Datum
 
 class KSKPJSONEncoder(JSONEncoder):
@@ -14,6 +14,8 @@ class KSKPJSONEncoder(JSONEncoder):
         elif isinstance(obj, Vis):
             return obj.to_html()
         elif isinstance(obj, Datum):
+            return obj.to_json()
+        elif isinstance(obj, User) or isinstance(obj, Group):
             return obj.to_json()
         else:
             # 上記以外のクラスはデフォルトのデコード処理とする
