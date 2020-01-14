@@ -34,6 +34,8 @@ import * as React from 'react'
 import { FlowModelProps } from 'Model/Flow/FlowModel'
 import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
+import { connect as wsConnect, disconnect as wsDisconnect, send as wsSend } from '@giantmachines/redux-websocket';
+import { message } from '@giantmachines/redux-websocket/dist/actions'
 
 export type FlowEditorProps = {
   projectId: string,
@@ -80,6 +82,9 @@ export type FlowEditorProps = {
   addNote: Function;
   sortStepSrcEndAction: Function;
   moveSteps: Function;
+  connect: Function;
+  disconnect: Function;
+  send: Function;
 }
 
 const FlowEditorContainer = connect(
@@ -200,6 +205,15 @@ const FlowEditorContainer = connect(
       },
       moveSteps(x: number, y: number, step) {
         dispatch(moveStepsAction(x, y, step))
+      },
+      connect(url) {
+        dispatch(wsConnect(url))
+      },
+      disconnect() {
+        dispatch(wsDisconnect())
+      },
+      send(message:{}) {
+        dispatch(wsSend(message))
       }
     }
   },

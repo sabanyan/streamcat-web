@@ -3,7 +3,7 @@ import thunk from 'redux-thunk'
 import { flowEditorReducer, libraryReducer, flowListReducer } from 'Modules/index'
 import { reducer as notificationsReducer } from 'reapop'
 import { composeWithDevTools } from 'redux-devtools-extension';
-
+import reduxWebsocket from '@giantmachines/redux-websocket';
 
 // default value for notifications
 const defaultNotification = {
@@ -21,8 +21,9 @@ const reducers = combineReducers({
     flowListReducer
 })
 
+const reduxWebsocketMiddleware = reduxWebsocket();
 const enhancers = composeWithDevTools(
-    applyMiddleware(thunk),
+    applyMiddleware(thunk, reduxWebsocketMiddleware),
     // other store enhancers if any
 )
 

@@ -31,6 +31,7 @@ type ToolBarProps = {
   setZoom: Function;
   undo: Function;
   redo: Function;
+  send: Function;
 }
 
 export default class ToolBar extends React.Component<ToolBarProps> {
@@ -104,6 +105,10 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   onClickProjectRun() {
+    const { send } = this.props
+    send({ my: 'message' })
+
+    return
     this.loading = true
     this.loadingMessage = ''
 

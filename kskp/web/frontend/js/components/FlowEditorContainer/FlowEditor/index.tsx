@@ -105,11 +105,11 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
         })
       })
       .catch(e => {
-        if(!lockUUID) {
+        if (!lockUUID) {
           notify({
-            title: "警告：読取専用フロー", 
-            message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。", 
-            status:"warning",
+            title: "警告：読取専用フロー",
+            message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+            status: "warning",
             dismissAfter: -1,
             closeButton: true
           })
@@ -123,6 +123,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           })
         }
       })
+    const { connect, disconnect } = this.props
+    connect('ws://localhost/websocket:5000')
   }
 
   componentDidMount() {
@@ -131,6 +133,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
   componentWillUnmount() {
     window.removeEventListener('beforeunload', this.handleLeavePage);
+   
   }
 
 
@@ -138,6 +141,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     if (this.state.lockUUID) {
       API.request.doDelete.locks({ lockUUID: this.state.lockUUID })
     }
+    const { connect, disconnect } = this.props
+    disconnect()
   }
 
   renderSteps() {
@@ -224,11 +229,11 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const { flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps,
       nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps,
       setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail,
-      updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom } = this.props;
+      updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom, send } = this.props;
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
-  
+
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
@@ -249,6 +254,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           undo={undo}
           redo={redo}
           disabled={disabled}
+          send={send}
         />
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
           message={'フローを構築中です'} />

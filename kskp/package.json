@@ -29,7 +29,9 @@
   },
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "devDependencies": {
+    "@giantmachines/redux-websocket": "^1.1.6",
     "@types/classnames": "^2.2.8",
+    "@types/jquery": "^3.3.31",
     "@types/react": "^16.8.22",
     "@types/react-dom": "^16.8.4",
     "array-move": "^2.1.0",
@@ -77,6 +79,7 @@
     "react-chartjs-2": "^2.7.2",
     "react-dom": "^16.3.2",
     "react-redux": "^5.0.7",
+    "react-websocket": "^2.1.0",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0"
   }
