@@ -4,7 +4,7 @@ import { flowEditorReducer, libraryReducer, flowListReducer } from 'Modules/inde
 import { reducer as notificationsReducer } from 'reapop'
 import { composeWithDevTools } from 'redux-devtools-extension';
 import reduxWebsocket from '@giantmachines/redux-websocket';
-
+import { reducer as websocketReducer } from 'Modules/reducer/websocket/index'
 // default value for notifications
 const defaultNotification = {
     position: 'tr',
@@ -18,7 +18,8 @@ const reducers = combineReducers({
     notifications: notificationsReducer(defaultNotification),
     flowEditorReducer,
     libraryReducer,
-    flowListReducer
+    flowListReducer,
+    websocketReducer
 })
 
 const reduxWebsocketMiddleware = reduxWebsocket();

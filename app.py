@@ -1,9 +1,7 @@
+
 import os
 from flask import Flask
 from kskp.store import STORE_DIR
-from geventwebsocket.handler import WebSocketHandler
-from gevent.pywsgi import WSGIServer
-
 
 app = Flask('kskp.web.backend')
 app.secret_key = '-jm624cqpry89e'
@@ -58,5 +56,15 @@ app.config['LOCK_MANAGER'] = LockManager()
 # sessionを31日間保持する場合はTrue
 # session.permanent = True
 
-#if __name__ == '__main__':
 
+def create_app():
+    app.debug = True
+    host_port = (host, port)
+    server = WSGIServer(
+        host_port,
+        app,
+        handler_class=WebSocketHandler
+    )
+    server.serve_forever()
+
+run()

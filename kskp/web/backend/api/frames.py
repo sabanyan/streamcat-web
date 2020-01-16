@@ -301,14 +301,22 @@ def make_new_viss():
     activity = execute_flow(flow, vis_args=vis_args)
     return format_vis(activity)
 
-def execute_flow(flow, args={}, inputs={}, vis_args={}):
+def run_flow(flow_uuid, args, request):
+    inputs = _make_flow_inputs(flow_uuid, request)
+    flow = Flow.find_by_uuid(flow_uuid)
+    result = execute_flow(flow, args=args, inputs=inputs)
+    result = format_result(result)
+
+    return result
+
+def execute_flow(flow, args={}, inputs={}, vis_args={}, job_complete_handler=None):
     """
     指定されたフローを実行し実行結果を取得する
     """
     try:
         from kskp.engine import execute, FlowJsonLink
         link = FlowJsonLink(flow, vis_args)
-        activity = execute(link=link, args=args, inputs=inputs)
+        activity = execute(link=link, args=args, inputs=inputs, job_complete_handler=job_complete_handler)
         if not activity:
             raise Exception('実行結果は出力されませんでした')
         return activity

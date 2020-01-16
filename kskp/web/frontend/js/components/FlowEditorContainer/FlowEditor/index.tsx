@@ -123,8 +123,10 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           })
         }
       })
-    const { connect, disconnect } = this.props
-    connect('ws://localhost/websocket:5000')
+    const { connect, disconnect, send } = this.props
+    let result = "ws://" + location.host + "/api/v0/websocket"
+    console.log(result)
+    connect(result)
   }
 
   componentDidMount() {
@@ -229,7 +231,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const { flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps,
       nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps,
       setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail,
-      updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom, send } = this.props;
+      updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom, send, connect } = this.props;
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
@@ -255,6 +257,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           redo={redo}
           disabled={disabled}
           send={send}
+          connect={connect}
         />
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
           message={'フローを構築中です'} />

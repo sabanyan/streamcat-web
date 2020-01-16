@@ -418,7 +418,6 @@ def get_navigation():
             # この分岐に入るのは、お救いフローフォルダである
             flow = model.fetch_flow_by_uuid(flow_uuid)
             project = model.fecth_project(flow['projectId'])
-            print(project)
             navigation['project_uuid'] = porject.uuid
             navigation['project_name'] = project.label
             navigation['flow_uuid'] = flow.uuid
@@ -432,6 +431,7 @@ def get_navigation():
 
     return jsonify({'success': True, 'data': navigation})
 
+   
 @mod.errorhandler(400)
 def handle_bad_request(error):
     """
