@@ -26,10 +26,16 @@ app.json_encoder = KSKPJSONEncoder
 
 # render_template
 # 将来的にvisualizeどうなるかわからないので、とりあえず別に隔離しておく
-from .views import visualize
 from .views import basic
-app.register_blueprint(visualize.mod)
 app.register_blueprint(basic.mod)
+
+from .views import visualize
+app.register_blueprint(visualize.mod)
+
+from .views import authz
+app.register_blueprint(authz.mod)
+
+
 # api
 from .api import auth
 app.register_blueprint(auth.mod, url_prefix='/signup')

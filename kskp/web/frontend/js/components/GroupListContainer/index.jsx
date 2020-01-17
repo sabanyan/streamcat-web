@@ -48,10 +48,10 @@ export default class GroupListContainer extends React.Component {
   registerModal() {
     // モーダル処理の登録
     ModalUtil.registerModal({
-      id: Constants.modal.ADD_PROJECT, onClickDone: () => {
+      id: Constants.modal.ADD_GROUP, onClickDone: () => {
         APIUtil.post('groups', {name: this.state.groupName}).then((response) => {
           ModalUtil.emitModal(
-            {id: Constants.modal.ADD_PROJECT, visible: false})
+            {id: Constants.modal.ADD_GROUP, visible: false})
           this.clearKeyword()
           this.getGroupList()
         })
@@ -72,10 +72,14 @@ export default class GroupListContainer extends React.Component {
         })
       }
 
-      this.setState(
-        {isLoading: false, finished: true, groups: json.data, selectedGroup: selectedGroup}, () => {
-          this.forceUpdate()
-        })
+      this.setState({
+        isLoading: false, 
+        finished: true, 
+        groups: json.data, 
+        selectedGroup: selectedGroup
+      }, () => {
+        this.forceUpdate()
+      })
     })
   }
 
@@ -85,13 +89,16 @@ export default class GroupListContainer extends React.Component {
 
   renderGroupList() {
     const {keyword} = this.state
+    
     return this.state.groups.filter((group) => {
       if (keyword === '') {
         return true
       }
       return (group.name.indexOf(keyword) != -1) ? true : false
     }).map((group) => {
+      console.log('group',group)
       const selected = (this.state.selectedGroup === group)
+
       return <GroupListRow key={group.uuid}
                            group={group}
                            href={'./groups/' + group.uuid}
@@ -105,14 +112,14 @@ export default class GroupListContainer extends React.Component {
     return <EmptyState
       icon={'add'}
       title={'グループがありません'}
-      description={'グループを作成すると、フローを作成することができるようになります。'}>
+      description={'グループが作成できます。'}>
       <Button onClick={(e) => this.onClickNew(e)}>作成する</Button>
     </EmptyState>
   }
 
   renderSearchBar () {
     return <div className={style.searchBar}>
-      <TextField placeholder={'プロジェクトを検索'} onChange={(e) => this.onChangeKeyword(e)} />
+      <TextField placeholder={'グループを検索'} onChange={(e) => this.onChangeKeyword(e)} />
     </div>
   }
 
@@ -126,7 +133,7 @@ export default class GroupListContainer extends React.Component {
 
   onChangeGroupName (e) {
     this.setState({
-      Groupname: e.target.value,
+      GroupName: e.target.value,
     })
   }
 
@@ -144,7 +151,7 @@ export default class GroupListContainer extends React.Component {
 
   onClickNew (e) {
     ModalUtil.emitModal({
-      id: Constants.modal.ADD_PROJECT,
+      id: Constants.modal.ADD_GROUP,
       visible: true,
       done: '作成する',
       content: <div>
@@ -218,11 +225,11 @@ export default class GroupListContainer extends React.Component {
     }
     if (!this.state.finished) return null
     return <div>
-      {this.renderSearchBar()}
-      {this.renderGroupListHeader()}
+      { /* this.renderSearchBar() */ }
+      { /* this.renderGroupListHeader() */ }
       {this.renderGroupList()}
-      {this.renderNewGroup()}
-      {this.renderInspector()}
+      { /* this.renderNewGroup() */ }
+      { /* this.renderInspector() */ }
     </div>
   }
 
@@ -230,7 +237,7 @@ export default class GroupListContainer extends React.Component {
     return <div className={style.inspectorListContainer}>
       <div className={'container mt-40px'}>
         <Loader absolute={true} visible={this.state.isLoading} />
-        {this.renderAll()}
+          {this.renderAll()}
         <ModalManager />
       </div>
     </div>

@@ -30,20 +30,21 @@ export default class GroupListRow extends React.Component<Props> {
   }
 
   render () {
-    const {icon, children, selected, href} = this.props
-    const {name, uuid, createdAt, creatorName} = this.props.group
+    return <div>p</div>
+    // const {icon, children, selected, href} = this.props
+    // const {name, uuid, createdAt, creatorName} = this.props.group
 
-    return <div className={classnames(style.group, {[style.selected]: selected})} onClick={(e) => this.onClick(e)}>
-      <div className={style.groupList}>
-        <div className={style.name}>
-          <i className={classnames('material-icons', [style.icon])}>description</i>
-          <a href={href}>{name}</a>
-        </div>
-        <div className={style.creatorName}>{creatorName}</div>
-        <div className={style.createdAt}>{createdAt}</div>
-        <div className={style.action}>{children}</div>
-      </div>
-    </div>
+    // return <div className={classnames(style.group, {[style.selected]: selected})} onClick={(e) => this.onClick(e)}>
+    //   <div className={style.groupList}>
+    //     <div className={style.name}>
+    //       <i className={classnames('material-icons', [style.icon])}>description</i>
+    //       <a href={href}>{name}</a>
+    //     </div>
+    //     <div className={style.creatorName}>{creatorName}</div>
+    //     <div className={style.createdAt}>{createdAt}</div>
+    //     <div className={style.action}>{children}</div>
+    //   </div>
+    // </div>
   }
 
 }

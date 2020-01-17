@@ -5,8 +5,13 @@ from .utils.api_base import api_base
 mod = Blueprint('authz', __name__)
 
 @mod.route('/groups')
-def get_groups():    
-    return 'get_groups'
+@api_base
+def get_groups():
+    # result = ''    
+    # for g in Group.all():
+    #     result += g.name
+    # return f'get_groups: [{result}]'
+    return Group.all()
 
 @mod.route('/add-group')
 @api_base

@@ -1,6 +1,13 @@
 import * as React from 'react'
 import style from './style.scss'
-import {FlowEditorContainer, FlowListContainer, ProfileContainer, ProjectListContainer, LibraryListContainer} from 'Components/index';
+import {
+    FlowEditorContainer, 
+    FlowListContainer, 
+    ProfileContainer, 
+    ProjectListContainer, 
+    LibraryListContainer,
+    GroupListContainer
+} from 'Components/index';
 import NavigationBar from 'Components/shared/Base/NavigationBar/index';
 import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import { connect } from 'react-redux'
@@ -63,8 +70,8 @@ export class Kskp extends React.Component<Props, State> {
                 break;
             case ViewId.ProjectList: viewComponent = <ProjectListContainer/>
                 break;
-            case ViewId.GroupList  : viewComponent = <ProjectListContainer/>
-
+            case ViewId.GroupList  : viewComponent = <GroupListContainer/>
+                break;
                 default:
                     break;
         }
