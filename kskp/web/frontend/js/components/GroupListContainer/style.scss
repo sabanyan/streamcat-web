@@ -1,0 +1,17 @@
+@import "../../../sass/common";
+
+.header {
+  font-weight: bold;
+  color: $kskp-text;
+}
+
+.search-bar {
+  max-width: 568px;
+  margin: 0 auto;
+}
+
+.inspector-list-container {
+  padding-right: 400px;
+  overflow-x: scroll;
+  min-height: 100vh;
+}

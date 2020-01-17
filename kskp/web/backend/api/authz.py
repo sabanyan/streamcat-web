@@ -1,4 +1,5 @@
 from flask import Blueprint, session
+from kskp.store.auth.group import Group
 from .utils.api_base import api_base
 
 mod = Blueprint('authz', __name__)
@@ -15,4 +16,6 @@ def make_new_group():
     """
     new_group = Group('admin', is_admin=1, creator=session['user_id'])
     new_group.save()
+    
     return new_group
+    

@@ -16,11 +16,12 @@ export type State = {
 }
 
 export enum ViewId {
-    Flow_Editor,
-    Flow_List,
-    Library_List,
+    FlowEditor,
+    FlowList,
+    LibraryList,
     Profile,
-    Project_List,
+    ProjectList,
+    GroupList,
     Undefined,
 }
 
@@ -52,16 +53,17 @@ export class Kskp extends React.Component<Props, State> {
     renderView (viewId:ViewId) {
         let viewComponent:any = null
         switch(viewId) {
-            case ViewId.Flow_Editor     : viewComponent = <FlowEditorContainer/>
+            case ViewId.FlowEditor : viewComponent = <FlowEditorContainer/>
                 break;
-            case ViewId.Flow_List       : viewComponent = <FlowListContainer/>
+            case ViewId.FlowList   : viewComponent = <FlowListContainer/>
                 break;
-            case ViewId.Library_List    : viewComponent = <LibraryListContainer/>
+            case ViewId.LibraryList: viewComponent = <LibraryListContainer/>
                 break;
-            case ViewId.Profile         : viewComponent = <ProfileContainer/>
+            case ViewId.Profile    : viewComponent = <ProfileContainer/>
                 break;
-            case ViewId.Project_List    : viewComponent = <ProjectListContainer/>
+            case ViewId.ProjectList: viewComponent = <ProjectListContainer/>
                 break;
+            case ViewId.GroupList  : viewComponent = <ProjectListContainer/>
 
                 default:
                     break;

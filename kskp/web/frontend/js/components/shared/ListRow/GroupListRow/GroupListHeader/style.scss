@@ -1,0 +1,30 @@
+@import "../../../../../../sass/common";
+
+.group-list-header {
+  position: relative;
+  display: block;
+  color: $kskp-text;
+  font-size: 16px;
+  padding: 8px 16px;
+}
+
+.name {
+  padding-left: 24px;
+  display: inline-block;
+  width: calc(100% - 20% - 200px - 80px);
+}
+
+.created-at {
+  display: inline-block;
+  width: 200px;
+}
+
+.creator-name {
+  display: inline-block;
+  width: 20%;
+}
+
+.action {
+  display: inline-block;
+  width: 80px
+}

@@ -16,22 +16,27 @@ if (document.getElementById('base')) {
 
 if (document.getElementById('flow_editor')){
   elementId = 'flow_editor'
-  viewId = ViewId.Flow_Editor
+  viewId = ViewId.FlowEditor
 }
 
 if (document.getElementById('project_list')) {
   elementId = 'project_list'
-  viewId = ViewId.Project_List
+  viewId = ViewId.ProjectList
 }
 
 if (document.getElementById('flow_list')) {
   elementId = 'flow_list'
-  viewId = ViewId.Flow_List
+  viewId = ViewId.FlowList
 }
 
 if (document.getElementById('library_list')) {
   elementId = 'library_list'
-  viewId = ViewId.Library_List
+  viewId = ViewId.LibraryList
+}
+
+if (document.getElementById('group_list')) {
+  elementId = 'group_list'
+  viewId = ViewId.GroupList
 }
 
 if (document.getElementById('profile')) {
