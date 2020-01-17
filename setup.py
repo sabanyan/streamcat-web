@@ -7,8 +7,6 @@ setup(
     install_requires=[
         'flask',
         'flask_mail',
-        'sqlalchemy',
-        'psycopg2',
         'numpy',
         'scipy',
         'pandas==0.24.2',
@@ -16,9 +14,7 @@ setup(
         'holoviews',
         'bokeh',
         'ptvsd',
-        'awscli',
         'matplotlib',
         'watchdog',
-        'cx_Oracle'
     ],
 )
