@@ -255,7 +255,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   saveFlow() {
     const { flow, lockUUID, notify } = this.props
-
     return API.do.checkDo(
       () => {
         if (!lockUUID) throw new MessageModel({
@@ -266,7 +265,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       },
       API.request.doPut.flow,
       {
-        flowUUID: flow.uuid,
+        flowUUID: inject_flow_uuid,
         flow: flow,
         lockUUID: lockUUID
       }
