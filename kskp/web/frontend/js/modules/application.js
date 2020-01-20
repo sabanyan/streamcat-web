@@ -65,13 +65,14 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     case LOAD_FLOW_JSON_ACTION: {
       let { context, onSuccess } = action
       const flowJson = graph.load(context.data)
-      newState.originalFlow = { ...flowJson }
-      newState.flow = new FlowModel(flowJson)
-      newState.nodes = flowJson.nodes
-      newState.graph = graph.getGraph(newState)
 
+      newState.originalFlow = { ...flowJson }
+      newState.flow = new FlowModel(context.data)
+      newState.nodes = newState.flow.nodes
+      newState.graph = graph.getGraph(newState)
       newState.history.current = 0
       newState.history.nodes = [{ ...newState.nodes }]
+      
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history)

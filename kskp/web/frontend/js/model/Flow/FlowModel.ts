@@ -17,7 +17,7 @@ export default class FlowModel {
   createdAt?: string
   creator?: string
   label: string = ""
-  nodes: any[] = []
+  nodes?: any[] = []
   params: [] = []
   ports: [any[], any[]] = [[], []]
   projectId?: number
@@ -35,8 +35,9 @@ export default class FlowModel {
     this.description = props.description
   }
 
-  toNodeModels(nodes: any[]) {
+  toNodeModels(nodes?: any[]) {
     let results: any[] = []
+    if (!nodes) return []
     nodes.forEach((node, index) => {
       const baseProps = {
         id: node.id,
