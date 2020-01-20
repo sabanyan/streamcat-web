@@ -65,7 +65,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       let {context, onSuccess} = action
       const flowJson = graph.load(context.data)
       newState.originalFlow = {...flowJson}
-      newState.flow = new FlowModel(flowJson)
+      newState.flow = new FlowModel(context.data)
       newState.nodes = flowJson.nodes
       newState.graph = graph.getGraph(newState)
 
