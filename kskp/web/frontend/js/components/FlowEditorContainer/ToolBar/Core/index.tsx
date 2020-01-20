@@ -15,7 +15,7 @@ import { API } from 'Modules/api/index'
 
 type ToolBarProps = {
   flow: FlowModelProps;
-  nodes: [];
+  nodes: any[];
   history: HistoryType;
   zoom: number;
   lockUUID?: string;

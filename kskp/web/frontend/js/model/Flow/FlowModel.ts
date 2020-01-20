@@ -36,8 +36,9 @@ export default class FlowModel {
   }
 
   toNodeModels(nodes?: any[]) {
-    let results: any[] = []
     if (!nodes) return []
+    
+    let results: any[] = []
     nodes.forEach((node, index) => {
       const baseProps = {
         id: node.id,
@@ -57,6 +58,7 @@ export default class FlowModel {
             makeCache: node.makeCache,
             cacheCreatedAt: node.cacheCreatedAt
           }
+          model = new DataFrameStepModel(props)
           break;
         case Constants.step.type.command:
         case Constants.step.type.subflow:
@@ -90,7 +92,6 @@ export default class FlowModel {
       }
       if (model) results.push(model)
     })
-
     return results
   }
 

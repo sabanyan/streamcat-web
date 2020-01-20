@@ -57,7 +57,7 @@ export type FlowEditorProps = {
   sortFlow: Function;
   executeFlow: Function;
   updateDataFrameDetail: Function;
-  nodes: [];
+  nodes: any[];
   selected_step_ids: string[];
   selected_tab_id: string;
   children: React.ReactNode;
