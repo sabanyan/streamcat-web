@@ -178,7 +178,7 @@ class FrameApiTestCase(TestCaseBase):
 
         frame = Library.load_frame(frame_uuid)
         # data列にラベルがあるらしい、requestのjsonがそのまま入っているのでjson.loadsする
-        self.assertEqual(frame.data, data)
+        self.assertDictEqual(frame.data, {'encoding': 'utf-8'})
         self.assertEqual(frame.modifier, 100)
 
 
