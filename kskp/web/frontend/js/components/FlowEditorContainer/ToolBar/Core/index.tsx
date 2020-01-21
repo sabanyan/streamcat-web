@@ -108,8 +108,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   onClickProjectRun() {
     const { send } = this.props
-    //send({ my: 'message' })
-    this.ws = new WebSocket('ws://0.0.0.0:5000/api/v0/websocket');
+    send({ my: 'message' })
+    //this.ws = new WebSocket('ws://0.0.0.0:5000/api/v0/websocket');
     return
     this.loading = true
     this.loadingMessage = ''

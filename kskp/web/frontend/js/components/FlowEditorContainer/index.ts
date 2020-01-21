@@ -35,7 +35,6 @@ import { FlowModelProps } from 'Model/Flow/FlowModel'
 import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 import { connect as wsConnect, disconnect as wsDisconnect, send as wsSend } from '@giantmachines/redux-websocket';
-import { message } from '@giantmachines/redux-websocket/dist/actions'
 
 export type FlowEditorProps = {
   projectId: string,
