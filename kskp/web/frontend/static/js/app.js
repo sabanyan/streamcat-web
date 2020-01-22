@@ -8267,7 +8267,7 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nexports.vizs = vizs;\n\nvar _index = __webpack_require__(/*! Model/index */ \"./web/frontend/js/model/index.ts\");\n\nfunction vizs(res) {\n    if (!res.data.success) {\n        if (res.data.message !== \"VisualizeInitException\") {\n            throw new _index.MessageModel({ title: \"Post /vizs Exception\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n        }\n    } else if (!res.data.lasts) {\n        throw new _index.MessageModel({ title: \"Post /vizs JSON Parsing Exception\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n    }\n    return res.data.lasts;\n}\n\n//# sourceURL=webpack:///./web/frontend/js/modules/api/response/post/vizs/index.ts?");
+eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\nexports.vizs = vizs;\n\nvar _index = __webpack_require__(/*! Model/index */ \"./web/frontend/js/model/index.ts\");\n\nfunction vizs(res) {\n    if (!res.data.success) {\n        throw new _index.MessageModel({ title: \"Post /vizs Exception\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n    } else if (!res.data.lasts) {\n        throw new _index.MessageModel({ title: \"Post /vizs JSON Parsing Exception\", messageStatus: \"error\", code: res.data.code, message: res.data.message });\n    }\n    return res.data.lasts;\n}\n\n//# sourceURL=webpack:///./web/frontend/js/modules/api/response/post/vizs/index.ts?");
 
 /***/ }),
 
