@@ -8,7 +8,7 @@ export default class GroupListHeader extends React.Component {
   }
 
   render () {
-    return <div className={style.projectListHeader}> 
+    return <div className={style.groupListHeader}> 
       <div className={style.name}>名前</div>
       <div className={style.creatorName}>作成者</div>
       <div className={style.createdAt}>作成日時</div>

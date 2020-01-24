@@ -68,7 +68,7 @@ export default class GroupListContainer extends React.Component {
       let selectedGroup = this.state.selectedGroup
       if (selectedGroup) {
         selectedGroup = json.data.find((group) => {
-          return (group.uuid === selectedGroup.uuid)
+          return (group.id === selectedGroup.id)
         })
       }
 
@@ -95,16 +95,14 @@ export default class GroupListContainer extends React.Component {
         return true
       }
       return (group.name.indexOf(keyword) != -1) ? true : false
-    }).map((group) => {
-      console.log('group',group)
+    }).map((group) => {      
       const selected = (this.state.selectedGroup === group)
-
-      return <GroupListRow key={group.uuid}
+      
+      return <GroupListRow key={group.id}
                            group={group}
-                           href={'./groups/' + group.uuid}
+                           href={'./groups/' + group.id}
                            selected={selected}
-                           onClickGroup={(e, group) => this.onClickGroup(e, group)}>
-      </GroupListRow>
+                           onClickGroup={(e, group) => this.onClickGroup(e, group)} />
     })
   }
 
@@ -215,7 +213,7 @@ export default class GroupListContainer extends React.Component {
 
   renderInspector () {
     return <GroupInspector group={this.state.selectedGroup}
-                           onClickDelete={(uuid) => this.onClickDelete(uuid)}
+                           onClickDelete={(id) => this.onClickDelete(id)}
                            onBlurTitle={(e, group) => this.onBlurTitle(e, group)} />
   }
 
@@ -224,12 +222,13 @@ export default class GroupListContainer extends React.Component {
       return this.renderEmptyState()
     }
     if (!this.state.finished) return null
+
     return <div>
-      { /* this.renderSearchBar() */ }
-      { /* this.renderGroupListHeader() */ }
+      {this.renderSearchBar()}
+      {this.renderGroupListHeader()}
       {this.renderGroupList()}
-      { /* this.renderNewGroup() */ }
-      { /* this.renderInspector() */ }
+      {this.renderNewGroup()}
+      {this.renderInspector()}
     </div>
   }
 

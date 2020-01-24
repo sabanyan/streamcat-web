@@ -1,12 +1,13 @@
 @import "../../../../../sass/common";
 
 
-.project_list {
+.group-list {
   position: relative;
   display: block;
   border-radius: 0;
   color: $kskp-text;
-  background: #fff;
+  // background: #fff;
+  background: #F00;
   padding: 16px;
 
   &:hover {
@@ -19,7 +20,7 @@
 .new {
   text-align: center;
 
-  .project_list {
+  .group-list {
     color: $kskp-list-link-color;
 
     .icon {
@@ -37,7 +38,7 @@
   padding-right: 8px;
 }
 
-.project {
+.group {
   display: block;
   border-top: 1px solid $kskp-list-border-color;
 
@@ -49,7 +50,7 @@
 }
 
 .selected {
-  .project_list {
+  .group-list {
     background: #fafafa;
   }
 }
@@ -59,12 +60,12 @@
   width: calc(100% - 20% - 200px - 80px);
 }
 
-.created_at {
+.created-at {
   display: inline-block;
   width: 200px;
 }
 
-.creator_name {
+.creator-name {
   display: inline-block;
   width: 20%;
 }

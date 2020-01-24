@@ -51,9 +51,14 @@ module.exports = (env) => {
           },
           {
             test: /\.s?css$/,
-            use: ['style-loader', 'css-loader?modules', 'sass-loader'],
+            use: [{loader: 'style-loader'}, {
+              loader: 'css-loader?modules',
+              options: {
+                localsConvention: 'camelCase'
+              }  
+            }, {loader: 'sass-loader'}],
             exclude: /node_modules/,
-          },
+          }
         ],
       },
       resolve: {

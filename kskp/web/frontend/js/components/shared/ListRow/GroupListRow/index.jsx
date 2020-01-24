@@ -5,10 +5,11 @@ import style from './style.scss'
 type Props = {
   icon: string;
   group: {
+    id: number;
+    name: string;
+    isAdmin: boolean;
     createdAt: string;
     creatorName: string;
-    name: string;
-    uuid: string;
   };
   children: React.Node;
   selected: boolean;
@@ -18,33 +19,27 @@ type Props = {
 
 export default class GroupListRow extends React.Component<Props> {
 
-  constructor (props) {
-    super(props)
-  }
-
-  onClick (e: Event) {
+  onClick(e: Event) {
     const {group, onClickGroup} = this.props
     if (onClickGroup) {
       onClickGroup(e, group)
     }
   }
 
-  render () {
-    return <div>p</div>
-    // const {icon, children, selected, href} = this.props
-    // const {name, uuid, createdAt, creatorName} = this.props.group
+  render() {
+    const {icon, children, selected, href} = this.props
+    const {id, name, isAdmin, createdAt, creatorName} = this.props.group
 
-    // return <div className={classnames(style.group, {[style.selected]: selected})} onClick={(e) => this.onClick(e)}>
-    //   <div className={style.groupList}>
-    //     <div className={style.name}>
-    //       <i className={classnames('material-icons', [style.icon])}>description</i>
-    //       <a href={href}>{name}</a>
-    //     </div>
-    //     <div className={style.creatorName}>{creatorName}</div>
-    //     <div className={style.createdAt}>{createdAt}</div>
-    //     <div className={style.action}>{children}</div>
-    //   </div>
-    // </div>
+    return <div className={classnames(style.group, {[style.selected]: selected})} onClick={(e) => this.onClick(e)}>
+      <div className={style.groupList}>
+        <div className={style.name}>
+          <i className={classnames('material-icons', [style.icon])}>description</i>
+          <a href={href}>{name}</a>
+        </div>
+        <div className={style.creatorName}>{creatorName}</div>
+        <div className={style.createdAt}>{createdAt}</div>
+        <div className={style.action}>{children}</div>
+      </div>
+    </div>    
   }
-
 }

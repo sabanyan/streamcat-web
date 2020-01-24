@@ -7,6 +7,8 @@ export {default as DataSourceInspector} from './DataSourceInspector'
 export {default as DataTableInspector} from './DataTableInspector'
 export {default as FlowInspector} from './FlowInspector'
 export {default as FlowSettingsInspector} from './FlowSettingsInspector'
+export {default as GroupInspector} from './GroupInspector'
+
 export {default as InputFlowForm} from './InputFlowForm'
 export {default as InspectorKnob} from './InspectorKnob'
 export {default as LibraryInspector} from './LibraryInspector'
