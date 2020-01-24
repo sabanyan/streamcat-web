@@ -245,15 +245,78 @@ def update_folder(folder_uuid):
     else:
         raise Exception('update_folder parameter error!')
 
+# @mod.route('/folders/<folder_uuid>', methods=['DELETE'])
+# @login_required_api
+# @api_base
+# def delete_folder(folder_uuid):
+#     """
+#     フォルダを削除する
+#     """
+#     folder = Folder.find_by_uuid(folder_uuid)
+#     folder.delete()
+
 @mod.route('/folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_folder(folder_uuid):
-    """
-    フォルダを削除する
-    """
+def throw_away(folder_uuid):
+    modifier = session['user_id']
     folder = Folder.find_by_uuid(folder_uuid)
-    folder.delete()
+    _throw_away_inner(folder, modifier)
+
+def _throw_away_inner(datum, modifier):
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder()
+
+    using_frame_uuids = []
+    for flow in Flow.find_all_flows():
+        from kskp.store import get_all_frame_uuid_in_frame
+        using_frame_uuids.extend(get_all_frame_uuid_in_frame(flow.uuid))
+
+    if datum.type == Datum.FOLDER_TYPE:
+        # フォルダ直下のフォルダとデータベースとドキュメントを取得する
+        childrenGetter = ChildrenGetter()
+        children = childrenGetter.execute(session['user_id'], datum)
+
+        for child in children:
+            _throw_away_inner(child, modifier)
+
+        # フォルダを削除する(可能であれば)
+        try:
+            datum.delete()
+        except Exception:
+            pass
+
+    elif datum.type == Datum.FRAME_TYPE:
+        # 削除しようとするframeが、フローで使用されていない場合に削除する
+        if datum.uuid not in using_frame_uuids:
+            datum.move(trash_folder.uuid, modifier)
+
+    elif datum.type == Datum.FLOW_TYPE:
+        # フロー
+        using_flow_uuids = Datum.get_flow_uuids_using_other_datum(datum.uuid)
+        if len(using_flow_uuids) == 0:
+            datum.move(trash_folder.uuid, modifier)
+
+    else:
+        # データベース接続、リモートフォルダ接続
+        datum.move(trash_folder.uuid, modifier)
+
+
+@mod.route('/trashes', methods=['DELETE'])
+@login_required_api
+@api_base
+def trash_all():
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder()
+
+    # フォルダ直下のフォルダとデータベースとドキュメントを取得する
+    childrenGetter = ChildrenGetter()
+    children = childrenGetter.execute(session['user_id'], trash_folder)
+
+    # 全てを削除する
+    for child in children:
+        child.delete()
+
 
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
