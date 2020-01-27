@@ -13,13 +13,3 @@ export function lockedDo(flowUUID, promisedTask: Function, promisedProps: {}) {
             await API.request.doDelete.locks({ lockUUID: lockUUID })
         })
 }
-
-export function checkDo(isValid: Function, promisedTask: Function, promisedProps: {}) {
-
-    return new Promise((reslove, reject) => {
-        isValid()
-        reslove()
-    }).then(() => {
-        promisedTask(promisedProps)
-    })
-}
