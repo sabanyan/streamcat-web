@@ -72,6 +72,38 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     })
   }
 
+  saveFlow() {
+    const { flow, lockUUID, notify } = this.props
+
+    return new Promise(async (reslove, reject) => {
+      
+      if (!lockUUID) throw new MessageModel({
+        title: '警告：読取専用フロー', 
+        message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
+        messageStatus:"warning"
+      })
+
+      await API.request.doPut.flow(
+        {
+          flowUUID: inject_flow_uuid,
+          flow: flow,
+          lockUUID: lockUUID
+        }
+      )
+
+      reslove()
+    }) // flow 保存に失敗した場合、
+    .catch(e => {
+      notify({
+        title: e.title,
+        message: e.message,
+        status: e.messageStatus,
+        dismissAfter: -1,
+        closeButton: true
+      })
+    })
+  }
+
   onClickPreview(e: Event) {
     const flow_uuid = inject_flow_uuid
     const selected_step = this.getSelectedStep()
@@ -80,6 +112,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     stepIds.push(id)
     let visualizers = this.props.mast.visualizers
     visualizers = SortUtil.getSortedContents(visualizers)
+
     this.setState({
       loading: true
     }, () => {
@@ -250,38 +283,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           this.props.updateDataFrameDetail({})
         }
       }
-    })
-  }
-
-  saveFlow() {
-    const { flow, lockUUID, notify } = this.props
-
-    return new Promise(async (reslove, reject) => {
-      
-      if (!lockUUID) throw new MessageModel({
-        title: '警告：読取専用フロー', 
-        message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
-        messageStatus:"warning"
-      })
-
-      await API.request.doPut.flow(
-        {
-          flowUUID: inject_flow_uuid,
-          flow: flow,
-          lockUUID: lockUUID
-        }
-      )
-
-      reslove()
-    }) // flow 保存に失敗した場合、
-    .catch(e => {
-      notify({
-        title: e.title,
-        message: e.message,
-        status: e.messageStatus,
-        dismissAfter: -1,
-        closeButton: true
-      })
     })
   }
 

@@ -15,10 +15,10 @@ export function vizs(props:Props) {
     const url = (props.url) ? props.url : URL.POST.vizs
     
     let result:Promise<any>|null = null
-    if (flowUUID && stepIds) {
-        result = VIZS_FROM_FLOW(flowUUID, stepIds, vizId, args, url)
-    } else if (frameUUID) {
+    if (frameUUID) {
         result = VIZS_FROM_FRAME(frameUUID, vizId, args, url)
+    } else if (flowUUID && stepIds) {
+        result = VIZS_FROM_FLOW(flowUUID, stepIds, vizId, args, url)
     } else {
         result = new Promise((resolve, reject) => {reject("unextpected paramter error is occured while requsting API POST /VIZ")})
     }
