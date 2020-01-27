@@ -255,30 +255,34 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   saveFlow() {
     const { flow, lockUUID, notify } = this.props
-    return API.do.checkDo(
-      () => {
-        if (!lockUUID) throw new MessageModel({
-          title: '警告：読取専用フロー', 
-          message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
-          messageStatus:"warning"
-        })
-      },
-      API.request.doPut.flow,
-      {
-        flowUUID: inject_flow_uuid,
-        flow: flow,
-        lockUUID: lockUUID
-      }
-    )
-      .catch(e => {
-        notify({
-          title: e.title,
-          message: e.message,
-          status: e.messageStatus,
-          dismissAfter: -1,
-          closeButton: true
-        })
+
+    return new Promise(async (reslove, reject) => {
+      
+      if (!lockUUID) throw new MessageModel({
+        title: '警告：読取専用フロー', 
+        message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
+        messageStatus:"warning"
       })
+
+      await API.request.doPut.flow(
+        {
+          flowUUID: inject_flow_uuid,
+          flow: flow,
+          lockUUID: lockUUID
+        }
+      )
+
+      reslove()
+    }) // flow 保存に失敗した場合、
+    .catch(e => {
+      notify({
+        title: e.title,
+        message: e.message,
+        status: e.messageStatus,
+        dismissAfter: -1,
+        closeButton: true
+      })
+    })
   }
 
   render() {
