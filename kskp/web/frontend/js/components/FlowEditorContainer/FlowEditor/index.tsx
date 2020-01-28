@@ -204,7 +204,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
         updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom} = this.props;
     const isLoading = (!this.state || this.state.isLoading) ? true : false   
     
-    return <div className={style.flow_editor_container}>
+    return <div className={style.flowEditorContainer}>
       <div className={style.flow_editor}>
         <PaperZoom />
         {/*<SettingsButton {...this.props}/>*/}
