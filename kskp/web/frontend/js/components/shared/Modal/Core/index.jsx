@@ -178,7 +178,7 @@ export default class Modal extends React.Component<Props, State> {
     let modal_body = (dynamic) ? content : children
 
     if (preview) {
-      let key = (contents) ? contents[0] : null
+      let key = (contents) ? contents[0].id : null
       modal = <PreviewModal key={key}
                             id={id} title={title} footer={modal_footer}
                             close_button={close_button} visible={visible} 
