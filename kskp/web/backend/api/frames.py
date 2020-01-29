@@ -301,13 +301,52 @@ def make_new_viss():
     activity = execute_flow(flow, vis_args=vis_args)
     return format_vis(activity)
 
-def run_flow(flow_uuid, args, request):
-    inputs = _make_flow_inputs(flow_uuid, request)
+def run_flow_by_websocket(websocket_message, dlog_path):
+    flow_uuid = websocket_message['flowUUID']
+    args = websocket_message['args'] if websocket_message['args'] else {}
+
+    # log出力のため、dlog pathの設定
+    args['dlog'] = dlog_path
+
+    from kskp.store import Library, NysolModule, fetch_flow_by_uuid
+
+    flow_json = fetch_flow_by_uuid(flow_uuid)    
+    # make_flow_inputs
+    inputs = {}
+    for port in flow_json['ports'][0]:
+        # frame（既にkskpに存在するデータソース）の場合
+        if websocket_message[port['nodeId']] is not None:
+            # フレームのUUIDを取得する
+            frame_uuid = websocket_message[port['nodeId']]
+            # 指定したuuidのframeを取得する
+            nysol_module = _load_frame(frame_uuid)
+            inputs[port['nodeId']] = nysol_module
+            continue
+
     flow = Flow.find_by_uuid(flow_uuid)
-    result = execute_flow(flow, args=args, inputs=inputs)
+    result = execute_flow_by_websocket(flow, args=args, inputs=inputs, dlog_path=dlog_path)
     result = format_result(result)
 
     return result
+
+def execute_flow_by_websocket(flow, args={}, inputs={}, vis_args={}, dlog_path=None):
+    """
+    指定されたフローを実行し実行結果を取得する
+    """
+    try:
+        from kskp.engine import execute, FlowJsonLink
+        
+        link = FlowJsonLink(flow, vis_args, None, dlog_path)
+        activity = execute(link=link, args=args, inputs=inputs)
+        
+        if not activity:
+            raise Exception('実行結果は出力されませんでした')
+        return activity
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise Exception(str(e))
 
 def execute_flow(flow, args={}, inputs={}, vis_args={}, job_complete_handler=None):
     """

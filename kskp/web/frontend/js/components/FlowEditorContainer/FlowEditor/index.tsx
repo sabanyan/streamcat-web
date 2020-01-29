@@ -125,7 +125,6 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       })
     const { connect, disconnect, send } = this.props
     let result = "ws://" + location.host + "/api/v0/websocket"
-    console.log(result)
     connect(result)
   }
 
@@ -235,7 +234,6 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
-    console.log("lock")
 
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>

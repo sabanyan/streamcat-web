@@ -3,17 +3,30 @@ from geventwebsocket.handler import WebSocketHandler
 from gevent.pywsgi import WSGIServer
 import argparse
 
-def run(host, port):
+# https://coderwall.com/p/q2mrbw/gevent-with-debug-support-for-flask
+from werkzeug.serving import run_with_reloader
+from werkzeug.debug import DebuggedApplication
+import logging
+logging.basicConfig(level=logging.INFO) 
+
+host = "0.0.0.0"
+port = 5000
+
+@run_with_reloader
+def run_server():
     app.debug = True
-    host_port = (host, port)
+    if app.debug:
+        application = DebuggedApplication(app)
+    else:
+        application = app
     server = WSGIServer(
-        host_port,
+        (host, port),
         app,
         handler_class=WebSocketHandler
     )
-    print("Server is running on {}:{}".format(host, port))
+    print("Server is Starting on {}:{}".format(host, port))
     server.serve_forever()
-
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process')
     parser.add_argument('host', metavar='host', type=str, default="0.0.0.0",
@@ -24,4 +37,7 @@ if __name__ == '__main__':
     host = args.host
     port = args.port
     
-    run(host, port)
+    if host and port:
+        run_server()
+    else:
+        print("Host, Portが入力されていません。")

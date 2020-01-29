@@ -2,12 +2,17 @@ from flask import Blueprint, request, session, jsonify, send_from_directory, ren
 from .auth import login_required_api
 from .utils.navigation import update_navigation
 from .utils import api_base, lock_required
-from .frames import run_flow
+from .frames import run_flow_by_websocket
 from kskp.store import *
 from kskp.web.backend import app
 
+import os
 from geventwebsocket.handler import WebSocketHandler
 from watchdog.events import PatternMatchingEventHandler
+from watchdog.observers import Observer
+import json
+import logging
+import time
 
 mod = Blueprint('socket', __name__)
 
@@ -18,38 +23,43 @@ def connect():
         ws = request.environ['wsgi.websocket']
         while True:
             message = ws.receive()
-            ws.send(f'you send {message}. thanx.')
-    
-    '''
-    isDone = False
-    while isDone is False:
-        message = ws.receive()
-        isDone = messageHandler(message, request)
-    '''
+            message = json.loads(message)
+            result = messageHandler(ws, message)
+            message['type'] = MESSAGE_FLOW_EXCUTE_LOG
+            message['data'] = result
+            ws.send(json.dumps(message))
 
 MESSAGE_FLOW_EXCUTE_START = "MESSAGE_FLOW_EXCUTE_START"
 MESSAGE_FLOW_EXCUTE_LOG = "MESSAGE_FLOW_EXCUTE_LOG"
 MESSAGE_FLOW_EXCUTE_END = "MESSAGE_FLOW_EXCUTE_END"
-def messageHandler(message, request):
+def messageHandler(ws, message):
     result = False
-    if message.type == MESSAGE_FLOW_EXCUTE_START:
-    # フロントエンドでフローが実行された時
-        result = onFlowExcuteMessageReceived(request)
+    # ユーザーがフロー実行ボタンをクリックした時
+    if message['type'] == MESSAGE_FLOW_EXCUTE_START:
+        result = onFlowExcuteMessageReceived(ws, message)
     else:
         raise Exception(message.type)
     return result
 
-def onFlowExcuteMessageReceived(request):
-    args = request.json['args']
-    flow_uuid = request.json['flow_uuid']
-    lock_uuid = request.json['lock_uuid']
-    path = "kskp/messages/" + flow_uuid
-    handler = JobCompleteHandler(ws, path)
+def onFlowExcuteMessageReceived(ws, message):
+    args = message['args']
+    flow_uuid = message['flowUUID']
 
-    run_flow(flow_uuid, args, request, handler)
+    path = './log/' + message['flowUUID']
+    job_complete_handler = JobCompleteHandler(ws,path)
+    # Nysolのdlog（進捗）確認のため、WatchDog
+    observer = Observer()
+    observer.schedule(job_complete_handler, job_complete_handler.path)
+    # WatchDog Start
+    observer.start()
+    # 実行
+    result = run_flow_by_websocket(message, job_complete_handler.path)
+    time.sleep(1)
+    observer.stop()
+    # observer threadの終了を待つ
+    observer.join()
 
-    return True
-
+    return result
 
 class JobCompleteHandler(PatternMatchingEventHandler):
     
@@ -57,17 +67,24 @@ class JobCompleteHandler(PatternMatchingEventHandler):
         super().__init__()
         self.ws = ws
         self.path = path
-
+        
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+    
     def on_created(self, event):
         self.send_message(event)
 
     def on_modified(self, event):
         self.send_message(event)
-    
+        
     def send_message(self, event):
         if event.is_directory:
             return 
 
         with open(event.src_path, 'r') as f:
-            self.ws.send(f'{f.read()}')
+            message = {}
+            message['type'] = MESSAGE_FLOW_EXCUTE_LOG
+            message['data'] =  f'{f.read()}'
+
+            self.ws.send(json.dumps(message))
 

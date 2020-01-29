@@ -14,7 +14,7 @@ import { FlowModelProps } from "Model/Flow/FlowModel";
 import { API } from 'Modules/api/index'
 
 type ToolBarProps = {
-  flow: FlowModelProps;
+  flow: any;
   nodes: [];
   history: HistoryType;
   zoom: number;
@@ -62,39 +62,31 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
     flow.nodes = nodes
 
-    return API.do.checkDo(
-      () => {
-        if (!lockUUID) throw new MessageModel({
+    return new Promise(async (resolve, reject) => {
+      if (!lockUUID) {
+        throw new MessageModel({
           title: '警告：読取専用フロー', 
           message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
           messageStatus:"warning"
         })
-      },
-      API.request.doPut.flow,
-      {
+      } 
+
+      await API.request.doPut.flow({
         flowUUID: inject_flow_uuid,
         flow: flow,
         lockUUID: lockUUID
-      }
-    )
-      .then((r) => {
-        dismissNotify(saveNotify.id)
       })
-      .catch(e => {
-        notify({
-          title: e.title,
-          message: e.message,
-          status: e.messageStatus,
-          dismissAfter: -1,
-          closeButton: true
-        })
-      })
+
+      dismissNotify(saveNotify.id)
+      resolve()
+    })
   }
 
   onClickSort() {
     this.props.sortFlow()
     this.props.addHistory()
   }
+
 
   run() {
     let { notify, dismissNotify } = this.props
@@ -106,11 +98,44 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     return FlowUtil.runWithArgs(runArgs, notify, dismissNotify)
   }
 
+  runWithWebsocket() {
+    const { connect, send, flow} = this.props
+
+    send({ 
+      type: 'MESSAGE_FLOW_EXCUTE_START',
+      flowUUID: inject_flow_uuid,
+      args: flow.params
+    })
+  }
+
   onClickProjectRun() {
-    const { send } = this.props
-    send({ my: 'message' })
-    //this.ws = new WebSocket('ws://0.0.0.0:5000/api/v0/websocket');
-    return
+    const { send, flow, notify } = this.props
+
+    this.loading = true
+    this.loadingMessage = ''
+
+    this.saveFlow()
+    .then(() => {
+      this.runWithWebsocket()
+    })
+    .catch(e => {
+      notify({
+        title: e.title,
+        message: e.message,
+        status: e.messageStatus,
+        dismissAfter: -1,
+        closeButton: true
+      })
+    })
+    .then(() => {
+      this.loading = false
+      this.flowUpdate()
+      this.forceUpdate()
+    })
+  }
+
+  /*
+  onClickProjectRun() {
     this.loading = true
     this.loadingMessage = ''
 
@@ -163,6 +188,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       })
     })
   }
+  */
 
   flowUpdate() {
     APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
