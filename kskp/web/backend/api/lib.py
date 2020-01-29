@@ -156,6 +156,38 @@ def fecth_library():
     root = get_library(session['user_id'])
     return _jsonify_folder(root)
 
+@mod.route('/trashes', methods=['DELETE'])
+@login_required_api
+@api_base
+def empty_all():
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder()
+
+    # ゴミ箱直下のフォルダとファイルを取得する
+    childrenGetter = ChildrenGetter()
+    children = childrenGetter.execute(session['user_id'], trash_folder)
+
+    # ゴミ箱直下のフォルダとファイルを削除する
+    for child in children:
+        _empty_all_inner(child)
+
+def _empty_all_inner(datum):
+    if datum.type == Datum.FOLDER_TYPE:
+        # フォルダ直下のフォルダとデータベースとドキュメントを取得する
+        childrenGetter = ChildrenGetter()
+        children = childrenGetter.execute(session['user_id'], datum)
+        
+        # フォルダ直下のフォルダとファイルを削除する
+        for child in children:
+            _empty_all_inner(child)
+
+        # フォルダを削除する
+        datum.delete()
+    
+    else:
+        # ファイルを削除する
+        datum.delete()
+
 @mod.route('/locks', methods=['POST'])
 @login_required_api
 @api_base
@@ -245,78 +277,67 @@ def update_folder(folder_uuid):
     else:
         raise Exception('update_folder parameter error!')
 
-# @mod.route('/folders/<folder_uuid>', methods=['DELETE'])
-# @login_required_api
-# @api_base
-# def delete_folder(folder_uuid):
-#     """
-#     フォルダを削除する
-#     """
-#     folder = Folder.find_by_uuid(folder_uuid)
-#     folder.delete()
-
 @mod.route('/folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
 def throw_away(folder_uuid):
-    modifier = session['user_id']
-    folder = Folder.find_by_uuid(folder_uuid)
-    _throw_away_inner(folder, modifier)
-
-def _throw_away_inner(datum, modifier):
     from kskp.store import Library
     trash_folder = Library.load_trash_folder()
 
-    using_frame_uuids = []
-    for flow in Flow.find_all_flows():
-        from kskp.store import get_all_frame_uuid_in_frame
-        using_frame_uuids.extend(get_all_frame_uuid_in_frame(flow.uuid))
+    folder = Folder.find_by_uuid(folder_uuid)
+    thrown_away_count = _throw_away_inner(trash_folder.uuid, folder, session['user_id'])
 
+    if thrown_away_count == 0:
+        raise Exception('削除できませんでした')
+
+def _throw_away_inner(parent_uuid, datum, modifier):
     if datum.type == Datum.FOLDER_TYPE:
         # フォルダ直下のフォルダとデータベースとドキュメントを取得する
         childrenGetter = ChildrenGetter()
         children = childrenGetter.execute(session['user_id'], datum)
 
+        # ゴミ箱に捨てても削除前の階層構造を維持するため、削除対象フォルダをゴミ箱に複製する
+        trashed_folder = Folder(parent_uuid, datum.label, modifier)
+        trashed_folder.save()
+
+        thrown_away_count = 0
+
         for child in children:
-            _throw_away_inner(child, modifier)
+            thrown_away_count += _throw_away_inner(trashed_folder.uuid, child, modifier)
+
+        # 削除対象フォルダを捨てられなかった場合は、複製フォルダを作らない
+        if len(children) > 0 and thrown_away_count == 0:
+            trashed_folder.delete()
 
         # フォルダを削除する(可能であれば)
         try:
             datum.delete()
+            return thrown_away_count + 1
         except Exception:
-            pass
+            return thrown_away_count + 0
 
     elif datum.type == Datum.FRAME_TYPE:
         # 削除しようとするframeが、フローで使用されていない場合に削除する
-        if datum.uuid not in using_frame_uuids:
-            datum.move(trash_folder.uuid, modifier)
+        using_flow_uuids = Flow.get_flow_uuids_using_other_datum(datum.uuid)
+        if len(using_flow_uuids) == 0:
+            datum.move(parent_uuid, modifier)
+            return 1
+        else:
+            return 0
 
     elif datum.type == Datum.FLOW_TYPE:
         # フロー
-        using_flow_uuids = Datum.get_flow_uuids_using_other_datum(datum.uuid)
+        using_flow_uuids = Flow.get_flow_uuids_using_other_datum(datum.uuid)
         if len(using_flow_uuids) == 0:
-            datum.move(trash_folder.uuid, modifier)
+            datum.move(parent_uuid, modifier)
+            return 1
+        else:
+            return 0
 
     else:
         # データベース接続、リモートフォルダ接続
-        datum.move(trash_folder.uuid, modifier)
-
-
-@mod.route('/trashes', methods=['DELETE'])
-@login_required_api
-@api_base
-def trash_all():
-    from kskp.store import Library
-    trash_folder = Library.load_trash_folder()
-
-    # フォルダ直下のフォルダとデータベースとドキュメントを取得する
-    childrenGetter = ChildrenGetter()
-    children = childrenGetter.execute(session['user_id'], trash_folder)
-
-    # 全てを削除する
-    for child in children:
-        child.delete()
-
+        datum.move(parent_uuid, modifier)
+        return 1
 
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
@@ -356,19 +377,18 @@ def update_awss3_folder(awss3_uuid):
     modifier = session['user_id']
     return AwsS3.update_data(awss3_uuid, label, bucket_name, modifier)
 
-
 @mod.route('/awss3s/<awss3_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_awss3_folder(awss3_uuid):
-    """
-    AWS S3フォルダを削除する
-    """
-    # AWS S3ディレクトリ直下のファイルをDBから登録解除する
-    pass
+def throw_away_awss3(awss3_uuid):
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder()
+
     folder = AwsS3.find_by_uuid(awss3_uuid)
-    # AWS S3 folderレコードをDBから削除する
-    folder.delete()
+    thrown_away_count = _throw_away_inner(trash_folder.uuid, folder, session['user_id'])
+
+    if thrown_away_count == 0:
+        raise Exception('削除できませんでした')
 
 @mod.route('/databases/<database_uuid>', methods=['GET'])
 @login_required_api
@@ -447,14 +467,12 @@ def update_database(database_uuid):
 @mod.route('/databases/<database_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_database(database_uuid):
-    """
-    データベースを削除する
-    """
-    database = Database.find_by_uuid(database_uuid)
-    # DatabaseレコードをDBから削除する
-    database.delete()
+def throw_away_database(database_uuid):
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder()
 
+    database = Database.find_by_uuid(database_uuid)
+    database.move(trash_folder.uuid, session['user_id'])
 
 @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
 @login_required_api
@@ -534,14 +552,15 @@ def update_remote_folder(folder_uuid):
 @mod.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_remote_folder(folder_uuid):
+def throw_away_remote_folder(folder_uuid):
     """
     リモートフォルダを削除する
     """
-    folder = RemoteFolder.find_by_uuid(folder_uuid)
-    # リモートフォルダレコードをDBから削除する
-    folder.delete()
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder()
 
+    folder = RemoteFolder.find_by_uuid(folder_uuid)
+    folder.move(trash_folder.uuid, session['user_id'])
 
 # @mod.route('/documents/<doc_uuid>', methods=['GET'])
 # @login_required_api
