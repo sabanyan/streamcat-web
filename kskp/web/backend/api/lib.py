@@ -285,6 +285,10 @@ def throw_away(folder_uuid):
     trash_folder = Library.load_trash_folder()
 
     folder = Folder.find_by_uuid(folder_uuid)
+
+    if folder.parent_uuid is None:
+        raise Exception('ルートフォルダは削除できません')
+
     thrown_away_count = _throw_away_inner(trash_folder.uuid, folder, session['user_id'])
 
     if thrown_away_count == 0:

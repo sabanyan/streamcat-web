@@ -7,7 +7,7 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import ss
 from kskp.store import StoreModel as Store
-from kskp.store import Datum, Mountable, Frame, AwsS3, Database, RemoteFolder, STORE_DIR
+from kskp.store import Datum, Folder, Flow, Mountable, Frame, AwsS3, Database, RemoteFolder, STORE_DIR, TRASH_FOLDER_UUID
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
 class DataStoreTestCase(TestCaseBase):
@@ -212,7 +212,12 @@ class LibraryTestCase(TestCaseBase):
         self.assertTrue(os.path.isdir((STORE_DIR / root.path / ' NEW FOLDER ').as_posix()))
 
         # フォルダを削除する(DELETE /folders)
-        # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
+        self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
+
+        # フォルダはゴミ箱に移動していること
+        trashed = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        self.assertEqual(len(trashed), 1)
+        self.assertEqual(trashed[0].label, ' NEW FOLDER ')
 
     def test_move_folder(self):
         # ルートを取得する
@@ -658,6 +663,10 @@ class DatabaseTestCase(TestCaseBase):
         # Databaseを削除(unmount)する(DELETE /databases)
         self.delete_uri('/api/v0/databases/' + database_uuid, self.USER_ID)
 
+        # Databaseはゴミ箱に移動していること
+        db = Database.find_by_uuid(database_uuid)
+        self.assertEqual(db.parent_uuid, TRASH_FOLDER_UUID)
+
     def test_update_database(self):
         root = Datum.find_root()
         root_uuid = root.uuid
@@ -1060,8 +1069,15 @@ class RemoteFolderTestCase(TestCaseBase):
         self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
-        # RemoteFolderを削除(unmount)する(DELETE /remote-folders)
+        # RemoteFolderをほかす(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
+
+        # フォルダはゴミ箱に移動していること
+        folder = RemoteFolder.find_by_uuid(folder_uuid)
+        self.assertEqual(folder.parent_uuid, TRASH_FOLDER_UUID)
+
+        # RemoteFolderを削除(unmount)する
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
 
     def test_update_folders(self):
         root = Datum.find_root()
@@ -1109,8 +1125,15 @@ class RemoteFolderTestCase(TestCaseBase):
         self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
-        # RemoteFolderを削除(unmount)する(DELETE /remote-folders)
+        # RemoteFolderをほかす(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
+
+        # フォルダはゴミ箱に移動していること
+        folder = RemoteFolder.find_by_uuid(folder_uuid)
+        self.assertEqual(folder.parent_uuid, TRASH_FOLDER_UUID)
+
+        # RemoteFolderを削除(unmount)する
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
 
     @unittest.skip('moveするにはpoth列とlabel列の名称を一致させるという縛りを破るしかない。縛りを破る予定だが今はテストをスキップ')
     def test_move_folders(self):
@@ -1162,6 +1185,171 @@ class RemoteFolderTestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
         self.assertNotEqual(result['data']['createdAt'], None)
+
+
+class TrashTestCase(TestCaseBase):
+    
+    def test_maintain_folder_hierarchy(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # フォルダ1を作成する(POST /folders)
+        folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1", "parent": root.uuid}, self.USER_ID)
+        folder1_uuid = folder1['data']['uuid']
+
+        # フォルダ1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER_ID)
+        folder2_uuid = folder2['data']['uuid']
+
+        # フォルダ2内にフレームを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER_ID)
+        frame_uuid_1= result['data']['uuid']
+
+        # フォルダ1をほかす
+        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER_ID)
+        
+        # フォルダ1はゴミ箱に移動していること
+        trashed1 = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        self.assertEqual(trashed1[0].label, 'フォルダですよ1')
+
+        # フォルダ2はゴミ箱に移動していること
+        trashed2 = Datum.find_by_parent_uuid(trashed1[0].uuid)
+        self.assertEqual(trashed2[0].label, 'フォルダですよ2')
+
+        # フレームはゴミ箱に移動していること
+        frame = Frame.find_by_uuid(frame_uuid_1)
+        self.assertEqual(frame.parent_uuid, trashed2[0].uuid)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trashed = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        self.assertEqual(len(trashed), 0)
+
+    def test_delete_limitation(self):
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # フォルダ1を作成する(POST /folders)
+        folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ!1", "parent": root.uuid}, self.USER_ID)
+        folder1_uuid = folder1['data']['uuid']
+
+        # フォルダ1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ!2", "parent": folder1_uuid}, self.USER_ID)
+        folder2_uuid = folder2['data']['uuid']
+
+        # フォルダ2内にフレームを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER_ID)
+        frame_uuid_1= result['data']['uuid']
+
+        flow_data = {
+          "label": "q", 
+          "nodes": [
+            {
+              "id": "d", 
+              "type": "frame", 
+              "uuid": frame_uuid_1,
+              "label": "testData", 
+              "makeCache": False, 
+              "dataSource": "csv", 
+              "cacheCreatedAt": None
+            }, 
+            {
+              "id": "d1", 
+              "type": "frame", 
+              "uuid": None, 
+              "label": "d1",
+              "makeCache": False, 
+              "dataSource": "csv", 
+              "cacheCreatedAt": None
+            }, 
+            {
+              "id": "c1", 
+              "args": {
+                "a": "add,add1", 
+                "c": "1,2", 
+                "precision": 10
+              }, 
+              "dsts": {
+                "o": "d1"
+              }, 
+              "size": {
+                "width": 38, 
+                "height": 38
+              }, 
+              "srcs": {
+                "i": "d"
+              }, 
+              "type": "command", 
+              "label": "計算", 
+              "commandId": "mcal", 
+              "srcsOrder": [
+                "i"
+              ]
+            }
+          ], 
+          "ports": [
+            [], 
+            [
+              {
+                "type": "frame", 
+                "label": "testData", 
+                "nodeId": "d"
+              }
+            ]
+          ], 
+          "params": [], 
+          "creator": "開発用", 
+          "createdAt": "2019-12-04 13:54:46", 
+          "projectId": None, 
+          "description": ""
+        }
+
+        # フローを作成する
+        flow = Flow(root.uuid, 'フロー', flow_data, self.USER_ID)
+        flow.save()
+
+        # フォルダ1をほかすが、中のフレームはフローで使用中なのでエラーになる
+        with self.assertRaises(AssertionError) as e:
+            self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER_ID)
+
+        # フォルダ2内にフレーム2を作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy2.csv')
+        # フレーム2データを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_2', folder2_uuid, f, self.USER_ID)
+        frame_uuid_2= result['data']['uuid']
+
+        # フォルダ1をほかす
+        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER_ID)
+
+        # フォルダ1は放されずに残っている
+        folder1 = Folder.find_by_uuid(folder1_uuid)
+        self.assertEqual(folder1.parent_uuid, root.uuid)
+
+        # フォルダ2は放されずに残っている
+        folder2 = Folder.find_by_uuid(folder2_uuid)
+        self.assertEqual(folder2.parent_uuid, folder1_uuid)
+
+        # ゴミ箱へはフォルダの階層構造を維持しつつ、フレーム2が捨てられている
+        trashed1 = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        self.assertEqual(trashed1[0].label, 'フォルダですよ!1')
+
+        trashed2 = Datum.find_by_parent_uuid(trashed1[0].uuid)
+        self.assertEqual(trashed2[0].label, 'フォルダですよ!2')
+
+        frame = Frame.find_by_uuid(frame_uuid_2)
+        self.assertEqual(frame.parent_uuid, trashed2[0].uuid)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trashed = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        self.assertEqual(len(trashed), 0)
 
 @unittest.skip
 class ExecuteTestCase(TestCaseBase):
