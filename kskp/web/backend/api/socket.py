@@ -16,22 +16,32 @@ import time
 
 mod = Blueprint('socket', __name__)
 
+MESSAGE_FLOW_EXCUTE_START = "MESSAGE_FLOW_EXCUTE_START"
+MESSAGE_FLOW_EXCUTE_LOG = "MESSAGE_FLOW_EXCUTE_LOG"
+MESSAGE_FLOW_EXCUTE_END = "MESSAGE_FLOW_EXCUTE_END"
+MESSAGE_EXCEPTION = "MESSAGE_EXCEPTION"
+
 @mod.route('/websocket')
 @login_required_api
 def connect():
     if request.environ.get('wsgi.websocket'):
         ws = request.environ['wsgi.websocket']
-        while True:
-            message = ws.receive()
-            message = json.loads(message)
-            result = messageHandler(ws, message)
-            message['type'] = MESSAGE_FLOW_EXCUTE_LOG
-            message['data'] = result
-            ws.send(json.dumps(message))
+        try:
+            while True:
+                message = ws.receive()
+                message = json.loads(message)
+                result = messageHandler(ws, message)
+                message['type'] = MESSAGE_FLOW_EXCUTE_LOG
+                message['data'] = result    
+                ws.send(json.dumps(message))
+        except Exception as e:
+            message['type'] = MESSAGE_EXCEPTION
+            message['data'] = str(e)
+            logging.info("--------connect---------")
+            logging.info(message)
+            logging.info(json.dumps(message))
+            #ws.send(message)
 
-MESSAGE_FLOW_EXCUTE_START = "MESSAGE_FLOW_EXCUTE_START"
-MESSAGE_FLOW_EXCUTE_LOG = "MESSAGE_FLOW_EXCUTE_LOG"
-MESSAGE_FLOW_EXCUTE_END = "MESSAGE_FLOW_EXCUTE_END"
 def messageHandler(ws, message):
     result = False
     # ユーザーがフロー実行ボタンをクリックした時

@@ -153,7 +153,6 @@ export default class NavigationBar extends React.Component<Props> {
         </ul>
       </div>
     </nav>
-
   }
 
 }

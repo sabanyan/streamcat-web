@@ -310,22 +310,26 @@ def run_flow_by_websocket(websocket_message, dlog_path):
 
     from kskp.store import Library, NysolModule, fetch_flow_by_uuid
 
-    flow_json = fetch_flow_by_uuid(flow_uuid)    
-    # make_flow_inputs
-    inputs = {}
-    for port in flow_json['ports'][0]:
-        # frame（既にkskpに存在するデータソース）の場合
-        if websocket_message[port['nodeId']] is not None:
-            # フレームのUUIDを取得する
-            frame_uuid = websocket_message[port['nodeId']]
-            # 指定したuuidのframeを取得する
-            nysol_module = _load_frame(frame_uuid)
-            inputs[port['nodeId']] = nysol_module
-            continue
+    try:
+        flow_json = fetch_flow_by_uuid(flow_uuid)    
+        # make_flow_inputs
+        inputs = {}
+        for port in flow_json['ports'][0]:
+            # frame（既にkskpに存在するデータソース）の場合
+            if websocket_message[port['nodeId']] is not None:
+                # フレームのUUIDを取得する
+                frame_uuid = websocket_message[port['nodeId']]
+                # 指定したuuidのframeを取得する
+                nysol_module = _load_frame(frame_uuid)
+                inputs[port['nodeId']] = nysol_module
+                continue
 
-    flow = Flow.find_by_uuid(flow_uuid)
-    result = execute_flow_by_websocket(flow, args=args, inputs=inputs, dlog_path=dlog_path)
-    result = format_result(result)
+        flow = Flow.find_by_uuid(flow_uuid)
+        result = execute_flow_by_websocket(flow, args=args, inputs=inputs, dlog_path=dlog_path)
+        result = format_result(result)
+        
+    except Exception as e:
+        raise e
 
     return result
 
