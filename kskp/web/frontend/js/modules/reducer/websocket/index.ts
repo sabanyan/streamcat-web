@@ -23,17 +23,34 @@ const REDUX_WEBSOCKET_ERROR = 'REDUX_WEBSOCKET::ERROR'
 
 
 type State = {
-    
+    logs: string[]
 }
 
-export function reducer(state={}, action) {
-    let newState = state
-    switch (action.type) {
-        case REDUX_WEBSOCKET_MESSAGE:
-            console.log(action)
-            break;
+const initialState:State = {
+    logs: []
+}
 
+export function reducer(state = initialState, action) {
+    let newState:State = state
+    try {
+        switch (action.type) {
+            case REDUX_WEBSOCKET_MESSAGE:
+                newState = addMessage(newState, action)
+                break;
+        }
+    } catch(e) {
+        console.log(e)
+    } finally {
+        return newState
     }
+}
 
+function addMessage(state:State, action:any):State {
+
+    let newLogs = state.logs.slice(0, state.logs.length)
+    let message:string = JSON.parse(action.payload.message).data
+    newLogs.push(message)
+    let newState = {...state, logs:newLogs}
+ 
     return newState
 }

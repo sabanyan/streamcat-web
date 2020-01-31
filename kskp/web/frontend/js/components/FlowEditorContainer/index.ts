@@ -72,6 +72,7 @@ export type FlowEditorProps = {
   position: any;
   flow: FlowModelProps;
   drag: DragType;
+  logs: string[];
   selected_data_source_detail: Function;
   sortStepSrcEnd: Function;
   deleteSelectStep: Function;
@@ -106,6 +107,7 @@ const FlowEditorContainer = connect(
       flow: state.flowEditorReducer.flow,
       originalFlow: state.flowEditorReducer.originalFlow,
       navigation: state.flowEditorReducer.navigation,
+      logs: state.websocketReducer.logs
     }
   },
   dispatch => {

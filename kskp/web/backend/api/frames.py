@@ -10,6 +10,8 @@ from kskp.web.backend import app
 
 from .auth import login_required_api
 from .utils import api_base, frame_api_base
+from watchdog.observers import Observer
+import logging
 
 mod = Blueprint('frames', __name__)
 
@@ -301,12 +303,12 @@ def make_new_viss():
     activity = execute_flow(flow, vis_args=vis_args)
     return format_vis(activity)
 
-def run_flow_by_websocket(websocket_message, dlog_path):
+def run_flow_by_websocket(websocket_message, job_complete_handler):
     flow_uuid = websocket_message['flowUUID']
     args = websocket_message['args'] if websocket_message['args'] else {}
 
     # log出力のため、dlog pathの設定
-    args['dlog'] = dlog_path
+    #args['dlog'] = dlog_path
 
     from kskp.store import Library, NysolModule, fetch_flow_by_uuid
 
@@ -325,7 +327,7 @@ def run_flow_by_websocket(websocket_message, dlog_path):
                 continue
 
         flow = Flow.find_by_uuid(flow_uuid)
-        result = execute_flow_by_websocket(flow, args=args, inputs=inputs, dlog_path=dlog_path)
+        result = execute_flow_by_websocket(flow, args=args, inputs=inputs, job_complete_handler=job_complete_handler)
         result = format_result(result)
         
     except Exception as e:
@@ -333,18 +335,49 @@ def run_flow_by_websocket(websocket_message, dlog_path):
 
     return result
 
-def execute_flow_by_websocket(flow, args={}, inputs={}, vis_args={}, dlog_path=None):
+def execute_flow_by_websocket(flow, args={}, inputs={}, vis_args={}, job_complete_handler=None):
     """
     指定されたフローを実行し実行結果を取得する
     """
     try:
         from kskp.engine import execute, FlowJsonLink
+        import os
+
+        observer = None
+        try:
+
+            dlog_root = './logs/' # + activity_uuid
+            if not os.path.exists(dlog_root):
+                os.makedirs(dlog_root)
+
+            # FlowJsonLink
+            link = FlowJsonLink(flow, vis_args, None, dlog_root)
+            activity_uuid = link.context.activity_data_dest_appender.activity_uuid
+
+            dlog_path = dlog_root + activity_uuid
+            if not os.path.exists(dlog_path):
+                os.makedirs(dlog_path)
+
+            observer = Observer()
+            # WatchDogの開始
+            observer.schedule(job_complete_handler, dlog_path)
+            observer.start()
+
+            logging.info(link)
+            logging.info(args)
+            logging.info(inputs)
+            
+            activity = execute(link=link, args=args, inputs=inputs)
+
+            if not activity:
+                raise Exception('実行結果は出力されませんでした')
         
-        link = FlowJsonLink(flow, vis_args, None, dlog_path)
-        activity = execute(link=link, args=args, inputs=inputs)
-        
-        if not activity:
-            raise Exception('実行結果は出力されませんでした')
+        finally:
+            if observer is not None:
+                observer.stop()
+                # observer Threadが中止されるのを待つ
+                observer.join()
+
         return activity
         
     except Exception as e:
