@@ -32,7 +32,7 @@ def connect():
             message = json.loads(message)
             try:
                 result = messageHandler(ws, message)
-                message['type'] = MESSAGE_FLOW_EXCUTE_LOG
+                message['type'] = MESSAGE_FLOW_EXCUTE_END
                 message['data'] = result    
             except Exception as e:
                 message['type'] = MESSAGE_EXCEPTION

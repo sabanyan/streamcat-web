@@ -1,0 +1,8 @@
+@import "../../../../sass/common";
+
+.logBox {
+  width: 100%;
+  font-family: Courier, monospace;
+  background-color: lighten(black,10%);
+  color: lighten(white,10%);
+}

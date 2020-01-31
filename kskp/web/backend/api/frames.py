@@ -342,6 +342,7 @@ def execute_flow_by_websocket(flow, args={}, inputs={}, vis_args={}, job_complet
     try:
         from kskp.engine import execute, FlowJsonLink
         import os
+        import time
 
         observer = None
         try:
@@ -357,16 +358,10 @@ def execute_flow_by_websocket(flow, args={}, inputs={}, vis_args={}, job_complet
             dlog_path = dlog_root + activity_uuid
             if not os.path.exists(dlog_path):
                 os.makedirs(dlog_path)
-
             observer = Observer()
             # WatchDogの開始
             observer.schedule(job_complete_handler, dlog_path)
-            observer.start()
-
-            logging.info(link)
-            logging.info(args)
-            logging.info(inputs)
-            
+            observer.start()            
             activity = execute(link=link, args=args, inputs=inputs)
 
             if not activity:
@@ -374,6 +369,8 @@ def execute_flow_by_websocket(flow, args={}, inputs={}, vis_args={}, job_complet
         
         finally:
             if observer is not None:
+                # job handlerがws_message送っているため、少し待つ
+                time.sleep(1)
                 observer.stop()
                 # observer Threadが中止されるのを待つ
                 observer.join()

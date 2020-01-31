@@ -305,8 +305,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
           onClick={() => this.props.undo()}>もとに戻す</Undo>
         <Redo disabled={redoDisabled} icon={'redo'}
           onClick={() => this.props.redo()}>繰り返す</Redo>
-      </div>
-      <div className={classnames(style.paper_toolbar)}>
         <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
           onClickZoomOut={(e) => this.onClickZoomOut(e)}
           onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
@@ -314,6 +312,10 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         <Sort disabled={disabled} icon={'&#xE42A'}
           onClick={(e) => this.onClickSort()}>整列</Sort>
       </div>
+      {/*
+      <div className={classnames(style.paper_toolbar)}>
+      </div>
+      */}
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false}
         visible={this.loading} message={this.loadingMessage} />
     </div>
