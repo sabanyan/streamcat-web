@@ -225,7 +225,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps,
       setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail,
       updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom,inspector,
-      resizeInspector,editor } = this.props;
+      resizeInspector, editor } = this.props;
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
