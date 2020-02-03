@@ -21,36 +21,89 @@ const REDUX_WEBSOCKET_RECONNECT_ATTEMPT = 'REDUX_WEBSOCKET::RECONNECT_ATTEMPT'
 const REDUX_WEBSOCKET_RECONNECTED = 'REDUX_WEBSOCKET::RECONNECTED'
 const REDUX_WEBSOCKET_ERROR = 'REDUX_WEBSOCKET::ERROR'
 
+// Custom Action
+const KSKP_FLOW_EXCUTE_START = 'KSKP_FLOW_EXCUTE_START'
+const KSKP_FLOW_EXCUTE_END = 'KSKP_FLOW_EXCUTE_END'
 
 type State = {
     logs: string[]
 }
 
-const initialState:State = {
+const initialState: State = {
     logs: []
 }
 
 export function reducer(state = initialState, action) {
-    let newState:State = state
+    let newState: State = state
     try {
         switch (action.type) {
             case REDUX_WEBSOCKET_MESSAGE:
-                newState = addMessage(newState, action)
+                newState = messageHandler(state, action)
                 break;
         }
-    } catch(e) {
+    } catch (e) {
         console.log(e)
     } finally {
         return newState
     }
 }
 
-function addMessage(state:State, action:any):State {
+// backendのsocket.pyで定義したメッセージと一致させること
+const MESSAGE_FLOW_EXCUTE_START = "MESSAGE_FLOW_EXCUTE_START"
+const MESSAGE_FLOW_EXCUTE_LOG = "MESSAGE_FLOW_EXCUTE_LOG"
+const MESSAGE_FLOW_EXCUTE_END = "MESSAGE_FLOW_EXCUTE_END"
+const MESSAGE_EXCEPTION = "MESSAGE_EXCEPTION"
 
+function messageHandler(state, action) {
+    let newState = state
+
+    // kskpで定義したメッセージ
+    let customMessage = JSON.parse(action.payload.message)
+    switch (customMessage.type) {
+        case MESSAGE_FLOW_EXCUTE_START:
+            newState = parseFlowExcuteStart(state, customMessage)
+            break
+        case MESSAGE_FLOW_EXCUTE_LOG:
+            newState = parseFlowExcuteLog(state, customMessage)
+            break
+        case MESSAGE_FLOW_EXCUTE_END:
+            newState = parseFlowExcuteEnd(state, customMessage)
+        case MESSAGE_EXCEPTION:
+            newState = parseException(state, customMessage)
+            break
+    }
+
+    return newState
+}
+
+function parseFlowExcuteStart(state: State, customMessage: any): State {
     let newLogs = state.logs.slice(0, state.logs.length)
-    let message:string = JSON.parse(action.payload.message).data
-    newLogs.push(message)
-    let newState = {...state, logs:newLogs}
- 
+    newLogs.push(customMessage.data)
+    let newState = { ...state, logs: newLogs }
+
+    return newState
+}
+
+function parseFlowExcuteLog(state: State, customMessage: any): State {
+    let newLogs = state.logs.slice(0, state.logs.length)
+    newLogs.push(customMessage.data)
+    let newState = { ...state, logs: newLogs }
+
+    return newState
+}
+
+function parseFlowExcuteEnd(state: State, customMessage: any): State {
+    let newLogs = state.logs.slice(0, state.logs.length)
+    newLogs.push(customMessage.data)
+    let newState = { ...state, logs: newLogs }
+
+    return newState
+}
+
+function parseException(state: State, customMessage: any): State {
+    let newLogs = state.logs.slice(0, state.logs.length)
+    newLogs.push(customMessage.data)
+    let newState = { ...state, logs: newLogs }
+
     return newState
 }

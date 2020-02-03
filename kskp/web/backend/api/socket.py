@@ -50,8 +50,10 @@ def messageHandler(ws, message):
     return result
 
 def onFlowExcuteMessageReceived(ws, message):
-
     job_complete_handler = JobCompleteHandler(ws)
+    start_message['type'] = MESSAGE_EXCEPTION
+    start_message['data'] = message
+    ws.send(json.dumps(start_message))
 
     # 実行
     result = run_flow_by_websocket(message, job_complete_handler)
