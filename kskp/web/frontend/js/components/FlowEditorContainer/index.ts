@@ -26,7 +26,8 @@ import {
   updateDataFrameDetailAction,
   updateFlowAction,
   updateStepAction,
-  moveStepsAction
+  moveStepsAction,
+  resizeInspectorAction
 } from 'Modules/application'
 import FlowEditor from 'Components/FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
@@ -34,6 +35,7 @@ import * as React from 'react'
 import { FlowModel } from 'Model/index'
 import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
+
 
 export type FlowEditorProps = {
   projectId: string,
@@ -71,6 +73,7 @@ export type FlowEditorProps = {
   position: any;
   flow: FlowModel;
   drag: DragType;
+  inspector:{width:number}
   selected_data_source_detail: Function;
   sortStepSrcEnd: Function;
   deleteSelectStep: Function;
@@ -80,6 +83,7 @@ export type FlowEditorProps = {
   addNote: Function;
   sortStepSrcEndAction: Function;
   moveSteps: Function;
+  resizeInspector: Function;
 }
 
 const FlowEditorContainer = connect(
@@ -102,6 +106,10 @@ const FlowEditorContainer = connect(
       flow: state.flowEditorReducer.flow,
       originalFlow: state.flowEditorReducer.originalFlow,
       navigation: state.flowEditorReducer.navigation,
+      //editor
+      editor: state.flowEditorReducer.editor,
+      //inspector
+      inspector: state.flowEditorReducer.inspector
     }
   },
   dispatch => {
@@ -200,6 +208,9 @@ const FlowEditorContainer = connect(
       },
       moveSteps(x: number, y: number, step) {
         dispatch(moveStepsAction(x, y, step))
+      },
+      resizeInspector(width: number) {
+        dispatch(resizeInspectorAction(width))
       }
     }
   },

@@ -38,6 +38,7 @@ const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
 const UPDATE_CACHE_ACTION = 'update_cache_action'
 const MOVE_STEPS_ACTION = 'move_steps_action'
+const RESIZE_INSPECTOR_ACTION = 'resize_inspector_action'
 const graph: GraphUtil = new GraphUtil()
 
 let initialState = {
@@ -54,7 +55,19 @@ let initialState = {
   drag: {},
   selected_in_edges: [],
   selected_out_edges: [],
-  selected_data_source_detail: {}
+  selected_data_source_detail: {},
+  // editor
+  editor: {
+    width: window.innerWidth - Constants.default.inspector.width,
+    height: undefined,
+    logBox: {
+      height: undefined
+    }
+  },
+  // inspector
+  inspector: {
+    width:Constants.default.inspector.width,
+  }
 }
 
 const FlowEditorReducer = (state = initialState, action: {}) => {
@@ -583,7 +596,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       break
     }
 
-    case MOVE_STEPS_ACTION:
+    case MOVE_STEPS_ACTION: {
       const { x, y, step } = action
       const { selected_step_ids, nodes } = newState
 
@@ -601,6 +614,20 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       }
 
       break;
+    }
+
+    case RESIZE_INSPECTOR_ACTION: {
+      newState = {
+        ...newState, 
+        inspector: {
+          width : action.width
+        },
+        editor: {
+          width: window.innerWidth - action.width
+        }
+      }
+      break;
+    }
 
     default:
       window.nodes = state.nodes
@@ -991,3 +1018,9 @@ export const moveStepsAction = (x: number, y: number, step) => {
   }
 }
 
+export const resizeInspectorAction = (width: number) => {
+  return {
+    type: RESIZE_INSPECTOR_ACTION,
+    width: width
+  }
+}
