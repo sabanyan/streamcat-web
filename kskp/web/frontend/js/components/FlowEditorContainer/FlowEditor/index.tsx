@@ -231,7 +231,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const { flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps,
       nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps,
       setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail,
-      updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom, send, connect, logs } = this.props;
+      updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom, send, connect, logs,
+      inspector, resizeInspector, editor } = this.props;
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
@@ -262,6 +263,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
           message={'フローを構築中です'} />
         <PaperScroller
+          editor={editor}
           pasteSteps={pasteSteps}
           copySteps={copySteps}
           deleteSteps={deleteSteps}
@@ -292,6 +294,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           selectSteps={selectSteps}
           flow={flow}
           lockUUID={this.state.lockUUID}
+          inspector={inspector}
           updateFlow={updateFlow}
           notify={notify}
           dismissNotify={dismissNotify}
@@ -303,6 +306,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           deleteCache={deleteCache}
           updateStep={updateStep}
           sortStepSrcEnd={sortStepSrcEnd}
+          resizeInspector={resizeInspector}
         />
         <LogBox logs={logs}></LogBox>
         <NotificationManager />

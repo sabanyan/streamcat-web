@@ -17,7 +17,7 @@ export default class FlowModel {
   createdAt?: string
   creator?: string
   label: string = ""
-  nodes: any[] = []
+  nodes?: any[] = []
   params: [] = []
   ports: [any[], any[]] = [[], []]
   projectId?: number
@@ -35,7 +35,9 @@ export default class FlowModel {
     this.description = props.description
   }
 
-  toNodeModels(nodes: any[]) {
+  toNodeModels(nodes?: any[]) {
+    if (!nodes) return []
+    
     let results: any[] = []
     nodes.forEach((node, index) => {
       const baseProps = {
@@ -56,6 +58,7 @@ export default class FlowModel {
             makeCache: node.makeCache,
             cacheCreatedAt: node.cacheCreatedAt
           }
+          model = new DataFrameStepModel(props)
           break;
         case Constants.step.type.command:
         case Constants.step.type.subflow:
@@ -89,7 +92,6 @@ export default class FlowModel {
       }
       if (model) results.push(model)
     })
-
     return results
   }
 

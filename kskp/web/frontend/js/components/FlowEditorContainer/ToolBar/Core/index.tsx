@@ -10,12 +10,12 @@ import { Loader } from 'Shared/Base'
 import { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType } from 'Types/index'
 import { NoteStepModelProps } from 'Model/Step/NoteStepModel'
 import { defaultGraphProps } from 'Utils/GraphUtil'
-import { FlowModelProps } from "Model/Flow/FlowModel";
+import { FlowModel } from "Model/index";
 import { API } from 'Modules/api/index'
 
 type ToolBarProps = {
-  flow: any;
-  nodes: [];
+  flow: FlowModel;
+  nodes: any[];
   history: HistoryType;
   zoom: number;
   lockUUID?: string;
@@ -62,15 +62,18 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
     flow.nodes = nodes
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise(async (reslove, reject) => {
+
+      // 編集権限がないと、保存不可
       if (!lockUUID) {
         throw new MessageModel({
           title: '警告：読取専用フロー', 
           message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
           messageStatus:"warning"
         })
-      } 
+      }
 
+      //　フロー保存
       await API.request.doPut.flow({
         flowUUID: inject_flow_uuid,
         flow: flow,
@@ -78,7 +81,18 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       })
 
       dismissNotify(saveNotify.id)
-      resolve()
+      
+      reslove()
+    })
+    // 保存失敗した場合、エラーメッセージ出力
+    .catch(e => {
+      notify({
+        title: e.title,
+        message: e.message,
+        status: e.messageStatus,
+        dismissAfter: -1,
+        closeButton: true
+      })
     })
   }
 

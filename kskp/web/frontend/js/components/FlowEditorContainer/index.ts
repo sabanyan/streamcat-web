@@ -26,15 +26,17 @@ import {
   updateDataFrameDetailAction,
   updateFlowAction,
   updateStepAction,
-  moveStepsAction
+  moveStepsAction,
+  resizeInspectorAction
 } from 'Modules/application'
 import FlowEditor from 'Components/FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
-import { FlowModelProps } from 'Model/Flow/FlowModel'
+import { FlowModel } from 'Model/index'
 import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 import { connect as wsConnect, disconnect as wsDisconnect, send as wsSend } from '@giantmachines/redux-websocket';
+
 
 export type FlowEditorProps = {
   projectId: string,
@@ -58,7 +60,7 @@ export type FlowEditorProps = {
   sortFlow: Function;
   executeFlow: Function;
   updateDataFrameDetail: Function;
-  nodes: [];
+  nodes: any[];
   selected_step_ids: string[];
   selected_tab_id: string;
   children: React.ReactNode;
@@ -70,9 +72,11 @@ export type FlowEditorProps = {
   history: any;
   mast: any;
   position: any;
-  flow: FlowModelProps;
+  flow: FlowModel;
   drag: DragType;
   logs: string[];
+  inspector:{width:number};
+  editor: {};
   selected_data_source_detail: Function;
   sortStepSrcEnd: Function;
   deleteSelectStep: Function;
@@ -85,6 +89,7 @@ export type FlowEditorProps = {
   connect: Function;
   disconnect: Function;
   send: Function;
+  resizeInspector: Function;
 }
 
 const FlowEditorContainer = connect(
@@ -107,7 +112,11 @@ const FlowEditorContainer = connect(
       flow: state.flowEditorReducer.flow,
       originalFlow: state.flowEditorReducer.originalFlow,
       navigation: state.flowEditorReducer.navigation,
-      logs: state.websocketReducer.logs
+      logs: state.websocketReducer.logs,
+      //editor
+      editor: state.flowEditorReducer.editor,
+      //inspector
+      inspector: state.flowEditorReducer.inspector
     }
   },
   dispatch => {
@@ -215,6 +224,9 @@ const FlowEditorContainer = connect(
       },
       send(message:{}) {
         dispatch(wsSend(message))
+      },
+      resizeInspector(width: number) {
+        dispatch(resizeInspectorAction(width))
       }
     }
   },
