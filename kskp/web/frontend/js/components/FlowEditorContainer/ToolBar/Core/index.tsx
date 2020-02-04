@@ -40,7 +40,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   loading: boolean = false
   loadingMessage: string = ""
   uploadedFile: UploadedFileType = null
-  ws:any = null
+  ws: any = null
 
   constructor(props: ToolBarProps) {
     super(props)
@@ -67,9 +67,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       // 編集権限がないと、保存不可
       if (!lockUUID) {
         throw new MessageModel({
-          title: '警告：読取専用フロー', 
-          message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
-          messageStatus:"warning"
+          title: '警告：読取専用フロー',
+          message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。',
+          messageStatus: "warning"
         })
       }
 
@@ -81,19 +81,19 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       })
 
       dismissNotify(saveNotify.id)
-      
+
       reslove()
     })
-    // 保存失敗した場合、エラーメッセージ出力
-    .catch(e => {
-      notify({
-        title: e.title,
-        message: e.message,
-        status: e.messageStatus,
-        dismissAfter: -1,
-        closeButton: true
+      // 保存失敗した場合、エラーメッセージ出力
+      .catch(e => {
+        notify({
+          title: e.title,
+          message: e.message,
+          status: e.messageStatus,
+          dismissAfter: -1,
+          closeButton: true
+        })
       })
-    })
   }
 
   onClickSort() {
@@ -113,9 +113,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
   }
 
   runWithWebsocket() {
-    const { connect, send, flow} = this.props
+    const { connect, send, flow } = this.props
 
-    send({ 
+    send({
       type: 'MESSAGE_FLOW_EXCUTE_START',
       flowUUID: inject_flow_uuid,
       args: flow.params
@@ -129,23 +129,23 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.loadingMessage = ''
 
     this.saveFlow()
-    .then(() => {
-      this.runWithWebsocket()
-    })
-    .catch(e => {
-      notify({
-        title: e.title,
-        message: e.message,
-        status: e.messageStatus,
-        dismissAfter: -1,
-        closeButton: true
+      .then(() => {
+        this.runWithWebsocket()
       })
-    })
-    .then(() => {
-      this.loading = false
-      this.flowUpdate()
-      this.forceUpdate()
-    })
+      .catch(e => {
+        notify({
+          title: e.title,
+          message: e.message,
+          status: e.messageStatus,
+          dismissAfter: -1,
+          closeButton: true
+        })
+      })
+      .then(() => {
+        this.loading = false
+        this.flowUpdate()
+        this.forceUpdate()
+      })
   }
 
   /*
@@ -319,17 +319,17 @@ export default class ToolBar extends React.Component<ToolBarProps> {
           onClick={() => this.props.undo()}>もとに戻す</Undo>
         <Redo disabled={redoDisabled} icon={'redo'}
           onClick={() => this.props.redo()}>繰り返す</Redo>
-        <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
-          onClickZoomOut={(e) => this.onClickZoomOut(e)}
-          onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
-          zoom={zoom} />
-        <Sort disabled={disabled} icon={'&#xE42A'}
-          onClick={(e) => this.onClickSort()}>整列</Sort>
       </div>
-      {/*
-      <div className={classnames(style.paper_toolbar)}>
-      </div>
-      */}
+      {
+        <div className={classnames(style.paper_toolbar)}>
+          <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
+            onClickZoomOut={(e) => this.onClickZoomOut(e)}
+            onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
+            zoom={zoom} />
+          <Sort disabled={disabled} icon={'&#xE42A'}
+            onClick={(e) => this.onClickSort()}>整列</Sort>
+        </div>
+      }
       <Loader whiteBackground={true} center={true} absolute={true} fixed={false}
         visible={this.loading} message={this.loadingMessage} />
     </div>
