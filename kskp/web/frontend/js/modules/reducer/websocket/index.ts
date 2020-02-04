@@ -8,7 +8,7 @@
 // These actions must be dispatched by you, however we do export action creator functions that can be used.
 const REDUX_WEBSOCKET_WEBSOCKET_CONNECT = 'REDUX_WEBSOCKET::WEBSOCKET_CONNECT'
 const REDUX_WEBSOCKET_WEBSOCKET_DISCONNECT = 'REDUX_WEBSOCKET::WEBSOCKET_DISCONNECT'
-const REDUX_WEBSOCKET_WEBSOCKET_SEND = 'REDUX_WEBSOCKET::WEBSOCKET_SEND'
+const REDUX_WEBSOCKET_WEBSOCKET_SEND = 'REDUX_WEBSOCKET::SEND'
 
 // Library dispatched actions
 // These actions are dispatched automatically by the middlware.
@@ -40,6 +40,10 @@ export function reducer(state = initialState, action) {
             case REDUX_WEBSOCKET_MESSAGE:
                 newState = messageHandler(state, action)
                 break;
+
+            case REDUX_WEBSOCKET_WEBSOCKET_SEND:
+                newState = parseFlowExcuteStart(state, action)
+                break;
         }
     } catch (e) {
         console.log(e)
@@ -59,6 +63,7 @@ function messageHandler(state, action) {
 
     // kskpで定義したメッセージ
     let customMessage = JSON.parse(action.payload.message)
+    console.log(customMessage)
     switch (customMessage.type) {
         case MESSAGE_FLOW_EXCUTE_START:
             newState = parseFlowExcuteStart(state, customMessage)
@@ -68,6 +73,7 @@ function messageHandler(state, action) {
             break
         case MESSAGE_FLOW_EXCUTE_END:
             newState = parseFlowExcuteEnd(state, customMessage)
+            break
         case MESSAGE_EXCEPTION:
             newState = parseException(state, customMessage)
             break
@@ -76,9 +82,10 @@ function messageHandler(state, action) {
     return newState
 }
 
-function parseFlowExcuteStart(state: State, customMessage: any): State {
+function parseFlowExcuteStart(state: State, action: any): State {
     let newLogs = state.logs.slice(0, state.logs.length)
-    newLogs.push(customMessage.data)
+    let startLog = "[START] flow is running... \n"
+    newLogs.push(startLog)
     let newState = { ...state, logs: newLogs }
 
     return newState
@@ -94,7 +101,17 @@ function parseFlowExcuteLog(state: State, customMessage: any): State {
 
 function parseFlowExcuteEnd(state: State, customMessage: any): State {
     let newLogs = state.logs.slice(0, state.logs.length)
-    newLogs.push(customMessage.data)
+    let endLog = "[END]\n"
+    newLogs.push(endLog)
+
+    if (Array.isArray(customMessage.data)) {
+        customMessage.data.forEach((result, index) => {
+            let label = result.label
+            let uuid = result.uuid
+            let resultLog = "[RESULT] : " + label + " (" + uuid + ") \n"
+            newLogs.push(resultLog)
+        });
+    }
     let newState = { ...state, logs: newLogs }
 
     return newState
@@ -102,7 +119,8 @@ function parseFlowExcuteEnd(state: State, customMessage: any): State {
 
 function parseException(state: State, customMessage: any): State {
     let newLogs = state.logs.slice(0, state.logs.length)
-    newLogs.push(customMessage.data)
+    let exceptionLog = "[EXCEPTION] " + customMessage.data + " \n"
+    newLogs.push(exceptionLog)
     let newState = { ...state, logs: newLogs }
 
     return newState

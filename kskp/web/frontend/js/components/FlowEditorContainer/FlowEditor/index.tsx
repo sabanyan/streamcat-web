@@ -154,7 +154,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       steps = nodes.map((step: StepModelType) => {
         let selected = (step.id === selected_step_ids[0])
         return <Step
-          key={step.id}
+          key={step.id + step.label}
           model={step}
           position={step.position}
           type={step.type}
@@ -236,7 +236,6 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
-    
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />

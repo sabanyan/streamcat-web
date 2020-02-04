@@ -30,7 +30,7 @@ export default class LogBox extends React.Component<Props, State> {
 
     // textArea
     if (this.textLog.current) {
-      this.textLog.current.scrollTop = this.textLog.current.scrollHeightß
+      this.textLog.current.scrollTop = this.textLog.current.scrollHeight
     }
   }
 
@@ -51,7 +51,6 @@ export default class LogBox extends React.Component<Props, State> {
   renderTextArea() {
     const { width, logs } = this.props
     const { isFold, height } = this.state
-
     let textArea: any = null
     if (isFold === false) {
       textArea = <textarea
