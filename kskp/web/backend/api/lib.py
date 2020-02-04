@@ -15,6 +15,7 @@ from kskp.store import (
     DatabaseConn,
     RemoteFolder,
     RemoteFolderConn,
+    TrashCan,
     ChildrenGetter
 )
 
@@ -105,6 +106,8 @@ def _convert_type(datum):
         return AwsS3.convert_to_awss3(datum)
     elif datum.type == Datum.DATABASE_TYPE:
         return Database.convert_to_database(datum)
+    elif datum.type == Datum.TRASH_TYPE:
+        return TrashCan.convert_to_trash_can(datum)
     else:
         raise Exception('Undefined type of datum(%s) is found!' % datum.type)
 

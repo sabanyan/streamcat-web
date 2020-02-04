@@ -7,7 +7,7 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import ss
 from kskp.store import StoreModel as Store
-from kskp.store import Datum, Folder, Flow, Mountable, Frame, AwsS3, Database, RemoteFolder, STORE_DIR, TRASH_FOLDER_UUID
+from kskp.store import Datum, Folder, Flow, Mountable, Frame, AwsS3, Database, RemoteFolder, TrashCan, STORE_DIR
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
 class DataStoreTestCase(TestCaseBase):
@@ -215,7 +215,8 @@ class LibraryTestCase(TestCaseBase):
         self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
         # フォルダはゴミ箱に移動していること
-        trashed = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        trash_can = TrashCan.find()
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
         self.assertEqual(len(trashed), 1)
         self.assertEqual(trashed[0].label, ' NEW FOLDER ')
 
@@ -664,8 +665,9 @@ class DatabaseTestCase(TestCaseBase):
         self.delete_uri('/api/v0/databases/' + database_uuid, self.USER_ID)
 
         # Databaseはゴミ箱に移動していること
+        trash_can = TrashCan.find()
         db = Database.find_by_uuid(database_uuid)
-        self.assertEqual(db.parent_uuid, TRASH_FOLDER_UUID)
+        self.assertEqual(db.parent_uuid, trash_can.uuid)
 
     def test_update_database(self):
         root = Datum.find_root()
@@ -1073,8 +1075,9 @@ class RemoteFolderTestCase(TestCaseBase):
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
 
         # フォルダはゴミ箱に移動していること
+        trash_can = TrashCan.find()
         folder = RemoteFolder.find_by_uuid(folder_uuid)
-        self.assertEqual(folder.parent_uuid, TRASH_FOLDER_UUID)
+        self.assertEqual(folder.parent_uuid, trash_can.uuid)
 
         # RemoteFolderを削除(unmount)する
         self.delete_uri('/api/v0/trashes', self.USER_ID)
@@ -1129,8 +1132,9 @@ class RemoteFolderTestCase(TestCaseBase):
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER_ID)
 
         # フォルダはゴミ箱に移動していること
+        trash_can = TrashCan.find()
         folder = RemoteFolder.find_by_uuid(folder_uuid)
-        self.assertEqual(folder.parent_uuid, TRASH_FOLDER_UUID)
+        self.assertEqual(folder.parent_uuid, trash_can.uuid)
 
         # RemoteFolderを削除(unmount)する
         self.delete_uri('/api/v0/trashes', self.USER_ID)
@@ -1212,7 +1216,8 @@ class TrashTestCase(TestCaseBase):
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER_ID)
         
         # フォルダ1はゴミ箱に移動していること
-        trashed1 = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        trash_can = TrashCan.find()
+        trashed1 = Datum.find_by_parent_uuid(trash_can.uuid)
         self.assertEqual(trashed1[0].label, 'フォルダですよ1')
 
         # フォルダ2はゴミ箱に移動していること
@@ -1225,7 +1230,7 @@ class TrashTestCase(TestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER_ID)
-        trashed = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
         self.assertEqual(len(trashed), 0)
 
     def test_delete_limitation(self):
@@ -1337,7 +1342,8 @@ class TrashTestCase(TestCaseBase):
         self.assertEqual(folder2.parent_uuid, folder1_uuid)
 
         # ゴミ箱へはフォルダの階層構造を維持しつつ、フレーム2が捨てられている
-        trashed1 = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        trash_can = TrashCan.find()
+        trashed1 = Datum.find_by_parent_uuid(trash_can.uuid)
         self.assertEqual(trashed1[0].label, 'フォルダですよ!1')
 
         trashed2 = Datum.find_by_parent_uuid(trashed1[0].uuid)
@@ -1348,7 +1354,7 @@ class TrashTestCase(TestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER_ID)
-        trashed = Datum.find_by_parent_uuid(TRASH_FOLDER_UUID)
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
         self.assertEqual(len(trashed), 0)
 
 @unittest.skip
