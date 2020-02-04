@@ -308,7 +308,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           sortStepSrcEnd={sortStepSrcEnd}
           resizeInspector={resizeInspector}
         />
-        <LogBox logs={logs}></LogBox>
+        <LogBox logs={logs} width={editor.width}></LogBox>
         <NotificationManager />
       </div>
     </div>

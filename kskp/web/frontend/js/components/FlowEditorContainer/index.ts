@@ -76,7 +76,7 @@ export type FlowEditorProps = {
   drag: DragType;
   logs: string[];
   inspector:{width:number};
-  editor: {};
+  editor: {width:number};
   selected_data_source_detail: Function;
   sortStepSrcEnd: Function;
   deleteSelectStep: Function;
