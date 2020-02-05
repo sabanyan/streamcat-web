@@ -19,6 +19,7 @@ setup(
         'awscli',
         'matplotlib',
         'watchdog',
+        'pathtools',
         'cx_Oracle',
         'gevent-websocket',
         'gevent',
