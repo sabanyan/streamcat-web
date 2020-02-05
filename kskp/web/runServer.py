@@ -9,11 +9,8 @@ from werkzeug.debug import DebuggedApplication
 import logging
 logging.basicConfig(level=logging.INFO) 
 
-host = "0.0.0.0"
-port = 5000
-
 @run_with_reloader
-def run_server():
+def run_server(host, port):
     app.debug = True
     if app.debug:
         application = DebuggedApplication(app)
@@ -38,6 +35,6 @@ if __name__ == '__main__':
     port = args.port
     
     if host and port:
-        run_server()
+        run_server(host, port)
     else:
         print("Host, Portが入力されていません。")
