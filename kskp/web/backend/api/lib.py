@@ -159,12 +159,25 @@ def fecth_library():
     root = get_library(session['user_id'])
     return _jsonify_folder(root)
 
+@mod.route('/trashes', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fetch_trashes():
+    """
+    ゴミ箱を返却する
+    """
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder(session['user_id'])
+    
+    return _jsonify_folder(trash_folder)
+
 @mod.route('/trashes', methods=['DELETE'])
 @login_required_api
 @api_base
 def empty_all():
     from kskp.store import Library
-    trash_folder = Library.load_trash_folder()
+    trash_folder = Library.load_trash_folder(session['user_id'])
 
     # ゴミ箱直下のフォルダとファイルを取得する
     childrenGetter = ChildrenGetter()
@@ -285,7 +298,7 @@ def update_folder(folder_uuid):
 @api_base
 def throw_away(folder_uuid):
     from kskp.store import Library
-    trash_folder = Library.load_trash_folder()
+    trash_folder = Library.load_trash_folder(session['user_id'])
 
     folder = Folder.find_by_uuid(folder_uuid)
 
@@ -389,7 +402,7 @@ def update_awss3_folder(awss3_uuid):
 @api_base
 def throw_away_awss3(awss3_uuid):
     from kskp.store import Library
-    trash_folder = Library.load_trash_folder()
+    trash_folder = Library.load_trash_folder(session['user_id'])
 
     folder = AwsS3.find_by_uuid(awss3_uuid)
     thrown_away_count = _throw_away_inner(trash_folder.uuid, folder, session['user_id'])
@@ -476,7 +489,7 @@ def update_database(database_uuid):
 @api_base
 def throw_away_database(database_uuid):
     from kskp.store import Library
-    trash_folder = Library.load_trash_folder()
+    trash_folder = Library.load_trash_folder(session['user_id'])
 
     database = Database.find_by_uuid(database_uuid)
     database.move(trash_folder.uuid, session['user_id'])
@@ -564,7 +577,7 @@ def throw_away_remote_folder(folder_uuid):
     リモートフォルダを削除する
     """
     from kskp.store import Library
-    trash_folder = Library.load_trash_folder()
+    trash_folder = Library.load_trash_folder(session['user_id'])
 
     folder = RemoteFolder.find_by_uuid(folder_uuid)
     folder.move(trash_folder.uuid, session['user_id'])
