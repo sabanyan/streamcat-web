@@ -13,7 +13,7 @@ from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 from kskp.store import model
 from kskp.store import ss
 from kskp.web.backend import app
-from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR, TRASH_FOLDER_UUID
+from kskp.store import Datum, Frame, Flow, Folder, Library, TrashCan, STORE_DIR
 from kskp.web.backend.api.tests.utils import create_data
 
 # 
@@ -607,7 +607,8 @@ class FlowApiTestCase(TestCaseBase):
 
         # フローはゴミ箱に移動していること
         flow = Flow.find_by_uuid(test_flow_uuid)
-        self.assertEqual(flow.parent_uuid, TRASH_FOLDER_UUID)
+        trash = TrashCan.find()
+        self.assertEqual(flow.parent_uuid, trash.uuid)
 
     @unittest.skip('とりあえず手動でテストする')
     def test_fetch_subflows(self):
