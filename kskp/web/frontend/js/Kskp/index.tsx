@@ -12,7 +12,7 @@ import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 import {
     FlowEditorContainer, FlowListContainer, ProjectListContainer, LibraryListContainer,
-    ProfileContainer
+    ProfileContainer, TrashListContainer
 } from 'Components/index';
 
 export type Props = {
@@ -32,6 +32,7 @@ export enum ViewId {
     Library_List,
     Profile,
     Project_List,
+    TrashCan,
     Undefined = -1,
 }
 
@@ -77,6 +78,8 @@ class ViewSwitcher extends React.Component<Props, State> {
             case ViewId.Profile: viewComponent = <ProfileContainer />
                 break;
             case ViewId.Project_List: viewComponent = <ProjectListContainer />
+                break;
+            case ViewId.TrashCan: viewComponent = <TrashListContainer />
                 break;
             default:
                 break;
