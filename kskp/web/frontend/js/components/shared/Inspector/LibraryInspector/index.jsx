@@ -122,7 +122,6 @@ class LibraryInspector extends React.Component<Props> {
     let content = null
     let label = ""
     if (data) {
-
       if (data.type === Constants.library.type.trash) {
         // Trash
         content = <div>
@@ -131,7 +130,7 @@ class LibraryInspector extends React.Component<Props> {
           </div>
         </div>
         return <Resizer>
-          <BaseInspector>
+          <BaseInspector subLabel={data.label}>
             {content}
           </BaseInspector>
         </Resizer>

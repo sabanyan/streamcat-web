@@ -1,30 +1,24 @@
 
 
-const JSON_FOLDER_TYPE = 'folder'
-const JSON_AWSS3_TYPE = 'awss3'
-const JSON_RFOLDER_TYPE = 'rfolder'
-const JSON_DATABASE_TYPE = 'database'
-const JSON_FLOW_TYPE = 'flow'
-const JSON_FRAME_TYPE = 'frame'
-const JSON_TRASH_TYPE = 'trash'
-
-export enum LIBRARY_TYPE {
-  UNDEFINED,
-  FOLDER,
-  AWSS3,
-  RFOLDER, // remotefolder
-  DATABASE,
-  FLOW,
-  FRAME,
-  TRASH
+export const TYPE = {
+  FOLDER: 'folder',
+  AWSS3: 'awss3',
+  RFOLDER: 'rfolder',
+  DATABASE: 'database',
+  FLOW: 'flow',
+  FRAME: 'frame',
+  TRASH: 'trash',
+  UNDEFINED: 'undefined'
 }
 
-export type Library = {
+export type LibraryChild = {
   uuid: string
   type: string
   label: string
   creator: string
   createdAt: string
+  encoding?: string
+  newline: string
 }
 
 type Folder = {
@@ -40,53 +34,55 @@ type Props = {
   creator: string
   createdAt: string
   // children
-  children: Library[]
+  children: LibraryChild[]
   // folderPath
   folderPath: Folder[]
 }
 
 export default class LibraryModel {
   uuid: string
-  type: LIBRARY_TYPE
+  type: string
   label: string
   creator: string
   createdAt: string
   // children
-  children: Library[]
+  children: LibraryChild[]
   // folderPath
   folderPath: Folder[]
 
-  constructor(props: Props) {
-    this.uuid = props.uuid
-    this.type = this.parseType(props.type)
-    this.label = props.label
-    this.creator = props.creator
-    this.createdAt = props.createdAt
-    this.children = props.children
-    this.folderPath = props.folderPath
+  constructor(json: Props) {
+    this.uuid = json.uuid
+    this.type = json.type
+    this.label = json.label
+    this.creator = json.creator
+    this.createdAt = json.createdAt
+    this.children = json.children
+    this.folderPath = json.folderPath
   }
 
-  parseType(type: string): LIBRARY_TYPE {
-    let result: LIBRARY_TYPE = LIBRARY_TYPE.UNDEFINED
+  jsonToModel(json: Props) {
+    this.uuid = json.uuid
+    this.type = json.type
+    this.label = json.label
+    this.creator = json.creator
+    this.createdAt = json.createdAt
+    this.children = json.children
+    this.folderPath = json.folderPath
+  }
 
-    switch (type) {
-      case JSON_FOLDER_TYPE: result = LIBRARY_TYPE.FOLDER
-        break
-      case JSON_AWSS3_TYPE: result = LIBRARY_TYPE.AWSS3
-        break
-      case JSON_RFOLDER_TYPE: result = LIBRARY_TYPE.RFOLDER
-        break
-      case JSON_DATABASE_TYPE: result = LIBRARY_TYPE.DATABASE
-        break
-      case JSON_FLOW_TYPE: result = LIBRARY_TYPE.FOLDER
-        break
-      case JSON_FRAME_TYPE: result = LIBRARY_TYPE.FRAME
-        break
-      case JSON_TRASH_TYPE: result = LIBRARY_TYPE.TRASH
-        break
+  modelToJson(): Props {
+    return {
+      uuid: this.uuid,
+      type: this.type,
+      label: this.label,
+      creator: this.creator,
+      createdAt: this.createdAt,
+      children: this.children,
+      folderPath: this.folderPath
     }
-
-    return result
   }
 
+  isNotEmpty(): boolean {
+    return (this.uuid) ? true : false
+  }
 }

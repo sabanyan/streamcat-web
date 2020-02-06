@@ -1,32 +1,52 @@
 
 
 import React from 'react'
-
-import { Loader } from 'Shared/Base'
-import { CommonListRow, CommonListHeader} from 'Components/shared/ListRow'
+import classnames from 'classnames'
+import { Loader, EmptyState } from 'Shared/Base'
+import { CommonListRow, CommonListHeader } from 'Components/shared/ListRow'
 import { API } from 'Modules/api/index'
+import { Content, Inspector } from 'Modules/reducers/common'
+import Constants from 'Constants/index'
 
-import { LibraryModel } from 'Model/index'
+import { Resizer } from 'Shared/Inspector'
+import TrashInspector from './inspector/index'
+import { Inspector as CommonInspector } from 'Shared/Inspector/index'
+
+import { LibraryModel, LibraryChild } from 'Model/index'
 
 import style from './style.scss'
 
 type Props = {
+  content: Content
+  inspector: Inspector
 }
 
 type State = {
-  trash?: LibraryModel
   isLoading: boolean
+  selectedIndex: number
+
+  model?: LibraryModel
+
+  listRows: LibraryChild[]
 }
 
+const pageTitle = "コミ箱"
 const headers = ['名前', '作成者', '作成日時']
+const rowProps = ['label', 'creator', 'createdAt']
 const hrefs = undefined
+
+const emtpyTitle = 'ゴミ箱が空です'
+const emptyDescription = '表示できるファイルがありません'
+
 
 export default class TrashList extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props)
     this.state = {
-      isLoading: false
+      selectedIndex: -1,
+      isLoading: false,
+      listRows: []
     }
   }
 
@@ -37,67 +57,144 @@ export default class TrashList extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    //this.fetch()
+    this.setState({
+      isLoading: true
+    }, () => {
+      this.fetch()
+        .then(() => {
+          this.setState({
+            isLoading: false
+          })
+        })
+    })
   }
 
   fetch() {
     return new Promise(async (resolve, reject) => {
-      this.setStateAsync({
-        isLoading: true
-      })
-
-      await API.request.doGet.trashes({url:'api/v0/library'})
+      await API.request.doGet.trashes({})
         .then((response) => {
-          console.log(response)
           if (response.data.data) {
-            this.setState({
-              trash: new LibraryModel(response.data.data)
-            })
+            let model = new LibraryModel(response.data.data)
+            if (model.isNotEmpty()) {
+              this.setState({
+                model: model,
+                listRows: model.children
+              })
+            }
           }
         })
       resolve()
     })
-      .then(() => {
-        this.setState({
-          isLoading: false
-        })
-      })
   }
 
   renderContent() {
-
+    let content = this.renderEmptyState()
+    if (this.state.listRows.length > 0) {
+      content = <React.Fragment>
+        {this.renderListHeader()}
+        {this.renderListRow()}
+        {this.renderButtons()}
+      </React.Fragment>
+    }
     return <React.Fragment>
-      {this.renderListHeader()}
-      {this.renderListRow()}
-      {this.renderButtons()}
+      {/* {this.renderPageTitle()} */}
+      {content}
     </React.Fragment>
   }
 
+  renderPageTitle() {
+    return <div className={style.pageTitle}><label>{pageTitle}</label></div>
+  }
+
   renderListHeader() {
-    return <CommonListHeader headers={headers} />
+    return <CommonListHeader headers={headers} hasIcon={true} />
+  }
+
+  toIcon(data: LibraryChild): string {
+    let result = "warning"
+    switch (data.type) {
+      case Constants.library.type.document:
+      case Constants.library.type.flow:
+      case Constants.library.type.frame:
+        result = "description"
+        break
+      case Constants.library.type.folder:
+        result = "folder"
+        break
+      case Constants.library.type.database:
+        result = "kskp_database"
+        break
+      case Constants.library.type.remoteFolder:
+        result = "dns"
+        break
+      case Constants.library.type.trash:
+        result = "delete_outline"
+        break
+    }
+    return result
   }
 
   renderListRow() {
-    return null
+    let result: any = []
+
+    this.state.listRows.forEach((data: LibraryChild, index) => {
+      let isSelected = (this.state.selectedIndex >= 0 && this.state.selectedIndex === index) ? true : false
+      let icon: string = this.toIcon(data)
+      let listRow = <React.Fragment key={index}>
+        <CommonListRow
+          index={index} icon={icon}
+          rowProps={rowProps} data={data} isSelected={isSelected}
+          onClick={(e) => this.onClickRow(e, data, index)} />
+      </React.Fragment>
+
+      result.push(listRow)
+    })
+
+    return result
+  }
+
+  onClickRow(e, data: LibraryChild, index: number) {
+    this.setState({
+      selectedIndex: index
+    })
+  }
+
+  renderEmptyState() {
+    return <EmptyState icon={'inbox'} title={emtpyTitle} description={emptyDescription}></EmptyState>
   }
 
   renderButtons() {
     return null
   }
 
-  renderInspector() {
+  renderButton(onClick: Function, title: string, icon: string) {
 
   }
 
+  renderInspector() {
+    const { content, inspector } = this.props
+
+    let data: LibraryChild | undefined
+    if (this.state.selectedIndex >= 0) {
+      data = this.state.listRows[this.state.selectedIndex]
+    }
+    return <React.Fragment key={this.state.selectedIndex}>
+      <Resizer width={inspector.width}>
+        <TrashInspector data={data} />
+      </Resizer>
+    </React.Fragment>
+  }
+
   render() {
+    const { content, inspector } = this.props
 
-    return <div className={style.container}>
-      <Loader center={true} absolute={true} visible={this.state.isLoading} />
-      <div className={style.content}>
-
+    return <div className={style.listContainer} style={{ width: content.width }}>
+      <div className={style.content} >
+        <Loader center={true} absolute={true} visible={this.state.isLoading} />
+        {this.renderContent()}
       </div>
-      <div className={style.inspector}>
-
+      <div className={style.inspector} style={{ width: inspector.width }}>
+        {this.renderInspector()}
       </div>
     </div>
   }
