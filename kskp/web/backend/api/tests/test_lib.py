@@ -220,6 +220,11 @@ class LibraryTestCase(TestCaseBase):
         self.assertEqual(len(trashed), 1)
         self.assertEqual(trashed[0].label, ' NEW FOLDER ')
 
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
+        self.assertEqual(len(trashed), 0)
+
     def test_move_folder(self):
         # ルートを取得する
         root = Datum.find_root()
@@ -325,6 +330,12 @@ class LibraryTestCase(TestCaseBase):
         # 中のファイルを削除する(DELETE /frames)
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
 
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trash_can = TrashCan.find()
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
+        self.assertEqual(len(trashed), 0)
+
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
@@ -357,12 +368,18 @@ class LibraryTestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
 
-        # 中のファイルごとフォルダを削除しようとする(DELETE /folders)
+        # ルートフォルダは削除できない(DELETE /folders)
         with self.assertRaises(AssertionError) as e:
             self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
         # 中のファイルを削除する(DELETE /frames)
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trash_can = TrashCan.find()
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
+        self.assertEqual(len(trashed), 0)
 
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
@@ -404,6 +421,12 @@ class LibraryTestCase(TestCaseBase):
         # 中のファイルを削除する(DELETE /frames)
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
 
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trash_can = TrashCan.find()
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
+        self.assertEqual(len(trashed), 0)
+        
         # フォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
 
