@@ -5,8 +5,8 @@ import { Url } from "Modules/api/core/types/request";
 type Props = Url & {
 }
 
-const url = "/api/v0/trashes"
+const request_url = "/api/v0/trashes"
 export function trashes(props: Props) {
-    const url = (props.url) ? props.url : URL.GET.subflows
+    const url = (props.url) ? props.url : request_url
     return ApiBase.Get(url)
 }

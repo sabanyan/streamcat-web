@@ -4,12 +4,13 @@ import defaultStyle from './style.scss'
 import { database } from './ListIcons/index'
 
 type Props = {
-  isSelected: Boolean
+  index?: number
+  isSelected?: Boolean
   icon?: string
 
   // data
-  headers: string[]
-  hrefs?: string[] // clickされた時、飛ぶURL（headersのitemと紐付く） 
+  rowProps: string[] // 
+  hrefs?: string[] // clickされた時、飛ぶUR
   data: any
 
   //style
@@ -25,12 +26,14 @@ export default class CommonListRow extends React.Component<Props> {
   }
 
   onClick(e) {
-    const { data, onClick } = this.props
-    if (onClick) onClick(e, data)
+    const { index, data, onClick } = this.props
+    if (onClick) onClick(e, data, index)
   }
 
-  renderIcon(icon: string) {
+  renderIcon(icon?: string) {
     let result
+    if (!icon) return result
+
     switch (icon) {
       case 'kskp_database': result = database
         break;
@@ -43,9 +46,9 @@ export default class CommonListRow extends React.Component<Props> {
   }
 
   renderColumn() {
-    const { data, headers, hrefs } = this.props
+    const { data, rowProps, hrefs } = this.props
 
-    let hrefsArray = new Array(headers.length)
+    let hrefsArray = new Array(rowProps.length)
     if (hrefs) {
       hrefs.forEach((h, index) => {
         hrefsArray[index] = h
@@ -53,7 +56,7 @@ export default class CommonListRow extends React.Component<Props> {
     }
 
     let result: any = []
-    headers.forEach((header, index) => {
+    rowProps.forEach((header, index) => {
       // 該当columnに飛ぶ先が設定されてる場合
       let renderedHeader = <div key={index + header}>{data[header]}</div>
       if (hrefsArray[index]) {
@@ -76,13 +79,13 @@ export default class CommonListRow extends React.Component<Props> {
   }
 
   render() {
-    const { icon, hrefs, data, isSelected, customStyle } = this.props
+    const { index, icon, hrefs, data, isSelected, customStyle } = this.props
 
     let style = (customStyle) ? customStyle : defaultStyle
 
     return <div className={classnames(style.listRow, { [style.selected]: isSelected })} onClick={(e) => this.onClick(e)}>
       <div className={style.icon}>
-        {icon ? this.renderIcon(icon) : null}
+        {this.renderIcon(icon)}
       </div>
       <div className={style.columns}>
         {this.renderColumn()}

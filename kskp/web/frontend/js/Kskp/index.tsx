@@ -14,9 +14,14 @@ import {
     FlowEditorContainer, FlowListContainer, ProjectListContainer, LibraryListContainer,
     ProfileContainer, TrashListContainer
 } from 'Components/index';
+import {Content, Inspector} from 'Modules/reducers/common'
 
 export type Props = {
     viewId: ViewId
+
+    // redux state
+    content: Content
+    inspector: Inspector
 
     notify: Function;
     dismissNotify: Function;
@@ -67,6 +72,7 @@ class ViewSwitcher extends React.Component<Props, State> {
     }
 
     renderView(viewId: ViewId) {
+        const {content, inspector} = this.props
         let viewComponent: any = null
         switch (viewId) {
             case ViewId.Flow_Editor: viewComponent = <FlowEditorContainer />
@@ -79,7 +85,7 @@ class ViewSwitcher extends React.Component<Props, State> {
                 break;
             case ViewId.Project_List: viewComponent = <ProjectListContainer />
                 break;
-            case ViewId.TrashCan: viewComponent = <TrashListContainer />
+            case ViewId.TrashCan: viewComponent = <TrashListContainer content={content} inspector={inspector}/>
                 break;
             default:
                 break;
@@ -114,7 +120,10 @@ class ViewSwitcher extends React.Component<Props, State> {
 
 export const Kskp = connect(
     state => {
-        return {}
+        return {
+            content: state.CommonReducer.content,
+            inspector: state.CommonReducer.inspector
+        }
     },
     dispatch => {
         return {
