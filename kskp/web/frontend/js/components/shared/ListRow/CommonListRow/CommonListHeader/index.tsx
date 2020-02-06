@@ -3,7 +3,7 @@ import defaultStyle from './style.scss'
 
 type Props = {
   headers: string[];
-  style:StyleSheet;
+  customStyle?:string;
 }
 
 export default class FlowListHeader extends React.Component<Props> {
@@ -23,11 +23,11 @@ export default class FlowListHeader extends React.Component<Props> {
   }
 
   render () {
-    const {headers, style} = this.props
+    const {headers, customStyle} = this.props
 
-    let customStyle = (style) ? style : defaultStyle
+    let style = (customStyle) ? customStyle : defaultStyle
 
-    return <div className={customStyle.listHeader}>
+    return <div className={style.listHeader}>
       {this.renderHeaders(headers)}
     </div>
   }

@@ -3,6 +3,7 @@
 import React from 'react'
 
 import { Loader } from 'Shared/Base'
+import { CommonListRow, CommonListHeader} from 'Components/shared/ListRow'
 import { API } from 'Modules/api/index'
 
 import { LibraryModel } from 'Model/index'
@@ -17,6 +18,8 @@ type State = {
   isLoading: boolean
 }
 
+const headers = ['名前', '作成者', '作成日時']
+const hrefs = undefined
 
 export default class TrashList extends React.Component<Props, State> {
 
@@ -43,8 +46,9 @@ export default class TrashList extends React.Component<Props, State> {
         isLoading: true
       })
 
-      await API.request.doGet.trashes({})
+      await API.request.doGet.trashes({url:'api/v0/library'})
         .then((response) => {
+          console.log(response)
           if (response.data.data) {
             this.setState({
               trash: new LibraryModel(response.data.data)
@@ -62,18 +66,23 @@ export default class TrashList extends React.Component<Props, State> {
 
   renderContent() {
 
+    return <React.Fragment>
+      {this.renderListHeader()}
+      {this.renderListRow()}
+      {this.renderButtons()}
+    </React.Fragment>
   }
 
-  renderHeader() {
-
+  renderListHeader() {
+    return <CommonListHeader headers={headers} />
   }
 
-  renderList() {
-
+  renderListRow() {
+    return null
   }
 
   renderButtons() {
-
+    return null
   }
 
   renderInspector() {
@@ -83,12 +92,11 @@ export default class TrashList extends React.Component<Props, State> {
   render() {
 
     return <div className={style.container}>
+      <Loader center={true} absolute={true} visible={this.state.isLoading} />
       <div className={style.content}>
-        <Loader center={true} absolute={true} visible={this.state.isLoading} />
 
       </div>
       <div className={style.inspector}>
-
 
       </div>
     </div>
