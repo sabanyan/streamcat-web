@@ -9,8 +9,8 @@ from kskp.store import (
     Datum,
     Frame,
     Library,
-    STORE_DIR,
-    TRASH_FOLDER_UUID
+    TrashCan,
+    STORE_DIR
 )
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
@@ -207,7 +207,8 @@ class FrameApiTestCase(TestCaseBase):
 
         # ゴミ箱に移動しているかのテスト
         frame = Frame.find_by_uuid(frame_uuid)
-        self.assertEqual(frame.parent_uuid, TRASH_FOLDER_UUID)
+        trash = TrashCan.find()
+        self.assertEqual(frame.parent_uuid, trash.uuid)
 
     # ここからフローの実行テスト
     """
