@@ -657,9 +657,13 @@ export default class Library extends React.Component<Props, State> {
 
     return this.state.libraryChildren.map((child, index) => {
       const selected = (this.state.selected_data === child)
+      let href = '/folders/' + child.uuid + dialogOption
+      // ゴミ箱の場合、ゴミ箱専用のページに飛ぶ
+      if (child.type === Constants.library.type.trash) href = '/trashes'
+
       return <LibraryListRow key={"LLR_" + index} libraryChild={child} selected={selected}
                           onClick={(e, library) => this.onClickLibrary(e, library)}
-                          href={'/folders/' + child.uuid + dialogOption} />
+                          href={href} />
     })
   }
 
@@ -867,6 +871,27 @@ export default class Library extends React.Component<Props, State> {
     }
   }
 
+  onClickCleanTrash(data) {
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        APIUtil.delete('trashes').then(() => {
+          this.fetchFolder()
+        })
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: 'ゴミ箱を空にする',
+      danger: true,
+      content: <div>
+        ゴミ箱を空にしますか？
+      </div>,
+    })
+
+  }
+
   renderInspector () {
     const {notify, dissmissNotify} = this.props
     const data: LibraryListDataType = this.state.selected_data
@@ -874,21 +899,30 @@ export default class Library extends React.Component<Props, State> {
     let onClickApply = null
     let onClickMove = null
     let onClickEdit = null
+    let onClickCleanTrash = null
 
     switch (this.state.mode) {
+      // データソース追加時
       case Constants.library.mode.frame_select:
         if (data && data.type === Constants.library.type.frame) {
           onClickApply = (data) => this.onClickApply(data)
         }
         break
-      case Constants.library.mode.folder_select:
+      // 移動させる時
+      case Constants.library.mode.folder_select: 
         break
+      // librayList
       case Constants.library.mode.list:
-        onClickDelete = (data) => this.onClickDelete(data)
-        onClickMove = (data) => this.onClickMove(data)
-        if (data && data.type === Constants.library.type.database) {
-          onClickEdit = (data) => this.onClickEditDatabase(data)
+        if (data && data.type === Constants.library.type.trash) {
+          onClickCleanTrash = (data) => this.onClickCleanTrash(data)
+        } else {
+          onClickDelete = (data) => this.onClickDelete(data)
+          onClickMove = (data) => this.onClickMove(data)
+          if (data && data.type === Constants.library.type.database) {
+            onClickEdit = (data) => this.onClickEditDatabase(data)
+          }
         }
+
         break
     }
     return <LibraryInspector data={data}
@@ -896,6 +930,7 @@ export default class Library extends React.Component<Props, State> {
                              onClickApply={onClickApply}
                              onClickMove={onClickMove}
                              onClickEdit={onClickEdit}
+                             onClickCleanTrash={onClickCleanTrash}
                              onBlurTitle={(e) => this.onBlurTitle(e,data)}
                              visualizers={this.state.visualizers}
                              notify={notify}
