@@ -479,8 +479,9 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       if (node instanceof DataFrameStepModel) {
         node.deleteCache()
       }
-
+      
       newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, key: id, new_node: node })
+      newState.flow.nodes = newState.nodes
       break
     }
 
