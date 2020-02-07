@@ -76,7 +76,7 @@ export default class NavigationBar extends React.Component<Props> {
 
   renderFlowDesignerNavigationItem () {
     const {navigation} = this.props
-    if (!this.hasProject) return null
+    //if (!this.hasProject) return null
     return <li className="nav-item library">
       <a className="nav-link" href={'/library'}>
         <img className="icon" src={baseUrl + 'images/icon/library.svg'} />ライブラリ
