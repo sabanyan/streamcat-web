@@ -273,7 +273,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
           onClick={(e) => this.onClickSave()}>保存</Save>
         <DataSourceImport disabled={disabled} icon={'&#xE2C2'}
           onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport>
-        <Run disabled={false} icon={'&#xE037'}
+        <Run disabled={disabled} icon={'&#xE037'}
           onClick={(e) => this.onClickProjectRun()}>このフローを実行</Run>
         <Note disabled={disabled} icon={'comment'}
           onClick={() => this.onClickNote()}>メモ</Note>
