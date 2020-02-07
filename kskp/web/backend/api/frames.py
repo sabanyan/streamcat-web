@@ -26,6 +26,9 @@ def fetch_frame(frame_uuid):
     no_contents = True if request.args.get('no_contents') else False
 
     frame = Frame.find_by_uuid(frame_uuid)
+    if frame is None:
+        raise Exception('no frame exists.')
+
     result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
@@ -325,6 +328,7 @@ def format_result(activity):
 
 def format_vis(activity):
     from kskp.store import Activity
+    # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
     return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.result]
 
 def _make_flow_inputs(flow_uuid, request):
