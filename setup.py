@@ -14,7 +14,6 @@ setup(
         'holoviews',
         'bokeh',
         'ptvsd',
-        'matplotlib',
-        'watchdog',
+        'matplotlib'
     ],
 )
