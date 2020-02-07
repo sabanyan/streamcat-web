@@ -227,7 +227,7 @@ def fetch_subflows():
 
     subflow_data_list = []
     for subflow in Flow.find_all_subflows(no_inputs, no_outputs):
-        subflow_data =  Flow.convert_to_flow(subflow).flow_data
+        subflow_data =  subflow.flow_data
         subflow_data['uuid'] = subflow.uuid
         # 親フォルダのラベルを取得する
         parent = Datum.find_parent(subflow.uuid)

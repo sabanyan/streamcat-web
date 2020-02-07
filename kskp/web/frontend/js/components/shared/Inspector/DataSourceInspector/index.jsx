@@ -76,11 +76,11 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const { flow, lockUUID, notify } = this.props
 
     return new Promise(async (reslove, reject) => {
-      
+
       if (!lockUUID) throw new MessageModel({
-        title: '警告：読取専用フロー', 
-        message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
-        messageStatus:"warning"
+        title: '警告：読取専用フロー',
+        message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。',
+        messageStatus: "warning"
       })
 
       await API.request.doPut.flow(
@@ -93,15 +93,15 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
       reslove()
     }) // flow 保存に失敗した場合、
-    .catch(e => {
-      notify({
-        title: e.title,
-        message: e.message,
-        status: e.messageStatus,
-        dismissAfter: -1,
-        closeButton: true
+      .catch(e => {
+        notify({
+          title: e.title,
+          message: e.message,
+          status: e.messageStatus,
+          dismissAfter: -1,
+          closeButton: true
+        })
       })
-    })
   }
 
   onClickPreview(e: Event) {
@@ -286,6 +286,32 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     })
   }
 
+  renderFrameDetail(data_source_detail) {
+    let result = null
+    if (data_source_detail.encoding && data_source_detail.newline) {
+      result = <React.Fragment>
+        <div className={style.overview}>
+          <div className={style.overview_label}>
+            文字コード
+              </div>
+          <div className={style.overview_value}>
+            {data_source_detail.encoding}
+          </div>
+        </div>
+        <div className={style.overview}>
+          <div className={style.overview_label}>
+            改行コード
+              </div>
+          <div className={style.overview_value}>
+            {data_source_detail.newline}
+          </div>
+        </div>
+      </React.Fragment>
+    }
+
+    return result
+  }
+
   render() {
     const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled } = this.props;
     let step_text
@@ -356,6 +382,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
                 {fileSize}
               </div>
             </div>
+            {this.renderFrameDetail(selected_data_source_detail)}
             <div className={style.overview}>
               <div className={style.overview_label}>
                 作成日時
