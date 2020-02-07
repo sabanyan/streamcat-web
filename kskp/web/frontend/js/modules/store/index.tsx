@@ -1,6 +1,6 @@
-import { applyMiddleware, combineReducers, compose, createStore } from 'redux'
+import { applyMiddleware, combineReducers, createStore } from 'redux'
 import thunk from 'redux-thunk'
-import {flowEditorReducer, libraryReducer, flowListReducer, apiReducer} from 'Modules/index'
+import { flowEditorReducer, libraryReducer, flowListReducer } from 'Modules/index'
 import { reducer as notificationsReducer } from 'reapop'
 import { composeWithDevTools } from 'redux-devtools-extension';
 
@@ -13,20 +13,19 @@ const defaultNotification = {
     allowHTML: true,
     closeButton: false
 }
-  
+
 const reducers = combineReducers({
     notifications: notificationsReducer(defaultNotification),
     flowEditorReducer,
     libraryReducer,
-    flowListReducer,
-    apiReducer
+    flowListReducer
 })
 
 const enhancers = composeWithDevTools(
     applyMiddleware(thunk),
     // other store enhancers if any
-  )
+)
 
-const store = createStore(reducers,  enhancers)
+const store = createStore(reducers, enhancers)
 
 export default store
