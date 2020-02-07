@@ -7,9 +7,9 @@ import type { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
-import { APIUtil, ModalUtil, SortUtil, HttpUtil, ErrorUtil, ReactDomUtil} from "Utils/index";
+import { APIUtil, ModalUtil, SortUtil, HttpUtil, ErrorUtil, ReactDomUtil } from "Utils/index";
 import Visualizer from "Shared/Visualizer/Core";
-import {API} from 'Modules/api/index'
+import { API } from 'Modules/api/index'
 
 type Props = {
   visualizers: [];
@@ -21,17 +21,17 @@ type Props = {
 }
 
 class LibraryInspector extends React.Component<Props> {
-  constructor (props: Props) {
+  constructor(props: Props) {
     super(props)
   }
 
-  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
+  onBlurTitle(e: SyntheticInputEvent<EventTarget>) {
     if (this.props.onBlurTitle) {
       this.props.onBlurTitle(e)
     }
   }
 
-  componentWillMount () {
+  componentWillMount() {
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.preview.DATASOURCE, onClickOK: () => {
@@ -42,23 +42,23 @@ class LibraryInspector extends React.Component<Props> {
 
   onClickPreview(e) {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
-    let {data, visualizers} = this.props
+    let { data, visualizers } = this.props
     visualizers = SortUtil.getSortedContents(visualizers)
-    
+
     let id = data.uuid
 
     try {
       if (!visualizers) "visualizers are not defined"
       // vizs
       this.setState({
-        loading:true
+        loading: true
       }, () => {
         let contents = []
         for (const v of visualizers) {
-          let content = {frame_uuid:data.uuid, visualize:v}
-          contents.push({title: v.label, content: content, parentProps: this.props, id:id})
+          let content = { frame_uuid: data.uuid, visualize: v }
+          contents.push({ title: v.label, content: content, parentProps: this.props, id: id })
         }
-    
+
         ModalUtil.emitModal({
           id: Constants.preview.DATASOURCE,
           visible: true,
@@ -66,18 +66,18 @@ class LibraryInspector extends React.Component<Props> {
           title: data.label
         })
       })
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
   }
 
   onClickEdit(e) {
-    const {data, onClickEdit} = this.props
+    const { data, onClickEdit } = this.props
     onClickEdit(data)
   }
 
   renderButtons() {
-    const {data, onClickDelete, onClickApply, onClickMove, onClickEdit} = this.props
+    const { data, onClickDelete, onClickApply, onClickMove, onClickEdit } = this.props
 
     let preview, download, del, apply, move, edit
 
@@ -93,16 +93,16 @@ class LibraryInspector extends React.Component<Props> {
     if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
 
     // edit
-    if (onClickEdit && data && data.type === Constants.library.type.database){
+    if (onClickEdit && data && data.type === Constants.library.type.database) {
       edit = <Button onClick={(e) => this.onClickEdit(e)} icon={'create'}>編集する</Button>
-    } 
-    
+    }
+
     // delete button
     if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
-  
+
     // apply button
     if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
-    
+
     return <React.Fragment>
       {preview}
       {download}
@@ -113,45 +113,69 @@ class LibraryInspector extends React.Component<Props> {
     </React.Fragment>
   }
 
-  render () {
-    const {data} = this.props
+  renderFrameDetail(data) {
+    let result = null
+
+    if (data.type === Constants.library.type.frame) {
+      result = <React.Fragment>
+        <div>
+          <label>文字コード</label>
+        </div>
+        <div>
+          {data.encoding}
+        </div>
+        <div>
+          <label>改行コード</label>
+        </div>
+        <div>
+          {data.newline}
+        </div>
+      </React.Fragment>
+    }
+
+    return result
+  }
+
+  render() {
+    const { data } = this.props
     let content = null
     let label = ""
     if (data) {
       label = data.label
       content = <div>
-          <div className={"mb-8px"}>
-            {data.label}
-          </div>
-          <div className={style.actions}>
-            {this.renderButtons()}
-          </div>
-          <div className={style.full_hr}/>
-          <div>
-            <label>名称</label>
-          </div>
-          <div>
-            {data.label}
-          </div>
-          <div>
-            <label>作成者</label>
-          </div>
-          <div>
-            {data.creator}
-          </div>
-          <div>
-            <label>作成日時</label>
-          </div>
-          <div>
-            {moment(data.createdAt).format(Constants.format.dateTime)}
-          </div>
+        <div className={"mb-8px"}>
+          {data.label}
+        </div>
+        <div className={style.actions}>
+          {this.renderButtons()}
+        </div>
+        <div className={style.full_hr} />
+        <div>
+          <label>名称</label>
+        </div>
+        <div>
+          {data.label}
+        </div>
+        {this.renderFrameDetail(data)}
+        <div>
+          <label>作成者</label>
+        </div>
+        <div>
+          {data.creator}
+        </div>
+        <div>
+          <label>作成日時</label>
+        </div>
+        <div>
+          {moment(data.createdAt).format(Constants.format.dateTime)}
+        </div>
       </div>
-      
+
       return <Resizer>
-          <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
-            {content}
-          </BaseInspector>
-      </Resizer>  
+        <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
+          {content}
+        </BaseInspector>
+      </Resizer>
     } else {
       return <Resizer>
         <BaseInspector onBlurTitle={(e) => this.onBlurTitle(e)}>
