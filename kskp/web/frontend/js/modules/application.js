@@ -225,7 +225,8 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             const to: string = add_step.id
             let inputPortName = Constants.default.command.inputPortName
             if (add_step.srcs !== undefined || add_step.srcs !== {}) {
-              inputPortName = Object.keys(add_step.srcs)[0]
+              let object = add_step.srcs
+              inputPortName = Object.keys(object).find(key => object[key] === id)
             }
             graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName))
 
@@ -244,7 +245,8 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             const to: string = id
             let outputPortName = Constants.default.command.outputPortName
             if (add_step.dsts !== undefined || add_step.dsts !== {}) {
-              outputPortName = Object.keys(add_step.dsts)[0]
+              let object = add_step.dsts
+              outputPortName = Object.keys(object).find(key => object[key] === id)
             }
             graph.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortName))
           })
