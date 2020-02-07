@@ -1,4 +1,3 @@
-//@flow
 import Constants from 'Constants/index'
 import { GraphUtil } from 'Utils'
 import { defaultGraphProps, defaultNodeProps } from 'Utils/GraphUtil'
