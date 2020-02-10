@@ -29,6 +29,9 @@ import {
   moveStepsAction,
   resizeInspectorAction
 } from 'Modules/application'
+import {
+  websocketClearResultAction
+} from 'Modules/reducer/websocket/index'
 import FlowEditor from 'Components/FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
@@ -36,7 +39,6 @@ import { FlowModel } from 'Model/index'
 import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 import { connect as wsConnect, disconnect as wsDisconnect, send as wsSend } from '@giantmachines/redux-websocket';
-
 
 export type FlowEditorProps = {
   projectId: string,
@@ -75,6 +77,8 @@ export type FlowEditorProps = {
   flow: FlowModel;
   drag: DragType;
   logs: string[];
+  excuteResult: string[],
+  excuteException: string[],
   inspector:{width:number};
   editor: {width:number};
   selected_data_source_detail: Function;
@@ -90,6 +94,7 @@ export type FlowEditorProps = {
   disconnect: Function;
   send: Function;
   resizeInspector: Function;
+  websocketClearResult: Function;
 }
 
 const FlowEditorContainer = connect(
@@ -112,7 +117,11 @@ const FlowEditorContainer = connect(
       flow: state.flowEditorReducer.flow,
       originalFlow: state.flowEditorReducer.originalFlow,
       navigation: state.flowEditorReducer.navigation,
+      // 実行log
       logs: state.websocketReducer.logs,
+      excuteResult: state.websocketReducer.excuteResult,
+      excuteException: state.websocketReducer.excuteException,
+      
       //editor
       editor: state.flowEditorReducer.editor,
       //inspector
@@ -227,6 +236,9 @@ const FlowEditorContainer = connect(
       },
       resizeInspector(width: number) {
         dispatch(resizeInspectorAction(width))
+      },
+      websocketClearResult() {
+        dispatch(websocketClearResultAction())
       }
     }
   },

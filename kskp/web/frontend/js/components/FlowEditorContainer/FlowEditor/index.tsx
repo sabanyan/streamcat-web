@@ -227,12 +227,14 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     return selector
   }
 
+
   render() {
     const { flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps,
       nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps,
       setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail,
       updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom, send, connect, logs,
-      inspector, resizeInspector, editor } = this.props;
+      inspector, resizeInspector, editor, excuteResult, excuteException, websocketClearResult } = this.props;
+
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
@@ -258,6 +260,9 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           disabled={disabled}
           send={send}
           connect={connect}
+          excuteResult={excuteResult}
+          excuteException={excuteException}
+          websocketClearResult={websocketClearResult}
         />
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
           message={'フローを構築中です'} />

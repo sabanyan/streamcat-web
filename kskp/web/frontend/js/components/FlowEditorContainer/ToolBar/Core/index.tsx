@@ -20,6 +20,8 @@ type ToolBarProps = {
   zoom: number;
   lockUUID?: string;
   disabled?: boolean;
+  excuteResult: string[];
+  excuteException: string[];
 
   notify: Function;
   dismissNotify: Function;
@@ -33,6 +35,7 @@ type ToolBarProps = {
   redo: Function;
   send: Function;
   connect: Function;
+  websocketClearResult: Function;
 }
 
 export default class ToolBar extends React.Component<ToolBarProps> {
@@ -44,6 +47,27 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
   constructor(props: ToolBarProps) {
     super(props)
+  }
+
+  componentDidUpdate(prevProps, prevState, snapshot) {
+    const {excuteResult, excuteException, notify, websocketClearResult } = this.props
+    if (prevProps.excuteResult.length === 0 && excuteResult.length > 0) {
+      notify({
+        title: 'フロー実行完了',
+        message: excuteResult.toString(),
+        status: 'success',
+        dismissAfter: 0,
+      })
+      websocketClearResult()
+    } else if (prevProps.excuteException.length === 0 && excuteException.length > 0) {
+      notify({
+        title: 'フロー実行エラー',
+        message: excuteException.toString(),
+        status: 'error',
+        dismissAfter: 0,
+      })
+      websocketClearResult()
+    }
   }
 
   onClickSave() {

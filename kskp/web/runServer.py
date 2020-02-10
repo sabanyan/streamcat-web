@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 host = "0.0.0.0"
 port = 5000
 
-@run_with_reloader
+#@run_with_reloader
 def run_server():
     app.debug = True
     if app.debug:

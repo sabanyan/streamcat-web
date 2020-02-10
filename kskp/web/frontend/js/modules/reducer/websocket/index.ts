@@ -22,15 +22,24 @@ const REDUX_WEBSOCKET_RECONNECTED = 'REDUX_WEBSOCKET::RECONNECTED'
 const REDUX_WEBSOCKET_ERROR = 'REDUX_WEBSOCKET::ERROR'
 
 // Custom Action
-const KSKP_FLOW_EXCUTE_START = 'KSKP_FLOW_EXCUTE_START'
-const KSKP_FLOW_EXCUTE_END = 'KSKP_FLOW_EXCUTE_END'
+const WEBSOCKET_CLEAR_RESULT = 'KSKP_CLEAR_RESULT'
+
+export const websocketClearResultAction = () => {
+    return {
+        type: WEBSOCKET_CLEAR_RESULT
+    }
+}
 
 type State = {
     logs: string[]
+    excuteResult: string[],
+    excuteException: string[],
 }
 
 const initialState: State = {
-    logs: []
+    logs: [],
+    excuteResult: [],
+    excuteException: [],
 }
 
 export function reducer(state = initialState, action) {
@@ -44,6 +53,9 @@ export function reducer(state = initialState, action) {
             case REDUX_WEBSOCKET_WEBSOCKET_SEND:
                 newState = parseFlowExcuteStart(state, action)
                 break;
+
+            case WEBSOCKET_CLEAR_RESULT:
+                newState = clearResult(state, action)
         }
     } catch (e) {
         console.log(e)
@@ -63,7 +75,6 @@ function messageHandler(state, action) {
 
     // kskpで定義したメッセージ
     let customMessage = JSON.parse(action.payload.message)
-    console.log(customMessage)
     switch (customMessage.type) {
         case MESSAGE_FLOW_EXCUTE_START:
             newState = parseFlowExcuteStart(state, customMessage)
@@ -103,6 +114,7 @@ function parseFlowExcuteEnd(state: State, customMessage: any): State {
     let newLogs = state.logs.slice(0, state.logs.length)
     let endLog = "[END]\n"
     newLogs.push(endLog)
+    let result = []
 
     if (Array.isArray(customMessage.data)) {
         customMessage.data.forEach((result, index) => {
@@ -110,9 +122,10 @@ function parseFlowExcuteEnd(state: State, customMessage: any): State {
             let uuid = result.uuid
             let resultLog = "[RESULT] : " + label + " (" + uuid + ") \n"
             newLogs.push(resultLog)
+            result.push(resultLog)
         });
     }
-    let newState = { ...state, logs: newLogs }
+    let newState = { ...state, logs: newLogs, excuteResult: result }
 
     return newState
 }
@@ -121,7 +134,10 @@ function parseException(state: State, customMessage: any): State {
     let newLogs = state.logs.slice(0, state.logs.length)
     let exceptionLog = "[EXCEPTION] " + customMessage.data + " \n"
     newLogs.push(exceptionLog)
-    let newState = { ...state, logs: newLogs }
-
+    let newState = { ...state, logs: newLogs, excuteException: [customMessage.data] }
     return newState
+}
+
+function clearResult(state: State, action): State {
+    return {...state, excuteResult: [], excuteException: []}
 }
