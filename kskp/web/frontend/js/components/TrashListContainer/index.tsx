@@ -2,23 +2,28 @@
 
 import React from 'react'
 import classnames from 'classnames'
+import style from './style.scss'
+
+import { NotificationManager } from 'Shared/Notification'
 import { Loader, EmptyState } from 'Shared/Base'
 import { CommonListRow, CommonListHeader } from 'Components/shared/ListRow'
+import Constants from 'Constants/index'
 import { API } from 'Modules/api/index'
 import { Content, Inspector } from 'Modules/reducers/common'
-import Constants from 'Constants/index'
 
 import { Resizer } from 'Shared/Inspector'
 import TrashInspector from './inspector/index'
-import { Inspector as CommonInspector } from 'Shared/Inspector/index'
-
 import { LibraryModel, LibraryChild } from 'Model/index'
 
-import style from './style.scss'
+
+
 
 type Props = {
   content: Content
   inspector: Inspector
+
+  notify: Function
+  dismissNotify: Function
 }
 
 type State = {
@@ -70,6 +75,8 @@ export default class TrashList extends React.Component<Props, State> {
   }
 
   fetch() {
+    const {notify} = this.props
+   
     return new Promise(async (resolve, reject) => {
       await API.request.doGet.trashes({})
         .then((response) => {
@@ -81,7 +88,19 @@ export default class TrashList extends React.Component<Props, State> {
                 listRows: model.children
               })
             }
+          } else {
+            throw response.data
           }
+        })
+        .catch((e) => {
+          console.log(e)
+          notify({
+            title: 'ゴミ箱エラー',
+            message: e.message,
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
         })
       resolve()
     })
@@ -186,16 +205,17 @@ export default class TrashList extends React.Component<Props, State> {
   }
 
   render() {
-    const { content, inspector } = this.props
-
-    return <div className={style.listContainer} style={{ width: content.width }}>
+    const { content, inspector, notify } = this.props
+    
+    return <div className={style.listContainer} >
       <div className={style.content} >
         <Loader center={true} absolute={true} visible={this.state.isLoading} />
         {this.renderContent()}
       </div>
-      <div className={style.inspector} style={{ width: inspector.width }}>
+      <div className={style.inspector} >
         {this.renderInspector()}
       </div>
+      <NotificationManager/>
     </div>
   }
 }
