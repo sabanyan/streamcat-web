@@ -874,8 +874,17 @@ export default class Library extends React.Component<Props, State> {
   onClickCleanTrash(data) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        APIUtil.delete('trashes').then(() => {
+        APIUtil.delete('trashes').then((response) => {
+         if (response.data.success !== true) throw response.data
           this.fetchFolder()
+        }).catch(e => {
+          this.props.notify({
+            title: 'ゴミ箱エラー',
+            message: e.message,
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
         })
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },

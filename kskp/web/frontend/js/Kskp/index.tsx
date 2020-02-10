@@ -72,7 +72,7 @@ class ViewSwitcher extends React.Component<Props, State> {
     }
 
     renderView(viewId: ViewId) {
-        const {content, inspector} = this.props
+        const {content, inspector, notify, dismissNotify} = this.props
         let viewComponent: any = null
         switch (viewId) {
             case ViewId.Flow_Editor: viewComponent = <FlowEditorContainer />
@@ -85,7 +85,7 @@ class ViewSwitcher extends React.Component<Props, State> {
                 break;
             case ViewId.Project_List: viewComponent = <ProjectListContainer />
                 break;
-            case ViewId.TrashCan: viewComponent = <TrashListContainer content={content} inspector={inspector}/>
+            case ViewId.TrashCan: viewComponent = <TrashListContainer content={content} inspector={inspector} notify={notify} dismissNotify={dismissNotify}/>
                 break;
             default:
                 break;
@@ -101,6 +101,7 @@ class ViewSwitcher extends React.Component<Props, State> {
     render() {
         const { viewId, notify, dismissNotify } = this.props
         let result: any = null
+
         try {
             result = <div className={style.kskp}>
                 {this.renderNavigationBar()}
