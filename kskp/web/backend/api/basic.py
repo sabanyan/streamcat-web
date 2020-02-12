@@ -214,7 +214,7 @@ def throw_away_flow(flow_uuid):
     指定されたフローを削除する
     """
     from kskp.store import Library
-    trash_folder = Library.load_trash_folder()
+    trash_folder = Library.load_trash_folder(session['user_id'])
 
     # 削除しようとするflowが、フローで使用されている場合は例外を送出する
     using_flow_uuids = Flow.get_flow_uuids_using_other_datum(flow_uuid)

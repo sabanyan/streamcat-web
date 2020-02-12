@@ -171,7 +171,7 @@ def update_frame(frame_uuid):
 @api_base
 def throw_away_frame(frame_uuid):
     from kskp.store import Library
-    trash_folder = Library.load_trash_folder()
+    trash_folder = Library.load_trash_folder(session['user_id'])
 
     # 削除しようとするframeが、フローで使用されている場合は例外を送出する
     using_flow_uuids = Flow.get_flow_uuids_using_other_datum(frame_uuid)
