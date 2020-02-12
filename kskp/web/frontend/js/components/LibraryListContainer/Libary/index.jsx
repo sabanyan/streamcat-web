@@ -450,7 +450,7 @@ export default class Library extends React.Component<Props, State> {
       content: <div>
         <TextField placeholder={'名称'} onChange={(e, validation) => this.onChangeFrameName(e, validation)} />
         <div className={'mt-8px'} />
-        <FileUploader accept={['text/csv']} onChangeFile={(e) => this.onChangeFile(e)} />
+        <FileUploader accept={['.csv']} onChangeFile={(e) => this.onChangeFile(e)} />
       </div>,
     })
     e.preventDefault()
