@@ -1216,7 +1216,106 @@ class RemoteFolderTestCase(TestCaseBase):
 
 class TrashTestCase(TestCaseBase):
     
+    def test_get_trashes(self):
+        """
+        GET /trashes
+        """
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # フォルダ1を作成する(POST /folders)
+        folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1", "parent": root.uuid}, self.USER_ID)
+        folder1_uuid = folder1['data']['uuid']
+
+        # フォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": root.uuid}, self.USER_ID)
+        folder2_uuid = folder2['data']['uuid']
+
+        # フレームを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1', root.uuid, f, self.USER_ID)
+        frame_uuid_1= result['data']['uuid'] 
+
+        # フォルダ1、フォルダ2、フレームをほかす
+        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER_ID)
+        self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER_ID)
+        self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER_ID)
+
+        # GET /trashesでゴミ箱の中を確認する
+        result = self.get_uri('/api/v0/trashes', self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+            "type"     : "trash",
+            "label"    : "ゴミ箱",
+            "creator"  : '管理者'
+        }
+        expected_child1 = {
+            "type"     : "folder",
+            "label"    : "フォルダですよ1",
+            "creator"  : '管理者'
+        }
+        expected_child2 = {
+            "type"     : "folder",
+            "label"    : "フォルダですよ2",
+            "creator"  : '管理者'
+        }
+        expected_child3 = {
+            "type"     : "frame",
+            "label"    : "フレームファイル_1",
+            "creator"  : '管理者'
+        }
+        folder_path1 = {
+            "type"     : "folder",
+            "label"    : "ROOT_FOLDER"
+        }
+        folder_path2 = {
+            "type"     : "trash",
+            "label"    : "ゴミ箱"
+        }
+
+        # PUT /trashes apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        # テストではLibrary._init_library_folders()でゴミ箱を作成しているのでcreator=None
+        self.assertIsNone(result['data']['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+        # フォルダ2
+        # (ゴミ箱内のフォルダは新規作成するのでUUIDは新規取得される)
+        self.assertIsNotNone(result['data']['children'][0]['uuid'])
+        self.assertEqual(result['data']['children'][0]['type'], expected_child2['type'])
+        self.assertEqual(result['data']['children'][0]['label'], expected_child2['label'])
+        self.assertEqual(result['data']['children'][0]['creator'], expected_child2['creator'])
+        self.assertNotEqual(result['data']['children'][0]['createdAt'], None)
+        # フォルダ1
+        # (ゴミ箱内のフォルダは新規作成するのでUUIDは新規取得される)
+        self.assertIsNotNone(result['data']['children'][1]['uuid'])
+        self.assertEqual(result['data']['children'][1]['type'], expected_child1['type'])
+        self.assertEqual(result['data']['children'][1]['label'], expected_child1['label'])
+        self.assertEqual(result['data']['children'][1]['creator'], expected_child1['creator'])
+        self.assertNotEqual(result['data']['children'][1]['createdAt'], None)
+        # フレーム1
+        self.assertEqual(result['data']['children'][2]['uuid'], frame_uuid_1)
+        self.assertEqual(result['data']['children'][2]['type'], expected_child3['type'])
+        self.assertEqual(result['data']['children'][2]['label'], expected_child3['label'])
+        self.assertEqual(result['data']['children'][2]['creator'], expected_child3['creator'])
+        self.assertNotEqual(result['data']['children'][2]['createdAt'], None)
+        # ROOT (folderPath)
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['type'], folder_path1['type'])
+        self.assertEqual(result['data']['folderPath'][0]['label'], folder_path1['label'])
+        # ゴミ箱 (folderPath)
+        self.assertIsNotNone(result['data']['folderPath'][1]['uuid'])
+        self.assertEqual(result['data']['folderPath'][1]['type'], folder_path2['type'])
+        self.assertEqual(result['data']['folderPath'][1]['label'], folder_path2['label'])
+
     def test_maintain_folder_hierarchy(self):
+        """
+        ゴミ箱に捨ててもフォルダ階層は維持される
+        """
         # ルートを取得する
         root = Datum.find_root()
 
@@ -1257,6 +1356,10 @@ class TrashTestCase(TestCaseBase):
         self.assertEqual(len(trashed), 0)
 
     def test_delete_limitation(self):
+        """
+        フローから参照されているフレームはゴミ箱に捨てられないこと
+        """
+
         # ルートを取得する
         root = Datum.find_root()
 
