@@ -282,73 +282,87 @@ def fetch_visualizers():
     return jsonify({'success': True, 'data': link.resolve()})
 
 @mod.route('/files')
+@login_required_api
 def download_file():
-    # 現在type, labelは未使用
-    # type = request.args.get('type')
+    def convert(file_path, source_encoding, source_newline, target_encoding, target_newline):
+        """
+        指定されたファイルの文字コードと改行コードを変換する
+        """
+        with file_path.open(encoding=source_encoding, newline=source_newline, errors='replace') as f:
+            for line in f:
+                if source_encoding == target_encoding and source_newline == target_newline:
+                    # 変換処理が必要ない場合は処理を軽くする
+                    yield line
+                else:
+                    # 変換できない文字があれば、
+                    # UTF-8への変換の場合は�(U+FFFD)に置き換える
+                    # CP932への変換の場合は?(3F)に置き換える
+                    line = line.rstrip(source_newline) + target_newline
+                    yield line.encode(target_encoding, errors='replace')
+
+    def error(message):
+        return jsonify({'success':False, 'code':-1, 'message': message})
+
+    # frameのuuidと拡張子指定を取得する
     frame_uuid = request.args.get('uuid')
-    # label = request.args.get('label')
     ext = request.args.get('ext')
 
     frame = Frame.find_by_uuid(frame_uuid)
-    frame_path = frame.path if frame is not None else None
+    if frame is None:
+        return error(f'指定されたFrame({frame_uuid})が見つかりませんでした')
 
-    if frame_path is None:
-        raise Exception('cannot find frame')
+    frame_path = STORE_DIR / frame.path
+    if not frame_path.exists():
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
 
-    character_code = os.getenv('FRAME_CHARACTER_CODE', 'utf-8')
-    frame_label = frame.label
+    # frameの文字コードと改行コードを識別する
+    source_encoding = 'utf-8' if frame.encoding == 'UNKNOWN' else frame.encoding
+    source_newline = '\n' if frame.newline == 'UNKNOWN' else frame.newline
 
-    def make_tmpfile_for_charactor_change(origin_file_path, encoding='utf-8', newline='\n'):
-        """
-        文字コード変更用のファイルを作り、そのパスを返す
-        tmpなので、今の所はdbには登録しない。
-        デフォルトはutf-8の形式
-        """
-        root_path = Datum.find_root().path
-        tmp_dir = STORE_DIR / root_path / 'download_tmp'
-        if not tmp_dir.exists():
-            tmp_dir.mkdir()
+    # 環境変数からダウンロードファイルの文字コード設定値を取得する
+    # (設定値がない場合は'UTF-8'とする)
+    target_encoding = os.getenv('FRAME_CHARACTER_CODE', 'UTF-8').lower()
+    target_newline = '\r\n' if target_encoding in ('cp932', 'CP932') else '\n'
 
-        path = tmp_dir / str(uuid.uuid4())
-        with open(path, 'w', encoding=encoding, newline=newline) as f:
-            with open(origin_file_path, encoding='utf-8') as origin_f:
-                f.write(origin_f.read())
-        return path
+    # ダウンロードファイルのサイズを計算する
+    if source_encoding == target_encoding and source_newline == target_newline:
+        # 変換処理がない場合は元ファイルサイズがダウンロードファイルのサイズである
+        downloadFileSize = os.path.getsize(frame_path)
+    else:
+        downloadFileSize = None
 
+    # ダウンロードファイル名を作成する
+    if not frame.label.endswith('.csv') and not frame.label.endswith('.txt'):
+        if ext is None or ext == '':
+            downloadFileName = frame.label + '.csv'
+        else:
+            downloadFileName = frame.label + '.' + ext
+    # ファイル名をURLエンコードする
+    import urllib.parse
+    downloadFileName = urllib.parse.quote(downloadFileName)
+
+    # frameを返す
+    # ・文字コード変換と改行コード変換をしながら返す
+    # ・Streamで返すため一時ファイルは作成されない
+    # ・変換に失敗した文字は代替する文字に置き換える
+    from flask import Response
     try:
-        dir_path = (STORE_DIR / frame_path.parent).as_posix()
-        frame_name = frame_path.name
-
-        # 文字コードの指定があれば、その文字コードのファイルを作り、
-        # そのあとに出来上がったファイルをダウンロードする
-        #
-        # 2019/6/28現在の一時的な仕様は下記の通り
-        # 1. 現状kskp/data/tmpディレクトリに作成される
-        # 2. tmpディレクトリ内に作成されたファイルは残ったまま
-        # 3. 環境変数でダウンロードするファイルの文字コードを制御している
-        if character_code == 'cp932':
-            encode_file_path = make_tmpfile_for_charactor_change(STORE_DIR / frame_path, 'cp932', '\r\n')
-            dir_path = os.path.dirname(encode_file_path.as_posix())
-            frame_name = os.path.basename(encode_file_path.as_posix())
-
-        # ダウンロードファイルの拡張子を設定する
-        if not frame_label.endswith('.csv') and not frame_label.endswith('.txt'):
-            if ext is None or ext == '':
-                frame_label = frame_label + '.csv'
-            else:
-                frame_label = frame_label + '.' + ext
-
-        return send_from_directory(dir_path, frame_name, as_attachment = True,
-                                    attachment_filename = frame_label, mimetype = 'text/csv')
+        response = Response(convert(frame_path, source_encoding, source_newline, target_encoding, target_newline))
+        response.content_type = f'text/csv; {target_encoding}'
+        if downloadFileSize is not None:
+            # 設定することでWebブラウザがダウンロードの進捗状況を表示してくれるかも
+            response.content_length = downloadFileSize
+        # filename*=はFirefox用
+        response.headers['Content-Disposition'] = f'attachment; filename={downloadFileName}; filename*={downloadFileName}'
+        return response
+    except UnicodeDecodeError:
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{source_encoding}で開けませんでした')
+    except UnicodeEncodeError:
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{target_encoding}に変換できませんでした')
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({
-                            'success': False,
-                            'code': -1,
-                            'message': str(e)
-                        })
-
+        return error(str(e))
 
 @mod.route('/caches', methods=['DELETE'])
 @login_required_api
