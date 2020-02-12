@@ -284,36 +284,6 @@ def fetch_visualizers():
 @mod.route('/files')
 @login_required_api
 def download_file():
-
-    def detect_encoding(file_path):
-        """
-        指定されたファイルの文字コードを判別する
-        """
-        from chardet.enums import LanguageFilter
-        from chardet.universaldetector import UniversalDetector
-        detector = UniversalDetector(lang_filter=LanguageFilter.CJK)
-
-        max_feed_num = 100
-        chunk_size = 1024
-
-        with file_path.open('rb') as f:
-            for i in range(max_feed_num):
-                chunk = f.read(chunk_size)
-                if not chunk:
-                    break
-                # 一定Byteずつ食わせる
-                detector.feed(chunk)
-                # 文字コード判定の信頼度がある一定を超えた場合に識別結果を返す
-                if detector.done:
-                    detector.close()
-                    return detector.result['encoding']
-        # 確信を持って識別ができなかった場合、最も確度の高い識別結果を返す
-        detector.close()
-        for prober in detector._charset_probers:
-            return prober.charset_name
-        # 今回の調査で我々は・・・何の成果も得られませんでした！！
-        return 'UTF-8'
-
     def convert(file_path, source_encoding, source_newline, target_encoding, target_newline):
         """
         指定されたファイルの文字コードと改行コードを変換する
@@ -346,12 +316,12 @@ def download_file():
         return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
 
     # frameの文字コードと改行コードを識別する
-    source_encoding = detect_encoding(frame_path)
-    source_newline = '\r\n' if source_encoding in ('SHIFT_JIS', 'CP932') else '\n'
+    source_encoding = 'utf-8' if frame.encoding == 'UNKNOWN' else frame.encoding
+    source_newline = '\n' if frame.newline == 'UNKNOWN' else frame.newline
 
     # 環境変数からダウンロードファイルの文字コード設定値を取得する
     # (設定値がない場合は'UTF-8'とする)
-    target_encoding = os.getenv('FRAME_CHARACTER_CODE', 'UTF-8')
+    target_encoding = os.getenv('FRAME_CHARACTER_CODE', 'UTF-8').lower()
     target_newline = '\r\n' if target_encoding in ('cp932', 'CP932') else '\n'
 
     # ダウンロードファイルのサイズを計算する
