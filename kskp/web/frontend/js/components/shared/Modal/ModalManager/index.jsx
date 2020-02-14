@@ -37,7 +37,6 @@ export default class ModalManager extends React.Component {
   }
 
   render () {
-
     return <div>
       <Modal key={Constants.modal.ADD_COMMAND}
              id={Constants.modal.ADD_COMMAND} dynamic={true}>
@@ -89,6 +88,9 @@ export default class ModalManager extends React.Component {
       <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW}
              title="選択されたフローを実行します" dynamic={true} footer={true}>
       </Modal>
+
+      <Modal key={Constants.modal.ADD_GROUP} id={Constants.modal.ADD_GROUP}
+             title="グループを追加する" dynamic={true} done={'追加する'} primary={true} />
     </div>
   }
 }

@@ -49,7 +49,9 @@ export default class GroupListContainer extends React.Component {
     // モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.modal.ADD_GROUP, onClickDone: () => {
+        console.log('before post groups', this.state.groupName)
         APIUtil.post('groups', {name: this.state.groupName}).then((response) => {
+          console.log('post groups', response)
           ModalUtil.emitModal(
             {id: Constants.modal.ADD_GROUP, visible: false})
           this.clearKeyword()
@@ -72,14 +74,15 @@ export default class GroupListContainer extends React.Component {
         })
       }
 
-      this.setState({
-        isLoading: false, 
-        finished: true, 
-        groups: json.data, 
-        selectedGroup: selectedGroup
-      }, () => {
-        this.forceUpdate()
-      })
+      this.setState(
+        {
+          isLoading: false, 
+          finished: true, 
+          groups: json.data, 
+          selectedGroup: selectedGroup
+        },
+        () => { this.forceUpdate() }
+      )
     })
   }
 
@@ -130,24 +133,22 @@ export default class GroupListContainer extends React.Component {
   }
 
   onChangeGroupName (e) {
-    this.setState({
-      GroupName: e.target.value,
-    })
+    this.setState({groupName: e.target.value})
   }
 
   onBlurTitle (e, group) {
     if (group) {
-      APIUtil.put('groups/' + group.uuid, {
-        'new_name': e.target.value
-      }).then((response) => {
-        this.getGroupList()
-      }, (error) => {
-
-      })
+      APIUtil.put(
+        'groups/' + group.id,
+        { 'new_name': e.target.value }
+      ).then(
+        (response) => { this.getGroupList() },
+        (error) => {}
+      )
     }
   }
 
-  onClickNew (e) {
+  onClickNew (e) {    
     ModalUtil.emitModal({
       id: Constants.modal.ADD_GROUP,
       visible: true,
@@ -156,7 +157,7 @@ export default class GroupListContainer extends React.Component {
         <TextField 
           rules={{
             required: true,
-            minlength: 5,
+            minlength: 0,
           }}
           placeholder={'グループ名'}
           onChange={(e, validation) => this.onChangeGroupName(e, validation)}
@@ -166,18 +167,21 @@ export default class GroupListContainer extends React.Component {
   }
 
   onClickDelete (groupId) {
-    ModalUtil.registerModal({
-      id: Constants.modal.CONFIRM, onClickDone: () => {
-        APIUtil.delete('groups/' + groupId).then((response) => {
-
-          this.getGroupList()
-
-          this.setState({selectedGroup: null})
-
-          ModalUtil.closeModal(Constants.modal.CONFIRM)
-        })
-      },
-    })
+    console.log('groupId;', groupId)
+    ModalUtil.registerModal(
+      {
+        id: Constants.modal.CONFIRM, 
+        onClickDone: () => {
+          APIUtil.delete('groups/' + groupId).then(
+            (response) => {
+              this.getGroupList()
+              this.setState({selectedGroup: null})
+              ModalUtil.closeModal(Constants.modal.CONFIRM)
+            }
+          )
+        },
+      }
+    )
     ModalUtil.emitModal({
       id: Constants.modal.CONFIRM,
       visible: true,
@@ -211,7 +215,7 @@ export default class GroupListContainer extends React.Component {
     </a>
   }
 
-  renderInspector () {
+  renderInspector () {    
     return <GroupInspector group={this.state.selectedGroup}
                            onClickDelete={(id) => this.onClickDelete(id)}
                            onBlurTitle={(e, group) => this.onBlurTitle(e, group)} />
