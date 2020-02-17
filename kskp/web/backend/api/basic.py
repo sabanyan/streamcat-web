@@ -243,6 +243,9 @@ def fetch_subflows():
         # 親フォルダのないサブフローは取得しない
         if parent is None:
             continue
+        # ゴミ箱にあるサブフローは取得しない
+        if TrashCan.trashed(subflow.uuid):
+            continue
         if parent.type == Datum.FOLDER_TYPE:
             parent_label = Folder.convert_to_folder(parent).label
             subflow_data['projectName'] = parent_label
