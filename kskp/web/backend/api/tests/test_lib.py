@@ -1280,6 +1280,43 @@ class TrashTestCase(TestCaseBase):
             "description": ""
         }
 
+    def get_flow_with_subflow(self, subflow_uuid):
+        return {
+            "label": "zzz", 
+            "nodes": [
+            {
+                "id": "d", 
+                "type": "frame", 
+                "uuid": None, 
+                "label": "d", 
+                "makeCache": False, 
+                "dataSource": "csv", 
+                "cacheCreatedAt": None
+            }, 
+            {
+                "id": "f", 
+                "args": {}, 
+                "dsts": {
+                "d": "d"
+                }, 
+                "srcs": {}, 
+                "type": "flow", 
+                "uuid": subflow_uuid, 
+                "label": "f", 
+                "srcsOrder": []
+            }
+            ], 
+            "ports": [
+            [], 
+            []
+            ], 
+            "params": [], 
+            "creator": "開発用", 
+            "createdAt": "2020-02-17 18:49:49", 
+            "projectId": None, 
+            "description": ""
+        }
+
     def test_get_trashes(self):
         """
         GET /trashes
@@ -1899,19 +1936,104 @@ class TrashTestCase(TestCaseBase):
         """
         ゴミの戻し先がゴミ箱内の場合はエラーにする
         """
-        pass
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # フォルダ1を作成する(POST /folders)
+        folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!!Q", "parent": root.uuid}, self.USER_ID)
+        folder1_uuid = folder1['data']['uuid']
+
+        # フォルダ1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER_ID)
+        folder2_uuid = folder2['data']['uuid']
+
+        # フォルダ2内にフレームを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER_ID)
+        frame_uuid_1 = result['data']['uuid']
+
+        # フレームをほかす
+        self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER_ID)
+
+        # フォルダ1をほかす
+        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER_ID)
+
+        # フレームを戻そうとする
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/trashes/{frame_uuid_1}', {}, self.USER_ID)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trash_can = TrashCan.find()
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
+        self.assertEqual(len(trashed), 0)
 
     def test_use_frame_in_trashcan(self):
         """
         ゴミフレームを使おうとしたらエラーにする
         """
-        pass
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # フレーム1を作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1E', root.uuid, f, self.USER_ID)
+        frame_uuid_1 = result['data']['uuid']
+
+        # フレーム1をほかす
+        self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER_ID)
+
+        # フレーム1を参照するフローを作成する
+        with self.assertRaises(Exception):
+            flow = Flow(root.uuid, 'フロー', self.get_flow_with_source(frame_uuid_1), self.USER_ID)
+
+        # ゴミ箱を空にする
+        trash_can = TrashCan.find()
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
+        self.assertEqual(len(trashed), 0)
 
     def test_use_subflowin_trashcan(self):
         """
         ゴミフローを使おうとしたらエラーにする
         """
-        pass
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # フレーム1を作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1E', root.uuid, f, self.USER_ID)
+        frame_uuid_1 = result['data']['uuid']
+
+        # サブフローを作成する
+        subflow = Flow(root.uuid, 'サブフロー', self.get_flow_with_source(frame_uuid_1), self.USER_ID)
+        subflow.save()
+
+        # 削除前にフローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':subflow.uuid}, self.USER_ID)
+        lock_uuid = result['data']['uuid']
+
+        # サブフローをほかす
+        self.delete_uri_with_json(f'/api/v0/flows/{subflow.uuid}', {'lock':lock_uuid}, self.USER_ID)
+            
+        # ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
+
+        # サブフローを参照するフローを作成する
+        with self.assertRaises(Exception):
+            flow = Flow(root.uuid, 'フロー', self.get_flow_with_subflow(subflow.uuid), self.USER_ID)
+
+        # ゴミ箱を空にする
+        trash_can = TrashCan.find()
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
+        trashed = Datum.find_by_parent_uuid(trash_can.uuid)
+        self.assertEqual(len(trashed), 0)     
 
 @unittest.skip
 class ExecuteTestCase(TestCaseBase):
