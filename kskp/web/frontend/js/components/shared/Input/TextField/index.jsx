@@ -141,14 +141,14 @@ export default class TextField extends React.Component<Props, State> {
    * @returns {*}
    */
   render () {
-    const {placeholder, defaultValue, type} = this.props
+    const {key, placeholder, defaultValue, type} = this.props
     const {validation} = this.state
     const input_class = classnames('form-control', {
       [style.error]: !validation,
       [this.props.className]: (this.props.className)
     })
 
-    return <div>
+    return <div className={style.textField}>
       <input type={type} ref={'input'} className={input_class}
              placeholder={placeholder}
              onChange={(e) => this.onChange(e)}

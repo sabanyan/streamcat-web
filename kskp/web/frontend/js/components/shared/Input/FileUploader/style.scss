@@ -2,14 +2,62 @@
   display: none;
 }
 
-.btn_file {
-  cursor: pointer;
-}
 
 .text {
   font-size: 14px;
 }
 
-.file {
-  font-weight: bold;
+.field {
+  margin: 4px;
+
+  .textField {
+    writing-mode: vertical-lr;
+
+    i {
+      font-size: 18px;
+      cursor: default;
+    }
+
+    input {
+      width: 350px;
+      margin-left: 4px;
+    }
+
+  }
+
+  .originalName {
+    font-weight: bold;
+    font-size: 12px;
+    text-align: left;
+    padding:4px;
+    overflow-x: visible;
+    white-space: nowrap;
+
+    label {
+      vertical-align: text-top;
+      margin: 4px 0px 0px 32px;
+    }
+  }
+}
+
+.fileUploader {
+  text-align: center;
+}
+
+.button {
+  cursor: pointer;
+  color: #61B8E2;
+  font-size: 14px;
+  position: relative;
+  vertical-align: bottom;
+  i {
+    position: relative;
+    vertical-align: text-bottom;;
+    font-size: 18px;
+    margin: 0px 1px 0px 1px;
+  }
+}
+
+.uploadButton {
+  text-align: right;
 }
