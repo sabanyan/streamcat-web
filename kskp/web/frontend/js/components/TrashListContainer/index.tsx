@@ -10,6 +10,7 @@ import { CommonListRow, CommonListHeader } from 'Components/shared/ListRow'
 import Constants from 'Constants/index'
 import { API } from 'Modules/api/index'
 import { Content, Inspector } from 'Modules/reducers/common'
+import { ModalUtil } from 'Utils/index'
 
 import { Resizer } from 'Shared/Inspector'
 import TrashInspector from './inspector/index'
@@ -75,8 +76,8 @@ export default class TrashList extends React.Component<Props, State> {
   }
 
   fetch() {
-    const {notify} = this.props
-   
+    const { notify } = this.props
+
     return new Promise(async (resolve, reject) => {
       await API.request.doGet.trashes({})
         .then((response) => {
@@ -104,6 +105,44 @@ export default class TrashList extends React.Component<Props, State> {
         })
       resolve()
     })
+  }
+
+  onClickRecovery(e, data) {
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        this.doRecovery(data)
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: '戻す',
+      danger: true,
+      content: <div>
+        {data.label} を元の場所に戻しますか？
+      </div>,
+    })
+  }
+
+  doRecovery(data) {
+    API.request.doPut.trash({ trashUUID: data.uuid })
+      .then((response) => {
+        if (!response.data.success) throw response.data
+
+      })
+      .catch((err) => {
+        this.props.notify({
+          title: "ゴミ箱エラー",
+          message: err.message,
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      })
+      .then(() => {
+        this.fetch()
+      })
   }
 
   renderContent() {
@@ -191,7 +230,7 @@ export default class TrashList extends React.Component<Props, State> {
   }
 
   renderInspector() {
-    const { content, inspector } = this.props
+    const { content, inspector, notify } = this.props
 
     let data: LibraryChild | undefined
     if (this.state.selectedIndex >= 0) {
@@ -199,14 +238,14 @@ export default class TrashList extends React.Component<Props, State> {
     }
     return <React.Fragment key={this.state.selectedIndex}>
       <Resizer width={inspector.width}>
-        <TrashInspector data={data} />
+        <TrashInspector data={data} onClickRecovery={(e, data) => this.onClickRecovery(e, data)} />
       </Resizer>
     </React.Fragment>
   }
 
   render() {
     const { content, inspector, notify } = this.props
-    
+
     return <div className={style.listContainer} >
       <div className={style.content} >
         <Loader center={true} absolute={true} visible={this.state.isLoading} />
@@ -215,7 +254,7 @@ export default class TrashList extends React.Component<Props, State> {
       <div className={style.inspector} >
         {this.renderInspector()}
       </div>
-      <NotificationManager/>
+      <NotificationManager />
     </div>
   }
 }

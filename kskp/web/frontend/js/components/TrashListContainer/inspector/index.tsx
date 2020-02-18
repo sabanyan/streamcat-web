@@ -1,12 +1,17 @@
 import * as React from 'react'
-import { BaseInspector, Resizer } from 'Shared/Inspector'
 
-import { LibraryChild } from 'Model/index'
 import style from './style.scss'
+
+import { BaseInspector, Resizer } from 'Shared/Inspector'
+import { Button } from 'Shared/Input'
+import { LibraryChild } from 'Model/index'
+
 
 type Props = {
   data?: LibraryChild
   customStyle?: any
+
+  onClickRecovery: Function
 }
 
 type State = {
@@ -25,6 +30,20 @@ export default class TrashInspector extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props)
+  }
+
+  onClickRecovery(e, data) {
+    const { onClickRecovery } = this.props
+    onClickRecovery(e, data)
+  }
+
+  renderButtons(data) {
+
+    let recovery = data ? <Button onClick={(e) => this.onClickRecovery(e, data)} icon={'undo'}>戻す</Button> : null
+
+    return <React.Fragment>
+      {recovery}
+    </React.Fragment>
   }
 
   renderDetail() {
@@ -99,13 +118,16 @@ export default class TrashInspector extends React.Component<Props, State> {
     const className = (customStyle) ? customStyle : style
 
     return <React.Fragment>
-        <BaseInspector>
-          <div className={style.inspector}>
-            <div className={style.detail}>
-              {this.renderDetail()}
-            </div>
+      <BaseInspector>
+        <div className={style.inspector}>
+          <div className={style.actions}>
+            {this.renderButtons(data)}
           </div>
-        </BaseInspector>
+          <div className={style.detail}>
+            {this.renderDetail()}
+          </div>
+        </div>
+      </BaseInspector>
     </React.Fragment>
   }
 }
