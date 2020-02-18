@@ -654,17 +654,25 @@ export default class Library extends React.Component<Props, State> {
 
   renderLibraries () {
     let dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
+    let renderLibraries = []
 
-    return this.state.libraryChildren.map((child, index) => {
-      const selected = (this.state.selected_data === child)
-      let href = '/folders/' + child.uuid + dialogOption
-      // ゴミ箱の場合、ゴミ箱専用のページに飛ぶ
-      if (child.type === Constants.library.type.trash) href = '/trashes'
-
-      return <LibraryListRow key={"LLR_" + index} libraryChild={child} selected={selected}
-                          onClick={(e, library) => this.onClickLibrary(e, library)}
-                          href={href} />
-    })
+    if (this.state.libraryChildren && Array.isArray(this.state.libraryChildren)) {
+      this.state.libraryChildren.forEach((child, index) => {
+        // dialogで表示された場合(datasource追加、移動先選択など）は、ゴミ箱を表示しない
+        if (child.type === Constants.library.type.trash && this.isDialog()) return
+  
+        const selected = (this.state.selected_data === child)
+        let href = '/folders/' + child.uuid + dialogOption
+        // ゴミ箱の場合、ゴミ箱専用のページに飛ぶ
+        if (child.type === Constants.library.type.trash) href = '/trashes'
+  
+        const row = <LibraryListRow key={"LLR_" + index} libraryChild={child} selected={selected}
+                            onClick={(e, library) => this.onClickLibrary(e, library)}
+                            href={href} />
+        renderLibraries.push(row)
+      })
+    }
+    return renderLibraries
   }
 
   renderEmptyState () {
