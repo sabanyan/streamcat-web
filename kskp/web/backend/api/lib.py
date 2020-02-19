@@ -343,6 +343,9 @@ def update_folder(folder_uuid):
 @login_required_api
 @api_base
 def throw_away(folder_uuid):
+    throw_away_folder(folder_uuid)
+
+def throw_away_folder(folder_uuid):
     from kskp.store import Library
     trash_folder = Library.load_trash_folder(session['user_id'])
 
