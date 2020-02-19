@@ -1663,14 +1663,14 @@ class TrashTestCase(TestCaseBase):
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER_ID)
         frame_uuid_1 = result['data']['uuid']
 
-        # フォルダ2内にフレームを作成する
+        # フレーム1をほかす
+        self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER_ID)
+
+        # フォルダ2内に同じラベル名でフレームを作成する
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         result = self.post_frames('フレームファイル_1', folder2_uuid, f, self.USER_ID)
         frame_uuid_2 = result['data']['uuid']
         self.assertEqual(result['data']['label'], 'フレームファイル_1')
-
-        # フレーム1をほかす
-        self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER_ID)
 
         # フレーム1を戻す
         result = self.put_uri(f'/api/v0/trashes/{frame_uuid_1}', {}, self.USER_ID)
@@ -1969,6 +1969,150 @@ class TrashTestCase(TestCaseBase):
         trash_can = TrashCan.find()
         trashed = Datum.find_by_parent_uuid(trash_can.uuid)
         self.assertEqual(len(trashed), 0)
+
+    def test_update_then_return_database(self):
+        """
+        ゴミ箱へほかした後にdata列を更新する操作を行っても
+        prev_parent_id属性は変更されていこと
+        """
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # Databaseを作成する(POST /databases)
+        data = {
+            "parent"   : root.uuid,
+            "label"    : "リモートフォルダ1",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER_ID)
+        database_uuid = result['data']['uuid']
+
+        # ゴミ箱へほかす
+        self.delete_uri(f'/api/v0/databases/{database_uuid}', self.USER_ID)
+
+        # ラベル名を変更する
+        data = {
+            "label"    : "リモートフォルダ2",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        self.put_uri(f'/api/v0/databases/{database_uuid}', data, self.USER_ID)
+
+        # ゴミ箱から戻す
+        self.put_uri(f'/api/v0/trashes/{database_uuid}', {}, self.USER_ID)
+
+    def test_update_then_return_flow(self):
+        """
+        ゴミ箱へほかした後にdata列を更新する操作を行っても
+        prev_parent_id属性は変更されていこと
+        """
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # フローを作成する
+        import uuid
+        flow = Flow(root.uuid, 'サブフロー1', self.get_flow_with_source(str(uuid.uuid4())), self.USER_ID)
+        flow.save()
+
+        # 削除前にフローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER_ID)
+        lock_uuid = result['data']['uuid']
+
+        # フローをゴミ箱へほかす
+        self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER_ID)
+            
+        # フローを変更する
+        data = {
+            'flow': flow.data,
+            'label': 'フローです',
+            'lock' : lock_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{flow.uuid}', data, self.USER_ID)
+
+        # ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
+
+        # ゴミ箱から戻す
+        self.put_uri(f'/api/v0/trashes/{flow.uuid}', {}, self.USER_ID)
+
+    def test_update_then_return_frame(self):
+        """
+        ゴミ箱へほかした後にdata列を更新する操作を行っても
+        prev_parent_id属性は変更されていこと
+        """
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # フレーム1を作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_AA', root.uuid, f, self.USER_ID)
+        frame_uuid_1 = result['data']['uuid']
+
+        # ゴミ箱へほかす
+        self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER_ID)
+
+        # ラベル名を変更する
+        self.put_uri(f'/api/v0/frames/{frame_uuid_1}', {"label": '変更したラベル名'}, self.USER_ID)
+
+        # ゴミ箱から戻す
+        self.put_uri(f'/api/v0/trashes/{frame_uuid_1}', {}, self.USER_ID)
+
+    def test_update_then_return_remote_folder(self):
+        """
+        ゴミ箱へほかした後にdata列を更新する操作を行っても
+        prev_parent_id属性は変更されていこと
+        """
+        # ルートを取得する
+        root = Datum.find_root()
+
+        # RemoteFolderを作成する(POST /remote-folders)
+        data = {
+            "parent"   : root.uuid,
+            "label"    : "リモートフォルダ1",
+            "protocol" : "smb",
+            "hostname" : "kskds-HP-Workstation-z620.local",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            "user_id"  : "ksk-ds",
+            "password" : "kskanalytics"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER_ID)
+        folder_uuid = result['data']['uuid']
+
+        # ゴミ箱へほかす
+        self.delete_uri(f'/api/v0/remote-folders/{folder_uuid}', self.USER_ID)
+
+        # リモートフォルダを変更する
+        data = {
+            "label"    : "リモートフォルダ2",
+            "protocol" : "smb",
+            "hostname" : "kskds-HP-Workstation-z620.local",
+            "domain"   : "WORKGROUP",
+            "directory": "share",
+            "user_id"  : "ksk-ds",
+            "password" : "kskanalytics"
+        }
+        self.put_uri(f'/api/v0/remote-folders/{folder_uuid}', data, self.USER_ID)
+
+        # ゴミ箱から戻す
+        self.put_uri(f'/api/v0/trashes/{folder_uuid}', {}, self.USER_ID)
+
+        # 再びゴミ箱へほかす
+        self.delete_uri(f'/api/v0/remote-folders/{folder_uuid}', self.USER_ID)
+
+        # RemoteFolderを削除(unmount)する
+        self.delete_uri('/api/v0/trashes', self.USER_ID)
 
     def test_use_frame_in_trashcan(self):
         """

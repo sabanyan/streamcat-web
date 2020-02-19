@@ -106,6 +106,8 @@ def _convert_type(datum):
         return AwsS3.convert_to_awss3(datum)
     elif datum.type == Datum.DATABASE_TYPE:
         return Database.convert_to_database(datum)
+    elif datum.type == Datum.RFOLDER_TYPE:
+        return RemoteFolder.convert_to_remote_folder(datum)
     elif datum.type == Datum.TRASH_TYPE:
         return TrashCan.convert_to_trash_can(datum)
     else:
@@ -179,7 +181,7 @@ def return_trashes(datum_uuid):
     ゴミを捨てる前の場所に戻す
     """
     datum = Datum.find_by_uuid(datum_uuid)
-    return _put_back(datum, session['user_id'])
+    return _put_back(_convert_type(datum), session['user_id'])
 
 def _put_back(datum, modifier):
     # フォルダを元の位置に戻す
