@@ -1,50 +1,56 @@
-//@flow
-import React from 'react'
+import * as React from 'react'
 import classnames from 'classnames'
 import style from './style.scss'
 import libraryListStyle from 'Shared/ListRow/LibraryListRow/style.scss'
-import { ModalManager } from 'Shared/Modal'
+import { ModalManager } from 'Components/shared/Modal'
 import { BreadCrumb, EmptyState, Loader } from 'Shared/Base'
 import { LibraryInspector, ParamsForm } from 'Shared/Inspector'
 import { NotificationManager } from 'Shared/Notification'
 import { APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil } from 'Utils/index'
 import { LibraryListHeader, LibraryListRow } from 'Shared/ListRow'
 import Constants from 'Constants/index'
-import { FileUploader, TextField } from 'Shared/Input'
-import type { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType } from 'Types/index'
-import type { LibraryProps } from 'LibraryListContainer/index'
+import { FileUploader, UploadFile, TextField } from 'Shared/Input'
+import { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType } from 'Types/index'
+import { LibraryProps } from 'LibraryListContainer/index'
 import { VisualizeModel } from "Model/index";
 import { LocksModel } from 'Model/index'
 import axios from 'axios'
 
-type Props = {
-  ...LibraryProps
-}
+type Props = LibraryProps
 
 type State = {
-  stores: [];
-  libraryChildren: [];
-  folderPath: [];
+  stores: any[];
+  libraryChildren: any[];
+  folderPath: any[];
   is_loading: boolean;
   is_finished: boolean;
-  selected_data?: LibraryListDataType | null;
+  selected_data?: any;
   currentFolderUUID: string;
-  upload_file?: UploadedFileType | null;
-  frame_name: string;
-  document_name: string;
-  folder_name: string;
+
+  // database
+  database: Database;
+  edit_database: Database;
+
+  // mode
   mode: string;
-  visualizers: [];
+  is_dialog: boolean;
+
+  // visualizers
+  visualizers: any[];
+
+  // new
+  upload_files: FileList | null; // 単一アップロードの場合（database, folder）、0番目のindexが対象
+  new_names: string[] // 単一アップロードの場合（database, folder）、0番目のindexがが対象
 }
 
 type Database = {
-  label: stirng;
-  DBMS: string;
-  host: string;
-  port: string;
-  database: string;
-  user_id: string;
-  user_password: stirng;
+  label?: string;
+  dbms?: any;
+  host?: string;
+  port?: string;
+  database?: string;
+  user_id?: string;
+  user_password?: string;
 }
 
 export default class Library extends React.Component<Props, State> {
@@ -52,26 +58,33 @@ export default class Library extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
 
-    const is_dialog = HttpUtil.getURLParam("dialog") ? true : false
+    const is_dialog: boolean = HttpUtil.getURLParam("dialog") ? true : false
     const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list
 
     //TODO ReduxのStoreで管理する
     this.state = {
       stores: [],
-      folderPath: [],
       libraryChildren: [],
-      currentFolderUUID: '',//現在のフォルダのuuid
+      folderPath: [],
       is_loading: false,
       is_finished: false,
       selected_data: null,
-      upload_file: null,
-      frame_name: '',
-      document_name: '',
-      folder_name: '',
-      is_dialog: is_dialog,
+      currentFolderUUID: '',//現在のフォルダのuuid
+
+      // database
       database: this.getIntialDatabase(),
-      edit_databse: this.getIntialDatabase(),
+      edit_database: this.getIntialDatabase(),
+
+      // mode
+      is_dialog: is_dialog,
       mode: mode,
+
+      // visualizers
+      visualizers: [],
+
+      // new
+      upload_files: null, // frame 複数アップロードのため
+      new_names: []
     }
 
     // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
@@ -86,12 +99,15 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
-  getIntialDatabase() {
+  getIntialDatabase(): Database {
     return {
+      label: "",
       dbms: this.getDataBaseParams()[1].default,
+      host: "",
+      port: "",
       database: "",
       user_id: "",
-      password: ""
+      user_password: ""
     }
   }
 
@@ -110,77 +126,68 @@ export default class Library extends React.Component<Props, State> {
 
   registerModal() {
     //モーダル処理の登録
-    ModalUtil.registerModal({
-      id: Constants.modal.ADD_DOCUMENT, onClickDone: () => {
-        if (!this.state.document_name) {
-          alert('資料名を入力してくsださい')
-          return false
-        }
-        if (!this.state.upload_file) {
-          alert('ファイルを選択してください')
-          return false
-        }
-        this.setState({ is_loading: true, selected_data: null })
-        const file: File = this.state.upload_file.file
-        const label = this.state.document_name
-        const parentUUID = this.state.currentFolderUUID
-        APIUtil.documentUpload(file, label, parentUUID).then((response) => {
-          this.completeUploaded(response)
-          this.setState({ document_name: null, upload_file: null }, () => {
-            ModalUtil.closeModal(Constants.modal.ADD_DOCUMENT)
-          })
-        }, () => {
-          this.unhandledNotify()
-        })
-      },
-    })
+
+    // Folder
     ModalUtil.registerModal({
       id: Constants.modal.ADD_FOLDER, onClickDone: () => {
-        if (!this.state.folder_name) {
+        if (this.state.new_names.length === 0) {
           alert('ファルダ名を入力してください')
-          ModalUtil.closeModal(Constants.modal.ADD_FRAME)
-          return false
+          ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
+          return
         }
         this.setState({ is_loading: true, selected_data: null })
         const body = {
-          'label': this.state.folder_name,
+          'label': this.state.new_names[0],
           'parent': this.state.currentFolderUUID,
         }
         APIUtil.post('folders', body).then((response) => {
           this.completeAddedFolder(response)
-          this.setState({ folder_name: null }, () => {
+          this.setState({ new_names: [] }, () => {
             ModalUtil.closeModal(Constants.modal.ADD_FOLDER)
           })
         }, () => {
           this.unhandledNotify('フォルダ作成エラー')
         })
-      },
+      }
     })
+
+    // CSV Upload
     ModalUtil.registerModal({
       id: Constants.modal.ADD_FRAME, onClickDone: () => {
-        if (!this.state.frame_name) {
+        if (this.state.new_names.length === 0) {
           alert('名称を入力してください')
-          return false
+          return
         }
-        if (!this.state.upload_file) {
+        if (!this.state.upload_files) {
           alert('ファイルを選択してください')
-          return false
+          return
         }
-        this.setState({ is_loading: true, selected_data: null })
-        const file: File = this.state.upload_file.file
-        const fileName = this.state.frame_name //TODO 将来的には使わない
-        const label = this.state.frame_name
-        const parentUUID = this.state.currentFolderUUID
-        APIUtil.frameUpload(file, fileName, label, parentUUID).then((response) => {
-          this.completeUploaded(response)
-          this.setState({ frame_name: null, upload_file: null }, () => {
-            ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+
+        this.setState({ is_loading: true, selected_data: null }, () =>{
+          const files: FileList | null = this.state.upload_files
+          const new_names: string[] = this.state.new_names
+          const parentUUID = this.state.currentFolderUUID
+          APIUtil.frameUpload(files, new_names, new_names, parentUUID)
+          .then((response) => {
+            console.log(response)
+            //this.completeUploaded(response)
+          }, () => {
+            //this.unhandledNotify('アップロードエラー')
           })
-        }, () => {
-          this.unhandledNotify('アップロードエラー')
+          .then(() => {
+            this.setState({
+              is_loading: false,
+              upload_files: null,
+              new_names: []
+            }, () => {
+              ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+            })
+          })
         })
       },
     })
+
+    // Database Upload
     ModalUtil.registerModal({
       id: Constants.modal.ADD_DATABASE, onClickDone: () => {
         try {
@@ -193,7 +200,7 @@ export default class Library extends React.Component<Props, State> {
             alert("DBMSを入力してください")
             return
           }
-          if (!database.hostname) {
+          if (!database.host) {
             alert("ホスト名を入力してください")
             return
           }
@@ -206,11 +213,11 @@ export default class Library extends React.Component<Props, State> {
             label: this.state.database.label,
             parent: this.state.currentFolderUUID,
             dbms: this.state.database.dbms,
-            hostname: this.state.database.hostname,
+            hostname: this.state.database.host,
             port: Number(this.state.database.port),
             database: this.state.database.database,
             user_id: this.state.database.user_id,
-            password: this.state.database.password
+            password: this.state.database.user_password
           }
           APIUtil.post('databases', body).then((response) => {
             this.completeAddedDatabase(response)
@@ -222,7 +229,6 @@ export default class Library extends React.Component<Props, State> {
         }
       },
     })
-
   }
 
   unhandledNotify(title: string) {
@@ -250,7 +256,7 @@ export default class Library extends React.Component<Props, State> {
     } else {
       this.props.notify({
         title: 'フォルダを作成しました',
-        message: this.state.folder_name + 'を作成しました',
+        message: this.state.new_names[0] + 'を作成しました',
         status: 'success'
       })
     }
@@ -326,38 +332,36 @@ export default class Library extends React.Component<Props, State> {
     } else {
       this.props.notify({
         title: 'アップロードしました',
-        message: this.state.frame_name + 'をアップロードしました',
+        message: this.state.new_names.join(",") + 'をアップロードしました',
         status: 'success'
       })
     }
     this.fetchFolder()
   }
 
-  onChangeFile(e: SyntheticInputEvent<EventTarget>) {
-    const selectedFiles: FileList = e.target.files
+  onChangeFile(e: React.ChangeEvent<HTMLInputElement>) {
+    let selectedFiles: FileList | null = e.target.files
     if (selectedFiles) {
-      const uploadFile: File = selectedFiles[0]
-      let defaultFileName = uploadFile.name.split('.')[0]
       this.setState({
-        upload_file: {
-          file: uploadFile,
-        },
-        frame_name: defaultFileName
+        upload_files: selectedFiles
       }, () => {
-        if (uploadFile && uploadFile.name) {
-          ModalUtil.emitModal({
-            id: Constants.modal.ADD_FRAME,
-            visible: true,
-            done: '追加する',
-            content: <div>
-              <TextField key={uploadFile.name} placeholder={'名称'} defaultValue={defaultFileName} onChange={(e, validation) => this.onChangeFrameName(e, validation)} />
-              <div className={'mt-8px'} />
-              <FileUploader accept={['text/csv']} onChangeFile={(e) => this.onChangeFile(e)} />
-            </div>,
-          })
-        }
+        ModalUtil.emitModal({
+          id: Constants.modal.ADD_FRAME,
+          visible: true,
+          done: 'アップロード',
+          content: <div>
+            <FileUploader accept={['text/csv']}
+              selectedFiles={selectedFiles}
+              onChangeFile={(e) => this.onChangeFile(e)} multiple={true}
+              onChangeNames={(names) => this.onChangeFrameName(names)} />
+          </div>,
+        })
       })
     }
+  }
+
+  onUploadFrame(uploadFiles:UploadFile[]) {
+    
   }
 
   //storesの取得処理
@@ -408,67 +412,51 @@ export default class Library extends React.Component<Props, State> {
     }
   }
 
-  onChangeDocumentName(e: SyntheticInputEvent<EventTarget>, validation) {
+  onChangeFrameName(names:string[]) {
     this.setState({
-      document_name: e.target.value,
+      new_names: names
     })
   }
 
-  onChangeFrameName(e: SyntheticInputEvent<EventTarget>, validation) {
+  onChangeFolderName(e: React.ChangeEvent<HTMLInputElement>, validation) {
+    let new_names = this.state.new_names
+    new_names[0] = e.target.value
+
     this.setState({
-      frame_name: e.target.value,
+      new_names: new_names
     })
   }
 
-  onChangeFolderName(e: SyntheticInputEvent<EventTarget>, validation) {
-    this.setState({
-      folder_name: e.target.value,
-    })
-  }
-
-  onClickNewDocument(e: SyntheticInputEvent<EventTarget>, validation) {
-    ModalUtil.emitModal({
-      id: Constants.modal.ADD_DOCUMENT,
-      visible: true,
-      done: '追加する',
-      content: <div>
-        <TextField placeholder={'資料名'}
-          onChange={(e, validation) => this.onChangeDocumentName(e,
-            validation)} />
-        <div className={'mt-8px'} />
-        <FileUploader accept={['*/*']} onChangeFile={(e) => this.onChangeFile(e)} />
-      </div>,
-    })
-    e.preventDefault()
-  }
-
-  onClickNewFrame(e: SyntheticInputEvent<EventTarget>) {
+  onClickNewFrame(e: React.ChangeEvent<HTMLInputElement>) {
+    const {notify} = this.props
     ModalUtil.emitModal({
       id: Constants.modal.ADD_FRAME,
       visible: true,
-      done: '追加する',
+      done: 'アップロード',
       content: <div>
-        <TextField placeholder={'名称'} onChange={(e, validation) => this.onChangeFrameName(e, validation)} />
-        <div className={'mt-8px'} />
-        <FileUploader accept={['text/csv']} onChangeFile={(e) => this.onChangeFile(e)} />
+        <FileUploader accept={['text/csv']} url={'api/v0/frames'} parentUUID={this.state.currentFolderUUID} notify={notify} />
       </div>,
     })
     e.preventDefault()
   }
 
-  onClickNewFolder(e: SyntheticInputEvent<EventTarget>) {
-    ModalUtil.emitModal({
-      id: Constants.modal.ADD_FOLDER,
-      visible: true,
-      done: '追加する',
-      content: <div>
-        <TextField placeholder={'フォルダ名'} onChange={(e, validation) => this.onChangeFolderName(e, validation)} />
-      </div>,
+  onClickNewFolder(e: React.ChangeEvent<HTMLInputElement>) {
+    this.setState({
+      new_names: [""]
+    }, () => {
+      ModalUtil.emitModal({
+        id: Constants.modal.ADD_FOLDER,
+        visible: true,
+        done: '追加する',
+        content: <div>
+          <TextField placeholder={'フォルダ名'} onChange={(e, validation) => this.onChangeFolderName(e, validation)} />
+        </div>,
+      })
     })
     e.preventDefault()
   }
 
-  onChangeDatabase(e, param, value) {
+  onChangeDatabase(e: React.ChangeEvent<HTMLInputElement>, param, value) {
     try {
       let database = this.state.database
       database[param.name] = value
@@ -560,9 +548,9 @@ export default class Library extends React.Component<Props, State> {
     return params
   }
 
-  onClickNewDatabase(e: SyntheticInputEvent<EventTarget>) {
+  onClickNewDatabase(e: React.MouseEvent<HTMLInputElement>) {
     const params = this.getDataBaseParams()
-    let database = {}
+    let database: Database = {}
     params.map(param => {
       if (param.default) database[param.name] = param.default
     })
@@ -583,7 +571,7 @@ export default class Library extends React.Component<Props, State> {
     e.preventDefault()
   }
 
-  onClickNewRemoteFolder(e: SyntheticInputEvent<EventTarget>) {
+  onClickNewRemoteFolder(e: React.MouseEvent<HTMLInputElement>) {
     this.setState({ is_loading: true, selected_data: null })
     const body = {
       'label': '新しいフォルダ',
@@ -603,7 +591,7 @@ export default class Library extends React.Component<Props, State> {
     e.preventDefault()
   }
 
-  onClickSelectDestination(e) {
+  onClickSelectDestination(e: React.MouseEvent<HTMLInputElement>) {
     if (window.opener || !window.opener.closed) {
       window.opener.onCallbackApply(this.state.currentFolderUUID)
     }
@@ -618,17 +606,19 @@ export default class Library extends React.Component<Props, State> {
     return this.renderButton((e) => this.onClickNewDatabase(e), 'データベースを追加する', 'add_circle_outline')
   }
 
-  renderNewDocument() {
-    return this.renderButton((e) => this.onClickNewDocument(e), '資料をアップロードする', 'add_circle_outline')
-  }
-
   renderNewFrame() {
     return this.renderButton((e) => this.onClickNewFrame(e), 'CSVをアップロードする', 'add_circle_outline')
+  }
+
+  /*
+  renderNewDocument() {
+    return this.renderButton((e) => this.onClickNewDocument(e), '資料をアップロードする', 'add_circle_outline')
   }
 
   renderNewRemoteFolder() {
     return this.renderButton((e) => this.onClickNewRemoteFolder(e), 'ファイルサーバを追加する', 'add_circle_outline')
   }
+  */
 
   renderSelectDestination() {
     return this.renderButton((e) => this.onClickSelectDestination(e), '移動する', 'input')
@@ -644,7 +634,7 @@ export default class Library extends React.Component<Props, State> {
           {title}
         </div>
       </div>
-    </a>
+    </a >
   }
 
 
@@ -672,7 +662,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   onClickLibrary(
-    e: SyntheticInputEvent<EventTarget>, library: LibraryListDataType) {
+    e: React.MouseEvent<HTMLInputElement>, library: LibraryListDataType) {
     this.setState({ selected_data: library })
   }
 
@@ -706,11 +696,12 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
-
   deleteLibraryChild(selected_data: LibraryListDataType) {
+    this.setState({ is_loading: true })
     let result = this.deleteLibraryListData(selected_data.type, selected_data.uuid)
     if (!result) return
     result.then((response) => {
+      this.setState({ is_loading: false })
       if (!response.data.success) {
         this.props.notify({
           title: '削除エラー',
@@ -753,57 +744,39 @@ export default class Library extends React.Component<Props, State> {
     const { notify } = this.props
 
     // 1. LockIdを取得する。
-    let body = { target: flow_uuid }
+    let body: any = { target: flow_uuid }
     let locks = new LocksModel(body)
     APIUtil.post('locks', body).then((response) => {
       let locksModel = locks.Parse(response)
       let lockId = locksModel.getLockId()
-      if (!lockId) throw locksModel.getErrorMessage()
-      //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
-      axios.delete('/api/v0/flows/' + flow_uuid, { data: { lock: lockId } })
-        .then((response) => {
-          if (!response.success) throw response.data.message
-        })
-        .catch((err) => {
-          notify({
-            title: '削除エラー',
-            message: err,
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        })
-        .then(() => {
-          APIUtil.post('delete-locks/' + lockId)
+      if (lockId) {
+        //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
+        axios.delete('/api/v0/flows/' + flow_uuid, { data: { lock: lockId } })
           .then((response) => {
-            if (!response.data.success) throw response.data.message
-            this.fetchFolder()
-          })
-          .catch((err) => {
-            notify({
-              title: '削除エラー',
-              message: err,
-              status: 'error',
-              dismissAfter: 0,
-              closeButton: true
+            APIUtil.post('delete-locks/' + lockId).then((response) => {
+              this.fetchFolder()
+            })
+          }, (err) => {
+            APIUtil.post('delete-locks/' + lockId).then((response) => {
+              this.fetchFolder()
             })
           })
+      } else {
+        // lockが出来なかった場合
+        notify({
+          title: '削除エラー',
+          message: locksModel.getErrorMessage(),
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
         })
-    }).catch(err => {
-      // lockが出来なかった場合
-      notify({
-        title: '削除エラー',
-        message: err,
-        status: 'error',
-        dismissAfter: 0,
-        closeButton: true
-      })
+      }
     })
   }
 
   editFlow(flow_uuid, parent_uuid) {
     const { notify } = this.props
-    let body = { target: flow_uuid }
+    let body: any = { target: flow_uuid }
     let locks = new LocksModel(body)
     axios.post('/api/v0/locks', body).then((response) => {
       let locksModel = locks.Parse(response)
@@ -886,10 +859,10 @@ export default class Library extends React.Component<Props, State> {
   renderInspector() {
     const { notify, dissmissNotify } = this.props
     const data: LibraryListDataType = this.state.selected_data
-    let onClickDelete = null
-    let onClickApply = null
-    let onClickMove = null
-    let onClickEdit = null
+    let onClickDelete: any = null
+    let onClickApply: any = null
+    let onClickMove: any = null
+    let onClickEdit: any = null
 
     switch (this.state.mode) {
       case Constants.library.mode.frame_select:
@@ -936,11 +909,11 @@ export default class Library extends React.Component<Props, State> {
       database: {
         "label": data.label,
         "dbms": data.dbms,
-        "hostname": data.hostname,
+        "host": data.hostname,
         "port": data.port,
         "database": data.database,
         "user_id": data.user_id,
-        "password": data.password
+        "user_password": data.password
       }
     }, () => {
       const paramsForm = <ParamsForm params={params} args={this.state.database} invalids={{}} rules={rules} onChange={(e, param, value) => this.onChangeEditDatabase(e, param, value)} ></ParamsForm>
@@ -998,7 +971,7 @@ export default class Library extends React.Component<Props, State> {
     return null
   }
 
-  makeHistory(folderPath: []): [BreadCrumbHistoryType] {
+  makeHistory(folderPath: any[]): BreadCrumbHistoryType[] {
     const dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
 
     const history = folderPath.map((path, index) => {
@@ -1017,7 +990,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   onBlurTitle(
-    e: SyntheticInputEvent<EventTarget>, selected_data: LibraryListDataType) {
+    e: React.FocusEvent<HTMLInputElement>, selected_data: any) {
     // Label の修正
     if (!selected_data) {
       return
@@ -1032,7 +1005,7 @@ export default class Library extends React.Component<Props, State> {
       return
     }
 
-    let body = {
+    let body: any = {
       label: e.target.value,
     }
     if (selected_data.type === Constants.library.type.database) {
@@ -1079,8 +1052,8 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
-  getEndPoint(libraryType: string) {
-    let endPoint = null
+  getEndPoint(libraryType: string): string | null {
+    let endPoint: string | null = null
     switch (libraryType) {
       case Constants.library.type.frame:
         endPoint = 'frames/'
@@ -1103,8 +1076,8 @@ export default class Library extends React.Component<Props, State> {
     return endPoint
   }
 
-  updateLibrary(libraryChildren: [], uuid: string, library) {
-    return libraryChildren.map((child) => {
+  updateLibrary(libraryChildren: any[], uuid: string, library) {
+    return libraryChildren.map((child: any) => {
       if (uuid === child.uuid) {
         return library
       }
@@ -1112,8 +1085,8 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
-  findLibrary(libraryChildren: [], uuid: string) {
-    return libraryChildren.find((child) => { return (child.uuid === uuid) })
+  findLibrary(libraryChildren: any[], uuid: string) {
+    return libraryChildren.find((child: any) => { return (child.uuid === uuid) })
   }
 
   isDialog() {

@@ -41,7 +41,7 @@ class APIUtil {
     return axios.delete(url, data, merged_config)
   }
 
-  frameUpload (file: File, fileName: string, label: string, parentUUID: string) {
+  frameUpload (file: FileList, fileName: string, label: string, parentUUID: string) {
     const options = {
       headers: {'enctype': 'multipart/form-data'}
     }
