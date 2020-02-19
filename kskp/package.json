@@ -52,7 +52,7 @@
     "react-i18next": "^10.11.2",
     "react-sortable-hoc": "^1.9.1",
     "react-test-renderer": "^16.4.2",
-    "reapop": "^2.0.1",
+    "reapop": "^2.1.0",
     "reapop-theme-wybo": "^1.0.2",
     "redux-devtools-extension": "^2.13.8",
     "sass-loader": "^7.0.1",
@@ -65,6 +65,7 @@
     "webpack-dev-server": "^3.7.2"
   },
   "dependencies": {
+    "@types/jquery": "^3.3.32",
     "ajv": "^6.5.4",
     "chart.js": "^2.7.2",
     "classnames": "^2.2.5",
