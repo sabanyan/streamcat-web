@@ -1,7 +1,7 @@
 
 
 import React from 'react'
-import classnames from 'classnames'
+
 import style from './style.scss'
 
 import { NotificationManager } from 'Shared/Notification'
@@ -10,13 +10,12 @@ import { CommonListRow, CommonListHeader } from 'Components/shared/ListRow'
 import Constants from 'Constants/index'
 import { API } from 'Modules/api/index'
 import { Content, Inspector } from 'Modules/reducers/common'
-import { ModalUtil } from 'Utils/index'
-
 import { Resizer } from 'Shared/Inspector'
 import TrashInspector from './inspector/index'
 import { LibraryModel, LibraryChild } from 'Model/index'
-
-
+import { APIUtil, HttpUtil, ModalUtil } from 'Utils/index'
+import { LocksModel } from 'Model/index'
+import axios from 'axios'
 
 
 type Props = {
@@ -217,6 +216,83 @@ export default class TrashList extends React.Component<Props, State> {
     })
   }
 
+  onClickMove(e, libraryData: any) {
+    HttpUtil.windowOpen('library?dialog=true&mode=folder_select', (folder_uuid) => {
+      const type = libraryData.type
+      const uuid = libraryData.uuid
+      const data = {
+        parent: folder_uuid
+      }
+
+      let result
+      switch (type) {
+        case Constants.library.type.folder:
+          result = APIUtil.put('folders/' + uuid, data)
+          break;
+        case Constants.library.type.flow:
+          result = this.editFlow(uuid, folder_uuid)
+          break;
+        case Constants.library.type.frame:
+          result = APIUtil.put('frames/' + uuid, data)
+          break;
+        case Constants.library.type.document:
+          result = APIUtil.put('documents/' + uuid, data)
+          break;
+        case Constants.library.type.database:
+          result = APIUtil.put('databases/' + uuid, data)
+          break;
+        case Constants.library.type.remoteFolder:
+          result = APIUtil.put('remote-folders/' + uuid, data)
+          break;
+      }
+      if (!result) return
+      result.then((response) => {
+        this.fetch()
+        if (!response.data.success) {
+          this.props.notify({
+            title: "ライブラリー移動エラー",
+            message: response.data.message,
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        }
+      })
+
+    })
+  }
+
+  editFlow(flow_uuid, parent_uuid) {
+    const { notify } = this.props
+    let body = { target: flow_uuid }
+    let locks = new LocksModel(flow_uuid)
+
+    return axios.post('/api/v0/locks', body).then((response) => {
+      let locksModel = locks.Parse(response)
+      let lockId = locksModel.getLockId()
+      if (lockId) {
+        axios.put('/api/v0/flows/' + flow_uuid, {
+          parent: parent_uuid,
+          lock: lockId
+        }).then((response) => {
+          navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+        }, (error) => {
+          navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+          console.log(error)
+        })
+      } else {
+        // lockが出来なかった場合
+        notify({
+          title: "ライブラリー移動エラー",
+          message: response.data.message,
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      }
+    })
+  }
+
   renderEmptyState() {
     return <EmptyState icon={'inbox'} title={emtpyTitle} description={emptyDescription}></EmptyState>
   }
@@ -238,7 +314,10 @@ export default class TrashList extends React.Component<Props, State> {
     }
     return <React.Fragment key={this.state.selectedIndex}>
       <Resizer width={inspector.width}>
-        <TrashInspector data={data} onClickRecovery={(e, data) => this.onClickRecovery(e, data)} />
+        <TrashInspector data={data}
+          onClickRecovery={(e, data) => this.onClickRecovery(e, data)}
+          onClickMove={(e, data) => this.onClickMove(e, data)}
+        />
       </Resizer>
     </React.Fragment>
   }
