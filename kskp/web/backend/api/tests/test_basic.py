@@ -139,8 +139,10 @@ class ProjectApiTestCase(TestCaseBase):
         # DELETE /projects
         self.delete_uri(('/api/v0/projects/%s' % folder.uuid), self.USER_ID)
 
-        # フォルダが消えていることを確認する
-        self.assertFalse(Folder.exists(folder.uuid))
+        # フローはゴミ箱に移動していること
+        folder = Folder.find_by_uuid(folder.uuid)
+        trash = TrashCan.find()
+        self.assertEqual(folder.parent_uuid, trash.uuid)
 
 class FrameApiTestCase(TestCaseBase):
 
