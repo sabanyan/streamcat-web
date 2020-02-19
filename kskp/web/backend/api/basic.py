@@ -75,8 +75,11 @@ def delete_project(project_uuid):
     """
     指定したプロジェクトを削除する
     """
-    folder = Folder.find_by_uuid(project_uuid)
-    folder.delete()
+    # folder = Folder.find_by_uuid(project_uuid)
+    # folder.delete()
+
+    from .lib import throw_away_folder
+    throw_away_folder(project_uuid)
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
