@@ -434,7 +434,7 @@ export default class Library extends React.Component<Props, State> {
       visible: true,
       done: 'アップロード',
       content: <div>
-        <FileUploader accept={['text/csv']} url={'api/v0/frames'} parentUUID={this.state.currentFolderUUID} notify={notify} />
+        <FileUploader accept={['.csv']} url={'api/v0/frames'} parentUUID={this.state.currentFolderUUID} notify={notify} />
       </div>,
     })
     e.preventDefault()
