@@ -12,6 +12,7 @@ type Props = {
   customStyle?: any
 
   onClickRecovery: Function
+  onClickMove: Function
 }
 
 type State = {
@@ -32,17 +33,18 @@ export default class TrashInspector extends React.Component<Props, State> {
     super(props)
   }
 
-  onClickRecovery(e, data) {
-    const { onClickRecovery } = this.props
-    onClickRecovery(e, data)
-  }
-
   renderButtons(data) {
+    const {onClickRecovery, onClickMove} = this.props
 
-    let recovery = data ? <Button onClick={(e) => this.onClickRecovery(e, data)} icon={'undo'}>戻す</Button> : null
+    let recovery, move
+    if (data) {
+      recovery = <Button onClick={(e) => onClickRecovery(e, data)} icon={'undo'}>戻す</Button> 
+      move =  <Button onClick={(e) => onClickMove(e,data)} icon={'arrow_right_alt'}>移動する</Button>
+    }
 
     return <React.Fragment>
       {recovery}
+      {move}
     </React.Fragment>
   }
 
