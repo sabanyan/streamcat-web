@@ -35,12 +35,12 @@ export default class TrashInspector extends React.Component<Props, State> {
   }
 
   renderButtons(data) {
-    const {onClickRecovery, onClickMove} = this.props
+    const { onClickRecovery, onClickMove } = this.props
 
     let recovery, move
     if (data) {
-      recovery = <Button onClick={(e) => onClickRecovery(e, data)} icon={'undo'}>戻す</Button> 
-      move =  <Button onClick={(e) => onClickMove(e,data)} icon={'arrow_right_alt'}>移動する</Button>
+      recovery = <Button onClick={(e) => onClickRecovery(e, data)} icon={'undo'}>戻す</Button>
+      move = <Button onClick={(e) => onClickMove(e, data)} icon={'arrow_right_alt'}>移動する</Button>
     }
 
     return <React.Fragment>
@@ -112,9 +112,10 @@ export default class TrashInspector extends React.Component<Props, State> {
     let prevFolderPath
     if (data.prevFolderPath) {
       prevFolderPath = <React.Fragment key={data.prevFolderPath}>
-      <div><label>{this.display.prevFolderPath}</label></div>
-      <div className={"mb-8px"}>{data.prevFolderPath}</div>
-    </React.Fragment>
+        <div><label>{this.display.prevFolderPath}</label></div>
+        <div className={"mb-8px"}>{data.prevFolderPath}</div>
+      </React.Fragment>
+      result.push(prevFolderPath)
     }
 
 
