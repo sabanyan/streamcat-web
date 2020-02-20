@@ -14,7 +14,7 @@ import { Resizer } from 'Shared/Inspector'
 import TrashInspector from './inspector/index'
 import { LibraryModel, LibraryChild } from 'Model/index'
 import { APIUtil, HttpUtil, ModalUtil } from 'Utils/index'
-import { LocksModel } from 'Model/index'
+import { LocksModel, MessageModel } from 'Model/index'
 import axios from 'axios'
 
 
@@ -95,7 +95,7 @@ export default class TrashList extends React.Component<Props, State> {
         .catch((e) => {
           console.log(e)
           notify({
-            title: 'ゴミ箱エラー',
+            title: 'エラー',
             message: e.message,
             status: 'error',
             dismissAfter: 0,
@@ -131,10 +131,11 @@ export default class TrashList extends React.Component<Props, State> {
 
       })
       .catch((err) => {
+        let message = new MessageModel(err)
         this.props.notify({
-          title: "ゴミ箱エラー",
-          message: err.message,
-          status: 'error',
+          title: message.title,
+          message: message.message,
+          status: message.messageStatus,
           dismissAfter: 0,
           closeButton: true
         })
@@ -143,6 +144,8 @@ export default class TrashList extends React.Component<Props, State> {
         this.fetch()
       })
   }
+
+  
 
   renderContent() {
     let content = this.renderEmptyState()
@@ -250,7 +253,7 @@ export default class TrashList extends React.Component<Props, State> {
         this.fetch()
         if (!response.data.success) {
           this.props.notify({
-            title: "ライブラリー移動エラー",
+            title: "エラー",
             message: response.data.message,
             status: 'error',
             dismissAfter: 0,
