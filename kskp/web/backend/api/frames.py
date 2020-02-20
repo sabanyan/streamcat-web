@@ -5,6 +5,7 @@ import time
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
+from kskp.core import NoResultsException
 from kskp.store import Datum, Frame, Flow, Folder
 from kskp.web.backend import app
 
@@ -223,7 +224,12 @@ def create_frame():
         
         else:
             raise Exception('引数等の指定が誤っています')
-    
+    except NoResultsException as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -4,
+                        'message': str(e)
+                    })    
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -305,8 +311,10 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
         link = FlowJsonLink(flow, vis_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
-            raise Exception('実行結果は出力されませんでした')
+            raise NoResultsException('実行結果は出力されませんでした')
         return activity
+    except NoResultsException as e:
+        raise e
     except Exception as e:
         import traceback
         traceback.print_exc()
