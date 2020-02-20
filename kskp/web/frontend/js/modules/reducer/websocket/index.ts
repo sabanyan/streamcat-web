@@ -72,7 +72,6 @@ const MESSAGE_EXCEPTION = "MESSAGE_EXCEPTION"
 
 function messageHandler(state, action) {
     let newState = state
-
     // kskpで定義したメッセージ
     let customMessage = JSON.parse(action.payload.message)
     switch (customMessage.type) {
@@ -114,7 +113,7 @@ function parseFlowExcuteEnd(state: State, customMessage: any): State {
     let newLogs = state.logs.slice(0, state.logs.length)
     let endLog = "[END]\n"
     newLogs.push(endLog)
-    let result = []
+    let results:string[] = []
 
     if (Array.isArray(customMessage.data)) {
         customMessage.data.forEach((result, index) => {
@@ -122,10 +121,10 @@ function parseFlowExcuteEnd(state: State, customMessage: any): State {
             let uuid = result.uuid
             let resultLog = "[RESULT] : " + label + " (" + uuid + ") \n"
             newLogs.push(resultLog)
-            result.push(resultLog)
+            results.push(resultLog)
         });
     }
-    let newState = { ...state, logs: newLogs, excuteResult: result }
+    let newState = { ...state, logs: newLogs, excuteResult: results }
 
     return newState
 }
