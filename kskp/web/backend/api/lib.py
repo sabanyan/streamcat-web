@@ -358,7 +358,7 @@ def throw_away_folder(folder_uuid):
 
     thrown_count, obstacle_count = _throw_away_inner(trash_folder.uuid, folder, session['user_id'])
 
-    if obstacle_count == 0 and not _is_system_folder(folder_uuid):
+    if obstacle_count == 0 and not Folder.is_system_folder(folder_uuid):
         # 中のファイル全て削除可能であればフォルダ(ファイル)ごとゴミ箱へ移動する
         folder.move(trash_folder.uuid, session['user_id'])
         thrown_count += 1
@@ -388,7 +388,7 @@ def _throw_away_inner(parent_uuid, datum, modifier):
             # 削除ファイルと削除不可ファイルを集計する
             thrown_count += child_thrown_count
             obstacle_count += child_obstacle_count
-        if obstacle_count == 0 and not _is_system_folder(datum.uuid):
+        if obstacle_count == 0 and not Folder.is_system_folder(datum.uuid):
             # 全部捨る場合はフォルダごとゴミ箱へ移動する
             trashed_folder.delete()
         else:
@@ -414,10 +414,6 @@ def _throw_away_inner(parent_uuid, datum, modifier):
     else:
         # データベース接続、リモートフォルダ接続
         return 0, 0
-
-def _is_system_folder(datum_uuid):
-    from kskp.store import FLOW_FOLDER_UUID, RESULT_FOLDER_UUID, CACHE_FOLDER_UUID
-    return datum_uuid in (FLOW_FOLDER_UUID, RESULT_FOLDER_UUID, CACHE_FOLDER_UUID)
 
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
