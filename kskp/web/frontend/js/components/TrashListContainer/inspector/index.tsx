@@ -26,6 +26,7 @@ export default class TrashInspector extends React.Component<Props, State> {
     newline: '改行コード',
     creator: '作成者',
     createdAt: '作成日時',
+    prevFolderPath: "捨てる前の場所"
   }
 
 
@@ -106,6 +107,14 @@ export default class TrashInspector extends React.Component<Props, State> {
       </React.Fragment>
 
       result.push(createdAt)
+    }
+
+    let prevFolderPath
+    if (data.prevFolderPath) {
+      prevFolderPath = <React.Fragment key={data.prevFolderPath}>
+      <div><label>{this.display.prevFolderPath}</label></div>
+      <div className={"mb-8px"}>{data.prevFolderPath}</div>
+    </React.Fragment>
     }
 
 

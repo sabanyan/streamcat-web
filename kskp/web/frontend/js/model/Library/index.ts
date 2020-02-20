@@ -15,10 +15,11 @@ export type LibraryChild = {
   uuid: string
   type: string
   label: string
+  encoding?: string
+  newline?: string
   creator: string
   createdAt: string
-  encoding?: string
-  newline: string
+  prevFolderPath?: string // ごみの場合、元の場所
 }
 
 type Folder = {
