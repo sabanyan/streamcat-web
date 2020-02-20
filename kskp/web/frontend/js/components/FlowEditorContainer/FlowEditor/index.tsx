@@ -135,9 +135,17 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
 
 
   handleLeavePage(e) {
+    console.log("handleLeavePage")
+    console.log("lockUUID")
+    console.log(this.state.lockUUID)
     if (this.state.lockUUID) {
       API.request.doDelete.locks({ lockUUID: this.state.lockUUID })
+      .then((response) => {
+        console.log(response)
+      })
     }
+
+    e.returnValue = true
   }
 
   renderSteps() {
