@@ -4,6 +4,7 @@ from .utils.navigation import update_navigation
 from .utils.api_base import api_base
 from pathlib import Path
 from kskp.web.backend import app
+from kskp.core import NothingToPutbackException
 from kskp.store import (
     StoreModel as Store,
     Datum,
@@ -188,7 +189,7 @@ def _put_back(datum, modifier):
     moved_data, exps = _put_back_inner(datum, modifier)
     if len(moved_data) == 0:
         if len(exps) == 0:
-            raise Exception('元に戻すファイルがありませんでした')
+            raise NothingToPutbackException('元に戻すファイルがありませんでした')
         elif len(exps) == 1:
             raise exps[0]
         else:
