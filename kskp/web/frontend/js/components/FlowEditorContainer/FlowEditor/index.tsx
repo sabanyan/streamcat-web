@@ -76,9 +76,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       flowRequest.push(APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
         const json = response.data
         this.props.loadFlowJSON(json).then(() => {
-          this.setState({
-            isLoading: false
-          })
+
         })
       }))
     }).catch((error) => {
@@ -101,7 +99,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       .then((res) => {
         lockUUID = API.response.post.locks(res).uuid
         this.setState({
-          lockUUID: lockUUID
+          lockUUID: lockUUID,
+          isLoading: false
         })
       })
       .catch(e => {
