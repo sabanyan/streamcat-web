@@ -17,7 +17,7 @@ class TestCaseBase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from kskp.store import Library
-        Library._init_library_folders()
+        # Library._init_library_folders()
         # ユーザを作成する
         from kskp.store import create_user
         with app.app_context():
@@ -74,12 +74,12 @@ class TestCaseBase(unittest.TestCase):
         """
         指定したパスのフローを、指定したUUIDでライブラリに登録する
         """
-        from kskp.store import get_flow_dir_path
         # テストで用いるテスト用フローをライブラリに登録する
         from kskp.store import Flow
         if not Flow.exists(flow_uuid):
             # テストで用いるテスト用フローをライブラリに登録する
-            flow_folder = get_flow_dir_path(user_id=self.USER_ID)
+            from kskp.store import Library
+            flow_folder = Library.load_flow_folder(self.USER_ID)
             class_name = self.__class__.__name__
             # フローJSONファイルからフローデータを取得する
             import pathlib

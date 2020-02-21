@@ -95,6 +95,11 @@ def login_required_api(func):
     @functools.wraps(func)
     def deco(**kwargs):
         if 'user_id' in session:
+
+            # kskp.storeに操作ユーザのIDを設定する
+            from kskp.store import ss
+            ss.user_id = session['user_id']
+
             return func(**kwargs)
         else:
             # ログインページを返す

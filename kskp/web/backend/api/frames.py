@@ -178,7 +178,7 @@ def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
     """
-    from kskp.store import get_all_frame_uuid_in_frame, Flow
+    from kskp.store import Flow
 
     frame = Frame.find_by_uuid(frame_uuid)
     if frame is None:
@@ -186,7 +186,7 @@ def delete_frame(frame_uuid):
 
     # 削除しようとするframeが、フローで使用されている場合は例外を送出する
     for flow in Flow.find_all_flows():
-        using_frame_uuids = get_all_frame_uuid_in_frame(flow.uuid)
+        using_frame_uuids = flow.get_frame_uuids()
         if frame_uuid in using_frame_uuids:
             raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
 
@@ -335,9 +335,7 @@ def _make_flow_inputs(flow_uuid, request):
     """
     inputsを作成する
     """
-    from kskp.store import Library, NysolModule, fetch_flow_by_uuid
-
-    flow_json = fetch_flow_by_uuid(flow_uuid)
+    flow_json = Flow.find_by_uuid(flow_uuid).flow_data
 
     # executeの引数
     inputs = {}
