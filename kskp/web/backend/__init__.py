@@ -48,7 +48,7 @@ app.register_blueprint(mod)
 
 # 環境変数からロックの有効期間(分)を取得する
 # (設定値がない場合は1時間とする)
-lock_expire_minutes = os.getenv('LOCK_EXPIRE_MIN', 60)
+lock_expire_minutes = int(os.getenv('LOCK_EXPIRE_MIN', 60))
 # LockManagerオブジェクトを作成する
 from flask import session
 from kskp.store import LockManager
