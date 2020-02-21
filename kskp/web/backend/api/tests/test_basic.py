@@ -53,7 +53,7 @@ class ProjectApiTestCase(TestCaseBase):
         self.post_uri('/api/v0/projects', data, user_id)
 
         # ルートフローフォルダを取得する
-        root_flow_folder = model.get_flow_dir_path(user_id)
+        root_flow_folder = Library.load_flow_folder(user_id)
 
         # 保存されたフォルダを取得する
         sql = """
@@ -460,8 +460,7 @@ class FlowApiTestCase(TestCaseBase):
             test_flow_uuid = setUpFlow(self)
 
         # フロー格納フォルダを取得する
-        from kskp.store.model import get_flow_dir_path
-        flow_folder = get_flow_dir_path(self.USER_ID)
+        flow_folder = root_flow_folder = Library.load_flow_folder(self.USER_ID)
 
         # フローを、フロー格納フォルダに格納する
         flow_uuid = str(uuid.uuid4())
@@ -898,7 +897,7 @@ def setUpProject(self):
     with self.client.session_transaction() as session:
         session['user_id'] = model.get_user_id_by_email(user1)['id']
 
-    model.create_project('proj1', session)
+    # model.create_project('proj1', session)
 
     from kskp.web.backend.api.lib import get_library
     default_flow = get_library(session['user_id'])
