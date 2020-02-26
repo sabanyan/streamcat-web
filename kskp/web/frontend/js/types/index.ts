@@ -1,4 +1,3 @@
-//@flow
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubflowCommandModel, SubFlowStepModel } from 'Model/index'
 import * as React from 'react'
 import CommandModel from 'Model/Command/CommandModel'
@@ -128,7 +127,7 @@ export type DragType = {
 
 export type ToolBarButtonType = {
   onClick: Function;
-  children: React.Node;
+  children: React.ReactNode;
   disabled: boolean;
   icon: string;
   is_paper_toolbar_button: boolean;
@@ -145,7 +144,7 @@ export type ZoomToolBarButtonType = {
 
 export type DownloadButtonType = {
   onClick: Function;
-  children: React.Children;
+  children: React.ReactChildren;
   disabled: boolean;
   icon: string;
   danger: boolean;
