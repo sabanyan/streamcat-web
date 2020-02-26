@@ -12,19 +12,27 @@ import Constants from 'Constants/index'
 import { FileUploader, UploadFile, TextField } from 'Shared/Input'
 import { BreadCrumbHistoryType, LibraryListDataType, UploadedFileType } from 'Types/index'
 import { LibraryProps } from 'LibraryListContainer/index'
-import { VisualizeModel } from "Model/index";
+import { VisualizeModel, LibraryChild, MessageModel } from 'Model/index';
 import { LocksModel } from 'Model/index'
 import axios from 'axios'
+
+import Queue from 'promise-queue-plus'
+import { API } from 'Modules/api/index'
+
+import List from 'Shared/Container/List/index'
+import IconRender from 'Shared/IconRenderer/index'
 
 type Props = LibraryProps
 
 type State = {
   stores: any[];
-  libraryChildren: any[];
+  libraryChildren: LibraryChild[];
   folderPath: any[];
   is_loading: boolean;
   is_finished: boolean;
   selected_data?: any;
+  selectedDatas: LibraryChild[];
+  lastSelected: LibraryChild | null;
   currentFolderUUID: string;
 
   // database
@@ -58,6 +66,13 @@ export default class Library extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
 
+    this.onClickLibrary = this.onClickLibrary.bind(this)
+    this.getColumns = this.getColumns.bind(this)
+    this.deleteLibrary = this.deleteLibrary.bind(this)
+    this.moveLibrary = this.moveLibrary.bind(this)
+    this.setState = this.setState.bind(this)
+    this.fetchFolder = this.fetchFolder.bind(this)
+
     const is_dialog: boolean = HttpUtil.getURLParam("dialog") ? true : false
     const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list
 
@@ -69,11 +84,13 @@ export default class Library extends React.Component<Props, State> {
       is_loading: false,
       is_finished: false,
       selected_data: null,
+      selectedDatas: [],
+      lastSelected: null,
       currentFolderUUID: '',//現在のフォルダのuuid
 
       // database
-      database: this.getIntialDatabase(),
-      edit_database: this.getIntialDatabase(),
+      database: this.getInitialDatabase(),
+      edit_database: this.getInitialDatabase(),
 
       // mode
       is_dialog: is_dialog,
@@ -99,7 +116,7 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
-  getIntialDatabase(): Database {
+  getInitialDatabase(): Database {
     return {
       label: "",
       dbms: this.getDataBaseParams()[1].default,
@@ -163,26 +180,26 @@ export default class Library extends React.Component<Props, State> {
           return
         }
 
-        this.setState({ is_loading: true, selected_data: null }, () =>{
+        this.setState({ is_loading: true, selected_data: null }, () => {
           const files: FileList | null = this.state.upload_files
           const new_names: string[] = this.state.new_names
           const parentUUID = this.state.currentFolderUUID
           APIUtil.frameUpload(files, new_names, new_names, parentUUID)
-          .then((response) => {
-            console.log(response)
-            //this.completeUploaded(response)
-          }, () => {
-            //this.unhandledNotify('アップロードエラー')
-          })
-          .then(() => {
-            this.setState({
-              is_loading: false,
-              upload_files: null,
-              new_names: []
+            .then((response) => {
+              console.log(response)
+              //this.completeUploaded(response)
             }, () => {
-              ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+              //this.unhandledNotify('アップロードエラー')
             })
-          })
+            .then(() => {
+              this.setState({
+                is_loading: false,
+                upload_files: null,
+                new_names: []
+              }, () => {
+                ModalUtil.closeModal(Constants.modal.ADD_FRAME)
+              })
+            })
         })
       },
     })
@@ -282,7 +299,7 @@ export default class Library extends React.Component<Props, State> {
     }
     this.setState({
       is_loading: false,
-      database: this.getIntialDatabase()
+      database: this.getInitialDatabase()
     }, () => {
       ModalUtil.closeModal(Constants.modal.ADD_DATABASE)
       this.fetchFolder()
@@ -308,7 +325,7 @@ export default class Library extends React.Component<Props, State> {
     }
     this.setState({
       is_loading: false,
-      edit_database: this.getIntialDatabase()
+      edit_database: this.getInitialDatabase()
     }, () => {
       ModalUtil.closeModal(Constants.modal.EDIT_DATABASE)
       this.fetchFolder()
@@ -360,8 +377,8 @@ export default class Library extends React.Component<Props, State> {
     }
   }
 
-  onUploadFrame(uploadFiles:UploadFile[]) {
-    
+  onUploadFrame(uploadFiles: UploadFile[]) {
+
   }
 
   //storesの取得処理
@@ -412,7 +429,7 @@ export default class Library extends React.Component<Props, State> {
     }
   }
 
-  onChangeFrameName(names:string[]) {
+  onChangeFrameName(names: string[]) {
     this.setState({
       new_names: names
     })
@@ -428,7 +445,7 @@ export default class Library extends React.Component<Props, State> {
   }
 
   onClickNewFrame(e: React.ChangeEvent<HTMLInputElement>) {
-    const {notify} = this.props
+    const { notify } = this.props
     ModalUtil.emitModal({
       id: Constants.modal.ADD_FRAME,
       visible: true,
@@ -514,7 +531,7 @@ export default class Library extends React.Component<Props, State> {
         "default": "postgresql"
       },
       {
-        "name": "hostname",
+        "name": "host",
         "type": "string",
         "label": "ホスト名",
         "default": ""
@@ -538,7 +555,7 @@ export default class Library extends React.Component<Props, State> {
         "default": ""
       },
       {
-        "name": "password",
+        "name": "user_password",
         "type": "string",
         "label": "パスワード",
         "default": ""
@@ -598,74 +615,6 @@ export default class Library extends React.Component<Props, State> {
     window.close()
   }
 
-  renderNewFolder() {
-    return this.renderButton((e) => this.onClickNewFolder(e), 'フォルダを作成する', 'add_circle_outline')
-  }
-
-  renderNewDatabase() {
-    return this.renderButton((e) => this.onClickNewDatabase(e), 'データベースを追加する', 'add_circle_outline')
-  }
-
-  renderNewFrame() {
-    return this.renderButton((e) => this.onClickNewFrame(e), 'CSVをアップロードする', 'add_circle_outline')
-  }
-
-  /*
-  renderNewDocument() {
-    return this.renderButton((e) => this.onClickNewDocument(e), '資料をアップロードする', 'add_circle_outline')
-  }
-
-  renderNewRemoteFolder() {
-    return this.renderButton((e) => this.onClickNewRemoteFolder(e), 'ファイルサーバを追加する', 'add_circle_outline')
-  }
-  */
-
-  renderSelectDestination() {
-    return this.renderButton((e) => this.onClickSelectDestination(e), '移動する', 'input')
-  }
-
-  renderButton(onClick: Function, title: string, icon: string) {
-    return <a
-      className={classnames(libraryListStyle.library, libraryListStyle.new)}
-      href="#" onClick={(e) => onClick(e)}>
-      <div className={libraryListStyle.library_list}>
-        <div className={libraryListStyle.name}>
-          <i className={classnames('material-icons', [libraryListStyle.icon])}>{icon}</i>
-          {title}
-        </div>
-      </div>
-    </a >
-  }
-
-
-  renderLibrariesHeader() {
-    return <LibraryListHeader />
-  }
-
-  renderLibraries() {
-    let dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
-
-    return this.state.libraryChildren.map((child, index) => {
-      const selected = (this.state.selected_data === child)
-      return <LibraryListRow key={"LLR_" + index} libraryChild={child} selected={selected}
-        onClick={(e, library) => this.onClickLibrary(e, library)}
-        href={'/folders/' + child.uuid + dialogOption} />
-    })
-  }
-
-  renderEmptyState() {
-    return <EmptyState
-      icon={'inbox'}
-      title={'ライブラリが空です'}
-      description={'表示できるファイルがありません'}>
-    </EmptyState>
-  }
-
-  onClickLibrary(
-    e: React.MouseEvent<HTMLInputElement>, library: LibraryListDataType) {
-    this.setState({ selected_data: library })
-  }
-
   isEmptyLibraryList() {
     if (!this.state.is_finished) {
       return false
@@ -678,218 +627,202 @@ export default class Library extends React.Component<Props, State> {
     return false
   }
 
-  onClickDelete(selected_data: LibraryListDataType) {
+  async deleteLibrary(library: LibraryChild, lock: { uuid: string | null }) {
+    const { notify } = this.props
+
+    return new Promise(async (resolve, reject) => {
+      // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
+      if (library.type === Constants.library.type.flow) {
+        await API.request.doPost.locks({ flowUUID: library.uuid })
+          .then((res) => {
+            if (!res.data.success) throw res.data
+            lock.uuid = API.response.post.locks(res).uuid
+          })
+          .catch((e) => {
+            console.log(e)
+            reject(e)
+          })
+      }
+
+      // Libraryを削除する
+      await API.request.doDelete.library({
+        libraryUUID: library.uuid,
+        libraryType: library.type,
+        lockUUID: lock.uuid
+      })
+        .then((res) => {
+          if (!res.data.success) throw res.data
+        })
+        .catch((e) => {
+          console.log(e)
+          reject(e)
+        })
+
+      // Lockを取得した場合、Lockを解除する
+      if (lock.uuid) {
+        await API.request.doDelete.locks({ lockUUID: lock.uuid })
+          .then((res) => {
+            lock.uuid = null
+            if (!res.data.success) throw res.data
+          })
+          .catch((e) => {
+            console.log(e)
+            reject(e)
+          })
+      }
+      resolve()
+    })
+      .then(() => {
+        // 成功
+        notify({
+          title: '',
+          message: library.label + 'を削除しました',
+          status: 'success'
+        })
+      })
+      .catch((e) => {
+        // エラー
+        notify({
+          title: "ライブラリー削除エラー",
+          message: e.message,
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      })
+  }
+
+  onClickDelete() {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
-        this.deleteLibraryChild(selected_data)
+        const selectedDatas = this.state.selectedDatas
+
+        let queue = Queue(
+          1, // concurrency
+          {
+            "retry": 0               //Number of retries
+            , "retryIsJump": false     //retry now? 
+            , "timeout": 0            //The timeout period
+          }
+        )
+        let lock = { uuid: null }
+        this.setState({
+          is_loading: true
+        }, () => {
+          selectedDatas.forEach((selectedData: LibraryChild) => {
+            queue.push(this.deleteLibrary, [selectedData, lock])
+          })
+          queue.push(this.setState, [{ is_loading: false }])
+          queue.push(this.fetchFolder, [])
+          queue.start()
+        })
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
     })
+    let targets:string[] = []
+    this.state.selectedDatas.forEach((data) => {
+      targets.push(data.label)
+    })
+
     ModalUtil.emitModal({
       id: Constants.modal.CONFIRM,
       visible: true,
       done: '削除する',
       danger: true,
       content: <div>
-        {selected_data.label} を削除しますか？
+        {targets.join(",")} を削除しますか？
       </div>,
     })
   }
 
-  deleteLibraryChild(selected_data: LibraryListDataType) {
-    this.setState({ is_loading: true })
-    let result = this.deleteLibraryListData(selected_data.type, selected_data.uuid)
-    if (!result) return
-    result.then((response) => {
-      this.setState({ is_loading: false })
-      if (!response.data.success) {
-        this.props.notify({
-          title: '削除エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-      }
-      if (response.data.success) {
-        this.props.notify({
-          title: '削除しました',
-          message: selected_data.label + 'を削除しました',
-          status: 'success'
-        })
-        this.fetchFolder()
-      }
-    })
-  }
-
-  deleteLibraryListData(type: string, uuid: string) {
-    switch (type) {
-      case Constants.library.type.frame:
-        return APIUtil.delete('frames/' + uuid) //TODO このエンドポイントは無い
-      case Constants.library.type.document:
-        return APIUtil.delete('documents/' + uuid)
-      case Constants.library.type.folder:
-        return APIUtil.delete('folders/' + uuid)
-      case Constants.library.type.database:
-        return APIUtil.delete('databases/' + uuid)
-      case Constants.library.type.remoteFolder:
-        return APIUtil.delete('remote-folders/' + uuid)
-      case Constants.library.type.flow:
-        // FIX IT: Flowの削除 
-        this.deleteFlow(uuid)
-    }
-  }
-
-  deleteFlow(flow_uuid) {
+  async moveLibrary(library: LibraryChild, parentFolderUUID: string, lock: { uuid: string | null }) {
     const { notify } = this.props
 
-    // 1. LockIdを取得する。
-    let body: any = { target: flow_uuid }
-    let locks = new LocksModel(body)
-    APIUtil.post('locks', body).then((response) => {
-      let locksModel = locks.Parse(response)
-      let lockId = locksModel.getLockId()
-      if (lockId) {
-        //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
-        axios.delete('/api/v0/flows/' + flow_uuid, { data: { lock: lockId } })
-          .then((response) => {
-            APIUtil.post('delete-locks/' + lockId).then((response) => {
-              this.fetchFolder()
-            })
-          }, (err) => {
-            APIUtil.post('delete-locks/' + lockId).then((response) => {
-              this.fetchFolder()
-            })
+    return new Promise(async (resolve, reject) => {
+      // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
+      if (library.type === Constants.library.type.flow) {
+        await API.request.doPost.locks({ flowUUID: library.uuid })
+          .then((res) => {
+            if (!res.data.success) throw res.data
+            lock.uuid = API.response.post.locks(res).uuid
           })
-      } else {
-        // lockが出来なかった場合
-        notify({
-          title: '削除エラー',
-          message: locksModel.getErrorMessage(),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
+          .catch((e) => {
+            console.log(library)
+            console.log(e)
+            reject(e)
+          })
       }
-    })
-  }
 
-  editFlow(flow_uuid, parent_uuid) {
-    const { notify } = this.props
-    let body: any = { target: flow_uuid }
-    let locks = new LocksModel(body)
-    axios.post('/api/v0/locks', body).then((response) => {
-      let locksModel = locks.Parse(response)
-      let lockId = locksModel.getLockId()
-      if (lockId) {
-        axios.put('/api/v0/flows/' + flow_uuid, {
-          parent: parent_uuid,
-          lock: lockId
-        }).then((response) => {
-          navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
-          this.fetchFolder()
-        }, (error) => {
-          navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
-          console.log(error)
+      // Libraryを移動させる
+      await API.request.doPut.library({
+        parentUUID: parentFolderUUID,
+        libraryUUID: library.uuid,
+        libraryType: library.type,
+        lockUUID: lock.uuid
+      })
+        .then((res) => {
+          if (!res.data.success) throw res.data
         })
-      } else {
-        // lockが出来なかった場合
+        .catch((e) => {
+          console.log(library)
+          console.log(e)
+          reject(e)
+        })
+
+      // Lockを取得した場合、Lockを解除する
+      if (lock.uuid) {
+        await API.request.doDelete.locks({ lockUUID: lock.uuid })
+          .then((res) => {
+            lock.uuid = null
+            if (!res.data.success) throw res.data
+          })
+          .catch((e) => {
+            console.log(library)
+            console.log(e)
+            reject(e)
+          })
+      }
+      resolve()
+    })
+      .then(() => {
+        // 成功
+      })
+      .catch((e) => {
+        // 例外
         notify({
           title: "ライブラリー移動エラー",
-          message: response.data.message,
+          message: e.message,
           status: 'error',
           dismissAfter: 0,
           closeButton: true
         })
-      }
-    })
-  }
-
-  onClickMove(e) {
-    const selected_data = this.state.selected_data
-    try {
-      HttpUtil.windowOpen('library?dialog=true&mode=folder_select', (folder_uuid) => {
-        const type = selected_data.type
-        const uuid = selected_data.uuid
-        const data = {
-          parent: folder_uuid
-        }
-
-        let result
-        switch (type) {
-          case Constants.library.type.folder:
-            result = APIUtil.put('folders/' + uuid, data)
-            break;
-          case Constants.library.type.flow:
-            result = this.editFlow(uuid, folder_uuid)
-            break;
-          case Constants.library.type.frame:
-            result = APIUtil.put('frames/' + uuid, data)
-            break;
-          case Constants.library.type.document:
-            result = APIUtil.put('documents/' + uuid, data)
-            break;
-          case Constants.library.type.database:
-            result = APIUtil.put('databases/' + uuid, data)
-            break;
-          case Constants.library.type.remoteFolder:
-            result = APIUtil.put('remote-folders/' + uuid, data)
-            break;
-        }
-        if (!result) return
-        result.then((response) => {
-          if (response.data.success) {
-            this.fetchFolder()
-          } else {
-            this.props.notify({
-              title: "ライブラリー移動エラー",
-              message: response.data.message,
-              status: 'error',
-              dismissAfter: 0,
-              closeButton: true
-            })
-          }
-        })
       })
-    } catch (e) {
-      console.log(e)
-    }
   }
 
-  renderInspector() {
-    const { notify, dissmissNotify } = this.props
-    const data: LibraryListDataType = this.state.selected_data
-    let onClickDelete: any = null
-    let onClickApply: any = null
-    let onClickMove: any = null
-    let onClickEdit: any = null
+  onClickMove() {
+    const selectedDatas = this.state.selectedDatas
 
-    switch (this.state.mode) {
-      case Constants.library.mode.frame_select:
-        if (data && data.type === Constants.library.type.frame) {
-          onClickApply = (data) => this.onClickApply(data)
-        }
-        break
-      case Constants.library.mode.folder_select:
-        break
-      case Constants.library.mode.list:
-        onClickDelete = (data) => this.onClickDelete(data)
-        onClickMove = (data) => this.onClickMove(data)
-        if (data && data.type === Constants.library.type.database) {
-          onClickEdit = (data) => this.onClickEditDatabase(data)
-        }
-        break
-    }
-    return <LibraryInspector data={data}
-      onClickDelete={onClickDelete}
-      onClickApply={onClickApply}
-      onClickMove={onClickMove}
-      onClickEdit={onClickEdit}
-      onBlurTitle={(e) => this.onBlurTitle(e, data)}
-      visualizers={this.state.visualizers}
-      notify={notify}
-      dissmissNotify={dissmissNotify}
-    />
+    let queue = Queue(
+      1, // concurrency
+      {
+        "retry": 0               //Number of retries
+        , "retryIsJump": false     //retry now? 
+        , "timeout": 0            //The timeout period
+      }
+    )
+    let lock = { uuid: null }
+    HttpUtil.windowOpen('library?dialog=true&mode=folder_select', (folder_uuid) => {
+      this.setState({
+        is_loading: true
+      }, () => {
+        selectedDatas.forEach((selectedData: LibraryChild) => {
+          queue.push(this.moveLibrary, [selectedData, folder_uuid, lock])
+        })
+        queue.push(this.setState, [{ is_loading: false }])
+        queue.push(this.fetchFolder, [])
+        queue.start()
+      })
+    })
   }
 
   onClickApply(selected_data: LibraryListDataType) {
@@ -956,19 +889,58 @@ export default class Library extends React.Component<Props, State> {
     }
   }
 
+
+  onClickLibrary(e, data, index): void {
+    // クリックされたデータを１番目の位置にする
+    let selectedDatas: LibraryChild[] = this.state.selectedDatas
+    let lastSelected: LibraryChild | null = this.state.lastSelected
+
+    if (e.metaKey || e.ctrlKey) {
+      // command or ctrl + click
+      if (selectedDatas.includes(data)) {
+        selectedDatas = selectedDatas.filter(d => d.uuid !== data.uuid)
+      } else {
+        selectedDatas.push(data)
+      }
+    } else if (e.shiftKey) {
+      // shift + click
+      let current = this.state.libraryChildren.indexOf(data)
+      if (lastSelected) {
+        let last = this.state.libraryChildren.indexOf(lastSelected)
+        let min, max
+        if (current >= last) {
+          min = last
+          max = current
+        } else {
+          min = current
+          max = last
+        }
+        selectedDatas = this.state.libraryChildren.slice(min, max + 1)
+      }
+    } else {
+      // 単一選択
+      if (this.state.selectedDatas.includes(data)) {
+        selectedDatas = []
+      } else {
+        selectedDatas = [data]
+      }
+    }
+    lastSelected = data
+
+    this.setState({
+      selectedDatas: selectedDatas,
+      lastSelected: lastSelected
+    }, () => {
+      //console.log(selectedDatas)
+    })
+  }
+
   editLibraryChild(data) {
     APIUtil.put('databases/' + data.uuid, this.state.database).then((response) => {
       this.completeEditDatabase(response)
     }, () => {
       this.unhandledNotify('データベース修正エラー')
     })
-  }
-
-  renderBreadCrumb() {
-    if (Array.isArray(this.state.folderPath)) {
-      return <BreadCrumb history={this.makeHistory(this.state.folderPath)} />
-    }
-    return null
   }
 
   makeHistory(folderPath: any[]): BreadCrumbHistoryType[] {
@@ -987,6 +959,38 @@ export default class Library extends React.Component<Props, State> {
 
   makeLibraryURL(uuid: string): string {
     return '/folders/' + uuid
+  }
+
+  editFlow(flow_uuid, parent_uuid) {
+    const { notify } = this.props
+    let body: any = { target: flow_uuid }
+    let locks = new LocksModel(body)
+    return axios.post('/api/v0/locks', body)
+      .then((response) => {
+        let locksModel = locks.Parse(response)
+        let lockId = locksModel.getLockId()
+        if (lockId) {
+          axios.put('/api/v0/flows/' + flow_uuid, {
+            parent: parent_uuid,
+            lock: lockId
+          }).then((response) => {
+            navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+            this.fetchFolder()
+          }, (error) => {
+            navigator.sendBeacon('/api/v0/delete-locks/' + lockId)
+            console.log(error)
+          })
+        } else {
+          // lockが出来なかった場合
+          notify({
+            title: "ライブラリー移動エラー",
+            message: response.data.message,
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        }
+      })
   }
 
   onBlurTitle(
@@ -1092,14 +1096,129 @@ export default class Library extends React.Component<Props, State> {
   isDialog() {
     return (HttpUtil.getURLParam('dialog'))
   }
-  renderAll() {
-    if (!this.state.is_finished) {
-      return null
-    }
-    if (this.isEmptyLibraryList() && this.state.mode === Constants.library.mode.dialog) {
-      return this.renderEmptyState()
-    }
 
+  getHeaders(): any[] {
+    return [
+      "", // icon
+      "名前",
+      "作成者",
+      "作成日時"
+    ]
+  }
+
+  getColumns(data: LibraryChild, index: number): any[] {
+    let dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
+    let label: any
+    if (data.type === Constants.library.type.folder) {
+      label = <a href={'/folders/' + data.uuid + dialogOption}>{data.label}</a>
+    } else {
+      label = data.label
+    }
+    return [
+      <IconRender type={data.type} />,
+      label,
+      data.creator,
+      data.createdAt
+    ]
+  }
+
+  renderButton(onClick: Function, title: string, icon: string) {
+    return <a
+      className={classnames(libraryListStyle.library, libraryListStyle.new)}
+      href="#" onClick={(e) => onClick(e)}>
+      <div className={libraryListStyle.library_list}>
+        <div className={libraryListStyle.name}>
+          <i className={classnames('material-icons', [libraryListStyle.icon])}>{icon}</i>
+          {title}
+        </div>
+      </div>
+    </a >
+  }
+
+  renderEmptyState() {
+    return <EmptyState
+      icon={'inbox'}
+      title={'ライブラリが空です'}
+      description={'表示できるファイルがありません'}>
+    </EmptyState>
+  }
+
+  renderNewFolder() {
+    return this.renderButton((e) => this.onClickNewFolder(e), 'フォルダを作成する', 'add_circle_outline')
+  }
+
+  /*
+  renderNewDocument() {
+    return this.renderButton((e) => this.onClickNewDocument(e), '資料をアップロードする', 'add_circle_outline')
+  }
+
+  renderNewRemoteFolder() {
+    return this.renderButton((e) => this.onClickNewRemoteFolder(e), 'ファイルサーバを追加する', 'add_circle_outline')
+  }
+  */
+
+  renderNewFrame() {
+    return this.renderButton((e) => this.onClickNewFrame(e), 'CSVをアップロードする', 'add_circle_outline')
+  }
+
+  renderNewDatabase() {
+    return this.renderButton((e) => this.onClickNewDatabase(e), 'データベースを追加する', 'add_circle_outline')
+  }
+
+  renderSelectDestination() {
+    return this.renderButton((e) => this.onClickSelectDestination(e), '移動する', 'input')
+  }
+
+  renderBreadCrumb() {
+    if (Array.isArray(this.state.folderPath)) {
+      return <BreadCrumb history={this.makeHistory(this.state.folderPath)} />
+    }
+    return null
+  }
+
+  renderInspector() {
+    const { notify, dissmissNotify } = this.props
+    const data: LibraryListDataType = this.state.lastSelected
+    let onClickDelete: any = null
+    let onClickApply: any = null
+    let onClickMove: any = null
+    let onClickEdit: any = null
+
+    switch (this.state.mode) {
+      case Constants.library.mode.frame_select:
+        if (data && data.type === Constants.library.type.frame) {
+          onClickApply = (data) => this.onClickApply(data)
+        }
+        break
+      case Constants.library.mode.folder_select:
+        break
+      case Constants.library.mode.list:
+        onClickDelete = () => this.onClickDelete()
+        onClickMove = () => this.onClickMove()
+        if (data && data.type === Constants.library.type.database) {
+          onClickEdit = (data) => this.onClickEditDatabase(data)
+        }
+        break
+    }
+    return <LibraryInspector
+      selected={this.state.selectedDatas}
+      lastSelected={this.state.lastSelected}
+      onClickDelete={onClickDelete}
+      onClickApply={onClickApply}
+      onClickMove={onClickMove}
+      onClickEdit={onClickEdit}
+      onBlurTitle={(e) => this.onBlurTitle(e, data)}
+      visualizers={this.state.visualizers}
+      notify={notify}
+      dissmissNotify={dissmissNotify}
+    />
+  }
+
+  renderAll() {
+    if (!this.state.is_finished) return null
+    if (this.isEmptyLibraryList() && this.state.mode === Constants.library.mode.dialog) return this.renderEmptyState()
+
+    // 普通にライブラリーを開いた時
     let newUI = <div>
       {this.renderNewFolder()}
       {/*{this.renderNewDocument()}*/}
@@ -1107,19 +1226,23 @@ export default class Library extends React.Component<Props, State> {
       {this.renderNewDatabase()}
     </div>
 
+    // 異動先選択など
     let selectUI = <div>
       {this.renderSelectDestination()}
     </div>
 
     return <div>
       {this.renderBreadCrumb()}
-      {this.renderLibrariesHeader()}
-      {this.renderLibraries()}
+      <List<LibraryChild>
+        lists={this.state.libraryChildren}
+        selected={this.state.selectedDatas}
+        getHeaders={this.getHeaders}
+        getColumns={this.getColumns}
+        onClickData={this.onClickLibrary}
+      />
       {this.renderInspector()}
       {(this.state.mode === Constants.library.mode.list) ? newUI : null}
       {(this.state.mode === Constants.library.mode.folder_select) ? selectUI : null}
-      {/*{this.renderNewDatabase()}*/}
-      {/*{this.renderNewRemoteFolder()}*/}
     </div>
   }
 
