@@ -7,6 +7,7 @@ export type CommandParamType = {
   label: string;
   name: string;
   optional?: boolean;
+  options: any;
   type: string;
   default?: string | number;
 }

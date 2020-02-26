@@ -66,6 +66,7 @@
   },
   "dependencies": {
     "@types/jquery": "^3.3.32",
+    "@types/lodash": "^4.14.149",
     "ajv": "^6.5.4",
     "chart.js": "^2.7.2",
     "classnames": "^2.2.5",
@@ -74,6 +75,7 @@
     "eventemitter3": "^3.1.0",
     "lodash": "^4.17.15",
     "moment": "^2.22.2",
+    "promise-queue-plus": "^1.2.2",
     "react": "^16.3.2",
     "react-chartjs-2": "^2.7.2",
     "react-dom": "^16.3.2",
