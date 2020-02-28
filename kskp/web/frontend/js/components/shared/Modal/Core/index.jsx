@@ -103,6 +103,15 @@ export default class Modal extends React.Component<Props, State> {
     }
   }
 
+  /**
+   * x(close)ボタンがクリックされた
+   */
+  onClickClose() {
+    window.emitter.emit(Constants.event.MODAL_ON_CLICK_CLOSE + this.props.id,
+      { id: this.props.id })
+    this.setState({ visible: false })
+  }  
+
   render() {
 
     const done = (this.state.done) ? this.state.done : this.props.done
@@ -152,9 +161,7 @@ export default class Modal extends React.Component<Props, State> {
     let close_button
     if (close) {
       close_button =
-        <button type="button" className="close" onClick={() => {
-          this.setState({ visible: false })
-        }}>
+        <button type="button" className="close" onClick={() => this.onClickClose()}>
           <span>&times;</span>
         </button>
     }
