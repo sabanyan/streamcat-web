@@ -49,6 +49,9 @@ type State = {
   // new
   upload_files: FileList | null; // 単一アップロードの場合（database, folder）、0番目のindexが対象
   new_names: string[] // 単一アップロードの場合（database, folder）、0番目のindexがが対象
+
+  // search
+  searchText: string;
 }
 
 type Database = {
@@ -101,7 +104,10 @@ export default class Library extends React.Component<Props, State> {
 
       // new
       upload_files: null, // frame 複数アップロードのため
-      new_names: []
+      new_names: [],
+
+      // search
+      searchText: ""
     }
 
     // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
@@ -935,6 +941,13 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
+  onChangeSearchText(e) {
+    let searchText = e.target.value
+    this.setState({
+      searchText:searchText
+    })
+  }
+
   editLibraryChild(data) {
     APIUtil.put('databases/' + data.uuid, this.state.database).then((response) => {
       this.completeEditDatabase(response)
@@ -1122,6 +1135,12 @@ export default class Library extends React.Component<Props, State> {
     ]
   }
 
+  renderSearchBar () {
+    return <div className={style.search_bar}>
+      <TextField placeholder={'ライブラリーを検索'} onChange={(e) => this.onChangeSearchText(e)} />
+    </div>
+  }
+
   renderButton(onClick: Function, title: string, icon: string) {
     return <a
       className={classnames(libraryListStyle.library, libraryListStyle.new)}
@@ -1231,10 +1250,12 @@ export default class Library extends React.Component<Props, State> {
       {this.renderSelectDestination()}
     </div>
 
+    let list = this.state.libraryChildren.filter((libray) => libray.label.includes(this.state.searchText))
+
     return <div>
       {this.renderBreadCrumb()}
       <List<LibraryChild>
-        lists={this.state.libraryChildren}
+        lists={list}
         selected={this.state.selectedDatas}
         getHeaders={this.getHeaders}
         getColumns={this.getColumns}
@@ -1252,6 +1273,7 @@ export default class Library extends React.Component<Props, State> {
     let containerClassName = (this.isDialog()) ? 'container' : 'container mt-40px'
     return <div className={style.inspector_list_container}>
       <div className={containerClassName}>
+        {this.renderSearchBar()}
         <Loader center={true} absolute={true} visible={this.state.is_loading} />
         {this.renderAll()}
         <ModalManager
