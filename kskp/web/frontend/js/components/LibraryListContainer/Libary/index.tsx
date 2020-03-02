@@ -683,7 +683,7 @@ export default class Library extends React.Component<Props, State> {
       .catch((e) => {
         // エラー
         notify({
-          title: "ライブラリー削除エラー",
+          title: "ライブラリー削除エラー(" + library.label + ")",
           message: e.message,
           status: 'error',
           dismissAfter: 0,
@@ -790,7 +790,7 @@ export default class Library extends React.Component<Props, State> {
       .catch((e) => {
         // 例外
         notify({
-          title: "ライブラリー移動エラー",
+          title: "ライブラリー移動エラー(" + library.label + ")",
           message: e.message,
           status: 'error',
           dismissAfter: 0,
