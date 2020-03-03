@@ -332,11 +332,13 @@ def download_file():
         downloadFileSize = None
 
     # ダウンロードファイル名を作成する
-    if not frame.label.endswith('.csv') and not frame.label.endswith('.txt'):
-        if ext is None or ext == '':
-            downloadFileName = frame.label + '.csv'
-        else:
-            downloadFileName = frame.label + '.' + ext
+    if frame.label.endswith('.csv') or frame.label.endswith('.txt'):
+        downloadFileName = frame.label
+    elif ext is None or ext == '':
+        downloadFileName = frame.label + '.csv'
+    else:
+        downloadFileName = frame.label + '.' + ext
+    
     # ファイル名をURLエンコードする
     import urllib.parse
     downloadFileName = urllib.parse.quote(downloadFileName)
