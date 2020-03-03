@@ -40,3 +40,14 @@ export const warning = <i className={classnames('material-icons')}>warning</i>
 // project
 export const project = <i className={classnames('material-icons')}>description</i>
 
+// reorder
+export const reorder = <i className={classnames('material-icons')}>reorder</i>
+
+// arrow_drop_down
+export const arrow_drop_down = <i className={classnames('material-icons')}>arrow_drop_down</i>
+
+// arrow_drop_up
+export const arrow_drop_up = <i className={classnames('material-icons')}>arrow_drop_up</i>
+
+// arrow_drop_up
+export const remove = <i className={classnames('material-icons')}>remove</i>
