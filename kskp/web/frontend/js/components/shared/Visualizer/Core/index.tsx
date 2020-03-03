@@ -75,7 +75,7 @@ export default class Visualizer extends React.Component<Props, State> {
     return result
   }
 
-  componentWillMount() {
+  componentDidMount() {
     this.onLoad()
   }
 

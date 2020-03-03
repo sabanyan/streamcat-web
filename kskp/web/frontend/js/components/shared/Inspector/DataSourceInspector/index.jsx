@@ -288,7 +288,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   renderFrameDetail(data_source_detail) {
     let result = null
-    if (data_source_detail.encoding && data_source_detail.newline) {
+    if (data_source_detail && data_source_detail.encoding && data_source_detail.newline) {
       result = <React.Fragment>
         <div className={style.overview}>
           <div className={style.overview_label}>
