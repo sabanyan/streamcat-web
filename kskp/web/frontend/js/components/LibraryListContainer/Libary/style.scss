@@ -12,6 +12,19 @@
 
 .inspector_list_container {
   margin-right: 400px;
-  overflow-x:scroll;
+  overflow-x: scroll;
   min-height: 100vh;
+}
+
+.iconButton {
+  display: flex;
+  width: fit-content;
+  padding: 0;
+  border: none;
+  background: none;
+
+  :hover {
+    opacity:0.75;
+    cursor: pointer;
+  }
 }
