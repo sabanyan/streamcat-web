@@ -9,9 +9,12 @@ import { VisualizeModel, MessageModel } from 'Model/index';
 
 import { EmptyState, Loader } from 'Shared/Base'
 import { PreviewInspector } from 'Shared/Inspector'
+import FlowModel from '../../../../model/Flow/FlowModel';
 
 
 type Props = {
+  flow: FlowModel
+  lockUUID: string;
   index: number;
   visualize: VisualizeModel;
   flow_uuid: string;
@@ -76,7 +79,60 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    this.onLoad()
+    // this.onLoad()
+    
+    this.saveFlow()
+      .then(() => {
+        this.onTestLoad()
+      })
+      
+  }
+
+  // とりあえず、/put　flows・/post vizを投げる
+  onTestLoad() {
+    const { result, visualize } = this.props
+    this.setState({
+      isLoading: true
+    }, () => {
+      this.requestVisualize()
+        .then(() => {
+          this.setState({
+            isLoading: false
+          })
+        })
+    })
+  }
+
+  saveFlow() {
+    const { flow, lockUUID, notify, flow_uuid } = this.props
+
+    return new Promise(async (reslove, reject) => {
+
+      if (!lockUUID) throw new MessageModel({
+        title: '警告：読取専用フロー',
+        message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。',
+        messageStatus: "warning"
+      })
+      
+      await API.request.doPut.flow(
+        {
+          flowUUID: flow_uuid,
+          flow: flow,
+          lockUUID: lockUUID
+        }
+      )
+
+      reslove()
+    }) // flow 保存に失敗した場合、
+      .catch(e => {
+        notify({
+          title: e.title,
+          message: e.message,
+          status: e.messageStatus,
+          dismissAfter: -1,
+          closeButton: true
+        })
+      })
   }
 
   onLoad() {

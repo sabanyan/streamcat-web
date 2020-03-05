@@ -105,6 +105,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   onClickPreview(e: Event) {
+    const { lockUUID, flow } = this.props
     const flow_uuid = inject_flow_uuid
     const selected_step = this.getSelectedStep()
     let id = selected_step.id
@@ -121,7 +122,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           let contents = []
           for (const v of visualizers) {
             let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
-            contents.push({ title: v.label, content: content, id: id })
+            contents.push({ title: v.label, content: content, id: id, lockUUID: lockUUID, flow:flow})
           }
           ModalUtil.emitModal({
             id: Constants.preview.DATASOURCE,
