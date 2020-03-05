@@ -137,7 +137,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           this.setState({
             loading: false
           })
-          this.updateCache()
+          //this.updateCache()
         })
     })
   }
