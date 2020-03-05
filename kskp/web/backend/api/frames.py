@@ -10,6 +10,7 @@ from kskp.web.backend import app
 
 from .auth import login_required_api
 from .utils import api_base, frame_api_base
+import logging
 
 mod = Blueprint('frames', __name__)
 
@@ -277,6 +278,7 @@ def fetch_vis(frame_uuid):
     """
     指定したframeのVisデータを直接UUIDで指定して取得する
     """
+    logging.warning('/post viz frame')
     vis_args = {"d" : request.json}
 
     import uuid
@@ -286,7 +288,9 @@ def fetch_vis(frame_uuid):
     parent_folder = Datum.find_parent(frame_uuid)
     loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
     datasource = DataSource(None, 'tmp_source', parent_folder, loader_step, session['user_id'])
+    logging.warning('datasource')
     activity = execute_flow(datasource, vis_args=vis_args)
+    logging.warning('activity')
     return format_vis(activity)
 
 @mod.route('/vizs', methods=['POST'])
@@ -312,8 +316,11 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
     """
     try:
         from kskp.engine import execute, FlowJsonLink
+        logging.warning('execute_flow start')
         link = FlowJsonLink(flow, vis_args)
+        logging.warning('execute_flow link')
         activity = execute(link=link, args=args, inputs=inputs)
+        logging.warning('execute_flow activity')
         if not activity:
             raise Exception('実行結果は出力されませんでした')
         return activity

@@ -135,20 +135,43 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           console.log(message)
         })
         .then(() => {
-          /*
-          this.setState({
-            loading: false
-          })
-          */
-          //this.updateCache()
+          
+          console.log("138")
+          this.updateCache()
+            .then(() => {
+              console.log("141")
+              this.setState({
+                loading: false
+              }, () => {
+                console.log("145")
+              })
+            })
+          console.log("148")
+          
+         /*
+         console.log("151")
+         this.setState({
+           loading:false
+         }, () => {
+           console.log("155")
+           this.updateCache()
+           console.log("157")
+         })
+         console.log("159")
+         */
         })
+        
     })
   }
 
+  componentWillUpdate() {
+    console.log("component will update")
+  }
+
   updateCache() {
-    APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
+    return APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
       const json = response.data
-      this.props.loadFlowJSON(json)
+      //this.props.loadFlowJSON(json)
     })
   }
 

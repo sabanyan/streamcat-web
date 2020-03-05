@@ -79,13 +79,7 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   componentDidMount() {
-    // this.onLoad()
-    
-    this.saveFlow()
-      .then(() => {
-        this.onTestLoad()
-      })
-      
+    this.onLoad()  
   }
 
   // とりあえず、/put　flows・/post vizを投げる
@@ -168,6 +162,7 @@ export default class Visualizer extends React.Component<Props, State> {
   requestVisualize() {
     const { index, flow_uuid, stepIds, frame_uuid, visualize } = this.props
     const { onSaveResult, notify } = this.props
+    console.log("request viz")
     return API.request.doPost.vizs({
       flowUUID: flow_uuid,
       stepIds: stepIds,
@@ -176,6 +171,7 @@ export default class Visualizer extends React.Component<Props, State> {
       args: this.state.args
     })
       .then((res) => {
+        console.log("response viz")
         // JSON Parser
         let json = API.response.post.vizs(res)
         // TODO: 将来はModel
