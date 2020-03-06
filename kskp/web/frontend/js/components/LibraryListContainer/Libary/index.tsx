@@ -49,6 +49,13 @@ type State = {
   // new
   upload_files: FileList | null; // 単一アップロードの場合（database, folder）、0番目のindexが対象
   new_names: string[] // 単一アップロードの場合（database, folder）、0番目のindexがが対象
+
+  // search
+  searchText: string;
+
+  // sort
+  sortKey: string | null;
+  sortOrder: "asc" | "desc" | null;
 }
 
 type Database = {
@@ -63,10 +70,12 @@ type Database = {
 
 export default class Library extends React.Component<Props, State> {
 
+
   constructor(props: Props) {
     super(props)
 
     this.onClickLibrary = this.onClickLibrary.bind(this)
+    this.getHeaders = this.getHeaders.bind(this)
     this.getColumns = this.getColumns.bind(this)
     this.deleteLibrary = this.deleteLibrary.bind(this)
     this.moveLibrary = this.moveLibrary.bind(this)
@@ -101,7 +110,14 @@ export default class Library extends React.Component<Props, State> {
 
       // new
       upload_files: null, // frame 複数アップロードのため
-      new_names: []
+      new_names: [],
+
+      // search
+      searchText: "",
+
+      // sort
+      sortKey: null,
+      sortOrder: null
     }
 
     // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
@@ -691,7 +707,7 @@ export default class Library extends React.Component<Props, State> {
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
     })
-    let targets:string[] = []
+    let targets: string[] = []
     this.state.selectedDatas.forEach((data) => {
       targets.push(data.label)
     })
@@ -907,6 +923,30 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
+  onClickSort(e, sortKey: string) {
+    let sortOrder = this.state.sortOrder
+
+    if (sortOrder === null || sortKey !== this.state.sortKey) {
+      sortOrder = "asc"
+    } else if (sortOrder === "asc") {
+      sortOrder = "desc"
+    } else {
+      sortOrder = null
+    }
+
+    this.setState({
+      sortKey: sortKey,
+      sortOrder: sortOrder
+    })
+  }
+
+  onChangeSearchText(e) {
+    let searchText = e.target.value
+    this.setState({
+      searchText: searchText
+    })
+  }
+
   editLibraryChild(data) {
     APIUtil.put('databases/' + data.uuid, this.state.database).then((response) => {
       this.completeEditDatabase(response)
@@ -1070,11 +1110,40 @@ export default class Library extends React.Component<Props, State> {
   }
 
   getHeaders(): any[] {
+    let icon
+    if (this.state && this.state.sortKey === "label" && this.state.sortOrder) {
+      icon = this.state.sortOrder
+    } else {
+      icon = "remove"
+    }
+    let label = <button className={style.iconButton} onClick={(e) => this.onClickSort(e, "label")}>
+      <label>名前</label>
+      <IconRender type={icon} />
+    </button>
+
+    if (this.state && this.state.sortKey === "creater" && this.state.sortOrder) {
+      icon = this.state.sortOrder
+    } else {
+      icon = "remove"
+    }
+    let creater = <button className={style.iconButton} onClick={(e) => this.onClickSort(e, "creater")}>
+      <label>作成者</label><IconRender type={icon} />
+    </button>
+
+    if (this.state && this.state.sortKey === "createAt" && this.state.sortOrder) {
+      icon = this.state.sortOrder
+    } else {
+      icon = "remove"
+    }
+    let createAt = <button className={style.iconButton} onClick={(e) => this.onClickSort(e, "createAt")}>
+      <label>作成日時</label><IconRender type={icon} />
+    </button>
+
     return [
       "", // icon
-      "名前",
-      "作成者",
-      "作成日時"
+      label,
+      creater,
+      createAt
     ]
   }
 
@@ -1092,6 +1161,12 @@ export default class Library extends React.Component<Props, State> {
       data.creator,
       data.createdAt
     ]
+  }
+
+  renderSearchBar() {
+    return <div className={style.search_bar}>
+      <TextField placeholder={'ライブラリーを検索'} onChange={(e) => this.onChangeSearchText(e)} />
+    </div>
   }
 
   renderButton(onClick: Function, title: string, icon: string) {
@@ -1203,10 +1278,24 @@ export default class Library extends React.Component<Props, State> {
       {this.renderSelectDestination()}
     </div>
 
+    let list = this.state.libraryChildren.filter((libray) => libray.label.includes(this.state.searchText))
+    if (this.state.sortKey && this.state.sortOrder) {
+      let sortKey: string = this.state.sortKey
+      let sortOrder: "asc" | "desc" = this.state.sortOrder
+      list = list.sort((a: LibraryChild, b: LibraryChild) => {
+        if (sortOrder === "asc") {
+          return (a[sortKey] < b[sortKey]) ? -1 : 1
+        } else {
+          return (a[sortKey] < b[sortKey]) ? 1 : -1
+        }
+      })
+    }
+
     return <div>
       {this.renderBreadCrumb()}
+      {this.renderSearchBar()}
       <List<LibraryChild>
-        lists={this.state.libraryChildren}
+        lists={list}
         selected={this.state.selectedDatas}
         getHeaders={this.getHeaders}
         getColumns={this.getColumns}
