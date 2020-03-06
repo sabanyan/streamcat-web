@@ -170,37 +170,8 @@ export default class Library extends React.Component<Props, State> {
 
     // CSV Upload
     ModalUtil.registerModal({
-      id: Constants.modal.ADD_FRAME, onClickDone: () => {
-        if (this.state.new_names.length === 0) {
-          alert('名称を入力してください')
-          return
-        }
-        if (!this.state.upload_files) {
-          alert('ファイルを選択してください')
-          return
-        }
-
-        this.setState({ is_loading: true, selected_data: null }, () => {
-          const files: FileList | null = this.state.upload_files
-          const new_names: string[] = this.state.new_names
-          const parentUUID = this.state.currentFolderUUID
-          APIUtil.frameUpload(files, new_names, new_names, parentUUID)
-            .then((response) => {
-              console.log(response)
-              //this.completeUploaded(response)
-            }, () => {
-              //this.unhandledNotify('アップロードエラー')
-            })
-            .then(() => {
-              this.setState({
-                is_loading: false,
-                upload_files: null,
-                new_names: []
-              }, () => {
-                ModalUtil.closeModal(Constants.modal.ADD_FRAME)
-              })
-            })
-        })
+      id: Constants.modal.ADD_FRAME, onClickClose: () => {
+        this.fetchFolder()
       },
     })
 
@@ -445,13 +416,14 @@ export default class Library extends React.Component<Props, State> {
   }
 
   onClickNewFrame(e: React.ChangeEvent<HTMLInputElement>) {
-    const { notify } = this.props
+    const {notify} = this.props
+    let url = location.protocol + "//" + location.host + "/api/v0/frames"
     ModalUtil.emitModal({
       id: Constants.modal.ADD_FRAME,
       visible: true,
       done: 'アップロード',
       content: <div>
-        <FileUploader accept={['.csv']} url={'api/v0/frames'} parentUUID={this.state.currentFolderUUID} notify={notify} />
+        <FileUploader accept={['.csv']} url={url} parentUUID={this.state.currentFolderUUID} notify={notify} />
       </div>,
     })
     e.preventDefault()
