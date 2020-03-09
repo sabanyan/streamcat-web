@@ -193,7 +193,7 @@ export default class CommandStepModel extends BaseStepModel {
     //必須バリデーション
     let command: CommandModel = this.getCommand()
     // commandが存在しない場合、フローが見えない事象があるため、
-    // commandが存在しなくても処理が止まらなくする
+    // commandが存在しなくても処理が止まらないように
     if (!command) {
       return
     }
