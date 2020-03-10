@@ -42,7 +42,7 @@ class ProjectInspector extends React.Component<Props> {
     const description = project.description
     const selected_tab_id = this.state.selected_tab_id
     content = <div>
-      <div className={style.actions}>
+      <div className={style.actions} data-cy="deleteProject">
         <Button danger={true}
                 onClick={() => this.props.onClickDelete(uuid)}>削除する</Button>
       </div>
