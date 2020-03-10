@@ -34,7 +34,7 @@ export default class ProjectListRow extends React.Component<Props> {
     const {icon, children, selected, href} = this.props
     const {name, uuid, created_at, creator_name} = this.props.project
 
-    return <div className={classnames(style.project, {[style.selected]: selected})} onClick={(e) => this.onClick(e)}>
+    return <div data-cy={"listRow_" + name} className={classnames(style.project, {[style.selected]: selected})} onClick={(e) => this.onClick(e)}>
       <div className={style.project_list}>
         <div className={style.name}>
           <i className={classnames('material-icons', [style.icon])}>description</i>

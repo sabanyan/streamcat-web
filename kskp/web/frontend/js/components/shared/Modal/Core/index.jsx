@@ -142,7 +142,7 @@ export default class Modal extends React.Component<Props, State> {
      * 確定・キャンセルボタン
      */
     if (!ok) {
-      buttons = <div>
+      buttons = <div data-cy={this.props.id}>
         <Button
           onClick={() => this.onClickCancel()}>
           {cancel}

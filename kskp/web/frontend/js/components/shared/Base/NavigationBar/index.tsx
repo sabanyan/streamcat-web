@@ -97,7 +97,7 @@ export default class NavigationBar extends React.Component<Props> {
   renderUserNavigationItem () {
     const {navigation} = this.props
     if (!this.isLogin || !navigation) return null
-    return <li className="nav-item dropdown user">
+    return <li className="nav-item dropdown user" data-cy="loginUser">
       <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
          aria-haspopup="true" aria-expanded="false">
         <img className="icon" src={baseUrl + 'images/icon/user.svg'} />
