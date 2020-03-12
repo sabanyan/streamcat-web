@@ -179,7 +179,7 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
 
     return  <div className="kskp-form">
           <label>入力</label>
-          <SortableList items={inEdgeSelect} onSortEnd={this.props.sortStepSrcEnd}/>
+          <SortableList items={inEdgeSelect} onSortEnd={this.props.sortStepSrcEnd} distance={1}/>
           {addEdgeContainer}
           <label>出力</label>
           {output}
