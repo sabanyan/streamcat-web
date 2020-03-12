@@ -97,12 +97,13 @@ export default class CommandStepModel extends BaseStepModel {
   deleteInPort (key) {
     delete this.srcs[key]
     // delete
-    let srcsOrder = []
+    let result = []
     this.srcsOrder.forEach((srcKey, index) => {
       if (srcKey !== key) {
-        srcsOrder.push(srcKey)
+        result.push(srcKey)
       }
     })
+    this.srcsOrder = result
   }
 
   /**

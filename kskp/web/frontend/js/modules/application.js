@@ -582,7 +582,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     }
 
     case SORT_STEP_SRC_END_ACTION: {
-      newState.nodes = newState.nodes.map((node, index) => {
+      newState.nodes.forEach((node, index) => {
         if (node.id == state.selected_step_ids[0] && node.onSortEnd) {
           node.onSortEnd(action.payload.oldIndex, action.payload.newIndex)
         }
