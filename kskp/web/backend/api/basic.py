@@ -235,7 +235,7 @@ def fetch_subflows():
         if parent is None:
             continue
         if parent.type == Datum.FOLDER_TYPE:
-            parent_label = Folder.convert_to_folder(parent).label
+            parent_label = parent.label
             subflow_data['projectName'] = parent_label
         subflow_data_list.append(subflow_data)
     return jsonify({'success': True, 'data': subflow_data_list})
