@@ -163,7 +163,7 @@ export default class ProjectListContainer extends React.Component {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         APIUtil.delete('projects/' + project_uuid).then((response) => {
-          //this.getProjectList()
+          this.getProjectList()
           this.setState({ selected_project: null })
           ModalUtil.closeModal(Constants.modal.CONFIRM)
         })
