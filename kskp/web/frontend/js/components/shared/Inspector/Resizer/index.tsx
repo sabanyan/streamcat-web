@@ -1,4 +1,3 @@
-//@flow
 import * as React from 'react'
 import style from '../style.scss'
 import classnames from 'classnames'
@@ -10,16 +9,25 @@ let mouseMoveEvent
 let mouseUpEvent
 
 type Props = {
-  children: React.Node;
+  children: React.ReactNode;
+  inspector?: {width:number};
+
+  resizeInspector?: Function
 }
 
 type State = {
   isDragging: boolean;
   isClosed: boolean;
   willClosed: boolean;
+  
   width: number;
 }
 
+
+/*
+ *　flowEditor : 
+ *　その他      :
+ */
 class Resizer extends React.Component<Props, State> {
   constructor (props: Props) {
     super(props)
@@ -27,7 +35,8 @@ class Resizer extends React.Component<Props, State> {
       isDragging: false,
       isClosed: false,
       willClosed: false,
-      width: Constants.default.inspector.width,
+
+      width: Constants.default.inspector.width
     }
   }
 
@@ -36,16 +45,24 @@ class Resizer extends React.Component<Props, State> {
   }
 
   onMouseDown (e: Event) {
+    const {resizeInspector} = this.props
+
     this.setState({
       isDragging: true,
+    }, () => {
+      if (this.state.isClosed) {
+        let width = Constants.default.inspector.width
+        this.setState({
+          isClosed: false,
+          willClosed: false,
+          width : width
+        })
+
+        //　redux 使うケース（FlowEditor)
+        if (resizeInspector) resizeInspector(width)
+      }
     })
-    if (this.state.isClosed) {
-      this.setState({
-        width: Constants.default.inspector.width,
-        isClosed: false,
-        willClosed: false,
-      })
-    }
+    
     //mousemoveイベントでハンドリング
     mouseMoveEvent = (e: MouseEvent) => this.onMouseMove(e)
     mouseUpEvent = (e: MouseEvent) => this.onMouseUp(e)
@@ -69,6 +86,7 @@ class Resizer extends React.Component<Props, State> {
   }
 
   onResize (e: MouseEvent) {
+    const {resizeInspector} = this.props
     const zeroPoint = window.innerWidth - Constants.default.inspector.width
     const closedPoint = window.innerWidth - Constants.default.inspector.width +
       Constants.default.inspector.width *
@@ -76,8 +94,13 @@ class Resizer extends React.Component<Props, State> {
 
     if (e.pageX > closedPoint) {
       //閉じる
+      const width = Constants.default.inspector.closedWidth
       this.setState(
-        {width: Constants.default.inspector.closedWidth, isClosed: true})
+        {isClosed: true, width:width}, () => {
+
+          //　redux 使うケース（FlowEditor)
+          if (resizeInspector) resizeInspector(width)
+        })
     }
     if (e.pageX > zeroPoint) {
       //閉じる
@@ -87,7 +110,11 @@ class Resizer extends React.Component<Props, State> {
       const newWidth = window.innerWidth - e.pageX
       if (newWidth >= Constants.default.inspector.width && newWidth <=
         Constants.default.inspector.maxWidth) {
-        this.setState({width: newWidth, willClosed: false})
+        this.setState({willClosed: false, width: newWidth},
+          () => {
+            //　redux 使うケース（FlowEditor)
+            if (resizeInspector) resizeInspector(newWidth)
+          })
       }
     }
   }
@@ -97,13 +124,14 @@ class Resizer extends React.Component<Props, State> {
   }
 
   render () {
-    const {children} = this.props
-    const {width, isClosed, isDragging, willClosed} = this.state
+    const {children, inspector} = this.props
+    const {isClosed, isDragging, willClosed} = this.state
     let childrendElement = children
     if (isClosed) {
       childrendElement = null
     }
 
+    let width = (inspector) ? inspector.width : this.state.width 
     let styleName = (this.isDialog()) ? style.property_dialog : style.property
 
     return <div className={classnames(styleName, style.in,
