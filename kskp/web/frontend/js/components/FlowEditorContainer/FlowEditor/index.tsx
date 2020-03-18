@@ -176,11 +176,11 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   renderEdges() {
     let { nodes, graph } = this.props
     let edges: any = []
-
     if (Array.isArray(graph.edges)) {
       graph.edges.forEach((edge, index) => {
         const v_node = GraphUtil.getNode(nodes, edge.v)
         const w_node = GraphUtil.getNode(nodes, edge.w)
+
         if (v_node && w_node) {
           const vx = v_node.position.x +
             Constants.default.datasource.width / 2
@@ -197,7 +197,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             outPortLabel = JSON.parse(edge.name).port_name;
           }
           //入力元ノードがDataFrameの場合のみ出力もとにラベルを付与する
-          if (w_node instanceof CommandStepModel) {
+          if (v_node instanceof CommandStepModel) {
             inPortLabel = JSON.parse(edge.name).port_name;
           }
 
