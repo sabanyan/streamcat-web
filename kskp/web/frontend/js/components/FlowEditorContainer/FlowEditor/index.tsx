@@ -101,15 +101,16 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       .then((res) => {
         lockUUID = API.response.post.locks(res).uuid
         this.setState({
-          lockUUID: lockUUID
+          lockUUID: lockUUID,
+          isLoading: false
         })
       })
       .catch(e => {
-        if(!lockUUID) {
+        if (!lockUUID) {
           notify({
-            title: "警告：読取専用フロー", 
-            message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。", 
-            status:"warning",
+            title: "警告：読取専用フロー",
+            message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+            status: "warning",
             dismissAfter: -1,
             closeButton: true
           })
@@ -137,7 +138,12 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   handleLeavePage(e) {
     if (this.state.lockUUID) {
       API.request.doDelete.locks({ lockUUID: this.state.lockUUID })
+        .then((response) => {
+          console.log(response)
+        })
     }
+
+    e.returnValue = true
   }
 
   renderSteps() {
@@ -228,7 +234,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
-  
+
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
