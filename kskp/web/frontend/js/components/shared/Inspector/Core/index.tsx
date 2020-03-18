@@ -1,4 +1,3 @@
-//@flow
 import React from 'react'
 import {
   CommandInspector,
@@ -10,31 +9,34 @@ import {
 } from 'Shared/Inspector'
 import classnames from 'classnames'
 import style from '../style.scss'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { FlowEditorProps } from 'FlowEditorContainer/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
-import type { DataFrameDetailType, MastType } from "Types/index";
-import type { FlowModelProps } from "Model/Flow/FlowModel";
+import { DataFrameDetailType, MastType } from "Types/index";
+import { FlowModelProps } from "Model/Flow/FlowModel";
 
 type InspectorProps = {
-  selected_step_ids: [];
+  inspector: {width:number};
+  flow: FlowModelProps;
+  selected_step_ids: Array<string>;
   nodes: [];
   mast: MastType;
   selected_tab_id: string;
+  selected_data_source_detail: DataFrameDetailType;
+  lockUUID: string;
+  updateDataFrameDetail: Function
   addStep: Function;
   selectSteps: Function;
-  flow: FlowModelProps;
   updateFlow: Function;
   notify: Function;
   dismissNotify: Function;
-  selected_data_source_detail: DataFrameDetailType;
   loadFlowJSON: Function;
   deleteSteps: Function;
   addHistory: Function;
   deleteCache: Function;
   updateStep: Function;
   sortStepSrcEnd: Function;
-  POST_VIZS_FROM_FLOW: Function;
+  resizeInspector:Function;
 }
 
 class Inspector extends React.Component<InspectorProps> {
@@ -42,11 +44,12 @@ class Inspector extends React.Component<InspectorProps> {
   render() {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, selectSteps, flow,
       updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
-      loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, POST_VIZS_FROM_FLOW } = this.props
+      loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd,
+      resizeInspector, inspector } = this.props
 
     let property
 
-    if (selected_step_ids.length == 1) {
+    if (selected_step_ids.length === 1) {
       if (selected_step_ids[0] === 'flow') {
         property = <FlowSettingsInspector
           mast={mast}
@@ -78,7 +81,6 @@ class Inspector extends React.Component<InspectorProps> {
             deleteCache={deleteCache}
             addStep={addStep}
             updateStep={updateStep}
-            POST_VIZS_FROM_FLOW={POST_VIZS_FROM_FLOW}
           />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector
@@ -121,9 +123,14 @@ class Inspector extends React.Component<InspectorProps> {
         addStep={addStep}
         addHistory={addHistory} />
     }
-    return <Resizer>
-      {property}
-    </Resizer>
+
+    return <React.Fragment>
+      <Resizer
+        inspector={inspector}
+        resizeInspector={resizeInspector}>
+        {property}
+      </Resizer>
+    </React.Fragment>
   }
 
 }
