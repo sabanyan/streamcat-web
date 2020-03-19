@@ -20,7 +20,7 @@ def lock_required(func):
             return jsonify({
                             'success': False,
                             'code'   : -1,
-                            'message': '対象データをロックしてから更新・削除してください'
+                            'message': 'ロックが強制解除された、または有効期限が切れました'
                         })
         return func(**kwargs)
 

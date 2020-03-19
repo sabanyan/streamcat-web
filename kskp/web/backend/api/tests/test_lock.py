@@ -171,6 +171,41 @@ class LockFlowTestCase(TestCaseBase):
         # フローのロックを解除する
         result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
 
+    def test_unlock_target(self):
+        """
+        指定したUUIDのフローのロックを解除する
+        """
+        # ルートフォルダを作成する
+        result = self.get_uri('/api/v0/library', self.USER_ID)
+        root_uuid = result['data']['uuid']
+        # フレームを作成する(POST /frames)
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummyE.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイル_1E', root_uuid, f, self.USER_ID)
+        frame_uuid = result['data']['uuid']
+        # フォルダを作成する
+        result = self.post_uri('/api/v0/folders', {'parent':root_uuid, 'label':'フロー2'}, self.USER_ID)
+        folder_uuid = result['data']['uuid']
+        # フローを作成する
+        result = self.create_flow(source_uuid=frame_uuid, parent_uuid=folder_uuid)
+        # POST /flowsでuuidを取得できないので GET /flowsで取得するしかない
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER_ID)
+        flow_uuid = result['data']['children'][0]['uuid']
+        # フローをロックする
+        result = self.post_locks('/api/v0/locks', {'target' : flow_uuid}, self.USER_ID)
+        self.assertTrue(result['success'], 'POST locks is failed.')
+        lock_uuid = result['data']['uuid']
+        # 正しいロックUUIDで更新する
+        result = self.update_flow(flow_uuid, source_uuid=frame_uuid, lock_uuid=lock_uuid)
+        # フローのUUIDでロックを解除する
+        result = self.post_uri(f'/api/v0/delete-locks?of={flow_uuid}', {}, self.USER_ID)
+
+    def test_expire_lock(self):
+        """
+        有効期間を過ぎたロックは解除される
+        """
+
     @unittest.skip
     def test_simulutaneous_lock(self):
         """
@@ -188,7 +223,7 @@ class LockFlowTestCase(TestCaseBase):
 
             def create_unlock_in_thread(self, lock_uuid):
                 # フローのロックを解除する
-                self.base.delete_uri(f'/api/v0/locks/{lock_uuid}', self.base.USER_ID)
+                self.base.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.base.USER_ID)
 
             def create_flow_in_thread(self, ):
                 # ルートフォルダを作成する
