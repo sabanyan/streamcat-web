@@ -26,7 +26,7 @@ def update_navigation(func):
             'project_name': '',
             'flow_uuid': '',
             'flow_name': '',
-            'depo_name': os.environ['KSKP_DEPO']
+            'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
         }
 
         # 条件分岐がちょっと不安

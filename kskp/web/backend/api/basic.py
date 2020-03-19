@@ -411,7 +411,7 @@ def get_navigation():
         'project_name': '',
         'flow_uuid': '',
         'flow_name': '',
-        'depo_name': os.environ['KSKP_DEPO']
+        'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
     }
 
     flow_uuid = request.args.get('flow_uuid')
