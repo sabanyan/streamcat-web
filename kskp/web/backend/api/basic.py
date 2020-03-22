@@ -237,7 +237,7 @@ def fetch_subflows():
         if parent is None:
             continue
         if parent.type == Datum.FOLDER_TYPE:
-            parent_label = Folder.convert_to_folder(parent).label
+            parent_label = parent.label
             subflow_data['projectName'] = parent_label
         subflow_data_list.append(subflow_data)
     return jsonify({'success': True, 'data': subflow_data_list})
@@ -334,11 +334,13 @@ def download_file():
         downloadFileSize = None
 
     # ダウンロードファイル名を作成する
-    if not frame.label.endswith('.csv') and not frame.label.endswith('.txt'):
-        if ext is None or ext == '':
-            downloadFileName = frame.label + '.csv'
-        else:
-            downloadFileName = frame.label + '.' + ext
+    if frame.label.endswith('.csv') or frame.label.endswith('.txt'):
+        downloadFileName = frame.label
+    elif ext is None or ext == '':
+        downloadFileName = frame.label + '.csv'
+    else:
+        downloadFileName = frame.label + '.' + ext
+    
     # ファイル名をURLエンコードする
     import urllib.parse
     downloadFileName = urllib.parse.quote(downloadFileName)
@@ -403,14 +405,15 @@ def delete_cache():
 @login_required_api
 def get_navigation():
     from kskp.store import model
-
+        
     navigation = {
         'user_id': '',
         'user_name': '',
         'project_uuid': '',
         'project_name': '',
         'flow_uuid': '',
-        'flow_name': ''
+        'flow_name': '',
+        'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
     }
 
     flow_uuid = request.args.get('flow_uuid')

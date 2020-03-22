@@ -328,7 +328,11 @@ export default class FlowUtil {
 
   static setModelType (json: {}): StepModelType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
-    if (json['srcs'] !== undefined && json['dsts'] !== undefined) return new CommandStepModel(json)
+    if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
+      let node = new CommandStepModel(json)
+      node.loadArgs()
+      return node
+    }
     if (json['uuid'] !== undefined && json['dataSource'] !== undefined) return new DataFrameStepModel(json)
     return json
   }

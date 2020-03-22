@@ -101,15 +101,16 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       .then((res) => {
         lockUUID = API.response.post.locks(res).uuid
         this.setState({
-          lockUUID: lockUUID
+          lockUUID: lockUUID,
+          isLoading: false
         })
       })
       .catch(e => {
-        if(!lockUUID) {
+        if (!lockUUID) {
           notify({
-            title: "警告：読取専用フロー", 
-            message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。", 
-            status:"warning",
+            title: "警告：読取専用フロー",
+            message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+            status: "warning",
             dismissAfter: -1,
             closeButton: true
           })
@@ -175,11 +176,11 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
   renderEdges() {
     let { nodes, graph } = this.props
     let edges: any = []
-
     if (Array.isArray(graph.edges)) {
       graph.edges.forEach((edge, index) => {
         const v_node = GraphUtil.getNode(nodes, edge.v)
         const w_node = GraphUtil.getNode(nodes, edge.w)
+
         if (v_node && w_node) {
           const vx = v_node.position.x +
             Constants.default.datasource.width / 2
@@ -196,7 +197,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             outPortLabel = JSON.parse(edge.name).port_name;
           }
           //入力元ノードがDataFrameの場合のみ出力もとにラベルを付与する
-          if (w_node instanceof CommandStepModel) {
+          if (v_node instanceof CommandStepModel) {
             inPortLabel = JSON.parse(edge.name).port_name;
           }
 
@@ -224,11 +225,12 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     const { flow, pasteSteps, copySteps, dragStart, drag, selected_step_ids, deleteSteps,
       nodes, history, notify, dismissNotify, addStep, addHistory, sortFlow, loadFlowJSON, selectSteps,
       setZoom, undo, redo, dragging, dragEnd, mast, selected_tab_id, updateFlow, selected_data_source_detail,
-      updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom } = this.props;
+      updateDataFrameDetail, deleteCache, updateStep, sortStepSrcEnd, graph, zoom,inspector,
+      resizeInspector, editor } = this.props;
     const isLoading = (!this.state || this.state.isLoading) ? true : false
     const isLocked = (this.state && this.state.lockUUID) ? true : false
     const disabled = (isLoading || !isLocked) ? true : false
-  
+
     return <div className={style.flow_editor_container}>
       <div className={style.flow_editor}>
         <PaperZoom />
@@ -253,6 +255,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
         <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
           message={'フローを構築中です'} />
         <PaperScroller
+          editor={editor}
           pasteSteps={pasteSteps}
           copySteps={copySteps}
           deleteSteps={deleteSteps}
@@ -283,6 +286,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           selectSteps={selectSteps}
           flow={flow}
           lockUUID={this.state.lockUUID}
+          inspector={inspector}
           updateFlow={updateFlow}
           notify={notify}
           dismissNotify={dismissNotify}
@@ -294,6 +298,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           deleteCache={deleteCache}
           updateStep={updateStep}
           sortStepSrcEnd={sortStepSrcEnd}
+          resizeInspector={resizeInspector}
         />
 
         <NotificationManager />

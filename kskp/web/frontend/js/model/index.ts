@@ -22,3 +22,5 @@ export { DataFrameStepModelProps } from './Step/DataFrameStepModel'
 export { VisualizeModelProps } from './Visualize/VisualizeModel'
 export { NoteStepModelProps } from './Step/NoteStepModel'
 export { SubFlowStepModelProps } from './Step/SubFlowStepModel'
+export {Props as NavigationModelProps} from './Navigation/NavigationModel'
+

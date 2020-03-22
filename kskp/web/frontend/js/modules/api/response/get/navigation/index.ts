@@ -1,18 +1,10 @@
 import { CommonResponse } from 'Modules/api/core/index';
 
 import { MessageModel } from 'Model/index'
-import { NavigationModel } from "Model/index";
+import { NavigationModel, NavigationModelProps } from "Model/index";
 
 
-type NavigationData = {
-    user_id: string | "",
-    user_name: string | "",
-    project_uuid: string | "",
-    project_name: string | "",
-    flow_uuid: string | "",
-    flow_name: string | ""
-}
-export type VizResponse = CommonResponse<undefined, NavigationData>
+export type VizResponse = CommonResponse<undefined, NavigationModelProps>
 export function navigation(res: VizResponse): NavigationModel | undefined {
     let result
 
