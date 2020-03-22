@@ -217,7 +217,7 @@ export default class ParamList extends  React.Component<Props, State>{
             </div>)
         })
        
-        let contents = (this.state.draggable) ? <SortableList items={paramElements} onSortEnd={(value, e) => this.onSortEnd(value, e)}/> : paramElements
+        let contents = (this.state.draggable) ? <SortableList distance={1} items={paramElements} onSortEnd={(value, e) => this.onSortEnd(value, e)}/> : paramElements
         return <React.Fragment>
             <div className={style.labelContainer}>
                 {labels}

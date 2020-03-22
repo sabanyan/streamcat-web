@@ -12,7 +12,7 @@ setup(
         'pandas==0.24.2',
         'sklearn',
         'holoviews',
-        'bokeh',
+        'bokeh==1.4.0',
         'ptvsd',
         'matplotlib'
     ],
