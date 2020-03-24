@@ -1,22 +1,20 @@
 import { NavigationModel, NavigationModelProps } from "Model/index";
 // Navigation
 
-// Navigation
 type RESPONSE_NAVIGATION = {
     data : {
         success : boolean,
-        data : NavigationModelProps,
+        data : NavigationModelProps
     }
 }
 
-export function NAVIGATION(res: RESPONSE_NAVIGATION):NavigationModel | undefined {
+export function Navigation(res: RESPONSE_NAVIGATION):NavigationModel | undefined {
     let result
     try {
-        if (res.data.data) result = new NavigationModel(res.data.data)
+        result = new NavigationModel(res.data.data)
     } catch(e) {
         console.log(e)
     } finally {
         return result
     }   
 }
-

@@ -146,10 +146,7 @@ export default class ProjectListContainer extends React.Component {
       visible: true,
       done: '作成する',
       content: <div>
-        <TextField rules={{
-          required: true,
-          minlength: 5,
-        }} placeholder={'プロジェクト名'}
+        <TextField  placeholder={'プロジェクト名'}
                    onChange={(e, validation) => this.onChangeProjectName(e,
                      validation)} />
       </div>,

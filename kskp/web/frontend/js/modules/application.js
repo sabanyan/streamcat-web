@@ -83,7 +83,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       newState.nodes = flowJson.nodes
       newState.graph = graph.getGraph(newState)
       newState.history.current = 0
-      newState.history.nodes = [{ ...newState.nodes }]
+      newState.history.nodes = [[...newState.nodes]]
       
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
@@ -93,6 +93,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       ValidatorUtil.isGraphModelSchema(newState)
       ValidatorUtil.isNodesSchema(newState)
       ValidatorUtil.nodesValidate(newState.nodes)
+      newState.flow.nodes = newState.nodes
       break
     }
     case ADD_MASTER_ACTION: {
@@ -266,14 +267,15 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         })
       }
 
-      newState.flow.nodes.push(add_step)
       newState.nodes.push(add_step)
+      newState.flow.nodes = newState.nodes
       newState.graph = graph.getGraph(newState)
       break
     }
     case UPDATE_STEP_ACTION: {
 
       newState.nodes = rebuildNodesEdges(newState, action)
+      newState.flow.nodes = newState.nodes
 
       //選択されているEdgeも更新する
       newState.selected_in_edges = graph.g.inEdges(state.selected_step_ids[0])
@@ -285,6 +287,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     }
     case UPDATE_FLOW_ACTION: {
       newState = { ...newState, flow: action.flow }
+      //newState.nodes = newState.flow.nodes
       break
     }
 
@@ -317,10 +320,12 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         newState.flow.deleteOutPortWithId(id)
         //選択されたノードを削除
         newState.nodes = graph.removeNode(newState.nodes, id)
+        newState.flow.nodes = newState.nodes
         deleteKeySet.add(id)
       })
 
       newState.nodes = GraphUtil.getNewNodesWithExculudeKeys(newState.nodes, deleteKeySet)
+      newState.flow.nodes = newState.nodes
       newState.graph = graph.getGraph(newState)
 
       //削除後は非選択状態にする
@@ -344,7 +349,6 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     // }
     case PASTE_STEPS_ACTION: {
       let newState = StateUtil.deepCopy(state)
-
       const add_nodes = JSON.parse(action.paste_nodes)
 
       //ペースト時に
@@ -392,7 +396,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         const action_step = _.cloneDeep(newNode)
         action_step.dsts = newDsts
         newState.nodes = rebuildNodesEdges(newState, { step: action_step })
-
+        newState.flow.nodes = newState.nodes
       })
       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
 
@@ -432,8 +436,10 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current - 1
         newState.nodes = state.history.nodes[newState.history.current]
+        newState.flow.nodes = newState.nodes
         allRebuildNodesEdges(newState)
         window.nodes = newState.nodes
+
         newState.graph = graph.getGraph(newState)
       }
       return newState
@@ -445,6 +451,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current + 1
         newState.nodes = state.history.nodes[newState.history.current]
+        newState.flow.nodes = newState.nodes
         allRebuildNodesEdges(newState)
         window.nodes = newState.nodes
         newState.graph = graph.getGraph(newState)
@@ -590,11 +597,12 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     }
 
     case SORT_STEP_SRC_END_ACTION: {
-      newState.nodes.map((node, index) => {
+      newState.nodes.forEach((node, index) => {
         if (node.id == state.selected_step_ids[0] && node.onSortEnd) {
           node.onSortEnd(action.payload.oldIndex, action.payload.newIndex)
         }
       })
+      newState.flow.nodes = newState.nodes
       break
     }
 
@@ -612,6 +620,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
               node.position.y = node.position.y - dy
             }
           })
+          newState.flow.nodes = newState.nodes
           newState.graph = graph.getGraph(newState)
       }
 
