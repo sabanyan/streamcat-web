@@ -11,8 +11,8 @@ setup(
         'scipy',
         'pandas==0.24.2',
         'sklearn',
-        'holoviews',
-        'bokeh',
+        'holoviews==1.12.7',
+        'bokeh==1.4.0',
         'ptvsd',
         'matplotlib'
     ],

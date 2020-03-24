@@ -318,9 +318,10 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
             raise Exception('実行結果は出力されませんでした')
         return activity
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise Exception(str(e))
+        # import traceback
+        # traceback.print_exc()
+        # raise Exception(str(e))
+        raise
 
 def format_result(activity):
     from kskp.store import Activity

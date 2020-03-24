@@ -649,7 +649,7 @@ export default class Library extends React.Component<Props, State> {
       // Lockを取得した場合、Lockを解除する
       if (lock.uuid) {
         await API.request.doDelete.locks({ lockUUID: lock.uuid })
-          .then((res) => {
+          .then((res:any) => {
             lock.uuid = null
             if (!res.data.success) throw res.data
           })
@@ -760,7 +760,7 @@ export default class Library extends React.Component<Props, State> {
       // Lockを取得した場合、Lockを解除する
       if (lock.uuid) {
         await API.request.doDelete.locks({ lockUUID: lock.uuid })
-          .then((res) => {
+          .then((res:any) => {
             lock.uuid = null
             if (!res.data.success) throw res.data
           })

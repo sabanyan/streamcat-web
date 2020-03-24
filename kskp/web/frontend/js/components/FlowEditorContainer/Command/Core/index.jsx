@@ -70,6 +70,7 @@ export default class Command extends React.Component<Props> {
       model.type = Constants.step.type.command
       model.commandId = command.id
       node = new CommandStepModel(model)
+      node.initArgs()
     } else if (command instanceof SubflowCommandModel) {
       model.type = Constants.step.type.subflow
       model.uuid = command.uuid
