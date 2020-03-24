@@ -136,7 +136,7 @@ export default class Visualizer extends React.Component<Props, State> {
       .catch((exception) => {
         this.setState({
           html: null,
-          args: this.initArgs(visualize, {})
+          args: this.state.args
         })
         if (exception.message !== "VisualizeInitException") {
           notify({
