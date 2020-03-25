@@ -1,6 +1,6 @@
 import os
 from flask import Flask
-from kskp.store import STORE_DIR
+# from kskp.store import STORE_DIR
 
 app = Flask('kskp.web.backend')
 app.secret_key = '-jm624cqpry89e'
