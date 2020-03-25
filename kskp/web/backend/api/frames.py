@@ -31,6 +31,8 @@ def fetch_frame(frame_uuid):
 
     result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)
 
+    print(result)   
+
     if request.args.get('header_only') == '1':
         # headerのカラムに改行コードが含まれているケースの対応
         if result.get('contents') is None:
@@ -61,8 +63,8 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
         result['contents'] = contents
         # 行数は一旦返さないことにする
         # result['numberOfLines'] = number_of_lines
-    result['encoding'] = frame.encoding_str
-    result['newline'] = frame.newline
+    result['encoding'] = frame.encoding_str()
+    result['newline'] = frame.newline_str()
     result['fileSize'] = frame.file_size
     result['lastModifiedAt'] = frame.modified_at_str
 
@@ -185,10 +187,14 @@ def delete_frame(frame_uuid):
         raise Exception('no frame exists.')
 
     # 削除しようとするframeが、フローで使用されている場合は例外を送出する
-    for flow in Flow.find_all_flows():
-        using_frame_uuids = flow.get_frame_uuids()
-        if frame_uuid in using_frame_uuids:
-            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
+    flow_labels = Flow.get_flows_referencing_frame(frame_uuid)
+    if len(flow_labels) > 0:
+        raise Exception(f'このCSVファイルはフロー({flow_labels[0]})で使用しているため削除できません')
+
+    # for flow in Flow.find_all_flows():
+    #     using_frame_uuids = flow.get_frame_uuids()
+    #     if frame_uuid in using_frame_uuids:
+    #         raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
 
     # フレームを削除する
     frame.delete()

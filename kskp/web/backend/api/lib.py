@@ -122,7 +122,7 @@ def _jsonify_folder(folder):
 
     # children属性を作成する
     data = folder.to_json()
-    data['children'] = [_convert_type(child) for child in children]
+    data['children'] = children
     
     # folderPath属性を作成する
     folder_list = folder.get_folder_path()
