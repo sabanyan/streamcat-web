@@ -115,7 +115,7 @@ def new_flow():
     else:
         parent_uuid = j.get('project_uuid')
         label = j.get('name')
-        flow_data = create_flow(j, session['user_id'])
+        flow_data = Flow.create_flow(j, session['user_id'])
         # flowを作成する
         new_flow = Flow(parent_uuid,
                         label,

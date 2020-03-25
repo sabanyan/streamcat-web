@@ -620,7 +620,7 @@ class FlowApiTestCase(TestCaseBase):
 
             flow1_datasource_name = str(uuid.uuid4())
             data1 = {'project_uuid': project_uuid, 'name': 'サブフローテスト用', 'datasource': None}
-            created_flow = model.create_flow(data1, user1, flow1_datasource_name)
+            created_flow = Flow.create_flow(data1, user1, flow1_datasource_name)
 
             # サブフロー化
             created_flow['ports'][0] = {"name": "i","type": "frame"}
@@ -667,7 +667,7 @@ class FlowApiTestCase(TestCaseBase):
         with app.app_context():
             # サブフロー1を作成する
             data1 = {'project_uuid': None, 'name': 'INPUTだけがあるサブフロー', 'datasource': None}
-            subflow1_data = model.create_flow(data1, self.USER_ID)
+            subflow1_data = Flow.create_flow(data1, self.USER_ID)
             subflow1_data['ports'][0] = {"name": "i","type": "frame"}
             # サブフロー1をライブラリに保存する
             root = Datum.find_root()
@@ -677,7 +677,7 @@ class FlowApiTestCase(TestCaseBase):
 
             # サブフロー2を作成する
             data2 = {'project_uuid': None, 'name': 'OUTPUTだけがあるサブフロー', 'datasource': None}
-            subflow2_data = model.create_flow(data2, self.USER_ID)
+            subflow2_data = Flow.create_flow(data2, self.USER_ID)
             subflow2_data['ports'][1] = {"name": "o","type": "frame"}
             # サブフロー2をライブラリに保存する
             root = Datum.find_root()
@@ -724,7 +724,7 @@ class FlowApiTestCase(TestCaseBase):
         with app.app_context():
             # サブフロー1を作成する
             data1 = {'project_uuid': None, 'name': 'OUTPUTだけがあるサブフローです', 'datasource': None}
-            subflow1_data = model.create_flow(data1, self.USER_ID)
+            subflow1_data = Flow.create_flow(data1, self.USER_ID)
             subflow1_data['ports'][1] = {"name": "o","type": "frame"}
             # サブフロー1をライブラリに保存する
             root = Datum.find_root()
@@ -734,7 +734,7 @@ class FlowApiTestCase(TestCaseBase):
 
             # サブフロー2を作成する
             data2 = {'project_uuid': None, 'name': 'INPUTだけがあるサブフローです', 'datasource': None}
-            subflow2_data = model.create_flow(data2, self.USER_ID)
+            subflow2_data = Flow.create_flow(data2, self.USER_ID)
             subflow2_data['ports'][0] = {"name": "i","type": "frame"}
             # サブフロー2をライブラリに保存する
             root = Datum.find_root()
@@ -922,7 +922,7 @@ def setUpFlow(self):
         'name': flow_label,
         'datasouce': None
     }
-    flow_data = model.create_flow(request_data, user1, None)
+    flow_data = Flow.create_flow(request_data, user1, None)
     test_flow = Flow(root.uuid, flow_label, flow_data, user1)
     test_flow_uuid = test_flow.uuid
 
