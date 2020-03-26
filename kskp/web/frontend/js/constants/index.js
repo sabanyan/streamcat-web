@@ -175,7 +175,48 @@ const Constants = {
   },
   errorMessage: {
     unhandledError: '予期せぬエラーが発生しました'
-  }
+  },
+  encodings: [
+    "ascii",
+    "utf-8",
+    "SHIFT_JIS",
+    "CP932",
+    "utf-8-sig",
+    "UTF-16",
+    "UTF-32",
+    "EUC-JP",
+    "Big5",
+    "CP949",
+    "EUC-KR",
+    "EUC-TW",
+    "GB2312",
+    "IBM855",
+    "IBM866",
+    "iso-2022-jp",
+    "iso-2022-kr",
+    "iso-8859-1",
+    "iso-8859-2-hungarian",
+    "iso-8859-5-bulgarian",
+    "iso-8859-5-cyrillic",
+    "iso-8859-6-arabic",
+    "iso-8859-7-greek",
+    "iso-8859-9-turkish",
+    "KOI8-R",
+    "MacCyrillic",
+    "TIS-620",
+    "windows-1250-hungarian",
+    "windows-1251-cyrillic",
+    "windows-1251-bulgarian",
+    "windows-1252",
+    "windows-1254-turkish",
+    "windows-1255-hebrew",
+    "windows-1256-arabic"
+  ],
+  newlines: [
+    "CR",
+    "LF",
+    "CRLF"
+  ]
 
 }
 export default Constants
