@@ -63,34 +63,49 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
       // 編集権限がないと、保存不可
       if (!lockUUID) {
-        throw new MessageModel({
-          title: '警告：読取専用フロー', 
-          message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。', 
-          messageStatus:"warning"
+        reject(new MessageModel({
+          title: '警告：読取専用フロー',
+          message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。',
+          messageStatus: "warning"
+        }))
+      } else {
+
+        //　フロー保存
+        await API.request.doPut.flow({
+          flowUUID: inject_flow_uuid,
+          flow: flow,
+          lockUUID: lockUUID
         })
+          .then((response) => {
+            if (!response.data.success) {
+              console.log(response)
+              reject(new MessageModel({
+                title: 'フロー保存エラー',
+              title: 'フロー保存エラー', 
+                title: 'フロー保存エラー',
+                message: response.data.message,
+              message: response.data.message, 
+                message: response.data.message,
+                messageStatus: "warning"
+              }))
+            }
+          })
+
+        dismissNotify(saveNotify.id)
       }
 
-      //　フロー保存
-      await API.request.doPut.flow({
-        flowUUID: inject_flow_uuid,
-        flow: flow,
-        lockUUID: lockUUID
-      })
-
-      dismissNotify(saveNotify.id)
-      
       reslove()
     })
-    // 保存失敗した場合、エラーメッセージ出力
-    .catch(e => {
-      notify({
-        title: e.title,
-        message: e.message,
-        status: e.messageStatus,
-        dismissAfter: -1,
-        closeButton: true
+      // 保存失敗した場合、エラーメッセージ出力
+      .catch(e => {
+        notify({
+          title: e.title,
+          message: e.message,
+          status: e.messageStatus,
+          dismissAfter: -1,
+          closeButton: true
+        })
       })
-    })
   }
 
   onClickSort() {
