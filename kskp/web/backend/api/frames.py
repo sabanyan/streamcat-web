@@ -62,8 +62,9 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
         # 行数は一旦返さないことにする
         # result['numberOfLines'] = number_of_lines
     result['encoding'] = frame.encoding_str
-    result['newline'] = frame.newline
+    result['newline'] = frame.newline_str
     result['fileSize'] = frame.file_size
+    result['lastModifier'] = frame.modifier_str
     result['lastModifiedAt'] = frame.modified_at_str
 
     return result
