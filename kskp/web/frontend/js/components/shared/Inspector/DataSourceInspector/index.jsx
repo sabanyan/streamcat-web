@@ -378,7 +378,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       let fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0
       fileSize = StringUtil.convertToFileSize(fileSize)
       let lastModifiedAt = selected_data_source_detail ? selected_data_source_detail.lastModifiedAt : ""
-
+      let lastModifier = selected_data_source_detail ? selected_data_source_detail.lastModifier : ""
+      
       content = <div>
         <div className={style.property_overview}>
           <div className={style.actions}>
@@ -411,7 +412,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
                 作成者
               </div>
               <div className={style.overview_value}>
-                {/*{property.overview.created_user_name || ""}*/}
+                {lastModifier}{/*{property.overview.created_user_name || ""}*/}
               </div>
             </div>
             <div className={style.overview}>
