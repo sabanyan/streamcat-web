@@ -422,7 +422,9 @@ def get_navigation():
 
     if session['user_id'] is not None and session['user_id'] !='':
         navigation['user_id'] = session['user_id']
-        navigation['user_name'] = model.get_user_by_id(session['user_id'])['name']
+        # navigation['user_name'] = model.get_user_by_id(session['user_id'])['name']
+        from kskp.store.auth import User
+        navigation['user_name'] = User.find_by_uuid(session['user_uuid']).name
 
     if flow_uuid is not None :
         flow = Flow.find_by_uuid(flow_uuid)
