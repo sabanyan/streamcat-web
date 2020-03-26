@@ -156,7 +156,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         console.log(error)
         notify({
           title: 'フロ取得エラー',
-          message: error.message,
+          message: error.message + "(フローの読み込みに失敗しました。再読み込みしてください)",
           status: 'error',
           dismissAfter: 0,
           closeButton: true
@@ -379,7 +379,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       fileSize = StringUtil.convertToFileSize(fileSize)
       let lastModifiedAt = selected_data_source_detail ? selected_data_source_detail.lastModifiedAt : ""
       let lastModifier = selected_data_source_detail ? selected_data_source_detail.lastModifier : ""
-      
+
       content = <div>
         <div className={style.property_overview}>
           <div className={style.actions}>
