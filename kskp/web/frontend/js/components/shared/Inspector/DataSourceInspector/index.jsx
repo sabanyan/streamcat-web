@@ -143,10 +143,25 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   updateCache() {
-    APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
-      const json = response.data
-      this.props.loadFlowJSON(json)
-    })
+    const {notify} = this.props
+
+    APIUtil.get('flows/' + inject_flow_uuid)
+      .then((response) => {
+        console.log(response)
+        if (response.data.success === false) throw response.data
+        const json = response.data
+        this.props.loadFlowJSON(json)
+      })
+      .catch((error) => {
+        console.log(error)
+        notify({
+          title: 'フロ取得エラー',
+          message: error.message,
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      })
   }
 
   onClickCSVDownload(e: Event) {
