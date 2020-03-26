@@ -18,17 +18,39 @@ type Props = {
   onClickApply?: Function;
   onClickMove?: Function;
   onBlurTitle?: Function;
+  onEditEncodings?: Function;
+}
+
+type State = {
+  isEditable: boolean;
+  data?: LibraryListDataType;
 }
 
 class LibraryInspector extends React.Component<Props> {
   constructor(props: Props) {
     super(props)
+
+    this.onChangeEncoding.bind(this)
+    this.onChangeNewline.bind(this)
+
+    this.state = {
+      isEditable: false,
+      data: props.data
+    }
   }
 
   onBlurTitle(e: SyntheticInputEvent<EventTarget>) {
     if (this.props.onBlurTitle) {
       this.props.onBlurTitle(e)
     }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    let isEditable = (nextProps.data !== this.state.data) ? false : true
+    this.setState({
+      data: nextProps.data,
+      isEditable : isEditable
+    })
   }
 
   componentWillMount() {
@@ -113,25 +135,87 @@ class LibraryInspector extends React.Component<Props> {
     </React.Fragment>
   }
 
+  setDetailEditable(isEditable: boolean) {
+    this.setState({
+      isEditable: isEditable
+    })
+  }
+
+  onStartEditDetail(e) {
+    this.setState({
+      isEditable: true
+    }, () => {
+      
+    })
+  }
+
+  onEndEditDetail(e) {
+    const { saveDataDetail } = this.props
+    this.setState({
+      isEditable: false
+    }, () => {
+      saveDataDetail(e, this.state.data)
+    })
+  }
+
+  onChangeEncoding(e) {
+    const { onChangeDataDetail } = this.props
+
+    let data = this.state.data
+    data.encoding = e.target.value
+    onChangeDataDetail(e, data)
+  }
+
+  onChangeNewline(e) {
+    const { onChangeDataDetail } = this.props
+
+    let data = this.state.data
+    data.newline = e.target.value
+    onChangeDataDetail(e, data)
+  }
+
   renderFrameDetail(data) {
     let result = null
 
-    if (data.type === Constants.library.type.frame) {
-      result = <React.Fragment>
-        <div>
-          <label>文字コード</label>
-        </div>
-        <div>
-          {data.encoding}
-        </div>
-        <div>
-          <label>改行コード</label>
-        </div>
-        <div>
-          {data.newline}
-        </div>
+    if (!data || data.type !== Constants.library.type.frame) return result
+    let edit = <Button class={style.editDetailButton} onClick={(e) => this.onStartEditDetail(e)} icon={'edit'}></Button>
+    let done = <Button class={style.editDetailButton} onClick={(e) => this.onEndEditDetail(e)} icon={'done'}></Button>
+
+    let button = (this.state.isEditable) ? done : edit
+
+    let encodings = []
+    Constants.encodings.forEach((value) => {
+      let encoding = <React.Fragment key={value}>
+        <option value={value}>{value}</option>
       </React.Fragment>
-    }
+      encodings.push(encoding)
+    })
+
+    let newlines = []
+    Constants.newlines.forEach((value) => {
+      let newline = <React.Fragment key={value}>
+        <option value={value}>{value}</option>
+      </React.Fragment>
+      newlines.push(newline)
+    })
+
+    result = <React.Fragment>
+      <div>
+        <label>文字コード</label>
+      </div>
+      <select value={data.encoding} disabled={!this.state.isEditable} onChange={(e) => this.onChangeEncoding(e)}>
+        {encodings}
+      </select>
+      {button}
+      <div>
+        <label>改行コード</label>
+      </div>
+      <div>
+        <select value={data.newline} disabled={!this.state.isEditable} onChange={(e) => this.onChangeNewline(e)}>
+          {newlines}
+        </select>
+      </div>
+    </React.Fragment>
 
     return result
   }
