@@ -134,10 +134,7 @@ export default class Visualizer extends React.Component<Props, State> {
         this.setState({ args: args, html: contents })
       })
       .catch((exception) => {
-        this.setState({
-          html: null,
-          args: this.state.args
-        })
+      
         if (exception.message !== "VisualizeInitException") {
           notify({
             title: exception.title,
@@ -148,6 +145,16 @@ export default class Visualizer extends React.Component<Props, State> {
           })
         }
         console.log(exception)
+        let args = this.state.args
+        const result = {
+          html: null,
+          args: args
+        }
+        onSaveResult(index, result, [])
+        this.setState({
+          html: null,
+          args: this.state.args
+        })
       })
   }
 
