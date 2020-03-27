@@ -82,7 +82,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
               reject(new MessageModel({
                 title: 'フロー保存エラー',
                 message: response.data.message,
-                messageStatus: "warning"
+                messageStatus: "error"
               }))
             }
           })
