@@ -145,7 +145,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   updateCache() {
     const {notify} = this.props
 
-    APIUtil.get('flows/' + inject_flow_uuid)
+    APIUtil.get('flows/' + inject_flow_uuid + "?navigation=off")
       .then((response) => {
         console.log(response)
         if (response.data.success === false) throw response.data
