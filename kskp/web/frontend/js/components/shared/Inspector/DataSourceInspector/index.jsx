@@ -440,12 +440,17 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
               キャッシュ削除
             </Button>
           </div>
-          <div className={style.cache_label}>
+          {
+            /*
+            <div className={style.cache_label}>
             キャッシュ作成日
-          </div>
-          <div className={style.cache_value}>
-            {selected_step.cacheCreatedAt}
-          </div>
+            </div>
+            <div className={style.cache_value}>
+              {selected_step.cacheCreatedAt}
+            </div>
+            */
+          }
+
         </div>
         <div className={style.full_hr} />
         <CommandSelector
