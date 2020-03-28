@@ -48,16 +48,16 @@ from kskp.store import model
 
 #     return (user1, project_id, project_uuid, new_flow_name, data_source_name, created_flow)
 
-def create_data(file_path_obj, data=None):
-    """
-    テストデータ作成用
-    frameのuuidが返る
-    """
-    import nysol.mcmd as nm
-    from kskp.store import Library
+# def create_data(file_path_obj, data=None):
+#     """
+#     テストデータ作成用
+#     frameのuuidが返る
+#     """
+#     import nysol.mcmd as nm
+#     from kskp.store import Library
 
-    if data is not None:
-        nm.mread(i=data, o=file_path_obj.as_posix()).run()
-    root = Library.load_root()
-    frame = Library.save_frame(root.uuid, str(uuid.uuid4()), file_path_obj)
-    return frame.uuid
+#     if data is not None:
+#         nm.mread(i=data, o=file_path_obj.as_posix()).run()
+#     root = Library.load_root()
+#     frame = Library.save_frame(root.uuid, str(uuid.uuid4()), file_path_obj)
+#     return frame.uuid
