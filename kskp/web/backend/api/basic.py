@@ -97,9 +97,10 @@ def new_flow():
         new_label = Datum.get_another_label_name(original_label, original_flow.parent_uuid)
         # フローを複製する
         new_flow = original_flow.duplicate(new_label, g.user)
+        flow_data = new_flow.flow_data
         # 複製したフローを保存する
         new_flow.save()
-        return new_flow.flow_data
+        return flow_data
     else:
         parent_uuid = j.get('project_uuid')
         label = j.get('name')
@@ -139,7 +140,7 @@ def fecth_flows():
         flow_data = {'uuid':datum.uuid,
                      'label':datum.label,
                      'creator':datum.creator_str,
-                     'created_at':datum.created_at_str}
+                     'createdAt':datum.created_at_str}
         flow_list.append(flow_data)
 
     # resque_flow_folder = get_resque_flow_dir_path(g.user)

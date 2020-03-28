@@ -29,9 +29,7 @@ def fetch_frame(frame_uuid):
     if frame is None:
         raise Exception('no frame exists.')
 
-    result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)
-
-    print(result)   
+    result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)  
 
     if request.args.get('header_only') == '1':
         # headerのカラムに改行コードが含まれているケースの対応

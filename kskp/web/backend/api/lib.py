@@ -89,7 +89,7 @@ def delete_store(store_id):
     """
     データストアの定義(雛形)を削除する
     """
-    store = Store(store_id)
+    store = Store.find_by_id(store_id)
     store.delete()
 
 def _convert_type(datum):
@@ -346,8 +346,9 @@ def make_new_database():
                             request.json['label'],
                             database_conn,
                             creator=g.user)
+    ret = new_database.to_json()
     new_database.save()
-    return new_database.to_json()
+    return ret
 
 @mod.route('/databases/<database_uuid>', methods=['PUT'])
 @login_required_api
@@ -433,8 +434,9 @@ def make_new_remote_folder():
                               request.json['label'],
                               remote_folder_conn,
                               creator=g.user)
+    ret = new_folder.to_json()
     new_folder.save()
-    return new_folder
+    return ret
 
 @mod.route('/remote-folders/<folder_uuid>', methods=['PUT'])
 @login_required_api

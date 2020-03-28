@@ -45,7 +45,11 @@ def login_required(func):
                 if user is None:
                     return render_template('login.html', email=f['email'])
 
-                if authenticate(user, f['password'], session):
+                # if authenticate(user, f['password'], session):
+                if user.authenticate(f['password']):
+                    # ユーザID保存
+                    session['user_id'] = user.id
+                    g.user = user
                     # 認証成功 本来のページへ遷移する
                     if session.get('last_URL'):
                         last_url = session['last_URL']
@@ -130,28 +134,28 @@ def get_salt(user_id):
     user_id_bytes = bytes(str(user_id), encoding='utf-8')
     return user_id_bytes + FIXED_SALT
 
-def authenticate(user, password, session):
-    """
-    IDとパスワードを元に認証処理を行う
-    認証の成功時にはTrueを、失敗すればFalseを返す
-    """
+# def authenticate(user, password, session):
+#     """
+#     IDとパスワードを元に認証処理を行う
+#     認証の成功時にはTrueを、失敗すればFalseを返す
+#     """
 
-    hashed_password = get_password_hash(user.email, password)
-    # sql = 'SELECT password FROM users WHERE id = ?'
+#     hashed_password = get_password_hash(user.email, password)
+#     # sql = 'SELECT password FROM users WHERE id = ?'
 
-    # passwords = model.query_db(sql, (user_id,), one=True)
+#     # passwords = model.query_db(sql, (user_id,), one=True)
 
-    if user.password is None:
-        # そもそもユーザが存在しない場合
-        return False
+#     if user.password is None:
+#         # そもそもユーザが存在しない場合
+#         return False
 
-    if hashed_password == user.password:
-        # 認証成功
-        session['user_id'] = user.id # model.get_user_id_by_email(user_id)  # ユーザID保存
-        g.user = user
-        return True
-    else:
-        return False
+#     if hashed_password == user.password:
+#         # 認証成功
+#         session['user_id'] = user.id # model.get_user_id_by_email(user_id)  # ユーザID保存
+#         g.user = user
+#         return True
+#     else:
+#         return False
 
 
 @mod.route('/')
