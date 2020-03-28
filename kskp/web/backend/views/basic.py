@@ -13,11 +13,7 @@ def top():
 @mod.route('/projects', methods=['GET', 'POST'])
 @login_required
 def projects():
-    # from kskp.store import get_projects_by_user_id
     # ログインユーザーが閲覧可能なプロジェクト一覧を取得する
-    # projects = get_projects_by_user_id(session['user_id'])
-
-    # return render_template('projects.html', projects=projects)
     return render_template('projects.html')
 
 @mod.route('/flows', methods=['GET', 'POST'])

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, session, jsonify, send_from_directory
+from flask import Blueprint, request, session, jsonify, send_from_directory, g
 from .auth import login_required_api
 from .utils.navigation import update_navigation
 from .utils.api_base import api_base
@@ -41,7 +41,7 @@ def upload_flow():
     if 'file' not in request.files or request.files.get('file') is None:
         raise Exception('No archive file found.')
 
-    creator = session['user_id']
+    creator = g.user
     root = get_library(creator)
     stream = request.files.get('file').stream
     
@@ -78,7 +78,7 @@ def make_new_store():
                              request.json['description'],
                              request.json['url'],
                              request.json['params'],
-                             session['user_id'])
+                             g.user)
     new_store.save()
     return new_store
 
@@ -118,7 +118,7 @@ def _jsonify_folder(folder):
     # フォルダ直下のフォルダとデータベースとドキュメントを取得する
     # children = Datum.find_by_parent_uuid(folder.uuid)
     childrenGetter = ChildrenGetter()
-    children = childrenGetter.execute(session['user_id'], folder)
+    children = childrenGetter.execute(g.user, folder)
 
     # children属性を作成する
     data = folder.to_json()
@@ -129,7 +129,7 @@ def _jsonify_folder(folder):
     data['folderPath'] = [folder for folder in folder_list]
     return data
 
-def get_library(user_id):
+def get_library(user):
     """
     ルートデータストアを取得する、存在しない場合は作成する
     """
@@ -139,7 +139,7 @@ def get_library(user_id):
     if root is None:
         new_root = Folder(parent_uuid=None,
                           label='ROOT_FOLDER',
-                          creator=user_id)
+                          creator=user)
         # folderレコードをDBに格納する
         new_root.save()
         root = new_root
@@ -153,7 +153,7 @@ def fecth_library():
     """
     ルートデータストアを返却する
     """
-    root = get_library(session['user_id'])
+    root = get_library(g.user)
     return _jsonify_folder(root)
 
 @mod.route('/locks', methods=['POST'])
@@ -166,7 +166,7 @@ def make_new_lock():
     if request.json is None or 'target' not in request.json:
         raise Exception('ロック対象データのuuidを指定してください')
     lock_manager = app.config['LOCK_MANAGER'] 
-    lock = lock_manager.lock(request.json['target'], creator=session['user_id'])
+    lock = lock_manager.lock(request.json['target'], creator=g.user)
     return lock.to_json()
 
 @mod.route('/delete-locks', methods=['POST'])
@@ -220,7 +220,7 @@ def make_new_folder():
     """
     new_folder = Folder(request.json['parent'],
                         request.json['label'],
-                        creator=session['user_id'])
+                        creator=g.user)
     new_folder.save()
     return new_folder
 
@@ -240,12 +240,12 @@ def update_folder(folder_uuid):
     if 'label' in request.json and request.json['label'] != '':
         # フォルダのラベルを修正する
         label = request.json['label']
-        modifier = session['user_id']
+        modifier = g.user
         return Folder.update_data(folder_uuid, label, modifier)
     elif 'parent' in request.json and request.json['parent'] != '':
         # フォルダを移動する
         new_parent = request.json['parent']
-        modifier = session['user_id']
+        modifier = g.user
         folder = Folder.find_by_uuid(folder_uuid)
         return folder.move(new_parent, modifier)
     else:
@@ -282,7 +282,7 @@ def make_new_awss3_folder():
     new_folder = AwsS3(request.json['parent'],
                        request.json['label'],
                        request.json['bucket'],
-                       creator=session['user_id'])
+                       creator=g.user)
     # AwsS3レコードをDBに格納する
     new_folder.save()
     return new_folder.to_json()
@@ -296,7 +296,7 @@ def update_awss3_folder(awss3_uuid):
     """
     label = request.json['label']
     bucket_name = request.json['bucket']
-    modifier = session['user_id']
+    modifier = g.user
     return AwsS3.update_data(awss3_uuid, label, bucket_name, modifier)
 
 
@@ -345,7 +345,7 @@ def make_new_database():
     new_database = Database(request.json['parent'],
                             request.json['label'],
                             database_conn,
-                            creator=session['user_id'])
+                            creator=g.user)
     new_database.save()
     return new_database.to_json()
 
@@ -376,12 +376,12 @@ def update_database(database_uuid):
         database_conn.valid_or_raise()
 
         label = request.json['label']
-        modifier = session['user_id']
+        modifier = g.user
         return Database.update_data(database_uuid, label, database_conn, modifier)
     elif 'parent' in request.json and request.json['parent'] != '':
         # データベースを移動する
         new_parent = request.json['parent']
-        modifier = session['user_id']
+        modifier = g.user
         database = Database.find_by_uuid(database_uuid)
         return database.move(new_parent, modifier)
     else:
@@ -432,7 +432,7 @@ def make_new_remote_folder():
     new_folder = RemoteFolder(request.json['parent'],
                               request.json['label'],
                               remote_folder_conn,
-                              creator=session['user_id'])
+                              creator=g.user)
     new_folder.save()
     return new_folder
 
@@ -463,12 +463,12 @@ def update_remote_folder(folder_uuid):
         remote_folder_conn.valid_or_raise()
 
         label = request.json['label']
-        modifier = session['user_id']
+        modifier = g.user
         return RemoteFolder.update_data(folder_uuid, label, remote_folder_conn, modifier)
     elif 'parent' in request.json and request.json['parent'] != '':
         # リモートフォルダを移動する
         new_parent = request.json['parent']
-        modifier = session['user_id']
+        modifier = g.user
         folder = RemoteFolder.find_by_uuid(folder_uuid)
         return folder.move(new_parent, modifier)
     else:
@@ -522,14 +522,14 @@ def delete_remote_folder(folder_uuid):
 #         #                  , request.form.get('parent')
 #         #                  , request.form.get('label')
 #         #                  , request.files.get('file').stream
-#         #                  , creator=session['user_id'])
+#         #                  , creator=g.user)
 #         # set_file2(new_doc)
 #         # return jsonify({'success': True, 'data': new_doc.to_json()})
 
 #         new_doc = DocumentStore(request.form.get('parent')
 #                               , request.form.get('label')
 #                               , request.files.get('file').stream
-#                               , session['user_id'])
+#                               , g.user)
 #         # documentレコードをDBに格納する
 #         new_doc.save()
 #         # ドキュメントに紐付くファイル(path列で指定されるファイル)がなければ作成する
@@ -553,7 +553,7 @@ def delete_remote_folder(folder_uuid):
 #         #              , None
 #         #              , request.json['label']
 #         #              , None
-#         #              , session['user_id'])
+#         #              , g.user)
 #         # upd_file2(doc)
 #         # return jsonify({'success': True, 'data': doc.to_json()})
 
@@ -561,7 +561,7 @@ def delete_remote_folder(folder_uuid):
 #         if doc is None:
 #             raise Exception('no document exists.')
 #         doc.data = json.dumps({'label' : request.json['label']})
-#         doc.modifier = session['user_id']
+#         doc.modifier = g.user
 #         doc.update_data()
 #         return jsonify({'success': True, 'data': doc.to_json()})
 #     except Exception as e:

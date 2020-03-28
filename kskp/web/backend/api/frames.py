@@ -4,7 +4,7 @@ import os
 import time
 
 from pathlib import Path
-from flask import Blueprint, jsonify, request, jsonify, session
+from flask import Blueprint, jsonify, request, jsonify, session, g
 from kskp.store import Datum, Frame, Flow, Folder
 from kskp.web.backend import app
 
@@ -162,12 +162,12 @@ def update_frame(frame_uuid):
     if 'label' in request.json and request.json['label'] != '':
         # frameのラベルを修正する
         label = request.json['label']
-        modifier = session['user_id']
+        modifier = g.user
         return Frame.update_data(frame_uuid, label, modifier)
     elif 'parent' in request.json and request.json['parent'] != '':
         # frameを移動する
         new_parent = request.json['parent']
-        modifier = session['user_id']
+        modifier = g.user
         frame = Frame.find_by_uuid(frame_uuid)
         return frame.move(new_parent, modifier)
     else:
@@ -219,7 +219,7 @@ def create_frame():
             new_frame = Frame(request.form.get('parent')
                             , request.form.get('label')
                             , request.files.get('file').stream
-                            , creator=session['user_id'])
+                            , creator=g.user)
             # documentレコードをDBに格納する
             new_frame.save()
             return jsonify({'success': True, 'data': new_frame})
@@ -291,7 +291,7 @@ def fetch_vis(frame_uuid):
     from kskp.engine import Step
     parent_folder = Datum.find_parent(frame_uuid)
     loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
-    datasource = DataSource(None, 'tmp_source', parent_folder, loader_step, session['user_id'])
+    datasource = DataSource(None, 'tmp_source', parent_folder, loader_step, g.user)
     activity = execute_flow(datasource, vis_args=vis_args)
     return format_vis(activity)
 

@@ -1,7 +1,7 @@
 import os
 import json
 import functools
-from flask import session, request, jsonify
+from flask import session, request, jsonify, g
 from kskp.store import model, Datum, Flow, Folder
 from kskp.store.auth import User
 
@@ -15,15 +15,15 @@ def update_navigation(func):
 
         data = json.loads(func(**kwargs).data.decode())
 
-        if session['user_id'] is None or session['user_id'] =='':
-            user_name = ''
-        else:
-            # user_name =  model.get_user_by_id(session['user_id'])['name']
-            user_name =  User.find_by_uuid(session['user_uuid']).name
+        # if session['user_id'] is None or session['user_id'] =='':
+        #     user_name = ''
+        # else:
+        #     # user_name =  model.get_user_by_id(session['user_id'])['name']
+        #     user_name =  User.find_by_uuid(session['user_uuid']).name
 
         navigation = {
-            'user_id': session['user_id'],
-            'user_name': user_name,
+            'user_id': g.user.id,
+            'user_name': g.user.name,
             'project_uuid': '',
             'project_name': '',
             'flow_uuid': '',
