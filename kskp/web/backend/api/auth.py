@@ -8,7 +8,8 @@ from flask import (
     render_template,
     url_for, jsonify,
     request, redirect,
-    flash
+    flash,
+    g
 )
 from flask_mail import Mail, Message
 
@@ -100,9 +101,10 @@ def login_required_api(func):
 
             # kskp.storeに操作ユーザのIDを設定する
             from kskp.store import ss
-            ss.user_id = session['user_id']
-            ss.user_uuid = session['user_uuid']
-
+            from kskp.store.auth import User
+            user = User.find_by_id(session['user_id'])
+            ss.user = user
+            g.user = user
             return func(**kwargs)
         else:
             # ログインページを返す
@@ -146,7 +148,7 @@ def authenticate(user, password, session):
     if hashed_password == user.password:
         # 認証成功
         session['user_id'] = user.id # model.get_user_id_by_email(user_id)  # ユーザID保存
-        session['user_uuid'] = user.uuid
+        g.user = user
         return True
     else:
         return False
