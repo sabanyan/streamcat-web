@@ -10,7 +10,7 @@ from pathlib import Path
 from werkzeug.datastructures import Headers
 
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
-from kskp.store import model
+# from kskp.store import model
 from kskp.store import ss
 from kskp.web.backend import app
 from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR
@@ -250,8 +250,8 @@ class FlowApiTestCase(TestCaseBase):
         self.db_fd, os.environ['SQLITE_PATH'] = tempfile.mkstemp()
         app.testing = True
         self.client = app.test_client()
-        with app.app_context():
-            model.init_db()
+        # with app.app_context():
+        #     model.init_db()
 
         # テスト用フレームをライブラリに登録する
         # input_frame_path = os.path.join('kskp/data/frames', self.INPUT_FRAME_UUID + '.csv')
@@ -881,9 +881,6 @@ class NavigationApiTestCase(TestCaseBase):
         self.assertEqual(data['flow_name'], test_flow.label)
 
 def setUpUser(self):
-    # user1 = 1
-    # model.create_user(user1, '', 'user1', '')
-    # return user1
     from kskp.store.auth import User
     return User.find_by_id(1)
 
@@ -892,7 +889,6 @@ def setUpProject(self):
     user1 = setUpUser(self)
 
     with self.client.session_transaction() as session:
-        # session['user_id'] = model.get_user_id_by_email(user1)['id']
         session['user_id'] = user1.id
 
     # model.create_project('proj1', session)

@@ -9,8 +9,9 @@ from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 
 class AuthTestCase(TestCaseBase):
     def test_password_hash(self):
+        user = User('a', 'password', 'test')
         self.assertEqual(
-            auth.get_password_hash('a', 'password'),
+            user._get_password_hash('a', 'password'),
             '962c604d898bb6032131ecaca67ad70118f8c35ce31a505616cace7ea6d64a65'
         )
 
@@ -45,7 +46,6 @@ class AuthTestCase(TestCaseBase):
         email = 'dev@kskp.io'
         name = '開発者'
         password = '1bdae10ff4532d6bd4c23d54cae62fa4f636b19cf5e3e8f83432a90aea99f33f'
-        # hashpass = auth.get_password_hash(email, password)
 
         with self.client.session_transaction() as session:
             user = User(email, password, name)
