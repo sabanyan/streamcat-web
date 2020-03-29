@@ -1,20 +1,20 @@
-import time
-import hashlib
 import functools # wraps for decorator
 
 from flask import (
     Blueprint,
     session,
     render_template,
-    url_for, jsonify,
-    request, redirect,
+    url_for,
+    jsonify,
+    request,
+    redirect,
     flash,
     g
 )
 from flask_mail import Mail, Message
 
 from kskp.web.backend import app
-from kskp.store import model
+# from kskp.store import model
 from kskp.store.auth import User
 
 mod = Blueprint('auth', __name__)
@@ -39,13 +39,11 @@ def login_required(func):
                 # 認証を要求している場合
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
-                # user = model.get_user_id_by_email(f['email'])
                 user = User.find_by_email(f['email'])
 
                 if user is None:
                     return render_template('login.html', email=f['email'])
 
-                # if authenticate(user, f['password'], session):
                 if user.authenticate(f['password']):
                     # ユーザID保存
                     session['user_id'] = user.id
@@ -105,7 +103,6 @@ def login_required_api(func):
 
             # kskp.storeに操作ユーザのIDを設定する
             from kskp.store import ss
-            from kskp.store.auth import User
             user = User.find_by_id(session['user_id'])
             ss.user = user
             g.user = user
@@ -115,47 +112,24 @@ def login_required_api(func):
             return jsonify({'success': False, 'message': 'not authorized'})
     return deco
 
-def get_password_hash(user_id, password):
-    """
-    パスワードのハッシュを作成する
-    """
-    salt = get_salt(user_id)
-    current_hash = b''
-    password_bytes = bytes(password, encoding='utf-8')
-    for _ in range(1, STRETCH_COUNT):
-        hash_target = current_hash + password_bytes + salt
-        current_hash = bytes(hashlib.sha256(hash_target).hexdigest(), 'ascii')
-    return str(current_hash, encoding='utf-8')
-
-def get_salt(user_id):
-    """
-    固定ソルトとユーザID（現在はメールアドレス）
-    """
-    user_id_bytes = bytes(str(user_id), encoding='utf-8')
-    return user_id_bytes + FIXED_SALT
-
-# def authenticate(user, password, session):
+# def get_password_hash(user_id, password):
 #     """
-#     IDとパスワードを元に認証処理を行う
-#     認証の成功時にはTrueを、失敗すればFalseを返す
+#     パスワードのハッシュを作成する
 #     """
+#     salt = get_salt(user_id)
+#     current_hash = b''
+#     password_bytes = bytes(password, encoding='utf-8')
+#     for _ in range(1, STRETCH_COUNT):
+#         hash_target = current_hash + password_bytes + salt
+#         current_hash = bytes(hashlib.sha256(hash_target).hexdigest(), 'ascii')
+#     return str(current_hash, encoding='utf-8')
 
-#     hashed_password = get_password_hash(user.email, password)
-#     # sql = 'SELECT password FROM users WHERE id = ?'
-
-#     # passwords = model.query_db(sql, (user_id,), one=True)
-
-#     if user.password is None:
-#         # そもそもユーザが存在しない場合
-#         return False
-
-#     if hashed_password == user.password:
-#         # 認証成功
-#         session['user_id'] = user.id # model.get_user_id_by_email(user_id)  # ユーザID保存
-#         g.user = user
-#         return True
-#     else:
-#         return False
+# def get_salt(user_id):
+#     """
+#     固定ソルトとユーザID（現在はメールアドレス）
+#     """
+#     user_id_bytes = bytes(str(user_id), encoding='utf-8')
+#     return user_id_bytes + FIXED_SALT
 
 
 @mod.route('/')
@@ -227,11 +201,14 @@ def complete_sign_up():
     creator = email
 
     # ユーザーのDB登録
-    model.create_user(email, password, user_name, creator)
+    # model.create_user(email, password, user_name, creator)
+    new_user = User(email, password, user_name)
+    new_user.save()
 
     flash('ユーザー登録が完了しました。')
 
-    session['user_id'] = model.get_user_id_by_email(session['signup_email'])['id']
+    # session['user_id'] = model.get_user_id_by_email(session['signup_email'])['id']
+    session['user_id'] = new_user.id
     del session['signup_email']
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
@@ -242,6 +219,8 @@ def make_temporal_url(email):
     """
     ユーザー新規登録用のURLを作成する
     """
+    import time
+    import hashlib
     hash_target = email + str(time.time())
     temp_path = hashlib.sha256(hash_target.encode()).hexdigest()
 

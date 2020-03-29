@@ -31,9 +31,9 @@ class TestCaseBase(unittest.TestCase):
         everyone_group.join_user(cls.USER2)
 
         # ユーザを作成する
-        from kskp.store import create_user
-        with app.app_context():
-            create_user('anonymous@aaa.bbb', '', 'user1', '')
+        # from kskp.store import create_user
+        # with app.app_context():
+        #     create_user('anonymous@aaa.bbb', '', 'user1', '')
         # SQLAlchemyで使用するテーブルが存在しない場合は作成する
         from kskp.store import BaseModel
         from kskp.store import engine

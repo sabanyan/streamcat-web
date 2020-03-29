@@ -3,7 +3,7 @@ import unittest
 import tempfile
 from flask import template_rendered
 from kskp.web.backend import app
-from kskp.store import model
+# from kskp.store import model
 from kskp.web.backend.api.tests.utils import setUpUser, setUpProject
 
 class HtmlTestCase(unittest.TestCase):
@@ -11,8 +11,8 @@ class HtmlTestCase(unittest.TestCase):
         app.testing = True
         self.client = app.test_client()
         self.db_fd, os.environ['SQLITE_PATH'] = tempfile.mkstemp()
-        with app.app_context():
-            model.init_db()
+        # with app.app_context():
+        #     model.init_db()
         with self.client.session_transaction() as session:
             session['user_id'] = 'user_id'
 
