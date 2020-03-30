@@ -287,7 +287,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     }
     case UPDATE_FLOW_ACTION: {
       newState = { ...newState, flow: action.flow }
-      newState.nodes = newState.flow.nodes
+      //newState.nodes = newState.flow.nodes
       break
     }
 

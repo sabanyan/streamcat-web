@@ -94,6 +94,7 @@ const Constants = {
     ADD_FRAME: 'add_frame',
     ADD_DATABASE: 'add_database',
     EDIT_DATABASE: 'edit_database',
+    EDIT_ENCODING: 'edit_encoding',
     RUN_FLOW: 'run_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
@@ -217,6 +218,5 @@ const Constants = {
     "LF",
     "CRLF"
   ]
-
 }
 export default Constants
