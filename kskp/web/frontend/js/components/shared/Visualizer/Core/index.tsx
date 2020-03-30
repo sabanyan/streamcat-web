@@ -24,6 +24,7 @@ type Props = {
   headers: string[]
 
   onSaveResult: Function;
+  afterViz: Function
   notify: Function;
   dismissNotify: Function;
 }
@@ -40,6 +41,7 @@ export default class Visualizer extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     const initialArgs = this.initArgs(props.visualize, {})
+
 
     this.state = {
       headers: props.headers,
@@ -110,7 +112,7 @@ export default class Visualizer extends React.Component<Props, State> {
   }
 
   requestVisualize() {
-    const { index, flow_uuid, stepIds, frame_uuid, visualize } = this.props
+    const { index, flow_uuid, stepIds, frame_uuid, visualize, afterViz } = this.props
     const { onSaveResult, notify } = this.props
     return API.request.doPost.vizs({
       flowUUID: flow_uuid,
@@ -155,6 +157,9 @@ export default class Visualizer extends React.Component<Props, State> {
           html: null,
           args: this.state.args
         })
+      })
+      .then(() => {
+        afterViz()
       })
   }
 

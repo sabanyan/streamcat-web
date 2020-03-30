@@ -61,6 +61,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     this.state = {
       loading: false
     }
+    this.updateCache = this.updateCache.bind(this)
   }
 
   componentWillMount() {
@@ -121,7 +122,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           let contents = []
           for (const v of visualizers) {
             let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
-            contents.push({ title: v.label, content: content, id: id })
+            contents.push({ title: v.label, content: content, id: id, afterViz: this.updateCache})
           }
           ModalUtil.emitModal({
             id: Constants.preview.DATASOURCE,
@@ -137,7 +138,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           this.setState({
             loading: false
           })
-          this.updateCache()
+          //this.updateCache()
         })
     })
   }
@@ -303,6 +304,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   renderFrameDetail(data_source_detail) {
     let result = null
+    console.log("dfdd")
+    console.log(data_source_detail)
     if (data_source_detail.encoding && data_source_detail.newline) {
       result = <React.Fragment>
         <div className={style.overview}>
