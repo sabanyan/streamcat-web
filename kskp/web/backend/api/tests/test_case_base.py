@@ -34,12 +34,13 @@ class TestCaseBase(unittest.TestCase):
         # from kskp.store import create_user
         # with app.app_context():
         #     create_user('anonymous@aaa.bbb', '', 'user1', '')
-        # SQLAlchemyで使用するテーブルが存在しない場合は作成する
-        from kskp.store import BaseModel
-        from kskp.store import engine
-        # ルートデータストアを作成する
-        from kskp.store import Library
-        Library.load_root(creator=cls.USER1)
+
+        # # SQLAlchemyで使用するテーブルが存在しない場合は作成する
+        # from kskp.store import BaseModel
+        # from kskp.store import engine
+        # # ルートデータストアを作成する
+        # from kskp.store import Library
+        # Library.load_root(creator=cls.USER1)
 
     @classmethod
     def tearDownClass(cls):
@@ -79,27 +80,37 @@ class TestCaseBase(unittest.TestCase):
         """
         指定したパスのフレームを、指定したUUIDでライブラリに登録する
         """
-        # from kskp.store import get_frame_dir_path
-        from kskp.web.backend.api.lib import get_library
-        # テストで用いるテスト用フレームをライブラリに登録する
-        from kskp.store import Frame
-        if not Frame.exists(frame_uuid):
-            # テストで用いるテスト用フレームをライブラリに登録する
-            frame_folder = get_library(user=self.USER1)
-            class_name = self.__class__.__name__
-            new_frame = Frame(frame_folder.uuid, 'テスト用フレーム(%s)' % class_name, None)
-            new_frame.uuid = frame_uuid
-            new_frame.add_entry_from_path(Path(frame_file_path))
+        from flask import g
+
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = self.USER1.id
+                from kskp.store import AuthzSession, Session
+                g.session = AuthzSession(Session, user=self.USER1)
+
+
+                # from kskp.store import get_frame_dir_path
+                from kskp.web.backend.api.lib import get_library
+                # テストで用いるテスト用フレームをライブラリに登録する
+                from kskp.store import Frame
+                if not Frame.exists(frame_uuid):
+                    # テストで用いるテスト用フレームをライブラリに登録する
+                    frame_folder = get_library(user=self.USER1)
+                    class_name = self.__class__.__name__
+                    new_frame = Frame(frame_folder.uuid, 'テスト用フレーム(%s)' % class_name, None)
+                    new_frame.uuid = frame_uuid
+                    new_frame.add_entry_from_path(Path(frame_file_path))
 
     def remove_frame_from_library(self, frame_uuid):
         """
         指定したUUIDのフレームをライブラリから削除する
         (実ファイルは削除しない)
         """
-        from kskp.store import Frame
-        frame = Frame.find_by_uuid(frame_uuid)
-        if frame is not None:
-            frame.remove_reference_only()
+        # from kskp.store import Frame
+        # frame = Frame.find_by_uuid(frame_uuid)
+        # if frame is not None:
+        #     frame.remove_reference_only()
+        pass
 
     def save_flow_to_library(self, flow_uuid, flow_file_path):
         """

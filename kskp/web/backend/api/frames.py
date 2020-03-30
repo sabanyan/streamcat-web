@@ -4,12 +4,13 @@ import os
 import time
 
 from pathlib import Path
-from flask import Blueprint, jsonify, request, jsonify, session, g
-from kskp.store import Datum, Frame, Flow, Folder
+from flask import Blueprint, jsonify, request, jsonify, g
 from kskp.web.backend import app
 
 from .auth import login_required_api
 from .utils import api_base, frame_api_base
+
+from kskp.store.session import Session
 
 mod = Blueprint('frames', __name__)
 
@@ -25,7 +26,7 @@ def fetch_frame(frame_uuid):
     limit = int(request.args.get('limit')) if request.args.get('limit') else 999
     no_contents = True if request.args.get('no_contents') else False
 
-    frame = Frame.find_by_uuid(frame_uuid)
+    frame = g.session.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
@@ -106,43 +107,43 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
 #     # 行数も返すように変更
 #     return result_data, result_len
 
-def replace_column_name(column_list):
-    """
-    受け取ったカラム名リストに重複している列名があれば
-    連番をつける
-    """
-    def check_column_overlap(column_list):
-        """
-        受け取ったカラム名リストを走査する
-        """
-        index_dict = {}
-        column_name_overlap = False
+# def replace_column_name(column_list):
+#     """
+#     受け取ったカラム名リストに重複している列名があれば
+#     連番をつける
+#     """
+#     def check_column_overlap(column_list):
+#         """
+#         受け取ったカラム名リストを走査する
+#         """
+#         index_dict = {}
+#         column_name_overlap = False
 
-        for index, column_name in enumerate(column_list):
-            if not column_name in index_dict:
-                index_dict[column_name] = []
-            else:
-                column_name_overlap = True
-            index_dict[column_name].append((index, len(index_dict[column_name])))
+#         for index, column_name in enumerate(column_list):
+#             if not column_name in index_dict:
+#                 index_dict[column_name] = []
+#             else:
+#                 column_name_overlap = True
+#             index_dict[column_name].append((index, len(index_dict[column_name])))
 
-        return index_dict, column_name_overlap
+#         return index_dict, column_name_overlap
 
-    index_dict, column_name_overlap = check_column_overlap(column_list)
+#     index_dict, column_name_overlap = check_column_overlap(column_list)
 
-    if not column_name_overlap:
-        return column_list
+#     if not column_name_overlap:
+#         return column_list
 
-    for column_name, tuple_list in index_dict.items():
-        if len(tuple_list) < 2:
-            continue
+#     for column_name, tuple_list in index_dict.items():
+#         if len(tuple_list) < 2:
+#             continue
 
-        for tuple in tuple_list:
-            # tuple[0]　インデックス（column_listの）
-            # tuple[1]　連番
-            if tuple[1] > 0:
-                column_list[tuple[0]] = column_name + '.' + str(tuple[1])
+#         for tuple in tuple_list:
+#             # tuple[0]　インデックス（column_listの）
+#             # tuple[1]　連番
+#             if tuple[1] > 0:
+#                 column_list[tuple[0]] = column_name + '.' + str(tuple[1])
 
-    return column_list
+#     return column_list
 
 @mod.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
@@ -161,12 +162,13 @@ def update_frame(frame_uuid):
         # frameのラベルを修正する
         label = request.json['label']
         modifier = g.user
-        return Frame.update_data(frame_uuid, label, modifier)
+        frame = g.session.data.find_by_uuid(frame_uuid)
+        return frame.update_data(label, modifier)
     elif 'parent' in request.json and request.json['parent'] != '':
         # frameを移動する
         new_parent = request.json['parent']
         modifier = g.user
-        frame = Frame.find_by_uuid(frame_uuid)
+        frame = g.session.data.find_by_uuid(frame_uuid)
         return frame.move(new_parent, modifier)
     else:
         raise Exception('update_frame parameter error!')
@@ -178,21 +180,14 @@ def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
     """
-    from kskp.store import Flow
-
-    frame = Frame.find_by_uuid(frame_uuid)
+    frame = g.session.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
     # 削除しようとするframeが、フローで使用されている場合は例外を送出する
-    flow_labels = Flow.get_flows_referencing_frame(frame_uuid)
+    flow_labels = g.session.data.get_flows_referencing_frame(frame_uuid)
     if len(flow_labels) > 0:
         raise Exception(f'このCSVファイルはフロー({flow_labels[0]})で使用しているため削除できません')
-
-    # for flow in Flow.find_all_flows():
-    #     using_frame_uuids = flow.get_frame_uuids()
-    #     if frame_uuid in using_frame_uuids:
-    #         raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
 
     # フレームを削除する
     frame.delete()
@@ -214,10 +209,10 @@ def create_frame():
                 raise Exception('No label is designated.')
             
             # parentとlabel属性があれば新形式のPOST /framesだとみなす
-            new_frame = Frame(request.form.get('parent')
-                            , request.form.get('label')
-                            , request.files.get('file').stream
-                            , creator=g.user)
+            parent = g.session.data.find_by_uuid(request.form.get('parent'))
+            new_frame = parent.create_frame(request.form.get('label')
+                                            , request.files.get('file').stream
+                                            , creator=g.user)
             # documentレコードをDBに格納する
             new_frame.save()
             return jsonify({'success': True, 'data': new_frame})
@@ -228,10 +223,10 @@ def create_frame():
             # 
             flow_uuid = request.json.get('flow_uuid')
             args = request.json.get('args') if request.json.get('args') else {}
-            inputs = _make_flow_inputs(flow_uuid, request)
+            inputs = _make_flow_inputs(g.session, flow_uuid, request)
             # フローの実行
-            flow = Flow.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, args=args, inputs=inputs)
+            flow = g.session.data.find_by_uuid(flow_uuid)
+            result = execute_flow(flow, g.session, args=args, inputs=inputs)
             result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
@@ -270,8 +265,8 @@ def make_new_frames():
         # 普通の実行
         flow_uuid = request.args['from']
 
-    flow = Flow.find_by_uuid(flow_uuid)     
-    activity = execute_flow(flow)
+    flow = g.session.data.find_by_uuid(flow_uuid)     
+    activity = execute_flow(flow, g.session)
     return format_result(activity)
 
 @mod.route('/vizs/<frame_uuid>', methods=['POST'])
@@ -284,13 +279,14 @@ def fetch_vis(frame_uuid):
     vis_args = {"d" : request.json}
 
     import uuid
-    from kskp.store import Datum, DataSource
     from kskp.depo.std.commands import LoaderCommand
     from kskp.engine import Step
-    parent_folder = Datum.find_parent(frame_uuid)
+
+    frame = g.session.data.find_by_uuid(frame_uuid)
+    parent_folder = frame.find_parent()
     loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
-    datasource = DataSource(None, 'tmp_source', parent_folder, loader_step, g.user)
-    activity = execute_flow(datasource, vis_args=vis_args)
+    datasource = g.session.data.create_datasource(None, 'tmp_source', parent_folder, loader_step, g.user)
+    activity = execute_flow(datasource, g.session, vis_args=vis_args)
     return format_vis(activity)
 
 @mod.route('/vizs', methods=['POST'])
@@ -306,17 +302,17 @@ def make_new_viss():
     flow_uuid = request.args['from']
     vis_args = request.json
 
-    flow = Flow.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow, vis_args=vis_args)
+    flow = g.session.data.find_by_uuid(flow_uuid)
+    activity = execute_flow(flow, g.session, vis_args=vis_args)
     return format_vis(activity)
 
-def execute_flow(flow, args={}, inputs={}, vis_args={}):
+def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
     """
     指定されたフローを実行し実行結果を取得する
     """
     try:
         from kskp.engine import execute, FlowJsonLink
-        link = FlowJsonLink(flow, vis_args)
+        link = FlowJsonLink(flow, session, vis_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
             raise Exception('実行結果は出力されませんでした')
@@ -336,11 +332,11 @@ def format_vis(activity):
     # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
     return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.result]
 
-def _make_flow_inputs(flow_uuid, request):
+def _make_flow_inputs(session, flow_uuid, request):
     """
     inputsを作成する
     """
-    flow_json = Flow.find_by_uuid(flow_uuid).flow_data
+    flow_json = session.data.find_by_uuid(flow_uuid).flow_data
 
     # executeの引数
     inputs = {}
@@ -371,8 +367,9 @@ def _make_flow_inputs(flow_uuid, request):
 def _load_frame(frame_uuid):
     # Loaderを用いて指定したuuidのframeを取得する
     from kskp.depo.std.commands import CommandLink
+    store = g.session.data.find_by_uuid(frame_uuid).find_parent()
     loader = CommandLink('loader').resolve()
-    result = loader.run({'uuid':frame_uuid}, {'store':Folder(None, '')})
+    result = loader.run({'uuid':frame_uuid}, {'store':store})
     # NYSOLコマンドを返す
     nysol_module = result['o']
     return nysol_module
