@@ -14,8 +14,7 @@ from flask import (
 from flask_mail import Mail, Message
 
 from kskp.web.backend import app
-# from kskp.store import model
-from kskp.store.auth import User
+from kskp.store.session import Session, UnAuthzSessoin
 
 mod = Blueprint('auth', __name__)
 
@@ -39,15 +38,14 @@ def login_required(func):
                 # 認証を要求している場合
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
-                user = User.find_by_email(f['email'])
-
-                if user is None:
-                    return render_template('login.html', email=f['email'])
+                with UnAuthzSessoin() as db_session:
+                    user = db_session.find_user_by_email(f['email'])
+                    if user is None:
+                        return render_template('login.html', email=f['email'])
 
                 if user.authenticate(f['password']):
                     # ユーザID保存
                     session['user_id'] = user.id
-                    g.user = user
                     # 認証成功 本来のページへ遷移する
                     if session.get('last_URL'):
                         last_url = session['last_URL']
@@ -100,13 +98,25 @@ def login_required_api(func):
     @functools.wraps(func)
     def deco(**kwargs):
         if 'user_id' in session:
-
-            # kskp.storeに操作ユーザのIDを設定する
-            from kskp.store import ss
-            user = User.find_by_id(session['user_id'])
-            ss.user = user
-            g.user = user
-            return func(**kwargs)
+            try:
+                # Userオブジェクトをflask.gに設定する
+                with UnAuthzSessoin() as db_session:
+                    user = db_session.find_user_by_id(session['user_id'])
+                    if user is None:
+                        raise Exception('user is None !')
+                    g.user = user
+                # Sessionオブジェクトをflask.gに設定する
+                with Session(user) as db_session:
+                    # AuthzSessionをUserオブジェクトに格納する
+                    g.user.session = db_session._session
+                    g.session = db_session
+                    return func(**kwargs)
+            finally:
+                # TODO:
+                # kskp.storeにあるssはFlask-Sessionローカルになってない気がするので、
+                # 同時に複数のユーザがアクセスするとss.userが競合するかもしれない
+                # ss.close() 
+                pass
         else:
             # ログインページを返す
             return jsonify({'success': False, 'message': 'not authorized'})
