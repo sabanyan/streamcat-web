@@ -30,9 +30,6 @@ class LibraryInspector extends React.Component<Props> {
   constructor(props: Props) {
     super(props)
 
-    this.onChangeEncoding.bind(this)
-    this.onChangeNewline.bind(this)
-
     this.state = {
       isEditable: false,
       data: props.data
@@ -46,10 +43,9 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   componentWillReceiveProps(nextProps) {
-    let isEditable = (nextProps.data !== this.state.data) ? false : true
     this.setState({
-      data: nextProps.data,
-      isEditable : isEditable
+      isEditable: false,
+      data: nextProps.data
     })
   }
 
@@ -63,7 +59,7 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   onClickPreview(e) {
-    // dataがない（Null)の場合はPreviwボタンは表示しない（render)
+    // dataがない（Null)の場合はPreviewボタンは表示しない（render)
     let { data, visualizers } = this.props
     visualizers = SortUtil.getSortedContents(visualizers)
 
@@ -145,7 +141,7 @@ class LibraryInspector extends React.Component<Props> {
     this.setState({
       isEditable: true
     }, () => {
-      
+
     })
   }
 
@@ -203,7 +199,7 @@ class LibraryInspector extends React.Component<Props> {
       <div>
         <label>文字コード</label>
       </div>
-      <select value={data.encoding} disabled={!this.state.isEditable} onChange={(e) => this.onChangeEncoding(e)}>
+      <select className={style.encoding} value={data.encoding} disabled={!this.state.isEditable} onChange={(e) => this.onChangeEncoding(e)}>
         {encodings}
       </select>
       {button}
@@ -211,7 +207,7 @@ class LibraryInspector extends React.Component<Props> {
         <label>改行コード</label>
       </div>
       <div>
-        <select value={data.newline} disabled={!this.state.isEditable} onChange={(e) => this.onChangeNewline(e)}>
+        <select className={style.newline} value={data.newline} disabled={!this.state.isEditable} onChange={(e) => this.onChangeNewline(e)}>
           {newlines}
         </select>
       </div>
