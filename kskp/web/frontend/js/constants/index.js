@@ -216,7 +216,7 @@ const Constants = {
   newlines: [
     "CR",
     "LF",
-    "CRLF"
+    "CR+LF"
   ]
 }
 export default Constants
