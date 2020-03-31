@@ -1,4 +1,3 @@
-//@flow
 import Constants from 'Constants/index'
 import { GraphUtil } from 'Utils'
 import { defaultGraphProps, defaultNodeProps } from 'Utils/GraphUtil'
@@ -37,6 +36,8 @@ const DRAG_END_ACTION = 'drag_end_action'
 const SET_ZOOM_ACTION = 'set_zoom_action'
 const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
 const UPDATE_CACHE_ACTION = 'update_cache_action'
+const MOVE_STEPS_ACTION = 'move_steps_action'
+const RESIZE_INSPECTOR_ACTION = 'resize_inspector_action'
 const graph: GraphUtil = new GraphUtil()
 
 let initialState = {
@@ -53,7 +54,19 @@ let initialState = {
   drag: {},
   selected_in_edges: [],
   selected_out_edges: [],
-  selected_data_source_detail: {}
+  selected_data_source_detail: {},
+  // editor
+  editor: {
+    width: window.innerWidth - Constants.default.inspector.width,
+    height: undefined,
+    logBox: {
+      height: undefined
+    }
+  },
+  // inspector
+  inspector: {
+    width:Constants.default.inspector.width,
+  }
 }
 
 const FlowEditorReducer = (state = initialState, action: {}) => {
@@ -62,15 +75,16 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
   let newState = StateUtil.deepCopy(state)
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
-      let {context, onSuccess} = action
+      let { context, onSuccess } = action
       const flowJson = graph.load(context.data)
-      newState.originalFlow = {...flowJson}
-      newState.flow = new FlowModel(flowJson)
+
+      newState.originalFlow = { ...flowJson }
+      newState.flow = new FlowModel(context.data)
       newState.nodes = flowJson.nodes
       newState.graph = graph.getGraph(newState)
-
       newState.history.current = 0
-      newState.history.nodes = [{...newState.nodes}]
+      newState.history.nodes = [[...newState.nodes]]
+      
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history)
@@ -79,15 +93,16 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       ValidatorUtil.isGraphModelSchema(newState)
       ValidatorUtil.isNodesSchema(newState)
       ValidatorUtil.nodesValidate(newState.nodes)
+      newState.flow.nodes = newState.nodes
       break
     }
     case ADD_MASTER_ACTION: {
-      let {context} = action
-      newState.mast = Object.assign(newState.mast, {...context})
+      let { context } = action
+      newState.mast = Object.assign(newState.mast, { ...context })
       break
     }
     case ADD_STEP_ACTION: {
-      let {add_step, src_step_ids, dst_step_ids} = action
+      let { add_step, src_step_ids, dst_step_ids } = action
 
       let offsetX = 0
       // let hasNode = (from_step_ids)?(graph.outEdges(from_step_ids[0]).length):false
@@ -159,7 +174,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
           })
 
           //追加したノードが他のノードと位置が重複していた場合ちょっとずらす処理
-          const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({...add_step.position}, newState.nodes)
+          const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition({ ...add_step.position }, newState.nodes)
           const notOverlapOffsetX = notOverlapNodePosition.x - add_step.position.x
           const notOverlapOffsetY = notOverlapNodePosition.y - add_step.position.y
           if (notOverlapOffsetX !== 0 || notOverlapOffsetY !== 0) {
@@ -181,7 +196,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
               width: defaultNodeProps.width,
               height: defaultNodeProps.height
             })
-            newState.nodes = GraphUtil.updateNode({nodes: state.nodes, key: id, new_node: new_node})
+            newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, key: id, new_node: new_node })
           })
           //出力先ステップの位置調整
 
@@ -211,7 +226,8 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             const to: string = add_step.id
             let inputPortName = Constants.default.command.inputPortName
             if (add_step.srcs !== undefined || add_step.srcs !== {}) {
-              inputPortName = Object.keys(add_step.srcs)[0]
+              let object = add_step.srcs
+              inputPortName = Object.keys(object).find(key => object[key] === id)
             }
             graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName))
 
@@ -230,14 +246,15 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             const to: string = id
             let outputPortName = Constants.default.command.outputPortName
             if (add_step.dsts !== undefined || add_step.dsts !== {}) {
-              outputPortName = Object.keys(add_step.dsts)[0]
+              let object = add_step.dsts
+              outputPortName = Object.keys(object).find(key => object[key] === id)
             }
             graph.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortName))
           })
         } else {
           add_step.srcs = {}
           add_step.dsts = {}
-          add_step.setFrame({x: 0, y: 0, width: defaultNodeProps.width, height: defaultNodeProps.height})
+          add_step.setFrame({ x: 0, y: 0, width: defaultNodeProps.width, height: defaultNodeProps.height })
         }
       }
 
@@ -251,12 +268,14 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       }
 
       newState.nodes.push(add_step)
+      newState.flow.nodes = newState.nodes
       newState.graph = graph.getGraph(newState)
       break
     }
     case UPDATE_STEP_ACTION: {
 
       newState.nodes = rebuildNodesEdges(newState, action)
+      newState.flow.nodes = newState.nodes
 
       //選択されているEdgeも更新する
       newState.selected_in_edges = graph.g.inEdges(state.selected_step_ids[0])
@@ -267,7 +286,8 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       break
     }
     case UPDATE_FLOW_ACTION: {
-      newState = {...newState, flow:action.flow}
+      newState = { ...newState, flow: action.flow }
+      //newState.nodes = newState.flow.nodes
       break
     }
 
@@ -300,10 +320,12 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         newState.flow.deleteOutPortWithId(id)
         //選択されたノードを削除
         newState.nodes = graph.removeNode(newState.nodes, id)
+        newState.flow.nodes = newState.nodes
         deleteKeySet.add(id)
       })
 
       newState.nodes = GraphUtil.getNewNodesWithExculudeKeys(newState.nodes, deleteKeySet)
+      newState.flow.nodes = newState.nodes
       newState.graph = graph.getGraph(newState)
 
       //削除後は非選択状態にする
@@ -327,7 +349,6 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     // }
     case PASTE_STEPS_ACTION: {
       let newState = StateUtil.deepCopy(state)
-
       const add_nodes = JSON.parse(action.paste_nodes)
 
       //ペースト時に
@@ -374,8 +395,8 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
 
         const action_step = _.cloneDeep(newNode)
         action_step.dsts = newDsts
-        newState.nodes = rebuildNodesEdges(newState, {step: action_step})
-
+        newState.nodes = rebuildNodesEdges(newState, { step: action_step })
+        newState.flow.nodes = newState.nodes
       })
       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
 
@@ -390,9 +411,9 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       // 親・子関係のコマンド（c）、データフレーム（d）がある場合、　n番目のヒストリで
       // dを削除したら、n-1番目のヒストリのcのdstもなくなる
       newState.history = StateUtil.deepCopy(newState.history)
-      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history,newState.nodes)
-      
-      if(isSame){
+      const isSame = FlowUtil.isSameCurrentNodesToBeforeHistoryNodes(newState.history, newState.nodes)
+
+      if (isSame) {
         return newState
       }
 
@@ -415,8 +436,10 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current - 1
         newState.nodes = state.history.nodes[newState.history.current]
+        newState.flow.nodes = newState.nodes
         allRebuildNodesEdges(newState)
         window.nodes = newState.nodes
+
         newState.graph = graph.getGraph(newState)
       }
       return newState
@@ -428,6 +451,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         //一つ前に巻き戻し
         newState.history.current = newState.history.current + 1
         newState.nodes = state.history.nodes[newState.history.current]
+        newState.flow.nodes = newState.nodes
         allRebuildNodesEdges(newState)
         window.nodes = newState.nodes
         newState.graph = graph.getGraph(newState)
@@ -476,8 +500,9 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       if (node instanceof DataFrameStepModel) {
         node.deleteCache()
       }
-
-      newState.nodes = GraphUtil.updateNode({nodes: state.nodes, key: id, new_node: node})
+      
+      newState.nodes = GraphUtil.updateNode({ nodes: state.nodes, key: id, new_node: node })
+      newState.flow.nodes = newState.nodes
       break
     }
 
@@ -549,18 +574,18 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
       break
     }
     case DRAG_END_ACTION: {
-      newState = {...state, drag: {}}
+      newState = { ...state, drag: {} }
       break
     }
 
     case SET_ZOOM_ACTION: {
-      const {offset, value} = action
+      const { offset, value } = action
       if (offset === undefined) {
         //絶対値
-        newState = {...state, zoom: value}
+        newState = { ...state, zoom: value }
       } else if (state.zoom + offset >= 40 && state.zoom + offset <= 180) {
         //差分
-        newState = {...state, zoom: state.zoom + offset}
+        newState = { ...state, zoom: state.zoom + offset }
       }
       newState.graph = graph.getGraph(newState)
       break
@@ -572,19 +597,54 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
     }
 
     case SORT_STEP_SRC_END_ACTION: {
-      newState.nodes.map((node, index) => {
+      newState.nodes.forEach((node, index) => {
         if (node.id == state.selected_step_ids[0] && node.onSortEnd) {
           node.onSortEnd(action.payload.oldIndex, action.payload.newIndex)
         }
       })
+      newState.flow.nodes = newState.nodes
       break
+    }
+
+    case MOVE_STEPS_ACTION: {
+      const { x, y, step } = action
+      const { selected_step_ids, nodes } = newState
+
+      if (selected_step_ids.length > 0 && step) {
+          const dx = (step.position.x - x)
+          const dy = (step.position.y - y)
+  
+          nodes.map((node, index) => {
+            if (selected_step_ids.includes(node.id)) {
+              node.position.x = node.position.x - dx
+              node.position.y = node.position.y - dy
+            }
+          })
+          newState.flow.nodes = newState.nodes
+          newState.graph = graph.getGraph(newState)
+      }
+
+      break;
+    }
+
+    case RESIZE_INSPECTOR_ACTION: {
+      newState = {
+        ...newState, 
+        inspector: {
+          width : action.width
+        },
+        editor: {
+          width: window.innerWidth - action.width
+        }
+      }
+      break;
     }
 
     default:
       window.nodes = state.nodes
       return state
   }
-  
+
   window.nodes = newState.nodes
   return newState
 
@@ -598,7 +658,7 @@ export default FlowEditorReducer
  * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
  * @returns {*}
  */
-function rebuildNodesEdges (newState, action) {
+function rebuildNodesEdges(newState, action) {
   return newState.nodes.map((node, index) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
     if (node.id === action.step.id) {
@@ -657,7 +717,7 @@ function rebuildNodesEdges (newState, action) {
  * @param action action.stepに変更後のコマンドステップ or サブフローステップを設定する
  * @returns {*}
  */
-function allRebuildNodesEdges (newState) {
+function allRebuildNodesEdges(newState) {
   graph.removeAllEdges(newState.graph.edges)
   return newState.nodes.map((node, index) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
@@ -705,13 +765,13 @@ export const addStepAction = (add_step: StepModelType, src_step_ids: [] = [], ds
  * @param context
  * @returns {{type: string, context: *}}
  */
-export function loadFlowJSONAction(context: {}){
+export function loadFlowJSONAction(context: {}) {
   return (dispatch, getState) => {
     return Promise.resolve().then(() => {
-      const { flowEditorReducer} = getState()
+      const { flowEditorReducer } = getState()
       return dispatch({
-        type      : LOAD_FLOW_JSON_ACTION,
-        context   : context
+        type: LOAD_FLOW_JSON_ACTION,
+        context: context
       })
     })
   }
@@ -922,7 +982,7 @@ export const dragEndAction = (x: number, y: number) => {
  * @returns {{type: string, offset: *, value: *}}
  * @constructor
  */
-export const setZoomAction = ({offset, value}) => {
+export const setZoomAction = ({ offset, value }) => {
   return {
     type: SET_ZOOM_ACTION,
     offset: offset,
@@ -960,3 +1020,18 @@ export const sortStepSrcEndAction = (detail: {}, mouseEvent: {}) => {
   }
 }
 
+export const moveStepsAction = (x: number, y: number, step) => {
+  return {
+    type: MOVE_STEPS_ACTION,
+    x: x,
+    y: y,
+    step: step
+  }
+}
+
+export const resizeInspectorAction = (width: number) => {
+  return {
+    type: RESIZE_INSPECTOR_ACTION,
+    width: width
+  }
+}

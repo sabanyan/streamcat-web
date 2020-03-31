@@ -25,8 +25,8 @@ type GraphType = {
 
 class GraphUtil {
 
-  constructor () {
-    this.g = new dagre.graphlib.Graph({multigraph: true})
+  constructor() {
+    this.g = new dagre.graphlib.Graph({ multigraph: true })
     this.g.setGraph({
       marginx: defaultGraphProps.marginX,
       marginy: defaultGraphProps.marginY,
@@ -46,7 +46,7 @@ class GraphUtil {
    * @param id
    * @param from_id
    */
-  addNode (id: string) {
+  addNode(id: string) {
     const self = this
     this.g.setNode(id, {
       label: id,
@@ -63,27 +63,27 @@ class GraphUtil {
     // }
   }
 
-  outEdges (id: string) {
+  outEdges(id: string) {
     return this.g.outEdges(id)
   }
 
-  inEdges (id: string) {
+  inEdges(id: string) {
     return this.g.inEdges(id)
   }
 
-  nodeEdges (id: string) {
+  nodeEdges(id: string) {
     return this.g.nodeEdges(id)
   }
 
-  static edgeName (v: string, w: string, port_name: string) {
-    return JSON.stringify({v: v, w: w, port_name: port_name})
+  static edgeName(v: string, w: string, port_name: string) {
+    return JSON.stringify({ v: v, w: w, port_name: port_name })
   }
 
   /**
    * ノードの削除
    * @param id
    */
-  removeNode (nodes: [], id: string): [] {
+  removeNode(nodes: [], id: string): [] {
     const edges = this.g.nodeEdges(id)
     if (Array.isArray(edges)) {
       edges.forEach((edge) => {
@@ -99,8 +99,8 @@ class GraphUtil {
    * @param from_id
    * @param to_id
    */
-  addEdge (from_id: string, to_id: string, name: string) {
-    this.g.setEdge({v: from_id, w: to_id, name: name})
+  addEdge(from_id: string, to_id: string, name: string) {
+    this.g.setEdge({ v: from_id, w: to_id, name: name })
   }
 
   /**
@@ -108,15 +108,15 @@ class GraphUtil {
    * @param from_id
    * @param to_id
    */
-  removeEdge (from_id: string, to_id: string, name: string) {
-    this.g.removeEdge({v: from_id, w: to_id, name: name})
+  removeEdge(from_id: string, to_id: string, name: string) {
+    this.g.removeEdge({ v: from_id, w: to_id, name: name })
   }
 
   /**
    * 全エッジの削除
    * @param edges
    */
-  removeAllEdges (edges: []) {
+  removeAllEdges(edges: []) {
     edges.forEach((edge) => {
       const from = edge.v
       const to = edge.w
@@ -128,7 +128,7 @@ class GraphUtil {
   /**
    * dagreによるレイアウト
    */
-  layout () {
+  layout() {
     dagre.layout(this.g)
   }
 
@@ -137,15 +137,15 @@ class GraphUtil {
    * @returns {{width, height}}
    */
 
-  getGraph (GraphType) {
-    const {nodes, zoom} = GraphType
+  getGraph(GraphType) {
+    const { nodes, zoom } = GraphType
     const graph = this.g.graph()
     const graph_nodes = this.g.nodes()
     const edges = this.g.edges()
     if (nodes) {
       const width = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.x + nodes[key].size.width))
       const height = Math.max(...Object.keys(nodes).map((key) => nodes[key].position.y + nodes[key].size.height))
-      return {width: ZoomUtil.zoom(width, zoom), height: ZoomUtil.zoom(height, zoom), nodes: graph_nodes, edges: edges}
+      return { width: ZoomUtil.zoom(width, zoom), height: ZoomUtil.zoom(height, zoom), nodes: graph_nodes, edges: edges }
     }
 
     return {
@@ -161,7 +161,7 @@ class GraphUtil {
    * @param nodes
    * @returns {*}
    */
-  refreshPosition (nodes: []) {
+  refreshPosition(nodes: []) {
     const self = this
     this.layout()
     this.g.nodes().forEach((v) => {
@@ -188,7 +188,7 @@ class GraphUtil {
    * @param key
    * @returns {*}
    */
-  static getNode (nodes: [], key: string) {
+  static getNode(nodes: [], key: string) {
     let node = nodes.find((node) => {
       return node.id === key
     })
@@ -200,8 +200,8 @@ class GraphUtil {
    * @returns {any[]}
    * @param parameters
    */
-  static updateNode (parameters: { nodes: [], key: string, new_node: any }) {
-    let {nodes, key, new_node} = parameters
+  static updateNode(parameters: { nodes: [], key: string, new_node: any }) {
+    let { nodes, key, new_node } = parameters
     let new_nodes = nodes.map((node: any) => {
       if (node.id === key) {
         return new_node
@@ -218,7 +218,7 @@ class GraphUtil {
    * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithIncludeKeys (nodes: [], keySet: any) {
+  static getNewNodesWithIncludeKeys(nodes: [], keySet: any) {
     let node = nodes.filter((node) => {
       return (key_set.has(node.id))
     })
@@ -231,7 +231,7 @@ class GraphUtil {
    * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithExculudeKeys (nodes: [], keySet: Set) {
+  static getNewNodesWithExculudeKeys(nodes: [], keySet: Set) {
     let node = nodes.filter((node) => {
       return !(keySet.has(node.id))
     })
@@ -243,7 +243,7 @@ class GraphUtil {
    * @param json
    * @returns {*}
    */
-  load (json: {}) {
+  load(json: {}) {
     const self = this
     let hasPosition = false
 
@@ -292,6 +292,7 @@ class GraphUtil {
             model.type = Constants.step.type.command
             model.commandId = step.commandId
             node = new CommandStepModel(model)
+            node.loadArgs()
           } else if (type === Constants.step.type.subflow) {
             model.type = Constants.step.type.subflow
             model.uuid = step.uuid
