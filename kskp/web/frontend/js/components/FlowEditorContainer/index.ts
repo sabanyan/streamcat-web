@@ -25,16 +25,17 @@ import {
   undoAction,
   updateDataFrameDetailAction,
   updateFlowAction,
-  updateStepAction
- } from 'Modules/application'
+  updateStepAction,
+  moveStepsAction,
+  resizeInspectorAction
+} from 'Modules/application'
 import FlowEditor from 'Components/FlowEditorContainer/FlowEditor'
 import { connect } from 'react-redux'
 import * as React from 'react'
-import { FlowModelProps } from 'Model/Flow/FlowModel'
+import { FlowModel } from 'Model/index'
 import { DataFrameDetailType, DragType, GraphType, MastType, StepModelType } from 'Types/index'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
-import {apiActions} from 'Modules/api/index'
-import { LocksModel } from 'Model/index';
+
 
 export type FlowEditorProps = {
   projectId: string,
@@ -58,11 +59,10 @@ export type FlowEditorProps = {
   sortFlow: Function;
   executeFlow: Function;
   updateDataFrameDetail: Function;
-  nodes: {};
+  nodes: any[];
   selected_step_ids: string[];
   selected_tab_id: string;
   children: React.ReactNode;
-  locks: LocksModel;
   dragStart: Function;
   dragging: Function;
   dragEnd: Function;
@@ -71,8 +71,10 @@ export type FlowEditorProps = {
   history: any;
   mast: any;
   position: any;
-  flow: FlowModelProps;
+  flow: FlowModel;
   drag: DragType;
+  inspector:{width:number};
+  editor: {};
   selected_data_source_detail: Function;
   sortStepSrcEnd: Function;
   deleteSelectStep: Function;
@@ -81,8 +83,8 @@ export type FlowEditorProps = {
   dismissNotify: Function;
   addNote: Function;
   sortStepSrcEndAction: Function;
-  newLocks: Function;
-  updateLocks: Function;
+  moveSteps: Function;
+  resizeInspector: Function;
 }
 
 const FlowEditorContainer = connect(
@@ -103,110 +105,113 @@ const FlowEditorContainer = connect(
       selected_out_edges: state.flowEditorReducer.selected_out_edges,
       zoom: state.flowEditorReducer.zoom,
       flow: state.flowEditorReducer.flow,
-      locks: state.apiReducer.locks,
       originalFlow: state.flowEditorReducer.originalFlow,
       navigation: state.flowEditorReducer.navigation,
+      //editor
+      editor: state.flowEditorReducer.editor,
+      //inspector
+      inspector: state.flowEditorReducer.inspector
     }
   },
   dispatch => {
-    
+
     return {
-      newLocks (flowUUID:string) {
-        return dispatch(apiActions.NewLocks(flowUUID))
-      },
-      updateLocks (locks:LocksModel) {
-        return dispatch(apiActions.UpdateLocks(locks))
-      },
-      loadFlowJSON (context: {}) {
+      loadFlowJSON(context: {}) {
         return dispatch(loadFlowJSONAction(context))
       },
-      addMaster (context: {}) {
+      addMaster(context: {}) {
         dispatch(addMasterAction(context))
       },
-      addStep (add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) {
-        dispatch(addStepAction(add_step,src_step_ids,dst_step_ids))
+      addStep(add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) {
+        dispatch(addStepAction(add_step, src_step_ids, dst_step_ids))
       },
-      updateStep (step: StepModelType) {
+      updateStep(step: StepModelType) {
         dispatch(updateStepAction(step))
       },
-      updateFlow (flow) {
+      updateFlow(flow) {
         dispatch(updateFlowAction(flow))
       },
-      selectSteps (selected_steps: []) {
+      selectSteps(selected_steps: []) {
         dispatch(selectStepsAction(selected_steps))
       },
-      addSelectStep (selected_step_id: string) {
+      addSelectStep(selected_step_id: string) {
         dispatch(addSelectStepAction(selected_step_id))
       },
-      deleteSelectStep (selected_step_id: string) {
+      deleteSelectStep(selected_step_id: string) {
         dispatch(deleteSelectStepAction(selected_step_id))
       },
-      deleteSteps (step_ids: []) {
+      deleteSteps(step_ids: []) {
         dispatch(deleteStepsAction(step_ids))
       },
-      deleteCache (selected_step_id: string) {
+      deleteCache(selected_step_id: string) {
         dispatch(deleteCacheAction(selected_step_id))
       },
-      cutSteps (step_ids: []) {
+      cutSteps(step_ids: []) {
         dispatch(cutStepsAction(step_ids))
       },
-      copySteps (step_ids: []) {
+      copySteps(step_ids: []) {
         dispatch(copyStepsAction(step_ids))
       },
-      pasteSteps (paste_nodes: []) {
+      pasteSteps(paste_nodes: []) {
         dispatch(pasteStepsAction(paste_nodes))
       },
-      addHistory () {
+      addHistory() {
         dispatch(addHistoryAction())
       },
-      undo () {
+      undo() {
         dispatch(undoAction())
       },
-      redo () {
+      redo() {
         dispatch(redoAction())
       },
-      sortFlow () {
+      sortFlow() {
         dispatch(sortFlowAction())
       },
-      executeFlow (flowid: string) {
+      executeFlow(flowid: string) {
         // flowidは未使用
         dispatch(executeFlowAction(flowid))
       },
-      selectTab (tab_id: string) {
+      selectTab(tab_id: string) {
         dispatch(selectTabAction(tab_id))
       },
-      dragStart (x: number, y: number) {
-        dispatch(dragStartAction(x,y))
+      dragStart(x: number, y: number) {
+        dispatch(dragStartAction(x, y))
       },
-      dragging (x: number, y: number) {
-        dispatch(draggingAction(x,y))
+      dragging(x: number, y: number) {
+        dispatch(draggingAction(x, y))
       },
-      dragEnd (x: number, y: number) {
-        dispatch(dragEndAction(x,y))
+      dragEnd(x: number, y: number) {
+        dispatch(dragEndAction(x, y))
       },
-      setZoom ({offset, value}) {
-        dispatch(setZoomAction({offset, value}))
+      setZoom({ offset, value }) {
+        dispatch(setZoomAction({ offset, value }))
       },
-      updateDataFrameDetail (detail: DataFrameDetailType) {
+      updateDataFrameDetail(detail: DataFrameDetailType) {
         dispatch(updateDataFrameDetailAction(detail))
       },
-      notify (context:{}) {
+      notify(context: {}) {
         return dispatch(addNotification(context))
       },
-      updateNotify (context:{}) {
+      updateNotify(context: {}) {
         return dispatch(updateNotification(context))
       },
-      dismissNotify (id:string) {
+      dismissNotify(id: string) {
         setTimeout(() => {
           dispatch(removeNotification(id))
         }, 1000)
       },
-      addNote (x: number, y: number) {
-        dispatch(addNoteAction(x,y))
+      addNote(x: number, y: number) {
+        dispatch(addNoteAction(x, y))
       },
-      sortStepSrcEnd (detail: {}, mouseEvent: {}) {
+      sortStepSrcEnd(detail: {}, mouseEvent: {}) {
         // mouseEventは未使用
-        dispatch(sortStepSrcEndAction(detail,mouseEvent))
+        dispatch(sortStepSrcEndAction(detail, mouseEvent))
+      },
+      moveSteps(x: number, y: number, step) {
+        dispatch(moveStepsAction(x, y, step))
+      },
+      resizeInspector(width: number) {
+        dispatch(resizeInspectorAction(width))
       }
     }
   },

@@ -1,3 +1,4 @@
+import os
 import json
 import functools
 from flask import session, request, jsonify
@@ -24,7 +25,8 @@ def update_navigation(func):
             'project_uuid': '',
             'project_name': '',
             'flow_uuid': '',
-            'flow_name': ''
+            'flow_name': '',
+            'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
         }
 
         # 条件分岐がちょっと不安

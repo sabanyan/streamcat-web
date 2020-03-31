@@ -9,7 +9,7 @@ from kskp.store import Datum, Frame, Flow, Folder
 from kskp.web.backend import app
 
 from .auth import login_required_api
-from .utils import api_base, frame_api_base
+from .utils import api_base, frame_api_base, RequestJson
 
 mod = Blueprint('frames', __name__)
 
@@ -26,6 +26,9 @@ def fetch_frame(frame_uuid):
     no_contents = True if request.args.get('no_contents') else False
 
     frame = Frame.find_by_uuid(frame_uuid)
+    if frame is None:
+        raise Exception('no frame exists.')
+
     result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)
 
     if request.args.get('header_only') == '1':
@@ -58,7 +61,10 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
         result['contents'] = contents
         # 行数は一旦返さないことにする
         # result['numberOfLines'] = number_of_lines
+    result['encoding'] = frame.encoding_str
+    result['newline'] = frame.newline_str
     result['fileSize'] = frame.file_size
+    result['lastModifier'] = frame.modifier_str
     result['lastModifiedAt'] = frame.modified_at_str
 
     return result
@@ -146,25 +152,36 @@ def update_frame(frame_uuid):
     """
     frameのラベルを修正する、またはframeを移動する
     """
-    if ('label'  not in request.json or request.json['label']  == '') and \
-       ('parent' not in request.json or request.json['parent'] == ''):
-        raise Exception('labelまたはparent属性を指定してください')
-    elif 'label' in request.json and 'parent' in request.json:
-        raise Exception('labelとはparent属性は同時に指定できません')
-        
-    if 'label' in request.json and request.json['label'] != '':
-        # frameのラベルを修正する
-        label = request.json['label']
-        modifier = session['user_id']
-        return Frame.update_data(frame_uuid, label, modifier)
-    elif 'parent' in request.json and request.json['parent'] != '':
+    req = RequestJson(request.json)
+
+    if req.has_no_all('parent', 'label', 'encoding', 'newline'):
+        raise Exception('label,encoding,newlineまたはparent属性を指定してください')
+    elif req.has('parent') and req.has_at_least('label', 'encoding', 'newline'):
+        raise Exception('label,encoding,newlineとはparent属性は同時に指定できません')
+    
+    modifier = session['user_id']
+
+    if req.has('parent'):
         # frameを移動する
-        new_parent = request.json['parent']
-        modifier = session['user_id']
+        new_parent = req['parent']
         frame = Frame.find_by_uuid(frame_uuid)
         return frame.move(new_parent, modifier)
+
     else:
-        raise Exception('update_frame parameter error!')
+        if req.has('label'):
+            # frameのラベルを修正する
+            label = req['label']
+            ret = Frame.update_label(frame_uuid, label, modifier)
+
+        if req.has_all('encoding', 'newline'):
+            encoding_str = req['encoding']
+            newline_str = req['newline']
+            ret = Frame.update_encoding_newline(frame_uuid, encoding_str, newline_str, modifier)
+
+        if ret is None:
+            raise Exception('update_frame parameter error!')
+
+        return ret
 
 @mod.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api
@@ -313,9 +330,10 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
             raise Exception('実行結果は出力されませんでした')
         return activity
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise Exception(str(e))
+        # import traceback
+        # traceback.print_exc()
+        # raise Exception(str(e))
+        raise
 
 def format_result(activity):
     from kskp.store import Activity
@@ -323,6 +341,7 @@ def format_result(activity):
 
 def format_vis(activity):
     from kskp.store import Activity
+    # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
     return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.result]
 
 def _make_flow_inputs(flow_uuid, request):

@@ -3,6 +3,7 @@ from flask.json import JSONEncoder
 from kskp.store import StoreModel as Store
 from kskp.store import Vis
 from kskp.core import Datum as Datum
+from kskp.store.lock_manager import Lock
 
 class KSKPJSONEncoder(JSONEncoder):
     """
@@ -13,6 +14,8 @@ class KSKPJSONEncoder(JSONEncoder):
             return obj.to_json()
         elif isinstance(obj, Vis):
             return obj.to_html()
+        elif isinstance(obj, Lock):
+            return obj.to_json()
         elif isinstance(obj, Datum):
             return obj.to_json()
         else:

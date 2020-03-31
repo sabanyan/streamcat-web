@@ -5,6 +5,7 @@ export type Props = {
   project_uuid: string;
   user_id: string;
   user_name: string;
+  depo_name: string;
 }
 
 export default class NavigationModel {
@@ -14,6 +15,7 @@ export default class NavigationModel {
   project_uuid: string
   user_id: string
   user_name: string
+  depo_name: string
 
   constructor (props: Props) {
     this.flow_name    = props.flow_name
@@ -22,5 +24,6 @@ export default class NavigationModel {
     this.project_uuid = props.project_uuid
     this.user_id      = props.user_id
     this.user_name    = props.user_name
+    this.depo_name    = props.depo_name
   }
 }

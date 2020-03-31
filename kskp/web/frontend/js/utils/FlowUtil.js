@@ -261,29 +261,25 @@ export default class FlowUtil {
       dismissAfter: 0
     })
 
-
     return APIUtil.put('flows/' + flowUUID, putBody)
-    .catch((message) => {
-      console.log(message)
-    })
-    .then((response) => {
-      if (dismissNotify) dismissNotify(saveNotify.id)
-      if (locksModel && locksModel.error) throw locksModel.error.message
-      if (!response.data.success) throw ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response))
-    }).catch((message) => {
-      notify({
-        title: 'フロー保存エラー',
-        message: message,
-        status: 'error',
-        dismissAfter: 0,
-        closeButton: true
+      .catch((message) => {
+        console.log(message)
       })
-      reject(message)
-    })
-}
-
-  // static copyStep(step:StepModelType):StepModelType{
-  // }
+      .then((response) => {
+        if (dismissNotify) dismissNotify(saveNotify.id)
+        if (locksModel && locksModel.error) throw locksModel.error.message
+        if (!response.data.success) throw ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response))
+      }).catch((message) => {
+        notify({
+          title: 'フロー保存エラー',
+          message: message,
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+        reject(message)
+      })
+  }
 
   /**
    * Srcsをコピーする
@@ -332,7 +328,11 @@ export default class FlowUtil {
 
   static setModelType (json: {}): StepModelType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
-    if (json['srcs'] !== undefined && json['dsts'] !== undefined) return new CommandStepModel(json)
+    if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
+      let node = new CommandStepModel(json)
+      node.loadArgs()
+      return node
+    }
     if (json['uuid'] !== undefined && json['dataSource'] !== undefined) return new DataFrameStepModel(json)
     return json
   }

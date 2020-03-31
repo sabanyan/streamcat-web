@@ -76,7 +76,8 @@ class PreviewInspector extends React.Component<PreviewInspectorProps, State> {
         <Button onClick={(e) => this.onClickApply(e)}>表示</Button>
         <div>
           <div className="kskp-form"></div>
-          <ParamsForm 
+          <ParamsForm
+             key={label} 
              headers={headers} params={params} args={this.state.args} 
              invalids={{}} groups={groups} 
              onChange={(e, param, value) => this.onArgsChange(e, param, value)}/>

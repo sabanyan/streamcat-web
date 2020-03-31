@@ -398,8 +398,40 @@ class LibraryTestCase(TestCaseBase):
         # 中のファイルを削除する(DELETE /frames)
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
 
-        # フォルダを削除する(DELETE /folders)
-        # self.delete_uri('/api/v0/folders/' + folder_uuid, self.USER_ID)
+    def test_update_frame_encoding(self):
+        root = Datum.find_root()
+
+        # アップロード用に一時ファイルを作成する
+        import io
+        f = (io.BytesIO(b"thisisaframefile"), 'aaa2.csv')
+
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('フレームファイルAA2', root.uuid, f, self.USER_ID)
+        frame_uuid = result['data']['uuid']
+
+        # フレームの文字コードを変更する(PUT /frames)
+        result = self.put_uri('/api/v0/frames/' + frame_uuid, {'encoding':'UTF-8', 'newline':'LF'}, self.USER_ID)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : 'フレームファイルAA2'
+            ,'type'     : 'frame'
+            ,'encoding' : 'UTF-8'
+            ,'newline'  : 'LF'
+            ,'creator'  : '管理者'
+        }
+
+        # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
+        self.assertNotEqual(result['data']['uuid'], None)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['encoding'], expected_result['encoding'])
+        self.assertEqual(result['data']['newline'], expected_result['newline'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # 中のファイルを削除する(DELETE /frames)
+        self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
 
     def test_move_frame(self):
         # ルートを取得する

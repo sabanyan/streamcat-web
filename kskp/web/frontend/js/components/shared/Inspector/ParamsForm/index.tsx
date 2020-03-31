@@ -108,17 +108,15 @@ export default class ParamsForm extends React.Component<Props> {
     return paramElement
   }
 
-  renderGroup(key, group) {
-    const result = <React.Fragment>
-          <div key={key} className={style.group}>
-            {group.label}
-          </div>
-          <p className={style.description}>
-            {group.description}
-          </p>
+  renderGroup(group, key) {
+    return <React.Fragment key={key}>
+      <div className={style.group}>
+        {group.label}
+      </div>
+      <p className={style.description}>
+      {group.description}
+    </p>
     </React.Fragment>
-
-    return result
   }
 
 
@@ -145,7 +143,7 @@ export default class ParamsForm extends React.Component<Props> {
       if(!params) throw "params is undefined in renderParamsForm"
       if (groups) {
         groups.forEach(group => {
-          paramsForm.push(this.renderGroup(group.name + "_start", group))
+          paramsForm.push(this.renderGroup(group, group.name + "_group"))
           group.params.forEach((paramName, index) => {
             const param = params.find(p => p.name == paramName)
             if (!param) throw "[Error] undefined params.name " + param.name + " in Group "
@@ -173,8 +171,6 @@ export default class ParamsForm extends React.Component<Props> {
     const {params, groups} = this.props
     //パラメータフォームの作成
 
-    const paramsForm = this.renderParamsForm(params, groups)
-
-    return paramsForm
+    return this.renderParamsForm(params, groups)
   }
 }

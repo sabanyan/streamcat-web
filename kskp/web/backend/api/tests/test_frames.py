@@ -62,6 +62,8 @@ class FrameApiTestCase(TestCaseBase):
         # 中身をテストしてもいいけど面倒臭いので、Noneじゃないことだけテストする
         self.assertIsNotNone(result['data'].get('contents'))
         self.assertEqual(result['data']['fileSize'], 56)
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
 
@@ -91,6 +93,8 @@ class FrameApiTestCase(TestCaseBase):
         self.assertEqual(result['success'], True)
         # no_contentsをつけているのでNoneのはず
         self.assertIsNone(result['data'].get('contents'))
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
@@ -124,6 +128,8 @@ class FrameApiTestCase(TestCaseBase):
         # no_contentsをつけているのでNoneのはず
         self.assertEqual(result['data']['contents'], correct)
         self.assertEqual(result['data']['fileSize'], 56)
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
 
@@ -178,7 +184,7 @@ class FrameApiTestCase(TestCaseBase):
 
         frame = Library.load_frame(frame_uuid)
         # data列にラベルがあるらしい、requestのjsonがそのまま入っているのでjson.loadsする
-        self.assertEqual(frame.data, data)
+        self.assertEqual(frame.label, '変更後')
         self.assertEqual(frame.modifier, 100)
 
 
@@ -566,6 +572,41 @@ class FrameApiTestCase(TestCaseBase):
         self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
         self.assertIsNotNone(lasts[0].get('contents'))
 
+    def test_bad_csv_vizs(self):
+        """
+        不正なCSVをVis実行する
+        """
+        # テストフレーム作成
+        csv_data = [
+            ['顧客', None, '顧客'],
+            ['A', 1],
+            ['A', 2, 20],
+            ['B', 1],
+            [ 0, '3', 40],
+            ['B', 1, 50]
+        ]
+        frame_path = STORE_DIR / root_path / 'test_data_4.csv'
+        frame_uuid = create_data(frame_path, csv_data)
+
+        # Visデータのポイント引数の作成
+        data = {
+            "args" : {
+                "visualizer" : "csvtohtmltable",
+                "offset" : 0,
+                "limit"  : 5
+            }
+        }
+
+        # Visの取得
+        result = self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER_ID)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd')
+        self.assertEqual(lasts[0]['args']['column_names'], ['顧客','','顧客'])
+        self.assertIsNotNone(lasts[0].get('contents'))
+
+
 def create_data(file_path_obj, data=None):
     """
     テストデータ作成用
@@ -574,8 +615,13 @@ def create_data(file_path_obj, data=None):
     import nysol.mcmd as nm
     import uuid
 
+    # if data is not None:
+    #     nm.mread(i=data, o=file_path_obj.as_posix()).run()
     if data is not None:
-        nm.mread(i=data, o=file_path_obj.as_posix()).run()
+        with file_path_obj.open('w') as f:
+            import csv
+            writer = csv.writer(f, lineterminator='\n')
+            writer.writerows(data)
     
     frame = Library.save_frame(root.uuid,
                                str(uuid.uuid4()),
