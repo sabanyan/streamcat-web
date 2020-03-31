@@ -105,8 +105,7 @@ class LibraryInspector extends React.Component<Props> {
     if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
 
     // editEncoding
-    if (onClickEditEncoding) editEncoding =  <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
-
+    if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding =  <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
 
     return <React.Fragment>
       {preview}
