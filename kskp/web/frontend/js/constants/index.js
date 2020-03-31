@@ -178,6 +178,7 @@ const Constants = {
     unhandledError: '予期せぬエラーが発生しました'
   },
   encodings: [
+    "UNKNOWN",
     "ascii",
     "utf-8",
     "SHIFT_JIS",
@@ -214,6 +215,7 @@ const Constants = {
     "windows-1256-arabic"
   ],
   newlines: [
+    "UNKNOWN",
     "CR",
     "LF",
     "CR+LF"
