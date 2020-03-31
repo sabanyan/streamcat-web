@@ -943,13 +943,12 @@ export default class Library extends React.Component<Props, State> {
       ModalUtil.emitModal({
         id: Constants.modal.EDIT_DATABASE,
         visible: true,
-        done: '編集する',
+        done: '反映する',
         danger: true,
         content: paramsForm
       })
     })
   }
-
 
   onChangeEncoding(e, data) {
     data.encoding = e.target.value
@@ -957,7 +956,7 @@ export default class Library extends React.Component<Props, State> {
     ModalUtil.emitModal({
       id: Constants.modal.EDIT_ENCODING,
       visible: true,
-      done: '編集する',
+      done: '反映する',
       danger: true,
       content: this.renderEditEncodingForm(data)
     })
@@ -969,7 +968,7 @@ export default class Library extends React.Component<Props, State> {
     ModalUtil.emitModal({
       id: Constants.modal.EDIT_ENCODING,
       visible: true,
-      done: '編集する',
+      done: '反映する',
       danger: true,
       content: this.renderEditEncodingForm(data)
     })
@@ -1035,7 +1034,7 @@ export default class Library extends React.Component<Props, State> {
     ModalUtil.emitModal({
       id: Constants.modal.EDIT_ENCODING,
       visible: true,
-      done: '編集する',
+      done: '反映する',
       danger: true,
       content: this.renderEditEncodingForm(data)
     })
