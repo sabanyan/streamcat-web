@@ -2,7 +2,7 @@
 import React from "react";
 import Constants from "Constants/index";
 
-import {APIUtil, HttpUtil, ModalUtil, SortUtil} from "Utils/index";
+import {APIUtil, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
 import {VisualizeModel} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
@@ -42,8 +42,6 @@ export default class PreviewContainer extends React.Component<Props, State> {
       visualizers = SortUtil.getSortedContents(visualizers)
       window.visualizers = visualizers
 
-      const label = "label";
-
       // vizs
       this.setState({
         is_loading: false
@@ -61,7 +59,7 @@ export default class PreviewContainer extends React.Component<Props, State> {
             // データが存在しなくて生成する必要あり（フローエディターからのプレビュー）
             let flow_uuid = HttpUtil.getURLParam('flow_uuid');
             let frame_id = HttpUtil.getURLParam('step_id');
-            let step_ids = JSON.parse(atob((HttpUtil.getURLParam('step_ids'))));
+            let step_ids = JSON.parse(StringUtil.base64decode((HttpUtil.getURLParam('step_ids'))));
             content = {title: v.label, content: viz, parentProps: this.props, id: frame_id};
             viz["frame_uuid"] = frame_uuid;
             viz["flow_uuid"] = flow_uuid;
@@ -69,13 +67,13 @@ export default class PreviewContainer extends React.Component<Props, State> {
           }
           contents.push(content);
         }
-        console.log(contents);
+        const title = StringUtil.base64decode(HttpUtil.getURLParam('title'));
 
         ModalUtil.emitModal({
           id: Constants.modal.PREVIEW_DATASOURCE,
           visible: true,
           contents: contents,
-          title: label
+          title: title
         })
       })
     }).then((response) => { },
