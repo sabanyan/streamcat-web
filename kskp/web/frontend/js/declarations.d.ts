@@ -4,6 +4,7 @@ declare const inject_project_uuid:string
 declare const inject_flow_uuid:string
 declare const inject_static_url:string
 declare const inject_folder_uuid:string
+declare const inject_data_uuid:string
 
 declare interface Window {
     commands: {}
