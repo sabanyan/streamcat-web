@@ -53,7 +53,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s' % frame_uuid, self.USER_ID)
@@ -62,6 +62,8 @@ class FrameApiTestCase(TestCaseBase):
         # 中身をテストしてもいいけど面倒臭いので、Noneじゃないことだけテストする
         self.assertIsNotNone(result['data'].get('contents'))
         self.assertEqual(result['data']['fileSize'], 56)
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
 
@@ -83,7 +85,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?no_contents=1' % frame_uuid, self.USER_ID)
@@ -91,6 +93,8 @@ class FrameApiTestCase(TestCaseBase):
         self.assertEqual(result['success'], True)
         # no_contentsをつけているのでNoneのはず
         self.assertIsNone(result['data'].get('contents'))
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
@@ -113,7 +117,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?offset=2&limit=1' % frame_uuid, self.USER_ID)
@@ -124,6 +128,8 @@ class FrameApiTestCase(TestCaseBase):
         # no_contentsをつけているのでNoneのはず
         self.assertEqual(result['data']['contents'], correct)
         self.assertEqual(result['data']['fileSize'], 56)
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
 
@@ -145,7 +151,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?header_only=1' % frame_uuid, self.USER_ID)
@@ -168,7 +174,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         data = {
@@ -178,7 +184,7 @@ class FrameApiTestCase(TestCaseBase):
 
         frame = Library.load_frame(frame_uuid)
         # data列にラベルがあるらしい、requestのjsonがそのまま入っているのでjson.loadsする
-        self.assertEqual(frame.data, data)
+        self.assertEqual(frame.label, '変更後')
         self.assertEqual(frame.modifier, 100)
 
 
@@ -196,7 +202,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER_ID)
@@ -216,7 +222,13 @@ class FrameApiTestCase(TestCaseBase):
       "description": "",
       "ports": [
         [],
-        []
+        [
+            {
+            "type": "frame", 
+            "label": "d1", 
+            "nodeId": "d1"
+            }
+        ]
       ],
       "nodes": [
         {
@@ -263,7 +275,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -292,10 +304,10 @@ class FrameApiTestCase(TestCaseBase):
 
 
     # @unittest.skip
-    def test_flow_preview(self):
+    def test_flow_vis(self):
         """
-        フローをプレビュー実行する
-                        　↓プレビュー
+        フローをVis実行する
+                        　↓Vis
         フロー：i -> c1 -> d1 -> c2 -> d2
         """
         # テストフレーム作成
@@ -307,7 +319,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -344,22 +356,27 @@ class FrameApiTestCase(TestCaseBase):
           "dataSource": "csv"
         }
 
-        flow_json = json.loads(json.dumps(self.flow_json))
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['nodes'].append(input_node)
         flow_json['nodes'].append(add_cmd)
         flow_json['nodes'].append(add_datum)
         flow = Library.save_flow(root.uuid, 'test', flow_json)
         
         # フローの実行
-        result = self.get_uri(f'/api/v0/frames?from={flow.uuid}.d1', self.USER_ID)
+        vis_args = { "d1" : 
+                        {"args" :
+                            {"visualizer" : "csvtohtmltable",
+                             "offset" : 0,
+                             "limit"  : 100
+                            }
+                        }
+                    }
+        result = self.post_uri(f'/api/v0/vizs?from={flow.uuid}', vis_args, self.USER_ID)
         lasts = result['lasts']
-
-        # DBにframeデータが生成されているか
-        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
 
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
-        self.assertEqual(lasts[0]['label'], '出力結果')
+        self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
 
 
     # @unittest.skip
@@ -409,7 +426,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         # フローの実行
@@ -461,7 +478,7 @@ class FrameApiTestCase(TestCaseBase):
             'type':'frame'
         }
 
-        flow_json = json.loads(json.dumps(self.flow_json))
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
         flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
@@ -484,7 +501,7 @@ class FrameApiTestCase(TestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR.parent / root_path / 'test_data.csv'
+        frame_path = STORE_DIR / root_path / 'test_data.csv'
         frame_uuid = create_data(frame_path, csv_data)
 
         args = {
@@ -507,6 +524,89 @@ class FrameApiTestCase(TestCaseBase):
         self.assertEqual(lasts[0]['id'], 'd1')
         self.assertEqual(lasts[0]['label'], '出力結果')
 
+    def test_empty_vizs(self):
+        """
+        offset=limit=0を指定してヘッダ行だけを取得する
+        """
+        # テストフレーム作成
+        csv_data = [
+            ['顧客', '数量', '金額'],
+            ['A', 1, 10],
+            ['A', 2, 20],
+            ['B', 1, 30],
+            ['B', 3, 40],
+            ['B', 1, 50]
+        ]
+        frame_path = STORE_DIR / root_path / 'test_data_3.csv'
+        frame_uuid = create_data(frame_path, csv_data)
+
+        # テストフローの作成
+        input_node = {
+          "id": "i",
+          "type": "frame",
+          "label": "テストデータ",
+          "uuid": frame_uuid,
+          "dataSource": "csv"
+        }
+
+        flow_json = copy.deepcopy(self.flow_json)
+        flow_json['nodes'].append(input_node)
+        flow = Library.save_flow(root.uuid, 'test', flow_json)
+        # Visデータのポイント引数の作成
+        data = {
+			"d1" : {
+                "args" : {
+                    "visualizer" : "csvtohtmltable",
+                    "offset" : 0,
+                    "limit"  : 0
+                }
+			}
+        }
+
+        # Visの取得
+        result = self.post_uri(f'/api/v0/vizs?from={flow.uuid}', data, self.USER_ID)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
+        self.assertIsNotNone(lasts[0].get('contents'))
+
+    def test_bad_csv_vizs(self):
+        """
+        不正なCSVをVis実行する
+        """
+        # テストフレーム作成
+        csv_data = [
+            ['顧客', None, '顧客'],
+            ['A', 1],
+            ['A', 2, 20],
+            ['B', 1],
+            [ 0, '3', 40],
+            ['B', 1, 50]
+        ]
+        frame_path = STORE_DIR / root_path / 'test_data_4.csv'
+        frame_uuid = create_data(frame_path, csv_data)
+
+        # Visデータのポイント引数の作成
+        data = {
+            "args" : {
+                "visualizer" : "csvtohtmltable",
+                "offset" : 0,
+                "limit"  : 5
+            }
+        }
+
+        # Visの取得
+        result = self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER_ID)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd')
+        self.assertEqual(lasts[0]['args']['column_names'], ['顧客','','顧客'])
+        self.assertIsNotNone(lasts[0].get('contents'))
+
+
 def create_data(file_path_obj, data=None):
     """
     テストデータ作成用
@@ -515,8 +615,13 @@ def create_data(file_path_obj, data=None):
     import nysol.mcmd as nm
     import uuid
 
+    # if data is not None:
+    #     nm.mread(i=data, o=file_path_obj.as_posix()).run()
     if data is not None:
-        nm.mread(i=data, o=file_path_obj.as_posix()).run()
+        with file_path_obj.open('w') as f:
+            import csv
+            writer = csv.writer(f, lineterminator='\n')
+            writer.writerows(data)
     
     frame = Library.save_frame(root.uuid,
                                str(uuid.uuid4()),

@@ -1,5 +1,6 @@
 from flask import jsonify
 import functools
+from kskp.store import LockedDatumException
 
 def api_base(func):
     """
@@ -14,7 +15,39 @@ def api_base(func):
                 return jsonify({'success': True})
             else:
                 return jsonify({'success': True, 'data': result})
+        except LockedDatumException as e:
+            return jsonify({
+                            'success': False,
+                            'code'   : -2,
+                            'message': str(e)
+                        })
         except Exception as e:
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                            'success': False,
+                            'code'   : -1,
+                            'message': str(e)
+                        })
+    return wrapper
+
+
+def frame_api_base(func):
+    """
+    Frame関連のAPIは戻り値を'lasts'属性に格納して返す
+    そのためapi_baseとは別のクラスを用意する
+    """
+    @functools.wraps(func)
+    def wrapper(**kwargs):
+        try:
+            result = func(**kwargs)
+            if result is None:
+                return jsonify({'success': True})
+            else:
+                return jsonify({'success': True, 'lasts': result})
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
             return jsonify({
                             'success': False,
                             'code'   : -1,

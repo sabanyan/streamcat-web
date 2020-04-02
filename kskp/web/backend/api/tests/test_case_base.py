@@ -16,6 +16,8 @@ class TestCaseBase(unittest.TestCase):
         
     @classmethod
     def setUpClass(cls):
+        from kskp.store import Library
+        Library._init_library_folders()
         # ユーザを作成する
         from kskp.store import create_user
         with app.app_context():
@@ -25,16 +27,15 @@ class TestCaseBase(unittest.TestCase):
         from kskp.store import engine
         # ルートデータストアを作成する
         from kskp.store import Library
-        Library._init_library_folders()
-        BaseModel.metadata.create_all(bind=engine, checkfirst=True)
+        Library.load_root(creator=1)
 
     @classmethod
     def tearDownClass(cls):
         # ライブラリフォルダを削除する
         from kskp.store import Datum, STORE_DIR
-        library_path = STORE_DIR.parent / Datum.find_root().path
+        library_path = STORE_DIR / Datum.find_root().path
         import shutil
-        shutil.rmtree(library_path.as_posix())
+        # shutil.rmtree(library_path.as_posix())
         # Sessionを閉じる
         from kskp.store import engine, ss as session
         session.close()
@@ -178,4 +179,18 @@ class TestCaseBase(unittest.TestCase):
         error_detail = result['message'] if 'message' in result else ''
         self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
         return result
-        
+
+    def delete_uri_with_json(self, uri, json_data, user_id):
+        """
+        URIへDELETEする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user_id
+            response = client.delete(uri,
+                                     content_type='application/json',
+                                     data=json.dumps(json_data))
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
+        return result

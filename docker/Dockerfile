@@ -54,10 +54,10 @@ RUN go get github.com/kahing/goofys
 RUN go install github.com/kahing/goofys
 RUN cp /root/go/bin/goofys /usr/local/bin
 
-# AWS keys of kskp user
-ENV AWS_ACCESS_KEY_ID AKIAY2HAWKVRAU3IKV4L
-ENV AWS_SECRET_ACCESS_KEY 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
-ENV AWS_DEFAULT_REGION ap-northeast-1
+# # AWS keys of kskp user
+# ENV AWS_ACCESS_KEY_ID
+# ENV AWS_SECRET_ACCESS_KEY
+# ENV AWS_DEFAULT_REGION
 
 # Add privilage for mount command
 RUN echo "kskp ALL=(ALL) NOPASSWD: /usr/bin/mount,/usr/sbin/mount.cifs,/usr/bin/umount,/usr/local/bin/goofys" >> /etc/sudoers
@@ -86,6 +86,10 @@ RUN pip install nysol
 # install nkf
 RUN yum install -y epel-release
 RUN yum install -y nkf --enablerepo=epel
+
+# install ORACLE client
+ADD https://download.oracle.com/otn_software/linux/instantclient/193000/oracle-instantclient19.3-basiclite-19.3.0.0.0-1.x86_64.rpm /home/kskp/kskp-web
+RUN yum install -y /home/kskp/kskp-web/oracle-instantclient19.3-basiclite-19.3.0.0.0-1.x86_64.rpm
 
 USER kskp
 

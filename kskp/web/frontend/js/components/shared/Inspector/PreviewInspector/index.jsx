@@ -1,11 +1,11 @@
 //@flow
 import * as React from 'react'
-import { BaseInspector, ParamsForm } from 'Shared/Inspector'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { BaseInspector, ParamsForm, Resizer} from 'Shared/Inspector'
+import { FlowEditorProps } from 'FlowEditorContainer/index'
 import style from './style.scss'
 import { Button } from 'Shared/Input'
 import FlowModel from 'Model/Flow/FlowModel'
-import { ParamUtil } from 'Utils/index'
+import { ParamUtil, StateUtil } from 'Utils/index'
 import classnames from 'classnames'
 
 type PreviewInspectorProps = {
@@ -15,85 +15,86 @@ type PreviewInspectorProps = {
   params: [],
   args: {},
   headers: [],
-  onBuild: Function,
-  onSave: Function
+  // event
+  onApply: Function
 }
 
-class PreviewInspector extends React.Component<PreviewInspectorProps> {
-  inputRefs: any[]
+type State = {
+  args: {}
+}
 
-  selectedSubFlow: FlowModel
+class PreviewInspector extends React.Component<PreviewInspectorProps, State> {
   loaded: boolean = false
 
   constructor (props: PreviewInspectorProps) {
     super(props)
-    this.inputRefs = []
   }
 
   componentWillMount () {
-
+    try {
+      const {args} = this.props
+      this.setState({
+        args : args
+      })
+    } catch(e) {
+      console.log(e)
+    }
   }
 
-  updateArgs () {
-    const args = ParamUtil.getArgsFromInputRefs(this.inputRefs)
-    //プレビューリクエスト
-    this.props.onSave(args)
-  }
-
-  onBuild (param, element) {
-    if (element) this.inputRefs.push({param: param, element: element})
+  onArgsChange (e, param, value) {
+    try {
+      const argKey = param.name
+      let args = this.state.args
+      args[argKey] = value
+      if(!value) delete args[argKey]
+      this.setState({
+        args:args
+      }, () => {
+        this.forceUpdate()
+      })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
   onClickApply () {
-    this.updateArgs()
+    try {
+      const {onApply} = this.props
+      const args = this.state.args
+      //プレビューリクエスト
+      onApply(args)
+    } catch(e) {
+      console.log(e)
+    }    
   }
 
   render () {
-    const {params, args, groups, label, headers, events} = this.props
-    let inputForm = []
-    let subFlowLink, content, subLabel
-
-    //指定されたステップの元コマンドを取得
-    // const command:CommandModel = selected_step.getCommand()
-    // //選択されたステップのラベルを取得
-    // label = selected_step.label
-    // //コマンドのラベルを取得
-    // subLabel = command.label
-    this.inputRefs = []
-    //
-    // const params:[CommandParamType] = params
-    // const args:{} = args
-    const invalids: {} = {}
-    inputForm =
-      <ParamsForm headers={headers} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
-                  onBuild={(param, element) => this.onBuild(param, element)} events={events} groups={groups}/>
-
-    let form
-
-    if (inputForm) {
-      form = <div>
+    const {params, args, groups, label, headers} = this.props
+    const content = <div>
+      <div>
         <div className={style.full_hr} />
+        <Button onClick={(e) => this.onClickApply(e)}>表示</Button>
         <div>
-          <div className="kskp-form">
-            {inputForm}
-          </div>
+          <div className="kskp-form"></div>
+          <ParamsForm
+             key={label} 
+             headers={headers} params={params} args={this.state.args} 
+             invalids={{}} groups={groups} 
+             onChange={(e, param, value) => this.onArgsChange(e, param, value)}/>
         </div>
       </div>
-    }
-
-    content = <div>
-      {form}
       <div className={style.full_hr} />
-      <Button onClick={(e) => this.onClickApply(e)}>反映</Button>
     </div>
 
     const property_class = classnames(style.property, style.in)
 
-    return <div className={property_class}>
+    return <Resizer>
+    <div className={property_class}>
       <BaseInspector key={0} header={''} label={label} subLabel={''}>
         {content}
       </BaseInspector>
     </div>
+    </Resizer>
   }
 
 }

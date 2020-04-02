@@ -1,3 +1,4 @@
+import os
 import json
 import functools
 from flask import session, request, jsonify
@@ -24,7 +25,8 @@ def update_navigation(func):
             'project_uuid': '',
             'project_name': '',
             'flow_uuid': '',
-            'flow_name': ''
+            'flow_name': '',
+            'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
         }
 
         # 条件分岐がちょっと不安
@@ -35,25 +37,12 @@ def update_navigation(func):
         # フローが指定された場合
         if 'flow' in request.args or 'flow_uuid' in kwargs:
             flow_uuid = request.args['flow'] if 'flow' in request.args else kwargs['flow_uuid']
-
-            if Flow.exists(flow_uuid):
-                flow = Flow.find_by_uuid(flow_uuid)
-                parent_datum = Datum.find_parent(flow_uuid)
-                parent = Folder.convert_to_folder(parent_datum)
-                navigation['project_uuid'] = parent.uuid
-                navigation['project_name'] = parent.label
-                navigation['flow_uuid'] = flow_uuid
-                navigation['flow_name'] = flow.label
-            else:
-                # この分岐に入るのは、お救いフローフォルダである
-                flow = model.fetch_flow_by_uuid(flow_uuid)
-                project = model.fecth_project(flow['projectId'])
-                # navigation['project_uuid'] = RESQUE_FLOW_FOLDER_UUID
-                # navigation['project_name'] = RESQUE_FLOW_FOLDER_LABEL
-                navigation['project_uuid'] = ''
-                navigation['project_name'] = ''
-                navigation['flow_uuid'] = flow_uuid
-                navigation['flow_name'] = flow['label']
+            parent = Datum.find_parent(flow_uuid)
+            navigation['project_uuid'] = parent.uuid
+            navigation['project_name'] = parent.label
+            flow = Flow.find_by_uuid(flow_uuid)
+            navigation['flow_uuid'] = flow_uuid
+            navigation['flow_name'] = flow.label
 
         # プロジェクトが指定された場合
         elif 'project' in request.args:

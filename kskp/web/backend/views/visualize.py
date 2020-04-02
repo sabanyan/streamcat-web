@@ -2,7 +2,7 @@
 import json
 
 from pathlib import Path
-from flask import Blueprint, request, render_template
+from flask import Blueprint, request, render_template, jsonify
 from kskp.web.backend.api.auth import login_required
 
 mod = Blueprint('visualize', __name__)
@@ -18,10 +18,19 @@ def execute_visualizer():
     command = CommandLink(request.args.get('from')).resolve()
 
     result = command.run(request.json.get('args'), request.json.get('inputs'))['o']
-
+    
+    """
+    return jsonify({
+                    'success': False,
+                    'code'   : -1,
+                    'message': "error"
+                    })
+    """
+    
     try:
         if request.args.get('from') == 'csvtohtmltable':
             return render_template('visualize/table.html', header=result['header'], reader=result['reader'])
+   
     except:
         return render_template('visualize/table.html', header=[], reader=[])
 

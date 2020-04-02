@@ -55,38 +55,15 @@ export default class Modal extends React.Component<Props, State> {
     window.emitter.removeListener(Constants.event.MODAL_EVENT + this.props.id)
     window.emitter.addListener(Constants.event.MODAL_EVENT + this.props.id,
       (context) => {
-        if (context.visible !== undefined) {
-          self.setState({
-            visible: context.visible,
-          })
-        }
-        if (context.content !== undefined) {
-          self.setState({
-            content: context.content,
-          })
-        }
-        if (context.contents !== undefined) {
-          self.setState({
-            contents: context.contents,
-          })
-        }
-        if (context.title !== undefined) {
-          self.setState({
-            title: context.title,
-          })
-        }
-        if (context.done !== undefined) {
-          self.setState({
-            done: context.done,
-          })
-        }
-        if (context.danger !== undefined) {
-          self.setState({
-            danger: context.danger,
-          })
-        }
+        this.setState({
+          visible: context.visible,
+          content: context.content,
+          contents: context.contents,
+          title: (context.title !== undefined) ? context.title : this.state.title,
+          done: context.done,
+          danger: context.danger,
+        })
       })
-
   }
 
   /**
@@ -195,14 +172,18 @@ export default class Modal extends React.Component<Props, State> {
       </div>
     }
 
-    const {id, dynamic} = this.props
+    const {id, dynamic, notify, dismissNotify} = this.props
 
     let modal
     let modal_body = (dynamic) ? content : children
 
     if (preview) {
-      modal = <PreviewModal id={id} title={title} footer={modal_footer}
-                            close_button={close_button} visible={visible} contents={(visible) ? contents : null}>
+      let key = (contents) ? contents[0].id : null
+      modal = <PreviewModal key={key}
+                            id={id} title={title} footer={modal_footer}
+                            close_button={close_button} visible={visible} 
+                            contents={(visible) ? contents : null}
+                            notify={notify} dismissNotify={dismissNotify}>
       </PreviewModal>
     } else {
       modal = <StandardModal id={id} title={title} footer={modal_footer}

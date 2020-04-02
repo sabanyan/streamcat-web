@@ -92,6 +92,9 @@ const Constants = {
     ADD_FOLDER: 'add_folder',
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
+    ADD_DATABASE: 'add_database',
+    EDIT_DATABASE: 'edit_database',
+    EDIT_ENCODING: 'edit_encoding',
     RUN_FLOW: 'run_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
@@ -165,13 +168,57 @@ const Constants = {
       remoteFolder: 'remote-folder'
     },
     mode: {
+      frame_select: 'frame_select',
+      folder_select: 'folder_select',
       dialog: 'dialog', //選択モード
       list: 'list' //通常モード
     }
   },
   errorMessage: {
     unhandledError: '予期せぬエラーが発生しました'
-  }
-
+  },
+  encodings: [
+    "UNKNOWN",
+    "ASCII",
+    "UTF-8",
+    "SHIFT_JIS",
+    "CP932",
+    "UTF-8 BOM",
+    "UTF-16",
+    "UTF-32",
+    "EUC-JP",
+    "Big5",
+    "CP949",
+    "EUC-KR",
+    "EUC-TW",
+    "GB2312",
+    "IBM855",
+    "IBM866",
+    "iso-2022-jp",
+    "iso-2022-kr",
+    "iso-8859-1",
+    "iso-8859-2-hungarian",
+    "iso-8859-5-bulgarian",
+    "iso-8859-5-cyrillic",
+    "iso-8859-6-arabic",
+    "iso-8859-7-greek",
+    "iso-8859-9-turkish",
+    "KOI8-R",
+    "MacCyrillic",
+    "TIS-620",
+    "windows-1250-hungarian",
+    "windows-1251-cyrillic",
+    "windows-1251-bulgarian",
+    "windows-1252",
+    "windows-1254-turkish",
+    "windows-1255-hebrew",
+    "windows-1256-arabic"
+  ],
+  newlines: [
+    "UNKNOWN",
+    "CR",
+    "LF",
+    "CR+LF"
+  ]
 }
 export default Constants

@@ -236,158 +236,50 @@ export default class FlowUtil {
     return result
   }
 
-  /**
-   * フローの保存
-   * @param flowUUID
-   * @param nodes
-   * @param projectId
-   * @param projectName
-   * @returns {Promise<any>}
-   */
-  static saveNodes (flowUUID: string, nodes: [], notify?: Function, dismissNotify?: Function): any {
+  static saveFlow (flowUUID: string, flowModel, locksModel, nodes:{}, notify: Function, dismissNotify: Function): any {
     //validation
     ValidatorUtil.nodesValidate(nodes)
 
-    let saveNotify
-    if (notify) {
-      saveNotify = notify({
-        title: 'フロー保存中',
-        message: 'フローのノードを保存しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
+    let flow = {}
+    if (flowModel.label)       flow['label']       = flowModel.label
+    if (flowModel.description) flow['description'] = flowModel.description
+    if (flowModel.params)      flow['params']      = flowModel.params
+    if (flowModel.ports)       flow['ports']       = flowModel.ports
+    if (flowModel.nodes)       flow['nodes']       = nodes
+
+    let putBody = {
+      label :flowModel.label,
+      flow  :flow,
+      lock  :(locksModel && locksModel.lockId) ? locksModel.lockId : undefined
     }
 
-    return new Promise((resolve, reject) => {
-      APIUtil.put('flows/' + flowUUID, {nodes: nodes}).then((response) => {
+    let saveNotify
+    saveNotify = notify({
+      title: 'フロー保存中',
+      message: 'フローの設定を保存しています',
+      status: 'loading',
+      dismissAfter: 0
+    })
+
+    return APIUtil.put('flows/' + flowUUID, putBody)
+      .catch((message) => {
+        console.log(message)
+      })
+      .then((response) => {
         if (dismissNotify) dismissNotify(saveNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        resolve(response)
-      }, (error) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
+        if (locksModel && locksModel.error) throw locksModel.error.message
+        if (!response.data.success) throw ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response))
+      }).catch((message) => {
         notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+          title: 'フロー保存エラー',
+          message: message,
           status: 'error',
           dismissAfter: 0,
           closeButton: true
         })
-        reject(error)
+        reject(message)
       })
-    })
   }
-
-  /**
-   * フローの保存
-   * @param flowUUID
-   * @param label
-   * @param description
-   * @param params
-   * @param ports
-   * @returns {Promise<any>}
-   */
-  static saveFlowSettings (flowUUID: string, {label, description, params, ports}, notify: Function, dismissNotify: Function): any {
-    let putBody = {}
-    if (label) putBody['label'] = label
-    if (description) putBody['description'] = description
-    if (params) putBody['params'] = params
-    if (ports) putBody['ports'] = ports
-
-    let saveNotify
-    if (notify) {
-      saveNotify = notify({
-        title: 'フロー保存中',
-        message: 'フローの設定を保存しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
-    }
-
-    return new Promise((resolve, reject) => {
-      APIUtil.put('flows/' + flowUUID, putBody).then((response) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        resolve(response)
-      }, (error) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
-      })
-    })
-  }
-
-  static saveFlow (flowUUID: string, {label, description, params, ports, nodes}, notify: Function, dismissNotify: Function): any {
-    //validation
-    ValidatorUtil.nodesValidate(nodes)
-
-    let putBody = {}
-    if (label) putBody['label'] = label
-    if (description) putBody['description'] = description
-    if (params) putBody['params'] = params
-    if (ports) putBody['ports'] = ports
-    if (ports) putBody['nodes'] = nodes
-
-    let saveNotify
-    if (notify) {
-      saveNotify = notify({
-        title: 'フロー保存中',
-        message: 'フローの設定を保存しています',
-        status: 'loading',
-        dismissAfter: 0
-      })
-    }
-
-    return new Promise((resolve, reject) => {
-      APIUtil.put('flows/' + flowUUID, putBody).then((response) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
-        resolve(response)
-      }, (error) => {
-        if (dismissNotify) dismissNotify(saveNotify.id)
-        notify({
-          title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
-        })
-        reject(error)
-      })
-    })
-  }
-
-  // static copyStep(step:StepModelType):StepModelType{
-  // }
 
   /**
    * Srcsをコピーする
@@ -436,7 +328,11 @@ export default class FlowUtil {
 
   static setModelType (json: {}): StepModelType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
-    if (json['srcs'] !== undefined && json['dsts'] !== undefined) return new CommandStepModel(json)
+    if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
+      let node = new CommandStepModel(json)
+      node.loadArgs()
+      return node
+    }
     if (json['uuid'] !== undefined && json['dataSource'] !== undefined) return new DataFrameStepModel(json)
     return json
   }

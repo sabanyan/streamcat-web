@@ -30,7 +30,7 @@
   position: fixed;
   width: 400px;
   right: -400px;
-  top: 0px;
+  top: 64px;
   height: 100%;
   transition: opacity 0.2s linear, right 0.2s ease-in;
   transition: width 0.1s;
@@ -58,7 +58,7 @@
 }
 
 .property_container {
-  height: calc(100% - 64px);
+  height: 100%;
   width: 100%;
   overflow: scroll;
 }
@@ -88,7 +88,7 @@
 
 .property_body {
   padding: 16px;
-  padding-bottom: 64px;
+  padding-bottom: 128px;
   background-color: $kskp-property-background-color;
   min-height: 100%;
 
@@ -368,3 +368,25 @@ ul, li {
 li {
   margin-bottom: 8px;
 }
+
+.actions {
+
+  button {
+    margin-top : 5px;
+    margin-right : 5px;
+  }
+
+  a {
+    margin-top : 5px;
+    margin-right : 5px;
+    position: relative;
+    top: -1px;
+  }
+}
+
+
+.encoding, .newline  {
+  height: 31px;
+  margin-right:5px;
+} 
+

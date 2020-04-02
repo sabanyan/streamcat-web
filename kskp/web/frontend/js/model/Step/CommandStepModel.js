@@ -1,11 +1,9 @@
 //@flow
 import { BaseStepModel } from 'Model/index'
-import BaseModelProps from 'Model/Step/BaseStepModel'
 import type { CommandParamType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
 import validateJS from 'validate.js'
 import arrayMove from 'array-move'
-import Constants from '../../constants'
 
 type stepType = 'command' | 'frame'
 
@@ -38,31 +36,51 @@ export default class CommandStepModel extends BaseStepModel {
     if (Object.keys(this.srcs) != 0 && this.srcsOrder.length == 0) {
       this.srcsOrder = Object.keys(this.srcs)
     }
-    this.initCommandArgs()
+    this.args = props.args
   }
 
-  initCommandArgs() {
-    // SubflowStepModelがCommandStepModelを継承する場合があるため
-    if (!(this.type === Constants.step.type.command)) {
-      return
+  loadArgs() {
+    let result = {}
+    let args = this.args
+    try {
+      const command = this.getCommand()
+      if (!command) throw "command is undefined in CommandStepModel"
+      if (!command.params) throw "command.params is undefined in CommandStepModel"
+      const params = command.params
+      const rules = (command.rules) ? command.rules : {}
+      params.map((param:CommandParamType) => {
+        // ルールの適用
+        const rule = rules[param.name]
+        // rule: 必須項目で空白（""）が許される場合
+        if (rule && rule["presence"] && ["presence"]["allowEmpty"] === true) result[param.name] = ""
+        // 保存されたユーザー入力値の適用
+        if (args[param.name]) result[param.name] = args[param.name]
+      })
+    } catch(e) {
+      console.log(e)
     }
-    const command: CommandModel = this.getCommand()
-    if (!command || !(command.params) || !(Array.isArray(command.params))) {
-      return
+  }
+
+  initArgs() {
+    let result = {}
+    try {
+      const command = this.getCommand()
+      if (!command) throw "command is undefined in CommandStepModel"
+      if (!command.params) throw "command.params is undefined in CommandStepModel"
+      const params = command.params
+      const rules = (command.rules) ? command.rules : {}
+      params.map((param:CommandParamType) => {
+        // ルールの適用
+        const rule = rules[param.name]
+        // rule: 必須項目で空白（""）が許される場合
+        if (rule && rule["presence"] && ["presence"]["allowEmpty"] === true) result[param.name] = ""
+        // default値の適用
+        if (param.default) result[param.name] = param.default
+      })
+    } catch(e) {
+      console.log(e)
     }
-    command.params.map((param) => {
-      // 必須項目で空白（””）が許される場合
-      if(command.rules[param.name] 
-        && command.rules[param.name]["presence"]
-        && command.rules[param.name]["presence"]["allowEmpty"] === true
-        && !(this.args[param.name])) {
-          this.args[param.name] = ""
-      }
-      // default値がある場合、設定する
-      if(param.default && typeof (this.args[param.name]) === "undefined" && !(this.args[param.name] === "")) {
-        this.args[param.name] = param.default
-      } 
-    })
+    this.args = result
   }
 
   getStep (nodes, key) {
@@ -79,16 +97,17 @@ export default class CommandStepModel extends BaseStepModel {
   deleteInPort (key) {
     delete this.srcs[key]
     // delete
-    let srcsOrder = []
+    let result = []
     this.srcsOrder.forEach((srcKey, index) => {
       if (srcKey !== key) {
-        srcsOrder.push(srcKey)
+        result.push(srcKey)
       }
     })
+    this.srcsOrder = result
   }
 
   /**
-   * 指定されたポートを削除する
+   * 指定されたポートを追加する
    * @param key
    */
   addInPort (key, value) {
@@ -194,7 +213,7 @@ export default class CommandStepModel extends BaseStepModel {
     //必須バリデーション
     let command: CommandModel = this.getCommand()
     // commandが存在しない場合、フローが見えない事象があるため、
-    // commandが存在しなくても処理が止まらなくする
+    // commandが存在しなくても処理が止まらないように
     if (!command) {
       return
     }

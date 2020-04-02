@@ -7,7 +7,7 @@ from pathlib import Path
 from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
 from .auth import login_required_api
 from .utils.navigation import update_navigation
-from .utils.api_base import api_base
+from .utils import api_base, lock_required
 from kskp.store import *
 from kskp.web.backend import app
 
@@ -145,9 +145,8 @@ def fecth_flows():
     for datum in data:
         if datum.type != Datum.FLOW_TYPE:
             continue
-        flow = Flow.convert_to_flow(datum)
-        flow_data = flow.flow_data
-        flow_data['uuid'] = flow.uuid
+        flow_data = datum.data2['flow']
+        flow_data['uuid'] = datum.uuid
         flow_list.append(flow_data)
 
     # resque_flow_folder = get_resque_flow_dir_path(session['user_id'])
@@ -168,14 +167,12 @@ def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
     """
-    if Flow.exists(flow_uuid):
-        flow = Flow.find_by_uuid(flow_uuid)
-        return flow.flow_data
-    else:
-        return fetch_flow_by_uuid(flow_uuid)
+    flow = Flow.find_by_uuid(flow_uuid)
+    return flow.flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
+@lock_required
 @api_base
 def update_flow(flow_uuid):
     """
@@ -184,7 +181,7 @@ def update_flow(flow_uuid):
     if 'parent' in request.json:
         if 'label' in request.json:
             raise Exception('labelとはparent属性は同時に指定できません')
-        # frameを移動する
+        # flowを移動する
         new_parent = request.json['parent']
         modifier = session['user_id']
         flow = Flow.find_by_uuid(flow_uuid)
@@ -200,13 +197,14 @@ def update_flow(flow_uuid):
         else:
             flow_label = request.json['label']
 
-        flow_data.update(request.json)
+        flow_data.update(request.json['flow'])
         # 変更を保存する
         Flow.update_data(flow_uuid, flow_label, flow_data, session['user_id'])
         return flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
+@lock_required
 @api_base
 def delete_flow(flow_uuid):
     """
@@ -226,7 +224,7 @@ def fetch_subflows():
 
     subflow_data_list = []
     for subflow in Flow.find_all_subflows(no_inputs, no_outputs):
-        subflow_data =  Flow.convert_to_flow(subflow).flow_data
+        subflow_data =  subflow.flow_data
         subflow_data['uuid'] = subflow.uuid
         # 親フォルダのラベルを取得する
         parent = Datum.find_parent(subflow.uuid)
@@ -234,7 +232,7 @@ def fetch_subflows():
         if parent is None:
             continue
         if parent.type == Datum.FOLDER_TYPE:
-            parent_label = Folder.convert_to_folder(parent).label
+            parent_label = parent.label
             subflow_data['projectName'] = parent_label
         subflow_data_list.append(subflow_data)
     return jsonify({'success': True, 'data': subflow_data_list})
@@ -244,11 +242,25 @@ def fetch_commands():
     """
     コマンド定義の一覧を返す
     """
+    visible_commands_json = []
+    if len(request.args) == 0 or request.args.get('all') == 'on':
+        visible_commands_json.append('mcmd')
+        visible_commands_json.append('kcmd')
+        visible_commands_json.append('pcmd')
+        visible_commands_json.append('scmd')
+    else:
+        if request.args.get('mcmd') == 'on':
+            visible_commands_json.append('mcmd') 
+        if request.args.get('kcmd') == 'on':
+            visible_commands_json.append('kcmd') 
+        if request.args.get('pcmd') == 'on':
+            visible_commands_json.append('pcmd') 
+        if request.args.get('scmd') == 'on':
+            visible_commands_json.append('scmd') 
 
-    from kskp.store import CommandsPathFileSource, CommandsPathLink
-
+    from kskp.depo.std.commands import CommandsPathLink, CommandsPathFileSource
     commands_list = []
-    for visible_command in app.config['VISIBLE_COMMANDS_JSON']:
+    for visible_command in visible_commands_json:
         link = CommandsPathLink(CommandsPathFileSource(visible_command))
         commands_list.extend(link.resolve())
 
@@ -260,97 +272,100 @@ def fetch_visualizers():
     ビジュアライズ用コマンド定義の一覧を返す
     """
 
-    from kskp.store import CommandsPathFileSource, CommandsPathLink
+    from kskp.depo.std.commands import CommandsPathLink, CommandsPathFileSource
 
-    link = CommandsPathLink(CommandsPathFileSource('visualizers'))
+    link = CommandsPathLink(CommandsPathFileSource('vcmd'))
 
     return jsonify({'success': True, 'data': link.resolve()})
 
-def upload_frame(file, file_name):
-    """
-    CSVをアップロードする
-    TODO: テスト未実施
-    """
-    frame_uuid = str(uuid.uuid4())
-
-    from werkzeug.utils import secure_filename
-    file_path = DATAFRAME_DIR_PATH / Path(secure_filename(frame_uuid + '.csv'))
-    file.save(file_path.as_posix())
-    file.close()
-
-    return {"uuid": frame_uuid, "label": file_name}
-
 @mod.route('/files')
+@login_required_api
 def download_file():
-    # 現在type, labelは未使用
-    # type = request.args.get('type')
+    def convert(file_path, source_encoding, source_newline, target_encoding, target_newline):
+        """
+        指定されたファイルの文字コードと改行コードを変換する
+        """
+        with file_path.open(encoding=source_encoding, newline=source_newline, errors='replace') as f:
+            for line in f:
+                if source_encoding == target_encoding and source_newline == target_newline:
+                    # 変換処理が必要ない場合は処理を軽くする
+                    yield line
+                else:
+                    # 変換できない文字があれば、
+                    # UTF-8への変換の場合は�(U+FFFD)に置き換える
+                    # CP932への変換の場合は?(3F)に置き換える
+                    line = line.rstrip(source_newline) + target_newline
+                    yield line.encode(target_encoding, errors='replace')
+
+    def error(message):
+        return jsonify({'success':False, 'code':-1, 'message': message})
+
+    # frameのuuidと拡張子指定を取得する
     frame_uuid = request.args.get('uuid')
-    # label = request.args.get('label')
     ext = request.args.get('ext')
 
     frame = Frame.find_by_uuid(frame_uuid)
-    frame_path = frame.path if frame is not None else None
+    if frame is None:
+        return error(f'指定されたFrame({frame_uuid})が見つかりませんでした')
 
-    if frame_path is None:
-        raise Exception('cannot find frame')
+    frame_path = STORE_DIR / frame.path
+    if not frame_path.exists():
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
 
-    character_code = os.getenv('FRAME_CHARACTER_CODE', 'utf-8')
-    frame_label = frame.label
+    # frameの文字コードと改行コードを識別する
+    source_encoding = 'utf-8' if frame.encoding == 'UNKNOWN' else frame.encoding
+    source_newline = '\n' if frame.newline == 'UNKNOWN' else frame.newline
 
-    def make_tmpfile_for_charactor_change(origin_file_path, encoding='utf-8', newline='\n'):
-        """
-        文字コード変更用のファイルを作り、そのパスを返す
-        tmpなので、今の所はdbには登録しない。
-        デフォルトはutf-8の形式
-        """
-        root_path = Datum.find_root().path
-        tmp_dir = STORE_DIR.parent / root_path / 'download_tmp'
-        if not tmp_dir.exists():
-            tmp_dir.mkdir()
+    # 環境変数からダウンロードファイルの文字コード設定値を取得する
+    # (設定値がない場合は'UTF-8'とする)
+    target_encoding = os.getenv('FRAME_CHARACTER_CODE', 'UTF-8').lower()
+    target_newline = '\r\n' if target_encoding in ('cp932', 'CP932') else '\n'
 
-        path = tmp_dir / str(uuid.uuid4())
-        with open(path, 'w', encoding=encoding, newline=newline) as f:
-            with open(origin_file_path, encoding='utf-8') as origin_f:
-                f.write(origin_f.read())
-        return path
+    # ダウンロードファイルのサイズを計算する
+    if source_encoding == target_encoding and source_newline == target_newline:
+        # 変換処理がない場合は元ファイルサイズがダウンロードファイルのサイズである
+        downloadFileSize = os.path.getsize(frame_path)
+    else:
+        downloadFileSize = None
 
+    # ダウンロードファイル名を作成する
+    if frame.label.endswith('.csv') or frame.label.endswith('.txt'):
+        downloadFileName = frame.label
+    elif ext is None or ext == '':
+        downloadFileName = frame.label + '.csv'
+    else:
+        downloadFileName = frame.label + '.' + ext
+    
+    # ファイル名をURLエンコードする
+    import urllib.parse
+    downloadFileName = urllib.parse.quote(downloadFileName)
+
+    # frameを返す
+    # ・文字コード変換と改行コード変換をしながら返す
+    # ・Streamで返すため一時ファイルは作成されない
+    # ・変換に失敗した文字は代替する文字に置き換える
+    from flask import Response
     try:
-        dir_path = (STORE_DIR.parent / frame_path.parent).as_posix()
-        frame_name = frame_path.name
-
-        # 文字コードの指定があれば、その文字コードのファイルを作り、
-        # そのあとに出来上がったファイルをダウンロードする
-        #
-        # 2019/6/28現在の一時的な仕様は下記の通り
-        # 1. 現状kskp/data/tmpディレクトリに作成される
-        # 2. tmpディレクトリ内に作成されたファイルは残ったまま
-        # 3. 環境変数でダウンロードするファイルの文字コードを制御している
-        if character_code == 'cp932':
-            encode_file_path = make_tmpfile_for_charactor_change(STORE_DIR.parent / frame_path, 'cp932', '\r\n')
-            dir_path = os.path.dirname(encode_file_path.as_posix())
-            frame_name = os.path.basename(encode_file_path.as_posix())
-
-        # ダウンロードファイルの拡張子を設定する
-        if not frame_label.endswith('.csv') and not frame_label.endswith('.txt'):
-            if ext is None or ext == '':
-                frame_label = frame_label + '.csv'
-            else:
-                frame_label = frame_label + '.' + ext
-
-        return send_from_directory(dir_path, frame_name, as_attachment = True,
-                                    attachment_filename = frame_label, mimetype = 'text/csv')
+        response = Response(convert(frame_path, source_encoding, source_newline, target_encoding, target_newline))
+        response.content_type = f'text/csv; {target_encoding}'
+        if downloadFileSize is not None:
+            # 設定することでWebブラウザがダウンロードの進捗状況を表示してくれるかも
+            response.content_length = downloadFileSize
+        # filename*=はFirefox用
+        response.headers['Content-Disposition'] = f'attachment; filename={downloadFileName}; filename*={downloadFileName}'
+        return response
+    except UnicodeDecodeError:
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{source_encoding}で開けませんでした')
+    except UnicodeEncodeError:
+        return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})を{target_encoding}に変換できませんでした')
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({
-                            'success': False,
-                            'code': -1,
-                            'message': str(e)
-                        })
-
+        return error(str(e))
 
 @mod.route('/caches', methods=['DELETE'])
 @login_required_api
+@api_base
 def delete_cache():
     """
     キャッシュを削除する
@@ -365,20 +380,71 @@ def delete_cache():
     flow = Flow.find_by_uuid(flow_uuid)
     j = flow.flow_data
 
+    cache_uuids = []
     for i, node in enumerate(j['nodes']):
         if node['id'] == datum_id:
             frame_uuid = j['nodes'][i]['uuid']
             j['nodes'][i]['uuid'] = None
             j['nodes'][i]['cacheCreatedAt'] = None
-
-            # キャッシュを削除する（増え続けると困るので）
-            frame = Frame.find_by_uuid(frame_uuid)
-            if frame is not None:
-                frame.delete()
+            cache_uuids.append(frame_uuid)
 
     Flow.update_data(flow_uuid, flow.label, j, session['user_id'])
 
-    return jsonify({'success': True})
+    # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
+    for cache_uuid in cache_uuids:
+        cache = Frame.find_by_uuid(cache_uuid)
+        if cache is not None:
+            cache.delete()
+
+@mod.route('/navigation', methods=['GET'])
+@login_required_api
+def get_navigation():
+    from kskp.store import model
+        
+    navigation = {
+        'user_id': '',
+        'user_name': '',
+        'project_uuid': '',
+        'project_name': '',
+        'flow_uuid': '',
+        'flow_name': '',
+        'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
+    }
+
+    flow_uuid = request.args.get('flow_uuid')
+    project_uuid = request.args.get('project_uuid')
+
+
+    if session['user_id'] is not None and session['user_id'] !='':
+        navigation['user_id'] = session['user_id']
+        navigation['user_name'] = model.get_user_by_id(session['user_id'])['name']
+
+    if flow_uuid is not None :
+        if Flow.exists(flow_uuid):
+            flow = Flow.find_by_uuid(flow_uuid)
+            parent_datum = Datum.find_parent(flow_uuid)
+            parent = Folder.convert_to_folder(parent_datum)
+            navigation['project_uuid'] = parent.uuid
+            navigation['project_name'] = parent.label
+            navigation['flow_uuid'] = flow_uuid
+            navigation['flow_name'] = flow.label
+        else:
+            # この分岐に入るのは、お救いフローフォルダである
+            flow = model.fetch_flow_by_uuid(flow_uuid)
+            project = model.fecth_project(flow['projectId'])
+            print(project)
+            navigation['project_uuid'] = porject.uuid
+            navigation['project_name'] = project.label
+            navigation['flow_uuid'] = flow.uuid
+            navigation['flow_name'] = flow.label
+        
+    # プロジェクトが指定された場合
+    elif project_uuid is not None:
+        project = Folder.find_by_uuid(project_uuid)
+        navigation['project_uuid'] = project.uuid
+        navigation['project_name'] = project.label
+
+    return jsonify({'success': True, 'data': navigation})
 
 @mod.errorhandler(400)
 def handle_bad_request(error):

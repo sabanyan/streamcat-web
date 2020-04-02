@@ -13,12 +13,8 @@ app.config['JSON_AS_ASCII'] = False
 app.config['JSON_SORT_KEYS'] = False
 
 # DB設定（現在はSQlite）
-os.environ['SQLITE_PATH'] = (STORE_DIR.parent / 'kskp.db').as_posix()
-os.environ['DATABASE_URI'] = 'sqlite:///' + os.environ['SQLITE_PATH']
-
-# 文字コード設定（とりあえず標準はutf-8で）
-os.environ['FRAME_CHARACTER_CODE'] = 'utf-8'
-# os.environ['FRAME_CHARACTER_CODE'] = 'cp932'
+# os.environ['SQLITE_PATH'] = (STORE_DIR.parent / 'kskp.db').as_posix()
+# os.environ['DATABASE_URI'] = 'sqlite:///' + os.environ['SQLITE_PATH']
 
 # flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
 from .api.utils.kskp_json_encoder import KSKPJSONEncoder
@@ -49,6 +45,16 @@ app.register_blueprint(lib.mod, url_prefix=PREFIX)
 # static用
 from kskp.web.frontend import mod
 app.register_blueprint(mod)
+
+# 環境変数からロックの有効期間(分)を取得する
+# (設定値がない場合は1時間とする)
+lock_expire_minutes = int(os.getenv('LOCK_EXPIRE_MIN', 60))
+# LockManagerオブジェクトを作成する
+from flask import session
+from kskp.store import LockManager
+app.config['LOCK_MANAGER'] = LockManager(60 * lock_expire_minutes)
+# sessionを31日間保持する場合はTrue
+# session.permanent = True
 
 def run():
     app.run(debug=True)

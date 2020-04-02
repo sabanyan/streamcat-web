@@ -7,29 +7,32 @@ import type { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
-import { APIUtil, ModalUtil, SortUtil, HttpUtil  } from "Utils/index";
+import { APIUtil, ModalUtil, SortUtil, HttpUtil, ErrorUtil, ReactDomUtil } from "Utils/index";
 import Visualizer from "Shared/Visualizer/Core";
+import { API } from 'Modules/api/index'
 
 type Props = {
   visualizers: [];
   data?: LibraryListDataType;
   onClickDelete?: Function;
   onClickApply?: Function;
+  onClickMove?: Function;
   onBlurTitle?: Function;
+  onClickEditEncoding?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
-  constructor (props: Props) {
+  constructor(props: Props) {
     super(props)
   }
 
-  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
+  onBlurTitle(e: SyntheticInputEvent<EventTarget>) {
     if (this.props.onBlurTitle) {
       this.props.onBlurTitle(e)
     }
   }
 
-  componentWillMount () {
+  componentWillMount() {
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.preview.DATASOURCE, onClickOK: () => {
@@ -39,101 +42,145 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   onClickPreview(e) {
-    // dataがない（Null)の場合はPreviwボタンは表示しない（render)
-    const {data, visualizers} = this.props
+    // dataがない（Null)の場合はPreviewボタンは表示しない（render)
+    let { data, visualizers } = this.props
+    visualizers = SortUtil.getSortedContents(visualizers)
 
-    if (!visualizers) {
-      return
-    }
-    const uuid = data.uuid
-    const getFrameHeaderURL = "frames/" + uuid
-    APIUtil.get(getFrameHeaderURL + "?header_only=1&offset=0&limit=1").then((response) => {
-      const headers = response.data.data
-      let sortedVisualizers = visualizers
-      sortedVisualizers = SortUtil.getSortedContents(sortedVisualizers)
-      let contents = []
-      for (const v of sortedVisualizers) {
-        const content = {frame_uuid:uuid, visualize:v, headers:headers}
-        contents.push({title: v.label,content:content,parentProps:this.props})
-      }
+    let id = data.uuid
 
-      ModalUtil.emitModal({
-        id: Constants.preview.DATASOURCE,
-        visible: true,
-        contents: contents,
-        title: data.label
-      })
+    try {
+      if (!visualizers) "visualizers are not defined"
+      // vizs
       this.setState({
-        loading: false
+        loading: true
+      }, () => {
+        let contents = []
+        for (const v of visualizers) {
+          let content = { frame_uuid: data.uuid, visualize: v }
+          contents.push({ title: v.label, content: content, parentProps: this.props, id: id })
+        }
+
+        ModalUtil.emitModal({
+          id: Constants.preview.DATASOURCE,
+          visible: true,
+          contents: contents,
+          title: data.label
+        })
       })
-    })
+    } catch (e) {
+      console.log(e)
+    }
   }
 
-  isDialog () {
-    return (HttpUtil.getURLParam('dialog'))
+  onClickEdit(e) {
+    const { data, onClickEdit } = this.props
+    onClickEdit(data)
   }
 
-  render () {
-    const {data, onClickDelete, onClickApply} = this.props
-    let content = null
-    let label = ""
-    let preview = null
-    let  download = null
+  renderButtons() {
+    const { data, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding } = this.props
+
+    let preview, download, del, apply, move, edit, editEncoding
+
+    // preview button
+    // download button
     if (data && data.label && data.type === Constants.library.type.frame) {
       preview = <Button onClick={(e) => this.onClickPreview(e)} icon={'visibility'}>プレビュー</Button>
-      // csv download
       const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
-      download = <DownloadButton href={href} icon={'visibility'}>CSVダウンロード</DownloadButton>
+      download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
     }
-    let deleteButton
-    if (onClickDelete) {
-      deleteButton = <Button danger={true}
-                             onClick={() => onClickDelete(data)}>削除する</Button>
+
+    // move button
+    if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
+
+    // edit
+    if (onClickEdit && data && data.type === Constants.library.type.database) {
+      edit = <Button onClick={(e) => this.onClickEdit(e)} icon={'create'}>編集する</Button>
     }
-    let applyButton
-    if (onClickApply) {
-      applyButton = <Button primary={true}
-                            onClick={() => onClickApply(data)}>選択する</Button>
+
+    // delete button
+    if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
+
+    // apply button
+    if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
+
+    // editEncoding
+    if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding =  <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
+
+    return <React.Fragment>
+      {preview}
+      {download}
+      {move}
+      {edit}
+      {del}
+      {apply}
+      {editEncoding}
+    </React.Fragment>
+  }
+
+  renderFrameDetail(data) {
+    let result = null
+
+    if (data.type === Constants.library.type.frame) {
+      result = <React.Fragment>
+        <div>
+          <label>文字コード</label>
+        </div>
+        <div>
+          {data.encoding}
+        </div>
+        <div>
+          <label>改行コード</label>
+        </div>
+        <div>
+          {data.newline}
+        </div>
+      </React.Fragment>
     }
-    let inspectorPreperty = (this.isDialog()) ? style.property_dialog : style.property
+
+    return result
+  }
+
+  render() {
+    const { data } = this.props
+    let content = null
+    let label = ""
     if (data) {
       label = data.label
       content = <div>
-          <div className={"mb-8px"}>
-            {data.label}
-          </div>
-          <div className={style.actions}>
-            {preview}
-            {download}
-            {deleteButton}
-            {applyButton} 
-          </div>
-          <div className={style.full_hr}/>
-          <div>
-            <label>名称</label>
-          </div>
-          <div>
-            {data.label}
-          </div>
-          <div>
-            <label>作成者</label>
-          </div>
-          <div>
-            {data.creator}
-          </div>
-          <div>
-            <label>作成日時</label>
-          </div>
-          <div>
-            {moment(data.createdAt).format(Constants.format.dateTime)}
-          </div>
+        <div className={"mb-8px"}>
+          {data.label}
+        </div>
+        <div className={style.actions}>
+          {this.renderButtons()}
+        </div>
+        <div className={style.full_hr} />
+        <div>
+          <label>名称</label>
+        </div>
+        <div>
+          {data.label}
+        </div>
+        {this.renderFrameDetail(data)}
+        <div>
+          <label>作成者</label>
+        </div>
+        <div>
+          {data.creator}
+        </div>
+        <div>
+          <label>作成日時</label>
+        </div>
+        <div>
+          {moment(data.createdAt).format(Constants.format.dateTime)}
+        </div>
       </div>
-      
+
       return <Resizer>
-          <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
-            {content}
-          </BaseInspector>
-      </Resizer>  
+        <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
+          {content}
+        </BaseInspector>
+      </Resizer>
     } else {
       return <Resizer>
         <BaseInspector onBlurTitle={(e) => this.onBlurTitle(e)}>
@@ -141,9 +188,7 @@ class LibraryInspector extends React.Component<Props> {
         </BaseInspector>
       </Resizer>
     }
-
   }
-
 }
 
 export default LibraryInspector

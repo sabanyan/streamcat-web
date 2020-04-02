@@ -186,13 +186,16 @@ class PaperScroller extends React.Component<PaperScrollerProps> {
   }
 
   render () {
+    const { editor } = this.props
+    const width = editor.width
     // onKeyDownには tabIndex が必要
     // ref:https://stackoverflow.com/questions/43503964/onkeydown-event-not-working-on-divs-in-react
     return <div tabIndex={0} onKeyDown={(e) => this.onKeyDown(e)}
                 onMouseDown={(e) => this.onMouseDown(e)}
                 onMouseMove={(e) => this.onMouseMove(e)}
                 onMouseUp={(e) => this.onMouseUp(e)}
-                className={style.paper_scroller}>
+                className={style.paper_scroller}
+                style={{width: width}}>
       {this.props.children}
     </div>
   }
