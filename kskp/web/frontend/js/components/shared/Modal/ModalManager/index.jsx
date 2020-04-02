@@ -37,7 +37,7 @@ export default class ModalManager extends React.Component {
   }
 
   render () {
-       const {notify, dismissNotify} = this.props
+    const {notify, dismissNotify} = this.props
 
     return <div>
       <Modal key={Constants.modal.ADD_COMMAND}
@@ -47,11 +47,12 @@ export default class ModalManager extends React.Component {
              id={Constants.modal.IMPORT_DATASOURCE} dynamic={true}
              done={'追加する'}>
       </Modal>
-      <Modal key={Constants.preview.DATASOURCE}
-             id={Constants.preview.DATASOURCE} dynamic={true}
+      <Modal key={Constants.modal.PREVIEW_DATASOURCE}
+             id={Constants.modal.PREVIEW_DATASOURCE} dynamic={true}
              preview={true} footer={false}
              notify={notify}
-             dismissNotify={dismissNotify}>
+             dismissNotify={dismissNotify}
+             close={false}>
       </Modal>
       <Modal key={Constants.modal.SHOW_MESSAGE}
              id={Constants.modal.SHOW_MESSAGE} title="" dynamic={true}
@@ -72,10 +73,10 @@ export default class ModalManager extends React.Component {
              title="フォルダを追加する" dynamic={true} done={'追加する'} primary={true}>
       </Modal>
       <Modal key={Constants.modal.ADD_DATABASE} id={Constants.modal.ADD_DATABASE}
-              title="データベースを追加する" dynamic={true} done={'追加する'} primary={true}>
+             title="データベースを追加する" dynamic={true} done={'追加する'} primary={true}>
       </Modal>
       <Modal key={Constants.modal.EDIT_DATABASE} id={Constants.modal.EDIT_DATABASE}
-              title="データベースを編集する" dynamic={true} done={'編集する'} primary={true}>
+             title="データベースを編集する" dynamic={true} done={'編集する'} primary={true}>
       </Modal>
       <Modal key={Constants.modal.ADD_DOCUMENT} id={Constants.modal.ADD_DOCUMENT}
              title="資料をアップロードする" dynamic={true} done={'追加する'} primary={true}>

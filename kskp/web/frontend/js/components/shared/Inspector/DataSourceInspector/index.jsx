@@ -66,8 +66,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   componentWillMount() {
     //モーダル処理の登録
     ModalUtil.registerModal({
-      id: Constants.preview.DATASOURCE, onClickOK: () => {
-        ModalUtil.closeModal(Constants.preview.DATASOURCE)
+      id: Constants.modal.PREVIEW_DATASOURCE, onClickOK: () => {
+        ModalUtil.closeModal(Constants.modal.PREVIEW_DATASOURCE)
       },
     })
   }
@@ -133,12 +133,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
               let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
               contents.push({ title: v.label, content: content, id: id })
             }
-            ModalUtil.emitModal({
-              id: Constants.preview.DATASOURCE,
-              visible: true,
-              contents: contents,
-              title: selected_step.getLabel()
-            })
+            let id =  selected_step.uuid;
+            window.open("/preview/"+id+"?dialog=true");
           }
         })
         .catch((message) => {
