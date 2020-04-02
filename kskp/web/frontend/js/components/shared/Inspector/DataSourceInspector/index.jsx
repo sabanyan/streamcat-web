@@ -133,8 +133,13 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
               let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
               contents.push({ title: v.label, content: content, id: id })
             }
-            let id =  selected_step.uuid;
-            window.open("/preview/"+id+"?dialog=true");
+            if(selected_step.uuid){
+              // uuidだけでプレビュー
+              window.open('/preview?step_id='+ id + '&dialog=true&frame_uuid=' + selected_step.uuid) ;
+            }else{
+              // 新規生成するので、step_id と flow_uuid と step_ids でデータを生成する
+              window.open('/preview?step_id='+ id + '&dialog=true&step_ids=' + btoa(JSON.stringify(stepIds)) + '&flow_uuid=' + flow_uuid) ;
+            }
           }
         })
         .catch((message) => {

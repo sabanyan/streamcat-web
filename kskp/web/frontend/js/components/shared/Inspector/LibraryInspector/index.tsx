@@ -52,8 +52,9 @@ class LibraryInspector extends React.Component<Props> {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
     let { lastSelected} = this.props;
     let library: LibraryListDataType = lastSelected;
-    let id = library.uuid
-    window.open("/preview/"+id+"?dialog=true");
+    let uuid = library.uuid
+    // uuidだけでプレビュー
+    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid) ;
   }
 
   onClickEdit(e) {
