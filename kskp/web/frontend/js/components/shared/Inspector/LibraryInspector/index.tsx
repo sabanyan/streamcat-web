@@ -5,7 +5,7 @@ import { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
-import { APIUtil, ModalUtil, SortUtil, HttpUtil, ErrorUtil, ReactDomUtil } from "Utils/index";
+import { APIUtil, ModalUtil, StringUtil } from "Utils/index";
 import { LibraryChild } from 'Model/index';
 
 type Props = {
@@ -54,7 +54,7 @@ class LibraryInspector extends React.Component<Props> {
     let library: LibraryListDataType = lastSelected;
     let uuid = library.uuid
     // uuidだけでプレビュー
-    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid) ;
+    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.base64encode(library.label));
   }
 
   onClickEdit(e) {
