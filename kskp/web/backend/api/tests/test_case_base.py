@@ -86,7 +86,7 @@ class TestCaseBase(unittest.TestCase):
             with client.session_transaction() as session:
                 session['user_id'] = self.USER1.id
                 from kskp.store import AuthzSession, Session
-                g.session = AuthzSession(Session, user=self.USER1)
+                g.factory = AuthzSession(Session, user=self.USER1)
 
 
                 # from kskp.store import get_frame_dir_path

@@ -31,7 +31,7 @@ def update_navigation(func):
         # フローが指定された場合
         if 'flow' in request.args or 'flow_uuid' in kwargs:
             flow_uuid = request.args['flow'] if 'flow' in request.args else kwargs['flow_uuid']
-            flow = g.session.data.find_by_uuid(flow_uuid)
+            flow = g.factory.data.find_by_uuid(flow_uuid)
             parent = flow.find_parent()
             navigation['project_uuid'] = parent.uuid
             navigation['project_name'] = parent.label
@@ -42,7 +42,7 @@ def update_navigation(func):
         elif 'project' in request.args:
             project_uuid = request.args['project']
             navigation['project_uuid'] = project_uuid
-            project = g.session.data.find_by_uuid(project_uuid)
+            project = g.factory.data.find_by_uuid(project_uuid)
             navigation['project_name'] = project.label
 
         data['navigation'] = navigation
