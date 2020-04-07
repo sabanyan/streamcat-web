@@ -10,8 +10,6 @@ from kskp.web.backend import app
 from .auth import login_required_api
 from .utils import api_base, frame_api_base
 
-from kskp.store.session import Session
-
 mod = Blueprint('frames', __name__)
 
 @mod.route('/frames/<frame_uuid>')
@@ -26,7 +24,7 @@ def fetch_frame(frame_uuid):
     limit = int(request.args.get('limit')) if request.args.get('limit') else 999
     no_contents = True if request.args.get('no_contents') else False
 
-    frame = g.session.data.find_by_uuid(frame_uuid)
+    frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
@@ -161,15 +159,13 @@ def update_frame(frame_uuid):
     if 'label' in request.json and request.json['label'] != '':
         # frameのラベルを修正する
         label = request.json['label']
-        modifier = g.user
-        frame = g.session.data.find_by_uuid(frame_uuid)
-        return frame.update_data(label, modifier)
+        frame = g.factory.data.find_by_uuid(frame_uuid)
+        return frame.update_data(label)
     elif 'parent' in request.json and request.json['parent'] != '':
         # frameを移動する
         new_parent = request.json['parent']
-        modifier = g.user
-        frame = g.session.data.find_by_uuid(frame_uuid)
-        return frame.move(new_parent, modifier)
+        frame = g.factory.data.find_by_uuid(frame_uuid)
+        return frame.move(new_parent)
     else:
         raise Exception('update_frame parameter error!')
 
@@ -180,12 +176,12 @@ def delete_frame(frame_uuid):
     """
     指定したframeを物理削除する
     """
-    frame = g.session.data.find_by_uuid(frame_uuid)
+    frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
     # 削除しようとするframeが、フローで使用されている場合は例外を送出する
-    flow_labels = g.session.data.get_flows_referencing_frame(frame_uuid)
+    flow_labels = g.factory.data.get_flows_referencing_frame(frame_uuid)
     if len(flow_labels) > 0:
         raise Exception(f'このCSVファイルはフロー({flow_labels[0]})で使用しているため削除できません')
 
@@ -209,10 +205,9 @@ def create_frame():
                 raise Exception('No label is designated.')
             
             # parentとlabel属性があれば新形式のPOST /framesだとみなす
-            parent = g.session.data.find_by_uuid(request.form.get('parent'))
+            parent = g.factory.data.find_by_uuid(request.form.get('parent'))
             new_frame = parent.create_frame(request.form.get('label')
-                                            , request.files.get('file').stream
-                                            , creator=g.user)
+                                            , request.files.get('file').stream)
             # documentレコードをDBに格納する
             new_frame.save()
             return jsonify({'success': True, 'data': new_frame})
@@ -223,10 +218,10 @@ def create_frame():
             # 
             flow_uuid = request.json.get('flow_uuid')
             args = request.json.get('args') if request.json.get('args') else {}
-            inputs = _make_flow_inputs(g.session, flow_uuid, request)
+            inputs = _make_flow_inputs(g.factory, flow_uuid, request)
             # フローの実行
-            flow = g.session.data.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, g.session, args=args, inputs=inputs)
+            flow = g.factory.data.find_by_uuid(flow_uuid)
+            result = execute_flow(flow, g.factory, args=args, inputs=inputs)
             result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
@@ -265,8 +260,8 @@ def make_new_frames():
         # 普通の実行
         flow_uuid = request.args['from']
 
-    flow = g.session.data.find_by_uuid(flow_uuid)     
-    activity = execute_flow(flow, g.session)
+    flow = g.factory.data.find_by_uuid(flow_uuid)     
+    activity = execute_flow(flow, g.factory)
     return format_result(activity)
 
 @mod.route('/vizs/<frame_uuid>', methods=['POST'])
@@ -282,11 +277,11 @@ def fetch_vis(frame_uuid):
     from kskp.depo.std.commands import LoaderCommand
     from kskp.engine import Step
 
-    frame = g.session.data.find_by_uuid(frame_uuid)
+    frame = g.factory.data.find_by_uuid(frame_uuid)
     parent_folder = frame.find_parent()
     loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
-    datasource = g.session.data.create_datasource(None, 'tmp_source', parent_folder, loader_step, g.user)
-    activity = execute_flow(datasource, g.session, vis_args=vis_args)
+    datasource = g.factory.data.create_datasource(None, 'tmp_source', parent_folder, loader_step)
+    activity = execute_flow(datasource, g.factory, vis_args=vis_args)
     return format_vis(activity)
 
 @mod.route('/vizs', methods=['POST'])
@@ -302,8 +297,8 @@ def make_new_viss():
     flow_uuid = request.args['from']
     vis_args = request.json
 
-    flow = g.session.data.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow, g.session, vis_args=vis_args)
+    flow = g.factory.data.find_by_uuid(flow_uuid)
+    activity = execute_flow(flow, g.factory, vis_args=vis_args)
     return format_vis(activity)
 
 def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
@@ -367,7 +362,7 @@ def _make_flow_inputs(session, flow_uuid, request):
 def _load_frame(frame_uuid):
     # Loaderを用いて指定したuuidのframeを取得する
     from kskp.depo.std.commands import CommandLink
-    store = g.session.data.find_by_uuid(frame_uuid).find_parent()
+    store = g.factory.data.find_by_uuid(frame_uuid).find_parent()
     loader = CommandLink('loader').resolve()
     result = loader.run({'uuid':frame_uuid}, {'store':store})
     # NYSOLコマンドを返す

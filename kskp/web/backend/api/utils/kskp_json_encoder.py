@@ -17,11 +17,7 @@ class KSKPJSONEncoder(JSONEncoder):
         elif isinstance(obj, Lock):
             return obj.to_json()
         elif isinstance(obj, Datum):
-            from kskp.store import Frame
-            if obj.type == Frame.FRAME_TYPE:
-                return Frame.to_json(obj)
-            else:
-                return obj.to_json()
+            return obj.to_json()
         else:
             # 上記以外のクラスはデフォルトのデコード処理とする
             return JSONEncoder.default(self, obj)

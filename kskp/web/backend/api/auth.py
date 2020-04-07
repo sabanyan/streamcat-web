@@ -14,7 +14,7 @@ from flask import (
 from flask_mail import Mail, Message
 
 from kskp.web.backend import app
-from kskp.store.session import Session, UnAuthzSessoin
+from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
 
@@ -38,8 +38,8 @@ def login_required(func):
                 # 認証を要求している場合
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
-                with UnAuthzSessoin() as db_session:
-                    user = db_session.find_user_by_email(f['email'])
+                with UnAuthzFactory() as factory:
+                    user = factory.find_user_by_email(f['email'])
                     if user is None:
                         return render_template('login.html', email=f['email'])
 
@@ -100,16 +100,16 @@ def login_required_api(func):
         if 'user_id' in session:
             try:
                 # Userオブジェクトをflask.gに設定する
-                with UnAuthzSessoin() as db_session:
-                    user = db_session.find_user_by_id(session['user_id'])
+                with UnAuthzFactory() as factory:
+                    user = factory.find_user_by_id(session['user_id'])
                     if user is None:
                         raise Exception('user is None !')
                     g.user = user
                 # Sessionオブジェクトをflask.gに設定する
-                with Session(user) as db_session:
+                with Factory(user) as factory:
                     # AuthzSessionをUserオブジェクトに格納する
-                    g.user.session = db_session._session
-                    g.session = db_session
+                    g.user.session = factory._session
+                    g.factory = factory
                     return func(**kwargs)
             finally:
                 # TODO:
