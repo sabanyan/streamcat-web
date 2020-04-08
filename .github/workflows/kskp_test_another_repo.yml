@@ -1,4 +1,4 @@
-name: KSKP remote unit test
+name: KSKP_remote_unit_test
 
 on  :
     push:
