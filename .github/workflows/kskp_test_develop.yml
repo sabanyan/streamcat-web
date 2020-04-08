@@ -3,8 +3,8 @@ name: KSKP-Test_develop
 on:
   push:
     branches:
-      - develop_github_actions
-      - develop
+      - develop_github_actions22
+
 jobs:
   build:
     runs-on: ubuntu-latest
