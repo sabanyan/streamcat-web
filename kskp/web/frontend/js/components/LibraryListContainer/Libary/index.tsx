@@ -1163,6 +1163,98 @@ export default class Library extends React.Component<Props, State> {
     ]
   }
 
+  onChangeEncoding(e, data) {
+    data.encoding = e.target.value
+
+    ModalUtil.emitModal({
+      id: Constants.modal.EDIT_ENCODING,
+      visible: true,
+      done: '反映する',
+      danger: true,
+      content: this.renderEditEncodingForm(data)
+    })
+  }
+
+  onChangeNewline(e, data) {
+    data.newline = e.target.value
+
+    ModalUtil.emitModal({
+      id: Constants.modal.EDIT_ENCODING,
+      visible: true,
+      done: '反映する',
+      danger: true,
+      content: this.renderEditEncodingForm(data)
+    })
+  }
+
+  renderEditEncodingForm(data) {
+    let encodings:any = []
+    Constants.encodings.forEach((value) => {
+      let encoding = <React.Fragment key={value}>
+        <option value={value}>{value}</option>
+      </React.Fragment>
+      encodings.push(encoding)
+    })
+
+    let newlines:any = []
+    Constants.newlines.forEach((value) => {
+      let newline = <React.Fragment key={value}>
+        <option value={value}>{value}</option>
+      </React.Fragment>
+      newlines.push(newline)
+    })
+
+    return <React.Fragment>
+      <div>
+        <label>文字コード</label>
+      </div>
+      <select value={data.encoding} onChange={(e) => this.onChangeEncoding(e, data)}>
+        {encodings}
+      </select>
+      <div>
+        <label>改行コード</label>
+      </div>
+      <div>
+        <select value={data.newline} onChange={(e) => this.onChangeNewline(e, data)}>
+          {newlines}
+        </select>
+      </div>
+    </React.Fragment>
+  }
+
+
+  onClickEditEncoding(data) {
+
+    ModalUtil.registerModal({
+      id: Constants.modal.EDIT_ENCODING, onClickDone: () => {
+        if (data.type === Constants.library.type.frame) {
+          this.setState({ is_loading: true },
+            () => {
+              APIUtil.put("frames/" + data.uuid, {
+                encoding: data.encoding,
+                newline: data.newline
+              })
+                .then(() => {
+                  this.setState({ is_loading: false })
+                })
+            }
+          )
+        }
+        ModalUtil.closeModal(Constants.modal.EDIT_ENCODING)
+      },
+    })
+
+    ModalUtil.emitModal({
+      id: Constants.modal.EDIT_ENCODING,
+      visible: true,
+      done: '反映する',
+      danger: true,
+      content: this.renderEditEncodingForm(data)
+    })
+  }
+
+
+
   renderSearchBar() {
     return <div className={style.search_bar}>
       <TextField placeholder={'ライブラリーを検索'} onChange={(e) => this.onChangeSearchText(e)} />
@@ -1230,6 +1322,7 @@ export default class Library extends React.Component<Props, State> {
     let onClickApply: any = null
     let onClickMove: any = null
     let onClickEdit: any = null
+    let onClickEditEncoding:any = null
 
     switch (this.state.mode) {
       case Constants.library.mode.frame_select:
@@ -1242,6 +1335,7 @@ export default class Library extends React.Component<Props, State> {
       case Constants.library.mode.list:
         onClickDelete = () => this.onClickDelete()
         onClickMove = () => this.onClickMove()
+        onClickEditEncoding = (data) => this.onClickEditEncoding(data)
         if (data && data.type === Constants.library.type.database) {
           onClickEdit = (data) => this.onClickEditDatabase(data)
         }
@@ -1254,6 +1348,7 @@ export default class Library extends React.Component<Props, State> {
       onClickApply={onClickApply}
       onClickMove={onClickMove}
       onClickEdit={onClickEdit}
+      onClickEditEncoding={onClickEditEncoding}
       onBlurTitle={(e) => this.onBlurTitle(e, data)}
       visualizers={this.state.visualizers}
       notify={notify}
