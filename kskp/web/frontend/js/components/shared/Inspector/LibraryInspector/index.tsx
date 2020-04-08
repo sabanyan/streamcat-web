@@ -17,6 +17,7 @@ type Props = {
   onClickMove?: Function;
   onBlurTitle?: Function;
   onClickEdit?: Function;
+  onClickEditEncoding?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
@@ -93,9 +94,9 @@ class LibraryInspector extends React.Component<Props> {
 
   }
   renderButtons(data?: LibraryChild) {
-    const { selected, onClickDelete, onClickApply, onClickMove, onClickEdit } = this.props
+    const { selected, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding } = this.props
 
-    let preview, download, del, apply, move, edit
+    let preview, download, del, apply, move, edit, editEncoding
 
     // 
     if (selected.length == 1) {
@@ -125,6 +126,10 @@ class LibraryInspector extends React.Component<Props> {
 
       // move button
       if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
+
+      // editEncoding
+      if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
+
     }
 
     return <React.Fragment>
@@ -134,6 +139,7 @@ class LibraryInspector extends React.Component<Props> {
       {edit}
       {del}
       {apply}
+      {editEncoding}
     </React.Fragment>
   }
 
@@ -152,27 +158,30 @@ class LibraryInspector extends React.Component<Props> {
       result.push(label)
     }
 
-    // 文字コードがあれば、表示する
-    let encoding
-    if (data.encoding) {
-      encoding = <React.Fragment key={data.encoding}>
-        <div><label>{this.display.encoding}</label></div>
-        <div className={"mb-8px"}>{data.encoding}</div>
-      </React.Fragment>
+    if (data.type === Constants.library.type.frame) {
+      // 文字コードがあれば、表示する
+      let encoding
+      if (data.encoding) {
+        encoding = <React.Fragment key={data.encoding}>
+          <div><label>{this.display.encoding}</label></div>
+          <div className={"mb-8px"}>{data.encoding}</div>
+        </React.Fragment>
 
-      result.push(encoding)
+        result.push(encoding)
+      }
+
+      // 改行コードがあれば、表示する
+      let newline
+      if (data.newline) {
+        newline = <React.Fragment key={data.newline}>
+          <div><label>{this.display.newline}</label></div>
+          <div className={"mb-8px"}>{data.newline}</div>
+        </React.Fragment>
+
+        result.push(newline)
+      }
     }
 
-    // 改行コードがあれば、表示する
-    let newline
-    if (data.newline) {
-      newline = <React.Fragment key={data.newline}>
-        <div><label>{this.display.newline}</label></div>
-        <div className={"mb-8px"}>{data.newline}</div>
-      </React.Fragment>
-
-      result.push(newline)
-    }
 
     // 作成者があれば、表示する
     let creator
@@ -213,7 +222,7 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderSelect(data?: LibraryChild) {
-    let content = <div className={style.inspector}>
+    let content:any = <div className={style.inspector}>
       <div className={style.actions}>
         {this.renderButtons(data)}
       </div>
