@@ -4,7 +4,7 @@ on  :
     push:
 
 jobs:
-    throw test repo:
+    throw_test_repo:
         runs-on:    ubuntu-latest
         steps:
             -   name: throw http reqest for test repo
