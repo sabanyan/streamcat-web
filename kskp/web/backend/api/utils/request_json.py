@@ -1,0 +1,44 @@
+class RequestJson():
+
+    _request_json = {}
+
+    def __init__(self, request_json):
+        self._request_json = request_json
+
+    def __getitem__(self, key):
+        return self._request_json[key]
+
+    def has(self, key):
+        """
+        指定したキーが存在し、かつ値が設定されていることを確認する
+        """
+        d = self._request_json
+        return key in d and d[key] is not None and d[key] != ''
+
+    def has_all(self, *keys):
+        """
+        全てのキーについて、
+        指定したキーが存在し、かつ値が設定されていることを確認する
+        """
+        for key in keys:
+            if not self.has(key):
+                return False
+        return True
+
+    def has_no_all(self, *keys):
+        """
+        全てのキーについて、
+        指定したキーが存在しない、または値が設定されていないことを確認する
+        """
+        for key in keys:
+            if self.has(key):
+                return False
+        return True
+
+    def has_at_least(self, *keys):
+        """
+        指定したキーのうち少なくとも1つについて、
+        指定したキーが存在し、かつ値が設定されていることを確認する
+        """
+        return not self.has_no_all(*keys)
+

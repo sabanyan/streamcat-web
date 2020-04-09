@@ -18,6 +18,7 @@ type Props = {
   onClickApply?: Function;
   onClickMove?: Function;
   onBlurTitle?: Function;
+  onClickEditEncoding?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
@@ -41,7 +42,7 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   onClickPreview(e) {
-    // dataがない（Null)の場合はPreviwボタンは表示しない（render)
+    // dataがない（Null)の場合はPreviewボタンは表示しない（render)
     let { data, visualizers } = this.props
     visualizers = SortUtil.getSortedContents(visualizers)
 
@@ -77,9 +78,9 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderButtons() {
-    const { data, onClickDelete, onClickApply, onClickMove, onClickEdit } = this.props
+    const { data, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding } = this.props
 
-    let preview, download, del, apply, move, edit
+    let preview, download, del, apply, move, edit, editEncoding
 
     // preview button
     // download button
@@ -103,6 +104,9 @@ class LibraryInspector extends React.Component<Props> {
     // apply button
     if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
 
+    // editEncoding
+    if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding =  <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
+
     return <React.Fragment>
       {preview}
       {download}
@@ -110,6 +114,7 @@ class LibraryInspector extends React.Component<Props> {
       {edit}
       {del}
       {apply}
+      {editEncoding}
     </React.Fragment>
   }
 
@@ -183,9 +188,7 @@ class LibraryInspector extends React.Component<Props> {
         </BaseInspector>
       </Resizer>
     }
-
   }
-
 }
 
 export default LibraryInspector

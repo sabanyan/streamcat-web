@@ -39,7 +39,11 @@ export default class PreviewModal extends React.Component<Props, State> {
   saveResults (index: number, result: {}, headers=[]) {
     let results = this.state.results
     results[index] = result
-    this.setState({results: results, headers: headers})
+    if (headers.length === 0) {
+      this.setState({results: results})
+    } else {
+      this.setState({results: results, headers: headers})
+    }
   }
 
   loadResults (index: number) {

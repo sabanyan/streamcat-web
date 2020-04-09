@@ -143,10 +143,25 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   updateCache() {
-    APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
-      const json = response.data
-      this.props.loadFlowJSON(json)
-    })
+    const {notify} = this.props
+
+    APIUtil.get('flows/' + inject_flow_uuid + "?navigation=off")
+      .then((response) => {
+        console.log(response)
+        if (response.data.success === false) throw response.data
+        const json = response.data
+        this.props.loadFlowJSON(json)
+      })
+      .catch((error) => {
+        console.log(error)
+        notify({
+          title: 'フロ取得エラー',
+          message: error.message + "(フローの読み込みに失敗しました。再読み込みしてください)",
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      })
   }
 
   onClickCSVDownload(e: Event) {
@@ -363,6 +378,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       let fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0
       fileSize = StringUtil.convertToFileSize(fileSize)
       let lastModifiedAt = selected_data_source_detail ? selected_data_source_detail.lastModifiedAt : ""
+      let lastModifier = selected_data_source_detail ? selected_data_source_detail.lastModifier : ""
 
       content = <div>
         <div className={style.property_overview}>
@@ -396,7 +412,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
                 作成者
               </div>
               <div className={style.overview_value}>
-                {/*{property.overview.created_user_name || ""}*/}
+                {lastModifier}{/*{property.overview.created_user_name || ""}*/}
               </div>
             </div>
             <div className={style.overview}>
@@ -424,12 +440,17 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
               キャッシュ削除
             </Button>
           </div>
-          <div className={style.cache_label}>
+          {
+            /*
+            <div className={style.cache_label}>
             キャッシュ作成日
-          </div>
-          <div className={style.cache_value}>
-            {selected_step.cacheCreatedAt}
-          </div>
+            </div>
+            <div className={style.cache_value}>
+              {selected_step.cacheCreatedAt}
+            </div>
+            */
+          }
+
         </div>
         <div className={style.full_hr} />
         <CommandSelector
