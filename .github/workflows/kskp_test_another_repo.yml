@@ -12,4 +12,4 @@ jobs:
                     curl -X POST https://api.github.com/repos/ksk-anl/kskp-test/dispatches \
                     -H 'Accept: application/vnd.github.everest-preview+json' \
                     -u ${{ secrets.ACCESS_TOKEN }} \
-                    --data '{"event_type": "send_message", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
+                    --data '{"event_type": "send_message", "client_payload": { "repository": {"default_branch": "develop"}}}}'
