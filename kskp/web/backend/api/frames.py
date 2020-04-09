@@ -157,25 +157,25 @@ def update_frame(frame_uuid):
         raise Exception('label,encoding,newlineまたはparent属性を指定してください')
     elif req.has('parent') and req.has_at_least('label', 'encoding', 'newline'):
         raise Exception('label,encoding,newlineとはparent属性は同時に指定できません')
-    
-    modifier = session['user_id']
+
+    frame = g.factory.data.find_by_uuid(frame_uuid)
 
     if req.has('parent'):
         # frameを移動する
         new_parent = req['parent']
-        frame = Frame.find_by_uuid(frame_uuid)
-        return frame.move(new_parent, modifier)
+        return frame.move(new_parent)
 
     else:
         if req.has('label'):
             # frameのラベルを修正する
             label = req['label']
-            ret = Frame.update_label(frame_uuid, label, modifier)
+            # ret = Frame.update_label(frame_uuid, label, modifier)
+            ret = frame.update_data(label)
 
         if req.has_all('encoding', 'newline'):
             encoding_str = req['encoding']
             newline_str = req['newline']
-            ret = Frame.update_encoding_newline(frame_uuid, encoding_str, newline_str, modifier)
+            ret = frame.update_encoding_newline(encoding_str, newline_str)
 
         if ret is None:
             raise Exception('update_frame parameter error!')
