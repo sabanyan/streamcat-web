@@ -16,7 +16,7 @@ mod = Blueprint('lib', __name__)
 @login_required_api
 def download_flow(uuid):
     from kskp.store import FlowDumper
-    flow_dumper = FlowDumper()
+    flow_dumper = FlowDumper(g.factory)
     (archive_path, archive_name) = flow_dumper.dump_archive(uuid)
 
     # アーカイブファイルを返す
@@ -37,8 +37,8 @@ def upload_flow():
     stream = request.files.get('file').stream
     
     from kskp.store import FlowDumper
-    flow_dumper = FlowDumper()
-    flow_dumper.restore_archive(root.uuid, stream, creator=g.user)
+    flow_dumper = FlowDumper(g.factory)
+    flow_dumper.restore_archive(root, stream)
 
 @mod.route('/stores', methods=['GET'])
 @login_required_api
