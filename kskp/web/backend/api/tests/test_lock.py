@@ -2,16 +2,12 @@ import os
 import json
 import uuid
 import pprint
-from pathlib import Path
 import unittest
 
 from kskp.web.backend import app
-from kskp.store import ss
-from kskp.store import StoreModel as Store
-from kskp.store import Datum, Frame, AwsS3, STORE_DIR
-from kskp.web.backend.api.tests.test_case_base import TestCaseBase
+from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 
-class LockFlowTestCase(TestCaseBase):
+class LockFlowTestCase(ApiTestCaseBase):
 
     def create_flow(self, parent_uuid, source_uuid):
         new_flow_name = '新しいフローでーす！'

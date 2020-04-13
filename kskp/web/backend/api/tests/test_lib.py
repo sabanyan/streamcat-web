@@ -5,35 +5,34 @@ import pprint
 from pathlib import Path
 
 from kskp.web.backend import app
-from kskp.store import ss
 from kskp.store import StoreModel as Store
-from kskp.store import Datum, Mountable, Frame, AwsS3, Database, RemoteFolder, STORE_DIR
-from kskp.web.backend.api.tests.test_case_base import TestCaseBase
+from kskp.store import Mountable, STORE_DIR
+from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 
-class DataStoreTestCase(TestCaseBase):
+class DataStoreTestCase(ApiTestCaseBase):
 
     def test_create_fetchall_delete_stores(self):
         """
         fetch_stores APIをテストする
         """
         # storesテーブルへのセット
-        store1 = Store.create('Directory',
-                              '1.0.0',
-                              'ディレクトリ',
-                              '',
-                              '',
-                              [{'name':'filePath', 'type':'string', 'label':'CSVファイル格納パス名'}],
-                              self.USER1)
-        store2 = Store.create('PostgreSQL',
-                              '1.0.0',
-                              'PostgreSQLへの接続設定(ODBC)',
-                              '',
-                              '',
-                              [{'name':'connectionString', 'type':'string', 'label':'postgreSQLへの接続文字列'}],
-                              self.USER1)
-        ss.add(store1)
-        ss.add(store2)
-        ss.commit()
+        store1 = self.factory.store.create(
+                            'Directory',
+                            '1.0.0',
+                            'ディレクトリ',
+                            '',
+                            '',
+                            [{'name':'filePath', 'type':'string', 'label':'CSVファイル格納パス名'}])
+        store2 = self.factory.store.create(
+                            'PostgreSQL',
+                            '1.0.0',
+                            'PostgreSQLへの接続設定(ODBC)',
+                            '',
+                            '',
+                            [{'name':'connectionString', 'type':'string', 'label':'postgreSQLへの接続文字列'}])
+        self.factory._session.add(store1)
+        self.factory._session.add(store2)
+        self.factory._session.commit()
 
         # GET /stores
         result = self.get_uri('/api/v0/stores', self.USER1)
@@ -115,7 +114,7 @@ class DataStoreTestCase(TestCaseBase):
         with self.assertRaises(AssertionError) as e:
             result = self.get_uri('/api/v0/stores/%s' % expected_result['id'], self.USER1)
 
-class LibraryTestCase(TestCaseBase):
+class LibraryTestCase(ApiTestCaseBase):
     def test_get_root(self):
         """
         ルートフォルダがある場合にGET /libraryを実行した場合
@@ -183,7 +182,7 @@ class LibraryTestCase(TestCaseBase):
 
     def test_update_folder(self):
         # フォルダを作成する(POST /folders)
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # フォルダを作成する(POST /folders)
         result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": root.uuid}, self.USER1)
@@ -196,7 +195,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : ' NEW FOLDER '
             ,'type'     : 'folder'
-            ,'creator'  : 'Admin'
+            ,'creator'  : '管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -216,7 +215,7 @@ class LibraryTestCase(TestCaseBase):
 
     def test_move_folder(self):
         # ルートを取得する
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # 移動元フォルダを作成する(POST /folders)
         folder_src = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER1)
@@ -233,7 +232,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'folder'
-            ,'creator'  : 'Admin'
+            ,'creator'  : '管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -250,7 +249,7 @@ class LibraryTestCase(TestCaseBase):
 
     def test_move_folder2(self):
         # ルートを取得する
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # 移動元フォルダを作成する(POST /folders)
         folder_src = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER1)
@@ -278,7 +277,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'folder'
-            ,'creator'  : 'Admin'
+            ,'creator'  : '管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -300,7 +299,7 @@ class LibraryTestCase(TestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER1)
         # folder_uuid = result['data']['uuid']
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -326,7 +325,7 @@ class LibraryTestCase(TestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER1)
         # folder_uuid = result['data']['uuid']
-        folder_uuid = Datum.find_root().uuid
+        folder_uuid = self.factory.data.load_root().uuid
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -343,7 +342,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : '新しいフレームファイル!'
             ,'type'     : 'frame'
-            ,'creator'  : 'Admin'
+            ,'creator'  : '管理者'
         }
 
         # Post /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -365,7 +364,7 @@ class LibraryTestCase(TestCaseBase):
         # フォルダを作成する(POST /folders)
         # result = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ", "parent": None}, self.USER1)
         # folder_uuid = result['data']['uuid']
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # アップロード用に一時ファイルを作成する
         import io
@@ -382,7 +381,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : ' F L A M E-F I L E '
             ,'type'     : 'frame'
-            ,'creator'  : 'Admin'
+            ,'creator'  : '管理者'
         }
 
         # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -399,18 +398,18 @@ class LibraryTestCase(TestCaseBase):
         self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER1)
 
     def test_update_frame_encoding(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # アップロード用に一時ファイルを作成する
         import io
         f = (io.BytesIO(b"thisisaframefile"), 'aaa2.csv')
 
         # フレームデータを作成する(POST /frames)
-        result = self.post_frames('フレームファイルAA2', root.uuid, f, self.USER_ID)
+        result = self.post_frames('フレームファイルAA2', root.uuid, f, self.USER1)
         frame_uuid = result['data']['uuid']
 
         # フレームの文字コードを変更する(PUT /frames)
-        result = self.put_uri('/api/v0/frames/' + frame_uuid, {'encoding':'UTF-8', 'newline':'LF'}, self.USER_ID)
+        result = self.put_uri('/api/v0/frames/' + frame_uuid, {'encoding':'UTF-8', 'newline':'LF'}, self.USER1)
 
         # 期待するAPIの戻り値
         expected_result = {
@@ -431,11 +430,11 @@ class LibraryTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
         # 中のファイルを削除する(DELETE /frames)
-        self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER_ID)
+        self.delete_uri('/api/v0/frames/' + frame_uuid, self.USER1)
 
     def test_move_frame(self):
         # ルートを取得する
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER1)
@@ -455,7 +454,7 @@ class LibraryTestCase(TestCaseBase):
         expected_result = {
              'label'    : 'フレームファイル_1B'
             ,'type'     : 'frame'
-            ,'creator'  : 'Admin'
+            ,'creator'  : '管理者'
         }
 
         # PUT /frames apiが正常終了することを検証する
@@ -471,9 +470,9 @@ class LibraryTestCase(TestCaseBase):
         self.assertTrue(os.path.isfile((STORE_DIR / root.path / '新しいフォルダ1B' / 'フレームファイル_1B').as_posix()))
 
 @unittest.skip('ASW S3のIDとアカウントが必要')
-class AwsS3TestCase(TestCaseBase):
+class AwsS3TestCase(ApiTestCaseBase):
     def test_create_get_awss3(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -490,11 +489,11 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         awss3_uuid = result['data']['uuid']
-        awss3 = AwsS3.find_by_uuid(awss3_uuid)
+        awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
         # S3マウント用フォルダが作成されていることを検証する
         self.assertTrue(os.path.isdir((STORE_DIR / awss3.path).as_posix()))
@@ -507,7 +506,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertIsNotNone(result['data']['children'])
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
@@ -526,7 +525,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_update_awss3(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
         
@@ -539,7 +538,7 @@ class AwsS3TestCase(TestCaseBase):
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
         awss3_uuid = result['data']['uuid']
-        awss3 = AwsS3.find_by_uuid(awss3_uuid)
+        awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
         # S3フォルダのラベルを更新する(PUT /awss3s)
         update_data = {
@@ -553,7 +552,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], '大根の卸金が欲しい')
         self.assertEqual(result['data']['bucket'], 'abc')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
@@ -564,7 +563,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_remount_awss3(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -577,7 +576,7 @@ class AwsS3TestCase(TestCaseBase):
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
 
         awss3_uuid = result['data']['uuid']
-        awss3 = AwsS3.find_by_uuid(awss3_uuid)
+        awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
         # KSKPの外部からUnmountをする
         import shlex
@@ -605,7 +604,7 @@ class AwsS3TestCase(TestCaseBase):
         self.assertFalse(os.path.exists(awss3_path))
 
     def test_mount_under_mount_awss3(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -617,7 +616,7 @@ class AwsS3TestCase(TestCaseBase):
         }
         result = self.post_uri('/api/v0/awss3s', data, self.USER1)
         awss3_uuid = result['data']['uuid']
-        awss3 = AwsS3.find_by_uuid(awss3_uuid)
+        awss3 = self.factory.data.find_by_uuid(awss3_uuid)
 
         # AWS S3フォルダの下にAWS S3フォルダを作成しようとする(POST /awss3s)
         data = {
@@ -636,9 +635,9 @@ class AwsS3TestCase(TestCaseBase):
         # S3マウント用フォルダが削除されていることを検証する
         self.assertFalse(os.path.exists(awss3_path))
 
-class DatabaseTestCase(TestCaseBase):
+class DatabaseTestCase(ApiTestCaseBase):
     def test_create_get_database(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -665,11 +664,11 @@ class DatabaseTestCase(TestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp')
         self.assertEqual(result['data']['user_id'], 'postgres')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         database_uuid = result['data']['uuid']
-        database = Database.find_by_uuid(database_uuid)
+        database = self.factory.data.find_by_uuid(database_uuid)
 
         # Databaseを取得する(GET /databases)
         result = self.get_uri('/api/v0/databases/' + database_uuid, self.USER1)
@@ -684,14 +683,14 @@ class DatabaseTestCase(TestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp')
         self.assertEqual(result['data']['user_id'], 'postgres')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
         self.delete_uri('/api/v0/databases/' + database_uuid, self.USER1)
 
     def test_update_database(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
         
@@ -709,7 +708,7 @@ class DatabaseTestCase(TestCaseBase):
         result = self.post_uri('/api/v0/databases', data, self.USER1)
 
         database_uuid = result['data']['uuid']
-        database = Database.find_by_uuid(database_uuid)
+        database = self.factory.data.find_by_uuid(database_uuid)
 
         # Databaseのラベルを更新する(PUT /databases)
         update_data = {
@@ -733,7 +732,7 @@ class DatabaseTestCase(TestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp!')
         self.assertEqual(result['data']['user_id'], 'tiger')
         self.assertEqual(result['data']['password'], 'scott')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
@@ -741,7 +740,7 @@ class DatabaseTestCase(TestCaseBase):
 
     def test_move_database(self):
         # ルートを取得する
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1B", "parent": root.uuid}, self.USER1)
@@ -774,7 +773,7 @@ class DatabaseTestCase(TestCaseBase):
             "user_id"  : "postgres",
             "password" : "",
             'type'     : 'database',
-            'creator'  : 'Admin'
+            'creator'  : '管理者'
         }
 
         # PUT /databases apiの戻り値が正しいことを検証する(createdAtは検証できない)
@@ -1040,10 +1039,10 @@ class DatabaseTestCase(TestCaseBase):
 # 
 # テスト実行時にmountコマンドの実行に必要なPasswordが聞かれます
 # 
-class RemoteFolderTestCase(TestCaseBase):
+class RemoteFolderTestCase(ApiTestCaseBase):
 
     def test_create_get_folders(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
 
@@ -1070,11 +1069,11 @@ class RemoteFolderTestCase(TestCaseBase):
         self.assertEqual(result['data']['directory'], 'share')
         self.assertEqual(result['data']['user_id'], 'ksk-ds')
         self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         folder_uuid = result['data']['uuid']
-        folder = RemoteFolder.find_by_uuid(folder_uuid)
+        folder = self.factory.data.find_by_uuid(folder_uuid)
 
         # RemoteFolderを取得する(GET /remote-folders)
         result = self.get_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
@@ -1089,14 +1088,14 @@ class RemoteFolderTestCase(TestCaseBase):
         self.assertEqual(result['data']['directory'], 'share')
         self.assertEqual(result['data']['user_id'], 'ksk-ds')
         self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # RemoteFolderを削除(unmount)する(DELETE /remote-folders)
         self.delete_uri('/api/v0/remote-folders/' + folder_uuid, self.USER1)
 
     def test_update_folders(self):
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
         root_uuid = root.uuid
         root_path = root.path
         
@@ -1114,7 +1113,7 @@ class RemoteFolderTestCase(TestCaseBase):
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
 
         folder_uuid = result['data']['uuid']
-        folder = RemoteFolder.find_by_uuid(folder_uuid)
+        folder = self.factory.data.find_by_uuid(folder_uuid)
 
         # RemoteFolderのラベルを更新する(PUT /remote-folders)
         update_data = {
@@ -1138,7 +1137,7 @@ class RemoteFolderTestCase(TestCaseBase):
         self.assertEqual(result['data']['directory'], 'share2')
         self.assertEqual(result['data']['user_id'], 'user2')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'Admin')
+        self.assertEqual(result['data']['creator'], '管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # RemoteFolderを削除(unmount)する(DELETE /remote-folders)
@@ -1147,7 +1146,7 @@ class RemoteFolderTestCase(TestCaseBase):
     @unittest.skip('moveするにはpoth列とlabel列の名称を一致させるという縛りを破るしかない。縛りを破る予定だが今はテストをスキップ')
     def test_move_folders(self):
         # ルートを取得する
-        root = Datum.find_root()
+        root = self.factory.data.load_root()
 
         # 移動先フォルダを作成する(POST /folders)
         folder_dst = self.post_uri('/api/v0/folders', {"label" : "新しいフォルダ1C", "parent": root.uuid}, self.USER1)
@@ -1196,7 +1195,7 @@ class RemoteFolderTestCase(TestCaseBase):
         self.assertNotEqual(result['data']['createdAt'], None)
 
 @unittest.skip
-class ExecuteTestCase(TestCaseBase):
+class ExecuteTestCase(ApiTestCaseBase):
     def test_execute_flow(self):
         """
         フローの実行結果がライブラリに登録されることを検証する
@@ -1221,16 +1220,16 @@ class ExecuteTestCase(TestCaseBase):
         flow_path = Path(app.root_path) / 'api/tests/flows/168d23c2-f835-4392-ba0e-76e94a08b719.json'
         flow_data = json.loads(flow_path.read_text(encoding='utf-8'))
         # フローオブジェクトを作成する
-        test_flow = Flow(root.uuid, 'テストフロー', flow_data, self.USER1)
+        test_flow = root.create_flow('テストフロー', flow_data)
         # フローをライブラリに保存する
         test_flow.save()
 
-        if not Flow.exists(subflow_uuid):
+        if not self.factory.data.exists(subflow_uuid):
             # テスト用フローから呼ばれるサブフローをライブラリに保存する
             subflow_path = Path(app.root_path) / 'api/tests/flows/833fdb62-2bb6-4a77-a0e1-77941ad951a3.json'
             subflow_data = json.loads(subflow_path.read_text(encoding='utf-8'))
             # サブフローオブジェクトを作成する
-            test_subflow = Flow(root.uuid, 'テストサブフロー', subflow_data, self.USER1)
+            test_subflow = root.create_flow('テストサブフロー', subflow_data)
             # サブフローをライブラリに保存する
             test_subflow.uuid = subflow_uuid
             test_subflow.save()
@@ -1241,8 +1240,8 @@ class ExecuteTestCase(TestCaseBase):
         # 出力結果がライブラリに登録されることを検証する
         frame_uuid_d1 = result['name'][0]['uuid']
         frame_uuid_d3 = result['name'][1]['uuid']
-        self.assertTrue(Frame.exists(frame_uuid_d1))
-        self.assertTrue(Frame.exists(frame_uuid_d3))
+        self.assertTrue(self.factory.data.exists(frame_uuid_d1))
+        self.assertTrue(self.factory.data.exists(frame_uuid_d3))
         
         # 削除
         # このテストで作成したjobsだけ削除する

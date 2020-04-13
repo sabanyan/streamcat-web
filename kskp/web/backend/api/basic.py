@@ -22,11 +22,9 @@ def new_project():
     """
     # ルートフローフォルダが無ければ作成する
     root_flow_folder = g.factory.data.load_flow_folder()
-    root_flow_folder_uuid = root_flow_folder.uuid
 
     # 新しいフローフォルダを作成する
-    new_folder = g.factory.data.create_folder(root_flow_folder_uuid,
-                                              request.json['name'])
+    new_folder = root_flow_folder.create_folder(request.json['name'])
     new_folder.save()
 
 @mod.route('/projects')
