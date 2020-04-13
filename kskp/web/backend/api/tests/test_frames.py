@@ -1,28 +1,22 @@
 import unittest
 import copy
-import json
-import os
-import tempfile
-from pathlib import Path
-from kskp.web.backend import app
-from kskp.store import (
-    Datum,
-    Library,
-    STORE_DIR
-)
-from kskp.web.backend.api.tests.test_case_base import TestCaseBase
+from kskp.store import STORE_DIR
+from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 
-
-class FrameApiTestCase(TestCaseBase):
+class FrameApiTestCase(ApiTestCaseBase):
     """
     実行以外のFramesAPIのテストを行う
     """
-
-
     def setUp(self):
-        self.root = Library.load_root()
+        self.root = self.factory.data.load_root()
         self.root_path = self.root.path
     
+    def save_flow(self, parent, label, flow_data):
+        new_flow = parent.create_flow(label, flow_data)
+        new_flow.save()
+        # save()によりreadable=Noneになるため再取得する
+        return self.factory.data.find_by_uuid(new_flow.uuid)
+
     # @unittest.skip
     def test_fetch_frame(self):
         """
@@ -169,7 +163,7 @@ class FrameApiTestCase(TestCaseBase):
         }
         self.put_uri('/api/v0/frames/%s' % frame_uuid, data, self.USER1)
 
-        frame = Library.load_frame(frame_uuid)
+        frame = self.factory.data.find_by_uuid(frame_uuid)
         # data列にラベルがあるらしい、requestのjsonがそのまま入っているのでjson.loadsする
         self.assertEqual(frame.label, '変更後')
         self.assertEqual(frame.modifier, self.USER1)
@@ -196,7 +190,9 @@ class FrameApiTestCase(TestCaseBase):
 
         self.assertEqual(result['success'], True)
         # 消えているかのテスト
-        self.assertIsNone(Library.load_frame(frame_uuid))
+        from sqlalchemy.orm.exc import NoResultFound
+        with self.assertRaises(NoResultFound) as e:
+            self.assertIsNone(self.factory.data.find_by_uuid(frame_uuid))
 
     # ここからフローの実行テスト
     """
@@ -276,14 +272,14 @@ class FrameApiTestCase(TestCaseBase):
 
         flow_json = self.flow_json
         flow_json['nodes'].append(input_node)
-        flow = Library.save_flow(self.root.uuid, 'test', flow_json)
+        flow = self.save_flow(self.root, 'test', flow_json)
 
         # フローの実行
         result = self.get_uri(f'/api/v0/frames?from={flow.uuid}', self.USER1)
         lasts = result['lasts']
 
         # DBにframeデータが生成されているか
-        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
+        self.assertIsNotNone(self.factory.data.find_by_uuid(lasts[0]['uuid']))
 
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
@@ -347,7 +343,7 @@ class FrameApiTestCase(TestCaseBase):
         flow_json['nodes'].append(input_node)
         flow_json['nodes'].append(add_cmd)
         flow_json['nodes'].append(add_datum)
-        flow = Library.save_flow(self.root.uuid, 'test', flow_json)
+        flow = self.save_flow(self.root, 'test', flow_json)
         
         # フローの実行
         vis_args = { "d1" : 
@@ -402,7 +398,7 @@ class FrameApiTestCase(TestCaseBase):
         flow_json['ports'][0].append(input_port)
         flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
-        flow = Library.save_flow(self.root.uuid, 'test', flow_json)
+        flow = self.save_flow(self.root, 'test', flow_json)
 
         # テストフレーム作成
         csv_data = [
@@ -426,7 +422,7 @@ class FrameApiTestCase(TestCaseBase):
         lasts = result['lasts']
 
         # DBにframeデータが生成されているか
-        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
+        self.assertIsNotNone(self.factory.data.find_by_uuid(lasts[0]['uuid']))
 
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
@@ -477,7 +473,7 @@ class FrameApiTestCase(TestCaseBase):
             if node['id'] == 'c1':
                 node['args']['f'] = f'@[{arg_for_param}]'
                 break
-        flow = Library.save_flow(self.root.uuid, 'test', flow_json)
+        flow = self.save_flow(self.root, 'test', flow_json)
 
         # テストフレーム作成
         csv_data = [
@@ -505,7 +501,7 @@ class FrameApiTestCase(TestCaseBase):
         lasts = result['lasts']
 
         # DBにframeデータが生成されているか
-        self.assertIsNotNone(Library.load_frame(lasts[0]['uuid']))
+        self.assertIsNotNone(self.factory.data.find_by_uuid(lasts[0]['uuid']))
 
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
@@ -538,7 +534,7 @@ class FrameApiTestCase(TestCaseBase):
 
         flow_json = copy.deepcopy(self.flow_json)
         flow_json['nodes'].append(input_node)
-        flow = Library.save_flow(self.root.uuid, 'test', flow_json)
+        flow = self.save_flow(self.root, 'test', flow_json)
         # Visデータのポイント引数の作成
         data = {
 			"d1" : {
