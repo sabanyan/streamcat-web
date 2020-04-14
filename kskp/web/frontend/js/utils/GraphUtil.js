@@ -338,6 +338,8 @@ class GraphUtil {
             position: note.position,
             type: note.type,
             size: note.size,
+            fontSize: note.fontSize,
+            color: note.color,
           }
           node = new NoteStepModel(model)
           newNodes.push(node)
