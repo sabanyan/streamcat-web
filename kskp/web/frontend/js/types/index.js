@@ -178,3 +178,9 @@ export type GraphType = {
   edges: any[];
   nodes: any[];
 }
+
+export type dropDownListItem = {
+  label: string,
+  value: string,
+  object?: {}
+}
