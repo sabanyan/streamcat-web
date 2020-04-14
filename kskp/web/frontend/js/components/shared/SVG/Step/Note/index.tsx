@@ -22,11 +22,12 @@ export default class Note extends React.Component<Props> {
     const fontSize = parseInt(model.getFontSize(),0);
     let width = StringUtil.getTextWidth(model.title, fontSize);
     const style = ContentStyle;
-    style.width = Constants.default.note.width + Constants.default.note.padding;
+    const minWidth = Constants.default.note.width;
+    style.width = minWidth;
     style.height = fontSize + Constants.default.note.padding;
     let textWidth = width + Constants.default.note.padding;
 
-    if (style.width < textWidth) {
+    if (minWidth < textWidth) {
       style.width = textWidth
     }
 
@@ -98,8 +99,6 @@ export default class Note extends React.Component<Props> {
     const size = this.calculateSize();
     const {width,height} = size;
     return <g>
-        <text>{width
-        }</text>
       <svg width={width}
            height={height}>
         {this.renderShape(size)}

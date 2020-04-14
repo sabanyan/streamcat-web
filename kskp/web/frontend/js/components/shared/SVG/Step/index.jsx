@@ -436,15 +436,3 @@ export const TextStyle = {
   fontSize: 10,
   padding: 8
 }
-
-export const NoteStyle = {
-  x: 0,
-  y: 0,
-  tx: 0,
-  ty: 0,
-  width: Constants.default.note.width,
-  height: Constants.default.note.height,
-  rx: 0,
-  ry: 0,
-  strokeWidth: 2,
-}

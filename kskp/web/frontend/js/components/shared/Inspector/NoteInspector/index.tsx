@@ -27,7 +27,12 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
     super(props)
   }
 
-  getSelectedStep (): NoteStepModel {
+  componentDidMount(): void {
+      const element:HTMLInputElement = document.querySelector(".property_body input:first-child") as HTMLInputElement;
+      if(element)element.focus();
+  }
+
+    getSelectedStep (): NoteStepModel {
       let {selected_step_ids, nodes} = this.props;
       if (Array.isArray(selected_step_ids) && selected_step_ids.length > 0) {
           return GraphUtil.getNode(nodes, selected_step_ids[0]);
@@ -63,7 +68,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
 
   onTitleChange (e: React.ChangeEvent<HTMLInputElement>) {
     this.update((step) => {
-        if(e.target && e.target.value){
+        if(e.target){
             step.title = e.target.value
         }
       return step
