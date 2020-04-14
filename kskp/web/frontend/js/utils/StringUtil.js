@@ -30,5 +30,13 @@ export default class StringUtil {
 
     return metrics.width
   }
+
+  static base64encode(value:string):string{
+   return window.btoa(unescape(encodeURIComponent(value)));
+  }
+
+  static base64decode(value:string):string{
+    return decodeURIComponent(escape(window.atob(value)));
+  }
 }
 

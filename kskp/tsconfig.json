@@ -24,6 +24,7 @@
         "LibraryListContainer/*": ["./web/frontend/js/components/LibraryListContainer/*"],
         "ProfileContainer/*": ["./web/frontend/js/components/ProfileContainer/*"],
         "ProjectListContainer/*": ["./web/frontend/js/components/ProjectListContainer/*"],
+        "PreviewContainer/*": ["./web/frontend/js/components/PreviewContainer/*"],
         "Shared/*": ["./web/frontend/js/components/shared/*"],
         "Constants/*": ["./web/frontend/js/constants/*"],
         "Model/*": ["./web/frontend/js/model/*"],

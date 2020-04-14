@@ -64,6 +64,7 @@ module.exports = (env) => {
           LibraryListContainer: path.resolve(__dirname, './web/frontend/js/components/LibraryListContainer/'),
           ProfileContainer: path.resolve(__dirname, './web/frontend/js/components/ProfileContainer/'),
           ProjectListContainer: path.resolve(__dirname, './web/frontend/js/components/ProjectListContainer/'),
+          PreviewContainer: path.resolve(__dirname, './web/frontend/js/components/PreviewContainer/'),
           Shared: path.resolve(__dirname, './web/frontend/js/components/shared/'),
           Constants: path.resolve(__dirname, './web/frontend/js/constants/'),
           Model: path.resolve(__dirname, './web/frontend/js/model/'),
