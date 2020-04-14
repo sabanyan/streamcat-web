@@ -143,5 +143,6 @@ export const TextStyle:CSSProperties = {
   verticalAlign: 'middle',
   textAlign: 'left',
   paddingLeft: 8,
-  wordBreak: 'keep-all'
+  wordBreak: 'keep-all',
+  whiteSpace: 'nowrap'
 };
