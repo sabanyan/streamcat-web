@@ -363,9 +363,7 @@ export default class Step extends React.Component<StepProps, State> {
             width={16} height={20} />
         </Rect>
     } else if (this.isNote(step)) {
-      let model = step
-      icon =
-        <Note hover={hover} selected={selected} model={step}></Note>
+      icon = <Note hover={hover} selected={selected} model={step}/>
 
     }
 
@@ -437,16 +435,4 @@ export const TextStyle = {
   height: 50,
   fontSize: 10,
   padding: 8
-}
-
-export const NoteStyle = {
-  x: 0,
-  y: 0,
-  tx: 0,
-  ty: 0,
-  width: Constants.default.note.width,
-  height: Constants.default.note.height,
-  rx: 0,
-  ry: 0,
-  strokeWidth: 2,
 }
