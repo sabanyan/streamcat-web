@@ -1,10 +1,13 @@
 import type { BaseModelProps } from 'Model/Step/BaseStepModel'
 import { BaseStepModel } from 'Model/index'
+import Constants from 'Constants/index'
 
 export type NoteStepModelProps = {
   ...BaseModelProps,
   title: string;
-  content: string
+  content: string;
+  fontSize: number;
+  color: string;
 }
 
 export default class NoteStepModel extends BaseStepModel {
@@ -13,6 +16,8 @@ export default class NoteStepModel extends BaseStepModel {
     super(props)
     this.initialize(props, 'title')
     this.initialize(props, 'content')
+    this.initialize(props, 'fontSize')
+    this.initialize(props, 'color')
   }
 
   hasData (): boolean {
@@ -33,6 +38,14 @@ export default class NoteStepModel extends BaseStepModel {
 
   getContent () {
     return this.content
+  }
+
+  getColor () {
+    return this.color || Constants.default.note.color.green;
+  }
+
+  getFontSize () {
+    return this.fontSize || 10;
   }
 
   validate () {
