@@ -38,7 +38,7 @@ const Constants = {
       outputPortName: 'i',
     },
     note: {
-      width: (38 + 6 * 2) * 4,
+      width: 88,
       height: (38 + 6 * 2) / 2,
       padding: 15,
       color: {
