@@ -22,13 +22,21 @@ export default class StringUtil {
     return tmp.textContent || tmp.innerText || ''
   }
 
-  static getTextWidth (text, font) {
+  static getTextWidth (text, fontSize) {
     let canvas = StringUtil.getTextWidth.canvas || (StringUtil.getTextWidth.canvas = document.createElement('canvas'))
     let context = canvas.getContext('2d')
-    context.font = font
+    context.font = fontSize + "px " + '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
     let metrics = context.measureText(text)
 
     return metrics.width
+  }
+
+  static base64encode(value:string):string{
+   return window.btoa(unescape(encodeURIComponent(value)));
+  }
+
+  static base64decode(value:string):string{
+    return decodeURIComponent(escape(window.atob(value)));
   }
 }
 

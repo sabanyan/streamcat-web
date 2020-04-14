@@ -39,6 +39,11 @@ if (document.getElementById('profile')) {
   viewId = ViewId.Profile
 }
 
+if (document.getElementById('preview')) {
+  elementId = 'preview'
+  viewId = ViewId.Preview
+}
+
 if (elementId) {
   ReactDOM.render(
     <Provider store={store}>

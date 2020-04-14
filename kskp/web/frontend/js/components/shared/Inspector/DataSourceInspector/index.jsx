@@ -66,8 +66,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   componentWillMount() {
     //モーダル処理の登録
     ModalUtil.registerModal({
-      id: Constants.preview.DATASOURCE, onClickOK: () => {
-        ModalUtil.closeModal(Constants.preview.DATASOURCE)
+      id: Constants.modal.PREVIEW_DATASOURCE, onClickOK: () => {
+        ModalUtil.closeModal(Constants.modal.PREVIEW_DATASOURCE)
       },
     })
   }
@@ -133,12 +133,13 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
               let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
               contents.push({ title: v.label, content: content, id: id })
             }
-            ModalUtil.emitModal({
-              id: Constants.preview.DATASOURCE,
-              visible: true,
-              contents: contents,
-              title: selected_step.getLabel()
-            })
+            if(selected_step.uuid){
+              // uuidだけでプレビュー
+              window.open('/preview?step_id='+ id + '&dialog=true&frame_uuid=' + selected_step.uuid + '&title=' + StringUtil.base64encode(selected_step.label)) ;
+            }else{
+              // 新規生成するので、step_id と flow_uuid と step_ids でデータを生成する
+              window.open('/preview?step_id='+ id + '&dialog=true&step_ids=' + StringUtil.base64encode(JSON.stringify(stepIds)) + '&flow_uuid=' + flow_uuid + '&title=' + StringUtil.base64encode(selected_step.label)) ;
+            }
           }
         })
         .catch((message) => {

@@ -5,7 +5,7 @@ import { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
-import { APIUtil, ModalUtil, SortUtil, HttpUtil, ErrorUtil, ReactDomUtil } from "Utils/index";
+import { APIUtil, ModalUtil, StringUtil } from "Utils/index";
 import { LibraryChild } from 'Model/index';
 
 type Props = {
@@ -37,8 +37,8 @@ class LibraryInspector extends React.Component<Props> {
   componentWillMount() {
     //モーダル処理の登録
     ModalUtil.registerModal({
-      id: Constants.preview.DATASOURCE, onClickOK: () => {
-        ModalUtil.closeModal(Constants.preview.DATASOURCE)
+      id: Constants.modal.PREVIEW_DATASOURCE, onClickOK: () => {
+        ModalUtil.closeModal(Constants.modal.PREVIEW_DATASOURCE)
       },
     })
   }
@@ -51,38 +51,11 @@ class LibraryInspector extends React.Component<Props> {
 
   onClickPreview(e) {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
-    let { lastSelected, visualizers } = this.props
-
-    try {
-      if (!lastSelected) throw "LibraryInspector onClickPreview undefined data"
-      if (!visualizers) throw "LibraryInspector onClickPreview undefined visualizers"
-
-      let library: LibraryListDataType = lastSelected
-      visualizers = SortUtil.getSortedContents(visualizers)
-
-      let id = library.uuid
-
-      // vizs
-      this.setState({
-        loading: true
-      }, () => {
-        let contents: any[] = []
-        for (const v of visualizers) {
-          let viz = { frame_uuid: library.uuid, visualize: v }
-          let content: any = { title: v.label, content: viz, parentProps: this.props, id: id }
-          contents.push(content)
-        }
-
-        ModalUtil.emitModal({
-          id: Constants.preview.DATASOURCE,
-          visible: true,
-          contents: contents,
-          title: library.label
-        })
-      })
-    } catch (e) {
-      console.log(e)
-    }
+    let { lastSelected} = this.props;
+    let library: LibraryListDataType = lastSelected;
+    let uuid = library.uuid
+    // uuidだけでプレビュー
+    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.base64encode(library.label));
   }
 
   onClickEdit(e) {

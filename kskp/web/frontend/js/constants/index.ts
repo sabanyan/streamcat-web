@@ -38,9 +38,20 @@ const Constants = {
       outputPortName: 'i',
     },
     note: {
-      width: (38 + 6 * 2) * 4,
+      width: 88,
       height: (38 + 6 * 2) / 2,
       padding: 15,
+      color: {
+        yellow: "yellow",
+        red: "red",
+        green: "green",
+      },
+      fontSize: {
+        max: 40,
+        min: 12,
+        increase: 2,
+        default: 14
+      }
     },
     inspector: {
       width: 400,
@@ -101,6 +112,7 @@ const Constants = {
     CONFIRM: 'confirm',
     SHOW_RUN_RESULT: 'show_run_result',
     SHOW_RUN_ERROR: 'show_run_error',
+    PREVIEW_DATASOURCE: 'preview_datasource',
     property: {
       title: 'title',
       message: 'message',
@@ -109,9 +121,6 @@ const Constants = {
   format: {
     date: 'YYYY-MM-DD',
     dateTime: 'YYYY-MM-DD HH:mm:ss'
-  },
-  preview: {
-    DATASOURCE: 'preview_datasource',
   },
   event: {
     ON_LOAD_NAVIGATION: 'onLoadNavigation',
