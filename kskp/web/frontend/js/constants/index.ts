@@ -41,6 +41,17 @@ const Constants = {
       width: (38 + 6 * 2) * 4,
       height: (38 + 6 * 2) / 2,
       padding: 15,
+      color: {
+        yellow: "yellow",
+        red: "red",
+        green: "green",
+      },
+      fontSize: {
+        max: 40,
+        min: 12,
+        increase: 2,
+        default: 14
+      }
     },
     inspector: {
       width: 400,
