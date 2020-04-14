@@ -363,9 +363,7 @@ export default class Step extends React.Component<StepProps, State> {
             width={16} height={20} />
         </Rect>
     } else if (this.isNote(step)) {
-      let model = step
-      icon =
-        <Note hover={hover} selected={selected} model={step}></Note>
+      icon = <Note hover={hover} selected={selected} model={step}/>
 
     }
 
