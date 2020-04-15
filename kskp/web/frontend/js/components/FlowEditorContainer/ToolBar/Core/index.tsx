@@ -84,12 +84,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 messageStatus: "error"
               }))
             }
+            dismissNotify(saveNotify.id)
+            reslove(response.data)
           })
-
-        dismissNotify(saveNotify.id)
       }
 
-      reslove()
+      
     })
       // 保存失敗した場合、エラーメッセージ出力
       .catch(e => {
@@ -174,6 +174,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     
     this.saveFlow()
       .then((result: any) => {
+        
         if (result.success === true) this.run()
         this.loading = false
       })
