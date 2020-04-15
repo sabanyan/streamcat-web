@@ -67,6 +67,12 @@ def folders(folder_uuid):
 def profile():
     return render_template('profile.html', user_id=session['user_id'])
 
+@mod.route('/trashes', methods=['GET', 'POST'])
+@login_required
+def trashes():
+    return render_template('trashcan.html', user_id=session['user_id'])
+
+
 # 開発用画面
 # TODO: 将来、見れる権限の検討が必要かも
 @mod.route('/dev', methods=['GET', 'PUT'])

@@ -42,7 +42,11 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   onClickPreview(e) {
+<<<<<<< HEAD:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.j
     // dataがない（Null)の場合はPreviewボタンは表示しない（render)
+=======
+    // dataがない（Null)の場合はPreviwボタンは表示しない（render)
+>>>>>>> 13cdebeec7df743f4e54727bf4eb5583bc71449a:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.jsx
     let { data, visualizers } = this.props
     visualizers = SortUtil.getSortedContents(visualizers)
 
@@ -78,9 +82,15 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderButtons() {
+<<<<<<< HEAD:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.j
     const { data, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding } = this.props
 
     let preview, download, del, apply, move, edit, editEncoding
+=======
+    const { data, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickCleanTrash } = this.props
+
+    let preview, download, del, apply, move, edit, trashClean
+>>>>>>> 13cdebeec7df743f4e54727bf4eb5583bc71449a:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.jsx
 
     // preview button
     // download button
@@ -104,8 +114,13 @@ class LibraryInspector extends React.Component<Props> {
     // apply button
     if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
 
+<<<<<<< HEAD:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.j
     // editEncoding
     if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding =  <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
+=======
+    // clean trash button
+    if (onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} icon={'delete_forever'}>ゴミ箱を空にする</Button>
+>>>>>>> 13cdebeec7df743f4e54727bf4eb5583bc71449a:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.jsx
 
     return <React.Fragment>
       {preview}
@@ -114,6 +129,7 @@ class LibraryInspector extends React.Component<Props> {
       {edit}
       {del}
       {apply}
+<<<<<<< HEAD:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.j
       {editEncoding}
     </React.Fragment>
   }
@@ -141,11 +157,18 @@ class LibraryInspector extends React.Component<Props> {
     return result
   }
 
+=======
+      {trashClean}
+    </React.Fragment>
+  }
+
+>>>>>>> 13cdebeec7df743f4e54727bf4eb5583bc71449a:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.jsx
   render() {
     const { data } = this.props
     let content = null
     let label = ""
     if (data) {
+<<<<<<< HEAD:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.j
       label = data.label
       content = <div>
         <div className={"mb-8px"}>
@@ -175,6 +198,52 @@ class LibraryInspector extends React.Component<Props> {
           {moment(data.createdAt).format(Constants.format.dateTime)}
         </div>
       </div>
+=======
+      if (data.type === Constants.library.type.trash) {
+        // Trash
+        content = <div>
+          <div className={style.actions}>
+            {this.renderButtons()}
+          </div>
+        </div>
+        return <Resizer>
+          <BaseInspector subLabel={data.label}>
+            {content}
+          </BaseInspector>
+        </Resizer>
+      } else {
+        // その他
+        label = data.label
+        content = <div>
+          <div className={"mb-8px"}>
+            {data.label}
+          </div>
+          <div className={style.actions}>
+            {this.renderButtons()}
+          </div>
+          <div className={style.full_hr} />
+          <div>
+            <label>名称</label>
+          </div>
+          <div>
+            {data.label}
+          </div>
+          <div>
+            <label>作成者</label>
+          </div>
+          <div>
+            {data.creator}
+          </div>
+          <div>
+            <label>作成日時</label>
+          </div>
+          <div>
+            {moment(data.createdAt).format(Constants.format.dateTime)}
+          </div>
+        </div>
+      }
+
+>>>>>>> 13cdebeec7df743f4e54727bf4eb5583bc71449a:kskp/web/frontend/js/components/shared/Inspector/LibraryInspector/index.jsx
 
       return <Resizer>
         <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>

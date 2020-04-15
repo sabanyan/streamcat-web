@@ -175,7 +175,8 @@ const Constants = {
       folder: 'folder',
       database: 'database',
       flow: 'flow',
-      remoteFolder: 'remote-folder'
+      remoteFolder: 'remote-folder',
+      trash: 'trash'
     },
     mode: {
       frame_select: 'frame_select',

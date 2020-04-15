@@ -3,6 +3,7 @@ import thunk from 'redux-thunk'
 import { flowEditorReducer, libraryReducer, flowListReducer } from 'Modules/index'
 import { reducer as notificationsReducer } from 'reapop'
 import { composeWithDevTools } from 'redux-devtools-extension';
+import { CommonReducer } from 'Modules/reducers/index'
 
 
 // default value for notifications
@@ -18,7 +19,8 @@ const reducers = combineReducers({
     notifications: notificationsReducer(defaultNotification),
     flowEditorReducer,
     libraryReducer,
-    flowListReducer
+    flowListReducer,
+    CommonReducer
 })
 
 const enhancers = composeWithDevTools(
