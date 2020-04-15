@@ -9,7 +9,7 @@ type Props<Data> = {
   selected: Data[]
 
   getHeaders(): any[]
-  getColumns(data: Data, index: number): any[]
+  getColumns(data: Data, index: number): any[] | null // nullの場合、該当行を表示しない
 
   onClickData(e: React.MouseEvent<HTMLInputElement>, data: Data, index: number): void
 
@@ -45,8 +45,9 @@ export default class List<Data> extends React.Component<Props<Data>, State>{
     let rows: any[] = []
     lists.forEach((data: Data, index: number) => {
       const isSelected: boolean = selected.includes(data)
-      const columns: any[] = getColumns(data, index)
-      const row = <React.Fragment key={index}>
+      const columns: any[] | null = getColumns(data, index)
+      if (columns) {
+        const row = <React.Fragment key={index}>
         <CommonListRow<Data>
           index={index}
           isSelected={isSelected}
@@ -58,6 +59,7 @@ export default class List<Data> extends React.Component<Props<Data>, State>{
       </React.Fragment>
 
       rows.push(row)
+      }
     })
     return rows
   }

@@ -75,8 +75,11 @@ def delete_project(project_uuid):
     """
     指定したプロジェクトを削除する
     """
-    folder = Folder.find_by_uuid(project_uuid)
-    folder.delete()
+    # folder = Folder.find_by_uuid(project_uuid)
+    # folder.delete()
+
+    from .lib import throw_away_folder
+    throw_away_folder(project_uuid)
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
@@ -206,12 +209,21 @@ def update_flow(flow_uuid):
 @login_required_api
 @lock_required
 @api_base
-def delete_flow(flow_uuid):
+def throw_away_flow(flow_uuid):
     """
     指定されたフローを削除する
     """
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder(session['user_id'])
+
+    # 削除しようとするflowが、フローで使用されている場合は例外を送出する
+    using_flow_uuids = Flow.get_flow_uuids_using_other_datum(flow_uuid)
+    if len(using_flow_uuids) > 0:
+        flow = Flow.find_by_uuid(using_flow_uuids[0])
+        raise Exception('このフローは別のフロー(%s)で使用しているため削除できません' % flow.label)
+
     flow = Flow.find_by_uuid(flow_uuid)
-    flow.delete()
+    flow.move(trash_folder.uuid, session['user_id'])
 
 @mod.route('/subflows', methods=['GET'])
 @login_required_api
@@ -230,6 +242,9 @@ def fetch_subflows():
         parent = Datum.find_parent(subflow.uuid)
         # 親フォルダのないサブフローは取得しない
         if parent is None:
+            continue
+        # ゴミ箱にあるサブフローは取得しない
+        if TrashCan.trashed(subflow.uuid):
             continue
         if parent.type == Datum.FOLDER_TYPE:
             parent_label = parent.label

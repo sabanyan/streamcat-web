@@ -4,3 +4,4 @@ export {default as LibraryListContainer} from 'Components/LibraryListContainer/i
 export {default as ProfileContainer} from 'Components/ProfileContainer/index'
 export {default as ProjectListContainer} from 'Components/ProjectListContainer/index'
 export {default as PreviewContainer} from 'Components/PreviewContainer/index'
+export {default as TrashListContainer} from 'Components/TrashListContainer/index'
