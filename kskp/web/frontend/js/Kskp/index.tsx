@@ -12,11 +12,16 @@ import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 import {
     FlowEditorContainer, FlowListContainer, ProjectListContainer, LibraryListContainer,
-    ProfileContainer, PreviewContainer
+    ProfileContainer, PreviewContainer, TrashListContainer
 } from 'Components/index';
+import {Content, Inspector} from 'Modules/reducers/common'
 
 export type Props = {
     viewId: ViewId
+
+    // redux state
+    content: Content
+    inspector: Inspector
 
     notify: Function;
     dismissNotify: Function;
@@ -33,6 +38,7 @@ export enum ViewId {
     Profile,
     Project_List,
     Preview,
+    TrashCan,
     Undefined = -1,
 }
 
@@ -67,6 +73,7 @@ class ViewSwitcher extends React.Component<Props, State> {
     }
 
     renderView(viewId: ViewId) {
+        const {content, inspector, notify, dismissNotify} = this.props
         let viewComponent: any = null
         switch (viewId) {
             case ViewId.Flow_Editor: viewComponent = <FlowEditorContainer />
@@ -80,6 +87,8 @@ class ViewSwitcher extends React.Component<Props, State> {
             case ViewId.Project_List: viewComponent = <ProjectListContainer />
                 break;
             case ViewId.Preview: viewComponent = <PreviewContainer />
+                break;
+            case ViewId.TrashCan: viewComponent = <TrashListContainer content={content} inspector={inspector} notify={notify} dismissNotify={dismissNotify}/>
                 break;
             default:
                 break;
@@ -95,6 +104,7 @@ class ViewSwitcher extends React.Component<Props, State> {
     render() {
         const { viewId, notify, dismissNotify } = this.props
         let result: any = null
+
         try {
             result = <div className={style.kskp}>
                 {this.renderNavigationBar()}
@@ -114,7 +124,10 @@ class ViewSwitcher extends React.Component<Props, State> {
 
 export const Kskp = connect(
     state => {
-        return {}
+        return {
+            content: state.CommonReducer.content,
+            inspector: state.CommonReducer.inspector
+        }
     },
     dispatch => {
         return {

@@ -13,7 +13,7 @@ from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 from kskp.store import model
 from kskp.store import ss
 from kskp.web.backend import app
-from kskp.store import Datum, Frame, Flow, Folder, Library, STORE_DIR
+from kskp.store import Datum, Frame, Flow, Folder, Library, TrashCan, STORE_DIR
 from kskp.web.backend.api.tests.utils import create_data
 
 # 
@@ -139,8 +139,10 @@ class ProjectApiTestCase(TestCaseBase):
         # DELETE /projects
         self.delete_uri(('/api/v0/projects/%s' % folder.uuid), self.USER_ID)
 
-        # フォルダが消えていることを確認する
-        self.assertFalse(Folder.exists(folder.uuid))
+        # フローはゴミ箱に移動していること
+        folder = Folder.find_by_uuid(folder.uuid)
+        trash = TrashCan.find()
+        self.assertEqual(folder.parent_uuid, trash.uuid)
 
 class FrameApiTestCase(TestCaseBase):
 
@@ -606,8 +608,10 @@ class FlowApiTestCase(TestCaseBase):
         # ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER_ID)
 
-        # フローは削除されていること
-        self.assertFalse(Flow.exists(test_flow_uuid))
+        # フローはゴミ箱に移動していること
+        flow = Flow.find_by_uuid(test_flow_uuid)
+        trash = TrashCan.find()
+        self.assertEqual(flow.parent_uuid, trash.uuid)
 
     @unittest.skip('とりあえず手動でテストする')
     def test_fetch_subflows(self):

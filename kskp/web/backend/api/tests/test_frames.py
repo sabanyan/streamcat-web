@@ -7,7 +7,9 @@ from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import (
     Datum,
+    Frame,
     Library,
+    TrashCan,
     STORE_DIR
 )
 from kskp.web.backend.api.tests.test_case_base import TestCaseBase
@@ -208,8 +210,11 @@ class FrameApiTestCase(TestCaseBase):
         result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER_ID)
 
         self.assertEqual(result['success'], True)
-        # 消えているかのテスト
-        self.assertIsNone(Library.load_frame(frame_uuid))
+
+        # ゴミ箱に移動しているかのテスト
+        frame = Frame.find_by_uuid(frame_uuid)
+        trash = TrashCan.find()
+        self.assertEqual(frame.parent_uuid, trash.uuid)
 
     # ここからフローの実行テスト
     """
