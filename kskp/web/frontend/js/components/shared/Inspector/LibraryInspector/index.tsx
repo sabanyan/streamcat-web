@@ -54,7 +54,7 @@ class LibraryInspector extends React.Component<Props> {
     let library: LibraryListDataType = lastSelected;
     let uuid = library.uuid
     // uuidだけでプレビュー
-    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.base64encode(library.label));
+    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
   }
 
   onClickEdit(e) {
