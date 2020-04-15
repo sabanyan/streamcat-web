@@ -59,7 +59,7 @@ export default class PreviewContainer extends React.Component<Props, State> {
             // データが存在しなくて生成する必要あり（フローエディターからのプレビュー）
             let flow_uuid = HttpUtil.getURLParam('flow_uuid');
             let frame_id = HttpUtil.getURLParam('step_id');
-            let step_ids = JSON.parse(StringUtil.base64decode((HttpUtil.getURLParam('step_ids'))));
+            let step_ids = JSON.parse(StringUtil.urlDecode((HttpUtil.getURLParam('step_ids'))));
             content = {title: v.label, content: viz, parentProps: this.props, id: frame_id};
             viz["frame_uuid"] = frame_uuid;
             viz["flow_uuid"] = flow_uuid;
@@ -67,7 +67,7 @@ export default class PreviewContainer extends React.Component<Props, State> {
           }
           contents.push(content);
         }
-        const title = StringUtil.base64decode(HttpUtil.getURLParam('title'));
+        const title = StringUtil.urlDecode(HttpUtil.getURLParam('title'));
 
         ModalUtil.emitModal({
           id: Constants.modal.PREVIEW_DATASOURCE,
