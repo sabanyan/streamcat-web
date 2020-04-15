@@ -18,6 +18,7 @@ type Props = {
   onBlurTitle?: Function;
   onClickEdit?: Function;
   onClickEditEncoding?: Function;
+  onClickCleanTrash?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
@@ -51,11 +52,11 @@ class LibraryInspector extends React.Component<Props> {
 
   onClickPreview(e) {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
-    let { lastSelected} = this.props;
+    let { lastSelected } = this.props;
     let library: LibraryListDataType = lastSelected;
     let uuid = library.uuid
     // uuidだけでプレビュー
-    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.base64encode(library.label));
+    window.open('/preview?step_id=' + null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.base64encode(library.label));
   }
 
   onClickEdit(e) {
@@ -67,11 +68,10 @@ class LibraryInspector extends React.Component<Props> {
 
   }
   renderButtons(data?: LibraryChild) {
-    const { selected, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding } = this.props
+    const { selected, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash } = this.props
 
-    let preview, download, del, apply, move, edit, editEncoding
+    let preview, download, del, apply, move, edit, editEncoding, trashClean
 
-    // 
     if (selected.length == 1) {
       // preview button
       if (data && data.label && data.type === Constants.library.type.frame) {
@@ -91,18 +91,22 @@ class LibraryInspector extends React.Component<Props> {
 
       // apply button
       if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
+
+      // editEncoding
+      if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
+
+      // clean trash button
+      if (onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} icon={'delete_forever'}>ゴミ箱を空にする</Button>
+
     }
 
+    // 複数選択の場合
     if (selected.length >= 1) {
       // delete button
       if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
 
       // move button
       if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
-
-      // editEncoding
-      if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
-
     }
 
     return <React.Fragment>
@@ -113,6 +117,7 @@ class LibraryInspector extends React.Component<Props> {
       {del}
       {apply}
       {editEncoding}
+      {trashClean}
     </React.Fragment>
   }
 
@@ -195,7 +200,7 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderSelect(data?: LibraryChild) {
-    let content:any = <div className={style.inspector}>
+    let content: any = <div className={style.inspector}>
       <div className={style.actions}>
         {this.renderButtons(data)}
       </div>

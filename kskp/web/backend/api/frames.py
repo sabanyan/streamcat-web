@@ -5,6 +5,7 @@ import time
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, jsonify, session
+from kskp.core import NoResultsException
 from kskp.store import Datum, Frame, Flow, Folder
 from kskp.web.backend import app
 
@@ -186,25 +187,20 @@ def update_frame(frame_uuid):
 @mod.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_frame(frame_uuid):
-    """
-    指定したframeを物理削除する
-    """
-    from kskp.store import get_all_frame_uuid_in_frame, Flow
+def throw_away_frame(frame_uuid):
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder(session['user_id'])
+
+    # 削除しようとするframeが、フローで使用されている場合は例外を送出する
+    using_flow_uuids = Flow.get_flow_uuids_using_other_datum(frame_uuid)
+    if len(using_flow_uuids) > 0:
+        flow = Flow.find_by_uuid(using_flow_uuids[0])
+        raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
 
     frame = Frame.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
-
-    # 削除しようとするframeが、フローで使用されている場合は例外を送出する
-    for flow in Flow.find_all_flows():
-        using_frame_uuids = get_all_frame_uuid_in_frame(flow.uuid)
-        if frame_uuid in using_frame_uuids:
-            raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
-
-    # フレームを削除する
-    frame.delete()
-    return frame
+    frame.move(trash_folder.uuid, session['user_id'])
 
 @mod.route('/frames', methods=['POST'])
 @login_required_api
@@ -245,7 +241,12 @@ def create_frame():
         
         else:
             raise Exception('引数等の指定が誤っています')
-    
+    except NoResultsException as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -4,
+                        'message': str(e)
+                    })    
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -327,8 +328,10 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
         link = FlowJsonLink(flow, vis_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
-            raise Exception('実行結果は出力されませんでした')
+            raise NoResultsException('実行結果は出力されませんでした')
         return activity
+    except NoResultsException as e:
+        raise e
     except Exception as e:
         # import traceback
         # traceback.print_exc()

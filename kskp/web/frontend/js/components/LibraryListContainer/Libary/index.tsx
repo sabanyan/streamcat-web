@@ -813,6 +813,35 @@ export default class Library extends React.Component<Props, State> {
     })
   }
 
+  onClickCleanTrash(data) {
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM, onClickDone: () => {
+        APIUtil.delete('trashes').then((response) => {
+          if (response.data.success !== true) throw response.data
+          this.fetchFolder()
+        }).catch(e => {
+          this.props.notify({
+            title: 'ゴミ箱エラー',
+            message: e.message,
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        })
+        ModalUtil.closeModal(Constants.modal.CONFIRM)
+      },
+    })
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM,
+      visible: true,
+      done: 'ゴミ箱を空にする',
+      danger: true,
+      content: <div>
+        ゴミ箱を空にしますか？
+      </div>,
+    })
+  }
+
   onClickApply(selected_data: LibraryListDataType) {
     if (window.opener || !window.opener.closed) {
       window.opener.onCallbackApply(selected_data)
@@ -1111,6 +1140,7 @@ export default class Library extends React.Component<Props, State> {
 
   getHeaders(): any[] {
     let icon
+
     if (this.state && this.state.sortKey === "label" && this.state.sortOrder) {
       icon = this.state.sortOrder
     } else {
@@ -1147,14 +1177,23 @@ export default class Library extends React.Component<Props, State> {
     ]
   }
 
-  getColumns(data: LibraryChild, index: number): any[] {
+  getColumns(data: LibraryChild, index: number): any[] | null {
     let dialogOption = (this.state.is_dialog) ? '?dialog=true' + '&mode=' + this.state.mode : ''
     let label: any
+    // dialogで表示された場合(datasource追加、移動先選択など）は、ゴミ箱を表示しない
+    if (data.type === Constants.library.type.trash && this.isDialog()) {
+      return null
+    }  
+      
     if (data.type === Constants.library.type.folder) {
       label = <a href={'/folders/' + data.uuid + dialogOption}>{data.label}</a>
+    // ゴミ箱の場合、ゴミ箱専用のページに飛ぶ  
+    } else if (data.type === Constants.library.type.trash) { 
+      label = <a href={'/trashes'}>{data.label}</a>
     } else {
       label = data.label
     }
+
     return [
       <IconRender type={data.type} />,
       label,
@@ -1323,6 +1362,7 @@ export default class Library extends React.Component<Props, State> {
     let onClickMove: any = null
     let onClickEdit: any = null
     let onClickEditEncoding:any = null
+    let onClickCleanTrash:any  = null
 
     switch (this.state.mode) {
       case Constants.library.mode.frame_select:
@@ -1338,7 +1378,12 @@ export default class Library extends React.Component<Props, State> {
         onClickEditEncoding = (data) => this.onClickEditEncoding(data)
         if (data && data.type === Constants.library.type.database) {
           onClickEdit = (data) => this.onClickEditDatabase(data)
+        } else if (data && data.type === Constants.library.type.trash) {
+          onClickCleanTrash = (data) => this.onClickCleanTrash(data)
+        } else if (data && data.type === Constants.library.type.database) {
+          onClickEdit = (data) => this.onClickEditDatabase(data)
         }
+
         break
     }
     return <LibraryInspector
@@ -1349,6 +1394,7 @@ export default class Library extends React.Component<Props, State> {
       onClickMove={onClickMove}
       onClickEdit={onClickEdit}
       onClickEditEncoding={onClickEditEncoding}
+      onClickCleanTrash={onClickCleanTrash}
       onBlurTitle={(e) => this.onBlurTitle(e, data)}
       visualizers={this.state.visualizers}
       notify={notify}

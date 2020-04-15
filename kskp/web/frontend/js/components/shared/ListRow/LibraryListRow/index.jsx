@@ -63,6 +63,8 @@ export default class LibraryListRow extends React.Component<Props> {
         break
       case Constants.library.type.remoteFolder:
         icon = <i className={classnames('material-icons',[style.icon])}>dns</i>
+      case Constants.library.type.trash:
+        icon = <i className={classnames('material-icons',[style.icon])}>delete_outline</i>
         break
     }
 
@@ -70,7 +72,8 @@ export default class LibraryListRow extends React.Component<Props> {
   }
 
   canUseHref (libraryChild) {
-    return (libraryChild.type === Constants.library.type.folder)
+    // フォルダかゴミ箱は中身が見れる
+    return (libraryChild.type === Constants.library.type.folder || libraryChild.type === Constants.library.type.trash)
   }
 
   render () {
