@@ -32,11 +32,11 @@ export default class StringUtil {
   }
 
   static urlEncode(value:string):string{
-   return encodeURI(value);
+   return encodeURIComponent(value);
   }
 
   static urlDecode(value:string):string{
-    return decodeURI(value);
+    return decodeURIComponent(value);
   }
 }
 
