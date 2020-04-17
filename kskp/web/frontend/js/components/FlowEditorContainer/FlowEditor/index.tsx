@@ -29,6 +29,7 @@ type State = {
 }
 
 export default class FlowEditor extends React.Component<FlowEditorProps, State> {
+  temp_isReady = true
 
   constructor(props: FlowEditorProps) {
     super(props)
@@ -38,6 +39,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
       lockUUID: undefined
     }
     this.handleLeavePage = this.handleLeavePage.bind(this)
+    this.temp_ensureLock = this.temp_ensureLock.bind(this)
 
     let preRequest: any = []
     let flowRequest: any = []
@@ -103,6 +105,9 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
         this.setState({
           lockUUID: lockUUID,
           isLoading: false
+        }, () => {
+          if (!lockUUID) throw res.data
+          setInterval(this.temp_ensureLock,1000);       
         })
       })
       .catch(e => {
@@ -124,6 +129,26 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           })
         }
       })
+  }
+
+  temp_ensureLock() {
+    const {flow} = this.props
+
+    let lockUUID = this.state.lockUUID
+    if (!lockUUID) return
+    if (!this.temp_isReady) return
+  
+    this.temp_isReady = false
+    API.request.doPut.flow({
+      lockUUID: lockUUID,
+      flowUUID: inject_flow_uuid,
+      flow: flow
+    })
+    .then((res) => {
+      console.log(new Date())
+      console.log(res.data)
+      this.temp_isReady = true
+    })
   }
 
   componentDidMount() {
