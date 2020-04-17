@@ -328,7 +328,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render() {
-    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled } = this.props;
+    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled, lockUUID } = this.props;
     let step_text
     let dataSource
     let preview
@@ -434,7 +434,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           </div>
           <div className={style.cache_delete}>
             <Button icon={'delete'} danger={true}
-              disabled={!selected_step.isCached()}
+              disabled={!selected_step.isCached() || !lockUUID}
 
               onClick={(e) => { this.onClickDeleteCache() }}>
               キャッシュ削除
