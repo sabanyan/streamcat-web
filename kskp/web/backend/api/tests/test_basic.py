@@ -9,7 +9,7 @@ import pprint
 from pathlib import Path
 
 from kskp.web.backend import app
-from kskp.store import Flow, STORE_DIR
+from kskp.store import Datum, Flow, STORE_DIR
 from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 
 # 
@@ -65,7 +65,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['id'])
         self.assertEqual(result['parent_id'], root_flow_folder.id)
         self.assertIsNotNone(result['uuid'])
-        self.assertEqual(result['path'], (Path(root_flow_folder.path) / 'プロジェクトです').as_posix())
+        self.assertEqual(result['path'], (Datum._to_rel_path(root_flow_folder.path) / 'プロジェクトです').as_posix())
         self.assertEqual(result['type'], 'folder')
         self.assertEqual(result['label'], project_name)
         self.assertEqual(result['creator'], self.USER1.id)
@@ -119,6 +119,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['label'], new_label)
 
         # フォルダを削除する
+        folder = self.factory.data.find_by_uuid(folder.uuid)
         self.assertFalse(folder.delete())
 
     def test_delete_project(self):

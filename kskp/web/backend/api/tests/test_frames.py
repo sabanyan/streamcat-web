@@ -589,25 +589,3 @@ class FrameApiTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['args']['column_names'], ['顧客','','顧客'])
         self.assertIsNotNone(lasts[0].get('contents'))
 
-
-    # def create_data(self, file_path_obj, data=None):
-    #     """
-    #     テストデータ作成用
-    #     frameのuuidが返る
-    #     """
-    #     import nysol.mcmd as nm
-    #     import uuid
-
-    #     # if data is not None:
-    #     #     nm.mread(i=data, o=file_path_obj.as_posix()).run()
-    #     if data is not None:
-    #         with file_path_obj.open('w') as f:
-    #             import csv
-    #             writer = csv.writer(f, lineterminator='\n')
-    #             writer.writerows(data)
-        
-    #     frame = Library.save_frame(self.root.uuid,
-    #                             str(uuid.uuid4()),
-    #                             Path(Datum._to_rel_path(file_path_obj.as_posix())))
-    #     return frame.uuid
-
