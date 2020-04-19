@@ -1,6 +1,5 @@
 import unittest
 import copy
-from kskp.store import STORE_DIR
 from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 
 class FrameApiTestCase(ApiTestCaseBase):
@@ -34,7 +33,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s' % frame_uuid, self.USER1)
@@ -66,7 +65,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?no_contents=1' % frame_uuid, self.USER1)
@@ -98,7 +97,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?offset=2&limit=1' % frame_uuid, self.USER1)
@@ -132,7 +131,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         result = self.get_uri('/api/v0/frames/%s?header_only=1' % frame_uuid, self.USER1)
@@ -155,7 +154,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         data = {
@@ -183,7 +182,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER1)
@@ -258,7 +257,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -302,7 +301,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -409,7 +408,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         # フローの実行
@@ -484,7 +483,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data.csv'
+        frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         args = {
@@ -520,7 +519,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             ['B', 3, 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data_3.csv'
+        frame_path = self.root_path / 'test_data_3.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         # テストフローの作成
@@ -568,7 +567,7 @@ class FrameApiTestCase(ApiTestCaseBase):
             [ 0, '3', 40],
             ['B', 1, 50]
         ]
-        frame_path = STORE_DIR / self.root_path / 'test_data_4.csv'
+        frame_path = self.root_path / 'test_data_4.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
         # Visデータのポイント引数の作成
