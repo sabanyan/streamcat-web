@@ -18,8 +18,8 @@ from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
 
-FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
-STRETCH_COUNT = 100
+# FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
+# STRETCH_COUNT = 100
 app.secret_key = '-jm624cqpry89e'
 
 
@@ -98,49 +98,22 @@ def login_required_api(func):
     @functools.wraps(func)
     def deco(**kwargs):
         if 'user_id' in session:
-            try:
-                # Userオブジェクトをflask.gに設定する
-                with UnAuthzFactory() as factory:
-                    user = factory.find_user_by_id(session['user_id'])
-                    if user is None:
-                        raise Exception('user is None !')
-                    g.user = user
-                # Sessionオブジェクトをflask.gに設定する
-                with Factory(user) as factory:
-                    # AuthzSessionをUserオブジェクトに格納する
-                    g.user.session = factory._session
-                    g.factory = factory
-                    return func(**kwargs)
-            finally:
-                # TODO:
-                # kskp.storeにあるssはFlask-Sessionローカルになってない気がするので、
-                # 同時に複数のユーザがアクセスするとss.userが競合するかもしれない
-                # ss.close() 
-                pass
+            # Userオブジェクトをflask.gに設定する
+            with UnAuthzFactory() as factory:
+                user = factory.find_user_by_id(session['user_id'])
+                if user is None:
+                    raise Exception('user is None !')
+                g.user = user
+            # Sessionオブジェクトをflask.gに設定する
+            with Factory(user) as factory:
+                # AuthzSessionをUserオブジェクトに格納する
+                g.user.session = factory._session
+                g.factory = factory
+                return func(**kwargs)
         else:
             # ログインページを返す
             return jsonify({'success': False, 'message': 'not authorized'})
     return deco
-
-# def get_password_hash(user_id, password):
-#     """
-#     パスワードのハッシュを作成する
-#     """
-#     salt = get_salt(user_id)
-#     current_hash = b''
-#     password_bytes = bytes(password, encoding='utf-8')
-#     for _ in range(1, STRETCH_COUNT):
-#         hash_target = current_hash + password_bytes + salt
-#         current_hash = bytes(hashlib.sha256(hash_target).hexdigest(), 'ascii')
-#     return str(current_hash, encoding='utf-8')
-
-# def get_salt(user_id):
-#     """
-#     固定ソルトとユーザID（現在はメールアドレス）
-#     """
-#     user_id_bytes = bytes(str(user_id), encoding='utf-8')
-#     return user_id_bytes + FIXED_SALT
-
 
 @mod.route('/')
 def signup():
@@ -211,13 +184,11 @@ def complete_sign_up():
     creator = email
 
     # ユーザーのDB登録
-    # model.create_user(email, password, user_name, creator)
     new_user = User(email, password, user_name)
     new_user.save()
 
     flash('ユーザー登録が完了しました。')
 
-    # session['user_id'] = model.get_user_id_by_email(session['signup_email'])['id']
     session['user_id'] = new_user.id
     del session['signup_email']
 
