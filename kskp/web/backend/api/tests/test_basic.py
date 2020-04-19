@@ -9,7 +9,7 @@ import pprint
 from pathlib import Path
 
 from kskp.web.backend import app
-from kskp.store import Datum, Flow, STORE_DIR
+from kskp.store import Datum, Flow
 from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 
 # 
@@ -149,7 +149,7 @@ class FrameApiTestCase(ApiTestCaseBase):
         os.makedirs(self.path.parent, exist_ok=True)
         self.path.write_text(csv_contents, encoding='utf-8')
 
-        self.TESTDATA_DIR = STORE_DIR / self.factory.data.load_root().path
+        self.TESTDATA_DIR = self.factory.data.load_root().path
 
     def tearDown(self):
         # 後片付け

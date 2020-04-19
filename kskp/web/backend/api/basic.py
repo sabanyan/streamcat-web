@@ -288,7 +288,7 @@ def download_file():
     if frame is None:
         return error(f'指定されたFrame({frame_uuid})が見つかりませんでした')
 
-    frame_path = STORE_DIR / frame.path
+    frame_path = frame.path
     if not frame_path.exists():
         return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
 
