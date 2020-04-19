@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify, send_from_directory, g
 from .auth import login_required_api
 from .utils.navigation import update_navigation
 from .utils.api_base import api_base
-from pathlib import Path
 from kskp.web.backend import app
 from kskp.store import (
     DatabaseConn,
@@ -103,22 +102,6 @@ def _jsonify_folder(folder):
     data['folderPath'] = [folder for folder in folder_list]
     return data
 
-# def get_library(session, user):
-#     """
-#     ルートデータストアを取得する、存在しない場合は作成する
-#     """
-#     root = session.data.find_root()
-#     # ルートフォルダが存在しない場合はルートフォルダを作成する
-#     # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
-#     if root is None:
-#         new_root = session.data.create_folder(parent_uuid=None,
-#                                               label='ROOT_FOLDER',
-#                                               creator=user)
-#         # folderレコードをDBに格納する
-#         new_root.save()
-#         root = new_root
-#     return root
-
 @mod.route('/library', methods=['GET'])
 @login_required_api
 @update_navigation
@@ -192,8 +175,8 @@ def make_new_folder():
     """
     フォルダを作成する
     """
-    new_folder = g.factory.data.create_folder(request.json['parent'],
-                                              request.json['label'])
+    parent = g.factory.data.find_by_uuid(request.json['parent'])
+    new_folder = parent.create_folder(request.json['label'])
     new_folder.save()
     return new_folder
 
