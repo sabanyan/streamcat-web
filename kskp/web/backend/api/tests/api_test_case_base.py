@@ -48,7 +48,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         指定したパスのフレームを、指定したUUIDでライブラリに登録する
         """
-        from flask import g
+        # from flask import g
 
         # with app.test_client() as client:
         #     with client.session_transaction() as session:
@@ -63,7 +63,7 @@ class ApiTestCaseBase(TestCaseBase):
             class_name = self.__class__.__name__
             new_frame = frame_folder.create_frame('テスト用フレーム(%s)' % class_name, None)
             new_frame.uuid = frame_uuid
-            new_frame.add_entry_from_path(Path(frame_file_path))
+            new_frame.save(file_path=frame_file_path)
 
     def save_flow_to_library(self, flow_uuid, flow_file_path):
         """
