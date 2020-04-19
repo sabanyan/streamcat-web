@@ -28,7 +28,6 @@ def download_flow(uuid):
 @login_required_api
 @api_base  
 def upload_flow():
-    import json
     if 'file' not in request.files or request.files.get('file') is None:
         raise Exception('No archive file found.')
 

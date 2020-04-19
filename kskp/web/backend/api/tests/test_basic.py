@@ -253,14 +253,14 @@ class FlowApiTestCase(ApiTestCaseBase):
         # with app.app_context():
         #     model.init_db()
 
-        # テスト用フレームをライブラリに登録する
-        # input_frame_path = os.path.join('kskp/data/frames', self.INPUT_FRAME_UUID + '.csv')
-        input_frame_path = 'kskp/web/backend/api/tests/frames/test_frame.csv'
-        self.save_frame_to_library(self.INPUT_FRAME_UUID, input_frame_path)
+        # # テスト用フレームをライブラリに登録する
+        # # input_frame_path = os.path.join('kskp/data/frames', self.INPUT_FRAME_UUID + '.csv')
+        # input_frame_path = 'kskp/web/backend/api/tests/frames/test_frame.csv'
+        # self.save_frame_to_library(self.INPUT_FRAME_UUID, input_frame_path)
 
-        # テスト用フレームをライブラリに登録する
-        input_frame_path2 = 'kskp/web/backend/api/tests/flows/2C72275F-2019-49AE-B36D-A29D1507F8DD.json'
-        self.save_frame_to_library(self.INPUT_FRAME_UUID2, input_frame_path2)
+        # # テスト用フレームをライブラリに登録する
+        # input_frame_path2 = 'kskp/web/backend/api/tests/flows/2C72275F-2019-49AE-B36D-A29D1507F8DD.json'
+        # self.save_frame_to_library(self.INPUT_FRAME_UUID2, input_frame_path2)
 
     def tearDown(self):
         os.close(self.db_fd)

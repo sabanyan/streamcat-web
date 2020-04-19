@@ -1,6 +1,5 @@
 # TODO: 実装を進めていって、使い始めたものからコメントアウトしていく
 import os
-from pathlib import Path
 from flask import Blueprint, request, jsonify, g
 from .auth import login_required_api
 from .utils.navigation import update_navigation
@@ -304,7 +303,7 @@ def download_file():
     # ダウンロードファイルのサイズを計算する
     if source_encoding == target_encoding and source_newline == target_newline:
         # 変換処理がない場合は元ファイルサイズがダウンロードファイルのサイズである
-        downloadFileSize = os.path.getsize(frame_path)
+        downloadFileSize = frame.file_size
     else:
         downloadFileSize = None
 
@@ -379,8 +378,6 @@ def delete_cache():
 @mod.route('/navigation', methods=['GET'])
 @login_required_api
 def get_navigation():
-    # from kskp.store import model
-        
     navigation = {
         'user_id': '',
         'user_name': '',

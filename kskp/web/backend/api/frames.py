@@ -1,10 +1,7 @@
 # 色々やっていること、考慮しなければいけないことがが多いので隔離
-import json
-import os
-import time
 
 from pathlib import Path
-from flask import Blueprint, jsonify, request, jsonify, g
+from flask import Blueprint, jsonify, request, g
 from kskp.web.backend import app
 
 from .auth import login_required_api
@@ -46,13 +43,6 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
     指定されたCSVファイルを読み込んで、
     詳細情報なども含んだframeを表すdictを返す
     """
-    def format_time(file_path):
-        """
-        指定されたファイルの最終更新時間をyyyy/MM/dd HH:MMで返却する
-        """
-        wk = time.localtime(os.path.getmtime(file_path))
-        return time.strftime('%Y/%m/%d %H:%M', wk)
-
     result = {}
 
     if not no_contents:
@@ -67,82 +57,6 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
     result['lastModifiedAt'] = frame.modified_at_str
 
     return result
-
-# def load_as_data_frame(path_obj, offset, limit):
-#     """
-#     CSVの文字列を受け取り、
-#     いわゆるデータフレームの形式にして返す
-#     TODO: offsetはつかってない
-#     """
-#     result_text = ''
-#     result_data = {}
-#     column_list = []
-#     with path_obj.open(encoding='utf-8') as f:
-#         n = 0
-#         limit_count = 0
-
-#         for line in f:
-#             if limit is not None and limit_count == limit:
-#                 break
-
-#             if n == 0:
-#                 # 一行目はヘッダとみなす
-#                 # 重複文字があればインデックスをつける
-#                 column_list = replace_column_name(line.split(','))
-#                 for column_name in column_list:
-#                     result_data[column_name] = []
-#             else:
-#                 if offset < n:
-#                     for idx, column_data in enumerate(line.split(',')):
-#                         result_data[column_list[idx]].append(column_data)
-#                     limit_count += 1
-#             n += 1
-
-#     if n == 0:
-#         raise Exception('空のCSVを読み込みました。コマンド実行時にエラーが発生した可能性があります。')
-
-#     result_len = n
-
-#     # 行数も返すように変更
-#     return result_data, result_len
-
-# def replace_column_name(column_list):
-#     """
-#     受け取ったカラム名リストに重複している列名があれば
-#     連番をつける
-#     """
-#     def check_column_overlap(column_list):
-#         """
-#         受け取ったカラム名リストを走査する
-#         """
-#         index_dict = {}
-#         column_name_overlap = False
-
-#         for index, column_name in enumerate(column_list):
-#             if not column_name in index_dict:
-#                 index_dict[column_name] = []
-#             else:
-#                 column_name_overlap = True
-#             index_dict[column_name].append((index, len(index_dict[column_name])))
-
-#         return index_dict, column_name_overlap
-
-#     index_dict, column_name_overlap = check_column_overlap(column_list)
-
-#     if not column_name_overlap:
-#         return column_list
-
-#     for column_name, tuple_list in index_dict.items():
-#         if len(tuple_list) < 2:
-#             continue
-
-#         for tuple in tuple_list:
-#             # tuple[0]　インデックス（column_listの）
-#             # tuple[1]　連番
-#             if tuple[1] > 0:
-#                 column_list[tuple[0]] = column_name + '.' + str(tuple[1])
-
-#     return column_list
 
 @mod.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
