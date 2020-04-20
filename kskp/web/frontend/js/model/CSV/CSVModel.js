@@ -3,7 +3,8 @@ import Model from "Model/Core";
 
 export type CSVModelProps = {
   data: string;
-  uuid: string
+  uuid: string;
+  label: string;
 }
 
 export default class CSVModel extends Model {
@@ -11,10 +12,11 @@ export default class CSVModel extends Model {
     super(props)
     this.initialize(props, 'data')
     this.initialize(props, 'uuid')
+    this.initialize(props, 'label')
   }
 
   getCSVFileName () {
-    return this.uuid + '.csv'
+    return this.label + '.csv'
   }
 
   handleDownload () {
