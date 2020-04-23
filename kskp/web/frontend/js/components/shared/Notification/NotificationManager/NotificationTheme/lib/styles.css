@@ -555,6 +555,7 @@
     box-sizing: border-box;
     width: 100%;
     padding: 10px 20px;
+    word-break: break-all;
 }
 
 :local .notification-close-button-container {
