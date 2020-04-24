@@ -8,3 +8,4 @@ export {default as SettingsButton} from './SettingsButton'
 export {default as TextFieldWithButton} from './TextFieldWithButton'
 
 export {UploadFile} from './FileUploader'
+export * from './LinkButton'
