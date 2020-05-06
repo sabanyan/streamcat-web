@@ -23,6 +23,7 @@ type Props = {
   };
   headers: string[]
 
+  afterViz: Function;
   onSaveResult: Function;
   notify: Function;
   dismissNotify: Function;
@@ -155,6 +156,10 @@ export default class Visualizer extends React.Component<Props, State> {
           html: null,
           args: this.state.args
         })
+      })
+      .then(() => {
+        const {afterViz} = this.props
+        if (afterViz) afterViz()
       })
   }
 
