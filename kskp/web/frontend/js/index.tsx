@@ -29,9 +29,9 @@ if (document.getElementById('flow_list')) {
   viewId = ViewId.Flow_List
 }
 
-if (document.getElementById('library_list')) {
-  elementId = 'library_list'
-  viewId = ViewId.Library_List
+if (document.getElementById('library')) {
+  elementId = 'library'
+  viewId = ViewId.Library
 }
 
 if (document.getElementById('profile')) {
