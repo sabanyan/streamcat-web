@@ -11,7 +11,7 @@ import { ModalManager } from 'Shared/Modal'
 import { addNotification, removeNotification, updateNotification } from 'reapop'
 
 import {
-    FlowEditorContainer, FlowListContainer, ProjectListContainer, LibraryListContainer,
+    FlowEditorContainer, FlowListContainer, ProjectListContainer, LibraryContainer,
     ProfileContainer, PreviewContainer, TrashListContainer
 } from 'Components/index';
 import {Content, Inspector} from 'Modules/reducers/common'
@@ -34,7 +34,7 @@ export type State = {
 export enum ViewId {
     Flow_Editor,
     Flow_List,
-    Library_List,
+    Library,
     Profile,
     Project_List,
     Preview,
@@ -80,7 +80,7 @@ class ViewSwitcher extends React.Component<Props, State> {
                 break;
             case ViewId.Flow_List: viewComponent = <FlowListContainer />
                 break;
-            case ViewId.Library_List: viewComponent = <LibraryListContainer />
+            case ViewId.Library: viewComponent = <LibraryContainer />
                 break;
             case ViewId.Profile: viewComponent = <ProfileContainer />
                 break;
