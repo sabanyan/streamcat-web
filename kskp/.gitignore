@@ -38,3 +38,4 @@ kskp.db
 build/
 dist/
 .vscode/settings.json
+/.exclude/
