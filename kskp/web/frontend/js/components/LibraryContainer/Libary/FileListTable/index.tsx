@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as style from "./style.scss";
-import {FileListBody} from "LibraryListContainer/Libary/FileListTable/FileListBody";
-import {FileListHeader, ITableHeader} from "LibraryListContainer/Libary/FileListTable/FileListHeader";
+import {FileListHeader, ITableHeader} from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
+import {FileListBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 
 interface Props {
     onClickHeader: (header: ITableHeader) => void;
