@@ -86,13 +86,13 @@ export default class PreviewContainer extends React.Component<Props, State> {
 
 
   render () {
-    const { notify, dissmissNotify } = this.props
+    const { notify, dismissNotify } = this.props
 
     return <div className={'container mt-40px'}>
       <Loader center={true} absolute={true} visible={this.state.is_loading} />
       <ModalManager
         notify={notify}
-        dissmissNotify={dissmissNotify}
+        dismissNotify={dismissNotify}
       />
       <NotificationManager />
     </div>
