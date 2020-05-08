@@ -1,15 +1,17 @@
 import * as React from "react";
 import * as style from "./style.scss";
 import {FileListHeader, ITableHeader} from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import {FileListBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
+import {FileListBody, ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 
 interface Props {
     onClickHeader: (header: ITableHeader) => void;
-    onClickBody: () => void;
+    onClickFileName: (body: ITableBody) => void;
+    onClickCell: (body: ITableBody) => void;
+    bodies: ITableBody[];
 }
 
 const FileListTable = (props: Props) => {
-    const {onClickHeader, onClickBody} = props;
+    const {onClickHeader, onClickFileName, onClickCell, bodies} = props;
 
     const headers: ITableHeader[] = [
         {name: "", key: ""},
@@ -18,8 +20,11 @@ const FileListTable = (props: Props) => {
         {name: "作成日時", key: "create_date_time"}
     ];
     return <table className={style.fileListTable}>
-        <FileListHeader headers={headers} onClick={onClickHeader} />
-        <FileListBody onClick={onClickBody} />
+        <FileListHeader headers={headers}
+                        onClick={onClickHeader} />
+        <FileListBody bodies={bodies}
+                      onClickFileName={onClickFileName}
+                      onClickCell={onClickCell} />
     </table>;
 };
 
