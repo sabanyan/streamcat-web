@@ -1,30 +1,28 @@
-import * as React from 'react'
-import { connect } from 'react-redux'
+import * as React from "react";
+import {useEffect, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
 
-import { API } from 'Modules/api/index'
-import style from './style.scss'
+import {API} from "Modules/api";
+import style from "./style.scss";
 
-import { NavigationModel } from 'Model/index';
-import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
-import NavigationBar from 'Components/shared/Base/NavigationBar/index';
-import { ModalManager } from 'Shared/Modal'
-import { addNotification, removeNotification, updateNotification } from 'reapop'
+import {NavigationModel} from "Model/index";
+import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
+import NavigationBar from "Components/shared/Base/NavigationBar/index";
+import {ModalManager} from "Shared/Modal";
+import {addNotification, removeNotification} from "reapop";
 
 import {
-    FlowEditorContainer, FlowListContainer, ProjectListContainer, LibraryContainer,
-    ProfileContainer, PreviewContainer, TrashListContainer
-} from 'Components/index';
-import {Content, Inspector} from 'Modules/reducers/common'
+    FlowEditorContainer,
+    FlowListContainer,
+    LibraryContainer,
+    PreviewContainer,
+    ProfileContainer,
+    ProjectListContainer,
+    TrashListContainer
+} from "Components/index";
 
 export type Props = {
     viewId: ViewId
-
-    // redux state
-    content: Content
-    inspector: Inspector
-
-    notify: Function;
-    dismissNotify: Function;
 }
 
 export type State = {
@@ -42,53 +40,73 @@ export enum ViewId {
     Undefined = -1,
 }
 
-class ViewSwitcher extends React.Component<Props, State> {
+const contentSelector = state => state.CommonReducer.content;
+const inspectorSelector = state => state.CommonReducer.inspector;
 
-    constructor(props: Props) {
-        super(props)
-    }
+const Kskp = (props: Props) => {
 
-    componentWillMount() {
-        API.request.doGet.navigation({ flowUUID: inject_flow_uuid, projectUUID: inject_project_uuid })
+    const dispatch = useDispatch();
+    const content = useSelector(contentSelector);
+    const inspector = useSelector(inspectorSelector);
+    const {viewId} = props;
+
+    const notify = (context) => dispatch(addNotification(context));
+
+    const updateNotify = (context) => dispatch(addNotification(context));
+    const dismissNotify = (id: string) => {
+        setTimeout(() => {
+            dispatch(removeNotification(id));
+        }, 1000);
+    };
+
+
+    const [nav, setNav] = useState<NavigationModelProps | undefined>();
+
+    const getNavigation = () => {
+        API.request.doGet.navigation({flowUUID: inject_flow_uuid, projectUUID: inject_project_uuid})
             .then((res) => {
-                this.setState({
-                    nav: API.response.get.navigation(res)
-                })
+                setNav(API.response.get.navigation(res));
             }, (err) => {
-                console.log(err)
-            })
-    }
+                console.log(err);
+            });
+    };
 
-    renderNavigationBar() {
-        let nav: NavigationModelProps | undefined
-        if (this.state && this.state.nav) {
-            nav = this.state.nav
-        }
+    useEffect(() => {
+        getNavigation();
+    }, []);
 
+    const renderNavigationBar = () => {
         return (
             <div className={style.nav}>
                 <NavigationBar navigation={nav} />
             </div>
-        )
-    }
+        );
+    };
 
-    renderView(viewId: ViewId) {
-        const {content, inspector, notify, dismissNotify} = this.props
-        let viewComponent: any = null
+    const renderView = (viewId: ViewId) => {
+        let viewComponent: React.ReactNode = null;
         switch (viewId) {
-            case ViewId.Flow_Editor: viewComponent = <FlowEditorContainer />
+            case ViewId.Flow_Editor:
+                viewComponent = <FlowEditorContainer />;
                 break;
-            case ViewId.Flow_List: viewComponent = <FlowListContainer />
+            case ViewId.Flow_List:
+                viewComponent = <FlowListContainer />;
                 break;
-            case ViewId.Library: viewComponent = <LibraryContainer />
+            case ViewId.Library:
+                viewComponent = <LibraryContainer />;
                 break;
-            case ViewId.Profile: viewComponent = <ProfileContainer />
+            case ViewId.Profile:
+                viewComponent = <ProfileContainer />;
                 break;
-            case ViewId.Project_List: viewComponent = <ProjectListContainer />
+            case ViewId.Project_List:
+                viewComponent = <ProjectListContainer />;
                 break;
-            case ViewId.Preview: viewComponent = <PreviewContainer />
+            case ViewId.Preview:
+                viewComponent = <PreviewContainer />;
                 break;
-            case ViewId.TrashCan: viewComponent = <TrashListContainer content={content} inspector={inspector} notify={notify} dismissNotify={dismissNotify}/>
+            case ViewId.TrashCan:
+                viewComponent = <TrashListContainer content={content} inspector={inspector} notify={notify}
+                                                    dismissNotify={dismissNotify} />;
                 break;
             default:
                 break;
@@ -98,50 +116,25 @@ class ViewSwitcher extends React.Component<Props, State> {
             <div className={style.view}>
                 {viewComponent}
             </div>
-        )
+        );
+    };
+
+    let result: any = null;
+
+    try {
+        return <div className={style.kskp}>
+            {renderNavigationBar()}
+            {renderView(viewId)}
+            <ModalManager
+                notify={notify}
+                dismissNotify={dismissNotify}
+            />
+        </div>;
+    } catch (e) {
+        console.log(e);
+        return result;
     }
 
-    render() {
-        const { viewId, notify, dismissNotify } = this.props
-        let result: any = null
+};
 
-        try {
-            result = <div className={style.kskp}>
-                {this.renderNavigationBar()}
-                {this.renderView(viewId)}
-                <ModalManager
-                    notify={notify}
-                    dismissNotify={dismissNotify}
-                />
-            </div>
-        } catch (e) {
-            console.log(e)
-        } finally {
-            return result
-        }
-    }
-}
-
-export const Kskp = connect(
-    state => {
-        return {
-            content: state.CommonReducer.content,
-            inspector: state.CommonReducer.inspector
-        }
-    },
-    dispatch => {
-        return {
-            notify(context: {}) {
-                return dispatch(addNotification(context))
-            },
-            updateNotify(context: {}) {
-                return dispatch(updateNotification(context))
-            },
-            dismissNotify(id: string) {
-                setTimeout(() => {
-                    dispatch(removeNotification(id))
-                }, 1000)
-            }
-        }
-    }
-)(ViewSwitcher)
+export {Kskp};
