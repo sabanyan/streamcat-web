@@ -9,3 +9,4 @@ export {default as TextFieldWithButton} from './TextFieldWithButton'
 
 export {UploadFile} from './FileUploader'
 export * from './LinkButton'
+export * from './InputForm'
