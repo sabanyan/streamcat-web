@@ -22,6 +22,8 @@ const FileListBody = (props: Props) => {
     const bodiesElement = bodies.map((body: ITableBody, index) => {
         return <tr onClick={() => onClickCell(body)} key={index}>
             <td>
+            </td>
+            <td>
                 {body.type}
                 <LinkButton onClick={(e: React.SyntheticEvent<any, Event>) => {
                     onClickFileName(body);
@@ -30,7 +32,11 @@ const FileListBody = (props: Props) => {
                     {body.label}
                 </LinkButton>
                 {body.uuid}
+            </td>
+            <td>
                 {body.creator}
+            </td>
+            <td>
                 {body.createdAt}
             </td>
         </tr>;

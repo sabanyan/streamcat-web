@@ -9,6 +9,7 @@ import Constants from "Constants/index";
 import {APIUtil, HttpUtil, ModalUtil} from "Utils/index";
 import {EmptyState, Loader} from "Shared/Base";
 import {ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
+import FlatButton from "Shared/Input/FlatButton";
 
 interface ContainerProps {
     notify: any;
@@ -211,7 +212,9 @@ const Library = (props: Props) => {
                 }}
                 onClickHeader={() => {
                 }}
-                bodies={libraryChildren} />
+                bodies={libraryChildren}
+                
+            />
 
         </div>;
     };
@@ -229,11 +232,11 @@ const Library = (props: Props) => {
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
-        <Button onClick={onClickNewFlow}>フローの新規作成</Button>
-        <Button onClick={onClickNewProject}>プロジェクトの新規作成</Button>
-        <Button onClick={onClickNewFolder}>フォルダの作成</Button>
-        <Button onClick={onClickCSVUpload}>CSVファイルアップロード</Button>
-        <Button onClick={onClickAddDataSource}>データソースの追加</Button>
+        <FlatButton icon={"add"} onClick={onClickNewFlow}>フローの新規作成</FlatButton>
+        <FlatButton onClick={onClickNewProject}>プロジェクトの新規作成</FlatButton>
+        <FlatButton onClick={onClickNewFolder}>フォルダの作成</FlatButton>
+        <FlatButton onClick={onClickCSVUpload}>CSVファイルアップロード</FlatButton>
+        <FlatButton onClick={onClickAddDataSource}>データソースの追加</FlatButton>
         <ModalManager
             notify={notify}
             dismissNotify={dismissNotify}
