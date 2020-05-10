@@ -3,7 +3,7 @@ import * as style from "./style.scss";
 
 interface Props{
   children: React.ReactNode;
-  onClick?: ()=>void;
+  onClick?: (e: React.SyntheticEvent<any, Event>)=>void;
 }
 
 const LinkButton = (props: Props) => {
