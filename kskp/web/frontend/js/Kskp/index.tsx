@@ -13,13 +13,13 @@ import {addNotification, removeNotification} from "reapop";
 import {
     FlowEditorContainer,
     FlowListContainer,
-    LibraryContainer,
     PreviewContainer,
     ProfileContainer,
     ProjectListContainer,
     TrashListContainer
 } from "Components/index";
 import {NavigationBar} from "Shared/Base";
+import {Library} from "Components/LibraryContainer/Libary";
 
 export type Props = {
     viewId: ViewId
@@ -93,7 +93,7 @@ const Kskp = (props: Props) => {
                 viewComponent = <FlowListContainer />;
                 break;
             case ViewId.Library:
-                viewComponent = <LibraryContainer />;
+                viewComponent = <Library />;
                 break;
             case ViewId.Profile:
                 viewComponent = <ProfileContainer />;
