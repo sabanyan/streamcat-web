@@ -7,7 +7,7 @@ import style from "../style.scss";
 import {NoteStepModel} from "Model/index";
 import {FlowEditorProps} from "FlowEditorContainer/index";
 import {dropDownListItem} from "Types/index";
-import Spacer from "Shared/Base/Layouts/Spacer";
+import {Spacer} from "Shared/Base";
 
 type State = {
   loading: boolean;
