@@ -7,7 +7,6 @@ import style from "./style.scss";
 
 import {NavigationModel} from "Model/index";
 import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
-import NavigationBar from "Components/shared/Base/NavigationBar/index";
 import {ModalManager} from "Shared/Modal";
 import {addNotification, removeNotification} from "reapop";
 
@@ -20,6 +19,7 @@ import {
     ProjectListContainer,
     TrashListContainer
 } from "Components/index";
+import {NavigationBar} from "Shared/Base";
 
 export type Props = {
     viewId: ViewId
