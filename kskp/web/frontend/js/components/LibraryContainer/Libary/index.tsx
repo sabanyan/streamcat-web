@@ -2,14 +2,15 @@ import * as React from "react";
 import {useEffect, useState} from "react";
 import {ModalManager} from "Shared/Modal";
 import {NotificationManager} from "Shared/Notification";
-import {Button, TextField} from "Shared/Input";
+import {TextField} from "Shared/Input";
 import {FileListTable} from "Components/LibraryContainer/Libary/FileListTable";
 import {BreadCrumb, IBreadCrumbsLink} from "Components/LibraryContainer/Libary/BreadCrumb";
 import Constants from "Constants/index";
 import {APIUtil, HttpUtil, ModalUtil} from "Utils/index";
-import {EmptyState, Loader} from "Shared/Base";
+import {EmptyState, Loader, Spacer} from "Shared/Base";
 import {ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
-import FlatButton from "Shared/Input/FlatButton";
+import {MenuList} from "Components/LibraryContainer/Libary/MenuList";
+import {Flex} from "Shared/Base/Layouts/Flex";
 
 interface ContainerProps {
     notify: any;
@@ -185,7 +186,7 @@ const Library = (props: Props) => {
 
         console.log(libraryChildren);
 
-        return <div>
+        return <Flex justifyContent={"center"} fluid={true}>
             {/*{this.renderBreadCrumb()}*/}
             {/*{this.renderSearchBar()}*/}
             {/*<List<LibraryChild>*/}
@@ -200,23 +201,42 @@ const Library = (props: Props) => {
             {/*{(this.state.mode === Constants.library.mode.folder_select) ? selectUI : null}*/}
 
 
-            <BreadCrumb links={links} />
-            <FileListTable
-                onClickCell={(body: ITableBody) => {
-                    alert("cell");
-                    console.log(body);
-                }}
-                onClickFileName={(body: ITableBody) => {
-                    alert("file");
-                    console.log(body);
-                }}
-                onClickHeader={() => {
-                }}
-                bodies={libraryChildren}
-                
-            />
+            <Flex flexDirection={"row"} width={1480 + 40 + 40} fluid={true}>
+                <Spacer width={40} />
+                <Flex flexDirection={"column"} fluid={true}>
+                    <Spacer height={40} />
+                    <BreadCrumb links={links} />
+                    <Spacer height={8} />
 
-        </div>;
+                    <FileListTable
+                        onClickCell={(body: ITableBody) => {
+                            alert("cell");
+                            console.log(body);
+                        }}
+                        onClickFileName={(body: ITableBody) => {
+                            alert("file");
+                            console.log(body);
+                        }}
+                        onClickHeader={() => {
+                        }}
+                        bodies={libraryChildren}
+
+                    />
+                </Flex>
+                <Spacer width={40} />
+                <Flex flexDirection={"column"} fluid={true} width={280}>
+                    <Spacer height={160} />
+                    <MenuList
+                        onClickAddDataSource={onClickAddDataSource}
+                        onClickCSVUpload={onClickCSVUpload}
+                        onClickNewFlow={onClickNewFlow}
+                        onClickNewFolder={onClickNewFolder}
+                        onClickNewProject={onClickNewProject}
+                    />
+                </Flex>
+                <Spacer width={40} />
+            </Flex>
+        </Flex>;
     };
 
 
@@ -232,11 +252,7 @@ const Library = (props: Props) => {
     return <>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
-        <FlatButton icon={"add"} onClick={onClickNewFlow}>フローの新規作成</FlatButton>
-        <FlatButton onClick={onClickNewProject}>プロジェクトの新規作成</FlatButton>
-        <FlatButton onClick={onClickNewFolder}>フォルダの作成</FlatButton>
-        <FlatButton onClick={onClickCSVUpload}>CSVファイルアップロード</FlatButton>
-        <FlatButton onClick={onClickAddDataSource}>データソースの追加</FlatButton>
+
         <ModalManager
             notify={notify}
             dismissNotify={dismissNotify}
