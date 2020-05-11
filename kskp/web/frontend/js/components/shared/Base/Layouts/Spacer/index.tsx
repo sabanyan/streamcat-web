@@ -5,12 +5,9 @@ type Props = {
     width?: number
 }
 
-export default class Spacer extends React.Component<Props> {
-    constructor(props: Props) {
-        super(props);
-    }
-    render() {
-        const {width, height} = this.props;
-        return <div style={{width: width, height: height, display: (width !== undefined) ? "inline-block" : "block"}} />;
-    }
-}
+const Spacer = (props:Props) => {
+    const {width, height} = props;
+    return <div style={{width: width, height: height, display: (width !== undefined) ? "inline-block" : "block"}} />;
+};
+
+export {Spacer};
