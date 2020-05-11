@@ -11,18 +11,22 @@ import {EmptyState, Loader, Spacer} from "Shared/Base";
 import {ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 import {MenuList} from "Components/LibraryContainer/Libary/MenuList";
 import {Flex} from "Shared/Base/Layouts/Flex";
+import {useDispatch} from "react-redux";
+import {addNotification, removeNotification} from "reapop";
 
-interface ContainerProps {
-    notify: any;
-    dismissNotify: any;
-}
-
-interface Props extends ContainerProps {
+interface Props {
 
 }
 
 const Library = (props: Props) => {
-    const {notify, dismissNotify} = props;
+
+    const dispatch = useDispatch();
+    const notify = (context) => dispatch(addNotification(context));
+    const dismissNotify = (id: string) => {
+        setTimeout(() => {
+            dispatch(removeNotification(id));
+        }, 1000);
+    };
 
     const [projectName, setProjectName] = useState<string>("");
     const [stores, setStores] = useState();
@@ -262,4 +266,4 @@ const Library = (props: Props) => {
 
 };
 
-export default Library;
+export {Library};
