@@ -34,6 +34,8 @@ const FileListBody = (props: Props) => {
                 return "icon-folder";
             case "trash":
                 return "icon-trash";
+            case "frame":
+                return "icon-folder";
             default:
                 console.log(type);
                 return null;

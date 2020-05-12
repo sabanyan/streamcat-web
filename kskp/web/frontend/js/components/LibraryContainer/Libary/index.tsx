@@ -2,20 +2,31 @@ import * as React from "react";
 import {useEffect, useState} from "react";
 import {ModalManager} from "Shared/Modal";
 import {NotificationManager} from "Shared/Notification";
-import {TextField} from "Shared/Input";
+import {FileUploader, TextField} from "Shared/Input";
 import {FileListTable} from "Components/LibraryContainer/Libary/FileListTable";
 import {BreadCrumb, IBreadCrumbsLink} from "Components/LibraryContainer/Libary/BreadCrumb";
 import Constants from "Constants/index";
-import {APIUtil, HttpUtil, ModalUtil} from "Utils/index";
+import {APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil} from "Utils/index";
 import {EmptyState, Loader, Spacer} from "Shared/Base";
 import {ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 import {MenuList} from "Components/LibraryContainer/Libary/MenuList";
 import {Flex} from "Shared/Base/Layouts/Flex";
 import {useDispatch} from "react-redux";
 import {addNotification, removeNotification} from "reapop";
+import ParamsForm from "Shared/Inspector/ParamsForm";
 
 interface Props {
 
+}
+
+export interface Database {
+    label?: string;
+    dbms?: any;
+    host?: string;
+    port?: string;
+    database?: string;
+    user_id?: string;
+    user_password?: string;
 }
 
 const Library = (props: Props) => {
@@ -28,7 +39,125 @@ const Library = (props: Props) => {
         }, 1000);
     };
 
-    const [projectName, setProjectName] = useState<string>("");
+    const [formFlowName, setFormFlowName] = useState<string>("");
+    const [formProjectName, setFormProjectName] = useState<string>("");
+    const [formFolderName, setFormFolderName] = useState<string>("");
+    const [database, setDatabase] = useState<Database | null>(null);
+
+    const [new_names, setNewNames] = useState();
+
+    useEffect(() => {
+        if (!database) return;
+        const params = getDataBaseParams();
+        // const rules = getDataBaseRules();
+        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
+                                       onChange={(e, param, value) => onChangeDatabase(e, param, value)} />;
+        ModalUtil.emitModal({
+            id: Constants.modal.ADD_DATABASE,
+            visible: true,
+            done: "追加する",
+            dynamic: true,
+            content: paramsForm
+        });
+    }, [database]);
+
+    useEffect(() => {
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_PROJECT, onClickDone: () => {
+                APIUtil.post("projects", {name: formProjectName}).then((response) => {
+                    ModalUtil.emitModal(
+                        {id: Constants.modal.ADD_PROJECT, visible: false});
+                    // this.clearKeyword()
+                    // this.getProjectList()
+                    fetchFolder();
+                });
+            }
+        });
+    }, [formProjectName]);
+
+    useEffect(() => {
+        // Folder
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_FOLDER, onClickDone: () => {
+                if (formFolderName.length === 0) {
+                    alert("ファルダ名を入力してください");
+                    ModalUtil.closeModal(Constants.modal.ADD_FOLDER);
+                    return;
+                }
+                setIsLoading(true);
+                // TODO SelectedDataの扱い
+                // this.setState({is_loading: true, selected_data: null});
+                const body = {
+                    "label": formFolderName,
+                    "parent": currentFolderUUID
+                };
+                APIUtil.post("folders", body).then((response) => {
+                    completeAddedFolder(response);
+                    setFormFolderName("");
+                    ModalUtil.closeModal(Constants.modal.ADD_FOLDER);
+                }, () => {
+                    unhandledNotify("フォルダ作成エラー");
+                });
+            }
+        });
+    }, [formFolderName]);
+
+    const unhandledNotify = (title: string) => {
+        setIsLoading(false);
+        notify({
+            title: title,
+            message: Constants.errorMessage.unhandledError,
+            status: "error",
+            dismissAfter: 0,
+            closeButton: true
+        });
+    };
+
+    const completeAddedFolder = (response: any) => {
+        const json = response.data.data;
+        setIsLoading(false);
+        if (!response.data.success) {
+            notify({
+                title: "フォルダ作成エラー",
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                status: "error",
+                dismissAfter: 0,
+                closeButton: true
+            });
+        } else {
+            notify({
+                title: "フォルダを作成しました",
+                message: formFolderName + "を作成しました",
+                status: "success"
+            });
+        }
+        fetchFolder();
+    };
+
+    useEffect(() => {
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_FLOW, onClickDone: () => {
+                if (!formFlowName) {
+                    alert("フロー名を入力してください");
+                    return false;
+                }
+                APIUtil.post("flows", {
+                    name: formFlowName,
+                    project_uuid: inject_project_uuid,
+                    datasource: {
+                        "type": "frame"
+                    }
+                }).then((response) => {
+                    ModalUtil.closeModal(Constants.modal.ADD_FLOW);
+                    // this.clearKeyword()
+                    // this.getFlowList()
+                    fetchFolder();
+                });
+                return true;
+            }
+        });
+    }, [formFlowName]);
+
     const [stores, setStores] = useState();
     const [libraryChildren, setLibraryChildren] = useState();
     const [folderPath, setFolderPath] = useState();
@@ -48,19 +177,7 @@ const Library = (props: Props) => {
 
 
     useEffect(() => {
-        //モーダル処理の登録
-        ModalUtil.registerModal({
-            id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-                APIUtil.post("projects", {name: projectName}).then((response) => {
-                    ModalUtil.emitModal(
-                        {id: Constants.modal.ADD_PROJECT, visible: false});
-                    // this.clearKeyword()
-                    // this.getProjectList()
-                });
-            }
-        });
         fetchFolder();
-
     }, []);
 
 
@@ -117,12 +234,13 @@ const Library = (props: Props) => {
 
     const onClickNewFlow = () => {
         ModalUtil.emitModal({
-            id: Constants.modal.ADD_PROJECT,
+            id: Constants.modal.ADD_FLOW,
             visible: true,
-            done: "削除する",
-            danger: true,
+            done: "作成する",
             content: <div>
-                選択されたステップを削除しますか？
+                <TextField placeholder={"フロー名"}
+                           onChange={(e, validation) => setFormFlowName(e.target.value)} />
+                <div className={"mt-8px"} />
             </div>
         });
     };
@@ -132,19 +250,122 @@ const Library = (props: Props) => {
             visible: true,
             done: "作成する",
             content: <TextField placeholder={"プロジェクト名"}
-                                onChange={(e) => setProjectName(e.target.value)} />
+                                onChange={(e) => setFormProjectName(e.target.value)} />
         });
     };
     const onClickNewFolder = () => {
-
+        ModalUtil.emitModal({
+            id: Constants.modal.ADD_FOLDER,
+            visible: true,
+            done: "追加する",
+            content: <div>
+                <TextField placeholder={"フォルダ名"} onChange={(e) => setFormFolderName(e.target.value)} />
+            </div>
+        });
     };
     const onClickCSVUpload = () => {
-
+        let url = location.protocol + "//" + location.host + "/api/v0/frames";
+        ModalUtil.emitModal({
+            id: Constants.modal.ADD_FRAME,
+            visible: true,
+            done: "アップロード",
+            content: <div>
+                <FileUploader accept={[".csv"]} url={url} parentUUID={currentFolderUUID} notify={notify} />
+            </div>
+        });
     };
+
+
+    const getDataBaseRules = () => {
+        const rules = {
+            "label": {
+                "presence": {"allowEmpty": false}
+            },
+            "dbms": {
+                "presence": {"allowEmpty": false}
+            },
+            "hostname": {
+                "presence": {"allowEmpty": false}
+            },
+            "port": {
+                "presence": {"allowEmpty": false}
+            }
+        };
+        return rules;
+    };
+    const getDataBaseParams = () => {
+        const params = [
+            {
+                "name": "label",
+                "type": "string",
+                "label": "Label"
+            },
+            {
+                "name": "dbms",
+                "type": "select",
+                "label": "DBMS",
+                "options": {
+                    "labels": ["PostgreSQL", "ORACLE"],
+                    "values": ["postgresql", "oracle"]
+                },
+                "default": "postgresql"
+            },
+            {
+                "name": "host",
+                "type": "string",
+                "label": "ホスト名",
+                "default": ""
+            },
+            {
+                "name": "port",
+                "type": "number",
+                "label": "ポート番号",
+                "default": ""
+            },
+            {
+                "name": "database",
+                "type": "string",
+                "label": "データベース名",
+                "default": ""
+            },
+            {
+                "name": "user_id",
+                "type": "string",
+                "label": "ユーザID",
+                "default": ""
+            },
+            {
+                "name": "user_password",
+                "type": "string",
+                "label": "パスワード",
+                "default": ""
+            }
+        ];
+
+        return params;
+    };
+
     const onClickAddDataSource = () => {
-
+        const params = getDataBaseParams();
+        let database: Database = {};
+        params.map(param => {
+            if (param.default) database[param.name] = param.default;
+        });
+        const rules = getDataBaseRules();
+        setDatabase(database);
     };
 
+
+    const onChangeDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
+        try {
+            if (!database) return;
+            let newDatabase = database;
+            newDatabase[param.name] = value;
+            setDatabase(newDatabase);
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
     const isEmptyLibraryList = () => {
         if (!is_finished) {
