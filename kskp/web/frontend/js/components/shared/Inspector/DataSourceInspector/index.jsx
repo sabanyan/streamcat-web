@@ -58,6 +58,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   constructor(props: FlowEditorProps) {
     super(props)
+    this.updateCache = this.updateCache.bind(this)
     this.state = {
       loading: false
     }
@@ -121,7 +122,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           let contents = []
           for (const v of visualizers) {
             let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
-            contents.push({ title: v.label, content: content, id: id })
+            contents.push({ title: v.label, content: content, id: id, afterViz: this.updateCache })
           }
           ModalUtil.emitModal({
             id: Constants.preview.DATASOURCE,
