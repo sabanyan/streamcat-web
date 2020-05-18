@@ -133,17 +133,39 @@ const Library = (props: Props) => {
     const [currentFolderUUID, setCurrentFolderUUID] = useState();
     const [isLoading, setIsLoading] = useState();
     const [is_finished, setIsFinished] = useState();
+    const [isDialog, setIsDialog] = useState();
 
     const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list;
 
-    const links: IBreadCrumbsLink[] = [{
-        name: "ライブラリ",
-        url: "/"
-    }, {
-        name: "project_test",
-        url: "/"
-    }];
+    const [links,setLinks] = useState<IBreadCrumbsLink[]>([]);
 
+    useEffect(()=>{
+        if(!folderPath)return;
+        setLinks(makeBreadCrumbLinks(folderPath));
+    },folderPath);
+
+    const makeBreadCrumbLinks = (folderPath: any[]): IBreadCrumbsLink[]  =>{
+        const dialogOption = (isDialog) ? '?dialog=true' : "";
+        return folderPath.map((path, index):IBreadCrumbsLink => {
+            const isCurrent =  ((folderPath.length - 1) === index);
+            if(index === 0){
+                // ルートはライブラリを指定
+                return {
+                    uuid: path.uuid,
+                    label:"ライブラリ",
+                    url: "library"+ dialogOption,
+                    current:isCurrent
+                }
+            }
+
+            return {
+                uuid: path.uuid,
+                label: path.label,
+                url: "folders/" + path.uuid + dialogOption,
+                current: isCurrent
+            }
+        });
+    };
 
     const onClickAddDatabaseDone = ()=>{
         if (!database) return;

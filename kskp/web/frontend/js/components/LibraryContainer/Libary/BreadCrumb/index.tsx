@@ -1,13 +1,16 @@
 import * as React from "react";
+import {Fragment} from "react";
 import * as style from "./style.scss";
 import {Text} from "Shared/Base/Texts/Text";
 import {LinkButton} from "Shared/Input";
 import classnames from "classnames";
-import {Fragment} from "react";
+import WebUtil from "Utils/WebUtil";
 
 export interface IBreadCrumbsLink {
-    name: string,
-    url: string
+    uuid: string | null;
+    label: string;
+    url: string;
+    current: boolean;
 }
 
 interface Props {
@@ -21,11 +24,16 @@ const BreadCrumb = (props: Props) => {
             <Text>ライブラリ</Text>
         </div>;
     }
-    const linkElements = links.map((link,index) => {
-        let icon:React.ReactNode = <i className={classnames('material-icons')} style={{color: "#606c7a"}}>chevron_right</i>;
-        if(index + 1 === links.length)icon = null;
+    const linkElements = links.map((link, index) => {
+        let icon: React.ReactNode = <i className={classnames("material-icons")}
+                                       style={{color: "#606c7a"}}>chevron_right</i>;
+        if (index + 1 === links.length) icon = null;
         return <Fragment key={index}>
-            <LinkButton>{link.name}</LinkButton>
+            {(link.current)?
+                <>{link.label}</>
+                :
+                <LinkButton onClick={()=>{WebUtil.navigateURL(link.url)}}>{link.label}</LinkButton>
+            }
             {icon}
         </Fragment>;
     });
