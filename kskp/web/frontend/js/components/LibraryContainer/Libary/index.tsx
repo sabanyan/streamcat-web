@@ -29,6 +29,89 @@ export interface Database {
     user_password?: string;
 }
 
+const getDataBaseRules = () => {
+    // TODO rulesの型定義
+    const rules = {
+        "label": {
+            "presence": {"allowEmpty": false}
+        },
+        "dbms": {
+            "presence": {"allowEmpty": false}
+        },
+        "hostname": {
+            "presence": {"allowEmpty": false}
+        },
+        "port": {
+            "presence": {"allowEmpty": false}
+        }
+    };
+    return rules;
+};
+const getDataBaseParams = () => {
+    // TODO paramsの型定義
+    const params = [
+        {
+            "name": "label",
+            "type": "string",
+            "label": "Label"
+        },
+        {
+            "name": "dbms",
+            "type": "select",
+            "label": "DBMS",
+            "options": {
+                "labels": ["PostgreSQL", "ORACLE"],
+                "values": ["postgresql", "oracle"]
+            },
+            "default": "postgresql"
+        },
+        {
+            "name": "host",
+            "type": "string",
+            "label": "ホスト名",
+            "default": ""
+        },
+        {
+            "name": "port",
+            "type": "number",
+            "label": "ポート番号",
+            "default": ""
+        },
+        {
+            "name": "database",
+            "type": "string",
+            "label": "データベース名",
+            "default": ""
+        },
+        {
+            "name": "user_id",
+            "type": "string",
+            "label": "ユーザID",
+            "default": ""
+        },
+        {
+            "name": "user_password",
+            "type": "string",
+            "label": "パスワード",
+            "default": ""
+        }
+    ];
+
+    return params;
+};
+
+const getInitialDatabase = (): Database => {
+    return {
+        label: "",
+        dbms: getDataBaseParams()[1].default,
+        host: "",
+        port: "",
+        database: "",
+        user_id: "",
+        user_password: ""
+    };
+};
+
 const Library = (props: Props) => {
 
     const dispatch = useDispatch();
@@ -42,24 +125,71 @@ const Library = (props: Props) => {
     const [formFlowName, setFormFlowName] = useState<string>("");
     const [formProjectName, setFormProjectName] = useState<string>("");
     const [formFolderName, setFormFolderName] = useState<string>("");
-    const [database, setDatabase] = useState<Database | null>(null);
-
+    const [database, setDatabase] = useState<Database | null>(getInitialDatabase());
     const [new_names, setNewNames] = useState();
+    const [stores, setStores] = useState();
+    const [libraryChildren, setLibraryChildren] = useState();
+    const [folderPath, setFolderPath] = useState();
+    const [currentFolderUUID, setCurrentFolderUUID] = useState();
+    const [isLoading, setIsLoading] = useState();
+    const [is_finished, setIsFinished] = useState();
+
+    const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list;
+
+    const links: IBreadCrumbsLink[] = [{
+        name: "ライブラリ",
+        url: "/"
+    }, {
+        name: "project_test",
+        url: "/"
+    }];
+
+
+    const onClickAddDatabaseDone = ()=>{
+        if (!database) return;
+        try {
+            if (!database.label) {
+                alert("Labelを入力してください");
+                return;
+            }
+            if (!database.dbms) {
+                alert("DBMSを入力してください");
+                return;
+            }
+            if (!database.host) {
+                alert("ホスト名を入力してください");
+                return;
+            }
+            if (!database.port) {
+                alert("ポート名を入力してください");
+                return;
+            }
+
+            const body = {
+                label: database.label,
+                parent: currentFolderUUID,
+                dbms: database.dbms,
+                hostname: database.host,
+                port: Number(database.port),
+                database: database.database,
+                user_id: database.user_id,
+                password: database.user_password
+            };
+            APIUtil.post("databases", body).then((response) => {
+                completeAddedDatabase(response);
+            }, () => {
+                unhandledNotify("データベース作成エラー");
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
     useEffect(() => {
-        if (!database) return;
-        const params = getDataBaseParams();
-        // const rules = getDataBaseRules();
-        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
-                                       onChange={(e, param, value) => onChangeDatabase(e, param, value)} />;
-        ModalUtil.emitModal({
-            id: Constants.modal.ADD_DATABASE,
-            visible: true,
-            done: "追加する",
-            dynamic: true,
-            content: paramsForm
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone
         });
-    }, [database]);
+    }, []);
 
     useEffect(() => {
         ModalUtil.registerModal({
@@ -102,38 +232,6 @@ const Library = (props: Props) => {
         });
     }, [formFolderName]);
 
-    const unhandledNotify = (title: string) => {
-        setIsLoading(false);
-        notify({
-            title: title,
-            message: Constants.errorMessage.unhandledError,
-            status: "error",
-            dismissAfter: 0,
-            closeButton: true
-        });
-    };
-
-    const completeAddedFolder = (response: any) => {
-        const json = response.data.data;
-        setIsLoading(false);
-        if (!response.data.success) {
-            notify({
-                title: "フォルダ作成エラー",
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                status: "error",
-                dismissAfter: 0,
-                closeButton: true
-            });
-        } else {
-            notify({
-                title: "フォルダを作成しました",
-                message: formFolderName + "を作成しました",
-                status: "success"
-            });
-        }
-        fetchFolder();
-    };
-
     useEffect(() => {
         ModalUtil.registerModal({
             id: Constants.modal.ADD_FLOW, onClickDone: () => {
@@ -158,23 +256,74 @@ const Library = (props: Props) => {
         });
     }, [formFlowName]);
 
-    const [stores, setStores] = useState();
-    const [libraryChildren, setLibraryChildren] = useState();
-    const [folderPath, setFolderPath] = useState();
-    const [currentFolderUUID, setCurrentFolderUUID] = useState();
-    const [isLoading, setIsLoading] = useState();
-    const [is_finished, setIsFinished] = useState();
 
-    const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list;
+    /**
+     * データベース作成後の完了処理
+     * @param response
+     */
+    const completeAddedDatabase = (response: any) => {
+        if(!database)return;
+        const json = response.data.data;
+        if (!response.data.success) {
+            notify({
+                title: "データベース作成エラー",
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                status: "error",
+                dismissAfter: 0,
+                closeButton: true
+            });
+        } else {
+            notify({
+                title: "データベースを作成しました",
+                message: database.label + "を作成しました",
+                status: "success"
+            });
+        }
+        setIsLoading(false);
+        setDatabase(getInitialDatabase());
+        ModalUtil.closeModal(Constants.modal.ADD_DATABASE);
+        fetchFolder();
+    };
 
-    const links: IBreadCrumbsLink[] = [{
-        name: "ライブラリ",
-        url: "/"
-    }, {
-        name: "project_test",
-        url: "/"
-    }];
+    /**
+     * ハンドリングできないエラー表示
+     * @param title
+     */
+    const unhandledNotify = (title: string) => {
+        setIsLoading(false);
+        notify({
+            title: title,
+            message: Constants.errorMessage.unhandledError,
+            status: "error",
+            dismissAfter: 0,
+            closeButton: true
+        });
+    };
 
+    /**
+     * フォルダ作成時の完了処理
+     * @param response
+     */
+    const completeAddedFolder = (response: any) => {
+        const json = response.data.data;
+        setIsLoading(false);
+        if (!response.data.success) {
+            notify({
+                title: "フォルダ作成エラー",
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                status: "error",
+                dismissAfter: 0,
+                closeButton: true
+            });
+        } else {
+            notify({
+                title: "フォルダを作成しました",
+                message: formFolderName + "を作成しました",
+                status: "success"
+            });
+        }
+        fetchFolder();
+    };
 
     useEffect(() => {
         fetchFolder();
@@ -187,7 +336,6 @@ const Library = (props: Props) => {
             setIsFinished(true);
         });
     };
-
 
     const getStores = () => {
         return APIUtil.get("stores").then((response) => {
@@ -275,83 +423,25 @@ const Library = (props: Props) => {
         });
     };
 
-
-    const getDataBaseRules = () => {
-        const rules = {
-            "label": {
-                "presence": {"allowEmpty": false}
-            },
-            "dbms": {
-                "presence": {"allowEmpty": false}
-            },
-            "hostname": {
-                "presence": {"allowEmpty": false}
-            },
-            "port": {
-                "presence": {"allowEmpty": false}
-            }
-        };
-        return rules;
-    };
-    const getDataBaseParams = () => {
-        const params = [
-            {
-                "name": "label",
-                "type": "string",
-                "label": "Label"
-            },
-            {
-                "name": "dbms",
-                "type": "select",
-                "label": "DBMS",
-                "options": {
-                    "labels": ["PostgreSQL", "ORACLE"],
-                    "values": ["postgresql", "oracle"]
-                },
-                "default": "postgresql"
-            },
-            {
-                "name": "host",
-                "type": "string",
-                "label": "ホスト名",
-                "default": ""
-            },
-            {
-                "name": "port",
-                "type": "number",
-                "label": "ポート番号",
-                "default": ""
-            },
-            {
-                "name": "database",
-                "type": "string",
-                "label": "データベース名",
-                "default": ""
-            },
-            {
-                "name": "user_id",
-                "type": "string",
-                "label": "ユーザID",
-                "default": ""
-            },
-            {
-                "name": "user_password",
-                "type": "string",
-                "label": "パスワード",
-                "default": ""
-            }
-        ];
-
-        return params;
-    };
-
     const onClickAddDataSource = () => {
+        console.log("ADD_DATABASE");
         const params = getDataBaseParams();
         let database: Database = {};
         params.map(param => {
             if (param.default) database[param.name] = param.default;
         });
-        const rules = getDataBaseRules();
+        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
+                                       onChange={onChangeDatabase} />;
+
+        ModalUtil.emitModal({
+            id: Constants.modal.ADD_DATABASE,
+            visible: true,
+            done: "追加する",
+            dynamic: true,
+            content: paramsForm
+        });
+        console.log(database);
+
         setDatabase(database);
     };
 
@@ -362,6 +452,15 @@ const Library = (props: Props) => {
             let newDatabase = database;
             newDatabase[param.name] = value;
             setDatabase(newDatabase);
+            const params = getDataBaseParams()
+            const paramsForm = <ParamsForm params={params} args={database} invalids={{}} onChange={(e, param, value) => onChangeDatabase(e, param, value)}></ParamsForm>
+            ModalUtil.emitModal({
+                id: Constants.modal.ADD_DATABASE,
+                visible: true,
+                done: '追加する',
+                dynamic: true,
+                content: paramsForm,
+            })
         } catch (e) {
             console.log(e);
         }
