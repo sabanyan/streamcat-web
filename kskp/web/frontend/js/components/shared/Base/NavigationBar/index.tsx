@@ -1,6 +1,12 @@
 import React, {useEffect, useState} from "react";
 import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
 import {HttpUtil, WebUtil} from "Utils/index";
+import {NavigationBarItem} from "Shared/Base/NavigationBar/NavigationBarItem";
+import {NavigationBarItemGroup} from "Shared/Base/NavigationBar/NavigationBarItemGroup";
+import {NavigationBarMenuGroup} from "Shared/Base/NavigationBar/NavigationBarMenuGroup";
+import {NavigationBarBrand} from "Shared/Base/NavigationBar/NavigationBarBrand";
+import {NavigationBarGroup} from "Shared/Base/NavigationBar/NavigationBarGroup";
+import {NavigationBarUserMenuItem} from "Shared/Base/NavigationBar/NavigationBarUserMenuItem";
 
 interface Props {
     navigation?: NavigationModelProps
@@ -12,74 +18,52 @@ const NavigationBar = (props: Props) => {
     const [hasProject, setHasProject] = useState(false);
     const [hasFlow, setHasFlow] = useState(false);
 
-    const renderProjectNavigationItem = () => {
-        if (!isLogin) return null;
-        return <li className="nav-item list">
-            <a className="nav-link" href="/projects">
-                <img className="icon" src={baseUrl + "images/icon/list.svg"} />
-                プロジェクト
-            </a>
-        </li>;
-    };
+    // const renderProjectNavigationItem = () => {
+    //     if (!isLogin) return null;
+    //     return <li className="nav-item list">
+    //         <a className="nav-link" href="/projects">
+    //             <img className="icon" src={baseUrl + "images/icon/list.svg"} />
+    //             プロジェクト
+    //         </a>
+    //     </li>;
+    // };
 
-    const renderProjectListNavigationItem = () => {
-        const {navigation} = props;
-        if (!hasProject || !navigation) return null;
-        return <li className="nav-item project">
-            <a className="nav-link" href={"/flows?project=" + navigation.project_uuid}>
-                <img className="icon" src={baseUrl + "images/icon/folder.svg"} />
-                {navigation.project_name}
-            </a>
-        </li>;
-    };
+    // const renderProjectListNavigationItem = () => {
+    //     const {navigation} = props;
+    //     if (!hasProject || !navigation) return null;
+    //     return <li className="nav-item project">
+    //         <a className="nav-link" href={"/flows?project=" + navigation.project_uuid}>
+    //             <img className="icon" src={baseUrl + "images/icon/folder.svg"} />
+    //             {navigation.project_name}
+    //         </a>
+    //     </li>;
+    // };
 
-    const renderFlowListNavigationItem = () => {
-        const {navigation} = props;
-        if (!hasFlow || !navigation) return null;
-        return <li className="nav-item flow">
-            <a className="nav-link" href={"/flows/" + navigation.flow_uuid}>
-                <img className="icon" src={baseUrl + "images/icon/flow.svg"} />
-                {navigation.flow_name}
-            </a>
-        </li>;
-    };
+    // const renderFlowListNavigationItem = () => {
+    //     const {navigation} = props;
+    //     if (!hasFlow || !navigation) return null;
+    //     return <li className="nav-item flow">
+    //         <a className="nav-link" href={"/flows/" + navigation.flow_uuid}>
+    //             <img className="icon" src={baseUrl + "images/icon/flow.svg"} />
+    //             {navigation.flow_name}
+    //         </a>
+    //     </li>;
+    // };
 
-    const renderLibraryNavigationItem = () => {
-        const {navigation} = props;
-        if (!hasFlow || !navigation) return null;
-        return <li className="nav-item designer">
-            <a className="nav-link" href={"/flows/" + navigation.flow_uuid}>
-                <img className="icon" src={baseUrl + "images/icon/designer.svg"} />フローデザイナー
-            </a>
-        </li>;
-    };
-
-    const renderFlowDesignerNavigationItem = () => {
-        const {navigation} = props;
-        //if (!this.hasProject) return null
-        return <li className="nav-item library">
-            <a className="nav-link" href={"/library"}>
-                <img className="icon" src={baseUrl + "images/icon/library.svg"} />ライブラリ
-            </a>
-        </li>;
-    };
-
-    const onClickLogout = (e) => {
-        let logoutParam = "?session=off";
-        if (location.href.indexOf("?") !== -1) {
-            logoutParam = logoutParam.replace("?", "&");
-        }
-        const url = location.href + logoutParam;
-        WebUtil.navigateURL(url);
-        e.preventDefault();
-    };
+    // const renderLibraryNavigationItem = () => {
+    //     const {navigation} = props;
+    //     if (!hasFlow || !navigation) return null;
+    //     return <li className="nav-item designer">
+    //         <a className="nav-link" href={"/flows/" + navigation.flow_uuid}>
+    //             <img className="icon" src={baseUrl + "images/icon/designer.svg"} />フローデザイナー
+    //         </a>
+    //     </li>;
+    // };
 
     const renderUserNavigationItem = () => {
         const {navigation} = props;
-        if (!isLogin || !navigation) return null;
-
         let depoName;
-        if (navigation.depo_name !== "master") {
+        if (navigation && navigation.depo_name !== "master") {
             depoName = <div>
                 <div className="dropdown-item">
                     <b>{navigation.depo_name}</b>
@@ -88,18 +72,20 @@ const NavigationBar = (props: Props) => {
             </div>;
         }
 
-        return <li className="nav-item dropdown user">
-            <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
-               aria-haspopup="true" aria-expanded="false">
-                <img className="icon" src={baseUrl + "images/icon/user.svg"} />
-                {navigation.user_name}
-            </a>
-            <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                {/*<a href="/profile" className="dropdown-item">プロフィール設定</a>*/}
-                {depoName}
-                <a href="#" className="dropdown-item" onClick={(e) => onClickLogout(e)}>ログアウト</a>
-            </div>
-        </li>;
+        const onClickLogout = (e) => {
+            let logoutParam = "?session=off";
+            if (location.href.indexOf("?") !== -1) {
+                logoutParam = logoutParam.replace("?", "&");
+            }
+            const url = location.href + logoutParam;
+            WebUtil.navigateURL(url);
+            e.preventDefault();
+        };
+
+        return <NavigationBarUserMenuItem navigation={navigation} visible={isLogin}>
+            {depoName}
+            <a href="#" className="dropdown-item" onClick={(e) => onClickLogout(e)}>ログアウト</a>
+        </NavigationBarUserMenuItem>
 
     };
 
@@ -124,26 +110,15 @@ const NavigationBar = (props: Props) => {
         }
     },[props]);
 
-    return <nav className="navbar navbar-expand navbar-dark fixed-top">
-        <a className="navbar-brand" href="#">
-            <img src={baseUrl + "images/logo.png"} height="30" className="d-inline-block align-top"
-                 alt="" />
-        </a>
-        <div className="collapse navbar-collapse breadcrumb-navbar">
-            <ul className="navbar-nav mr-auto">
-                {renderProjectNavigationItem()}
-                {renderProjectListNavigationItem()}
-                {renderFlowListNavigationItem()}
-            </ul>
-        </div>
-        <div className="menu-navbar">
-            <ul className="navbar-nav">
-                {/*{this.renderLibraryNavigationItem()}*/}
-                {renderFlowDesignerNavigationItem()}
-                {renderUserNavigationItem()}
-            </ul>
-        </div>
-    </nav>;
+    return <NavigationBarGroup>
+        <NavigationBarBrand/>
+        <NavigationBarItemGroup>
+            <NavigationBarItem href={"/library"} iconUrl={baseUrl + "images/icon/library.svg"}>ライブラリ</NavigationBarItem>
+        </NavigationBarItemGroup>
+        <NavigationBarMenuGroup>
+            {renderUserNavigationItem()}
+        </NavigationBarMenuGroup>
+    </NavigationBarGroup>;
 
 };
 
