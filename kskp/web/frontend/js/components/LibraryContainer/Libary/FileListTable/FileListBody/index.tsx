@@ -39,6 +39,8 @@ const FileListBody = (props: Props) => {
                 return "icon-trash";
             case "frame":
                 return "icon-file-csv";
+            case "flow":
+                return "icon-flow";
             case "database":
                 return "icon-database";
             case "remote-folder":

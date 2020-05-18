@@ -166,6 +166,10 @@ const Library = (props: Props) => {
         });
     };
 
+    const onClickAddFrameDone = ()=>{
+        fetchFolder();
+    };
+
     const onClickAddDatabaseDone = ()=>{
         if (!database) return;
         try {
@@ -211,6 +215,13 @@ const Library = (props: Props) => {
             id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone
         });
     }, []);
+
+    useEffect(() => {
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_FRAME, onClickDone: onClickAddFrameDone
+        });
+    }, []);
+
 
     useEffect(() => {
         ModalUtil.registerModal({
@@ -262,7 +273,7 @@ const Library = (props: Props) => {
                 }
                 APIUtil.post("flows", {
                     name: formFlowName,
-                    project_uuid: inject_project_uuid,
+                    project_uuid: inject_folder_uuid, // TODO project_uuid のキーが将来的に変更になる可能性あり、実態はfolderのuuidが利用できる
                     datasource: {
                         "type": "frame"
                     }
@@ -543,7 +554,9 @@ const Library = (props: Props) => {
             if(body.type === "frame"){
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
             }
-
+            if(body.type === "flow"){
+                WebUtil.navigateURL(WebUtil.webURL('/flows/' + body.uuid));
+            }
             console.log(body);
 
         };
