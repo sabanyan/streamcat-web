@@ -14,10 +14,9 @@ const FileListTable = (props: Props) => {
     const {onClickHeader, onClickFileName, onClickCell, bodies} = props;
 
     const headers: ITableHeader[] = [
-        {name: "", key: ""},
         {name: "名前", key: "name"},
-        {name: "作成者", key: "creator"},
-        {name: "作成日時", key: "create_date_time"}
+        {name: "作成者", key: "creator", width: 200},
+        {name: "作成日時", key: "create_date_time", width: 184}
     ];
     return <table className={style.fileListTable}>
         <FileListHeader headers={headers}

@@ -1,6 +1,7 @@
 import * as React from "react";
 import {LinkButton} from "Shared/Input";
 import style from "Shared/Input/FlatButton/style.scss";
+import moment from "moment";
 
 export interface ITableBody {
     uuid: string;
@@ -51,8 +52,6 @@ const FileListBody = (props: Props) => {
     const bodiesElement = bodies.map((body: ITableBody, index) => {
         return <tr onClick={() => onClickCell(body)} key={index}>
             <td>
-            </td>
-            <td>
                 {getIconElement(getIconFromBodyType(body.type))}
                 <LinkButton onClick={(e: React.SyntheticEvent<any, Event>) => {
                     onClickFileName(body);
@@ -60,13 +59,12 @@ const FileListBody = (props: Props) => {
                 }}>
                     {body.label}
                 </LinkButton>
-                {body.uuid}
             </td>
             <td>
                 {body.creator}
             </td>
             <td>
-                {body.createdAt}
+                {moment(body.createdAt).format("YYYY/MM/DD hh:mm")}
             </td>
         </tr>;
     });
