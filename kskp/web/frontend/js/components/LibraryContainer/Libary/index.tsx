@@ -6,7 +6,7 @@ import {FileUploader, TextField} from "Shared/Input";
 import {FileListTable} from "Components/LibraryContainer/Libary/FileListTable";
 import {BreadCrumb, IBreadCrumbsLink} from "Components/LibraryContainer/Libary/BreadCrumb";
 import Constants from "Constants/index";
-import {APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil} from "Utils/index";
+import {APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, WebUtil, StringUtil} from "Utils/index";
 import {EmptyState, Loader, Spacer} from "Shared/Base";
 import {ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 import {MenuList} from "Components/LibraryContainer/Libary/MenuList";
@@ -510,6 +510,27 @@ const Library = (props: Props) => {
 
         console.log(libraryChildren);
 
+
+        const onClickFileName=(body: ITableBody)=>{
+
+            // TODO ダイアログ表示された場合の選択時の対応
+            // TODO ダイアログ表示された場合のゴミ箱や機能制限の対応
+
+            if(body.type === "trash"){
+                WebUtil.navigateURL(WebUtil.webURL("/trashes"));
+            }
+            if(body.type === "folder"){
+                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid));
+            }
+            if(body.type === "frame"){
+                window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
+            }
+
+            console.log(body);
+
+        };
+
+
         return <Flex justifyContent={"center"} fluid={true}>
             {/*{this.renderBreadCrumb()}*/}
             {/*{this.renderSearchBar()}*/}
@@ -537,10 +558,7 @@ const Library = (props: Props) => {
                             alert("cell");
                             console.log(body);
                         }}
-                        onClickFileName={(body: ITableBody) => {
-                            alert("file");
-                            console.log(body);
-                        }}
+                        onClickFileName={onClickFileName}
                         onClickHeader={() => {
                         }}
                         bodies={libraryChildren}
