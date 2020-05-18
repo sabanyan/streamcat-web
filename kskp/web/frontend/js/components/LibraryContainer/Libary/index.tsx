@@ -130,7 +130,6 @@ const Library = (props: Props) => {
     const [stores, setStores] = useState();
     const [libraryChildren, setLibraryChildren] = useState();
     const [folderPath, setFolderPath] = useState();
-    const [currentFolderUUID, setCurrentFolderUUID] = useState();
     const [isLoading, setIsLoading] = useState();
     const [is_finished, setIsFinished] = useState();
     const [isDialog, setIsDialog] = useState();
@@ -153,7 +152,7 @@ const Library = (props: Props) => {
                 return {
                     uuid: path.uuid,
                     label:"ライブラリ",
-                    url: "library"+ dialogOption,
+                    url: "/library"+ dialogOption,
                     current:isCurrent
                 }
             }
@@ -161,7 +160,7 @@ const Library = (props: Props) => {
             return {
                 uuid: path.uuid,
                 label: path.label,
-                url: "folders/" + path.uuid + dialogOption,
+                url: "/folders/" + path.uuid + dialogOption,
                 current: isCurrent
             }
         });
@@ -189,7 +188,7 @@ const Library = (props: Props) => {
 
             const body = {
                 label: database.label,
-                parent: currentFolderUUID,
+                parent: inject_folder_uuid,
                 dbms: database.dbms,
                 hostname: database.host,
                 port: Number(database.port),
@@ -241,7 +240,7 @@ const Library = (props: Props) => {
                 // this.setState({is_loading: true, selected_data: null});
                 const body = {
                     "label": formFolderName,
-                    "parent": currentFolderUUID
+                    "parent": inject_folder_uuid
                 };
                 APIUtil.post("folders", body).then((response) => {
                     completeAddedFolder(response);
@@ -375,7 +374,6 @@ const Library = (props: Props) => {
                     const {children, folderPath, inject_folder_uuid} = json;
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                    setCurrentFolderUUID(inject_folder_uuid);
                 } else {
                     APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
                         if (response.data.success) {
@@ -383,7 +381,6 @@ const Library = (props: Props) => {
                             const {children, folderPath, inject_folder_uuid} = json;
                             setLibraryChildren(children);
                             setFolderPath(folderPath);
-                            setCurrentFolderUUID(inject_folder_uuid);
                         }
                     });
                 }
@@ -396,7 +393,6 @@ const Library = (props: Props) => {
                     const {children, folderPath, uuid} = json;
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                    setCurrentFolderUUID(uuid);
                 }
             });
         }
@@ -440,7 +436,7 @@ const Library = (props: Props) => {
             visible: true,
             done: "アップロード",
             content: <div>
-                <FileUploader accept={[".csv"]} url={url} parentUUID={currentFolderUUID} notify={notify} />
+                <FileUploader accept={[".csv"]} url={url} parentUUID={inject_folder_uuid} notify={notify} />
             </div>
         });
     };
