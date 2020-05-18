@@ -30,12 +30,18 @@ const FileListBody = (props: Props) => {
     };
     const getIconFromBodyType = (type: string): string | null => {
         switch (type) {
+            case "project":
+                return "icon-project";
             case "folder":
                 return "icon-folder";
             case "trash":
                 return "icon-trash";
             case "frame":
-                return "icon-folder";
+                return "icon-file-csv";
+            case "database":
+                return "icon-database";
+            case "remote-folder":
+                return "icon-remote-folder";
             default:
                 console.log(type);
                 return null;
