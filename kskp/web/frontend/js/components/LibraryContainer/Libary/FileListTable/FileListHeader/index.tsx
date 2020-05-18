@@ -3,6 +3,7 @@ import * as React from "react";
 export interface ITableHeader {
     name: string;
     key: string;
+    width?: number;
 }
 
 interface Props {
@@ -17,7 +18,7 @@ const FileListHeader = (props: Props) => {
     const headerElement = headers.map(header => {
         return <th onClick={() => {
             onClick(header);
-        }}>{header.name}</th>;
+        }} style={{width: header.width}}>{header.name}</th>;
     });
 
     return <thead>
