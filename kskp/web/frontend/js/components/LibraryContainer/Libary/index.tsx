@@ -14,6 +14,7 @@ import {Flex} from "Shared/Base/Layouts/Flex";
 import {useDispatch} from "react-redux";
 import {addNotification, removeNotification} from "reapop";
 import ParamsForm from "Shared/Inspector/ParamsForm";
+import {ITableHeader} from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 
 interface Props {
 
@@ -29,7 +30,7 @@ export interface Database {
     user_password?: string;
 }
 
-const getDataBaseRules = () => {
+export const getDataBaseRules = () => {
     // TODO rulesの型定義
     const rules = {
         "label": {
@@ -47,7 +48,7 @@ const getDataBaseRules = () => {
     };
     return rules;
 };
-const getDataBaseParams = () => {
+export const getDataBaseParams = () => {
     // TODO paramsの型定義
     const params = [
         {
@@ -129,6 +130,8 @@ const Library = (props: Props) => {
     const [new_names, setNewNames] = useState();
     const [stores, setStores] = useState();
     const [libraryChildren, setLibraryChildren] = useState();
+    const [initialLibraryChildren, setInitialLibraryChildren] = useState();
+
     const [folderPath, setFolderPath] = useState();
     const [isLoading, setIsLoading] = useState();
     const [is_finished, setIsFinished] = useState();
@@ -383,6 +386,7 @@ const Library = (props: Props) => {
                 if (response.data.success) {
                     const json = response.data.data;
                     const {children, folderPath, inject_folder_uuid} = json;
+                    setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
                 } else {
@@ -390,6 +394,7 @@ const Library = (props: Props) => {
                         if (response.data.success) {
                             const json = response.data.data;
                             const {children, folderPath, inject_folder_uuid} = json;
+                            setInitialLibraryChildren(children);
                             setLibraryChildren(children);
                             setFolderPath(folderPath);
                         }
@@ -402,6 +407,7 @@ const Library = (props: Props) => {
                 const json = response.data.data;
                 if (response.data.success) {
                     const {children, folderPath, uuid} = json;
+                    setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
                 }
@@ -590,10 +596,14 @@ const Library = (props: Props) => {
                             console.log(body);
                         }}
                         onClickFileName={onClickFileName}
-                        onClickHeader={() => {
+                        onClickHeader={(header:ITableHeader) => {
+                            if(header.sort){
+                                setLibraryChildren(_.orderBy(libraryChildren, header.key, header.sort));
+                            }else{
+                                setLibraryChildren(initialLibraryChildren);
+                            }
                         }}
                         bodies={libraryChildren}
-
                     />
                 </Flex>
                 <Spacer width={40} />
