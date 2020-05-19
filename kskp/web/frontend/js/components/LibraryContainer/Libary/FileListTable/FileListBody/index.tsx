@@ -1,7 +1,8 @@
 import * as React from "react";
 import {LinkButton} from "Shared/Input";
-import style from "Shared/Input/FlatButton/style.scss";
 import moment from "moment";
+import classnames from "classnames";
+import style from "./style.scss";
 
 export interface ITableBody {
     uuid: string;
@@ -10,17 +11,17 @@ export interface ITableBody {
     label: string;
     creator: string;
     createdAt: string;
+    selected?: boolean;
 }
 
 interface Props {
-    onClickFileName: (body: ITableBody) => void;
-    onClickCell: (body: ITableBody) => void;
+    onClickFileName: (body: ITableBody,event?:React.SyntheticEvent<any, Event>) => void;
+    onClickCell: (body: ITableBody,event?:React.MouseEvent<HTMLTableRowElement>) => void;
     bodies: ITableBody[];
 }
 
 const FileListBody = (props: Props) => {
     const {bodies, onClickCell, onClickFileName} = props;
-
 
     const getIconElement = (icon: string | null) => {
         const baseUrl = "/front_static/";
@@ -52,12 +53,12 @@ const FileListBody = (props: Props) => {
     };
 
     const bodiesElement = bodies.map((body: ITableBody, index) => {
-        return <tr onClick={() => onClickCell(body)} key={index}>
+        return <tr className={classnames({[style.selected]: body.selected})} onClick={(event) => onClickCell(body,event)} key={index}>
             <td>
                 {getIconElement(getIconFromBodyType(body.type))}
-                <LinkButton onClick={(e: React.SyntheticEvent<any, Event>) => {
-                    onClickFileName(body);
-                    e.stopPropagation();
+                <LinkButton onClick={(event: React.SyntheticEvent<any, Event>) => {
+                    onClickFileName(body,event);
+                    event.stopPropagation();
                 }}>
                     {body.label}
                 </LinkButton>

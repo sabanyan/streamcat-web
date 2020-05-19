@@ -9,9 +9,9 @@ import {
 import {FileListBody, ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 
 interface Props {
-    onClickHeader: (header: ITableHeader) => void;
-    onClickFileName: (body: ITableBody) => void;
-    onClickCell: (body: ITableBody) => void;
+    onClickHeader: (header: ITableHeader, event?: React.MouseEvent<HTMLTableHeaderCellElement>) => void;
+    onClickFileName: (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => void;
+    onClickCell: (body: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => void;
     bodies: ITableBody[];
 }
 

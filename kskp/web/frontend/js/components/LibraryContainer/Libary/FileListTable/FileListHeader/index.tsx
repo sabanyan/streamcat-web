@@ -12,7 +12,7 @@ export type TTableHeaderSortType = "asc" | "desc" | null | undefined
 
 interface Props {
     headers: ITableHeader[];
-    onClick: (header: ITableHeader) => void;
+    onClick: (header: ITableHeader,event?:React.MouseEvent<HTMLTableHeaderCellElement>) => void;
 }
 
 const FileListHeader = (props: Props) => {
@@ -38,9 +38,9 @@ const FileListHeader = (props: Props) => {
         return iconElement;
     };
 
-    const headerElement = headers.map(header => {
-        return <th onClick={() => {
-            onClick(header);
+    const headerElement = headers.map((header,index) => {
+        return <th key={index} onClick={(event) => {
+            onClick(header,event);
         }} style={{width: header.width}}>{header.label}{getIconElement(getIconFromSort(header.sort))}</th>;
     });
 
