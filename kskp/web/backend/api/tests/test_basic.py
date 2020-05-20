@@ -40,33 +40,34 @@ class ProjectApiTestCase(ApiTestCaseBase):
         """
         POST /projects APIをテストする
         """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
         project_name = 'プロジェクトです'
-        data = {'name': project_name}
+        data = {'parent': root.uuid,
+                'name'  : project_name}
 
         # POST /projects
         self.post_uri('/api/v0/projects', data, self.USER1)
 
-        # ルートフローフォルダを取得する
-        root_flow_folder = self.factory.data.load_flow_folder()
-
         # 保存されたフォルダを取得する
         sql = f"""
         select * from data D
-        where D.type = 'folder'
+        where D.type = 'project'
           and creator = {self.USER1.id}
           and exists (select * from Data P
                       where P.id = D.parent_id
-                        and P.uuid = '{root_flow_folder.uuid}')
+                        and P.uuid = '{root.uuid}')
         order by id
         """
         result = self.get_record_by_sql(sql)
 
         # フォルダが期待どうりに保存されていることを検証する
         self.assertIsNotNone(result['id'])
-        self.assertEqual(result['parent_id'], root_flow_folder.id)
+        self.assertEqual(result['parent_id'], root.id)
         self.assertIsNotNone(result['uuid'])
-        self.assertEqual(result['path'], (Datum._to_rel_path(root_flow_folder.path) / 'プロジェクトです').as_posix())
-        self.assertEqual(result['type'], 'folder')
+        self.assertEqual(result['path'], (Datum._to_rel_path(root.path) / 'プロジェクトです').as_posix())
+        self.assertEqual(result['type'], 'project')
         self.assertEqual(result['label'], project_name)
         self.assertEqual(result['creator'], self.USER1.id)
         self.assertEqual(result['modifier'], self.USER1.id)
@@ -77,8 +78,13 @@ class ProjectApiTestCase(ApiTestCaseBase):
         """
         GET /projects APIをテストする
         """
+        # ROOTを取得する
+        flow_folder = self.factory.data.load_flow_folder()
+
         # プロジェクトを作成する
-        self.post_uri('/api/v0/projects', {'name': '新しいプロジェクト'}, self.USER2)
+        data = {'parent': flow_folder.uuid,
+                'name'  : '新しいプロジェクト'}
+        self.post_uri('/api/v0/projects', data, self.USER2)
 
         # フォルダを取得する
         results = self.get_uri('/api/v0/projects', self.USER2)
@@ -437,7 +443,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['navigation']['user_id'], self.USER1.id)
         self.assertEqual(result['navigation']['user_name'], '管理者')
         # self.assertEqual(result['navigation']['project_uuid'], )
-        self.assertEqual(result['navigation']['project_name'], 'ROOT_FOLDER')
+        self.assertEqual(result['navigation']['project_name'], 'ライブラリ')
         self.assertEqual(result['navigation']['flow_name'], test_flow_label)
         self.assertEqual(result['navigation']['flow_uuid'], test_flow_uuid)
 
@@ -693,7 +699,7 @@ class FlowApiTestCase(ApiTestCaseBase):
             if subflow['uuid'] == subflow1_uuid:
                 found_flag = True
                 self.assertEqual(subflow['label'], 'INPUTだけがあるサブフロー')
-                self.assertEqual(subflow['projectName'], 'ROOT_FOLDER')
+                self.assertEqual(subflow['projectName'], 'ライブラリ')
                 self.assertEqual(subflow['ports'][0], {"name": "i","type": "frame"})
 
         self.assertEqual(found_flag, True)
@@ -747,7 +753,7 @@ class FlowApiTestCase(ApiTestCaseBase):
             if subflow['uuid'] == subflow1_uuid:
                 found_flag = True
                 self.assertEqual(subflow['label'], 'OUTPUTだけがあるサブフローです')
-                self.assertEqual(subflow['projectName'], 'ROOT_FOLDER')
+                self.assertEqual(subflow['projectName'], 'ライブラリ')
                 self.assertEqual(subflow['ports'][1], {"name": "o","type": "frame"})
 
         self.assertEqual(found_flag, True)

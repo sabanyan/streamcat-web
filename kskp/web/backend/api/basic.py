@@ -14,14 +14,12 @@ mod = Blueprint('api', __name__)
 @api_base
 def new_project():
     """
-    新しいプロジェクトを作成するAPI
+    プロジェクトを作成する
     """
-    # ルートフローフォルダが無ければ作成する
-    root_flow_folder = g.factory.data.load_flow_folder()
-
-    # 新しいフローフォルダを作成する
-    new_folder = root_flow_folder.create_folder(request.json['name'])
-    new_folder.save()
+    parent = g.factory.data.find_by_uuid(request.json['parent'])
+    new_project = parent.create_project_folder(request.json['name'])
+    new_project.save()
+    return new_project
 
 @mod.route('/projects')
 @login_required_api
@@ -55,8 +53,8 @@ def delete_project(project_uuid):
     """
     指定したプロジェクトを削除する
     """
-    folder = g.factory.data.find_by_uuid(project_uuid)
-    folder.delete()
+    project = g.factory.data.find_by_uuid(project_uuid)
+    project.delete()
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
@@ -68,8 +66,8 @@ def update_project(project_uuid):
     現在はプロジェクト名のみ
     """
     new_project_name = request.json.get('new_name')
-    folder = g.factory.data.find_by_uuid(project_uuid)
-    folder.update_data(new_project_name)
+    project = g.factory.data.find_by_uuid(project_uuid)
+    project.update_data(new_project_name)
 
 @mod.route('/flows', methods=['POST'])
 @login_required_api
