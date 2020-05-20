@@ -128,8 +128,8 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['type'], 'folder')
-        self.assertEqual(result['data']['label'], 'ROOT_FOLDER')
-        self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
+        self.assertEqual(result['data']['label'], 'ライブラリ')
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
         from kskp.store import Datum
@@ -149,8 +149,8 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['type'], 'folder')
-        self.assertEqual(result['data']['label'], 'ROOT_FOLDER')
-        self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
+        self.assertEqual(result['data']['label'], 'ライブラリ')
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
         from kskp.store import Datum
@@ -170,9 +170,9 @@ class LibraryTestCase(ApiTestCaseBase):
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], root_uuid)
         self.assertEqual(result['data']['type'], 'folder')
-        self.assertEqual(result['data']['label'], 'ROOT_FOLDER')
+        self.assertEqual(result['data']['label'], 'ライブラリ')
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
-        self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
 
         # ルートフォルダを削除する(DELETE /folders)
         # self.delete_uri('/api/v0/folders/' + root_uuid, self.USER1)
@@ -512,7 +512,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertIsNotNone(result['data']['children'])
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
-        self.assertEqual(result['data']['folderPath'][0]['label'], 'ROOT_FOLDER')
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
         self.assertEqual(result['data']['folderPath'][1]['uuid'], awss3_uuid)
         self.assertEqual(result['data']['folderPath'][1]['label'], 'Amazonに感謝')
 
