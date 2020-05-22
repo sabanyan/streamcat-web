@@ -112,21 +112,22 @@ class ProjectApiTestCase(ApiTestCaseBase):
         """
         # フォルダを作成する
         root = self.factory.data.load_root()
-        folder = root.create_folder('フロー格納フォルダ')
-        folder.save()
+        project = root.create_project_folder('フロー格納フォルダ')
+        project.save()
 
         # PUT /projects
         new_label = '変更後のフォルダ名'
         json_data = {'new_name': new_label, "description": ""}
-        self.put_uri(('/api/v0/projects/%s' % folder.uuid), json_data, self.USER1)
+        self.put_uri(('/api/v0/projects/%s' % project.uuid), json_data, self.USER1)
 
         # ラベル名が修正されていることを確認する
-        result = self.get_uri(f'/api/v0/folders/{folder.uuid}', self.USER1)
+        # GET /projects/[uuid] が無いので GET /folders/[uuid] で確認する
+        result = self.get_uri(f'/api/v0/folders/{project.uuid}', self.USER1)
         self.assertEqual(result['data']['label'], new_label)
 
         # フォルダを削除する
-        folder = self.factory.data.find_by_uuid(folder.uuid)
-        self.assertFalse(folder.delete())
+        project = self.factory.data.find_by_uuid(project.uuid)
+        self.assertFalse(project.delete())
 
     def test_delete_project(self):
         """
@@ -134,14 +135,14 @@ class ProjectApiTestCase(ApiTestCaseBase):
         """
         # フォルダを作成する
         root = self.factory.data.load_root()
-        folder = root.create_folder('フロー格納フォルダ')
-        folder.save()
+        project = root.create_project_folder('フロー格納フォルダ')
+        project.save()
 
         # DELETE /projects
-        self.delete_uri(('/api/v0/projects/%s' % folder.uuid), self.USER1)
+        self.delete_uri(('/api/v0/projects/%s' % project.uuid), self.USER1)
 
         # フォルダが消えていることを確認する
-        self.assertFalse(self.factory.data.exists(folder.uuid))
+        self.assertFalse(self.factory.data.exists(project.uuid))
 
 class FrameApiTestCase(ApiTestCaseBase):
 
