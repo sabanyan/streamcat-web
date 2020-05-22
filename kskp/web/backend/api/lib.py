@@ -9,6 +9,7 @@ from kskp.store import (
     StoreModel as Store,
     Datum,
     Folder,
+    ProjectFolder,
     Frame,
     Flow,
     AwsS3,
@@ -144,7 +145,7 @@ def get_library(user_id):
     # (最初にライブラリ画面にアクセスする時はルートフォルダ自身も存在しません)
     if root is None:
         new_root = Folder(parent_uuid=None,
-                          label='ROOT_FOLDER',
+                          label='ライブラリ',
                           creator=user_id)
         # folderレコードをDBに格納する
         new_root.save()
@@ -373,8 +374,27 @@ def throw_away_folder(folder_uuid):
     if thrown_count == 0:
         raise Exception('削除できませんでした')
 
+def throw_away_project(project_uuid):
+    from kskp.store import Library
+    trash_folder = Library.load_trash_folder(session['user_id'])
+
+    project = ProjectFolder.find_by_uuid(project_uuid)
+
+    if project.parent_uuid is None:
+        raise Exception('ルートフォルダは削除できません')
+
+    thrown_count, obstacle_count = _throw_away_inner(trash_folder.uuid, project, session['user_id'])
+
+    if obstacle_count == 0 and not Folder.is_system_folder(project_uuid):
+        # 中のファイル全て削除可能であればフォルダ(ファイル)ごとゴミ箱へ移動する
+        project.move(trash_folder.uuid, session['user_id'])
+        thrown_count += 1
+
+    if thrown_count == 0:
+        raise Exception('削除できませんでした')    
+
 def _throw_away_inner(parent_uuid, datum, modifier):
-    if datum.type == Datum.FOLDER_TYPE:
+    if datum.type == Datum.FOLDER_TYPE or datum.type == Datum.PROJECT_TYPE:
         # フォルダ直下のフォルダとデータベースとドキュメントを取得する
         childrenGetter = ChildrenGetter()
         children = childrenGetter.execute(modifier, datum)

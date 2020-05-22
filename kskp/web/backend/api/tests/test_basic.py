@@ -13,7 +13,7 @@ from kskp.web.backend.api.tests.test_case_base import TestCaseBase
 from kskp.store import model
 from kskp.store import ss
 from kskp.web.backend import app
-from kskp.store import Datum, Frame, Flow, Folder, Library, TrashCan, STORE_DIR
+from kskp.store import Datum, Frame, Flow, Folder, ProjectFolder, Library, TrashCan, STORE_DIR
 from kskp.web.backend.api.tests.utils import create_data
 
 # 
@@ -44,35 +44,36 @@ class ProjectApiTestCase(TestCaseBase):
         """
         POST /projects APIをテストする
         """
+        # ROOTを取得する
+        root = Library.load_root()
+
         project_name = 'プロジェクトです'
-        data = {'name': project_name}
+        data = {'parent': root.uuid,
+                'name'  : project_name}
 
         user_id = 777
 
         # POST /projects
         self.post_uri('/api/v0/projects', data, user_id)
 
-        # ルートフローフォルダを取得する
-        root_flow_folder = model.get_flow_dir_path(user_id)
-
         # 保存されたフォルダを取得する
         sql = """
         select * from data D
-        where D.type = 'folder'
+        where D.type = 'project'
           and creator = 777
           and exists (select * from Data P
                       where P.id = D.parent_id
                         and P.uuid = '{uuid}')
         order by id
-        """.format(uuid=root_flow_folder.uuid)
+        """.format(uuid=root.uuid)
         result = self.get_record_by_sql(sql)
 
         # フォルダが期待どうりに保存されていることを検証する
         self.assertIsNotNone(result['id'])
-        self.assertEqual(result['parent_id'], root_flow_folder.id)
+        self.assertEqual(result['parent_id'], root.id)
         self.assertIsNotNone(result['uuid'])
-        self.assertEqual(result['path'], (Path(root_flow_folder.path) / 'プロジェクトです').as_posix())
-        self.assertEqual(result['type'], 'folder')
+        self.assertEqual(result['path'], (Path(root.path) / 'プロジェクトです').as_posix())
+        self.assertEqual(result['type'], 'project')
         self.assertEqual(result['label'], project_name)
         self.assertEqual(result['creator'], user_id)
         self.assertEqual(result['modifier'], user_id)
@@ -83,8 +84,13 @@ class ProjectApiTestCase(TestCaseBase):
         """
         GET /projects APIをテストする
         """
+        # ROOTを取得する
+        flow_folder = Library.load_flow_folder()
+
         # プロジェクトを作成する
-        self.post_uri('/api/v0/projects', {'name': '新しいプロジェクト'}, self.USER_ID)
+        data = {'parent': flow_folder.uuid,
+                'name'  : '新しいプロジェクト'}
+        self.post_uri('/api/v0/projects', data, self.USER_ID)
 
         # フォルダを取得する
         results = self.get_uri('/api/v0/projects', self.USER_ID)
@@ -112,20 +118,20 @@ class ProjectApiTestCase(TestCaseBase):
         """
         # フォルダを作成する
         root = Datum.find_root()
-        folder = Folder(root.uuid, 'フロー格納フォルダ', self.USER_ID)
-        folder.save()
+        project = ProjectFolder(root.uuid, 'フロー格納フォルダ', self.USER_ID)
+        project.save()
 
         # PUT /projects
         new_label = '変更後のフォルダ名'
         json_data = {'new_name': new_label, "description": ""}
-        self.put_uri(('/api/v0/projects/%s' % folder.uuid), json_data, self.USER_ID)
+        self.put_uri(('/api/v0/projects/%s' % project.uuid), json_data, self.USER_ID)
 
         # ラベル名が修正されていることを確認する
-        updated_folder = Folder.find_by_uuid(folder.uuid)
-        self.assertEqual(updated_folder.label, new_label)
+        updated_project = ProjectFolder.find_by_uuid(project.uuid)
+        self.assertEqual(updated_project.label, new_label)
 
         # フォルダを削除する
-        self.assertFalse(folder.delete())
+        self.assertFalse(project.delete())
 
     def test_delete_project(self):
         """
@@ -133,16 +139,16 @@ class ProjectApiTestCase(TestCaseBase):
         """
         # フォルダを作成する
         root = Datum.find_root()
-        folder = Folder(root.uuid, 'フロー格納フォルダ', self.USER_ID)
-        folder.save()
+        project = ProjectFolder(root.uuid, 'フロー格納フォルダ', self.USER_ID)
+        project.save()
 
         # DELETE /projects
-        self.delete_uri(('/api/v0/projects/%s' % folder.uuid), self.USER_ID)
+        self.delete_uri(('/api/v0/projects/%s' % project.uuid), self.USER_ID)
 
         # フローはゴミ箱に移動していること
-        folder = Folder.find_by_uuid(folder.uuid)
+        project = ProjectFolder.find_by_uuid(project.uuid)
         trash = TrashCan.find()
-        self.assertEqual(folder.parent_uuid, trash.uuid)
+        self.assertEqual(project.parent_uuid, trash.uuid)
 
 class FrameApiTestCase(TestCaseBase):
 
@@ -448,7 +454,7 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result['navigation']['user_id'], self.USER_ID)
         self.assertEqual(result['navigation']['user_name'], 'user1')
         # self.assertEqual(result['navigation']['project_uuid'], )
-        self.assertEqual(result['navigation']['project_name'], 'ROOT_FOLDER')
+        self.assertEqual(result['navigation']['project_name'], 'ライブラリ')
         self.assertEqual(result['navigation']['flow_name'], test_flow_label)
         self.assertEqual(result['navigation']['flow_uuid'], test_flow_uuid)
 
@@ -712,7 +718,7 @@ class FlowApiTestCase(TestCaseBase):
             if subflow['uuid'] == subflow1_uuid:
                 found_flag = True
                 self.assertEqual(subflow['label'], 'INPUTだけがあるサブフロー')
-                self.assertEqual(subflow['projectName'], 'ROOT_FOLDER')
+                self.assertEqual(subflow['projectName'], 'ライブラリ')
                 self.assertEqual(subflow['ports'][0], {"name": "i","type": "frame"})
 
         self.assertEqual(found_flag, True)
@@ -769,7 +775,7 @@ class FlowApiTestCase(TestCaseBase):
             if subflow['uuid'] == subflow1_uuid:
                 found_flag = True
                 self.assertEqual(subflow['label'], 'OUTPUTだけがあるサブフローです')
-                self.assertEqual(subflow['projectName'], 'ROOT_FOLDER')
+                self.assertEqual(subflow['projectName'], 'ライブラリ')
                 self.assertEqual(subflow['ports'][1], {"name": "o","type": "frame"})
 
         self.assertEqual(found_flag, True)
