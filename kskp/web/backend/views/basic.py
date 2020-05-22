@@ -43,9 +43,11 @@ def flow_designer(flow_uuid):
 @mod.route('/library', methods=['GET', 'POST'])
 @login_required
 def library():
+    from kskp.store import Library
+    root = Library.load_root()
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
-    return render_template('library.html',js_resources=js_resources,css_resources=css_resources)
+    return render_template('library.html',folder_uuid=root.uuid,js_resources=js_resources,css_resources=css_resources)
 
 @mod.route('/preview', methods=['GET', 'POST'])
 @login_required

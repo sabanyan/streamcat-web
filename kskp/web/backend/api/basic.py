@@ -18,17 +18,13 @@ mod = Blueprint('api', __name__)
 @api_base
 def new_project():
     """
-    新しいプロジェクトを作成するAPI
+    プロジェクトを作成する
     """
-    # ルートフローフォルダが無ければ作成する
-    root_flow_folder = Library.load_flow_folder(session['user_id'])
-    root_flow_folder_uuid = root_flow_folder.uuid
-
     # 新しいフローフォルダを作成する
-    new_folder = Folder(root_flow_folder_uuid,
-                        request.json['name'],
-                        session['user_id'])
-    new_folder.save()
+    new_project = ProjectFolder(request.json['parent'],
+                                request.json['name'],
+                                session['user_id'])
+    new_project.save()
 
 @mod.route('/projects')
 @login_required_api
@@ -78,8 +74,8 @@ def delete_project(project_uuid):
     # folder = Folder.find_by_uuid(project_uuid)
     # folder.delete()
 
-    from .lib import throw_away_folder
-    throw_away_folder(project_uuid)
+    from .lib import throw_away_project
+    throw_away_project(project_uuid)
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
@@ -91,7 +87,7 @@ def update_project(project_uuid):
     現在はプロジェクト名のみ
     """
     new_project_name = request.json.get('new_name')
-    Folder.update_data(project_uuid, new_project_name, session['user_id'])
+    ProjectFolder.update_data(project_uuid, new_project_name, session['user_id'])
 
 @mod.route('/flows', methods=['POST'])
 @login_required_api
@@ -455,7 +451,11 @@ def get_navigation():
         
     # プロジェクトが指定された場合
     elif project_uuid is not None:
-        project = Folder.find_by_uuid(project_uuid)
+        if ProjectFolder.exists(project_uuid):
+            project = ProjectFolder.find_by_uuid(project_uuid)
+        else:
+            # type='folder'なプロジェクトにも後方互換として対応する
+            project = Folder.find_by_uuid(project_uuid)
         navigation['project_uuid'] = project.uuid
         navigation['project_name'] = project.label
 

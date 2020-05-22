@@ -2,7 +2,7 @@ import os
 import json
 import functools
 from flask import session, request, jsonify
-from kskp.store import model, Datum, Flow, Folder
+from kskp.store import model, Datum, Flow, Folder, ProjectFolder
 
 def update_navigation(func):
     @functools.wraps(func)
@@ -48,7 +48,11 @@ def update_navigation(func):
         elif 'project' in request.args:
             project_uuid = request.args['project']
             navigation['project_uuid'] = project_uuid
-            project = Folder.find_by_uuid(project_uuid)
+            if ProjectFolder.exists(project_uuid):
+                project = ProjectFolder.find_by_uuid(project_uuid)
+            else:
+                # type='folder'なプロジェクトにも後方互換として対応する
+                project = Folder.find_by_uuid(project_uuid)
             navigation['project_name'] = project.label
 
         data['navigation'] = navigation
