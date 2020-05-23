@@ -585,6 +585,9 @@ const Library = (props: Props) => {
             if(body.type === "folder"){
                 WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid));
             }
+            if(body.type === "project"){
+                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid));
+            }
             if(body.type === "frame"){
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
             }
