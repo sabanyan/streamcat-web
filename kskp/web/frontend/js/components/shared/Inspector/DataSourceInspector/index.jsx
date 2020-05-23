@@ -58,6 +58,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   constructor(props: FlowEditorProps) {
     super(props)
+    this.updateCache = this.updateCache.bind(this)
     this.state = {
       loading: false
     }
@@ -121,7 +122,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           let contents = []
           for (const v of visualizers) {
             let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
-            contents.push({ title: v.label, content: content, id: id })
+            contents.push({ title: v.label, content: content, id: id, afterViz: this.updateCache })
           }
           ModalUtil.emitModal({
             id: Constants.preview.DATASOURCE,
@@ -176,6 +177,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       let props: CSVModelProps = {
         uuid: selected_step.uuid,
         data: response.data,
+        label: selected_step.label
       }
       const csv: CSVModel = new CSVModel(props)
       csv.handleDownload()
@@ -328,7 +330,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render() {
-    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled } = this.props;
+    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled, lockUUID } = this.props;
     let step_text
     let dataSource
     let preview
@@ -338,8 +340,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       preview = <Button onClick={(e) => this.onClickPreview(e)}
         icon={'visibility'} disabled={disabled}>プレビュー</Button>
       if (selected_step.hasData()) {
-        const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
-        download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
+        let href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
+        download = <Button icon={'get_app'} onClick={(e) => this.onClickCSVDownload(e)}>CSVダウンロード</Button>
       }
     }
 
@@ -434,7 +436,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           </div>
           <div className={style.cache_delete}>
             <Button icon={'delete'} danger={true}
-              disabled={!selected_step.isCached()}
+              disabled={!selected_step.isCached() || !lockUUID}
 
               onClick={(e) => { this.onClickDeleteCache() }}>
               キャッシュ削除

@@ -418,7 +418,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result2['data']['creator'], '管理者')
         self.assertIsNotNone(result2['data']['createdAt'])
 
-
     def test_copy_flow_using_cache(self):
         """
         キャッシュデータを持つフローをコピーした場合は、
@@ -500,7 +499,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         # キャッシュがコピーされていることを検証する
         # (フローJSONに記録されたキャッシュのUUIDが異なることを検証する)
         self.assertNotEqual(cache_uuid2, cache_uuid1)
-
 
     def test_fetch_flow(self):
         """
