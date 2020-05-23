@@ -84,7 +84,7 @@ def update_frame(frame_uuid):
             # frameのラベルを修正する
             label = req['label']
             # ret = Frame.update_label(frame_uuid, label, modifier)
-            ret = frame.update_data(label)
+            ret = frame.update_label(label)
 
         if req.has_all('encoding', 'newline'):
             encoding_str = req['encoding']
