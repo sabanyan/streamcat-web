@@ -136,8 +136,8 @@ const Library = (props: Props) => {
 
     const [new_names, setNewNames] = useState();
     const [stores, setStores] = useState();
-    const [libraryChildren, setLibraryChildren] = useState();
-    const [initialLibraryChildren, setInitialLibraryChildren] = useState();
+    const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType>([]);
+    const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType>([]);
 
 
     const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
@@ -179,7 +179,7 @@ const Library = (props: Props) => {
     useEffect(() => {
         ModalUtil.registerModal({
             id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-                APIUtil.post("projects", {name: formProjectName}).then((response) => {
+                APIUtil.post("projects", {name: formProjectName,parent: inject_folder_uuid}).then((response) => {
                     ModalUtil.emitModal(
                         {id: Constants.modal.ADD_PROJECT, visible: false});
                     // this.clearKeyword()
@@ -210,6 +210,7 @@ const Library = (props: Props) => {
                     completeAddedFolder(response);
                     setFormFolderName("");
                     ModalUtil.closeModal(Constants.modal.ADD_FOLDER);
+                    fetchFolder();
                 }, () => {
                     unhandledNotify("フォルダ作成エラー");
                 });
