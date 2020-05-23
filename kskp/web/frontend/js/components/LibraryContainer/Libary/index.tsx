@@ -20,6 +20,8 @@ import LibraryInspector from "Shared/Inspector/LibraryInspector";
 import {VisualizeModel} from "Model/index";
 import {LibraryListDataType} from "Types/index";
 import * as _ from "lodash";
+import Queue from "promise-queue-plus";
+import {API} from "Modules/api";
 
 interface Props {
 
@@ -242,6 +244,9 @@ const Library = (props: Props) => {
         });
     }, [formFlowName]);
 
+    useEffect(() => {
+        fetchFolder();
+    }, []);
 
     const getVisualizers = ()=> {
         // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
@@ -387,11 +392,6 @@ const Library = (props: Props) => {
         }
         fetchFolder();
     };
-
-    useEffect(() => {
-        fetchFolder();
-    }, []);
-
 
     const fetchFolder = () => {
         Promise.all([getStores(), getFolderChildren()]).then(() => {
@@ -571,9 +571,6 @@ const Library = (props: Props) => {
         //     });
         // }
 
-        console.log(libraryChildren);
-
-
         const onClickFileName=(body: ITableBody)=>{
 
             // TODO ダイアログ表示された場合の選択時の対応
@@ -594,7 +591,6 @@ const Library = (props: Props) => {
             if(body.type === "flow"){
                 WebUtil.navigateURL(WebUtil.webURL('/flows/' + body.uuid));
             }
-            console.log(body);
 
         };
 
@@ -604,13 +600,6 @@ const Library = (props: Props) => {
             // let lastSelected: LibraryChild | null = this.state.lastSelected
 
             let data: LibraryListDataType = cell;
-
-            console.log("onClickCell");
-            console.log(event);
-            console.log(data);
-            console.log(lastSelected);
-            console.log(selectedDatas);
-
             if (event && (event.metaKey || event.ctrlKey)) {
                 // command or ctrl + click
                 if (selectedDatas.includes(data)) {
@@ -642,7 +631,8 @@ const Library = (props: Props) => {
                 }
             }
             setLastSelected(data);
-            setSelectedDatas(selectedDatas);
+            //TODO 単一選択がうごかなかったのでコメントアウト
+            //setSelectedDatas(selectedDatas);
 
         };
 
@@ -695,15 +685,138 @@ const Library = (props: Props) => {
         </Flex>;
     };
 
+    const deleteLibrary = async (library: LibraryChild, lock: { uuid: string | null }) => {
+
+        return new Promise(async (resolve, reject) => {
+            // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
+            if (library.type === Constants.library.type.flow) {
+                await API.request.doPost.locks({flowUUID: library.uuid})
+                    .then((res) => {
+                        if (!res.data.success) throw res.data;
+                        lock.uuid = API.response.post.locks(res).uuid;
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                        reject(e);
+                    });
+            }
+
+            // Libraryを削除する
+            await API.request.doDelete.library({
+                libraryUUID: library.uuid,
+                libraryType: library.type,
+                lockUUID: lock.uuid
+            })
+                .then((res) => {
+                    if (!res.data.success) throw res.data;
+                })
+                .catch((e) => {
+                    console.log(e);
+                    reject(e);
+                });
+
+            // Lockを取得した場合、Lockを解除する
+            if (lock.uuid) {
+                await API.request.doDelete.locks({lockUUID: lock.uuid})
+                    .then((res: any) => {
+                        lock.uuid = null;
+                        if (!res.data.success) throw res.data;
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                        reject(e);
+                    });
+            }
+            resolve();
+        })
+            .then(() => {
+                // 成功
+                notify({
+                    title: "",
+                    message: library.label + "を削除しました",
+                    status: "success"
+                });
+            })
+            .catch((e) => {
+                // エラー
+                notify({
+                    title: "ライブラリー削除エラー(" + library.label + ")",
+                    message: e.message,
+                    status: "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            });
+    };
+
+    const moveLibrary = async (library: LibraryChild, parentFolderUUID: string, lock: { uuid: string | null }) => {
+
+        return new Promise(async (resolve, reject) => {
+            // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
+            if (library.type === Constants.library.type.flow) {
+                await API.request.doPost.locks({flowUUID: library.uuid})
+                    .then((res) => {
+                        if (!res.data.success) throw res.data;
+                        lock.uuid = API.response.post.locks(res).uuid;
+                    })
+                    .catch((e) => {
+                        console.log(library);
+                        console.log(e);
+                        reject(e);
+                    });
+            }
+
+            // Libraryを移動させる
+            await API.request.doPut.library({
+                parentUUID: parentFolderUUID,
+                libraryUUID: library.uuid,
+                libraryType: library.type,
+                lockUUID: lock.uuid
+            })
+                .then((res) => {
+                    if (!res.data.success) throw res.data;
+                })
+                .catch((e) => {
+                    console.log(library);
+                    console.log(e);
+                    reject(e);
+                });
+
+            // Lockを取得した場合、Lockを解除する
+            if (lock.uuid) {
+                await API.request.doDelete.locks({lockUUID: lock.uuid})
+                    .then((res: any) => {
+                        lock.uuid = null;
+                        if (!res.data.success) throw res.data;
+                    })
+                    .catch((e) => {
+                        console.log(library);
+                        console.log(e);
+                        reject(e);
+                    });
+            }
+            resolve();
+        })
+            .then(() => {
+                // 成功
+            })
+            .catch((e) => {
+                // 例外
+                notify({
+                    title: "ライブラリー移動エラー(" + library.label + ")",
+                    message: e.message,
+                    status: "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            });
+    };
 
     const renderInspector = () => {
         if(!lastSelected)return null;
         const data: LibraryListDataType = lastSelected;
-        let onClickDelete: any = null;
         let onClickApply: any = null;
-        let onClickMove: any = null;
         let onClickEdit: any = null;
-        let onClickEditEncoding: any = null;
         let onClickCleanTrash: any = null;
 
         const onClickEditDatabase = (data: LibraryListDataType) => {
@@ -792,6 +905,7 @@ const Library = (props: Props) => {
             });
         };
 
+        console.log(data);
 
         switch (mode) {
             case Constants.library.mode.frame_select:
@@ -802,9 +916,6 @@ const Library = (props: Props) => {
             case Constants.library.mode.folder_select:
                 break;
             case Constants.library.mode.list:
-                onClickDelete = () => onClickDelete();
-                onClickMove = () => onClickMove();
-                onClickEditEncoding = (data) => onClickEditEncoding(data);
                 if (data && data.type === Constants.library.type.database) {
                     onClickEdit = (data) => onClickEditDatabase(data);
                 } else if (data && data.type === Constants.library.type.trash) {
@@ -908,6 +1019,157 @@ const Library = (props: Props) => {
                 }
             });
         };
+
+        const onClickMove = () => {
+            let queue = Queue(
+                1, // concurrency
+                {
+                    "retry": 0               //Number of retries
+                    , "retryIsJump": false     //retry now?
+                    , "timeout": 0            //The timeout period
+                }
+            );
+            let lock = {uuid: null};
+            HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
+                setIsLoading(true);
+
+                selectedDatas.forEach((selectedData: LibraryChild) => {
+                    queue.push(moveLibrary, [selectedData, folder_uuid, lock]);
+                });
+                queue.push(setIsLoading, [false]);
+                queue.push(fetchFolder, []);
+                queue.start();
+            });
+        };
+
+        const onClickDelete = () => {
+            ModalUtil.registerModal({
+                id: Constants.modal.CONFIRM, onClickDone: () => {
+                    let queue = Queue(
+                        1, // concurrency
+                        {
+                            "retry": 0               //Number of retries
+                            , "retryIsJump": false     //retry now?
+                            , "timeout": 0            //The timeout period
+                        }
+                    );
+                    let lock = {uuid: null};
+                    setIsLoading(true);
+                    selectedDatas.forEach((selectedData: LibraryChild) => {
+                        queue.push(deleteLibrary, [selectedData, lock]);
+                    });
+                    queue.push(setIsLoading, [false]);
+                    queue.push(fetchFolder, []);
+                    queue.start();
+                    ModalUtil.closeModal(Constants.modal.CONFIRM);
+                }
+            });
+            let targets: string[] = [];
+            selectedDatas.forEach((data) => {
+                targets.push(data.label);
+            });
+
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM,
+                visible: true,
+                done: "削除する",
+                danger: true,
+                content: <div>
+                    {targets.join(",")} を削除しますか？
+                </div>
+            });
+        };
+
+        const onClickEditEncoding = (data)=> {
+
+
+            const onChangeEncoding = (e, data) => {
+                data.encoding = e.target.value;
+
+                ModalUtil.emitModal({
+                    id: Constants.modal.EDIT_ENCODING,
+                    visible: true,
+                    done: "反映する",
+                    danger: true,
+                    content: renderEditEncodingForm(data)
+                });
+            };
+
+            const onChangeNewline = (e, data) => {
+                data.newline = e.target.value;
+
+                ModalUtil.emitModal({
+                    id: Constants.modal.EDIT_ENCODING,
+                    visible: true,
+                    done: "反映する",
+                    danger: true,
+                    content: renderEditEncodingForm(data)
+                });
+            };
+
+            const renderEditEncodingForm = (data) => {
+                let encodings: any = [];
+                Constants.encodings.forEach((value) => {
+                    let encoding = <React.Fragment key={value}>
+                        <option value={value}>{value}</option>
+                    </React.Fragment>;
+                    encodings.push(encoding);
+                });
+
+                let newlines: any = [];
+                Constants.newlines.forEach((value) => {
+                    let newline = <React.Fragment key={value}>
+                        <option value={value}>{value}</option>
+                    </React.Fragment>;
+                    newlines.push(newline);
+                });
+
+                return <React.Fragment>
+                    <div>
+                        <label>文字コード</label>
+                    </div>
+                    <select value={data.encoding} onChange={(e) => onChangeEncoding(e, data)}>
+                        {encodings}
+                    </select>
+                    <div>
+                        <label>改行コード</label>
+                    </div>
+                    <div>
+                        <select value={data.newline} onChange={(e) => onChangeNewline(e, data)}>
+                            {newlines}
+                        </select>
+                    </div>
+                </React.Fragment>;
+            };
+
+            ModalUtil.registerModal({
+                id: Constants.modal.EDIT_ENCODING, onClickDone: () => {
+                    if (data.type === Constants.library.type.frame) {
+
+                        setIsLoading(true);
+                        APIUtil.put("frames/" + data.uuid, {
+                            encoding: data.encoding,
+                            newline: data.newline
+                        })
+                            .then(() => {
+                                setIsLoading(false);
+                            });
+                    }
+                    ModalUtil.closeModal(Constants.modal.EDIT_ENCODING);
+                }
+            });
+
+            ModalUtil.emitModal({
+                id: Constants.modal.EDIT_ENCODING,
+                visible: true,
+                done: "反映する",
+                danger: true,
+                content: renderEditEncodingForm(data)
+            });
+        }
+
+
+        console.log(selectedDatas);
 
         return <LibraryInspector
             selected={selectedDatas}
