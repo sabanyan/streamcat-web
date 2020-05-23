@@ -420,6 +420,88 @@ class FlowApiTestCase(TestCaseBase):
         self.assertEqual(result2['data']['creator'], 'user1')
         self.assertIsNotNone(result2['data']['createdAt'])
 
+    def test_copy_flow_using_cache(self):
+        """
+        キャッシュデータを持つフローをコピーした場合は、
+        そのキャッシュデータもコピーすることを確認する
+        """
+
+        # mnewstrコマンド1つのフロー
+        test_flow = {
+            "label": "テストフロ",
+            "params": [],
+            "description": "",
+            "ports": [
+                [],
+                [
+                    {
+                        "type": "frame", 
+                        "label": "d", 
+                        "nodeId": "d"
+                    }
+                ]
+            ],
+            "nodes": [
+                {
+                    "id": "c", 
+                    "args": {
+                    "I": "1", 
+                    "S": "1", 
+                    "a": "i", 
+                    "l": "10"
+                    }, 
+                    "dsts": {
+                    "o": "d"
+                    },
+                    "srcs": {}, 
+                    "type": "command", 
+                    "error": {}, 
+                    "label": "連番データの新規生成", 
+                    "commandId": "mnewnumber", 
+                    "srcsOrder": []
+                },
+                {
+                    "id": "d", 
+                    "size": {
+                    "width": 38, 
+                    "height": 38
+                    }, 
+                    "type": "frame", 
+                    "uuid": None, 
+                    "label": "d", 
+                    "makeCache": True, 
+                    "dataSource": "csv", 
+                    "cacheCreatedAt": ""
+                }
+            ]
+        }
+
+        # フローを新規作成する
+        with app.app_context():
+            test_flow_uuid = setUpFlow(self, flow_data=test_flow)
+
+        # 新規作成したフローを実行してキャッシュを生成する
+        self.get_uri(f'/api/v0/frames?from={test_flow_uuid}', self.USER_ID)
+
+        # 生成したキャッシュのUUIDを取得する
+        result = self.get_uri(f'/api/v0/flows/{test_flow_uuid}', self.USER_ID)
+        cache_uuid1 = result['data']['nodes'][1]['uuid']
+
+        # フローをコピーする
+        data_copy_flow = {'original_flow_uuid': test_flow_uuid}
+        result = self.post_uri('/api/v0/flows', data_copy_flow, self.USER_ID)
+
+        # 複製したキャッシュのUUIDを取得する
+        cache_uuid2 = result['data']['nodes'][1]['uuid']
+
+        # キャッシュが存在することを検証する
+        # (no frame existsの例外が送出されたいことを検証する)
+        self.get_uri(f'/api/v0/frames/{cache_uuid1}', self.USER_ID)
+        self.get_uri(f'/api/v0/frames/{cache_uuid2}', self.USER_ID)
+
+        # キャッシュがコピーされていることを検証する
+        # (フローJSONに記録されたキャッシュのUUIDが異なることを検証する)
+        self.assertNotEqual(cache_uuid2, cache_uuid1)
 
     def test_fetch_flow(self):
         """
@@ -905,7 +987,7 @@ def setUpProject(self):
     return (user1, None, default_flow.uuid)
 
 
-def setUpFlow(self):
+def setUpFlow(self, flow_data=None):
     from kskp.store import Datum, Flow
 
     # ユーザIDを取得する
@@ -923,7 +1005,10 @@ def setUpFlow(self):
         'name': flow_label,
         'datasouce': None
     }
-    flow_data = model.create_flow(request_data, user1, None)
+    
+    if flow_data is None:
+        flow_data = model.create_flow(request_data, user1, None)
+
     test_flow = Flow(root.uuid, flow_label, flow_data, user1)
     test_flow_uuid = test_flow.uuid
 
