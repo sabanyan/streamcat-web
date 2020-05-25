@@ -20,6 +20,9 @@ def new_project():
     """
     プロジェクトを作成する
     """
+    if 'parent' not in request.json:
+        raise Exception('parent属性を指定してください')
+
     # 新しいフローフォルダを作成する
     new_project = ProjectFolder(request.json['parent'],
                                 request.json['name'],
@@ -52,7 +55,7 @@ def get_projects():
     projects = []
 
     for datum in Datum.find_by_parent_uuid(root_flow_folder_uuid):
-        folder = Folder.convert_to_folder(datum)
+        folder = ProjectFolder.convert_to_folder(datum)
         proj = {}
         proj['uuid'] = folder.uuid
         proj['name'] = folder.label
@@ -63,6 +66,18 @@ def get_projects():
         projects.append(proj)
 
     return projects
+
+@mod.route('/projects/<project_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fetch_project(project_uuid):
+    """
+    プロジェクトを返却する
+    """
+    from .lib import _jsonify_folder
+    folder = ProjectFolder.find_by_uuid(project_uuid)
+    return _jsonify_folder(folder)
 
 @mod.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api

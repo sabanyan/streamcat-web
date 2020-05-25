@@ -100,6 +100,8 @@ def _convert_type(datum):
         return None
     elif datum.type == Datum.FOLDER_TYPE:
         return Folder.convert_to_folder(datum)
+    elif datum.type == Datum.PROJECT_TYPE:
+        return ProjectFolder.convert_to_folder(datum)
     elif datum.type == Datum.FRAME_TYPE:
         return Frame.convert_to_frame(datum)
     elif datum.type == Datum.FLOW_TYPE:
@@ -201,7 +203,7 @@ def _put_back(datum, modifier):
     return moved_data
 
 def _put_back_inner(datum, modifier):
-    if datum.type == Datum.FOLDER_TYPE and datum.prev_parent_id is None:
+    if (datum.type == Datum.FOLDER_TYPE or datum.type == Datum.PROJECT_TYPE) and datum.prev_parent_id is None:
         # 移動対象がprev_parent_idを持たないフォルダの場合
         # その下のファイルを個別に移動する
         childrenGetter = ChildrenGetter()
@@ -238,7 +240,7 @@ def empty_all():
         _empty_all_inner(child)
 
 def _empty_all_inner(datum):
-    if datum.type == Datum.FOLDER_TYPE:
+    if datum.type == Datum.FOLDER_TYPE or datum.type == Datum.PROJECT_TYPE:
         # フォルダ直下のフォルダとデータベースとドキュメントを取得する
         childrenGetter = ChildrenGetter()
         children = childrenGetter.execute(session['user_id'], datum)
