@@ -112,6 +112,25 @@ class ProjectApiTestCase(TestCaseBase):
         self.assertEqual(navi['user_id'], self.USER_ID)
         self.assertIsNotNone(navi['user_name'])
 
+    def test_get_project(self):
+        """
+        GET /projects APIをテストする
+        """
+        # フォルダを作成する
+        root = Datum.find_root()
+        project = ProjectFolder(root.uuid, 'フロー格納フォルダA', self.USER_ID)
+        project.save()
+
+        # フォルダを取得する
+        result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER_ID)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project.uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], 'フロー格納フォルダA')
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+
     def test_update_project(self):
         """
         PUT /projects APIをテストする
