@@ -9,11 +9,15 @@ type Props = {
     flexDirection?: FlexDirectionProperty;
     inline?: boolean;
     fluid?: boolean;
-    width?: number;
+    width?: number | string;
+    minWidth?: number | string;
+    onClick?: ()=>void;
+    height?: number | string;
+    minHeight?: number | string;
 }
 
 const Flex = (props: Props) => {
-    const {children, justifyContent, alignItems, flexDirection, inline, fluid, width} = props;
+    const {children, justifyContent, alignItems, flexDirection, inline, fluid, width, onClick, height,minHeight, minWidth} = props;
     return <div className={style.flex}
                 style={{
                     justifyContent: justifyContent,
@@ -21,8 +25,12 @@ const Flex = (props: Props) => {
                     flexDirection: flexDirection,
                     display: (inline) ? "inline-flex" : "flex",
                     width: (fluid) ? "100%" : width,
-                    maxWidth: (fluid) ? width : undefined
-                }}>
+                    height: height,
+                    maxWidth: (fluid) ? width : undefined,
+                    minWidth: minWidth,
+                    minHeight: minHeight
+                }}
+                onClick={onClick}>
         {children}
     </div>;
 };

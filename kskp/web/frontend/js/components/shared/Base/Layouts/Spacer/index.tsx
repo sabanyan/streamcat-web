@@ -1,13 +1,14 @@
 import React from "react";
 
-type Props = {
-    height?: number,
-    width?: number
+interface Props {
+    height?: number | string;
+    width?: number | string;
+    minWidth?: number | string;
 }
 
 const Spacer = (props:Props) => {
-    const {width, height} = props;
-    return <div style={{width: width, height: height, display: (width !== undefined) ? "inline-block" : "block"}} />;
+    const {width, height, minWidth} = props;
+    return <div style={{width: width, minWidth: minWidth, height: height, display: (width !== undefined) ? "inline-block" : "block"}} />;
 };
 
 export {Spacer};
