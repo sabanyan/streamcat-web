@@ -153,6 +153,7 @@ const Library = (props: Props) => {
     const [isDialog, setIsDialog] = useState();
 
     const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list;
+    const isProject = HttpUtil.getURLParam("project") ? HttpUtil.getURLParam("project") : false;
 
     const [links,setLinks] = useState<IBreadCrumbsLink[]>([]);
 
@@ -409,6 +410,16 @@ const Library = (props: Props) => {
 
     const getFolderChildren = () => {
         if (inject_folder_uuid) {
+
+            if(isProject){
+                return APIUtil.get("projects/" + inject_folder_uuid).then((response) => {
+                    const json = response.data.data;
+                    const {children, folderPath} = json;
+                    setInitialLibraryChildren(children);
+                    setLibraryChildren(children);
+                    setFolderPath(folderPath);
+                };
+            }
             //該当フォルダを取得
             return APIUtil.get("folders/" + inject_folder_uuid).then((response) => {
                 if (response.data.success) {
@@ -583,7 +594,7 @@ const Library = (props: Props) => {
                 WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid));
             }
             if(body.type === "project"){
-                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid));
+                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + "?project=true"));
             }
             if(body.type === "frame"){
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
