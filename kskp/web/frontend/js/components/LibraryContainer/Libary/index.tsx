@@ -146,6 +146,7 @@ const Library = (props: Props) => {
     const [lastSelected, setLastSelected] = useState<LibraryChild | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel[]>([]);
 
+    const clickedLibraryCell = useRef(false);
 
     const [folderPath, setFolderPath] = useState();
     const [isLoading, setIsLoading] = useState();
@@ -647,6 +648,14 @@ const Library = (props: Props) => {
 
         };
 
+        const onClickLibrary = () => {
+            setTimeout(()=>{
+                if(!clickedLibraryCell.current){
+                    setLastSelected(null);
+                }
+                clickedLibraryCell.current = false;
+            },300);
+        };
 
         return <Flex justifyContent={"center"} fluid={true}>
             {/*{this.renderBreadCrumb()}*/}
@@ -825,6 +834,9 @@ const Library = (props: Props) => {
 
     const renderInspector = () => {
         if(!lastSelected)return null;
+
+        clickedLibraryCell.current = true;
+
         const data: LibraryListDataType = lastSelected;
         let onClickApply: any = null;
         let onClickEdit: any = null;
@@ -1073,6 +1085,7 @@ const Library = (props: Props) => {
                     queue.push(fetchFolder, []);
                     queue.start();
                     ModalUtil.closeModal(Constants.modal.CONFIRM);
+                    setLastSelected(null);
                 }
             });
             let targets: string[] = [];
