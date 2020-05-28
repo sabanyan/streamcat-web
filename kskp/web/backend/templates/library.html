@@ -6,6 +6,7 @@
   const inject_project_uuid = '{{ project_uuid }}'
   const inject_flow_uuid  = undefined
   const inject_folder_uuid = '{{ folder_uuid }}'
+  const inject_is_trash = {{ "true" if is_trash else "false" }}
 </script>
 <div id="library"></div>
 {% endblock %}
