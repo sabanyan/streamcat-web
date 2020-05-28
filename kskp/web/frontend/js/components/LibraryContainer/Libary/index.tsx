@@ -19,12 +19,13 @@ import {LibraryChild} from "Model/Library";
 import LibraryInspector from "Shared/Inspector/LibraryInspector";
 import {LibraryModel, LocksModel, MessageModel, VisualizeModel} from "Model/index";
 import {LibraryListDataType} from "Types/index";
-import * as _ from "lodash";
+import _ from "lodash";
 import Queue from "promise-queue-plus";
 import {API} from "Modules/api";
 import {TrashMenuList} from "Components/LibraryContainer/Libary/TrashMenuList";
 import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
+import {ApplyMenuList} from "Components/LibraryContainer/Libary/ApplyMenuList";
 
 interface Props {
 
@@ -154,9 +155,8 @@ const Library = (props: Props) => {
     const [folderPath, setFolderPath] = useState();
     const [isLoading, setIsLoading] = useState();
     const [is_finished, setIsFinished] = useState();
-    const [isDialog, setIsDialog] = useState();
-
-    const mode = HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list;
+    const [isDialog, setIsDialog] = useState((HttpUtil.getURLParam("dialog")) ? true : false);
+    const [mode, setMode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = HttpUtil.getURLParam("project") ? HttpUtil.getURLParam("project") : false;
 
     const [links,setLinks] = useState<IBreadCrumbsLink[]>([]);
@@ -173,6 +173,13 @@ const Library = (props: Props) => {
     //     }
     //     setBeforeSelected(lastSelected);
     // },[lastSelected]);
+
+    useEffect(()=>{
+        if(isDialog){
+            const bodyEl = document.querySelector("body");
+            if(bodyEl)bodyEl.classList.add('dialog');
+        }
+    },[isDialog]);
 
     useEffect(()=>{
         if(!folderPath)return;
@@ -276,7 +283,7 @@ const Library = (props: Props) => {
         });
     };
     const makeBreadCrumbLinks = (folderPath: any[]): IBreadCrumbsLink[]  =>{
-        const dialogOption = (isDialog) ? '?dialog=true' : "";
+        const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? "&mode=" + mode : ""):"";
         return folderPath.map((path, index):IBreadCrumbsLink => {
             const isCurrent =  ((folderPath.length - 1) === index);
             if(index === 0){
@@ -545,6 +552,13 @@ const Library = (props: Props) => {
         });
     };
 
+    const onClickSelectDestination = () => {
+        if (window.opener || !window.opener.closed) {
+            window.opener.onCallbackApply(inject_folder_uuid);
+        }
+        window.close();
+    };
+
     const onClickAddDataSource = () => {
         console.log("ADD_DATABASE");
         const params = getDataBaseParams();
@@ -631,24 +645,25 @@ const Library = (props: Props) => {
         // }
 
         const onClickFileName=(body: ITableBody)=>{
-
+            const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? "&mode=" + mode : ""):"";
             // TODO ダイアログ表示された場合の選択時の対応
             // TODO ダイアログ表示された場合のゴミ箱や機能制限の対応
 
             if(body.type === "trash"){
-                WebUtil.navigateURL(WebUtil.webURL("/trashes"));
+                WebUtil.navigateURL(WebUtil.webURL("/trashes" + dialogOption));
             }
             if(body.type === "folder"){
-                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid));
+                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption));
             }
             if(body.type === "project"){
-                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + "?project=true"));
+                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption + "&project=true" ));
             }
             if(body.type === "frame"){
+                // TODO データフレームがクリックされた場合どうするか
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
             }
             if(body.type === "flow"){
-                WebUtil.navigateURL(WebUtil.webURL('/flows/' + body.uuid));
+                WebUtil.navigateURL(WebUtil.webURL('/flows/' + body.uuid + + dialogOption));
             }
 
         };
@@ -760,18 +775,23 @@ const Library = (props: Props) => {
                 <Spacer minWidth={40} />
                 <Flex flexDirection={"column"} fluid={true} width={280}>
                     <Spacer height={160} />
-                    {(!inject_is_trash)?
-                        <MenuList
-                            onClickAddDataSource={onClickAddDataSource}
-                            onClickCSVUpload={onClickCSVUpload}
-                            onClickNewFlow={onClickNewFlow}
-                            onClickNewFolder={onClickNewFolder}
-                            onClickNewProject={onClickNewProject}
+                    {(mode === Constants.library.mode.folder_select) ?
+                        <ApplyMenuList
+                            onClickApply={onClickSelectDestination}
                         />
-                    :
-                        <TrashMenuList
-                            onClickDeleteAll={onClickDeleteAll}
-                        />
+                        :
+                        (!inject_is_trash) ?
+                            <MenuList
+                                onClickAddDataSource={onClickAddDataSource}
+                                onClickCSVUpload={onClickCSVUpload}
+                                onClickNewFlow={onClickNewFlow}
+                                onClickNewFolder={onClickNewFolder}
+                                onClickNewProject={onClickNewProject}
+                            />
+                            :
+                            <TrashMenuList
+                                onClickDeleteAll={onClickDeleteAll}
+                            />
                     }
                 </Flex>
                 <Spacer width={40} />
@@ -1070,6 +1090,9 @@ const Library = (props: Props) => {
         let _onClickApply: any = null;
         let _onClickEdit: any = null;
         let _onClickCleanTrash: any = null;
+        let _onClickDelete: any = null;
+        let _onClickMove: any = null;
+        let _onClickEditEncoding: any = null;
 
         const onClickMove = () => {
             let queue = Queue(
@@ -1198,6 +1221,9 @@ const Library = (props: Props) => {
             case Constants.library.mode.folder_select:
                 break;
             case Constants.library.mode.list:
+                _onClickDelete = () => onClickDelete();
+                _onClickMove = () => onClickMove();
+                _onClickEditEncoding = (data) => onClickEditEncoding(data);
                 if (data && data.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 } else if (data && data.type === Constants.library.type.trash) {
@@ -1205,7 +1231,6 @@ const Library = (props: Props) => {
                 } else if (data && data.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 }
-
                 break;
         }
 
@@ -1435,11 +1460,11 @@ const Library = (props: Props) => {
         return <LibraryInspector
             selected={selectedDatas}
             lastSelected={lastSelected}
-            onClickDelete={onClickDelete}
+            onClickDelete={_onClickDelete}
             onClickApply={_onClickApply}
-            onClickMove={onClickMove}
+            onClickMove={_onClickMove}
             onClickEdit={_onClickEdit}
-            onClickEditEncoding={onClickEditEncoding}
+            onClickEditEncoding={_onClickEditEncoding}
             onClickCleanTrash={_onClickCleanTrash}
             onBlurTitle={(e) => onBlurTitle(e, data)}
             visualizers={visualizers}

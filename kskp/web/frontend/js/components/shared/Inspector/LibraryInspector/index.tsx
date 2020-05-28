@@ -86,7 +86,7 @@ class LibraryInspector extends React.Component<Props> {
 
       // edit
       if (onClickEdit && data && data.type === Constants.library.type.database) {
-        edit = <Button onClick={(e) => this.onClickEdit(e)} icon={'create'}>編集する</Button>
+        edit = <Button onClick={(e) => this.onClickEdit(e)}>編集する</Button>
       }
 
       // apply button
@@ -106,7 +106,7 @@ class LibraryInspector extends React.Component<Props> {
       if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
 
       // move button
-      if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
+      if (onClickMove) move = <Button onClick={(data) => onClickMove(data)}>移動する</Button>
     }
 
     if(onClickCleanTrash){
@@ -118,8 +118,8 @@ class LibraryInspector extends React.Component<Props> {
     return <React.Fragment>
       {preview}
       {download}
-      {move}
       {edit}
+      {move}
       {del}
       {apply}
       {editEncoding}
