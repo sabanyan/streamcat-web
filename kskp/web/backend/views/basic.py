@@ -72,7 +72,8 @@ def profile():
 @mod.route('/trashes', methods=['GET', 'POST'])
 @login_required
 def trashes():
-    return render_template('trashcan.html', user_id=session['user_id'])
+    is_trash = 1
+    return render_template('library.html', is_trash=is_trash , user_id=session['user_id'])
 
 
 # 開発用画面
