@@ -15,7 +15,6 @@ import {
     FlowListContainer,
     ProfileContainer,
     ProjectListContainer,
-    TrashListContainer
 } from "Components/index";
 import {NavigationBar} from "Shared/Base";
 import {Preview} from "PreviewContainer/Preview";
@@ -103,10 +102,6 @@ const Kskp = (props: Props) => {
                 break;
             case ViewId.Preview:
                 viewComponent = <Preview />;
-                break;
-            case ViewId.TrashCan:
-                viewComponent = <TrashListContainer content={content} inspector={inspector} notify={notify}
-                                                    dismissNotify={dismissNotify} />;
                 break;
             default:
                 break;
