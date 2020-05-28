@@ -8,7 +8,7 @@ mod = Blueprint('basic_template', __name__)
 
 @mod.route('/')
 def top():
-    return redirect(url_for('basic_template.projects'))
+    return redirect(url_for('basic_template.library'))
 
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
