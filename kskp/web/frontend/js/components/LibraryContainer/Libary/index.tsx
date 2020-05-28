@@ -820,7 +820,7 @@ const Library = (props: Props) => {
             if (library.type === Constants.library.type.flow) {
                 await API.request.doPost.locks({flowUUID: library.uuid})
                     .then((res) => {
-                        if (!res.data.success) throw res.data;
+                        if (res && !res.data.success) throw res.data;
                         lock.uuid = API.response.post.locks(res).uuid;
                     })
                     .catch((e) => {
@@ -836,7 +836,7 @@ const Library = (props: Props) => {
                 lockUUID: lock.uuid
             })
                 .then((res) => {
-                    if (!res.data.success) throw res.data;
+                    if (res && !res.data.success) throw res.data;
                 })
                 .catch((e) => {
                     console.log(e);
@@ -848,7 +848,7 @@ const Library = (props: Props) => {
                 await API.request.doDelete.locks({lockUUID: lock.uuid})
                     .then((res: any) => {
                         lock.uuid = null;
-                        if (!res.data.success) throw res.data;
+                        if (res && !res.data.success) throw res.data;
                     })
                     .catch((e) => {
                         console.log(e);
@@ -884,7 +884,7 @@ const Library = (props: Props) => {
             if (library.type === Constants.library.type.flow) {
                 await API.request.doPost.locks({flowUUID: library.uuid})
                     .then((res) => {
-                        if (!res.data.success) throw res.data;
+                        if (res && !res.data.success) throw res.data;
                         lock.uuid = API.response.post.locks(res).uuid;
                     })
                     .catch((e) => {
@@ -902,7 +902,7 @@ const Library = (props: Props) => {
                 lockUUID: lock.uuid
             })
                 .then((res) => {
-                    if (!res.data.success) throw res.data;
+                    if (res && !res.data.success) throw res.data;
                 })
                 .catch((e) => {
                     console.log(library);
@@ -915,7 +915,7 @@ const Library = (props: Props) => {
                 await API.request.doDelete.locks({lockUUID: lock.uuid})
                     .then((res: any) => {
                         lock.uuid = null;
-                        if (!res.data.success) throw res.data;
+                        if (res && !res.data.success) throw res.data;
                     })
                     .catch((e) => {
                         console.log(library);
