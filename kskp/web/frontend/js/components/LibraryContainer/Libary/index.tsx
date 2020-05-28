@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {ModalManager} from "Shared/Modal";
 import {NotificationManager} from "Shared/Notification";
 import {FileUploader, TextField} from "Shared/Input";
@@ -138,8 +138,8 @@ const Library = (props: Props) => {
 
     const [new_names, setNewNames] = useState();
     const [stores, setStores] = useState();
-    const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType>([]);
-    const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType>([]);
+    const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
+    const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
 
 
     const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
@@ -158,6 +158,18 @@ const Library = (props: Props) => {
 
     const [links,setLinks] = useState<IBreadCrumbsLink[]>([]);
 
+    // const [beforeSelected, setBeforeSelected] = useState();
+    // useEffect(()=>{
+    //         // 選択状態がかわったときに選択状態をクリアする
+    //     console.log("lastSelected", lastSelected);
+    //     console.log("selectedDats", selectedDatas);
+    //     console.log("beforeSelected", beforeSelected);
+    //     if(lastSelected && beforeSelected){
+    //         if (lastSelected.uuid != beforeSelected.uuid){
+    //         }
+    //     }
+    //     setBeforeSelected(lastSelected);
+    // },[lastSelected]);
 
     useEffect(()=>{
         if(!folderPath)return;
@@ -172,7 +184,7 @@ const Library = (props: Props) => {
 
     useEffect(() => {
         ModalUtil.registerModal({
-            id: Constants.modal.ADD_FRAME, onClickDone: onClickAddFrameDone
+            id: Constants.modal.ADD_FRAME, onClickClose: onClickAddFrameDone
         });
     }, []);
 
@@ -409,6 +421,13 @@ const Library = (props: Props) => {
         });
     };
 
+    const clearSelected = ()=>{
+        setLibraryChildren(libraryChildren.map((libraryChildren:LibraryListDataType)=>{
+            libraryChildren.selected = false;
+            return libraryChildren
+        }));
+    };
+
     const getFolderChildren = () => {
         if (inject_folder_uuid) {
 
@@ -419,7 +438,7 @@ const Library = (props: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                };
+                });
             }
             //該当フォルダを取得
             return APIUtil.get("folders/" + inject_folder_uuid).then((response) => {
@@ -613,8 +632,10 @@ const Library = (props: Props) => {
 
             let data: LibraryListDataType = cell;
             if (event && (event.metaKey || event.ctrlKey)) {
+                data.selected = true;
                 // command or ctrl + click
                 if (selectedDatas.includes(data)) {
+                    data.selected = !data.selected;
                     setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
                 } else {
                     selectedDatas.push(data);
@@ -632,10 +653,16 @@ const Library = (props: Props) => {
                         min = current;
                         max = last;
                     }
-                    setSelectedDatas(libraryChildren.slice(min, max + 1));
+                    // TODO シフトキーによる複数選択
+                    const selectedDatas:LibraryListDataType[] = libraryChildren.slice(min, max + 1).map((libraryChild)=>{
+                        libraryChild.selected = !libraryChild.selected;
+                    });
+                    setSelectedDatas(selectedDatas);
                 }
             } else {
                 // 単一選択
+                clearSelected();// 選択状態を一旦解除
+                data.selected = true;
                 if (selectedDatas.includes(data)) {
                     setSelectedDatas([]);
                 } else {
@@ -645,12 +672,13 @@ const Library = (props: Props) => {
             setLastSelected(data);
             //TODO 単一選択がうごかなかったのでコメントアウト
             //setSelectedDatas(selectedDatas);
-
+            clickedLibraryCell.current = true;
         };
 
         const onClickLibrary = () => {
             setTimeout(()=>{
                 if(!clickedLibraryCell.current){
+                    clearSelected();// 選択状態を一旦解除
                     setLastSelected(null);
                 }
                 clickedLibraryCell.current = false;
@@ -670,13 +698,14 @@ const Library = (props: Props) => {
             {renderInspector()}
             {/*{(this.state.mode === Constants.library.mode.list) ? newUI : null}*/}
             {/*{(this.state.mode === Constants.library.mode.folder_select) ? selectUI : null}*/}
-            <Flex flexDirection={"row"} width={1480 + 40 + 40} fluid={true}>
+            <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true} onClick={onClickLibrary}>
                 <Spacer width={40} />
                 <Flex flexDirection={"column"} fluid={true}>
                     <Spacer height={40} />
                     <BreadCrumb links={links} />
                     <Spacer height={8} />
                     <FileListTable
+                        minWidth={800}
                         onClickCell={onClickCell}
                         onClickFileName={onClickFileName}
                         onClickHeader={(header:ITableHeader) => {
@@ -688,8 +717,9 @@ const Library = (props: Props) => {
                         }}
                         bodies={libraryChildren}
                     />
+                    <Spacer height={80} />
                 </Flex>
-                <Spacer width={40} />
+                <Spacer minWidth={40} />
                 <Flex flexDirection={"column"} fluid={true} width={280}>
                     <Spacer height={160} />
                     <MenuList
