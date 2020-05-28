@@ -663,7 +663,7 @@ const Library = (props: Props) => {
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
             }
             if(body.type === "flow"){
-                WebUtil.navigateURL(WebUtil.webURL('/flows/' + body.uuid + + dialogOption));
+                window.open(WebUtil.webURL('/flows/' + body.uuid + + dialogOption));
             }
 
         };
@@ -768,7 +768,21 @@ const Library = (props: Props) => {
                                 setLibraryChildren(initialLibraryChildren);
                             }
                         }}
-                        bodies={libraryChildren}
+                        bodies={
+                            libraryChildren.map((libraryChild) => {
+                                const body = libraryChild as ITableBody;
+                                if(mode === Constants.library.mode.folder_select){
+                                    switch (body.type) {
+                                        case "folder":
+                                        case "project":
+                                            body.clickable = true;
+                                    }
+                                }else{
+                                    body.clickable = true;
+                                }
+                                return body;
+                            })
+                        }
                     />
                     <Spacer height={80} />
                 </Flex>
