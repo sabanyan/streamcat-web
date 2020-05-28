@@ -10,28 +10,6 @@ mod = Blueprint('basic_template', __name__)
 def top():
     return redirect(url_for('basic_template.projects'))
 
-@mod.route('/projects', methods=['GET', 'POST'])
-@login_required
-def projects():
-    from kskp.store import get_projects_by_user_id
-    # ログインユーザーが閲覧可能なプロジェクト一覧を取得する
-    projects = get_projects_by_user_id(session['user_id'])
-
-    return render_template('projects.html', projects=projects)
-
-@mod.route('/flows', methods=['GET', 'POST'])
-@login_required
-def flows():
-    from kskp.store import Datum, Flow
-    
-    parent_uuid = request.args.get('project')
-
-    # projectが指定されていない場合は空のフロー一覧を返す
-    if parent_uuid is None:
-        flow_list = []
-        return flow_list
-
-    return render_template('flows.html', project_uuid=request.args.get('project'))
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required

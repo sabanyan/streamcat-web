@@ -12,9 +12,7 @@ import {addNotification, removeNotification} from "reapop";
 
 import {
     FlowEditorContainer,
-    FlowListContainer,
     ProfileContainer,
-    ProjectListContainer,
 } from "Components/index";
 import {NavigationBar} from "Shared/Base";
 import {Preview} from "PreviewContainer/Preview";
@@ -88,17 +86,11 @@ const Kskp = (props: Props) => {
             case ViewId.Flow_Editor:
                 viewComponent = <FlowEditorContainer />;
                 break;
-            case ViewId.Flow_List:
-                viewComponent = <FlowListContainer />;
-                break;
             case ViewId.Library:
                 viewComponent = <Library />;
                 break;
             case ViewId.Profile:
                 viewComponent = <ProfileContainer />;
-                break;
-            case ViewId.Project_List:
-                viewComponent = <ProjectListContainer />;
                 break;
             case ViewId.Preview:
                 viewComponent = <Preview />;
