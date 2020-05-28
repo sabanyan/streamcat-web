@@ -56,6 +56,7 @@ export type LibraryListDataType = {
   label: string;
   type: string;
   uuid: string;
+  selected: boolean;
 }
 
 export type ServersDataType = {

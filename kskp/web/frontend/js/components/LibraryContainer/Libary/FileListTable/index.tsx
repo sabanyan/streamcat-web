@@ -13,10 +13,11 @@ interface Props {
     onClickFileName: (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => void;
     onClickCell: (body: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => void;
     bodies: ITableBody[];
+    minWidth?: number | string;
 }
 
 const FileListTable = (props: Props) => {
-    const {onClickHeader, onClickFileName, onClickCell, bodies} = props;
+    const {onClickHeader, onClickFileName, onClickCell, bodies, minWidth} = props;
 
     const initialHeaders = [
         {label: "名前", key: "label"},
@@ -55,7 +56,7 @@ const FileListTable = (props: Props) => {
         }
     };
 
-    return <table className={style.fileListTable}>
+    return <table className={style.fileListTable} style={{minWidth:minWidth}}>
         <FileListHeader headers={headers}
                         onClick={_onClickHeader} />
         <FileListBody bodies={bodies}
