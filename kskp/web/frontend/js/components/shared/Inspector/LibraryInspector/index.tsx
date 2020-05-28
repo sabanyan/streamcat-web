@@ -109,6 +109,12 @@ class LibraryInspector extends React.Component<Props> {
       if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
     }
 
+    if(onClickCleanTrash){
+      // ゴミ箱の場合、削除と移動を非表示にする
+      del = null;
+      move = null;
+    }
+
     return <React.Fragment>
       {preview}
       {download}
