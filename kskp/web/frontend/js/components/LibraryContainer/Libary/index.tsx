@@ -17,11 +17,14 @@ import ParamsForm from "Shared/Inspector/ParamsForm";
 import {ITableHeader} from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import {LibraryChild} from "Model/Library";
 import LibraryInspector from "Shared/Inspector/LibraryInspector";
-import {VisualizeModel} from "Model/index";
+import {LibraryModel, LocksModel, MessageModel, VisualizeModel} from "Model/index";
 import {LibraryListDataType} from "Types/index";
 import * as _ from "lodash";
 import Queue from "promise-queue-plus";
 import {API} from "Modules/api";
+import {TrashMenuList} from "Components/LibraryContainer/Libary/TrashMenuList";
+import axios from "axios";
+import TrashInspector from "Shared/Inspector/TrashInspector";
 
 interface Props {
 
@@ -430,8 +433,7 @@ const Library = (props: Props) => {
 
     const getFolderChildren = () => {
         if (inject_folder_uuid) {
-
-            if(isProject){
+            if (isProject) {
                 return APIUtil.get("projects/" + inject_folder_uuid).then((response) => {
                     const json = response.data.data;
                     const {children, folderPath} = json;
@@ -460,6 +462,32 @@ const Library = (props: Props) => {
                     });
                 }
             });
+        } else if (inject_is_trash){
+          // ゴミ箱の場合
+            return new Promise(async (resolve, reject) => {
+                await API.request.doGet.trashes({})
+                    .then((response) => {
+                        if (response.data.data) {
+                            let model = new LibraryModel(response.data.data);
+                            setInitialLibraryChildren(model.children);
+                            setLibraryChildren(model.children);
+                            setFolderPath(model.folderPath);
+                        } else {
+                            throw response.data;
+                        }
+                    })
+                    .catch((e) => {
+                        console.log(e);
+                        notify({
+                            title: "エラー",
+                            message: e.message,
+                            status: "error",
+                            dismissAfter: 0,
+                            closeButton: true
+                        });
+                    });
+                resolve();
+            })
         } else {
             //ルートを取得
             return APIUtil.get("library").then((response) => {
@@ -685,6 +713,10 @@ const Library = (props: Props) => {
             },300);
         };
 
+        const onClickDeleteAll = ()=>{
+            onClickCleanTrash()
+        };
+
         return <Flex justifyContent={"center"} fluid={true}>
             {/*{this.renderBreadCrumb()}*/}
             {/*{this.renderSearchBar()}*/}
@@ -695,7 +727,13 @@ const Library = (props: Props) => {
             {/*    getColumns={this.getColumns}*/}
             {/*    onClickData={this.onClickLibrary}*/}
             {/*/>*/}
-            {renderInspector()}
+            {
+                (!inject_is_trash)?
+                    renderLibraryInspector()
+                    :
+                    renderTrashInspector()
+
+            }
             {/*{(this.state.mode === Constants.library.mode.list) ? newUI : null}*/}
             {/*{(this.state.mode === Constants.library.mode.folder_select) ? selectUI : null}*/}
             <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true} onClick={onClickLibrary}>
@@ -722,13 +760,19 @@ const Library = (props: Props) => {
                 <Spacer minWidth={40} />
                 <Flex flexDirection={"column"} fluid={true} width={280}>
                     <Spacer height={160} />
-                    <MenuList
-                        onClickAddDataSource={onClickAddDataSource}
-                        onClickCSVUpload={onClickCSVUpload}
-                        onClickNewFlow={onClickNewFlow}
-                        onClickNewFolder={onClickNewFolder}
-                        onClickNewProject={onClickNewProject}
-                    />
+                    {(!inject_is_trash)?
+                        <MenuList
+                            onClickAddDataSource={onClickAddDataSource}
+                            onClickCSVUpload={onClickCSVUpload}
+                            onClickNewFlow={onClickNewFlow}
+                            onClickNewFolder={onClickNewFolder}
+                            onClickNewProject={onClickNewProject}
+                        />
+                    :
+                        <TrashMenuList
+                            onClickDeleteAll={onClickDeleteAll}
+                        />
+                    }
                 </Flex>
                 <Spacer width={40} />
             </Flex>
@@ -862,15 +906,192 @@ const Library = (props: Props) => {
             });
     };
 
-    const renderInspector = () => {
-        if(!lastSelected)return null;
+    const renderTrashInspector = (): React.ReactNode => {
+        if (!lastSelected) return null;
+        clickedLibraryCell.current = true;
+        const data: LibraryListDataType = lastSelected;
+
+        const doRecovery = (data) => {
+            API.request.doPut.trash({trashUUID: data.uuid})
+                .then((response) => {
+                    if (!response.data.success) throw response.data;
+
+                })
+                .catch((err) => {
+                    let message = new MessageModel(err);
+                    notify({
+                        title: message.title,
+                        message: message.message,
+                        status: message.messageStatus,
+                        dismissAfter: 0,
+                        closeButton: true
+                    });
+                })
+                .then(() => {
+                    fetchFolder();
+                });
+        };
+
+        const onClickRecovery = (e, data) => {
+            ModalUtil.registerModal({
+                id: Constants.modal.CONFIRM, onClickDone: () => {
+                    doRecovery(data);
+                    ModalUtil.closeModal(Constants.modal.CONFIRM);
+                }
+            });
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM,
+                visible: true,
+                done: "戻す",
+                danger: true,
+                content: <div>
+                    {data.label} を元の場所に戻しますか？
+                </div>
+            });
+        };
+
+        const editFlow = (flow_uuid, parent_uuid) => {
+            let body = {target: flow_uuid};
+            let locks = new LocksModel(flow_uuid);
+
+            return axios.post("/api/v0/locks", body).then((response) => {
+                let locksModel = locks.Parse(response);
+                let lockId = locksModel.getLockId();
+                if (lockId) {
+                    axios.put("/api/v0/flows/" + flow_uuid, {
+                        parent: parent_uuid,
+                        lock: lockId
+                    }).then((response) => {
+                        navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
+                    }, (error) => {
+                        navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
+                        console.log(error);
+                    });
+                } else {
+                    // lockが出来なかった場合
+                    notify({
+                        title: "ライブラリー移動エラー",
+                        message: response.data.message,
+                        status: "error",
+                        dismissAfter: 0,
+                        closeButton: true
+                    });
+                }
+            });
+        };
+
+        const onClickMove = (e, libraryData: any) => {
+            HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
+                const type = libraryData.type;
+                const uuid = libraryData.uuid;
+                const data = {
+                    parent: folder_uuid
+                };
+
+                let result;
+                switch (type) {
+                    case Constants.library.type.folder:
+                        result = APIUtil.put("folders/" + uuid, data);
+                        break;
+                    case Constants.library.type.flow:
+                        result = editFlow(uuid, folder_uuid);
+                        break;
+                    case Constants.library.type.frame:
+                        result = APIUtil.put("frames/" + uuid, data);
+                        break;
+                    case Constants.library.type.document:
+                        result = APIUtil.put("documents/" + uuid, data);
+                        break;
+                    case Constants.library.type.database:
+                        result = APIUtil.put("databases/" + uuid, data);
+                        break;
+                    case Constants.library.type.remoteFolder:
+                        result = APIUtil.put("remote-folders/" + uuid, data);
+                        break;
+                }
+                if (!result) return;
+                result.then((response) => {
+                    fetchFolder();
+                    if (!response.data.success) {
+                        notify({
+                            title: "エラー",
+                            message: response.data.message,
+                            status: "error",
+                            dismissAfter: 0,
+                            closeButton: true
+                        });
+                    }
+                });
+
+            });
+        };
+
+        return <TrashInspector data={data}
+                               onClickRecovery={(e, data) => onClickRecovery(e, data)}
+                               onClickMove={(e, data) => onClickMove(e, data)}
+        />;
+    };
+
+    const onClickCleanTrash = () => {
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM, onClickDone: () => {
+                APIUtil.delete("trashes").then((response) => {
+                    if (response.data.success !== true) throw response.data;
+                    fetchFolder();
+                }).catch(e => {
+                    notify({
+                        title: "ゴミ箱エラー",
+                        message: e.message,
+                        status: "error",
+                        dismissAfter: 0,
+                        closeButton: true
+                    });
+                });
+                ModalUtil.closeModal(Constants.modal.CONFIRM);
+            }
+        });
+        ModalUtil.emitModal({
+            id: Constants.modal.CONFIRM,
+            visible: true,
+            done: "ゴミ箱を空にする",
+            danger: true,
+            content: <div>
+                ゴミ箱を空にしますか？
+            </div>
+        });
+    };
+
+    const renderLibraryInspector = (): React.ReactNode => {
+        if (!lastSelected) return null;
 
         clickedLibraryCell.current = true;
 
         const data: LibraryListDataType = lastSelected;
-        let onClickApply: any = null;
-        let onClickEdit: any = null;
-        let onClickCleanTrash: any = null;
+        let _onClickApply: any = null;
+        let _onClickEdit: any = null;
+        let _onClickCleanTrash: any = null;
+
+        const onClickMove = () => {
+            let queue = Queue(
+                1, // concurrency
+                {
+                    "retry": 0               //Number of retries
+                    , "retryIsJump": false     //retry now?
+                    , "timeout": 0            //The timeout period
+                }
+            );
+            let lock = {uuid: null};
+            HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
+                setIsLoading(true);
+
+                selectedDatas.forEach((selectedData: LibraryChild) => {
+                    queue.push(moveLibrary, [selectedData, folder_uuid, lock]);
+                });
+                queue.push(setIsLoading, [false]);
+                queue.push(fetchFolder, []);
+                queue.start();
+            });
+        };
 
         const onClickEditDatabase = (data: LibraryListDataType) => {
             if (data.type !== Constants.library.type.database) {
@@ -901,7 +1122,7 @@ const Library = (props: Props) => {
                     });
                 } else {
                     notify({
-                        title: "データベースを編集しました", message: (database)?database.label:"" + "を編集しました",
+                        title: "データベースを編集しました", message: (database) ? database.label : "" + "を編集しました",
                         status: "success"
                     });
                 }
@@ -928,7 +1149,7 @@ const Library = (props: Props) => {
                         setDatabase(newDatabase);
                         const params = getDataBaseParams();
                         const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
-                                                       onChange={(e, param, value) => onChangeEditDatabase(e, param, value)}/>;
+                                                       onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
                         ModalUtil.emitModal({
                             id: Constants.modal.EDIT_DATABASE,
                             visible: true,
@@ -942,7 +1163,8 @@ const Library = (props: Props) => {
                 }
             };
 
-            const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}} onChange={(e, param, value) => onChangeEditDatabase(e, param, value)}/>;
+            const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
+                                           onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
             ModalUtil.registerModal({
                 id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
                     editLibraryChild(data);
@@ -958,23 +1180,30 @@ const Library = (props: Props) => {
             });
         };
 
+        const onClickApply = (selected_data: LibraryListDataType) => {
+            if (window.opener || !window.opener.closed) {
+                window.opener.onCallbackApply(selected_data);
+            }
+            window.close();
+        };
+
         console.log(data);
 
         switch (mode) {
             case Constants.library.mode.frame_select:
                 if (data && data.type === Constants.library.type.frame) {
-                    onClickApply = (data) => onClickApply(data);
+                    _onClickApply = (data) => onClickApply(data);
                 }
                 break;
             case Constants.library.mode.folder_select:
                 break;
             case Constants.library.mode.list:
                 if (data && data.type === Constants.library.type.database) {
-                    onClickEdit = (data) => onClickEditDatabase(data);
+                    _onClickEdit = (data) => onClickEditDatabase(data);
                 } else if (data && data.type === Constants.library.type.trash) {
-                    onClickCleanTrash = (data) => onClickCleanTrash(data);
+                    _onClickCleanTrash = onClickCleanTrash;
                 } else if (data && data.type === Constants.library.type.database) {
-                    onClickEdit = (data) => onClickEditDatabase(data);
+                    _onClickEdit = (data) => onClickEditDatabase(data);
                 }
 
                 break;
@@ -1073,28 +1302,6 @@ const Library = (props: Props) => {
             });
         };
 
-        const onClickMove = () => {
-            let queue = Queue(
-                1, // concurrency
-                {
-                    "retry": 0               //Number of retries
-                    , "retryIsJump": false     //retry now?
-                    , "timeout": 0            //The timeout period
-                }
-            );
-            let lock = {uuid: null};
-            HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
-                setIsLoading(true);
-
-                selectedDatas.forEach((selectedData: LibraryChild) => {
-                    queue.push(moveLibrary, [selectedData, folder_uuid, lock]);
-                });
-                queue.push(setIsLoading, [false]);
-                queue.push(fetchFolder, []);
-                queue.start();
-            });
-        };
-
         const onClickDelete = () => {
             ModalUtil.registerModal({
                 id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -1134,7 +1341,7 @@ const Library = (props: Props) => {
             });
         };
 
-        const onClickEditEncoding = (data)=> {
+        const onClickEditEncoding = (data) => {
 
 
             const onChangeEncoding = (e, data) => {
@@ -1220,7 +1427,7 @@ const Library = (props: Props) => {
                 danger: true,
                 content: renderEditEncodingForm(data)
             });
-        }
+        };
 
 
         console.log(selectedDatas);
@@ -1229,15 +1436,15 @@ const Library = (props: Props) => {
             selected={selectedDatas}
             lastSelected={lastSelected}
             onClickDelete={onClickDelete}
-            onClickApply={onClickApply}
+            onClickApply={_onClickApply}
             onClickMove={onClickMove}
-            onClickEdit={onClickEdit}
+            onClickEdit={_onClickEdit}
             onClickEditEncoding={onClickEditEncoding}
-            onClickCleanTrash={onClickCleanTrash}
+            onClickCleanTrash={_onClickCleanTrash}
             onBlurTitle={(e) => onBlurTitle(e, data)}
             visualizers={visualizers}
-        />
-    }
+        />;
+    };
 
     const findLibrary = (libraryChildren: any[], uuid: string): LibraryChild => {
         return libraryChildren.find((child: any) => {
