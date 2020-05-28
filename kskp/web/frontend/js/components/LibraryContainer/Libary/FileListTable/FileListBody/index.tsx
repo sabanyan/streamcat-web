@@ -12,11 +12,12 @@ export interface ITableBody {
     creator: string;
     createdAt: string;
     selected?: boolean;
+    clickable?: boolean;
 }
 
 interface Props {
-    onClickFileName: (body: ITableBody,event?:React.SyntheticEvent<any, Event>) => void;
-    onClickCell: (body: ITableBody,event?:React.MouseEvent<HTMLTableRowElement>) => void;
+    onClickFileName: (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => void;
+    onClickCell: (body: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => void;
     bodies: ITableBody[];
 }
 
@@ -53,15 +54,20 @@ const FileListBody = (props: Props) => {
     };
 
     const bodiesElement = bodies.map((body: ITableBody, index) => {
-        return <tr className={classnames({[style.selected]: body.selected})} onClick={(event) => onClickCell(body,event)} key={index}>
+        return <tr className={classnames({[style.selected]: body.selected})}
+                   onClick={(event) => onClickCell(body, event)} key={index}>
             <td>
                 {getIconElement(getIconFromBodyType(body.type))}
-                <LinkButton onClick={(event: React.SyntheticEvent<any, Event>) => {
-                    onClickFileName(body,event);
-                    event.stopPropagation();
-                }}>
-                    {body.label}
-                </LinkButton>
+                {(body.clickable) ?
+                    <LinkButton onClick={(event: React.SyntheticEvent<any, Event>) => {
+                        onClickFileName(body, event);
+                        event.stopPropagation();
+                    }}>
+                        {body.label}
+                    </LinkButton>
+                    :
+                    <span className={style.filename}>{body.label}</span>
+                }
             </td>
             <td>
                 {body.creator}
