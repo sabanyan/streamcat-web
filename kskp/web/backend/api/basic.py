@@ -16,6 +16,9 @@ def new_project():
     """
     プロジェクトを作成する
     """
+    if 'parent' not in request.json:
+        raise Exception('parent属性を指定してください')
+
     parent = g.factory.data.find_by_uuid(request.json['parent'])
     new_project = parent.create_project_folder(request.json['name'])
     new_project.save()
@@ -45,6 +48,18 @@ def get_projects():
         projects.append(proj)
 
     return projects
+
+@mod.route('/projects/<project_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fetch_project(project_uuid):
+    """
+    プロジェクトを返却する
+    """
+    from .lib import _jsonify_folder
+    project = g.factory.data.find_by_uuid(project_uuid)
+    return _jsonify_folder(project)
 
 @mod.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
