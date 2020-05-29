@@ -112,6 +112,38 @@ def fecth_library():
     root = g.factory.data.load_root()
     return _jsonify_folder(root)
 
+@mod.route('/trashes', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fetch_trashes():
+    """
+    ゴミ箱を返却する
+    """
+    trash_folder = g.factory.data.find_trashcan()
+    
+    return _jsonify_folder(trash_folder)
+
+@mod.route('/trashes/<datum_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def return_trashes(datum_uuid):
+    """
+    ゴミを捨てる前の場所に戻す
+    """
+    datum = g.factory.data.find_by_uuid(datum_uuid)
+    return datum.put_back()
+
+@mod.route('/trashes', methods=['DELETE'])
+@login_required_api
+@api_base
+def empty_all():
+    """
+    ゴミ箱を空にする
+    """
+    trash_folder = g.factory.data.find_trashcan()
+    trash_folder.trash_all()
+
 @mod.route('/locks', methods=['POST'])
 @login_required_api
 @api_base
@@ -208,12 +240,12 @@ def update_folder(folder_uuid):
 @mod.route('/folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_folder(folder_uuid):
+def throw_away_folder(folder_uuid):
     """
-    フォルダを削除する
+    フォルダをほかす
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
-    folder.delete()
+    folder.throw_away()
 
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
@@ -256,15 +288,16 @@ def update_awss3_folder(awss3_uuid):
 @mod.route('/awss3s/<awss3_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_awss3_folder(awss3_uuid):
+def throw_away_awss3(awss3_uuid):
     """
-    AWS S3フォルダを削除する
+    AWS S3フォルダをほかす
     """
     # AWS S3ディレクトリ直下のファイルをDBから登録解除する
     pass
+
     folder = g.factory.data.find_by_uuid(awss3_uuid)
     # AWS S3 folderレコードをDBから削除する
-    folder.delete()
+    folder.throw_away()
 
 @mod.route('/databases/<database_uuid>', methods=['GET'])
 @login_required_api
@@ -342,13 +375,13 @@ def update_database(database_uuid):
 @mod.route('/databases/<database_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_database(database_uuid):
+def throw_away_database(database_uuid):
     """
-    データベースを削除する
+    データベースをほかす
     """
     database = g.factory.data.find_by_uuid(database_uuid)
     # DatabaseレコードをDBから削除する
-    database.delete()
+    database.throw_away()
 
 
 @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
@@ -428,13 +461,13 @@ def update_remote_folder(folder_uuid):
 @mod.route('/remote-folders/<folder_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_remote_folder(folder_uuid):
+def throw_away_remote_folder(folder_uuid):
     """
-    リモートフォルダを削除する
+    リモートフォルダをほかす
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
     # リモートフォルダレコードをDBから削除する
-    folder.delete()
+    folder.throw_away()
 
 
 # @mod.route('/documents/<doc_uuid>', methods=['GET'])
