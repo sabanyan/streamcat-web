@@ -1,0 +1,47 @@
+@import "../../../../../sass/common";
+
+.fileListTable {
+
+  width: 100%;
+  th {
+    height: 56px;
+    font-size: 16px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    vertical-align: middle;
+    color: #606c7a;
+    padding: 0 24px;
+    cursor: pointer;
+  }
+
+  td {
+    height: 56px;
+    background-color: #fdfeff;
+    vertical-align: middle;
+    padding: 0 24px;
+    box-sizing: border-box;
+    border-bottom: 1px solid #e5e5e5;
+    font-size: 16px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #606c7a;
+  }
+
+  tr:first-of-type {
+    td {
+      border-top: 1px solid #e5e5e5;
+    }
+  }
+
+  //tr:hover {
+  //  td {
+  //    background: #f6faff
+  //  }
+  //}
+}

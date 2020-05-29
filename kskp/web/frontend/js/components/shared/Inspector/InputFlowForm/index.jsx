@@ -114,6 +114,7 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
     })
     runArgs.variables = vars
     this.props.updateRunArgs(runArgs)
+    this.forceUpdate()
   }
 
   render () {

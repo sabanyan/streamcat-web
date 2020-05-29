@@ -8,27 +8,8 @@ mod = Blueprint('basic_template', __name__)
 
 @mod.route('/')
 def top():
-    return redirect(url_for('basic_template.projects'))
+    return redirect(url_for('basic_template.library'))
 
-@mod.route('/projects', methods=['GET', 'POST'])
-@login_required
-def projects():
-    # ログインユーザーが閲覧可能なプロジェクト一覧を取得する
-    return render_template('projects.html')
-
-@mod.route('/flows', methods=['GET', 'POST'])
-@login_required
-def flows():
-    from kskp.store import Datum, Flow
-    
-    parent_uuid = request.args.get('project')
-
-    # projectが指定されていない場合は空のフロー一覧を返す
-    if parent_uuid is None:
-        flow_list = []
-        return flow_list
-
-    return render_template('flows.html', project_uuid=request.args.get('project'))
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
@@ -41,10 +22,18 @@ def flow_designer(flow_uuid):
 @login_required
 @login_required_api
 def library():
-    root = g.factory.data.load_root()
+    from kskp.store import Library
+    root = Library.load_root()
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
     return render_template('library.html',folder_uuid=root.uuid,js_resources=js_resources,css_resources=css_resources)
+
+@mod.route('/preview', methods=['GET', 'POST'])
+@login_required
+def preview():
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    return render_template('preview.html',js_resources=js_resources,css_resources=css_resources)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
 @login_required
@@ -62,7 +51,8 @@ def profile():
 @mod.route('/trashes', methods=['GET', 'POST'])
 @login_required
 def trashes():
-    return render_template('trashcan.html', user_id=session['user_id'])
+    is_trash = 1
+    return render_template('library.html', is_trash=is_trash , user_id=session['user_id'])
 
 
 # 開発用画面
