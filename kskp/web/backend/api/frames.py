@@ -99,26 +99,19 @@ def update_frame(frame_uuid):
 @mod.route('/frames/<frame_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_frame(frame_uuid):
+def throw_away_frame(frame_uuid):
     """
-    指定したframeを物理削除する
+    指定したframeをほかす
     """
     frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
-
-    # 削除しようとするframeが、フローで使用されている場合は例外を送出する
-    flow_labels = g.factory.data.get_flows_referencing_frame(frame_uuid)
-    if len(flow_labels) > 0:
-        raise Exception(f'このCSVファイルはフロー({flow_labels[0]})で使用しているため削除できません')
-
-    # フレームを削除する
-    frame.delete()
-    return frame
+    frame.throw_away()
 
 @mod.route('/frames', methods=['POST'])
 @login_required_api
 def create_frame():
+    from kskp.store import NoResultsException
     try:
         if 'file' in request.files:
             # 
@@ -154,7 +147,13 @@ def create_frame():
         
         else:
             raise Exception('引数等の指定が誤っています')
-    
+
+    except NoResultsException as e:
+        return jsonify({
+                        'success': False,
+                        'code'   : -4,
+                        'message': str(e)
+                    })    
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -233,11 +232,12 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
     指定されたフローを実行し実行結果を取得する
     """
     try:
+        from kskp.store import NoResultsException
         from kskp.engine import execute, FlowJsonLink
         link = FlowJsonLink(flow, session, vis_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
-            raise Exception('実行結果は出力されませんでした')
+            raise NoResultsException('実行結果は出力されませんでした')
         return activity
     except Exception as e:
         # import traceback

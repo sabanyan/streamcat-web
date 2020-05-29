@@ -49,12 +49,12 @@ def get_projects():
 @mod.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_project(project_uuid):
+def throw_away_project(project_uuid):
     """
-    指定したプロジェクトを削除する
+    指定したプロジェクトをほかす
     """
     project = g.factory.data.find_by_uuid(project_uuid)
-    project.delete()
+    project.throw_away()
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
@@ -183,12 +183,12 @@ def update_flow(flow_uuid):
 @login_required_api
 @lock_required
 @api_base
-def delete_flow(flow_uuid):
+def throw_away_flow(flow_uuid):
     """
-    指定されたフローを削除する
+    指定されたフローをほかす
     """
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    flow.delete()
+    flow.throw_away()
 
 @mod.route('/subflows', methods=['GET'])
 @login_required_api
@@ -207,6 +207,9 @@ def fetch_subflows():
         parent = subflow.find_parent()
         # 親フォルダのないサブフローは取得しない
         if parent is None:
+            continue
+        # ゴミ箱にあるサブフローは取得しない
+        if g.factory.data.trashed(subflow.uuid):
             continue
         if parent.type == Datum.FOLDER_TYPE:
             parent_label = parent.label

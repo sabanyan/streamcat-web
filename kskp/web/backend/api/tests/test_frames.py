@@ -188,10 +188,10 @@ class FrameApiTestCase(ApiTestCaseBase):
         result = self.delete_uri('/api/v0/frames/%s' % frame_uuid, self.USER1)
 
         self.assertEqual(result['success'], True)
-        # 消えているかのテスト
-        from sqlalchemy.orm.exc import NoResultFound
-        with self.assertRaises(NoResultFound) as e:
-            self.assertIsNone(self.factory.data.find_by_uuid(frame_uuid))
+
+        # ゴミ箱に移動しているかのテスト
+        frame = self.factory.data.find_by_uuid(frame_uuid)
+        self.assertEqual(frame.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
 
     # ここからフローの実行テスト
     """

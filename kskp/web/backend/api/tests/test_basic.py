@@ -141,8 +141,9 @@ class ProjectApiTestCase(ApiTestCaseBase):
         # DELETE /projects
         self.delete_uri(('/api/v0/projects/%s' % project.uuid), self.USER1)
 
-        # フォルダが消えていることを確認する
-        self.assertFalse(self.factory.data.exists(project.uuid))
+        # プロジェクトはゴミ箱に移動していること
+        project = self.factory2.data.find_by_uuid(project.uuid)
+        self.assertEqual(project.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
 
 class FrameApiTestCase(ApiTestCaseBase):
 
@@ -246,7 +247,6 @@ class FrameApiTestCase(ApiTestCaseBase):
         frame = self.factory.data.find_by_uuid(frame_uuid)
         frame.delete()
      
-
 class FlowApiTestCase(ApiTestCaseBase):
 
     # フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
@@ -680,9 +680,10 @@ class FlowApiTestCase(ApiTestCaseBase):
             
         # ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
-
-        # フローは削除されていること
-        self.assertFalse(self.factory.data.exists(test_flow_uuid))
+ 
+        # フローはゴミ箱に移動していること
+        flow = self.factory.data.find_by_uuid(test_flow_uuid)
+        self.assertEqual(flow.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
 
     @unittest.skip('とりあえず手動でテストする')
     def test_fetch_subflows(self):
