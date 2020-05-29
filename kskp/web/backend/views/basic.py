@@ -1,7 +1,6 @@
 
 from bokeh.resources import INLINE
 from flask import render_template, redirect, session, request, Blueprint, url_for, g
-
 from kskp.web.backend.api.auth import login_required, login_required_api
 
 mod = Blueprint('basic_template', __name__)
@@ -22,8 +21,7 @@ def flow_designer(flow_uuid):
 @login_required
 @login_required_api
 def library():
-    from kskp.store import Library
-    root = Library.load_root()
+    root = g.factory.data.load_root()
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
     return render_template('library.html',folder_uuid=root.uuid,js_resources=js_resources,css_resources=css_resources)
