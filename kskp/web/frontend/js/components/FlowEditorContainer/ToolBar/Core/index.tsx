@@ -60,7 +60,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     flow.nodes = nodes
 
     return new Promise(async (reslove, reject) => {
-
       // 編集権限がないと、保存不可
       if (!lockUUID) {
         reject(new MessageModel({
@@ -85,12 +84,12 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 messageStatus: "error"
               }))
             }
+            dismissNotify(saveNotify.id)
+            reslove(response.data)
           })
-
-        dismissNotify(saveNotify.id)
       }
 
-      reslove()
+      
     })
       // 保存失敗した場合、エラーメッセージ出力
       .catch(e => {
@@ -109,6 +108,17 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     this.props.addHistory()
   }
 
+  renderRunResult(json: RunResponseType) {
+    const result = json.lasts.map((n) => {
+      return <li>{n.id}</li>
+    })
+    const content = <div>
+      <div>ライブラリにフローの実行結果が追加されました。</div>
+      <ul>{result}</ul>
+    </div>
+
+    return content
+  }
   run() {
     let { notify, dismissNotify } = this.props
     const runArgs = {
@@ -117,31 +127,13 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       'variables': []
     }
     return FlowUtil.runWithArgs(runArgs, notify, dismissNotify)
-  }
-
-  onClickProjectRun() {
-    this.loading = true
-    this.loadingMessage = ''
-
-    this.forceUpdate()
-    let result = this.saveFlow()
-    if (!result) {
-      this.loading = false
-      return
-    }
-    result.then(() => {
-      this.run().then((response) => {
+      .then((response) => {
         if (response.data.success) {
           const json: RunResponseType = response.data
-          const result = json.lasts.map((n) => {
-            return <li>{n.id}</li>
-          })
-          const content = <div>
-            <div>ライブラリにフローの実行結果が追加されました。</div>
-            <ul>{result}</ul>
-          </div>
+          const content = this.renderRunResult(json)
 
-          let notifyId = this.props.notify({
+          // 結果出力
+          let notifyId = notify({
             title: 'フロー実行完了',
             message: ReactDomUtil.renderToString(content),
             status: 'success',
@@ -166,11 +158,26 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         this.loading = false
         // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
         this.flowUpdate()
-      }, (error) => {
+      })
+      .catch((e) => {
+        this.loading = false
         this.loading = false
         this.forceUpdate()
       })
-    })
+  }
+
+  onClickProjectRun() {
+    const { lockUUID } = this.props
+
+    this.loading = true
+    this.loadingMessage = ''
+    
+    this.saveFlow()
+      .then((result: any) => {
+        
+        if (result.success === true) this.run()
+        this.loading = false
+      })
   }
 
   flowUpdate() {

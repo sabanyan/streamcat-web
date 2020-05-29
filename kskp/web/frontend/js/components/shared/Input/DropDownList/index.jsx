@@ -2,16 +2,12 @@
 import * as React from 'react'
 import style from './style.scss'
 import classnames from 'classnames'
+import type { dropDownListItem } from 'Types/index'
 
 type Props = {
   onChange?: Function;
   label?: string;
-  list?: [
-    {
-      label: string,
-      value: string,
-      object: {}
-    }];
+  list?: dropDownListItem[];
   defaultValue: string;
   disabled: boolean;
   hiddenNoSelect?: boolean;

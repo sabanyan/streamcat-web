@@ -1,22 +1,35 @@
 .navbar {
   background: $kskp-nav-background-color;
   height: 64px;
-  padding: 0 12px;
-  .navbar-brand img{
-    padding-top: 4px;
-    padding-left: 8px;
-    height: 25px;
+  padding: 0 12px 0 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .navbar-brand {
+    display: inline-flex;
+    margin-right: 40px;
+    padding: 0;
+    img{
+      padding: 0;
+      height: 25px;
+    }
   }
   .breadcrumb-navbar{
+    .navbar-nav{
+      display: flex;
+    }
     .nav-item{
-      height: 34px;
+      margin: 0!important;
       padding: 6px 16px;
       background: rgba(255,255,255,0.2);
-      border-radius: 4px;
-      margin-right: 8px;
       color: #fff;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      height: 64px;
+      width: 150px;
       .icon{
-        width: 18px;
+        width: 20px;
         height: 18px;
         position: relative;
         margin-right: 8px;
@@ -51,11 +64,15 @@
     }
   }
   .menu-navbar{
+    display: flex;
     .nav-item{
+      margin: 0!important;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
       height: 34px;
       padding: 4px 16px;
       border-radius: 4px;
-      margin-right: 8px;
       color: #fff;
       &.active{
         &:after{
@@ -81,6 +98,22 @@
         height: 18px;
         position: relative;
         margin-right: 8px;
+      }
+    }
+    .user{
+      .nav-link{
+        display: flex;
+        align-items: center;
+        &::after{
+          margin-left: 16px;
+          margin-right: 8px;
+          border-top-width: 5px;
+          border-right-width: 5px;
+          border-left-width: 5px;
+        }
+        .icon{
+          margin-right: 8px + 4px;
+        }
       }
     }
   }

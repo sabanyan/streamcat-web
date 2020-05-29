@@ -8,13 +8,13 @@ import style from './style.scss'
 
 type Props = {
   params: CommandParamType[];//パラメーター定義
-  groups?:[];　//パラメータのグルプ定義
+  groups?: [];　//パラメータのグルプ定義
   args: {};//入力値
   invalids: {}; // Validationチェック内容
   command?: CommandModel;
   headers?: string[];//カラム情報
   // event
-  onChange: Function; // onChange(e:event, param:CommandParamType, value:any)
+  onChange: (e: React.ChangeEvent<HTMLInputElement>, param: CommandParamType, value: any) => void
 }
 
 export default class ParamsForm extends React.Component<Props> {

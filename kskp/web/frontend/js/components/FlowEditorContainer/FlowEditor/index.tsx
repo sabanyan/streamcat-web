@@ -198,7 +198,7 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
           }
           //入力元ノードがDataFrameの場合のみ出力もとにラベルを付与する
           if (v_node instanceof DataFrameStepModel) {
-            inPortLabel = JSON.parse(edge.name).port_name
+            inPortLabel = JSON.parse(edge.name).port_name;
           }
 
           let e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />

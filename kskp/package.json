@@ -30,6 +30,7 @@
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "devDependencies": {
     "@types/classnames": "^2.2.8",
+    "@types/moment": "^2.13.0",
     "@types/react": "^16.8.22",
     "@types/react-dom": "^16.8.4",
     "array-move": "^2.1.0",
@@ -49,10 +50,11 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^23.5.0",
     "node-sass": "^4.12.0",
+    "promise-queue-plus": "^1.2.2",
     "react-i18next": "^10.11.2",
     "react-sortable-hoc": "^1.9.1",
     "react-test-renderer": "^16.4.2",
-    "reapop": "^2.0.1",
+    "reapop": "^2.1.0",
     "reapop-theme-wybo": "^1.0.2",
     "redux-devtools-extension": "^2.13.8",
     "sass-loader": "^7.0.1",
@@ -65,6 +67,8 @@
     "webpack-dev-server": "^3.7.2"
   },
   "dependencies": {
+    "@types/jquery": "^3.3.32",
+    "@types/lodash": "^4.14.149",
     "ajv": "^6.5.4",
     "chart.js": "^2.7.2",
     "classnames": "^2.2.5",
@@ -73,10 +77,10 @@
     "eventemitter3": "^3.1.0",
     "lodash": "^4.17.15",
     "moment": "^2.22.2",
-    "react": "^16.3.2",
+    "react": "^16.13.1",
     "react-chartjs-2": "^2.7.2",
-    "react-dom": "^16.3.2",
-    "react-redux": "^5.0.7",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.0",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0"
   }

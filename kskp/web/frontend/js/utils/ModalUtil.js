@@ -27,6 +27,14 @@ export default class ModalUtil {
         context.onClickCancel()
       }
     })
+    window.emitter.removeAllListeners(Constants.event.MODAL_ON_CLICK_CLOSE +
+      context.id)
+    window.emitter.addListener(Constants.event.MODAL_ON_CLICK_CLOSE +
+      context.id, (result_context) => {
+      if (context.onClickClose) {
+        context.onClickClose()
+      }
+    })
   }
 
   /**

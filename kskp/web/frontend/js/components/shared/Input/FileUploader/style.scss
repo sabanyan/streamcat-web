@@ -2,14 +2,98 @@
   display: none;
 }
 
-.btn_file {
-  cursor: pointer;
-}
 
 .text {
   font-size: 14px;
 }
 
-.file {
-  font-weight: bold;
+.field {
+  margin: 4px;
+
+  .textField {
+    display: flex;
+
+    i {
+      font-size: 18px;
+      cursor: default;
+      //position: relative;
+      height: fit-content;
+      margin: 8px 0px 0px 0px;
+      //top: 10px;
+    }
+
+    .ready {
+      color: lighten(gray,10%)
+    }
+
+    .success {
+      color: lighten(green,10%)
+    }
+
+    .fail {
+      color: lighten(red,10%);
+    }
+
+    input {
+      width: 575px;
+      margin-left: 4px;
+    }
+
+    .upload {
+      text-align: left;
+      white-space: normal;
+      text-indent: 10px;
+      position: relative;
+      top: 5px;
+      //font-family: "YuGothic M";
+      height: 38px;
+      width: 100%;
+      //border-bottom: groove;
+    }
+
+  }
+
+  .originalName {
+    font-weight: bold;
+    font-size: 12px;
+    text-align: left;
+    padding:4px;
+    overflow-x: visible;
+    white-space: normal;
+
+    label {
+      vertical-align: text-top;
+      margin: 0px 0px 0px 32px;
+    }
+  }
+}
+
+.fileUploader {
+  text-align: center;
+}
+
+.button {
+  cursor: pointer;
+  color: #61B8E2;
+  font-size: 14px;
+  position: relative;
+  vertical-align: bottom;
+  i {
+    position: relative;
+    vertical-align: text-bottom;;
+    font-size: 18px;
+    margin: 0px 1px 0px 1px;
+  }
+}
+
+.uploadButton {
+  text-align: right;
+  margin: 0 10px 20px 0px
+}
+
+.message {
+  color: red;
+  font-size: medium;
+  margin: 10px 0px 10px 0px;
+  text-align: left;
 }
