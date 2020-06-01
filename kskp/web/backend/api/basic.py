@@ -20,7 +20,7 @@ def new_project():
         raise Exception('parent属性を指定してください')
 
     parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_project = parent.create_project_folder(request.json['name'])
+    new_project = parent.create_project_folder(request.json['label'])
     new_project.save()
     return new_project
 
@@ -77,12 +77,26 @@ def throw_away_project(project_uuid):
 @api_base
 def update_project(project_uuid):
     """
-    指定したプロジェクトを更新する
-    現在はプロジェクト名のみ
+    プロジェクトのラベルを修正する、またはプロジェクトを移動する
     """
-    new_project_name = request.json.get('new_name')
-    project = g.factory.data.find_by_uuid(project_uuid)
-    project.update_data(new_project_name)
+    if ('label'  not in request.json or request.json['label']  == '') and \
+       ('parent' not in request.json or request.json['parent'] == ''):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif 'label' in request.json and 'parent' in request.json:
+        raise Exception('labelとはparent属性は同時に指定できません')
+        
+    if 'label' in request.json and request.json['label'] != '':
+        # プロジェクトのラベルを修正する
+        label = request.json['label']
+        project = g.factory.data.find_by_uuid(project_uuid)
+        return project.update_data(label)
+    elif 'parent' in request.json and request.json['parent'] != '':
+        # プロジェクトを移動する
+        new_parent = request.json['parent']
+        project = g.factory.data.find_by_uuid(project_uuid)
+        return project.move(new_parent)
+    else:
+        raise Exception('update_project parameter error!')
 
 @mod.route('/flows', methods=['POST'])
 @login_required_api
@@ -226,7 +240,7 @@ def fetch_subflows():
         # ゴミ箱にあるサブフローは取得しない
         if g.factory.data.trashed(subflow.uuid):
             continue
-        if parent.type == Datum.FOLDER_TYPE:
+        if isinstance(parent, Folder):
             parent_label = parent.label
             subflow_data['projectName'] = parent_label
         subflow_data_list.append(subflow_data)

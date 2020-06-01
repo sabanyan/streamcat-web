@@ -45,7 +45,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
 
         project_name = 'プロジェクトです'
         data = {'parent': root.uuid,
-                'name'  : project_name}
+                'label'  : project_name}
 
         # POST /projects
         result = self.post_uri('/api/v0/projects', data, self.USER1)
@@ -85,7 +85,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
 
         # プロジェクトを作成する
         data = {'parent': flow_folder.uuid,
-                'name'  : '新しいプロジェクト'}
+                'label' : '新しいプロジェクト'}
         self.post_uri('/api/v0/projects', data, self.USER2)
 
         # フォルダを取得する
@@ -138,7 +138,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
 
         # PUT /projects
         new_label = '変更後のフォルダ名'
-        json_data = {'new_name': new_label, "description": ""}
+        json_data = {'label': new_label, "description": ""}
         self.put_uri(('/api/v0/projects/%s' % project.uuid), json_data, self.USER1)
 
         # ラベル名が修正されていることを確認する
@@ -149,6 +149,40 @@ class ProjectApiTestCase(ApiTestCaseBase):
         # フォルダを削除する
         project = self.factory.data.find_by_uuid(project.uuid)
         self.assertFalse(project.delete())
+
+    def test_move_project(self):
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # 移動元フォルダを作成する(POST /projects)
+        folder_src = self.post_uri('/api/v0/projects', {"label" : "新しいフォルダ1", "parent": root.uuid}, self.USER1)
+        folder_src_uuid = folder_src['data']['uuid']
+
+        # 移動先フォルダを作成する(POST /projects)
+        folder_dst = self.post_uri('/api/v0/projects', {"label" : "新しいフォルダ2", "parent": root.uuid}, self.USER1)
+        folder_dst_uuid = folder_dst['data']['uuid']
+
+        # 移動元から移動先へフォルダを移動する
+        result = self.put_uri('/api/v0/projects/%s' % folder_src_uuid, {"parent": folder_dst_uuid}, self.USER1)
+
+        # 期待するAPIの戻り値
+        expected_result = {
+             'label'    : '新しいフォルダ1'
+            ,'type'     : 'project'
+            ,'creator'  : '管理者'
+        }
+
+        # PUT /projects apiが正常終了することを検証する
+        self.assertEqual(result['success'], True)
+        # PUT /projects apiの戻り値が正しいことを検証する(createdAtは検証できない)
+        self.assertEqual(result['data']['uuid'], folder_src_uuid)
+        self.assertEqual(result['data']['label'], expected_result['label'])
+        self.assertEqual(result['data']['type'], expected_result['type'])
+        self.assertEqual(result['data']['creator'], expected_result['creator'])
+        self.assertNotEqual(result['data']['createdAt'], None)
+
+        # フォルダに対応するディレクトリが存在することを検証する
+        self.assertTrue(os.path.isdir((root.path / '新しいフォルダ2' / '新しいフォルダ1').as_posix()))
 
     def test_delete_project(self):
         """
