@@ -25,9 +25,10 @@ def new_project():
 
     # 新しいフローフォルダを作成する
     new_project = ProjectFolder(request.json['parent'],
-                                request.json['name'],
+                                request.json['label'],
                                 session['user_id'])
     new_project.save()
+    return new_project
 
 @mod.route('/projects')
 @login_required_api
@@ -98,11 +99,27 @@ def delete_project(project_uuid):
 @api_base
 def update_project(project_uuid):
     """
-    指定したプロジェクトを更新する
-    現在はプロジェクト名のみ
+    プロジェクトのラベルを修正する、またはプロジェクトを移動する
     """
-    new_project_name = request.json.get('new_name')
-    ProjectFolder.update_data(project_uuid, new_project_name, session['user_id'])
+    if ('label'  not in request.json or request.json['label']  == '') and \
+       ('parent' not in request.json or request.json['parent'] == ''):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif 'label' in request.json and 'parent' in request.json:
+        raise Exception('labelとはparent属性は同時に指定できません')
+        
+    if 'label' in request.json and request.json['label'] != '':
+        # プロジェクトのラベルを修正する
+        label = request.json['label']
+        modifier = session['user_id']
+        return ProjectFolder.update_data(project_uuid, label, modifier)
+    elif 'parent' in request.json and request.json['parent'] != '':
+        # プロジェクトを移動する
+        new_parent = request.json['parent']
+        modifier = session['user_id']
+        project = ProjectFolder.find_by_uuid(project_uuid)
+        return project.move(new_parent, modifier)
+    else:
+        raise Exception('update_project parameter error!')
 
 @mod.route('/flows', methods=['POST'])
 @login_required_api
@@ -257,7 +274,7 @@ def fetch_subflows():
         # ゴミ箱にあるサブフローは取得しない
         if TrashCan.trashed(subflow.uuid):
             continue
-        if parent.type == Datum.FOLDER_TYPE:
+        if parent.type == Datum.FOLDER_TYPE or parent.type == Datum.PROJECT_TYPE:
             parent_label = parent.label
             subflow_data['projectName'] = parent_label
         subflow_data_list.append(subflow_data)
