@@ -24,12 +24,13 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
     const name = e.currentTarget.getAttribute('name')
     HttpUtil.windowOpen('library?dialog=true&mode=frame_select', (args) => {
       const selected_data: LibraryListDataType = args
+      const label = selected_data.label
       const uuid = selected_data.uuid
-
       // update
       let runArgs = this.props.runArgs
       const flows = runArgs.flows.map((f) => {
         if (f.label == name) {
+          f.value = label
           f.uuid = uuid
         }
         return f
@@ -63,7 +64,7 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
     const result = []
     for (const f of runArgs.flows) {
       const key = f.label
-      const value = f.uuid
+      const value = f.value
       const form = <div key={key} className={style ? style.flow_param : null}>
         <div className={style ? style.left : null}>
           {this.renderAddInputFlowButton(key, value)}
