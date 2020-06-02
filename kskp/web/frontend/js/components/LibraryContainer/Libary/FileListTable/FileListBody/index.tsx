@@ -52,10 +52,13 @@ const FileListBody = (props: Props) => {
                 return null;
         }
     };
+    const onClick = (event,body)=>{
+        onClickCell(body, event)
+    };
 
     const bodiesElement = bodies.map((body: ITableBody, index) => {
         return <tr className={classnames({[style.selected]: body.selected})}
-                   onClick={(event) => onClickCell(body, event)} key={index}>
+                   onClick={(event)=>onClick(event,body)} key={index}>
             <td>
                 {getIconElement(getIconFromBodyType(body.type))}
                 {(body.clickable) ?
