@@ -292,7 +292,8 @@ const Library = (props: Props) => {
                     uuid: path.uuid,
                     label:"ライブラリ",
                     url: "/library"+ dialogOption,
-                    current:isCurrent
+                    current:isCurrent,
+                    type: "folder"
                 }
             }
 
@@ -300,7 +301,8 @@ const Library = (props: Props) => {
                 uuid: path.uuid,
                 label: path.label,
                 url: "/folders/" + path.uuid + dialogOption,
-                current: isCurrent
+                current: isCurrent,
+                type: path.type
             }
         });
     };
