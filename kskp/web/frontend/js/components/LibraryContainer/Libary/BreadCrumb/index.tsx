@@ -5,11 +5,13 @@ import {Text} from "Shared/Base/Texts/Text";
 import {LinkButton} from "Shared/Input";
 import classnames from "classnames";
 import WebUtil from "Utils/WebUtil";
+import Constants from "Constants/index";
 
 export interface IBreadCrumbsLink {
     uuid: string | null;
     label: string;
     url: string;
+    type: string;
     current: boolean;
 }
 
@@ -28,11 +30,24 @@ const BreadCrumb = (props: Props) => {
         let icon: React.ReactNode = <i className={classnames("material-icons")}
                                        style={{color: "#606c7a"}}>chevron_right</i>;
         if (index + 1 === links.length) icon = null;
+
+        let url;
+
+        switch (link.type) {
+            case Constants.library.type.project:
+                url = link.url + "?project=true";
+                break;
+            default:
+                url = link.url;
+        }
+
         return <Fragment key={index}>
-            {(link.current)?
+            {(link.current) ?
                 <>{link.label}</>
                 :
-                <LinkButton onClick={()=>{WebUtil.navigateURL(link.url)}}>{link.label}</LinkButton>
+                <LinkButton onClick={() => {
+                    WebUtil.navigateURL(url);
+                }}>{link.label}</LinkButton>
             }
             {icon}
         </Fragment>;
