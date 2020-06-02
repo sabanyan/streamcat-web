@@ -780,6 +780,10 @@ const Library = (props: Props) => {
                                 }else{
                                     body.clickable = true;
                                 }
+                                if(inject_is_trash){
+                                    // ゴミ箱の場合は全て選択不可
+                                    body.clickable = false;
+                                }
                                 return body;
                             })
                         }
