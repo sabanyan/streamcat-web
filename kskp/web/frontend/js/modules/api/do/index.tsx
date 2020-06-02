@@ -1,9 +1,8 @@
 import { API } from 'Modules/api/index'
-import { MessageModel } from 'Model/index';
 
 export function lockedDo(flowUUID, promisedTask: Function, promisedProps: {}) {
 
-    return API.request.doPost.locks({ flowUUID: flowUUID })
+    return API.request.doPost.locks({ target: flowUUID })
         .then(async (res) => {
             const locksData = API.response.post.locks(res)
             const lockUUID = locksData.uuid
