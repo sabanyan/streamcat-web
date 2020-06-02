@@ -57,7 +57,7 @@ const FileListBody = (props: Props) => {
     };
 
     const bodiesElement = bodies.map((body: ITableBody, index) => {
-        return <tr className={classnames({[style.selected]: body.selected})}
+        return <tr className={classnames(style.row,{[style.selected]: body.selected})}
                    onClick={(event)=>onClick(event,body)} key={index}>
             <td>
                 {getIconElement(getIconFromBodyType(body.type))}

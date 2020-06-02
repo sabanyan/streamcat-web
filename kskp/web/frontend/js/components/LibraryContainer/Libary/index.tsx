@@ -683,8 +683,10 @@ const Library = (props: Props) => {
                 } else {
                     selectedDatas.push(data);
                 }
+                setLastSelected(data);
             } else if (event && event.shiftKey) {
                 // shift + click
+                clearSelected();// 選択状態を一旦解除
                 let current = libraryChildren.indexOf(data);
                 if (lastSelected) {
                     let last = libraryChildren.indexOf(lastSelected);
@@ -697,8 +699,9 @@ const Library = (props: Props) => {
                         max = last;
                     }
                     // TODO シフトキーによる複数選択
-                    const selectedDatas:LibraryListDataType[] = libraryChildren.slice(min, max + 1).map((libraryChild)=>{
-                        libraryChild.selected = !libraryChild.selected;
+                    const selectedDatas:LibraryListDataType[] = libraryChildren.slice(min, max+1).map((libraryChild)=>{
+                        libraryChild.selected = true;
+                        return libraryChild;
                     });
                     setSelectedDatas(selectedDatas);
                 }
@@ -711,10 +714,8 @@ const Library = (props: Props) => {
                 } else {
                     setSelectedDatas([data]);
                 }
+                setLastSelected(data);
             }
-            setLastSelected(data);
-            //TODO 単一選択がうごかなかったのでコメントアウト
-            //setSelectedDatas(selectedDatas);
             clickedLibraryCell.current = true;
         };
 
