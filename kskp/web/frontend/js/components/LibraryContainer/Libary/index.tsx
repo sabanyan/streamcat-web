@@ -1111,6 +1111,7 @@ const Library = (props: Props) => {
         let _onClickDelete: any = null;
         let _onClickMove: any = null;
         let _onClickEditEncoding: any = null;
+        let _onBlurTitle: any = null;
 
         const onClickMove = () => {
             let queue = Queue(
@@ -1242,9 +1243,11 @@ const Library = (props: Props) => {
                 _onClickDelete = () => onClickDelete();
                 _onClickMove = () => onClickMove();
                 _onClickEditEncoding = (data) => onClickEditEncoding(data);
+                _onBlurTitle = (e) => onBlurTitle(e, data);
                 if (data && data.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 } else if (data && data.type === Constants.library.type.trash) {
+                    _onBlurTitle = null;
                     _onClickCleanTrash = onClickCleanTrash;
                 } else if (data && data.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
@@ -1473,7 +1476,6 @@ const Library = (props: Props) => {
         };
 
 
-        console.log(selectedDatas);
 
         return <LibraryInspector
             selected={selectedDatas}
@@ -1484,7 +1486,7 @@ const Library = (props: Props) => {
             onClickEdit={_onClickEdit}
             onClickEditEncoding={_onClickEditEncoding}
             onClickCleanTrash={_onClickCleanTrash}
-            onBlurTitle={(e) => onBlurTitle(e, data)}
+            onBlurTitle={_onBlurTitle}
             visualizers={visualizers}
         />;
     };

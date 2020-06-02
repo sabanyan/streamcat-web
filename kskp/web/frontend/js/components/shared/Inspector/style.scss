@@ -180,19 +180,20 @@
   position: relative;
   color: $kskp-text;
   border-bottom: 1px dotted transparent;
+  &.clickable{
+    &:hover {
+      border-bottom: 1px dotted $kskp-text;
+      cursor: pointer;
+    }
 
-  &:hover {
-    border-bottom: 1px dotted $kskp-text;
-    cursor: pointer;
-  }
+    &:active, &:focus {
+      border-bottom: 1px solid transparent;
+    }
 
-  &:active, &:focus {
-    border: inherit;
-  }
-
-  &:disabled {
-    border: none !important;
-    cursor: default;
+    &:disabled {
+      border-bottom: 1px solid transparent;
+      cursor: default;
+    }
   }
 }
 
