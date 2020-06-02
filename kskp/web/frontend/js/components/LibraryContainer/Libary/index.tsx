@@ -765,6 +765,7 @@ const Library = (props: Props) => {
                         onClickCell={onClickCell}
                         onClickFileName={onClickFileName}
                         onClickHeader={(header:ITableHeader) => {
+                            clickedLibraryCell.current = true;
                             if(header.sort){
                                 setLibraryChildren(_.orderBy(libraryChildren, header.key, header.sort));
                             }else{
