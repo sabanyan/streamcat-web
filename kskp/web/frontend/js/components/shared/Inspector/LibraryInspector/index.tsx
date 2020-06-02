@@ -44,12 +44,6 @@ class LibraryInspector extends React.Component<Props> {
     })
   }
 
-  onBlurTitle(e: React.FocusEvent<HTMLInputElement>) {
-    if (this.props.onBlurTitle) {
-      this.props.onBlurTitle(e)
-    }
-  }
-
   onClickPreview(e) {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
     let { lastSelected } = this.props;
@@ -236,7 +230,7 @@ class LibraryInspector extends React.Component<Props> {
     let content = (selected.length <= 1) ? this.renderSelect(lastSelected) : this.renderSelects(selected, lastSelected)
 
     return <Resizer>
-      <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
+      <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={true}>
         {content}
       </BaseInspector>
     </Resizer>

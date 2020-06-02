@@ -34,14 +34,15 @@ class BaseInspector extends React.Component<BaseInspectorProps> {
     const {header, label, children, onBlurTitle, subLabel} = this.props
     const disabled = (!onBlurTitle)
     let labelContainer, subLabelContainer
-    // FIXIT ロジクもう少し分かりやすく
-    if (!disabled && label !== undefined) {
+    if (onBlurTitle && label !== undefined) {
       labelContainer = <input key={label}
                               type="text" ref={'title'}
                               onBlur={(onBlurTitle) ? (e) => {onBlurTitle(e, this.props)} : null}
-                              className={style.label}
+                              className={classnames(style.label,style.clickable)}
                               defaultValue={label}
-                              disabled={disabled}></input>
+                              disabled={disabled}/>
+    }else{
+      labelContainer = <div className={style.label}>{label}</div>
     }
     if (subLabel) {
       subLabelContainer = <div>
