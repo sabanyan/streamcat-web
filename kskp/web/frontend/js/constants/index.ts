@@ -171,6 +171,7 @@ const Constants = {
   library: {
     type: {
       document: 'document',
+      project: 'project',
       frame: 'frame',
       folder: 'folder',
       database: 'database',

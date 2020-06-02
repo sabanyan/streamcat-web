@@ -205,7 +205,7 @@ const Library = (props: Props) => {
     useEffect(() => {
         ModalUtil.registerModal({
             id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-                APIUtil.post("projects", {name: formProjectName,parent: inject_folder_uuid}).then((response) => {
+                APIUtil.post("projects", {label: formProjectName,parent: inject_folder_uuid}).then((response) => {
                     ModalUtil.emitModal(
                         {id: Constants.modal.ADD_PROJECT, visible: false});
                     // this.clearKeyword()
@@ -1032,6 +1032,9 @@ const Library = (props: Props) => {
                     case Constants.library.type.folder:
                         result = APIUtil.put("folders/" + uuid, data);
                         break;
+                    case Constants.library.type.project:
+                        result = APIUtil.put("projects/" + uuid, data);
+                        break;
                     case Constants.library.type.flow:
                         result = editFlow(uuid, folder_uuid);
                         break;
@@ -1267,6 +1270,9 @@ const Library = (props: Props) => {
                     break;
                 case Constants.library.type.folder:
                     endPoint = "folders/";
+                    break;
+                case Constants.library.type.project:
+                    endPoint = "projects/";
                     break;
                 case Constants.library.type.database:
                     endPoint = "databases/";
