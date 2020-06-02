@@ -203,7 +203,7 @@ def _put_back(datum, modifier):
     return moved_data
 
 def _put_back_inner(datum, modifier):
-    if (datum.type == Datum.FOLDER_TYPE or datum.type == Datum.PROJECT_TYPE) and datum.prev_parent_id is None:
+    if isinstance(datum, Folder) and datum.prev_parent_id is None:
         # 移動対象がprev_parent_idを持たないフォルダの場合
         # その下のファイルを個別に移動する
         childrenGetter = ChildrenGetter()
@@ -240,7 +240,7 @@ def empty_all():
         _empty_all_inner(child)
 
 def _empty_all_inner(datum):
-    if datum.type == Datum.FOLDER_TYPE or datum.type == Datum.PROJECT_TYPE:
+    if isinstance(datum, Folder):
         # フォルダ直下のフォルダとデータベースとドキュメントを取得する
         childrenGetter = ChildrenGetter()
         children = childrenGetter.execute(session['user_id'], datum)
@@ -396,13 +396,18 @@ def throw_away_project(project_uuid):
         raise Exception('削除できませんでした')    
 
 def _throw_away_inner(parent_uuid, datum, modifier):
-    if datum.type == Datum.FOLDER_TYPE or datum.type == Datum.PROJECT_TYPE:
+    if isinstance(datum, Folder):
         # フォルダ直下のフォルダとデータベースとドキュメントを取得する
         childrenGetter = ChildrenGetter()
         children = childrenGetter.execute(modifier, datum)
 
         # ゴミ箱に捨てても削除前の階層構造を維持するため、削除対象フォルダの形代をゴミ箱に作成する
-        trashed_folder = Folder(parent_uuid, datum.label, modifier)
+        if datum.type == Datum.FOLDER_TYPE:
+            trashed_folder = Folder(parent_uuid, datum.label, modifier)
+        elif datum.type == Datum.PROJECT_TYPE:
+            trashed_folder = ProjectFolder(parent_uuid, datum.label, modifier)
+        else:
+            raise Exception('Unkown datum type')
         trashed_folder.save()
 
         throwables = []
