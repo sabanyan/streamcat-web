@@ -2,7 +2,7 @@ import { API } from 'Modules/api/index'
 
 export function lockedDo(flowUUID, promisedTask: Function, promisedProps: {}) {
 
-    return API.request.doPost.locks({ target: flowUUID })
+    return API.request.doPost.locks({ flowUUID: flowUUID })
         .then(async (res) => {
             const locksData = API.response.post.locks(res)
             const lockUUID = locksData.uuid

@@ -3,12 +3,12 @@ import { URL } from 'Modules/api/core/url/index';
 import { Url } from "Modules/api/core/types/request";
 
 type Props = Url & {
-    target: string
+    flowUUID: string
 }
 
 export function locks(props: Props) {
     const url = (props.url) ? props.url : URL.POST.locks
-    const data = { target: props.target }
+    const data = { target: props.flowUUID }
 
     return ApiBase.Post(url, data)
 }
