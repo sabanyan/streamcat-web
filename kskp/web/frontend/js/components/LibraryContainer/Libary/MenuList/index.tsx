@@ -23,7 +23,7 @@ const MenuList = (props: Props) => {
         <Spacer height={8}/>
         <FlatButton icon={"icon-upload"}  onClick={onClickCSVUpload}>CSVファイルアップロード</FlatButton>
         <Spacer height={8}/>
-        <FlatButton icon={"icon-add"}  onClick={onClickAddDataSource}>データソースの追加</FlatButton>
+        <FlatButton icon={"icon-add"}  onClick={onClickAddDataSource}>データベースの追加</FlatButton>
     </div>;
 };
 
