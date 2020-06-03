@@ -724,7 +724,7 @@ const Library = (props: Props) => {
                     setLastSelected(null);
                 }
                 clickedLibraryCell.current = false;
-            },300);
+            },100);
         };
 
         const onClickDeleteAll = ()=>{
@@ -1298,6 +1298,11 @@ const Library = (props: Props) => {
             e: React.FocusEvent<HTMLInputElement>, selected_data: any) => {
             // Label の修正
             if (!selected_data) {
+                return;
+            }
+
+            // セルをクリックして切り替えしている最中の場合はイベントをキャンセルする
+            if(clickedLibraryCell.current){
                 return;
             }
 
