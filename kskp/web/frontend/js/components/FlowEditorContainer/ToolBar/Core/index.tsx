@@ -161,7 +161,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     
     this.saveFlow()
       .then((result: any) => {
-        if (result.success === true) this.run()
+        if (result && result.success === true) this.run()
         this.loading = false
       })
   }
