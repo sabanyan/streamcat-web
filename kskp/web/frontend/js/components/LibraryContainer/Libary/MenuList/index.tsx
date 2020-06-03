@@ -19,7 +19,7 @@ const MenuList = (props: Props) => {
         <Spacer height={8}/>
         <FlatButton icon={"icon-add"}  onClick={onClickNewProject}>プロジェクトの新規作成</FlatButton>
         <Spacer height={8}/>
-        <FlatButton icon={"icon-make-folder"}  onClick={onClickNewFolder}>フォルダの作成</FlatButton>
+        <FlatButton icon={"icon-add"}  onClick={onClickNewFolder}>フォルダの作成</FlatButton>
         <Spacer height={8}/>
         <FlatButton icon={"icon-upload"}  onClick={onClickCSVUpload}>CSVファイルアップロード</FlatButton>
         <Spacer height={8}/>
