@@ -709,13 +709,9 @@ const Library = (props: Props) => {
                 }
             } else {
                 // 単一選択
-                clearSelected();// 選択状態を一旦解除
+                clearSelected();
                 data.selected = true;
-                if (selectedDatas.includes(data)) {
-                    setSelectedDatas([]);
-                } else {
-                    setSelectedDatas([data]);
-                }
+                setSelectedDatas([data]);
                 setLastSelected(data);
             }
             clickedLibraryCell.current = true;
