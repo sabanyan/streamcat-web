@@ -1,5 +1,6 @@
 import * as React from "react";
-import style from "Shared/Input/FlatButton/style.scss";
+import iconStyle from "Shared/Input/FlatButton/style.scss";
+import style from "./style.scss";
 
 export interface ITableHeader {
     label: string;
@@ -12,7 +13,7 @@ export type TTableHeaderSortType = "asc" | "desc" | null | undefined
 
 interface Props {
     headers: ITableHeader[];
-    onClick: (header: ITableHeader,event?:React.MouseEvent<HTMLTableHeaderCellElement>) => void;
+    onClick: (header: ITableHeader,event?:React.MouseEvent<HTMLSpanElement>) => void;
 }
 
 const FileListHeader = (props: Props) => {
@@ -33,15 +34,15 @@ const FileListHeader = (props: Props) => {
     const getIconElement = (icon: string | null) => {
         const baseUrl = "/front_static/";
         const iconElement = (icon)
-            ? <img className={style.icon} src={baseUrl + "images/icon/" + icon + ".svg"} />
+            ? <img className={iconStyle.icon} src={baseUrl + "images/icon/" + icon + ".svg"} />
             : null;
         return iconElement;
     };
 
     const headerElement = headers.map((header,index) => {
-        return <th key={index} onClick={(event) => {
+        return <th key={index} style={{width: header.width}}><span onClick={(event) => {
             onClick(header,event);
-        }} style={{width: header.width}}>{header.label}{getIconElement(getIconFromSort(header.sort))}</th>;
+        }} >{header.label}{getIconElement(getIconFromSort(header.sort))}</span></th>;
     });
 
     return <thead>
