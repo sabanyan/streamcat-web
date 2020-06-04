@@ -8,11 +8,11 @@ interface Props {
     onClickNewProject: () => void;
     onClickNewFolder: () => void;
     onClickCSVUpload: () => void;
-    onClickAddDataSource: () => void;
+    onClickAddDatabase: () => void;
 }
 
 const MenuList = (props: Props) => {
-    const {onClickNewFlow, onClickNewProject, onClickNewFolder, onClickCSVUpload,onClickAddDataSource} = props;
+    const {onClickNewFlow, onClickNewProject, onClickNewFolder, onClickCSVUpload,onClickAddDatabase} = props;
 
     return <div className={style.menuList}>
         <FlatButton icon={"icon-add"} onClick={onClickNewFlow}>フローの新規作成</FlatButton>
@@ -23,7 +23,7 @@ const MenuList = (props: Props) => {
         <Spacer height={8}/>
         <FlatButton icon={"icon-upload"}  onClick={onClickCSVUpload}>CSVファイルアップロード</FlatButton>
         <Spacer height={8}/>
-        <FlatButton icon={"icon-add"}  onClick={onClickAddDataSource}>データベースの追加</FlatButton>
+        <FlatButton icon={"icon-add"}  onClick={onClickAddDatabase}>データベースの追加</FlatButton>
     </div>;
 };
 
