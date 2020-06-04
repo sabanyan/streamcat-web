@@ -132,7 +132,8 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     let inputParams, inputParamsContainer, addFlowParams
     this.paramRefs = []
     inputParams = params.map((param, index) => {
-      return <div key={param.name} className={style.flow_param}>
+      // FixIt: keyによって削除された変数の表示がおかしくなったり、変数入力欄のフォカースを失ったりする事象が発生する。両方直せる方法を考える
+      return <div key={index} className={style.flow_param}>
         <div className={style.left}>
           <input ref={(ref) => {
             //render時にrefがnullのケースでcallされる場合があるので、
