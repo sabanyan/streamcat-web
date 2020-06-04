@@ -34,11 +34,11 @@ interface Props {
 export interface Database {
     label?: string;
     dbms?: any;
-    host?: string;
+    hostname?: string;
     port?: string;
     database?: string;
     user_id?: string;
-    user_password?: string;
+    password?: string;
 }
 
 export const getDataBaseRules = () => {
@@ -65,7 +65,7 @@ export const getDataBaseParams = () => {
         {
             "name": "label",
             "type": "string",
-            "label": "Label"
+            "label": "名称"
         },
         {
             "name": "dbms",
@@ -78,7 +78,7 @@ export const getDataBaseParams = () => {
             "default": "postgresql"
         },
         {
-            "name": "host",
+            "name": "hostname",
             "type": "string",
             "label": "ホスト名",
             "default": ""
@@ -102,7 +102,7 @@ export const getDataBaseParams = () => {
             "default": ""
         },
         {
-            "name": "user_password",
+            "name": "password",
             "type": "string",
             "label": "パスワード",
             "default": ""
@@ -116,11 +116,11 @@ const getInitialDatabase = (): Database => {
     return {
         label: "",
         dbms: getDataBaseParams()[1].default,
-        host: "",
+        hostname: "",
         port: "",
         database: "",
         user_id: "",
-        user_password: ""
+        password: ""
     };
 };
 
@@ -137,8 +137,9 @@ const Library = (props: Props) => {
     const [formFlowName, setFormFlowName] = useState<string>("");
     const [formProjectName, setFormProjectName] = useState<string>("");
     const [formFolderName, setFormFolderName] = useState<string>("");
-    const [database, setDatabase] = useState<Database | null>(getInitialDatabase());
-    const [edit_database,setEditDatabase] = useState<Database | null>(getInitialDatabase);
+    // const [database, setDatabase] = useState<Database | null>(null);
+    const [addDatabase, setAddDatabase] = useState<Database | null>(null);
+    const [editDatabase,setEditDatabase] = useState<Database | null>(null);
 
     const [new_names, setNewNames] = useState();
     const [stores, setStores] = useState();
@@ -185,12 +186,6 @@ const Library = (props: Props) => {
         if(!folderPath)return;
         setLinks(makeBreadCrumbLinks(folderPath));
     },folderPath);
-
-    useEffect(() => {
-        ModalUtil.registerModal({
-            id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone
-        });
-    }, []);
 
     useEffect(() => {
         ModalUtil.registerModal({
@@ -272,6 +267,103 @@ const Library = (props: Props) => {
         fetchFolder();
     }, []);
 
+    useEffect(()=>{
+        const database = editDatabase;
+        if(!database)return;
+        const rules = getDataBaseRules();
+        const params = getDataBaseParams();
+        const completeEditDatabase = (response: any) => {
+            const json = response.data.data;
+            if (!response.data.success) {
+                notify({
+                    title: "データベース作成エラー",
+                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                    status: "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            } else {
+                notify({
+                    title: "データベースを編集しました", message: (database) ? database.label : "" + "を編集しました",
+                    status: "success"
+                });
+            }
+            setIsLoading(false);
+            setEditDatabase(null);
+            ModalUtil.closeModal(Constants.modal.EDIT_DATABASE);
+            fetchFolder();
+
+        };
+
+        const editLibraryChild = (data: LibraryListDataType) => {
+            APIUtil.put("databases/" + data.uuid, database).then((response) => {
+                completeEditDatabase(response);
+            }, () => {
+                unhandledNotify("データベース修正エラー");
+            });
+        };
+
+
+        const onChangeEditDatabase = (e, param, value) => {
+            try {
+                const newDatabase = database;
+                if (newDatabase) {
+                    newDatabase[param.name] = value;
+                    setEditDatabase(newDatabase);
+                    const params = getDataBaseParams();
+                    const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
+                                                   onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
+                    ModalUtil.emitModal({
+                        id: Constants.modal.EDIT_DATABASE,
+                        visible: true,
+                        done: "編集する",
+                        danger: true,
+                        content: paramsForm
+                    });
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        };
+
+        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
+                                       onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
+        ModalUtil.registerModal({
+            id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
+                editLibraryChild(lastSelected);
+                setEditDatabase(null);
+                ModalUtil.closeModal(Constants.modal.CONFIRM);
+            }
+        });
+        ModalUtil.emitModal({
+            id: Constants.modal.EDIT_DATABASE,
+            visible: true,
+            done: "編集する",
+            danger: true,
+            content: paramsForm
+        });
+
+    },[editDatabase]);
+
+
+    useEffect(() => {
+        const database = addDatabase;
+        if (!database) return;
+        const params = getDataBaseParams();
+        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
+                                       onChange={(e, param, value) => onChangeNewDatabase(e, param, value)}/>;
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone
+        });
+        ModalUtil.emitModal({
+            id: Constants.modal.ADD_DATABASE,
+            visible: true,
+            done: "追加する",
+            dynamic: true,
+            content: paramsForm
+        });
+    }, [addDatabase]);
+
     const getVisualizers = ()=> {
         // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
         APIUtil.get("visualizers").then((response) => {
@@ -312,22 +404,23 @@ const Library = (props: Props) => {
     };
 
     const onClickAddDatabaseDone = ()=>{
+        const database = addDatabase;
         if (!database) return;
         try {
             if (!database.label) {
-                alert("Labelを入力してください");
+                alert("名称を入力してください");
                 return;
             }
             if (!database.dbms) {
                 alert("DBMSを入力してください");
                 return;
             }
-            if (!database.host) {
+            if (!database.hostname) {
                 alert("ホスト名を入力してください");
                 return;
             }
             if (!database.port) {
-                alert("ポート名を入力してください");
+                alert("ポート番号を入力してください");
                 return;
             }
 
@@ -335,11 +428,11 @@ const Library = (props: Props) => {
                 label: database.label,
                 parent: inject_folder_uuid,
                 dbms: database.dbms,
-                hostname: database.host,
+                hostname: database.hostname,
                 port: Number(database.port),
                 database: database.database,
                 user_id: database.user_id,
-                password: database.user_password
+                password: database.password
             };
             APIUtil.post("databases", body).then((response) => {
                 completeAddedDatabase(response);
@@ -356,6 +449,7 @@ const Library = (props: Props) => {
      * @param response
      */
     const completeAddedDatabase = (response: any) => {
+        const database = addDatabase;
         if(!database)return;
         const json = response.data.data;
         if (!response.data.success) {
@@ -374,7 +468,7 @@ const Library = (props: Props) => {
             });
         }
         setIsLoading(false);
-        setDatabase(getInitialDatabase());
+        setAddDatabase(null);
         ModalUtil.closeModal(Constants.modal.ADD_DATABASE);
         fetchFolder();
     };
@@ -561,44 +655,30 @@ const Library = (props: Props) => {
         window.close();
     };
 
-    const onClickAddDataSource = () => {
-        console.log("ADD_DATABASE");
+    const onClickAddDatabase = () => {
         const params = getDataBaseParams();
-        let database: Database = {};
-        params.map(param => {
-            if (param.default) database[param.name] = param.default;
-        });
-        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
-                                       onChange={onChangeDatabase} />;
-
-        ModalUtil.emitModal({
-            id: Constants.modal.ADD_DATABASE,
-            visible: true,
-            done: "追加する",
-            dynamic: true,
-            content: paramsForm
-        });
-        console.log(database);
-
-        setDatabase(database);
+        // let database: Database = {};
+        // params.map(param => {
+        //     if (param.default) database[param.name] = param.default;
+        // });
+        // const paramsForm = <ParamsForm params={params} args={getInitialDatabase()} invalids={{}}
+        //                                onChange={onChangeNewDatabase} />;
+        //
+        // ModalUtil.emitModal({
+        //     id: Constants.modal.ADD_DATABASE,
+        //     visible: true,
+        //     done: "追加する",
+        //     dynamic: true,
+        //     content: paramsForm
+        // });
+        setAddDatabase(getInitialDatabase());
     };
 
-
-    const onChangeDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
+    const onChangeNewDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
         try {
-            if (!database) return;
-            let newDatabase = database;
-            newDatabase[param.name] = value;
-            setDatabase(newDatabase);
-            const params = getDataBaseParams()
-            const paramsForm = <ParamsForm params={params} args={database} invalids={{}} onChange={(e, param, value) => onChangeDatabase(e, param, value)}></ParamsForm>
-            ModalUtil.emitModal({
-                id: Constants.modal.ADD_DATABASE,
-                visible: true,
-                done: '追加する',
-                dynamic: true,
-                content: paramsForm,
-            })
+            if(addDatabase){
+                setAddDatabase({...addDatabase,...{[param.name]:value}});
+            }
         } catch (e) {
             console.log(e);
         }
@@ -660,8 +740,11 @@ const Library = (props: Props) => {
             if(body.type === "project"){
                 WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption + "&project=true" ));
             }
+            if(body.type === "database"){
+                setLastSelected(body);
+                onClickEditDatabase(body);
+            }
             if(body.type === "frame"){
-                // TODO データフレームがクリックされた場合どうするか
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
             }
             if(body.type === "flow"){
@@ -800,7 +883,7 @@ const Library = (props: Props) => {
                         :
                         (!inject_is_trash) ?
                             <MenuList
-                                onClickAddDataSource={onClickAddDataSource}
+                                onClickAddDatabase={onClickAddDatabase}
                                 onClickCSVUpload={onClickCSVUpload}
                                 onClickNewFlow={onClickNewFlow}
                                 onClickNewFolder={onClickNewFolder}
@@ -892,7 +975,6 @@ const Library = (props: Props) => {
                         lock.uuid = API.response.post.locks(res).uuid;
                     })
                     .catch((e) => {
-                        console.log(library);
                         console.log(e);
                         reject(e);
                     });
@@ -909,7 +991,6 @@ const Library = (props: Props) => {
                     if (res && !res.data.success) throw res.data;
                 })
                 .catch((e) => {
-                    console.log(library);
                     console.log(e);
                     reject(e);
                 });
@@ -922,7 +1003,6 @@ const Library = (props: Props) => {
                         if (res && !res.data.success) throw res.data;
                     })
                     .catch((e) => {
-                        console.log(library);
                         console.log(e);
                         reject(e);
                     });
@@ -1102,6 +1182,22 @@ const Library = (props: Props) => {
         });
     };
 
+    const onClickEditDatabase = (data: LibraryListDataType) => {
+        if (data.type !== Constants.library.type.database) {
+            return;
+        }
+        const database:Database = {
+            "label": data.label,
+            "dbms": data.dbms,
+            "hostname": data.hostname,
+            "port": data.port,
+            "database": data.database,
+            "user_id": data.user_id,
+            "password": data.password
+        };
+        setEditDatabase(database);
+    };
+
     const renderLibraryInspector = (): React.ReactNode => {
         if (!lastSelected) return null;
 
@@ -1138,101 +1234,12 @@ const Library = (props: Props) => {
             });
         };
 
-        const onClickEditDatabase = (data: LibraryListDataType) => {
-            if (data.type !== Constants.library.type.database) {
-                return;
-            }
-            const rules = getDataBaseRules();
-            const params = getDataBaseParams();
-            const newDatabase = {
-                "label": data.label,
-                "dbms": data.dbms,
-                "host": data.hostname,
-                "port": data.port,
-                "database": data.database,
-                "user_id": data.user_id,
-                "user_password": data.password
-            };
-            setDatabase(newDatabase);
-
-            const completeEditDatabase = (response: any) => {
-                const json = response.data.data;
-                if (!response.data.success) {
-                    notify({
-                        title: "データベース作成エラー",
-                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                        status: "error",
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
-                } else {
-                    notify({
-                        title: "データベースを編集しました", message: (database) ? database.label : "" + "を編集しました",
-                        status: "success"
-                    });
-                }
-                setIsLoading(false);
-                setEditDatabase(getInitialDatabase());
-                ModalUtil.closeModal(Constants.modal.EDIT_DATABASE);
-                fetchFolder();
-
-            };
-
-            const editLibraryChild = (data: LibraryListDataType) => {
-                APIUtil.put("databases/" + data.uuid, newDatabase).then((response) => {
-                    completeEditDatabase(response);
-                }, () => {
-                    unhandledNotify("データベース修正エラー");
-                });
-            };
-
-            const onChangeEditDatabase = (e, param, value) => {
-                try {
-                    const newDatabase = database;
-                    if (newDatabase) {
-                        newDatabase[param.name] = value;
-                        setDatabase(newDatabase);
-                        const params = getDataBaseParams();
-                        const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
-                                                       onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
-                        ModalUtil.emitModal({
-                            id: Constants.modal.EDIT_DATABASE,
-                            visible: true,
-                            done: "編集する",
-                            danger: true,
-                            content: paramsForm
-                        });
-                    }
-                } catch (e) {
-                    console.log(e);
-                }
-            };
-
-            const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
-                                           onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
-            ModalUtil.registerModal({
-                id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
-                    editLibraryChild(data);
-                    ModalUtil.closeModal(Constants.modal.CONFIRM);
-                }
-            });
-            ModalUtil.emitModal({
-                id: Constants.modal.EDIT_DATABASE,
-                visible: true,
-                done: "編集する",
-                danger: true,
-                content: paramsForm
-            });
-        };
-
         const onClickApply = (selected_data: LibraryListDataType) => {
             if (window.opener || !window.opener.closed) {
                 window.opener.onCallbackApply(selected_data);
             }
             window.close();
         };
-
-        console.log(data);
 
         switch (mode) {
             case Constants.library.mode.frame_select:
