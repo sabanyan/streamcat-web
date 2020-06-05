@@ -4,7 +4,7 @@ import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { AddButton, Button } from 'Shared/Input'
-import { ModalUtil } from 'Utils/index'
+import { ModalUtil,StringUtil } from 'Utils/index'
 import Constants from 'Constants/index'
 import type { MastType, SubFlowParamType } from 'Types/index'
 import { CommandSelector } from "FlowEditorContainer/Command";
@@ -51,6 +51,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
       let param: SubFlowParamType = {}
       param['label'] = elem.value
       param['name'] = elem.value
+      param['uuid'] = elem.uuid
       param['type'] = 'string'
       params.push(param)
     })
@@ -66,7 +67,8 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   onClickAddFlowParam () {
     let {flow} = this.props
     const name = this.setNewParamName('new_param', 1)
-    flow.params.push({label:name, name: name, type: 'string'})
+    const uuid = StringUtil.generateUUID();
+    flow.params.push({label:name, name: name, type: 'string',uuid: uuid})
     this.props.updateFlow(flow)
   }
 
@@ -132,12 +134,13 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     let inputParams, inputParamsContainer, addFlowParams
     this.paramRefs = []
     inputParams = params.map((param, index) => {
-      return <div key={index} className={style.flow_param}>
+      return <div key={param.uuid} className={style.flow_param}>
         <div className={style.left}>
           <input ref={(ref) => {
             //render時にrefがnullのケースでcallされる場合があるので、
             //refがあることを確認してから入れる
             if (ref) {
+              ref.uuid = param.uuid;
               this.paramRefs.push(ref)
             }
           }} type={'text'} className={'form-control'} defaultValue={param.name}
