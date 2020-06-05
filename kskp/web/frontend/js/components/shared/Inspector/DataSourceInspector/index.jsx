@@ -58,6 +58,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   constructor(props: FlowEditorProps) {
     super(props)
+    this.updateCache = this.updateCache.bind(this)
     this.state = {
       loading: false
     }
@@ -73,15 +74,16 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   saveFlow() {
-    const { flow, lockUUID, notify } = this.props
+    const { flow, lockUUID, notify, dismissNotify } = this.props
+
+    let saveNotify = notify({
+      title: 'フロー保存中',
+      message: 'フローの設定を保存しています',
+      status: 'loading',
+      dismissAfter: 0,
+    })
 
     return new Promise(async (reslove, reject) => {
-
-      if (!lockUUID) throw new MessageModel({
-        title: '警告：読取専用フロー',
-        message: 'このフローはすでに編集中のため、 編集権限が取得できませんでした。',
-        messageStatus: "warning"
-      })
 
       await API.request.doPut.flow(
         {
@@ -90,14 +92,21 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           lockUUID: lockUUID
         }
       )
-
-      reslove()
-    }) // flow 保存に失敗した場合、
+        .then((response) => {
+          dismissNotify(saveNotify.id)
+          if (response.data.success === true) {
+            reslove(response.data)
+          } else {
+            reject(response.data)
+          }
+        })
+    })
+      // 保存失敗した場合、エラーメッセージ出力
       .catch(e => {
         notify({
-          title: e.title,
+          title: 'フロー保存エラー',
           message: e.message,
-          status: e.messageStatus,
+          status: 'error',
           dismissAfter: -1,
           closeButton: true
         })
@@ -117,18 +126,21 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       loading: true
     }, () => {
       this.saveFlow()
-        .then(() => {
-          let contents = []
-          for (const v of visualizers) {
-            let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
-            contents.push({ title: v.label, content: content, id: id })
+        .then((result: any) => {
+          if (result.success === true) {
+            // preview
+            let contents = []
+            for (const v of visualizers) {
+              let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
+              contents.push({ title: v.label, content: content, id: id, afterViz: this.updateCache  })
+            }
+            ModalUtil.emitModal({
+              id: Constants.preview.DATASOURCE,
+              visible: true,
+              contents: contents,
+              title: selected_step.getLabel()
+            })
           }
-          ModalUtil.emitModal({
-            id: Constants.preview.DATASOURCE,
-            visible: true,
-            contents: contents,
-            title: selected_step.getLabel()
-          })
         })
         .catch((message) => {
           console.log(message)
@@ -137,16 +149,30 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           this.setState({
             loading: false
           })
-          this.updateCache()
         })
     })
   }
 
   updateCache() {
-    APIUtil.get('flows/' + inject_flow_uuid).then((response) => {
-      const json = response.data
-      this.props.loadFlowJSON(json)
-    })
+    const {notify} = this.props
+
+    APIUtil.get('flows/' + inject_flow_uuid + "?navigation=off")
+      .then((response) => {
+        console.log(response)
+        if (response.data.success === false) throw response.data
+        const json = response.data
+        this.props.loadFlowJSON(json)
+      })
+      .catch((error) => {
+        console.log(error)
+        notify({
+          title: 'フロ取得エラー',
+          message: error.message + "(フローの読み込みに失敗しました。再読み込みしてください)",
+          status: 'error',
+          dismissAfter: 0,
+          closeButton: true
+        })
+      })
   }
 
   onClickCSVDownload(e: Event) {
@@ -161,6 +187,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       let props: CSVModelProps = {
         uuid: selected_step.uuid,
         data: response.data,
+        label: selected_step.label
       }
       const csv: CSVModel = new CSVModel(props)
       csv.handleDownload()
@@ -313,7 +340,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render() {
-    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled } = this.props;
+    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled, lockUUID } = this.props;
     let step_text
     let dataSource
     let preview
@@ -323,8 +350,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       preview = <Button onClick={(e) => this.onClickPreview(e)}
         icon={'visibility'} disabled={disabled}>プレビュー</Button>
       if (selected_step.hasData()) {
-        const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
-        download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
+        let href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
+        download = <Button icon={'get_app'} onClick={(e) => this.onClickCSVDownload(e)}>CSVダウンロード</Button>
       }
     }
 
@@ -363,6 +390,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       let fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0
       fileSize = StringUtil.convertToFileSize(fileSize)
       let lastModifiedAt = selected_data_source_detail ? selected_data_source_detail.lastModifiedAt : ""
+      let lastModifier = selected_data_source_detail ? selected_data_source_detail.lastModifier : ""
 
       content = <div>
         <div className={style.property_overview}>
@@ -396,7 +424,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
                 作成者
               </div>
               <div className={style.overview_value}>
-                {/*{property.overview.created_user_name || ""}*/}
+                {lastModifier}{/*{property.overview.created_user_name || ""}*/}
               </div>
             </div>
             <div className={style.overview}>
@@ -418,18 +446,23 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           </div>
           <div className={style.cache_delete}>
             <Button icon={'delete'} danger={true}
-              disabled={!selected_step.isCached()}
+              disabled={!selected_step.isCached() || !lockUUID}
 
               onClick={(e) => { this.onClickDeleteCache() }}>
               キャッシュ削除
             </Button>
           </div>
-          <div className={style.cache_label}>
+          {
+            /*
+            <div className={style.cache_label}>
             キャッシュ作成日
-          </div>
-          <div className={style.cache_value}>
-            {selected_step.cacheCreatedAt}
-          </div>
+            </div>
+            <div className={style.cache_value}>
+              {selected_step.cacheCreatedAt}
+            </div>
+            */
+          }
+
         </div>
         <div className={style.full_hr} />
         <CommandSelector

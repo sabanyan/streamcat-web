@@ -167,11 +167,8 @@ def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
     """
-    if Flow.exists(flow_uuid):
-        flow = Flow.find_by_uuid(flow_uuid)
-        return flow.flow_data
-    else:
-        return fetch_flow_by_uuid(flow_uuid)
+    flow = Flow.find_by_uuid(flow_uuid)
+    return flow.flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api

@@ -178,8 +178,8 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
     let edges: any = []
     if (Array.isArray(graph.edges)) {
       graph.edges.forEach((edge, index) => {
-        const v_node = GraphUtil.getNode(nodes, edge.v)
-        const w_node = GraphUtil.getNode(nodes, edge.w)
+        const v_node = GraphUtil.getNode(nodes, edge.v)　// 入力元ノード
+        const w_node = GraphUtil.getNode(nodes, edge.w)　// 出力元ノード
 
         if (v_node && w_node) {
           const vx = v_node.position.x +
@@ -190,15 +190,15 @@ export default class FlowEditor extends React.Component<FlowEditorProps, State> 
             Constants.default.operator.width / 2
           const wy = w_node.position.y +
             Constants.default.operator.height / 2
-          let outPortLabel;
-          let inPortLabel;
+          let outPortLabel; // 入力元ノードからの出力ポートラベル
+          let inPortLabel;　// 出力元ノードからの入力ポートラベル
           //出力先ノードがDataFrameの場合のみ出力もとにラベルを付与する
           if (w_node instanceof DataFrameStepModel) {
-            outPortLabel = JSON.parse(edge.name).port_name;
+            outPortLabel = JSON.parse(edge.name).port_name
           }
           //入力元ノードがDataFrameの場合のみ出力もとにラベルを付与する
-          if (v_node instanceof CommandStepModel) {
-            inPortLabel = JSON.parse(edge.name).port_name;
+          if (v_node instanceof DataFrameStepModel) {
+            inPortLabel = JSON.parse(edge.name).port_name
           }
 
           let e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy} key={index} />
