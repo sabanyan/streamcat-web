@@ -1,4 +1,5 @@
 //@flow
+import { v4 as uuidv4 } from 'uuid';
 export default class StringUtil {
 
   static separate (num: number): string {
@@ -29,6 +30,10 @@ export default class StringUtil {
     let metrics = context.measureText(text)
 
     return metrics.width
+  }
+
+  static generateUUID(): string{
+    return uuidv4();
   }
 }
 
