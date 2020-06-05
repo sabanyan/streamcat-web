@@ -62,6 +62,8 @@ class FrameApiTestCase(TestCaseBase):
         # 中身をテストしてもいいけど面倒臭いので、Noneじゃないことだけテストする
         self.assertIsNotNone(result['data'].get('contents'))
         self.assertEqual(result['data']['fileSize'], 56)
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
 
@@ -91,6 +93,8 @@ class FrameApiTestCase(TestCaseBase):
         self.assertEqual(result['success'], True)
         # no_contentsをつけているのでNoneのはず
         self.assertIsNone(result['data'].get('contents'))
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
@@ -124,6 +128,8 @@ class FrameApiTestCase(TestCaseBase):
         # no_contentsをつけているのでNoneのはず
         self.assertEqual(result['data']['contents'], correct)
         self.assertEqual(result['data']['fileSize'], 56)
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['lastModifiedAt'], now)
 
 
