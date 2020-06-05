@@ -26,6 +26,7 @@ import {TrashMenuList} from "Components/LibraryContainer/Libary/TrashMenuList";
 import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
 import {ApplyMenuList} from "Components/LibraryContainer/Libary/ApplyMenuList";
+import LibraryUtil from "Utils/LibraryUtil";
 
 interface Props {
 
@@ -137,43 +138,22 @@ const Library = (props: Props) => {
     const [formFlowName, setFormFlowName] = useState<string>("");
     const [formProjectName, setFormProjectName] = useState<string>("");
     const [formFolderName, setFormFolderName] = useState<string>("");
-    // const [database, setDatabase] = useState<Database | null>(null);
     const [addDatabase, setAddDatabase] = useState<Database | null>(null);
     const [editDatabase,setEditDatabase] = useState<Database | null>(null);
-
-    const [new_names, setNewNames] = useState();
     const [stores, setStores] = useState();
     const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
-
-
     const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
     const [lastSelected, setLastSelected] = useState<LibraryChild | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel[]>([]);
-
     const clickedLibraryCell = useRef(false);
-
     const [folderPath, setFolderPath] = useState();
     const [isLoading, setIsLoading] = useState();
     const [is_finished, setIsFinished] = useState();
-    const [isDialog, setIsDialog] = useState((HttpUtil.getURLParam("dialog")) ? true : false);
-    const [mode, setMode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
+    const [isDialog] = useState((HttpUtil.getURLParam("dialog")) ? true : false);
+    const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = HttpUtil.getURLParam("project") ? HttpUtil.getURLParam("project") : false;
-
     const [links,setLinks] = useState<IBreadCrumbsLink[]>([]);
-
-    // const [beforeSelected, setBeforeSelected] = useState();
-    // useEffect(()=>{
-    //         // 選択状態がかわったときに選択状態をクリアする
-    //     console.log("lastSelected", lastSelected);
-    //     console.log("selectedDats", selectedDatas);
-    //     console.log("beforeSelected", beforeSelected);
-    //     if(lastSelected && beforeSelected){
-    //         if (lastSelected.uuid != beforeSelected.uuid){
-    //         }
-    //     }
-    //     setBeforeSelected(lastSelected);
-    // },[lastSelected]);
 
     useEffect(()=>{
         if(isDialog){
@@ -198,31 +178,37 @@ const Library = (props: Props) => {
     }, []);
 
     useEffect(() => {
+        // プロジェクトの作成
         ModalUtil.registerModal({
             id: Constants.modal.ADD_PROJECT, onClickDone: () => {
+                if(formProjectName.length === 0){
+                    alert("プロジェクト名を入力して下さい");
+                    return;
+                }
+                setIsLoading(true);
                 APIUtil.post("projects", {label: formProjectName,parent: inject_folder_uuid}).then((response) => {
                     ModalUtil.emitModal(
                         {id: Constants.modal.ADD_PROJECT, visible: false});
-                    // this.clearKeyword()
-                    // this.getProjectList()
                     fetchFolder();
+                    setFormProjectName("");
+                    notify({
+                        title: "プロジェクトを作成しました", message: formProjectName + "を作成しました",
+                        status: "success"
+                    });
                 });
             }
         });
     }, [formProjectName]);
 
     useEffect(() => {
-        // Folder
+        // フォルダの作成
         ModalUtil.registerModal({
             id: Constants.modal.ADD_FOLDER, onClickDone: () => {
                 if (formFolderName.length === 0) {
                     alert("ファルダ名を入力してください");
-                    ModalUtil.closeModal(Constants.modal.ADD_FOLDER);
                     return;
                 }
                 setIsLoading(true);
-                // TODO SelectedDataの扱い
-                // this.setState({is_loading: true, selected_data: null});
                 const body = {
                     "label": formFolderName,
                     "parent": inject_folder_uuid
@@ -240,12 +226,14 @@ const Library = (props: Props) => {
     }, [formFolderName]);
 
     useEffect(() => {
+        // フローの作成
         ModalUtil.registerModal({
             id: Constants.modal.ADD_FLOW, onClickDone: () => {
                 if (!formFlowName) {
                     alert("フロー名を入力してください");
                     return false;
                 }
+                setIsLoading(true);
                 APIUtil.post("flows", {
                     name: formFlowName,
                     project_uuid: inject_folder_uuid, // TODO project_uuid のキーが将来的に変更になる可能性あり、実態はfolderのuuidが利用できる
@@ -254,9 +242,12 @@ const Library = (props: Props) => {
                     }
                 }).then((response) => {
                     ModalUtil.closeModal(Constants.modal.ADD_FLOW);
-                    // this.clearKeyword()
-                    // this.getFlowList()
+                    setFormFlowName("");
                     fetchFolder();
+                    notify({
+                        title: "フローを作成しました", message: formFlowName + "を作成しました",
+                        status: "success"
+                    });
                 });
                 return true;
             }
@@ -268,6 +259,7 @@ const Library = (props: Props) => {
     }, []);
 
     useEffect(()=>{
+        // データベースの編集
         const database = editDatabase;
         if(!database)return;
         const rules = getDataBaseRules();
@@ -284,7 +276,7 @@ const Library = (props: Props) => {
                 });
             } else {
                 notify({
-                    title: "データベースを編集しました", message: (database) ? database.label : "" + "を編集しました",
+                    title: "データベースを保存しました", message: (database) ? database.label : "" + "を保存しました",
                     status: "success"
                 });
             }
@@ -296,6 +288,7 @@ const Library = (props: Props) => {
         };
 
         const editLibraryChild = (data: LibraryListDataType) => {
+            setIsLoading(true);
             APIUtil.put("databases/" + data.uuid, database).then((response) => {
                 completeEditDatabase(response);
             }, () => {
@@ -316,7 +309,7 @@ const Library = (props: Props) => {
                     ModalUtil.emitModal({
                         id: Constants.modal.EDIT_DATABASE,
                         visible: true,
-                        done: "編集する",
+                        done: "設定する",
                         danger: true,
                         content: paramsForm
                     });
@@ -338,7 +331,7 @@ const Library = (props: Props) => {
         ModalUtil.emitModal({
             id: Constants.modal.EDIT_DATABASE,
             visible: true,
-            done: "編集する",
+            done: "設定する",
             danger: true,
             content: paramsForm
         });
@@ -347,6 +340,7 @@ const Library = (props: Props) => {
 
 
     useEffect(() => {
+        // データベースの新規作成
         const database = addDatabase;
         if (!database) return;
         const params = getDataBaseParams();
@@ -434,6 +428,7 @@ const Library = (props: Props) => {
                 user_id: database.user_id,
                 password: database.password
             };
+            setIsLoading(true);
             APIUtil.post("databases", body).then((response) => {
                 completeAddedDatabase(response);
             }, () => {
@@ -630,7 +625,7 @@ const Library = (props: Props) => {
         ModalUtil.emitModal({
             id: Constants.modal.ADD_FOLDER,
             visible: true,
-            done: "追加する",
+            done: "作成する",
             content: <div>
                 <TextField placeholder={"フォルダ名"} onChange={(e) => setFormFolderName(e.target.value)} />
             </div>
@@ -641,7 +636,7 @@ const Library = (props: Props) => {
         ModalUtil.emitModal({
             id: Constants.modal.ADD_FRAME,
             visible: true,
-            done: "アップロード",
+            done: "アップロードする",
             content: <div>
                 <FileUploader accept={[".csv"]} url={url} parentUUID={inject_folder_uuid} notify={notify} />
             </div>
@@ -946,8 +941,9 @@ const Library = (props: Props) => {
         })
             .then(() => {
                 // 成功
+                const typeLabel = LibraryUtil.getTypeLabel(library.type);
                 notify({
-                    title: "",
+                    title: typeLabel + "を削除しました",
                     message: library.label + "を削除しました",
                     status: "success"
                 });
@@ -1011,6 +1007,11 @@ const Library = (props: Props) => {
         })
             .then(() => {
                 // 成功
+                const typeLabel = LibraryUtil.getTypeLabel(library.type);
+                notify({
+                    title: typeLabel + "を移動しました", message: library.label + "を移動しました",
+                    status: "success"
+                });
             })
             .catch((e) => {
                 // 例外
@@ -1158,6 +1159,11 @@ const Library = (props: Props) => {
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 APIUtil.delete("trashes").then((response) => {
                     if (response.data.success !== true) throw response.data;
+                    notify({
+                        title: "ゴミ箱を空にしました",
+                        message: "ゴミ箱を空にしました",
+                        status: "success"
+                    });
                     fetchFolder();
                 }).catch(e => {
                     notify({
@@ -1177,7 +1183,9 @@ const Library = (props: Props) => {
             done: "ゴミ箱を空にする",
             danger: true,
             content: <div>
-                ゴミ箱を空にしますか？
+                <strong>ゴミ箱にある項目を完全に消去してもよろしいですか？</strong>
+                <br/>
+                この操作は取り消せません。
             </div>
         });
     };
@@ -1405,7 +1413,7 @@ const Library = (props: Props) => {
             });
         };
 
-        const onClickEditEncoding = (data) => {
+        const onClickEditEncoding = (data: LibraryChild) => {
 
 
             const onChangeEncoding = (e, data) => {
@@ -1478,6 +1486,13 @@ const Library = (props: Props) => {
                         })
                             .then(() => {
                                 setIsLoading(false);
+
+                                const typeLabel = LibraryUtil.getTypeLabel(data.type);
+                                notify({
+                                    title: typeLabel + "の文字コードを変更しました",
+                                    message: data.label + "の文字コードを変更しました",
+                                    status: "success"
+                                });
                             });
                     }
                     ModalUtil.closeModal(Constants.modal.EDIT_ENCODING);
