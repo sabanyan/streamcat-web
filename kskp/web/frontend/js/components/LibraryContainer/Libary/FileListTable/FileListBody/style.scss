@@ -1,22 +1,18 @@
 @import "../../../../../../sass/common";
-
+.row{
+  @extend .selectDisable;
+}
 .selected{
   td{
     background: #f6faff;
-    @extend .selectDisable;
-    img{
-      @extend .selectDisable;
-    }
   }
-  @extend .selectDisable;
 }
 
 .selectDisable {
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -o-user-select: none;
   user-select: none;
+  a::selection,img::selection,td::selection{
+    background: transparent!important;
+  }
 }
 
 .icon{

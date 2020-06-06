@@ -26,6 +26,7 @@ import {TrashMenuList} from "Components/LibraryContainer/Libary/TrashMenuList";
 import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
 import {ApplyMenuList} from "Components/LibraryContainer/Libary/ApplyMenuList";
+import LibraryUtil from "Utils/LibraryUtil";
 
 interface Props {
 
@@ -34,11 +35,11 @@ interface Props {
 export interface Database {
     label?: string;
     dbms?: any;
-    host?: string;
+    hostname?: string;
     port?: string;
     database?: string;
     user_id?: string;
-    user_password?: string;
+    password?: string;
 }
 
 export const getDataBaseRules = () => {
@@ -65,7 +66,7 @@ export const getDataBaseParams = () => {
         {
             "name": "label",
             "type": "string",
-            "label": "Label"
+            "label": "名称"
         },
         {
             "name": "dbms",
@@ -78,7 +79,7 @@ export const getDataBaseParams = () => {
             "default": "postgresql"
         },
         {
-            "name": "host",
+            "name": "hostname",
             "type": "string",
             "label": "ホスト名",
             "default": ""
@@ -102,7 +103,7 @@ export const getDataBaseParams = () => {
             "default": ""
         },
         {
-            "name": "user_password",
+            "name": "password",
             "type": "string",
             "label": "パスワード",
             "default": ""
@@ -116,11 +117,11 @@ const getInitialDatabase = (): Database => {
     return {
         label: "",
         dbms: getDataBaseParams()[1].default,
-        host: "",
+        hostname: "",
         port: "",
         database: "",
         user_id: "",
-        user_password: ""
+        password: ""
     };
 };
 
@@ -137,42 +138,22 @@ const Library = (props: Props) => {
     const [formFlowName, setFormFlowName] = useState<string>("");
     const [formProjectName, setFormProjectName] = useState<string>("");
     const [formFolderName, setFormFolderName] = useState<string>("");
-    const [database, setDatabase] = useState<Database | null>(getInitialDatabase());
-    const [edit_database,setEditDatabase] = useState<Database | null>(getInitialDatabase);
-
-    const [new_names, setNewNames] = useState();
+    const [addDatabase, setAddDatabase] = useState<Database | null>(null);
+    const [editDatabase,setEditDatabase] = useState<Database | null>(null);
     const [stores, setStores] = useState();
     const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
-
-
     const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
     const [lastSelected, setLastSelected] = useState<LibraryChild | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel[]>([]);
-
     const clickedLibraryCell = useRef(false);
-
     const [folderPath, setFolderPath] = useState();
     const [isLoading, setIsLoading] = useState();
     const [is_finished, setIsFinished] = useState();
-    const [isDialog, setIsDialog] = useState((HttpUtil.getURLParam("dialog")) ? true : false);
-    const [mode, setMode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
+    const [isDialog] = useState((HttpUtil.getURLParam("dialog")) ? true : false);
+    const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = HttpUtil.getURLParam("project") ? HttpUtil.getURLParam("project") : false;
-
     const [links,setLinks] = useState<IBreadCrumbsLink[]>([]);
-
-    // const [beforeSelected, setBeforeSelected] = useState();
-    // useEffect(()=>{
-    //         // 選択状態がかわったときに選択状態をクリアする
-    //     console.log("lastSelected", lastSelected);
-    //     console.log("selectedDats", selectedDatas);
-    //     console.log("beforeSelected", beforeSelected);
-    //     if(lastSelected && beforeSelected){
-    //         if (lastSelected.uuid != beforeSelected.uuid){
-    //         }
-    //     }
-    //     setBeforeSelected(lastSelected);
-    // },[lastSelected]);
 
     useEffect(()=>{
         if(isDialog){
@@ -188,12 +169,6 @@ const Library = (props: Props) => {
 
     useEffect(() => {
         ModalUtil.registerModal({
-            id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone
-        });
-    }, []);
-
-    useEffect(() => {
-        ModalUtil.registerModal({
             id: Constants.modal.ADD_FRAME, onClickClose: onClickAddFrameDone
         });
     }, []);
@@ -203,31 +178,37 @@ const Library = (props: Props) => {
     }, []);
 
     useEffect(() => {
+        // プロジェクトの作成
         ModalUtil.registerModal({
             id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-                APIUtil.post("projects", {name: formProjectName,parent: inject_folder_uuid}).then((response) => {
+                if(formProjectName.length === 0){
+                    alert("プロジェクト名を入力して下さい");
+                    return;
+                }
+                setIsLoading(true);
+                APIUtil.post("projects", {label: formProjectName,parent: inject_folder_uuid}).then((response) => {
                     ModalUtil.emitModal(
                         {id: Constants.modal.ADD_PROJECT, visible: false});
-                    // this.clearKeyword()
-                    // this.getProjectList()
                     fetchFolder();
+                    setFormProjectName("");
+                    notify({
+                        title: "プロジェクトを作成しました", message: formProjectName + "を作成しました",
+                        status: "success"
+                    });
                 });
             }
         });
     }, [formProjectName]);
 
     useEffect(() => {
-        // Folder
+        // フォルダの作成
         ModalUtil.registerModal({
             id: Constants.modal.ADD_FOLDER, onClickDone: () => {
                 if (formFolderName.length === 0) {
                     alert("ファルダ名を入力してください");
-                    ModalUtil.closeModal(Constants.modal.ADD_FOLDER);
                     return;
                 }
                 setIsLoading(true);
-                // TODO SelectedDataの扱い
-                // this.setState({is_loading: true, selected_data: null});
                 const body = {
                     "label": formFolderName,
                     "parent": inject_folder_uuid
@@ -245,12 +226,14 @@ const Library = (props: Props) => {
     }, [formFolderName]);
 
     useEffect(() => {
+        // フローの作成
         ModalUtil.registerModal({
             id: Constants.modal.ADD_FLOW, onClickDone: () => {
                 if (!formFlowName) {
                     alert("フロー名を入力してください");
                     return false;
                 }
+                setIsLoading(true);
                 APIUtil.post("flows", {
                     name: formFlowName,
                     project_uuid: inject_folder_uuid, // TODO project_uuid のキーが将来的に変更になる可能性あり、実態はfolderのuuidが利用できる
@@ -259,9 +242,12 @@ const Library = (props: Props) => {
                     }
                 }).then((response) => {
                     ModalUtil.closeModal(Constants.modal.ADD_FLOW);
-                    // this.clearKeyword()
-                    // this.getFlowList()
+                    setFormFlowName("");
                     fetchFolder();
+                    notify({
+                        title: "フローを作成しました", message: formFlowName + "を作成しました",
+                        status: "success"
+                    });
                 });
                 return true;
             }
@@ -271,6 +257,106 @@ const Library = (props: Props) => {
     useEffect(() => {
         fetchFolder();
     }, []);
+
+    useEffect(()=>{
+        // データベースの編集
+        const database = editDatabase;
+        if(!database)return;
+        const rules = getDataBaseRules();
+        const params = getDataBaseParams();
+        const completeEditDatabase = (response: any) => {
+            const json = response.data.data;
+            if (!response.data.success) {
+                notify({
+                    title: "データベース作成エラー",
+                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                    status: "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            } else {
+                notify({
+                    title: "データベースを保存しました", message: (database) ? database.label : "" + "を保存しました",
+                    status: "success"
+                });
+            }
+            setIsLoading(false);
+            setEditDatabase(null);
+            ModalUtil.closeModal(Constants.modal.EDIT_DATABASE);
+            fetchFolder();
+
+        };
+
+        const editLibraryChild = (data: LibraryListDataType) => {
+            setIsLoading(true);
+            APIUtil.put("databases/" + data.uuid, database).then((response) => {
+                completeEditDatabase(response);
+            }, () => {
+                unhandledNotify("データベース修正エラー");
+            });
+        };
+
+
+        const onChangeEditDatabase = (e, param, value) => {
+            try {
+                const newDatabase = database;
+                if (newDatabase) {
+                    newDatabase[param.name] = value;
+                    setEditDatabase(newDatabase);
+                    const params = getDataBaseParams();
+                    const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
+                                                   onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
+                    ModalUtil.emitModal({
+                        id: Constants.modal.EDIT_DATABASE,
+                        visible: true,
+                        done: "設定する",
+                        danger: true,
+                        content: paramsForm
+                    });
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        };
+
+        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
+                                       onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
+        ModalUtil.registerModal({
+            id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
+                editLibraryChild(lastSelected);
+                setEditDatabase(null);
+                ModalUtil.closeModal(Constants.modal.CONFIRM);
+            }
+        });
+        ModalUtil.emitModal({
+            id: Constants.modal.EDIT_DATABASE,
+            visible: true,
+            done: "設定する",
+            danger: true,
+            content: paramsForm
+        });
+
+    },[editDatabase]);
+
+
+    useEffect(() => {
+        // データベースの新規作成
+        const database = addDatabase;
+        if (!database) return;
+        const params = getDataBaseParams();
+        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
+                                       onChange={(e, param, value) => onChangeNewDatabase(e, param, value)}/>;
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone
+        });
+        ModalUtil.emitModal({
+            id: Constants.modal.ADD_DATABASE,
+            visible: true,
+            done: "追加する",
+            dynamic: true,
+            content: paramsForm
+        });
+    }, [addDatabase]);
 
     const getVisualizers = ()=> {
         // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
@@ -292,7 +378,8 @@ const Library = (props: Props) => {
                     uuid: path.uuid,
                     label:"ライブラリ",
                     url: "/library"+ dialogOption,
-                    current:isCurrent
+                    current:isCurrent,
+                    type: "folder"
                 }
             }
 
@@ -300,7 +387,8 @@ const Library = (props: Props) => {
                 uuid: path.uuid,
                 label: path.label,
                 url: "/folders/" + path.uuid + dialogOption,
-                current: isCurrent
+                current: isCurrent,
+                type: path.type
             }
         });
     };
@@ -310,22 +398,23 @@ const Library = (props: Props) => {
     };
 
     const onClickAddDatabaseDone = ()=>{
+        const database = addDatabase;
         if (!database) return;
         try {
             if (!database.label) {
-                alert("Labelを入力してください");
+                alert("名称を入力してください");
                 return;
             }
             if (!database.dbms) {
                 alert("DBMSを入力してください");
                 return;
             }
-            if (!database.host) {
+            if (!database.hostname) {
                 alert("ホスト名を入力してください");
                 return;
             }
             if (!database.port) {
-                alert("ポート名を入力してください");
+                alert("ポート番号を入力してください");
                 return;
             }
 
@@ -333,12 +422,13 @@ const Library = (props: Props) => {
                 label: database.label,
                 parent: inject_folder_uuid,
                 dbms: database.dbms,
-                hostname: database.host,
+                hostname: database.hostname,
                 port: Number(database.port),
                 database: database.database,
                 user_id: database.user_id,
-                password: database.user_password
+                password: database.password
             };
+            setIsLoading(true);
             APIUtil.post("databases", body).then((response) => {
                 completeAddedDatabase(response);
             }, () => {
@@ -354,6 +444,7 @@ const Library = (props: Props) => {
      * @param response
      */
     const completeAddedDatabase = (response: any) => {
+        const database = addDatabase;
         if(!database)return;
         const json = response.data.data;
         if (!response.data.success) {
@@ -372,7 +463,7 @@ const Library = (props: Props) => {
             });
         }
         setIsLoading(false);
-        setDatabase(getInitialDatabase());
+        setAddDatabase(null);
         ModalUtil.closeModal(Constants.modal.ADD_DATABASE);
         fetchFolder();
     };
@@ -534,7 +625,7 @@ const Library = (props: Props) => {
         ModalUtil.emitModal({
             id: Constants.modal.ADD_FOLDER,
             visible: true,
-            done: "追加する",
+            done: "作成する",
             content: <div>
                 <TextField placeholder={"フォルダ名"} onChange={(e) => setFormFolderName(e.target.value)} />
             </div>
@@ -545,7 +636,7 @@ const Library = (props: Props) => {
         ModalUtil.emitModal({
             id: Constants.modal.ADD_FRAME,
             visible: true,
-            done: "アップロード",
+            done: "アップロードする",
             content: <div>
                 <FileUploader accept={[".csv"]} url={url} parentUUID={inject_folder_uuid} notify={notify} />
             </div>
@@ -559,44 +650,30 @@ const Library = (props: Props) => {
         window.close();
     };
 
-    const onClickAddDataSource = () => {
-        console.log("ADD_DATABASE");
+    const onClickAddDatabase = () => {
         const params = getDataBaseParams();
-        let database: Database = {};
-        params.map(param => {
-            if (param.default) database[param.name] = param.default;
-        });
-        const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
-                                       onChange={onChangeDatabase} />;
-
-        ModalUtil.emitModal({
-            id: Constants.modal.ADD_DATABASE,
-            visible: true,
-            done: "追加する",
-            dynamic: true,
-            content: paramsForm
-        });
-        console.log(database);
-
-        setDatabase(database);
+        // let database: Database = {};
+        // params.map(param => {
+        //     if (param.default) database[param.name] = param.default;
+        // });
+        // const paramsForm = <ParamsForm params={params} args={getInitialDatabase()} invalids={{}}
+        //                                onChange={onChangeNewDatabase} />;
+        //
+        // ModalUtil.emitModal({
+        //     id: Constants.modal.ADD_DATABASE,
+        //     visible: true,
+        //     done: "追加する",
+        //     dynamic: true,
+        //     content: paramsForm
+        // });
+        setAddDatabase(getInitialDatabase());
     };
 
-
-    const onChangeDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
+    const onChangeNewDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
         try {
-            if (!database) return;
-            let newDatabase = database;
-            newDatabase[param.name] = value;
-            setDatabase(newDatabase);
-            const params = getDataBaseParams()
-            const paramsForm = <ParamsForm params={params} args={database} invalids={{}} onChange={(e, param, value) => onChangeDatabase(e, param, value)}></ParamsForm>
-            ModalUtil.emitModal({
-                id: Constants.modal.ADD_DATABASE,
-                visible: true,
-                done: '追加する',
-                dynamic: true,
-                content: paramsForm,
-            })
+            if(addDatabase){
+                setAddDatabase({...addDatabase,...{[param.name]:value}});
+            }
         } catch (e) {
             console.log(e);
         }
@@ -658,8 +735,11 @@ const Library = (props: Props) => {
             if(body.type === "project"){
                 WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption + "&project=true" ));
             }
+            if(body.type === "database"){
+                setLastSelected(body);
+                onClickEditDatabase(body);
+            }
             if(body.type === "frame"){
-                // TODO データフレームがクリックされた場合どうするか
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
             }
             if(body.type === "flow"){
@@ -683,8 +763,10 @@ const Library = (props: Props) => {
                 } else {
                     selectedDatas.push(data);
                 }
+                setLastSelected(data);
             } else if (event && event.shiftKey) {
                 // shift + click
+                clearSelected();// 選択状態を一旦解除
                 let current = libraryChildren.indexOf(data);
                 if (lastSelected) {
                     let last = libraryChildren.indexOf(lastSelected);
@@ -697,24 +779,19 @@ const Library = (props: Props) => {
                         max = last;
                     }
                     // TODO シフトキーによる複数選択
-                    const selectedDatas:LibraryListDataType[] = libraryChildren.slice(min, max + 1).map((libraryChild)=>{
-                        libraryChild.selected = !libraryChild.selected;
+                    const selectedDatas:LibraryListDataType[] = libraryChildren.slice(min, max+1).map((libraryChild)=>{
+                        libraryChild.selected = true;
+                        return libraryChild;
                     });
                     setSelectedDatas(selectedDatas);
                 }
             } else {
                 // 単一選択
-                clearSelected();// 選択状態を一旦解除
+                clearSelected();
                 data.selected = true;
-                if (selectedDatas.includes(data)) {
-                    setSelectedDatas([]);
-                } else {
-                    setSelectedDatas([data]);
-                }
+                setSelectedDatas([data]);
+                setLastSelected(data);
             }
-            setLastSelected(data);
-            //TODO 単一選択がうごかなかったのでコメントアウト
-            //setSelectedDatas(selectedDatas);
             clickedLibraryCell.current = true;
         };
 
@@ -725,7 +802,7 @@ const Library = (props: Props) => {
                     setLastSelected(null);
                 }
                 clickedLibraryCell.current = false;
-            },300);
+            },100);
         };
 
         const onClickDeleteAll = ()=>{
@@ -762,6 +839,7 @@ const Library = (props: Props) => {
                         onClickCell={onClickCell}
                         onClickFileName={onClickFileName}
                         onClickHeader={(header:ITableHeader) => {
+                            clickedLibraryCell.current = true;
                             if(header.sort){
                                 setLibraryChildren(_.orderBy(libraryChildren, header.key, header.sort));
                             }else{
@@ -780,6 +858,10 @@ const Library = (props: Props) => {
                                 }else{
                                     body.clickable = true;
                                 }
+                                if(inject_is_trash){
+                                    // ゴミ箱の場合は全て選択不可
+                                    body.clickable = false;
+                                }
                                 return body;
                             })
                         }
@@ -796,7 +878,7 @@ const Library = (props: Props) => {
                         :
                         (!inject_is_trash) ?
                             <MenuList
-                                onClickAddDataSource={onClickAddDataSource}
+                                onClickAddDatabase={onClickAddDatabase}
                                 onClickCSVUpload={onClickCSVUpload}
                                 onClickNewFlow={onClickNewFlow}
                                 onClickNewFolder={onClickNewFolder}
@@ -859,8 +941,9 @@ const Library = (props: Props) => {
         })
             .then(() => {
                 // 成功
+                const typeLabel = LibraryUtil.getTypeLabel(library.type);
                 notify({
-                    title: "",
+                    title: typeLabel + "を削除しました",
                     message: library.label + "を削除しました",
                     status: "success"
                 });
@@ -888,7 +971,6 @@ const Library = (props: Props) => {
                         lock.uuid = API.response.post.locks(res).uuid;
                     })
                     .catch((e) => {
-                        console.log(library);
                         console.log(e);
                         reject(e);
                     });
@@ -905,7 +987,6 @@ const Library = (props: Props) => {
                     if (res && !res.data.success) throw res.data;
                 })
                 .catch((e) => {
-                    console.log(library);
                     console.log(e);
                     reject(e);
                 });
@@ -918,7 +999,6 @@ const Library = (props: Props) => {
                         if (res && !res.data.success) throw res.data;
                     })
                     .catch((e) => {
-                        console.log(library);
                         console.log(e);
                         reject(e);
                     });
@@ -927,6 +1007,11 @@ const Library = (props: Props) => {
         })
             .then(() => {
                 // 成功
+                const typeLabel = LibraryUtil.getTypeLabel(library.type);
+                notify({
+                    title: typeLabel + "を移動しました", message: library.label + "を移動しました",
+                    status: "success"
+                });
             })
             .catch((e) => {
                 // 例外
@@ -1027,6 +1112,9 @@ const Library = (props: Props) => {
                     case Constants.library.type.folder:
                         result = APIUtil.put("folders/" + uuid, data);
                         break;
+                    case Constants.library.type.project:
+                        result = APIUtil.put("projects/" + uuid, data);
+                        break;
                     case Constants.library.type.flow:
                         result = editFlow(uuid, folder_uuid);
                         break;
@@ -1071,6 +1159,11 @@ const Library = (props: Props) => {
             id: Constants.modal.CONFIRM, onClickDone: () => {
                 APIUtil.delete("trashes").then((response) => {
                     if (response.data.success !== true) throw response.data;
+                    notify({
+                        title: "ゴミ箱を空にしました",
+                        message: "ゴミ箱を空にしました",
+                        status: "success"
+                    });
                     fetchFolder();
                 }).catch(e => {
                     notify({
@@ -1090,9 +1183,27 @@ const Library = (props: Props) => {
             done: "ゴミ箱を空にする",
             danger: true,
             content: <div>
-                ゴミ箱を空にしますか？
+                <strong>ゴミ箱にある項目を完全に消去してもよろしいですか？</strong>
+                <br/>
+                この操作は取り消せません。
             </div>
         });
+    };
+
+    const onClickEditDatabase = (data: LibraryListDataType) => {
+        if (data.type !== Constants.library.type.database) {
+            return;
+        }
+        const database:Database = {
+            "label": data.label,
+            "dbms": data.dbms,
+            "hostname": data.hostname,
+            "port": data.port,
+            "database": data.database,
+            "user_id": data.user_id,
+            "password": data.password
+        };
+        setEditDatabase(database);
     };
 
     const renderLibraryInspector = (): React.ReactNode => {
@@ -1107,6 +1218,7 @@ const Library = (props: Props) => {
         let _onClickDelete: any = null;
         let _onClickMove: any = null;
         let _onClickEditEncoding: any = null;
+        let _onBlurTitle: any = null;
 
         const onClickMove = () => {
             let queue = Queue(
@@ -1130,101 +1242,12 @@ const Library = (props: Props) => {
             });
         };
 
-        const onClickEditDatabase = (data: LibraryListDataType) => {
-            if (data.type !== Constants.library.type.database) {
-                return;
-            }
-            const rules = getDataBaseRules();
-            const params = getDataBaseParams();
-            const newDatabase = {
-                "label": data.label,
-                "dbms": data.dbms,
-                "host": data.hostname,
-                "port": data.port,
-                "database": data.database,
-                "user_id": data.user_id,
-                "user_password": data.password
-            };
-            setDatabase(newDatabase);
-
-            const completeEditDatabase = (response: any) => {
-                const json = response.data.data;
-                if (!response.data.success) {
-                    notify({
-                        title: "データベース作成エラー",
-                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-                        status: "error",
-                        dismissAfter: 0,
-                        closeButton: true
-                    });
-                } else {
-                    notify({
-                        title: "データベースを編集しました", message: (database) ? database.label : "" + "を編集しました",
-                        status: "success"
-                    });
-                }
-                setIsLoading(false);
-                setEditDatabase(getInitialDatabase());
-                ModalUtil.closeModal(Constants.modal.EDIT_DATABASE);
-                fetchFolder();
-
-            };
-
-            const editLibraryChild = (data: LibraryListDataType) => {
-                APIUtil.put("databases/" + data.uuid, newDatabase).then((response) => {
-                    completeEditDatabase(response);
-                }, () => {
-                    unhandledNotify("データベース修正エラー");
-                });
-            };
-
-            const onChangeEditDatabase = (e, param, value) => {
-                try {
-                    const newDatabase = database;
-                    if (newDatabase) {
-                        newDatabase[param.name] = value;
-                        setDatabase(newDatabase);
-                        const params = getDataBaseParams();
-                        const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
-                                                       onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
-                        ModalUtil.emitModal({
-                            id: Constants.modal.EDIT_DATABASE,
-                            visible: true,
-                            done: "編集する",
-                            danger: true,
-                            content: paramsForm
-                        });
-                    }
-                } catch (e) {
-                    console.log(e);
-                }
-            };
-
-            const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
-                                           onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
-            ModalUtil.registerModal({
-                id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
-                    editLibraryChild(data);
-                    ModalUtil.closeModal(Constants.modal.CONFIRM);
-                }
-            });
-            ModalUtil.emitModal({
-                id: Constants.modal.EDIT_DATABASE,
-                visible: true,
-                done: "編集する",
-                danger: true,
-                content: paramsForm
-            });
-        };
-
         const onClickApply = (selected_data: LibraryListDataType) => {
             if (window.opener || !window.opener.closed) {
                 window.opener.onCallbackApply(selected_data);
             }
             window.close();
         };
-
-        console.log(data);
 
         switch (mode) {
             case Constants.library.mode.frame_select:
@@ -1238,9 +1261,11 @@ const Library = (props: Props) => {
                 _onClickDelete = () => onClickDelete();
                 _onClickMove = () => onClickMove();
                 _onClickEditEncoding = (data) => onClickEditEncoding(data);
+                _onBlurTitle = (e) => onBlurTitle(e, data);
                 if (data && data.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 } else if (data && data.type === Constants.library.type.trash) {
+                    _onBlurTitle = null;
                     _onClickCleanTrash = onClickCleanTrash;
                 } else if (data && data.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
@@ -1259,6 +1284,9 @@ const Library = (props: Props) => {
                     break;
                 case Constants.library.type.folder:
                     endPoint = "folders/";
+                    break;
+                case Constants.library.type.project:
+                    endPoint = "projects/";
                     break;
                 case Constants.library.type.database:
                     endPoint = "databases/";
@@ -1285,6 +1313,11 @@ const Library = (props: Props) => {
             e: React.FocusEvent<HTMLInputElement>, selected_data: any) => {
             // Label の修正
             if (!selected_data) {
+                return;
+            }
+
+            // セルをクリックして切り替えしている最中の場合はイベントをキャンセルする
+            if(clickedLibraryCell.current){
                 return;
             }
 
@@ -1380,7 +1413,7 @@ const Library = (props: Props) => {
             });
         };
 
-        const onClickEditEncoding = (data) => {
+        const onClickEditEncoding = (data: LibraryChild) => {
 
 
             const onChangeEncoding = (e, data) => {
@@ -1453,6 +1486,13 @@ const Library = (props: Props) => {
                         })
                             .then(() => {
                                 setIsLoading(false);
+
+                                const typeLabel = LibraryUtil.getTypeLabel(data.type);
+                                notify({
+                                    title: typeLabel + "の文字コードを変更しました",
+                                    message: data.label + "の文字コードを変更しました",
+                                    status: "success"
+                                });
                             });
                     }
                     ModalUtil.closeModal(Constants.modal.EDIT_ENCODING);
@@ -1469,7 +1509,6 @@ const Library = (props: Props) => {
         };
 
 
-        console.log(selectedDatas);
 
         return <LibraryInspector
             selected={selectedDatas}
@@ -1480,7 +1519,7 @@ const Library = (props: Props) => {
             onClickEdit={_onClickEdit}
             onClickEditEncoding={_onClickEditEncoding}
             onClickCleanTrash={_onClickCleanTrash}
-            onBlurTitle={(e) => onBlurTitle(e, data)}
+            onBlurTitle={_onBlurTitle}
             visualizers={visualizers}
         />;
     };
