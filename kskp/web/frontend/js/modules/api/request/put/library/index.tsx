@@ -13,6 +13,7 @@ export type Props = Url & {
 
 const defaultUrl = {
   folders: '/api/v0/folders',
+  projects: '/api/v0/projects',
   flows: '/api/v0/flows',
   frame: '/api/v0/frames',
   documents: '/api/v0/document',
@@ -30,6 +31,9 @@ export function library(props: Props) {
     switch (props.libraryType) {
       case Constants.library.type.folder:
         url = defaultUrl.folders
+        break;
+      case Constants.library.type.project:
+        url = defaultUrl.projects
         break;
       case Constants.library.type.flow:
         url = defaultUrl.flows
