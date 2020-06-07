@@ -114,7 +114,7 @@ def new_flow():
         original_label = original_flow.label + ' のコピー'
         # 同じフォルダ内の他データと重複しないラベル名を取得する
         parent = original_flow.find_parent()
-        new_label = parent.get_another_label_name(original_label)
+        new_label = parent.make_unique_label(original_label)
         # フローを複製する
         new_flow = original_flow.duplicate(new_label)
         flow_data = new_flow.flow_data
