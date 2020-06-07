@@ -1,8 +1,7 @@
 import os
 import json
 import functools
-from flask import session, request, jsonify
-from kskp.store import model, Datum, Flow, Folder, ProjectFolder
+from flask import request, jsonify, g
 
 def update_navigation(func):
     @functools.wraps(func)
@@ -14,14 +13,9 @@ def update_navigation(func):
 
         data = json.loads(func(**kwargs).data.decode())
 
-        if session['user_id'] is None or session['user_id'] =='':
-            user_name = ''
-        else:
-            user_name =  model.get_user_by_id(session['user_id'])['name']
-
         navigation = {
-            'user_id': session['user_id'],
-            'user_name': user_name,
+            'user_id': g.user.id,
+            'user_name': g.user.name,
             'project_uuid': '',
             'project_name': '',
             'flow_uuid': '',
@@ -37,10 +31,10 @@ def update_navigation(func):
         # フローが指定された場合
         if 'flow' in request.args or 'flow_uuid' in kwargs:
             flow_uuid = request.args['flow'] if 'flow' in request.args else kwargs['flow_uuid']
-            parent = Datum.find_parent(flow_uuid)
+            flow = g.factory.data.find_by_uuid(flow_uuid)
+            parent = flow.find_parent()
             navigation['project_uuid'] = parent.uuid
             navigation['project_name'] = parent.label
-            flow = Flow.find_by_uuid(flow_uuid)
             navigation['flow_uuid'] = flow_uuid
             navigation['flow_name'] = flow.label
 
@@ -48,11 +42,7 @@ def update_navigation(func):
         elif 'project' in request.args:
             project_uuid = request.args['project']
             navigation['project_uuid'] = project_uuid
-            if ProjectFolder.exists(project_uuid):
-                project = ProjectFolder.find_by_uuid(project_uuid)
-            else:
-                # type='folder'なプロジェクトにも後方互換として対応する
-                project = Folder.find_by_uuid(project_uuid)
+            project = g.factory.data.find_by_uuid(project_uuid)
             navigation['project_name'] = project.label
 
         data['navigation'] = navigation

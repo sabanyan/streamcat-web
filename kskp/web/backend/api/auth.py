@@ -1,24 +1,25 @@
-import time
-import hashlib
 import functools # wraps for decorator
 
 from flask import (
     Blueprint,
     session,
     render_template,
-    url_for, jsonify,
-    request, redirect,
-    flash
+    url_for,
+    jsonify,
+    request,
+    redirect,
+    flash,
+    g
 )
 from flask_mail import Mail, Message
 
 from kskp.web.backend import app
-from kskp.store import model
+from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
 
-FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
-STRETCH_COUNT = 100
+# FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
+# STRETCH_COUNT = 100
 app.secret_key = '-jm624cqpry89e'
 
 
@@ -37,12 +38,14 @@ def login_required(func):
                 # 認証を要求している場合
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
-                user = model.get_user_id_by_email(f['email'])
+                with UnAuthzFactory() as factory:
+                    user = factory.find_user_by_email(f['email'])
+                    if user is None:
+                        return render_template('login.html', email=f['email'])
 
-                if user is None:
-                    return render_template('login.html', email=f['email'])
-
-                if authenticate(user['id'], f['password'], session):
+                if user.authenticate(f['password']):
+                    # ユーザID保存
+                    session['user_id'] = user.id
                     # 認証成功 本来のページへ遷移する
                     if session.get('last_URL'):
                         last_url = session['last_URL']
@@ -95,53 +98,22 @@ def login_required_api(func):
     @functools.wraps(func)
     def deco(**kwargs):
         if 'user_id' in session:
-            return func(**kwargs)
+            # Userオブジェクトをflask.gに設定する
+            with UnAuthzFactory() as factory:
+                user = factory.find_user_by_id(session['user_id'])
+                if user is None:
+                    raise Exception('user is None !')
+                g.user = user
+            # Sessionオブジェクトをflask.gに設定する
+            with Factory(user) as factory:
+                # AuthzSessionをUserオブジェクトに格納する
+                g.user.session = factory._session
+                g.factory = factory
+                return func(**kwargs)
         else:
             # ログインページを返す
             return jsonify({'success': False, 'message': 'not authorized'})
     return deco
-
-def get_password_hash(user_id, password):
-    """
-    パスワードのハッシュを作成する
-    """
-    salt = get_salt(user_id)
-    current_hash = b''
-    password_bytes = bytes(password, encoding='utf-8')
-    for _ in range(1, STRETCH_COUNT):
-        hash_target = current_hash + password_bytes + salt
-        current_hash = bytes(hashlib.sha256(hash_target).hexdigest(), 'ascii')
-    return str(current_hash, encoding='utf-8')
-
-def get_salt(user_id):
-    """
-    固定ソルトとユーザID（現在はメールアドレス）
-    """
-    user_id_bytes = bytes(str(user_id), encoding='utf-8')
-    return user_id_bytes + FIXED_SALT
-
-def authenticate(user_id, password, session):
-    """
-    IDとパスワードを元に認証処理を行う
-    認証の成功時にはTrueを、失敗すればFalseを返す
-    """
-
-    hashed_password = get_password_hash(model.get_user_by_id(user_id)['email'], password)
-    sql = 'SELECT password FROM users WHERE id = ?'
-
-    passwords = model.query_db(sql, (user_id,), one=True)
-
-    if passwords is None:
-        # そもそもユーザが存在しない場合
-        return False
-
-    if hashed_password == passwords['password']:
-        # 認証成功
-        session['user_id'] = user_id # model.get_user_id_by_email(user_id)  # ユーザID保存
-        return True
-    else:
-        return False
-
 
 @mod.route('/')
 def signup():
@@ -212,11 +184,12 @@ def complete_sign_up():
     creator = email
 
     # ユーザーのDB登録
-    model.create_user(email, password, user_name, creator)
+    new_user = User(email, password, user_name)
+    new_user.save()
 
     flash('ユーザー登録が完了しました。')
 
-    session['user_id'] = model.get_user_id_by_email(session['signup_email'])['id']
+    session['user_id'] = new_user.id
     del session['signup_email']
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
@@ -227,6 +200,8 @@ def make_temporal_url(email):
     """
     ユーザー新規登録用のURLを作成する
     """
+    import time
+    import hashlib
     hash_target = email + str(time.time())
     temp_path = hashlib.sha256(hash_target.encode()).hexdigest()
 

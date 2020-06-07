@@ -1,10 +1,6 @@
 # TODO: 実装を進めていって、使い始めたものからコメントアウトしていく
 import os
-# import json
-# import uuid
-from pathlib import Path
-# from .engine.data3 import *
-from flask import Blueprint, request, session, jsonify, send_from_directory, render_template
+from flask import Blueprint, request, jsonify, g
 from .auth import login_required_api
 from .utils.navigation import update_navigation
 from .utils import api_base, lock_required
@@ -23,10 +19,8 @@ def new_project():
     if 'parent' not in request.json:
         raise Exception('parent属性を指定してください')
 
-    # 新しいフローフォルダを作成する
-    new_project = ProjectFolder(request.json['parent'],
-                                request.json['label'],
-                                session['user_id'])
+    parent = g.factory.data.find_by_uuid(request.json['parent'])
+    new_project = parent.create_project_folder(request.json['label'])
     new_project.save()
     return new_project
 
@@ -38,31 +32,18 @@ def get_projects():
     """
     現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
     """
-    # projects = []
-    # for p in get_projects_by_user_id(session['user_id']):
-    #     proj = {}
-    #     proj['uuid'] = p['uuid']
-    #     proj['name'] = p['name']
-    #     proj['creator_id'] = p['creator_id']
-    #     proj['creator_name'] = p['creator_name']
-    #     proj['created_at'] = p['created_at']
-    #     projects.append(proj)
-
     # ルートフローフォルダが無ければ作成する
-    root_flow_folder = get_flow_dir_path(session['user_id'])
-    root_flow_folder_uuid = root_flow_folder.uuid
+    root_flow_folder = g.factory.data.load_flow_folder()
 
     # FIXIT: 権限機能がないのでログインユーザに関係なく全てのプロジェクトが表示される
     projects = []
 
-    for datum in Datum.find_by_parent_uuid(root_flow_folder_uuid):
-        folder = ProjectFolder.convert_to_folder(datum)
+    for folder in root_flow_folder.find_children():
         proj = {}
         proj['uuid'] = folder.uuid
         proj['name'] = folder.label
-        proj['creator_id'] = folder.creator
-        creator = get_user_by_id(folder.creator)
-        proj['creator_name'] = creator['name'] if creator is not None else ''
+        proj['creator_id'] = folder.creator.id if folder.creator is not None else None
+        proj['creator_name'] = folder.creator_str
         proj['created_at'] = folder.created_at_str
         projects.append(proj)
 
@@ -77,21 +58,18 @@ def fetch_project(project_uuid):
     プロジェクトを返却する
     """
     from .lib import _jsonify_folder
-    folder = ProjectFolder.find_by_uuid(project_uuid)
-    return _jsonify_folder(folder)
+    project = g.factory.data.find_by_uuid(project_uuid)
+    return _jsonify_folder(project)
 
 @mod.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_project(project_uuid):
+def throw_away_project(project_uuid):
     """
-    指定したプロジェクトを削除する
+    指定したプロジェクトをほかす
     """
-    # folder = Folder.find_by_uuid(project_uuid)
-    # folder.delete()
-
-    from .lib import throw_away_project
-    throw_away_project(project_uuid)
+    project = g.factory.data.find_by_uuid(project_uuid)
+    project.throw_away()
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
@@ -110,14 +88,13 @@ def update_project(project_uuid):
     if 'label' in request.json and request.json['label'] != '':
         # プロジェクトのラベルを修正する
         label = request.json['label']
-        modifier = session['user_id']
-        return ProjectFolder.update_data(project_uuid, label, modifier)
+        project = g.factory.data.find_by_uuid(project_uuid)
+        return project.update_data(label)
     elif 'parent' in request.json and request.json['parent'] != '':
         # プロジェクトを移動する
         new_parent = request.json['parent']
-        modifier = session['user_id']
-        project = ProjectFolder.find_by_uuid(project_uuid)
-        return project.move(new_parent, modifier)
+        project = g.factory.data.find_by_uuid(project_uuid)
+        return project.move(new_parent)
     else:
         raise Exception('update_project parameter error!')
 
@@ -133,24 +110,25 @@ def new_flow():
     j = request.json
 
     if 'original_flow_uuid' in j:
-        original_flow = Flow.find_by_uuid(j.get('original_flow_uuid'))
+        original_flow = g.factory.data.find_by_uuid(j.get('original_flow_uuid'))
         original_label = original_flow.label + ' のコピー'
         # 同じフォルダ内の他データと重複しないラベル名を取得する
-        new_label = Datum.get_another_label_name(original_label, original_flow.parent_uuid)
+        parent = original_flow.find_parent()
+        new_label = parent.make_unique_label(original_label)
         # フローを複製する
-        new_flow = original_flow.duplicate(new_label, session['user_id'])
+        new_flow = original_flow.duplicate(new_label)
+        flow_data = new_flow.flow_data
         # 複製したフローを保存する
         new_flow.save()
-        return new_flow.flow_data
+        return flow_data
     else:
         parent_uuid = j.get('project_uuid')
         label = j.get('name')
-        flow_data = create_flow(j, session['user_id'])
+        from kskp.store import Flow
+        flow_data = Flow.create_flow(j, g.user)
         # flowを作成する
-        new_flow = Flow(parent_uuid,
-                        label,
-                        flow_data,
-                        creator=session['user_id'])
+        parent = g.factory.data.find_by_uuid(parent_uuid)
+        new_flow = parent.create_flow(label, flow_data)
         # flowをDBに格納する
         new_flow.save()
         return flow_data
@@ -171,21 +149,19 @@ def fecth_flows():
     if parent_uuid is None:
         return flow_list
 
-    data = Datum.find_by_parent_uuid(parent_uuid)
+    parent = g.factory.data.find_by_uuid(parent_uuid)
+    children = parent.find_children()
 
-    for datum in data:
+    for datum in children:
         if datum.type != Datum.FLOW_TYPE:
             continue
-        flow_data = datum.data2['flow']
-        flow_data['uuid'] = datum.uuid
+        # flow_data = datum.data2['flow']
+        # flow_data['uuid'] = datum.uuid
+        flow_data = {'uuid':datum.uuid,
+                    'label':datum.label,
+                    'creator':datum.creator_str,
+                    'createdAt':datum.created_at_str}
         flow_list.append(flow_data)
-
-    # resque_flow_folder = get_resque_flow_dir_path(session['user_id'])
-
-    # if resque_flow_folder.uuid == parent_uuid:
-    #     # プロジェクトの指定は無視してローカルディレクトリのJSONファイルから全てのフローを取得する
-    #     flow_list_from_jsons = fetch_flows_by_project_uuid(parent_uuid)
-    #     flow_list.extend(flow_list_from_jsons)
 
     return flow_list
 
@@ -198,7 +174,7 @@ def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
     """
-    flow = Flow.find_by_uuid(flow_uuid)
+    flow = g.factory.data.find_by_uuid(flow_uuid)
     return flow.flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
@@ -214,13 +190,12 @@ def update_flow(flow_uuid):
             raise Exception('labelとはparent属性は同時に指定できません')
         # flowを移動する
         new_parent = request.json['parent']
-        modifier = session['user_id']
-        flow = Flow.find_by_uuid(flow_uuid)
-        return flow.move(new_parent, modifier)
+        flow = g.factory.data.find_by_uuid(flow_uuid)
+        return flow.move(new_parent)
     else:
         # 指定したフローの内容を渡されたdataの内容と結合する
         # 同じキーが含まれる場合は新しいもので上書きされる
-        flow = Flow.find_by_uuid(flow_uuid)
+        flow = g.factory.data.find_by_uuid(flow_uuid)
         flow_data = flow.flow_data
         # フローエディタで指定するラベル名をフローのラベル名とする
         if 'label' not in request.json or request.json['label'] == '':
@@ -230,8 +205,8 @@ def update_flow(flow_uuid):
 
         flow_data.update(request.json['flow'])
         # 変更を保存する
-        Flow.update_data(flow_uuid, flow_label, flow_data, session['user_id'])
-        return flow_data
+        flow.update_data(flow_label, flow_data)
+        return flow.flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
@@ -239,19 +214,10 @@ def update_flow(flow_uuid):
 @api_base
 def throw_away_flow(flow_uuid):
     """
-    指定されたフローを削除する
+    指定されたフローをほかす
     """
-    from kskp.store import Library
-    trash_folder = Library.load_trash_folder(session['user_id'])
-
-    # 削除しようとするflowが、フローで使用されている場合は例外を送出する
-    using_flow_uuids = Flow.get_flow_uuids_using_other_datum(flow_uuid)
-    if len(using_flow_uuids) > 0:
-        flow = Flow.find_by_uuid(using_flow_uuids[0])
-        raise Exception('このフローは別のフロー(%s)で使用しているため削除できません' % flow.label)
-
-    flow = Flow.find_by_uuid(flow_uuid)
-    flow.move(trash_folder.uuid, session['user_id'])
+    flow = g.factory.data.find_by_uuid(flow_uuid)
+    flow.throw_away()
 
 @mod.route('/subflows', methods=['GET'])
 @login_required_api
@@ -263,18 +229,18 @@ def fetch_subflows():
     no_outputs = request.args.get('no_outputs') == 'on'
 
     subflow_data_list = []
-    for subflow in Flow.find_all_subflows(no_inputs, no_outputs):
-        subflow_data =  subflow.flow_data
+    for subflow in g.factory.data.find_all_subflows(no_inputs, no_outputs):
+        subflow_data = subflow.flow_data
         subflow_data['uuid'] = subflow.uuid
         # 親フォルダのラベルを取得する
-        parent = Datum.find_parent(subflow.uuid)
+        parent = subflow.find_parent()
         # 親フォルダのないサブフローは取得しない
         if parent is None:
             continue
         # ゴミ箱にあるサブフローは取得しない
-        if TrashCan.trashed(subflow.uuid):
+        if g.factory.data.trashed(subflow.uuid):
             continue
-        if parent.type == Datum.FOLDER_TYPE or parent.type == Datum.PROJECT_TYPE:
+        if isinstance(parent, Folder):
             parent_label = parent.label
             subflow_data['projectName'] = parent_label
         subflow_data_list.append(subflow_data)
@@ -347,11 +313,11 @@ def download_file():
     frame_uuid = request.args.get('uuid')
     ext = request.args.get('ext')
 
-    frame = Frame.find_by_uuid(frame_uuid)
+    frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         return error(f'指定されたFrame({frame_uuid})が見つかりませんでした')
 
-    frame_path = STORE_DIR / frame.path
+    frame_path = frame.path
     if not frame_path.exists():
         return error(f'指定されたFrame({frame_uuid})のファイル({frame_path})が存在しませんでした')
 
@@ -367,7 +333,7 @@ def download_file():
     # ダウンロードファイルのサイズを計算する
     if source_encoding == target_encoding and source_newline == target_newline:
         # 変換処理がない場合は元ファイルサイズがダウンロードファイルのサイズである
-        downloadFileSize = os.path.getsize(frame_path)
+        downloadFileSize = frame.file_size
     else:
         downloadFileSize = None
 
@@ -420,7 +386,7 @@ def delete_cache():
     flow_uuid = ofs[0]
     datum_id = ofs[1]
 
-    flow = Flow.find_by_uuid(flow_uuid)
+    flow = g.factory.data.find_by_uuid(flow_uuid)
     j = flow.flow_data
 
     cache_uuids = []
@@ -431,19 +397,17 @@ def delete_cache():
             j['nodes'][i]['cacheCreatedAt'] = None
             cache_uuids.append(frame_uuid)
 
-    Flow.update_data(flow_uuid, flow.label, j, session['user_id'])
+    flow.update_data(flow.label, j)
 
     # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
     for cache_uuid in cache_uuids:
-        cache = Frame.find_by_uuid(cache_uuid)
+        cache = g.factory.data.find_by_uuid(cache_uuid)
         if cache is not None:
             cache.delete()
 
 @mod.route('/navigation', methods=['GET'])
 @login_required_api
 def get_navigation():
-    from kskp.store import model
-        
     navigation = {
         'user_id': '',
         'user_name': '',
@@ -458,36 +422,21 @@ def get_navigation():
     project_uuid = request.args.get('project_uuid')
 
 
-    if session['user_id'] is not None and session['user_id'] !='':
-        navigation['user_id'] = session['user_id']
-        navigation['user_name'] = model.get_user_by_id(session['user_id'])['name']
+    if g.user is not None:
+        navigation['user_id'] = g.user.id
+        navigation['user_name'] = g.user.name
 
     if flow_uuid is not None :
-        if Flow.exists(flow_uuid):
-            flow = Flow.find_by_uuid(flow_uuid)
-            parent_datum = Datum.find_parent(flow_uuid)
-            parent = Folder.convert_to_folder(parent_datum)
-            navigation['project_uuid'] = parent.uuid
-            navigation['project_name'] = parent.label
-            navigation['flow_uuid'] = flow_uuid
-            navigation['flow_name'] = flow.label
-        else:
-            # この分岐に入るのは、お救いフローフォルダである
-            flow = model.fetch_flow_by_uuid(flow_uuid)
-            project = model.fecth_project(flow['projectId'])
-            print(project)
-            navigation['project_uuid'] = porject.uuid
-            navigation['project_name'] = project.label
-            navigation['flow_uuid'] = flow.uuid
-            navigation['flow_name'] = flow.label
+        flow = g.factory.data.find_by_uuid(flow_uuid)
+        parent = flow.find_parent()
+        navigation['project_uuid'] = parent.uuid
+        navigation['project_name'] = parent.label
+        navigation['flow_uuid'] = flow_uuid
+        navigation['flow_name'] = flow.label
         
     # プロジェクトが指定された場合
     elif project_uuid is not None:
-        if ProjectFolder.exists(project_uuid):
-            project = ProjectFolder.find_by_uuid(project_uuid)
-        else:
-            # type='folder'なプロジェクトにも後方互換として対応する
-            project = Folder.find_by_uuid(project_uuid)
+        project = g.factory.data.find_by_uuid(project_uuid)
         navigation['project_uuid'] = project.uuid
         navigation['project_name'] = project.label
 
