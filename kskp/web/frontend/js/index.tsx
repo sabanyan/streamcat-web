@@ -49,6 +49,11 @@ if (document.getElementById("trashcan")) {
     viewId = ViewId.TrashCan;
 }
 
+if (document.getElementById('trashcan')) {
+  elementId = 'trashcan'
+  viewId = ViewId.TrashCan
+}
+
 if (elementId) {
     ReactDOM.render(
         <Provider store={store}>
