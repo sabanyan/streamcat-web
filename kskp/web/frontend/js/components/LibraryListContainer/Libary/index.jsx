@@ -711,11 +711,9 @@ export default class Library extends React.Component<Props, State> {
 
 
   deleteLibraryChild(selected_data: LibraryListDataType) {
-    this.setState({ is_loading: true })
     let result = this.deleteLibraryListData(selected_data.type, selected_data.uuid)
     if (!result) return
     result.then((response) => {
-      this.setState({ is_loading: false })
       if (!response.data.success) {
         this.props.notify({
           title: '削除エラー',
@@ -763,28 +761,46 @@ export default class Library extends React.Component<Props, State> {
     APIUtil.post('locks', body).then((response) => {
       let locksModel = locks.Parse(response)
       let lockId = locksModel.getLockId()
-      if (lockId) {
-        //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
-        axios.delete('/api/v0/flows/' + flow_uuid, { data: { lock: lockId } })
+      if (!lockId) throw locksModel.getErrorMessage()
+      //APIUtil.delete('flows/' + flow_uuid, {lock:lockId})
+      axios.delete('/api/v0/flows/' + flow_uuid, { data: { lock: lockId } })
+        .then((response) => {
+          if (!response.data || !response.data.success) throw response.data.message
+        })
+        .catch((err) => {
+          notify({
+            title: '削除エラー',
+            message: err,
+            status: 'error',
+            dismissAfter: 0,
+            closeButton: true
+          })
+        })
+        .then(() => {
+          APIUtil.post('delete-locks/' + lockId)
           .then((response) => {
-            APIUtil.post('delete-locks/' + lockId).then((response) => {
-              this.fetchFolder()
-            })
-          }, (err) => {
-            APIUtil.post('delete-locks/' + lockId).then((response) => {
-              this.fetchFolder()
+            if (!response.data.success) throw response.data.message
+            this.fetchFolder()
+          })
+          .catch((err) => {
+            notify({
+              title: 'Lockエラー',
+              message: err,
+              status: 'error',
+              dismissAfter: 0,
+              closeButton: true
             })
           })
-      } else {
-        // lockが出来なかった場合
-        notify({
-          title: '削除エラー',
-          message: locksModel.getErrorMessage(),
-          status: 'error',
-          dismissAfter: 0,
-          closeButton: true
         })
-      }
+    }).catch(err => {
+      // lockが出来なかった場合
+      notify({
+        title: 'Lockエラー',
+        message: err,
+        status: 'error',
+        dismissAfter: 0,
+        closeButton: true
+      })
     })
   }
 

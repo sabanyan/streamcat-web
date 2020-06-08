@@ -144,7 +144,7 @@ export default class NavigationBar extends React.Component<Props> {
     }
 
     return <nav className="navbar navbar-expand navbar-dark fixed-top">
-      <a className="navbar-brand" href="#">
+      <a className="navbar-brand" href="javascript:void(0)">
         <img src={baseUrl + 'images/logo.png'} height="30" className="d-inline-block align-top"
              alt="" />
       </a>
