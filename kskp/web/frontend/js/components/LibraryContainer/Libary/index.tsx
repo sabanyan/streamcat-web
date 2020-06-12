@@ -747,6 +747,11 @@ const Library = (props: Props) => {
                 onClickEditDatabase(body);
             }
             if(body.type === "frame"){
+                if(mode === Constants.library.mode.frame_select){
+                    // データソースの追加時
+                    onClickApply(body);
+                    return;
+                }
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
             }
             if(body.type === "flow"){
@@ -816,6 +821,41 @@ const Library = (props: Props) => {
             onClickCleanTrash()
         };
 
+
+        const renderMenuList = () => {
+            let menuList;
+            if (mode === Constants.library.mode.folder_select) {
+                menuList = <ApplyMenuList
+                    onClickApply={onClickSelectDestination}
+                />;
+            }else if (mode === Constants.library.mode.frame_select) {
+                return null;
+            }else{
+                if (!inject_is_trash) {
+                    menuList =  <MenuList
+                        onClickAddDatabase={onClickAddDatabase}
+                        onClickCSVUpload={onClickCSVUpload}
+                        onClickNewFlow={onClickNewFlow}
+                        onClickNewFolder={onClickNewFolder}
+                        onClickNewProject={onClickNewProject}
+                    />;
+                }else{
+                    menuList =  <TrashMenuList
+                        onClickDeleteAll={onClickDeleteAll}
+                    />;
+                }
+            }
+
+            return <>
+                    <Spacer minWidth={40} />
+                    <Flex flexDirection={"column"} fluid={true} width={280}>
+                        <Spacer height={160} />
+                        {menuList}
+                    </Flex>
+                </>
+        };
+
+
         return <Flex justifyContent={"center"} fluid={true}>
             {/*{this.renderBreadCrumb()}*/}
             {/*{this.renderSearchBar()}*/}
@@ -862,6 +902,13 @@ const Library = (props: Props) => {
                                         case "project":
                                             body.clickable = true;
                                     }
+                                }else if(mode === Constants.library.mode.frame_select){
+                                    switch (body.type) {
+                                        case "frame":
+                                        case "folder":
+                                        case "project":
+                                            body.clickable = true;
+                                    }
                                 }else{
                                     body.clickable = true;
                                 }
@@ -875,28 +922,7 @@ const Library = (props: Props) => {
                     />
                     <Spacer height={80} />
                 </Flex>
-                <Spacer minWidth={40} />
-                <Flex flexDirection={"column"} fluid={true} width={280}>
-                    <Spacer height={160} />
-                    {(mode === Constants.library.mode.folder_select) ?
-                        <ApplyMenuList
-                            onClickApply={onClickSelectDestination}
-                        />
-                        :
-                        (!inject_is_trash) ?
-                            <MenuList
-                                onClickAddDatabase={onClickAddDatabase}
-                                onClickCSVUpload={onClickCSVUpload}
-                                onClickNewFlow={onClickNewFlow}
-                                onClickNewFolder={onClickNewFolder}
-                                onClickNewProject={onClickNewProject}
-                            />
-                            :
-                            <TrashMenuList
-                                onClickDeleteAll={onClickDeleteAll}
-                            />
-                    }
-                </Flex>
+                {renderMenuList()}
                 <Spacer width={40} />
             </Flex>
         </Flex>;
@@ -1213,6 +1239,13 @@ const Library = (props: Props) => {
         setEditDatabase(database);
     };
 
+    const onClickApply = (selected_data: LibraryListDataType) => {
+        if (window.opener || !window.opener.closed) {
+            window.opener.onCallbackApply(selected_data);
+        }
+        window.close();
+    };
+
     const renderLibraryInspector = (): React.ReactNode => {
         if (!lastSelected) return null;
 
@@ -1249,18 +1282,11 @@ const Library = (props: Props) => {
             });
         };
 
-        const onClickApply = (selected_data: LibraryListDataType) => {
-            if (window.opener || !window.opener.closed) {
-                window.opener.onCallbackApply(selected_data);
-            }
-            window.close();
-        };
-
         switch (mode) {
             case Constants.library.mode.frame_select:
-                if (data && data.type === Constants.library.type.frame) {
-                    _onClickApply = (data) => onClickApply(data);
-                }
+                // if (data && data.type === Constants.library.type.frame) {
+                //     _onClickApply = (data) => onClickApply(data);
+                // }
                 break;
             case Constants.library.mode.folder_select:
                 break;
