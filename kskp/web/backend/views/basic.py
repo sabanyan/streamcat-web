@@ -39,7 +39,15 @@ def folders(folder_uuid):
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
     folder_uuid = folder_uuid.rsplit('?')[0]
-    return render_template('library.html',folder_uuid=folder_uuid,js_resources=js_resources,css_resources=css_resources)
+    return render_template('library.html',folder_uuid=folder_uuid,is_project=0,js_resources=js_resources,css_resources=css_resources)
+
+@mod.route('/projects/<project_uuid>', methods=['GET', 'POST'])
+@login_required
+def projects(project_uuid):
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    project_uuid = project_uuid.rsplit('?')[0]
+    return render_template('library.html',folder_uuid=project_uuid,is_project=1,js_resources=js_resources,css_resources=css_resources)
 
 @mod.route('/profile', methods=['GET', 'POST'])
 @login_required
