@@ -31,22 +31,12 @@ const BreadCrumb = (props: Props) => {
                                        style={{color: "#606c7a"}}>chevron_right</i>;
         if (index + 1 === links.length) icon = null;
 
-        let url;
-
-        switch (link.type) {
-            case Constants.library.type.project:
-                url = link.url + "?project=true";
-                break;
-            default:
-                url = link.url;
-        }
-
         return <Fragment key={index}>
             {(link.current) ?
                 <>{link.label}</>
                 :
-                <LinkButton onClick={() => {
-                    WebUtil.navigateURL(url);
+                <LinkButton url={link.url} onClick={() => {
+                    WebUtil.navigateURL(link.url);
                 }}>{link.label}</LinkButton>
             }
             {icon}

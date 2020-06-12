@@ -152,7 +152,7 @@ const Library = (props: Props) => {
     const [is_finished, setIsFinished] = useState();
     const [isDialog] = useState((HttpUtil.getURLParam("dialog")) ? true : false);
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
-    const isProject = HttpUtil.getURLParam("project") ? HttpUtil.getURLParam("project") : false;
+    const isProject = inject_is_project;
     const [links,setLinks] = useState<IBreadCrumbsLink[]>([]);
 
     useEffect(()=>{
@@ -383,10 +383,17 @@ const Library = (props: Props) => {
                 }
             }
 
+            let url_prefix;
+            if (path.type === "folder") {
+                url_prefix = "/folders/";
+            } else if (path.type === "project") {
+                url_prefix = "/projects/";
+            }
+
             return {
                 uuid: path.uuid,
                 label: path.label,
-                url: "/folders/" + path.uuid + dialogOption,
+                url: url_prefix + path.uuid + dialogOption,
                 current: isCurrent,
                 type: path.type
             }
@@ -733,7 +740,7 @@ const Library = (props: Props) => {
                 WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption));
             }
             if(body.type === "project"){
-                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption + "&project=true" ));
+                WebUtil.navigateURL(WebUtil.webURL("/projects/" + body.uuid + dialogOption));
             }
             if(body.type === "database"){
                 setLastSelected(body);
