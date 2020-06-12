@@ -84,7 +84,7 @@ const NavigationBar = (props: Props) => {
 
         return <NavigationBarUserMenuItem navigation={navigation} visible={isLogin}>
             {depoName}
-            <a href="#" className="dropdown-item" onClick={(e) => onClickLogout(e)}>ログアウト</a>
+            <a href="javascript:return false;" className="dropdown-item" onClick={(e) => onClickLogout(e)}>ログアウト</a>
         </NavigationBarUserMenuItem>
 
     };
