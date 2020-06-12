@@ -743,7 +743,7 @@ const Library = (props: Props) => {
                 window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
             }
             if(body.type === "flow"){
-                window.open(WebUtil.webURL('/flows/' + body.uuid + + dialogOption));
+                window.open(WebUtil.webURL('/flows/' + body.uuid + dialogOption));
             }
 
         };
