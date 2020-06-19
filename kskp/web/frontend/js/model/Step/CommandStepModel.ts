@@ -1,14 +1,13 @@
-//@flow
 import { BaseStepModel } from 'Model/index'
-import type { CommandParamType } from 'Types/index'
+import { CommandParamType } from 'Types/index'
 import CommandModel from 'Model/Command/CommandModel'
 import validateJS from 'validate.js'
 import arrayMove from 'array-move'
+import {BaseModelProps} from "Model/Step/BaseStepModel";
 
 type stepType = 'command' | 'frame'
 
-export type CommandStepModelProps = {
-  ...BaseModelProps,
+export interface CommandStepModelProps extends BaseModelProps{
   srcs: {};
   srcsOrder: [];
   dsts: {};
@@ -21,10 +20,10 @@ export type CommandStepModelProps = {
 
 export default class CommandStepModel extends BaseStepModel {
   srcs: {} = {}
-  srcsOrder: [] = []
+  srcsOrder: any[] = []
   dsts: {} = {}
   args: {} = {}
-  commandId: string
+  commandId: string|undefined = undefined
 
   constructor (props: CommandStepModelProps) {
     super(props)
@@ -33,15 +32,15 @@ export default class CommandStepModel extends BaseStepModel {
     this.initialize(props, 'dsts')
     this.initialize(props, 'args')
     this.initialize(props, 'commandId')
-    if (Object.keys(this.srcs) != 0 && this.srcsOrder.length == 0) {
+    if (Object.keys(this.srcs).length != 0 && this.srcsOrder.length == 0) {
       this.srcsOrder = Object.keys(this.srcs)
     }
     this.args = props.args
   }
 
-  loadArgs() {
+  loadArgs(args?:{}) {
     let result = {}
-    let args = this.args
+    let _args = this.args
     try {
       const command = this.getCommand()
       if (!command) throw "command is undefined in CommandStepModel"
@@ -54,7 +53,7 @@ export default class CommandStepModel extends BaseStepModel {
         // rule: 必須項目で空白（""）が許される場合
         if (rule && rule["presence"] && ["presence"]["allowEmpty"] === true) result[param.name] = ""
         // 保存されたユーザー入力値の適用
-        if (args[param.name]) result[param.name] = args[param.name]
+        if (_args[param.name]) result[param.name] = _args[param.name]
       })
     } catch(e) {
       console.log(e)
@@ -97,7 +96,7 @@ export default class CommandStepModel extends BaseStepModel {
   deleteInPort (key) {
     delete this.srcs[key]
     // delete
-    let result = []
+    let result:any[] = []
     this.srcsOrder.forEach((srcKey, index) => {
       if (srcKey !== key) {
         result.push(srcKey)
@@ -129,10 +128,10 @@ export default class CommandStepModel extends BaseStepModel {
     let max = 0
     filterKeys.forEach((key) => {
       const value = key.replace('*', '')
-      max = (value > max) ? value : max
+      max = (parseInt(value) > max) ? parseInt(value) : max
     })
 
-    return parseInt(max)
+    return max
   }
 
   /**
@@ -168,14 +167,14 @@ export default class CommandStepModel extends BaseStepModel {
     return steps
   }
 
-  getCommand (): CommandModel {
-    let command = null
-    window.commands.forEach((_command) => {
+  getCommand (): any {
+    let command
+    (window as any).commands.forEach((_command) => {
       if (this.commandId === _command.id) {
         command = _command
       }
     })
-    return command
+    return command as CommandModel
   }
 
   getLabel () {
@@ -189,7 +188,7 @@ export default class CommandStepModel extends BaseStepModel {
   onSortEnd (oldIndex, newIndex) {
     this.srcsOrder = arrayMove(this.srcsOrder, oldIndex, newIndex)
     // ソート後,連番をリーネムする。
-    let renamedSrcsOrder = []
+    let renamedSrcsOrder: string[] = []
     let renaemdSrcs = {}
     let portIndex = 1
     this.srcsOrder.forEach((srcKey, index) => {

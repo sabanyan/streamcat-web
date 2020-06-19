@@ -17,7 +17,7 @@ import ParamsForm from "Shared/Inspector/ParamsForm";
 import {ITableHeader} from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import {LibraryChild} from "Model/Library";
 import LibraryInspector from "Shared/Inspector/LibraryInspector";
-import {LibraryModel, LocksModel, MessageModel, VisualizeModel} from "Model/index";
+import {LibraryModel, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps} from "Model/index";
 import {LibraryListDataType} from "Types/index";
 import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
@@ -138,7 +138,7 @@ const Library = () => {
     const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
     const [lastSelected, setLastSelected] = useState<LibraryChild | null>(null);
-    const [visualizers, setVisualizers] = useState<VisualizeModel[]>([]);
+    const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const clickedLibraryCell = useRef(false);
     const [folderPath, setFolderPath] = useState();
     const [isLoading, setIsLoading] = useState();

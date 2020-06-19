@@ -1,23 +1,23 @@
-//@flow
 import { CommandParamType, CommandPortType, SubFlowCommandParamType } from 'Types/index'
 import Model from "Model/Core";
 
 export default class SubflowCommandModel extends Model {
-  id: string
-  createdAt: string
-  creator: string
-  description: string
-  label: string
+  id: string | undefined = undefined
+  createdAt: string | undefined = undefined
+  creator: string | undefined = undefined
+  description: string | undefined = undefined
+  label: string | undefined = undefined
   nodes: [] = []
-  params: [CommandParamType] = []
-  ports: [CommandPortType] = [[], []]
-  projectId: string
-  projectName: string
-  uuid: string
+  params: any[CommandParamType] = []
+  ports: any[CommandPortType] = [[], []]
+  projectId: string | undefined = undefined
+  projectName: string | undefined = undefined
+  uuid: string | undefined = undefined
   classification: string = 'subflow'
+  rules: {} = {}
 
   constructor (props: SubFlowCommandParamType) {
-    super(props)
+    super()
     this.id = props.uuid //サブフローのIDはUUIDとする
     this.initialize(props, 'createdAt')
     this.initialize(props, 'creator')

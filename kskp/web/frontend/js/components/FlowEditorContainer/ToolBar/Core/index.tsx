@@ -203,8 +203,8 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         uuid: selected_data.uuid,
         label: selected_data.label,
         dataSource: Constants.data.dataSource.csv,
-        srcs: [],
-        dsts: [],
+        // srcs: [],
+        // dsts: [],
       }
       const add_step = new DataFrameStepModel(props)
       this.props.addStep(add_step)

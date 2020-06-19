@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import Constants from "Constants/index";
 
 import {APIUtil, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
-import {VisualizeModel} from "Model/index";
+import {VisualizeModel, VisualizeModelProps} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
 import NotificationManager from "Shared/Notification/NotificationManager";
@@ -33,7 +33,7 @@ const Preview = (_: Props) => {
     };
 
     const [isLoading, setIsLoading] = useState(false);
-    const [visualizers, setVisualizers] = useState<VisualizeModel[]>([]);
+    const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
 
     const getVisualizers = () => {
         setIsLoading(true);

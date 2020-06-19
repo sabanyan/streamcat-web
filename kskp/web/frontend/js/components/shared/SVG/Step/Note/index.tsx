@@ -19,7 +19,7 @@ export default class Note extends React.Component<Props> {
 
   calculateSize () {
     let model = this.props.model;
-    const fontSize = parseInt(model.getFontSize(),0);
+    const fontSize = model.getFontSize();
     let width = StringUtil.getTextWidth(model.title, fontSize);
     const style = ContentStyle;
     const minWidth = Constants.default.note.width;

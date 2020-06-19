@@ -1,4 +1,3 @@
-//@flow
 import Ajv from 'ajv/lib/ajv'
 import FlowModelSchema from 'Schema/flow/FlowModelSchema.json'
 import GraphModelSchema from 'Schema/graph/GraphModelSchema.json'
@@ -8,17 +7,16 @@ import SubFlowCommandModeSchema from 'Schema/steps/SubFlowStepModelSchema.json'
 import NoteStepModelSchema from 'Schema/steps/NoteStepModelSchema.json'
 
 import { CommandUtil, LogUtil } from 'Utils/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
+import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, NoteStepModel } from 'Model/index'
 import ValidateJS from 'validate.js'
-import NoteStepModel from 'Model/Step/NoteStepModel.js'
 
 class ValidatorUtil {
-  ajv: Ajv
-
+  ajv: any
+  allDefined: ()=>any;
   constructor () {
-    this.ajv = new Ajv()
+    this.ajv = new Ajv() as any
     //日本語対応のバリデーターに変更する
-    ValidateJS.options = {fullMessages: false}
+    (ValidateJS as any).options = {fullMessages: false}
 
     ValidateJS.validators.length.options = {
       notValid: '入力桁数が正しくありません',
@@ -82,10 +80,10 @@ class ValidatorUtil {
     //
     //---------------------------------------------
 
-    ValidateJS.validators.presencesIfTargetIsInput = function (value, options, key, attributes) {
+    ValidateJS.validators.presencesIfTargetIsInput =  (value, options, key, attributes):any => {
       //対象のパラメータの入力がある場合は必須項目になる
       var isValueExist = false
-      var errorMessage = []
+      var errorMessage : any[] = []
 
       if (options && !value) {
         const command = CommandUtil.getCommand(attributes['_command_id'])
@@ -124,10 +122,10 @@ class ValidatorUtil {
     //         },
     //
     //---------------------------------------------
-    ValidateJS.validators.presencesIfTargetIsNotInput = function (value, options, key, attributes) {
+    ValidateJS.validators.presencesIfTargetIsNotInput =  (value, options, key, attributes) : any => {
       //対象のパラメータの入力がない場合は必須項目になる
       var isValueExist = false
-      var errorMessage = []
+      var errorMessage: any[] = []
       if (options && !value) {
         const command = CommandUtil.getCommand(attributes['_command_id'])
         var arrayOptions = Array.isArray(options) ? options : [options]
@@ -161,7 +159,7 @@ class ValidatorUtil {
     // tmpPath は f が同時に入力されているとエラーになる
     //
     // また、suggestTarget（任意）を入力すると、エラーメッセージで対象のパラメータを使用するよう通知する
-    // 
+    //
     // 使い方:
     // "rules":{
     //  "f":{
@@ -181,12 +179,12 @@ class ValidatorUtil {
     // }
     //---------------------------------------------
 
-    ValidateJS.validators.onlyOneInput = function (value, options, key, attributes) {
+    ValidateJS.validators.onlyOneInput =  (value, options, key, attributes): any =>{
       //対象のパラメータの入力がある場合は必須項目になる
       if (options && value) {
         const command = CommandUtil.getCommand(attributes['_command_id'])
         var isError = false
-        var errorMessage = []
+        var errorMessage: any[] = []
         let arrayOptions = Array.isArray(options.target) ? options.target : [options.target]
 
         arrayOptions.forEach((option) => {
@@ -216,7 +214,7 @@ class ValidatorUtil {
     // tmpPath は patternで指定した正規表現に基づきチェックが行われる
     //
     // 使い方:
-    // 
+    //
     // "rules":{
     //  "tmpPath":{
     //    "specifiedFormatIfTargetInput": {
@@ -227,7 +225,7 @@ class ValidatorUtil {
     //  },
     // }
     //---------------------------------------------
-    ValidateJS.validators.specifiedFormatIfTargetInput = function (value, options, key, attributes) {
+    ValidateJS.validators.specifiedFormatIfTargetInput =  (value, options, key, attributes):any =>  {
       var isError = false
       if (value && options) {
         let arrayOptions = Array.isArray(options.target) ? options.target : [options.target]
@@ -252,14 +250,14 @@ class ValidatorUtil {
       }
     }
     //---------------------------------------------
-    // 
+    //
     // compareNumbersLargerThan
-    // 
+    //
     // 二つのパラメータに入力されたデータの大小を比較する,数字が大きくなる方に適用する
-    // 
+    //
     // 関係としては、「fromの値」≦「toの値」
     // この場合、from は to より大きい場合エラーとなる
-    // 
+    //
     // 使い方:
     // "rules" : {
     //  "to" : {
@@ -269,7 +267,7 @@ class ValidatorUtil {
     //   }
     //  }
     // }
-    // 
+    //
     //---------------------------------------------
     ValidateJS.validators.compareNumbersLargerThan = function (value, options, key, attributes) {
       // compareNumbersLargerThanではoptions配列は現在はない
@@ -291,11 +289,11 @@ class ValidatorUtil {
 
     //---------------------------------------------
     // raiseWarningTargetsSelected
-    // 
+    //
     // ある複数の特定のパラメータ選択時、対象のパラメータの入力がエラーとなる
     // 対象リスト内の項目が一つでも当てはまったらいけない場合は、onlyOneInputを使用
     // 全て当てはまることが必要な場合はraiseWarningTargetsSelectedを使用
-    // 
+    //
     // 使い方:
     // "rules" : {
     //   "t" : {
@@ -303,9 +301,9 @@ class ValidatorUtil {
     //   }
     // }
     //---------------------------------------------
-    ValidateJS.validators.raiseWarningTargetsSelected = function (value, options, key, attributes) {
+    ValidateJS.validators.raiseWarningTargetsSelected = (value, options, key, attributes): any => {
       var isError = false
-      var errorMessage = []
+      var errorMessage:any[] = []
       if (options && value) {
         var isAllOptionsSelected = true
         const command = CommandUtil.getCommand(attributes['_command_id'])
@@ -326,12 +324,12 @@ class ValidatorUtil {
 
     //---------------------------------------------
     // presencesIfSpecifiedValueInput
-    // 
+    //
     // あるパラメータの値が特定の値の場合、対象のパラメータが入力もしくは選択されている必要がある
-    // 
-    // 
+    //
+    //
     // needOrNotで1なら必須となり、0なら必須でなくなる（基本1やと思うが、mnumberのaの例外として、-Bと、["nfn", "nfno"]指定時にsが必要でなくなることがある）
-    // 
+    //
     // 使い方(新):
     // "rules" : {
     //   "s" : {
@@ -364,17 +362,17 @@ class ValidatorUtil {
     }
     //---------------------------------------------
     // lessValueListThanN
-    // 
+    //
     // あるパラメータのリストの要素数よりN個少ない要素を入力しなければならない
     // 裏を返せば、N=0 なら２つのリストの要素数は同数入力しなければならない
-    // 
+    //
     // justValueは、difference項目の例外として、
     // ある固定値の項目の入力を許可するというもの
     // 例）Rに５項目入力されていたら、vは４項目入力しなければならないが
     // 例外として、vに1つの入力のみでも構わないというもの
     // ・・・これexceptionとかの方がいいのかな、でもこれはエラーの名前に似てるし嫌やな
     // ここに-1を入れたら無効化、justValueのチェックでは無条件に通過する。
-    // 
+    //
     // 使い方: (新)
     // "rules": {
     //   "v" : {
@@ -386,7 +384,7 @@ class ValidatorUtil {
     //   }
     // }
     //---------------------------------------------
-    ValidateJS.validators.lessValueListThanN = function (value, options, key, attributes) {
+    ValidateJS.validators.lessValueListThanN =  (value, options, key, attributes):any => {
       if (options && value) {
         // @[f]のような、特殊な意味を持つ単語を除く
         const targetValue = attributes[options.target]
@@ -402,7 +400,7 @@ class ValidatorUtil {
             const command = CommandUtil.getCommand(attributes['_command_id'])
             const label = CommandUtil.getCommandParamLabel(command, key)
             const targetLabel = CommandUtil.getCommandParamLabel(command, options.target)
-            var errorMessage = []
+            var errorMessage: any[] = []
 
             if (options.difference == 0) {
               errorMessage.push('[' + label + '] ' + 'と、[' + targetLabel + ']の項目数が同じになるよう入力してください。')
@@ -455,8 +453,8 @@ class ValidatorUtil {
     */
     //---------------------------------------------
 
-    ValidateJS.validators.checkSeveralSpecifiedFormats = function (value, options, key, attributes) {
-      var errorMessage = []
+    ValidateJS.validators.checkSeveralSpecifiedFormats =  (value, options, key, attributes): any => {
+      var errorMessage: any[]= []
       if (options && value) {
         // defaultRuleのみの入力を許容する、formatにも代えられるようにする
         if (options.specialRules) {
@@ -514,10 +512,10 @@ class ValidatorUtil {
 
     //---------------------------------------------
     // checkArrangementSequences
-    // 
+    //
     // 入力された「数値」の並び方が正しいかどうか確認
     // 注)これは現在数値のみ対応、内部の文字列は取り除く処理をしている
-    // 
+    //
     // 使い方
     // "rules" : {
     //   "R" : {
@@ -529,7 +527,7 @@ class ValidatorUtil {
       var isError = false
       // if(options && value){
       if (value) {
-        var onlyNumber = []
+        var onlyNumber: number[] = []
         var listedValue = value.split(',')
         // 文字列の抜き取りと、数値のリスト化
         listedValue.forEach((numOKstrNG) => {
@@ -588,10 +586,6 @@ class ValidatorUtil {
       if (!result) success = false
     })
     return success
-  }
-
-  isFlowModelSchema (state) {
-    return this.schemaValidate(FlowModelSchema, state)
   }
 
   nodesValidate (nodes) {

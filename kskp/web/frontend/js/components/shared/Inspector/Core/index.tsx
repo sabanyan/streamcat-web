@@ -9,7 +9,6 @@ import {
 } from 'Shared/Inspector'
 import classnames from 'classnames'
 import style from '../style.scss'
-import { FlowEditorProps } from 'FlowEditorContainer/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
 import { DataFrameDetailType, MastType } from "Types/index";
