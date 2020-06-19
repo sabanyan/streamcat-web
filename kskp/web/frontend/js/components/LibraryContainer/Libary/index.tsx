@@ -19,7 +19,7 @@ import {LibraryChild} from "Model/Library";
 import LibraryInspector from "Shared/Inspector/LibraryInspector";
 import {LibraryModel, LocksModel, MessageModel, VisualizeModel} from "Model/index";
 import {LibraryListDataType} from "Types/index";
-import _ from "lodash";
+import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
 import {API} from "Modules/api";
 import {TrashMenuList} from "Components/LibraryContainer/Libary/TrashMenuList";
@@ -27,10 +27,6 @@ import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
 import {ApplyMenuList} from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";
-
-interface Props {
-
-}
 
 export interface Database {
     label?: string;
@@ -44,7 +40,7 @@ export interface Database {
 
 export const getDataBaseRules = () => {
     // TODO rulesの型定義
-    const rules = {
+    return {
         "label": {
             "presence": {"allowEmpty": false}
         },
@@ -58,11 +54,10 @@ export const getDataBaseRules = () => {
             "presence": {"allowEmpty": false}
         }
     };
-    return rules;
 };
 export const getDataBaseParams = () => {
     // TODO paramsの型定義
-    const params = [
+    return [
         {
             "name": "label",
             "type": "string",
@@ -109,8 +104,6 @@ export const getDataBaseParams = () => {
             "default": ""
         }
     ];
-
-    return params;
 };
 
 const getInitialDatabase = (): Database => {
@@ -125,7 +118,7 @@ const getInitialDatabase = (): Database => {
     };
 };
 
-const Library = (props: Props) => {
+const Library = () => {
 
     const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));
@@ -139,8 +132,8 @@ const Library = (props: Props) => {
     const [formProjectName, setFormProjectName] = useState<string>("");
     const [formFolderName, setFormFolderName] = useState<string>("");
     const [addDatabase, setAddDatabase] = useState<Database | null>(null);
-    const [editDatabase,setEditDatabase] = useState<Database | null>(null);
-    const [stores, setStores] = useState();
+    const [editDatabase, setEditDatabase] = useState<Database | null>(null);
+    const [, setStores] = useState();
     const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
@@ -150,22 +143,22 @@ const Library = (props: Props) => {
     const [folderPath, setFolderPath] = useState();
     const [isLoading, setIsLoading] = useState();
     const [is_finished, setIsFinished] = useState();
-    const [isDialog] = useState((HttpUtil.getURLParam("dialog")) ? true : false);
+    const [isDialog] = useState<Boolean>((HttpUtil.getURLParam("dialog")==="true"));
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
-    const isProject = HttpUtil.getURLParam("project") ? HttpUtil.getURLParam("project") : false;
-    const [links,setLinks] = useState<IBreadCrumbsLink[]>([]);
+    const isProject = inject_is_project;
+    const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
 
-    useEffect(()=>{
-        if(isDialog){
+    useEffect(() => {
+        if (isDialog) {
             const bodyEl = document.querySelector("body");
-            if(bodyEl)bodyEl.classList.add('dialog');
+            if (bodyEl) bodyEl.classList.add("dialog");
         }
-    },[isDialog]);
+    }, [isDialog]);
 
-    useEffect(()=>{
-        if(!folderPath)return;
+    useEffect(() => {
+        if (!folderPath) return;
         setLinks(makeBreadCrumbLinks(folderPath));
-    },folderPath);
+    }, folderPath);
 
     useEffect(() => {
         ModalUtil.registerModal({
@@ -181,12 +174,12 @@ const Library = (props: Props) => {
         // プロジェクトの作成
         ModalUtil.registerModal({
             id: Constants.modal.ADD_PROJECT, onClickDone: () => {
-                if(formProjectName.length === 0){
+                if (formProjectName.length === 0) {
                     alert("プロジェクト名を入力して下さい");
                     return;
                 }
                 setIsLoading(true);
-                APIUtil.post("projects", {label: formProjectName,parent: inject_folder_uuid}).then((response) => {
+                APIUtil.post("projects", {label: formProjectName, parent: inject_folder_uuid}).then(() => {
                     ModalUtil.emitModal(
                         {id: Constants.modal.ADD_PROJECT, visible: false});
                     fetchFolder();
@@ -240,7 +233,7 @@ const Library = (props: Props) => {
                     datasource: {
                         "type": "frame"
                     }
-                }).then((response) => {
+                }).then(() => {
                     ModalUtil.closeModal(Constants.modal.ADD_FLOW);
                     setFormFlowName("");
                     fetchFolder();
@@ -258,14 +251,12 @@ const Library = (props: Props) => {
         fetchFolder();
     }, []);
 
-    useEffect(()=>{
+    useEffect(() => {
         // データベースの編集
         const database = editDatabase;
-        if(!database)return;
-        const rules = getDataBaseRules();
+        if (!database) return;
         const params = getDataBaseParams();
         const completeEditDatabase = (response: any) => {
-            const json = response.data.data;
             if (!response.data.success) {
                 notify({
                     title: "データベース作成エラー",
@@ -336,7 +327,7 @@ const Library = (props: Props) => {
             content: paramsForm
         });
 
-    },[editDatabase]);
+    }, [editDatabase]);
 
 
     useEffect(() => {
@@ -345,7 +336,7 @@ const Library = (props: Props) => {
         if (!database) return;
         const params = getDataBaseParams();
         const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
-                                       onChange={(e, param, value) => onChangeNewDatabase(e, param, value)}/>;
+                                       onChange={(e, param, value) => onChangeNewDatabase(e, param, value)} />;
         ModalUtil.registerModal({
             id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone
         });
@@ -358,7 +349,7 @@ const Library = (props: Props) => {
         });
     }, [addDatabase]);
 
-    const getVisualizers = ()=> {
+    const getVisualizers = () => {
         // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
         APIUtil.get("visualizers").then((response) => {
             const json = response.data;
@@ -368,36 +359,43 @@ const Library = (props: Props) => {
             setVisualizers(visualizers);
         });
     };
-    const makeBreadCrumbLinks = (folderPath: any[]): IBreadCrumbsLink[]  =>{
-        const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? "&mode=" + mode : ""):"";
-        return folderPath.map((path, index):IBreadCrumbsLink => {
-            const isCurrent =  ((folderPath.length - 1) === index);
-            if(index === 0){
+    const makeBreadCrumbLinks = (folderPath: any[]): IBreadCrumbsLink[] => {
+        const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
+        return folderPath.map((path, index): IBreadCrumbsLink => {
+            const isCurrent = ((folderPath.length - 1) === index);
+            if (index === 0) {
                 // ルートはライブラリを指定
                 return {
                     uuid: path.uuid,
-                    label:"ライブラリ",
-                    url: "/library"+ dialogOption,
-                    current:isCurrent,
+                    label: "ライブラリ",
+                    url: "/library" + dialogOption,
+                    current: isCurrent,
                     type: "folder"
-                }
+                };
+            }
+
+            let url_prefix;
+            if (path.type === "folder") {
+                url_prefix = "/folders/";
+            } else if (path.type === "project") {
+                url_prefix = "/projects/";
             }
 
             return {
                 uuid: path.uuid,
                 label: path.label,
-                url: "/folders/" + path.uuid + dialogOption,
+                url: url_prefix + path.uuid + dialogOption,
                 current: isCurrent,
                 type: path.type
-            }
+            };
         });
     };
 
-    const onClickAddFrameDone = ()=>{
+    const onClickAddFrameDone = () => {
         fetchFolder();
     };
 
-    const onClickAddDatabaseDone = ()=>{
+    const onClickAddDatabaseDone = () => {
         const database = addDatabase;
         if (!database) return;
         try {
@@ -445,8 +443,7 @@ const Library = (props: Props) => {
      */
     const completeAddedDatabase = (response: any) => {
         const database = addDatabase;
-        if(!database)return;
-        const json = response.data.data;
+        if (!database) return;
         if (!response.data.success) {
             notify({
                 title: "データベース作成エラー",
@@ -488,7 +485,6 @@ const Library = (props: Props) => {
      * @param response
      */
     const completeAddedFolder = (response: any) => {
-        const json = response.data.data;
         setIsLoading(false);
         if (!response.data.success) {
             notify({
@@ -522,10 +518,10 @@ const Library = (props: Props) => {
         });
     };
 
-    const clearSelected = ()=>{
-        setLibraryChildren(libraryChildren.map((libraryChildren:LibraryListDataType)=>{
+    const clearSelected = () => {
+        setLibraryChildren(libraryChildren.map((libraryChildren: LibraryListDataType) => {
             libraryChildren.selected = false;
-            return libraryChildren
+            return libraryChildren;
         }));
     };
 
@@ -544,7 +540,7 @@ const Library = (props: Props) => {
             return APIUtil.get("folders/" + inject_folder_uuid).then((response) => {
                 if (response.data.success) {
                     const json = response.data.data;
-                    const {children, folderPath, inject_folder_uuid} = json;
+                    const {children, folderPath} = json;
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
@@ -552,7 +548,7 @@ const Library = (props: Props) => {
                     APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
                         if (response.data.success) {
                             const json = response.data.data;
-                            const {children, folderPath, inject_folder_uuid} = json;
+                            const {children, folderPath} = json;
                             setInitialLibraryChildren(children);
                             setLibraryChildren(children);
                             setFolderPath(folderPath);
@@ -560,9 +556,9 @@ const Library = (props: Props) => {
                     });
                 }
             });
-        } else if (inject_is_trash){
-          // ゴミ箱の場合
-            return new Promise(async (resolve, reject) => {
+        } else if (inject_is_trash) {
+            // ゴミ箱の場合
+            return new Promise(async (resolve) => {
                 await API.request.doGet.trashes({})
                     .then((response) => {
                         if (response.data.data) {
@@ -585,13 +581,13 @@ const Library = (props: Props) => {
                         });
                     });
                 resolve();
-            })
+            });
         } else {
             //ルートを取得
             return APIUtil.get("library").then((response) => {
                 const json = response.data.data;
                 if (response.data.success) {
-                    const {children, folderPath, uuid} = json;
+                    const {children, folderPath} = json;
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
@@ -607,7 +603,7 @@ const Library = (props: Props) => {
             done: "作成する",
             content: <div>
                 <TextField placeholder={"フロー名"}
-                           onChange={(e, validation) => setFormFlowName(e.target.value)} />
+                           onChange={(e) => setFormFlowName(e.target.value)} />
                 <div className={"mt-8px"} />
             </div>
         });
@@ -651,28 +647,13 @@ const Library = (props: Props) => {
     };
 
     const onClickAddDatabase = () => {
-        const params = getDataBaseParams();
-        // let database: Database = {};
-        // params.map(param => {
-        //     if (param.default) database[param.name] = param.default;
-        // });
-        // const paramsForm = <ParamsForm params={params} args={getInitialDatabase()} invalids={{}}
-        //                                onChange={onChangeNewDatabase} />;
-        //
-        // ModalUtil.emitModal({
-        //     id: Constants.modal.ADD_DATABASE,
-        //     visible: true,
-        //     done: "追加する",
-        //     dynamic: true,
-        //     content: paramsForm
-        // });
         setAddDatabase(getInitialDatabase());
     };
 
     const onChangeNewDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
         try {
-            if(addDatabase){
-                setAddDatabase({...addDatabase,...{[param.name]:value}});
+            if (addDatabase) {
+                setAddDatabase({...addDatabase, ...{[param.name]: value}});
             }
         } catch (e) {
             console.log(e);
@@ -683,76 +664,44 @@ const Library = (props: Props) => {
         if (!is_finished) {
             return false;
         }
-        if (!Array.isArray(libraryChildren) ||
-            libraryChildren.length === 0 || libraryChildren === null) {
-            return true;
-        }
-        return false;
+        return !Array.isArray(libraryChildren) || libraryChildren.length === 0;
     };
 
     const renderAll = () => {
         if (!is_finished) return null;
         if (isEmptyLibraryList() && mode === Constants.library.mode.dialog) return renderEmptyState();
 
-        // // 普通にライブラリーを開いた時
-        // let newUI = <div>
-        //     {this.renderNewFolder()}
-        //     {/*{this.renderNewDocument()}*/}
-        //     {this.renderNewFrame()}
-        //     {this.renderNewDatabase()}
-        // </div>;
-        //
-        // // 異動先選択など
-        // let selectUI = <div>
-        //     {this.renderSelectDestination()}
-        // </div>;
+        const onClickFileName = (body: ITableBody) => {
+            const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
 
-        // TODO ソート（コメントアウト済み）
-        // let list = this.state.libraryChildren.filter((libray) => libray.label.includes(this.state.searchText));
-        // if (this.state.sortKey && this.state.sortOrder) {
-        //     let sortKey: string = this.state.sortKey;
-        //     let sortOrder: "asc" | "desc" = this.state.sortOrder;
-        //     list = list.sort((a: LibraryChild, b: LibraryChild) => {
-        //         if (sortOrder === "asc") {
-        //             return (a[sortKey] < b[sortKey]) ? -1 : 1;
-        //         } else {
-        //             return (a[sortKey] < b[sortKey]) ? 1 : -1;
-        //         }
-        //     });
-        // }
-
-        const onClickFileName=(body: ITableBody)=>{
-            const dialogOption = (isDialog) ? '?dialog=true' + ((mode) ? "&mode=" + mode : ""):"";
-            // TODO ダイアログ表示された場合の選択時の対応
-            // TODO ダイアログ表示された場合のゴミ箱や機能制限の対応
-
-            if(body.type === "trash"){
+            if (body.type === "trash") {
                 WebUtil.navigateURL(WebUtil.webURL("/trashes" + dialogOption));
             }
-            if(body.type === "folder"){
+            if (body.type === "folder") {
                 WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption));
             }
-            if(body.type === "project"){
-                WebUtil.navigateURL(WebUtil.webURL("/folders/" + body.uuid + dialogOption + "&project=true" ));
+            if (body.type === "project") {
+                WebUtil.navigateURL(WebUtil.webURL("/projects/" + body.uuid + dialogOption));
             }
-            if(body.type === "database"){
+            if (body.type === "database") {
                 setLastSelected(body);
                 onClickEditDatabase(body);
             }
-            if(body.type === "frame"){
-                window.open(WebUtil.webURL('/preview?step_id=null&dialog=false&frame_uuid=' + body.uuid + '&title=' + StringUtil.urlEncode(body.label)));
+            if (body.type === "frame") {
+                if (mode === Constants.library.mode.frame_select) {
+                    // データソースの追加時
+                    onClickApply(body);
+                    return;
+                }
+                window.open(WebUtil.webURL("/preview?step_id=null&dialog=false&frame_uuid=" + body.uuid + "&title=" + StringUtil.urlEncode(body.label)));
             }
-            if(body.type === "flow"){
-                window.open(WebUtil.webURL('/flows/' + body.uuid + + dialogOption));
+            if (body.type === "flow") {
+                window.open(WebUtil.webURL("/flows/" + body.uuid + dialogOption));
             }
 
         };
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
-            //     // クリックされたデータを１番目の位置にする
-            //     let selectedDatas: LibraryChild[] = this.state.selectedDatas
-            // let lastSelected: LibraryChild | null = this.state.lastSelected
-
             let data: LibraryListDataType = cell;
             if (event && (event.metaKey || event.ctrlKey)) {
                 data.selected = true;
@@ -778,8 +727,7 @@ const Library = (props: Props) => {
                         min = current;
                         max = last;
                     }
-                    // TODO シフトキーによる複数選択
-                    const selectedDatas:LibraryListDataType[] = libraryChildren.slice(min, max+1).map((libraryChild)=>{
+                    const selectedDatas: LibraryListDataType[] = libraryChildren.slice(min, max + 1).map((libraryChild) => {
                         libraryChild.selected = true;
                         return libraryChild;
                     });
@@ -796,39 +744,63 @@ const Library = (props: Props) => {
         };
 
         const onClickLibrary = () => {
-            setTimeout(()=>{
-                if(!clickedLibraryCell.current){
+            setTimeout(() => {
+                if (!clickedLibraryCell.current) {
                     clearSelected();// 選択状態を一旦解除
                     setLastSelected(null);
                 }
                 clickedLibraryCell.current = false;
-            },100);
+            }, 100);
         };
 
-        const onClickDeleteAll = ()=>{
-            onClickCleanTrash()
+        const onClickDeleteAll = () => {
+            onClickCleanTrash();
         };
+
+        const renderMenuList = () => {
+            let menuList;
+            if (mode === Constants.library.mode.folder_select) {
+                menuList = <ApplyMenuList
+                    onClickApply={onClickSelectDestination}
+                />;
+            } else if (mode === Constants.library.mode.frame_select) {
+                return null;
+            } else {
+                if (!inject_is_trash) {
+                    menuList = <MenuList
+                        onClickAddDatabase={onClickAddDatabase}
+                        onClickCSVUpload={onClickCSVUpload}
+                        onClickNewFlow={onClickNewFlow}
+                        onClickNewFolder={onClickNewFolder}
+                        onClickNewProject={onClickNewProject}
+                    />;
+                } else {
+                    menuList = <TrashMenuList
+                        onClickDeleteAll={onClickDeleteAll}
+                    />;
+                }
+            }
+
+            return <>
+                <Spacer minWidth={40} />
+                <Flex flexDirection={"column"} fluid={true} width={280}>
+                    <Spacer height={160} />
+                    {menuList}
+                </Flex>
+            </>;
+        };
+
 
         return <Flex justifyContent={"center"} fluid={true}>
-            {/*{this.renderBreadCrumb()}*/}
-            {/*{this.renderSearchBar()}*/}
-            {/*<List<LibraryChild>*/}
-            {/*    lists={list}*/}
-            {/*    selected={this.state.selectedDatas}*/}
-            {/*    getHeaders={this.getHeaders}*/}
-            {/*    getColumns={this.getColumns}*/}
-            {/*    onClickData={this.onClickLibrary}*/}
-            {/*/>*/}
             {
-                (!inject_is_trash)?
+                (!inject_is_trash) ?
                     renderLibraryInspector()
                     :
                     renderTrashInspector()
 
             }
-            {/*{(this.state.mode === Constants.library.mode.list) ? newUI : null}*/}
-            {/*{(this.state.mode === Constants.library.mode.folder_select) ? selectUI : null}*/}
-            <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true} onClick={onClickLibrary}>
+            <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true}
+                  onClick={onClickLibrary}>
                 <Spacer width={40} />
                 <Flex flexDirection={"column"} fluid={true}>
                     <Spacer height={40} />
@@ -838,27 +810,34 @@ const Library = (props: Props) => {
                         minWidth={800}
                         onClickCell={onClickCell}
                         onClickFileName={onClickFileName}
-                        onClickHeader={(header:ITableHeader) => {
+                        onClickHeader={(header: ITableHeader) => {
                             clickedLibraryCell.current = true;
-                            if(header.sort){
-                                setLibraryChildren(_.orderBy(libraryChildren, header.key, header.sort));
-                            }else{
+                            if (header.sort) {
+                                setLibraryChildren(lodash.orderBy(libraryChildren, header.key, header.sort));
+                            } else {
                                 setLibraryChildren(initialLibraryChildren);
                             }
                         }}
                         bodies={
                             libraryChildren.map((libraryChild) => {
                                 const body = libraryChild as ITableBody;
-                                if(mode === Constants.library.mode.folder_select){
+                                if (mode === Constants.library.mode.folder_select) {
                                     switch (body.type) {
                                         case "folder":
                                         case "project":
                                             body.clickable = true;
                                     }
-                                }else{
+                                } else if (mode === Constants.library.mode.frame_select) {
+                                    switch (body.type) {
+                                        case "frame":
+                                        case "folder":
+                                        case "project":
+                                            body.clickable = true;
+                                    }
+                                } else {
                                     body.clickable = true;
                                 }
-                                if(inject_is_trash){
+                                if (inject_is_trash) {
                                     // ゴミ箱の場合は全て選択不可
                                     body.clickable = false;
                                 }
@@ -868,28 +847,7 @@ const Library = (props: Props) => {
                     />
                     <Spacer height={80} />
                 </Flex>
-                <Spacer minWidth={40} />
-                <Flex flexDirection={"column"} fluid={true} width={280}>
-                    <Spacer height={160} />
-                    {(mode === Constants.library.mode.folder_select) ?
-                        <ApplyMenuList
-                            onClickApply={onClickSelectDestination}
-                        />
-                        :
-                        (!inject_is_trash) ?
-                            <MenuList
-                                onClickAddDatabase={onClickAddDatabase}
-                                onClickCSVUpload={onClickCSVUpload}
-                                onClickNewFlow={onClickNewFlow}
-                                onClickNewFolder={onClickNewFolder}
-                                onClickNewProject={onClickNewProject}
-                            />
-                            :
-                            <TrashMenuList
-                                onClickDeleteAll={onClickDeleteAll}
-                            />
-                    }
-                </Flex>
+                {renderMenuList()}
                 <Spacer width={40} />
             </Flex>
         </Flex>;
@@ -1080,7 +1038,7 @@ const Library = (props: Props) => {
                     axios.put("/api/v0/flows/" + flow_uuid, {
                         parent: parent_uuid,
                         lock: lockId
-                    }).then((response) => {
+                    }).then(() => {
                         navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
                     }, (error) => {
                         navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
@@ -1184,7 +1142,7 @@ const Library = (props: Props) => {
             danger: true,
             content: <div>
                 <strong>ゴミ箱にある項目を完全に消去してもよろしいですか？</strong>
-                <br/>
+                <br />
                 この操作は取り消せません。
             </div>
         });
@@ -1194,7 +1152,7 @@ const Library = (props: Props) => {
         if (data.type !== Constants.library.type.database) {
             return;
         }
-        const database:Database = {
+        const database: Database = {
             "label": data.label,
             "dbms": data.dbms,
             "hostname": data.hostname,
@@ -1204,6 +1162,13 @@ const Library = (props: Props) => {
             "password": data.password
         };
         setEditDatabase(database);
+    };
+
+    const onClickApply = (selected_data: LibraryListDataType) => {
+        if (window.opener || !window.opener.closed) {
+            window.opener.onCallbackApply(selected_data);
+        }
+        window.close();
     };
 
     const renderLibraryInspector = (): React.ReactNode => {
@@ -1242,18 +1207,11 @@ const Library = (props: Props) => {
             });
         };
 
-        const onClickApply = (selected_data: LibraryListDataType) => {
-            if (window.opener || !window.opener.closed) {
-                window.opener.onCallbackApply(selected_data);
-            }
-            window.close();
-        };
-
         switch (mode) {
             case Constants.library.mode.frame_select:
-                if (data && data.type === Constants.library.type.frame) {
-                    _onClickApply = (data) => onClickApply(data);
-                }
+                // if (data && data.type === Constants.library.type.frame) {
+                //     _onClickApply = (data) => onClickApply(data);
+                // }
                 break;
             case Constants.library.mode.folder_select:
                 break;
@@ -1317,7 +1275,7 @@ const Library = (props: Props) => {
             }
 
             // セルをクリックして切り替えしている最中の場合はイベントをキャンセルする
-            if(clickedLibraryCell.current){
+            if (clickedLibraryCell.current) {
                 return;
             }
 
@@ -1507,7 +1465,6 @@ const Library = (props: Props) => {
                 content: renderEditEncodingForm(data)
             });
         };
-
 
 
         return <LibraryInspector

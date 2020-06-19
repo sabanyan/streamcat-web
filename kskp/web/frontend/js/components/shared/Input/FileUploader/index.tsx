@@ -232,7 +232,7 @@ export default class FileUploader extends React.Component<Props, State> {
     const onClick = (e) => this.onClickFileSelect(e)
 
     return <React.Fragment key={title + icon}>
-      <a href="#" className={style.button} onClick={onClick}>
+      <a href="javascript:return false;" className={style.button} onClick={onClick}>
         <i className={'material-icons'}>{icon}</i>
         {title}
       </a >
