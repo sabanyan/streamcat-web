@@ -1,16 +1,20 @@
-import type { BaseModelProps } from 'Model/Step/BaseStepModel'
+import { BaseModelProps } from 'Model/Step/BaseStepModel'
 import { BaseStepModel } from 'Model/index'
 import Constants from 'Constants/index'
 
-export type NoteStepModelProps = {
-  ...BaseModelProps,
+export interface NoteStepModelProps extends BaseModelProps{
   title: string;
   content: string;
-  fontSize: number;
-  color: string;
+  fontSize?: number;
+  color?: string;
 }
 
 export default class NoteStepModel extends BaseStepModel {
+  uuid: string | undefined = undefined;
+  title: string | undefined = undefined;
+  content: string | undefined = undefined;
+  color: string = Constants.default.note.color.green;
+  fontSize: number = 10;
 
   constructor (props: NoteStepModelProps) {
     super(props)
@@ -21,7 +25,7 @@ export default class NoteStepModel extends BaseStepModel {
   }
 
   hasData (): boolean {
-    return (this.uuid)
+    return !!(this.uuid)
   }
 
   getLabel (): string {
@@ -41,11 +45,11 @@ export default class NoteStepModel extends BaseStepModel {
   }
 
   getColor () {
-    return this.color || Constants.default.note.color.green;
+    return this.color;
   }
 
   getFontSize () {
-    return this.fontSize || 10;
+    return this.fontSize;
   }
 
   validate () {

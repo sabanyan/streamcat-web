@@ -5,7 +5,7 @@ import { CommandParamType } from 'Types/index'
 import { StateUtil } from 'Utils/index';
 import style from './style.scss'
 
-import { VisualizeModel, MessageModel } from 'Model/index';
+import {VisualizeModel, VisualizeModelProps} from "Model/index";
 
 import { EmptyState, Loader } from 'Shared/Base'
 import { PreviewInspector } from 'Shared/Inspector'
@@ -13,7 +13,7 @@ import { PreviewInspector } from 'Shared/Inspector'
 
 type Props = {
   index: number;
-  visualize: VisualizeModel;
+  visualize: VisualizeModel<VisualizeModelProps>;
   flow_uuid: string;
   stepIds: string[];
   frame_uuid: string;
@@ -50,7 +50,7 @@ export default class Visualizer extends React.Component<Props, State> {
     }
   }
 
-  initArgs(visualize: VisualizeModel, args: {}) {
+  initArgs(visualize: VisualizeModel<VisualizeModelProps>, args: {}) {
     let result = {}
     try {
       const command = { ...visualize }

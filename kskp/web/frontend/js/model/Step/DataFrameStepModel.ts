@@ -1,22 +1,21 @@
 // @flow
-import type { BaseModelProps } from 'Model/Step/BaseStepModel'
+import { BaseModelProps } from 'Model/Step/BaseStepModel'
 import { BaseStepModel } from 'Model/index'
 
 type dataSourceType = 'csv'
 
-export type DataFrameStepModelProps = {
-  ...BaseModelProps,
-  uuid: string;
-  dataSource: dataSourceType;
+export interface DataFrameStepModelProps extends BaseModelProps{
+  uuid: string|null
+  dataSource: string | undefined;
   makeCache?: boolean;
   cacheCreatedAt?: string;
 }
 
 export default class DataFrameStepModel extends BaseStepModel {
-  uuid: string = null
-  dataSource: dataSourceType
+  uuid: string|null = null
+  dataSource: dataSourceType | undefined = undefined
   makeCache: boolean = false
-  cacheCreatedAt: string = null
+  cacheCreatedAt: string|null = null
 
   constructor (props: DataFrameStepModelProps) {
     super(props)
@@ -27,7 +26,7 @@ export default class DataFrameStepModel extends BaseStepModel {
   }
 
   hasData (): boolean {
-    return (this.uuid)
+    return !!(this.uuid)
   }
 
   isCached (): boolean {
@@ -38,7 +37,7 @@ export default class DataFrameStepModel extends BaseStepModel {
     return this.makeCache
   }
 
-  getCacheCreatedAt (): boolean {
+  getCacheCreatedAt (): string|null {
     return this.cacheCreatedAt
   }
 

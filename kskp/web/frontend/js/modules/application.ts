@@ -1,13 +1,13 @@
 import Constants from 'Constants/index'
-import { GraphUtil } from 'Utils'
 import { defaultGraphProps, defaultNodeProps } from 'Utils/GraphUtil'
-import { FlowUtil, StateUtil, ValidatorUtil, ZoomUtil } from 'Utils/index'
+import { GraphUtil, FlowUtil, StateUtil, ValidatorUtil, ZoomUtil } from 'Utils/index'
 import FlowModel from 'Model/Flow/FlowModel'
-import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
+import { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
-import type { CommandModelType, CommandPortType, StepModelType } from '../types'
+import { CommandModelType, CommandPortType, StepModelType } from '../types'
 import { DataFrameDetailType } from 'Types/index'
 import _ from 'lodash'
+import { useDispatch } from 'react-redux'
 
 const LOAD_FLOW_JSON_ACTION = 'load_flow_json_action'
 const ADD_MASTER_ACTION = 'add_master_action'
@@ -38,6 +38,7 @@ const UPDATE_DATA_SOURCE_DETAIL_ACTION = 'update_data_source_detail_action'
 const UPDATE_CACHE_ACTION = 'update_cache_action'
 const MOVE_STEPS_ACTION = 'move_steps_action'
 const RESIZE_INSPECTOR_ACTION = 'resize_inspector_action'
+const ADD_NOTE_ACTION = 'add_note_action'
 const graph: GraphUtil = new GraphUtil()
 
 let initialState = {
@@ -69,7 +70,7 @@ let initialState = {
   }
 }
 
-const FlowEditorReducer = (state = initialState, action: {}) => {
+const FlowEditorReducer = (state = initialState, action: any) => {
   //http://otiai10.hatenablog.com/entry/2016/04/20/013348
   //stateを一度ディープコピーしないとrenderされないためコピーする
   let newState = StateUtil.deepCopy(state)
@@ -149,8 +150,9 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
 
           if (!src_step_ids.length) {
             //入力がない場合、グラフの中央を基準にする
+            const el = document.querySelector('#flow_editor>div');
             const leftTopPosition = {
-              x: document.querySelector('#flow_editor>div').scrollLeft,
+              x: (el && el.scrollLeft)? el.scrollLeft : 0,
               y: window.pageYOffset
             }
             average = {
@@ -227,7 +229,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             let inputPortName = Constants.default.command.inputPortName
             if (add_step.srcs !== undefined || add_step.srcs !== {}) {
               let object = add_step.srcs
-              inputPortName = Object.keys(object).find(key => object[key] === id)
+              inputPortName = Object.keys(object).find(key => object[key] === id) || ""
             }
             graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName))
 
@@ -247,7 +249,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
             let outputPortName = Constants.default.command.outputPortName
             if (add_step.dsts !== undefined || add_step.dsts !== {}) {
               let object = add_step.dsts
-              outputPortName = Object.keys(object).find(key => object[key] === id)
+              outputPortName = Object.keys(object).find(key => object[key] === id) || ""
             }
             graph.addEdge(from, to, GraphUtil.edgeName(from, to, outputPortName))
           })
@@ -402,7 +404,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
 
       newState.graph = graph.getGraph(newState)
 
-      window.nodes = newState.nodes
+      (window as any).nodes = newState.nodes
       return newState
     }
     case ADD_HISTORY_ACTION: {
@@ -438,7 +440,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         newState.nodes = state.history.nodes[newState.history.current]
         newState.flow.nodes = newState.nodes
         allRebuildNodesEdges(newState)
-        window.nodes = newState.nodes
+        (window as any).nodes = newState.nodes
 
         newState.graph = graph.getGraph(newState)
       }
@@ -453,7 +455,7 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
         newState.nodes = state.history.nodes[newState.history.current]
         newState.flow.nodes = newState.nodes
         allRebuildNodesEdges(newState)
-        window.nodes = newState.nodes
+        (window as any).nodes = newState.nodes
         newState.graph = graph.getGraph(newState)
       }
       return newState
@@ -634,18 +636,18 @@ const FlowEditorReducer = (state = initialState, action: {}) => {
           width : action.width
         },
         editor: {
-          width: window.innerWidth - action.width
+          width: (window as any).innerWidth - action.width
         }
       }
       break;
     }
 
     default:
-      window.nodes = state.nodes
+      (window as any).nodes = state.nodes
       return state
   }
 
-  window.nodes = newState.nodes
+  (window as any).nodes = newState.nodes
   return newState
 
 }
@@ -1010,7 +1012,7 @@ export const addNoteAction = (x: number, y: number) => {
   }
 }
 
-export const sortStepSrcEndAction = (detail: {}, mouseEvent: {}) => {
+export const sortStepSrcEndAction = (detail: any, mouseEvent: {}) => {
   return {
     type: SORT_STEP_SRC_END_ACTION,
     payload: {

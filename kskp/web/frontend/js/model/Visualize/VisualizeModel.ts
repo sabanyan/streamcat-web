@@ -25,6 +25,7 @@ export default class VisualizeModel<VisualizeModelProps> extends Model {
   ports: [[], []] = [[], []]
   url = ''
   version = ''
+  rules: {} = {}
 
   constructor (props: VisualizeModelProps) {
     super()

@@ -29,10 +29,12 @@
   },
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "devDependencies": {
+    "@types/ajv": "^1.0.0",
     "@types/classnames": "^2.2.8",
     "@types/moment": "^2.13.0",
     "@types/react": "^16.8.22",
     "@types/react-dom": "^16.8.4",
+    "@types/validate.js": "^0.11.0",
     "array-move": "^2.1.0",
     "axios": "^0.18.1",
     "babel-loader": "^7.1.4",

@@ -2,12 +2,10 @@
 import ModelUtil from 'Utils/ModelUtil'
 import Model from "Model/Core";
 
-type stepType = 'command' | 'frame'
-
 export type BaseModelProps = {
-  id?: string;
-  type: stepType;
-  label?: string;
+  id?: string | null | undefined;
+  type: string;
+  label?: string | null | undefined;
   position?: { x: number, y: number };
   size?: { width: number, height: number };
   invalid?: boolean;
@@ -15,16 +13,16 @@ export type BaseModelProps = {
 }
 
 export default class BaseStepModel extends Model {
-  id: string
-  type: stepType
-  label: string
+  id: string | null | undefined = undefined;
+  type: string | undefined = undefined;
+  label: string | null | undefined = undefined;
   position: { x: number, y: number } = {x: 0, y: 0}
   size: { width: number, height: number } = {width: 0, height: 0}
   invalid: {} = {}
   error: {} = {}
 
   constructor (props: BaseModelProps) {
-    super(props)
+    super()
     this.initialize(props, 'id')
     this.initialize(props, 'type')
     this.initialize(props, 'label')
@@ -46,14 +44,14 @@ export default class BaseStepModel extends Model {
     return this.id
   }
 
-  setPosition (position: ?{ x: number, y: number }) {
+  setPosition (position: { x: number, y: number } | undefined) {
     if (position) {
       this.position.x = position.x
       this.position.y = position.y
     }
   }
 
-  setSize (size: ?{ width: number, height: number }) {
+  setSize (size: { width: number, height: number } | undefined) {
     if (size) {
       this.size.width = size.width
       this.size.height = size.height

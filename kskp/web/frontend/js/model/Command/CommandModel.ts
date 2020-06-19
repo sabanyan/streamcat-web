@@ -1,5 +1,4 @@
-//@flow
-import type { CommandParamType, CommandPortType } from 'Types/index'
+import { CommandParamType, CommandPortType } from 'Types/index'
 import Model from "Model/Core";
 
 type stepType = 'command' | 'frame'
@@ -16,18 +15,18 @@ export type CommandModelProps = {
 }
 
 export default class CommandModel extends Model {
-  classification: string
-  description: string
-  id: string
-  label: string = null
-  params: [CommandParamType] = []
-  groups: []
-  ports: [CommandPortType] = [[], []]
+  classification: string | undefined = undefined
+  description: string | undefined = undefined
+  id: string | undefined = undefined
+  label: string | null = null
+  params: any[CommandParamType] = []
+  groups: string[] | undefined = undefined
+  ports: any[CommandPortType] = [[], []]
   rules: {} = {}
-  version: string
+  version: string | undefined = undefined
 
   constructor (props: CommandModelProps) {
-    super(props)
+    super()
     this.initialize(props, 'classification')
     this.initialize(props, 'description')
     this.initialize(props, 'id')

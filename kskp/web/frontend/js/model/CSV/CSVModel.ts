@@ -8,8 +8,10 @@ export type CSVModelProps = {
 }
 
 export default class CSVModel extends Model {
+  label: string = "";
+  data: any;
   constructor (props: CSVModelProps) {
-    super(props)
+    super()
     this.initialize(props, 'data')
     this.initialize(props, 'uuid')
     this.initialize(props, 'label')
@@ -26,10 +28,13 @@ export default class CSVModel extends Model {
       // msSaveOrOpenBlobの場合はファイルを保存せずに開ける
       window.navigator.msSaveOrOpenBlob(blob, this.getCSVFileName())
     } else {
-      let element = document.getElementById('csv_download')
-      element.href = window.URL.createObjectURL(blob)
-      element.download = this.getCSVFileName()
-      document.querySelector('#csv_download').click()
+      let element: HTMLAnchorElement | null = document.getElementById('csv_download') as HTMLAnchorElement
+      if(element){
+        element.href = window.URL.createObjectURL(blob)
+        element.download = this.getCSVFileName()
+        const csvDownLoadEl:HTMLAnchorElement | null = document.querySelector('#csv_download');
+        if(csvDownLoadEl)csvDownLoadEl.click()
+      }
     }
   }
 

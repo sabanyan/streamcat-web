@@ -11,12 +11,12 @@ import {ModalManager} from "Shared/Modal";
 import {addNotification, removeNotification} from "reapop";
 
 import {
-    FlowEditorContainer,
     ProfileContainer,
 } from "Components/index";
 import {NavigationBar} from "Shared/Base";
 import {Preview} from "PreviewContainer/Preview";
 import {Library} from "Components/LibraryContainer/Libary";
+import {FlowEditor} from "FlowEditorContainer/FlowEditor";
 
 export type Props = {
     viewId: ViewId
@@ -84,7 +84,7 @@ const Kskp = (props: Props) => {
         let viewComponent: React.ReactNode = null;
         switch (viewId) {
             case ViewId.Flow_Editor:
-                viewComponent = <FlowEditorContainer />;
+                viewComponent = <FlowEditor />;
                 break;
             case ViewId.Library:
                 viewComponent = <Library />;
