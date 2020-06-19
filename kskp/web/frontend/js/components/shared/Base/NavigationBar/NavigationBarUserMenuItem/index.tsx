@@ -12,7 +12,7 @@ const NavigationBarUserMenuItem = (props: Props) => {
     const {navigation, children, visible} = props;
     if (!visible || !navigation) return null;
     return <li className="nav-item dropdown user">
-        <a className="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown"
+        <a className="nav-link dropdown-toggle" href="javascript: return false;" id="navbarDropdownMenuLink" data-toggle="dropdown"
            aria-haspopup="true" aria-expanded="false">
             <img className="icon" src={baseUrl + "images/icon/user.svg"} />
             {navigation.user_name}
