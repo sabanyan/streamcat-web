@@ -67,6 +67,7 @@
     "webpack-dev-server": "^3.7.2"
   },
   "dependencies": {
+    "@types/jquery": "^3.3.38",
     "ajv": "^6.5.4",
     "chart.js": "^2.7.2",
     "classnames": "^2.2.5",
