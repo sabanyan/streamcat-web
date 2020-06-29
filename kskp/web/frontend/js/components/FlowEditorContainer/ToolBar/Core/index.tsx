@@ -57,7 +57,10 @@ export default class ToolBar extends React.Component<ToolBarProps> {
       dismissAfter: 0,
     })
 
+    console.log(notify);
+
     flow.nodes = nodes
+
 
     return new Promise(async (reslove, reject) => {
       // 編集権限がないと、保存不可
