@@ -37,19 +37,12 @@ export enum ViewId {
     Undefined = -1,
 }
 
-const contentSelector = state => state.CommonReducer.content;
-const inspectorSelector = state => state.CommonReducer.inspector;
-
 const Kskp = (props: Props) => {
 
     const dispatch = useDispatch();
-    const content = useSelector(contentSelector);
-    const inspector = useSelector(inspectorSelector);
     const {viewId} = props;
 
     const notify = (context) => dispatch(addNotification(context));
-
-    const updateNotify = (context) => dispatch(addNotification(context));
     const dismissNotify = (id: string) => {
         setTimeout(() => {
             dispatch(removeNotification(id));

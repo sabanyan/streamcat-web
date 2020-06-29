@@ -41,7 +41,7 @@ const RESIZE_INSPECTOR_ACTION = 'resize_inspector_action'
 const ADD_NOTE_ACTION = 'add_note_action'
 const graph: GraphUtil = new GraphUtil()
 
-let initialState = {
+export let initialState = {
   selected_step_ids: [],
   graph: graph.getGraph({}),
   zoom: 100,
@@ -768,14 +768,9 @@ export const addStepAction = (add_step: StepModelType, src_step_ids: [] = [], ds
  * @returns {{type: string, context: *}}
  */
 export function loadFlowJSONAction(context: {}) {
-  return (dispatch, getState) => {
-    return Promise.resolve().then(() => {
-      const { flowEditorReducer } = getState()
-      return dispatch({
-        type: LOAD_FLOW_JSON_ACTION,
-        context: context
-      })
-    })
+  return {
+    type: LOAD_FLOW_JSON_ACTION,
+    context: context,
   }
 }
 
