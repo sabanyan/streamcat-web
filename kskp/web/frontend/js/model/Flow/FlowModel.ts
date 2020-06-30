@@ -11,6 +11,8 @@ export type FlowModelProps = {
   ports: [[], []]
   projectId?: number
   description: string
+  hasInPortWithId: (id: string) => boolean;
+  hasOutPortWithId: (id: string) => boolean;
 }
 
 export default class FlowModel {

@@ -1,6 +1,6 @@
 export { default as Note } from './Step/Note'
 export { default as Rect } from './Step/Rect'
-export { default as Step } from './Step'
+export { Step } from './Step'
 
 export { default as CommandIcon } from './Icon/CommandIcon'
 export { default as ErrorIcon } from './Icon/ErrorIcon'

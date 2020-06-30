@@ -1,12 +1,11 @@
-//@flow
 import React from 'react'
 import { ToolBarButton } from 'FlowEditorContainer/ToolBar'
-import type { ToolBarButtonType } from 'Types/index'
+import { ToolBarButtonType } from 'Types/index'
 
-const DryRun = (props: ToolBarButtonType) => {
+const Run = (props: ToolBarButtonType) => {
   const {onClick, children, disabled, icon} = props
   return <ToolBarButton onClick={onClick} disabled={disabled}
                         icon={icon}>{children}</ToolBarButton>
 }
 
-export default DryRun
+export {Run}
