@@ -13,7 +13,7 @@ type State = {
   inspector: Inspector
 }
 
-const initialState = {
+export const CommonReducerInitialState = {
   content: { width: getContentWidth(400) },
   inspector: { width: 400 }
 }
@@ -32,7 +32,7 @@ function getContentWidth(inspectorWidth:number) {
   return width
 }
 
-const CommonReducer = (state: State = initialState, action: any) => {
+const CommonReducer = (state: State = CommonReducerInitialState, action: any) => {
   let newState = state
 
   switch (action.type) {
