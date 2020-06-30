@@ -1,9 +1,7 @@
 //@flow
-import React, {useCallback, useEffect, useMemo, useReducer, useState} from "react";
-import Paper from "FlowEditorContainer/Paper";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import PaperScroller from "FlowEditorContainer/PaperScroller";
 import {Edge, Selector, Step} from "Shared/SVG";
-import PaperZoom from "FlowEditorContainer/PaperZoom";
 import ToolBar from "FlowEditorContainer/ToolBar/Core";
 import Constants from "Constants/index";
 import style from "./style.scss";
@@ -19,25 +17,21 @@ import {addNotification, removeNotification} from "reapop";
 import {
     addHistoryAction,
     addMasterAction,
-    addNoteAction,
     addSelectStepAction,
     addStepAction,
     copyStepsAction,
-    cutStepsAction,
     deleteCacheAction,
     deleteSelectStepAction,
     deleteStepsAction,
     dragEndAction,
     draggingAction,
     dragStartAction,
-    executeFlowAction, FlowEditorReducerInitialState,
     loadFlowJSONAction,
     moveStepsAction,
     pasteStepsAction,
     redoAction,
     resizeInspectorAction,
     selectStepsAction,
-    selectTabAction,
     setZoomAction,
     sortFlowAction,
     sortStepSrcEndAction,
@@ -47,6 +41,8 @@ import {
     updateStepAction
 } from "Modules/application";
 import {useDispatch, useSelector} from "react-redux";
+import {Paper} from "FlowEditorContainer/Paper";
+import {PaperZoom} from "FlowEditorContainer/PaperZoom";
 
 const FlowEditor = () => {
 
@@ -94,9 +90,9 @@ const FlowEditor = () => {
     const deleteCache = useCallback((selected_step_id: string) => {
         dispatch(deleteCacheAction(selected_step_id));
     },[]);
-    const cutSteps = useCallback((step_ids: []) => {
-        dispatch(cutStepsAction(step_ids));
-    },[]);
+    // const cutSteps = useCallback((step_ids: []) => {
+    //     dispatch(cutStepsAction(step_ids));
+    // },[]);
     const copySteps = useCallback((step_ids: []) => {
         dispatch(copyStepsAction(step_ids));
     },[]);
@@ -115,13 +111,13 @@ const FlowEditor = () => {
     const sortFlow = useCallback(() => {
         dispatch(sortFlowAction());
     },[]);
-    const executeFlow = useCallback((flowid: string) => {
-        // flowidは未使用
-        dispatch(executeFlowAction(flowid));
-    },[]);
-    const selectTab = useCallback((tab_id: string) => {
-        dispatch(selectTabAction(tab_id));
-    },[]);
+    // const executeFlow = useCallback((flowid: string) => {
+    //     // flowidは未使用
+    //     dispatch(executeFlowAction(flowid));
+    // },[]);
+    // const selectTab = useCallback((tab_id: string) => {
+    //     dispatch(selectTabAction(tab_id));
+    // },[]);
     const dragStart = useCallback((x: number, y: number) => {
         dispatch(dragStartAction(x, y));
     },[]);
@@ -137,9 +133,9 @@ const FlowEditor = () => {
     const updateDataFrameDetail = useCallback((detail: DataFrameDetailType) => {
         dispatch(updateDataFrameDetailAction(detail));
     },[]);
-    const addNote = useCallback((x: number, y: number) => {
-        dispatch(addNoteAction(x, y));
-    },[]);
+    // const addNote = useCallback((x: number, y: number) => {
+    //     dispatch(addNoteAction(x, y));
+    // },[]);
     const sortStepSrcEnd = useCallback((detail: {}, mouseEvent: {}) => {
         // mouseEventは未使用
         dispatch(sortStepSrcEndAction(detail, mouseEvent));
@@ -160,14 +156,16 @@ const FlowEditor = () => {
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [lockUUID, setLockUUID] = useState<string | undefined>(undefined);
-
-    const hasLockedUUID = useMemo(()=>(lockUUID)?true:false,[lockUUID]); // lockUUIDを保持している際は、編集可能な状態
+    const [, setReadOnly] = useState<boolean>(false);
+    const hasLockedUUID = useMemo(()=>!!(lockUUID),[lockUUID]); // lockUUIDを保持している際は、編集可能な状態
     const disabled = useMemo(()=>(isLoading || !hasLockedUUID),[isLoading,hasLockedUUID]);
 
     useEffect(()=>{
         const handleLeavePage = () => {
             if (lockUUID) {
-                API.request.doDelete.locks({lockUUID: lockUUID});
+                API.request.doDelete.locks({lockUUID: lockUUID}).finally(() => {
+
+                });
             }
         };
         window.addEventListener("beforeunload", handleLeavePage);
@@ -187,7 +185,7 @@ const FlowEditor = () => {
             });
             window.commands = commands;
             addMaster({commands: commands});
-        }).then((response) => {
+        }).then(() => {
             },
             (error) => {
                 console.log(error);
@@ -200,7 +198,7 @@ const FlowEditor = () => {
             });
             window.visualizers = visualizers;
             addMaster({visualizers: visualizers})
-        }).then((response) => {
+        }).then(() => {
             },
             (error) => {
                 console.log(error);
@@ -213,7 +211,7 @@ const FlowEditor = () => {
             });
             window.subflows = subflows;
             addMaster({subflows: subflows})
-        }).then((response) => {
+        }).then(() => {
             },
             (error) => {
                 console.log(error);
@@ -246,6 +244,7 @@ const FlowEditor = () => {
                             dismissAfter: -1,
                             closeButton: true
                         });
+                        setReadOnly(true);
                     } else {
                         notify({
                             title: e.title,

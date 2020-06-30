@@ -1,8 +1,7 @@
-//@flow
 import React from 'react'
 import style from './style.scss'
 import classnames from 'classnames'
-import type { ToolBarButtonType } from 'Types/index'
+import { ToolBarButtonType } from 'Types/index'
 
 const ToolBarButton = (props: ToolBarButtonType) => {
 
@@ -17,4 +16,4 @@ const ToolBarButton = (props: ToolBarButtonType) => {
     </div>
   </button>
 }
-export default ToolBarButton
+export {ToolBarButton}
