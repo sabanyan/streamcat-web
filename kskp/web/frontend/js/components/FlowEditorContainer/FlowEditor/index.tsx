@@ -420,7 +420,7 @@ const FlowEditor = () => {
                 sortStepSrcEnd={sortStepSrcEnd}
                 resizeInspector={resizeInspector}
             />
-            <NotificationManager />
+            <NotificationManager/>
         </div>
     </div>;
 };

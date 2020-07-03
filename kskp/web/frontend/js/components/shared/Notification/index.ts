@@ -1,1 +1,1 @@
-export {default as NotificationManager} from './NotificationManager'
+export * from './NotificationManager'

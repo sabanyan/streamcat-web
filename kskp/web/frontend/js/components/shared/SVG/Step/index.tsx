@@ -29,7 +29,6 @@ interface Props {
     updateDataFrameDetail: Function;
     updateStep: Function;
     moveSteps: Function;
-    movable: boolean
 }
 
 const Step = (props: Props) => {

@@ -1,9 +1,9 @@
 import * as React from "react";
-import Index from "Shared/SVG/Shadow";
 import Constants from "Constants/index";
 import style from "./style.scss";
 import {ZoomUtil} from "Utils/index";
 import {GraphType} from "Types/index";
+import {Shadow} from "Shared/SVG";
 
 type Props = {
     zoom: number;
@@ -23,7 +23,7 @@ const Paper = (props: Props) => {
 
     return <svg className={style.paper} width={paperWidth} height={paperHeight}
                 viewBox={"0 0 " + viewWidth + " " + viewHeight}>
-        <Index />
+        <Shadow />
         {children}
     </svg>;
 };

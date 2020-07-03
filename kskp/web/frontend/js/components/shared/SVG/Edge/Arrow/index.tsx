@@ -5,8 +5,8 @@ type ArrowProps = {
     y: number; //矢印の先端座標
     width: number; //矢印の幅
     height: number;//矢印の高さ
-    degree: number; //矢印の角度
     className: string;
+    angle: number; //矢印の角度
 }
 
 const Arrow = (props: ArrowProps) => {
