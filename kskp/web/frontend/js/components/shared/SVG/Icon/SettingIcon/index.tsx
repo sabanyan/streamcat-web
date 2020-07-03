@@ -1,5 +1,5 @@
 import React from "react";
-import Icon from "Shared/SVG/Icon";
+import {Icon} from "Shared/SVG/Icon";
 
 const SettingIcon = () => {
     return (

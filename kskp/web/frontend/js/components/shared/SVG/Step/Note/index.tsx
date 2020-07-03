@@ -8,7 +8,7 @@ type Props = {
   hover: boolean,
   selected: boolean,
   model: NoteStepModel,
-  filter: string | null,
+  filter?: string | null,
 }
 
 export default class Note extends React.Component<Props> {

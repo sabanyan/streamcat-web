@@ -5,7 +5,7 @@ import {APIUtil, HttpUtil, ModalUtil, SortUtil, StringUtil} from "Utils/index";
 import {VisualizeModel, VisualizeModelProps} from "Model/index";
 import {ModalManager} from "Shared/Modal";
 import Loader from "Shared/Base/Loader";
-import NotificationManager from "Shared/Notification/NotificationManager";
+import {NotificationManager} from "Shared/Notification";
 import {useDispatch} from "react-redux";
 import {addNotification, removeNotification} from "reapop";
 
