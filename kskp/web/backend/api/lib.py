@@ -317,13 +317,7 @@ def make_new_database():
     """
     データベースを作成する
     """
-    database_conn = DatabaseConn(
-        request.json['dbms'],
-        request.json['hostname'],
-        request.json['port'],
-        request.json['database'],
-        request.json['user_id'],
-        request.json['password'])
+    database_conn = DatabaseConn(request.json)
 
     # 接続情報に漏れがあれば例外を送出する
     database_conn.valid_or_raise()
@@ -350,13 +344,7 @@ def update_database(database_uuid):
 
     if 'label' in request.json and request.json['label'] != '':
         # データベースを修正する
-        database_conn = DatabaseConn(
-            request.json['dbms'],
-            request.json['hostname'],
-            request.json['port'],
-            request.json['database'],
-            request.json['user_id'],
-            request.json['password'])
+        database_conn = DatabaseConn(request.json)
 
         # 接続情報に漏れがあれば例外を送出する
         database_conn.valid_or_raise()
