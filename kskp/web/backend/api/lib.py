@@ -391,13 +391,7 @@ def make_new_remote_folder():
     """
     リモートフォルダを作成する
     """
-    remote_folder_conn = RemoteFolderConn(
-        request.json['protocol'],
-        request.json['hostname'],
-        request.json['domain'],
-        request.json['directory'],
-        request.json['user_id'],
-        request.json['password'])
+    remote_folder_conn = RemoteFolderConn(request.json)
 
     # 接続情報に漏れがあれば例外を送出する
     remote_folder_conn.valid_or_raise()
@@ -424,13 +418,7 @@ def update_remote_folder(folder_uuid):
 
     if 'label' in request.json and request.json['label'] != '':
         # リモートフォルダを修正する
-        remote_folder_conn = RemoteFolderConn(
-            request.json['protocol'],
-            request.json['hostname'],
-            request.json['domain'],
-            request.json['directory'],
-            request.json['user_id'],
-            request.json['password'])
+        remote_folder_conn = RemoteFolderConn(request.json)
 
         # 接続情報に漏れがあれば例外を送出する
         remote_folder_conn.valid_or_raise()
