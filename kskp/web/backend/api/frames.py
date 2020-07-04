@@ -258,12 +258,12 @@ def _make_flow_inputs(session, flow_uuid, request):
     """
     inputsを作成する
     """
-    flow_json = session.data.find_by_uuid(flow_uuid).flow_data
+    flow_data = session.data.find_by_uuid(flow_uuid).flow_data
 
     # executeの引数
     inputs = {}
 
-    for port in flow_json['ports'][0]:
+    for port in flow_data.ports[0]:
         # frame（既にkskpに存在するデータソース）の場合
         if request.json.get(port['nodeId']) is not None:
             # フレームのUUIDを取得する

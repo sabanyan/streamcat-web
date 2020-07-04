@@ -120,6 +120,7 @@ def new_flow():
         flow_data = new_flow.flow_data
         # 複製したフローを保存する
         new_flow.save()
+        new_flow = new_flow.reload()
         return flow_data
     else:
         parent_uuid = j.get('project_uuid')
@@ -131,6 +132,7 @@ def new_flow():
         new_flow = parent.create_flow(label, flow_data)
         # flowをDBに格納する
         new_flow.save()
+        new_flow = new_flow.reload()
         return flow_data
 
 @mod.route('/flows', methods=['GET'])
@@ -196,16 +198,16 @@ def update_flow(flow_uuid):
         # 指定したフローの内容を渡されたdataの内容と結合する
         # 同じキーが含まれる場合は新しいもので上書きされる
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        flow_data = flow.flow_data
+        # flow_data = flow.flow_data
         # フローエディタで指定するラベル名をフローのラベル名とする
         if 'label' not in request.json or request.json['label'] == '':
             flow_label = flow.label
         else:
             flow_label = request.json['label']
 
-        flow_data.update(request.json['flow'])
+        # flow_data.update(request.json['flow'])
         # 変更を保存する
-        flow.update_data(flow_label, flow_data)
+        flow.update_data(flow_label, request.json['flow'])
         return flow.flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
@@ -230,8 +232,6 @@ def fetch_subflows():
 
     subflow_data_list = []
     for subflow in g.factory.data.find_all_subflows(no_inputs, no_outputs):
-        subflow_data = subflow.flow_data
-        subflow_data['uuid'] = subflow.uuid
         # 親フォルダのラベルを取得する
         parent = subflow.find_parent()
         # 親フォルダのないサブフローは取得しない
@@ -240,10 +240,13 @@ def fetch_subflows():
         # ゴミ箱にあるサブフローは取得しない
         if g.factory.data.trashed(subflow.uuid):
             continue
+        # subflow_data = subflow.flow_data.to_json()
+        subflow_data = subflow.flow_data.to_json(contains_nodes=False)
+        subflow_data['uuid'] = subflow.uuid
+        subflow_data_list.append(subflow_data)
         if isinstance(parent, Folder):
             parent_label = parent.label
             subflow_data['projectName'] = parent_label
-        subflow_data_list.append(subflow_data)
     return jsonify({'success': True, 'data': subflow_data_list})
 
 @mod.route('/commands')
@@ -387,17 +390,17 @@ def delete_cache():
     datum_id = ofs[1]
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    j = flow.flow_data
+    flow_data = flow.flow_data
 
     cache_uuids = []
-    for i, node in enumerate(j['nodes']):
+    for i, node in enumerate(flow_data.nodes):
         if node['id'] == datum_id:
-            frame_uuid = j['nodes'][i]['uuid']
-            j['nodes'][i]['uuid'] = None
-            j['nodes'][i]['cacheCreatedAt'] = None
+            frame_uuid = node['uuid']
+            node['uuid'] = None
+            node['cacheCreatedAt'] = None
             cache_uuids.append(frame_uuid)
 
-    flow.update_data(flow.label, j)
+    flow.update_data(flow.label, flow_data.to_json())
 
     # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
     for cache_uuid in cache_uuids:

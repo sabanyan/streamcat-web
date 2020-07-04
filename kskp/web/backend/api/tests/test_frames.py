@@ -10,8 +10,8 @@ class FrameApiTestCase(ApiTestCaseBase):
         self.root = self.factory.data.load_root()
         self.root_path = self.root.path
     
-    def save_flow(self, parent, label, flow_data):
-        new_flow = parent.create_flow(label, flow_data)
+    def save_flow(self, parent, label, flow_json):
+        new_flow = parent.create_flow(label, flow_json)
         new_flow.save()
         # save()によりreadable=Noneになるため再取得する
         return self.factory.data.find_by_uuid(new_flow.uuid)
