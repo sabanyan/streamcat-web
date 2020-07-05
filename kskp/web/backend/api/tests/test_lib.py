@@ -2060,7 +2060,7 @@ class TrashTestCase(ApiTestCaseBase):
             
         # フローを変更する
         data = {
-            'flow': flow.data,
+            'flow' : flow.flow_data,
             'label': 'フローです',
             'lock' : lock_uuid
         }
