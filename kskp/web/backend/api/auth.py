@@ -107,7 +107,7 @@ def login_required_api(func):
             # Sessionオブジェクトをflask.gに設定する
             with Factory(user) as factory:
                 # AuthzSessionをUserオブジェクトに格納する
-                g.user.session = factory._session
+                g.user._session = factory._session
                 g.factory = factory
                 return func(**kwargs)
         else:
