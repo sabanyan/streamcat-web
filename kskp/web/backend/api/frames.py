@@ -254,11 +254,11 @@ def format_vis(activity):
     # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
     return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.result]
 
-def _make_flow_inputs(session, flow_uuid, request):
+def _make_flow_inputs(factory, flow_uuid, request):
     """
     inputsを作成する
     """
-    flow_data = session.data.find_by_uuid(flow_uuid).flow_data
+    flow_data = factory.data.find_by_uuid(flow_uuid).flow_data
 
     # executeの引数
     inputs = {}
