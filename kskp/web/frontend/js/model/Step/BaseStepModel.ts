@@ -1,5 +1,5 @@
 //@flow
-import ModelUtil from 'Utils/ModelUtil'
+import ModelUtil from "Utils/ModelUtil";
 import Model from "Model/Core";
 
 export type BaseModelProps = {

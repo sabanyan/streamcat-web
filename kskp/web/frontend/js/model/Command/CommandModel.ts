@@ -1,4 +1,4 @@
-import { CommandParamType, CommandPortType } from 'Types/index'
+import {CommandParamType, CommandPortType} from "Types/index";
 import Model from "Model/Core";
 
 type stepType = 'command' | 'frame'
@@ -17,7 +17,7 @@ export type CommandModelProps = {
 export default class CommandModel extends Model {
   classification: string | undefined = undefined
   description: string | undefined = undefined
-  id: string | undefined = undefined
+  id: string | undefined | null = undefined
   label: string | null = null
   params: any[CommandParamType] = []
   groups: string[] | undefined = undefined

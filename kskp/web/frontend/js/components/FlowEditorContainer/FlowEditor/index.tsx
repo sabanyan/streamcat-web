@@ -1,6 +1,6 @@
 //@flow
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import PaperScroller from "FlowEditorContainer/PaperScroller";
+import {PaperScroller} from "FlowEditorContainer/PaperScroller";
 import {Edge, Selector, Step} from "Shared/SVG";
 import ToolBar from "FlowEditorContainer/ToolBar/Core";
 import Constants from "Constants/index";

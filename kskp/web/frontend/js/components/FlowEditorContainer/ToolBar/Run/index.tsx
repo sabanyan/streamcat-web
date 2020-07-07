@@ -1,6 +1,6 @@
-import React from 'react'
-import { ToolBarButton } from 'FlowEditorContainer/ToolBar'
-import { ToolBarButtonType } from 'Types/index'
+import React from "react";
+import {ToolBarButton} from "FlowEditorContainer/ToolBar";
+import {ToolBarButtonType} from "Types/index";
 
 const Run = (props: ToolBarButtonType) => {
   const {onClick, children, disabled, icon} = props
