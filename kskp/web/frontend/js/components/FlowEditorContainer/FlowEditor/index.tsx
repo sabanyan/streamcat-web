@@ -370,7 +370,7 @@ const FlowEditor = () => {
                      setZoom={setZoom}
                      undo={undo}
                      redo={redo}
-                     disabled={disabled}
+                     disabled={disabled || readOnly}
             />
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
                     message={"フローを構築中です"} />
