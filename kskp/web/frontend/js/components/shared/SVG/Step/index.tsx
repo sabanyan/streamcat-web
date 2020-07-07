@@ -31,10 +31,16 @@ interface Props {
     moveSteps: Function;
 }
 
+// useStateを使うと期待通り動作しないので修正
+let coords: { x: number, y: number } | null = null;
+let setCoords = (_coords: { x: number, y: number } | null) => {
+    coords = _coords;
+};
+
 const Step = (props: Props) => {
 
-    const [coords, setCoords] = useState<null | { x: number, y: number }>(null);
     const [hover, setHover] = useState<boolean>(false);
+
     /**
      * mouse down ステップ選択処理
      * @param e
@@ -42,25 +48,14 @@ const Step = (props: Props) => {
     const handleMouseDown = (e: React.MouseEvent<SVGElement>) => {
         //mousemoveイベントでハンドリング
         // fix #195
-        console.log("handleMouseDown");
-
         if (e.button === 0) onMouseLeftDown(e);
     };
 
     const onMouseLeftDown = (e: React.MouseEvent<SVGElement>) => {
-
         setCoords({
             x: e.pageX,
             y: e.pageY
         });
-
-        console.log("onMouseLeftDown");
-        console.log({
-            x: e.pageX,
-            y: e.pageY
-        });
-        console.log("setCoords",coords);
-
         mouseMoveEvent = (e: React.MouseEvent<SVGElement>) => handleMouseMove(e);
         mouseUpEvent = (e: React.MouseEvent<SVGElement>) => handleMouseUp(e);
         document.addEventListener("mousemove", mouseMoveEvent, {passive: true});
@@ -84,9 +79,7 @@ const Step = (props: Props) => {
      */
     const handleMouseUp = (e: React.MouseEvent<SVGElement>) => {
 
-        console.log("handleMouseUp");
         setCoords(null);
-        console.log("setCoords",coords);
 
         const {model, addSelectStep, deleteSelectStep, selectSteps, updateDataFrameDetail} = props;
         let step = model;
@@ -127,7 +120,6 @@ const Step = (props: Props) => {
      * @param e
      */
     const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
-        console.log("mouse move")
         const {selected_step_ids} = props;
         if (selected_step_ids.length > 1) {
             onMoveSteps(e);
@@ -139,30 +131,14 @@ const Step = (props: Props) => {
             x: e.pageX,
             y: e.pageY
         });
-        console.log("setCoords",coords);
     };
 
-    const onMoveSteps = (e : React.MouseEvent<SVGElement>) => {
-        const {zoom, model, selected_step_ids, moveSteps} = props;
-        if (selected_step_ids.includes(model.id)) {
-            let x = ZoomUtil.zoomReverse(e.pageX, zoom);
-            let y = ZoomUtil.zoomReverse(e.pageY, zoom);
-            moveSteps(x, y, model);
-        }
-    };
-
-    const onUpdateStep = (e: React.MouseEvent<SVGElement>) => {
-        const {zoom, selected_step_ids, position, model, updateStep} = props;
-        if (selected_step_ids.length > 1) {
-            onMoveSteps(e);
-            return;
-        }
+    const calcNewPosition = (e: React.MouseEvent<SVGElement>): { new_x: number, new_y: number } => {
+        const {zoom, position} = props;
         let coords_x = e.pageX;
         let coords_y = e.pageY;
 
-        console.log(coords);
         if (coords) {
-            console.log("has coords");
             coords_x = coords.x;
             coords_y = coords.y;
         }
@@ -172,9 +148,25 @@ const Step = (props: Props) => {
         const yDiff = coords_y - e.pageY;
         const new_x = position.x - ZoomUtil.zoomReverse(xDiff, zoom);
         const new_y = position.y - ZoomUtil.zoomReverse(yDiff, zoom);
+        return {new_x: new_x, new_y: new_y};
+    };
 
-        console.log(xDiff);
-        console.log(yDiff);
+
+    const onMoveSteps = (e: React.MouseEvent<SVGElement>) => {
+        const {model, selected_step_ids, moveSteps} = props;
+        if (selected_step_ids.includes(model.id)) {
+            const {new_x, new_y} = calcNewPosition(e);
+            moveSteps(new_x, new_y, model);
+        }
+    };
+
+    const onUpdateStep = (e: React.MouseEvent<SVGElement>) => {
+        const {selected_step_ids, model, updateStep} = props;
+        if (selected_step_ids.length > 1) {
+            onMoveSteps(e);
+            return;
+        }
+        const {new_x, new_y} = calcNewPosition(e);
         //移動に応じてStepの位置を更新
         let step = model;
         step.setPosition({x: new_x, y: new_y});
@@ -343,8 +335,8 @@ const Step = (props: Props) => {
 
     }
 
-    let invalid_icon = (Object.keys(invalid).length)? <ErrorIcon/>: null;
-    let error_icon = (Object.keys(error).length)? <ErrorIcon/>: null;
+    let invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;
+    let error_icon = (Object.keys(error).length) ? <ErrorIcon /> : null;
 
     return (
         <g className={style.operator} transform={"translate(" + x + "," + y + ")"}>

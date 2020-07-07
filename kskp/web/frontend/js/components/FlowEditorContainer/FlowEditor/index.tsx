@@ -1,4 +1,3 @@
-//@flow
 import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {PaperScroller} from "FlowEditorContainer/PaperScroller";
 import {Edge, Selector, Step} from "Shared/SVG";

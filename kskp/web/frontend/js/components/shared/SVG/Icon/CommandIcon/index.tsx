@@ -1,4 +1,3 @@
-//@flow
 import React from "react";
 import {Icon} from "Shared/SVG/Icon";
 import {Rect} from "Shared/SVG";
