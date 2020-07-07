@@ -1,5 +1,5 @@
 //@flow
-import React from 'react'
+import React, { Fragment } from 'react'
 import Constants from 'Constants/index'
 import {
   APIUtil,
