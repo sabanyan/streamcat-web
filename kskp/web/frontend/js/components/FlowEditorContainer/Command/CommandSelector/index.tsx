@@ -12,6 +12,7 @@ type Props = {
     addStep: Function;
     selectSteps: Function;
     addHistory: Function;
+    disabled?: boolean;
 }
 
 const CommandSelector = (props: Props) => {
@@ -48,7 +49,7 @@ const CommandSelector = (props: Props) => {
         return (command.getInPorts()[0].name === "*");
     };
 
-    const {numberOfInput, selected_step_ids, addStep, selectSteps, addHistory} = props;
+    const {numberOfInput, selected_step_ids, addStep, selectSteps, addHistory, disabled} = props;
     const isNoKeyword = (keyword.length == 0);
     let noOperators = true;
     let sortedCommands: [];

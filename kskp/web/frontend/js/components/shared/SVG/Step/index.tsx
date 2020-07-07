@@ -6,6 +6,7 @@ import style from "./style.scss";
 import {APIUtil, ZoomUtil} from "Utils/index";
 import {DragType, MastType, StepModelType} from "Types/index";
 import {FlowModelProps} from "Model/Flow/FlowModel";
+import {PaperScroller} from "FlowEditorContainer/PaperScroller";
 
 let mouseMoveEvent;
 let mouseUpEvent;
@@ -29,6 +30,7 @@ interface Props {
     updateDataFrameDetail: Function;
     updateStep: Function;
     moveSteps: Function;
+    readOnly: boolean;
 }
 
 // useStateを使うと期待通り動作しないので修正
@@ -120,7 +122,8 @@ const Step = (props: Props) => {
      * @param e
      */
     const handleMouseMove = (e: React.MouseEvent<SVGElement>) => {
-        const {selected_step_ids} = props;
+        const {selected_step_ids,readOnly} = props;
+        if(readOnly) return; // 読み取り専用の場合は移動不可
         if (selected_step_ids.length > 1) {
             onMoveSteps(e);
         } else {

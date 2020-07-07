@@ -50,6 +50,7 @@ type DataSourceInspectorProps = {
   addStep: Function;
   updateStep: Function;
   updateFlow: Function;
+  readOnly: boolean;
 }
 
 class DataSourceInspector extends React.Component<DataSourceInspectorProps, State> {
@@ -340,7 +341,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render() {
-    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled } = this.props;
+    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled , readOnly} = this.props;
     let step_text
     let dataSource
     let preview
@@ -348,7 +349,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const selected_step = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
       preview = <Button onClick={(e) => this.onClickPreview(e)}
-        icon={'visibility'} disabled={disabled}>プレビュー</Button>
+        icon={'visibility'} disabled={disabled | readOnly}>プレビュー</Button>
       if (selected_step.hasData()) {
         const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
         download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
@@ -359,14 +360,14 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
         <label><input type="checkbox" checked={flow.hasInPortWithId(selected_step.id)} ref={'flowIn'}
-          onChange={(e) => this.onChangeFlowInOut(e)} />
+          onChange={(e) => this.onChangeFlowInOut(e)} disabled={readOnly} />
           &nbsp;入力
         </label>
       </div>
       <div>
         <label><input type="checkbox" checked={flow.hasOutPortWithId(selected_step.id)}
           ref={'flowOut'}
-          onChange={(e) => this.onChangeFlowInOut(e)} />
+          onChange={(e) => this.onChangeFlowInOut(e)} disabled={readOnly}/>
           &nbsp;出力
         </label>
       </div>
@@ -374,7 +375,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const cacheCheckForm = <div>
       <div>
         <label><input type="checkbox" checked={selected_step.makeCache ? 'checked' : ''}
-          ref={'cache'} disabled=""
+          ref={'cache'} disabled={readOnly}
           onChange={(e) => this.onChangeCacheCheck(e)} />
         </label>
       </div>
@@ -398,7 +399,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
             {preview}
             {download}
             <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
-              danger={true}>削除</Button>
+              danger={true} disabled={readOnly}>削除</Button>
           </div>
           <div className={style.full_hr} />
           <div className={style.overviews}>
@@ -446,8 +447,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           </div>
           <div className={style.cache_delete}>
             <Button icon={'delete'} danger={true}
-              disabled={!selected_step.isCached()}
-
+              disabled={!selected_step.isCached() | readOnly}
               onClick={(e) => { this.onClickDeleteCache() }}>
               キャッシュ削除
             </Button>
@@ -464,21 +464,27 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           }
 
         </div>
-        <div className={style.full_hr} />
-        <CommandSelector
-          mast={mast}
-          numberOfInput={1}
-          selected_step_ids={selected_step_ids}
-          addStep={addStep}
-          selectSteps={selectSteps}
-          addHistory={addHistory}
-        />
+        {
+          (!readOnly) ?
+            <Fragment>
+              <div className={style.full_hr} />
+              <CommandSelector
+                mast={mast}
+                numberOfInput={1}
+                selected_step_ids={selected_step_ids}
+                addStep={addStep}
+                selectSteps={selectSteps}
+                addHistory={addHistory}
+              />
+            </Fragment>
+            : null
+        }
       </div>
     }
 
     // FIXIT onBlurTitle to onChange #164
     return <BaseInspector header={''} label={selected_step.label}
-      onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }}>
+      onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }} disabled={readOnly}>
       {content}
     </BaseInspector>
   }

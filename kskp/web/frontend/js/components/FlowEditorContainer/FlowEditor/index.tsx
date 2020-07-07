@@ -155,7 +155,7 @@ const FlowEditor = () => {
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [lockUUID, setLockUUID] = useState<string | undefined>(undefined);
-    const [, setReadOnly] = useState<boolean>(false);
+    const [readOnly, setReadOnly] = useState<boolean>(false);
     const hasLockedUUID = useMemo(()=>!!(lockUUID),[lockUUID]); // lockUUIDを保持している際は、編集可能な状態
     const disabled = useMemo(()=>(isLoading || !hasLockedUUID),[isLoading,hasLockedUUID]);
 
@@ -287,6 +287,7 @@ const FlowEditor = () => {
                     updateDataFrameDetail={updateDataFrameDetail}
                     updateStep={updateStep}
                     moveSteps={moveSteps}
+                    readOnly={readOnly}
                 />;
             });
         }
@@ -418,6 +419,7 @@ const FlowEditor = () => {
                 updateStep={updateStep}
                 sortStepSrcEnd={sortStepSrcEnd}
                 resizeInspector={resizeInspector}
+                readOnly={readOnly}
             />
             <NotificationManager/>
         </div>
