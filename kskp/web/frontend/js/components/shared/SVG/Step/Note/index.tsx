@@ -13,9 +13,9 @@ type Props = {
 
 const Note = (props: Props) => {
     const calculateSize = () => {
-        let model = {props};
-        const fontSize = (model as any).getFontSize();
-        let width = StringUtil.getTextWidth((model as any).title, fontSize);
+        let {model} = props;
+        const fontSize = model.getFontSize();
+        let width = StringUtil.getTextWidth(model.title, fontSize);
         const style = ContentStyle;
         const minWidth = Constants.default.note.width;
         style.width = minWidth;
