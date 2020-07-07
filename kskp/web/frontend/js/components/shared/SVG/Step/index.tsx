@@ -307,7 +307,7 @@ const Step = (props: Props) => {
 
     if (flowIn || flowOut) {
         icon = <g>
-            <Rect padding={5} selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
+            <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
                   hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
                   hover={hover} selected={selected} stroke={"#63CFFD"}
                   filter={filter} style={RectStyle}>
@@ -331,7 +331,7 @@ const Step = (props: Props) => {
         //データソース
         const stroke = (!step.hasData()) ? {stroke: "#CCCCCC"} : {};
         icon =
-            <Rect padding={5} selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
+            <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
                   hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
                   hover={hover} selected={selected} stroke={"#63CFFD"}
                   filter={filter} style={RectStyle}>
@@ -356,12 +356,12 @@ const Step = (props: Props) => {
             {invalid_icon}
             {error_icon}
             <g className={style.labelContainer}>
-                <foreignObject {...TextStyle} transform={"translate(" + (-1 * TextStyle.width) + ",0)"}>
+                <foreignObject {...StepTextStyle} transform={"translate(" + (-1 * StepTextStyle.width) + ",0)"}>
                     <div style={{
                         display: "table",
                         width: "100%",
-                        height: TextStyle.height,
-                        paddingRight: TextStyle.padding + "px"
+                        height: StepTextStyle.height,
+                        paddingRight: StepTextStyle.padding + "px"
                     }}>
                         <p style={{
                             display: "table-cell",
@@ -401,7 +401,7 @@ export const CircleStyle = {
     strokeWidth: 2
 };
 
-export const TextStyle = {
+export const StepTextStyle = {
     width: 80,
     height: 50,
     fontSize: 10,

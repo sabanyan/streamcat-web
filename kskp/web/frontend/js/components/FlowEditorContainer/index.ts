@@ -1,5 +1,6 @@
-import { FlowModel } from 'Model/index'
-import { DragType } from 'Types/index'
+import {FlowModel} from "Model/index";
+import {DragType} from "Types/index";
+
 export type FlowEditorProps = {
   projectId: string,
   projectName: string,

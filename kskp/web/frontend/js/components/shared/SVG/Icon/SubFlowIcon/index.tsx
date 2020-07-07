@@ -4,15 +4,15 @@ import {Rect} from "Shared/SVG";
 import * as Step from "Shared/SVG/Step";
 
 interface Props {
-    hover: boolean;
-    selected: boolean;
-    filter: string;
+    hover?: boolean;
+    selected?: boolean;
+    filter?: string;
 }
 
 const SubFlowIcon = (props: Props) => {
     const {hover, selected, filter} = props;
     return (
-        <Rect padding={5} selectedOutlineColor={"#B0E273"} fillColor={"#FFFFFF"}
+        <Rect selectedOutlineColor={"#B0E273"} fillColor={"#FFFFFF"}
               hoverFillColor={"#F3FEE8"} selectedFillColor={"#F3FEE8"}
               hover={hover} selected={selected} stroke={"#7ED321"}
               filter={filter} style={Step.RectStyle}>

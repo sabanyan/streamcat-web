@@ -1,7 +1,7 @@
-import React from 'react'
-import style from './style.scss'
-import classnames from 'classnames'
-import { ToolBarButtonType } from 'Types/index'
+import React from "react";
+import style from "./style.scss";
+import classnames from "classnames";
+import {ToolBarButtonType} from "Types/index";
 
 const ToolBarButton = (props: ToolBarButtonType) => {
 

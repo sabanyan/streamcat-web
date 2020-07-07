@@ -1,6 +1,6 @@
-import { CommandStepModelProps } from 'Model/Step/CommandStepModel'
-import { CommandStepModel, SubflowCommandModel } from 'Model/index'
-import { CommandParamType } from 'Types/index'
+import {CommandStepModelProps} from "Model/Step/CommandStepModel";
+import {CommandStepModel, SubflowCommandModel} from "Model/index";
+import {CommandParamType} from "Types/index";
 
 export interface SubFlowStepModelProps  extends  CommandStepModelProps{
   uuid: string
