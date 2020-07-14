@@ -13,6 +13,7 @@ export type FlowModelProps = {
   description: string
   hasInPortWithId: (id: string) => boolean;
   hasOutPortWithId: (id: string) => boolean;
+  uuid?:string;
 }
 
 export default class FlowModel {
