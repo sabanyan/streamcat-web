@@ -71,4 +71,4 @@ const DataPreviewInspector = (props: Props) => {
     </BaseInspector>;
 };
 
-export default {DataPreviewInspector};
+export {DataPreviewInspector};

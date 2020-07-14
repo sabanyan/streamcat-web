@@ -75,4 +75,5 @@ const BaseInspector = (props: Props) => {
     </div>;
 };
 
-export default BaseInspector;
+export {BaseInspector};
+

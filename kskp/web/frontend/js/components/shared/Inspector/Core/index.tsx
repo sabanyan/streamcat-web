@@ -22,7 +22,7 @@ type InspectorProps = {
   mast: MastType;
   selected_tab_id: string;
   selected_data_source_detail: DataFrameDetailType;
-  lockUUID: string;
+  lockUUID: string | undefined;
   updateDataFrameDetail: Function
   addStep: Function;
   selectSteps: Function;
@@ -141,4 +141,4 @@ class Inspector extends React.Component<InspectorProps> {
 
 }
 
-export default Inspector
+export {Inspector}

@@ -27,7 +27,7 @@ type Props = {
     updateStep: Function;
     updateFlow: Function;
     readOnly: boolean;
-    lockUUID: string;
+    lockUUID: string | undefined;
     updateDataFrameDetail: Function;
 }
 
