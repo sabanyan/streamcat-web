@@ -4,7 +4,7 @@ import Model from "Model/Core";
 export type CSVModelProps = {
   data: string;
   uuid: string;
-  label: string;
+  label?: string;
 }
 
 export default class CSVModel extends Model {
