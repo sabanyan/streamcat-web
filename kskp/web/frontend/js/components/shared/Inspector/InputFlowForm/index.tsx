@@ -1,132 +1,128 @@
-import React from 'react'
-import { AddButton } from 'Shared/Input'
-import { HttpUtil } from 'Utils/index'
-import style from './style.scss'
-import { FlowModelProps } from "Model/Flow/FlowModel";
-import { RunArgsType } from "Types/index";
+import React, {useState} from "react";
+import {AddButton} from "Shared/Input";
+import {HttpUtil} from "Utils/index";
+import style from "./style.scss";
+import {FlowModelProps} from "Model/Flow/FlowModel";
+import {RunArgsType} from "Types/index";
 
-type InputFlowFormProps = {
-  runArgs: RunArgsType;
-  updateRunArgs: Function;
-  flow: FlowModelProps
+type Props = {
+    runArgs: RunArgsType;
+    updateRunArgs: Function;
+    flow: FlowModelProps
 }
 
-type State = {
-  inputDatas: [],
-}
+const InputFlowForm = (props: Props) => {
+    const [, updateState] = React.useState();
+    const forceUpdate = React.useCallback(() => updateState({}), []);
 
-export default class InputFlowForm extends React.Component<InputFlowFormProps, State> {
-  constructor (props) {
-    super(props)
-  }
+    const onClickInput = (e) => {
+        const name = e.currentTarget.getAttribute("name");
+        HttpUtil.windowOpen("library?dialog=true&mode=frame_select", (args) => {
+            const selected_data = args;
+            const uuid = selected_data.uuid;
+            // update
+            let {runArgs, updateRunArgs} = props;
+            const flows = runArgs.flows.map((f) => {
+                if (f.label == name) {
+                    f.uuid = uuid;
+                }
+                return f;
+            });
+            runArgs.flows = flows;
+            updateRunArgs(runArgs);
+            forceUpdate();
+        });
+    };
 
-  onClickInput (e) {
-    const name = e.currentTarget.getAttribute('name')
-    HttpUtil.windowOpen('library?dialog=true&mode=frame_select', (args) => {
-      const selected_data: LibraryListDataType = args
-      const uuid = selected_data.uuid
+    const renderAddInputFlowButton = (key, value) => {
+        const content = (value) ?
+            key + " : " + value
+            :
+            key + " : 入力ファイルを選択してください";
+        return <AddButton
+            name={key}
+            onClick={(e) => onClickInput(e)}
+            type={"text"} style={style}>
+            {content}
+        </AddButton>;
+    };
 
-      // update
-      let runArgs = this.props.runArgs
-      const flows = runArgs.flows.map((f) => {
-        if (f.label == name) {
-          f.uuid = uuid
+    const renderInputFlowForm = () => {
+        let {runArgs} = props;
+
+        if (runArgs.length === 0) {
+            return null;
         }
-        return f
-      })
-      runArgs.flows = flows
-      this.props.updateRunArgs(runArgs)
-      this.forceUpdate()
-    })
-  }
 
-  renderAddInputFlowButton (key, value) {
-    const content = (value) ?
-      key + ' : ' + value
-      :
-      key + ' : 入力ファイルを選択してください'
-    return <AddButton
-      name={key}
-      onClick={(e) => this.onClickInput(e)}
-      type={'text'} style={style}>
-      {content}
-    </AddButton>
-  }
+        const result: React.ReactNode[] = [];
+        for (const f of runArgs.flows) {
+            const key = f.label;
+            const value = f.uuid;
+            const form = <div key={key} className={style ? style.flow_param : null}>
+                <div className={style ? style.left : null}>
+                    {renderAddInputFlowButton(key, value)}
+                </div>
+                <div className={style ? style.right : null}>
+                </div>
+            </div>;
+            result.push(form);
+        }
 
-  renderInputFlowForm (flow) {
-    const runArgs = this.props.runArgs
+        return result;
+    };
 
-    if (runArgs.length === 0) {
-      return null
-    }
+    const renderFlowVariableForm = (flow) => {
+        const params = flow.params;
 
-    const result = []
-    for (const f of runArgs.flows) {
-      const key = f.label
-      const value = f.uuid
-      const form = <div key={key} className={style ? style.flow_param : null}>
-        <div className={style ? style.left : null}>
-          {this.renderAddInputFlowButton(key, value)}
-        </div>
-        <div className={style ? style.right : null}>
-        </div>
-      </div>
-      result.push(form)
-    }
+        if (params.length === 0) {
+            return null;
+        }
 
-    return result
-  }
+        let forms: any[] = [];
+        for (const v of params) {
+            const form = <div key={v.name} className={style.flow_param}>
+                <div className={style.left}>
+                    <input onChange={(e) => {
+                        onChangeVariable(e);
+                    }}
+                           name={v.name}
+                           type={"text"} className={style.flow_param_input} placeholder={v.name} />
+                </div>
+            </div>;
+            forms.push(form);
+        }
 
-  renderFlowVariableForm (flow) {
-    const params = flow.params
+        return <div>
+            {forms}
+        </div>;
+    };
 
-    if (params.length === 0) {
-      return null
-    }
+    const onChangeVariable = (e) => {
+        const value = e.currentTarget.value;
+        const name = e.currentTarget.name;
 
-    let forms = []
-    for (const v of params) {
-      const form = <div key={v.name} className={style.flow_param}>
-        <div className={style.left}>
-          <input onChange={(e) => {this.onChangeVariable(e)}}
-                 name={v.name}
-                 type={'text'} className={style.flow_param_input} placeholder={v.name} />
-        </div>
-      </div>
-      forms.push(form)
-    }
+        let {runArgs, updateRunArgs} = props;
+        let vars = runArgs.variables.map((v) => {
+            if (v.name == name) {
+                v.value = value;
+            }
+            return v;
+        });
+        runArgs.variables = vars;
+        updateRunArgs(runArgs);
+        forceUpdate();
+    };
 
-    return <div>
-      {forms}
-    </div>
-  }
-
-  onChangeVariable (e) {
-    const value = e.currentTarget.value
-    const name = e.currentTarget.name
-
-    let runArgs = this.props.runArgs
-    let vars = runArgs.variables.map((v) => {
-      if (v.name == name) {
-        v.value = value
-      }
-      return v
-    })
-    runArgs.variables = vars
-    this.props.updateRunArgs(runArgs)
-    this.forceUpdate()
-  }
-
-  render () {
-    const {flow} = this.props
-    const inputFlowForm = this.renderInputFlowForm(flow)
-    const inputVariableForm = this.renderFlowVariableForm(flow)
+    const {flow} = props;
+    const inputFlowForm = renderInputFlowForm();
+    const inputVariableForm = renderFlowVariableForm(flow);
 
     return <div>
-      <label className="inputFlow">入力フロー</label>
-      {inputFlowForm}
-      <label className="inputVar">フロー変数</label>
-      {inputVariableForm}
-    </div>
-  }
-}
+        <label className="inputFlow">入力フロー</label>
+        {inputFlowForm}
+        <label className="inputVar">フロー変数</label>
+        {inputVariableForm}
+    </div>;
+};
+
+export {InputFlowForm};
