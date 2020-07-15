@@ -1,13 +1,17 @@
-//@flow
 import React from "react";
 
-export default class Param extends React.Component<Props> {
-
-    constructor(props: Props) {
-        super(props);
-    }
-
-    getLabel() {
-        return (this.props.param.label) ? this.props.param.label : this.props.param.name;
+interface Props {
+    param: {
+        label: string
+        name: string
     }
 }
+
+const Param = (props: Props) => {
+    const getLabel = () => {
+        const {param} = props;
+        return (param.label) ? param.label : param.name;
+    };
+};
+
+export {Param}
