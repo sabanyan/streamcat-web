@@ -4,22 +4,19 @@ import style from "./style.scss";
 import classnames from "classnames";
 
 type Props = {
-    onMouseDown: Function;
-    onMouseMove: Function;
-    onMouseUp: Function;
+    onMouseDown: (e: React.MouseEvent) => void;
+    onMouseMove: (e: React.MouseEvent) => void;
+    onMouseUp: (e: React.MouseEvent) => void;
     isClosed: boolean;
 }
 
-class InspectorKnob extends React.Component<Props> {
+const InspectorKnob = (props: Props) => {
+    const {isClosed, onMouseMove, onMouseDown, onMouseUp} = props;
+    return <div className={classnames(style.inspector_knob,
+        {[style.isClosed]: isClosed})}
+                onMouseMove={onMouseMove}
+                onMouseDown={onMouseDown}
+                onMouseUp={onMouseUp} />;
+};
 
-    render() {
-        return <div className={classnames(style.inspector_knob,
-            {[style.isClosed]: this.props.isClosed})}
-                    onMouseMove={this.props.onMouseMove}
-                    onMouseDown={this.props.onMouseDown}
-                    onMouseUp={this.props.onMouseUp} />;
-    }
-
-}
-
-export default InspectorKnob;
+export {InspectorKnob};
