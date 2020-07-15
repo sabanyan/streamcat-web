@@ -7,7 +7,7 @@ import {GraphUtil, ModalUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {MastType} from "Types/index";
 
-type MultiInspectorProps = {
+type Props = {
     deleteSteps: Function;
     selectSteps: Function;
     nodes: [];
@@ -18,14 +18,13 @@ type MultiInspectorProps = {
     readOnly: boolean;
 }
 
-class MultiInspector extends React.Component<MultiInspectorProps> {
-    onClickDelete() {
-
+const MultiInspector = (props: Props) => {
+    const onClickDelete = () => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                let {selected_step_ids} = this.props;
-                this.props.deleteSteps(selected_step_ids);
-                this.props.selectSteps();
+                const {deleteSteps, selectSteps, selected_step_ids} = props;
+                deleteSteps(selected_step_ids);
+                selectSteps();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });
@@ -38,10 +37,10 @@ class MultiInspector extends React.Component<MultiInspectorProps> {
                 選択されたステップを削除しますか？
             </div>
         });
-    }
+    };
 
-    getNumberOfSelectedDataSources() {
-        const {nodes, selected_step_ids} = this.props;
+    const getNumberOfSelectedDataSources = () => {
+        const {nodes, selected_step_ids} = props;
         let cnt = 0;
         let hasMixedCommand = false; //コマンドが混ざって選択されている場合
         selected_step_ids.forEach((id) => {
@@ -56,42 +55,39 @@ class MultiInspector extends React.Component<MultiInspectorProps> {
         });
         if (hasMixedCommand) return 0;
         return cnt;
+    };
+
+    const {mast, addStep, selectSteps, addHistory, readOnly, selected_step_ids} = props;
+    const numberOfSelectedDataSources = getNumberOfSelectedDataSources();
+
+    let commandSelector;
+    if (numberOfSelectedDataSources) {
+        commandSelector = <div>
+            <CommandSelector
+                mast={mast}
+                numberOfInput={numberOfSelectedDataSources}
+                selected_step_ids={selected_step_ids}
+                addStep={addStep}
+                selectSteps={selectSteps}
+                addHistory={addHistory} />
+        </div>;
     }
 
-    render() {
-        const {mast, selected_step_ids, addStep, selectSteps, addHistory, readOnly} = this.props;
-        const numberOfSelectedDataSources = this.getNumberOfSelectedDataSources();
-
-        let commandSelector;
-        if (numberOfSelectedDataSources) {
-            commandSelector = <div>
-                <CommandSelector
-                    mast={mast}
-                    numberOfInput={numberOfSelectedDataSources}
-                    selected_step_ids={selected_step_ids}
-                    addStep={addStep}
-                    selectSteps={selectSteps}
-                    addHistory={addHistory} />
-            </div>;
-        }
-
-        if (readOnly) {
-            // 読み取り専用の場合はコマンドセレクタを表示しない
-            commandSelector = null;
-        }
-
-        return <BaseInspector header={""}
-                              title={this.props.selected_step_ids.length + " files"}
-                              disabled={readOnly}>>
-            <div className="kskp-form">
-                <Button onClick={() => this.onClickDelete()} danger={true} disabled={readOnly}>
-                    削除する
-                </Button>
-            </div>
-            {commandSelector}
-        </BaseInspector>;
+    if (readOnly) {
+        // 読み取り専用の場合はコマンドセレクタを表示しない
+        commandSelector = null;
     }
 
-}
+    return <BaseInspector header={""}
+                          title={selected_step_ids.length + " files"}
+                          disabled={readOnly}>>
+        <div className="kskp-form">
+            <Button onClick={() => onClickDelete()} danger={true} disabled={readOnly}>
+                削除する
+            </Button>
+        </div>
+        {commandSelector}
+    </BaseInspector>;
+};
 
 export default MultiInspector;
