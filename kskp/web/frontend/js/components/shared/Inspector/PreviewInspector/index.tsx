@@ -1,99 +1,77 @@
 //@flow
 import * as React from "react";
+import {useState} from "react";
 import {BaseInspector, ParamsForm, Resizer} from "Shared/Inspector";
 import style from "./style.scss";
 import {Button} from "Shared/Input";
 import classnames from "classnames";
+import {FlowEditorProps} from "FlowEditorContainer/index";
 
-type PreviewInspectorProps = {
-    ...FlowEditorProps,
-    children?: React.Node,
+interface Props extends FlowEditorProps {
+    children: React.ReactNode,
     label: string,
     params: [],
     args: {},
     headers: [],
+    groups: [],
     // event
     onApply: Function
 }
 
-type State = {
-    args: {}
-}
 
-class PreviewInspector extends React.Component<PreviewInspectorProps, State> {
-    loaded: boolean = false;
+const PreviewInspector = (props: Props) => {
 
-    constructor(props: PreviewInspectorProps) {
-        super(props);
-    }
+    const [args, setArgs] = useState<any>(props.args);
 
-    componentWillMount() {
-        try {
-            const {args} = this.props;
-            this.setState({
-                args: args
-            });
-        } catch (e) {
-            console.log(e);
-        }
-    }
-
-    onArgsChange(e, param, value) {
+    const onArgsChange = (e, param, value) => {
         try {
             const argKey = param.name;
-            let args = this.state.args;
-            args[argKey] = value;
-            if (!value) delete args[argKey];
-            this.setState({
-                args: args
-            }, () => {
-                this.forceUpdate();
-            });
+            const _args = {...args};
+            _args[argKey] = value;
+            if (!value) delete _args[argKey];
+            setArgs(_args);
         } catch (e) {
             console.log(e);
         }
-    }
+    };
 
-    onClickApply() {
+    const onClickApply = () => {
         try {
-            const {onApply} = this.props;
-            const args = this.state.args;
+            const {onApply} = props;
             //プレビューリクエスト
             onApply(args);
         } catch (e) {
             console.log(e);
         }
-    }
+    };
 
-    render() {
-        const {params, args, groups, label, headers} = this.props;
-        const content = <div>
-            <div>
-                <div className={style.full_hr} />
-                <Button onClick={(e) => this.onClickApply(e)}>表示</Button>
-                <div>
-                    <div className="kskp-form"></div>
-                    <ParamsForm
-                        key={label}
-                        headers={headers} params={params} args={this.state.args}
-                        invalids={{}} groups={groups}
-                        onChange={(e, param, value) => this.onArgsChange(e, param, value)} />
-                </div>
-            </div>
+    const {params, groups, label, headers} = props;
+    const content = <div>
+        <div>
             <div className={style.full_hr} />
-        </div>;
-
-        const property_class = classnames(style.property, style.in);
-
-        return <Resizer>
-            <div className={property_class}>
-                <BaseInspector key={0} header={""} label={label} subLabel={""}>
-                    {content}
-                </BaseInspector>
+            <Button onClick={() => onClickApply()}>表示</Button>
+            <div>
+                <div className="kskp-form"/>
+                <ParamsForm
+                    key={label}
+                    headers={headers} params={params} args={args}
+                    invalids={{}} groups={groups}
+                    onChange={(e, param, value) => onArgsChange(e, param, value)} />
             </div>
-        </Resizer>;
-    }
+        </div>
+        <div className={style.full_hr} />
+    </div>;
 
-}
+    const property_class = classnames(style.property, style.in);
 
-export default PreviewInspector;
+    return <Resizer>
+        <div className={property_class}>
+            <BaseInspector key={0} header={""} label={label} subLabel={""} disabled={false}>
+                {content}
+            </BaseInspector>
+        </div>
+    </Resizer>;
+};
+export {PreviewInspector};
+
+
