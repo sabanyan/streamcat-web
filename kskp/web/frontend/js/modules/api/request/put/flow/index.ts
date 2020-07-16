@@ -2,12 +2,12 @@ import { ApiBase } from 'Modules/api/core/index'
 import { URL } from 'Modules/api/core/url/index';
 import { Url, LockUUID } from "Modules/api/core/types/request";
 
-import { FlowModel } from 'Model/index';
+import {FlowModel, FlowModelProps} from "Model/index";
 
 // PUT
 export type Props = Url & LockUUID & {
     flowUUID: string
-    flow: FlowModel
+    flow: FlowModelProps
 }
 
 export function flow(props: Props) {

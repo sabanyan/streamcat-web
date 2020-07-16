@@ -12,7 +12,7 @@ type Props = {
     selectSteps: Function;
     nodes: [];
     mast: MastType;
-    selected_step_ids: [];
+    selected_step_ids: string[];
     addStep: Function;
     addHistory: Function;
     readOnly: boolean;
@@ -90,4 +90,5 @@ const MultiInspector = (props: Props) => {
     </BaseInspector>;
 };
 
-export default MultiInspector;
+export {MultiInspector};
+

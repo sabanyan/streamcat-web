@@ -8,7 +8,7 @@ import {TextField} from "Shared/Input";
 type Props = {
     mast: MastType;
     numberOfInput: number;
-    selected_step_ids: [];
+    selected_step_ids: string[];
     addStep: Function;
     selectSteps: Function;
     addHistory: Function;

@@ -3,5 +3,5 @@ export type Url = {
 }
 
 export type LockUUID = {
-    lockUUID: string
+    lockUUID?: string | null
 }

@@ -211,7 +211,7 @@ const LibraryInspector = (props: Props) => {
     let content = (selected.length <= 1) ? renderSelect(lastSelected) : renderSelects(selected, lastSelected);
 
     return <Resizer>
-        <BaseInspector label={label} onBlurTitle={onBlurTitle} disabled={true}>
+        <BaseInspector label={label} onBlurTitle={onBlurTitle}>
             {content}
         </BaseInspector>
     </Resizer>;

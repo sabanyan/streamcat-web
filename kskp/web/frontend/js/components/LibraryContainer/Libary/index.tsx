@@ -16,7 +16,7 @@ import {addNotification, removeNotification} from "reapop";
 import ParamsForm from "Shared/Inspector/ParamsForm";
 import {ITableHeader} from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import {LibraryChild} from "Model/Library";
-import LibraryInspector from "Shared/Inspector/LibraryInspector";
+import {LibraryInspector} from "Shared/Inspector";
 import {LibraryModel, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps} from "Model/index";
 import {LibraryListDataType} from "Types/index";
 import * as lodash from "lodash";

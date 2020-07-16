@@ -5,14 +5,13 @@ import {BaseInspector, ParamsForm, Resizer} from "Shared/Inspector";
 import style from "./style.scss";
 import {Button} from "Shared/Input";
 import classnames from "classnames";
-import {FlowEditorProps} from "FlowEditorContainer/index";
 
-interface Props extends FlowEditorProps {
-    children: React.ReactNode,
+interface Props {
+    children?: React.ReactNode,
     label: string,
     params: [],
     args: {},
-    headers: [],
+    headers: string[],
     groups: [],
     // event
     onApply: Function

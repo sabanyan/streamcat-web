@@ -63,4 +63,4 @@ const ParamBoolean = (props: Props) => {
 };
 
 
-export {ParamBoolean}
+export {ParamBoolean};

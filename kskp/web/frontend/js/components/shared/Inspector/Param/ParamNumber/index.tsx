@@ -1,46 +1,46 @@
 //@flow
-import React from 'react'
-import type { CommandParamType } from 'Types/index'
-import { Param } from 'Shared/Inspector'
+import React from "react";
+import {CommandParamType} from "Types/index";
 //import classnames from 'classnames'
 
 type Props = {
-  param: CommandParamType;
-  events?: {};
-  defaultValue: any;
-  refValue?: any;
+    param: CommandParamType;
+    events?: {
+        onChange?: Function;
+    };
+    defaultValue: any;
+    refValue?: any;
+    disabled?: boolean;
+    onBuild?: Function;
 }
 
-export default class ParamNumber extends Param {
-  constructor (props: Props) {
-    super(props)
-  }
+const ParamNumber = (props: Props) => {
+    const onChange = (e) => {
+        const {param, events} = props;
 
-  onChange(e) {
-    const {param, events} = this.props
+        if (events && events.onChange) {
+            const onChange = events.onChange;
+            onChange(e, param);
+        }
+    };
 
-    if (events && events.onChange) {
-      const onChange = events.onChange
-      onChange(e, param)
-    }
-  }
-
-  render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
-    const {param, onBuild, events, defaultValue, refValue, disabled} = this.props
-    let inputRef = refValue
+    const {param, onBuild, defaultValue, refValue, disabled} = props;
+    let inputRef = refValue;
     if (onBuild) {
-      inputRef = element => onBuild(param, element)
+        inputRef = element => onBuild(param, element);
     }
 
-    const label = (param.label) ? param.label : param.name
+    const label = (param.label) ? param.label : param.name;
     return <div>
-      <label>
-        {label}
-      </label>
-      <input name={param.name} type="text" className="form-control" placeholder={param.name} defaultValue={defaultValue}
-             ref={inputRef} disabled={disabled} paramtype={param.type} onChange={(e) => this.onChange(e)} ></input>
-    </div>
-  }
+        <label>
+            {label}
+        </label>
+        <input name={param.name} type="text" className="form-control" placeholder={param.name}
+               defaultValue={defaultValue}
+               ref={inputRef} disabled={disabled} onChange={(e) => onChange(e)} />
+    </div>;
 
-}
+};
+
+export {ParamNumber};

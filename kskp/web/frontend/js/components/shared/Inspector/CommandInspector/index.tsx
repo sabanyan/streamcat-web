@@ -12,7 +12,7 @@ import FlowModel from "Model/Flow/FlowModel";
 import {Loader} from "Shared/Base";
 
 type Props = {
-    selected_step_ids: [];
+    selected_step_ids: string[];
     mast: MastType;
     nodes: [];
     updateStep: Function;
@@ -191,7 +191,7 @@ const CommandInspector = (props: Props) => {
 
     // FIXIT onBlurTitle to onChange #164
     return <BaseInspector key={selected_step.id} header={""} label={label} subLabel={subLabel}
-                          name={selected_step.id} onHide={() => onHide()}
+                          onHide={() => onHide()}
                           onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={readOnly}>
         {content}

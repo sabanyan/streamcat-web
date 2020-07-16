@@ -14,7 +14,7 @@ type Props = {
     sortStepSrcEnd: Function;
     onChangeInEdge: Function;
     onChangeOutEdge: Function;
-    selectedSubFlow: FlowModel;
+    selectedSubFlow: FlowModel | null;
     disabled?: boolean;
 }
 

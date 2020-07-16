@@ -1,24 +1,23 @@
-export * from './BaseInspector'
-export * from './CommandInspector'
-export * from './CommandInspector/InOutConnector'
-export * from './Core'
-export * from './DataPreviewInspector'
-export * from './DataSourceInspector'
-export * from './DataTableInspector'
-export * from './FlowInspector'
-export * from './FlowSettingsInspector'
-export {default as InputFlowForm} from './InputFlowForm'
-export {default as InspectorKnob} from './InspectorKnob'
-export {default as LibraryInspector} from './LibraryInspector'
-export {default as MultiInspector} from './MultiInspector'
-export {default as NoteInspector} from './NoteInspector'
-export {default as PreviewInspector} from './PreviewInspector'
-export {default as ProjectInspector} from './ProjectInspector'
-export {default as Resizer} from './Resizer'
-export {default as ParamsForm} from './ParamsForm'
-export {default as Param} from './Param/Core'
-export {default as ParamBoolean} from './Param/ParamBoolean'
-export {default as ParamSelect} from './Param/ParamSelect'
-export {default as ParamString} from './Param/ParamString'
-export {default as ParamList} from './Param/ParamList'
-export {default as ParamTextArea} from './Param/ParamList'
+export * from "./BaseInspector";
+export * from "./CommandInspector";
+export * from "./CommandInspector/InOutConnector";
+export * from "./Core";
+export * from "./DataPreviewInspector";
+export * from "./DataSourceInspector";
+export * from "./DataTableInspector";
+export * from "./FlowInspector";
+export * from "./FlowSettingsInspector";
+export * from "./InputFlowForm";
+export * from "./InspectorKnob";
+export * from "./LibraryInspector";
+export * from "./MultiInspector";
+export * from "./NoteInspector";
+export * from "./PreviewInspector";
+export * from "./Resizer";
+export {default as ParamsForm} from "./ParamsForm";
+export * from "./Param/ParamBoolean";
+export {default as ParamSelect} from "./Param/ParamSelect";
+export {default as ParamString} from "./Param/ParamString";
+export {default as ParamList} from "./Param/ParamList";
+export * from "./Param/ParamNumber";
+export {default as ParamTextArea} from "./Param/ParamTextArea";
