@@ -33,7 +33,6 @@ const CommandInspector = (props: Props) => {
     useEffect(() => {
         //データフレームの詳細を取得する
         const selected_step: StepModelType = getSelectedStep();
-        setSelectedSubFlow(null);
         if (selected_step instanceof CommandStepModel) {
             if (selected_step.type === Constants.step.type.subflow) {
                 //サブフローの場合のみ詳細を取得
