@@ -10,7 +10,7 @@ import {FlowModelProps} from "Model/Flow/FlowModel";
 
 type Props = {
     mast: MastType;
-    selected_step_ids: [];
+    selected_step_ids: string[];
     addStep: Function;
     selectSteps: Function;
     flow: FlowModelProps;

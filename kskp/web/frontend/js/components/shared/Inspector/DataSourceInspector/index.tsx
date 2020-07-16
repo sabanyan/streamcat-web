@@ -4,7 +4,7 @@ import {APIUtil, ErrorUtil, GraphUtil, ModalUtil, ReactDomUtil, SortUtil, StateU
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
-import {DataFrameStepModel, FlowModel} from "Model/index";
+import {DataFrameStepModel, FlowModel, FlowModelProps} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {DataFrameDetailType, MastType} from "Types/index";
 import {Loader} from "Shared/Base";
@@ -19,8 +19,8 @@ type Props = {
     deleteSteps: Function;
     selectSteps: Function;
     addHistory: Function;
-    flow: FlowModel;
-    selected_step_ids: [];
+    flow: FlowModelProps;
+    selected_step_ids: string[];
     deleteCache: Function;
     nodes: [];
     addStep: Function;
@@ -35,7 +35,7 @@ const DataSourceInspector = (props: Props) => {
 
     const flowIn = useRef<HTMLInputElement>(null);
     const flowOut = useRef<HTMLInputElement>(null);
-
+    const cache = useRef<HTMLInputElement>(null);
     // const [dataFrameDetail,setDataFrameDetail] = useState<DataFrameDetailType>(undefined);
     const [loading, setLoading] = useState<boolean>(false);
 
@@ -352,7 +352,7 @@ const DataSourceInspector = (props: Props) => {
     const cacheCheckForm = <div>
         <div>
             <label><input type="checkbox" checked={(selected_step.makeCache)}
-                          ref={"cache"} disabled={readOnly}
+                          ref={cache} disabled={readOnly}
                           onChange={() => onChangeCacheCheck()} />
             </label>
         </div>

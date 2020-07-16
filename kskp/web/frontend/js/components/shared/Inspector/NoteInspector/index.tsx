@@ -176,4 +176,4 @@ const NoteInspector = (props: Props) => {
     </BaseInspector>;
 };
 
-export default NoteInspector;
+export {NoteInspector};

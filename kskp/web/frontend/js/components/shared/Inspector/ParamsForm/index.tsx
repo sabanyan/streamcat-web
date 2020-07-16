@@ -11,7 +11,7 @@ type Props = {
     groups?: [];　//パラメータのグルプ定義
     args: {};//入力値
     invalids: {}; // Validationチェック内容
-    command?: CommandModel;
+    command?: CommandModel | null;
     headers?: string[];//カラム情報
     disabled?: boolean;
     // event
