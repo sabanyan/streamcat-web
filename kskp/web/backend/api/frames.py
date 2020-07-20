@@ -236,10 +236,15 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
         from kskp.engine import execute, FlowJsonLink
         link = FlowJsonLink(flow, session, vis_args)
         lasts = execute(link=link, args=args, inputs=inputs)
+
         # Activityを取得して返り値とする
         for point_id, datum in lasts.items():
             if isinstance(datum, Activity):
+                # 実行時エラーが発生した場合、例外送出する
+                if not datum.is_success:
+                    raise datum.exs[0]
                 return datum
+
         # Activityを取得できなかった場合
         raise NoResultsException('実行結果は出力されませんでした')
 
