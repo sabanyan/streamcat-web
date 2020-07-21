@@ -80,7 +80,7 @@ const MultiInspector = (props: Props) => {
 
     return <BaseInspector header={""}
                           title={selected_step_ids.length + " files"}
-                          disabled={readOnly}>>
+                          disabled={readOnly}>
         <div className="kskp-form">
             <Button onClick={() => onClickDelete()} danger={true} disabled={readOnly}>
                 削除する
