@@ -24,16 +24,6 @@ const FlowSettingsInspector = (props: Props) => {
 
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
-    const onHide = () => {
-        const {updateFlow} = props;
-        const {flow}: { flow: FlowModelProps } = props;
-        if (descriptionRef && descriptionRef.current) {
-            flow.description = descriptionRef.current.value;
-            flow.params = getCurrentParams();
-            updateFlow(flow);
-        }
-    };
-
     const getCurrentParams = () => {
         //現在入力中のすべてのParamsを取得する
         let params: SubFlowParamType[] = [];
@@ -153,7 +143,7 @@ const FlowSettingsInspector = (props: Props) => {
     addFlowParams = <AddButton onClick={() => onClickAddFlowParam()} disabled={(readOnly)}>フロー変数を追加する</AddButton>;
 
     return <BaseInspector header={""} label={flow.label}
-                          onBlurTitle={(e) => onBlurTitle(e)} onHide={() => onHide()}
+                          onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={readOnly}>
       <textarea className={"mb-8px form-control"} placeholder={"フローの説明"} ref={descriptionRef}
                 defaultValue={flow.description} rows={8}
