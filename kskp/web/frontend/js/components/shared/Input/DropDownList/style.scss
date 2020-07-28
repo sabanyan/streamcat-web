@@ -36,7 +36,10 @@
   color: $kskp-text;
   border-color: #CED4DA;
   border-width: 1px;
-
+  &:disabled{
+    border: 1px solid #CED4DA;
+    background: #e9ecef;
+  }
 }
 
 .hasLabel {
