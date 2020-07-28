@@ -7,6 +7,8 @@ import style from './style.scss'
 
 import { Button, TextField } from 'Shared/Input'
 import { Loader } from 'Shared/Base'
+import { ModalUtil } from "Utils/index";
+import Constants from "Constants/index";
 
 type Props = {
   url: string
@@ -108,7 +110,7 @@ export default class FileUploader extends React.Component<Props, State> {
       1, // concurrency
       {
         "retry": 0               //Number of retries
-        , "retryIsJump": false     //retry now? 
+        , "retryIsJump": false     //retry now?
         , "timeout": 0            //The timeout period
       }
     )
@@ -166,7 +168,7 @@ export default class FileUploader extends React.Component<Props, State> {
 
       let content = "アップロードが完了しました。<br> (成功:" + successCount + "、失敗:" + failCount + ")"
       notify({
-        title: 'アップロード結果',
+        title: 'アップロードしました',
         message: content,
         status: 'success',
         dismissAfter: 0,
@@ -176,6 +178,7 @@ export default class FileUploader extends React.Component<Props, State> {
       self.setState({
         isLoading: false
       })
+
     })
   }
 
@@ -229,7 +232,7 @@ export default class FileUploader extends React.Component<Props, State> {
     const onClick = (e) => this.onClickFileSelect(e)
 
     return <React.Fragment key={title + icon}>
-      <a href="#" className={style.button} onClick={onClick}>
+      <a href="javascript:return false;" className={style.button} onClick={onClick}>
         <i className={'material-icons'}>{icon}</i>
         {title}
       </a >
@@ -242,10 +245,13 @@ export default class FileUploader extends React.Component<Props, State> {
       return false
     })
     const disabled = this.state.isLoading || uploads.length === 0 ? true : false
+    const visibled = (uploads.length > 0)
+    if(!visibled)return null;
 
-    const upload = "アップロード"
+    const upload = "アップロードする";
     const onClickUpload = (e) => this.onClickUpload(e)
-    const uploadButton = <Button primary={true}
+    const uploadButton = <Button icon={"get_app"}
+      primary={true}
       onClick={onClickUpload}
       disabled={disabled}
       >
@@ -263,7 +269,7 @@ export default class FileUploader extends React.Component<Props, State> {
   render() {
     const { accept } = this.props
     const attrAccept = (accept) ? accept.join(',') : undefined
-    
+
     return <div className={style.fileUploader}>
       <Loader center={true} absolute={true} visible={this.state.isLoading} />
       {this.renderButtons()}

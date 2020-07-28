@@ -51,3 +51,6 @@ export const arrow_drop_up = <i className={classnames('material-icons')}>arrow_d
 
 // arrow_drop_up
 export const remove = <i className={classnames('material-icons')}>remove</i>
+
+// chevron_right
+export const chevron_right = <i className={classnames('material-icons')}>chevron_right</i>

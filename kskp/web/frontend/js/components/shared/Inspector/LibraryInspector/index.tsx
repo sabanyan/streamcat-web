@@ -44,12 +44,6 @@ class LibraryInspector extends React.Component<Props> {
     })
   }
 
-  onBlurTitle(e: React.FocusEvent<HTMLInputElement>) {
-    if (this.props.onBlurTitle) {
-      this.props.onBlurTitle(e)
-    }
-  }
-
   onClickPreview(e) {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
     let { lastSelected } = this.props;
@@ -75,45 +69,51 @@ class LibraryInspector extends React.Component<Props> {
     if (selected.length == 1) {
       // preview button
       if (data && data.label && data.type === Constants.library.type.frame) {
-        preview = <Button onClick={(e) => this.onClickPreview(e)} icon={'visibility'}>プレビュー</Button>
+        preview = <Button onClick={(e) => this.onClickPreview(e)} icon={"visibility"}>プレビューする</Button>
       }
 
       // download button
       if (data && data.label && data.type === Constants.library.type.frame) {
         const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
-        download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
+        download = <DownloadButton href={href} icon={"get_app"}>CSVをダウンロードする</DownloadButton>
       }
 
       // edit
       if (onClickEdit && data && data.type === Constants.library.type.database) {
-        edit = <Button onClick={(e) => this.onClickEdit(e)} icon={'create'}>編集する</Button>
+        edit = <Button onClick={(e) => this.onClickEdit(e)} icon={"settings"}>設定を開く</Button>
       }
 
       // apply button
       if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
 
       // editEncoding
-      if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コード編集</Button>
+      if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コードを編集する</Button>
 
       // clean trash button
-      if (onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} icon={'delete_forever'}>ゴミ箱を空にする</Button>
+      if (onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>
 
     }
 
     // 複数選択の場合
     if (selected.length >= 1) {
       // delete button
-      if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)}>削除する</Button>
+      if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>
 
       // move button
-      if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={'arrow_right_alt'}>移動する</Button>
+      if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>
+    }
+
+    if(onClickCleanTrash){
+      // ゴミ箱の場合、削除と移動を非表示にする
+      del = null;
+      move = null;
     }
 
     return <React.Fragment>
       {preview}
       {download}
-      {move}
       {edit}
+      {move}
       {del}
       {apply}
       {editEncoding}
@@ -230,7 +230,7 @@ class LibraryInspector extends React.Component<Props> {
     let content = (selected.length <= 1) ? this.renderSelect(lastSelected) : this.renderSelects(selected, lastSelected)
 
     return <Resizer>
-      <BaseInspector label={label} onBlurTitle={(e) => this.onBlurTitle(e)}>
+      <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={true}>
         {content}
       </BaseInspector>
     </Resizer>

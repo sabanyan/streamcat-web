@@ -1,0 +1,19 @@
+@import "../../../../../sass/common";
+
+.error {
+  border: 3px solid $kskp-danger !important;
+}
+
+.validation_messages {
+  list-style: none;
+  padding: 4px
+}
+
+.message {
+  font-size: 12px;
+  color: $kskp-danger;
+}
+
+.textField {
+  margin : 4px 0px 0px 0px;
+}
