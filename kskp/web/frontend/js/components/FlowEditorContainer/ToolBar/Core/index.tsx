@@ -4,7 +4,7 @@ import {DataSourceImport, Note, Redo, Run, Save, Sort, Undo, Zoom} from "FlowEdi
 import style from "./style.scss";
 import classnames from "classnames";
 import {DataFrameStepModelProps} from "Model/Step/DataFrameStepModel";
-import {DataFrameStepModel, FlowModel, MessageModel, NoteStepModel} from "Model/index";
+import {DataFrameStepModel, FlowModel, FlowModelProps, MessageModel, NoteStepModel} from "Model/index";
 import {APIUtil, FlowUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil} from "Utils/index";
 import {Loader} from "Shared/Base";
 import {HistoryType, LibraryListDataType, RunResponseType, UploadedFileType} from "Types/index";
@@ -13,7 +13,7 @@ import {defaultGraphProps} from "Utils/GraphUtil";
 import {API} from "Modules/api/index";
 
 type ToolBarProps = {
-    flow: FlowModel;
+    flow: FlowModelProps;
     nodes: any[];
     history: HistoryType;
     zoom: number;

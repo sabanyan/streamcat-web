@@ -4,14 +4,14 @@ import style from "../style.scss";
 import classnames from "classnames";
 
 interface Props {
-    label?: string;
+    label?: string | null;
     subLabel?: string;
     header?: string;
     title?: (string | React.ReactNode);
     children?: React.ReactNode;
     onBlurTitle?: Function;
     onHide?: Function;
-    disabled: boolean;
+    disabled?: boolean;
 }
 
 const BaseInspector = (props: Props) => {
@@ -44,13 +44,13 @@ const BaseInspector = (props: Props) => {
     const _disabled = (!onBlurTitle || disabled);
     let labelContainer, subLabelContainer;
     if (onBlurTitle && label !== undefined) {
-        labelContainer = <input key={label}
+        labelContainer = <input key={label || undefined}
                                 type="text" ref={inputEl}
                                 onBlur={(onBlurTitle) ? (e) => {
                                     onBlurTitle(e, props);
                                 } : undefined}
                                 className={classnames(style.label, style.clickable)}
-                                defaultValue={label}
+                                defaultValue={label || undefined}
                                 disabled={_disabled} />;
     } else {
         labelContainer = <div className={style.label}>{label}</div>;
@@ -75,4 +75,5 @@ const BaseInspector = (props: Props) => {
     </div>;
 };
 
-export default BaseInspector;
+export {BaseInspector};
+
