@@ -1,12 +1,7 @@
 # 色々やっていること、考慮しなければいけないことがが多いので隔離
-import json
-import os
-import time
 
 from pathlib import Path
-from flask import Blueprint, jsonify, request, jsonify, session
-from kskp.core import NoResultsException
-from kskp.store import Datum, Frame, Flow, Folder
+from flask import Blueprint, jsonify, request, g
 from kskp.web.backend import app
 
 from .auth import login_required_api
@@ -26,11 +21,11 @@ def fetch_frame(frame_uuid):
     limit = int(request.args.get('limit')) if request.args.get('limit') else 999
     no_contents = True if request.args.get('no_contents') else False
 
-    frame = Frame.find_by_uuid(frame_uuid)
+    frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
-    result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)
+    result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)  
 
     if request.args.get('header_only') == '1':
         # headerのカラムに改行コードが含まれているケースの対応
@@ -48,13 +43,6 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
     指定されたCSVファイルを読み込んで、
     詳細情報なども含んだframeを表すdictを返す
     """
-    def format_time(file_path):
-        """
-        指定されたファイルの最終更新時間をyyyy/MM/dd HH:MMで返却する
-        """
-        wk = time.localtime(os.path.getmtime(file_path))
-        return time.strftime('%Y/%m/%d %H:%M', wk)
-
     result = {}
 
     if not no_contents:
@@ -70,82 +58,6 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
 
     return result
 
-# def load_as_data_frame(path_obj, offset, limit):
-#     """
-#     CSVの文字列を受け取り、
-#     いわゆるデータフレームの形式にして返す
-#     TODO: offsetはつかってない
-#     """
-#     result_text = ''
-#     result_data = {}
-#     column_list = []
-#     with path_obj.open(encoding='utf-8') as f:
-#         n = 0
-#         limit_count = 0
-
-#         for line in f:
-#             if limit is not None and limit_count == limit:
-#                 break
-
-#             if n == 0:
-#                 # 一行目はヘッダとみなす
-#                 # 重複文字があればインデックスをつける
-#                 column_list = replace_column_name(line.split(','))
-#                 for column_name in column_list:
-#                     result_data[column_name] = []
-#             else:
-#                 if offset < n:
-#                     for idx, column_data in enumerate(line.split(',')):
-#                         result_data[column_list[idx]].append(column_data)
-#                     limit_count += 1
-#             n += 1
-
-#     if n == 0:
-#         raise Exception('空のCSVを読み込みました。コマンド実行時にエラーが発生した可能性があります。')
-
-#     result_len = n
-
-#     # 行数も返すように変更
-#     return result_data, result_len
-
-def replace_column_name(column_list):
-    """
-    受け取ったカラム名リストに重複している列名があれば
-    連番をつける
-    """
-    def check_column_overlap(column_list):
-        """
-        受け取ったカラム名リストを走査する
-        """
-        index_dict = {}
-        column_name_overlap = False
-
-        for index, column_name in enumerate(column_list):
-            if not column_name in index_dict:
-                index_dict[column_name] = []
-            else:
-                column_name_overlap = True
-            index_dict[column_name].append((index, len(index_dict[column_name])))
-
-        return index_dict, column_name_overlap
-
-    index_dict, column_name_overlap = check_column_overlap(column_list)
-
-    if not column_name_overlap:
-        return column_list
-
-    for column_name, tuple_list in index_dict.items():
-        if len(tuple_list) < 2:
-            continue
-
-        for tuple in tuple_list:
-            # tuple[0]　インデックス（column_listの）
-            # tuple[1]　連番
-            if tuple[1] > 0:
-                column_list[tuple[0]] = column_name + '.' + str(tuple[1])
-
-    return column_list
-
 @mod.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
 @api_base
@@ -159,25 +71,25 @@ def update_frame(frame_uuid):
         raise Exception('label,encoding,newlineまたはparent属性を指定してください')
     elif req.has('parent') and req.has_at_least('label', 'encoding', 'newline'):
         raise Exception('label,encoding,newlineとはparent属性は同時に指定できません')
-    
-    modifier = session['user_id']
+
+    frame = g.factory.data.find_by_uuid(frame_uuid)
 
     if req.has('parent'):
         # frameを移動する
         new_parent = req['parent']
-        frame = Frame.find_by_uuid(frame_uuid)
-        return frame.move(new_parent, modifier)
+        return frame.move(new_parent)
 
     else:
         if req.has('label'):
             # frameのラベルを修正する
             label = req['label']
-            ret = Frame.update_label(frame_uuid, label, modifier)
+            # ret = Frame.update_label(frame_uuid, label, modifier)
+            ret = frame.update_label(label)
 
         if req.has_all('encoding', 'newline'):
             encoding_str = req['encoding']
             newline_str = req['newline']
-            ret = Frame.update_encoding_newline(frame_uuid, encoding_str, newline_str, modifier)
+            ret = frame.update_encoding_newline(encoding_str, newline_str)
 
         if ret is None:
             raise Exception('update_frame parameter error!')
@@ -188,23 +100,18 @@ def update_frame(frame_uuid):
 @login_required_api
 @api_base
 def throw_away_frame(frame_uuid):
-    from kskp.store import Library
-    trash_folder = Library.load_trash_folder(session['user_id'])
-
-    # 削除しようとするframeが、フローで使用されている場合は例外を送出する
-    using_flow_uuids = Flow.get_flow_uuids_using_other_datum(frame_uuid)
-    if len(using_flow_uuids) > 0:
-        flow = Flow.find_by_uuid(using_flow_uuids[0])
-        raise Exception('このCSVファイルはフロー(%s)で使用しているため削除できません' % flow.label)
-
-    frame = Frame.find_by_uuid(frame_uuid)
+    """
+    指定したframeをほかす
+    """
+    frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
-    frame.move(trash_folder.uuid, session['user_id'])
+    frame.throw_away()
 
 @mod.route('/frames', methods=['POST'])
 @login_required_api
 def create_frame():
+    from kskp.store import NoResultsException
     try:
         if 'file' in request.files:
             # 
@@ -218,10 +125,9 @@ def create_frame():
                 raise Exception('No label is designated.')
             
             # parentとlabel属性があれば新形式のPOST /framesだとみなす
-            new_frame = Frame(request.form.get('parent')
-                            , request.form.get('label')
-                            , request.files.get('file').stream
-                            , creator=session['user_id'])
+            parent = g.factory.data.find_by_uuid(request.form.get('parent'))
+            new_frame = parent.create_frame(request.form.get('label')
+                                            , request.files.get('file').stream)
             # documentレコードをDBに格納する
             new_frame.save()
             return jsonify({'success': True, 'data': new_frame})
@@ -232,15 +138,16 @@ def create_frame():
             # 
             flow_uuid = request.json.get('flow_uuid')
             args = request.json.get('args') if request.json.get('args') else {}
-            inputs = _make_flow_inputs(flow_uuid, request)
+            inputs = _make_flow_inputs(g.factory, flow_uuid, request)
             # フローの実行
-            flow = Flow.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, args=args, inputs=inputs)
+            flow = g.factory.data.find_by_uuid(flow_uuid)
+            result = execute_flow(flow, g.factory, args=args, inputs=inputs)
             result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
         else:
             raise Exception('引数等の指定が誤っています')
+
     except NoResultsException as e:
         return jsonify({
                         'success': False,
@@ -279,8 +186,8 @@ def make_new_frames():
         # 普通の実行
         flow_uuid = request.args['from']
 
-    flow = Flow.find_by_uuid(flow_uuid)     
-    activity = execute_flow(flow)
+    flow = g.factory.data.find_by_uuid(flow_uuid)     
+    activity = execute_flow(flow, g.factory)
     return format_result(activity)
 
 @mod.route('/vizs/<frame_uuid>', methods=['POST'])
@@ -293,13 +200,14 @@ def fetch_vis(frame_uuid):
     vis_args = {"d" : request.json}
 
     import uuid
-    from kskp.store import Datum, DataSource
     from kskp.depo.std.commands import LoaderCommand
     from kskp.engine import Step
-    parent_folder = Datum.find_parent(frame_uuid)
+
+    frame = g.factory.data.find_by_uuid(frame_uuid)
+    parent_folder = frame.find_parent()
     loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
-    datasource = DataSource(None, 'tmp_source', parent_folder, loader_step, session['user_id'])
-    activity = execute_flow(datasource, vis_args=vis_args)
+    datasource = g.factory.data.create_datasource(None, 'tmp_source', parent_folder, loader_step)
+    activity = execute_flow(datasource, g.factory, vis_args=vis_args)
     return format_vis(activity)
 
 @mod.route('/vizs', methods=['POST'])
@@ -315,23 +223,22 @@ def make_new_viss():
     flow_uuid = request.args['from']
     vis_args = request.json
 
-    flow = Flow.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow, vis_args=vis_args)
+    flow = g.factory.data.find_by_uuid(flow_uuid)
+    activity = execute_flow(flow, g.factory, vis_args=vis_args)
     return format_vis(activity)
 
-def execute_flow(flow, args={}, inputs={}, vis_args={}):
+def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
     """
     指定されたフローを実行し実行結果を取得する
     """
     try:
+        from kskp.store import NoResultsException
         from kskp.engine import execute, FlowJsonLink
-        link = FlowJsonLink(flow, vis_args)
+        link = FlowJsonLink(flow, session, vis_args)
         activity = execute(link=link, args=args, inputs=inputs)
         if not activity:
             raise NoResultsException('実行結果は出力されませんでした')
         return activity
-    except NoResultsException as e:
-        raise e
     except Exception as e:
         # import traceback
         # traceback.print_exc()
@@ -347,13 +254,11 @@ def format_vis(activity):
     # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
     return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.result]
 
-def _make_flow_inputs(flow_uuid, request):
+def _make_flow_inputs(session, flow_uuid, request):
     """
     inputsを作成する
     """
-    from kskp.store import Library, NysolModule, fetch_flow_by_uuid
-
-    flow_json = fetch_flow_by_uuid(flow_uuid)
+    flow_json = session.data.find_by_uuid(flow_uuid).flow_data
 
     # executeの引数
     inputs = {}
@@ -384,8 +289,9 @@ def _make_flow_inputs(flow_uuid, request):
 def _load_frame(frame_uuid):
     # Loaderを用いて指定したuuidのframeを取得する
     from kskp.depo.std.commands import CommandLink
+    store = g.factory.data.find_by_uuid(frame_uuid).find_parent()
     loader = CommandLink('loader').resolve()
-    result = loader.run({'uuid':frame_uuid}, {'store':Folder(None, '')})
+    result = loader.run({'uuid':frame_uuid}, {'store':store})
     # NYSOLコマンドを返す
     nysol_module = result['o']
     return nysol_module

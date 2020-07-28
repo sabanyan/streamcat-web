@@ -30,6 +30,7 @@
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "devDependencies": {
     "@types/classnames": "^2.2.8",
+    "@types/moment": "^2.13.0",
     "@types/react": "^16.8.22",
     "@types/react-dom": "^16.8.4",
     "array-move": "^2.1.0",
@@ -76,10 +77,10 @@
     "eventemitter3": "^3.1.0",
     "lodash": "^4.17.15",
     "moment": "^2.22.2",
-    "react": "^16.3.2",
+    "react": "^16.13.1",
     "react-chartjs-2": "^2.7.2",
-    "react-dom": "^16.3.2",
-    "react-redux": "^5.0.7",
+    "react-dom": "^16.13.1",
+    "react-redux": "^7.2.0",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0"
   }

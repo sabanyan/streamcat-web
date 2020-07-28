@@ -42,7 +42,9 @@ export default class IconRenderer extends React.Component<Props> {
       case "remove":
         result = Icon.remove
         break;
-
+      case "chevron_right":
+        result = Icon.chevron_right
+        break;
       default:
         result = Icon.warning
         break;
