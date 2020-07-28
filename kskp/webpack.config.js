@@ -32,7 +32,7 @@ module.exports = (env) => {
       // development に設定するとソースマップ有効でJSファイルが出力される
       mode: mode,
       // メインとなるJavaScriptファイル（エントリーポイント）ls
-      entry: ['babel-polyfill','./web/frontend/js/index.tsx'],
+      entry: ['./web/frontend/js/index.tsx'],
       output: {
         path: `${__dirname}/web/frontend/static/js`,
         filename: 'app.js',
