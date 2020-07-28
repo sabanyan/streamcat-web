@@ -13,6 +13,7 @@ type Props = {
   hiddenNoSelect?: boolean;
   onClickAction?: Function;
   actionLabel?: string;
+  disabled?: boolean;
 }
 
 export default class DropDownList extends React.Component<Props> {
