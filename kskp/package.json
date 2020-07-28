@@ -13,11 +13,6 @@
     "flow": "flow",
     "flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text"
   },
-  "jest": {
-    "moduleNameMapper": {
-      "\\.(css|scss)$": "identity-obj-proxy"
-    }
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ksk-anl/kskp-beta.git"
@@ -50,9 +45,12 @@
     "flow-bin": "^0.72.0",
     "flow-coverage-report": "^0.6.1",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^23.5.0",
+    "jest": "^26.1.0",
+    "jest-environment-puppeteer": "^4.4.0",
+    "jest-puppeteer": "^4.4.0",
     "node-sass": "^4.12.0",
     "promise-queue-plus": "^1.2.2",
+    "puppeteer": "^5.2.0",
     "react-i18next": "^10.11.2",
     "react-sortable-hoc": "^1.9.1",
     "react-test-renderer": "^16.4.2",
