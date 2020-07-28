@@ -18,6 +18,7 @@ interface NoteInspectorProps  {
   selectSteps: Function;
   updateStep: Function;
   deleteSteps: Function;
+  readOnly: boolean;
 }
 
 class NoteInspector extends React.Component<NoteInspectorProps, State> {

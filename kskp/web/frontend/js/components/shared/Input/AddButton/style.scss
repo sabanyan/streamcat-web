@@ -9,6 +9,10 @@
   &:hover {
     color: darken($primary-link-color, 10%);
   }
+  &.disabled{
+    cursor: default;
+    opacity: 0.5;
+  }
 }
 
 .icon {

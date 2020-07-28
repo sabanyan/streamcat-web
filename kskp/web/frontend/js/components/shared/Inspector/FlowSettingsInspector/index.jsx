@@ -1,13 +1,13 @@
 //@flow
-import React from 'react'
+import React, { Fragment } from 'react'
 import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { AddButton, Button } from 'Shared/Input'
 import { ModalUtil } from 'Utils/index'
 import Constants from 'Constants/index'
+import { CommandSelector } from 'FlowEditorContainer/Command';
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import type { MastType, SubFlowParamType } from 'Types/index'
-import { CommandSelector } from "FlowEditorContainer/Command";
 import type { FlowModelProps } from "Model/Flow/FlowModel";
 
 type FlowSettingsInspectorProps = {
@@ -18,6 +18,7 @@ type FlowSettingsInspectorProps = {
   flow: FlowModelProps;
   updateFlow: Function;
   addHistory: Function;
+  readOnly: boolean;
 }
 
 class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> {
@@ -125,7 +126,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   }
 
   render () {
-    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory} = this.props
+    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory, readOnly} = this.props
     if (!flow) return null
     const {params} = flow
 
@@ -141,7 +142,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
               this.paramRefs.push(ref)
             }
           }} type={'text'} className={'form-control'} defaultValue={param.name}
-                 onChange={(e) => {this.onParamChange(e)}} />
+                 onChange={(e) => {this.onParamChange(e)}}/>
         </div>
         <div className={style.right}>
           <Button danger={true} onClick={() => this.onClickDeleteParam(param)}>削除</Button>
@@ -159,24 +160,31 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
         フロー変数の設定がありません
       </div>
     }
-    addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
+    addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()} disabled={(readOnly)}>フロー変数を追加する</AddButton>
 
     return <BaseInspector header={''} label={this.props.flow.label}
-                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}>
+                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}
+                          disabled={readOnly}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8}
-                onChange={(e) => this.onDescriptionChange(e)}></textarea>
+                onChange={(e) => this.onDescriptionChange(e)} disabled={(readOnly)}></textarea>
       {inputParamsContainer}
       {addFlowParams}
-      <div className={style.full_hr} />
-      <CommandSelector
-          mast={mast}
-          numberOfInput={0}
-          selected_step_ids={selected_step_ids}
-          addStep={addStep}
-          selectSteps={selectSteps}
-          addHistory={addHistory}
-      />
+      {
+        (!readOnly) ?
+          <Fragment>
+            <div className={style.full_hr} />
+            <CommandSelector
+              mast={mast}
+              numberOfInput={0}
+              selected_step_ids={selected_step_ids}
+              addStep={addStep}
+              selectSteps={selectSteps}
+              addHistory={addHistory}
+            />
+          </Fragment>
+          : null
+      }
     </BaseInspector>
   }
 }
