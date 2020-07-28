@@ -37,7 +37,7 @@
       /* Module Resolution Options */
       "moduleResolution": "node",            /* http://js.studio-kingdom.com/typescript/handbook/module_resolution 参照 */
       "esModuleInterop": true,                /* ESModuleと同じ動作をする. */
-      "resolveJsonModule": true,
+      "resolveJsonModule": true
     },
     "exclude": [
       "node_modules",
