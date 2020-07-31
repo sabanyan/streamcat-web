@@ -237,6 +237,9 @@ def fetch_subflows():
         # 親フォルダのないサブフローは取得しない
         if parent is None:
             continue
+        # 実行権限のないサブフローは取得しない
+        if not subflow.executable:
+            continue
         # ゴミ箱にあるサブフローは取得しない
         if g.factory.data.trashed(subflow.uuid):
             continue
@@ -393,7 +396,7 @@ def delete_cache():
     flow_data = flow.flow_data
 
     cache_uuids = []
-    for i, node in enumerate(flow_data.nodes):
+    for i, node in enumerate(flow_data.get_nodes()):
         if node['id'] == datum_id:
             frame_uuid = node['uuid']
             node['uuid'] = None
