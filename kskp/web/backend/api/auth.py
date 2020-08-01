@@ -14,6 +14,7 @@ from flask import (
 from flask_mail import Mail, Message
 
 from kskp.web.backend import app
+from kskp.store import NoResultFound
 from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
@@ -39,8 +40,9 @@ def login_required(func):
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
                 with UnAuthzFactory() as factory:
-                    user = factory.find_user_by_email(f['email'])
-                    if user is None:
+                    try:
+                        user = factory.find_user_by_email(f['email'])
+                    except NoResultFound:
                         return render_template('login.html', email=f['email'])
 
                 if user.authenticate(f['password']):
