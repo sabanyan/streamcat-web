@@ -157,6 +157,18 @@ def make_new_lock():
     lock = lock_manager.lock(request.json['target'], creator=g.user)
     return lock.to_json()
 
+@mod.route('/extend-locks/<lock_uuid>', methods=['POST'])
+@login_required_api
+@api_base
+def extend_lock(lock_uuid):
+    """
+    ロックの有効期間を延長する
+    """
+    from kskp.store import LockedDatumException
+    lock_manager = app.config['LOCK_MANAGER']
+    if not lock_manager.contains(lock_uuid):
+        raise LockedDatumException(f'Lock ({lock_uuid}) is already expired')
+
 @mod.route('/delete-locks', methods=['POST'])
 @login_required_api
 @api_base
