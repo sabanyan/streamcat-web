@@ -1,7 +1,5 @@
 from flask import jsonify
 import functools
-from kskp.store import NothingToPutbackException, NoResultsException
-from kskp.store import LockedDatumException
 
 def api_base(func):
     """
@@ -10,6 +8,8 @@ def api_base(func):
     """
     @functools.wraps(func)
     def wrapper(**kwargs):
+        from kskp.store import LockedDatumException, NothingToPutbackException
+
         try:
             # デコレート対象関数の呼び出し
             result = func(**kwargs)
@@ -47,6 +47,8 @@ def frame_api_base(func):
     """
     @functools.wraps(func)
     def wrapper(**kwargs):
+        from kskp.store import NoResultsException
+
         try:
             # デコレート対象関数の呼び出し
             result = func(**kwargs)

@@ -1,9 +1,8 @@
-from flask import Flask, jsonify
 from flask.json import JSONEncoder
 from kskp.store import StoreModel as Store
 from kskp.store import Vis
-from kskp.core import Datum as Datum
 from kskp.store import FlowData
+from kskp.core import Datum
 from kskp.store.lock_manager import Lock
 
 class KSKPJSONEncoder(JSONEncoder):
