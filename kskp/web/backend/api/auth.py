@@ -14,6 +14,7 @@ from flask import (
 from flask_mail import Mail, Message
 
 from kskp.web.backend import app
+from kskp.store import NoResultFound
 from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
@@ -39,11 +40,18 @@ def login_required(func):
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
                 with UnAuthzFactory() as factory:
-                    user = factory.find_user_by_email(f['email'])
-                    if user is None:
+                    try:
+                        user = factory.find_user_by_email(f['email'])
+                    except NoResultFound:
                         return render_template('login.html', email=f['email'])
 
                 if user.authenticate(f['password']):
+
+                    # 仮登録状態の場合はパスワード登録画面に遷移する
+                    if user.is_temp:
+                        session['signup_email'] = f['email']
+                        return render_template('register_password.html', email=f['email'])
+
                     # ユーザID保存
                     session['user_id'] = user.id
                     # 認証成功 本来のページへ遷移する
@@ -103,11 +111,15 @@ def login_required_api(func):
                 user = factory.find_user_by_id(session['user_id'])
                 if user is None:
                     raise Exception('user is None !')
+                elif user.is_temp:
+                    # 本パスワード登録画面に遷移する
+                    session['signup_email'] = user.email
+                    return render_template('register_password.html', email=user.email)
                 g.user = user
             # Sessionオブジェクトをflask.gに設定する
             with Factory(user) as factory:
                 # AuthzSessionをUserオブジェクトに格納する
-                g.user.session = factory._session
+                g.user._session = factory._session
                 g.factory = factory
                 return func(**kwargs)
         else:
@@ -176,24 +188,37 @@ def complete_sign_up():
     """
     パスワードが決定されたので、それを元にユーザー登録を行う
     """
+    from kskp.store.auth import InvalidPassword
+
     email = session['signup_email']
-    password = request.form['password']
-    user_name = request.form['user_name']
+    del session['signup_email']
+    new_password = request.form['password']
+    # user_name = request.form['user_name']
 
-    # TODO: この部分の仕様は不明確
-    creator = email
+    with UnAuthzFactory() as factory:
+        try:
+            user = factory.find_user_by_email(email)
+        except NoResultFound:
+            return render_template('login.html', email=email)
 
-    # ユーザーのDB登録
-    new_user = User(email, password, user_name)
-    new_user.save()
+    with Factory(user) as factory:
+        user = factory.user.find_by_id(user.id)
+        # 本パスワードへの変更
+        try:
+            user.update_password(new_password, modifier=user)
+        except InvalidPassword as e:
+            # もう一度パスワード入力を促す
+            session['signup_email'] = email
+            flash(str(e))
+            return render_template('register_password.html', email=email)
+
+        # ユーザID保存
+        session['user_id'] = user.id
 
     flash('ユーザー登録が完了しました。')
 
-    session['user_id'] = new_user.id
-    del session['signup_email']
-
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
-    return redirect(url_for('projects'))
+    return redirect(url_for('basic_template.library'))
 
 
 def make_temporal_url(email):
