@@ -25,10 +25,10 @@ class KSKPJSONEncoder(JSONEncoder):
         #     # 上記以外のクラスはデフォルトのデコード処理とする
         #     return JSONEncoder.default(self, obj)
 
-        if isinstance(obj, (Store, Lock, Datum, FlowData, User, Role)):
-            return obj.to_json()
-        elif isinstance(obj, Vis):
+        if isinstance(obj, Vis):
             return obj.to_html()
+        elif isinstance(obj, (Store, Lock, Datum, FlowData, User, Role)):
+            return obj.to_json()
         else:
             # 上記以外のクラスはデフォルトのデコード処理とする
             return JSONEncoder.default(self, obj)
