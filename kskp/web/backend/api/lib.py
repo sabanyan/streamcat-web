@@ -157,6 +157,18 @@ def make_new_lock():
     lock = lock_manager.lock(request.json['target'], creator=g.user)
     return lock.to_json()
 
+@mod.route('/extend-locks/<lock_uuid>', methods=['POST'])
+@login_required_api
+@api_base
+def extend_lock(lock_uuid):
+    """
+    ロックの有効期間を延長する
+    """
+    from kskp.store import LockedDatumException
+    lock_manager = app.config['LOCK_MANAGER']
+    if not lock_manager.contains(lock_uuid):
+        raise LockedDatumException(f'Lock ({lock_uuid}) is already expired')
+
 @mod.route('/delete-locks', methods=['POST'])
 @login_required_api
 @api_base
@@ -317,13 +329,7 @@ def make_new_database():
     """
     データベースを作成する
     """
-    database_conn = DatabaseConn(
-        request.json['dbms'],
-        request.json['hostname'],
-        request.json['port'],
-        request.json['database'],
-        request.json['user_id'],
-        request.json['password'])
+    database_conn = DatabaseConn(request.json)
 
     # 接続情報に漏れがあれば例外を送出する
     database_conn.valid_or_raise()
@@ -350,13 +356,7 @@ def update_database(database_uuid):
 
     if 'label' in request.json and request.json['label'] != '':
         # データベースを修正する
-        database_conn = DatabaseConn(
-            request.json['dbms'],
-            request.json['hostname'],
-            request.json['port'],
-            request.json['database'],
-            request.json['user_id'],
-            request.json['password'])
+        database_conn = DatabaseConn(request.json)
 
         # 接続情報に漏れがあれば例外を送出する
         database_conn.valid_or_raise()
@@ -403,13 +403,7 @@ def make_new_remote_folder():
     """
     リモートフォルダを作成する
     """
-    remote_folder_conn = RemoteFolderConn(
-        request.json['protocol'],
-        request.json['hostname'],
-        request.json['domain'],
-        request.json['directory'],
-        request.json['user_id'],
-        request.json['password'])
+    remote_folder_conn = RemoteFolderConn(request.json)
 
     # 接続情報に漏れがあれば例外を送出する
     remote_folder_conn.valid_or_raise()
@@ -436,13 +430,7 @@ def update_remote_folder(folder_uuid):
 
     if 'label' in request.json and request.json['label'] != '':
         # リモートフォルダを修正する
-        remote_folder_conn = RemoteFolderConn(
-            request.json['protocol'],
-            request.json['hostname'],
-            request.json['domain'],
-            request.json['directory'],
-            request.json['user_id'],
-            request.json['password'])
+        remote_folder_conn = RemoteFolderConn(request.json)
 
         # 接続情報に漏れがあれば例外を送出する
         remote_folder_conn.valid_or_raise()

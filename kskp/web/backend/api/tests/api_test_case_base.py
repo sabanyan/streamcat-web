@@ -77,9 +77,9 @@ class ApiTestCaseBase(TestCaseBase):
             # フローJSONファイルからフローデータを取得する
             import pathlib
             flow_path = pathlib.Path(app.root_path).parent / flow_file_path
-            flow_data = json.loads(flow_path.read_text(encoding='utf-8'))
+            flow_json = json.loads(flow_path.read_text(encoding='utf-8'))
             # フローオブジェクトを作成する
-            test_flow = flow_folder.create_flow('テストフロー！(%s)' % class_name, flow_data)
+            test_flow = flow_folder.create_flow('テストフロー！(%s)' % class_name, flow_json)
             # フローをライブラリに保存する
             test_flow.uuid = flow_uuid
             test_flow.save()
