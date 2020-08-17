@@ -29,9 +29,11 @@ PREFIX = '/api/v0'
 from .api import basic
 from .api import frames
 from .api import lib
+from .api import system
 app.register_blueprint(basic.mod, url_prefix=PREFIX)
 app.register_blueprint(frames.mod, url_prefix=PREFIX)
 app.register_blueprint(lib.mod, url_prefix=PREFIX)
+app.register_blueprint(system.mod, url_prefix=PREFIX)
 
 # static用
 from kskp.web.frontend import mod
