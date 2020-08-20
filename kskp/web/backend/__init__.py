@@ -25,14 +25,17 @@ app.register_blueprint(basic.mod)
 from .api import auth
 app.register_blueprint(auth.mod, url_prefix='/signup')
 
+
 PREFIX = '/api/v0'
 from .api import basic
 from .api import frames
 from .api import lib
 from .api import system
+from .api import flow_test
 app.register_blueprint(basic.mod, url_prefix=PREFIX)
 app.register_blueprint(frames.mod, url_prefix=PREFIX)
 app.register_blueprint(lib.mod, url_prefix=PREFIX)
+app.register_blueprint(flow_test.mod, url_prefix=PREFIX)
 app.register_blueprint(system.mod, url_prefix=PREFIX)
 
 # static用

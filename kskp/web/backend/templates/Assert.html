@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<form action="api/v0/flow_tester" method="GET">
+  <p>flowもしくはProjectのuuidを入力してください</p>
+  <input type="text" name="uuid">
+  <input type="submit" value="send">
+</form>
+
+{% endblock %}

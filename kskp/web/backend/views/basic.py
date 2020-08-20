@@ -68,3 +68,9 @@ def trashes():
 def dev():
     return render_template('dev/dev.html')
 
+
+@mod.route('/flow_test', methods=['GET', 'POST'])
+@login_required
+def flow_test():
+    return render_template('Assert.html')
+
