@@ -42,8 +42,8 @@ def make_new_user():
     if not req.has_all('email', 'name'):
         raise Exception('email,name属性を指定してください')
 
-    # TODO: 仮パスワードは自動生成して返すか？
-    new_user = g.factory.user.create(email=req['email'], name=req['name'])
+    # passwordの指定がなければ自動生成する
+    new_user = g.factory.user.create(email=req['email'], name=req['name'], password=req.get('password'))
     new_user.save()
     return new_user
 
@@ -53,10 +53,10 @@ def make_new_user():
 def update_user(user_uuid):
     """
     ユーザを修正する
-    TODO: パスワードリセットはどう実装する？
+    'password':Noneの場合はパスワードを自動生成する
     """
     req = RequestJson(request.json)
-    if req.has_no_all('email', 'name', 'password'):
+    if req.has_no_all('email', 'name') and not req.isnull('password') and not req.has('password'):
         raise Exception('email,nameまたはpassword属性を指定してください')
 
     user = g.factory.user.find_by_uuid(user_uuid)
@@ -64,9 +64,11 @@ def update_user(user_uuid):
     if req.has('email'):
         user = user.update_email(req['email'])
     if req.has('name'):
-        user = user.update_name(req['name'])        
+        user = user.update_name(req['name'])
     if req.has('password'):
         user = user.update_password(req['password'])
+    elif req.isnull('password'):
+        user = user.reset_password()
 
     return user
 
@@ -213,6 +215,8 @@ def delete_member():
 # 
 # Auth
 # 
+
+# -> 権限情報は、projects APIで取得・設定するようにする
 
 @mod.route('/auths', methods=['GET'])
 @login_required_api
