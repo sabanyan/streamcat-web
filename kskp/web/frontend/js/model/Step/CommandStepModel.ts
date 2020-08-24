@@ -1,0 +1,239 @@
+import {BaseStepModel} from "Model/index";
+import {CommandParamType} from "Types/index";
+import CommandModel from "Model/Command/CommandModel";
+import validateJS from "validate.js";
+import arrayMove from "array-move";
+import {BaseModelProps} from "Model/Step/BaseStepModel";
+
+type stepType = "command" | "frame"
+
+export interface CommandStepModelProps extends BaseModelProps {
+    srcs: {};
+    srcsOrder: [];
+    dsts: {};
+    args: {};
+    commandId: string;
+    getSrcsSteps: Function;
+    getDstsSteps: Function;
+    getCommand: Function;
+}
+
+export default class CommandStepModel extends BaseStepModel {
+    srcs: {} = {};
+    srcsOrder: any[] = [];
+    dsts: {} = {};
+    args: {} = {};
+    commandId: string | undefined = undefined;
+
+    constructor(props: CommandStepModelProps) {
+        super(props);
+        this.initialize(props, "srcs");
+        this.initialize(props, "srcsOrder");
+        this.initialize(props, "dsts");
+        this.initialize(props, "args");
+        this.initialize(props, "commandId");
+        if (Object.keys(this.srcs).length != 0 && this.srcsOrder.length == 0) {
+            this.srcsOrder = Object.keys(this.srcs);
+        }
+        this.args = props.args;
+    }
+
+    loadArgs(args?: {}) {
+        let result = {};
+        let _args = this.args;
+        try {
+            const command = this.getCommand();
+            if (!command) throw "command is undefined in CommandStepModel";
+            if (!command.params) throw "command.params is undefined in CommandStepModel";
+            const params = command.params;
+            const rules = (command.rules) ? command.rules : {};
+            params.map((param: CommandParamType) => {
+                // ルールの適用
+                const rule = rules[param.name];
+                // rule: 必須項目で空白（""）が許される場合
+                if (rule && rule["presence"] && ["presence"]["allowEmpty"] === true) result[param.name] = "";
+                // 保存されたユーザー入力値の適用
+                if (_args[param.name]) result[param.name] = _args[param.name];
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
+    initArgs() {
+        let result = {};
+        try {
+            const command = this.getCommand();
+            if (!command) throw "command is undefined in CommandStepModel";
+            if (!command.params) throw "command.params is undefined in CommandStepModel";
+            const params = command.params;
+            const rules = (command.rules) ? command.rules : {};
+            params.map((param: CommandParamType) => {
+                // ルールの適用
+                const rule = rules[param.name];
+                // rule: 必須項目で空白（""）が許される場合
+                if (rule && rule["presence"] && ["presence"]["allowEmpty"] === true) result[param.name] = "";
+                // default値の適用
+                if (param.default) result[param.name] = param.default;
+            });
+        } catch (e) {
+            console.log(e);
+        }
+        this.args = result;
+    }
+
+    getStep(nodes, key) {
+        let step = nodes.find((node) => {
+            return node.id === key;
+        });
+        return step;
+    }
+
+    /**
+     * 指定されたポートを削除する
+     * @param key
+     */
+    deleteInPort(key) {
+        delete this.srcs[key];
+        // delete
+        let result: any[] = [];
+        this.srcsOrder.forEach((srcKey, index) => {
+            if (srcKey !== key) {
+                result.push(srcKey);
+            }
+        });
+        this.srcsOrder = result;
+    }
+
+    /**
+     * 指定されたポートを追加する
+     * @param key
+     */
+    addInPort(key, value) {
+        this.srcs[key] = (value) ? value : null;
+        this.srcsOrder.push(key);
+    }
+
+    /**
+     * 指定されたポート名の最大値を求める
+     * @param key
+     */
+    getInPortIndex() {
+        const srcKeys = Object.keys(this.srcs);
+
+        const filterKeys = srcKeys.filter((key) => {
+            return (key.indexOf("*") != -1);
+        });
+
+        let max = 0;
+        filterKeys.forEach((key) => {
+            const value = key.replace("*", "");
+            max = (parseInt(value) > max) ? parseInt(value) : max;
+        });
+
+        return max;
+    }
+
+    /**
+     * 入力ポートを追加できるか
+     */
+    addableInPort() {
+        // コマンドが複数入力可能かどうかを判断するため、元のコマンドのInPort定義に＊があるか確認する
+        const filterKeys = this.getCommand().getInPorts().filter((inPort) => {
+            return (inPort.name.indexOf("*") != -1);
+        });
+        return (filterKeys.length);
+    }
+
+    getSrcsSteps(nodes) {
+        let steps = {};
+        Object.keys(this.srcs).forEach((key) => {
+            const stepId = this.srcs[key];
+            steps[stepId] = {
+                id: stepId,
+                portName: key,
+                node: this.getStep(nodes, stepId)
+            };
+        });
+        return steps;
+    }
+
+    getDstsSteps(nodes) {
+        let steps = {};
+        return Object.keys(this.dsts).map((key) => {
+            const stepId = this.dsts[key];
+            steps[stepId] = this.getStep(nodes, stepId);
+        });
+        return steps;
+    }
+
+    getCommand(): any {
+        let command;
+        (window as any).commands.forEach((_command) => {
+            if (this.commandId === _command.id) {
+                command = _command;
+            }
+        });
+        return command as CommandModel;
+    }
+
+    getLabel() {
+        if (this.label == this.id) {
+            return this.getCommand().label;
+        }
+
+        return this.label;
+    }
+
+    onSortEnd(oldIndex, newIndex) {
+        this.srcsOrder = arrayMove(this.srcsOrder, oldIndex, newIndex);
+        // ソート後,連番をリーネムする。
+        let renamedSrcsOrder: string[] = [];
+        let renaemdSrcs = {};
+        let portIndex = 1;
+        this.srcsOrder.forEach((srcKey, index) => {
+            let temp = srcKey;
+            if (temp.indexOf("*") == 0) {
+                temp = "*" + portIndex;
+                portIndex++;
+            }
+            // SrcsのKeyをリーネムする
+            renaemdSrcs[temp] = this.srcs[srcKey];
+            // SrcsOrderの連番をリーネムする
+            renamedSrcsOrder.push(temp);
+        });
+
+        this.srcs = renaemdSrcs;
+        this.srcsOrder = renamedSrcsOrder;
+    }
+
+    validate() {
+        this.invalid = {};
+        //必須バリデーション
+        let command: CommandModel = this.getCommand();
+        // commandが存在しない場合、フローが見えない事象があるため、
+        // commandが存在しなくても処理が止まらないように
+        if (!command) {
+            return;
+        }
+
+        Object.keys(command.getParams()).map(key => {
+            const param: CommandParamType = command.getParam(key);
+            const value = this.args[key];
+            //TODO:param.optionalはrulesに移行予定
+            // if(!param.optional){
+            //   if(value === "" || value === null){
+            //     this.invalid[key] = "入力が必須の項目です"
+            //   }
+            // }
+            const args = {...this.args, ...{"_command_id": command.id}};
+            const result = validateJS(args, command.rules);
+            if (result) {
+                Object.keys(result).forEach((key) => {
+                    this.invalid[key] = result[key];
+                });
+            }
+        });
+
+    }
+}

@@ -11,12 +11,12 @@ import {ModalManager} from "Shared/Modal";
 import {addNotification, removeNotification} from "reapop";
 
 import {
-    FlowEditorContainer,
     ProfileContainer,
 } from "Components/index";
 import {NavigationBar} from "Shared/Base";
 import {Preview} from "PreviewContainer/Preview";
 import {Library} from "Components/LibraryContainer/Libary";
+import {FlowEditor} from "FlowEditorContainer/FlowEditor";
 
 export type Props = {
     viewId: ViewId
@@ -37,19 +37,12 @@ export enum ViewId {
     Undefined = -1,
 }
 
-const contentSelector = state => state.CommonReducer.content;
-const inspectorSelector = state => state.CommonReducer.inspector;
-
 const Kskp = (props: Props) => {
 
     const dispatch = useDispatch();
-    const content = useSelector(contentSelector);
-    const inspector = useSelector(inspectorSelector);
     const {viewId} = props;
 
     const notify = (context) => dispatch(addNotification(context));
-
-    const updateNotify = (context) => dispatch(addNotification(context));
     const dismissNotify = (id: string) => {
         setTimeout(() => {
             dispatch(removeNotification(id));
@@ -84,7 +77,7 @@ const Kskp = (props: Props) => {
         let viewComponent: React.ReactNode = null;
         switch (viewId) {
             case ViewId.Flow_Editor:
-                viewComponent = <FlowEditorContainer />;
+                viewComponent = <FlowEditor />;
                 break;
             case ViewId.Library:
                 viewComponent = <Library />;

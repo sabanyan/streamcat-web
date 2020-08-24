@@ -13,6 +13,7 @@ type Props = {
   invalids: {}; // Validationチェック内容
   command?: CommandModel;
   headers?: string[];//カラム情報
+  disabled?: boolean;
   // event
   onChange: (e: React.ChangeEvent<HTMLInputElement>, param: CommandParamType, value: any) => void
 }
@@ -121,10 +122,10 @@ export default class ParamsForm extends React.Component<Props> {
 
 
   renderParam(param, key) {
-    const {args, command, invalids, onChange, headers} = this.props
+    const {args, command, invalids, onChange, headers, disabled} = this.props
     let isPresence = (command) ? this.isPresence(command, param) : false
     const value = this.getDefaultValueOrArgsValue(args, param)
-    const paramElement = this.getParamElement(param, false, param.label, value, onChange, headers)
+    const paramElement = this.getParamElement(param, disabled, param.label, value, onChange, headers)
     const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
 
     return <div key={key} className={classnames('mb-8px', {
