@@ -1,6 +1,6 @@
-import Constants from 'Constants/index';
+import Constants from "Constants/index";
 
-import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
+import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
 
 export type FlowModelProps = {
   createdAt?: string
@@ -11,6 +11,8 @@ export type FlowModelProps = {
   ports: [[], []]
   projectId?: number
   description: string
+  hasInPortWithId: (id: string) => boolean;
+  hasOutPortWithId: (id: string) => boolean;
 }
 
 export default class FlowModel {

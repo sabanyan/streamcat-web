@@ -17,7 +17,6 @@ export { default as LibraryModel } from './Library/index'
 
 // Props
 export { CommandModelProps } from './Command/CommandModel'
-export { SubflowCommandModelProps } from './Command/SubflowCommandModel'
 export { FlowModelProps } from './Flow/FlowModel'
 export { CommandStepModelProps } from './Step/CommandStepModel'
 export { DataFrameStepModelProps } from './Step/DataFrameStepModel'

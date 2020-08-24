@@ -5,7 +5,6 @@ import {Button, DropDownList} from "Shared/Input";
 import Constants from "Constants/index";
 import style from "../style.scss";
 import {NoteStepModel} from "Model/index";
-import {FlowEditorProps} from "FlowEditorContainer/index";
 import {dropDownListItem} from "Types/index";
 import {Spacer} from "Shared/Base";
 
@@ -13,12 +12,13 @@ type State = {
   loading: boolean;
 }
 
-interface NoteInspectorProps extends FlowEditorProps  {
+interface NoteInspectorProps  {
   selected_step_ids: string[];
   nodes: [];
   selectSteps: Function;
   updateStep: Function;
   deleteSteps: Function;
+  readOnly: boolean;
 }
 
 class NoteInspector extends React.Component<NoteInspectorProps, State> {
@@ -32,7 +32,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
       if(element)element.focus();
   }
 
-    getSelectedStep (): NoteStepModel {
+    getSelectedStep (): NoteStepModel | null {
       let {selected_step_ids, nodes} = this.props;
       if (Array.isArray(selected_step_ids) && selected_step_ids.length > 0) {
           return GraphUtil.getNode(nodes, selected_step_ids[0]);
@@ -131,6 +131,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
 
   render () {
     let selected_step = this.getSelectedStep();
+    if(!selected_step) return null;
     const noteTitle = selected_step.title;
     const noteContent = selected_step.content;
     const fontSize = selected_step.fontSize;

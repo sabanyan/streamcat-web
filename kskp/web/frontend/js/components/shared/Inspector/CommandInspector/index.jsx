@@ -23,6 +23,7 @@ type CommandInspectorProps = {
   updateStep: Function;
   children?: React.Node;
   sortStepSrcEnd: Function;
+  readOnly: boolean;
 }
 
 class CommandInspector extends React.Component<CommandInspectorProps> {
@@ -115,7 +116,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   }
 
   render () {
-    const {selectedStep, updateStep, sortStepSrcEnd} = this.props;
+    const {selectedStep, updateStep, sortStepSrcEnd, readOnly} = this.props;
     const {commands, subflows} = this.props.mast
     let selected_step: StepModelType = this.getSelectedStep()
     let inputForm = []
@@ -134,7 +135,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids={invalids}
+      inputForm = <ParamsForm disabled={readOnly} params={params} args={args} invalids={invalids} command={command} invalids={invalids}
                               onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
 
     } else if (selected_step.type === Constants.step.type.subflow) {
@@ -147,10 +148,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids={invalids}
+      inputForm = <ParamsForm disabled={readOnly} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
                               onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
 
-      subFlowLink = <a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
+      subFlowLink = <a disabled={readOnly} href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
     }
 
     let form
@@ -180,18 +181,20 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             onChangeInEdge={(e, data) => this.onChangeInEdge(e, data)}
             onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)} selectedStep={selected_step}
             selectedSubFlow={this.selectedSubFlow}
+            disabled={readOnly}
         />
         {form}
         <div className={style.full_hr} />
         {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
-        <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
+        <Button onClick={(e) => this.onClickDelete(e)} danger={true} disabled={readOnly}>削除</Button>
       </div>
     }
 
     // FIXIT onBlurTitle to onChange #164
     return <BaseInspector key={selected_step.id} header={''} label={label} subLabel={subLabel}
                           name={selected_step.id} onHide={() => this.onHide()}
-                          onBlurTitle={(e) => this.onBlurTitle(e)}>
+                          onBlurTitle={(e) => this.onBlurTitle(e)}
+                          disabled={readOnly}>
       {content}
     </BaseInspector>
   }

@@ -9,7 +9,6 @@ import {
 } from 'Shared/Inspector'
 import classnames from 'classnames'
 import style from '../style.scss'
-import { FlowEditorProps } from 'FlowEditorContainer/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
 import { DataFrameDetailType, MastType } from "Types/index";
@@ -37,6 +36,7 @@ type InspectorProps = {
   updateStep: Function;
   sortStepSrcEnd: Function;
   resizeInspector:Function;
+  readOnly: boolean;
 }
 
 class Inspector extends React.Component<InspectorProps> {
@@ -45,7 +45,7 @@ class Inspector extends React.Component<InspectorProps> {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, selectSteps, flow,
       updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
       loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd,
-      resizeInspector, inspector } = this.props
+      resizeInspector, inspector, readOnly } = this.props
 
     let property
 
@@ -59,6 +59,7 @@ class Inspector extends React.Component<InspectorProps> {
           flow={flow}
           updateFlow={updateFlow}
           addHistory={addHistory}
+          readOnly={readOnly}
         />
       } else {
         const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
@@ -81,6 +82,7 @@ class Inspector extends React.Component<InspectorProps> {
             deleteCache={deleteCache}
             addStep={addStep}
             updateStep={updateStep}
+            readOnly={readOnly}
           />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector
@@ -92,6 +94,7 @@ class Inspector extends React.Component<InspectorProps> {
             selectSteps={selectSteps}
             deleteSteps={deleteSteps}
             sortStepSrcEnd={sortStepSrcEnd}
+            readOnly={readOnly}
           />
         } else if (selected_step instanceof NoteStepModel) {
           property = <NoteInspector
@@ -100,6 +103,7 @@ class Inspector extends React.Component<InspectorProps> {
             selectSteps={selectSteps}
             updateStep={updateStep}
             deleteSteps={deleteSteps}
+            readOnly={readOnly}
           />
         }
       }
@@ -112,6 +116,7 @@ class Inspector extends React.Component<InspectorProps> {
         flow={flow}
         updateFlow={updateFlow}
         addHistory={addHistory}
+        readOnly={readOnly}
       />
     } else {
       property = <MultiInspector
@@ -121,7 +126,8 @@ class Inspector extends React.Component<InspectorProps> {
         mast={mast}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
-        addHistory={addHistory} />
+        addHistory={addHistory}
+        readOnly={readOnly} />
     }
 
     return <React.Fragment>
