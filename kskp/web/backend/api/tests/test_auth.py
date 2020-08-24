@@ -5,7 +5,7 @@ from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 
 class AuthTestCase(ApiTestCaseBase):
     def test_password_hash(self):
-        user = self.factory.user.create('a', 'password', 'test')
+        user = self.factory.user.create('a', 'test', 'password')
         self.assertEqual(
             user._get_password_hash('a', 'password'),
             '962c604d898bb6032131ecaca67ad70118f8c35ce31a505616cace7ea6d64a65'
@@ -44,7 +44,7 @@ class AuthTestCase(ApiTestCaseBase):
         password = '1bdae10ff4532d6bd4c23d54cae62fa4f636b19cf5e3e8f83432a90aea99f33f'
 
         with self.client.session_transaction() as session:
-            user = self.factory.user.create(email, password, name)
+            user = self.factory.user.create(email, name, password)
             bln = user.authenticate(password)
             self.assertEqual(bln, True)
 
