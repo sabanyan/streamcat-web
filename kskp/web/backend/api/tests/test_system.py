@@ -314,3 +314,30 @@ class SystemTestCase(ApiTestCaseBase):
         # 論理削除ユーザはAPI操作はできないこと
         with self.assertRaisesRegex(AssertionError, expected_regex='False is not true : GET /api/v0/library is failed. not authorized'):
             result = self.get_uri('/api/v0/library', new_user)
+
+    def test_putback_user(self):
+        """
+        論理削除Userを登録状態Userに戻す
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'inactive-user!@ksk-anl.com', 'name':'論理削除ユーザです！', 'password':'AadiemtJ89'}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # 作成したユーザを登録状態にする
+        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user.update_password('passoiuyt*')
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # ユーザを取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # 登録ユーザは論理削除されていること
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # 論理削除ユーザを登録ユーザに戻す
+        result = self.put_uri(f'/api/v0/users/{user_uuid}/undelete', {}, self.USER1)
+
+        # 登録ユーザに戻っていること
+        self.assertEqual(result['data']['state'], 'active')

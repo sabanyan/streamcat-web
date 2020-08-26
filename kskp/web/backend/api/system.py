@@ -74,6 +74,16 @@ def update_user(user_uuid):
 
     return user
 
+@mod.route('/users/<user_uuid>/undelete', methods=['PUT'])
+@login_required_api
+@api_base
+def put_back_user(user_uuid):
+    """
+    論理削除されたユーザを登録状態に戻す
+    """
+    user = g.factory.user.find_by_uuid(user_uuid)
+    return user.put_back()
+
 @mod.route('/users/<user_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
