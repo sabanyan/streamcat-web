@@ -6,6 +6,39 @@ import Constants from 'Constants/index'
 import classnames from 'classnames'
 import style from './style.scss'
 
+
+export type Element = {
+  name: string;
+  type: string;
+  label: string;
+  input_balluon?: {
+    text?: ""
+  };
+  section?: boolean;
+}
+
+export type Param = {
+  name: string;
+  type: string;
+  label: string;
+  description: string;
+  elements: Element[];
+  default: {};
+  helper: {};
+  options: {
+    labels?: string[];
+    values?: string[];
+    multiple: boolean;
+  };
+}
+
+export type Group = {
+  name: string;
+  label: string;
+  params: string[];
+  hide_background: boolean;
+}
+
 type Props = {
   params: CommandParamType[];//パラメーター定義
   groups?: [];　//パラメータのグルプ定義
