@@ -16,11 +16,13 @@ mod = Blueprint('system', __name__)
 @api_base
 def get_users():
     """
-    全てのユーザを返却する
+    全てのユーザ、またはキーワードに一致するユーザを返す
     """
-    from kskp.store.auth import Role
-    role = g.factory.role.find_by_uuid(Role.EVERYONE_ROLE_UUID)
-    return role.get_joined_users()
+    search_keyword = request.args.get('q')
+    if search_keyword is None:
+        return g.factory.user.find_all()
+    else:
+        return g.factory.user.find_by_keyword(search_keyword)
 
 @mod.route('/users/<user_uuid>', methods=['GET'])
 @login_required_api
@@ -77,10 +79,11 @@ def update_user(user_uuid):
 @api_base
 def delete_user(user_uuid):
     """
-    ユーザを削除する
+    登録ユーザを論理削除する
+    (仮登録ユーザは物理削除する)
     """
     user = g.factory.user.find_by_uuid(user_uuid)
-    user.delete()
+    user.throw_away()
 
 # 
 # Role
