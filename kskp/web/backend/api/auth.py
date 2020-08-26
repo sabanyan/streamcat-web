@@ -111,6 +111,9 @@ def login_required_api(func):
                 user = factory.find_user_by_id(session['user_id'])
                 if user is None:
                     raise Exception('user is None !')
+                elif user.is_inactive:
+                    # ログインページを返す
+                    return jsonify({'success': False, 'message': 'not authorized'}) 
                 elif user.is_temp:
                     # 本パスワード登録画面に遷移する
                     session['signup_email'] = user.email
