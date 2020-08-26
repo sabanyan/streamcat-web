@@ -1,72 +1,76 @@
 import React from 'react'
+import { Tooltip } from '@material-ui/core';
 import { CommandParamType } from 'Types/index'
 import Constants from 'Constants/index'
 import style from './style.scss'
 
 type Props = {
-  label?      :string;
-  param       :CommandParamType;
-  disabled?   :boolean;
-  value?      :string;
-  
+  label?: string;
+  param: CommandParamType;
+  disabled?: boolean;
+  value?: string;
+
   // event
-  onChange?   :Function; // onChange(e, param)
+  onChange?: Function; // onChange(e, param)
 }
 
 export default class ParamString extends React.Component<Props> {
-  constructor (props: Props) {
+  constructor(props: Props) {
     super(props)
   }
 
   onChange(e) {
     try {
-        const {param, onChange} = this.props
-        let value = e.currentTarget.value
-        // ParamNumber 対応
-        if (param.type === Constants.param.type.number && value !== '') value = parseInt(value) 
-        if (!value) value = ""
-        if (onChange) onChange(e, param, value)
-    } catch(e) {
-        console.log(e)
+      const { param, onChange } = this.props
+      let value = e.currentTarget.value
+      // ParamNumber 対応
+      if (param.type === Constants.param.type.number && value !== '') value = parseInt(value)
+      if (!value) value = ""
+      if (onChange) onChange(e, param, value)
+    } catch (e) {
+      console.log(e)
     }
   }
 
   renderDescription() {
     let result = undefined
     try {
-      const {param} = this.props
+      const { param } = this.props
       if (param.description) {
         result = param.description
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
 
     return <p className={style.description}>
       {result}
     </p>
-  }  
+  }
 
   //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
-  render () {
-    const {label,param, disabled, value} = this.props
-    const {onChange} = this.props
+  render() {
+    const { label, param, disabled, value } = this.props
+    const { onChange } = this.props
 
     let isDisabled = (disabled) ? true : false
-    let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : null
+    let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : <React.Fragment></React.Fragment>
     let currentValue = (value) ? value : ""
 
     return <div className={style.param}>
-      {labelContainer}
-      <input 
+      <Tooltip title="Add">
+        <label>ggggg</label>
+      </Tooltip>
+
+      <input
         name={param.name}
-        type="text" 
-        className="form-control" 
+        type="text"
+        className="form-control"
         data-paramtype={param.type}
-        placeholder={param.name} 
+        placeholder={param.name}
         value={currentValue}
         disabled={isDisabled}
-        onChange={(e) => this.onChange(e)}>  
+        onChange={(e) => this.onChange(e)}>
       </input>
     </div>
   }
