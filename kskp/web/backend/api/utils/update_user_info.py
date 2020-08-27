@@ -1,0 +1,52 @@
+import json
+import functools
+from flask import request, jsonify, g
+
+def update_user_info(func):
+    @functools.wraps(func)
+    def deco(**kwargs):
+        # 所属ロールの情報を含めるか否か
+        update_roles = request.args.get('roles') == 'on'
+
+        # 所属プロジェクトの情報を含めるか否か
+        update_projects = request.args.get('projects') == 'on'
+
+        # デコレート対象関数の呼び出し
+        result = json.loads(func(**kwargs).data.decode())
+        user_data = result['data']
+
+        # User JSONに情報を追加する
+        _update_user_info_inner(user_data, update_roles, update_projects)
+
+        return jsonify(result)
+    return deco
+
+def update_users_info(func):
+    @functools.wraps(func)
+    def deco(**kwargs):
+        # 所属ロールの情報を含めるか否か
+        update_roles = request.args.get('roles') == 'on'
+
+        # 所属プロジェクトの情報を含めるか否か
+        update_projects = request.args.get('projects') == 'on'
+
+        # デコレート対象関数の呼び出し
+        results = json.loads(func(**kwargs).data.decode())
+
+        # User JSONに情報を追加する
+        for user_data in results['data']:
+            _update_user_info_inner(user_data, update_roles, update_projects)
+
+        return jsonify(results)
+    return deco
+
+def _update_user_info_inner(user_data, update_roles, update_projects):
+    if update_roles:
+        user = g.factory.user.find_by_uuid(user_data['uuid'])
+        joined_roles = g.factory.role.find_by_user_id(user.id)
+        user_data.update({'roles' : joined_roles})
+    if update_projects:
+        # user = g.factory.user.find_by_uuid(user_data['uuid'])
+        # user_data.update({'projects' : user.joined_projects()})
+        pass
+    return user_data
