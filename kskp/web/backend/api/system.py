@@ -4,7 +4,7 @@
 
 from flask import Blueprint, request, g
 from .auth import login_required_api
-from .utils import api_base, RequestJson
+from .utils import api_base, RequestJson, update_user_info, update_users_info
 mod = Blueprint('system', __name__)
 
 # 
@@ -13,6 +13,7 @@ mod = Blueprint('system', __name__)
 
 @mod.route('/users', methods=['GET'])
 @login_required_api
+@update_users_info
 @api_base
 def get_users():
     """
@@ -26,6 +27,7 @@ def get_users():
 
 @mod.route('/users/<user_uuid>', methods=['GET'])
 @login_required_api
+@update_user_info
 @api_base
 def get_user(user_uuid):
     """

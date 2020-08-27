@@ -1,13 +1,28 @@
 import unittest
-import os
-import json
 import pprint
-from pathlib import Path
-
-from kskp.web.backend import app
 from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from kskp.store.auth import Role
 
 class SystemTestCase(ApiTestCaseBase):
+
+    expected_everyone = {
+        "uuid": Role.EVERYONE_ROLE_UUID,
+        "name": Role.EVERYONE_ROLE_LABEL,
+        "systemRole": Role.EVERYONE_ROLE_LABEL
+    }
+
+    expected_sys_admin = {
+        "uuid": Role.SYS_ADMIN_ROLE_UUID,
+        "name": Role.SYS_ADMIN_ROLE_LABEL,
+        "systemRole": Role.SYS_ADMIN_ROLE_LABEL
+    }
+
+    expected_usr_admin = {
+        "uuid": Role.USR_ADMIN_ROLE_UUID,
+        "name": Role.USR_ADMIN_ROLE_LABEL,
+        "systemRole": Role.USR_ADMIN_ROLE_LABEL
+    }
+
     def test_create_get_delete_user(self):
         """
         Userの作成・取得・削除を検証する
@@ -24,7 +39,8 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'abc@def.com')
         self.assertEqual(result['data']['name'], 'テストです')
         self.assertEqual(result['data']['state'], 'tmp')
-        self.assertEqual(result['data']['systemRoles'], {'SYS_ADMIN':False,'USR_ADMIN':False})
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertEqual(result['data']['password'], 'abcアウアウ')
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
@@ -62,7 +78,8 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], expected['email'])
         self.assertEqual(result['data']['name'], expected['name'])
         self.assertEqual(result['data']['state'], 'active')
-        self.assertEqual(result['data']['systemRoles'], {'SYS_ADMIN':False,'USR_ADMIN':False})
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
@@ -77,7 +94,8 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], expected['email'])
         self.assertEqual(result['data']['name'], expected['name'])
         self.assertEqual(result['data']['state'], 'inactive')
-        self.assertEqual(result['data']['systemRoles'], {'SYS_ADMIN':False,'USR_ADMIN':False})
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
@@ -99,7 +117,8 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'def@def.com')
         self.assertEqual(result['data']['name'], 'テストですよ')
         self.assertEqual(result['data']['state'], 'tmp')
-        self.assertEqual(result['data']['systemRoles'], {'SYS_ADMIN':False,'USR_ADMIN':False})
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertIsInstance(result['data']['password'], str)
         self.assertEqual(len(result['data']['password']), 8)
@@ -129,7 +148,8 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'ghi@def.com')
         self.assertEqual(result['data']['name'], 'テストですよっと')
         self.assertEqual(result['data']['state'], 'tmp')
-        self.assertEqual(result['data']['systemRoles'], {'SYS_ADMIN':False,'USR_ADMIN':False})
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertNotEqual(result['data']['password'], 'アイウエオ')
         self.assertIsInstance(result['data']['password'], str)
@@ -170,27 +190,49 @@ class SystemTestCase(ApiTestCaseBase):
         管理者Userを取得する
         """
         # システム管理者を取得する
-        result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}', self.USER1)
+        result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
         self.assertEqual(result['data']['email'], 'Admin@kskp.io')
         self.assertEqual(result['data']['name'], 'システム管理者')
         self.assertEqual(result['data']['state'], 'active')
-        self.assertEqual(result['data']['systemRoles'], {'SYS_ADMIN':True,'USR_ADMIN':False})
+        # EveryOneロール
+        self.assertIn(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
+        self.assertIn(result['data']['roles'][0]['name'], self.expected_everyone['name'])
+        self.assertIn(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][0]['creator'])
+        self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
+        # システム管理者ロール
+        self.assertIn(result['data']['roles'][1]['uuid'], self.expected_sys_admin['uuid'])
+        self.assertIn(result['data']['roles'][1]['name'], self.expected_sys_admin['name'])
+        self.assertIn(result['data']['roles'][1]['systemRole'], self.expected_sys_admin['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][1]['creator'])
+        self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザ管理者を取得する
-        result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}', self.USER1)
+        result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', self.USER1)
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
         self.assertEqual(result['data']['email'], 'admin@kskp.io')
         self.assertEqual(result['data']['name'], 'ユーザ管理者')
         self.assertEqual(result['data']['state'], 'active')
-        self.assertEqual(result['data']['systemRoles'], {'SYS_ADMIN':False,'USR_ADMIN':True})
+        # EveryOneロール
+        self.assertIn(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
+        self.assertIn(result['data']['roles'][0]['name'], self.expected_everyone['name'])
+        self.assertIn(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][0]['creator'])
+        self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
+        # システム管理者ロール
+        self.assertIn(result['data']['roles'][1]['uuid'], self.expected_usr_admin['uuid'])
+        self.assertIn(result['data']['roles'][1]['name'], self.expected_usr_admin['name'])
+        self.assertIn(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][1]['creator'])
+        self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
