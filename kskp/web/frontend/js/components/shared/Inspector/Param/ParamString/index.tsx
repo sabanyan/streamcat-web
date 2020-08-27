@@ -48,19 +48,28 @@ export default class ParamString extends React.Component<Props> {
     </p>
   }
 
+  renderLabel() {
+    const { label, param, disabled, value } = this.props
+
+    if (param.description) {
+      return <Tooltip title={param.description} placement="top-start">
+        <label>{label}</label>
+      </Tooltip>
+    } else {
+      return <label>{label}</label>
+    }
+  }
+
   //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
   render() {
     const { label, param, disabled, value } = this.props
     const { onChange } = this.props
 
     let isDisabled = (disabled) ? true : false
-    let labelContainer = (label) ? <React.Fragment><label>{label}</label>{this.renderDescription()}</React.Fragment> : <React.Fragment></React.Fragment>
     let currentValue = (value) ? value : ""
 
     return <div className={style.param}>
-      <Tooltip title="Add">
-        <label>ggggg</label>
-      </Tooltip>
+      {this.renderLabel()}
 
       <input
         name={param.name}
