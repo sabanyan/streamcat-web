@@ -108,11 +108,15 @@ def login_required_api(func):
         if 'user_id' in session:
             # Userオブジェクトをflask.gに設定する
             with UnAuthzFactory() as factory:
-                user = factory.find_user_by_id(session['user_id'])
-                if user is None:
-                    raise Exception('user is None !')
-                elif user.is_inactive:
+                try:
+                    user = factory.find_user_by_id(session['user_id'])
+                except Exception:
+                    # 存在しないuser_idはSessonから削除する
+                    session.clear()
                     # ログインページを返す
+                    return render_template('login.html')
+                if user.is_inactive:
+                    # 認証エラー
                     return jsonify({'success': False, 'message': 'not authorized'}) 
                 elif user.is_temp:
                     # 本パスワード登録画面に遷移する
@@ -126,7 +130,7 @@ def login_required_api(func):
                 g.factory = factory
                 return func(**kwargs)
         else:
-            # ログインページを返す
+            # 認証エラー
             return jsonify({'success': False, 'message': 'not authorized'})
     return deco
 
