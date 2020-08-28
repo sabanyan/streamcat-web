@@ -4,7 +4,7 @@
 
 from flask import Blueprint, request, g
 from .auth import login_required_api
-from .utils import api_base, RequestJson
+from .utils import api_base, RequestJson, update_user_info, update_users_info
 mod = Blueprint('system', __name__)
 
 # 
@@ -13,17 +13,21 @@ mod = Blueprint('system', __name__)
 
 @mod.route('/users', methods=['GET'])
 @login_required_api
+@update_users_info
 @api_base
 def get_users():
     """
-    全てのユーザを返却する
+    全てのユーザ、またはキーワードに一致するユーザを返す
     """
-    from kskp.store.auth import Role
-    role = g.factory.role.find_by_uuid(Role.EVERYONE_ROLE_UUID)
-    return role.get_joined_users()
+    search_keyword = request.args.get('q')
+    if search_keyword is None:
+        return g.factory.user.find_all()
+    else:
+        return g.factory.user.find_by_keyword(search_keyword)
 
 @mod.route('/users/<user_uuid>', methods=['GET'])
 @login_required_api
+@update_user_info
 @api_base
 def get_user(user_uuid):
     """
@@ -42,8 +46,8 @@ def make_new_user():
     if not req.has_all('email', 'name'):
         raise Exception('email,name属性を指定してください')
 
-    # TODO: 仮パスワードは自動生成して返すか？
-    new_user = g.factory.user.create(email=req['email'], name=req['name'])
+    # passwordの指定がなければ自動生成する
+    new_user = g.factory.user.create(email=req['email'], name=req['name'], password=req.get('password'))
     new_user.save()
     return new_user
 
@@ -53,10 +57,10 @@ def make_new_user():
 def update_user(user_uuid):
     """
     ユーザを修正する
-    TODO: パスワードリセットはどう実装する？
+    'password':Noneの場合はパスワードを自動生成する
     """
     req = RequestJson(request.json)
-    if req.has_no_all('email', 'name', 'password'):
+    if req.has_no_all('email', 'name') and not req.isnull('password') and not req.has('password'):
         raise Exception('email,nameまたはpassword属性を指定してください')
 
     user = g.factory.user.find_by_uuid(user_uuid)
@@ -64,21 +68,34 @@ def update_user(user_uuid):
     if req.has('email'):
         user = user.update_email(req['email'])
     if req.has('name'):
-        user = user.update_name(req['name'])        
+        user = user.update_name(req['name'])
     if req.has('password'):
         user = user.update_password(req['password'])
+    elif req.isnull('password'):
+        user = user.reset_password()
 
     return user
+
+@mod.route('/users/<user_uuid>/undelete', methods=['PUT'])
+@login_required_api
+@api_base
+def put_back_user(user_uuid):
+    """
+    論理削除されたユーザを登録状態に戻す
+    """
+    user = g.factory.user.find_by_uuid(user_uuid)
+    return user.put_back()
 
 @mod.route('/users/<user_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
 def delete_user(user_uuid):
     """
-    ユーザを削除する
+    登録ユーザを論理削除する
+    (仮登録ユーザは物理削除する)
     """
     user = g.factory.user.find_by_uuid(user_uuid)
-    user.delete()
+    user.throw_away()
 
 # 
 # Role
@@ -213,6 +230,8 @@ def delete_member():
 # 
 # Auth
 # 
+
+# -> 権限情報は、projects APIで取得・設定するようにする
 
 @mod.route('/auths', methods=['GET'])
 @login_required_api
