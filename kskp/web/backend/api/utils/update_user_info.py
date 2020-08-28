@@ -13,10 +13,11 @@ def update_user_info(func):
 
         # デコレート対象関数の呼び出し
         result = json.loads(func(**kwargs).data.decode())
-        user_data = result['data']
 
-        # User JSONに情報を追加する
-        _update_user_info_inner(user_data, update_roles, update_projects)
+        if result['success']:
+            user_data = result['data']
+            # User JSONに情報を追加する
+            _update_user_info_inner(user_data, update_roles, update_projects)
 
         return jsonify(result)
     return deco
@@ -33,9 +34,10 @@ def update_users_info(func):
         # デコレート対象関数の呼び出し
         results = json.loads(func(**kwargs).data.decode())
 
-        # User JSONに情報を追加する
-        for user_data in results['data']:
-            _update_user_info_inner(user_data, update_roles, update_projects)
+        if results['success']:
+            # User JSONに情報を追加する
+            for user_data in results['data']:
+                _update_user_info_inner(user_data, update_roles, update_projects)
 
         return jsonify(results)
     return deco

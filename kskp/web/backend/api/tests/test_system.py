@@ -383,3 +383,11 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 登録ユーザに戻っていること
         self.assertEqual(result['data']['state'], 'active')
+
+    def test_get_no_uer(self):
+        """
+        存在しないUserを取得しようとすると例外を送出する
+        """
+        with self.assertRaises(Exception):
+            unkown_user_id = '00000000-0000-0000-0000-000000000000'
+            self.get_uri(f'/api/v0/users/{unkown_user_id}', self.USER1)
