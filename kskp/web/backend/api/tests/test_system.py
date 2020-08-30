@@ -1,5 +1,6 @@
 import unittest
 import pprint
+from kskp.core.datum import Datum
 from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 from kskp.store.auth import Role
 
@@ -198,17 +199,23 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'システム管理者')
         self.assertEqual(result['data']['state'], 'active')
         # EveryOneロール
-        self.assertIn(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
-        self.assertIn(result['data']['roles'][0]['name'], self.expected_everyone['name'])
-        self.assertIn(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
         self.assertIsNotNone(result['data']['roles'][0]['creator'])
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
         # システム管理者ロール
-        self.assertIn(result['data']['roles'][1]['uuid'], self.expected_sys_admin['uuid'])
-        self.assertIn(result['data']['roles'][1]['name'], self.expected_sys_admin['name'])
-        self.assertIn(result['data']['roles'][1]['systemRole'], self.expected_sys_admin['systemRole'])
+        self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_sys_admin['uuid'])
+        self.assertEqual(result['data']['roles'][1]['name'], self.expected_sys_admin['name'])
+        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_sys_admin['systemRole'])
         self.assertIsNotNone(result['data']['roles'][1]['creator'])
         self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
+        # 本人ロール
+        self.assertIsNotNone(result['data']['roles'][2]['uuid'])
+        self.assertEqual(result['data']['roles'][2]['name'], 'システム管理者')
+        self.assertEqual(result['data']['roles'][2]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][2]['creator'])
+        self.assertIsNotNone(result['data']['roles'][2]['createdAt'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
@@ -222,20 +229,63 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'ユーザ管理者')
         self.assertEqual(result['data']['state'], 'active')
         # EveryOneロール
-        self.assertIn(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
-        self.assertIn(result['data']['roles'][0]['name'], self.expected_everyone['name'])
-        self.assertIn(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
         self.assertIsNotNone(result['data']['roles'][0]['creator'])
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
         # システム管理者ロール
-        self.assertIn(result['data']['roles'][1]['uuid'], self.expected_usr_admin['uuid'])
-        self.assertIn(result['data']['roles'][1]['name'], self.expected_usr_admin['name'])
-        self.assertIn(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
+        self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_usr_admin['uuid'])
+        self.assertEqual(result['data']['roles'][1]['name'], self.expected_usr_admin['name'])
+        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
         self.assertIsNotNone(result['data']['roles'][1]['creator'])
         self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
+
+    def test_get_usr_with_projects(self):
+        """
+        Userの所属プロジェクトを取得する
+        """
+        # ROOTを取得する
+        flow_folder = self.factory.data.load_flow_folder()
+
+        # プロジェクトを作成する
+        data = {'parent': flow_folder.uuid,
+                'label' : 'プロジェクトX'}
+        self.post_uri('/api/v0/projects', data, self.USER2)
+
+        # プロジェクトを作成する
+        data = {'parent': flow_folder.uuid,
+                'label' : 'プロジェクトY'}
+        self.post_uri('/api/v0/projects', data, self.USER2)
+
+        # プロジェクト管理者を取得する
+        result = self.get_uri(f'/api/v0/users/{self.USER2.uuid}?projects=on', self.USER3)
+
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'test@kskp.io')
+        self.assertEqual(result['data']['name'], 'Test')
+        self.assertEqual(result['data']['state'], 'active')
+        # プロジェクトX
+        self.assertIsNotNone(result['data']['projects'][0]['uuid'])
+        self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['data']['projects'][0]['label'], 'プロジェクトX')
+        self.assertTrue(result['data']['projects'][0]['readable'])
+        self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
+        self.assertIsNotNone(result['data']['projects'][0]['creator'])
+        self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
+        # プロジェクトY
+        self.assertIsNotNone(result['data']['projects'][1]['uuid'])
+        self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトY')
+        self.assertTrue(result['data']['projects'][1]['readable'])
+        self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
+        self.assertIsNotNone(result['data']['projects'][1]['creator'])
+        self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
+
 
     def test_search_user(self):
         """
@@ -391,3 +441,118 @@ class SystemTestCase(ApiTestCaseBase):
         with self.assertRaises(Exception):
             unkown_user_id = '00000000-0000-0000-0000-000000000000'
             self.get_uri(f'/api/v0/users/{unkown_user_id}', self.USER1)
+
+    #
+    # Roles
+    #
+
+    def test_create_get_delete_role(self):
+        """
+        Roleの作成・取得・削除を検証する
+        """
+        # ロールを作成する
+        result = self.post_uri('/api/v0/roles', {'name':'テストロール'}, self.USER1)
+        role_uuid = result['data']['uuid']
+
+        # ロールを取得する
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}', self.USER1)
+
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['name'], 'テストロール')
+        self.assertEqual(result['data']['systemRole'], '')
+        self.assertNotIn('users', result['data'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # ロールを削除する
+        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER1)
+
+        # ロールは物理削除されていること
+        with self.assertRaises(Exception):
+            self.factory.role.find_by_uuid(role_uuid)
+
+    def test_update_role_by_self(self):
+        """
+        Role情報を変更する
+        """
+        # ロールを作成する
+        result = self.post_uri('/api/v0/roles', {'name':'テストロールです'}, self.USER1)
+        role_uuid = result['data']['uuid']
+
+        # ロール情報を変更する
+        result = self.put_uri(f'/api/v0/roles/{role_uuid}', {'name':'ロールケーキ'}, self.USER1)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], role_uuid)
+        self.assertEqual(result['data']['name'], 'ロールケーキ')
+        self.assertEqual(result['data']['systemRole'], '')
+        self.assertNotIn('users', result['data'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # ロールを削除する
+        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER1)
+
+    def test_get_all_role(self):
+        """
+        全てのRoleを取得する
+        """
+        # ロールを作成する
+        result = self.post_uri('/api/v0/roles', {'name':'テストロールですよっと'}, self.USER2)
+        role_uuid = result['data']['uuid']
+
+        # ロールを検索する
+        results = self.get_uri(f'/api/v0/roles', self.USER2)
+
+        # 一件以上のロールが取得できることを確認する
+        self.assertTrue(len(results) > 0)
+        
+        # ロールを削除する
+        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER2)
+
+        # ロールは物理削除されていること
+        with self.assertRaises(Exception):
+            self.factory.role.find_by_uuid(role_uuid)
+
+    def test_join_leave_user_to_role(self):
+        """
+        Roleの所属ユーザを取得する
+        """
+        # ロールを作成する
+        result = self.post_uri('/api/v0/roles', {'name':'にゃーお'}, self.USER0)
+        role_uuid = result['data']['uuid']
+
+        # ユーザを参加させる
+        result = self.put_uri(f'/api/v0/roles/{role_uuid}/users/{self.USER2.uuid}', {}, self.USER0)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], role_uuid)
+        self.assertEqual(result['data']['name'], 'にゃーお')
+        self.assertEqual(result['data']['systemRole'], '')
+        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        # 参加ユーザ
+        self.assertEqual(len(result['data']['users']), 1)
+        self.assertEqual(result['data']['users'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['users'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['users'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['users'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['users'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['users'][0]['createdAt'], self.USER2.created_at_str)
+
+        # ユーザを脱退させる
+        result = self.delete_uri(f'/api/v0/roles/{role_uuid}/users/{self.USER2.uuid}', self.USER0)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+
+        # 参加ユーザがいないことを確認する
+        self.assertEqual(len(result['data']['users']), 0)
+
+        # ロールを削除する
+        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER0)
+
