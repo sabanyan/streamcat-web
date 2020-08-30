@@ -43,12 +43,12 @@ def update_users_info(func):
     return deco
 
 def _update_user_info_inner(user_data, update_roles, update_projects):
+    user = None
     if update_roles:
         user = g.factory.user.find_by_uuid(user_data['uuid'])
-        joined_roles = g.factory.role.find_by_user_id(user.id)
-        user_data.update({'roles' : joined_roles})
+        user_data.update({'roles' : user.get_joined_roles()})
     if update_projects:
-        # user = g.factory.user.find_by_uuid(user_data['uuid'])
-        # user_data.update({'projects' : user.joined_projects()})
-        pass
+        # 少なくとも1つの権限を有するプロジェクトを所属プロジェクトとする
+        user = user or g.factory.user.find_by_uuid(user_data['uuid'])
+        user_data.update({'projects' : user.get_joined_projects()})
     return user_data
