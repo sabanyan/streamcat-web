@@ -13,7 +13,7 @@ def update_role_info(func):
 
         if result['success']:
             role_data = result['data']
-            # User JSONに情報を追加する
+            # Role JSONに情報を追加する
             _update_role_info_inner(role_data, update_users)
 
         return jsonify(result)
@@ -29,7 +29,7 @@ def update_roles_info(func):
         results = json.loads(func(**kwargs).data.decode())
 
         if results['success']:
-            # User JSONに情報を追加する
+            # Role JSONに情報を追加する
             for role_data in results['data']:
                 _update_role_info_inner(role_data, update_users)
 

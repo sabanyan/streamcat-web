@@ -249,15 +249,15 @@ class SystemTestCase(ApiTestCaseBase):
         Userの所属プロジェクトを取得する
         """
         # ROOTを取得する
-        flow_folder = self.factory.data.load_flow_folder()
+        root = self.factory.data.load_root()
 
         # プロジェクトを作成する
-        data = {'parent': flow_folder.uuid,
+        data = {'parent': root.uuid,
                 'label' : 'プロジェクトX'}
         self.post_uri('/api/v0/projects', data, self.USER2)
 
         # プロジェクトを作成する
-        data = {'parent': flow_folder.uuid,
+        data = {'parent': root.uuid,
                 'label' : 'プロジェクトY'}
         self.post_uri('/api/v0/projects', data, self.USER2)
 
@@ -517,7 +517,7 @@ class SystemTestCase(ApiTestCaseBase):
 
     def test_join_leave_user_to_role(self):
         """
-        Roleの所属ユーザを取得する
+        Roleにユーザを参加・脱退させる
         """
         # ロールを作成する
         result = self.post_uri('/api/v0/roles', {'name':'にゃーお'}, self.USER0)
@@ -555,4 +555,181 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ロールを削除する
         self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER0)
+
+    def test_join_leave_user_to_role2(self):
+        """
+        Roleにユーザを参加・脱退させる
+        (PUT /roles を用いる)
+        """
+        # ロールを作成する
+        result = self.post_uri('/api/v0/roles', {'name':'チュール🐱'}, self.USER0)
+        role_uuid = result['data']['uuid']
+
+        # ユーザを参加させる
+        data = {
+            'name'   : 'ちゃおちゅーる🐈',
+            'users': [self.USER2.uuid, self.USER3.uuid]
+        }
+        result = self.put_uri(f'/api/v0/roles/{role_uuid}', data, self.USER0)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], role_uuid)
+        self.assertEqual(result['data']['name'], 'ちゃおちゅーる🐈')
+        self.assertEqual(result['data']['systemRole'], '')
+        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        # 参加ユーザ(USER2)
+        self.assertEqual(len(result['data']['users']), 2)
+        self.assertEqual(result['data']['users'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['users'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['users'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['users'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['users'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['users'][0]['createdAt'], self.USER2.created_at_str)
+        # 参加ユーザ(USER3)
+        self.assertEqual(result['data']['users'][1]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['users'][1]['email'], self.USER3.email)
+        self.assertEqual(result['data']['users'][1]['name'], self.USER3.name)
+        self.assertEqual(result['data']['users'][1]['state'], self.USER3.state)
+        self.assertEqual(result['data']['users'][1]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['users'][1]['createdAt'], self.USER3.created_at_str)
+
+        # ユーザを脱退させる
+        data = {
+            'users': []
+        }
+        result = self.put_uri(f'/api/v0/roles/{role_uuid}', data, self.USER0)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+
+        # 参加ユーザがいないことを確認する
+        self.assertEqual(len(result['data']['users']), 0)
+
+        # ロールを削除する
+        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER0)
+
+    # 
+    # Projects
+    # 
+
+    def test_join_leave_user_to_project(self):
+        """
+        Projectにユーザを参加・脱退させる
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトだよ'}, self.USER0)
+        project_uuid = result['data']['uuid']
+
+        # ユーザを参加させる
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Reader'}, self.USER0)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER0)
+
+        # 
+        # TODO: 現在はDatum作成時にeveryoneに権限を与えているのでエラーになる
+        # 
+        print(result)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project_uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], 'プロジェクトだよ')
+        self.assertEqual(result['data']['children'], [])
+        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        # 参加ユーザ
+        self.assertEqual(len(result['data']['members']), 1)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(result['data']['members'][0]['type'], 'Reader')
+
+        # ユーザを脱退させる
+        result = self.delete_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', self.USER0)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER0)
+
+        # 参加ユーザがいないことを確認する
+        self.assertEqual(len(result['data']['members']), 0)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER0)
+
+    def test_join_leave_user_to_project2(self):
+        """
+        Projectにユーザを参加・脱退させる
+        (PUT /projects を用いる)
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトですよ'}, self.USER0)
+        project_uuid = result['data']['uuid']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER0)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+        
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project_uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], 'プロジェクトですよ')
+        self.assertEqual(result['data']['children'], [])
+        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        # 参加ユーザ(USER2)
+        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(result['data']['members'][0]['type'], 'Owner')
+        # 参加ユーザ(USER3)
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER3.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
+
+        # ユーザを脱退させる
+        data = {
+            'members': [{'uuid' : self.USER3.uuid, 'type': 'Owner'}]
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+
+        # 参加ユーザは1人である
+        self.assertEqual(len(result['data']['members']), 1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
 
