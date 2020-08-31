@@ -152,11 +152,22 @@ def update_role(role_uuid):
     ロールを修正する
     """
     req = RequestJson(request.json)
-    if req.has_no_all('name'):
-        raise Exception('name属性を指定してください')
+    if req.has_no_all('name', 'users'):
+        raise Exception('nameまたはusers属性を指定してください')
 
     role = g.factory.role.find_by_uuid(role_uuid)
-    role = role.update_name(req['name'])        
+
+    # ロール名を変更する
+    if req.has('name'):
+        role = role.update_name(req['name'])
+
+    # ロールにユーザを追加・削除する
+    if req.has('users'):
+        if not isinstance(req['users'], list):
+            raise Exception('users属性にはユーザuuidの配列を指定してください')
+        # users属性で指定されたユーザを追加する
+        users = [g.factory.user.find_by_uuid(user_uuid) for user_uuid in req['users']]
+        role.init_users(users)
 
     return role
 
@@ -171,7 +182,7 @@ def delete_role(role_uuid):
     role.delete()
 
 #
-# Role-Member
+# Role-User
 #
 
 @mod.route('/roles/<role_uuid>/users/<user_uuid>', methods=['PUT'])
@@ -200,17 +211,6 @@ def leave_user_outof_role(role_uuid, user_uuid):
 # Project-Member
 # 
 
-@mod.route('/projects/<project_uuid>/users', methods=['GET'])
-@login_required_api
-@api_base
-def get_users_in_project(role_uuid):
-    """
-    プロジェクトに参加する全てのユーザを返却する
-    -> GET /projects/<project_uuid>?users=on にて行う
-    """
-    role = g.factory.role.find_by_uuid(role_uuid)
-    return role.get_joined_users()
-
 @mod.route('/projects/<project_uuid>/users/<user_uuid>', methods=['PUT'])
 @login_required_api
 @api_base
@@ -219,6 +219,7 @@ def join_user_to_project(project_uuid, user_uuid):
     プロジェクトにユーザを追加する
     """
     from kskp.core import Datum
+    from kskp.store import ProjectFolder
 
     req = RequestJson(request.json)
     if not req.has_all('memberType'):
@@ -226,16 +227,8 @@ def join_user_to_project(project_uuid, user_uuid):
 
     project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
     user = g.factory.user.find_by_uuid(user_uuid)
-    self_role = user.load_self_role()
-    
-    if req['memberType'] == 'Reader':
-        self_role.init_authz(project.id, read=True, write=None)
-    elif req['memberType'] == 'Writer':
-        self_role.init_authz(project.id, read=True, write=True, exec=True)
-    elif req['memberType'] == 'Owner':
-        self_role.init_authz(project.id, read=True, write=True, exec=True, own=True)
-    else:
-        raise Exception('memberTypeの値が誤っています')
+    member = ProjectFolder.Member(user, req['memberType'])
+    project.join_member(member)
 
 @mod.route('/projects/<project_uuid>/users/<user_uuid>', methods=['DELETE'])
 @login_required_api
@@ -247,5 +240,4 @@ def leave_user_outof_project(project_uuid, user_uuid):
     from kskp.core import Datum
     project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
     user = g.factory.user.find_by_uuid(user_uuid)
-    self_role = user.load_self_role()
-    self_role.clear_authz(project.id)
+    project.leave_member(user)

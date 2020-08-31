@@ -1,28 +1,21 @@
-# TODO: 実装を進めていって、使い始めたものからコメントアウトしていく
 import os
 from flask import Blueprint, request, jsonify, g
 from .auth import login_required_api
-from .utils.navigation import update_navigation
-from .utils import api_base, lock_required
-from kskp.store import *
-from kskp.web.backend import app
+from .utils import (
+    api_base,
+    lock_required,
+    update_navigation,
+    update_project_info,
+    RequestJson
+)
+from kskp.store import (
+    Datum,
+    Folder,
+    ProjectFolder
+)
+# from kskp.store import *
 
 mod = Blueprint('api', __name__)
-
-@mod.route('/projects', methods=['POST'])
-@login_required_api
-@api_base
-def new_project():
-    """
-    プロジェクトを作成する
-    """
-    if 'parent' not in request.json:
-        raise Exception('parent属性を指定してください')
-
-    parent = g.factory.data.find_by_uuid(request.json['parent'])
-    new_project = parent.create_project_folder(request.json['label'])
-    new_project.save()
-    return new_project
 
 @mod.route('/projects')
 @login_required_api
@@ -52,6 +45,7 @@ def get_projects():
 @mod.route('/projects/<project_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_project_info
 @api_base
 def fetch_project(project_uuid):
     """
@@ -60,6 +54,61 @@ def fetch_project(project_uuid):
     from .lib import _jsonify_folder
     project = g.factory.data.find_by_uuid(project_uuid)
     return _jsonify_folder(project)
+
+@mod.route('/projects', methods=['POST'])
+@login_required_api
+@api_base
+def new_project():
+    """
+    プロジェクトを作成する
+    """
+    if 'parent' not in request.json:
+        raise Exception('parent属性を指定してください')
+
+    parent = g.factory.data.find_by_uuid(request.json['parent'])
+    new_project = parent.create_project_folder(request.json['label'])
+    new_project.save()
+    return new_project
+
+@mod.route('/projects/<project_uuid>', methods=['PUT'])
+@login_required_api
+@update_navigation
+@api_base
+def update_project(project_uuid):
+    """
+    プロジェクトのラベルを修正する、またはプロジェクトを移動する
+    """
+    req = RequestJson(request.json)
+
+    if req.has_no_all('parent', 'label', 'members'):
+        raise Exception('label,parentまたはmembers属性を指定してください')
+    elif req.has_all('parent', 'label', 'members'):
+        raise Exception('label,parentとmembers属性は同時に指定できません')
+
+    project = g.factory.data.find_by_uuid(project_uuid)
+
+    if req.has('label'):
+        # プロジェクトのラベルを修正する
+        return project.update_data(req['label'])
+    elif req.has('parent'):
+        # プロジェクトを移動する
+        return project.move(req['parent'])
+
+    elif req.has('members'):
+        # ロールにユーザを追加・削除する
+        if not isinstance(req['members'], list):
+            raise Exception('members属性にはユーザuuidの配列を指定してください')
+        # member属性からMembersオブジェクトを作成する
+        members = []
+        for member_dict in req['members']:
+            user = g.factory.user.find_by_uuid(member_dict['uuid'])
+            type = member_dict['type']
+            members.append(ProjectFolder.Member(user, type))
+        # member属性で指定されたユーザを追加する
+        project.init_members(members)
+        return project
+    else:
+        raise Exception('誤った引数が指定されました')
 
 @mod.route('/projects/<project_uuid>', methods=['DELETE'])
 @login_required_api
@@ -70,33 +119,6 @@ def throw_away_project(project_uuid):
     """
     project = g.factory.data.find_by_uuid(project_uuid)
     project.throw_away()
-
-@mod.route('/projects/<project_uuid>', methods=['PUT'])
-@login_required_api
-@update_navigation
-@api_base
-def update_project(project_uuid):
-    """
-    プロジェクトのラベルを修正する、またはプロジェクトを移動する
-    """
-    if ('label'  not in request.json or request.json['label']  == '') and \
-       ('parent' not in request.json or request.json['parent'] == ''):
-        raise Exception('labelまたはparent属性を指定してください')
-    elif 'label' in request.json and 'parent' in request.json:
-        raise Exception('labelとはparent属性は同時に指定できません')
-        
-    if 'label' in request.json and request.json['label'] != '':
-        # プロジェクトのラベルを修正する
-        label = request.json['label']
-        project = g.factory.data.find_by_uuid(project_uuid)
-        return project.update_data(label)
-    elif 'parent' in request.json and request.json['parent'] != '':
-        # プロジェクトを移動する
-        new_parent = request.json['parent']
-        project = g.factory.data.find_by_uuid(project_uuid)
-        return project.move(new_parent)
-    else:
-        raise Exception('update_project parameter error!')
 
 @mod.route('/flows', methods=['POST'])
 @login_required_api
