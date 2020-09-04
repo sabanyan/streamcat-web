@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<form action="/api/v0/flow_test/" method="POST">
+  <p>flowもしくはProjectのuuidを入力してください</p>
+  <input type="text" name="uuid">
+  <input type="submit" value="send">
+</form>
+
+
+<!-- <p><input type></p> -->
+
+<script>
+  const inject_project_uuid = undefined
+  const inject_flow_uuid = undefined
+</script>
+{% endblock %}

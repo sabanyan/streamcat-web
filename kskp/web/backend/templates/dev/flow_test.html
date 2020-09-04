@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<script src="{{ url_for('front_static.static', filename='js/jquery-3.2.1.min.js') }}"></script>
+<style>
+    form {
+        width : 100%;
+        height : 800px;
+        text-align: center
+    }
+    .jsonBody {
+        width : 90%;
+        height : 70%;
+        
+    }
+
+    .inputUUID {
+        margin: 10px;
+        width: 700px;
+    }
+</style>
+<p>フローテスト用ページです。</p>
+<p>・テスト用フローもしくはそれが格納されたプロジェクトのUUIDを入力、それを元にテストフローを実行、出力結果からフローが正しく動作しているかを判定する</p>
+<div>
+    <label>
+        <span>FlowもしくはProject UUIDを入力後、GETボタンを押す : </span>
+        <input type="text" name="testUUID" class="inputUUID">
+    </label>
+</div>
+
+<form action="/signup/confirm" method="POST">
+    <p>Json</p>
+    <textarea name="jsonTextArea" class="jsonBody" wrap="soft"></textarea>
+    <label>
+        <p>テスト実行</p>
+        <input id="getButton" type="button" value="GET" onclick="APIHandler('GET')"> 
+    </label>
+</form>
+
+
+<script>
+const TARGET_FLOW = 'flow'
+const METHOD_GET = 'GET'
+const METHOD_PUT = 'PUT'
+
+let readInput
+let update
+$(document).ready(function() {
+    $.extend({
+        "put" : function (url, data, success, error) {
+            error = error || function() {}; 
+            return $.ajax({
+                "url" : url,
+                "data" : data,
+                "success" : success,
+                "type" : "PUT",
+                "cache" : false,
+                "error" : error,
+                "dataType" : "json",
+                "contentType": "application/json"
+            });
+	    }
+    });
+
+    readInput = () => {
+        return {
+            selectedTarget : $('select[name=selectedTarget').val(),
+            selectedAPIMethod : $('select[name=selectedAPIMethod').val(),
+            testUUID : $('input[name=testUUID').val(),
+            jsonBody : $('textarea[name=jsonTextArea').val()
+        }
+    }
+
+    update = (json) => {
+        $('textarea[name=jsonTextArea').val(json)
+    }
+
+    $('input#sendButton').on('click', function() {
+        const input = readInput()
+        switch(input.selectedTarget) {
+            case TARGET_FLOW    :
+                flowHandler(input.selectedAPIMethod);
+                break;
+            
+                default:
+                    break;
+        }
+    });
+})
+
+function APIHandler(method) {
+    const input = readInput()
+    if( window.confirm('フローテストを行います。よろしいですか？') ){
+        // OK
+        switch(method) {
+                case METHOD_GET    :
+                    GET_FLOW();
+                    break;
+
+                case METHOD_PUT    :
+                    PUT_FLOW();
+                    break;
+
+                    default:
+                        break;
+        }
+    }else{
+		// キャンセル
+	}
+}
+
+// ---
+
+// function TEST_FLOW(){
+//     const input = readInput()
+//     const testUUID = input.testUUID
+//     let POSTBody = {
+//         "flow_uuid"
+//     }
+
+//     // frames.py 230 testURL
+//     // 実績はpostman見た方がいいかも
+//     const testUrl = '/api/v0/frames'
+//     // basic.py 142にプロジェクト内フロー一覧取得方法あり(GET)
+//     const getProject = '/flows'
+// }
+// ---
+// ここでは与えられたuuidがフローのUUIDかプロジェクトのUUIDかを判断する
+// function GET_FLOW() {
+//     const input = readInput()
+//     const prj_url = '/api/v0/projects/' + input.testUUID
+//     const flow_url = '/api/v0/flows/' + input.testUUID
+//     var num = 1
+//     // projectUUIDのチェック
+//     var flow_uuids = new Array()
+//     $.ajax({
+//         url : prj_url,
+//         type: 'get',
+//         async: false
+//     }).done(function( data, textStatus, jqXHR ) {
+//         // 成功
+//         // UUIDがproject_uuidである場合
+//         if (data.success == true) {
+//             for (var prj_elem of data.data.children){
+//                 if (prj_elem.type == "project"){
+//                     extra_uuid = flow_uuid_getter(prj_elem.uuid);
+//                     console.log(extra_uuid)
+//                     flow_uuids.concat(extra_uuid)
+//                 }else if(prj_elem.type == "flow"){
+//                     flow_uuids.push(prj_elem.uuid)
+//                 }
+//             }
+//         }else if(data.message == "'Flow' object has no attribute 'find_children'"){
+//             flow_uuids.push(input.testUUID)
+//         }
+
+//         console.log(flow_uuids)
+//         update(JSON.stringify(flow_uuids, null,  "\t"))
+
+//         // if (data.data) {
+//         //     // console.log(data.data)
+//         //     // update(JSON.stringify(data.data, null,  "\t"))
+//         //     console.log(flow_uuids)
+//         //     update(JSON.stringify(flow_uuids, null,  "\t"))
+//         // }
+//     }).fail(function( jqXHR, textStatus, errorThrown) {
+//         //失敗
+//         console.log(jqXHR, textStatus, errorThrown)
+//         alert("エラーが起きました。（詳細はconsole.log参照）")
+//     }).always(function( jqXHR, textStatus) {
+//         console.log(prj_url)
+//         //通信完了
+//     });
+// }
+function GET_FLOW() {
+    const input = readInput()
+    // const prj_url = '/api/v0/projects/' + input.testUUID
+    const prj_url = '/api/v0/flow_test/' + input.testUUID
+    const flow_url = '/api/v0/flows/' + input.testUUID
+    var num = 1
+    // projectUUIDのチェック
+    var flow_uuids = new Array()
+    $.getJSON(prj_url)
+    .done(function( data, textStatus, jqXHR ) {
+        // 成功
+        // UUIDがproject_uuidである場合
+        // if (data.success == true) {
+        //     for (var prj_elem of data.data.children){
+        //         if (prj_elem.type == "project"){
+        //             var extra_uuid = flow_uuid_getter(prj_elem.uuid);
+        //             console.log("got_extra_uuid")
+        //             console.log(extra_uuid)
+        //             console.log("got_extra_uuid")
+        //             flow_uuids.concat(extra_uuid)
+        //         }else if(prj_elem.type == "flow"){
+        //             flow_uuids.push(prj_elem.uuid)
+        //         }
+        //     }
+        // }else if(data.message == "'Flow' object has no attribute 'find_children'"){
+        //     flow_uuids.push(input.testUUID)
+        // }
+
+        console.log(data)
+        update(JSON.stringify(data, null,  "\t"))
+
+        // if (data.data) {
+        //     // console.log(data.data)
+        //     // update(JSON.stringify(data.data, null,  "\t"))
+        //     console.log(flow_uuids)
+        //     update(JSON.stringify(flow_uuids, null,  "\t"))
+        // }
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        //失敗
+        console.log(jqXHR, textStatus, errorThrown)
+        alert("エラーが起きました。（詳細はconsole.log参照）")
+    }).always(function( jqXHR, textStatus) {
+        console.log(prj_url)
+        //通信完了
+    });
+}
+// function GET_FLOW() {
+//     const input = readInput()
+//     // const prj_url = '/api/v0/projects/' + input.testUUID
+//     const prj_url = '/api/v0/flow_test/' + input.testUUID
+//     const flow_url = '/api/v0/flows/' + input.testUUID
+//     var num = 1
+//     // projectUUIDのチェック
+//     var flow_uuids = new Array()
+//     $.getJSON(prj_url)
+//     .done(function( data, textStatus, jqXHR ) {
+//         // 成功
+//         // UUIDがproject_uuidである場合
+//         if (data.success == true) {
+//             for (var prj_elem of data.data.children){
+//                 if (prj_elem.type == "project"){
+//                     var extra_uuid = flow_uuid_getter(prj_elem.uuid);
+//                     console.log("got_extra_uuid")
+//                     console.log(extra_uuid)
+//                     console.log("got_extra_uuid")
+//                     flow_uuids.concat(extra_uuid)
+//                 }else if(prj_elem.type == "flow"){
+//                     flow_uuids.push(prj_elem.uuid)
+//                 }
+//             }
+//         }else if(data.message == "'Flow' object has no attribute 'find_children'"){
+//             flow_uuids.push(input.testUUID)
+//         }
+
+//         console.log(flow_uuids)
+//         update(JSON.stringify(flow_uuids, null,  "\t"))
+
+//         // if (data.data) {
+//         //     // console.log(data.data)
+//         //     // update(JSON.stringify(data.data, null,  "\t"))
+//         //     console.log(flow_uuids)
+//         //     update(JSON.stringify(flow_uuids, null,  "\t"))
+//         // }
+//     }).fail(function( jqXHR, textStatus, errorThrown) {
+//         //失敗
+//         console.log(jqXHR, textStatus, errorThrown)
+//         alert("エラーが起きました。（詳細はconsole.log参照）")
+//     }).always(function( jqXHR, textStatus) {
+//         console.log(prj_url)
+//         //通信完了
+//     });
+// }
+
+
+function flow_uuid_getter(input_uuid){
+    const prj_url = '/api/v0/projects/' + input_uuid
+    var flow_uuids = new Array()
+    console.log(prj_url)
+
+    $.getJSON(prj_url)
+    .done(function( data, textStatus, jqXHR ) {
+        console.log("extra UUId")
+        // 成功
+        // UUIDがproject_uuidである場合
+        console.log(data)
+        if (data.success == true) {
+                console.log("45")
+            for (var prj_elem of data.data.children){
+                console.log("455")
+                if (prj_elem.type == "project"){
+                    extra_uuid = flow_uuid_getter(prj_elem.uuid);
+                    console.log(extra_uuid)
+                    flow_uuids.concat(extra_uuid)
+                    console.log(flow_uuids)
+                }else if(prj_elem.type == "flow"){
+                    flow_uuids.push(prj_elem.uuid)
+                }
+            }
+        }else if(data.message == "'Flow' object has no attribute 'find_children'"){
+            console.log("this is flowUUid")
+            flow_uuids.push(input.testUUID)
+        }
+        console.log("4554")
+        return flow_uuids;
+    }).fail(function( jqXHR, textStatus, errorThrown) {
+        //失敗
+        console.log(jqXHR, textStatus, errorThrown)
+        alert("エラーが起きました。（詳細はconsole.log参照）")
+    }).always(function( jqXHR, textStatus) {
+        //通信完了
+        console.log(flow_uuids)
+        return flow_uuids;
+    });
+
+}
+
+
+</script>
+{% endblock %}
