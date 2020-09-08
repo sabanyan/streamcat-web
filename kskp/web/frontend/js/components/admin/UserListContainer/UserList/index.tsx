@@ -11,6 +11,9 @@ import {ModalManager} from 'Shared/Modal';
 import {NotificationManager} from 'Shared/Notification';
 import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
+import {InputForm, TextField} from 'Shared/Input';
+import Constants from 'Constants/index';
+import Select from 'react-select';
 
 const UserList = () => {
     const dispatch = useDispatch();
@@ -109,18 +112,53 @@ const UserList = () => {
 
     // メニューを表示
     const renderMenuList = () => {
+        const [newUserName, setNewUserName] = useState<string | null>(null);
+        const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
+        const [selectedOption, setSelectedOption] = useState(null);
         const onClickNewUser = () => {
             // モーダル表示
-            // ModalUtil.emitModal({
-            //     id: Constants.modal.ADD_USER,
-            //     visible: true,
-            //     done: "作成する",
-            //     content: <div>
-            //         <TextField placeholder={"フロー名"}
-            //                    onChange={(e) => setFormFlowName(e.target.value)} />
-            //         <div className={"mt-8px"} />
-            //     </div>
-            // });
+            const options = [
+                {value: 'chocolate', label: 'Chocolate'},
+                {value: 'strawberry', label: 'Strawberry'},
+                {value: 'vanilla', label: 'Vanilla'},
+            ];
+            const onSubmit = () => {
+                alert('submit')
+            };
+            ModalUtil.emitModal({
+                id: Constants.modal.ADD_USER,
+                visible: true,
+                done: '作成する',
+                content: <div className={style.modal}>
+                    <InputForm onSubmit={onSubmit}>
+                        <div className={style.label}>
+                            名前
+                        </div>
+                        <div className={style.textField}>
+                            <TextField onChange={(e) => setNewUserName(e.target.value)}/>
+                        </div>
+                        <Spacer height={9}/>
+                        <div className={style.label}>
+                            E-mail
+                        </div>
+                        <div className={style.textField}>
+                            <TextField onChange={(e) => setNewUserEmail(e.target.value)}/>
+                        </div>
+                        <Spacer height={14}/>
+                        <div className={style.label}>
+                            所属プロジェクト
+                        </div>
+                        <div className={style.select}>
+                            <Select
+                                defaultValue={selectedOption}
+                                onChange={setSelectedOption}
+                                options={options}
+                            />
+                        </div>
+                    </InputForm>
+                    <div className={'mt-8px'}/>
+                </div>
+            });
         };
         return <>
             <Spacer minWidth={40}/>

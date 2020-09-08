@@ -31,3 +31,34 @@
   padding: 0 24px;
   color: #606c7a;
 }
+.modal{
+  display: flex;
+  justify-content: center;
+  height: 400px;
+}
+.label{
+  display: inline-flex;
+  font-size: 16px;
+  color: #606c7a;
+  width: 140px;
+}
+
+.textField{
+  display: inline-flex;
+  input{
+    width: 300px;
+  }
+}
+
+.select{
+  display: inline-flex;
+  > div{
+    width: 300px;
+  }
+  div[class*="menu"]{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+  }
+}
