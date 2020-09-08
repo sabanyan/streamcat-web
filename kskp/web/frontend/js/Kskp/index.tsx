@@ -15,8 +15,9 @@ import {
 } from "Components/index";
 import {NavigationBar} from "Shared/Base";
 import {Preview} from "PreviewContainer/Preview";
-import {Library} from "Components/LibraryContainer/Libary";
 import {FlowEditor} from "FlowEditorContainer/FlowEditor";
+import {UserList} from 'UserListContainer/UserList';
+import {Library} from 'LibraryContainer/Libary';
 
 export type Props = {
     viewId: ViewId
@@ -34,6 +35,7 @@ export enum ViewId {
     Project_List,
     Preview,
     TrashCan,
+    User_List,
     Undefined = -1,
 }
 
@@ -87,6 +89,9 @@ const Kskp = (props: Props) => {
                 break;
             case ViewId.Preview:
                 viewComponent = <Preview />;
+                break;
+            case ViewId.User_List:
+                viewComponent = <UserList/>;
                 break;
             default:
                 break;
