@@ -9,6 +9,16 @@ mod = Blueprint('basic_template', __name__)
 def top():
     return redirect(url_for('basic_template.library'))
 
+#
+# ユーザ管理機能
+# TODO: ルーティングの確認
+#
+@mod.route('/admin/users', methods=['GET', 'POST'])
+@login_required
+def admin_users():
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    return render_template('admin/users.html',js_resources=js_resources,css_resources=css_resources)
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required

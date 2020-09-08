@@ -185,3 +185,30 @@ export type dropDownListItem = {
   value: string,
   object?: {}
 }
+
+export interface UserListUser {
+  uuid:      string;
+  email:     string;
+  name:      string;
+  state:     string;
+  creator:   string;
+  createdAt: Date;
+  roles:     UserRole[];
+  password?: string;
+}
+
+export interface UserRole {
+  uuid:       string;
+  name:       string;
+  systemRole: string;
+  creator:    string;
+  createdAt:  Date;
+}
+
+export interface UserProject {
+  uuid:      string;
+  type:      string;
+  label:     string;
+  creator:   string;
+  createdAt: Date;
+}
