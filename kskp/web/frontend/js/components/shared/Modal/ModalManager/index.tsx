@@ -100,6 +100,9 @@ export default class ModalManager extends React.Component<Props> {
             <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW}
                    title="選択されたフローを実行します" dynamic={true} footer={true}>
             </Modal>
+            <Modal key={Constants.modal.ADD_USER} id={Constants.modal.ADD_USER}
+                   title="ユーザーの新規作成" dynamic={true} footer={true}>
+            </Modal>
         </div>;
     }
 }
