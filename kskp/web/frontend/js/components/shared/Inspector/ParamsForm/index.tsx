@@ -1,10 +1,11 @@
 import React from 'react'
-import {ParamString, ParamBoolean, ParamSelect, ParamList } from 'Shared/Inspector/index'
+import { ParamString, ParamNumber, ParamBoolean, ParamSelect, ParamList, Param } from 'Shared/Inspector/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { CommandParamType } from 'Types/index'
 import Constants from 'Constants/index'
 import classnames from 'classnames'
 import style from './style.scss'
+import { param } from 'jquery'
 
 
 export type Element = {
@@ -21,6 +22,9 @@ export type Param = {
   name: string;
   type: string;
   label: string;
+  input_ballon: {
+    text: string;
+  };
   description: string;
   elements: Element[];
   default: {};
@@ -53,7 +57,7 @@ type Props = {
 
 export default class ParamsForm extends React.Component<Props> {
 
-  constructor (props: Props) {
+  constructor(props: Props) {
     super(props)
   }
 
@@ -63,7 +67,7 @@ export default class ParamsForm extends React.Component<Props> {
    * @param param
    * @returns {*}
    */
-  getDefaultValueOrArgsValue (args: {} | [], param: CommandParamType) {
+  getDefaultValueOrArgsValue(args: {} | [], param: CommandParamType) {
     return args[param.name]
   }
 
@@ -73,7 +77,7 @@ export default class ParamsForm extends React.Component<Props> {
    * @param param
    * @returns {boolean}
    */
-  isPresence (command: CommandModel, param: CommandParamType) {
+  isPresence(command: CommandModel, param: CommandParamType) {
     let isPresence = false
     if (command) {
       if (command.rules &&
@@ -90,7 +94,7 @@ export default class ParamsForm extends React.Component<Props> {
    * @param invalid
    * @returns {*}
    */
-  getInvalidMessageElement (invalid: ([] | string)) {
+  getInvalidMessageElement(invalid: ([] | string)) {
     const invalidMessage: ([] | string) = invalid
     if (invalidMessage) {
       if (Array.isArray(invalidMessage)) {
@@ -108,21 +112,23 @@ export default class ParamsForm extends React.Component<Props> {
     return null
   }
 
-  getParamElement(param:CommandParamType, disabled:boolean=false,label?:string,value?:any, onChange?:Function, headers?:string[]) {
-    let paramElement:any
+  getParamElement(param: CommandParamType, disabled: boolean = false, label?: string, value?: any, onChange?: Function, headers?: string[]) {
+    let paramElement: any
     try {
       switch (param.type) {
-        case Constants.param.type.number  :
-        case Constants.param.type.string  :
+        case Constants.param.type.number:
+          paramElement = <ParamNumber label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+          break
+        case Constants.param.type.string:
           paramElement = <ParamString label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
-        case Constants.param.type.boolean :
+        case Constants.param.type.boolean:
           paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
-        case Constants.param.type.select  :
+        case Constants.param.type.select:
           paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
-        case Constants.param.type.column  :
+        case Constants.param.type.column:
           //カラム情報を付与
           param.options = {
             labels: headers,
@@ -131,11 +137,11 @@ export default class ParamsForm extends React.Component<Props> {
           }
           paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
-        case Constants.param.type.list    :
+        case Constants.param.type.list:
           paramElement = <ParamList label={label} param={param} disabled={disabled} value={value} onChange={onChange} headers={headers} />
           break
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
 
@@ -148,14 +154,14 @@ export default class ParamsForm extends React.Component<Props> {
         {group.label}
       </div>
       <p className={style.description}>
-      {group.description}
-    </p>
+        {group.description}
+      </p>
     </React.Fragment>
   }
 
 
   renderParam(param, key) {
-    const {args, command, invalids, onChange, headers, disabled} = this.props
+    const { args, command, invalids, onChange, headers, disabled } = this.props
     let isPresence = (command) ? this.isPresence(command, param) : false
     const value = this.getDefaultValueOrArgsValue(args, param)
     const paramElement = this.getParamElement(param, disabled, param.label, value, onChange, headers)
@@ -171,10 +177,10 @@ export default class ParamsForm extends React.Component<Props> {
   }
 
   renderParamsForm(params, groups) {
-    let paramsForm:JSX.Element[] = []
-  
-    try {      
-      if(!params) throw "params is undefined in renderParamsForm"
+    let paramsForm: JSX.Element[] = []
+
+    try {
+      if (!params) throw "params is undefined in renderParamsForm"
       if (groups) {
         groups.forEach(group => {
           paramsForm.push(this.renderGroup(group, group.name + "_group"))
@@ -194,15 +200,15 @@ export default class ParamsForm extends React.Component<Props> {
         })
       }
 
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
 
     return paramsForm
   }
 
-  render () {
-    const {params, groups} = this.props
+  render() {
+    const { params, groups } = this.props
     //パラメータフォームの作成
 
     return this.renderParamsForm(params, groups)
