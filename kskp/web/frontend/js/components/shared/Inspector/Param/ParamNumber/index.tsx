@@ -7,7 +7,6 @@ import { Helper } from 'Shared/Inspector'
 
 import Constants from 'Constants/index'
 
-
 import style from './style.scss'
 
 type Props = {
@@ -15,7 +14,9 @@ type Props = {
   param: CommandParamType;
   disabled?: boolean;
   value?: string;
+  helperTargetedInput: any;
 
+  setHelperTargetedInput(inputEl):void;
   // event
   onChange?: Function; // onChange(e, param)
 }
@@ -27,19 +28,16 @@ type State = {
 export default class ParamNumber extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
-    this.state = {
-      helperTargetedInput:null
-    }
   }
 
   onChange(e) {
     try {
-      const { param, onChange } = this.props
-      let value = e.currentTarget.value
+      const { param, onChange } = this.props;
+      let value = e.currentTarget.value;
       // ParamNumber 対応
-      if (param.type === Constants.param.type.number && value !== '') value = parseInt(value)
-      if (!value) value = ""
-      if (onChange) onChange(e, param, value)
+      if (param.type === Constants.param.type.number && value !== '') value = parseInt(value);
+      if (!value) value = "";
+      if (onChange) onChange(e, param, value);
     } catch (e) {
       console.log(e)
     }
@@ -51,25 +49,18 @@ export default class ParamNumber extends React.Component<Props, State> {
     })
   }
 
-  onBlurInput(e) {
-    /*
-    this.setState({
-      helperTargetedInput: null
-    })
-    */
-  }
-
   onClickShortcut(e, value, delimiter) {
-    let currentValue = this.state.helperTargetedInput.value
-    let newValue
+    const {helperTargetedInput, setHelperTargetedInput} = this.props;
+    let currentValue = helperTargetedInput.value;
+    let newValue;
 
     if (currentValue == "") {
-      newValue = value
+      newValue = value;
     } else {
-      newValue = currentValue + delimiter + value
+      newValue = currentValue + delimiter + value;
     }
 
-    this.state.helperTargetedInput.value = newValue
+    setHelperTargetedInput(newValue);
   }
 
   renderDescription() {
@@ -89,19 +80,17 @@ export default class ParamNumber extends React.Component<Props, State> {
   }
 
   render() {
-    const { label, param, disabled, value } = this.props
+    const { label, param, disabled, value, helperTargetedInput } = this.props
     const { onChange } = this.props
 
     let isDisabled = (disabled) ? true : false
     let currentValue = (value) ? value : ""
 
-    let openHelper:boolean = Boolean(this.state.helperTargetedInput)
+    let openHelper:boolean = Boolean(helperTargetedInput)
 
     return <div className={style.param}>
       <div className={style.label}>
-        <span>
-          {param.label}
-        </span>
+        <span>{param.label}</span>
         <div className={style.description}>
           <p>{param.description}</p>
         </div>
@@ -117,11 +106,10 @@ export default class ParamNumber extends React.Component<Props, State> {
           disabled={isDisabled}
           onChange={(e) => this.onChange(e)}
           onFocus={(e) => this.onFocusInput(e)}
-          onBlur={(e) => this.onBlurInput(e)}
         />
         {
           param.helper && param.helper[param.name] ?
-          <Popper open={openHelper} anchorEl={this.state.helperTargetedInput} transition placement="right-start">
+          <Popper className={style.popper} open={openHelper} anchorEl={helperTargetedInput} transition placement="right-start">
             <Helper helper={param.helper[param.name]} onClickShortcut={this.onClickShortcut.bind(this)} />
           </Popper>
           : null
