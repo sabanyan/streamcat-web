@@ -28,14 +28,14 @@ type Props = {
     }[];
   };
 
-  onClickShortcut(event, value, delimiter:string): void;
+  onClickShortcut(event, value, delimiter: string): void;
+  onClickCloseHelper(event): void;
 }
 
 export default function Helper(props: Props) {
-  const { helper, onClickShortcut } = props;
-
-  console.log(props)
+  const { helper, onClickShortcut, onClickCloseHelper } = props;
   const [tabIndex, setTabIndex] = React.useState(0);
+  
   const handleChange = (event, newValue) => {
     setTabIndex(newValue);
   };
@@ -48,7 +48,6 @@ export default function Helper(props: Props) {
     return (
       <div
         role="TabPanel"
-        hidden={value !== index}
         id={`scrollable-auto-tabpanel-${index}`}
         aria-labelledby={`scrollable-auto-tab-${index}`}
         {...other}
@@ -100,6 +99,7 @@ export default function Helper(props: Props) {
         </div>
       </div>)
     })
+
     return result
   }
 
@@ -112,6 +112,7 @@ export default function Helper(props: Props) {
     )
   })
 
+  /*
   tabs.forEach((t, index) => {
     renderedTabPannels.push(
       <TabPanel key={index} value={tabIndex} index={index}>
@@ -119,30 +120,31 @@ export default function Helper(props: Props) {
       </TabPanel>
     )
   })
+  */
 
   return <React.Fragment>
-    <AppBar position="static" color="default">
-      <Toolbar>
-        <IconButton size="small" color="inherit" aria-label="menu">
-          <span className="material-icons">close</span>
-        </IconButton>
-      </Toolbar>
-      <Tabs
-        value={tabIndex}
-        onChange={handleChange}
-        indicatorColor="primary"
-        textColor="primary"
-        variant="scrollable"
-        scrollButtons="auto"
-      >
-        {renderedTabs}
-      </Tabs>
-    </AppBar>
-    <Card variant="outlined">
-      <CardContent>
-        {renderedTabPannels}
-      </CardContent>
-    </Card>
+    <div className={style.helper}>
+      <AppBar position="sticky" color="default">
+          <div className={style.toolbar}>
+            <IconButton size="small" color="inherit" aria-label="menu" onClick={onClickCloseHelper} >
+              <span className="material-icons">close</span>
+            </IconButton>
+          </div>
+          <Tabs
+            value={tabIndex}
+            onChange={handleChange}
+            indicatorColor="primary"
+            textColor="primary"
+            variant="scrollable"
+            scrollButtons="auto"
+          >
+            {renderedTabs}
+          </Tabs>
+      </AppBar>
+      <TabPanel className={style.contents} value={tabIndex} index={tabIndex}>
+        {renderDatas(tabs[tabIndex].data)}
+      </TabPanel>
+    </div>
   </React.Fragment>
 }
 

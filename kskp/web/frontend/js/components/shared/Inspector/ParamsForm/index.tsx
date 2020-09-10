@@ -55,10 +55,25 @@ type Props = {
   onChange: (e: React.ChangeEvent<HTMLInputElement>, param: CommandParamType, value: any) => void
 }
 
-export default class ParamsForm extends React.Component<Props> {
+type State = {
+  helperTargetedInput: any;
+}
+
+export default class ParamsForm extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props)
+
+    this.state = {
+      helperTargetedInput: null
+    }
+  }
+
+  setHelperTargetedInput(inputEl) {
+
+    this.setState({
+      helperTargetedInput: inputEl
+    })
   }
 
   /**
@@ -117,10 +132,10 @@ export default class ParamsForm extends React.Component<Props> {
     try {
       switch (param.type) {
         case Constants.param.type.number:
-          paramElement = <ParamNumber label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
-          break
         case Constants.param.type.string:
-          paramElement = <ParamString label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+          paramElement = <ParamString
+            label={label} param={param} disabled={disabled} value={value} helperTargetedInput={this.state.helperTargetedInput}
+            setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange} />
           break
         case Constants.param.type.boolean:
           paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
@@ -145,7 +160,21 @@ export default class ParamsForm extends React.Component<Props> {
       console.log(e)
     }
 
-    return paramElement
+    return <React.Fragment>
+      <div className={style.param}>
+        <div className={style.label}>
+          <span>{param.label}</span>
+          <div className={style.description}>
+            <p>{param.description}</p>
+          </div>
+          <div className={style.input}>
+            {paramElement}
+          </div>
+        </div>
+      </div>
+    </React.Fragment>
+
+
   }
 
   renderGroup(group, key) {

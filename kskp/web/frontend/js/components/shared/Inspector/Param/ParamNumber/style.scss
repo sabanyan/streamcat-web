@@ -24,25 +24,7 @@
   margin: 0;
 }
 
-.labelPopper {
-  background-color: white;
-  border:1px solid;
-  padding:5px;
-  border-radius: 10px; 
-
-  label {
-    word-break: keep-all;
-  }
-
-  p {
-    font-size: 10px;
-  }
-}
-
-.input {
-
-}
-
-.inputPopper {
-  width: 400px;
+.popper {
+  z-index: 9;
+  margin-right: 8px;
 }
