@@ -14,18 +14,24 @@
                 border-radius: 5px;
                 display: flex;
                 flex-direction: row;
+                flex-wrap: wrap;
 
                 .element {
                     display: flex;
                     flex-direction: column;
                     margin: 4px;
                     justify-content: space-between;
+                    width: calc(50% - 8px);
 
                     .label {
                     }
 
                     .input {
                     }
+                }
+
+                .oneRow {
+                    width: 100%;
                 }
             }
             .buttons {
