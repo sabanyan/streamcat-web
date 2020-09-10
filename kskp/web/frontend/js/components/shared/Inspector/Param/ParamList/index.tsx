@@ -170,29 +170,36 @@ export default class ParamList extends React.Component<Props, State>{
             if (arg && arg[argIndex]) {
                 value = arg[argIndex][element.name]
             }
-            let className = style.paramElementArg
+            let className = style.element
             if (element.type === Constants.param.type.select || element.type === Constants.param.type.column) {
-                className = classnames(style.paramElementArg, style.select)
+                className = classnames(style.element, style.select)
             }
             ele = <div key={argIndex + element.name + index} className={className}>
-                <div>
-                {element.label}
+                <div className={style.label}>
+                    {element.label}
                 </div>
-                {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => { this.onChangeContent(e, element, elementValue, argIndex) }, headers)}
+                <div className={style.input}>
+                    {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => { this.onChangeContent(e, element, elementValue, argIndex) }, headers)}
+                </div>
             </div>
             elements.push(ele)
         })
 
         const deleteButton = (this.state.deletable) ? <Button danger={true} onClick={(e) => { this.onDeleteElement(e, param, argIndex) }}>削除</Button> : null
         return <React.Fragment>
-            {elements}
-            {deleteButton}
+            <div className={style.row}>
+                <div className={style.elementContainer}>
+                    {elements}
+                </div>
+                <div className={style.buttons}>
+                    {deleteButton}
+                </div>
+            </div>
         </React.Fragment>
     }
 
     renderElements(param: CommandParamType, arg: Array<CommandParamType>) {
         let paramElements: Array<JSX.Element> = []
-        let labels: Array<JSX.Element> = []
 
         if (!(param) || param.type !== Constants.param.type.list) {
             return null
@@ -202,22 +209,9 @@ export default class ParamList extends React.Component<Props, State>{
             return null
         }
 
-        // renderLabels
-        param.elements.forEach((element: CommandParamType, index: number) => {
-            let label = (element.label) ? element.label : element.name
-            labels.push(<label key={label + index}>{label}</label>)
-        })
-        labels.push(<label key={"dummy"}></label>)
-
-
-        let className = style.paramElements
-        if (this.state.deletable === false) {
-            className = style.paramElementsNoButton
-        }
-
         arg.forEach((element, index) => {
             let paramElement = this.renderElement(param, index, arg)
-            paramElements.push(<div key={index} className={className}>
+            paramElements.push(<div key={index} className={style.elementContainer}>
                 {paramElement}
             </div>)
         })
@@ -252,8 +246,10 @@ export default class ParamList extends React.Component<Props, State>{
         const listElements = this.renderElements(param, this.state.currentValue)
         const addButton = (this.state.addable) ? this.addButton() : null
 
-        return <div key={param.name} className={style.elements}>
-            {listElements}
+        return <div key={param.name} className={style.list}>
+            <div className={style.elements}>
+                {listElements}
+            </div>
             {addButton}
         </div>
     }
