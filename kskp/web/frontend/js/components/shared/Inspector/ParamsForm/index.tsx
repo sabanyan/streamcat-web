@@ -135,6 +135,7 @@ export default class ParamsForm extends React.Component<Props, State> {
         case Constants.param.type.string:
           paramElement = <ParamString
             label={label} param={param} disabled={disabled} value={value} helperTargetedInput={this.state.helperTargetedInput}
+            helper={param.helper}
             setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange} />
           break
         case Constants.param.type.boolean:
@@ -153,7 +154,10 @@ export default class ParamsForm extends React.Component<Props, State> {
           paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
         case Constants.param.type.list:
-          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value} onChange={onChange} headers={headers} />
+          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value} 
+          helperTargetedInput={this.state.helperTargetedInput}  headers={headers} 
+          helper={param.helper}
+          setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange}/>
           break
       }
     } catch (e) {

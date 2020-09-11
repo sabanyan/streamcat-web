@@ -15,6 +15,7 @@ type Props = {
   value?: string;
   helperTargetedInput?: any;
 
+  helper: any;
   setHelperTargetedInput?: Function;
   // event
   onChange?: Function; // onChange(e, param)
@@ -96,7 +97,7 @@ export default class ParamString extends React.Component<Props, State> {
 
   //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
   render() {
-    const { label, param, disabled, value, helperTargetedInput } = this.props
+    const { label, param, helper, disabled, value, helperTargetedInput } = this.props
     const { onChange } = this.props
 
     let isDisabled = (disabled) ? true : false
@@ -117,10 +118,10 @@ export default class ParamString extends React.Component<Props, State> {
         ref={this.inputRef}
       />
       {
-        param.helper && param.helper[param.name] && this.inputRef.current === helperTargetedInput ?
+        helper && helper[param.name] && this.inputRef.current === helperTargetedInput ?
           <Popper className={style.popper} open={openHelper} anchorEl={helperTargetedInput} transition placement="right-start">
             <Helper
-              helper={param.helper[param.name]}
+              helper={helper[param.name]}
               onClickShortcut={this.onClickShortcut.bind(this)}
               onClickCloseHelper={this.onClickCloseHelper.bind(this)}
             />
