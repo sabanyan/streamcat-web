@@ -47,6 +47,27 @@ def update_projects_info(func):
         return jsonify(results)
     return deco
 
+def update_projects_info2(func):
+    @functools.wraps(func)
+    def deco(**kwargs):
+        # 参加ユーザの情報を含めるか否か
+        if request.args.get('members') != 'on':
+            return func(**kwargs)
+
+        # デコレート対象関数の呼び出し
+        results = json.loads(func(**kwargs).data.decode())
+
+        # APIの異常終了時は情報を追加しない
+        if not results['success']:
+            return func(**kwargs)
+
+        # Project JSONに情報を追加する
+        for project_data in results['data']:
+            _update_project_info_inner(project_data)
+
+        return jsonify(results)
+    return deco
+
 def _update_project_info_inner(project_data):
     from kskp.core import Datum
     if g.factory.data.exists(project_data['uuid'], type=Datum.PROJECT_TYPE):

@@ -81,23 +81,25 @@ class ProjectApiTestCase(ApiTestCaseBase):
         GET /projects APIをテストする
         """
         # ROOTを取得する
-        flow_folder = self.factory.data.load_flow_folder()
+        root = self.factory.data.load_root()
 
         # プロジェクトを作成する
-        data = {'parent': flow_folder.uuid,
+        data = {'parent': root.uuid,
                 'label' : '新しいプロジェクト'}
         self.post_uri('/api/v0/projects', data, self.USER2)
 
         # フォルダを取得する
         results = self.get_uri('/api/v0/projects', self.USER2)
 
+        # 結果の件数は1件以上である
+        self.assertGreater(len(results['data']), 0)
+
         # 作成したプロジェクトが取得できることを検証する
         result0 = results['data'][0]
         self.assertIsNotNone(result0['uuid'])
-        self.assertEqual(result0['name'], '新しいプロジェクト')
-        self.assertEqual(result0['creator_id'], self.USER2.id)
-        self.assertIsNotNone(result0['creator_name'])
-        self.assertIsNotNone(result0['created_at'])
+        self.assertEqual(result0['type'], 'project')
+        self.assertIsNotNone(result0['creator'])
+        self.assertIsNotNone(result0['createdAt'])
 
         # ナビが取得できることを検証する
         navi = results['navigation']
@@ -106,7 +108,9 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertEqual(navi['project_name'], '')
         self.assertEqual(navi['project_uuid'], '')
         self.assertEqual(navi['user_id'], self.USER2.id)
-        self.assertIsNotNone(navi['user_name'])
+        self.assertEqual(navi['user_name'], self.USER2.name)
+        self.assertEqual(navi['depo_name'], 'Unit Test')
+
 
     def test_get_project(self):
         """
