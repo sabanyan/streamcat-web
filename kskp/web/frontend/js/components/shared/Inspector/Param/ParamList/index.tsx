@@ -17,7 +17,10 @@ type Props = {
     value: Array<CommandParamType>;
     label?: string;
     headers?: string[];
+    helperTargetedInput?: any;
 
+    helper: any;
+    setHelperTargetedInput?: Function;
     onChange: Function; // OnChange(e, param, value)
 }
 
@@ -25,7 +28,8 @@ type State = {
     currentValue: Array<CommandParamType>;
     addable: boolean,
     deletable: boolean,
-    draggable: boolean
+    draggable: boolean,
+    helperTargetedInput: any;
 }
 
 const SortableItem = SortableElement(({ value }) => <li>{value}</li>);
@@ -126,13 +130,18 @@ export default class ParamList extends React.Component<Props, State>{
     }
 
     getParamElement(param: CommandParamType, disabled: boolean = false, label?: string, value?: any, onChange?: Function, headers?: string[]) {
+        const { helperTargetedInput, setHelperTargetedInput, helper } = this.props;
+
         let paramElement: any
         try {
             switch (param.type) {
                 case Constants.param.type.number:
                 case Constants.param.type.string:
-                    paramElement = <ParamString label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
-                    break
+                    paramElement = <ParamString
+                    label={label} param={param} disabled={disabled} value={value} helperTargetedInput={helperTargetedInput}
+                    helper={helper}
+                    setHelperTargetedInput={setHelperTargetedInput} onChange={onChange} />
+                  break
                 case Constants.param.type.boolean:
                     paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
                     break
@@ -177,7 +186,7 @@ export default class ParamList extends React.Component<Props, State>{
             if (param.elements[index + 1] && param.elements[index + 1].section) {
                 className = classnames(className, style.oneRow)
             }
-            
+
             ele = <div key={argIndex + element.name + index} className={className}>
                 <div className={style.label}>
                     {element.label}

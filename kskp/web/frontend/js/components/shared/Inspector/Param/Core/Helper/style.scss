@@ -8,7 +8,6 @@
   overflow-y: scroll;
 }
 
-
 .toolbar {
   background: lighten(#00469d, 10%);
   font-size: small;
@@ -25,7 +24,7 @@
 .data {
   padding : 5px;
   span {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: bold;
   }
   .shortcuts {

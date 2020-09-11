@@ -16,6 +16,7 @@ type Props = {
   value?: string;
   helperTargetedInput: any;
 
+  helper: any;
   setHelperTargetedInput(inputEl):void;
   // event
   onChange?: Function; // onChange(e, param)
