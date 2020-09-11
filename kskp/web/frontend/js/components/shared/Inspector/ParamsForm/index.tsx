@@ -129,6 +129,7 @@ export default class ParamsForm extends React.Component<Props, State> {
 
   getParamElement(param: CommandParamType, disabled: boolean = false, label?: string, value?: any, onChange?: Function, headers?: string[]) {
     let paramElement: any
+    let className = param.type === Constants.param.type.boolean ? classnames(style.param, style.flex) : style.param
     try {
       switch (param.type) {
         case Constants.param.type.number:
@@ -154,10 +155,10 @@ export default class ParamsForm extends React.Component<Props, State> {
           paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
         case Constants.param.type.list:
-          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value} 
-          helperTargetedInput={this.state.helperTargetedInput}  headers={headers} 
-          helper={param.helper}
-          setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange}/>
+          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value}
+            helperTargetedInput={this.state.helperTargetedInput} headers={headers}
+            helper={param.helper}
+            setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange} />
           break
       }
     } catch (e) {
@@ -165,16 +166,14 @@ export default class ParamsForm extends React.Component<Props, State> {
     }
 
     return <React.Fragment>
-      <div className={style.param}>
+      <div className={className}>
         <div className={style.label}>
           <span>{param.label}</span>
           <div className={style.description}>
             <p>{param.description}</p>
           </div>
-          <div className={style.input}>
-            {paramElement}
-          </div>
         </div>
+        {paramElement}
       </div>
     </React.Fragment>
 
