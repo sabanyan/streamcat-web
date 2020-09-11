@@ -182,8 +182,11 @@ export default class ParamsForm extends React.Component<Props, State> {
   }
 
   renderGroup(group, key) {
+
+    let className = group.hide_background ? classnames(style.group, style.colored) : style.group
+
     return <React.Fragment key={key}>
-      <div className={style.group}>
+      <div className={className}>
         {group.label}
       </div>
       <p className={style.description}>
