@@ -6,6 +6,7 @@ from .utils import (
     lock_required,
     update_navigation,
     update_project_info,
+    update_projects_info2,
     RequestJson
 )
 from kskp.store import (
@@ -20,27 +21,13 @@ mod = Blueprint('api', __name__)
 @mod.route('/projects')
 @login_required_api
 @update_navigation
+@update_projects_info2
 @api_base
 def get_projects():
     """
-    現在ログイン中のユーザが閲覧できるプロジェクト一覧を返却するAPI
+    全てのプロジェクトを返却する
     """
-    # ルートフローフォルダが無ければ作成する
-    root_flow_folder = g.factory.data.load_flow_folder()
-
-    # FIXIT: 権限機能がないのでログインユーザに関係なく全てのプロジェクトが表示される
-    projects = []
-
-    for folder in root_flow_folder.find_children():
-        proj = {}
-        proj['uuid'] = folder.uuid
-        proj['name'] = folder.label
-        proj['creator_id'] = folder.creator.id if folder.creator is not None else None
-        proj['creator_name'] = folder.creator_str
-        proj['created_at'] = folder.created_at_str
-        projects.append(proj)
-
-    return projects
+    return g.factory.data.find_all(type=Datum.PROJECT_TYPE)
 
 @mod.route('/projects/<project_uuid>', methods=['GET'])
 @login_required_api
