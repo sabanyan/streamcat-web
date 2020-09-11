@@ -98,9 +98,7 @@ export default class ParamSelect extends React.Component<Props> {
       selectedValue = []
     }
 
-    return <div className={style.param}>
-      {labelContainer}
-        <i className="fas fa-eraser" onClick={(e) => this.onClear(e, multiple)}></i>
+    return <React.Fragment>
       <select 
         name={param.name}
         className={'form-control'}
@@ -109,8 +107,8 @@ export default class ParamSelect extends React.Component<Props> {
         disabled={isDisabled} 
         multiple={multiple}
         onChange={(e) => this.onChange(e, multiple)}>
-        {options}
+          {options}
       </select>
-    </div>
+    </React.Fragment>
   }
 }
