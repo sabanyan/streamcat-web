@@ -273,7 +273,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
         self.assertEqual(result['data']['projects'][0]['label'], 'プロジェクトX')
-        self.assertTrue(result['data']['projects'][0]['readable'])
+        self.assertFalse(result['data']['projects'][0]['readable'])
         self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][0]['creator'])
         self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
@@ -281,7 +281,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['projects'][1]['uuid'])
         self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
         self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトY')
-        self.assertTrue(result['data']['projects'][1]['readable'])
+        self.assertFalse(result['data']['projects'][1]['readable'])
         self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][1]['creator'])
         self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
@@ -634,7 +634,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER0)
 
         # 
-        # TODO: 現在はDatum作成時にeveryoneに権限を与えているのでエラーになる
+        # TODO: 現在はDatum作成時にユーザ管理者に権限を与えているのでエラーになる
         # 
         print(result)
 
@@ -647,15 +647,23 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        # 作成ユーザ
+        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
+        self.assertEqual(result['data']['members'][0]['type'], 'Owner')
         # 参加ユーザ
-        self.assertEqual(len(result['data']['members']), 1)
-        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
-        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
-        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
-        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
-        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
-        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
-        self.assertEqual(result['data']['members'][0]['type'], 'Reader')
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
 
         # ユーザを脱退させる
         result = self.delete_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', self.USER0)
@@ -663,8 +671,8 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを検索する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER0)
 
-        # 参加ユーザがいないことを確認する
-        self.assertEqual(len(result['data']['members']), 0)
+        # 参加ユーザは1人である
+        self.assertEqual(len(result['data']['members']), 1)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER0)
