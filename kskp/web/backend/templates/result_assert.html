@@ -3,8 +3,12 @@
 {% endblock %}
 
 {% block content %}
-<p>テスト結果：{{ result }}</p>
 
+<!-- {{ test_result|tojson|safe }} -->
+<label for="json">JSON</label><br>
+<textarea id="kanso" name="kanso" cols="150" rows="40" wrap="soft">
+    {{ test_result|tojson|safe }}
+</textarea>
 
 <div id="result_assert"></div>
 {% endblock %}

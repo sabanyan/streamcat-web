@@ -20,8 +20,8 @@ from kskp.store import (
 mod = Blueprint('assert', __name__)
 @mod.route('/flow_tester', methods=['GET'])
 @login_required_api
-@update_navigation
-@api_base
+# @update_navigation
+# @api_base
 def get_all_uuid():
     """
     入力された階層およびより下に存在するflow_uuidを全て取得する
@@ -75,27 +75,18 @@ def get_all_uuid():
     # flow_link = Flow(session, None, mcat_flow_json['label'], mcat_flow_json)
     flow_link = root_datum.create_flow("All_asserted_flow", mcat_flow_json)
 
-
+    # print("mcat_flow_json")
     # print(mcat_flow_json)
-    print('check0')
-    print(flow_link)
     # mcat_flow_json = create_flow(mcat_flow_json['label'], mcat_flow_json)
     # import uuid
     # mcat_flow_json.uuid = str(uuid.uuid4()) 
     # mcat_flow_json.save()
     flow_link = FlowJsonLink(flow_link, g.factory)
-    print('check0')
-    print(flow_link)
     lasts = execute(flow_link,{},{})
-    print('check1')
-    print(lasts)
     # print('check2')
     lasts = convert_from_activity(lasts)
     # print(lasts['mcat_output'])]
-    
-    print("\n\n")
-    print(lasts)
-    print('\n\n')
+
     
     # print(g.factory.data.find_by_uuid(lasts[0]['uuid']))
     # print(lasts)
@@ -106,9 +97,9 @@ def get_all_uuid():
     # テスト結果の情報を元に、returnするjsonを作成、返却する
     if root_datum:
         # return render_template('result_assert.html', result_assert="成功")
-        return render_template('result_assert.html', result=result)
+        return render_template('result_assert.html', test_result=mcat_flow_json)
     else:
-        return render_template('result_assert.html', result=result)
+        return render_template('result_assert.html', test_result=mcat_flow_json)
 
 
 
@@ -307,7 +298,7 @@ def make_mcat_json(uuid_list):
     }
     time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
     mcat_json['createdAt'] = time
-    mcat_json['uuid'] = uuid.uuid4()
+    mcat_json['uuid'] = None
 
     # jsonにそれぞれのflowの出力データ情報を配置
     flow_uuid_getter = Flow_uuid_getter(g.factory)# flow object
