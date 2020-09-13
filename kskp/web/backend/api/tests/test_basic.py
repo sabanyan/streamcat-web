@@ -154,6 +154,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
         project = self.factory.data.find_by_uuid(project.uuid)
         self.assertFalse(project.delete())
 
+    @unittest.skip('Projectの移動は禁止する仕様に変更した')
     def test_move_project(self):
         # ルートを取得する
         root = self.factory.data.load_root()
