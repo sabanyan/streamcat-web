@@ -10,7 +10,7 @@ from pathlib import Path
 
 from kskp.web.backend import app
 from kskp.store import Datum, Flow
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 # 
 # クラス毎にテストケースを実行してください。

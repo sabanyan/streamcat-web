@@ -5,7 +5,7 @@ import pprint
 import unittest
 
 from kskp.web.backend import app
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 class LockFlowTestCase(ApiTestCaseBase):
 
