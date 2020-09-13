@@ -1,8 +1,8 @@
 import unittest
 import pprint
 from kskp.core.datum import Datum
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
 from kskp.store.auth import Role
+from .api_test_case_base import ApiTestCaseBase
 
 class SystemTestCase(ApiTestCaseBase):
 
@@ -97,7 +97,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['state'], 'inactive')
         self.assertNotIn('roles', result['data'])
         self.assertNotIn('projects', result['data'])
-        # 登録状態なのでpassword属性は返されない
+        # 論理削除状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
@@ -269,23 +269,90 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'test@kskp.io')
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
-        # プロジェクトX
+        # プロジェクトの数が正しいことを確認する
+        self.assertEqual(len(result['data']['projects']), 3)
+        # MyProject
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][0]['label'], 'プロジェクトX')
+        self.assertEqual(result['data']['projects'][0]['label'], 'MyProject')
         self.assertFalse(result['data']['projects'][0]['readable'])
         self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][0]['creator'])
         self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
-        # プロジェクトY
+        # プロジェクトX
         self.assertIsNotNone(result['data']['projects'][1]['uuid'])
         self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトY')
+        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトX')
         self.assertFalse(result['data']['projects'][1]['readable'])
         self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][1]['creator'])
         self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
+        # プロジェクトY
+        self.assertIsNotNone(result['data']['projects'][2]['uuid'])
+        self.assertEqual(result['data']['projects'][2]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['data']['projects'][2]['label'], 'プロジェクトY')
+        self.assertFalse(result['data']['projects'][2]['readable'])
+        self.assertIsNone(result['data']['projects'][2]['prevFolderPath'])
+        self.assertIsNotNone(result['data']['projects'][2]['creator'])
+        self.assertIsNotNone(result['data']['projects'][2]['createdAt'])
 
+    def test_get_tmp_user_with_roles(self):
+        """
+        一度も登録状態になっていないUserの本人ロールは存在しない
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'メール@アドレス.co.jp', 'name':'平将門', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # ユーザを取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?roles=on', self.USER1)
+
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'メール@アドレス.co.jp')
+        self.assertEqual(result['data']['name'], '平将門')
+        self.assertEqual(result['data']['state'], 'tmp')
+        # 本人ロールは存在しないので所属するロールはeveryoneのみである
+        self.assertEqual(len(result['data']['roles']), 1)
+        # EveryOneロール
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][0]['creator'])
+        self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
+        # ユーザ管理者は仮パスワードは確認することができる
+        self.assertIsNotNone(result['data']['password'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+    def test_get_tmp_user_with_projects(self):
+        """
+        一度も登録状態になっていないUserのMyProjectは存在しない
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'iam.new-man@ksk-anl.co.jp', 'name':'IAM New Man', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # ユーザを取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
+
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'iam.new-man@ksk-anl.co.jp')
+        self.assertEqual(result['data']['name'], 'IAM New Man')
+        self.assertEqual(result['data']['state'], 'tmp')
+        # MyProjectも含め所属するプロジェクトは存在しない
+        self.assertEqual(len(result['data']['projects']), 0)
+        # ユーザ管理者は仮パスワードは確認することができる
+        self.assertIsNotNone(result['data']['password'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
 
     def test_search_user(self):
         """

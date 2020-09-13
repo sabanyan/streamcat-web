@@ -5,9 +5,8 @@ import pprint
 from pathlib import Path
 
 from kskp.web.backend import app
-from kskp.store import StoreModel as Store
 from kskp.store import Mountable
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 class DataStoreTestCase(ApiTestCaseBase):
 
