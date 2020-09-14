@@ -1,4 +1,3 @@
-//@flow
 import React from 'react'
 import { Popper } from '@material-ui/core';
 
@@ -14,21 +13,28 @@ type Props = {
   param: CommandParamType;
   disabled?: boolean;
   value?: string;
-  helperTargetedInput: any;
+  helperTargetedInput?: any;
 
   helper: any;
-  setHelperTargetedInput(inputEl):void;
+  setHelperTargetedInput?: Function;
   // event
   onChange?: Function; // onChange(e, param)
 }
 
 type State = {
-  helperTargetedInput:any;
+  helperTargetedInput: any;
 }
 
-export default class ParamNumber extends React.Component<Props, State> {
+
+export default class ParamString extends React.Component<Props, State> {
+  inputRef:any = null;
+
   constructor(props: Props) {
     super(props)
+    this.state = {
+      helperTargetedInput: null,
+    };
+    this.inputRef = React.createRef()
   }
 
   onChange(e) {
@@ -45,13 +51,16 @@ export default class ParamNumber extends React.Component<Props, State> {
   }
 
   onFocusInput(e) {
-    this.setState({
-      helperTargetedInput: e.currentTarget
-    })
+    const { setHelperTargetedInput } = this.props;
+
+    if (setHelperTargetedInput) {
+      setHelperTargetedInput(e.currentTarget);
+    }
   }
 
   onClickShortcut(e, value, delimiter) {
-    const {helperTargetedInput, setHelperTargetedInput} = this.props;
+    const { helperTargetedInput, setHelperTargetedInput, param, onChange } = this.props;
+
     let currentValue = helperTargetedInput.value;
     let newValue;
 
@@ -61,7 +70,13 @@ export default class ParamNumber extends React.Component<Props, State> {
       newValue = currentValue + delimiter + value;
     }
 
-    setHelperTargetedInput(newValue);
+    if (onChange) onChange(e, param, newValue);
+  }
+
+  onClickCloseHelper(e) {
+    const { helperTargetedInput, setHelperTargetedInput } = this.props;
+
+    if (setHelperTargetedInput) setHelperTargetedInput(null);
   }
 
   renderDescription() {
@@ -80,43 +95,39 @@ export default class ParamNumber extends React.Component<Props, State> {
     </p>
   }
 
+  //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
   render() {
-    const { label, param, disabled, value, helperTargetedInput } = this.props
+    const { label, param, helper, disabled, value, helperTargetedInput } = this.props
     const { onChange } = this.props
 
     let isDisabled = (disabled) ? true : false
     let currentValue = (value) ? value : ""
+    let openHelper: boolean = Boolean(helperTargetedInput)
 
-    let openHelper:boolean = Boolean(helperTargetedInput)
-
-    return <div className={style.param}>
-      <div className={style.label}>
-        <span>{param.label}</span>
-        <div className={style.description}>
-          <p>{param.description}</p>
-        </div>
-      </div>
-      <div className={style.input}>
-        <input
-          name={param.name}
-          type="text"
-          className="form-control"
-          data-paramtype={param.type}
-          placeholder={param.name}
-          value={currentValue}
-          disabled={isDisabled}
-          onChange={(e) => this.onChange(e)}
-          onFocus={(e) => this.onFocusInput(e)}
-        />
-        {
-          param.helper && param.helper[param.name] ?
+    return <React.Fragment>
+      <input
+        name={param.name}
+        type="text"
+        className="form-control"
+        data-paramtype={param.type}
+        placeholder={param.name}
+        value={currentValue}
+        disabled={isDisabled}
+        onChange={(e) => this.onChange(e)}
+        onFocus={(e) => this.onFocusInput(e)}
+        ref={this.inputRef}
+      />
+      {
+        helper && helper[param.name] && this.inputRef.current === helperTargetedInput ?
           <Popper className={style.popper} open={openHelper} anchorEl={helperTargetedInput} transition placement="right-start">
-            <Helper helper={param.helper[param.name]} onClickShortcut={this.onClickShortcut.bind(this)} />
+            <Helper
+              helper={helper[param.name]}
+              onClickShortcut={this.onClickShortcut.bind(this)}
+              onClickCloseHelper={this.onClickCloseHelper.bind(this)}
+            />
           </Popper>
           : null
-        }
-      </div>
-    </div>
+      }
+    </React.Fragment>
   }
-
 }

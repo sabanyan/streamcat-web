@@ -59,7 +59,7 @@ export default class ParamString extends React.Component<Props, State> {
   }
 
   onClickShortcut(e, value, delimiter) {
-    const { helperTargetedInput, setHelperTargetedInput } = this.props;
+    const { helperTargetedInput, setHelperTargetedInput, param, onChange } = this.props;
 
     let currentValue = helperTargetedInput.value;
     let newValue;
@@ -70,7 +70,7 @@ export default class ParamString extends React.Component<Props, State> {
       newValue = currentValue + delimiter + value;
     }
 
-    helperTargetedInput.value = newValue
+    if (onChange) onChange(e, param, newValue);
   }
 
   onClickCloseHelper(e) {
