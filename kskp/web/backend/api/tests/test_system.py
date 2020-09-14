@@ -812,3 +812,151 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
 
+    def test_update_flow_in_project(self):
+        """
+        プロジェクトの編集者はプロジェクト内のDatumを編集できること
+        """
+        # テスト用のフロー
+        flow_json = {
+            "label": "Test フロー ！",
+            "params": [],
+            "description": "",
+            "ports": [
+                [],
+                [
+                    {
+                    "type": "frame", 
+                    "label": "d1", 
+                    "nodeId": "d1"
+                    }
+                ]
+            ],
+            "nodes": [
+                {
+                "type": "frame",
+                "id": "d1",
+                "label": "出力結果",
+                "uuid": None,
+                "dataSource": "csv"
+                },
+                {
+                "type": "command",
+                "id": "c1",
+                "label": "c1",
+                "srcs": {
+                    "i": "i"
+                },
+                "dsts": {
+                    "o": "d1"
+                },
+                "args": {
+                    "f": "0,1",
+                    "x": True
+                },
+                "commandId": "mcut"
+                }
+            ]
+        }
+
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Flowプロジェクト'}, self.USER2)
+        project_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、プロジェクト内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': '私のフロー',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+
+        # フローのUUIDを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # プロジェクト管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}]
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # 編集者は、フローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+            
+        # 編集者は、フローを変更する
+        data = {
+            'flow' : flow_json,
+            'label': '私のフロー🛀',
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # 編集者は、フローをゴミ箱へほかす
+        self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER3)
+
+        # ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER3)
+
+    def test_cannot_update_database_in_project(self):
+        """
+        プロジェクトの閲覧者はそのプロジェクト内のDatumを編集できないこと
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Testプロジェクト'}, self.USER2)
+        project_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、プロジェクト内にdatabaseを作成する
+        data = {
+            "parent"   : project_uuid,
+            "label"    : "社内データベース",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : "password"
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER2)
+        database_uuid = result['data']['uuid']
+
+        # プロジェクトメンバではないユーザは、databaseを変更できない
+        data = {
+            "label"    : "社内データベースA",
+            "dbms"     : "ORACLE",
+            "hostname" : "db0",
+            "port"     : 2935,
+            "database" : "kskp",
+            "user_id"  : "scott",
+            "password" : "tiger"
+        }
+        with self.assertRaises(AssertionError):
+            result = self.put_uri(f'/api/v0/databases/{database_uuid}', data, self.USER3)
+        with self.assertRaises(AssertionError):
+            result = self.delete_uri(f'/api/v0/databases/{database_uuid}', self.USER3)
+
+        # プロジェクトにUSER3を閲覧者として参加させる
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER3.uuid}', {'memberType':'Reader'}, self.USER2)
+
+        # プロジェクトの閲覧者は、databaseを変更できない
+        with self.assertRaises(AssertionError):
+            result = self.put_uri(f'/api/v0/databases/{database_uuid}', data, self.USER3)
+        with self.assertRaises(AssertionError):
+            result = self.delete_uri(f'/api/v0/databases/{database_uuid}', self.USER3)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
