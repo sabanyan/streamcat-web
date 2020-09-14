@@ -1,8 +1,6 @@
 @import "../../../../../sass/common";
 
-
 .param {
-
 }
 
 .flex {
@@ -16,7 +14,6 @@
 }
 
 .presence {
-
 }
 
 .presence label {
@@ -27,17 +24,17 @@
   }
 }
 
-.invalid input[type=text] {
-  background: lighten(#F51F28, 40%);
+.invalid input[type="text"] {
+  background: lighten(#f51f28, 40%);
 }
-
 
 .group {
   border-top: 1px solid $kskp-property-border-color;
-  color: black;
+  color: #00469d;
   margin: 16px -16px 16px -16px;
   padding: 4px 16px 4px 16px;
   height: 30px;
+  font-size: 1.2rem;
 }
 
 .colored {
