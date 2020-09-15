@@ -240,10 +240,11 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
         # Activityを取得して返り値とする
         for point_id, datum in lasts.items():
             if isinstance(datum, Activity):
-                # 実行時エラーが発生した場合、例外送出する
-                if not datum.is_success:
-                    raise datum.exs[0]
-                return datum
+                activity = datum
+                # 実行に失敗した場合、例外を送出する
+                activity.is_success or activity.raise_one()
+                # 実行に成功した場合、Activityを返す
+                return activity
 
         # Activityを取得できなかった場合
         raise NoResultsException('実行結果は出力されませんでした')
@@ -256,12 +257,12 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
 
 def format_result(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.results]
+    return [{'id':point.id, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.lasts]
 
 def format_vis(activity):
     from kskp.store import Activity
     # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
-    return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.results]
+    return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.lasts]
 
 def _make_flow_inputs(factory, flow_uuid, request):
     """
