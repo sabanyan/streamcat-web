@@ -59,7 +59,7 @@ def projects(project_uuid):
     project_uuid = project_uuid.rsplit('?')[0]
     return render_template('library.html',folder_uuid=project_uuid,is_project=1,js_resources=js_resources,css_resources=css_resources)
 
-@mod.route('/profile', methods=['GET', 'POST'])
+@mod.route('/settings/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     return render_template('profile.html', user_id=session['user_id'])
