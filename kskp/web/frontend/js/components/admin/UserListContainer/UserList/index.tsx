@@ -1,6 +1,6 @@
 import * as React from 'react'
 import style from './style.scss';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {APIUtil, ModalUtil} from 'Utils/index';
 import {UserListUser, UserProject, UserRole} from 'Types/index';
 import {Flex, Loader, Spacer} from 'Shared/Base';
@@ -11,6 +11,11 @@ import {ModalManager} from 'Shared/Modal';
 import {NotificationManager} from 'Shared/Notification';
 import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
+import {InputForm, TextField} from 'Shared/Input';
+import Constants from 'Constants/index';
+import Select from 'react-select';
+import {LibraryChild} from 'Model/Library';
+import UserListInspector from 'Shared/Inspector/UserListInspector';
 
 const UserList = () => {
     const dispatch = useDispatch();
@@ -27,6 +32,9 @@ const UserList = () => {
     const [isFinished, setIsFinished] = useState<Boolean>(false);
     const [isLoading, setIsLoading] = useState<Boolean>(true);
     const [users, setUsers] = useState<UserListUser[]>([]);
+    const [lastSelected, setLastSelected] = useState<UserListUser | null>(null);
+    const [selectedDatas, setSelectedDatas] = useState<UserListUser[]>([]);
+    const clickedUserListCell = useRef(false);
 
 
     // ユーザ一覧を取得する
@@ -56,8 +64,46 @@ const UserList = () => {
 
     // ユーザ一覧を表示する
     const renderUserList = () => {
-        const onClickCell = () => {
-
+        const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => {
+            let data: UserListUser = cell;
+            if (event && (event.metaKey || event.ctrlKey)) {
+                data.selected = true;
+                // command or ctrl + click
+                if (selectedDatas.includes(data)) {
+                    data.selected = !data.selected;
+                    setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
+                } else {
+                    selectedDatas.push(data);
+                }
+                setLastSelected(data);
+            } else if (event && event.shiftKey) {
+                // shift + click
+                clearSelected();// 選択状態を一旦解除
+                let current = users.indexOf(data);
+                if (lastSelected) {
+                    let last = users.indexOf(lastSelected);
+                    let min, max;
+                    if (current >= last) {
+                        min = last;
+                        max = current;
+                    } else {
+                        min = current;
+                        max = last;
+                    }
+                    const selectedDatas: UserListUser[] = users.slice(min, max + 1).map((libraryChild) => {
+                        libraryChild.selected = true;
+                        return libraryChild;
+                    });
+                    setSelectedDatas(selectedDatas);
+                }
+            } else {
+                // 単一選択
+                clearSelected();
+                data.selected = true;
+                setSelectedDatas([data]);
+                setLastSelected(data);
+            }
+            clickedUserListCell.current = true;
         };
         const onClickFileName = () => {
 
@@ -132,15 +178,34 @@ const UserList = () => {
     };
 
     // ペインを表示
-    const renderInspector = () => {
+    const renderInspector = ():React.ReactNode => {
+        if (!lastSelected) return null;
 
+        clickedUserListCell.current = true;
+
+        const data: UserListUser = lastSelected;
+        return <UserListInspector selected={selectedDatas} lastSelected={lastSelected}/>
+    };
+
+    const clearSelected = () => {
+        setUsers(users.map((user: UserListUser) => {
+            user.selected = false;
+            return user;
+        }));
     };
 
     // 描画する
     const renderAll = () => {
         const onClickUserList = () => {
-
+            setTimeout(() => {
+                if (!clickedUserListCell.current) {
+                    clearSelected();// 選択状態を一旦解除
+                    setLastSelected(null);
+                }
+                clickedUserListCell.current = false;
+            }, 100);
         };
+
         return <>
             {renderLoadingIcon()}
             <Flex justifyContent={'center'} fluid={true}>
