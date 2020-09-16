@@ -1,7 +1,7 @@
 import * as React from 'react'
 import style from './style.scss';
 import {useEffect, useRef, useState} from 'react';
-import {APIUtil, ModalUtil} from 'Utils/index';
+import {APIUtil, ModalUtil, ReactDomUtil, ErrorUtil} from 'Utils/index';
 import {UserListUser, UserProject, UserRole} from 'Types/index';
 import {Flex, Loader, Spacer} from 'Shared/Base';
 import {MenuList} from 'UserListContainer/UserList/MenuList';
@@ -48,6 +48,17 @@ const UserList = () => {
         return APIUtil.get('users?projects=' + params.projects + '&roles=' + params.roles).then((response) => {
             const users: UserListUser[] = response.data.data;
             setUsers(users);
+            setIsLoading(false);
+            setIsFinished(true);
+        }).catch((error) => {
+            console.log(error);
+            notify({
+                title: '実行エラー',
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                status: 'error',
+                dismissAfter: 0,
+                closeButton: true
+            })
             setIsLoading(false);
             setIsFinished(true);
         });
