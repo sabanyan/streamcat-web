@@ -10,14 +10,12 @@ import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
 import {ModalManager} from "Shared/Modal";
 import {addNotification, removeNotification} from "reapop";
 
-import {
-    ProfileContainer,
-} from "Components/index";
 import {NavigationBar} from "Shared/Base";
 import {Preview} from "PreviewContainer/Preview";
 import {FlowEditor} from "FlowEditorContainer/FlowEditor";
 import {UserList} from 'UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
+import {Profile} from 'ProfileContainer/Profile';
 
 export type Props = {
     viewId: ViewId
@@ -85,7 +83,7 @@ const Kskp = (props: Props) => {
                 viewComponent = <Library />;
                 break;
             case ViewId.Profile:
-                viewComponent = <ProfileContainer />;
+                viewComponent = <Profile />;
                 break;
             case ViewId.Preview:
                 viewComponent = <Preview />;
