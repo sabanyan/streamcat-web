@@ -52,7 +52,7 @@ class HtmlTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃお〜ん😽'}, self.USER0)
         project_uuid = result['data']['uuid']
         # 画面が表示できること
-        self.assertRenderTemplate(f'/projects/project_uuid', 'library.html')
+        self.assertRenderTemplate(f'/projects/{project_uuid}', 'library.html')
 
     def test_cache_folders(self):
         """
