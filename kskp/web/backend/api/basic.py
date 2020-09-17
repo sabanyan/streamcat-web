@@ -430,6 +430,8 @@ def get_navigation():
         'project_name': '',
         'flow_uuid': '',
         'flow_name': '',
+        'user': {},
+        'allowlist': {}, 
         'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
     }
 
@@ -440,6 +442,8 @@ def get_navigation():
     if g.user is not None:
         navigation['user_id'] = g.user.id
         navigation['user_name'] = g.user.name
+        navigation['user'] = g.user.to_json()
+        navigation['allowlist'] = g.user.get_allowlist()
 
     if flow_uuid is not None :
         flow = g.factory.data.find_by_uuid(flow_uuid)

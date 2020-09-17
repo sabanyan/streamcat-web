@@ -953,7 +953,9 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], '')
         self.assertEqual(data['flow_uuid'], '')
         self.assertEqual(data['flow_name'], '')
-
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+        
         # テスト用フローデータを作成する
         flow_json = {
             'projectId': None,
@@ -986,7 +988,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], flow_uuid)
         self.assertEqual(data['flow_name'], test_flow.label)
-
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
 
         project_uuid = data['project_uuid']
         # project_uuidあり, flow_uuidなし
@@ -999,6 +1002,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], '')
         self.assertEqual(data['flow_name'], '')
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
 
         # project_uuidあり, flow_uuidあり
         uri = '/api/v0/navigation?project_uuid=' + project_uuid + '&flow_uuid=' + flow_uuid
@@ -1010,6 +1015,24 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], flow_uuid)
         self.assertEqual(data['flow_name'], test_flow.label)
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+
+    def test_get_sys_admin_navi(self):
+        """
+        システム管理者のnavigationを検証する
+        """
+        result = self.get_uri('/api/v0/navigation', self.USER0)
+        data = result['data']
+        self.assertEqual(data['user_id'], self.USER0.id)
+        self.assertEqual(data['user_name'], self.USER0.name)
+        self.assertEqual(data['project_uuid'], '')
+        self.assertEqual(data['project_name'], '')
+        self.assertEqual(data['flow_uuid'], '')
+        self.assertEqual(data['flow_name'], '')
+        self.assertDictEqual(data['user'], self.USER0.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER0.get_allowlist())
+
 
 def setUpUser(self):
     from kskp.store.auth import User
