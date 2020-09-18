@@ -1,7 +1,7 @@
 import unittest
 from flask import template_rendered
 from kskp.web.backend import app
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 class AuthTestCase(ApiTestCaseBase):
     def test_password_hash(self):

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from kskp.web.backend import app
 from kskp.store import Datum, Flow
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 # 
 # クラス毎にテストケースを実行してください。
@@ -81,23 +81,25 @@ class ProjectApiTestCase(ApiTestCaseBase):
         GET /projects APIをテストする
         """
         # ROOTを取得する
-        flow_folder = self.factory.data.load_flow_folder()
+        root = self.factory.data.load_root()
 
         # プロジェクトを作成する
-        data = {'parent': flow_folder.uuid,
+        data = {'parent': root.uuid,
                 'label' : '新しいプロジェクト'}
         self.post_uri('/api/v0/projects', data, self.USER2)
 
         # フォルダを取得する
         results = self.get_uri('/api/v0/projects', self.USER2)
 
+        # 結果の件数は1件以上である
+        self.assertGreater(len(results['data']), 0)
+
         # 作成したプロジェクトが取得できることを検証する
         result0 = results['data'][0]
         self.assertIsNotNone(result0['uuid'])
-        self.assertEqual(result0['name'], '新しいプロジェクト')
-        self.assertEqual(result0['creator_id'], self.USER2.id)
-        self.assertIsNotNone(result0['creator_name'])
-        self.assertIsNotNone(result0['created_at'])
+        self.assertEqual(result0['type'], 'project')
+        self.assertIsNotNone(result0['creator'])
+        self.assertIsNotNone(result0['createdAt'])
 
         # ナビが取得できることを検証する
         navi = results['navigation']
@@ -106,7 +108,9 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertEqual(navi['project_name'], '')
         self.assertEqual(navi['project_uuid'], '')
         self.assertEqual(navi['user_id'], self.USER2.id)
-        self.assertIsNotNone(navi['user_name'])
+        self.assertEqual(navi['user_name'], self.USER2.name)
+        self.assertEqual(navi['depo_name'], 'Unit Test')
+
 
     def test_get_project(self):
         """
@@ -150,6 +154,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
         project = self.factory.data.find_by_uuid(project.uuid)
         self.assertFalse(project.delete())
 
+    @unittest.skip('Projectの移動は禁止する仕様に変更した')
     def test_move_project(self):
         # ルートを取得する
         root = self.factory.data.load_root()
@@ -948,7 +953,9 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], '')
         self.assertEqual(data['flow_uuid'], '')
         self.assertEqual(data['flow_name'], '')
-
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+        
         # テスト用フローデータを作成する
         flow_json = {
             'projectId': None,
@@ -981,7 +988,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], flow_uuid)
         self.assertEqual(data['flow_name'], test_flow.label)
-
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
 
         project_uuid = data['project_uuid']
         # project_uuidあり, flow_uuidなし
@@ -994,6 +1002,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], '')
         self.assertEqual(data['flow_name'], '')
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
 
         # project_uuidあり, flow_uuidあり
         uri = '/api/v0/navigation?project_uuid=' + project_uuid + '&flow_uuid=' + flow_uuid
@@ -1005,6 +1015,24 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], flow_uuid)
         self.assertEqual(data['flow_name'], test_flow.label)
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+
+    def test_get_sys_admin_navi(self):
+        """
+        システム管理者のnavigationを検証する
+        """
+        result = self.get_uri('/api/v0/navigation', self.USER0)
+        data = result['data']
+        self.assertEqual(data['user_id'], self.USER0.id)
+        self.assertEqual(data['user_name'], self.USER0.name)
+        self.assertEqual(data['project_uuid'], '')
+        self.assertEqual(data['project_name'], '')
+        self.assertEqual(data['flow_uuid'], '')
+        self.assertEqual(data['flow_name'], '')
+        self.assertDictEqual(data['user'], self.USER0.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER0.get_allowlist())
+
 
 def setUpUser(self):
     from kskp.store.auth import User
