@@ -43,6 +43,16 @@ def get_user(user_uuid):
     """
     return g.factory.user.find_by_uuid(user_uuid)
 
+@mod.route('/users/self', methods=['GET'])
+@login_required_api
+@update_user_info
+@api_base
+def get_self():
+    """
+    自分ユーザを返却する
+    """
+    return g.factory.user.find_by_id(g.user.id)
+
 @mod.route('/users', methods=['POST'])
 @login_required_api
 @api_base
@@ -68,10 +78,29 @@ def update_user(user_uuid):
     'password':Noneの場合はパスワードを自動生成する
     """
     req = RequestJson(request.json)
+    user = g.factory.user.find_by_uuid(user_uuid)
+    return _update_user_inner(user, req)
+
+@mod.route('/users/self', methods=['PUT'])
+@login_required_api
+@api_base
+def update_self():
+    """
+    自分ユーザを修正する
+    """
+    req = RequestJson(request.json)
+    user = g.factory.user.find_by_id(g.user.id)
+
+    if not req.has('currentPassword'):
+        raise Exception('currentPassword属性を指定してください')
+    if not user.authenticate(req['currentPassword']):
+        raise Exception('現在のパスワードが誤っています')
+
+    return _update_user_inner(user, req)
+
+def _update_user_inner(user, req):
     if req.has_no_all('email', 'name') and not req.isnull('password') and not req.has('password'):
         raise Exception('email,nameまたはpassword属性を指定してください')
-
-    user = g.factory.user.find_by_uuid(user_uuid)
 
     if req.has('email'):
         user = user.update_email(req['email'])

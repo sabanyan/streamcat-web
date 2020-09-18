@@ -58,9 +58,9 @@ class SystemTestCase(ApiTestCaseBase):
         with self.assertRaises(Exception):
             self.factory.user.find_by_uuid(user_uuid)
 
-    def test_update_user_by_self(self):
+    def test_update_user(self):
         """
-        一般ユーザが自分のユーザ情報を変更する
+        ユーザ情報を変更する
         """
         # ユーザを作成する
         result = self.post_uri('/api/v0/users', {'email':'aaa-bbb_ccc@ksk-anl.com', 'name':'一般ユーザです', 'password':'0123iampassword!'}, self.USER1)
@@ -70,13 +70,13 @@ class SystemTestCase(ApiTestCaseBase):
         new_user = self.factory.user.find_by_uuid(user_uuid)
         new_user.update_password('hogehoge')
 
-        # ユーザ情報を変更する
+        # ユーザ管理者は、ユーザ情報を変更する
         expected = {
             'email': '変更後＠aiueo.co.jp',
             'name' : '私はカモメ',
             'password' : '#yerhfkdi'
         }
-        result = self.put_uri(f'/api/v0/users/{user_uuid}', expected, new_user)
+        result = self.put_uri(f'/api/v0/users/{user_uuid}', expected, self.USER1)
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
@@ -105,6 +105,109 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('password', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
+
+    def test_update_user_by_self(self):
+        """
+        一般ユーザが自分のユーザ情報を変更する
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'harunobu@kai.co.jp', 'name':'武田晴信', 'password':'abc012_-%[]();'}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # 作成したユーザを登録状態にする
+        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user.update_password('fuurinkazann')
+
+        # ユーザ情報を変更する
+        expected = {
+            'email': 'harunobu＠shinano.co.jp',
+            'name' : '武田信玄',
+            'password' : 'ugokazarukoto-yamanogotoshi',
+            'currentPassword' : 'fuurinkazann'
+        }
+        result = self.put_uri(f'/api/v0/users/self', expected, new_user)
+
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], expected['email'])
+        self.assertEqual(result['data']['name'], expected['name'])
+        self.assertEqual(result['data']['state'], 'active')
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
+        # 登録状態なのでpassword属性は返されない
+        self.assertNotIn('password', result['data'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # 登録ユーザは論理削除されていること
+        result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], expected['email'])
+        self.assertEqual(result['data']['name'], expected['name'])
+        self.assertEqual(result['data']['state'], 'inactive')
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
+        # 論理削除状態なのでpassword属性は返されない
+        self.assertNotIn('password', result['data'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+    def test_update_user_by_other(self):
+        """
+        一般ユーザが他人のユーザ情報を変更できないこと
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'kagetora@echigo.co.jp', 'name':'長尾景虎', 'password':'bishamon123'}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # 作成したユーザを登録状態にする
+        new_user = self.factory.user.find_by_uuid(user_uuid)
+        new_user.update_password('bishamontenn123')
+
+        # 他人のユーザ情報を変更する
+        data = {
+            'email': 'kensshin@echigo.co.jp',
+            'name' : '上杉謙信',
+            'password' : 'auauwa',
+            'currentPassword' : 'bishamontenn123'
+        }
+        with self.assertRaises(Exception):
+            self.put_uri(f'/api/v0/users/{user_uuid}', data, self.USER3)
+
+        # 一般ユーザは、他人のユーザ情報を取得できる
+        result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER3)
+
+        # ユーザ情報は変更されていないこと
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'kagetora@echigo.co.jp')
+        self.assertEqual(result['data']['name'], '長尾景虎')
+        self.assertEqual(result['data']['state'], 'active')
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
+        # 登録状態なのでpassword属性は返されない
+        self.assertNotIn('password', result['data'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # 登録ユーザは論理削除されていること
+        result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'kagetora@echigo.co.jp')
+        self.assertEqual(result['data']['name'], '長尾景虎')
+        self.assertEqual(result['data']['state'], 'inactive')
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
+        # 論理削除状態なのでpassword属性は返されない
+        self.assertNotIn('password', result['data'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
 
     def test_generate_password_and_create_user(self):
         """
@@ -960,3 +1063,40 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER2)
+
+    def test_exec_flow_in_project(self):
+        """
+        プロジェクトメンバはプロジェクト内のFlowを実行できること
+        """
+        pass
+
+    def test_cannot_exec_flow_in_project(self):
+        """
+        プロジェクトメンバでないユーザはプロジェクト内のFlowを実行できないこと
+        """
+        pass
+
+    def test_exec_flow_using_source_outside_project(self):
+        """
+        データソースが他のプロジェクトに存在するFlowを実行できること
+        """
+        pass
+
+    def test_exec_flow_using_subflow_outside_project(self):
+        """
+        サブフローが他のプロジェクトに存在するFlowを実行できること
+        """
+        pass
+
+    def test_cannot_exec_flow_using_source_outside_project(self):
+        """
+        データソースが他のプロジェクトに存在するFlowを実行できないこと
+        """
+        pass
+
+    def test_cannot_exec_flow_using_subflow_outside_project(self):
+        """
+        サブフローが他のプロジェクトに存在するFlowを実行できないこと
+        """
+        pass
+        pass
