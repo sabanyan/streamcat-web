@@ -35,17 +35,19 @@ const UserList = () => {
     const [lastSelected, setLastSelected] = useState<UserListUser | null>(null);
     const [selectedDatas, setSelectedDatas] = useState<UserListUser[]>([]);
     const clickedUserListCell = useRef(false);
-
+    const [keyword,setKeyword] = useState<string>("");
 
     // ユーザ一覧を取得する
-    const fetchUsers = () => {
+    const fetchUsers = (keyword?: string) => {
         // APIをたたく
         const params = {
             projects: 'on',
-            roles: 'on'
+            roles: 'on',
+            query: keyword
         };
         setIsLoading(true);
-        return APIUtil.get('users?projects=' + params.projects + '&roles=' + params.roles).then((response) => {
+        const url = 'users?' + ((keyword)?'q='+ params.query + '&': '') + 'projects=' + params.projects + '&roles=' + params.roles
+        return APIUtil.get(url).then((response) => {
             const users: UserListUser[] = response.data.data;
             setUsers(users);
             setIsLoading(false);
@@ -53,7 +55,7 @@ const UserList = () => {
         }).catch((error) => {
             console.log(error);
             notify({
-                title: '実行エラー',
+                title: 'ユーザ一覧取得エラー',
                 message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
                 status: 'error',
                 dismissAfter: 0,
@@ -67,6 +69,11 @@ const UserList = () => {
     useEffect(() => {
         fetchUsers();
     }, []);
+
+    useEffect(()=>{
+        // キーワードが変更されると同時に fetch する
+        fetchUsers(keyword)
+    },[keyword])
 
     // ローディングアイコンを表示する
     const renderLoadingIcon = () => {
@@ -252,6 +259,9 @@ const UserList = () => {
             }, 100);
         };
 
+        const onChangeKeyword = (e:React.ChangeEvent<HTMLInputElement>)=> {
+            setKeyword(e.target.value)
+        }
         return <>
             {renderLoadingIcon()}
             <Flex justifyContent={'center'} fluid={true}>
@@ -266,7 +276,7 @@ const UserList = () => {
                                 ユーザー管理
                             </div>
                             <div className={style.searchBarContainer}>
-                                <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'}/>
+                                <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
                             </div>
                         </div>
 
