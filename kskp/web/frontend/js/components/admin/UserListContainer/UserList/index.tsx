@@ -16,6 +16,7 @@ import Constants from 'Constants/index';
 import Select from 'react-select';
 import {LibraryChild} from 'Model/Library';
 import UserListInspector from 'Shared/Inspector/UserListInspector';
+import {project} from 'Shared/IconRenderer/icon';
 
 const UserList = () => {
     const dispatch = useDispatch();
@@ -36,6 +37,28 @@ const UserList = () => {
     const [selectedDatas, setSelectedDatas] = useState<UserListUser[]>([]);
     const clickedUserListCell = useRef(false);
     const [keyword,setKeyword] = useState<string>("");
+    const [projects,setProjects] = useState<UserProject>([]);
+
+    const fetchProjects = () => {
+        const url = '/projects'
+        return APIUtil.get(url).then((response) => {
+            const projects: UserProject[] = response.data.data;
+            setProjects(projects);
+            setIsLoading(false);
+            setIsFinished(true);
+        }).catch((error) => {
+            console.log(error);
+            notify({
+                title: 'プロジェクト取得エラー',
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                status: 'error',
+                dismissAfter: 0,
+                closeButton: true
+            })
+            setIsLoading(false);
+            setIsFinished(true);
+        });
+    }
 
     // ユーザ一覧を取得する
     const fetchUsers = (keyword?: string) => {
@@ -49,6 +72,7 @@ const UserList = () => {
         const url = 'users?' + ((keyword)?'q='+ params.query + '&': '') + 'projects=' + params.projects + '&roles=' + params.roles
         return APIUtil.get(url).then((response) => {
             const users: UserListUser[] = response.data.data;
+            console.log("fetch",users);
             setUsers(users);
             setIsLoading(false);
             setIsFinished(true);
@@ -68,6 +92,7 @@ const UserList = () => {
 
     useEffect(() => {
         fetchUsers();
+        fetchProjects();
     }, []);
 
     useEffect(()=>{
@@ -130,10 +155,13 @@ const UserList = () => {
 
         };
 
+        console.log(users);
         const bodies: ITableBody[] = users.map((user: UserListUser) => {
             let projects = [];
-            if (user && user.projects && Array.isArray(user.projects)) {
-                projects = user.projects((project: UserProject) => {
+            console.log("user",user);
+            if (user && Array.isArray(user.projects) && user.projects ) {
+                console.log("user",user.projects);
+                projects = user.projects.map((project: UserProject) => {
                     return {
                         uuid: project.uuid,
                         label: project.label
@@ -178,11 +206,12 @@ const UserList = () => {
         const [selectedOption, setSelectedOption] = useState(null);
         const onClickNewUser = () => {
             // モーダル表示
-            const options = [
-                {value: 'chocolate', label: 'Chocolate'},
-                {value: 'strawberry', label: 'Strawberry'},
-                {value: 'vanilla', label: 'Vanilla'},
-            ];
+            const options = projects.map((project:UserProject)=>{
+                return {
+                    label: project.label,
+                    value: project.uuid
+                }
+            })
             const onSubmit = () => {
                 alert('submit')
             };
