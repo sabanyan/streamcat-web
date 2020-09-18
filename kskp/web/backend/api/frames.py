@@ -2,10 +2,12 @@
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, g
-from kskp.web.backend import app
-
 from .auth import login_required_api
-from .utils import api_base, frame_api_base, RequestJson
+from .utils import (
+    api_base,
+    frame_api_base,
+    RequestJson
+)
 
 mod = Blueprint('frames', __name__)
 

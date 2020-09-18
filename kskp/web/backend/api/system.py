@@ -2,9 +2,17 @@
 # システム管理者向けのAPIを定義する
 # 
 
+import re
 from flask import Blueprint, request, g
 from .auth import login_required_api
-from .utils import api_base, RequestJson, update_user_info, update_users_info
+from .utils import (
+    api_base,
+    RequestJson,
+    update_user_info,
+    update_users_info,
+    update_role_info,
+    update_roles_info
+)
 mod = Blueprint('system', __name__)
 
 # 
@@ -35,6 +43,16 @@ def get_user(user_uuid):
     """
     return g.factory.user.find_by_uuid(user_uuid)
 
+@mod.route('/users/self', methods=['GET'])
+@login_required_api
+@update_user_info
+@api_base
+def get_self():
+    """
+    自分ユーザを返却する
+    """
+    return g.factory.user.find_by_id(g.user.id)
+
 @mod.route('/users', methods=['POST'])
 @login_required_api
 @api_base
@@ -60,10 +78,29 @@ def update_user(user_uuid):
     'password':Noneの場合はパスワードを自動生成する
     """
     req = RequestJson(request.json)
+    user = g.factory.user.find_by_uuid(user_uuid)
+    return _update_user_inner(user, req)
+
+@mod.route('/users/self', methods=['PUT'])
+@login_required_api
+@api_base
+def update_self():
+    """
+    自分ユーザを修正する
+    """
+    req = RequestJson(request.json)
+    user = g.factory.user.find_by_id(g.user.id)
+
+    if not req.has('currentPassword'):
+        raise Exception('currentPassword属性を指定してください')
+    if not user.authenticate(req['currentPassword']):
+        raise Exception('現在のパスワードが誤っています')
+
+    return _update_user_inner(user, req)
+
+def _update_user_inner(user, req):
     if req.has_no_all('email', 'name') and not req.isnull('password') and not req.has('password'):
         raise Exception('email,nameまたはpassword属性を指定してください')
-
-    user = g.factory.user.find_by_uuid(user_uuid)
 
     if req.has('email'):
         user = user.update_email(req['email'])
@@ -103,21 +140,17 @@ def delete_user(user_uuid):
 
 @mod.route('/roles', methods=['GET'])
 @login_required_api
+@update_roles_info
 @api_base
 def get_roles():
     """
-    ユーザが所属するロールを返却する
-    (ユーザが指定されていない場合は全てのロールを返却する)
+    全てのロールを返却する
     """
-    if 'user' in request.args:
-        # TODO: メソッド用意する必要あり
-        user_uuid = request.args['user']
-        pass
-    else:
-        return g.factory.role.find_all()
+    return g.factory.role.find_all()
 
 @mod.route('/roles/<role_uuid>', methods=['GET'])
 @login_required_api
+@update_role_info
 @api_base
 def get_role(role_uuid):
     """
@@ -148,13 +181,22 @@ def update_role(role_uuid):
     ロールを修正する
     """
     req = RequestJson(request.json)
-    if req.has_no_all('name'):
-        raise Exception('name属性を指定してください')
+    if req.has_no_all('name', 'users'):
+        raise Exception('nameまたはusers属性を指定してください')
 
     role = g.factory.role.find_by_uuid(role_uuid)
 
-    if role.has('name'):
-        role = role.update_name(req['name'])        
+    # ロール名を変更する
+    if req.has('name'):
+        role = role.update_name(req['name'])
+
+    # ロールにユーザを追加・削除する
+    if req.has('users'):
+        if not isinstance(req['users'], list):
+            raise Exception('users属性にはユーザuuidの配列を指定してください')
+        # users属性で指定されたユーザを追加する
+        users = [g.factory.user.find_by_uuid(user_uuid) for user_uuid in req['users']]
+        role.init_users(users)
 
     return role
 
@@ -168,90 +210,63 @@ def delete_role(role_uuid):
     role = g.factory.role.find_by_uuid(role_uuid)
     role.delete()
 
-# 
-# Member
-# 
+#
+# Role-User
+#
 
-@mod.route('/members/<role_uuid>', methods=['GET'])
+@mod.route('/roles/<role_uuid>/users/<user_uuid>', methods=['PUT'])
 @login_required_api
 @api_base
-def get_members(role_uuid):
-    """
-    ロールに属するユーザを返却する
-    (everyoneロールのUUIDを指定すれば全ユーザを返却する)
-    """
-    role = g.factory.role.find_by_uuid(role_uuid)
-    return role.get_joined_users()
-
-@mod.route('/members', methods=['GET'])
-@login_required_api
-@api_base
-def get_out_of_members():
-    """
-    ロールに属さないユーザを返却する
-         　~~~~~~~
-    """
-    if 'out_of_role' in request.args:
-        # TODO: メソッド用意する必要あり
-        pass
-    else:
-        raise Exception('No out_of_role parameter is designated')
-
-@mod.route('/members', methods=['POST'])
-@login_required_api
-@api_base
-def make_new_member():
+def join_user_to_role(role_uuid, user_uuid):
     """
     ロールにユーザを追加する
     """
-    req = RequestJson(request.json)
-    if not req.has_all('role', 'user'):
-        raise Exception('roke,user属性を指定してください')
-
-    role = g.factory.role.find_by_uuid(req['role'])
-    user = g.factory.user.find_by_uuid(req['user'])
+    role = g.factory.role.find_by_uuid(role_uuid)
+    user = g.factory.user.find_by_uuid(user_uuid)
     role.join_user(user)
 
-@mod.route('/members', methods=['DELETE'])
+@mod.route('/roles/<role_uuid>/users/<user_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def delete_member():
+def leave_user_outof_role(role_uuid, user_uuid):
     """
     ロールからユーザを削除する
     """
-    req = RequestJson(request.json)
-    if not req.has_all('role', 'user'):
-        raise Exception('roke,user属性を指定してください')
-
-    role = g.factory.role.find_by_uuid(req['role'])
-    user = g.factory.user.find_by_uuid(req['user'])
+    role = g.factory.role.find_by_uuid(role_uuid)
+    user = g.factory.user.find_by_uuid(user_uuid)
     role.leave_user(user)
 
 # 
-# Auth
+# Project-Member
 # 
 
-# -> 権限情報は、projects APIで取得・設定するようにする
-
-@mod.route('/auths', methods=['GET'])
+@mod.route('/projects/<project_uuid>/users/<user_uuid>', methods=['PUT'])
 @login_required_api
 @api_base
-def get_auths():
+def join_user_to_project(project_uuid, user_uuid):
     """
-    Datumの権限情報を返却する
+    プロジェクトにユーザを追加する
     """
-    if 'datum' in request.args:
-        # TODO: メソッド用意する必要あり
-        return g.factory.role.find_by_datum_uuid(role_uuid)
-    else:
-        raise Exception('No datum parameter is designated')
+    from kskp.core import Datum
+    from kskp.store import ProjectFolder
 
-@mod.route('/auths', methods=['PUT'])
+    req = RequestJson(request.json)
+    if not req.has_all('memberType'):
+        raise Exception('memberTyp属性を指定してください')
+
+    project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
+    user = g.factory.user.find_by_uuid(user_uuid)
+    member = ProjectFolder.Member(user, req['memberType'])
+    project.join_member(member)
+
+@mod.route('/projects/<project_uuid>/users/<user_uuid>', methods=['DELETE'])
 @login_required_api
 @api_base
-def update_auth():
+def leave_user_outof_project(project_uuid, user_uuid):
     """
-    Datumの権限情報を修正する
+    プロジェクトからユーザを削除する
     """
-    pass
-
+    from kskp.core import Datum
+    project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
+    user = g.factory.user.find_by_uuid(user_uuid)
+    project.leave_member(user)

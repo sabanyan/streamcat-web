@@ -1,6 +1,6 @@
 import unittest
 import copy
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 class FrameApiTestCase(ApiTestCaseBase):
     """

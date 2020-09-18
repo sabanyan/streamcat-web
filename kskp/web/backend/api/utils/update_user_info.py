@@ -11,12 +11,24 @@ def update_user_info(func):
         # 所属プロジェクトの情報を含めるか否か
         update_projects = request.args.get('projects') == 'on'
 
+        # 所属ロールも所属プロジェクトの情報も含めない場合は処理を終える
+        if not update_roles and not update_projects:
+            return func(**kwargs)
+
         # デコレート対象関数の呼び出し
         result = json.loads(func(**kwargs).data.decode())
-        user_data = result['data']
 
-        # User JSONに情報を追加する
-        _update_user_info_inner(user_data, update_roles, update_projects)
+        # APIの異常終了時は情報を追加しない
+        if not result['success']:
+            return func(**kwargs)
+
+        # 所属ロールの情報をUser JSONに追加する
+        if update_roles:
+            _update_user_roles_info(result['data'])
+
+        # 所属プロジェクトの情報をUser JSONに追加する
+        if update_projects:
+            _update_user_projects_info(result['data'])
 
         return jsonify(result)
     return deco
@@ -33,20 +45,29 @@ def update_users_info(func):
         # デコレート対象関数の呼び出し
         results = json.loads(func(**kwargs).data.decode())
 
-        # User JSONに情報を追加する
+        # APIの異常終了時は情報を追加しない
+        if not results['success']:
+            return func(**kwargs)
+
         for user_data in results['data']:
-            _update_user_info_inner(user_data, update_roles, update_projects)
+            # 所属ロールの情報をUser JSONに追加する
+            if update_roles:
+                _update_user_roles_info(user_data)
+
+            # 所属プロジェクトの情報をUser JSONに追加する
+            if update_projects:
+                _update_user_projects_info(user_data)   
 
         return jsonify(results)
     return deco
 
-def _update_user_info_inner(user_data, update_roles, update_projects):
-    if update_roles:
-        user = g.factory.user.find_by_uuid(user_data['uuid'])
-        joined_roles = g.factory.role.find_by_user_id(user.id)
-        user_data.update({'roles' : joined_roles})
-    if update_projects:
-        # user = g.factory.user.find_by_uuid(user_data['uuid'])
-        # user_data.update({'projects' : user.joined_projects()})
-        pass
+def _update_user_roles_info(user_data):
+    user = g.factory.user.find_by_uuid(user_data['uuid'])
+    user_data.update({'roles' : user.get_joined_roles()})
+    return user_data
+
+def _update_user_projects_info(user_data):
+    # 少なくとも1つの権限を有するプロジェクトを所属プロジェクトとする
+    user = g.factory.user.find_by_uuid(user_data['uuid'])
+    user_data.update({'projects' : user.get_joined_projects()})
     return user_data
