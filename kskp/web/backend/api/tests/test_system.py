@@ -208,7 +208,6 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
-
     def test_generate_password_and_create_user(self):
         """
         Userを作成する(パスワードは自動生成する)
@@ -368,7 +367,7 @@ class SystemTestCase(ApiTestCaseBase):
                 'label' : 'プロジェクトY'}
         self.post_uri('/api/v0/projects', data, self.USER2)
 
-        # プロジェクト管理者を取得する
+        # プロジェクトメンバでないユーザが、プロジェクト管理者を取得する
         result = self.get_uri(f'/api/v0/users/{self.USER2.uuid}?projects=on', self.USER3)
 
         # 期待するJSONが返ることを確認する
@@ -376,13 +375,25 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'test@kskp.io')
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
-        # プロジェクトの数が正しいことを確認する
+        # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
+        # TODO: test_cannot_update_database_in_project()が失敗するので
+        #       Testプロジェクトが削除されずここで抽出されてしまうのでテストに失敗する
+        self.assertEqual(len(result['data']['projects']), 0)
+
+        # 自分のユーザ情報を取得する
+        result = self.get_uri(f'/api/v0/users/{self.USER2.uuid}?projects=on', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'test@kskp.io')
+        self.assertEqual(result['data']['name'], 'Test')
+        self.assertEqual(result['data']['state'], 'active')
+        # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
         self.assertEqual(len(result['data']['projects']), 3)
         # MyProject
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
         self.assertEqual(result['data']['projects'][0]['label'], 'MyProject')
-        self.assertFalse(result['data']['projects'][0]['readable'])
+        self.assertTrue(result['data']['projects'][0]['readable'])
         self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][0]['creator'])
         self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
@@ -390,7 +401,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['projects'][1]['uuid'])
         self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
         self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトX')
-        self.assertFalse(result['data']['projects'][1]['readable'])
+        self.assertTrue(result['data']['projects'][1]['readable'])
         self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][1]['creator'])
         self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
@@ -398,7 +409,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['projects'][2]['uuid'])
         self.assertEqual(result['data']['projects'][2]['type'], Datum.PROJECT_TYPE)
         self.assertEqual(result['data']['projects'][2]['label'], 'プロジェクトY')
-        self.assertFalse(result['data']['projects'][2]['readable'])
+        self.assertTrue(result['data']['projects'][2]['readable'])
         self.assertIsNone(result['data']['projects'][2]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][2]['creator'])
         self.assertIsNotNone(result['data']['projects'][2]['createdAt'])
@@ -1051,6 +1062,10 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトにUSER3を閲覧者として参加させる
         result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER3.uuid}', {'memberType':'Reader'}, self.USER2)
+
+        # プロジェクトの閲覧者は、databaseを参照できる
+        # TODO: Project以外にはeveryoneへRWXを付与する実装がまだなのでここでこける(2020/09/22)
+        result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER3)
 
         # プロジェクトの閲覧者は、databaseを変更できない
         with self.assertRaises(AssertionError):

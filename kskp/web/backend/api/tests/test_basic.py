@@ -193,16 +193,21 @@ class ProjectApiTestCase(ApiTestCaseBase):
         """
         DELETE /projects APIをテストする
         """
-        # フォルダを作成する
-        root = self.factory.data.load_root()
-        project = root.create_project_folder('フロー格納フォルダ')
-        project.save()
+        # ルートフォルダを取得する(GET /library)
+        result = self.get_uri('/api/v0/library', self.USER1)
+        root_uuid = result['data']['uuid']
+
+        # プロジェクトを作成する(POST /project)
+        data = {'parent': root_uuid,
+                'label' : 'フロー格納フォルダ'}
+        result = self.post_uri('/api/v0/projects', data, self.USER1)
+        project_uuid = result['data']['uuid']
 
         # DELETE /projects
-        self.delete_uri(('/api/v0/projects/%s' % project.uuid), self.USER1)
+        self.delete_uri((f'/api/v0/projects/{project_uuid}'), self.USER1)
 
         # プロジェクトはゴミ箱に移動していること
-        project = self.factory2.data.find_by_uuid(project.uuid)
+        project = self.factory.data.find_by_uuid(project_uuid)
         self.assertEqual(project.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
 
 class FrameApiTestCase(ApiTestCaseBase):
