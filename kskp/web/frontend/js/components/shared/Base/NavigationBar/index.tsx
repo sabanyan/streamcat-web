@@ -60,6 +60,14 @@ const NavigationBar = (props: Props) => {
     //     </li>;
     // };
 
+    const renderGlobalNavigationItem = () => {
+        const {navigation} = props;
+        if (navigation){
+            return <NavigationBarItem href={"/library"} iconUrl={baseUrl + "images/icon/library.svg"}>ライブラリ</NavigationBarItem>
+        }
+        return null
+    }
+
     const renderUserNavigationItem = () => {
         const {navigation} = props;
         let depoName;
@@ -128,7 +136,7 @@ const NavigationBar = (props: Props) => {
     return <NavigationBarGroup>
         <NavigationBarBrand/>
         <NavigationBarItemGroup>
-            <NavigationBarItem href={"/library"} iconUrl={baseUrl + "images/icon/library.svg"}>ライブラリ</NavigationBarItem>
+            {renderGlobalNavigationItem()}
         </NavigationBarItemGroup>
         <NavigationBarMenuGroup>
             {renderUserNavigationItem()}
