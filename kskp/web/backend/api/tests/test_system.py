@@ -1,3 +1,4 @@
+import io
 import unittest
 import pprint
 from kskp.core.datum import Datum
@@ -376,8 +377,6 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
         # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
-        # TODO: test_cannot_update_database_in_project()が失敗するので
-        #       Testプロジェクトが削除されずここで抽出されてしまうのでテストに失敗する
         self.assertEqual(len(result['data']['projects']), 0)
 
         # 自分のユーザ情報を取得する
@@ -1064,7 +1063,6 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER3.uuid}', {'memberType':'Reader'}, self.USER2)
 
         # プロジェクトの閲覧者は、databaseを参照できる
-        # TODO: Project以外にはeveryoneへRWXを付与する実装がまだなのでここでこける(2020/09/22)
         result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER3)
 
         # プロジェクトの閲覧者は、databaseを変更できない
@@ -1078,6 +1076,63 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER2)
+
+    def test_read_other_owner_flow(self):
+        """
+        プロジェクトのメンバになったユーザは
+        プロジェクト内のフローとフレームを参照できること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'みんな大好き虫食い'}, self.USER2)
+        project_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、プロジェクト内にフローを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': 'なか卯',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+
+        # フローのUUIDを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # プロジェクト管理者は、プロジェクト内にフレームを作成する
+        f = (io.BytesIO(b"wxyz"), 'frame1.csv')
+        result = self.post_frames('𠮷野家', project_uuid, f, self.USER2)
+        frame_uuid = result['data']['uuid']
+
+        # プロジェクトのメンバでないユーザは、フローとフレームを参照できないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER3)
+
+        # USER3をメンバに参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # プロジェクトのメンバとなったユーザは、フローとフレームを参照できること
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        self.assertEqual(result['data']['label'], 'なか卯')
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER3)
+        # 驚いたことにGET /framesではlabelを返していない
+        # self.assertEqual(result['data']['label'], '𠮷野家')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
 
     def test_exec_flow_in_project(self):
         """
