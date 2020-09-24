@@ -392,7 +392,6 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
         self.assertEqual(result['data']['projects'][0]['label'], 'MyProject')
-        self.assertTrue(result['data']['projects'][0]['readable'])
         self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][0]['creator'])
         self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
@@ -400,7 +399,6 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['projects'][1]['uuid'])
         self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
         self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトX')
-        self.assertTrue(result['data']['projects'][1]['readable'])
         self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][1]['creator'])
         self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
@@ -408,7 +406,6 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['projects'][2]['uuid'])
         self.assertEqual(result['data']['projects'][2]['type'], Datum.PROJECT_TYPE)
         self.assertEqual(result['data']['projects'][2]['label'], 'プロジェクトY')
-        self.assertTrue(result['data']['projects'][2]['readable'])
         self.assertIsNone(result['data']['projects'][2]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][2]['creator'])
         self.assertIsNotNone(result['data']['projects'][2]['createdAt'])
@@ -1103,7 +1100,7 @@ class SystemTestCase(ApiTestCaseBase):
         flow_uuid = result['data']['children'][0]['uuid']
 
         # プロジェクト管理者は、プロジェクト内にフレームを作成する
-        f = (io.BytesIO(b"wxyz"), 'frame1.csv')
+        f = (io.BytesIO(b'wxyz'), 'frame1.csv')
         result = self.post_frames('𠮷野家', project_uuid, f, self.USER2)
         frame_uuid = result['data']['uuid']
 
@@ -1132,7 +1129,6 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER2)
-
 
     def test_exec_flow_in_project(self):
         """
@@ -1169,4 +1165,415 @@ class SystemTestCase(ApiTestCaseBase):
         サブフローが他のプロジェクトに存在するFlowを実行できないこと
         """
         pass
-        pass
+
+    #
+    # Other Datum
+    # 
+
+    def test_allowlist(self):
+        """
+        Datumのallowlistを検証する
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'暴れん坊将軍'}, self.USER1)
+        project_uuid = result['data']['uuid']
+
+        # 
+        # USER2を、プロジェクトに編集者メンバとして参加させる
+        # 
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER1)
+
+        # プロジェクトの下にフォルダを作成する
+        result = self.post_uri('/api/v0/folders', {"label" : "水戸黄門", "parent": project_uuid}, self.USER2)
+        folder_uuid = result['data']['uuid']
+
+        # フォルダの下にフローを作成する
+        # プロジェクト管理者は、プロジェクト内にフローを作成する
+        data = {
+            'project_uuid': folder_uuid,
+            'name': '遠山の金さん',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+        # フローのUUIDを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}?members=on', self.USER2)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # フォルダの下にフレームを作成する
+        f = (io.BytesIO(b'abcABC'), 'frame1')
+        result = self.post_frames('大岡越前', folder_uuid, f, self.USER2)
+        frame_uuid = result['data']['uuid']
+
+        # フォルダの下にDatabaseを作成する
+        data = {
+            "parent"   : folder_uuid,
+            "label"    : "桃太郎侍",
+            "dbms"     : "postgresql",
+            "hostname" : "db",
+            "port"     : 5432,
+            "database" : "kskp",
+            "user_id"  : "postgres",
+            "password" : ""
+        }
+        result = self.post_uri('/api/v0/databases', data, self.USER2)
+        database_uuid = result['data']['uuid']
+
+        # # フォルダの下にリモートフォルダを作成する
+        # data = {
+        #     "parent"   : folder_uuid,
+        #     "label"    : "中村主水",
+        #     "protocol" : "smb",
+        #     "hostname" : "kskds-HP-Workstation-z620.local",
+        #     "domain"   : "WORKGROUP",
+        #     "directory": "share",
+        #     "user_id"  : "ksk-ds",
+        #     "password" : "kskanalytics"
+        # }
+        # result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
+        # remote_folder_uuid = result['data']['uuid']
+
+        # # フォルダの下にAWS S3を作成する
+        # data = {
+        #     'parent': folder_uuid,
+        #     'label' : '銭形平次',
+        #     'bucket': 'kskp-test'
+        # }
+        # result = self.post_uri('/api/v0/awss3s', data, self.USER2)
+        # awss3_uuid = result['data']['uuid']
+
+
+        # 編集者メンバは、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['create'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['upload'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 編集者メンバは、フォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['create'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['upload'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # 編集者メンバは、フローを取得する
+        # result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertTrue(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertTrue(result['data']['allowlist']['lock'])
+
+        # # 編集者メンバは、フレームを取得する
+        # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
+        # print(result)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 編集者メンバは、Databaseを取得する
+        result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # 編集者メンバは、リモートフォルダを取得する
+        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # 編集者メンバは、AWS S3を取得する
+        # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 
+        # USER2を、プロジェクトの閲覧者メンバに変更する
+        # 
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Reader'}, self.USER1)
+ 
+        # 閲覧者メンバは、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertFalse(result['data']['allowlist']['create'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['allowlist']['upload'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 閲覧者メンバは、フォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertFalse(result['data']['allowlist']['create'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['allowlist']['upload'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # 閲覧者メンバは、フローを取得する
+        # result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertFalse(result['data']['allowlist']['update'])
+        # self.assertFalse(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertFalse(result['data']['allowlist']['move'])
+        # self.assertFalse(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertFalse(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # 閲覧者メンバは、フレームを取得する
+        # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertFalse(result['data']['allowlist']['update'])
+        # self.assertFalse(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertFalse(result['data']['allowlist']['move'])
+        # self.assertFalse(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertFalse(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 閲覧者メンバは、Databaseを取得する
+        result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # 閲覧者メンバは、リモートフォルダを取得する
+        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertFalse(result['data']['allowlist']['update'])
+        # self.assertFalse(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertFalse(result['data']['allowlist']['move'])
+        # self.assertFalse(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertFalse(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # 閲覧者メンバは、AWS S3を取得する
+        # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertFalse(result['data']['allowlist']['update'])
+        # self.assertFalse(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertFalse(result['data']['allowlist']['move'])
+        # self.assertFalse(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertFalse(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # 
+        # USER2を、プロジェクトのプロジェクト管理者に変更する
+        # 
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Owner'}, self.USER1)
+ 
+        # プロジェクト管理者は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['create'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['upload'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertTrue(result['data']['allowlist']['findMember'])
+        self.assertTrue(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # プロジェクト管理者は、フォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['create'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['upload'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # プロジェクト管理者は、フローを取得する
+        # result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertTrue(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertTrue(result['data']['allowlist']['lock'])
+
+        # # プロジェクト管理者は、フレームを取得する
+        # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # プロジェクト管理者は、Databaseを取得する
+        result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # プロジェクト管理者は、リモートフォルダを取得する
+        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # プロジェクト管理者は、AWS S3を取得する
+        # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
