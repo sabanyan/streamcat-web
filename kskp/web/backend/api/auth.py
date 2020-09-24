@@ -222,8 +222,6 @@ def complete_sign_up():
         # ユーザID保存
         session['user_id'] = user.id
 
-    flash('ユーザー登録が完了しました。')
-
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
     return redirect(url_for('basic_template.library'))
 
