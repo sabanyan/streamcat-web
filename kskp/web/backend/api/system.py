@@ -91,10 +91,12 @@ def update_self():
     req = RequestJson(request.json)
     user = g.factory.user.find_by_id(g.user.id)
 
-    if not req.has('currentPassword'):
+    if req.has('currentPassword'):
+        if not user.authenticate(req['currentPassword']):
+            raise Exception('現在のパスワードが誤っています')
+    elif req.has_at_least('email','password') or req.isnull('password'):
+        # emailまたはpasswordを修正する場合は、現在のパスワードによる認証が必要である
         raise Exception('currentPassword属性を指定してください')
-    if not user.authenticate(req['currentPassword']):
-        raise Exception('現在のパスワードが誤っています')
 
     return _update_user_inner(user, req)
 
