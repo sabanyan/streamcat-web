@@ -2,12 +2,12 @@ import React, {useEffect, useState} from 'react'
 import style from './style.scss'
 import {APIUtil, ReactDomUtil, ErrorUtil} from 'Utils/index'
 import {ModalManager} from 'Shared/Modal'
-import Constants from 'Constants/index'
-import {Form, Loader} from 'Shared/Base'
+import {Loader} from 'Shared/Base'
 import {Button, TextField} from 'Shared/Input'
 import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
 import {NotificationManager} from 'Shared/Notification';
+import { useForm } from "react-hook-form";
 
 /**
  * ======================================================
@@ -39,6 +39,8 @@ const Profile = () => {
         email: ""
     });
 
+    const { handleSubmit, register, errors } = useForm();
+
     useEffect(() => {
         const getProfile = () => {
             setIsLoading(true)
@@ -66,23 +68,21 @@ const Profile = () => {
     }, [])
 
     const onClickSave = () => {
-        //ON_SUBMIT_FORMを呼び出すと、Fromコンポーネントの現在のステートを含むSubmitイベントが呼ばれる
-        window.emitter.emit(Constants.event.ON_SUBMIT_FORM)
+
     }
 
-    const onSubmit = (formState) => {
+    const onSubmit = (data,e) => {
+        const formState = data;
         setIsLoading(true)
 
         const body = {
-            'profile': {
-                name: formState['name'],
-                email: formState['email'],
-                current_password: formState['current_password'],
-                new_password: formState['new_password'],
-            }
+            name: formState['name'],
+            email: formState['email'],
+            currentPassword: formState['currentPassword'] || null,
+            password: formState['password'] || null,
         }
 
-        HttpUtil.put('profile/' + inject_user_id, body).then((response) => {
+        APIUtil.put('users/self', body).then((response) => {
             const json = response.data
             setIsLoading(false)
         }).catch((error) => {
@@ -100,29 +100,27 @@ const Profile = () => {
         </div>
         <div className={style.property_body}>
             <div className={style.card}>
-                <Form onSubmit={(formState) => onSubmit(formState)}>
+                <form onSubmit={handleSubmit(onSubmit)}>
                     <div className={'mb-8px'}>
                         <label>ユーザ名</label>
-                        <TextField placeholder={'ユーザ名'} defaultValue={profile.name} useForm={true} formKey={'name'}/>
+                        <TextField placeholder={'ユーザ名'} defaultValue={profile.name} name={"name"} inputRef={register}/>
                     </div>
                     <div className={'mb-8px'}>
                         <label>メールアドレス</label>
-                        <TextField placeholder={'メールアドレス'} defaultValue={profile.email} type={'email'} useForm={true}
-                                   formKey={'email'}/>
+                        <TextField placeholder={'メールアドレス'} defaultValue={profile.email} type={'email'} name={"email"}  inputRef={register}/>
                     </div>
                     <div className={'mb-8px'}>
                         <label>パスワード</label>
-                        <TextField placeholder={'現在のパスワード'} type={'password'} useForm={true}
-                                   formKey={'current_password'}/>
+                        <TextField placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register}/>
                     </div>
                     <div className={'mb-8px'}>
                         <label>新しいパスワード</label>
-                        <TextField placeholder={'新しいパスワード'} type={'password'} useForm={true} formKey={'new_password'}/>
+                        <TextField placeholder={'新しいパスワード'} type={'password'} name={"password"} inputRef={register}/>
                     </div>
                     <div className={'text-right mt-20px'}>
-                        <Button className={'mr-0'} onClick={onClickSave}>保存する</Button>
+                        <Button submit={true} className={'mr-0'} onClick={onClickSave}>保存する</Button>
                     </div>
-                </Form>
+                </form>
             </div>
         </div>
         <ModalManager/>
