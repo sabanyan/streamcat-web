@@ -222,7 +222,12 @@ def complete_sign_up():
         # ユーザID保存
         session['user_id'] = user.id
 
-    flash('ユーザー登録が完了しました。')
+        # 本人ロールを作成する
+        user.load_self_role()
+        # 初めて登録状態に遷移する時に、MyProjectを作成する
+        root = factory.data.load_root()
+        project =root.create_project_folder('MyProject')
+        project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
     return redirect(url_for('basic_template.library'))
