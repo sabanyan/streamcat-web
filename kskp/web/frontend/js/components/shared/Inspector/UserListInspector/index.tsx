@@ -21,7 +21,7 @@ class UserListInspector extends React.Component<Props> {
     email: 'E-mail',
     projects: '所属プロジェクト',
     status: 'ステータス',
-    admin_types: '管理権限',
+    admin_types: 'KSKP 管理者',
     password: '仮パスワード',
   }
 
