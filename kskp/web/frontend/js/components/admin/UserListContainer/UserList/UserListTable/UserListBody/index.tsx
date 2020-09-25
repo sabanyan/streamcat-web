@@ -5,6 +5,7 @@ import classnames from 'classnames';
 import style from './style.scss';
 import {Badge} from 'Shared/Base/Badge';
 import {Spacer} from 'Shared/Base';
+import AdminUtil from 'Utils/AdminUtil';
 
 export interface ITableBody {
     uuid: string;
@@ -23,6 +24,7 @@ export interface ITableBody {
     createdAt: string;
     selected?: boolean;
     clickable?: boolean;
+    password?: string;
 }
 
 interface Props {
@@ -44,17 +46,6 @@ const UserListBody = (props: Props) => {
         onClickCell(body, event)
     };
 
-    const getStatus = (status: string): string => {
-        switch (status) {
-            case 'active':
-                return '登録済';
-            case 'tmp':
-                return '仮登録';
-            case 'delete':
-                return '削除済';
-        }
-        return '';
-    };
 
     const renderAdminTypes = (admin_types: {
         uuid: string,
@@ -104,7 +95,7 @@ const UserListBody = (props: Props) => {
                 {renderProjects(body.projects)}
             </td>
             <td>
-                {getStatus(body.status)}
+                {AdminUtil.getUserStatus(body.status)}
             </td>
             <td>
                 {renderAdminTypes(body.admin_types)}

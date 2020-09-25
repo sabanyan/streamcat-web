@@ -234,7 +234,8 @@ const UserList = () => {
                 projects: projects,
                 selected: false,
                 status: user.state,
-                uuid: user.uuid
+                uuid: user.uuid,
+                password: user.password
             };
             return body
         });
