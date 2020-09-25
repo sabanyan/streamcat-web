@@ -25,7 +25,7 @@ const UserListTable = (props: Props) => {
         {label: "E-mail", key: "email", width: 200},
         {label: "所属プロジェクト", key: "projects", width: 220},
         {label: "ステータス", key: "status", width: 220},
-        {label: "KSKP 管理者", key: "admin_types", width: 220}
+        {label: "KSKP 管理権限", key: "admin_types", width: 220}
     ];
     const [headers, setHeaders] = useState<ITableHeader[]>(initialHeaders);
 
