@@ -90,6 +90,32 @@ const UserList = () => {
         });
     };
 
+    // ユーザを新規に作成する
+    const createNewUser = (name: string,email: string) => {
+        // APIをたたく
+        const body = {
+            email: email,
+            name: name,
+            password: null
+        };
+        setIsLoading(true);
+        const url = 'users'
+        return APIUtil.post(url,body).then((response) => {
+            console.log(response)
+            fetchUsers();
+            setIsLoading(false);
+        }).catch((error) => {
+            notify({
+                title: 'ユーザー作成エラー',
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                status: 'error',
+                dismissAfter: 0,
+                closeButton: true
+            })
+            setIsLoading(false);
+        });
+    }
+
     useEffect(() => {
         fetchUsers();
         fetchProjects();
@@ -199,11 +225,24 @@ const UserList = () => {
                               onClickHeader={onClickHeader}/>
     };
 
+
     // メニューを表示
     const renderMenuList = () => {
         const [newUserName, setNewUserName] = useState<string | null>(null);
         const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
         const [selectedOption, setSelectedOption] = useState(null);
+
+        useEffect(()=>{
+            if (newUserName === null || newUserEmail === null) return;
+            ModalUtil.registerModal({
+                id: Constants.modal.ADD_USER, onClickDone: () => {
+                    createNewUser(newUserName,newUserEmail).then(()=>{
+                        ModalUtil.closeModal(Constants.modal.ADD_USER)
+                    })
+                },
+            })
+        },[newUserEmail,newUserName])
+
         const onClickNewUser = () => {
             // モーダル表示
             const options = projects.map((project:UserProject)=>{
@@ -212,15 +251,13 @@ const UserList = () => {
                     value: project.uuid
                 }
             })
-            const onSubmit = () => {
-                alert('submit')
-            };
+
             ModalUtil.emitModal({
                 id: Constants.modal.ADD_USER,
                 visible: true,
                 done: '作成する',
                 content: <div className={style.modal}>
-                    <InputForm onSubmit={onSubmit}>
+                    <form>
                         <div className={style.label}>
                             名前
                         </div>
@@ -245,7 +282,7 @@ const UserList = () => {
                                 options={options}
                             />
                         </div>
-                    </InputForm>
+                    </form>
                     <div className={'mt-8px'}/>
                 </div>
             });
