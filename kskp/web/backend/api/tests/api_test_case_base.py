@@ -176,3 +176,18 @@ class ApiTestCaseBase(TestCaseBase):
         error_detail = result['message'] if 'message' in result else ''
         self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
         return result
+
+    def post_register_complete(self, email, new_password, user):
+        """
+        POST /signup/complete でユーザの登録状態にする
+        """
+        uri = '/signup/complete'
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user.id
+                session['signup_email'] = email
+            response = client.post(uri,
+                                   content_type='multipart/form-data',
+                                   data={'password':new_password})
+        self.assertEqual(response.status_code, 302, msg=f'POST {uri} is failed. response status: {response.status}')
+        return response.get_data()

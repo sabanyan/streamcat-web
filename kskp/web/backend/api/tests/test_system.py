@@ -358,6 +358,10 @@ class SystemTestCase(ApiTestCaseBase):
         # ROOTを取得する
         root = self.factory.data.load_root()
 
+        # ユーザ2は、本登録処理をする
+        # (MyProjectが作成される)
+        self.post_register_complete(self.USER2.email, 'adminpass0', self.USER2)
+
         # プロジェクトを作成する
         data = {'parent': root.uuid,
                 'label' : 'プロジェクトX'}
@@ -467,6 +471,39 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+    def test_delete_tmp_user(self):
+        """
+        一旦登録状態になったUserが仮登録状態になった後、
+        削除すると論理削除となること
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'gentoku@shoku.go.china', 'name':'劉備玄徳', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # ユーザを取得する
+        new_user = self.factory.user.find_by_uuid(user_uuid)
+
+        # ユーザを登録状態にする
+        self.post_register_complete(new_user.email, 'password012345', new_user)
+
+        # ユーザのパスワードをリセットする
+        # (ユーザを仮登録状態にする)
+        self.put_uri(f'/api/v0/users/{user_uuid}', {'password':None}, self.USER1)
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # ユーザは論理削除状態になること
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # 同じユーザを2回論理削除してもエラーにならないこと
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # ユーザは論理削除状態のママのこと
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
+        self.assertEqual(result['data']['state'], 'inactive')
 
     def test_search_user(self):
         """
