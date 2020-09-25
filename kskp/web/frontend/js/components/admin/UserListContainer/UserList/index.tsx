@@ -116,8 +116,9 @@ const UserList = () => {
         });
     }
 
+    // ユーザを削除する
     const deleteUser = (uuid: string)=>{
-        const url = 'users/' + uuid
+        const url = 'users/' + uuid;
         return APIUtil.delete(url).then((response)=>{
             console.log(response)
             fetchUsers();
@@ -132,7 +133,28 @@ const UserList = () => {
             })
             setIsLoading(false);
         });
+    }
 
+    // ユーザのパスワードをリセットする
+    const resetUserPassword = (uuid: string) =>{
+        const url = 'users/' + uuid;
+        const body = {
+            password: null
+        }
+        return APIUtil.put(url,body).then((response)=>{
+            console.log(response)
+            fetchUsers();
+            setIsLoading(false);
+        }).catch((error) => {
+            notify({
+                title: 'パスワードリセットエラー',
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                status: 'error',
+                dismissAfter: 0,
+                closeButton: true
+            })
+            setIsLoading(false);
+        });
     }
 
     useEffect(() => {
@@ -144,6 +166,15 @@ const UserList = () => {
         // キーワードが変更されると同時に fetch する
         fetchUsers(keyword)
     },[keyword])
+
+    useEffect(()=>{
+        // パスワードリセットの処理
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM, onClickDone: () => {
+                resetUserPassword(lastSelected.uuid)
+            },
+        })
+    },[lastSelected])
 
     // ローディングアイコンを表示する
     const renderLoadingIcon = () => {
@@ -245,7 +276,6 @@ const UserList = () => {
                               onClickHeader={onClickHeader}/>
     };
 
-
     // メニューを表示
     const renderMenuList = () => {
         const [newUserName, setNewUserName] = useState<string | null>(null);
@@ -276,6 +306,7 @@ const UserList = () => {
                 id: Constants.modal.ADD_USER,
                 visible: true,
                 done: '作成する',
+                overflow: false,
                 content: <div className={style.modal}>
                     <form>
                         <div className={style.label}>
@@ -326,7 +357,22 @@ const UserList = () => {
         const onClickDelete = () => {
             deleteUser(data.uuid)
         };
-        return <UserListInspector selected={selectedDatas} lastSelected={lastSelected} onClickDelete={onClickDelete}/>
+        const onClickPasswordReset = ()=>{
+            const name = lastSelected.name;
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM,
+                visible: true,
+                done: 'パスワードをリセットする',
+                oveflow: true,
+                content: <div className={style.modal}>
+                    <div>
+                        {name} を仮登録のステータスにして、パスワードを自動的に作られたパスワードに設定しますがよろしいですか？<br/>
+                        パスワードを再生成すると現在設定されているパスワードは利用できなくなります。
+                    </div>
+                </div>
+            });
+        }
+        return <UserListInspector selected={selectedDatas} lastSelected={lastSelected} onClickDelete={onClickDelete} onClickPasswordReset={onClickPasswordReset}/>
     };
 
     const clearSelected = () => {
