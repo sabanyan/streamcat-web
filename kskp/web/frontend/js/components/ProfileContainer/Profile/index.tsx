@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import style from './style.scss'
-import {HttpUtil, ReactDomUtil, ErrorUtil} from 'Utils/index'
+import {APIUtil, ReactDomUtil, ErrorUtil} from 'Utils/index'
 import {ModalManager} from 'Shared/Modal'
 import Constants from 'Constants/index'
 import {Form, Loader} from 'Shared/Base'
@@ -44,7 +44,7 @@ const Profile = () => {
             setIsLoading(true)
             // user_idはナビゲーションモデルから取得できない
             // APIをたたかないと取得できないため、injectされたuser_idを使う
-            HttpUtil.get('profile/' + inject_user_id).then((response) => {
+            APIUtil.get('/users/self').then((response) => {
                 const json = response.data
                 setIsLoading(true);
                 setIsFinished(true);
