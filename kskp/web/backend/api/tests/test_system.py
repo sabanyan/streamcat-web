@@ -107,7 +107,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
-    def test_update_user_by_self(self):
+    def test_update_self(self):
         """
         一般ユーザが自分のユーザ情報を変更する
         """
@@ -155,6 +155,74 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('password', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
+
+    def test_update_self_without_pass(self):
+        """
+        一般ユーザが自分の名前を変更する
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'ujiyasu@odawara.co.jp', 'name':'北条氏康', 'password':'qscftyhnmko'}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # 作成したユーザを登録状態にする
+        new_user = self.factory.user.find_by_uuid(user_uuid)
+        self.post_register_complete('ujiyasu@odawara.co.jp', 'jurujuru', new_user)
+
+        # 名前だけの変更であればパスワード認証は必要ないこと
+        expected = {
+            'name' : '汁かけ飯大好きマン'
+        }
+        result = self.put_uri(f'/api/v0/users/self', expected, new_user)
+
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'ujiyasu@odawara.co.jp')
+        self.assertEqual(result['data']['name'], expected['name'])
+        self.assertEqual(result['data']['state'], 'active')
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
+        # 登録状態なのでpassword属性は返されない
+        self.assertNotIn('password', result['data'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # パスワード認証をして名前を変更してもよいこと
+        expected = {
+            'name' : '一回で汁の量を見極められずにn怒られたマン',
+            'currentPassword' : 'jurujuru'
+
+        }
+        result = self.put_uri(f'/api/v0/users/self', expected, new_user)
+
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'ujiyasu@odawara.co.jp')
+        self.assertEqual(result['data']['name'], expected['name'])
+        self.assertEqual(result['data']['state'], 'active')
+        self.assertNotIn('roles', result['data'])
+        self.assertNotIn('projects', result['data'])
+        # 登録状態なのでpassword属性は返されない
+        self.assertNotIn('password', result['data'])
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # emailの変更にはパスワード認証が必要であること
+        expected = {'email' : 'ujiyasu01@odawara.co.jp'}
+        with self.assertRaises(Exception):
+            self.put_uri(f'/api/v0/users/self', expected, new_user)
+
+        # passwordの変更にはパスワード認証が必要であること
+        expected = {'password' : 'abcdefg098'}
+        with self.assertRaises(Exception):
+            self.put_uri(f'/api/v0/users/self', expected, new_user)
+
+        # passwordのリセットにはパスワード認証が必要であること
+        expected = {'password' : None}
+        with self.assertRaises(Exception):
+            self.put_uri(f'/api/v0/users/self', expected, new_user)
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
 
     def test_update_user_by_other(self):
         """
