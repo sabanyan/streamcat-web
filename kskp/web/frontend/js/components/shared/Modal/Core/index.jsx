@@ -27,6 +27,7 @@ type State = {
   title?: string,
   done?: string,
   danger?: boolean,
+  overflow?: boolean
 }
 
 export default class Modal extends React.Component<Props, State> {
@@ -60,6 +61,7 @@ export default class Modal extends React.Component<Props, State> {
           title: (context.title !== undefined) ? context.title : this.state.title,
           done: context.done,
           danger: context.danger,
+          overflow: context.overflow
         })
       })
   }
@@ -115,7 +117,7 @@ export default class Modal extends React.Component<Props, State> {
   render() {
 
     const done = (this.state.done) ? this.state.done : this.props.done
-    const { visible, title, content, contents, danger } = this.state
+    const { visible, title, content, contents, danger, overflow } = this.state
     const { preview, ok, close, footer, cancel, children, primary } = this.props
 
     /**
@@ -196,7 +198,7 @@ export default class Modal extends React.Component<Props, State> {
       </PreviewModal>
     } else {
       modal = <StandardModal id={id} title={title} footer={modal_footer}
-        close_button={close_button} visible={visible}>
+        close_button={close_button} visible={visible} overflow={overflow}>
         {(visible) ? modal_body : null}
       </StandardModal>
     }

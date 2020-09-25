@@ -9,10 +9,11 @@ export default class StandardModal extends React.Component {
   }
 
   render () {
-    const {id, children, close_button, visible, title, footer} = this.props
+    const {id, children, close_button, visible, title, footer, overflow} = this.props
     const modal_class = classnames('modal fade', {
       'show in': visible,
       'none-pointer-events': !visible,
+      'overflow-content': overflow || true
     })
     return <div className={modal_class} style={{display: 'block'}} id={id}>
       <div className="modal-dialog">
