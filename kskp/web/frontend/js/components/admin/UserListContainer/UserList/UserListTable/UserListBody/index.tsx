@@ -3,6 +3,8 @@ import {LinkButton} from 'Shared/Input';
 import moment from 'moment';
 import classnames from 'classnames';
 import style from './style.scss';
+import {Badge} from 'Shared/Base/Badge';
+import {Spacer} from 'Shared/Base';
 
 export interface ITableBody {
     uuid: string;
@@ -61,12 +63,13 @@ const UserListBody = (props: Props) => {
         return admin_types.map((type: {
             uuid: string,
             systemRole: string,
-        }): React.ReactNode => {
+        },index): React.ReactNode => {
+            const spacer = (index)?<Spacer width={8}/>:null
             switch (type.systemRole) {
                 case 'USR_ADMIN':
-                    return <div>ユーザー</div>;
+                    return <>{spacer}<Badge color={"darkGreen"}>ユーザー</Badge></>;
                 case 'SYS_ADMIN':
-                    return <div>システム</div>;
+                    return <>{spacer}<Badge color={"darkBlue"}>システム</Badge></>;
                 case 'EVERYONE':
                 default:
                     return null
@@ -105,7 +108,6 @@ const UserListBody = (props: Props) => {
             </td>
             <td>
                 {renderAdminTypes(body.admin_types)}
-                {/*{moment(body.createdAt).format('YYYY/MM/DD hh:mm')}*/}
             </td>
         </tr>;
     });
