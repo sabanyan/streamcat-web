@@ -15,6 +15,7 @@ interface Props {
     onClickDelete?: Function;
     onBlurTitle?: Function;
     onClickEdit?: Function;
+    onClickPasswordReset?: Function;
 }
 
 const display = {
@@ -99,11 +100,9 @@ const UserListInspector = (props: Props) => {
                 </React.Fragment>
                 result.push(tempPasswordLabel)
             }
-            if (data.status === 'active') {
-                const onClickPasswordReset = () => {
-
-                }
-                let resetPasswordEelement = <Button danger={true} onClick={onClickPasswordReset}>パスワードリセット</Button>
+            const {onClickPasswordReset} = props;
+            if (data.status === 'active' && onClickPasswordReset) {
+                let resetPasswordEelement = <Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button>
                 result.push(resetPasswordEelement)
             }
         }
