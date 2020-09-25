@@ -116,6 +116,25 @@ const UserList = () => {
         });
     }
 
+    const deleteUser = (uuid: string)=>{
+        const url = 'users/' + uuid
+        return APIUtil.delete(url).then((response)=>{
+            console.log(response)
+            fetchUsers();
+            setIsLoading(false);
+        }).catch((error) => {
+            notify({
+                title: 'ユーザー削除エラー',
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                status: 'error',
+                dismissAfter: 0,
+                closeButton: true
+            })
+            setIsLoading(false);
+        });
+
+    }
+
     useEffect(() => {
         fetchUsers();
         fetchProjects();
@@ -303,7 +322,10 @@ const UserList = () => {
         clickedUserListCell.current = true;
 
         const data: UserListUser = lastSelected;
-        return <UserListInspector selected={selectedDatas} lastSelected={lastSelected}/>
+        const onClickDelete = () => {
+            deleteUser(data.uuid)
+        };
+        return <UserListInspector selected={selectedDatas} lastSelected={lastSelected} onClickDelete={onClickDelete}/>
     };
 
     const clearSelected = () => {
