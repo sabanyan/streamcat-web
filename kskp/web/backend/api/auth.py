@@ -14,7 +14,6 @@ from flask import (
 from flask_mail import Mail, Message
 
 from kskp.web.backend import app
-from kskp.store import NoResultFound
 from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
@@ -42,7 +41,7 @@ def login_required(func):
                 with UnAuthzFactory() as factory:
                     try:
                         user = factory.find_user_by_email(f['email'])
-                    except NoResultFound:
+                    except Exception:
                         return render_template('login.html', email=f['email'])
 
                 if user.authenticate(f['password']):
@@ -205,7 +204,7 @@ def complete_sign_up():
     with UnAuthzFactory() as factory:
         try:
             user = factory.find_user_by_email(email)
-        except NoResultFound:
+        except Exception:
             return render_template('login.html', email=email)
 
     with Factory(user) as factory:

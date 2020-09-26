@@ -250,7 +250,6 @@ class FrameApiTestCase(ApiTestCaseBase):
         # self.assertEqual(result['message'], '')
         # self.assertEqual(result['success'], True)
 
-
     def test_download_file(self):
         """
         download_file APIのテストをする
@@ -311,7 +310,7 @@ class FrameApiTestCase(ApiTestCaseBase):
         # 後片付け
         frame = self.factory.data.find_by_uuid(frame_uuid)
         frame.delete()
-     
+
 class FlowApiTestCase(ApiTestCaseBase):
 
     # フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
