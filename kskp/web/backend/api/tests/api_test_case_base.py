@@ -98,6 +98,24 @@ class ApiTestCaseBase(TestCaseBase):
         self.assertTrue(result['success'], 'GET %s is failed. %s' % (uri, error_detail))
         return result
 
+    def get_file(self, uri, user):
+        """
+        URIからファイルをダウンロードする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user.id
+            response = client.get(uri)
+        self.assertEqual(response.status_code, 200, msg=f'GET {uri} is failed. response status: {response.status}')
+
+        if response.content_type == 'application/json':
+            result = json.loads(response.get_data())
+            error_detail = result['message'] if 'message' in result else ''
+            self.assertTrue(result['success'], f'GET {uri} is failed. {error_detail}')
+            return result
+        else:
+            return response.get_data()
+
     def post_uri(self, uri, json_data, user):
         """
         URIへPOSTする

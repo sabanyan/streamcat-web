@@ -2,7 +2,6 @@
 # システム管理者向けのAPIを定義する
 # 
 
-import re
 from flask import Blueprint, request, g
 from .auth import login_required_api
 from .utils import (

@@ -1278,6 +1278,58 @@ class SystemTestCase(ApiTestCaseBase):
     # Other Datum
     # 
 
+    def test_download_file(self):
+        """
+        閲覧者はフレームをダウンロードできないこと
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'STAR⭐️BUCKS'}, self.USER2)
+        project_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、プロジェクト内にフレームを作成する
+        f = (io.BytesIO(b'Every cup has a story'), 'frame1.csv')
+        result = self.post_frames('TULLY\'s', project_uuid, f, self.USER2)
+        frame_uuid = result['data']['uuid']
+
+        # プロジェクトのメンバでないユーザは、フレームをダウンロードできないこと
+        with self.assertRaises(AssertionError):
+            result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+
+        # USER3を閲覧者メンバとして参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # 閲覧者メンバはフレームをダウンロードできないこと
+        with self.assertRaises(AssertionError):
+            self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+
+        # USER3を編集者メンバとして参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}]
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # 編集者メンバはフレームをダウンロードできること
+        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER3)
+        self.assertEqual(result, b'Every cup has a story\n')
+
+        # プロジェクト管理者はフレームーをダウンロードできること
+        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER2)
+        self.assertEqual(result, b'Every cup has a story\n')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
     def test_allowlist(self):
         """
         Datumのallowlistを検証する
