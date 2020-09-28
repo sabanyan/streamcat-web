@@ -103,6 +103,7 @@ const Constants = {
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
     ADD_DATABASE: 'add_database',
+    ADD_USER: 'add_user',
     EDIT_DATABASE: 'edit_database',
     EDIT_ENCODING: 'edit_encoding',
     RUN_FLOW: 'run_flow',

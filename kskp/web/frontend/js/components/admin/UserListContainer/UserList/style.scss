@@ -1,0 +1,64 @@
+@import "../../../../../sass/common";
+
+.pageTitleHeader {
+  width: 100%;
+  height: 56px;
+  border-radius: 8px;
+  background-color: #F5F7F8;
+  padding: 0 16px 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #606c7a;
+}
+
+.pageTitle {
+  display: inline-flex;
+  white-space: nowrap;
+
+}
+
+.searchBarContainer {
+  display: inline-flex;
+  max-width: 600px;
+  width: 100%;
+  min-width: 160px;
+  input{
+  }
+}
+
+.resultCount{
+  padding: 0 24px;
+  color: #606c7a;
+}
+.modal{
+  display: flex;
+  justify-content: center;
+  height: 400px;
+}
+.label{
+  display: inline-flex;
+  font-size: 16px;
+  color: #606c7a;
+  width: 140px;
+}
+
+.textField{
+  display: inline-flex;
+  input{
+    width: 300px;
+  }
+}
+
+.select{
+  display: inline-flex;
+  > div{
+    width: 300px;
+  }
+  div[class*="menu"]{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+  }
+}

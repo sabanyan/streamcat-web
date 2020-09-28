@@ -10,13 +10,12 @@ import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
 import {ModalManager} from "Shared/Modal";
 import {addNotification, removeNotification} from "reapop";
 
-import {
-    ProfileContainer,
-} from "Components/index";
 import {NavigationBar} from "Shared/Base";
 import {Preview} from "PreviewContainer/Preview";
-import {Library} from "Components/LibraryContainer/Libary";
 import {FlowEditor} from "FlowEditorContainer/FlowEditor";
+import {UserList} from 'UserListContainer/UserList';
+import {Library} from 'LibraryContainer/Libary';
+import {Profile} from 'ProfileContainer/Profile';
 
 export type Props = {
     viewId: ViewId
@@ -34,6 +33,7 @@ export enum ViewId {
     Project_List,
     Preview,
     TrashCan,
+    User_List,
     Undefined = -1,
 }
 
@@ -83,10 +83,13 @@ const Kskp = (props: Props) => {
                 viewComponent = <Library />;
                 break;
             case ViewId.Profile:
-                viewComponent = <ProfileContainer />;
+                viewComponent = <Profile />;
                 break;
             case ViewId.Preview:
                 viewComponent = <Preview />;
+                break;
+            case ViewId.User_List:
+                viewComponent = <UserList/>;
                 break;
             default:
                 break;
