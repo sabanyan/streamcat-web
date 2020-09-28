@@ -1,5 +1,10 @@
 import os
 from flask import Blueprint, request, jsonify, g
+from kskp.store import (
+    Datum,
+    Folder,
+    ProjectFolder
+)
 from .auth import login_required_api
 from .utils import (
     api_base,
@@ -7,14 +12,9 @@ from .utils import (
     update_navigation,
     update_project_info,
     update_projects_info2,
+    Constraints,
     RequestJson
 )
-from kskp.store import (
-    Datum,
-    Folder,
-    ProjectFolder
-)
-# from kskp.store import *
 
 mod = Blueprint('api', __name__)
 
@@ -304,6 +304,7 @@ def fetch_visualizers():
 
 @mod.route('/files')
 @login_required_api
+@Constraints.allow_download_only_with_writable
 def download_file():
     def convert(file_path, source_encoding, source_newline, target_encoding, target_newline):
         """
@@ -328,9 +329,10 @@ def download_file():
     frame_uuid = request.args.get('uuid')
     ext = request.args.get('ext')
 
-    frame = g.factory.data.find_by_uuid(frame_uuid)
-    if frame is None:
-        return error(f'指定されたFrame({frame_uuid})が見つかりませんでした')
+    try:
+        frame = g.factory.data.find_by_uuid(frame_uuid)
+    except Exception as e:
+        return error(str(e))
 
     frame_path = frame.path
     if not frame_path.exists():
