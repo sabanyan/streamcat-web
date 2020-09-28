@@ -1,14 +1,14 @@
 from flask import Blueprint, request, send_from_directory, g
 from kskp.web.backend import app
+from kskp.store import (
+    DatabaseConn,
+    RemoteFolderConn
+)
 from .auth import login_required_api
 from .utils import (
     api_base,
     update_navigation,
     update_projects_info
-)
-from kskp.store import (
-    DatabaseConn,
-    RemoteFolderConn
 )
 
 mod = Blueprint('lib', __name__)
