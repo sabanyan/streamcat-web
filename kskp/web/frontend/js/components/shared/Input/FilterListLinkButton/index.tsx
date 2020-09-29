@@ -16,6 +16,7 @@ const FilterListLinkButton = (props: Props) => {
     const onClick = () => {
         setHasShown(!hasShown);
     }
+
     const projectData: FilterListItem[] = [{
         id: 1,
         label: 'project',
@@ -50,10 +51,12 @@ const FilterListLinkButton = (props: Props) => {
     ]
     const onClickFilterListItem = (item: FilterListItem) => {
         // 最終的に選択されたアイテム
+        console.log("FilterListItem",item);
     }
 
     const onClickFilterCategoryItem = (item: FilterCategoryItem) => {
         // 最終的に選択されたカテゴリー
+        console.log("FilterCategoryItem",item);
     }
 
     return <div className={style.container}><a href="#" className={style.filterListLinkButton} onClick={onClick}>
