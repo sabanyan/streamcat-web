@@ -17,7 +17,8 @@ type Props = {
   close?: boolean,
   done?: string,
   children?: React.Node,
-  primary?: boolean
+  primary?: boolean,
+  overflow?: boolean
 }
 
 type State = {
@@ -26,8 +27,7 @@ type State = {
   contents?: [React.Node],
   title?: string,
   done?: string,
-  danger?: boolean,
-  overflow?: boolean
+  danger?: boolean
 }
 
 export default class Modal extends React.Component<Props, State> {
@@ -60,8 +60,7 @@ export default class Modal extends React.Component<Props, State> {
           contents: context.contents,
           title: (context.title !== undefined) ? context.title : this.state.title,
           done: context.done,
-          danger: context.danger,
-          overflow: context.overflow
+          danger: context.danger
         })
       })
   }
@@ -117,8 +116,8 @@ export default class Modal extends React.Component<Props, State> {
   render() {
 
     const done = (this.state.done) ? this.state.done : this.props.done
-    const { visible, title, content, contents, danger, overflow } = this.state
-    const { preview, ok, close, footer, cancel, children, primary } = this.props
+    const { visible, title, content, contents, danger } = this.state
+    const { preview, ok, close, footer, cancel, children, primary ,overflow } = this.props
 
     /**
      * 背景

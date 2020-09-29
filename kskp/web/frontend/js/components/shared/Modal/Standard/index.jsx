@@ -22,7 +22,7 @@ export default class StandardModal extends React.Component {
             <h5 className="modal-title">{title}</h5>
             {close_button}
           </div>
-          <div className="modal-body">
+          <div className="modal-body" style={{overflow: (overflow)?"scroll":"inherit"}}>
             <div>{children}</div>
           </div>
           {footer}
