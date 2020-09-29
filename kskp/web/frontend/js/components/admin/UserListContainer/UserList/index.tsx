@@ -157,6 +157,11 @@ const UserList = () => {
         });
     }
 
+    const clearSelectedCell = ()=>{
+        setLastSelected(null);
+        setSelectedDatas([]);
+    }
+
     useEffect(() => {
         fetchUsers();
         fetchProjects();
@@ -170,11 +175,23 @@ const UserList = () => {
     useEffect(()=>{
         // パスワードリセットの処理
         ModalUtil.registerModal({
-            id: Constants.modal.CONFIRM, onClickDone: () => {
-                resetUserPassword(lastSelected.uuid)
+            id: Constants.modal.RESET_USER_PASSWORD, onClickDone: () => {
+                resetUserPassword(lastSelected.uuid).finally(() => {
+                    ModalUtil.closeModal(Constants.modal.RESET_USER_PASSWORD);
+                    clearSelectedCell();
+                })
             },
         })
-    },[lastSelected])
+        // ユーザ削除の確認ダイアログ
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM, onClickDone: () => {
+                deleteUser(lastSelected.uuid).finally(() => {
+                    ModalUtil.closeModal(Constants.modal.CONFIRM);
+                    clearSelectedCell();
+                })
+            },
+        })
+    }, [lastSelected])
 
     // ローディングアイコンを表示する
     const renderLoadingIcon = () => {
@@ -231,12 +248,9 @@ const UserList = () => {
 
         };
 
-        console.log(users);
         const bodies: ITableBody[] = users.map((user: UserListUser) => {
             let projects = [];
-            console.log("user",user);
             if (user && Array.isArray(user.projects) && user.projects ) {
-                console.log("user",user.projects);
                 projects = user.projects.map((project: UserProject) => {
                     return {
                         uuid: project.uuid,
@@ -276,22 +290,32 @@ const UserList = () => {
                               onClickHeader={onClickHeader}/>
     };
 
+    const [newUserName, setNewUserName] = useState<string | null>(null);
+    const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
+    const [selectedOption, setSelectedOption] = useState(null);
+
+    useEffect(()=>{
+        if (newUserName === null || newUserEmail === null) return;
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_USER, onClickDone: () => {
+                createNewUser(newUserName,newUserEmail).then(()=>{
+                    ModalUtil.closeModal(Constants.modal.ADD_USER)
+                    clearField();
+                })
+            }, onClickCancel: ()=>{
+                clearField();
+            }
+        })
+    },[newUserEmail,newUserName])
+
+    const clearField = () =>{
+        setNewUserName("");
+        setNewUserEmail("");
+        setSelectedOption(null);
+    }
+
     // メニューを表示
     const renderMenuList = () => {
-        const [newUserName, setNewUserName] = useState<string | null>(null);
-        const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
-        const [selectedOption, setSelectedOption] = useState(null);
-
-        useEffect(()=>{
-            if (newUserName === null || newUserEmail === null) return;
-            ModalUtil.registerModal({
-                id: Constants.modal.ADD_USER, onClickDone: () => {
-                    createNewUser(newUserName,newUserEmail).then(()=>{
-                        ModalUtil.closeModal(Constants.modal.ADD_USER)
-                    })
-                },
-            })
-        },[newUserEmail,newUserName])
 
         const onClickNewUser = () => {
             // モーダル表示
@@ -301,12 +325,11 @@ const UserList = () => {
                     value: project.uuid
                 }
             })
-
+            clearField();
             ModalUtil.emitModal({
                 id: Constants.modal.ADD_USER,
                 visible: true,
                 done: '作成する',
-                overflow: false,
                 content: <div className={style.modal}>
                     <form>
                         <div className={style.label}>
@@ -355,15 +378,25 @@ const UserList = () => {
 
         const data: UserListUser = lastSelected;
         const onClickDelete = () => {
-            deleteUser(data.uuid)
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM,
+                visible: true,
+                done: '削除する',
+                danger: true,
+                content: <div className={style.modal}>
+                    <div>
+                        ユーザーを削除しますがよろしいですか？
+                    </div>
+                </div>
+            });
         };
         const onClickPasswordReset = ()=>{
             const name = lastSelected.name;
             ModalUtil.emitModal({
-                id: Constants.modal.CONFIRM,
+                id: Constants.modal.RESET_USER_PASSWORD,
                 visible: true,
                 done: 'パスワードをリセットする',
-                oveflow: true,
+                danger: true,
                 content: <div className={style.modal}>
                     <div>
                         {name} を仮登録のステータスにして、パスワードを自動的に作られたパスワードに設定しますがよろしいですか？<br/>
