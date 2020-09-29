@@ -3,60 +3,31 @@ import style from './style.scss';
 import classnames from 'classnames';
 import {useState} from 'react';
 import {FilterCategoryItemList} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList';
-import {FilterCategoryItem, FilterListItem} from 'Types/index'
+import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
 
 interface Props {
     children: string;
-    list?: FilterCategoryItem[];
+    list: IFilterCategoryItem[];
+    onClickFilterListItem: (item: IFilterListItem)=>void;
+    onClickFilterCategoryItem: (item: IFilterCategoryItem)=>void;
 }
 
 const FilterListLinkButton = (props: Props) => {
-    const {children} = props;
+    const {children, list, onClickFilterListItem, onClickFilterCategoryItem} = props;
     const [hasShown, setHasShown] = useState(false);
     const onClick = () => {
         setHasShown(!hasShown);
     }
 
-    const projectData: FilterListItem[] = [{
-        id: 1,
-        label: 'project',
-        selected: false
-    }];
-    const statusData: FilterListItem[] = [{
-        id: 1,
-        label: '仮登録',
-        selected: false
-    }, {
-        id: 1,
-        label: '利用中',
-        selected: false
-    }, {
-        id: 1,
-        label: '削除済',
-        selected: false
-    }];
-    const list: FilterCategoryItem[] = [
-        {
-            id: 1,
-            label: '所属プロジェクト',
-            multiple: false,
-            data: projectData,
-        },
-        {
-            id: 1,
-            label: 'ステータス',
-            multiple: true,
-            data: statusData
-        }
-    ]
-    const onClickFilterListItem = (item: FilterListItem) => {
+    const _onClickFilterListItem = (item: IFilterListItem) => {
         // 最終的に選択されたアイテム
-        console.log("FilterListItem",item);
+        onClickFilterListItem(item);
+        setHasShown(false);
     }
 
-    const onClickFilterCategoryItem = (item: FilterCategoryItem) => {
+    const _onClickFilterCategoryItem = (item: IFilterCategoryItem) => {
         // 最終的に選択されたカテゴリー
-        console.log("FilterCategoryItem",item);
+        onClickFilterCategoryItem(item);
     }
 
     return <div className={style.container}><a href="#" className={style.filterListLinkButton} onClick={onClick}>
@@ -64,8 +35,8 @@ const FilterListLinkButton = (props: Props) => {
     </a>
         {(hasShown) ? <FilterCategoryItemList
             list={list}
-            onClickFilterCategoryItem={onClickFilterCategoryItem}
-            onClickFilterListItem={onClickFilterListItem}/> : null
+            onClickFilterCategoryItem={_onClickFilterCategoryItem}
+            onClickFilterListItem={_onClickFilterListItem}/> : null
         }
     </div>
 };

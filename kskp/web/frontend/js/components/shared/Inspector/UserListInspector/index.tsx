@@ -55,7 +55,6 @@ const UserListInspector = (props: Props) => {
         let result: any = []
 
         const [showPassword, setShowPassword] = useState<Boolean>(false)
-        console.log('renderDetail', data);
         if (!data) return result
 
         if (data.email) {
@@ -86,18 +85,17 @@ const UserListInspector = (props: Props) => {
             result.push(status)
 
             if (data.status === 'tmp') {
-                const onClickShowPassword = () => {
-                    setShowPassword(true)
-                }
-                let showPasswordElement = (!showPassword)?<Button onClick={onClickShowPassword}>仮パスワードの表示</Button>:null;
-                result.push(showPasswordElement)
-
                 let tempPasswordLabel = <React.Fragment>
                     <div><label>{display.password}</label></div>
                     <div
                         className={'mb-8px'}>{(showPassword) ? data.password : AdminUtil.replaceAsterisk(data.password.length)}</div>
                 </React.Fragment>
                 result.push(tempPasswordLabel)
+                const onClickShowPassword = () => {
+                    setShowPassword(true)
+                }
+                let showPasswordElement = (!showPassword)?<Button onClick={onClickShowPassword}>仮パスワードを表示する</Button>:null;
+                result.push(showPasswordElement)
             }
             const {onClickPasswordReset} = props;
             if (data.status === 'active' && onClickPasswordReset) {
@@ -123,7 +121,6 @@ const UserListInspector = (props: Props) => {
             </div>
         </div>
 
-        console.log('renderSelect')
         return content
     }
 
@@ -136,7 +133,6 @@ const UserListInspector = (props: Props) => {
 
             </div>
         </div>
-        console.log('renderSelects')
 
         return content
     }
@@ -144,8 +140,6 @@ const UserListInspector = (props: Props) => {
 
     const {selected, lastSelected, onBlurTitle} = props
     let label = (lastSelected && selected.length <= 1) ? lastSelected.name : undefined
-    console.log(selected.length)
-    console.log(lastSelected)
     let content = (selected.length <= 1) ? renderSelect(lastSelected) : renderSelects(selected, lastSelected)
 
     return <Resizer>

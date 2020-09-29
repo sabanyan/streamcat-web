@@ -195,6 +195,7 @@ export interface UserListUser extends TableCell{
   createdAt: Date;
   roles:     UserRole[];
   password?: string;
+  projects?: UserProject[];
 }
 
 export interface TableCell {
