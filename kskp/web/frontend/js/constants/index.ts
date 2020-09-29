@@ -113,6 +113,7 @@ const Constants = {
     SHOW_RUN_RESULT: 'show_run_result',
     SHOW_RUN_ERROR: 'show_run_error',
     PREVIEW_DATASOURCE: 'preview_datasource',
+    RESET_USER_PASSWORD: 'reset_user_password',
     property: {
       title: 'title',
       message: 'message',
