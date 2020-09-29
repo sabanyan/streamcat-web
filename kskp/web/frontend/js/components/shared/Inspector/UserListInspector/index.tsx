@@ -89,10 +89,9 @@ const UserListInspector = (props: Props) => {
                 const onClickShowPassword = () => {
                     setShowPassword(true)
                 }
-                let showPasswordElement = <Button onClick={onClickShowPassword}>仮パスワードの表示</Button>
+                let showPasswordElement = (!showPassword)?<Button onClick={onClickShowPassword}>仮パスワードの表示</Button>:null;
                 result.push(showPasswordElement)
 
-                console.log(data)
                 let tempPasswordLabel = <React.Fragment>
                     <div><label>{display.password}</label></div>
                     <div
