@@ -354,6 +354,8 @@ const UserList = () => {
                                 defaultValue={selectedOption}
                                 onChange={setSelectedOption}
                                 options={options}
+                                placeholder={""}
+                                isSearchable={false}
                             />
                         </div>
                     </form>
