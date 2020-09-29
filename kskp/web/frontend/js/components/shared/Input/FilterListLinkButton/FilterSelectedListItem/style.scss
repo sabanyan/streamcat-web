@@ -1,0 +1,17 @@
+@import "../../../../../../sass/common";
+
+.listItem{
+  display: inline-flex;
+  width: auto;
+  padding: 4px 8px;
+}
+
+.label{
+  display: inline-flex;
+}
+
+.icon{
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
