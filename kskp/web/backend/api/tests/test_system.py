@@ -937,7 +937,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
         self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
         self.assertEqual(result['data']['members'][0]['type'], 'Owner')
-        # システム管理者
+        # ユーザ管理者
         self.assertEqual(result['data']['members'][1]['uuid'], self.USER1.uuid)
         self.assertEqual(result['data']['members'][1]['email'], self.USER1.email)
         self.assertEqual(result['data']['members'][1]['name'], self.USER1.name)
@@ -998,7 +998,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
         # 参加ユーザ(USER2)
-        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(len(result['data']['members']), 3)
         self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
         self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
         self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
@@ -1006,14 +1006,23 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
         self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
         self.assertEqual(result['data']['members'][0]['type'], 'Owner')
+        # ユーザ管理者
+        # (ユーザ管理者はプロジェクト管理者から外すことはできないこと)
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER1.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Owner')
         # 参加ユーザ(USER3)
-        self.assertEqual(result['data']['members'][1]['uuid'], self.USER3.uuid)
-        self.assertEqual(result['data']['members'][1]['email'], self.USER3.email)
-        self.assertEqual(result['data']['members'][1]['name'], self.USER3.name)
-        self.assertEqual(result['data']['members'][1]['state'], self.USER3.state)
-        self.assertEqual(result['data']['members'][1]['creator'], self.USER3.creator_str)
-        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER3.created_at_str)
-        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
+        self.assertEqual(result['data']['members'][2]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][2]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][2]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][2]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][2]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][2]['createdAt'], self.USER3.created_at_str)
+        self.assertEqual(result['data']['members'][2]['type'], 'Reader')
 
         # ユーザを脱退させる
         data = {
@@ -1025,7 +1034,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
 
         # 参加ユーザは1人である
-        self.assertEqual(len(result['data']['members']), 1)
+        self.assertEqual(len(result['data']['members']), 2)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
