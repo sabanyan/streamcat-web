@@ -17,6 +17,7 @@ import Select from 'react-select';
 import {LibraryChild} from 'Model/Library';
 import UserListInspector from 'Shared/Inspector/UserListInspector';
 import {project} from 'Shared/IconRenderer/icon';
+import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
 
 const UserList = () => {
     const dispatch = useDispatch();
@@ -439,20 +440,26 @@ const UserList = () => {
                 <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
                       onClick={onClickUserList}>
                     <Spacer width={40}/>
-                    <Flex flexDirection={'column'} fluid={true}>
+                    <Flex flexDirection={'column'}>
                         <Spacer height={40}/>
                         <div className={style.pageTitleHeader}>
-                            <div className={style.pageTitle}>
-                                ユーザー管理
+                            <div className={style.searchHeaderContainer}>
+                                <div className={style.pageTitle}>
+                                    ユーザー管理
+                                </div>
+                                <div className={style.searchBarContainer}>
+                                    <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
+                                </div>
                             </div>
-                            <div className={style.searchBarContainer}>
-                                <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
+                            <Spacer height={20}/>
+                            <div className={style.resultAndFilterContainer}>
+                                <div className={style.resultCount}>
+                                    表示されている件数 {users.length}件
+                                </div>
+                                <div className={style.filterLinkContainer}>
+                                    <FilterListLinkButton>検索フィルタ</FilterListLinkButton>
+                                </div>
                             </div>
-                        </div>
-
-                        <Spacer height={20}/>
-                        <div className={style.resultCount}>
-                            表示されている件数 {users.length}件
                         </div>
                         <Spacer height={30}/>
                         {renderUserList()}

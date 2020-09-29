@@ -1,0 +1,9 @@
+@import "../../../../../../../sass/common";
+
+.categoryItem{
+  padding: 12px;
+  &:hover{
+    background: red;
+  }
+  cursor: pointer;
+}
