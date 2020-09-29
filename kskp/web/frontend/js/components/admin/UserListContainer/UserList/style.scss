@@ -31,10 +31,15 @@
   padding: 0 24px;
   color: #606c7a;
 }
+
 .modal{
   display: flex;
   justify-content: center;
-  height: 400px;
+}
+
+.confirmModal{
+  display: flex;
+  justify-content: center;
 }
 .label{
   display: inline-flex;
