@@ -5,7 +5,7 @@ export default class AdminUtil {
                 return '登録済';
             case 'tmp':
                 return '仮登録';
-            case 'delete':
+            case 'inactive':
                 return '削除済';
         }
         return '';
