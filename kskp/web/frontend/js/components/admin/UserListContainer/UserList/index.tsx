@@ -18,6 +18,10 @@ import {LibraryChild} from 'Model/Library';
 import UserListInspector from 'Shared/Inspector/UserListInspector';
 import {project} from 'Shared/IconRenderer/icon';
 import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
+import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelectedList";
+import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
+import {Simulate} from "react-dom/test-utils";
+import error = Simulate.error;
 
 const UserList = () => {
     const dispatch = useDispatch();
@@ -38,7 +42,7 @@ const UserList = () => {
     const [selectedDatas, setSelectedDatas] = useState<UserListUser[]>([]);
     const clickedUserListCell = useRef(false);
     const [keyword,setKeyword] = useState<string>("");
-    const [projects,setProjects] = useState<UserProject>([]);
+    const [projects,setProjects] = useState<UserProject[]>([]);
 
     const fetchProjects = () => {
         const url = '/projects'
@@ -73,7 +77,6 @@ const UserList = () => {
         const url = 'users?' + ((keyword)?'q='+ params.query + '&': '') + 'projects=' + params.projects + '&roles=' + params.roles
         return APIUtil.get(url).then((response) => {
             const users: UserListUser[] = response.data.data;
-            console.log("fetch",users);
             setUsers(users);
             setIsLoading(false);
             setIsFinished(true);
@@ -102,7 +105,6 @@ const UserList = () => {
         setIsLoading(true);
         const url = 'users'
         return APIUtil.post(url,body).then((response) => {
-            console.log(response)
             fetchUsers();
             setIsLoading(false);
         }).catch((error) => {
@@ -121,7 +123,6 @@ const UserList = () => {
     const deleteUser = (uuid: string)=>{
         const url = 'users/' + uuid;
         return APIUtil.delete(url).then((response)=>{
-            console.log(response)
             fetchUsers();
             setIsLoading(false);
         }).catch((error) => {
@@ -143,7 +144,6 @@ const UserList = () => {
             password: null
         }
         return APIUtil.put(url,body).then((response)=>{
-            console.log(response)
             fetchUsers();
             setIsLoading(false);
         }).catch((error) => {
@@ -430,9 +430,169 @@ const UserList = () => {
             }, 100);
         };
 
-        const onChangeKeyword = (e:React.ChangeEvent<HTMLInputElement>)=> {
+        const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
             setKeyword(e.target.value)
         }
+
+        const setInitialFilterList = () => {
+            const projectData: IFilterListItem[] = projects.map((project) => {
+                return {
+                    id: project.uuid,
+                    label: project.label,
+                    selected: false
+                }
+            });
+
+            const statusData: IFilterListItem[] = [{
+                id: "temp",
+                label: '仮登録',
+                selected: false
+            }, {
+                id: "active",
+                label: '利用中',
+                selected: false
+            }, {
+                id: "inactive",
+                label: '削除済',
+                selected: false
+            }];
+            const list: IFilterCategoryItem[] = [
+                {
+                    id: "project",
+                    label: '所属プロジェクト',
+                    multiple: false,
+                    data: projectData,
+                },
+                {
+                    id: "status",
+                    label: 'ステータス',
+                    multiple: true,
+                    data: statusData
+                }
+            ]
+            setFilterList(list);
+        }
+
+        useEffect(() => {
+            if (!filterList.length && projects.length) {
+                setInitialFilterList()
+            }
+        }, [projects])
+
+        const [filterList, setFilterList] = useState<IFilterCategoryItem[]>([])
+        const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null)
+
+        useEffect(()=>{
+            // フィルターが変更される都度ユーザをフィルタリングする
+            filterUsers()
+        },[filterList])
+
+        // 取得済みのユーザーをフィルターする
+        const filterUsers = () => {
+            // 選択されている条件を抽出する
+            let selectedProjectUUIDs: string[] = []
+            let selectedStatusTypes: string[] = []
+            filterList.forEach((categoryListItem: IFilterCategoryItem)=>{
+                if(categoryListItem.id === "project"){
+                    categoryListItem.data.forEach((listItem: IFilterListItem)=>{
+                        if(listItem.selected){
+                            selectedProjectUUIDs.push(listItem.id);
+                        }
+                    })
+                }else if(categoryListItem.id === "status"){
+                    categoryListItem.data.forEach((listItem: IFilterListItem)=>{
+                        if(listItem.selected){
+                            selectedStatusTypes.push(listItem.id);
+                        }
+                    })
+                }
+            })
+            // ユーザーをフィルターする
+            let newFilteredUsers = users;
+            // 該当プロジェクトに属しているユーザのみ抽出
+            if(selectedProjectUUIDs.length){
+                newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
+                    let hasFound = false
+                    user.projects.forEach((project:UserProject)=>{
+                        // 該当するプロジェクトがあるか
+                        hasFound = true
+                    })
+                    return hasFound
+                })
+            }
+            // 該当するステータスのユーザのみ抽出
+            if(selectedStatusTypes.length){
+                newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
+                    let hasFound = false
+                    selectedStatusTypes.forEach((state)=>{
+                        if(user.state === state){
+                            hasFound = true
+                        }
+                    });
+                    return hasFound;
+                })
+            }
+
+            // フィルターしていない場合は、user を再取得する
+            const noFilter = (!selectedProjectUUIDs.length && !selectedStatusTypes.length);
+            if(noFilter){
+                // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+                // 200ms ほど間隔をあけてから再検索を行う
+                setTimeout(()=>{
+                    fetchUsers(keyword);
+                },200)
+                return
+            }
+            // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+            // 200ms ほど間隔をあけてからフィルタリングする
+            setTimeout(()=>{
+                setUsers(newFilteredUsers)
+            },200)
+        }
+
+        const removeSelectedCategory = (selectedCategory: IFilterCategoryItem)=>{
+            return filterList.map(category =>{
+                if(category.id === selectedCategory.id){
+                    category.data = category.data.map((listItem)=>{
+                        if(listItem.selected){
+                            return {...listItem,selected:false}
+                        }
+                        return listItem
+                    })
+                    return category
+                }
+                return category
+            });
+
+        }
+
+        const onClickRemove = (selectedCategory: IFilterCategoryItem)=>{
+            // クリックされたカテゴリを非選択状態にする
+            setFilterList(removeSelectedCategory(selectedCategory))
+        }
+        const onClickCategoryItem = (selectedCategoryItem: IFilterCategoryItem)=>{
+            setSelectedCategory(selectedCategoryItem)
+        }
+        const onClickListItem = (selectedListItems: IFilterListItem[])=>{
+            // 選択状態にする
+            const newList = filterList.map(category =>{
+                if(category.id === selectedCategory.id){
+                    category.data = category.data.map((listItem)=>{
+                        let hasFound = false
+                        selectedListItems.forEach(selectedListItem => {
+                            if(listItem.id === selectedListItem.id){
+                                hasFound = true
+                            }
+                        })
+                        return {...listItem,selected:hasFound}
+                    })
+                    return category
+                }
+                return category
+            });
+            setFilterList(newList)
+        }
+
         return <>
             {renderLoadingIcon()}
             <Flex justifyContent={'center'} fluid={true}>
@@ -457,7 +617,13 @@ const UserList = () => {
                                     表示されている件数 {users.length}件
                                 </div>
                                 <div className={style.filterLinkContainer}>
-                                    <FilterListLinkButton>検索フィルタ</FilterListLinkButton>
+                                    <FilterListLinkButton
+                                        list={filterList}
+                                        onClickFilterCategoryItem={onClickCategoryItem}
+                                        onClickFilterListItem={onClickListItem}
+                                    >検索フィルタ</FilterListLinkButton>
+                                    <Spacer width={20}/>
+                                    <FilterSelectedList onClickRemove={onClickRemove} list={filterList}/>
                                 </div>
                             </div>
                         </div>

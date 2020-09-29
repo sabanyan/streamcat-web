@@ -6,6 +6,7 @@ import style from './style.scss';
 import {Badge} from 'Shared/Base/Badge';
 import {Spacer} from 'Shared/Base';
 import AdminUtil from 'Utils/AdminUtil';
+import ImageUtil from "Utils/ImageUtil";
 
 export interface ITableBody {
     uuid: string;
@@ -35,12 +36,6 @@ interface Props {
 
 const UserListBody = (props: Props) => {
     const {bodies, onClickCell, onClickFileName} = props;
-
-    const getUserIconElement = () => {
-        const baseUrl = '/front_static/';
-        const icon = 'icon-user'
-        return <img className={style.icon} src={baseUrl + 'images/icon/' + icon + '.svg'}/>;
-    };
 
     const onClick = (event, body) => {
         onClickCell(body, event)
@@ -85,7 +80,7 @@ const UserListBody = (props: Props) => {
         return <tr className={classnames(style.row, {[style.selected]: body.selected})}
                    onClick={(event) => onClick(event, body)} key={index}>
             <td>
-                {getUserIconElement()}
+                {ImageUtil.getIconElement("icon-user")}
                 {body.name}
             </td>
             <td>
