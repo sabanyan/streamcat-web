@@ -17,6 +17,13 @@ import Select from 'react-select';
 import {LibraryChild} from 'Model/Library';
 import UserListInspector from 'Shared/Inspector/UserListInspector';
 import {project} from 'Shared/IconRenderer/icon';
+import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
+import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelectedList";
+import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
+import {Simulate} from "react-dom/test-utils";
+import error = Simulate.error;
+import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader';
+import * as lodash from 'lodash';
 
 const UserList = () => {
     const dispatch = useDispatch();
@@ -37,7 +44,7 @@ const UserList = () => {
     const [selectedDatas, setSelectedDatas] = useState<UserListUser[]>([]);
     const clickedUserListCell = useRef(false);
     const [keyword,setKeyword] = useState<string>("");
-    const [projects,setProjects] = useState<UserProject>([]);
+    const [projects,setProjects] = useState<UserProject[]>([]);
 
     const fetchProjects = () => {
         const url = '/projects'
@@ -72,7 +79,6 @@ const UserList = () => {
         const url = 'users?' + ((keyword)?'q='+ params.query + '&': '') + 'projects=' + params.projects + '&roles=' + params.roles
         return APIUtil.get(url).then((response) => {
             const users: UserListUser[] = response.data.data;
-            console.log("fetch",users);
             setUsers(users);
             setIsLoading(false);
             setIsFinished(true);
@@ -100,27 +106,13 @@ const UserList = () => {
         };
         setIsLoading(true);
         const url = 'users'
-        return APIUtil.post(url,body).then((response) => {
-            console.log(response)
-            fetchUsers();
-            setIsLoading(false);
-        }).catch((error) => {
-            notify({
-                title: 'ユーザー作成エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
-            setIsLoading(false);
-        });
+        return APIUtil.post(url,body);
     }
 
     // ユーザを削除する
     const deleteUser = (uuid: string)=>{
         const url = 'users/' + uuid;
         return APIUtil.delete(url).then((response)=>{
-            console.log(response)
             fetchUsers();
             setIsLoading(false);
         }).catch((error) => {
@@ -142,7 +134,6 @@ const UserList = () => {
             password: null
         }
         return APIUtil.put(url,body).then((response)=>{
-            console.log(response)
             fetchUsers();
             setIsLoading(false);
         }).catch((error) => {
@@ -191,6 +182,12 @@ const UserList = () => {
                 })
             },
         })
+        // ユーザ作成後の確認ダイアログ
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
+                ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
+            }
+        })
     }, [lastSelected])
 
     // ローディングアイコンを表示する
@@ -226,9 +223,9 @@ const UserList = () => {
                         min = current;
                         max = last;
                     }
-                    const selectedDatas: UserListUser[] = users.slice(min, max + 1).map((libraryChild) => {
-                        libraryChild.selected = true;
-                        return libraryChild;
+                    const selectedDatas: UserListUser[] = users.slice(min, max + 1).map((user) => {
+                        user.selected = true;
+                        return user;
                     });
                     setSelectedDatas(selectedDatas);
                 }
@@ -244,9 +241,26 @@ const UserList = () => {
         const onClickFileName = () => {
 
         };
-        const onClickHeader = () => {
-
-        };
+        const onClickHeader= (header: ITableHeader) => {
+            clickedUserListCell.current = true;
+            if (header.sort) {
+                if(header.key === "projects"){
+                    setUsers(lodash.orderBy(users, (e: UserListUser)=>{
+                        const projects = e.projects.length
+                        return projects
+                    }, header.sort));
+                }else if(header.key === "admin_types"){
+                    setUsers(lodash.orderBy(users, (e: UserListUser)=>{
+                        const roles = e.roles.filter(role => (role.systemRole != "EVERYONE"))
+                        return JSON.stringify(roles)
+                    }, header.sort));
+                } else{
+                    setUsers(lodash.orderBy(users, header.key, header.sort));
+                }
+            } else {
+                fetchUsers()
+            }
+        }
 
         const bodies: ITableBody[] = users.map((user: UserListUser) => {
             let projects = [];
@@ -271,15 +285,15 @@ const UserList = () => {
 
             const body: ITableBody = {
                 admin_types: admin_types,
-                clickable: false,
+                clickable: true,
                 createdAt: user.createdAt,
                 creator: user.creator,
                 email: user.email,
                 name: user.name,
                 projects: projects,
-                selected: false,
                 status: user.state,
                 uuid: user.uuid,
+                selected: user.selected,
                 password: user.password
             };
             return body
@@ -292,21 +306,67 @@ const UserList = () => {
 
     const [newUserName, setNewUserName] = useState<string | null>(null);
     const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
-    const [selectedOption, setSelectedOption] = useState(null);
+    const [selectedOption, setSelectedOption] = useState<UserProject | null>(null);
 
     useEffect(()=>{
         if (newUserName === null || newUserEmail === null) return;
         ModalUtil.registerModal({
             id: Constants.modal.ADD_USER, onClickDone: () => {
-                createNewUser(newUserName,newUserEmail).then(()=>{
+                createNewUser(newUserName,newUserEmail).then((response) => {
+                    setIsLoading(false);
+                    fetchUsers();
+                    if(!response.data.success){
+                        notify({
+                            title: 'ユーザー作成エラー',
+                            message: ReactDomUtil.renderToString(response.data.message),
+                            status: 'error',
+                            dismissAfter: 0,
+                            closeButton: true
+                        })
+                        ModalUtil.closeModal(Constants.modal.ADD_USER)
+                        clearField();
+                        return
+                    }
+                    const data = response.data.data
                     ModalUtil.closeModal(Constants.modal.ADD_USER)
+                    const project = (selectedOption && selectedOption.label)?<div>所属: {selectedOption.label}</div>: null;
+                    ModalUtil.emitModal({
+                        id: Constants.modal.ADD_USER_CONFIRM,
+                        visible: true,
+                        done: '閉じる',
+                        content: <div className={style.modal}>
+                            <form>
+                                <div className={style.addUserLabel}>
+                                    新規ユーザーの仮登録が完了しました。
+                                </div>
+                                <Spacer height={20}/>
+                                <div className={style.addUserDetails}>
+                                    <div>名前: {data.name}</div>
+                                    <div>Email: {data.email}</div>
+                                    {project}
+                                    <div>仮パスワード: {data.password}</div>
+                                </div>
+                            </form>
+                            <div className={'mt-8px'}/>
+                        </div>
+                    });
                     clearField();
+                }).catch((error) => {
+                    notify({
+                        title: 'ユーザー作成エラー',
+                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                        status: 'error',
+                        dismissAfter: 0,
+                        closeButton: true
+                    })
+                    ModalUtil.closeModal(Constants.modal.ADD_USER)
+                    setIsLoading(false);
                 })
             }, onClickCancel: ()=>{
                 clearField();
             }
         })
-    },[newUserEmail,newUserName])
+    },[newUserEmail,newUserName, selectedOption])
 
     const clearField = () =>{
         setNewUserName("");
@@ -417,6 +477,121 @@ const UserList = () => {
         }));
     };
 
+    const setInitialFilterList = () => {
+        const projectData: IFilterListItem[] = projects.map((project) => {
+            return {
+                id: project.uuid,
+                label: project.label,
+                selected: false
+            }
+        });
+
+        const statusData: IFilterListItem[] = [{
+            id: "tmp",
+            label: '仮登録',
+            selected: false
+        }, {
+            id: "active",
+            label: '利用中',
+            selected: false
+        }, {
+            id: "inactive",
+            label: '削除済',
+            selected: false
+        }];
+        const list: IFilterCategoryItem[] = [
+            {
+                id: "project",
+                label: '所属プロジェクト',
+                multiple: false,
+                data: projectData,
+            },
+            {
+                id: "status",
+                label: 'ステータス',
+                multiple: true,
+                data: statusData
+            }
+        ]
+        setFilterList(list);
+    }
+
+    useEffect(() => {
+        if (!filterList.length && projects.length) {
+            setInitialFilterList()
+        }
+    }, [projects])
+
+    const [filterList, setFilterList] = useState<IFilterCategoryItem[]>([])
+    const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null)
+
+    useEffect(()=>{
+        // フィルターが変更される都度ユーザをフィルタリングする
+        filterUsers()
+    },[filterList])
+
+    // 取得済みのユーザーをフィルターする
+    const filterUsers = () => {
+        // 選択されている条件を抽出する
+        let selectedProjectUUIDs: string[] = []
+        let selectedStatusTypes: string[] = []
+        filterList.forEach((categoryListItem: IFilterCategoryItem)=>{
+            if(categoryListItem.id === "project"){
+                categoryListItem.data.forEach((listItem: IFilterListItem)=>{
+                    if(listItem.selected){
+                        selectedProjectUUIDs.push(listItem.id);
+                    }
+                })
+            }else if(categoryListItem.id === "status"){
+                categoryListItem.data.forEach((listItem: IFilterListItem)=>{
+                    if(listItem.selected){
+                        selectedStatusTypes.push(listItem.id);
+                    }
+                })
+            }
+        })
+        // ユーザーをフィルターする
+        let newFilteredUsers = users;
+        // 該当プロジェクトに属しているユーザのみ抽出
+        if(selectedProjectUUIDs.length){
+            newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
+                let hasFound = false
+                user.projects.forEach((project:UserProject)=>{
+                    // 該当するプロジェクトがあるか
+                    hasFound = true
+                })
+                return hasFound
+            })
+        }
+        // 該当するステータスのユーザのみ抽出
+        if(selectedStatusTypes.length){
+            newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
+                let hasFound = false
+                selectedStatusTypes.forEach((state)=>{
+                    if(user.state === state){
+                        hasFound = true
+                    }
+                });
+                return hasFound;
+            })
+        }
+
+        // フィルターしていない場合は、user を再取得する
+        const noFilter = (!selectedProjectUUIDs.length && !selectedStatusTypes.length);
+        if(noFilter){
+            // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+            // 200ms ほど間隔をあけてから再検索を行う
+            setTimeout(()=>{
+                fetchUsers(keyword);
+            },200)
+            return
+        }
+        // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+        // 200ms ほど間隔をあけてからフィルタリングする
+        setTimeout(()=>{
+            setUsers(newFilteredUsers)
+        },200)
+    }
     // 描画する
     const renderAll = () => {
         const onClickUserList = () => {
@@ -429,9 +604,54 @@ const UserList = () => {
             }, 100);
         };
 
-        const onChangeKeyword = (e:React.ChangeEvent<HTMLInputElement>)=> {
+        const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
             setKeyword(e.target.value)
         }
+
+
+        const removeSelectedCategory = (selectedCategory: IFilterCategoryItem)=>{
+            return filterList.map(category =>{
+                if(category.id === selectedCategory.id){
+                    category.data = category.data.map((listItem)=>{
+                        if(listItem.selected){
+                            return {...listItem,selected:false}
+                        }
+                        return listItem
+                    })
+                    return category
+                }
+                return category
+            });
+
+        }
+
+        const onClickRemove = (selectedCategory: IFilterCategoryItem)=>{
+            // クリックされたカテゴリを非選択状態にする
+            setFilterList(removeSelectedCategory(selectedCategory))
+        }
+        const onClickCategoryItem = (selectedCategoryItem: IFilterCategoryItem)=>{
+            setSelectedCategory(selectedCategoryItem)
+        }
+        const onClickListItem = (selectedListItems: IFilterListItem[])=>{
+            // 選択状態にする
+            const newList = filterList.map(category =>{
+                if(category.id === selectedCategory.id){
+                    category.data = category.data.map((listItem)=>{
+                        let hasFound = false
+                        selectedListItems.forEach(selectedListItem => {
+                            if(listItem.id === selectedListItem.id){
+                                hasFound = true
+                            }
+                        })
+                        return {...listItem,selected:hasFound}
+                    })
+                    return category
+                }
+                return category
+            });
+            setFilterList(newList)
+        }
+
         return <>
             {renderLoadingIcon()}
             <Flex justifyContent={'center'} fluid={true}>
@@ -439,20 +659,32 @@ const UserList = () => {
                 <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
                       onClick={onClickUserList}>
                     <Spacer width={40}/>
-                    <Flex flexDirection={'column'} fluid={true}>
+                    <Flex flexDirection={'column'}>
                         <Spacer height={40}/>
                         <div className={style.pageTitleHeader}>
-                            <div className={style.pageTitle}>
-                                ユーザー管理
+                            <div className={style.searchHeaderContainer}>
+                                <div className={style.pageTitle}>
+                                    ユーザー管理
+                                </div>
+                                <div className={style.searchBarContainer}>
+                                    <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
+                                </div>
                             </div>
-                            <div className={style.searchBarContainer}>
-                                <input type={'text'} placeholder={'ユーザー名、E-mail で絞り込む'} className={'form-control'} onChange={onChangeKeyword}/>
+                            <Spacer height={20}/>
+                            <div className={style.resultAndFilterContainer}>
+                                <div className={style.resultCount}>
+                                    表示されている件数 {users.length}件
+                                </div>
+                                <div className={style.filterLinkContainer}>
+                                    <FilterListLinkButton
+                                        list={filterList}
+                                        onClickFilterCategoryItem={onClickCategoryItem}
+                                        onClickFilterListItem={onClickListItem}
+                                    >検索フィルタ</FilterListLinkButton>
+                                    <Spacer width={20}/>
+                                    <FilterSelectedList onClickRemove={onClickRemove} list={filterList}/>
+                                </div>
                             </div>
-                        </div>
-
-                        <Spacer height={20}/>
-                        <div className={style.resultCount}>
-                            表示されている件数 {users.length}件
                         </div>
                         <Spacer height={30}/>
                         {renderUserList()}

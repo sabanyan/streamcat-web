@@ -1,0 +1,14 @@
+@import "../../../../../../../sass/common";
+
+.categoryItem{
+  display: flex;
+  align-items: center;
+  padding: 14px;
+  height: 48px;
+  color: #606C7D;
+  &:hover{
+    background: #f8f9fa;
+  }
+
+  cursor: pointer;
+}

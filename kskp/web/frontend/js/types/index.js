@@ -195,6 +195,7 @@ export interface UserListUser extends TableCell{
   createdAt: Date;
   roles:     UserRole[];
   password?: string;
+  projects?: UserProject[];
 }
 
 export interface TableCell {
@@ -215,4 +216,17 @@ export interface UserProject {
   label:     string;
   creator:   string;
   createdAt: Date;
+}
+
+export interface IFilterCategoryItem {
+  id: string;
+  label: string;
+  multiple: boolean;
+  data: IFilterListItem[];
+}
+
+export interface IFilterListItem {
+  id: string;
+  label: string;
+  selected: boolean;
 }

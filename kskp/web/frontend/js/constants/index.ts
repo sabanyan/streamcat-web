@@ -104,6 +104,7 @@ const Constants = {
     ADD_FRAME: 'add_frame',
     ADD_DATABASE: 'add_database',
     ADD_USER: 'add_user',
+    ADD_USER_CONFIRM: 'add_user_confirm',
     EDIT_DATABASE: 'edit_database',
     EDIT_ENCODING: 'edit_encoding',
     RUN_FLOW: 'run_flow',
