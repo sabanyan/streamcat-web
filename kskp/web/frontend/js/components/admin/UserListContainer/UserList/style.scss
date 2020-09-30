@@ -45,6 +45,7 @@
   width: 100%;
   justify-content: space-between;
   align-items: center;
+  height: 44px;
 }
 
 .label{
@@ -52,6 +53,16 @@
   font-size: 16px;
   color: #606c7a;
   width: 140px;
+}
+
+.addUserLabel{
+  font-size: 16px;
+  color: #606c7a;
+}
+.addUserDetail{
+  display: flex;
+  font-size: 16px;
+  color: #606c7a;
 }
 
 .textField{
