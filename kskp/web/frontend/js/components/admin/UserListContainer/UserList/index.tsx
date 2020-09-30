@@ -245,9 +245,26 @@ const UserList = () => {
         const onClickFileName = () => {
 
         };
-        const onClickHeader = () => {
-
-        };
+        const onClickHeader= (header: ITableHeader) => {
+            clickedUserListCell.current = true;
+            if (header.sort) {
+                if(header.key === "projects"){
+                    setUsers(lodash.orderBy(users, (e: UserListUser)=>{
+                        const projects = e.projects.length
+                        return projects
+                    }, header.sort));
+                }else if(header.key === "admin_types"){
+                    setUsers(lodash.orderBy(users, (e: UserListUser)=>{
+                        const roles = e.roles.filter(role => (role.systemRole != "EVERYONE"))
+                        return JSON.stringify(roles)
+                    }, header.sort));
+                } else{
+                    setUsers(lodash.orderBy(users, header.key, header.sort));
+                }
+            } else {
+                fetchUsers()
+            }
+        }
 
         const bodies: ITableBody[] = users.map((user: UserListUser) => {
             let projects = [];
