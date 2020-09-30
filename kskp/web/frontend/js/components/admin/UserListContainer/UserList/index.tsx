@@ -22,6 +22,8 @@ import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelect
 import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
 import {Simulate} from "react-dom/test-utils";
 import error = Simulate.error;
+import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader';
+import * as lodash from 'lodash';
 
 const UserList = () => {
     const dispatch = useDispatch();
@@ -221,9 +223,9 @@ const UserList = () => {
                         min = current;
                         max = last;
                     }
-                    const selectedDatas: UserListUser[] = users.slice(min, max + 1).map((libraryChild) => {
-                        libraryChild.selected = true;
-                        return libraryChild;
+                    const selectedDatas: UserListUser[] = users.slice(min, max + 1).map((user) => {
+                        user.selected = true;
+                        return user;
                     });
                     setSelectedDatas(selectedDatas);
                 }
@@ -283,15 +285,15 @@ const UserList = () => {
 
             const body: ITableBody = {
                 admin_types: admin_types,
-                clickable: false,
+                clickable: true,
                 createdAt: user.createdAt,
                 creator: user.creator,
                 email: user.email,
                 name: user.name,
                 projects: projects,
-                selected: false,
                 status: user.state,
                 uuid: user.uuid,
+                selected: user.selected,
                 password: user.password
             };
             return body
@@ -475,6 +477,121 @@ const UserList = () => {
         }));
     };
 
+    const setInitialFilterList = () => {
+        const projectData: IFilterListItem[] = projects.map((project) => {
+            return {
+                id: project.uuid,
+                label: project.label,
+                selected: false
+            }
+        });
+
+        const statusData: IFilterListItem[] = [{
+            id: "tmp",
+            label: '仮登録',
+            selected: false
+        }, {
+            id: "active",
+            label: '利用中',
+            selected: false
+        }, {
+            id: "inactive",
+            label: '削除済',
+            selected: false
+        }];
+        const list: IFilterCategoryItem[] = [
+            {
+                id: "project",
+                label: '所属プロジェクト',
+                multiple: false,
+                data: projectData,
+            },
+            {
+                id: "status",
+                label: 'ステータス',
+                multiple: true,
+                data: statusData
+            }
+        ]
+        setFilterList(list);
+    }
+
+    useEffect(() => {
+        if (!filterList.length && projects.length) {
+            setInitialFilterList()
+        }
+    }, [projects])
+
+    const [filterList, setFilterList] = useState<IFilterCategoryItem[]>([])
+    const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null)
+
+    useEffect(()=>{
+        // フィルターが変更される都度ユーザをフィルタリングする
+        filterUsers()
+    },[filterList])
+
+    // 取得済みのユーザーをフィルターする
+    const filterUsers = () => {
+        // 選択されている条件を抽出する
+        let selectedProjectUUIDs: string[] = []
+        let selectedStatusTypes: string[] = []
+        filterList.forEach((categoryListItem: IFilterCategoryItem)=>{
+            if(categoryListItem.id === "project"){
+                categoryListItem.data.forEach((listItem: IFilterListItem)=>{
+                    if(listItem.selected){
+                        selectedProjectUUIDs.push(listItem.id);
+                    }
+                })
+            }else if(categoryListItem.id === "status"){
+                categoryListItem.data.forEach((listItem: IFilterListItem)=>{
+                    if(listItem.selected){
+                        selectedStatusTypes.push(listItem.id);
+                    }
+                })
+            }
+        })
+        // ユーザーをフィルターする
+        let newFilteredUsers = users;
+        // 該当プロジェクトに属しているユーザのみ抽出
+        if(selectedProjectUUIDs.length){
+            newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
+                let hasFound = false
+                user.projects.forEach((project:UserProject)=>{
+                    // 該当するプロジェクトがあるか
+                    hasFound = true
+                })
+                return hasFound
+            })
+        }
+        // 該当するステータスのユーザのみ抽出
+        if(selectedStatusTypes.length){
+            newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
+                let hasFound = false
+                selectedStatusTypes.forEach((state)=>{
+                    if(user.state === state){
+                        hasFound = true
+                    }
+                });
+                return hasFound;
+            })
+        }
+
+        // フィルターしていない場合は、user を再取得する
+        const noFilter = (!selectedProjectUUIDs.length && !selectedStatusTypes.length);
+        if(noFilter){
+            // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+            // 200ms ほど間隔をあけてから再検索を行う
+            setTimeout(()=>{
+                fetchUsers(keyword);
+            },200)
+            return
+        }
+        // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+        // 200ms ほど間隔をあけてからフィルタリングする
+        setTimeout(()=>{
+            setUsers(newFilteredUsers)
+        },200)
+    }
     // 描画する
     const renderAll = () => {
         const onClickUserList = () => {
@@ -491,121 +608,6 @@ const UserList = () => {
             setKeyword(e.target.value)
         }
 
-        const setInitialFilterList = () => {
-            const projectData: IFilterListItem[] = projects.map((project) => {
-                return {
-                    id: project.uuid,
-                    label: project.label,
-                    selected: false
-                }
-            });
-
-            const statusData: IFilterListItem[] = [{
-                id: "temp",
-                label: '仮登録',
-                selected: false
-            }, {
-                id: "active",
-                label: '利用中',
-                selected: false
-            }, {
-                id: "inactive",
-                label: '削除済',
-                selected: false
-            }];
-            const list: IFilterCategoryItem[] = [
-                {
-                    id: "project",
-                    label: '所属プロジェクト',
-                    multiple: false,
-                    data: projectData,
-                },
-                {
-                    id: "status",
-                    label: 'ステータス',
-                    multiple: true,
-                    data: statusData
-                }
-            ]
-            setFilterList(list);
-        }
-
-        useEffect(() => {
-            if (!filterList.length && projects.length) {
-                setInitialFilterList()
-            }
-        }, [projects])
-
-        const [filterList, setFilterList] = useState<IFilterCategoryItem[]>([])
-        const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null)
-
-        useEffect(()=>{
-            // フィルターが変更される都度ユーザをフィルタリングする
-            filterUsers()
-        },[filterList])
-
-        // 取得済みのユーザーをフィルターする
-        const filterUsers = () => {
-            // 選択されている条件を抽出する
-            let selectedProjectUUIDs: string[] = []
-            let selectedStatusTypes: string[] = []
-            filterList.forEach((categoryListItem: IFilterCategoryItem)=>{
-                if(categoryListItem.id === "project"){
-                    categoryListItem.data.forEach((listItem: IFilterListItem)=>{
-                        if(listItem.selected){
-                            selectedProjectUUIDs.push(listItem.id);
-                        }
-                    })
-                }else if(categoryListItem.id === "status"){
-                    categoryListItem.data.forEach((listItem: IFilterListItem)=>{
-                        if(listItem.selected){
-                            selectedStatusTypes.push(listItem.id);
-                        }
-                    })
-                }
-            })
-            // ユーザーをフィルターする
-            let newFilteredUsers = users;
-            // 該当プロジェクトに属しているユーザのみ抽出
-            if(selectedProjectUUIDs.length){
-                newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
-                    let hasFound = false
-                    user.projects.forEach((project:UserProject)=>{
-                        // 該当するプロジェクトがあるか
-                        hasFound = true
-                    })
-                    return hasFound
-                })
-            }
-            // 該当するステータスのユーザのみ抽出
-            if(selectedStatusTypes.length){
-                newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
-                    let hasFound = false
-                    selectedStatusTypes.forEach((state)=>{
-                        if(user.state === state){
-                            hasFound = true
-                        }
-                    });
-                    return hasFound;
-                })
-            }
-
-            // フィルターしていない場合は、user を再取得する
-            const noFilter = (!selectedProjectUUIDs.length && !selectedStatusTypes.length);
-            if(noFilter){
-                // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
-                // 200ms ほど間隔をあけてから再検索を行う
-                setTimeout(()=>{
-                    fetchUsers(keyword);
-                },200)
-                return
-            }
-            // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
-            // 200ms ほど間隔をあけてからフィルタリングする
-            setTimeout(()=>{
-                setUsers(newFilteredUsers)
-            },200)
-        }
 
         const removeSelectedCategory = (selectedCategory: IFilterCategoryItem)=>{
             return filterList.map(category =>{
