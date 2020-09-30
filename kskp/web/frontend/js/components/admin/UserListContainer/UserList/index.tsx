@@ -104,19 +104,7 @@ const UserList = () => {
         };
         setIsLoading(true);
         const url = 'users'
-        return APIUtil.post(url,body).then((response) => {
-            fetchUsers();
-            setIsLoading(false);
-        }).catch((error) => {
-            notify({
-                title: 'ユーザー作成エラー',
-                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                status: 'error',
-                dismissAfter: 0,
-                closeButton: true
-            })
-            setIsLoading(false);
-        });
+        return APIUtil.post(url,body);
     }
 
     // ユーザを削除する
@@ -191,6 +179,12 @@ const UserList = () => {
                     clearSelectedCell();
                 })
             },
+        })
+        // ユーザ作成後の確認ダイアログ
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
+                ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
+            }
         })
     }, [lastSelected])
 
@@ -310,21 +304,67 @@ const UserList = () => {
 
     const [newUserName, setNewUserName] = useState<string | null>(null);
     const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
-    const [selectedOption, setSelectedOption] = useState(null);
+    const [selectedOption, setSelectedOption] = useState<UserProject | null>(null);
 
     useEffect(()=>{
         if (newUserName === null || newUserEmail === null) return;
         ModalUtil.registerModal({
             id: Constants.modal.ADD_USER, onClickDone: () => {
-                createNewUser(newUserName,newUserEmail).then(()=>{
+                createNewUser(newUserName,newUserEmail).then((response) => {
+                    setIsLoading(false);
+                    fetchUsers();
+                    if(!response.data.success){
+                        notify({
+                            title: 'ユーザー作成エラー',
+                            message: ReactDomUtil.renderToString(response.data.message),
+                            status: 'error',
+                            dismissAfter: 0,
+                            closeButton: true
+                        })
+                        ModalUtil.closeModal(Constants.modal.ADD_USER)
+                        clearField();
+                        return
+                    }
+                    const data = response.data.data
                     ModalUtil.closeModal(Constants.modal.ADD_USER)
+                    const project = (selectedOption && selectedOption.label)?<div>所属: {selectedOption.label}</div>: null;
+                    ModalUtil.emitModal({
+                        id: Constants.modal.ADD_USER_CONFIRM,
+                        visible: true,
+                        done: '閉じる',
+                        content: <div className={style.modal}>
+                            <form>
+                                <div className={style.addUserLabel}>
+                                    新規ユーザーの仮登録が完了しました。
+                                </div>
+                                <Spacer height={20}/>
+                                <div className={style.addUserDetails}>
+                                    <div>名前: {data.name}</div>
+                                    <div>Email: {data.email}</div>
+                                    {project}
+                                    <div>仮パスワード: {data.password}</div>
+                                </div>
+                            </form>
+                            <div className={'mt-8px'}/>
+                        </div>
+                    });
                     clearField();
+                }).catch((error) => {
+                    notify({
+                        title: 'ユーザー作成エラー',
+                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                        status: 'error',
+                        dismissAfter: 0,
+                        closeButton: true
+                    })
+                    ModalUtil.closeModal(Constants.modal.ADD_USER)
+                    setIsLoading(false);
                 })
             }, onClickCancel: ()=>{
                 clearField();
             }
         })
-    },[newUserEmail,newUserName])
+    },[newUserEmail,newUserName, selectedOption])
 
     const clearField = () =>{
         setNewUserName("");
