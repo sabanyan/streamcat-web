@@ -16,8 +16,8 @@ interface Props {
 const FilterListItem = (props: Props) => {
     const {onClick, children, multiple, selected, checked, onChecked} = props;
     if (multiple) {
-        return <div className={style.listItem} onClick={() => onChecked(!checked)}>
-            {children}
+        return <div className={style.listItemMultiple} onClick={() => onChecked(!checked)}>
+            <div className={style.listItemLabel}>{children}</div>
             {
                 (checked) ?
                     ImageUtil.getIconElement("icon-checkbox-on")
@@ -27,7 +27,7 @@ const FilterListItem = (props: Props) => {
         </div>;
     } else {
         return <div className={style.listItem} onClick={onClick}>
-            {children}
+            <div className={style.listItemLabel}>{children}</div>
             {
                 (selected) ?
                     ImageUtil.getIconElement("icon-done")
