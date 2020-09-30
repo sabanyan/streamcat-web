@@ -1,0 +1,33 @@
+@import "../../../../../../sass/common";
+
+.listItem{
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  padding: 4px 14px;
+  border: 1px solid #DCE2E8;
+  height: 32px;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 13px;
+  justify-content: space-between;
+  cursor: pointer;
+  &:hover{
+    background: #f6faff;
+  }
+  margin-right: 8px;
+}
+
+.label{
+  display: inline-flex;
+}
+
+.icon{
+  display: inline-flex;
+  height: 14px;
+  width: 14px;
+  margin-left: 8px;
+  img{
+    top: 0!important;
+  }
+}
