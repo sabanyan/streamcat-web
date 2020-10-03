@@ -747,7 +747,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['uuid'])
         self.assertEqual(result['data']['name'], 'テストロール')
         self.assertEqual(result['data']['systemRole'], '')
-        self.assertNotIn('users', result['data'])
+        self.assertNotIn('members', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -773,7 +773,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['uuid'], role_uuid)
         self.assertEqual(result['data']['name'], 'ロールケーキ')
         self.assertEqual(result['data']['systemRole'], '')
-        self.assertNotIn('users', result['data'])
+        self.assertNotIn('members', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -810,10 +810,10 @@ class SystemTestCase(ApiTestCaseBase):
         role_uuid = result['data']['uuid']
 
         # ユーザを参加させる
-        result = self.put_uri(f'/api/v0/roles/{role_uuid}/users/{self.USER2.uuid}', {}, self.USER0)
+        result = self.put_uri(f'/api/v0/roles/{role_uuid}/users/{self.USER2.uuid}', {'owner':False}, self.USER0)
 
         # ロールを検索する
-        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?members=on', self.USER0)
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], role_uuid)
@@ -822,22 +822,37 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['creator'], 'システム管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         # 参加ユーザ
-        self.assertEqual(len(result['data']['users']), 1)
-        self.assertEqual(result['data']['users'][0]['uuid'], self.USER2.uuid)
-        self.assertEqual(result['data']['users'][0]['email'], self.USER2.email)
-        self.assertEqual(result['data']['users'][0]['name'], self.USER2.name)
-        self.assertEqual(result['data']['users'][0]['state'], self.USER2.state)
-        self.assertEqual(result['data']['users'][0]['creator'], self.USER2.creator_str)
-        self.assertEqual(result['data']['users'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(len(result['data']['members']), 2)
+        # USER0
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
+        # USER2
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER2.created_at_str)
 
         # ユーザを脱退させる
         result = self.delete_uri(f'/api/v0/roles/{role_uuid}/users/{self.USER2.uuid}', self.USER0)
 
         # ロールを検索する
-        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?members=on', self.USER0)
 
-        # 参加ユーザがいないことを確認する
-        self.assertEqual(len(result['data']['users']), 0)
+        # 参加ユーザはUSER0だけであることを確認する
+        self.assertEqual(len(result['data']['members']), 1)
+        # USER0
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
 
         # ロールを削除する
         self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER0)
@@ -854,12 +869,13 @@ class SystemTestCase(ApiTestCaseBase):
         # ユーザを参加させる
         data = {
             'name'   : 'ちゃおちゅーる🐈',
-            'users': [self.USER2.uuid, self.USER3.uuid]
+            'members': [{'uuid' : self.USER2.uuid, 'owner': True},
+                        {'uuid' : self.USER3.uuid, 'owner': False}]
         }
         result = self.put_uri(f'/api/v0/roles/{role_uuid}', data, self.USER0)
 
         # ロールを検索する
-        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?members=on', self.USER0)
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], role_uuid)
@@ -868,35 +884,42 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['creator'], 'システム管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         # 参加ユーザ(USER2)
-        self.assertEqual(len(result['data']['users']), 2)
-        self.assertEqual(result['data']['users'][0]['uuid'], self.USER2.uuid)
-        self.assertEqual(result['data']['users'][0]['email'], self.USER2.email)
-        self.assertEqual(result['data']['users'][0]['name'], self.USER2.name)
-        self.assertEqual(result['data']['users'][0]['state'], self.USER2.state)
-        self.assertEqual(result['data']['users'][0]['creator'], self.USER2.creator_str)
-        self.assertEqual(result['data']['users'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
         # 参加ユーザ(USER3)
-        self.assertEqual(result['data']['users'][1]['uuid'], self.USER3.uuid)
-        self.assertEqual(result['data']['users'][1]['email'], self.USER3.email)
-        self.assertEqual(result['data']['users'][1]['name'], self.USER3.name)
-        self.assertEqual(result['data']['users'][1]['state'], self.USER3.state)
-        self.assertEqual(result['data']['users'][1]['creator'], self.USER3.creator_str)
-        self.assertEqual(result['data']['users'][1]['createdAt'], self.USER3.created_at_str)
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER3.created_at_str)
 
         # ユーザを脱退させる
         data = {
-            'users': []
+            'members': [{'uuid' : self.USER3.uuid, 'owner': True}]
         }
-        result = self.put_uri(f'/api/v0/roles/{role_uuid}', data, self.USER0)
+        result = self.put_uri(f'/api/v0/roles/{role_uuid}', data, self.USER2)
 
         # ロールを検索する
-        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?members=on', self.USER2)
 
-        # 参加ユーザがいないことを確認する
-        self.assertEqual(len(result['data']['users']), 0)
+        # 参加ユーザはUSER3だけであることを確認する
+        self.assertEqual(len(result['data']['members']), 1)
+        # 参加ユーザ(USER3)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER3.created_at_str)
 
         # ロールを削除する
-        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER0)
+        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER3)
 
     # 
     # Projects

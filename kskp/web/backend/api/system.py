@@ -181,9 +181,11 @@ def update_role(role_uuid):
     """
     ロールを修正する
     """
+    from kskp.store.auth import Role
+
     req = RequestJson(request.json)
-    if req.has_no_all('name', 'users'):
-        raise Exception('nameまたはusers属性を指定してください')
+    if req.has_no_all('name', 'members'):
+        raise Exception('nameまたはmembers属性を指定してください')
 
     role = g.factory.role.find_by_uuid(role_uuid)
 
@@ -192,12 +194,17 @@ def update_role(role_uuid):
         role = role.update_name(req['name'])
 
     # ロールにユーザを追加・削除する
-    if req.has('users'):
-        if not isinstance(req['users'], list):
-            raise Exception('users属性にはユーザuuidの配列を指定してください')
-        # users属性で指定されたユーザを追加する
-        users = [g.factory.user.find_by_uuid(user_uuid) for user_uuid in req['users']]
-        role.init_users(users)
+    if req.has('members'):
+        if not isinstance(req['members'], list):
+            raise Exception('members属性にはユーザuuidの配列を指定してください')
+        # member属性からMembersオブジェクトを作成する
+        members = []
+        for member_dict in req['members']:
+            user = g.factory.user.find_by_uuid(member_dict['uuid'])
+            owner = member_dict['owner']
+            members.append(Role.Member(user, owner))
+        # member属性で指定されたユーザを追加する
+        role.init_members(members)
 
     return role
 
@@ -222,9 +229,16 @@ def join_user_to_role(role_uuid, user_uuid):
     """
     ロールにユーザを追加する
     """
+    from kskp.store.auth import Role
+
+    req = RequestJson(request.json)
+    if not req.has_all('owner'):
+        raise Exception('owner属性を指定してください')
+
     role = g.factory.role.find_by_uuid(role_uuid)
     user = g.factory.user.find_by_uuid(user_uuid)
-    role.join_user(user)
+    member = Role.Member(user, req['owner'])
+    role.join_member(member)
 
 @mod.route('/roles/<role_uuid>/users/<user_uuid>', methods=['DELETE'])
 @login_required_api
@@ -235,7 +249,7 @@ def leave_user_outof_role(role_uuid, user_uuid):
     """
     role = g.factory.role.find_by_uuid(role_uuid)
     user = g.factory.user.find_by_uuid(user_uuid)
-    role.leave_user(user)
+    role.leave_member(user)
 
 # 
 # Project-Member
