@@ -2,10 +2,10 @@ export default class AdminUtil {
     static getUserStatus = (status: string): string => {
         switch (status) {
             case 'active':
-                return '登録済';
+                return '利用中';
             case 'tmp':
                 return '仮登録';
-            case 'delete':
+            case 'inactive':
                 return '削除済';
         }
         return '';

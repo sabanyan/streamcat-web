@@ -82,9 +82,11 @@ $preview-height: 100%;
     border: none;
     .modal-body{
       max-height: 700px;
-      overflow: scroll;
       @extend .user-select;
     }
+  }
+  &.overflow-content .modal-body{
+    overflow: scroll;
   }
   .modal-header{
     display: block;
