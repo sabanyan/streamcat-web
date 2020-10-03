@@ -11,6 +11,33 @@ from .utils import (
 
 mod = Blueprint('frames', __name__)
 
+@mod.route('/frames', methods=['GET'])
+@login_required_api
+@frame_api_base
+def make_new_frames():
+    """
+    フローを実行してフレームを取得する
+    """
+    step_ids = []
+
+    if 'from' not in request.args:
+        raise Exception('No frame parameter is designated')
+
+    if '.' in request.args['from']:
+        # Vis
+        # ドットで区切って、具体的に一つだけstepを指定することができる
+        # TODO: 後々この部分は文法を拡張していく予定
+        froms = request.args['from'].split('.')
+        flow_uuid = froms[0]
+        step_ids.append(froms[1])
+    else:
+        # 普通の実行
+        flow_uuid = request.args['from']
+
+    flow = g.factory.data.find_by_uuid(flow_uuid)     
+    activity = execute_flow(flow, g.factory)
+    return format_result(activity)
+
 @mod.route('/frames/<frame_uuid>')
 @login_required_api
 @api_base
@@ -59,56 +86,6 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
     result['lastModifiedAt'] = frame.modified_at_str
 
     return result
-
-@mod.route('/frames/<frame_uuid>', methods=['PUT'])
-@login_required_api
-@api_base
-def update_frame(frame_uuid):
-    """
-    frameのラベルを修正する、またはframeを移動する
-    """
-    req = RequestJson(request.json)
-
-    if req.has_no_all('parent', 'label', 'encoding', 'newline'):
-        raise Exception('label,encoding,newlineまたはparent属性を指定してください')
-    elif req.has('parent') and req.has_at_least('label', 'encoding', 'newline'):
-        raise Exception('label,encoding,newlineとはparent属性は同時に指定できません')
-
-    frame = g.factory.data.find_by_uuid(frame_uuid)
-
-    if req.has('parent'):
-        # frameを移動する
-        new_parent = req['parent']
-        return frame.move(new_parent)
-
-    else:
-        if req.has('label'):
-            # frameのラベルを修正する
-            label = req['label']
-            # ret = Frame.update_label(frame_uuid, label, modifier)
-            ret = frame.update_label(label)
-
-        if req.has_all('encoding', 'newline'):
-            encoding_str = req['encoding']
-            newline_str = req['newline']
-            ret = frame.update_encoding_newline(encoding_str, newline_str)
-
-        if ret is None:
-            raise Exception('update_frame parameter error!')
-
-        return ret
-
-@mod.route('/frames/<frame_uuid>', methods=['DELETE'])
-@login_required_api
-@api_base
-def throw_away_frame(frame_uuid):
-    """
-    指定したframeをほかす
-    """
-    frame = g.factory.data.find_by_uuid(frame_uuid)
-    if frame is None:
-        raise Exception('no frame exists.')
-    frame.throw_away()
 
 @mod.route('/frames', methods=['POST'])
 @login_required_api
@@ -165,32 +142,55 @@ def create_frame():
                         'message': str(e)
                       })
 
-@mod.route('/frames', methods=['GET'])
+@mod.route('/frames/<frame_uuid>', methods=['PUT'])
 @login_required_api
-@frame_api_base
-def make_new_frames():
+@api_base
+def update_frame(frame_uuid):
     """
-    フローを実行してフレームを取得する
+    frameのラベルを修正する、またはframeを移動する
     """
-    step_ids = []
+    req = RequestJson(request.json)
 
-    if 'from' not in request.args:
-        raise Exception('No frame parameter is designated')
+    if req.has_no_all('parent', 'label', 'encoding', 'newline'):
+        raise Exception('label,encoding,newlineまたはparent属性を指定してください')
+    elif req.has('parent') and req.has_at_least('label', 'encoding', 'newline'):
+        raise Exception('label,encoding,newlineとはparent属性は同時に指定できません')
 
-    if '.' in request.args['from']:
-        # Vis
-        # ドットで区切って、具体的に一つだけstepを指定することができる
-        # TODO: 後々この部分は文法を拡張していく予定
-        froms = request.args['from'].split('.')
-        flow_uuid = froms[0]
-        step_ids.append(froms[1])
+    frame = g.factory.data.find_by_uuid(frame_uuid)
+
+    if req.has('parent'):
+        # frameを移動する
+        new_parent = req['parent']
+        return frame.move(new_parent)
+
     else:
-        # 普通の実行
-        flow_uuid = request.args['from']
+        if req.has('label'):
+            # frameのラベルを修正する
+            label = req['label']
+            # ret = Frame.update_label(frame_uuid, label, modifier)
+            ret = frame.update_label(label)
 
-    flow = g.factory.data.find_by_uuid(flow_uuid)     
-    activity = execute_flow(flow, g.factory)
-    return format_result(activity)
+        if req.has_all('encoding', 'newline'):
+            encoding_str = req['encoding']
+            newline_str = req['newline']
+            ret = frame.update_encoding_newline(encoding_str, newline_str)
+
+        if ret is None:
+            raise Exception('update_frame parameter error!')
+
+        return ret
+
+@mod.route('/frames/<frame_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def throw_away_frame(frame_uuid):
+    """
+    指定したframeをほかす
+    """
+    frame = g.factory.data.find_by_uuid(frame_uuid)
+    if frame is None:
+        raise Exception('no frame exists.')
+    frame.throw_away()
 
 @mod.route('/vizs/<frame_uuid>', methods=['POST'])
 @login_required_api
