@@ -104,6 +104,7 @@ const Constants = {
     ADD_FRAME: 'add_frame',
     ADD_DATABASE: 'add_database',
     ADD_USER: 'add_user',
+    ADD_USER_CONFIRM: 'add_user_confirm',
     EDIT_DATABASE: 'edit_database',
     EDIT_ENCODING: 'edit_encoding',
     RUN_FLOW: 'run_flow',
@@ -113,6 +114,7 @@ const Constants = {
     SHOW_RUN_RESULT: 'show_run_result',
     SHOW_RUN_ERROR: 'show_run_error',
     PREVIEW_DATASOURCE: 'preview_datasource',
+    RESET_USER_PASSWORD: 'reset_user_password',
     property: {
       title: 'title',
       message: 'message',
