@@ -19,6 +19,7 @@ type Props = {
   onClickEdit?: Function;
   onClickEditEncoding?: Function;
   onClickCleanTrash?: Function;
+  onClickMemberInfo?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
@@ -50,7 +51,7 @@ class LibraryInspector extends React.Component<Props> {
     let library: LibraryListDataType = lastSelected;
     let uuid = library.uuid
     // uuidだけでプレビュー
-    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
+    window.open('/preview?step_id=' + null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
   }
 
   onClickEdit(e) {
@@ -103,7 +104,7 @@ class LibraryInspector extends React.Component<Props> {
       if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>
     }
 
-    if(onClickCleanTrash){
+    if (onClickCleanTrash) {
       // ゴミ箱の場合、削除と移動を非表示にする
       del = null;
       move = null;
@@ -224,6 +225,13 @@ class LibraryInspector extends React.Component<Props> {
     return content
   }
 
+  renderProjectInfo() {
+    const { onClickMemberInfo } = this.props;
+
+    if (onClickMemberInfo) return <Button onClick={() =>  onClickMemberInfo ()} danger={true} icon={"delete"}>button</Button>
+    return "dddd"
+  }
+
   render() {
     const { selected, lastSelected } = this.props
     let label = (lastSelected && selected.length <= 1) ? lastSelected.label : undefined
@@ -232,6 +240,7 @@ class LibraryInspector extends React.Component<Props> {
     return <Resizer>
       <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={true}>
         {content}
+        {this.renderProjectInfo()}
       </BaseInspector>
     </Resizer>
   }
