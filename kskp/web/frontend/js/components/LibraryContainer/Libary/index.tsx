@@ -1,31 +1,31 @@
 import * as React from "react";
-import {useEffect, useRef, useState} from "react";
-import {ModalManager} from "Shared/Modal";
-import {NotificationManager} from "Shared/Notification";
-import {FileUploader, TextField} from "Shared/Input";
-import {FileListTable} from "Components/LibraryContainer/Libary/FileListTable";
-import {BreadCrumb, IBreadCrumbsLink} from "Components/LibraryContainer/Libary/BreadCrumb";
+import { useEffect, useRef, useState } from "react";
+import { ModalManager } from "Shared/Modal";
+import { NotificationManager } from "Shared/Notification";
+import { FileUploader, TextField } from "Shared/Input";
+import { FileListTable } from "Components/LibraryContainer/Libary/FileListTable";
+import { BreadCrumb, IBreadCrumbsLink } from "Components/LibraryContainer/Libary/BreadCrumb";
 import Constants from "Constants/index";
-import {APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil} from "Utils/index";
-import {EmptyState, Loader, Spacer} from "Shared/Base";
-import {ITableBody} from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
-import {MenuList} from "Components/LibraryContainer/Libary/MenuList";
-import {Flex} from "Shared/Base/Layouts/Flex";
-import {useDispatch} from "react-redux";
-import {addNotification, removeNotification} from "reapop";
+import { APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
+import { EmptyState, Loader, Spacer } from "Shared/Base";
+import { ITableBody } from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
+import { MenuList } from "Components/LibraryContainer/Libary/MenuList";
+import { Flex } from "Shared/Base/Layouts/Flex";
+import { useDispatch } from "react-redux";
+import { addNotification, removeNotification } from "reapop";
 import ParamsForm from "Shared/Inspector/ParamsForm";
-import {ITableHeader} from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import {LibraryChild} from "Model/Library";
-import LibraryInspector from "Shared/Inspector/LibraryInspector";
-import {LibraryModel, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps} from "Model/index";
-import {LibraryListDataType} from "Types/index";
+import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
+import { LibraryChild } from "Model/Library";
+import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
+import { LibraryModel, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
+import { LibraryListDataType } from "Types/index";
 import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
-import {API} from "Modules/api";
-import {TrashMenuList} from "Components/LibraryContainer/Libary/TrashMenuList";
+import { API } from "Modules/api";
+import { TrashMenuList } from "Components/LibraryContainer/Libary/TrashMenuList";
 import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
-import {ApplyMenuList} from "Components/LibraryContainer/Libary/ApplyMenuList";
+import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";
 
 export interface Database {
@@ -42,16 +42,16 @@ export const getDataBaseRules = () => {
     // TODO rulesの型定義
     return {
         "label": {
-            "presence": {"allowEmpty": false}
+            "presence": { "allowEmpty": false }
         },
         "dbms": {
-            "presence": {"allowEmpty": false}
+            "presence": { "allowEmpty": false }
         },
         "hostname": {
-            "presence": {"allowEmpty": false}
+            "presence": { "allowEmpty": false }
         },
         "port": {
-            "presence": {"allowEmpty": false}
+            "presence": { "allowEmpty": false }
         }
     };
 };
@@ -140,10 +140,10 @@ const Library = () => {
     const [lastSelected, setLastSelected] = useState<LibraryChild | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const clickedLibraryCell = useRef(false);
-    const [folderPath, setFolderPath] = useState();
-    const [isLoading, setIsLoading] = useState();
-    const [is_finished, setIsFinished] = useState();
-    const [isDialog] = useState<Boolean>((HttpUtil.getURLParam("dialog")==="true"));
+    const [folderPath, setFolderPath] = useState<any>();
+    const [isLoading, setIsLoading] = useState<Boolean>();
+    const [is_finished, setIsFinished] = useState<Boolean>();
+    const [isDialog] = useState<Boolean>((HttpUtil.getURLParam("dialog") === "true"));
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
@@ -179,9 +179,9 @@ const Library = () => {
                     return;
                 }
                 setIsLoading(true);
-                APIUtil.post("projects", {label: formProjectName, parent: inject_folder_uuid}).then(() => {
+                APIUtil.post("projects", { label: formProjectName, parent: inject_folder_uuid }).then(() => {
                     ModalUtil.emitModal(
-                        {id: Constants.modal.ADD_PROJECT, visible: false});
+                        { id: Constants.modal.ADD_PROJECT, visible: false });
                     fetchFolder();
                     setFormProjectName("");
                     notify({
@@ -296,7 +296,7 @@ const Library = () => {
                     setEditDatabase(newDatabase);
                     const params = getDataBaseParams();
                     const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
-                                                   onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
+                        onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
                     ModalUtil.emitModal({
                         id: Constants.modal.EDIT_DATABASE,
                         visible: true,
@@ -311,7 +311,7 @@ const Library = () => {
         };
 
         const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
-                                       onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
+            onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
         ModalUtil.registerModal({
             id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
                 editLibraryChild(lastSelected);
@@ -336,7 +336,7 @@ const Library = () => {
         if (!database) return;
         const params = getDataBaseParams();
         const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
-                                       onChange={(e, param, value) => onChangeNewDatabase(e, param, value)} />;
+            onChange={(e, param, value) => onChangeNewDatabase(e, param, value)} />;
         ModalUtil.registerModal({
             id: Constants.modal.ADD_DATABASE, onClickDone: onClickAddDatabaseDone
         });
@@ -359,7 +359,7 @@ const Library = () => {
             setVisualizers(visualizers);
         });
     };
-    const makeBreadCrumbLinks = (folderPath: any[]): IBreadCrumbsLink[] => {
+    const makeBreadCrumbLinks = (folderPath: any[] | any): IBreadCrumbsLink[] => {
         const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
         return folderPath.map((path, index): IBreadCrumbsLink => {
             const isCurrent = ((folderPath.length - 1) === index);
@@ -530,7 +530,7 @@ const Library = () => {
             if (isProject) {
                 return APIUtil.get("projects/" + inject_folder_uuid).then((response) => {
                     const json = response.data.data;
-                    const {children, folderPath} = json;
+                    const { children, folderPath } = json;
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
@@ -540,7 +540,7 @@ const Library = () => {
             return APIUtil.get("folders/" + inject_folder_uuid).then((response) => {
                 if (response.data.success) {
                     const json = response.data.data;
-                    const {children, folderPath} = json;
+                    const { children, folderPath } = json;
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
@@ -548,7 +548,7 @@ const Library = () => {
                     APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
                         if (response.data.success) {
                             const json = response.data.data;
-                            const {children, folderPath} = json;
+                            const { children, folderPath } = json;
                             setInitialLibraryChildren(children);
                             setLibraryChildren(children);
                             setFolderPath(folderPath);
@@ -587,7 +587,7 @@ const Library = () => {
             return APIUtil.get("library").then((response) => {
                 const json = response.data.data;
                 if (response.data.success) {
-                    const {children, folderPath} = json;
+                    const { children, folderPath } = json;
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
@@ -603,7 +603,7 @@ const Library = () => {
             done: "作成する",
             content: <div>
                 <TextField placeholder={"フロー名"}
-                           onChange={(e) => setFormFlowName(e.target.value)} />
+                    onChange={(e) => setFormFlowName(e.target.value)} />
                 <div className={"mt-8px"} />
             </div>
         });
@@ -614,7 +614,7 @@ const Library = () => {
             visible: true,
             done: "作成する",
             content: <TextField placeholder={"プロジェクト名"}
-                                onChange={(e) => setFormProjectName(e.target.value)} />
+                onChange={(e) => setFormProjectName(e.target.value)} />
         });
     };
     const onClickNewFolder = () => {
@@ -653,7 +653,7 @@ const Library = () => {
     const onChangeNewDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
         try {
             if (addDatabase) {
-                setAddDatabase({...addDatabase, ...{[param.name]: value}});
+                setAddDatabase({ ...addDatabase, ...{ [param.name]: value } });
             }
         } catch (e) {
             console.log(e);
@@ -800,7 +800,7 @@ const Library = () => {
 
             }
             <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true}
-                  onClick={onClickLibrary}>
+                onClick={onClickLibrary}>
                 <Spacer width={40} />
                 <Flex flexDirection={"column"} fluid={true}>
                     <Spacer height={40} />
@@ -858,7 +858,7 @@ const Library = () => {
         return new Promise(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
             if (library.type === Constants.library.type.flow) {
-                await API.request.doPost.locks({flowUUID: library.uuid})
+                await API.request.doPost.locks({ flowUUID: library.uuid })
                     .then((res) => {
                         if (res && !res.data.success) throw res.data;
                         lock.uuid = API.response.post.locks(res).uuid;
@@ -885,7 +885,7 @@ const Library = () => {
 
             // Lockを取得した場合、Lockを解除する
             if (lock.uuid) {
-                await API.request.doDelete.locks({lockUUID: lock.uuid})
+                await API.request.doDelete.locks({ lockUUID: lock.uuid })
                     .then((res: any) => {
                         lock.uuid = null;
                         if (res && !res.data.success) throw res.data;
@@ -923,7 +923,7 @@ const Library = () => {
         return new Promise(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
             if (library.type === Constants.library.type.flow) {
-                await API.request.doPost.locks({flowUUID: library.uuid})
+                await API.request.doPost.locks({ flowUUID: library.uuid })
                     .then((res) => {
                         if (res && !res.data.success) throw res.data;
                         lock.uuid = API.response.post.locks(res).uuid;
@@ -951,7 +951,7 @@ const Library = () => {
 
             // Lockを取得した場合、Lockを解除する
             if (lock.uuid) {
-                await API.request.doDelete.locks({lockUUID: lock.uuid})
+                await API.request.doDelete.locks({ lockUUID: lock.uuid })
                     .then((res: any) => {
                         lock.uuid = null;
                         if (res && !res.data.success) throw res.data;
@@ -989,7 +989,7 @@ const Library = () => {
         const data: LibraryListDataType = lastSelected;
 
         const doRecovery = (data) => {
-            API.request.doPut.trash({trashUUID: data.uuid})
+            API.request.doPut.trash({ trashUUID: data.uuid })
                 .then((response) => {
                     if (!response.data.success) throw response.data;
 
@@ -1028,7 +1028,7 @@ const Library = () => {
         };
 
         const editFlow = (flow_uuid, parent_uuid) => {
-            let body = {target: flow_uuid};
+            let body = { target: flow_uuid };
             let locks = new LocksModel(flow_uuid);
 
             return axios.post("/api/v0/locks", body).then((response) => {
@@ -1107,8 +1107,8 @@ const Library = () => {
         };
 
         return <TrashInspector data={data}
-                               onClickRecovery={(e, data) => onClickRecovery(e, data)}
-                               onClickMove={(e, data) => onClickMove(e, data)}
+            onClickRecovery={(e, data) => onClickRecovery(e, data)}
+            onClickMove={(e, data) => onClickMove(e, data)}
         />;
     };
 
@@ -1194,7 +1194,7 @@ const Library = () => {
                     , "timeout": 0            //The timeout period
                 }
             );
-            let lock = {uuid: null};
+            let lock = { uuid: null };
             HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
                 setIsLoading(true);
 
@@ -1343,7 +1343,7 @@ const Library = () => {
                             , "timeout": 0            //The timeout period
                         }
                     );
-                    let lock = {uuid: null};
+                    let lock = { uuid: null };
                     setIsLoading(true);
                     selectedDatas.forEach((selectedData: LibraryChild) => {
                         queue.push(deleteLibrary, [selectedData, lock]);
@@ -1466,6 +1466,23 @@ const Library = () => {
             });
         };
 
+        const onClickMemberInfo = () => {
+            ModalUtil.registerModal({
+                id: Constants.modal.MEMBER_INFO, onClickDone: () => {
+
+                    ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
+                }
+            });
+
+            ModalUtil.emitModal({
+                id: Constants.modal.MEMBER_INFO,
+                visible: true,
+                done: "反映する",
+                danger: true,
+                content: <MemberForm/>
+            });
+        };
+
 
         return <LibraryInspector
             selected={selectedDatas}
@@ -1476,6 +1493,7 @@ const Library = () => {
             onClickEdit={_onClickEdit}
             onClickEditEncoding={_onClickEditEncoding}
             onClickCleanTrash={_onClickCleanTrash}
+            onClickMemberInfo={onClickMemberInfo}
             onBlurTitle={_onBlurTitle}
             visualizers={visualizers}
         />;
@@ -1510,4 +1528,4 @@ const Library = () => {
 
 };
 
-export {Library};
+export { Library };
