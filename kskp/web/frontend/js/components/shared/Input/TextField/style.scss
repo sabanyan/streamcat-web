@@ -15,5 +15,8 @@
 }
 
 .textField {
-  margin : 4px 0px 0px 0px;
+  margin : 4px 0 0 0;
+  input:read-only{
+    background-color: #fafafa;
+  }
 }
