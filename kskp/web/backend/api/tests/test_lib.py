@@ -1574,12 +1574,12 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
-        # フォルダ1を作成する(POST /folders)
-        folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        # プロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "プロジェクトですよ1!!", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
 
-        # フォルダ1内にフォルダ2を作成する
-        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
+        # プロジェクト1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": project1_uuid}, self.USER1)
         folder2_uuid = folder2['data']['uuid']
 
         # フォルダ2内にフレームを作成する
@@ -1591,22 +1591,22 @@ class TrashTestCase(ApiTestCaseBase):
 
         # 移動したことのないフォルダは戻せない
         with self.assertRaises(AssertionError):
-            self.put_uri(f'/api/v0/trashes/{folder1_uuid}', {}, self.USER1)
+            self.put_uri(f'/api/v0/trashes/{project1_uuid}', {}, self.USER1)
 
-        # フォルダ1をほかす
-        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
+        # プロジェクト1をほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
         
-        # フォルダ1を戻す
-        self.put_uri(f'/api/v0/trashes/{folder1_uuid}', {}, self.USER1)
+        # プロジェクト1を戻す
+        self.put_uri(f'/api/v0/trashes/{project1_uuid}', {}, self.USER1)
 
-        # フォルダ1はゴミ箱にないこと
+        # プロジェクト1はゴミ箱にないこと
         trash_can = self.factory.data.load_trash_folder()
         trashed1 = trash_can.find_children()
-        self.assertNotIn(folder1_uuid, [t.uuid for t in trashed1])
+        self.assertNotIn(project1_uuid, [t.uuid for t in trashed1])
 
-        # フォルダ1は元の場所に戻っていること
+        # プロジェクト1は元の場所に戻っていること
         data = root.find_children()
-        self.assertIn(folder1_uuid, [d.uuid for d in data])
+        self.assertIn(project1_uuid, [d.uuid for d in data])
 
         # フォルダ2は変更されていないこと
         folder2 = self.factory.data.find_by_uuid(folder2_uuid)
@@ -1615,6 +1615,9 @@ class TrashTestCase(ApiTestCaseBase):
         # フレームは変更されていないこと
         frame = self.factory.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame.modified_at, frame.modified_at)
+
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -1899,12 +1902,16 @@ class TrashTestCase(ApiTestCaseBase):
         self.put_uri(f'/api/v0/trashes/{frame2_parent_parent.uuid}', {}, self.USER1)
 
         # フォルダ2は元の場所に戻っていること
-        folder2 = self.factory2.data.find_by_uuid(folder2_uuid)
-        self.assertEqual(folder2.find_parent().uuid, folder1.uuid)
+        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        result = self.get_uri(f'/api/v0/folders/{folder1.uuid}', self.USER1)
+        self.assertEqual(len(result['data']['children']), 2)
+        self.assertEqual(result['data']['children'][0]['uuid'], folder2_uuid)
 
         # フレーム2は元の場所に戻っていること
-        frame2 = self.factory2.data.find_by_uuid(frame_uuid_2)
-        self.assertEqual(frame2.find_parent().uuid, folder2.uuid)
+        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        result = self.get_uri(f'/api/v0/folders/{folder2.uuid}', self.USER1)
+        self.assertEqual(len(result['data']['children']), 1)
+        self.assertEqual(result['data']['children'][0]['uuid'], frame_uuid_2)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -1938,7 +1945,7 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱に形代が作成されていること
         trash_can = self.factory.data.load_trash_folder()
         trashes = trash_can.find_children()
-        self.assertNotEqual(trashes[0].uuid, flow_folder)
+        self.assertNotEqual(trashes[0], flow_folder)
         self.assertEqual(trashes[0].label, FLOW_FOLDER_LABEL)
 
         # フレーム1は形代フォルダ内にあること
@@ -1949,9 +1956,10 @@ class TrashTestCase(ApiTestCaseBase):
         self.put_uri(f'/api/v0/trashes/{frame.find_parent().uuid}', {}, self.USER1)
 
         # フレーム1は元の場所に戻っていること
-        # (factoryには上でキャッシュされてるのでfactory2を使う)
-        frame = self.factory2.data.find_by_uuid(frame_uuid_1)
-        self.assertEqual(frame.find_parent().uuid, FLOW_FOLDER_UUID)
+        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        result = self.get_uri(f'/api/v0/folders/{FLOW_FOLDER_UUID}', self.USER1)
+        self.assertEqual(len(result['data']['children']), 1)
+        self.assertEqual(result['data']['children'][0]['uuid'], frame_uuid_1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -2004,9 +2012,13 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
+        # プロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "I am project", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+
         # Databaseを作成する(POST /databases)
         data = {
-            "parent"   : root.uuid,
+            "parent"   : project1_uuid,
             "label"    : "リモートフォルダ1",
             "dbms"     : "postgresql",
             "hostname" : "db",
@@ -2036,6 +2048,12 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱から戻す
         self.put_uri(f'/api/v0/trashes/{database_uuid}', {}, self.USER1)
 
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_update_then_return_flow(self):
         """
         ゴミ箱へほかした後にdata列を更新する操作を行っても
@@ -2044,13 +2062,18 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
+        # プロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "I am project!", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+        project1 = self.factory.data.find_by_uuid(project1_uuid)
+
         # フローを作成する
         import uuid
-        flow = root.create_flow('サブフロー1', self.get_flow_with_source(str(uuid.uuid4())))
+        flow = project1.create_flow('サブフロー1', self.get_flow_with_source(str(uuid.uuid4())))
         flow.save()
         flow = self.factory.data.find_by_uuid(flow.uuid)
 
-        # 削除前にフローのロックを取得する
+        # 削除前にフローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
         lock_uuid = result['data']['uuid']
 
@@ -2059,7 +2082,7 @@ class TrashTestCase(ApiTestCaseBase):
             
         # フローを変更する
         data = {
-            'flow' : flow.flow_data,
+            'flow' : flow.flow_data.to_json(),
             'label': 'フローです',
             'lock' : lock_uuid
         }
@@ -2071,6 +2094,12 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱から戻す
         self.put_uri(f'/api/v0/trashes/{flow.uuid}', {}, self.USER1)
 
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_update_then_return_frame(self):
         """
         ゴミ箱へほかした後にdata列を更新する操作を行っても
@@ -2079,11 +2108,15 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
+        # プロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "I am project!!", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+
         # フレーム1を作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
-        result = self.post_frames('フレームファイル_AA', root.uuid, f, self.USER1)
+        result = self.post_frames('フレームファイル_AA', project1_uuid, f, self.USER1)
         frame_uuid_1 = result['data']['uuid']
 
         # ゴミ箱へほかす
@@ -2095,6 +2128,13 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱から戻す
         self.put_uri(f'/api/v0/trashes/{frame_uuid_1}', {}, self.USER1)
 
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+    @unittest.skip('権限機能実装後のリモートフォルダの修正ができてからテストする')
     def test_update_then_return_remote_folder(self):
         """
         ゴミ箱へほかした後にdata列を更新する操作を行っても
