@@ -80,7 +80,8 @@ const UserList = () => {
         const url = 'users?' + ((keyword)?'q='+ params.query + '&': '') + 'projects=' + params.projects + '&roles=' + params.roles
         return APIUtil.get(url).then((response) => {
             const users: UserListUser[] = response.data.data;
-            setUsers(users);
+            //setUsers(users);
+            filterUsers(users);
             setIsLoading(false);
             setIsFinished(true);
         }).catch((error) => {
@@ -554,12 +555,15 @@ const UserList = () => {
 
     useEffect(()=>{
         // フィルターが変更される都度ユーザをフィルタリングする
-        filterUsers()
+        const {hasNoFilter} = getSelectedFilter();
+        if(hasNoFilter){
+            fetchUsers(keyword);
+        }else{
+            filterUsers(users);
+        }
     },[filterList])
 
-    // 取得済みのユーザーをフィルターする
-    const filterUsers = () => {
-        // 選択されている条件を抽出する
+    const getSelectedFilter = ()=>{
         let selectedProjectUUIDs: string[] = []
         let selectedStatusTypes: string[] = []
         filterList.forEach((categoryListItem: IFilterCategoryItem)=>{
@@ -577,8 +581,19 @@ const UserList = () => {
                 })
             }
         })
+        return {
+            selectedProjectUUIDs: selectedProjectUUIDs,
+            selectedStatusTypes: selectedStatusTypes,
+            hasNoFilter: (!selectedProjectUUIDs.length && !selectedStatusTypes.length)
+        }
+    }
+
+    // 取得済みのユーザーをフィルターする
+    const filterUsers = (_users:UserListUser[]) => {
+        // 選択されている条件を抽出する
+        const {selectedProjectUUIDs,selectedStatusTypes, hasNoFilter} = getSelectedFilter();
         // ユーザーをフィルターする
-        let newFilteredUsers = users;
+        let newFilteredUsers = _users;
         // 該当プロジェクトに属しているユーザのみ抽出
         if(selectedProjectUUIDs.length){
             newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
@@ -604,16 +619,13 @@ const UserList = () => {
         }
 
         // フィルターしていない場合は、user を再取得する
-        const noFilter = (!selectedProjectUUIDs.length && !selectedStatusTypes.length);
-        if(noFilter){
-            // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
-            // 200ms ほど間隔をあけてから再検索を行う
-            setTimeout(()=>{
-                fetchUsers(keyword);
-            },200)
+        if(hasNoFilter){
+            // // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+            // // 200ms ほど間隔をあけてから再検索を行う
+            setUsers(_users);
             return
         }
-        // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+        // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
         // 200ms ほど間隔をあけてからフィルタリングする
         setTimeout(()=>{
             setUsers(newFilteredUsers)
