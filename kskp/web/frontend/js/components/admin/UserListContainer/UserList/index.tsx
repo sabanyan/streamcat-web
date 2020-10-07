@@ -99,7 +99,7 @@ const UserList = () => {
     };
 
     // ユーザを新規に作成する
-    const createNewUser = (name: string,email: string) => {
+    const createNewUser = (name: string,email: string,project: UserProject) => {
         // APIをたたく
         const body = {
             email: email,
@@ -108,7 +108,16 @@ const UserList = () => {
         };
         setIsLoading(true);
         const url = 'users'
+        if(project){
+            APIUtil.post(url,body).then()
+        }
         return APIUtil.post(url,body);
+    }
+
+    // ユーザをプロジェクトに紐付ける
+    const joinProject = (userUUID: string, projectUUID: string) => {
+        const url = '/projects/' + projectUUID + '/users/' + userUUID;
+        return APIUtil.put(url);
     }
 
     // ユーザを削除する
