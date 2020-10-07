@@ -34,7 +34,7 @@ class SystemTestCase(ApiTestCaseBase):
         Userの作成・取得・削除を検証する
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'abc@def.com', 'name':'テストです', 'password':'abcアウアウ'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'abc@def.com', 'name':'テストです', 'password':'abcdefghij'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # ユーザを取得する
@@ -48,7 +48,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('roles', result['data'])
         self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
-        self.assertEqual(result['data']['password'], 'abcアウアウ')
+        self.assertEqual(result['data']['password'], 'abcdefghij')
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -166,7 +166,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
-        self.post_register_complete('ujiyasu@odawara.co.jp', 'jurujuru', new_user)
+        self.post_register_complete('ujiyasu@odawara.co.jp', 'jurujurujuru', new_user)
 
         # 名前だけの変更であればパスワード認証は必要ないこと
         expected = {
@@ -189,7 +189,7 @@ class SystemTestCase(ApiTestCaseBase):
         # パスワード認証をして名前を変更してもよいこと
         expected = {
             'name' : '一回で汁の量を見極められずにn怒られたマン',
-            'currentPassword' : 'jurujuru'
+            'currentPassword' : 'jurujurujuru'
 
         }
         result = self.put_uri(f'/api/v0/users/self', expected, new_user)
@@ -297,7 +297,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertIsInstance(result['data']['password'], str)
-        self.assertEqual(len(result['data']['password']), 8)
+        self.assertEqual(len(result['data']['password']), 10)
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -313,7 +313,7 @@ class SystemTestCase(ApiTestCaseBase):
         Userのパスワードをリセットする
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'ghi@def.com', 'name':'テストですよっと', 'password':'アイウエオ'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'ghi@def.com', 'name':'テストですよっと', 'password':'AIUEOKAKIKU'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # パスワードをリセットする
@@ -327,9 +327,9 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('roles', result['data'])
         self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
-        self.assertNotEqual(result['data']['password'], 'アイウエオ')
+        self.assertNotEqual(result['data']['password'], 'AIUEOKAKIKU')
         self.assertIsInstance(result['data']['password'], str)
-        self.assertEqual(len(result['data']['password']), 8)
+        self.assertEqual(len(result['data']['password']), 10)
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -345,7 +345,7 @@ class SystemTestCase(ApiTestCaseBase):
         全てのUserを取得する
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'jkl@def.com', 'name':'テストですよっと♪', 'password':'_%@/\\a0'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'jkl@def.com', 'name':'テストですよっと♪', 'password':'^^^_%@/\\a0$$'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # ユーザを検索する
