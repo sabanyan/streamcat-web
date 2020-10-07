@@ -24,6 +24,7 @@ import {Simulate} from "react-dom/test-utils";
 import error = Simulate.error;
 import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader';
 import * as lodash from 'lodash';
+import Queue from "promise-queue-plus";
 
 const UserList = () => {
     const dispatch = useDispatch();
@@ -110,8 +111,8 @@ const UserList = () => {
     }
 
     // ユーザを削除する
-    const deleteUser = (uuid: string)=>{
-        const url = 'users/' + uuid;
+    const deleteUser = (userListUser: UserListUser)=>{
+        const url = 'users/' + userListUser.uuid;
         return APIUtil.delete(url).then((response)=>{
             fetchUsers();
             setIsLoading(false);
@@ -176,10 +177,22 @@ const UserList = () => {
         // ユーザ削除の確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-                deleteUser(lastSelected.uuid).finally(() => {
-                    ModalUtil.closeModal(Constants.modal.CONFIRM);
-                    clearSelectedCell();
-                })
+                let queue = Queue(
+                    1, // concurrency
+                    {
+                        "retry": 0               //Number of retries
+                        , "retryIsJump": false     //retry now?
+                        , "timeout": 0            //The timeout period
+                    }
+                );
+                setIsLoading(true);
+                selectedDatas.forEach((selectedData: LibraryChild) => {
+                    queue.push(deleteUser, [selectedData]);
+                });
+                queue.push(setIsLoading, [false]);
+                queue.start();
+                ModalUtil.closeModal(Constants.modal.CONFIRM);
+                clearSelectedCell();
             },
         })
         // ユーザ作成後の確認ダイアログ
@@ -445,8 +458,12 @@ const UserList = () => {
 
         clickedUserListCell.current = true;
 
-        const data: UserListUser = lastSelected;
         const onClickDelete = () => {
+            let targets: string[] = [];
+            selectedDatas.forEach((user) => {
+                targets.push(user.name);
+            });
+
             ModalUtil.emitModal({
                 id: Constants.modal.CONFIRM,
                 visible: true,
@@ -454,7 +471,7 @@ const UserList = () => {
                 danger: true,
                 content: <div className={style.modal}>
                     <div>
-                        ユーザーを削除しますがよろしいですか？
+                        {targets.join(",")} を削除しますか？
                     </div>
                 </div>
             });
