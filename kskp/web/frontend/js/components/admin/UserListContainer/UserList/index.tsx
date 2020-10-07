@@ -114,7 +114,6 @@ const UserList = () => {
     const deleteUser = (userListUser: UserListUser)=>{
         const url = 'users/' + userListUser.uuid;
         return APIUtil.delete(url).then((response)=>{
-            fetchUsers();
             setIsLoading(false);
         }).catch((error) => {
             notify({
@@ -174,6 +173,15 @@ const UserList = () => {
                 })
             },
         })
+        // ユーザ作成後の確認ダイアログ
+        ModalUtil.registerModal({
+            id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
+                ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
+            }
+        })
+    }, [lastSelected])
+
+    useEffect(()=>{
         // ユーザ削除の確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -190,18 +198,13 @@ const UserList = () => {
                     queue.push(deleteUser, [selectedData]);
                 });
                 queue.push(setIsLoading, [false]);
+                queue.push(fetchUsers, []);
                 queue.start();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
                 clearSelectedCell();
             },
         })
-        // ユーザ作成後の確認ダイアログ
-        ModalUtil.registerModal({
-            id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
-                ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
-            }
-        })
-    }, [lastSelected])
+    },[selectedDatas])
 
     // ローディングアイコンを表示する
     const renderLoadingIcon = () => {
