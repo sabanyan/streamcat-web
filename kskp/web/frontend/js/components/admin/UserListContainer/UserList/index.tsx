@@ -212,9 +212,9 @@ const UserList = () => {
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
-                let current = users.indexOf(data);
+                let current = users.findIndex(user=> data.uuid === user.uuid);
                 if (lastSelected) {
-                    let last = users.indexOf(lastSelected);
+                    let last =  users.findIndex(user=> lastSelected.uuid === user.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -283,6 +283,13 @@ const UserList = () => {
                 })
             }
 
+            let selected = false;
+            selectedDatas.forEach((selectedUser:UserListUser)=>{
+                if(user.uuid === selectedUser.uuid){
+                    selected = true
+                }
+            })
+
             const body: ITableBody = {
                 admin_types: admin_types,
                 clickable: true,
@@ -293,7 +300,7 @@ const UserList = () => {
                 projects: projects,
                 status: user.state,
                 uuid: user.uuid,
-                selected: user.selected,
+                selected: selected,
                 password: user.password
             };
             return body
