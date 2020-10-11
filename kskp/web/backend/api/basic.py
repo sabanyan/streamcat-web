@@ -91,6 +91,9 @@ def update_project(project_uuid):
             user = g.factory.user.find_by_uuid(member_dict['uuid'])
             type = member_dict['type']
             members.append(ProjectFolder.Member(user, type))
+        # プロジェクト管理者が設定されない場合はエラーとする
+        if not project.owner_exists(members):
+            raise Exception('プロジェクト管理者が設定されていません')
         # member属性で指定されたユーザを追加する
         project.init_members(members)
         return project
