@@ -1083,6 +1083,29 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
 
+    def test_join_project_by_usr_admin(self):
+        """
+        ユーザ管理者は全てのプロジェクトに対してメンバの追加と削除ができること
+        """
+        # ROOTを取得する
+        root = self.factory2.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'KitKat'}, self.USER2)
+        project_uuid = result['data']['uuid']
+
+        # ユーザ管理者は、プロジェクトメンバを追加する
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER3.uuid}', {'memberType':'Owner'}, self.USER1)
+
+        # ユーザ管理者は、プロジェクトメンバを外す
+        result = self.delete_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER3.uuid}', self.USER1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_join_project_without_owner(self):
         """
         プロジェクト管理者は必ず指定すること
@@ -1169,6 +1192,12 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/users/{new_user2.uuid}', self.USER1)
         self.assertEqual(result['data']['email'], 'kernel@kfc.co.jp')
         self.assertEqual(result['data']['state'], 'inactive')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_update_flow_in_project(self):
         """
