@@ -10,7 +10,7 @@ export default class ErrorUtil {
 
   static getErrorBody (error) {
     let errorBody
-    if (error.data['message']) {
+    if (error && error.data && error.data['message']) {
       errorBody = <div className={'modal-server-error-text'}>
         {error.data['message']}
       </div>

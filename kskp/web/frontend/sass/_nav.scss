@@ -82,7 +82,28 @@
           margin-bottom: -3px;
           border-bottom:4px solid $kskp-nav-active-border-color;
         }
-
+      }
+    }
+    .dropdown-menu{
+      .dropdown-item{
+        color: #606c7a;
+        font-size: 14px;
+        font-weight: normal;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        &:active{
+          background-color: $kskp-nav-active-background-color!important;
+        }
+      }
+      .depo-name{
+        .dropdown-item {
+          height: 20px;
+          font-weight: bold;
+          &:hover{
+            background: inherit;
+          }
+        }
       }
     }
     .nav-link{

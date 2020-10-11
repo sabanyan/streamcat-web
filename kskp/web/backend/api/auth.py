@@ -14,7 +14,6 @@ from flask import (
 from flask_mail import Mail, Message
 
 from kskp.web.backend import app
-from kskp.store import NoResultFound
 from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
@@ -41,16 +40,16 @@ def login_required(func):
                 f = request.form
                 with UnAuthzFactory() as factory:
                     try:
-                        user = factory.find_user_by_email(f['email'])
-                    except NoResultFound:
-                        return render_template('login.html', email=f['email'])
+                        user = factory.find_user_by_email(f.get('email'))
+                    except Exception:
+                        return render_template('login.html', email=f.get('email'), login_failed=True)
 
                 if user.authenticate(f['password']):
 
                     # 仮登録状態の場合はパスワード登録画面に遷移する
                     if user.is_temp:
-                        session['signup_email'] = f['email']
-                        return render_template('register_password.html', email=f['email'])
+                        session['signup_email'] = f.get('email')
+                        return render_template('register_password.html', email=f.get('email'))
 
                     # ユーザID保存
                     session['user_id'] = user.id
@@ -67,7 +66,7 @@ def login_required(func):
                     # メールアドレスは残してパスワードだけにする
                     # この仕様はセキュリティ上あまりよろしくはないが、
                     # ちゃんと画面が遷移したテストとしてわかりやすいので一時的にそうしている
-                    return render_template('login.html', email=f['email'])
+                    return render_template('login.html', email=f.get('email'), login_failed=True)
             elif request.args['session'] == 'off':
                 # ログアウト処理
                 # TODO: セッションを消すだけで良いか要検討
@@ -87,14 +86,14 @@ def login_required(func):
             else:
                 # 無効なクエリパラメータの値
                 # ひとまずログインページを返しておく
-                return render_template('login.html', original_url=request.base_url+'?session=on', args=request.args)
+                return render_template('login.html', original_url=request.base_url+'?session=on', args=request.args, login_failed=False)
         else:
             # クエリパラメータに'session'がない、普通のアクセス
             if 'user_id' in session:
                 return func(**kwargs)
             else:
                 # ログインページを返す
-                return render_template('login.html', original_url=request.base_url+'?session=on', args=request.args)
+                return render_template('login.html', original_url=request.base_url+'?session=on', args=request.args, login_failed=False)
 
     return deco
 
@@ -108,9 +107,16 @@ def login_required_api(func):
         if 'user_id' in session:
             # Userオブジェクトをflask.gに設定する
             with UnAuthzFactory() as factory:
-                user = factory.find_user_by_id(session['user_id'])
-                if user is None:
-                    raise Exception('user is None !')
+                try:
+                    user = factory.find_user_by_id(session['user_id'])
+                except Exception:
+                    # 存在しないuser_idはSessonから削除する
+                    session.clear()
+                    # ログインページを返す
+                    return render_template('login.html', login_failed=False)
+                if user.is_inactive:
+                    # 認証エラー
+                    return jsonify({'success': False, 'message': 'not authorized'}) 
                 elif user.is_temp:
                     # 本パスワード登録画面に遷移する
                     session['signup_email'] = user.email
@@ -123,7 +129,7 @@ def login_required_api(func):
                 g.factory = factory
                 return func(**kwargs)
         else:
-            # ログインページを返す
+            # 認証エラー
             return jsonify({'success': False, 'message': 'not authorized'})
     return deco
 
@@ -198,8 +204,8 @@ def complete_sign_up():
     with UnAuthzFactory() as factory:
         try:
             user = factory.find_user_by_email(email)
-        except NoResultFound:
-            return render_template('login.html', email=email)
+        except Exception:
+            return render_template('login.html', email=email, login_failed=True)
 
     with Factory(user) as factory:
         user = factory.user.find_by_id(user.id)
@@ -215,7 +221,12 @@ def complete_sign_up():
         # ユーザID保存
         session['user_id'] = user.id
 
-    flash('ユーザー登録が完了しました。')
+        # 本人ロールを作成する
+        user.load_self_role()
+        # 初めて登録状態に遷移する時に、MyProjectを作成する
+        root = factory.data.load_root()
+        project =root.create_project_folder('MyProject')
+        project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
     return redirect(url_for('basic_template.library'))

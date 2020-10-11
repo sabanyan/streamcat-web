@@ -50,8 +50,13 @@ if (document.getElementById("trashcan")) {
 }
 
 if (document.getElementById('trashcan')) {
-  elementId = 'trashcan'
-  viewId = ViewId.TrashCan
+    elementId = 'trashcan';
+    viewId = ViewId.TrashCan
+}
+
+if (document.getElementById('admin_users')) {
+    elementId = 'admin_users';
+    viewId = ViewId.User_List
 }
 
 if (elementId) {

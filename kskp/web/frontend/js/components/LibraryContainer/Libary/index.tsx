@@ -716,9 +716,9 @@ const Library = () => {
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
-                let current = libraryChildren.indexOf(data);
+                let current = libraryChildren.findIndex(libraryChild => data.uuid === libraryChild.uuid);
                 if (lastSelected) {
-                    let last = libraryChildren.indexOf(lastSelected);
+                    let last = libraryChildren.findIndex(libraryChild=> lastSelected.uuid === libraryChild.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
