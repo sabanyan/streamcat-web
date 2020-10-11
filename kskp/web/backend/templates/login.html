@@ -8,7 +8,7 @@
                 <div class="panel-body">
                     <form action="{{ original_url }}" method="post">
                       <div class="form-group">
-                          <label for="login_email">ユーザアカウント</label>
+                          <label for="login_email">ユーザーアカウント</label>
                           <input id="login_email" name="email" type="text" class="form-control form-control-sm"
                                  placeholder="メールアドレス" name="email" value="{{ email }}">
                       </div>
@@ -20,6 +20,11 @@
                       <div class="form-group">
                           <input type="submit" class="btn btn-primary btn-default btn-block" value="ログイン">
                       </div>
+                        {% if login_failed %}
+                        <div class="alert alert-danger small">
+                            ユーザーアカウントもしくはパスワードが正しくありません。
+                        </div>
+                        {% endif %}
                     </form>
                 </div>
             </div>
@@ -29,5 +34,5 @@
 <script>
     const inject_project_uuid = undefined
     const inject_flow_uuid = undefined
-  </script>
+</script>
 {% endblock %}

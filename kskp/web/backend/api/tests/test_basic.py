@@ -10,7 +10,7 @@ from pathlib import Path
 
 from kskp.web.backend import app
 from kskp.store import Datum, Flow
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 # 
 # クラス毎にテストケースを実行してください。
@@ -81,23 +81,25 @@ class ProjectApiTestCase(ApiTestCaseBase):
         GET /projects APIをテストする
         """
         # ROOTを取得する
-        flow_folder = self.factory.data.load_flow_folder()
+        root = self.factory.data.load_root()
 
         # プロジェクトを作成する
-        data = {'parent': flow_folder.uuid,
+        data = {'parent': root.uuid,
                 'label' : '新しいプロジェクト'}
         self.post_uri('/api/v0/projects', data, self.USER2)
 
         # フォルダを取得する
         results = self.get_uri('/api/v0/projects', self.USER2)
 
+        # 結果の件数は1件以上である
+        self.assertGreater(len(results['data']), 0)
+
         # 作成したプロジェクトが取得できることを検証する
         result0 = results['data'][0]
         self.assertIsNotNone(result0['uuid'])
-        self.assertEqual(result0['name'], '新しいプロジェクト')
-        self.assertEqual(result0['creator_id'], self.USER2.id)
-        self.assertIsNotNone(result0['creator_name'])
-        self.assertIsNotNone(result0['created_at'])
+        self.assertEqual(result0['type'], 'project')
+        self.assertIsNotNone(result0['creator'])
+        self.assertIsNotNone(result0['createdAt'])
 
         # ナビが取得できることを検証する
         navi = results['navigation']
@@ -106,7 +108,9 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertEqual(navi['project_name'], '')
         self.assertEqual(navi['project_uuid'], '')
         self.assertEqual(navi['user_id'], self.USER2.id)
-        self.assertIsNotNone(navi['user_name'])
+        self.assertEqual(navi['user_name'], self.USER2.name)
+        self.assertEqual(navi['depo_name'], 'Unit Test')
+
 
     def test_get_project(self):
         """
@@ -150,6 +154,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
         project = self.factory.data.find_by_uuid(project.uuid)
         self.assertFalse(project.delete())
 
+    @unittest.skip('Projectの移動は禁止する仕様に変更した')
     def test_move_project(self):
         # ルートを取得する
         root = self.factory.data.load_root()
@@ -169,7 +174,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'project'
-            ,'creator'  : 'システム管理者'
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # PUT /projects apiが正常終了することを検証する
@@ -188,16 +193,21 @@ class ProjectApiTestCase(ApiTestCaseBase):
         """
         DELETE /projects APIをテストする
         """
-        # フォルダを作成する
-        root = self.factory.data.load_root()
-        project = root.create_project_folder('フロー格納フォルダ')
-        project.save()
+        # ルートフォルダを取得する(GET /library)
+        result = self.get_uri('/api/v0/library', self.USER1)
+        root_uuid = result['data']['uuid']
+
+        # プロジェクトを作成する(POST /project)
+        data = {'parent': root_uuid,
+                'label' : 'フロー格納フォルダ'}
+        result = self.post_uri('/api/v0/projects', data, self.USER1)
+        project_uuid = result['data']['uuid']
 
         # DELETE /projects
-        self.delete_uri(('/api/v0/projects/%s' % project.uuid), self.USER1)
+        self.delete_uri((f'/api/v0/projects/{project_uuid}'), self.USER1)
 
         # プロジェクトはゴミ箱に移動していること
-        project = self.factory2.data.find_by_uuid(project.uuid)
+        project = self.factory.data.find_by_uuid(project_uuid)
         self.assertEqual(project.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
 
 class FrameApiTestCase(ApiTestCaseBase):
@@ -239,7 +249,6 @@ class FrameApiTestCase(ApiTestCaseBase):
 
         # self.assertEqual(result['message'], '')
         # self.assertEqual(result['success'], True)
-
 
     def test_download_file(self):
         """
@@ -301,7 +310,7 @@ class FrameApiTestCase(ApiTestCaseBase):
         # 後片付け
         frame = self.factory.data.find_by_uuid(frame_uuid)
         frame.delete()
-     
+
 class FlowApiTestCase(ApiTestCaseBase):
 
     # フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
@@ -358,7 +367,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['projectId'], None)
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertEqual(result['data']['label'], new_flow_name)
         self.assertEqual(result['data']['nodes'][0]['dataSource'], 'csv')
@@ -433,7 +442,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['description'],'')
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
 
@@ -458,7 +467,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['description'],'')
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # 同じフローを2回コピーする
@@ -470,7 +479,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result2['data']['description'],'')
         self.assertEqual(result2['data']['params'], [])
         self.assertEqual(result2['data']['ports'], [[],[]])
-        self.assertEqual(result2['data']['creator'], 'システム管理者')
+        self.assertEqual(result2['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result2['data']['createdAt'])
 
     def test_copy_flow_using_cache(self):
@@ -578,7 +587,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['projectId'], None)
         self.assertEqual(result['data']['label'], test_flow_label)
         self.assertEqual(result['navigation']['user_id'], self.USER1.id)
-        self.assertEqual(result['navigation']['user_name'], 'システム管理者')
+        self.assertEqual(result['navigation']['user_name'], 'ユーザ管理者')
         # self.assertEqual(result['navigation']['project_uuid'], )
         self.assertEqual(result['navigation']['project_name'], 'ライブラリ')
         self.assertEqual(result['navigation']['flow_name'], test_flow_label)
@@ -617,12 +626,12 @@ class FlowApiTestCase(ApiTestCaseBase):
         # self.assertEqual(results['data'][0]['description'],'')
         # self.assertEqual(results['data'][0]['params'], [])
         # self.assertEqual(results['data'][0]['ports'], [[],[]])
-        self.assertEqual(results['data'][0]['creator'], 'システム管理者')
+        self.assertEqual(results['data'][0]['creator'], 'ユーザ管理者')
         self.assertIsNotNone(results['data'][0]['createdAt'])
 
         # ナビゲーションを検証する
         self.assertEqual(results['navigation']['user_id'], self.USER1.id)
-        self.assertEqual(results['navigation']['user_name'], 'システム管理者')
+        self.assertEqual(results['navigation']['user_name'], 'ユーザ管理者')
         self.assertEqual(results['navigation']['project_uuid'], flow_folder.uuid)
         self.assertEqual(results['navigation']['project_name'], flow_folder.label)
 
@@ -701,7 +710,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : 'フロー1C'
             ,'type'     : 'flow'
-            ,'creator'  : 'システム管理者'
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # PUT /frames apiが正常終了することを検証する
@@ -948,7 +957,9 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], '')
         self.assertEqual(data['flow_uuid'], '')
         self.assertEqual(data['flow_name'], '')
-
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+        
         # テスト用フローデータを作成する
         flow_json = {
             'projectId': None,
@@ -981,7 +992,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], flow_uuid)
         self.assertEqual(data['flow_name'], test_flow.label)
-
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
 
         project_uuid = data['project_uuid']
         # project_uuidあり, flow_uuidなし
@@ -994,6 +1006,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], '')
         self.assertEqual(data['flow_name'], '')
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
 
         # project_uuidあり, flow_uuidあり
         uri = '/api/v0/navigation?project_uuid=' + project_uuid + '&flow_uuid=' + flow_uuid
@@ -1005,6 +1019,24 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], root.label)
         self.assertEqual(data['flow_uuid'], flow_uuid)
         self.assertEqual(data['flow_name'], test_flow.label)
+        self.assertDictEqual(data['user'], self.USER1.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+
+    def test_get_sys_admin_navi(self):
+        """
+        システム管理者のnavigationを検証する
+        """
+        result = self.get_uri('/api/v0/navigation', self.USER0)
+        data = result['data']
+        self.assertEqual(data['user_id'], self.USER0.id)
+        self.assertEqual(data['user_name'], self.USER0.name)
+        self.assertEqual(data['project_uuid'], '')
+        self.assertEqual(data['project_name'], '')
+        self.assertEqual(data['flow_uuid'], '')
+        self.assertEqual(data['flow_name'], '')
+        self.assertDictEqual(data['user'], self.USER0.to_json())
+        self.assertDictEqual(data['allowlist'], self.USER0.get_allowlist())
+
 
 def setUpUser(self):
     from kskp.store.auth import User

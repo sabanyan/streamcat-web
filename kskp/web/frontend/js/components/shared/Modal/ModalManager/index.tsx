@@ -44,7 +44,7 @@ export default class ModalManager extends React.Component<Props> {
     render() {
         const {notify, dismissNotify} = this.props;
 
-        return <div>
+        return <>
             <Modal key={Constants.modal.ADD_COMMAND}
                    id={Constants.modal.ADD_COMMAND} dynamic={true}>
             </Modal>
@@ -100,6 +100,15 @@ export default class ModalManager extends React.Component<Props> {
             <Modal key={Constants.modal.RUN_FLOW} id={Constants.modal.RUN_FLOW}
                    title="選択されたフローを実行します" dynamic={true} footer={true}>
             </Modal>
-        </div>;
+            <Modal key={Constants.modal.ADD_USER} id={Constants.modal.ADD_USER}
+                   title="ユーザーの新規作成" dynamic={true} footer={true} overflow={false}>
+            </Modal>
+            <Modal key={Constants.modal.ADD_USER_CONFIRM} id={Constants.modal.ADD_USER_CONFIRM}
+                   title="ユーザーの新規作成" dynamic={true} ok={true} overflow={false}>
+            </Modal>
+            <Modal key={Constants.modal.RESET_USER_PASSWORD} id={Constants.modal.RESET_USER_PASSWORD}
+                   title="" dynamic={true} footer={true}>
+            </Modal>
+        </>;
     }
 }

@@ -60,17 +60,38 @@ const NavigationBar = (props: Props) => {
     //     </li>;
     // };
 
+    const renderGlobalNavigationItem = () => {
+        const {navigation} = props;
+        if (navigation){
+            return <NavigationBarItem href={"/library"} iconUrl={baseUrl + "images/icon/library.svg"}>ライブラリ</NavigationBarItem>
+        }
+        return null
+    }
+
     const renderUserNavigationItem = () => {
         const {navigation} = props;
         let depoName;
         if (navigation && navigation.depo_name !== "master") {
-            depoName = <div>
+            depoName = <div className="depo-name">
                 <div className="dropdown-item">
-                    <b>{navigation.depo_name}</b>
+                    {navigation.depo_name}
                 </div>
                 <div className="dropdown-divider"/>
             </div>;
         }
+
+
+        const renderUserAdminMenu = () =>{
+            // TODO: ユーザ管理者権限をもつ場合、ユーザ管理画面へのリンクをつける
+            const hasUserAdmin = true
+            if(hasUserAdmin){
+                return <a href="/admin/users" className="dropdown-item">ユーザ管理</a>
+            }
+            return null
+        }
+
+        // ユーザ情報変更画面へのリンク
+
 
         const onClickLogout = (e) => {
             let logoutParam = "?session=off";
@@ -84,6 +105,8 @@ const NavigationBar = (props: Props) => {
 
         return <NavigationBarUserMenuItem navigation={navigation} visible={isLogin}>
             {depoName}
+            <a href="/settings/profile" className="dropdown-item">ユーザ情報変更</a>
+            {renderUserAdminMenu()}
             <a href="javascript:return false;" className="dropdown-item" onClick={(e) => onClickLogout(e)}>ログアウト</a>
         </NavigationBarUserMenuItem>
 
@@ -113,7 +136,7 @@ const NavigationBar = (props: Props) => {
     return <NavigationBarGroup>
         <NavigationBarBrand/>
         <NavigationBarItemGroup>
-            <NavigationBarItem href={"/library"} iconUrl={baseUrl + "images/icon/library.svg"}>ライブラリ</NavigationBarItem>
+            {renderGlobalNavigationItem()}
         </NavigationBarItemGroup>
         <NavigationBarMenuGroup>
             {renderUserNavigationItem()}

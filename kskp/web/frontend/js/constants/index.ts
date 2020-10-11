@@ -103,6 +103,8 @@ const Constants = {
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
     ADD_DATABASE: 'add_database',
+    ADD_USER: 'add_user',
+    ADD_USER_CONFIRM: 'add_user_confirm',
     EDIT_DATABASE: 'edit_database',
     EDIT_ENCODING: 'edit_encoding',
     MEMBER_INFO: 'member_info',
@@ -113,6 +115,7 @@ const Constants = {
     SHOW_RUN_RESULT: 'show_run_result',
     SHOW_RUN_ERROR: 'show_run_error',
     PREVIEW_DATASOURCE: 'preview_datasource',
+    RESET_USER_PASSWORD: 'reset_user_password',
     property: {
       title: 'title',
       message: 'message',
