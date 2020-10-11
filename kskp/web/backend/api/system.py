@@ -181,7 +181,7 @@ def update_role(role_uuid):
     """
     ロールを修正する
     """
-    from kskp.store.auth import Role
+    from kskp.store.auth import Role, NoRoleOwnerException
 
     req = RequestJson(request.json)
     if req.has_no_all('name', 'members'):
@@ -203,6 +203,9 @@ def update_role(role_uuid):
             user = g.factory.user.find_by_uuid(member_dict['uuid'])
             owner = member_dict['owner']
             members.append(Role.Member(user, owner))
+        # 所有者が設定されない場合はエラーとする
+        if not role.owner_exists(members):
+            raise NoRoleOwnerException('所有者が設定されていません')
         # member属性で指定されたユーザを追加する
         role.init_members(members)
 
@@ -229,7 +232,7 @@ def join_user_to_role(role_uuid, user_uuid):
     """
     ロールにユーザを追加する
     """
-    from kskp.store.auth import Role
+    from kskp.store.auth import Role, NoRoleOwnerException
 
     req = RequestJson(request.json)
     if not req.has_all('owner'):
@@ -238,6 +241,11 @@ def join_user_to_role(role_uuid, user_uuid):
     role = g.factory.role.find_by_uuid(role_uuid)
     user = g.factory.user.find_by_uuid(user_uuid)
     member = Role.Member(user, req['owner'])
+
+    # この所属によって、ロールに所有者が居なくなる場合はエラーとする
+    if member.owner == False and role.is_last_owner(member.user):
+        raise NoRoleOwnerException('この所属処理でロール所有者がいなくなります')
+
     role.join_member(member)
 
 @mod.route('/roles/<role_uuid>/users/<user_uuid>', methods=['DELETE'])
@@ -249,6 +257,11 @@ def leave_user_outof_role(role_uuid, user_uuid):
     """
     role = g.factory.role.find_by_uuid(role_uuid)
     user = g.factory.user.find_by_uuid(user_uuid)
+
+    # この脱退によって、ロールに所有者が居なくなる場合はエラーとする
+    if role.is_last_owner(user):
+        raise NoRoleOwnerException('この脱退処理でロール所有者がいなくなります')
+
     role.leave_member(user)
 
 # 
@@ -272,6 +285,11 @@ def join_user_to_project(project_uuid, user_uuid):
     project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
     user = g.factory.user.find_by_uuid(user_uuid)
     member = ProjectFolder.Member(user, req['memberType'])
+
+    # この所属によって、プロジェクトに管理者が居なくなる場合(ユーザ管理者は除外)はエラーとする
+    if member.type != ProjectFolder.OWNER_MEMBER_TYPE and project.is_last_owner(member.user):
+        raise Exception('この所属処理でプロジェクト管理者がいなくなります')
+
     project.join_member(member)
 
 @mod.route('/projects/<project_uuid>/users/<user_uuid>', methods=['DELETE'])
@@ -284,4 +302,9 @@ def leave_user_outof_project(project_uuid, user_uuid):
     from kskp.core import Datum
     project = g.factory.data.find_by_uuid(project_uuid, type=Datum.PROJECT_TYPE)
     user = g.factory.user.find_by_uuid(user_uuid)
+
+    # この脱退によって、プロジェクトに管理者が居なくなる場合(ユーザ管理者は除外)はエラーとする
+    if project.is_last_owner(user):
+        raise Exception('この脱退処理でプロジェクト管理者がいなくなります')
+
     project.leave_member(user)

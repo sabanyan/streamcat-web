@@ -69,13 +69,13 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
-        new_user.update_password('hogehoge')
+        new_user.update_password('hogehoge88')
 
         # ユーザ管理者は、ユーザ情報を変更する
         expected = {
             'email': '変更後＠aiueo.co.jp',
             'name' : '私はカモメ',
-            'password' : '#yerhfkdi'
+            'password' : '#yerhfkdi8'
         }
         result = self.put_uri(f'/api/v0/users/{user_uuid}', expected, self.USER1)
 
@@ -409,7 +409,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
         self.assertIsNotNone(result['data']['roles'][0]['creator'])
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
-        # システム管理者ロール
+        # ユーザ管理者ロール
         self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_usr_admin['uuid'])
         self.assertEqual(result['data']['roles'][1]['name'], self.expected_usr_admin['name'])
         self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
@@ -921,6 +921,27 @@ class SystemTestCase(ApiTestCaseBase):
         # ロールを削除する
         self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER3)
 
+    def test_cannot_no_usr_admin(self):
+        """
+        ユーザ管理者ロールのメンバを0人にはできないこと
+        """
+        # ユーザ管理者を取得する
+        result = self.get_uri(f'/api/v0/users/self?roles=on', self.USER1)
+        usr_admin_uuid = result['data']['uuid']
+
+        # ユーザ管理者ロールを取得する
+        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
+        usr_admin_role = result['data']['roles'][1]['uuid']
+
+        # 最後の一人のメンバをロールから外せないこと
+        with self.assertRaises(Exception):
+            self.delete_uri(f'/api/v0/roles/{usr_admin_role}/users/{usr_admin_uuid}', self.USER1)
+
+        # 最後の一人のメンバを削除できないこと
+        with self.assertRaises(Exception):
+            self.delete_uri(f'/api/v0/users/{usr_admin_uuid}', self.USER1)
+
+
     # 
     # Projects
     # 
@@ -1061,6 +1082,93 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
+
+    def test_join_project_without_owner(self):
+        """
+        プロジェクト管理者は必ず指定すること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃおーん'}, self.USER1)
+        project_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は外せないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER1.uuid}', self.USER1)
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Reader'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}]
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_join_project_without_member(self):
+        """
+        プロジェクトメンバは必ず指定すること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'ネコミミモード'}, self.USER1)
+        project_uuid = result['data']['uuid']
+
+        # メンバを設定する
+        data = {
+            'members': []
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_delete_project_owner(self):
+        """
+        ユーザがプロジェクトの唯一の所有者の場合でも、そのユーザを削除できること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # ユーザ1を作成する
+        result = self.post_uri('/api/v0/users', {'email':'donald@mcdonalds.co.jp', 'name':'ドナルド', 'password':'mcdonald!!!!!!'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        # 作成したユーザを登録状態にする
+        new_user1 = self.factory.user.find_by_uuid(user_uuid)
+        self.post_register_complete('donald@mcdonalds.co.jp', 'mcdonald!!!!!!0', new_user1)
+
+        # ユーザ2を作成する
+        result = self.post_uri('/api/v0/users', {'email':'kernel@kfc.co.jp', 'name':'カーネルサンダース', 'password':'kfc!kfc!kfc!'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        # 作成したユーザを登録状態にする
+        new_user2 = self.factory.user.find_by_uuid(user_uuid)
+        self.post_register_complete('kernel@kfc.co.jp', 'kfc!kfc!kfc!0', new_user2)
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'うにゃあ'}, new_user1)
+        project_uuid = result['data']['uuid']
+
+        # プロジェクト管理者をもう一人追加する
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{new_user2.uuid}', {'memberType':'Owner'}, new_user1)
+
+        # プロジェクト管理者を一人削除する
+        self.delete_uri(f'/api/v0/users/{new_user1.uuid}', self.USER1)
+        result = self.get_uri(f'/api/v0/users/{new_user1.uuid}', self.USER1)
+        self.assertEqual(result['data']['email'], 'donald@mcdonalds.co.jp')
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # 最後のプロジェクト管理者も削除できること
+        self.delete_uri(f'/api/v0/users/{new_user2.uuid}', self.USER1)
+        result = self.get_uri(f'/api/v0/users/{new_user2.uuid}', self.USER1)
+        self.assertEqual(result['data']['email'], 'kernel@kfc.co.jp')
+        self.assertEqual(result['data']['state'], 'inactive')
 
     def test_update_flow_in_project(self):
         """
