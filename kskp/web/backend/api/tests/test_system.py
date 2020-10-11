@@ -668,6 +668,64 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(len(results['data']), 1)
         self.assertEqual(results['data'][0]['email'], 'aui_eo@yahoo.co.jp')
 
+    def test_search_user3(self):
+        """
+        仕事人をAND検索する
+        """
+        # 仕事人を作成する
+        result = self.post_uri('/api/v0/users', {'email':'hacchoubori@edo.go.jp', 'name':'中村 主水', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'hide@edo.co.jp', 'name':'飾り職人の秀さん', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'yuuji@edo.co.jp', 'name':'三味線屋の勇次', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'junnosuke@edo.ac.jp', 'name':'西 順之助', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'kayo@edo.co.jp', 'name':'何でも屋の加代', 'password':None}, self.USER1)
+
+        # ユーザを検索する
+        keyword = '中村 主水'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'hacchoubori@edo.go.jp')
+
+        # ユーザを検索する
+        keyword = '三味線 勇次'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'yuuji@edo.co.jp')
+
+        # ユーザを検索する
+        keyword = '職人 三味線'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 0)
+
+        # ユーザを検索する
+        keyword = 'hide 秀'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'hide@edo.co.jp')
+
+        # ユーザを検索する
+        keyword = 'jp edo '
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 5)
+
+        # ユーザを検索する
+        keyword = '"中村 主水"'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'hacchoubori@edo.go.jp')
+
+        # ユーザを検索する
+        keyword = '"中村 ""主水"'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 0)
+
     def test_api_by_inactive_user(self):
         """
         論理削除UserはAPI操作ができないこと
