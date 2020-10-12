@@ -3,7 +3,7 @@ import style from './style.scss'
 import {APIUtil, ReactDomUtil, ErrorUtil} from 'Utils/index'
 import {ModalManager} from 'Shared/Modal'
 import {Loader} from 'Shared/Base'
-import {Button, TextField} from 'Shared/Input'
+import {Button, LinkButton, TextField} from 'Shared/Input'
 import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
 import {NotificationManager} from 'Shared/Notification';
@@ -41,6 +41,9 @@ const Profile = () => {
 
     const { handleSubmit, register, errors } = useForm();
 
+
+    const [editing, setEditing] = useState<('name' | 'email' | 'password' | null)>(null);
+
     useEffect(() => {
         const getProfile = () => {
             setIsLoading(true)
@@ -67,7 +70,15 @@ const Profile = () => {
         getProfile()
     }, [])
 
-    const onClickSave = () => {
+    const onClickSaveName = () => {
+
+    }
+
+    const onClickSaveEmail = () => {
+
+    }
+
+    const onClickSavePassword = () => {
 
     }
 
@@ -100,27 +111,79 @@ const Profile = () => {
         </div>
         <div className={style.property_body}>
             <div className={style.card}>
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form onSubmit={handleSubmit(onSubmit)} className={"mb-32px"}>
                     <div className={'mb-8px'}>
-                        <label>ユーザ名</label>
-                        <TextField placeholder={'ユーザ名'} defaultValue={profile.name} name={"name"} inputRef={register}/>
+                        {
+                            (editing === "name")?
+                                <label>ユーザ名 <LinkButton onClick={()=>setEditing(null)}>キャンセル</LinkButton></label>
+                                :
+                                <label>ユーザ名 <LinkButton onClick={()=>setEditing('name')}>変更する</LinkButton></label>
+                        }
+                        <TextField readOnly={(editing !=="name")} placeholder={'ユーザ名'} defaultValue={profile.name} name={"name"} inputRef={register}/>
                     </div>
-                    <div className={'mb-8px'}>
-                        <label>メールアドレス</label>
-                        <TextField placeholder={'メールアドレス'} defaultValue={profile.email} type={'email'} name={"email"}  inputRef={register}/>
-                    </div>
-                    <div className={'mb-8px'}>
-                        <label>パスワード</label>
-                        <TextField placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register}/>
-                    </div>
-                    <div className={'mb-8px'}>
-                        <label>新しいパスワード</label>
-                        <TextField placeholder={'新しいパスワード'} type={'password'} name={"password"} inputRef={register}/>
-                    </div>
-                    <div className={'text-right mt-20px'}>
-                        <Button submit={true} className={'mr-0'} onClick={onClickSave}>保存する</Button>
-                    </div>
+                    {
+                        (editing === "name")?
+                            <div className={'text-right'}>
+                                <Button submit={true} className={'mr-0'} onClick={onClickSaveName}>保存する</Button>
+                            </div>
+                            :
+                            null
+                    }
                 </form>
+
+                <form onSubmit={handleSubmit(onSubmit)} className={"mb-32px"}>
+                    <div className={'mb-8px'}>
+                        {
+                            (editing === "email")?
+                                <label>メールアドレス <LinkButton onClick={()=>setEditing(null)}>キャンセル</LinkButton></label>
+                                :
+                                <label>メールアドレス <LinkButton onClick={()=>setEditing('email')}>変更する</LinkButton></label>
+                        }
+                        <TextField readOnly={(editing !=="email")} placeholder={'メールアドレス'} defaultValue={profile.email} type={'email'} name={"email"}  inputRef={register}/>
+                    </div>
+                    {
+                        (editing === "email")?
+                            <>
+                                <div className={'mb-8px'}>
+                                    <label>現在のパスワード</label>
+                                    <TextField placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register}/>
+                                </div>
+                                <div className={'text-right'}>
+                                    <Button submit={true} className={'mr-0'} onClick={onClickSaveEmail}>保存する</Button>
+                                </div>
+                            </>
+                        : null
+                    }
+                </form>
+
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <label>
+                        {
+                            (editing === "password")?
+                                <LinkButton onClick={()=>setEditing(null)}>キャンセル</LinkButton>
+                                :
+                                <LinkButton onClick={()=>setEditing('password')}>現在のパスワードを変更する</LinkButton>
+                        }
+                    </label>
+                    {
+                        (editing === "password")?
+                            <>
+                                <div className={'mb-8px'}>
+                                    <label>現在のパスワード</label>
+                                    <TextField readOnly={(editing !== "password")} placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register}/>
+                                </div>
+                                <div className={'mb-8px'}>
+                                    <label>新しいパスワード</label>
+                                    <TextField  placeholder={'新しいパスワード'} type={'password'} name={"password"} inputRef={register}/>
+                                </div>
+                                <div className={'text-right'}>
+                                    <Button submit={true} className={'mr-0'} onClick={onClickSavePassword}>保存する</Button>
+                                </div>
+                            </>
+                            : null
+                    }
+                </form>
+
             </div>
         </div>
         <ModalManager/>
