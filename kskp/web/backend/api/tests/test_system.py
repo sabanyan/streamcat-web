@@ -1079,16 +1079,19 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトですよ'}, self.USER0)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # ユーザを参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER0)
 
         # プロジェクトを検索する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+        project_modified_at = result['data']['modifiedAt']
         
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], project_uuid)
@@ -1128,7 +1131,8 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ユーザを脱退させる
         data = {
-            'members': [{'uuid' : self.USER3.uuid, 'type': 'Owner'}]
+            'members': [{'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1174,6 +1178,7 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃおーん'}, self.USER1)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # プロジェクト管理者は外せないこと
         with self.assertRaises(AssertionError):
@@ -1182,7 +1187,8 @@ class SystemTestCase(ApiTestCaseBase):
         # ユーザを参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Reader'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
         }
         with self.assertRaises(AssertionError):
             self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
@@ -1200,13 +1206,106 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'ネコミミモード'}, self.USER1)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # メンバを設定する
         data = {
-            'members': []
+            'members': [],
+            'lastModifiedAt' : project_modified_at
         }
         with self.assertRaises(AssertionError):
             self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_join_project_simultaneously(self):
+        """
+        プロジェクトメンバの設定は先勝であること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'北海道はでっかいどう'}, self.USER1)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # USER2は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+        project_modified_at_1 = result['data']['modifiedAt']
+
+        # USER3は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+        project_modified_at_2 = result['data']['modifiedAt']
+
+        # USER2は、ユーザを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Reader'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at_1
+        }
+        self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # USER3は、ユーザを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at_2
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER3)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_join_project_simultaneously2(self):
+        """
+        プロジェクトメンバの設定は先勝であること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'北海道はでっかいどう'}, self.USER1)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # USER2は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+        project_modified_at_1 = result['data']['modifiedAt']
+
+        # USER3は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+        project_modified_at_2 = result['data']['modifiedAt']
+
+        # USER2は、ユーザを設定する
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Reader'}, self.USER2)
+
+        # USER3は、ユーザを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at_2
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER3)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
@@ -1309,6 +1408,7 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Flowプロジェクト'}, self.USER2)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # プロジェクト管理者は、プロジェクト内にFlowを作成する
         data = {
@@ -1326,7 +1426,8 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクト管理者は、プロジェクトメンバを設定する
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1420,6 +1521,7 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'みんな大好き虫食い'}, self.USER2)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # プロジェクト管理者は、プロジェクト内にフローを作成する
         data = {
@@ -1448,7 +1550,8 @@ class SystemTestCase(ApiTestCaseBase):
         # USER3をメンバに参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1515,6 +1618,7 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'STAR⭐️BUCKS'}, self.USER2)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # プロジェクト管理者は、プロジェクト内にフレームを作成する
         f = (io.BytesIO(b'Every cup has a story'), 'frame1.csv')
@@ -1528,7 +1632,8 @@ class SystemTestCase(ApiTestCaseBase):
         # USER3を閲覧者メンバとして参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1539,7 +1644,8 @@ class SystemTestCase(ApiTestCaseBase):
         # USER3を編集者メンバとして参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
