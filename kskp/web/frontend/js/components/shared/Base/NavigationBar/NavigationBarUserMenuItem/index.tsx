@@ -1,5 +1,5 @@
 import React from "react";
-import {NavigationModelProps} from "Model/index";
+import { NavigationModelProps } from "Model/index";
 
 interface Props {
     navigation?: NavigationModelProps;
@@ -9,13 +9,15 @@ interface Props {
 
 const baseUrl = "/front_static/";
 const NavigationBarUserMenuItem = (props: Props) => {
-    const {navigation, children, visible} = props;
+    const { navigation, children, visible } = props;
     if (!visible || !navigation) return null;
     return <li className="nav-item dropdown user">
         <a className="nav-link dropdown-toggle" href="javascript: return false;" id="navbarDropdownMenuLink" data-toggle="dropdown"
-           aria-haspopup="true" aria-expanded="false">
+            aria-haspopup="true" aria-expanded="false">
             <img className="icon" src={baseUrl + "images/icon/user.svg"} />
-            {navigation.user_name}
+            <label id="navbarUsername">
+                {navigation.user_name}
+            </label>
         </a>
         <div className="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
             {children}
@@ -23,4 +25,4 @@ const NavigationBarUserMenuItem = (props: Props) => {
     </li>;
 };
 
-export {NavigationBarUserMenuItem};
+export { NavigationBarUserMenuItem };
