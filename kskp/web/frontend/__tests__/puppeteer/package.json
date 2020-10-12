@@ -1,0 +1,17 @@
+{
+  "name": "kskp-test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "preset": "jest-puppeteer",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "25.5.4",
+    "jest-puppeteer": "^4.4.0"
+  },
+  "dependencies": {
+    "puppeteer": "1.20.0"
+  }
+}
