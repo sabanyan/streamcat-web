@@ -6480,6 +6480,20 @@ a.text-dark:hover, a.text-dark:focus {
         display: inline-block;
         margin-bottom: -3px;
         border-bottom: 4px solid #63CFFD; }
+    .navbar .menu-navbar .dropdown-menu .dropdown-item {
+      color: #606c7a;
+      font-size: 14px;
+      font-weight: normal;
+      height: 40px;
+      display: flex;
+      align-items: center; }
+      .navbar .menu-navbar .dropdown-menu .dropdown-item:active {
+        background-color: #EDF1F3 !important; }
+    .navbar .menu-navbar .dropdown-menu .depo-name .dropdown-item {
+      height: 20px;
+      font-weight: bold; }
+      .navbar .menu-navbar .dropdown-menu .depo-name .dropdown-item:hover {
+        background: inherit; }
     .navbar .menu-navbar .nav-link {
       color: #fff;
       display: inline-block;
@@ -6581,8 +6595,10 @@ a.text-dark:hover, a.text-dark:focus {
 .modal .modal-content {
   border: none; }
   .modal .modal-content .modal-body {
-    max-height: 700px;
-    overflow: scroll; }
+    max-height: 700px; }
+
+.modal.overflow-content .modal-body {
+  overflow: scroll; }
 
 .modal .modal-header {
   display: block;

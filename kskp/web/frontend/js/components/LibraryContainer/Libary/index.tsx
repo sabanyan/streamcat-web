@@ -1184,6 +1184,7 @@ const Library = () => {
         let _onClickMove: any = null;
         let _onClickEditEncoding: any = null;
         let _onBlurTitle: any = null;
+        let _onClickMemberInfo: any = null;
 
         const onClickMove = () => {
             let queue = Queue(
@@ -1466,20 +1467,23 @@ const Library = () => {
             });
         };
 
-        const onClickMemberInfo = () => {
+        _onClickMemberInfo = (e, members) => {
             ModalUtil.registerModal({
                 id: Constants.modal.MEMBER_INFO, onClickDone: () => {
 
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
                 }
             });
-
+            console.log("mambers")
+            console.log(members)
             ModalUtil.emitModal({
                 id: Constants.modal.MEMBER_INFO,
                 visible: true,
                 done: "反映する",
                 danger: true,
-                content: <MemberForm/>
+                content: <MemberForm 
+                    rows={members}
+                />
             });
         };
 
@@ -1493,7 +1497,7 @@ const Library = () => {
             onClickEdit={_onClickEdit}
             onClickEditEncoding={_onClickEditEncoding}
             onClickCleanTrash={_onClickCleanTrash}
-            onClickMemberInfo={onClickMemberInfo}
+            onClickMemberInfo={_onClickMemberInfo}
             onBlurTitle={_onBlurTitle}
             visualizers={visualizers}
         />;
