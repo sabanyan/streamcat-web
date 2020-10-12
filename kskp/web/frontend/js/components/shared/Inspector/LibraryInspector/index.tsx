@@ -7,6 +7,7 @@ import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
 import { APIUtil, ModalUtil, StringUtil } from "Utils/index";
 import { LibraryChild } from 'Model/index';
+import { get } from '../../../../modules/api/response/index';
 
 type Props = {
   visualizers: any[];
@@ -22,7 +23,18 @@ type Props = {
   onClickMemberInfo?: Function;
 }
 
-class LibraryInspector extends React.Component<Props> {
+type State = {
+  members: {
+    createdAt: string;
+    creator: string;
+    email: string;
+    name: string;
+    state: string;
+    type: string;
+    uuid: string;
+  }[] | null
+}
+class LibraryInspector extends React.Component<Props, State> {
   display = {
     label: '名称',
     encoding: '文字コード',
@@ -34,9 +46,25 @@ class LibraryInspector extends React.Component<Props> {
 
   constructor(props: Props) {
     super(props)
+    this.state = {
+      members: null
+    }
   }
 
   componentWillMount() {
+
+    const { lastSelected } = this.props
+    if (lastSelected && lastSelected.type === "project") {
+      APIUtil.get("/projects/" + lastSelected.uuid + "?members=on&allowlist=on").then((response) => {
+        console.log(response)
+        if (response.success) {
+          this.setState({
+            members: response.data.member
+          })
+        }
+      })
+    }
+
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.modal.PREVIEW_DATASOURCE, onClickOK: () => {
@@ -228,7 +256,7 @@ class LibraryInspector extends React.Component<Props> {
   renderProjectInfo() {
     const { onClickMemberInfo } = this.props;
 
-    if (onClickMemberInfo) return <Button onClick={() =>  onClickMemberInfo ()} danger={true} icon={"delete"}>button</Button>
+    if (onClickMemberInfo) return <Button onClick={(e) => onClickMemberInfo(e, this.state.members)} icon={"people"}>button</Button>
     return "dddd"
   }
 

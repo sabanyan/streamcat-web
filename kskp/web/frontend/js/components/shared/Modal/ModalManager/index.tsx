@@ -109,6 +109,9 @@ export default class ModalManager extends React.Component<Props> {
             <Modal key={Constants.modal.RESET_USER_PASSWORD} id={Constants.modal.RESET_USER_PASSWORD}
                    title="" dynamic={true} footer={true}>
             </Modal>
+            <Modal key={Constants.modal.MEMBER_INFO} id={Constants.modal.MEMBER_INFO}
+                   title="" dynamic={true} footer={true}>
+            </Modal>
         </>;
     }
 }
