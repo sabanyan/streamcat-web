@@ -63,7 +63,9 @@ def new_project():
 @api_base
 def update_project(project_uuid):
     """
-    プロジェクトのラベルを修正する、またはプロジェクトを移動する
+    プロジェクトのラベルを修正する
+    プロジェクトを移動する
+    プロジェクトメンバを設定する
     """
     req = RequestJson(request.json)
 
@@ -82,7 +84,9 @@ def update_project(project_uuid):
         return project.move(req['parent'])
 
     elif req.has('members'):
-        # ロールにユーザを追加・削除する
+        # プロジェクトにユーザを追加・削除する
+        if not req.has('lastModifiedAt'):
+            raise Exception('lastModifiedAtにプロジェクトの最終更新時刻を指定してください')
         if not isinstance(req['members'], list):
             raise Exception('members属性にはユーザuuidの配列を指定してください')
         # member属性からMembersオブジェクトを作成する
@@ -95,7 +99,9 @@ def update_project(project_uuid):
         if not project.owner_exists(members):
             raise Exception('プロジェクト管理者が設定されていません')
         # member属性で指定されたユーザを追加する
-        project.init_members(members)
+        from datetime import datetime
+        last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
+        project.init_members(members, last_modified_at)
         return project
     else:
         raise Exception('誤った引数が指定されました')
