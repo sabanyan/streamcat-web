@@ -20,6 +20,8 @@ interface Profile {
     email: string
 }
 
+type EditingMode = ('name' | 'email' | 'password' | null);
+
 const Profile = () => {
 
     const dispatch = useDispatch();
@@ -38,35 +40,48 @@ const Profile = () => {
         name: "",
         email: ""
     });
+    const { handleSubmit, register, errors, watch, clearErrors ,reset, setValue } = useForm({
+        shouldUnregister: false
+    });
+    const [editing, setEditing] = useState<EditingMode>(null);
 
-    const { handleSubmit, register, errors, watch } = useForm();
+    useEffect(()=>{
+        // null 値に指定した場合は validation エラーをクリアする
+        clearErrors()
+    },[editing])
 
-
-    const [editing, setEditing] = useState<('name' | 'email' | 'password' | null)>(null);
-
-    useEffect(() => {
-        const getProfile = () => {
-            setIsLoading(true)
-            // user_idはナビゲーションモデルから取得できない
-            // APIをたたかないと取得できないため、injectされたuser_idを使う
-            APIUtil.get('/users/self').then((response) => {
-                const json = response.data
-                setIsLoading(true);
-                setIsFinished(true);
-                setProfile(json.data);
-            }).catch((error) => {
-                notify({
-                    title: 'プロフィールの取得エラー',
-                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                    status: 'error',
-                    dismissAfter: 0,
-                    closeButton: true
-                })
-                setIsLoading(false);
-                setIsFinished(true);
-                //setProfile(null);
+    useEffect(()=>{
+        if(profile){
+            reset({
+                "name": profile.name,
+                "email": profile.email
             })
         }
+    },[profile])
+
+    const getProfile = () => {
+        setIsLoading(true)
+        // user_idはナビゲーションモデルから取得できない
+        // APIをたたかないと取得できないため、injectされたuser_idを使う
+        APIUtil.get('/users/self').then((response) => {
+            const json = response.data
+            setIsLoading(true);
+            setIsFinished(true);
+            setProfile(json.data);
+        }).catch((error) => {
+            notify({
+                title: 'プロフィールの取得エラー',
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                status: 'error',
+                dismissAfter: 0,
+                closeButton: true
+            })
+            setIsLoading(false);
+            setIsFinished(true);
+            //setProfile(null);
+        })
+    }
+    useEffect(() => {
         getProfile()
     }, [])
 
@@ -106,11 +121,17 @@ const Profile = () => {
                 message: "ユーザー情報を更新しました",
                 status: "success"
             });
+            getProfile();
             setEditing(null);
         }).catch((error) => {
             ErrorUtil.notifyError(notify,"ユーザー情報更新エラー",error);
             setIsLoading(false)
         })
+    }
+
+    const switchEditing = (mode:EditingMode)=>{
+        reset();
+        setEditing(mode);
     }
 
     if (!isFinished || !profile) return <div className={'container mt-40px'}>
@@ -127,11 +148,11 @@ const Profile = () => {
                     <div className={'mb-8px'}>
                         {
                             (editing === "name")?
-                                <label>ユーザー名 <LinkButton onClick={()=>setEditing(null)}>キャンセル</LinkButton></label>
+                                <label>ユーザー名 <LinkButton onClick={()=>switchEditing(null)}>キャンセル</LinkButton></label>
                                 :
-                                <label>ユーザー名 <LinkButton onClick={()=>setEditing('name')}>変更する</LinkButton></label>
+                                <label>ユーザー名 <LinkButton onClick={()=>switchEditing('name')}>変更する</LinkButton></label>
                         }
-                        <TextField readOnly={(editing !=="name")} placeholder={'ユーザ名'} defaultValue={profile.name} name={"name"} inputRef={register({ required: "ユーザー名を入力してください。" })}/>
+                        <TextField readOnly={(editing !=="name")} placeholder={'ユーザ名'} name={"name"} inputRef={register({ required: "ユーザー名を入力してください。" })}/>
                         {errors.name && <label className={"text-danger"}>{errors.name.message}</label>}
                     </div>
                     {
@@ -148,11 +169,11 @@ const Profile = () => {
                     <div className={'mb-8px'}>
                         {
                             (editing === "email")?
-                                <label>メールアドレス <LinkButton onClick={()=>setEditing(null)}>キャンセル</LinkButton></label>
+                                <label>メールアドレス <LinkButton onClick={()=>switchEditing(null)}>キャンセル</LinkButton></label>
                                 :
-                                <label>メールアドレス <LinkButton onClick={()=>setEditing('email')}>変更する</LinkButton></label>
+                                <label>メールアドレス <LinkButton onClick={()=>switchEditing('email')}>変更する</LinkButton></label>
                         }
-                        <TextField readOnly={(editing !=="email")} placeholder={'メールアドレス'} defaultValue={profile.email} type={'email'} name={"email"}  inputRef={register({ required: "E-mail を入力してください。" })}/>
+                        <TextField readOnly={(editing !=="email")} placeholder={'メールアドレス'} type={'email'} name={"email"}  inputRef={register({ required: "E-mail を入力してください。" })}/>
                         {errors.email && <label className={"text-danger"}>{errors.email.message}</label>}
                     </div>
                     {
@@ -174,9 +195,9 @@ const Profile = () => {
                     <label>
                         {
                             (editing === "password")?
-                                <LinkButton onClick={()=>setEditing(null)}>キャンセル</LinkButton>
+                                <LinkButton onClick={()=>switchEditing(null)}>キャンセル</LinkButton>
                                 :
-                                <LinkButton onClick={()=>setEditing('password')}>現在のパスワードを変更する</LinkButton>
+                                <LinkButton onClick={()=>switchEditing('password')}>現在のパスワードを変更する</LinkButton>
                         }
                     </label>
                     {
