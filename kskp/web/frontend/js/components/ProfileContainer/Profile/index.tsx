@@ -24,9 +24,8 @@ type EditingMode = ('name' | 'email' | 'password' | null);
 
 const Profile = () => {
 
-    const dispatch = useDispatch();
-
     // 通知機能メソッドの取得
+    const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));
     const dismissNotify = (id: string) => {
         setTimeout(() => {
@@ -40,18 +39,24 @@ const Profile = () => {
         name: '',
         email: ''
     });
-    const {handleSubmit, register, errors, watch, clearErrors, reset, setValue} = useForm({
+    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm({
         shouldUnregister: false
     });
     const [editing, setEditing] = useState<EditingMode>(null);
 
     useEffect(() => {
-        // null 値に指定した場合は validation エラーをクリアする
+        getProfile()
+    }, []);
+
+    useEffect(() => {
+        //編集モードが切り替わる都度、validation エラーをクリアする
         clearErrors()
     }, [editing]);
 
     useEffect(() => {
         if (profile) {
+            // プロフィールを取得した際にデフォルト値のプロフィールを設定する
+            // reset の引数を設定することで、テキストフィールドの defaultValue を設定できる
             reset({
                 'name': profile.name,
                 'email': profile.email
@@ -59,6 +64,7 @@ const Profile = () => {
         }
     }, [profile]);
 
+    // プロフィールの取得
     const getProfile = () => {
         setIsLoading(true)
         // user_idはナビゲーションモデルから取得できない
@@ -80,9 +86,6 @@ const Profile = () => {
             setIsFinished(true);
         })
     }
-    useEffect(() => {
-        getProfile()
-    }, []);
 
     const onSubmit = (data) => {
         const formState = data;
@@ -126,8 +129,9 @@ const Profile = () => {
         });
     }
 
+    // 編集モードの切り替え
     const switchEditing = (mode: EditingMode) => {
-        reset();
+        reset();// 値を初期値に戻して編集モードを設定する
         setEditing(mode);
     };
 
