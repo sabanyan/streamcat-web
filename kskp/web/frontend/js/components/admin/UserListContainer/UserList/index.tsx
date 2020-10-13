@@ -87,7 +87,7 @@ const UserList = () => {
         }).catch((error) => {
             console.log(error);
             notify({
-                title: 'ユーザ一覧取得エラー',
+                title: 'ユーザー一覧取得エラー',
                 message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
                 status: 'error',
                 dismissAfter: 0,
@@ -99,7 +99,7 @@ const UserList = () => {
     };
 
     // ユーザを新規に作成する
-    const createNewUser = (name: string,email: string,project: UserProject) => {
+    const createNewUser = async (name: string,email: string, projectUUID: string | null ) => {
         // APIをたたく
         const body = {
             email: email,
@@ -108,16 +108,37 @@ const UserList = () => {
         };
         setIsLoading(true);
         const url = 'users'
-        if(project){
-            APIUtil.post(url,body).then()
+        // ユーザーの作成
+        const newUserResponse = await APIUtil.post(url,body).catch(error=>{
+            ErrorUtil.notifyError(notify,"ユーザー作成エラー",error)
+            return Promise.reject()
+        })
+        if(!newUserResponse.data.success){
+            ErrorUtil.notifyError(notify,"ユーザー作成エラー",newUserResponse.data.message)
+            return Promise.reject()
         }
-        return APIUtil.post(url,body);
+        if(projectUUID){
+            // プロジェクトへの追加
+            const json = newUserResponse.data.data;
+            const joinProjectResponse = await joinProject(json.uuid,projectUUID).catch(error=>{
+                ErrorUtil.notifyError(notify,"プロジェクト追加エラー",error)
+                return Promise.reject()
+            })
+            if(!joinProjectResponse.data.success){
+                ErrorUtil.notifyError(notify,"プロジェクト追加エラー",newUserResponse.data.message)
+                return Promise.reject()
+            }
+        }
+        return Promise.resolve(newUserResponse)
     }
 
     // ユーザをプロジェクトに紐付ける
     const joinProject = (userUUID: string, projectUUID: string) => {
-        const url = '/projects/' + projectUUID + '/users/' + userUUID;
-        return APIUtil.put(url);
+        const url = 'projects/' + projectUUID + '/users/' + userUUID;
+        const body = {
+            "memberType" : "Reader"
+        };
+        return APIUtil.put(url,body);
     }
 
     // ユーザを削除する
@@ -345,7 +366,16 @@ const UserList = () => {
         if (newUserName === null || newUserEmail === null) return;
         ModalUtil.registerModal({
             id: Constants.modal.ADD_USER, onClickDone: () => {
-                createNewUser(newUserName,newUserEmail).then((response) => {
+                if(!newUserName.length){
+                    alert("名前を入力してください")
+                    return
+                }
+                if(!newUserEmail.length){
+                    alert("E-mailを入力してください")
+                    return
+                }
+                const projectUUID = (selectedOption)?selectedOption.value:null;
+                createNewUser(newUserName,newUserEmail, projectUUID).then((response) => {
                     setIsLoading(false);
                     fetchUsers();
                     if(!response.data.success){
@@ -384,14 +414,7 @@ const UserList = () => {
                         </div>
                     });
                     clearField();
-                }).catch((error) => {
-                    notify({
-                        title: 'ユーザー作成エラー',
-                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                        status: 'error',
-                        dismissAfter: 0,
-                        closeButton: true
-                    })
+                }).catch(() => {
                     ModalUtil.closeModal(Constants.modal.ADD_USER)
                     setIsLoading(false);
                 })

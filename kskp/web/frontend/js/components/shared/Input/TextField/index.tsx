@@ -15,6 +15,7 @@ type Props = {
     disabled?: boolean;
     name?: string;
     inputRef?: any;
+    readOnly?: boolean;
 };
 
 type State = Validation;
@@ -32,7 +33,8 @@ export default class TextField extends React.Component<Props, State> {
         defaultValue: "",
         type: "text",
         useForm: false,
-        formKey: ""
+        formKey: "",
+        readOnly: false
     };
 
     constructor(props: Props) {
@@ -143,11 +145,12 @@ export default class TextField extends React.Component<Props, State> {
      * @returns {*}
      */
     render() {
-        const {placeholder, defaultValue, type, disabled, name, inputRef} = this.props;
+        const {placeholder, defaultValue, type, disabled, name, inputRef, readOnly} = this.props;
         const {validation} = this.state;
         const input_class = classnames("form-control", {
             [style.error]: !validation,
-            [this.props.className]: (this.props.className)
+            [this.props.className]: (this.props.className),
+            [style.readOnly]: readOnly
         });
 
         return <div className={style.textField}>
@@ -157,7 +160,9 @@ export default class TextField extends React.Component<Props, State> {
                    defaultValue={defaultValue}
                    disabled={disabled}
                    name={name}
-                   ref={inputRef}/>
+                   ref={inputRef}
+                   readOnly={readOnly}
+            />
             {this.renderValidationMessage()}
         </div>;
     }
