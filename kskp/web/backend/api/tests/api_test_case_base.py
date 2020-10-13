@@ -105,16 +105,17 @@ class ApiTestCaseBase(TestCaseBase):
         with app.test_client() as client:
             with client.session_transaction() as session:
                 session['user_id'] = user.id
-            response = client.get(uri)
-        self.assertEqual(response.status_code, 200, msg=f'GET {uri} is failed. response status: {response.status}')
+            # response = client.get(uri)
+            with client.get(uri) as response:
+                self.assertEqual(response.status_code, 200, msg=f'GET {uri} is failed. response status: {response.status}')
 
-        if response.content_type == 'application/json':
-            result = json.loads(response.get_data())
-            error_detail = result['message'] if 'message' in result else ''
-            self.assertTrue(result['success'], f'GET {uri} is failed. {error_detail}')
-            return result
-        else:
-            return response.get_data()
+                if response.content_type == 'application/json':
+                    result = json.loads(response.get_data())
+                    error_detail = result['message'] if 'message' in result else ''
+                    self.assertTrue(result['success'], f'GET {uri} is failed. {error_detail}')
+                    return result
+                else:
+                    return response.get_data()
 
     def post_uri(self, uri, json_data, user):
         """
@@ -150,6 +151,25 @@ class ApiTestCaseBase(TestCaseBase):
             result = json.loads(response.get_data())
         error_detail = result['message'] if 'message' in result else ''
         self.assertTrue(result['success'], 'POST %s is failed. %s' % ('/api/v0/frames', error_detail))
+        return result
+
+    def post_flows(self, stream, user):
+        """
+        URI(/api/v0/flow_files)へPOSTする
+        指定するストリームをフローとしてアップロードする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user.id
+            response = client.post('/api/v0/flow_files',
+                                   content_type='multipart/form-data',
+                                   data={
+                                        'file' : stream
+                                        }
+                                  )
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        self.assertTrue(result['success'], 'POST %s is failed. %s' % ('/api/v0/flow_files', error_detail))
         return result
 
     def put_uri(self, uri, json_data, user):
