@@ -1544,7 +1544,6 @@ class TrashTestCase(ApiTestCaseBase):
         trashed = trash_folder.find_children()
         self.assertEqual(len(trashed), 0)
 
-
     def test_delete_root_folder(self):
         """
         ルートフォルダは削除できない
@@ -2245,6 +2244,159 @@ class TrashTestCase(ApiTestCaseBase):
         self.delete_uri('/api/v0/trashes', self.USER1)
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)     
+
+class FlowFilesTestCase(ApiTestCaseBase):
+
+    def _save_file(self, path, stream):
+        # 1MB
+        READ_BUFFER_SIZE = 1 * 1024 * 1024
+        with open(path, mode='wb') as f:
+            while True:
+                buff = stream.read(READ_BUFFER_SIZE)
+                f.write(buff)
+                if buff is None or len(buff)==0:
+                    break
+
+    def test_export_import_flow(self):
+        """
+        フローをエクスポート/インポートできること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # データソースを作成する
+        import io
+        frame = root.create_frame('データソース', io.BytesIO(b'abcdef'))
+        frame.save()
+
+        # フローを作成する
+        flow = root.create_simple_flow('Export用フロー', frame)
+        flow.save()
+
+        # フローをエクスポートする
+        result = self.get_file(f'/api/v0/flow_files/{flow.uuid}', self.USER1)
+        self._save_file(root.path/'フローファイル.tgz', io.BytesIO(result))
+
+        # フローをインポートする
+        with open(root.path/'フローファイル.tgz', mode='rb') as f:
+            self.post_flows(f, self.USER1)
+
+        # フローはインポートされていること
+        children = root.find_children_by_label('フローファイル')
+        result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
+
+        # プロジェクトフォルダが作成されていること
+        self.assertEqual(result['data']['label'], 'フローファイル')
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        # プロジェクトフォルダ以下にフローとフレームが作成されていること
+        self.assertEqual(result['data']['children'][0]['label'], 'Export用フロー')
+        self.assertEqual(result['data']['children'][0]['type'], 'flow')
+        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['data']['children'][1]['label'], 'データソース')
+        self.assertEqual(result['data']['children'][1]['type'], 'frame')
+        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
+
+        # インポートしたプロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
+        # 作成したフローを削除する
+        result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+        self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+        # 作成したフレームを削除する
+        self.delete_uri(f'/api/v0/frames/{frame.uuid}', self.USER1)
+        # 作成したファイルを削除する
+        (root.path/'フローファイル.tgz').unlink()
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+        
+    def test_export_import_folder(self):
+        """
+        フォルダ以下の全てのフローをエクスポート/インポートできること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # ルートの下にプロジェクト1を作成する
+        project1 = root.create_project_folder('プロジェクト')
+        project1.save()
+
+        # プロジェクト1の下にデータソース1を作成する
+        import io
+        frame1 = project1.create_frame('データソース1', io.BytesIO(b'abcdef0123'))
+        frame1.save()
+
+        # プロジェクト1の下にフロー1を作成する
+        flow1 = project1.create_simple_flow('Export用フロー1', frame1)
+        flow1.save()
+
+        # プロジェクト1の下にフォルダ2を作成する
+        folder2 = project1.create_folder('フォルダ！！')
+        folder2.save()
+
+        # フォルダ2の下にデータソース2を作成する
+        frame2 = folder2.create_frame('データソース2', io.BytesIO(b'abcdef0123'))
+        frame2.save()
+
+        # フォルダ2の下にフロー2を作成する
+        flow2 = folder2.create_simple_flow('Export用フロー2', frame2)
+        flow2.save()
+
+        # フローをエクスポートする
+        result = self.get_file(f'/api/v0/flow_files/{project1.uuid}', self.USER1)
+        self._save_file(root.path/'フォルダ丸ごと.tgz', io.BytesIO(result))
+
+        # フローをインポートする
+        with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:
+            self.post_flows(f, self.USER1)
+
+        # フローはインポートされていること
+        children = root.find_children_by_label(project1.label)
+        result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
+
+        # プロジェクトフォルダが作成されていること
+        self.assertEqual(result['data']['label'], 'プロジェクト')
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        # プロジェクトフォルダ以下にフローとフレームが作成されていること
+        folder2_uuid = result['data']['children'][0]['uuid']
+        self.assertEqual(result['data']['children'][0]['label'], 'フォルダ！！')
+        self.assertEqual(result['data']['children'][0]['type'], 'folder')
+        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['data']['children'][1]['label'], 'Export用フロー1')
+        self.assertEqual(result['data']['children'][1]['type'], 'flow')
+        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
+        self.assertEqual(result['data']['children'][2]['label'], 'データソース1')
+        self.assertEqual(result['data']['children'][2]['type'], 'frame')
+        self.assertEqual(result['data']['children'][2]['creator'], self.USER1.name)
+
+        # フォルダ2もインポートされていること
+        result = self.get_uri(f'/api/v0/projects/{folder2_uuid}', self.USER1)
+
+        # フォルダ2が作成されていること
+        self.assertEqual(result['data']['label'], 'フォルダ！！')
+        self.assertEqual(result['data']['type'], 'folder')
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        # フォルダ2以下にフローとフレームが作成されていること
+        self.assertEqual(result['data']['children'][0]['label'], 'Export用フロー2')
+        self.assertEqual(result['data']['children'][0]['type'], 'flow')
+        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['data']['children'][1]['label'], 'データソース2')
+        self.assertEqual(result['data']['children'][1]['type'], 'frame')
+        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
+
+        # 作成したプロジェクト等を削除する
+        self.delete_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
+        self.delete_uri(f'/api/v0/projects/{project1.uuid}', self.USER1)
+        (root.path/'フォルダ丸ごと.tgz').unlink()
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
 
 @unittest.skip
