@@ -7,7 +7,7 @@ import {Button, LinkButton, TextField} from 'Shared/Input'
 import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
 import {NotificationManager} from 'Shared/Notification';
-import { useForm } from "react-hook-form";
+import {useForm} from 'react-hook-form';
 
 /**
  * ======================================================
@@ -37,27 +37,27 @@ const Profile = () => {
     const [isLoading, setIsLoading] = useState<Boolean>(false);
     const [isFinished, setIsFinished] = useState<Boolean>(false);
     const [profile, setProfile] = useState<Profile | null>({
-        name: "",
-        email: ""
+        name: '',
+        email: ''
     });
-    const { handleSubmit, register, errors, watch, clearErrors ,reset, setValue } = useForm({
+    const {handleSubmit, register, errors, watch, clearErrors, reset, setValue} = useForm({
         shouldUnregister: false
     });
     const [editing, setEditing] = useState<EditingMode>(null);
 
-    useEffect(()=>{
+    useEffect(() => {
         // null 値に指定した場合は validation エラーをクリアする
         clearErrors()
-    },[editing])
+    }, [editing]);
 
-    useEffect(()=>{
-        if(profile){
+    useEffect(() => {
+        if (profile) {
             reset({
-                "name": profile.name,
-                "email": profile.email
+                'name': profile.name,
+                'email': profile.email
             })
         }
-    },[profile])
+    }, [profile]);
 
     const getProfile = () => {
         setIsLoading(true)
@@ -78,61 +78,58 @@ const Profile = () => {
             })
             setIsLoading(false);
             setIsFinished(true);
-            //setProfile(null);
         })
     }
     useEffect(() => {
         getProfile()
-    }, [])
+    }, []);
 
-    const onSubmit = (data,e) => {
+    const onSubmit = (data) => {
         const formState = data;
-        setIsLoading(true)
-
+        setIsLoading(true);
         let body;
-        switch (editing){
-            case "name":
+        switch (editing) {
+            case 'name':
                 body = {
                     name: formState['name']
                 }
                 break;
-            case "email":
+            case 'email':
                 body = {
                     email: formState['email'],
                     currentPassword: formState['currentPassword'],
                 }
                 break;
-            case "password":
+            case 'password':
                 body = {
                     currentPassword: formState['currentPassword'],
                     password: formState['password1'],
                 }
         }
-
         APIUtil.put('users/self', body).then((response) => {
             const json = response.data
             setIsLoading(false)
-            if (!json.success){
-                ErrorUtil.notifyError(notify,"ユーザー情報更新エラー",json.message);
+            if (!json.success) {
+                ErrorUtil.notifyError(notify, 'ユーザー情報更新エラー', json.message);
                 return
             }
             notify({
-                title: "ユーザー情報を更新しました",
-                message: "ユーザー情報を更新しました",
-                status: "success"
+                title: 'ユーザー情報を更新しました',
+                message: 'ユーザー情報を更新しました',
+                status: 'success'
             });
             getProfile();
             setEditing(null);
         }).catch((error) => {
-            ErrorUtil.notifyError(notify,"ユーザー情報更新エラー",error);
+            ErrorUtil.notifyError(notify, 'ユーザー情報更新エラー', error);
             setIsLoading(false)
-        })
+        });
     }
 
-    const switchEditing = (mode:EditingMode)=>{
+    const switchEditing = (mode: EditingMode) => {
         reset();
         setEditing(mode);
-    }
+    };
 
     if (!isFinished || !profile) return <div className={'container mt-40px'}>
         <Loader center={true} absolute={true} visible={isLoading}/>
@@ -144,19 +141,20 @@ const Profile = () => {
         </div>
         <div className={style.property_body}>
             <div className={style.card}>
-                <form onSubmit={handleSubmit(onSubmit)} className={"mb-32px"}>
+                <form onSubmit={handleSubmit(onSubmit)} className={'mb-32px'}>
                     <div className={'mb-8px'}>
                         {
-                            (editing === "name")?
-                                <label>ユーザー名 <LinkButton onClick={()=>switchEditing(null)}>キャンセル</LinkButton></label>
+                            (editing === 'name') ?
+                                <label>ユーザー名 <LinkButton onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
                                 :
-                                <label>ユーザー名 <LinkButton onClick={()=>switchEditing('name')}>変更する</LinkButton></label>
+                                <label>ユーザー名 <LinkButton onClick={() => switchEditing('name')}>変更する</LinkButton></label>
                         }
-                        <TextField readOnly={(editing !=="name")} placeholder={'ユーザ名'} name={"name"} inputRef={register({ required: "ユーザー名を入力してください。" })}/>
-                        {errors.name && <label className={"text-danger"}>{errors.name.message}</label>}
+                        <TextField readOnly={(editing !== 'name')} placeholder={'ユーザ名'} name={'name'}
+                                   inputRef={register({required: 'ユーザー名を入力してください。'})}/>
+                        {errors.name && <label className={'text-danger'}>{errors.name.message}</label>}
                     </div>
                     {
-                        (editing === "name")?
+                        (editing === 'name') ?
                             <div className={'text-right'}>
                                 <Button submit={true} className={'mr-0'}>保存する</Button>
                             </div>
@@ -164,79 +162,27 @@ const Profile = () => {
                             null
                     }
                 </form>
-
-                <form onSubmit={handleSubmit(onSubmit)} className={"mb-32px"}>
+                <form onSubmit={handleSubmit(onSubmit)} className={'mb-32px'}>
                     <div className={'mb-8px'}>
                         {
-                            (editing === "email")?
-                                <label>メールアドレス <LinkButton onClick={()=>switchEditing(null)}>キャンセル</LinkButton></label>
+                            (editing === 'email') ?
+                                <label>メールアドレス <LinkButton
+                                    onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
                                 :
-                                <label>メールアドレス <LinkButton onClick={()=>switchEditing('email')}>変更する</LinkButton></label>
+                                <label>メールアドレス <LinkButton
+                                    onClick={() => switchEditing('email')}>変更する</LinkButton></label>
                         }
-                        <TextField readOnly={(editing !=="email")} placeholder={'メールアドレス'} type={'email'} name={"email"}  inputRef={register({ required: "E-mail を入力してください。" })}/>
-                        {errors.email && <label className={"text-danger"}>{errors.email.message}</label>}
+                        <TextField readOnly={(editing !== 'email')} placeholder={'メールアドレス'} type={'email'}
+                                   name={'email'} inputRef={register({required: 'E-mail を入力してください。'})}/>
+                        {errors.email && <label className={'text-danger'}>{errors.email.message}</label>}
                     </div>
                     {
-                        (editing === "email")?
+                        (editing === 'email') ?
                             <>
                                 <div className={'mb-8px'}>
                                     <label>現在のパスワード</label>
-                                    <TextField placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register}/>
-                                </div>
-                                <div className={'text-right'}>
-                                    <Button submit={true} className={'mr-0'}>保存する</Button>
-                                </div>
-                            </>
-                        : null
-                    }
-                </form>
-
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <label>
-                        {
-                            (editing === "password")?
-                                <LinkButton onClick={()=>switchEditing(null)}>キャンセル</LinkButton>
-                                :
-                                <LinkButton onClick={()=>switchEditing('password')}>現在のパスワードを変更する</LinkButton>
-                        }
-                    </label>
-                    {
-                        (editing === "password")?
-                            <>
-                                <div className={'mb-8px'}>
-                                    <label>現在のパスワード</label>
-                                    <TextField readOnly={(editing !== "password")} placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register({ required: '現在のパスワードを入力してください。' })}/>
-                                    {errors.currentPassword && <label className={"text-danger"}>{errors.currentPassword.message}</label>}
-                                </div>
-                                <div className={'mb-8px'}>
-                                    <label>新しいパスワード <span className={style.helpText}>10桁以上のパスワードが必要</span></label>
-
-                                    <TextField  placeholder={'新しいパスワード'} type={'password'} name={"password1"} inputRef={register({
-                                        required: '新しいパスワードを入力してください',
-                                        minLength: {
-                                            value: 10,
-                                            message: "10桁以上のパスワードが必要です。"
-                                        },
-                                        maxLength: {
-                                            value: 64,
-                                            message: "64桁以下のパスワードが必要です。"
-                                        },
-                                        pattern: {
-                                            value: /[!-~]/,
-                                            message: "パスワードで利用できる文字は、英数字と記号 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ のみです。"
-                                        }
-                                    })}/>
-                                    {errors.password1 && <label className={"text-danger"}>{errors.password1.message}</label>}
-                                </div>
-                                <div className={'mb-8px'}>
-                                    <label>新しいパスワード（確認用）</label>
-                                    <TextField  placeholder={'新しいパスワード（確認用）'} type={'password'} name={"password2"} inputRef={register({
-                                        required: '新しいパスワード（確認用）を入力してください',
-                                        validate: (value) =>{
-                                            return value === watch('password1') || '新しいパスワードが新しいパスワード（確認用）と一致していません';
-                                        }
-                                    })}/>
-                                    {errors.password2 && <label className={"text-danger"}>{errors.password2.message}</label>}
+                                    <TextField placeholder={'現在のパスワード'} type={'password'} name={'currentPassword'}
+                                               inputRef={register}/>
                                 </div>
                                 <div className={'text-right'}>
                                     <Button submit={true} className={'mr-0'}>保存する</Button>
@@ -245,12 +191,71 @@ const Profile = () => {
                             : null
                     }
                 </form>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <label>
+                        {
+                            (editing === 'password') ?
+                                <LinkButton onClick={() => switchEditing(null)}>キャンセル</LinkButton>
+                                :
+                                <LinkButton onClick={() => switchEditing('password')}>現在のパスワードを変更する</LinkButton>
+                        }
+                    </label>
+                    {
+                        (editing === 'password') ?
+                            <>
+                                <div className={'mb-8px'}>
+                                    <label>現在のパスワード</label>
+                                    <TextField readOnly={(editing !== 'password')} placeholder={'現在のパスワード'}
+                                               type={'password'} name={'currentPassword'}
+                                               inputRef={register({required: '現在のパスワードを入力してください。'})}/>
+                                    {errors.currentPassword &&
+                                    <label className={'text-danger'}>{errors.currentPassword.message}</label>}
+                                </div>
+                                <div className={'mb-8px'}>
+                                    <label>新しいパスワード <span className={style.helpText}>10桁以上のパスワードが必要</span></label>
 
+                                    <TextField placeholder={'新しいパスワード'} type={'password'} name={'password1'}
+                                               inputRef={register({
+                                                   required: '新しいパスワードを入力してください',
+                                                   minLength: {
+                                                       value: 10,
+                                                       message: '10桁以上のパスワードが必要です。'
+                                                   },
+                                                   maxLength: {
+                                                       value: 64,
+                                                       message: '64桁以下のパスワードが必要です。'
+                                                   },
+                                                   pattern: {
+                                                       value: /[!-~]/,
+                                                       message: 'パスワードで利用できる文字は、英数字と記号 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ のみです。'
+                                                   }
+                                               })}/>
+                                    {errors.password1 &&
+                                    <label className={'text-danger'}>{errors.password1.message}</label>}
+                                </div>
+                                <div className={'mb-8px'}>
+                                    <label>新しいパスワード（確認用）</label>
+                                    <TextField placeholder={'新しいパスワード（確認用）'} type={'password'} name={'password2'}
+                                               inputRef={register({
+                                                   required: '新しいパスワード（確認用）を入力してください',
+                                                   validate: (value) => {
+                                                       return value === watch('password1') || '新しいパスワードが新しいパスワード（確認用）と一致していません';
+                                                   }
+                                               })}/>
+                                    {errors.password2 &&
+                                    <label className={'text-danger'}>{errors.password2.message}</label>}
+                                </div>
+                                <div className={'text-right'}>
+                                    <Button submit={true} className={'mr-0'}>保存する</Button>
+                                </div>
+                            </>
+                            : null
+                    }
+                </form>
             </div>
         </div>
         <ModalManager/>
         <NotificationManager/>
     </div>
 }
-
 export {Profile}
