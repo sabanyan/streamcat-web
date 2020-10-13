@@ -25,8 +25,13 @@ import error = Simulate.error;
 import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader';
 import * as lodash from 'lodash';
 import Queue from "promise-queue-plus";
+import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
-const UserList = () => {
+interface Props {
+    navigation?: NavigationModelProps
+}
+
+const UserList = (props: Props) => {
     const dispatch = useDispatch();
 
     // 通知機能メソッドの取得
@@ -479,6 +484,13 @@ const UserList = () => {
                 </div>
             });
         };
+
+        const {navigation} = props;
+        if(navigation && navigation.allowlist && !navigation.allowlist.createUser){
+            // ユーザ作成権限がない場合は、メニューを表示しない
+            return null;
+        }
+
         return <>
             <Spacer minWidth={40}/>
             <Flex flexDirection={'column'} fluid={true} width={280}>
@@ -527,7 +539,22 @@ const UserList = () => {
                 </div>
             });
         }
-        return <UserListInspector selected={selectedDatas} lastSelected={lastSelected} onClickDelete={onClickDelete} onClickPasswordReset={onClickPasswordReset}/>
+
+        // 実処理自体は Inspector 内に記述、props に定義がある場合は「仮パスワードの表示」ボタンを表示する
+        const onClickShowPassword = ()=>{};
+
+        const {navigation} = props;
+        const availablePasswordReset = (navigation && navigation.allowlist && navigation.allowlist.updateUser);
+        const availableDelete = (navigation && navigation.allowlist && navigation.allowlist.deleteUser);
+        const availableShowPassword = (navigation && navigation.allowlist && navigation.allowlist.readUserPassword);
+
+        return <UserListInspector
+            selected={selectedDatas}
+            lastSelected={lastSelected}
+            onClickShowPassword = {(availableShowPassword)?onClickShowPassword:undefined}
+            onClickDelete={(availableDelete)?onClickDelete:undefined}
+            onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
+        />
     };
 
     const clearSelected = () => {

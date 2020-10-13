@@ -8,12 +8,16 @@ import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
 import {NotificationManager} from 'Shared/Notification';
 import {useForm} from 'react-hook-form';
+import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
 /**
  * ======================================================
  *                      NOT USE REDUX
  * ======================================================
  */
+interface Props {
+    navigation?: NavigationModelProps
+}
 
 interface Profile {
     name: string,
@@ -22,7 +26,7 @@ interface Profile {
 
 type EditingMode = ('name' | 'email' | 'password' | null);
 
-const Profile = () => {
+const Profile = (_: Props) => {
 
     // 通知機能メソッドの取得
     const dispatch = useDispatch();

@@ -27,6 +27,7 @@ import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
 import {ApplyMenuList} from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";
+import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
 export interface Database {
     label?: string;
@@ -118,7 +119,11 @@ const getInitialDatabase = (): Database => {
     };
 };
 
-const Library = () => {
+interface Props {
+    navigation?: NavigationModelProps
+}
+
+const Library = (_: Props) => {
 
     const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));
