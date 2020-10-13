@@ -59,12 +59,7 @@ const NavigationBar = (props: Props) => {
         };
 
         const renderUserSettingsMenu = ()=>{
-            const {navigation} = props;
-            const availableUserSettings = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser)
-            if (availableUserSettings) {
-                return <a href="/settings/profile" className="dropdown-item">ユーザー情報変更</a>
-            }
-            return null
+            return <a href="/settings/profile" className="dropdown-item">ユーザー情報変更</a>
         }
 
         return <NavigationBarUserMenuItem navigation={navigation} visible={isLogin}>
