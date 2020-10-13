@@ -18,48 +18,6 @@ const NavigationBar = (props: Props) => {
     const [hasProject, setHasProject] = useState(false);
     const [hasFlow, setHasFlow] = useState(false);
 
-    // const renderProjectNavigationItem = () => {
-    //     if (!isLogin) return null;
-    //     return <li className="nav-item list">
-    //         <a className="nav-link" href="/projects">
-    //             <img className="icon" src={baseUrl + "images/icon/list.svg"} />
-    //             プロジェクト
-    //         </a>
-    //     </li>;
-    // };
-
-    // const renderProjectListNavigationItem = () => {
-    //     const {navigation} = props;
-    //     if (!hasProject || !navigation) return null;
-    //     return <li className="nav-item project">
-    //         <a className="nav-link" href={"/flows?project=" + navigation.project_uuid}>
-    //             <img className="icon" src={baseUrl + "images/icon/folder.svg"} />
-    //             {navigation.project_name}
-    //         </a>
-    //     </li>;
-    // };
-
-    // const renderFlowListNavigationItem = () => {
-    //     const {navigation} = props;
-    //     if (!hasFlow || !navigation) return null;
-    //     return <li className="nav-item flow">
-    //         <a className="nav-link" href={"/flows/" + navigation.flow_uuid}>
-    //             <img className="icon" src={baseUrl + "images/icon/flow.svg"} />
-    //             {navigation.flow_name}
-    //         </a>
-    //     </li>;
-    // };
-
-    // const renderLibraryNavigationItem = () => {
-    //     const {navigation} = props;
-    //     if (!hasFlow || !navigation) return null;
-    //     return <li className="nav-item designer">
-    //         <a className="nav-link" href={"/flows/" + navigation.flow_uuid}>
-    //             <img className="icon" src={baseUrl + "images/icon/designer.svg"} />フローデザイナー
-    //         </a>
-    //     </li>;
-    // };
-
     const renderGlobalNavigationItem = () => {
         const {navigation} = props;
         if (navigation){
@@ -81,17 +39,14 @@ const NavigationBar = (props: Props) => {
         }
 
 
-        const renderUserAdminMenu = () =>{
-            // TODO: ユーザ管理者権限をもつ場合、ユーザ管理画面へのリンクをつける
-            const hasUserAdmin = true
-            if(hasUserAdmin){
-                return <a href="/admin/users" className="dropdown-item">ユーザ管理</a>
+        const renderUserAdminMenu = () => {
+            const {navigation} = props;
+            const availableUserAdmin = (navigation && navigation.allowlist && navigation.allowlist.findUsers)
+            if (availableUserAdmin) {
+                return <a href="/admin/users" className="dropdown-item">ユーザー管理</a>
             }
             return null
         }
-
-        // ユーザ情報変更画面へのリンク
-
 
         const onClickLogout = (e) => {
             let logoutParam = "?session=off";
@@ -103,9 +58,18 @@ const NavigationBar = (props: Props) => {
             e.preventDefault();
         };
 
+        const renderUserSettingsMenu = ()=>{
+            const {navigation} = props;
+            const availableUserSettings = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser)
+            if (availableUserSettings) {
+                return <a href="/settings/profile" className="dropdown-item">ユーザー情報変更</a>
+            }
+            return null
+        }
+
         return <NavigationBarUserMenuItem navigation={navigation} visible={isLogin}>
             {depoName}
-            <a href="/settings/profile" className="dropdown-item">ユーザー情報変更</a>
+            {renderUserSettingsMenu()}
             {renderUserAdminMenu()}
             <a href="javascript:return false;" className="dropdown-item" onClick={(e) => onClickLogout(e)}>ログアウト</a>
         </NavigationBarUserMenuItem>

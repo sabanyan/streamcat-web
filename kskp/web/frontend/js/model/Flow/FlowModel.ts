@@ -15,6 +15,21 @@ export type FlowModelProps = {
   hasOutPortWithId: (id: string) => boolean;
 }
 
+export interface DatumAllowList{
+  read: boolean;
+  create: boolean;
+  update: boolean;
+  delete: boolean;
+  execute: boolean;
+  upload: boolean;
+  download: boolean;
+  copy: boolean;
+  move: boolean;
+  lock: boolean;
+  findMember: boolean;
+  updateMember: boolean;
+}
+
 export default class FlowModel {
   createdAt?: string
   creator?: string
