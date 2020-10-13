@@ -19,5 +19,7 @@
 }
 
 .readOnly{
-
+  border: transparent;
+  transition: none;
+  background-color: inherit!important;
 }
