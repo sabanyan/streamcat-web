@@ -39,7 +39,7 @@ const Profile = () => {
         email: ""
     });
 
-    const { handleSubmit, register, errors } = useForm();
+    const { handleSubmit, register, errors, watch } = useForm();
 
 
     const [editing, setEditing] = useState<('name' | 'email' | 'password' | null)>(null);
@@ -70,33 +70,45 @@ const Profile = () => {
         getProfile()
     }, [])
 
-    const onClickSaveName = () => {
-
-    }
-
-    const onClickSaveEmail = () => {
-
-    }
-
-    const onClickSavePassword = () => {
-
-    }
-
     const onSubmit = (data,e) => {
         const formState = data;
         setIsLoading(true)
 
-        const body = {
-            name: formState['name'],
-            email: formState['email'],
-            currentPassword: formState['currentPassword'] || null,
-            password: formState['password'] || null,
+        let body;
+        switch (editing){
+            case "name":
+                body = {
+                    name: formState['name']
+                }
+                break;
+            case "email":
+                body = {
+                    email: formState['email'],
+                    currentPassword: formState['currentPassword'],
+                }
+                break;
+            case "password":
+                body = {
+                    currentPassword: formState['currentPassword'],
+                    password: formState['password1'],
+                }
         }
 
         APIUtil.put('users/self', body).then((response) => {
             const json = response.data
             setIsLoading(false)
+            if (!json.success){
+                ErrorUtil.notifyError(notify,"ユーザー情報更新エラー",json.message);
+                return
+            }
+            notify({
+                title: "ユーザー情報を更新しました",
+                message: "ユーザー情報を更新しました",
+                status: "success"
+            });
+            setEditing(null);
         }).catch((error) => {
+            ErrorUtil.notifyError(notify,"ユーザー情報更新エラー",error);
             setIsLoading(false)
         })
     }
@@ -115,16 +127,17 @@ const Profile = () => {
                     <div className={'mb-8px'}>
                         {
                             (editing === "name")?
-                                <label>ユーザ名 <LinkButton onClick={()=>setEditing(null)}>キャンセル</LinkButton></label>
+                                <label>ユーザー名 <LinkButton onClick={()=>setEditing(null)}>キャンセル</LinkButton></label>
                                 :
-                                <label>ユーザ名 <LinkButton onClick={()=>setEditing('name')}>変更する</LinkButton></label>
+                                <label>ユーザー名 <LinkButton onClick={()=>setEditing('name')}>変更する</LinkButton></label>
                         }
-                        <TextField readOnly={(editing !=="name")} placeholder={'ユーザ名'} defaultValue={profile.name} name={"name"} inputRef={register}/>
+                        <TextField readOnly={(editing !=="name")} placeholder={'ユーザ名'} defaultValue={profile.name} name={"name"} inputRef={register({ required: "ユーザー名を入力してください。" })}/>
+                        {errors.name && <label className={"text-danger"}>{errors.name.message}</label>}
                     </div>
                     {
                         (editing === "name")?
                             <div className={'text-right'}>
-                                <Button submit={true} className={'mr-0'} onClick={onClickSaveName}>保存する</Button>
+                                <Button submit={true} className={'mr-0'}>保存する</Button>
                             </div>
                             :
                             null
@@ -139,7 +152,8 @@ const Profile = () => {
                                 :
                                 <label>メールアドレス <LinkButton onClick={()=>setEditing('email')}>変更する</LinkButton></label>
                         }
-                        <TextField readOnly={(editing !=="email")} placeholder={'メールアドレス'} defaultValue={profile.email} type={'email'} name={"email"}  inputRef={register}/>
+                        <TextField readOnly={(editing !=="email")} placeholder={'メールアドレス'} defaultValue={profile.email} type={'email'} name={"email"}  inputRef={register({ required: "E-mail を入力してください。" })}/>
+                        {errors.email && <label className={"text-danger"}>{errors.email.message}</label>}
                     </div>
                     {
                         (editing === "email")?
@@ -149,7 +163,7 @@ const Profile = () => {
                                     <TextField placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register}/>
                                 </div>
                                 <div className={'text-right'}>
-                                    <Button submit={true} className={'mr-0'} onClick={onClickSaveEmail}>保存する</Button>
+                                    <Button submit={true} className={'mr-0'}>保存する</Button>
                                 </div>
                             </>
                         : null
@@ -170,14 +184,41 @@ const Profile = () => {
                             <>
                                 <div className={'mb-8px'}>
                                     <label>現在のパスワード</label>
-                                    <TextField readOnly={(editing !== "password")} placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register}/>
+                                    <TextField readOnly={(editing !== "password")} placeholder={'現在のパスワード'} type={'password'} name={"currentPassword"} inputRef={register({ required: '現在のパスワードを入力してください。' })}/>
+                                    {errors.currentPassword && <label className={"text-danger"}>{errors.currentPassword.message}</label>}
                                 </div>
                                 <div className={'mb-8px'}>
-                                    <label>新しいパスワード</label>
-                                    <TextField  placeholder={'新しいパスワード'} type={'password'} name={"password"} inputRef={register}/>
+                                    <label>新しいパスワード <span className={style.helpText}>10桁以上のパスワードが必要</span></label>
+
+                                    <TextField  placeholder={'新しいパスワード'} type={'password'} name={"password1"} inputRef={register({
+                                        required: '新しいパスワードを入力してください',
+                                        minLength: {
+                                            value: 10,
+                                            message: "10桁以上のパスワードが必要です。"
+                                        },
+                                        maxLength: {
+                                            value: 64,
+                                            message: "64桁以下のパスワードが必要です。"
+                                        },
+                                        pattern: {
+                                            value: /[!-~]/,
+                                            message: "パスワードで利用できる文字は、英数字と記号 !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ のみです。"
+                                        }
+                                    })}/>
+                                    {errors.password1 && <label className={"text-danger"}>{errors.password1.message}</label>}
+                                </div>
+                                <div className={'mb-8px'}>
+                                    <label>新しいパスワード（確認用）</label>
+                                    <TextField  placeholder={'新しいパスワード（確認用）'} type={'password'} name={"password2"} inputRef={register({
+                                        required: '新しいパスワード（確認用）を入力してください',
+                                        validate: (value) =>{
+                                            return value === watch('password1') || '新しいパスワードが新しいパスワード（確認用）と一致していません';
+                                        }
+                                    })}/>
+                                    {errors.password2 && <label className={"text-danger"}>{errors.password2.message}</label>}
                                 </div>
                                 <div className={'text-right'}>
-                                    <Button submit={true} className={'mr-0'} onClick={onClickSavePassword}>保存する</Button>
+                                    <Button submit={true} className={'mr-0'}>保存する</Button>
                                 </div>
                             </>
                             : null
