@@ -137,7 +137,7 @@ const Profile = () => {
 
     return <div className={'container mt-40px'}>
         <div className={style.page_title}>
-            プロフィール設定
+            ユーザー情報変更
         </div>
         <div className={style.property_body}>
             <div className={style.card}>
