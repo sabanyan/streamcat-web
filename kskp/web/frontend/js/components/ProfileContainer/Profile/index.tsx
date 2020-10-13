@@ -26,7 +26,7 @@ interface Profile {
 
 type EditingMode = ('name' | 'email' | 'password' | null);
 
-const Profile = (_: Props) => {
+const Profile = (props: Props) => {
 
     // 通知機能メソッドの取得
     const dispatch = useDispatch();
@@ -36,6 +36,9 @@ const Profile = (_: Props) => {
             dispatch(removeNotification(id));
         }, 1000);
     };
+
+    const {navigation} = props;
+    const availableUpdateSelf = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser)
 
     const [isLoading, setIsLoading] = useState<Boolean>(false);
     const [isFinished, setIsFinished] = useState<Boolean>(false);
@@ -149,13 +152,17 @@ const Profile = (_: Props) => {
         </div>
         <div className={style.property_body}>
             <div className={style.card}>
-                <form onSubmit={handleSubmit(onSubmit)} className={'mb-32px'}>
+                <form onSubmit={(availableUpdateSelf)?handleSubmit(onSubmit):undefined} className={'mb-32px'}>
                     <div className={'mb-8px'}>
                         {
-                            (editing === 'name') ?
-                                <label>ユーザー名 <LinkButton onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
-                                :
-                                <label>ユーザー名 <LinkButton onClick={() => switchEditing('name')}>変更する</LinkButton></label>
+                            (availableUpdateSelf) ?
+                                (editing === 'name') ?
+                                    <label>ユーザー名 <LinkButton
+                                        onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
+                                    :
+                                    <label>ユーザー名 <LinkButton
+                                        onClick={() => switchEditing('name')}>変更する</LinkButton></label>
+                                :  <label>ユーザー名</label>
                         }
                         <TextField readOnly={(editing !== 'name')} placeholder={'ユーザ名'} name={'name'}
                                    inputRef={register({required: 'ユーザー名を入力してください。'})}/>
@@ -164,21 +171,23 @@ const Profile = (_: Props) => {
                     {
                         (editing === 'name') ?
                             <div className={'text-right'}>
-                                <Button submit={true} className={'mr-0'}>保存する</Button>
+                                <Button disabled={!availableUpdateSelf} submit={true} className={'mr-0'}>保存する</Button>
                             </div>
                             :
                             null
                     }
                 </form>
-                <form onSubmit={handleSubmit(onSubmit)} className={'mb-32px'}>
+                <form onSubmit={handleSubmit(onSubmit)}>
                     <div className={'mb-8px'}>
                         {
-                            (editing === 'email') ?
-                                <label>メールアドレス <LinkButton
-                                    onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
-                                :
-                                <label>メールアドレス <LinkButton
-                                    onClick={() => switchEditing('email')}>変更する</LinkButton></label>
+                            (availableUpdateSelf) ?
+                                (editing === 'email') ?
+                                    <label>メールアドレス <LinkButton
+                                        onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
+                                    :
+                                    <label>メールアドレス <LinkButton
+                                        onClick={() => switchEditing('email')}>変更する</LinkButton></label>
+                                : <label>メールアドレス</label>
                         }
                         <TextField readOnly={(editing !== 'email')} placeholder={'メールアドレス'} type={'email'}
                                    name={'email'} inputRef={register({required: 'E-mail を入力してください。'})}/>
@@ -193,73 +202,80 @@ const Profile = (_: Props) => {
                                                inputRef={register}/>
                                 </div>
                                 <div className={'text-right'}>
-                                    <Button submit={true} className={'mr-0'}>保存する</Button>
+                                    <Button disabled={!availableUpdateSelf} submit={true} className={'mr-0'}>保存する</Button>
                                 </div>
                             </>
                             : null
                     }
                 </form>
-                <form onSubmit={handleSubmit(onSubmit)}>
-                    <label>
-                        {
-                            (editing === 'password') ?
-                                <LinkButton onClick={() => switchEditing(null)}>キャンセル</LinkButton>
-                                :
-                                <LinkButton onClick={() => switchEditing('password')}>現在のパスワードを変更する</LinkButton>
-                        }
-                    </label>
-                    {
-                        (editing === 'password') ?
-                            <>
-                                <div className={'mb-8px'}>
-                                    <label>現在のパスワード</label>
-                                    <TextField readOnly={(editing !== 'password')} placeholder={'現在のパスワード'}
-                                               type={'password'} name={'currentPassword'}
-                                               inputRef={register({required: '現在のパスワードを入力してください。'})}/>
-                                    {errors.currentPassword &&
-                                    <label className={'text-danger'}>{errors.currentPassword.message}</label>}
-                                </div>
-                                <div className={'mb-8px'}>
-                                    <label>新しいパスワード <span className={style.helpText}>10桁以上のパスワードが必要</span></label>
+                {
+                    (availableUpdateSelf) ?
+                        <form onSubmit={handleSubmit(onSubmit)} className={'mt-32px'}>
+                            {
+                                (editing === 'password') ?
+                                    <label><LinkButton onClick={() => switchEditing(null)}>キャンセル</LinkButton></label>
+                                    :
+                                    <label><LinkButton
+                                        onClick={() => switchEditing('password')}>現在のパスワードを変更する</LinkButton></label>
+                            }
 
-                                    <TextField placeholder={'新しいパスワード'} type={'password'} name={'password1'}
-                                               inputRef={register({
-                                                   required: '新しいパスワードを入力してください',
-                                                   minLength: {
-                                                       value: 10,
-                                                       message: '10桁以上のパスワードが必要です。'
-                                                   },
-                                                   maxLength: {
-                                                       value: 64,
-                                                       message: '64桁以下のパスワードが必要です。'
-                                                   },
-                                                   pattern: {
-                                                       value: /[!-~]/,
-                                                       message: 'パスワードで利用できる文字は、英数字と記号 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ のみです。'
-                                                   }
-                                               })}/>
-                                    {errors.password1 &&
-                                    <label className={'text-danger'}>{errors.password1.message}</label>}
-                                </div>
-                                <div className={'mb-8px'}>
-                                    <label>新しいパスワード（確認用）</label>
-                                    <TextField placeholder={'新しいパスワード（確認用）'} type={'password'} name={'password2'}
-                                               inputRef={register({
-                                                   required: '新しいパスワード（確認用）を入力してください',
-                                                   validate: (value) => {
-                                                       return value === watch('password1') || '新しいパスワードが新しいパスワード（確認用）と一致していません';
-                                                   }
-                                               })}/>
-                                    {errors.password2 &&
-                                    <label className={'text-danger'}>{errors.password2.message}</label>}
-                                </div>
-                                <div className={'text-right'}>
-                                    <Button submit={true} className={'mr-0'}>保存する</Button>
-                                </div>
-                            </>
-                            : null
-                    }
-                </form>
+                            {
+                                (editing === 'password') ?
+                                    <>
+                                        <div className={'mb-8px'}>
+                                            <label>現在のパスワード</label>
+                                            <TextField readOnly={(editing !== 'password')} placeholder={'現在のパスワード'}
+                                                       type={'password'} name={'currentPassword'}
+                                                       inputRef={register({required: '現在のパスワードを入力してください。'})}/>
+                                            {errors.currentPassword &&
+                                            <label className={'text-danger'}>{errors.currentPassword.message}</label>}
+                                        </div>
+                                        <div className={'mb-8px'}>
+                                            <label>新しいパスワード <span
+                                                className={style.helpText}>10桁以上のパスワードが必要</span></label>
+
+                                            <TextField placeholder={'新しいパスワード'} type={'password'} name={'password1'}
+                                                       inputRef={register({
+                                                           required: '新しいパスワードを入力してください',
+                                                           minLength: {
+                                                               value: 10,
+                                                               message: '10桁以上のパスワードが必要です。'
+                                                           },
+                                                           maxLength: {
+                                                               value: 64,
+                                                               message: '64桁以下のパスワードが必要です。'
+                                                           },
+                                                           pattern: {
+                                                               value: /[!-~]/,
+                                                               message: 'パスワードで利用できる文字は、英数字と記号 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~ のみです。'
+                                                           }
+                                                       })}/>
+                                            {errors.password1 &&
+                                            <label className={'text-danger'}>{errors.password1.message}</label>}
+                                        </div>
+                                        <div className={'mb-8px'}>
+                                            <label>新しいパスワード（確認用）</label>
+                                            <TextField placeholder={'新しいパスワード（確認用）'} type={'password'}
+                                                       name={'password2'}
+                                                       inputRef={register({
+                                                           required: '新しいパスワード（確認用）を入力してください',
+                                                           validate: (value) => {
+                                                               return value === watch('password1') || '新しいパスワードが新しいパスワード（確認用）と一致していません';
+                                                           }
+                                                       })}/>
+                                            {errors.password2 &&
+                                            <label className={'text-danger'}>{errors.password2.message}</label>}
+                                        </div>
+                                        <div className={'text-right'}>
+                                            <Button disabled={!availableUpdateSelf} submit={true}
+                                                    className={'mr-0'}>保存する</Button>
+                                        </div>
+                                    </>
+                                    : null
+                            }
+                        </form>
+                        : null
+                }
             </div>
         </div>
         <ModalManager/>
