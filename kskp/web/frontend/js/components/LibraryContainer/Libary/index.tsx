@@ -1485,8 +1485,7 @@ const Library = (_: Props) => {
             ModalUtil.emitModal({
                 id: Constants.modal.MEMBER_INFO,
                 visible: true,
-                done: "反映する",
-                danger: true,
+                done: "保存する",
                 content: <MemberForm
                     rows={members}
                     searchedRows={seachResult}
@@ -1516,8 +1515,7 @@ const Library = (_: Props) => {
             ModalUtil.emitModal({
                 id: Constants.modal.MEMBER_INFO,
                 visible: true,
-                done: "反映する",
-                danger: true,
+                done: "保存する",
                 content: <MemberForm
                     rows={[]}
                     searchedRows={[]}

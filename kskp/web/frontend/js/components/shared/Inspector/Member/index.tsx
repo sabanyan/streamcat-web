@@ -61,6 +61,7 @@ export default function Member(props: Props) {
 
       <TableContainer component={Paper} className={style.table}>
         <Table aria-label="member"  >
+          {/*
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
@@ -68,6 +69,7 @@ export default function Member(props: Props) {
               <TableCell></TableCell>
             </TableRow>
           </TableHead>
+          */}
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.email}>
