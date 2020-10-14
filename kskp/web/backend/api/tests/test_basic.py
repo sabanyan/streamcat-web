@@ -539,7 +539,7 @@ class FlowApiTestCase(ApiTestCaseBase):
 
         # 生成したキャッシュのUUIDを取得する
         result = self.get_uri(f'/api/v0/flows/{test_flow_uuid}', self.USER1)
-        cache_uuid1 = result['data']['nodes'][1]['uuid']
+        cache_uuid1 = result['data']['flow']['nodes'][1]['uuid']
 
         # フローをコピーする
         data_copy_flow = {'original_flow_uuid': test_flow_uuid}
@@ -577,8 +577,18 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['success'], True)
 
         # self.assertEqual(flow_path.stem, data_source_name)
-        self.assertEqual(result['data']['projectId'], None)
+
+        # GET /flows/<uuid>の結果を検証する
+        self.assertEqual(result['data']['uuid'], test_flow_uuid)
+        self.assertEqual(result['data']['type'], 'flow')
         self.assertEqual(result['data']['label'], test_flow_label)
+        self.assertEqual(result['data']['prevFolderPath'], None)
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['flow']['projectId'], None)
+        self.assertEqual(result['data']['flow']['label'], test_flow_label)
+        self.assertEqual(result['data']['flow']['params'], [])
+        self.assertEqual(result['data']['flow']['ports'], [[],[]])
         self.assertEqual(result['navigation']['user_id'], self.USER1.id)
         self.assertEqual(result['navigation']['user_name'], 'ユーザ管理者')
         # self.assertEqual(result['navigation']['project_uuid'], )

@@ -116,6 +116,51 @@ def throw_away_project(project_uuid):
     project = g.factory.data.find_by_uuid(project_uuid)
     project.throw_away()
 
+@mod.route('/flows', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fecth_flows():
+    """
+    パラメータで指定されたプロジェクトが持つフローの一覧を取得する
+    """
+    flow_list = []
+
+    parent_uuid = request.args.get('project')
+
+    # projectが指定されていない場合は空のフロー一覧を返す
+    if parent_uuid is None:
+        return flow_list
+
+    parent = g.factory.data.find_by_uuid(parent_uuid)
+    children = parent.find_children()
+
+    for datum in children:
+        if datum.type != Datum.FLOW_TYPE:
+            continue
+        # flow_data = datum.data2['flow']
+        # flow_data['uuid'] = datum.uuid
+        flow_data = {'uuid':datum.uuid,
+                    'label':datum.label,
+                    'creator':datum.creator_str,
+                    'createdAt':datum.created_at_str}
+        flow_list.append(flow_data)
+
+    return flow_list
+
+@mod.route('/flows/<flow_uuid>', methods=['GET'])
+@login_required_api
+@update_navigation
+@api_base
+def fetch_flow(flow_uuid):
+    """
+    指定されたフローを取得する
+    """
+    flow = g.factory.data.find_by_uuid(flow_uuid)
+    ret = flow.to_json()
+    ret.update({'flow' : flow.flow_data})
+    return ret
+
 @mod.route('/flows', methods=['POST'])
 @login_required_api
 @api_base
@@ -152,50 +197,6 @@ def new_flow():
         new_flow.save()
         new_flow = new_flow.reload()
         return flow_data
-
-@mod.route('/flows', methods=['GET'])
-@login_required_api
-@update_navigation
-@api_base
-def fecth_flows():
-    """
-    パラメータで指定されたプロジェクトが持つフローの一覧を取得する
-    """
-    flow_list = []
-
-    parent_uuid = request.args.get('project')
-
-    # projectが指定されていない場合は空のフロー一覧を返す
-    if parent_uuid is None:
-        return flow_list
-
-    parent = g.factory.data.find_by_uuid(parent_uuid)
-    children = parent.find_children()
-
-    for datum in children:
-        if datum.type != Datum.FLOW_TYPE:
-            continue
-        # flow_data = datum.data2['flow']
-        # flow_data['uuid'] = datum.uuid
-        flow_data = {'uuid':datum.uuid,
-                    'label':datum.label,
-                    'creator':datum.creator_str,
-                    'createdAt':datum.created_at_str}
-        flow_list.append(flow_data)
-
-    return flow_list
-
-
-@mod.route('/flows/<flow_uuid>', methods=['GET'])
-@login_required_api
-@update_navigation
-@api_base
-def fetch_flow(flow_uuid):
-    """
-    指定されたフローを取得する
-    """
-    flow = g.factory.data.find_by_uuid(flow_uuid)
-    return flow.flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
