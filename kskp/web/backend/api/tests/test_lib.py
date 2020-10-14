@@ -2351,12 +2351,15 @@ class FlowFilesTestCase(ApiTestCaseBase):
         result = self.get_file(f'/api/v0/flow_files/{project1.uuid}', self.USER1)
         self._save_file(root.path/'フォルダ丸ごと.tgz', io.BytesIO(result))
 
+        # インポートしたプロジェクトと区別するため、エクスポート元のプロジェクトのラベル名を変更する
+        project1.update_data('うごげ〜')
+
         # フローをインポートする
         with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:
             self.post_flows(f, self.USER1)
 
         # フローはインポートされていること
-        children = root.find_children_by_label(project1.label)
+        children = root.find_children_by_label('プロジェクト')
         result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
 
         # プロジェクトフォルダが作成されていること
