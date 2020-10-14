@@ -1474,15 +1474,22 @@ const Library = () => {
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
                 }
             });
-            console.log("mambers")
-            console.log(members)
+            let temp = [
+                {
+                    name: "admin",
+                    email: "admin@kskp.com",
+                    type: "admin",
+                    uuid: "test"
+                }
+            ]
             ModalUtil.emitModal({
                 id: Constants.modal.MEMBER_INFO,
                 visible: true,
                 done: "反映する",
                 danger: true,
                 content: <MemberForm 
-                    rows={members}
+                    rows={temp}
+                    searchedRows={[]}
                 />
             });
         };

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useEffect, useRef, useState } from 'react';
 import { Paper, TextField, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core';
 import style from './style.scss'
 import { Tab } from 'Components/shared/Base';
@@ -15,10 +16,9 @@ type Row = {
 
 type Props = {
   rows: Row[];
-  order: 'desc' | 'asc';
-  orderBy: string;
+  searchedRows: Row[];
 
-  onSeachTextChagned: Function;
+  onSeachTextInputed: Function;
   onSeachedMemberClicked: Function;
   onMemberRoleChanged: Function;
   onDeleteMemberClicked: Function;
@@ -26,13 +26,27 @@ type Props = {
 }
 
 export default function Member(props: Props) {
-  const { rows, order, orderBy } = props
+  const { rows, searchedRows } = props
+  const { onSeachTextInputed } = props
 
   return <React.Fragment>
     <div className={style.paper}>
-      <TextField className={style.searchField} id="seachFiled" label="追加するユーザーの名前、Email" />
-      <TableContainer component={Paper}>
-        <Table aria-label="member">
+      <TextField
+        id="seachFiled"
+        label="追加するユーザーの名前、Email"
+        onKeyUp={(e) => onSeachTextInputed(e)}
+        className={style.searchField}
+      />
+      <div className={style.dropdown}>
+        {
+          searchedRows.map((row) => {
+            <a href="javascript:void(0)">{row.name + " " + row.email}</a>
+          })
+        }
+      </div>
+
+      <TableContainer component={Paper} className={style.table}>
+        <Table aria-label="member"  >
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
