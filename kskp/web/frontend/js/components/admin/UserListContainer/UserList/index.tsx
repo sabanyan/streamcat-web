@@ -24,8 +24,14 @@ import {Simulate} from "react-dom/test-utils";
 import error = Simulate.error;
 import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader';
 import * as lodash from 'lodash';
+import Queue from "promise-queue-plus";
+import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
-const UserList = () => {
+interface Props {
+    navigation?: NavigationModelProps
+}
+
+const UserList = (props: Props) => {
     const dispatch = useDispatch();
 
     // 通知機能メソッドの取得
@@ -79,13 +85,14 @@ const UserList = () => {
         const url = 'users?' + ((keyword)?'q='+ params.query + '&': '') + 'projects=' + params.projects + '&roles=' + params.roles
         return APIUtil.get(url).then((response) => {
             const users: UserListUser[] = response.data.data;
-            setUsers(users);
+            //setUsers(users);
+            filterUsers(users);
             setIsLoading(false);
             setIsFinished(true);
         }).catch((error) => {
             console.log(error);
             notify({
-                title: 'ユーザ一覧取得エラー',
+                title: 'ユーザー一覧取得エラー',
                 message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
                 status: 'error',
                 dismissAfter: 0,
@@ -97,7 +104,7 @@ const UserList = () => {
     };
 
     // ユーザを新規に作成する
-    const createNewUser = (name: string,email: string) => {
+    const createNewUser = async (name: string,email: string, projectUUID: string | null ) => {
         // APIをたたく
         const body = {
             email: email,
@@ -106,14 +113,43 @@ const UserList = () => {
         };
         setIsLoading(true);
         const url = 'users'
-        return APIUtil.post(url,body);
+        // ユーザーの作成
+        const newUserResponse = await APIUtil.post(url,body).catch(error=>{
+            ErrorUtil.notifyError(notify,"ユーザー作成エラー",error)
+            return Promise.reject()
+        })
+        if(!newUserResponse.data.success){
+            ErrorUtil.notifyError(notify,"ユーザー作成エラー",newUserResponse.data.message)
+            return Promise.reject()
+        }
+        if(projectUUID){
+            // プロジェクトへの追加
+            const json = newUserResponse.data.data;
+            const joinProjectResponse = await joinProject(json.uuid,projectUUID).catch(error=>{
+                ErrorUtil.notifyError(notify,"プロジェクト追加エラー",error)
+                return Promise.reject()
+            })
+            if(!joinProjectResponse.data.success){
+                ErrorUtil.notifyError(notify,"プロジェクト追加エラー",newUserResponse.data.message)
+                return Promise.reject()
+            }
+        }
+        return Promise.resolve(newUserResponse)
+    }
+
+    // ユーザをプロジェクトに紐付ける
+    const joinProject = (userUUID: string, projectUUID: string) => {
+        const url = 'projects/' + projectUUID + '/users/' + userUUID;
+        const body = {
+            "memberType" : "Reader"
+        };
+        return APIUtil.put(url,body);
     }
 
     // ユーザを削除する
-    const deleteUser = (uuid: string)=>{
-        const url = 'users/' + uuid;
+    const deleteUser = (userListUser: UserListUser)=>{
+        const url = 'users/' + userListUser.uuid;
         return APIUtil.delete(url).then((response)=>{
-            fetchUsers();
             setIsLoading(false);
         }).catch((error) => {
             notify({
@@ -173,15 +209,6 @@ const UserList = () => {
                 })
             },
         })
-        // ユーザ削除の確認ダイアログ
-        ModalUtil.registerModal({
-            id: Constants.modal.CONFIRM, onClickDone: () => {
-                deleteUser(lastSelected.uuid).finally(() => {
-                    ModalUtil.closeModal(Constants.modal.CONFIRM);
-                    clearSelectedCell();
-                })
-            },
-        })
         // ユーザ作成後の確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
@@ -189,6 +216,31 @@ const UserList = () => {
             }
         })
     }, [lastSelected])
+
+    useEffect(()=>{
+        // ユーザ削除の確認ダイアログ
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM, onClickDone: () => {
+                let queue = Queue(
+                    1, // concurrency
+                    {
+                        "retry": 0               //Number of retries
+                        , "retryIsJump": false     //retry now?
+                        , "timeout": 0            //The timeout period
+                    }
+                );
+                setIsLoading(true);
+                selectedDatas.forEach((selectedData: LibraryChild) => {
+                    queue.push(deleteUser, [selectedData]);
+                });
+                queue.push(setIsLoading, [false]);
+                queue.push(fetchUsers, []);
+                queue.start();
+                ModalUtil.closeModal(Constants.modal.CONFIRM);
+                clearSelectedCell();
+            },
+        })
+    },[selectedDatas])
 
     // ローディングアイコンを表示する
     const renderLoadingIcon = () => {
@@ -212,9 +264,9 @@ const UserList = () => {
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
-                let current = users.indexOf(data);
+                let current = users.findIndex(user=> data.uuid === user.uuid);
                 if (lastSelected) {
-                    let last = users.indexOf(lastSelected);
+                    let last =  users.findIndex(user=> lastSelected.uuid === user.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -283,6 +335,13 @@ const UserList = () => {
                 })
             }
 
+            let selected = false;
+            selectedDatas.forEach((selectedUser:UserListUser)=>{
+                if(user.uuid === selectedUser.uuid){
+                    selected = true
+                }
+            })
+
             const body: ITableBody = {
                 admin_types: admin_types,
                 clickable: true,
@@ -293,7 +352,7 @@ const UserList = () => {
                 projects: projects,
                 status: user.state,
                 uuid: user.uuid,
-                selected: user.selected,
+                selected: selected,
                 password: user.password
             };
             return body
@@ -312,7 +371,16 @@ const UserList = () => {
         if (newUserName === null || newUserEmail === null) return;
         ModalUtil.registerModal({
             id: Constants.modal.ADD_USER, onClickDone: () => {
-                createNewUser(newUserName,newUserEmail).then((response) => {
+                if(!newUserName.length){
+                    alert("名前を入力してください")
+                    return
+                }
+                if(!newUserEmail.length){
+                    alert("E-mailを入力してください")
+                    return
+                }
+                const projectUUID = (selectedOption)?selectedOption.value:null;
+                createNewUser(newUserName,newUserEmail, projectUUID).then((response) => {
                     setIsLoading(false);
                     fetchUsers();
                     if(!response.data.success){
@@ -351,14 +419,7 @@ const UserList = () => {
                         </div>
                     });
                     clearField();
-                }).catch((error) => {
-                    notify({
-                        title: 'ユーザー作成エラー',
-                        message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-                        status: 'error',
-                        dismissAfter: 0,
-                        closeButton: true
-                    })
+                }).catch(() => {
                     ModalUtil.closeModal(Constants.modal.ADD_USER)
                     setIsLoading(false);
                 })
@@ -423,6 +484,13 @@ const UserList = () => {
                 </div>
             });
         };
+
+        const {navigation} = props;
+        if(navigation && navigation.allowlist && !navigation.allowlist.createUser){
+            // ユーザ作成権限がない場合は、メニューを表示しない
+            return null;
+        }
+
         return <>
             <Spacer minWidth={40}/>
             <Flex flexDirection={'column'} fluid={true} width={280}>
@@ -438,8 +506,12 @@ const UserList = () => {
 
         clickedUserListCell.current = true;
 
-        const data: UserListUser = lastSelected;
         const onClickDelete = () => {
+            let targets: string[] = [];
+            selectedDatas.forEach((user) => {
+                targets.push(user.name);
+            });
+
             ModalUtil.emitModal({
                 id: Constants.modal.CONFIRM,
                 visible: true,
@@ -447,7 +519,7 @@ const UserList = () => {
                 danger: true,
                 content: <div className={style.modal}>
                     <div>
-                        ユーザーを削除しますがよろしいですか？
+                        {targets.join(",")} を削除しますか？
                     </div>
                 </div>
             });
@@ -467,7 +539,22 @@ const UserList = () => {
                 </div>
             });
         }
-        return <UserListInspector selected={selectedDatas} lastSelected={lastSelected} onClickDelete={onClickDelete} onClickPasswordReset={onClickPasswordReset}/>
+
+        // 実処理自体は Inspector 内に記述、props に定義がある場合は「仮パスワードの表示」ボタンを表示する
+        const onClickShowPassword = ()=>{};
+
+        const {navigation} = props;
+        const availablePasswordReset = (navigation && navigation.allowlist && navigation.allowlist.updateUser);
+        const availableDelete = (navigation && navigation.allowlist && navigation.allowlist.deleteUser);
+        const availableShowPassword = (navigation && navigation.allowlist && navigation.allowlist.readUserPassword);
+
+        return <UserListInspector
+            selected={selectedDatas}
+            lastSelected={lastSelected}
+            onClickShowPassword = {(availableShowPassword)?onClickShowPassword:undefined}
+            onClickDelete={(availableDelete)?onClickDelete:undefined}
+            onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
+        />
     };
 
     const clearSelected = () => {
@@ -527,12 +614,15 @@ const UserList = () => {
 
     useEffect(()=>{
         // フィルターが変更される都度ユーザをフィルタリングする
-        filterUsers()
+        const {hasNoFilter} = getSelectedFilter();
+        if(hasNoFilter){
+            fetchUsers(keyword);
+        }else{
+            filterUsers(users);
+        }
     },[filterList])
 
-    // 取得済みのユーザーをフィルターする
-    const filterUsers = () => {
-        // 選択されている条件を抽出する
+    const getSelectedFilter = ()=>{
         let selectedProjectUUIDs: string[] = []
         let selectedStatusTypes: string[] = []
         filterList.forEach((categoryListItem: IFilterCategoryItem)=>{
@@ -550,8 +640,19 @@ const UserList = () => {
                 })
             }
         })
+        return {
+            selectedProjectUUIDs: selectedProjectUUIDs,
+            selectedStatusTypes: selectedStatusTypes,
+            hasNoFilter: (!selectedProjectUUIDs.length && !selectedStatusTypes.length)
+        }
+    }
+
+    // 取得済みのユーザーをフィルターする
+    const filterUsers = (_users:UserListUser[]) => {
+        // 選択されている条件を抽出する
+        const {selectedProjectUUIDs,selectedStatusTypes, hasNoFilter} = getSelectedFilter();
         // ユーザーをフィルターする
-        let newFilteredUsers = users;
+        let newFilteredUsers = _users;
         // 該当プロジェクトに属しているユーザのみ抽出
         if(selectedProjectUUIDs.length){
             newFilteredUsers = newFilteredUsers.filter((user:UserListUser)=>{
@@ -577,16 +678,13 @@ const UserList = () => {
         }
 
         // フィルターしていない場合は、user を再取得する
-        const noFilter = (!selectedProjectUUIDs.length && !selectedStatusTypes.length);
-        if(noFilter){
-            // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
-            // 200ms ほど間隔をあけてから再検索を行う
-            setTimeout(()=>{
-                fetchUsers(keyword);
-            },200)
+        if(hasNoFilter){
+            // // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+            // // 200ms ほど間隔をあけてから再検索を行う
+            setUsers(_users);
             return
         }
-        // oClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
+        // onClickUserList で行っている setTimeOut による setUsers 処理が終わるのを待つため、
         // 200ms ほど間隔をあけてからフィルタリングする
         setTimeout(()=>{
             setUsers(newFilteredUsers)
