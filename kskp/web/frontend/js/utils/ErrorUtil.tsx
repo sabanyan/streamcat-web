@@ -1,15 +1,25 @@
-//@flow
 import { ModalUtil, StringUtil } from 'Utils/index'
 import Constants from 'Constants/index'
-import React from 'react'
+import * as React from "react";
+import { ReactDomUtil } from "./index";
 
 export default class ErrorUtil {
-  constructor (message: string): Error {
+  constructor (message: string) {
     throw new Error(message)
   }
 
+  static notifyError(notify,title,error){
+    notify({
+      title: title,
+      message: (error instanceof Error)?ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)):error,
+      status: 'error',
+      dismissAfter: 0,
+      closeButton: true
+    })
+  }
+
   static getErrorBody (error) {
-    let errorBody
+    let errorBody:React.ReactNode;
     if (error && error.data && error.data['message']) {
       errorBody = <div className={'modal-server-error-text'}>
         {error.data['message']}

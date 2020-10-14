@@ -8,6 +8,7 @@ import { Button, DownloadButton } from 'Shared/Input'
 import { APIUtil, ModalUtil, StringUtil } from "Utils/index";
 import { LibraryChild } from 'Model/index';
 import { get } from '../../../../modules/api/response/index';
+import { readyException } from 'jquery'
 
 type Props = {
   visualizers: any[];
@@ -47,19 +48,19 @@ class LibraryInspector extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      members: null
+      members: []
     }
   }
 
   componentWillMount() {
 
     const { lastSelected } = this.props
+    console.log("fffff1")
     if (lastSelected && lastSelected.type === "project") {
       APIUtil.get("/projects/" + lastSelected.uuid + "?members=on&allowlist=on").then((response) => {
-        console.log(response)
-        if (response.success) {
+        if (response.data.success && response.data.data.members) {
           this.setState({
-            members: response.data.member
+            members: response.data.data.members
           })
         }
       })
@@ -255,9 +256,24 @@ class LibraryInspector extends React.Component<Props, State> {
 
   renderProjectInfo() {
     const { onClickMemberInfo } = this.props;
+    console.log("mem")
+    console.log(this.state.members)
+    const memberCount = this.state.members ? this.state.members.length : 0
+    let members: any = null
+    if (this.state.members) {
+      members = this.state.members.map((member) => {
+        return <div key={member.email}>{member.name + "(" + member.type + ")"}</div>
+      })
+    }
 
-    if (onClickMemberInfo) return <Button onClick={(e) => onClickMemberInfo(e, this.state.members)} icon={"people"}>button</Button>
-    return "dddd"
+
+    return <React.Fragment>
+      <label>{"このプロジェクトのメンバー（" + memberCount + ")"}</label>
+      {(onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, this.state.members)} icon={"people"}>メンバーを編集する</Button> : null}
+      <div className={style.memberList}>
+        {members}
+      </div>
+    </React.Fragment>
   }
 
   render() {
@@ -268,7 +284,7 @@ class LibraryInspector extends React.Component<Props, State> {
     return <Resizer>
       <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={true}>
         {content}
-        {this.renderProjectInfo()}
+        {(lastSelected && lastSelected.type === "project") ? this.renderProjectInfo() : null}
       </BaseInspector>
     </Resizer>
   }

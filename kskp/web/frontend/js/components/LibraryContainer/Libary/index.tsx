@@ -27,6 +27,7 @@ import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
 import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";
+import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
 
 export interface Database {
     label?: string;
@@ -118,7 +119,11 @@ const getInitialDatabase = (): Database => {
     };
 };
 
-const Library = () => {
+interface Props {
+    navigation?: NavigationModelProps
+}
+
+const Library = (_: Props) => {
 
     const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));
@@ -718,7 +723,7 @@ const Library = () => {
                 clearSelected();// 選択状態を一旦解除
                 let current = libraryChildren.findIndex(libraryChild => data.uuid === libraryChild.uuid);
                 if (lastSelected) {
-                    let last = libraryChildren.findIndex(libraryChild=> lastSelected.uuid === libraryChild.uuid);
+                    let last = libraryChildren.findIndex(libraryChild => lastSelected.uuid === libraryChild.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -1467,6 +1472,31 @@ const Library = () => {
             });
         };
 
+
+        const onSearchTextInputed = async (e, members) => {
+            const searchText = e.currentTarget.value ? e.currentTarget.value : ""
+            let seachResult = []
+            if (searchText !== "") {
+                let response = await APIUtil.get("/users?q=" + searchText + "&roles=off&projects=on")
+                if (response.data.success && response.data.data) {
+                    seachResult = response.data.data
+                }
+            }
+            ModalUtil.emitModal({
+                id: Constants.modal.MEMBER_INFO,
+                visible: true,
+                done: "反映する",
+                danger: true,
+                content: <MemberForm
+                    rows={members}
+                    searchedRows={seachResult}
+                    onSearchTextInputed={onSearchTextInputed}
+                />
+            });
+
+        }
+
+
         _onClickMemberInfo = (e, members) => {
             ModalUtil.registerModal({
                 id: Constants.modal.MEMBER_INFO, onClickDone: () => {
@@ -1482,14 +1512,16 @@ const Library = () => {
                     uuid: "test"
                 }
             ]
+        
             ModalUtil.emitModal({
                 id: Constants.modal.MEMBER_INFO,
                 visible: true,
                 done: "反映する",
                 danger: true,
-                content: <MemberForm 
-                    rows={temp}
+                content: <MemberForm
+                    rows={[]}
                     searchedRows={[]}
+                    onSearchTextInputed={onSearchTextInputed}
                 />
             });
         };

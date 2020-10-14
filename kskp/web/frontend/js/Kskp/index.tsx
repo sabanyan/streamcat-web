@@ -16,6 +16,7 @@ import {FlowEditor} from "FlowEditorContainer/FlowEditor";
 import {UserList} from 'UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
+import {NotAllowed} from 'Components/NotAllowedContainer';
 
 export type Props = {
     viewId: ViewId
@@ -77,19 +78,19 @@ const Kskp = (props: Props) => {
         let viewComponent: React.ReactNode = null;
         switch (viewId) {
             case ViewId.Flow_Editor:
-                viewComponent = <FlowEditor />;
+                viewComponent = <FlowEditor navigation={nav}/>;
                 break;
             case ViewId.Library:
-                viewComponent = <Library />;
+                viewComponent = <Library navigation={nav}/>;
                 break;
             case ViewId.Profile:
-                viewComponent = <Profile />;
+                viewComponent = <Profile navigation={nav}/>;
                 break;
             case ViewId.Preview:
-                viewComponent = <Preview />;
+                viewComponent = <Preview navigation={nav}/>;
                 break;
             case ViewId.User_List:
-                viewComponent = <UserList/>;
+                viewComponent = (nav && nav.allowlist && nav.allowlist.findUsers)?<UserList navigation={nav}/>:<NotAllowed/>;
                 break;
             default:
                 break;
@@ -101,6 +102,7 @@ const Kskp = (props: Props) => {
             </div>
         );
     };
+
 
     let result: any = null;
 

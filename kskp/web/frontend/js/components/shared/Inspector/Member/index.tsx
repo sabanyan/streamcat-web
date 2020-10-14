@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect, useRef, useState } from 'react';
-import { Paper, TextField, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@material-ui/core';
+import { Paper, TextField, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Select } from '@material-ui/core';
 import style from './style.scss'
 import { Tab } from 'Components/shared/Base';
 
@@ -18,7 +18,7 @@ type Props = {
   rows: Row[];
   searchedRows: Row[];
 
-  onSeachTextInputed: Function;
+  onSearchTextInputed: Function;
   onSeachedMemberClicked: Function;
   onMemberRoleChanged: Function;
   onDeleteMemberClicked: Function;
@@ -27,22 +27,36 @@ type Props = {
 
 export default function Member(props: Props) {
   const { rows, searchedRows } = props
-  const { onSeachTextInputed } = props
+  const { onSearchTextInputed } = props
+
+  const searchedList = searchedRows.map((row) => {
+    return <a key={row.email} href="javascript:void(0)">{row.name + " (" + row.email + ")"}</a>
+  })
+
+  const roleForm = (role, onChange) => {
+    return <Select
+    native
+    value={role}
+    onChange={onChange}
+  >
+    <option aria-label="None" value="Unkown" />
+    <option value="Owner">P管理者</option>
+    <option value="Writer">編集者</option>
+    <option value="Reader">閲覧者</option>
+    <option value="Del">削除する</option>
+  </Select>
+  } 
 
   return <React.Fragment>
     <div className={style.paper}>
       <TextField
         id="seachFiled"
         label="追加するユーザーの名前、Email"
-        onKeyUp={(e) => onSeachTextInputed(e)}
+        onChange={(e) => onSearchTextInputed(e, rows)}
         className={style.searchField}
       />
       <div className={style.dropdown}>
-        {
-          searchedRows.map((row) => {
-            <a href="javascript:void(0)">{row.name + " " + row.email}</a>
-          })
-        }
+        {searchedList}
       </div>
 
       <TableContainer component={Paper} className={style.table}>
@@ -61,7 +75,7 @@ export default function Member(props: Props) {
                   {row.name}
                 </TableCell>
                 <TableCell>{row.email}</TableCell>
-                <TableCell>{row.type}</TableCell>
+                <TableCell>{roleForm(row.type, null)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
