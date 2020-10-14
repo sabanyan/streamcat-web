@@ -979,6 +979,139 @@ class SystemTestCase(ApiTestCaseBase):
         # ロールを削除する
         self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER3)
 
+    def test_join_leave_sys_admin_role(self):
+        """
+        システム管理者Roleにユーザを参加・脱退させる
+        """
+        # システム管理者にユーザを参加させる
+        result = self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER2.uuid}', {}, self.USER1)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{Role.SYS_ADMIN_ROLE_UUID}?members=on', self.USER0)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], Role.SYS_ADMIN_ROLE_UUID)
+        self.assertEqual(result['data']['name'], Role.SYS_ADMIN_ROLE_LABEL)
+        self.assertEqual(result['data']['systemRole'], Role.SYS_ADMIN_ROLE_LABEL)
+        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        # 参加ユーザ
+        self.assertEqual(len(result['data']['members']), 2)
+        # USER0
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
+        # USER2
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER2.created_at_str)
+
+        # ユーザを脱退させる
+        result = self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER2.uuid}', self.USER1)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{Role.SYS_ADMIN_ROLE_UUID}?members=on', self.USER0)
+
+        # 参加ユーザはUSER0だけであることを確認する
+        self.assertEqual(len(result['data']['members']), 1)
+        # USER0
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
+
+    def test_cannot_join_leave_sys_admin_role(self):
+        """
+        ユーザ管理者以外のユーザは、システム管理者Roleにユーザを参加・脱退できないこと
+        """
+        # USER2は、システム管理者にユーザを参加できないこと
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER2.uuid}', {}, self.USER2)
+
+        # USER2は、ユーザを脱退できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER2)
+
+        # システム管理者から最後のユーザを脱退できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER1)
+
+    def test_join_leave_usr_admin_role(self):
+        """
+        ユーザ管理者Roleにユーザを参加・脱退させる
+        """
+        # ユーザ管理者にユーザを参加させる
+        result = self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER2.uuid}', {}, self.USER1)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{Role.USR_ADMIN_ROLE_UUID}?members=on', self.USER0)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], Role.USR_ADMIN_ROLE_UUID)
+        self.assertEqual(result['data']['name'], Role.USR_ADMIN_ROLE_LABEL)
+        self.assertEqual(result['data']['systemRole'], Role.USR_ADMIN_ROLE_LABEL)
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        # 参加ユーザ
+        self.assertEqual(len(result['data']['members']), 2)
+        # USER1
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER1.created_at_str)
+        # USER2
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER2.created_at_str)
+
+        # ユーザを脱退させる
+        result = self.delete_uri(f'/api/v0/roles/usr_admin/users/{self.USER2.uuid}', self.USER1)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{Role.USR_ADMIN_ROLE_UUID}?members=on', self.USER0)
+
+        # 参加ユーザはUSER1だけであることを確認する
+        self.assertEqual(len(result['data']['members']), 1)
+        # USER1
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER1.created_at_str)
+
+    def test_cannot_join_leave_usr_admin_role(self):
+        """
+        ユーザ管理者以外のユーザは、ユーザ管理者Roleにユーザを参加・脱退できないこと
+        """
+        # USER2は、ユーザ管理者にユーザを参加できないこと
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER2.uuid}', {}, self.USER2)
+
+        # 既でに参加済みのユーザの参加で所有権の変更もない場合は、DBへの更新が発生しないのでエラーにならない
+        self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', {}, self.USER2)
+
+        # USER2は、ユーザを脱退できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', self.USER2)
+
+        # ユーザ管理者から最後のユーザを脱退できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', self.USER1)
+
     def test_cannot_no_usr_admin(self):
         """
         ユーザ管理者ロールのメンバを0人にはできないこと
@@ -998,7 +1131,6 @@ class SystemTestCase(ApiTestCaseBase):
         # 最後の一人のメンバを削除できないこと
         with self.assertRaises(Exception):
             self.delete_uri(f'/api/v0/users/{usr_admin_uuid}', self.USER1)
-
 
     # 
     # Projects

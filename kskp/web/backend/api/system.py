@@ -232,15 +232,39 @@ def join_user_to_role(role_uuid, user_uuid):
     """
     ロールにユーザを追加する
     """
-    from kskp.store.auth import Role, NoRoleOwnerException
-
     req = RequestJson(request.json)
     if not req.has_all('owner'):
         raise Exception('owner属性を指定してください')
+    _join_user_to_role(role_uuid, user_uuid, req['owner'])
+
+@mod.route('/roles/sys_admin/users/<user_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def join_user_to_sys_admin_role(user_uuid):
+    """
+    システム管理者ロールにユーザを追加する
+    """
+    # システム管理者による、システム管理者の追加・削除は不可なので、owner=Falseでシステム管理者ロールに追加する
+    sys_admin_role = g.factory.role.load_sys_admin_role()
+    _join_user_to_role(sys_admin_role.uuid, user_uuid, owner=False)
+
+@mod.route('/roles/usr_admin/users/<user_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def join_user_to_usr_admin_role(user_uuid):
+    """
+    ユーザ管理者ロールにユーザを追加する
+    """
+    # ユーザ管理者による、ユーザ管理者の追加・削除を可能とするため、owner=Trueでユーザ管理者ロールに追加する
+    usr_admin_role = g.factory.role.load_usr_admin_role()
+    _join_user_to_role(usr_admin_role.uuid, user_uuid, owner=True)
+
+def _join_user_to_role(role_uuid, user_uuid, owner):
+    from kskp.store.auth import Role, NoRoleOwnerException
 
     role = g.factory.role.find_by_uuid(role_uuid)
     user = g.factory.user.find_by_uuid(user_uuid)
-    member = Role.Member(user, req['owner'])
+    member = Role.Member(user, owner)
 
     # この所属によって、ロールに所有者が居なくなる場合はエラーとする
     if member.owner == False and role.is_last_owner(member.user):
@@ -255,6 +279,39 @@ def leave_user_outof_role(role_uuid, user_uuid):
     """
     ロールからユーザを削除する
     """
+    _leave_user_outof_role(role_uuid, user_uuid)
+
+@mod.route('/roles/sys_admin/users/<user_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def leave_user_outof_sys_admin_role(user_uuid):
+    """
+    システム管理者ロールからユーザを削除する
+    """
+    from kskp.store.auth import NoRoleOwnerException
+    sys_admin_role = g.factory.role.load_sys_admin_role()
+    try:
+        _leave_user_outof_role(sys_admin_role.uuid, user_uuid)
+    except NoRoleOwnerException:
+        raise NoRoleOwnerException('システム管理者権限を持つユーザがいなくなるのでこの操作はできません')
+
+@mod.route('/roles/usr_admin/users/<user_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def leave_user_outof_usr_admin_role(user_uuid):
+    """
+    ユーザ管理者ロールからユーザを削除する
+    """
+    from kskp.store.auth import NoRoleOwnerException
+    usr_admin_role = g.factory.role.load_usr_admin_role()
+    try:
+        _leave_user_outof_role(usr_admin_role.uuid, user_uuid)
+    except NoRoleOwnerException:
+        raise NoRoleOwnerException('ユーザ管理者権限を持つユーザがいなくなるのでこの操作はできません')
+
+def _leave_user_outof_role(role_uuid, user_uuid):
+    from kskp.store.auth import NoRoleOwnerException
+
     role = g.factory.role.find_by_uuid(role_uuid)
     user = g.factory.user.find_by_uuid(user_uuid)
 
