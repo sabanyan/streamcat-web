@@ -16,6 +16,7 @@ interface Props {
     onBlurTitle?: Function;
     onClickEdit?: Function;
     onClickPasswordReset?: Function;
+    onClickShowPassword?: Function;
 }
 
 const display = {
@@ -84,17 +85,18 @@ const UserListInspector = (props: Props) => {
             </React.Fragment>
             result.push(status)
 
-            if (data.status === 'tmp') {
+            const {onClickShowPassword} = props;
+            if (data.status === 'tmp' && onClickShowPassword) {
                 let tempPasswordLabel = <React.Fragment>
                     <div><label>{display.password}</label></div>
                     <div
                         className={'mb-8px'}>{(showPassword) ? data.password : AdminUtil.replaceAsterisk(data.password.length)}</div>
                 </React.Fragment>
                 result.push(tempPasswordLabel)
-                const onClickShowPassword = () => {
+                const _onClickShowPassword = () => {
                     setShowPassword(true)
                 }
-                let showPasswordElement = (!showPassword)?<Button onClick={onClickShowPassword}>仮パスワードを表示する</Button>:null;
+                let showPasswordElement = (!showPassword)?<Button onClick={()=>_onClickShowPassword()}>仮パスワードを表示する</Button>:null;
                 result.push(showPasswordElement)
             }
             const {onClickPasswordReset} = props;

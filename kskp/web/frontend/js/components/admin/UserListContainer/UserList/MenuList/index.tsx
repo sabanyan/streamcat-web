@@ -11,7 +11,7 @@ const MenuList = (props: Props) => {
     const {onClickNewUser} = props;
 
     return <div className={style.menuList}>
-        <FlatButton icon={"icon-add"} onClick={onClickNewUser}>ユーザの新規作成</FlatButton>
+        <FlatButton icon={"icon-add"} onClick={onClickNewUser}>ユーザーの新規作成</FlatButton>
     </div>;
 };
 
