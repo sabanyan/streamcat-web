@@ -46,24 +46,24 @@ def fetch_frame(frame_uuid):
     指定したframeを直接UUIDで指定して取得する
     """
     # オフセットのデフォルトは最初から（なので０）、limitはとりあえず1000行
-    offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-    limit = int(request.args.get('limit')) if request.args.get('limit') else 999
-    no_contents = True if request.args.get('no_contents') else False
+    # offset = int(request.args.get('offset')) if request.args.get('offset') else 0
+    # limit = int(request.args.get('limit')) if request.args.get('limit') else 999
+    # no_contents = True if request.args.get('no_contents') else False
 
     frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
 
-    result = csv_to_frame(frame, no_contents=no_contents, offset=offset, limit=limit)  
+    result = csv_to_frame(frame)  
 
-    if request.args.get('header_only') == '1':
-        # headerのカラムに改行コードが含まれているケースの対応
-        if result.get('contents') is None:
-            raise Exception('not use "no_contents" in query parameter')
-        headers = []
-        for column in result['contents']:
-            headers.append(column.replace('\n',''))
-        result = headers
+    # if request.args.get('header_only') == '1':
+    #     # headerのカラムに改行コードが含まれているケースの対応
+    #     if result.get('contents') is None:
+    #         raise Exception('not use "no_contents" in query parameter')
+    #     headers = []
+    #     for column in result['contents']:
+    #         headers.append(column.replace('\n',''))
+    #     result = headers
 
     return result
 
@@ -74,11 +74,11 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
     """
     result = {}
 
-    if not no_contents:
-        contents, number_of_lines = frame.load_as_data_frame(offset, limit)
-        result['contents'] = contents
-        # 行数は一旦返さないことにする
-        # result['numberOfLines'] = number_of_lines
+    # if not no_contents:
+    #     contents, number_of_lines = frame.load_as_data_frame(offset, limit)
+    #     result['contents'] = contents
+    #     # 行数は一旦返さないことにする
+    #     # result['numberOfLines'] = number_of_lines
     result['encoding'] = frame.encoding_str
     result['newline'] = frame.newline_str
     result['fileSize'] = frame.file_size
