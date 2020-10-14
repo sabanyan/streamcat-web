@@ -27,6 +27,7 @@ import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
 import {ApplyMenuList} from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";
+import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
 export interface Database {
     label?: string;
@@ -118,7 +119,11 @@ const getInitialDatabase = (): Database => {
     };
 };
 
-const Library = () => {
+interface Props {
+    navigation?: NavigationModelProps
+}
+
+const Library = (_: Props) => {
 
     const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));
@@ -716,9 +721,9 @@ const Library = () => {
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
-                let current = libraryChildren.indexOf(data);
+                let current = libraryChildren.findIndex(libraryChild => data.uuid === libraryChild.uuid);
                 if (lastSelected) {
-                    let last = libraryChildren.indexOf(lastSelected);
+                    let last = libraryChildren.findIndex(libraryChild=> lastSelected.uuid === libraryChild.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;

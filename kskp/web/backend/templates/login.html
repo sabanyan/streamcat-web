@@ -20,6 +20,11 @@
                       <div class="form-group">
                           <input type="submit" class="btn btn-primary btn-default btn-block" value="ログイン">
                       </div>
+                        {% if login_failed %}
+                        <div class="alert alert-danger small">
+                            ユーザーアカウントもしくはパスワードが正しくありません。
+                        </div>
+                        {% endif %}
                     </form>
                 </div>
             </div>

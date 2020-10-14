@@ -42,8 +42,13 @@ import {
 import {useDispatch, useSelector} from "react-redux";
 import {Paper} from "FlowEditorContainer/Paper";
 import {PaperZoom} from "FlowEditorContainer/PaperZoom";
+import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
-const FlowEditor = () => {
+interface Props {
+    navigation?: NavigationModelProps
+}
+
+const FlowEditor = (props: Props) => {
 
     const dispatch = useDispatch();
     const flow = useSelector(state => state.FlowEditorReducer.flow);
