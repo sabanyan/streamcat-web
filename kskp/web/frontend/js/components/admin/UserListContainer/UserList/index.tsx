@@ -547,13 +547,18 @@ const UserList = (props: Props) => {
         const availablePasswordReset = (navigation && navigation.allowlist && navigation.allowlist.updateUser);
         const availableDelete = (navigation && navigation.allowlist && navigation.allowlist.deleteUser);
         const availableShowPassword = (navigation && navigation.allowlist && navigation.allowlist.readUserPassword);
+        const onChangedUserSystemAdminRole = ()=>{
+            fetchUsers();
+        }
 
         return <UserListInspector
+            notify={notify}
             selected={selectedDatas}
             lastSelected={lastSelected}
             onClickShowPassword = {(availableShowPassword)?onClickShowPassword:undefined}
             onClickDelete={(availableDelete)?onClickDelete:undefined}
             onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
+            onChangedUserSystemAdminRole={onChangedUserSystemAdminRole}
         />
     };
 
