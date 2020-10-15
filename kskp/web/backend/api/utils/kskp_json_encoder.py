@@ -28,7 +28,7 @@ class KSKPJSONEncoder(JSONEncoder):
 
         if isinstance(obj, Vis):
             return obj.to_html()
-        elif isinstance(obj, (Store, Lock, Datum, FlowData, User, Role, ProjectFolder.Member)):
+        elif isinstance(obj, (Store, Lock, Datum, FlowData, User, Role, ProjectFolder.Member, Role.Member)):
             return obj.to_json()
         else:
             # 上記以外のクラスはデフォルトのデコード処理とする
