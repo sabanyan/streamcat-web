@@ -10,7 +10,7 @@ import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
 import {ModalManager} from "Shared/Modal";
 import {addNotification, removeNotification} from "reapop";
 
-import {NavigationBar} from "Shared/Base";
+import {Loader, NavigationBar} from 'Shared/Base';
 import {Preview} from "PreviewContainer/Preview";
 import {FlowEditor} from "FlowEditorContainer/FlowEditor";
 import {UserList} from 'UserListContainer/UserList';
@@ -76,6 +76,11 @@ const Kskp = (props: Props) => {
 
     const renderView = (viewId: ViewId) => {
         let viewComponent: React.ReactNode = null;
+
+        if (nav === undefined) {
+            return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true}/>
+        }
+
         switch (viewId) {
             case ViewId.Flow_Editor:
                 viewComponent = <FlowEditor navigation={nav}/>;
