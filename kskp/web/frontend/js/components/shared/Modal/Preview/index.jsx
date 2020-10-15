@@ -72,7 +72,7 @@ export default class PreviewModal extends React.Component<Props, State> {
     }
   }
 
-  componentWillReceiveProps(nextProps){
+  UNSAFE_componentWillReceiveProps(nextProps){
     this.setState({
       selected_tab_id:0,
       results: []
