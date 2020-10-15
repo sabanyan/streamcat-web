@@ -122,21 +122,18 @@ const UserListInspector = (props: Props) => {
         _activateAdminRole(Constants.admin.systemRole.USR_ADMIN,uuid,active);
     }
 
-    const onClickEdit = (e) => {
-        const {lastSelected, onClickEdit} = props
-        if (onClickEdit) onClickEdit(lastSelected)
-    }
-
     const renderButtons = (data?: UserListUser) => {
         const {selected, onClickDelete} = props
 
         let del
 
+        const availableDelete = ([...selected].findIndex((selected)=>{
+            return (selected.status !== Constants.admin.userStatus.inactive)
+        }) !== -1);
+
         // 複数選択の場合
         if (selected.length >= 1) {
-            // delete button
-            if (onClickDelete) del =
-                <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
+            if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
         }
         return <React.Fragment>
             {del}
@@ -190,7 +187,7 @@ const UserListInspector = (props: Props) => {
             result.push(status)
 
             const {onClickShowPassword} = props;
-            if (data.status === 'tmp' && onClickShowPassword) {
+            if (data.status === Constants.admin.userStatus.tmp && onClickShowPassword) {
                 let tempPasswordLabel = <React.Fragment>
                     <div><label>{display.password}</label></div>
                     <div
@@ -205,7 +202,7 @@ const UserListInspector = (props: Props) => {
             }
             const {onClickPasswordReset} = props;
             if (data.status === 'active' && onClickPasswordReset) {
-                let resetPasswordEelement = <Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button>
+                let resetPasswordEelement = <div className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
                 result.push(resetPasswordEelement)
             }
         }
@@ -250,7 +247,7 @@ const UserListInspector = (props: Props) => {
     }
 
     const renderSelect = (data?: UserListUser) => {
-        let content: any = <div className={style.inspector}>
+        return <div className={style.inspector}>
             <div className={style.actions}>
                 {renderButtons(data)}
             </div>
@@ -259,12 +256,10 @@ const UserListInspector = (props: Props) => {
                 {renderDetail(data)}
             </div>
         </div>
-
-        return content
     }
 
     const renderSelects = (selected: UserListUser[], data?: UserListUser) => {
-        let content = <div className={style.inspector}>
+        return <div className={style.inspector}>
             <div className={style.actions}>
                 {renderButtons(data)}
             </div>
@@ -272,8 +267,6 @@ const UserListInspector = (props: Props) => {
 
             </div>
         </div>
-
-        return content
     }
 
 
