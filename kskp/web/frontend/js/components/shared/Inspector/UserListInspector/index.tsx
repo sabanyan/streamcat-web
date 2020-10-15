@@ -27,7 +27,7 @@ interface Props {
 const display = {
     email: 'E-mail',
     projects: '所属プロジェクト',
-    status: 'ステータス',
+    state: 'ステータス',
     admin_types: 'KSKP 管理権限',
     admin_types_system_admin: 'システム管理権限',
     admin_types_user_admin: 'ユーザー管理権限',
@@ -37,21 +37,22 @@ const display = {
 
 const UserListInspector = (props: Props) => {
     const {notify} = props;
+    const [showPassword, setShowPassword] = useState<Boolean>(false)
 
-    useEffect(()=>{
-        // // パスワードリセットの処理
-        // ModalUtil.registerModal({
-        //     id: Constants.modal.CONFIRM_UPDATE_SYSTEM_ADMIN, onClickDone: () => {
-        //
-        //     },
-        // })
-        // // ユーザ作成後の確認ダイアログ
-        // ModalUtil.registerModal({
-        //     id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
-        //         ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
-        //     }
-        // })
-    }, [])
+    // useEffect(()=>{
+    //     // // パスワードリセットの処理
+    //     // ModalUtil.registerModal({
+    //     //     id: Constants.modal.CONFIRM_UPDATE_SYSTEM_ADMIN, onClickDone: () => {
+    //     //
+    //     //     },
+    //     // })
+    //     // // ユーザ作成後の確認ダイアログ
+    //     // ModalUtil.registerModal({
+    //     //     id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
+    //     //         ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
+    //     //     }
+    //     // })
+    // }, [])
 
     // システム権限を更新する
     const _activateAdminRole = (role:string, uuid: string,active: boolean) =>{
@@ -127,9 +128,12 @@ const UserListInspector = (props: Props) => {
 
         let del
 
-        const availableDelete = ([...selected].findIndex((selected)=>{
-            return (selected.status !== Constants.admin.userStatus.inactive)
+        const availableDelete = ([...selected].findIndex((user)=>{
+            console.log(user)
+            return (user.state !== Constants.admin.userStatus.inactive)
         }) !== -1);
+
+        console.log(availableDelete)
 
         // 複数選択の場合
         if (selected.length >= 1) {
@@ -156,7 +160,6 @@ const UserListInspector = (props: Props) => {
     const renderDetail = (data?: UserListUser) => {
         let result: any = []
 
-        const [showPassword, setShowPassword] = useState<Boolean>(false)
         if (!data) return result
 
         if (data.email) {
@@ -179,15 +182,15 @@ const UserListInspector = (props: Props) => {
             result.push(projectElements)
         }
 
-        if (data.status) {
-            let status = <React.Fragment key={"status"}>
-                <div><label>{display.status}</label></div>
-                <div className={'mb-8px'}>{AdminUtil.getUserStatus(data.status)}</div>
+        if (data.state) {
+            let state = <React.Fragment key={"state"}>
+                <div><label>{display.state}</label></div>
+                <div className={'mb-8px'}>{AdminUtil.getUserStatus(data.state)}</div>
             </React.Fragment>
-            result.push(status)
+            result.push(state)
 
             const {onClickShowPassword} = props;
-            if (data.status === Constants.admin.userStatus.tmp && onClickShowPassword) {
+            if (data.state === Constants.admin.userStatus.tmp && onClickShowPassword) {
                 let tempPasswordLabel = <React.Fragment key={"password"}>
                     <div><label>{display.password}</label></div>
                     <div
@@ -201,19 +204,19 @@ const UserListInspector = (props: Props) => {
                 result.push(showPasswordElement)
             }
             const {onClickPasswordReset} = props;
-            if (data.status === 'active' && onClickPasswordReset) {
+            if (data.state === 'active' && onClickPasswordReset) {
                 let resetPasswordEelement = <div key={"resetPassword"} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
                 result.push(resetPasswordEelement)
             }
         }
 
-        if (data.admin_types){
+        if (data.roles){
             result.push(<div key={"adminTypes"}><label>{display.admin_types}</label></div>)
             let systemAdminCheckboxElement = <React.Fragment key={"systemAdminCheckbox"}>
                 <div>
                     <label htmlFor={Constants.admin.systemRole.SYS_ADMIN}>
                         <input id={Constants.admin.systemRole.SYS_ADMIN}
-                               type="checkbox" defaultChecked={AdminUtil.hasSystemAdmin(data.admin_types)}
+                               type="checkbox" defaultChecked={AdminUtil.hasSystemAdmin(data.roles)}
                                onChange={(e) => onChangeSystemAdmin(e)}
                                value={Constants.admin.systemRole.SYS_ADMIN}
                         />
@@ -227,7 +230,7 @@ const UserListInspector = (props: Props) => {
                 <div className={'mb-8px'}>
                     <label htmlFor={Constants.admin.systemRole.USR_ADMIN}>
                         <input id={Constants.admin.systemRole.USR_ADMIN}
-                               type="checkbox" defaultChecked={AdminUtil.hasUserAdmin(data.admin_types)}
+                               type="checkbox" defaultChecked={AdminUtil.hasUserAdmin(data.roles)}
                                onChange={(e) => onChangeSystemAdmin(e)}
                                value={Constants.admin.systemRole.USR_ADMIN}
                         />

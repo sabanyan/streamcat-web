@@ -14,7 +14,6 @@ import {addNotification, removeNotification} from 'reapop';
 import {InputForm, TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
 import Select from 'react-select';
-import {LibraryChild} from 'Model/Library';
 import UserListInspector from 'Shared/Inspector/UserListInspector';
 import {project} from 'Shared/IconRenderer/icon';
 import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
@@ -230,7 +229,7 @@ const UserList = (props: Props) => {
                     }
                 );
                 setIsLoading(true);
-                selectedDatas.forEach((selectedData: LibraryChild) => {
+                selectedDatas.forEach((selectedData: UserListUser) => {
                     queue.push(deleteUser, [selectedData]);
                 });
                 queue.push(setIsLoading, [false]);
@@ -250,7 +249,7 @@ const UserList = (props: Props) => {
     // ユーザ一覧を表示する
     const renderUserList = () => {
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => {
-            let data: UserListUser = cell;
+            let data: UserListUser = users.find(user=>(cell.uuid === user.uuid));
             if (event && (event.metaKey || event.ctrlKey)) {
                 data.selected = true;
                 // command or ctrl + click
@@ -258,7 +257,7 @@ const UserList = (props: Props) => {
                     data.selected = !data.selected;
                     setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
                 } else {
-                    selectedDatas.push(data);
+                    setSelectedDatas([...selectedDatas,data]);
                 }
                 setLastSelected(data);
             } else if (event && event.shiftKey) {

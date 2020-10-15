@@ -7061,6 +7061,9 @@ input::placeholder, textarea::placeholder {
   .none-pointer-events * {
     pointer-events: none; }
 
+#navbarDropdownMenuLink {
+  cursor: pointer; }
+
 .kskp-list-link {
   cursor: pointer;
   color: #61B8E2 !important; }
