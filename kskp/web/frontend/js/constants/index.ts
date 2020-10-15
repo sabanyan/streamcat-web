@@ -115,6 +115,8 @@ const Constants = {
     SHOW_RUN_ERROR: 'show_run_error',
     PREVIEW_DATASOURCE: 'preview_datasource',
     RESET_USER_PASSWORD: 'reset_user_password',
+    CONFIRM_UPDATE_SYSTEM_ADMIN: 'confirm_update_system_admin',
+    CONFIRM_UPDATE_MY_SYSTEM_ADMIN: 'confirm_update_my_system_admin',
     property: {
       title: 'title',
       message: 'message',
@@ -233,6 +235,13 @@ const Constants = {
     "CR",
     "LF",
     "CR+LF"
-  ]
+  ],
+  admin:{
+    systemRole: {
+      EVERYONE:"EVERYONE",
+      USR_ADMIN:"USR_ADMIN",
+      SYS_ADMIN:"SYS_ADMIN"
+    }
+  }
 }
 export default Constants
