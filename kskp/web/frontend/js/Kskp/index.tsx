@@ -63,7 +63,7 @@ const Kskp = (props: Props) => {
     };
 
     useEffect(() => {
-        getNavigation();
+        if(viewId !== ViewId.Undefined)getNavigation();
     }, []);
 
     const renderNavigationBar = () => {
@@ -76,7 +76,7 @@ const Kskp = (props: Props) => {
 
     const renderView = (viewId: ViewId) => {
         let viewComponent: React.ReactNode = null;
-
+        if(viewId === ViewId.Undefined) return null;
         if (nav === undefined) {
             return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true}/>
         }
