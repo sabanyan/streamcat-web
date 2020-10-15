@@ -265,15 +265,11 @@ class FrameApiTestCase(ApiTestCaseBase):
         ]
         frame_uuid = self.create_data(Path(self.TESTDATA_DIR) / 'test_data.csv', data)
 
-        with app.test_client() as client:
-            response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
+        # テストデータをダウンロードする
+        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER1)
 
-        self.assertEqual(response.status_code, 200)
-        # GET /filesの@login_required_apiを解除すればテストはパスするが、解除したまま忘れてしまうリスクもあるしで悩ましい
-        self.assertFalse('not authorized' in str(response.data), 'GET /filesの認証を解除しないとテストできないです')
-        # ResourceWarningが出てしまうが、特に問題ありません。
-        self.assertEqual(response.mimetype, 'text/csv')
-        self.assertEqual(response.data,
+        # 作成したテストデータとダウンロードしたデータが一致すること
+        self.assertEqual(result,
                          b'\xe9\xa1\xa7\xe5\xae\xa2,\xe6\x95\xb0\xe9\x87\x8f,'
                          b'\xe9\x87\x91\xe9\xa1\x8d\nA,1,10\nA,2,20\nB,1,30\nB,3,40\nB,1,50\n')
 
@@ -295,15 +291,12 @@ class FrameApiTestCase(ApiTestCaseBase):
 
         # S_JISに変換してダウンロードするため、環境変数を設定する
         os.environ['FRAME_CHARACTER_CODE'] = 'cp932'
+        
+        # テストデータをダウンロードする
+        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER1)
 
-        with app.test_client() as client:
-            response = client.get('/api/v0/files?type=frame&uuid=%s&ext=csv' % frame_uuid)
-
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse('not authorized' in str(response.data), 'GET /filesの認証を解除しないとテストできないです')
-        # ResourceWarningが出てしまうが、特に問題ありません。
-        self.assertEqual(response.mimetype, 'text/csv')
-        self.assertEqual(response.data,
+        # 作成したテストデータがS_JISに変換されていること
+        self.assertEqual(result,
                          b'\x8c\xda\x8bq,\x90\x94\x97\xca,\x8b\xe0\x8az\r\n'
                          b'A,1,10\r\nA,2,20\r\nB,1,30\r\nB,3,40\r\nB,1,50\r\n')
 
@@ -546,7 +539,7 @@ class FlowApiTestCase(ApiTestCaseBase):
 
         # 生成したキャッシュのUUIDを取得する
         result = self.get_uri(f'/api/v0/flows/{test_flow_uuid}', self.USER1)
-        cache_uuid1 = result['data']['nodes'][1]['uuid']
+        cache_uuid1 = result['data']['flow']['nodes'][1]['uuid']
 
         # フローをコピーする
         data_copy_flow = {'original_flow_uuid': test_flow_uuid}
@@ -584,8 +577,18 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['success'], True)
 
         # self.assertEqual(flow_path.stem, data_source_name)
-        self.assertEqual(result['data']['projectId'], None)
+
+        # GET /flows/<uuid>の結果を検証する
+        self.assertEqual(result['data']['uuid'], test_flow_uuid)
+        self.assertEqual(result['data']['type'], 'flow')
         self.assertEqual(result['data']['label'], test_flow_label)
+        self.assertEqual(result['data']['prevFolderPath'], None)
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['flow']['projectId'], None)
+        self.assertEqual(result['data']['flow']['label'], test_flow_label)
+        self.assertEqual(result['data']['flow']['params'], [])
+        self.assertEqual(result['data']['flow']['ports'], [[],[]])
         self.assertEqual(result['navigation']['user_id'], self.USER1.id)
         self.assertEqual(result['navigation']['user_name'], 'ユーザ管理者')
         # self.assertEqual(result['navigation']['project_uuid'], )

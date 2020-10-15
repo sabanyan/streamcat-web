@@ -30,15 +30,18 @@ def download_flow(uuid):
 @login_required_api
 @api_base  
 def upload_flow():
+    from pathlib import Path
+
     if 'file' not in request.files or request.files.get('file') is None:
         raise Exception('No archive file found.')
 
     root = g.factory.data.load_root()
+    filename = Path(request.files.get('file').filename).stem
     stream = request.files.get('file').stream
-    
+
     from kskp.store import FlowDumper
     flow_dumper = FlowDumper(g.factory)
-    flow_dumper.restore_archive(root, stream)
+    flow_dumper.restore_archive(root, filename, stream)
 
 @mod.route('/stores', methods=['GET'])
 @login_required_api
