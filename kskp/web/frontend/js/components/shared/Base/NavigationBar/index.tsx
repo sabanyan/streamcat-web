@@ -66,7 +66,7 @@ const NavigationBar = (props: Props) => {
             {depoName}
             {renderUserSettingsMenu()}
             {renderUserAdminMenu()}
-            <a href="javascript:return false;" className="dropdown-item" onClick={(e) => onClickLogout(e)}>ログアウト</a>
+            <a href="#" className="dropdown-item" onClick={(e) =>{e.preventDefault();onClickLogout(e)}}>ログアウト</a>
         </NavigationBarUserMenuItem>
 
     };

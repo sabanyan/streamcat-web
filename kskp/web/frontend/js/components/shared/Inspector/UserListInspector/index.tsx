@@ -160,7 +160,7 @@ const UserListInspector = (props: Props) => {
         if (!data) return result
 
         if (data.email) {
-            let label = <React.Fragment>
+            let label = <React.Fragment key={"email"}>
                 <div><label>{display.email}</label></div>
                 <div className={'mb-8px'}>{data.email}</div>
             </React.Fragment>
@@ -169,9 +169,9 @@ const UserListInspector = (props: Props) => {
 
         if (data.projects) {
             let projects = data.projects.map((project) => {
-                return <div className={style.project}>{project.label}</div>
+                return <div key={project.uuid} className={style.project}>{project.label}</div>
             })
-            const projectElements = <React.Fragment>
+            const projectElements = <React.Fragment key={"projects"}>
                 <div><label>{display.projects}({data.projects.length})</label></div>
                 <div className={'mb-8px'}>{projects}</div>
             </React.Fragment>
@@ -180,7 +180,7 @@ const UserListInspector = (props: Props) => {
         }
 
         if (data.status) {
-            let status = <React.Fragment>
+            let status = <React.Fragment key={"status"}>
                 <div><label>{display.status}</label></div>
                 <div className={'mb-8px'}>{AdminUtil.getUserStatus(data.status)}</div>
             </React.Fragment>
@@ -188,7 +188,7 @@ const UserListInspector = (props: Props) => {
 
             const {onClickShowPassword} = props;
             if (data.status === Constants.admin.userStatus.tmp && onClickShowPassword) {
-                let tempPasswordLabel = <React.Fragment>
+                let tempPasswordLabel = <React.Fragment key={"password"}>
                     <div><label>{display.password}</label></div>
                     <div
                         className={'mb-8px'}>{(showPassword) ? data.password : AdminUtil.replaceAsterisk(data.password.length)}</div>
@@ -197,19 +197,19 @@ const UserListInspector = (props: Props) => {
                 const _onClickShowPassword = () => {
                     setShowPassword(true)
                 }
-                let showPasswordElement = (!showPassword)?<div className={'mb-8px'}><Button onClick={()=>_onClickShowPassword()}>仮パスワードを表示する</Button></div>:null;
+                let showPasswordElement = (!showPassword)?<div key={"showPassword"} className={'mb-8px'}><Button onClick={()=>_onClickShowPassword()}>仮パスワードを表示する</Button></div>:null;
                 result.push(showPasswordElement)
             }
             const {onClickPasswordReset} = props;
             if (data.status === 'active' && onClickPasswordReset) {
-                let resetPasswordEelement = <div className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
+                let resetPasswordEelement = <div key={"resetPassword"} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
                 result.push(resetPasswordEelement)
             }
         }
 
         if (data.admin_types){
-            result.push(<div><label>{display.admin_types}</label></div>)
-            let systemAdminCheckboxElement = <React.Fragment>
+            result.push(<div key={"adminTypes"}><label>{display.admin_types}</label></div>)
+            let systemAdminCheckboxElement = <React.Fragment key={"systemAdminCheckbox"}>
                 <div>
                     <label htmlFor={Constants.admin.systemRole.SYS_ADMIN}>
                         <input id={Constants.admin.systemRole.SYS_ADMIN}
@@ -223,7 +223,7 @@ const UserListInspector = (props: Props) => {
                 </div>
             </React.Fragment>
             result.push(systemAdminCheckboxElement)
-            let userAdminCheckboxElement = <React.Fragment>
+            let userAdminCheckboxElement = <React.Fragment key={"userAdminCheckbox"}>
                 <div className={'mb-8px'}>
                     <label htmlFor={Constants.admin.systemRole.USR_ADMIN}>
                         <input id={Constants.admin.systemRole.USR_ADMIN}

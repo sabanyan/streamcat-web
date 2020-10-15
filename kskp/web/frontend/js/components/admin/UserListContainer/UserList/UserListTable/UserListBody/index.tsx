@@ -50,12 +50,12 @@ const UserListBody = (props: Props) => {
             uuid: string,
             systemRole: string,
         },index): React.ReactNode => {
-            const spacer = (index)?<Spacer width={8}/>:null
+            const spacer = (index)?<React.Fragment key={index}><Spacer width={8}/></React.Fragment>:null
             switch (type.systemRole) {
                 case 'USR_ADMIN':
-                    return <>{spacer}<Badge color={"darkGreen"}>ユーザー</Badge></>;
+                    return <React.Fragment key={index}>{spacer}<Badge color={"darkGreen"}>ユーザー</Badge></React.Fragment>;
                 case 'SYS_ADMIN':
-                    return <>{spacer}<Badge color={"darkBlue"}>システム</Badge></>;
+                    return <React.Fragment key={index}>{spacer}<Badge color={"darkBlue"}>システム</Badge></React.Fragment>;
                 case 'EVERYONE':
                 default:
                     return null
@@ -77,8 +77,8 @@ const UserListBody = (props: Props) => {
     };
 
     const bodiesElement = bodies.map((body: ITableBody, index) => {
-        return <tr className={classnames(style.row, {[style.selected]: body.selected})}
-                   onClick={(event) => onClick(event, body)} key={index}>
+        return <tr key={body.uuid} className={classnames(style.row, {[style.selected]: body.selected})}
+                   onClick={(event) => onClick(event, body)}>
             <td>
                 {ImageUtil.getIconElement("icon-user")}
                 {body.name}
