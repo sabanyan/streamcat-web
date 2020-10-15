@@ -241,6 +241,11 @@ const Constants = {
       EVERYONE:"EVERYONE",
       USR_ADMIN:"USR_ADMIN",
       SYS_ADMIN:"SYS_ADMIN"
+    },
+    userStatus: {
+      tmp: "tmp",
+      active: "active",
+      inactive: "inactive"
     }
   }
 }

@@ -579,15 +579,15 @@ const UserList = (props: Props) => {
         });
 
         const statusData: IFilterListItem[] = [{
-            id: "tmp",
+            id: Constants.admin.userStatus.tmp,
             label: '仮登録',
             selected: false
         }, {
-            id: "active",
+            id: Constants.admin.userStatus.active,
             label: '利用中',
             selected: false
         }, {
-            id: "inactive",
+            id: Constants.admin.userStatus.inactive,
             label: '削除済',
             selected: false
         }];

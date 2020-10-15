@@ -3,11 +3,11 @@ import Constants from 'Constants/index';
 export default class AdminUtil {
     static getUserStatus = (status: string): string => {
         switch (status) {
-            case 'active':
+            case Constants.admin.userStatus.active:
                 return '利用中';
-            case 'tmp':
+            case Constants.admin.userStatus.tmp:
                 return '仮登録';
-            case 'inactive':
+            case Constants.admin.userStatus.inactive:
                 return '削除済';
         }
         return '';
