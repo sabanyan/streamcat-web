@@ -551,6 +551,7 @@ const UserList = (props: Props) => {
         }
 
         return <UserListInspector
+            navigation={navigation}
             notify={notify}
             selected={selectedDatas}
             lastSelected={lastSelected}

@@ -11,6 +11,9 @@ import AdminUtil from 'Utils/AdminUtil';
 import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
 import ErrorUtil from 'Utils/ErrorUtil';
+import {Spacer} from 'Shared/Base';
+import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
+import WebUtil from 'Utils/WebUtil';
 
 interface Props {
     selected: UserListUser[];
@@ -22,6 +25,7 @@ interface Props {
     onClickShowPassword?: Function;
     onChangedUserSystemAdminRole?: Function;
     notify: Function;
+    navigation?: NavigationModelProps
 }
 
 const display = {
@@ -36,23 +40,62 @@ const display = {
 
 
 const UserListInspector = (props: Props) => {
-    const {notify} = props;
-    const [showPassword, setShowPassword] = useState<Boolean>(false)
+    const {notify, navigation} = props;
+    const {selected, lastSelected, onBlurTitle} = props
+    const [showPassword, setShowPassword] = useState<boolean>(false)
+    const [systemAdminChecked, setSystemAdminChecked] = useState<boolean>(false)
+    const [userAdminChecked, setUserAdminChecked] = useState<boolean>(false)
 
-    // useEffect(()=>{
-    //     // // パスワードリセットの処理
-    //     // ModalUtil.registerModal({
-    //     //     id: Constants.modal.CONFIRM_UPDATE_SYSTEM_ADMIN, onClickDone: () => {
-    //     //
-    //     //     },
-    //     // })
-    //     // // ユーザ作成後の確認ダイアログ
-    //     // ModalUtil.registerModal({
-    //     //     id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
-    //     //         ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
-    //     //     }
-    //     // })
-    // }, [])
+    useEffect(() => {
+        console.log(lastSelected)
+        console.log(AdminUtil.hasSystemAdmin(lastSelected.roles))
+        console.log(AdminUtil.hasUserAdmin(lastSelected.roles))
+        setSystemAdminChecked(AdminUtil.hasSystemAdmin(lastSelected.roles))
+        setUserAdminChecked(AdminUtil.hasUserAdmin(lastSelected.roles))
+    }, [lastSelected])
+
+    useEffect(()=>{
+        // 権限更新確認ダイアログ
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN, onClickDone: () => {
+                activateSystemAdminRole(lastSelected.uuid,systemAdminChecked)
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN)
+            },onClickCancel: ()=>{
+                setSystemAdminChecked(!systemAdminChecked);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN)
+            },onClickClose: ()=>{
+                setSystemAdminChecked(!systemAdminChecked);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN)
+            }
+        })
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN, onClickDone: () => {
+                activateUserAdminRole(lastSelected.uuid,userAdminChecked)
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN)
+            },onClickCancel: ()=>{
+                setUserAdminChecked(!userAdminChecked);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN)
+            },onClickClose: ()=>{
+                setSystemAdminChecked(!userAdminChecked);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN)
+            }
+        })
+        // 自分のユーザー管理権限を剥奪する場合
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN, onClickDone: () => {
+                activateUserAdminRole(lastSelected.uuid,false).then(()=>{
+                    WebUtil.logout();
+                })
+                ModalUtil.closeModal(Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN)
+            },onClickCancel: ()=>{
+                setUserAdminChecked(true);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN)
+            },onClickClose: ()=>{
+                setUserAdminChecked(true);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN)
+            }
+        })
+    }, [lastSelected,systemAdminChecked,userAdminChecked])
 
     // システム権限を更新する
     const _activateAdminRole = (role:string, uuid: string,active: boolean) =>{
@@ -117,10 +160,10 @@ const UserListInspector = (props: Props) => {
     }
 
     const activateSystemAdminRole = (uuid: string,active: boolean) =>{
-        _activateAdminRole(Constants.admin.systemRole.SYS_ADMIN,uuid,active);
+        return _activateAdminRole(Constants.admin.systemRole.SYS_ADMIN,uuid,active);
     }
     const activateUserAdminRole = (uuid: string,active: boolean) =>{
-        _activateAdminRole(Constants.admin.systemRole.USR_ADMIN,uuid,active);
+        return _activateAdminRole(Constants.admin.systemRole.USR_ADMIN,uuid,active);
     }
 
     const renderButtons = (data?: UserListUser) => {
@@ -129,11 +172,8 @@ const UserListInspector = (props: Props) => {
         let del
 
         const availableDelete = ([...selected].findIndex((user)=>{
-            console.log(user)
             return (user.state !== Constants.admin.userStatus.inactive)
         }) !== -1);
-
-        console.log(availableDelete)
 
         // 複数選択の場合
         if (selected.length >= 1) {
@@ -146,13 +186,70 @@ const UserListInspector = (props: Props) => {
 
     const onChangeSystemAdmin = (e:React.ChangeEvent<HTMLInputElement>)=>{
         const {lastSelected} = props;
-        console.log(lastSelected);
         if(e.target.value === Constants.admin.systemRole.SYS_ADMIN){
+            setSystemAdminChecked(e.target.checked);
             // システム管理者がチェックされていた場合
-            activateSystemAdminRole(lastSelected.uuid,e.target.checked)
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN,
+                visible: true,
+                done: (e.target.checked)?"付与する":"外す",
+                content: <div className={style.modal}>
+                    <form>
+                        <div>
+                            {
+                                (e.target.checked)?
+                                    <div>システム管理権限を付与してもよろしいですか</div>
+                                    :
+                                    <div>システム管理権限を外してもよろしいですか</div>
+                            }
+                        </div>
+                    </form>
+                    <div className={'mt-8px'}/>
+                </div>
+            });
         }else if(e.target.value === Constants.admin.systemRole.USR_ADMIN){
             // ユーザー管理者がチェックされていた場合
-            activateUserAdminRole(lastSelected.uuid,e.target.checked)
+            setUserAdminChecked(e.target.checked);
+            const isMe = (navigation && navigation.user.uuid === lastSelected.uuid)
+            const needLogout = isMe && !e.target.checked
+            if(needLogout){
+                ModalUtil.emitModal({
+                    id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN,
+                    visible: true,
+                    done: "外す",
+                    danger: true,
+                    content: <div className={style.modal}>
+                        <form>
+                            <div>
+                                自身のユーザー管理権限を外すと、ユーザー管理機能が利用できなくなります。
+                                ユーザー管理権限を外す場合、直ちにログアウトされますがよろしいですか？
+                            </div>
+                        </form>
+                        <div className={'mt-8px'}/>
+                    </div>
+                });
+            }else{
+                ModalUtil.emitModal({
+                    id: Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN,
+                    visible: true,
+                    done: (e.target.checked)?"付与する":"外す",
+                    danger: (!e.target.checked),
+                    content: <div className={style.modal}>
+                        <form>
+                            <div>
+                                {
+                                    (e.target.checked)?
+                                        <div>ユーザー管理権限を付与してもよろしいですか</div>
+                                        :
+                                        <div>ユーザー管理権限を外してもよろしいですか</div>
+                                }
+                            </div>
+                        </form>
+                        <div className={'mt-8px'}/>
+                    </div>
+                });
+            }
+
         }
     }
 
@@ -216,7 +313,8 @@ const UserListInspector = (props: Props) => {
                 <div>
                     <label htmlFor={Constants.admin.systemRole.SYS_ADMIN}>
                         <input id={Constants.admin.systemRole.SYS_ADMIN}
-                               type="checkbox" defaultChecked={AdminUtil.hasSystemAdmin(data.roles)}
+                               type="checkbox"
+                               checked={systemAdminChecked}
                                onChange={(e) => onChangeSystemAdmin(e)}
                                value={Constants.admin.systemRole.SYS_ADMIN}
                         />
@@ -230,7 +328,8 @@ const UserListInspector = (props: Props) => {
                 <div className={'mb-8px'}>
                     <label htmlFor={Constants.admin.systemRole.USR_ADMIN}>
                         <input id={Constants.admin.systemRole.USR_ADMIN}
-                               type="checkbox" defaultChecked={AdminUtil.hasUserAdmin(data.roles)}
+                               type="checkbox"
+                               checked={userAdminChecked}
                                onChange={(e) => onChangeSystemAdmin(e)}
                                value={Constants.admin.systemRole.USR_ADMIN}
                         />
@@ -273,7 +372,6 @@ const UserListInspector = (props: Props) => {
     }
 
 
-    const {selected, lastSelected, onBlurTitle} = props
     let label = (lastSelected && selected.length <= 1) ? lastSelected.name : undefined
     let content = (selected.length <= 1) ? renderSelect(lastSelected) : renderSelects(selected, lastSelected)
 
