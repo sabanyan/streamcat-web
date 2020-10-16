@@ -58,7 +58,9 @@ const UserListInspector = (props: Props) => {
         // 権限更新確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN, onClickDone: () => {
-                activateSystemAdminRole(lastSelected.uuid,systemAdminChecked)
+                activateSystemAdminRole(lastSelected.uuid,systemAdminChecked).catch(_=>{
+                    setSystemAdminChecked(!systemAdminChecked);
+                })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN)
             },onClickCancel: ()=>{
                 setSystemAdminChecked(!systemAdminChecked);
@@ -70,7 +72,9 @@ const UserListInspector = (props: Props) => {
         })
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(lastSelected.uuid,userAdminChecked)
+                activateUserAdminRole(lastSelected.uuid,userAdminChecked).catch(_=>{
+                    setUserAdminChecked(!userAdminChecked);
+                })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN)
             },onClickCancel: ()=>{
                 setUserAdminChecked(!userAdminChecked);
@@ -83,8 +87,10 @@ const UserListInspector = (props: Props) => {
         // 自分のユーザー管理権限を剥奪する場合
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(lastSelected.uuid,false).then(()=>{
+                activateUserAdminRole(lastSelected.uuid,false).then((res)=>{
                     WebUtil.logout();
+                }).catch(_=>{
+                    setUserAdminChecked(true);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN)
             },onClickCancel: ()=>{
@@ -98,7 +104,7 @@ const UserListInspector = (props: Props) => {
     }, [lastSelected,systemAdminChecked,userAdminChecked])
 
     // システム権限を更新する
-    const _activateAdminRole = (role:string, uuid: string,active: boolean) =>{
+    const _activateAdminRole = async (role:string, uuid: string,active: boolean) =>{
         let url;
         switch (role){
             case Constants.admin.systemRole.USR_ADMIN:
@@ -113,19 +119,7 @@ const UserListInspector = (props: Props) => {
         if (!url)return;
         const {onChangedUserSystemAdminRole} = props;
         if(active){
-            return APIUtil.put(url).then((response)=>{
-                if(response.data.success){
-                    if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
-                }else {
-                    notify({
-                        title: 'システム権限更新エラー',
-                        message: ReactDomUtil.renderToString(response.data.message),
-                        status: 'error',
-                        dismissAfter: 0,
-                        closeButton: true
-                    })
-                }
-            }).catch((error) => {
+            const response = await APIUtil.put(url).catch((error) => {
                 notify({
                     title: 'システム権限更新エラー',
                     message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
@@ -133,21 +127,23 @@ const UserListInspector = (props: Props) => {
                     dismissAfter: 0,
                     closeButton: true
                 })
+                return Promise.reject()
             });
+            if(response.data.success){
+                if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
+            }else {
+                notify({
+                    title: 'システム権限更新エラー',
+                    message: ReactDomUtil.renderToString(response.data.message),
+                    status: 'error',
+                    dismissAfter: 0,
+                    closeButton: true
+                })
+                return Promise.reject()
+            }
+            return response;
         }else{
-            return APIUtil.delete(url).then((response)=>{
-                if(response.data.success){
-                    if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
-                }else {
-                    notify({
-                        title: 'システム権限更新エラー',
-                        message: ReactDomUtil.renderToString(response.data.message),
-                        status: 'error',
-                        dismissAfter: 0,
-                        closeButton: true
-                    })
-                }
-            }).catch((error) => {
+            const response = await APIUtil.delete(url).catch((error) => {
                 notify({
                     title: 'システム権限更新エラー',
                     message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
@@ -155,7 +151,22 @@ const UserListInspector = (props: Props) => {
                     dismissAfter: 0,
                     closeButton: true
                 })
+                return Promise.reject()
             });
+
+            if(response.data.success){
+                if(onChangedUserSystemAdminRole)onChangedUserSystemAdminRole()
+            }else {
+                notify({
+                    title: 'システム権限更新エラー',
+                    message: ReactDomUtil.renderToString(response.data.message),
+                    status: 'error',
+                    dismissAfter: 0,
+                    closeButton: true
+                })
+                return Promise.reject()
+            }
+            return response;
         }
     }
 
