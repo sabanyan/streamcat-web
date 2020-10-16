@@ -1700,6 +1700,68 @@ class SystemTestCase(ApiTestCaseBase):
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER2)
 
+    def test_move_inter_projects(self):
+        """
+        プロジェクト間でファイルを移動した場合、
+        ファイルの権限は移動先プロジェクトの権限に従うこと
+        """
+        # ルートフォルダを取得する
+        root = self.factory.data.load_root()
+        # ルートフォルダの下にプロジェクトAを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'格さん'}, self.USER0)
+        project_a_uuid = result['data']['uuid']
+        project_a_modified_at = result['data']['modifiedAt']
+
+        # ルートフォルダの下にプロジェクトBを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'助さん'}, self.USER3)
+        project_b_uuid = result['data']['uuid']
+        project_b_modified_at = result['data']['modifiedAt']
+
+        # USER2をプロジェクトAとBの編集者にする
+        result = self.put_uri(f'/api/v0/projects/{project_a_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER0)
+        result = self.put_uri(f'/api/v0/projects/{project_b_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER3)
+
+        # プロジェクトAの下にフレームを作成する
+        f = (io.BytesIO(b'I am a chilimen byer'), 'frame1.csv')
+        result = self.post_frames('御隠居', project_a_uuid, f, self.USER0)
+        frame_uuid = result['data']['uuid']
+
+        # USER2は、フレームをプロジェクトAからプロジェクトBへ移動できること
+        result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {"parent": project_b_uuid}, self.USER2)
+
+        # プロジェクトAのメンバは、フレームを参照できないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER0)
+
+        # プロジェクトAのメンバは、フレームをプレビューできないこと
+        # Visデータのポイント引数の作成
+        data = {
+            "args" : {
+                "visualizer" : "csvtohtmltable",
+                "offset" : 0,
+                "limit"  : 100
+            }
+        }
+        with self.assertRaises(AssertionError):
+            self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER0)
+
+        # プロジェクトBのメンバは、フレームの参照・更新ができること
+        result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': '水戸光圀公であらせられるぞ'}, self.USER3)
+
+        # USER2は、フレームを削除する
+        self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_a_uuid}', self.USER0)
+        self.delete_uri(f'/api/v0/projects/{project_b_uuid}', self.USER3)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER0)
+        self.delete_uri('/api/v0/trashes', self.USER3)
+
     def test_exec_flow_in_project(self):
         """
         プロジェクトメンバはプロジェクト内のFlowを実行できること
