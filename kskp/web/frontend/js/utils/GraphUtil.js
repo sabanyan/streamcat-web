@@ -247,7 +247,7 @@ class GraphUtil {
     const self = this
     let hasPosition = false
 
-    if (!json.nodes) return new FlowModel()
+    if (!json || !json.nodes) return new FlowModel()
 
     let newNodes = []
     json.nodes.forEach((node) => {
