@@ -110,13 +110,13 @@ export default class ModalManager extends React.Component<Props> {
                    title="" dynamic={true} footer={true}>
             </Modal>
             <Modal key={Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN} id={Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN}
-                   title="KSKP 管理権限の更新" dynamic={true} footer={true}>
+                   title="KSKP 管理権限の設定" dynamic={true} footer={true}>
             </Modal>
             <Modal key={Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN} id={Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN}
-                   title="KSKP 管理権限の更新" dynamic={true} footer={true}>
+                   title="KSKP 管理権限の設定" dynamic={true} footer={true}>
             </Modal>
             <Modal key={Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN} id={Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN}
-                   title="KSKP 管理権限の更新" dynamic={true} footer={true}>
+                   title="KSKP 管理権限の設定" dynamic={true} footer={true}>
             </Modal>
         </>;
     }
