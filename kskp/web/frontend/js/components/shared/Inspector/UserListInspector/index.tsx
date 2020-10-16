@@ -193,6 +193,7 @@ const UserListInspector = (props: Props) => {
                 id: Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN,
                 visible: true,
                 done: (e.target.checked)?"付与する":"外す",
+                danger: (!e.target.checked),
                 content: <div className={style.modal}>
                     <form>
                         <div>
