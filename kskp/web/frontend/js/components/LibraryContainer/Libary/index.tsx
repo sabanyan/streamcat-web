@@ -1517,7 +1517,7 @@ const Library = (_: Props) => {
                 visible: true,
                 done: "保存する",
                 content: <MemberForm
-                    rows={[]}
+                    rows={members}
                     searchedRows={[]}
                     onSearchTextInputed={onSearchTextInputed}
                 />
