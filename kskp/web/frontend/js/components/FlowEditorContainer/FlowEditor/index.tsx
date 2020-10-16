@@ -223,7 +223,7 @@ const FlowEditor = (props: Props) => {
 
         Promise.all(preRequest).then(() => {
             flowRequest.push(APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
-                const json = response.data;
+                const json = response.data.data;
                 loadFlowJSON(json)
             }));
         }).catch((error) => {
