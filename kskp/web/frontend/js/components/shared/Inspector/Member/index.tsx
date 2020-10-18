@@ -19,33 +19,35 @@ type Props = {
   searchedRows: Row[];
 
   onSearchTextInputed: Function;
-  onSeachedMemberClicked: Function;
+  onSearchedMemberClicked: Function;
   onMemberRoleChanged: Function;
-  onDeleteMemberClicked: Function;
-  onSaveClicked: Function;
+  onMemberSaveClicked: Function;
 }
 
 export default function Member(props: Props) {
   const { rows, searchedRows } = props
-  const { onSearchTextInputed } = props
+  const { onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged, onMemberSaveClicked} = props
 
   const searchedList = searchedRows.map((row) => {
-    return <a key={row.email} href="javascript:void(0)">{row.name + " (" + row.email + ")"}</a>
+    return <a key={row.email}
+      href="javascript:void(0)"
+      onClick={(e) => onSearchedMemberClicked(e, rows, row)}>{row.name + " (" + row.email + ")"}</a>
   })
 
-  const roleForm = (role, onChange) => {
+  const roleForm = (row) => {
     return <Select
-    native
-    value={role}
-    onChange={onChange}
-  >
-    <option aria-label="None" value="Unkown" />
-    <option value="Owner">P管理者</option>
-    <option value="Writer">編集者</option>
-    <option value="Reader">閲覧者</option>
-    <option value="Del">削除する</option>
-  </Select>
-  } 
+      native
+      value={row.type ? row.type : "Reader"}
+      onChange={(e) => onMemberRoleChanged(e, rows, row)}
+    
+    >
+      <option aria-label="None" value="Unkown" />
+      <option value="Owner">P管理者</option>
+      <option value="Writer">編集者</option>
+      <option value="Reader">閲覧者</option>
+      <option value="Del">削除する</option>
+    </Select>
+  }
 
   return <React.Fragment>
     <div className={style.paper}>
@@ -77,7 +79,7 @@ export default function Member(props: Props) {
                   {row.name}
                 </TableCell>
                 <TableCell>{row.email}</TableCell>
-                <TableCell>{roleForm(row.type, null)}</TableCell>
+                <TableCell>{roleForm(row)}</TableCell>
               </TableRow>
             ))}
           </TableBody>
