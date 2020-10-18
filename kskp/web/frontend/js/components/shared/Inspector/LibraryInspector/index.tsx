@@ -33,7 +33,8 @@ type State = {
     state: string;
     type: string;
     uuid: string;
-  }[] | null
+  }[] | null,
+  projectModifiedAt : string
 }
 class LibraryInspector extends React.Component<Props, State> {
   display = {
@@ -48,19 +49,20 @@ class LibraryInspector extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props)
     this.state = {
-      members: []
+      members: [],
+      projectModifiedAt : ""
     }
   }
 
   componentWillMount() {
 
     const { lastSelected } = this.props
-    console.log("fffff1")
     if (lastSelected && lastSelected.type === "project") {
       APIUtil.get("/projects/" + lastSelected.uuid + "?members=on&allowlist=on").then((response) => {
         if (response.data.success && response.data.data.members) {
           this.setState({
-            members: response.data.data.members
+            members: response.data.data.members,
+            projectModifiedAt: response.data.data.modified_at
           })
         }
       })
@@ -254,10 +256,8 @@ class LibraryInspector extends React.Component<Props, State> {
     return content
   }
 
-  renderProjectInfo() {
+  renderProjectInfo(project:any) {
     const { onClickMemberInfo } = this.props;
-    console.log("mem")
-    console.log(this.state.members)
     const memberCount = this.state.members ? this.state.members.length : 0
     let members: any = null
     if (this.state.members) {
@@ -269,7 +269,7 @@ class LibraryInspector extends React.Component<Props, State> {
 
     return <React.Fragment>
       <label>{"このプロジェクトのメンバー（" + memberCount + ")"}</label>
-      {(onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, this.state.members)} icon={"people"}>メンバーを編集する</Button> : null}
+      {(onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, this.state.members, project.uuid, this.state.projectModifiedAt)} icon={"people"}>メンバーを編集する</Button> : null}
       <div className={style.memberList}>
         {members}
       </div>
@@ -284,7 +284,7 @@ class LibraryInspector extends React.Component<Props, State> {
     return <Resizer>
       <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={true}>
         {content}
-        {(lastSelected && lastSelected.type === "project") ? this.renderProjectInfo() : null}
+        {(lastSelected && lastSelected.type === "project") ? this.renderProjectInfo(lastSelected) : null}
       </BaseInspector>
     </Resizer>
   }

@@ -28,6 +28,7 @@ import TrashInspector from "Shared/Inspector/TrashInspector";
 import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";
 import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
+import { project } from '../../shared/IconRenderer/icon/index';
 
 export interface Database {
     label?: string;
@@ -1472,14 +1473,66 @@ const Library = (_: Props) => {
             });
         };
 
+        const onMemberRoleChanged = (e, members: any[], user: any) => {
+            const value = e.currentTarget.value
 
-        const onSearchTextInputed = async (e, members) => {
+
+            if (value === "Del") {
+                members = members.filter((mem) => {
+                    return mem.uuid !== user.uuid
+                })
+            } else {
+                members = members.map((mem) => {
+                    if (mem.uuid === user.uuid) {
+                        mem.type = value
+                    }
+                    return mem
+                })
+            }
+
+            ModalUtil.emitModal({
+                id: Constants.modal.MEMBER_INFO,
+                visible: true,
+                done: "保存する",
+                content: <MemberForm
+                    rows={members}
+                    searchedRows={[]}
+                    onSearchTextInputed={onSearchTextInputed}
+                    onSearchedMemberClicked={onSearchedMemberClicked}
+                    onMemberRoleChanged={onMemberRoleChanged}
+                />
+            });
+
+        }
+
+        const onSearchedMemberClicked = (e, members: any[], addMember: any) => {
+            members.unshift(addMember)
+            ModalUtil.emitModal({
+                id: Constants.modal.MEMBER_INFO,
+                visible: true,
+                done: "保存する",
+                content: <MemberForm
+                    rows={members}
+                    searchedRows={[]}
+                    onSearchTextInputed={onSearchTextInputed}
+                    onSearchedMemberClicked={onSearchedMemberClicked}
+                    onMemberRoleChanged={onMemberRoleChanged}
+                />
+            });
+        }
+
+        const onSearchTextInputed = async (e, members: any[], addMember: any) => {
             const searchText = e.currentTarget.value ? e.currentTarget.value : ""
             let seachResult = []
             if (searchText !== "") {
                 let response = await APIUtil.get("/users?q=" + searchText + "&roles=off&projects=on")
                 if (response.data.success && response.data.data) {
                     seachResult = response.data.data
+                    seachResult = seachResult.filter((user: any) => {
+                        return members.filter((member) => {
+                            return user.uuid !== member.uuid
+                        }).length
+                    })
                 }
             }
             ModalUtil.emitModal({
@@ -1490,28 +1543,28 @@ const Library = (_: Props) => {
                     rows={members}
                     searchedRows={seachResult}
                     onSearchTextInputed={onSearchTextInputed}
+                    onSearchedMemberClicked={onSearchedMemberClicked}
+                    onMemberRoleChanged={onMemberRoleChanged}
                 />
             });
 
         }
 
 
-        _onClickMemberInfo = (e, members) => {
+        _onClickMemberInfo = (e, members, projectUUID, lastModifiedAt) => {
             ModalUtil.registerModal({
                 id: Constants.modal.MEMBER_INFO, onClickDone: () => {
+                    let putBody = {
+                        "members" : members,
+                        "lastModifiedAt" : lastModifiedAt
+                    }
+                    APIUtil.put("/projects/" + projectUUID).then((response) => {
 
+                    })
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
                 }
             });
-            let temp = [
-                {
-                    name: "admin",
-                    email: "admin@kskp.com",
-                    type: "admin",
-                    uuid: "test"
-                }
-            ]
-        
+
             ModalUtil.emitModal({
                 id: Constants.modal.MEMBER_INFO,
                 visible: true,
@@ -1520,6 +1573,8 @@ const Library = (_: Props) => {
                     rows={members}
                     searchedRows={[]}
                     onSearchTextInputed={onSearchTextInputed}
+                    onSearchedMemberClicked={onSearchedMemberClicked}
+                    onMemberRoleChanged={onMemberRoleChanged}
                 />
             });
         };
