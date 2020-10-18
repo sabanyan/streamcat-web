@@ -7041,6 +7041,12 @@ body {
     body.dialog .inspector-container {
       height: 100%; }
 
+.flashes {
+  list-style-type: none !important;
+  border-radius: 0; }
+  .flashes li:last-of-type {
+    margin-bottom: 0 !important; }
+
 #project_list .container, #flow_list .container, #library_list .container {
   min-width: 800px; }
 
@@ -7054,6 +7060,9 @@ input::placeholder, textarea::placeholder {
   pointer-events: none; }
   .none-pointer-events * {
     pointer-events: none; }
+
+#navbarDropdownMenuLink {
+  cursor: pointer; }
 
 .kskp-list-link {
   cursor: pointer;

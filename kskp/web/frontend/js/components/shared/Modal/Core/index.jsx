@@ -46,7 +46,7 @@ export default class Modal extends React.Component<Props, State> {
     this.state = { visible: false, content: null, contents: null, title: this.props.title }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const self = this
     /**
      * モーダルのリスナー処理
