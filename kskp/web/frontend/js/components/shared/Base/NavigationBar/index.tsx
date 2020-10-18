@@ -49,12 +49,7 @@ const NavigationBar = (props: Props) => {
         }
 
         const onClickLogout = (e) => {
-            let logoutParam = "?session=off";
-            if (location.href.indexOf("?") !== -1) {
-                logoutParam = logoutParam.replace("?", "&");
-            }
-            const url = location.href + logoutParam;
-            WebUtil.navigateURL(url);
+            WebUtil.logout();
             e.preventDefault();
         };
 
@@ -66,7 +61,7 @@ const NavigationBar = (props: Props) => {
             {depoName}
             {renderUserSettingsMenu()}
             {renderUserAdminMenu()}
-            <a href="javascript:return false;" className="dropdown-item" onClick={(e) => onClickLogout(e)}>ログアウト</a>
+            <a href="#" className="dropdown-item" onClick={(e) =>{e.preventDefault();onClickLogout(e)}}>ログアウト</a>
         </NavigationBarUserMenuItem>
 
     };

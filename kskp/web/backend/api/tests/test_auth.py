@@ -5,7 +5,7 @@ from .api_test_case_base import ApiTestCaseBase
 
 class AuthTestCase(ApiTestCaseBase):
     def test_password_hash(self):
-        user = self.factory.user.create('a', 'test', 'password')
+        user = self.factory.user.create('a', 'test', 'password0123')
         self.assertEqual(
             user._get_password_hash('a', 'password'),
             '962c604d898bb6032131ecaca67ad70118f8c35ce31a505616cace7ea6d64a65'

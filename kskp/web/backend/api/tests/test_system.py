@@ -34,7 +34,7 @@ class SystemTestCase(ApiTestCaseBase):
         Userの作成・取得・削除を検証する
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'abc@def.com', 'name':'テストです', 'password':'abcアウアウ'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'abc@def.com', 'name':'テストです', 'password':'abcdefghij'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # ユーザを取得する
@@ -48,7 +48,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('roles', result['data'])
         self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
-        self.assertEqual(result['data']['password'], 'abcアウアウ')
+        self.assertEqual(result['data']['password'], 'abcdefghij')
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -69,13 +69,13 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
-        new_user.update_password('hogehoge')
+        new_user.update_password('hogehoge88')
 
         # ユーザ管理者は、ユーザ情報を変更する
         expected = {
             'email': '変更後＠aiueo.co.jp',
             'name' : '私はカモメ',
-            'password' : '#yerhfkdi'
+            'password' : '#yerhfkdi8'
         }
         result = self.put_uri(f'/api/v0/users/{user_uuid}', expected, self.USER1)
 
@@ -166,7 +166,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
-        self.post_register_complete('ujiyasu@odawara.co.jp', 'jurujuru', new_user)
+        self.post_register_complete('ujiyasu@odawara.co.jp', 'jurujurujuru', new_user)
 
         # 名前だけの変更であればパスワード認証は必要ないこと
         expected = {
@@ -189,7 +189,7 @@ class SystemTestCase(ApiTestCaseBase):
         # パスワード認証をして名前を変更してもよいこと
         expected = {
             'name' : '一回で汁の量を見極められずにn怒られたマン',
-            'currentPassword' : 'jurujuru'
+            'currentPassword' : 'jurujurujuru'
 
         }
         result = self.put_uri(f'/api/v0/users/self', expected, new_user)
@@ -297,7 +297,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertIsInstance(result['data']['password'], str)
-        self.assertEqual(len(result['data']['password']), 8)
+        self.assertEqual(len(result['data']['password']), 10)
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -313,7 +313,7 @@ class SystemTestCase(ApiTestCaseBase):
         Userのパスワードをリセットする
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'ghi@def.com', 'name':'テストですよっと', 'password':'アイウエオ'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'ghi@def.com', 'name':'テストですよっと', 'password':'AIUEOKAKIKU'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # パスワードをリセットする
@@ -327,9 +327,9 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('roles', result['data'])
         self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
-        self.assertNotEqual(result['data']['password'], 'アイウエオ')
+        self.assertNotEqual(result['data']['password'], 'AIUEOKAKIKU')
         self.assertIsInstance(result['data']['password'], str)
-        self.assertEqual(len(result['data']['password']), 8)
+        self.assertEqual(len(result['data']['password']), 10)
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -345,7 +345,7 @@ class SystemTestCase(ApiTestCaseBase):
         全てのUserを取得する
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'jkl@def.com', 'name':'テストですよっと♪', 'password':'_%@/\\a0'}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'jkl@def.com', 'name':'テストですよっと♪', 'password':'^^^_%@/\\a0$$'}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # ユーザを検索する
@@ -409,7 +409,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
         self.assertIsNotNone(result['data']['roles'][0]['creator'])
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
-        # システム管理者ロール
+        # ユーザ管理者ロール
         self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_usr_admin['uuid'])
         self.assertEqual(result['data']['roles'][1]['name'], self.expected_usr_admin['name'])
         self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
@@ -668,6 +668,64 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(len(results['data']), 1)
         self.assertEqual(results['data'][0]['email'], 'aui_eo@yahoo.co.jp')
 
+    def test_search_user3(self):
+        """
+        仕事人をAND検索する
+        """
+        # 仕事人を作成する
+        result = self.post_uri('/api/v0/users', {'email':'hacchoubori@edo.go.jp', 'name':'中村 主水', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'hide@edo.co.jp', 'name':'飾り職人の秀さん', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'yuuji@edo.co.jp', 'name':'三味線屋の勇次', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'junnosuke@edo.ac.jp', 'name':'西 順之助', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'kayo@edo.co.jp', 'name':'何でも屋の加代', 'password':None}, self.USER1)
+
+        # ユーザを検索する
+        keyword = '中村 主水'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'hacchoubori@edo.go.jp')
+
+        # ユーザを検索する
+        keyword = '三味線 勇次'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'yuuji@edo.co.jp')
+
+        # ユーザを検索する
+        keyword = '職人 三味線'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 0)
+
+        # ユーザを検索する
+        keyword = 'hide 秀'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'hide@edo.co.jp')
+
+        # ユーザを検索する
+        keyword = 'jp edo '
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 5)
+
+        # ユーザを検索する
+        keyword = '"中村 主水"'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'hacchoubori@edo.go.jp')
+
+        # ユーザを検索する
+        keyword = '"中村 ""主水"'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 0)
+
     def test_api_by_inactive_user(self):
         """
         論理削除UserはAPI操作ができないこと
@@ -747,7 +805,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['uuid'])
         self.assertEqual(result['data']['name'], 'テストロール')
         self.assertEqual(result['data']['systemRole'], '')
-        self.assertNotIn('users', result['data'])
+        self.assertNotIn('members', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -773,7 +831,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['uuid'], role_uuid)
         self.assertEqual(result['data']['name'], 'ロールケーキ')
         self.assertEqual(result['data']['systemRole'], '')
-        self.assertNotIn('users', result['data'])
+        self.assertNotIn('members', result['data'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
@@ -810,10 +868,10 @@ class SystemTestCase(ApiTestCaseBase):
         role_uuid = result['data']['uuid']
 
         # ユーザを参加させる
-        result = self.put_uri(f'/api/v0/roles/{role_uuid}/users/{self.USER2.uuid}', {}, self.USER0)
+        result = self.put_uri(f'/api/v0/roles/{role_uuid}/users/{self.USER2.uuid}', {'owner':False}, self.USER0)
 
         # ロールを検索する
-        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?members=on', self.USER0)
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], role_uuid)
@@ -822,22 +880,37 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['creator'], 'システム管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         # 参加ユーザ
-        self.assertEqual(len(result['data']['users']), 1)
-        self.assertEqual(result['data']['users'][0]['uuid'], self.USER2.uuid)
-        self.assertEqual(result['data']['users'][0]['email'], self.USER2.email)
-        self.assertEqual(result['data']['users'][0]['name'], self.USER2.name)
-        self.assertEqual(result['data']['users'][0]['state'], self.USER2.state)
-        self.assertEqual(result['data']['users'][0]['creator'], self.USER2.creator_str)
-        self.assertEqual(result['data']['users'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(len(result['data']['members']), 2)
+        # USER0
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
+        # USER2
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER2.created_at_str)
 
         # ユーザを脱退させる
         result = self.delete_uri(f'/api/v0/roles/{role_uuid}/users/{self.USER2.uuid}', self.USER0)
 
         # ロールを検索する
-        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?members=on', self.USER0)
 
-        # 参加ユーザがいないことを確認する
-        self.assertEqual(len(result['data']['users']), 0)
+        # 参加ユーザはUSER0だけであることを確認する
+        self.assertEqual(len(result['data']['members']), 1)
+        # USER0
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
 
         # ロールを削除する
         self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER0)
@@ -854,12 +927,13 @@ class SystemTestCase(ApiTestCaseBase):
         # ユーザを参加させる
         data = {
             'name'   : 'ちゃおちゅーる🐈',
-            'users': [self.USER2.uuid, self.USER3.uuid]
+            'members': [{'uuid' : self.USER2.uuid, 'owner': True},
+                        {'uuid' : self.USER3.uuid, 'owner': False}]
         }
         result = self.put_uri(f'/api/v0/roles/{role_uuid}', data, self.USER0)
 
         # ロールを検索する
-        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?members=on', self.USER0)
 
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], role_uuid)
@@ -868,35 +942,195 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['creator'], 'システム管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         # 参加ユーザ(USER2)
-        self.assertEqual(len(result['data']['users']), 2)
-        self.assertEqual(result['data']['users'][0]['uuid'], self.USER2.uuid)
-        self.assertEqual(result['data']['users'][0]['email'], self.USER2.email)
-        self.assertEqual(result['data']['users'][0]['name'], self.USER2.name)
-        self.assertEqual(result['data']['users'][0]['state'], self.USER2.state)
-        self.assertEqual(result['data']['users'][0]['creator'], self.USER2.creator_str)
-        self.assertEqual(result['data']['users'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
         # 参加ユーザ(USER3)
-        self.assertEqual(result['data']['users'][1]['uuid'], self.USER3.uuid)
-        self.assertEqual(result['data']['users'][1]['email'], self.USER3.email)
-        self.assertEqual(result['data']['users'][1]['name'], self.USER3.name)
-        self.assertEqual(result['data']['users'][1]['state'], self.USER3.state)
-        self.assertEqual(result['data']['users'][1]['creator'], self.USER3.creator_str)
-        self.assertEqual(result['data']['users'][1]['createdAt'], self.USER3.created_at_str)
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER3.created_at_str)
 
         # ユーザを脱退させる
         data = {
-            'users': []
+            'members': [{'uuid' : self.USER3.uuid, 'owner': True}]
         }
-        result = self.put_uri(f'/api/v0/roles/{role_uuid}', data, self.USER0)
+        result = self.put_uri(f'/api/v0/roles/{role_uuid}', data, self.USER2)
 
         # ロールを検索する
-        result = self.get_uri(f'/api/v0/roles/{role_uuid}?users=on', self.USER0)
+        result = self.get_uri(f'/api/v0/roles/{role_uuid}?members=on', self.USER2)
 
-        # 参加ユーザがいないことを確認する
-        self.assertEqual(len(result['data']['users']), 0)
+        # 参加ユーザはUSER3だけであることを確認する
+        self.assertEqual(len(result['data']['members']), 1)
+        # 参加ユーザ(USER3)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER3.created_at_str)
 
         # ロールを削除する
-        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER0)
+        self.delete_uri(f'/api/v0/roles/{role_uuid}', self.USER3)
+
+    def test_join_leave_sys_admin_role(self):
+        """
+        システム管理者Roleにユーザを参加・脱退させる
+        """
+        # システム管理者にユーザを参加させる
+        result = self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER2.uuid}', {}, self.USER1)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{Role.SYS_ADMIN_ROLE_UUID}?members=on', self.USER0)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], Role.SYS_ADMIN_ROLE_UUID)
+        self.assertEqual(result['data']['name'], Role.SYS_ADMIN_ROLE_LABEL)
+        self.assertEqual(result['data']['systemRole'], Role.SYS_ADMIN_ROLE_LABEL)
+        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        # 参加ユーザ
+        self.assertEqual(len(result['data']['members']), 2)
+        # USER0
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
+        # USER2
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER2.created_at_str)
+
+        # ユーザを脱退させる
+        result = self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER2.uuid}', self.USER1)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{Role.SYS_ADMIN_ROLE_UUID}?members=on', self.USER0)
+
+        # 参加ユーザはUSER0だけであることを確認する
+        self.assertEqual(len(result['data']['members']), 1)
+        # USER0
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER0.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
+
+    def test_cannot_join_leave_sys_admin_role(self):
+        """
+        ユーザ管理者以外のユーザは、システム管理者Roleにユーザを参加・脱退できないこと
+        """
+        # USER2は、システム管理者にユーザを参加できないこと
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER2.uuid}', {}, self.USER2)
+
+        # USER2は、ユーザを脱退できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER2)
+
+        # システム管理者から最後のユーザを脱退できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER1)
+
+    def test_join_leave_usr_admin_role(self):
+        """
+        ユーザ管理者Roleにユーザを参加・脱退させる
+        """
+        # ユーザ管理者にユーザを参加させる
+        result = self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER2.uuid}', {}, self.USER1)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{Role.USR_ADMIN_ROLE_UUID}?members=on', self.USER0)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], Role.USR_ADMIN_ROLE_UUID)
+        self.assertEqual(result['data']['name'], Role.USR_ADMIN_ROLE_LABEL)
+        self.assertEqual(result['data']['systemRole'], Role.USR_ADMIN_ROLE_LABEL)
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        # 参加ユーザ
+        self.assertEqual(len(result['data']['members']), 2)
+        # USER1
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER1.created_at_str)
+        # USER2
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER2.created_at_str)
+
+        # ユーザを脱退させる
+        result = self.delete_uri(f'/api/v0/roles/usr_admin/users/{self.USER2.uuid}', self.USER1)
+
+        # ロールを検索する
+        result = self.get_uri(f'/api/v0/roles/{Role.USR_ADMIN_ROLE_UUID}?members=on', self.USER0)
+
+        # 参加ユーザはUSER1だけであることを確認する
+        self.assertEqual(len(result['data']['members']), 1)
+        # USER1
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER1.created_at_str)
+
+    def test_cannot_join_leave_usr_admin_role(self):
+        """
+        ユーザ管理者以外のユーザは、ユーザ管理者Roleにユーザを参加・脱退できないこと
+        """
+        # USER2は、ユーザ管理者にユーザを参加できないこと
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER2.uuid}', {}, self.USER2)
+
+        # 既でに参加済みのユーザの参加で所有権の変更もない場合は、DBへの更新が発生しないのでエラーにならない
+        self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', {}, self.USER2)
+
+        # USER2は、ユーザを脱退できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', self.USER2)
+
+        # ユーザ管理者から最後のユーザを脱退できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', self.USER1)
+
+    def test_cannot_no_usr_admin(self):
+        """
+        ユーザ管理者ロールのメンバを0人にはできないこと
+        """
+        # ユーザ管理者を取得する
+        result = self.get_uri(f'/api/v0/users/self?roles=on', self.USER1)
+        usr_admin_uuid = result['data']['uuid']
+
+        # ユーザ管理者ロールを取得する
+        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
+        usr_admin_role = result['data']['roles'][1]['uuid']
+
+        # 最後の一人のメンバをロールから外せないこと
+        with self.assertRaises(Exception):
+            self.delete_uri(f'/api/v0/roles/{usr_admin_role}/users/{usr_admin_uuid}', self.USER1)
+
+        # 最後の一人のメンバを削除できないこと
+        with self.assertRaises(Exception):
+            self.delete_uri(f'/api/v0/users/{usr_admin_uuid}', self.USER1)
 
     # 
     # Projects
@@ -937,7 +1171,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
         self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
         self.assertEqual(result['data']['members'][0]['type'], 'Owner')
-        # システム管理者
+        # ユーザ管理者
         self.assertEqual(result['data']['members'][1]['uuid'], self.USER1.uuid)
         self.assertEqual(result['data']['members'][1]['email'], self.USER1.email)
         self.assertEqual(result['data']['members'][1]['name'], self.USER1.name)
@@ -977,16 +1211,19 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトですよ'}, self.USER0)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # ユーザを参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER0)
 
         # プロジェクトを検索する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+        project_modified_at = result['data']['modifiedAt']
         
         # 期待するJSONが返ることを確認する
         self.assertEqual(result['data']['uuid'], project_uuid)
@@ -998,7 +1235,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
         # 参加ユーザ(USER2)
-        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(len(result['data']['members']), 3)
         self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
         self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
         self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
@@ -1006,18 +1243,28 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
         self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
         self.assertEqual(result['data']['members'][0]['type'], 'Owner')
+        # ユーザ管理者
+        # (ユーザ管理者はプロジェクト管理者から外すことはできないこと)
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER1.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Owner')
         # 参加ユーザ(USER3)
-        self.assertEqual(result['data']['members'][1]['uuid'], self.USER3.uuid)
-        self.assertEqual(result['data']['members'][1]['email'], self.USER3.email)
-        self.assertEqual(result['data']['members'][1]['name'], self.USER3.name)
-        self.assertEqual(result['data']['members'][1]['state'], self.USER3.state)
-        self.assertEqual(result['data']['members'][1]['creator'], self.USER3.creator_str)
-        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER3.created_at_str)
-        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
+        self.assertEqual(result['data']['members'][2]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][2]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][2]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][2]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][2]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][2]['createdAt'], self.USER3.created_at_str)
+        self.assertEqual(result['data']['members'][2]['type'], 'Reader')
 
         # ユーザを脱退させる
         data = {
-            'members': [{'uuid' : self.USER3.uuid, 'type': 'Owner'}]
+            'members': [{'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1025,10 +1272,221 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
 
         # 参加ユーザは1人である
-        self.assertEqual(len(result['data']['members']), 1)
+        self.assertEqual(len(result['data']['members']), 2)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
+
+    def test_join_project_by_usr_admin(self):
+        """
+        ユーザ管理者は全てのプロジェクトに対してメンバの追加と削除ができること
+        """
+        # ROOTを取得する
+        root = self.factory2.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'KitKat'}, self.USER2)
+        project_uuid = result['data']['uuid']
+
+        # ユーザ管理者は、プロジェクトメンバを追加する
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER3.uuid}', {'memberType':'Owner'}, self.USER1)
+
+        # ユーザ管理者は、プロジェクトメンバを外す
+        result = self.delete_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER3.uuid}', self.USER1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_join_project_without_owner(self):
+        """
+        プロジェクト管理者は必ず指定すること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃおーん'}, self.USER1)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト管理者は外せないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER1.uuid}', self.USER1)
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Reader'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_join_project_without_member(self):
+        """
+        プロジェクトメンバは必ず指定すること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'ネコミミモード'}, self.USER1)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # メンバを設定する
+        data = {
+            'members': [],
+            'lastModifiedAt' : project_modified_at
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_join_project_simultaneously(self):
+        """
+        プロジェクトメンバの設定は先勝であること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'北海道はでっかいどう'}, self.USER1)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # USER2は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+        project_modified_at_1 = result['data']['modifiedAt']
+
+        # USER3は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+        project_modified_at_2 = result['data']['modifiedAt']
+
+        # USER2は、ユーザを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Reader'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at_1
+        }
+        self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # USER3は、ユーザを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at_2
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER3)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_join_project_simultaneously2(self):
+        """
+        プロジェクトメンバの設定は先勝であること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'北海道はでっかいどう'}, self.USER1)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # USER2は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+        project_modified_at_1 = result['data']['modifiedAt']
+
+        # USER3は、プロジェクトを取得する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+        project_modified_at_2 = result['data']['modifiedAt']
+
+        # USER2は、ユーザを設定する
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Reader'}, self.USER2)
+
+        # USER3は、ユーザを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at_2
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER3)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+    def test_delete_project_owner(self):
+        """
+        ユーザがプロジェクトの唯一の所有者の場合でも、そのユーザを削除できること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # ユーザ1を作成する
+        result = self.post_uri('/api/v0/users', {'email':'donald@mcdonalds.co.jp', 'name':'ドナルド', 'password':'mcdonald!!!!!!'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        # 作成したユーザを登録状態にする
+        new_user1 = self.factory.user.find_by_uuid(user_uuid)
+        self.post_register_complete('donald@mcdonalds.co.jp', 'mcdonald!!!!!!0', new_user1)
+
+        # ユーザ2を作成する
+        result = self.post_uri('/api/v0/users', {'email':'kernel@kfc.co.jp', 'name':'カーネルサンダース', 'password':'kfc!kfc!kfc!'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        # 作成したユーザを登録状態にする
+        new_user2 = self.factory.user.find_by_uuid(user_uuid)
+        self.post_register_complete('kernel@kfc.co.jp', 'kfc!kfc!kfc!0', new_user2)
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'うにゃあ'}, new_user1)
+        project_uuid = result['data']['uuid']
+
+        # プロジェクト管理者をもう一人追加する
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{new_user2.uuid}', {'memberType':'Owner'}, new_user1)
+
+        # プロジェクト管理者を一人削除する
+        self.delete_uri(f'/api/v0/users/{new_user1.uuid}', self.USER1)
+        result = self.get_uri(f'/api/v0/users/{new_user1.uuid}', self.USER1)
+        self.assertEqual(result['data']['email'], 'donald@mcdonalds.co.jp')
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # 最後のプロジェクト管理者も削除できること
+        self.delete_uri(f'/api/v0/users/{new_user2.uuid}', self.USER1)
+        result = self.get_uri(f'/api/v0/users/{new_user2.uuid}', self.USER1)
+        self.assertEqual(result['data']['email'], 'kernel@kfc.co.jp')
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_update_flow_in_project(self):
         """
@@ -1082,6 +1540,7 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Flowプロジェクト'}, self.USER2)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # プロジェクト管理者は、プロジェクト内にFlowを作成する
         data = {
@@ -1099,7 +1558,8 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクト管理者は、プロジェクトメンバを設定する
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1193,6 +1653,7 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'みんな大好き虫食い'}, self.USER2)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # プロジェクト管理者は、プロジェクト内にフローを作成する
         data = {
@@ -1221,7 +1682,8 @@ class SystemTestCase(ApiTestCaseBase):
         # USER3をメンバに参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1288,6 +1750,7 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'STAR⭐️BUCKS'}, self.USER2)
         project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
 
         # プロジェクト管理者は、プロジェクト内にフレームを作成する
         f = (io.BytesIO(b'Every cup has a story'), 'frame1.csv')
@@ -1301,7 +1764,8 @@ class SystemTestCase(ApiTestCaseBase):
         # USER3を閲覧者メンバとして参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1312,7 +1776,8 @@ class SystemTestCase(ApiTestCaseBase):
         # USER3を編集者メンバとして参加させる
         data = {
             'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
-                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}]
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
 
@@ -1436,20 +1901,20 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 編集者メンバは、フローを取得する
-        # result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertTrue(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertTrue(result['data']['allowlist']['lock'])
+        # 編集者メンバは、フローを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertTrue(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertTrue(result['data']['allowlist']['lock'])
 
         # # 編集者メンバは、フレームを取得する
         # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
@@ -1547,20 +2012,20 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 閲覧者メンバは、フローを取得する
-        # result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['update'])
-        # self.assertFalse(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertFalse(result['data']['allowlist']['move'])
-        # self.assertFalse(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 閲覧者メンバは、フローを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertTrue(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # 閲覧者メンバは、フレームを取得する
         # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
@@ -1657,20 +2122,20 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # プロジェクト管理者は、フローを取得する
-        # result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertTrue(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertTrue(result['data']['allowlist']['lock'])
+        # プロジェクト管理者は、フローを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertTrue(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertTrue(result['data']['allowlist']['lock'])
 
         # # プロジェクト管理者は、フレームを取得する
         # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)

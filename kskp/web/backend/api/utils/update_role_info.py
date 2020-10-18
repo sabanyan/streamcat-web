@@ -6,7 +6,7 @@ def update_role_info(func):
     @functools.wraps(func)
     def deco(**kwargs):
         # 参加ユーザの情報を含めるか否か
-        if request.args.get('users') != 'on':
+        if request.args.get('members') != 'on':
             return func(**kwargs)
 
         # デコレート対象関数の呼び出し
@@ -27,7 +27,7 @@ def update_roles_info(func):
     @functools.wraps(func)
     def deco(**kwargs):
         # 参加ユーザの情報を含めるか否か
-        if request.args.get('users') != 'on':
+        if request.args.get('members') != 'on':
             return func(**kwargs)
 
         # デコレート対象関数の呼び出し
@@ -46,5 +46,5 @@ def update_roles_info(func):
 
 def _update_role_info_inner(role_data):
     role = g.factory.role.find_by_uuid(role_data['uuid'])
-    role_data.update({'users' : role.get_joined_users()})
+    role_data.update({'members' : role.get_joined_members()})
     return role_data
