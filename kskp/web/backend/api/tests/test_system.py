@@ -1040,9 +1040,11 @@ class SystemTestCase(ApiTestCaseBase):
         with self.assertRaises(AssertionError):
             self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER2)
 
-        # システム管理者から最後のユーザを脱退できないこと
-        with self.assertRaises(AssertionError):
-            self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER1)
+        # システム管理者から最後のユーザを脱退できること
+        self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER1)
+
+        # ユーザを戻す
+        self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', {}, self.USER1)
 
     def test_join_leave_usr_admin_role(self):
         """

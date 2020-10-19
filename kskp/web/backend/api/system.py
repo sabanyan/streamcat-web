@@ -290,10 +290,7 @@ def leave_user_outof_sys_admin_role(user_uuid):
     """
     from kskp.store.auth import NoRoleOwnerException
     sys_admin_role = g.factory.role.load_sys_admin_role()
-    try:
-        _leave_user_outof_role(sys_admin_role.uuid, user_uuid)
-    except NoRoleOwnerException:
-        raise NoRoleOwnerException('システム管理者権限を持つユーザがいなくなるのでこの操作はできません')
+    _leave_user_outof_role(sys_admin_role.uuid, user_uuid, raise_on_no_owner=False)
 
 @mod.route('/roles/usr_admin/users/<user_uuid>', methods=['DELETE'])
 @login_required_api
@@ -309,14 +306,14 @@ def leave_user_outof_usr_admin_role(user_uuid):
     except NoRoleOwnerException:
         raise NoRoleOwnerException('ユーザ管理者権限を持つユーザがいなくなるのでこの操作はできません')
 
-def _leave_user_outof_role(role_uuid, user_uuid):
+def _leave_user_outof_role(role_uuid, user_uuid, raise_on_no_owner=True):
     from kskp.store.auth import NoRoleOwnerException
 
     role = g.factory.role.find_by_uuid(role_uuid)
     user = g.factory.user.find_by_uuid(user_uuid)
 
     # この脱退によって、ロールに所有者が居なくなる場合はエラーとする
-    if role.is_last_owner(user):
+    if raise_on_no_owner and role.is_last_owner(user):
         raise NoRoleOwnerException('この脱退処理でロール所有者がいなくなります')
 
     role.leave_member(user)
