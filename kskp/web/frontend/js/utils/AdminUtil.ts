@@ -14,11 +14,11 @@ export default class AdminUtil {
     };
 
     static hasUserAdmin = (admin_types: [UserRole]):boolean =>{
-       return admin_types.find((role:UserRole)=>role.systemRole==Constants.admin.systemRole.USR_ADMIN)
+       return !!(admin_types.find((role:UserRole)=>role.systemRole==Constants.admin.systemRole.USR_ADMIN))
     }
 
     static hasSystemAdmin = (admin_types: [UserRole]):boolean =>{
-        return admin_types.find((role:UserRole)=>role.systemRole==Constants.admin.systemRole.SYS_ADMIN)
+        return !!(admin_types.find((role:UserRole)=>role.systemRole==Constants.admin.systemRole.SYS_ADMIN))
     }
 
     static replaceAsterisk = (length: number): string => {

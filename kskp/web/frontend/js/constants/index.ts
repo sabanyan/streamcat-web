@@ -115,8 +115,9 @@ const Constants = {
     SHOW_RUN_ERROR: 'show_run_error',
     PREVIEW_DATASOURCE: 'preview_datasource',
     RESET_USER_PASSWORD: 'reset_user_password',
-    CONFIRM_UPDATE_SYSTEM_ADMIN: 'confirm_update_system_admin',
-    CONFIRM_UPDATE_MY_SYSTEM_ADMIN: 'confirm_update_my_system_admin',
+    CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN: 'confirm_update_kskp_system_admin',
+    CONFIRM_UPDATE_KSKP_USER_ADMIN: 'confirm_update_kskp_user_admin',
+    CONFIRM_REMOVE_MY_USER_ADMIN: 'confirm_update_my_user_admin',
     property: {
       title: 'title',
       message: 'message',

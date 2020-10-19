@@ -76,10 +76,10 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
       let {context, onSuccess} = action;
-      const flowJson = graph.load(context.data);
+      const flowJson = graph.load(context.flow);
 
       newState.originalFlow = {...flowJson};
-      newState.flow = new FlowModel(context.data);
+      newState.flow = new FlowModel(context.flow);
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState);
       newState.history.current = 0;

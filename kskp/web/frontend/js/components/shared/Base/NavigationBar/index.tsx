@@ -49,12 +49,7 @@ const NavigationBar = (props: Props) => {
         }
 
         const onClickLogout = (e) => {
-            let logoutParam = "?session=off";
-            if (location.href.indexOf("?") !== -1) {
-                logoutParam = logoutParam.replace("?", "&");
-            }
-            const url = location.href + logoutParam;
-            WebUtil.navigateURL(url);
+            WebUtil.logout();
             e.preventDefault();
         };
 
