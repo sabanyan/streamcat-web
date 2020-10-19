@@ -24,6 +24,14 @@ interface Profile {
     email: string
 }
 
+interface FormInputs {
+    name: string,
+    email: string,
+    currentPassword: string,
+    password1: string,
+    password2: string
+}
+
 type EditingMode = ('name' | 'email' | 'password' | null);
 
 const Profile = (props: Props) => {
@@ -46,7 +54,7 @@ const Profile = (props: Props) => {
         name: '',
         email: ''
     });
-    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm({
+    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm<FormInputs>({
         shouldUnregister: false
     });
     const [editing, setEditing] = useState<EditingMode>(null);
@@ -64,10 +72,11 @@ const Profile = (props: Props) => {
         if (profile) {
             // プロフィールを取得した際にデフォルト値のプロフィールを設定する
             // reset の引数を設定することで、テキストフィールドの defaultValue を設定できる
-            reset({
+            const resetValue = {
                 'name': profile.name,
                 'email': profile.email
-            })
+            };
+            reset(resetValue)
         }
     }, [profile]);
 
