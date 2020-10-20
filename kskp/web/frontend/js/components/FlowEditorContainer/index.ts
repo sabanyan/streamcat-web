@@ -49,4 +49,5 @@ export type FlowEditorProps = {
   sortStepSrcEndAction: Function;
   moveSteps: Function;
   resizeInspector: Function;
+  setMode: Function;
 }

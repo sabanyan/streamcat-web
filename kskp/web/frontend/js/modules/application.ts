@@ -1,7 +1,7 @@
 import Constants from "Constants/index";
 import {defaultGraphProps, defaultNodeProps} from "Utils/GraphUtil";
 import {FlowUtil, GraphUtil, StateUtil, ValidatorUtil, ZoomUtil} from "Utils/index";
-import FlowModel from "Model/Flow/FlowModel";
+import FlowModel, {FlowEditModeValue} from 'Model/Flow/FlowModel';
 import {DataFrameStepModelProps} from "Model/Step/DataFrameStepModel";
 import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
 import {CommandPortType, StepModelType} from "../types";
@@ -38,9 +38,11 @@ const UPDATE_CACHE_ACTION = "update_cache_action";
 const MOVE_STEPS_ACTION = "move_steps_action";
 const RESIZE_INSPECTOR_ACTION = "resize_inspector_action";
 const ADD_NOTE_ACTION = "add_note_action";
+const SET_MODE_ACTION = "set_mode_action";
 const graph: GraphUtil = new GraphUtil();
 
 export let FlowEditorReducerInitialState = {
+  allowlist: {},
   selected_step_ids: [],
   graph: graph.getGraph({}),
   zoom: 100,
@@ -84,7 +86,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       newState.graph = graph.getGraph(newState);
       newState.history.current = 0;
       newState.history.nodes = [[...newState.nodes]];
-
+      newState.allowlist = flowJson.allowlist;
 
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history);
@@ -641,6 +643,14 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       break;
     }
 
+    case SET_MODE_ACTION: {
+      newState = {
+        ...newState,
+        mode: action.mode
+      };
+      break;
+    }
+
     default:
       (window as any).nodes = state.nodes;
       return state;
@@ -1029,5 +1039,12 @@ export const resizeInspectorAction = (width: number) => {
   return {
     type: RESIZE_INSPECTOR_ACTION,
     width: width
+  };
+};
+
+export const setModeAction = (mode: FlowEditModeValue) => {
+  return {
+    type: SET_MODE_ACTION,
+    mode: mode
   };
 };
