@@ -153,6 +153,7 @@ const Library = (_: Props) => {
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
+    const [allowlist, setAllowlist] = useState<{}>({});
 
     useEffect(() => {
         if (isDialog) {
@@ -767,6 +768,7 @@ const Library = (_: Props) => {
             let menuList;
             if (mode === Constants.library.mode.folder_select) {
                 menuList = <ApplyMenuList
+
                     onClickApply={onClickSelectDestination}
                 />;
             } else if (mode === Constants.library.mode.frame_select) {
@@ -774,6 +776,7 @@ const Library = (_: Props) => {
             } else {
                 if (!inject_is_trash) {
                     menuList = <MenuList
+                        allowlist={allowlist}
                         onClickAddDatabase={onClickAddDatabase}
                         onClickCSVUpload={onClickCSVUpload}
                         onClickNewFlow={onClickNewFlow}
@@ -1177,6 +1180,10 @@ const Library = (_: Props) => {
         window.close();
     };
 
+    const updateAllowlist = (allowlist:{}) => {
+        setAllowlist(allowlist);
+    };
+
     const renderLibraryInspector = (): React.ReactNode => {
         if (!lastSelected) return null;
 
@@ -1536,11 +1543,11 @@ const Library = (_: Props) => {
             ModalUtil.registerModal({
                 id: Constants.modal.MEMBER_INFO, onClickDone: () => {
                     let putBody = {
-                        "members" : members,
-                        "lastModifiedAt" : lastModifiedAt
+                        "members": members,
+                        "lastModifiedAt": lastModifiedAt
                     }
                     APIUtil.put("projects/" + projectUUID, putBody).then((response) => {
-                        
+
                         if (response.data.success) {
                             notify({
                                 title: "メンバー情報保存",
@@ -1576,6 +1583,7 @@ const Library = (_: Props) => {
             onClickCleanTrash={_onClickCleanTrash}
             onClickMemberInfo={_onClickMemberInfo}
             onBlurTitle={_onBlurTitle}
+            updateAllowlist={updateAllowlist}
             visualizers={visualizers}
         />;
     };
