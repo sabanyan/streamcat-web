@@ -85,7 +85,7 @@ class MultiInspector extends React.Component<MultiInspectorProps> {
 
     return <BaseInspector header={''}
                           title={this.props.selected_step_ids.length + ' files'}
-                          disabled={baseInspectorDisabled}>>
+                          disabled={baseInspectorDisabled}>
       <div className="kskp-form">
         <Button onClick={(e) => this.onClickDelete(e)} danger={true} disabled={baseInspectorDisabled}>
           削除する
