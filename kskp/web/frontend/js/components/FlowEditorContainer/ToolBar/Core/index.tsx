@@ -1,16 +1,17 @@
-import React from "react";
-import Constants from "Constants/index";
-import {DataSourceImport, Note, Redo, Run, Save, Sort, Undo, Zoom} from "FlowEditorContainer/ToolBar";
-import style from "./style.scss";
-import classnames from "classnames";
-import {DataFrameStepModelProps} from "Model/Step/DataFrameStepModel";
-import {DataFrameStepModel, FlowModel, MessageModel, NoteStepModel} from "Model/index";
-import {APIUtil, FlowUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil} from "Utils/index";
-import {Loader} from "Shared/Base";
-import {HistoryType, LibraryListDataType, RunResponseType, UploadedFileType} from "Types/index";
-import {NoteStepModelProps} from "Model/Step/NoteStepModel";
-import {defaultGraphProps} from "Utils/GraphUtil";
-import {API} from "Modules/api/index";
+import React from 'react';
+import Constants from 'Constants/index';
+import {DataSourceImport, Note, Redo, Run, Save, Sort, Undo, Zoom} from 'FlowEditorContainer/ToolBar';
+import style from './style.scss';
+import classnames from 'classnames';
+import {DataFrameStepModelProps} from 'Model/Step/DataFrameStepModel';
+import {DataFrameStepModel, FlowModel, MessageModel, NoteStepModel} from 'Model/index';
+import {APIUtil, FlowUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil} from 'Utils/index';
+import {Loader} from 'Shared/Base';
+import {HistoryType, LibraryListDataType, RunResponseType, UploadedFileType} from 'Types/index';
+import {NoteStepModelProps} from 'Model/Step/NoteStepModel';
+import {defaultGraphProps} from 'Utils/GraphUtil';
+import {API} from 'Modules/api/index';
+import {FlowEditModeValue, FlowExecuteModeValue} from 'Model/Flow/FlowModel';
 
 type ToolBarProps = {
     flow: FlowModel;
@@ -18,8 +19,6 @@ type ToolBarProps = {
     history: HistoryType;
     zoom: number;
     lockUUID?: string;
-    disabled?: boolean;
-
     notify: Function;
     dismissNotify: Function;
     addStep: Function;
@@ -30,6 +29,8 @@ type ToolBarProps = {
     setZoom: Function;
     undo: Function;
     redo: Function;
+    baseDisabled: boolean
+    runDisabled: boolean
 }
 
 export default class ToolBar extends React.Component<ToolBarProps> {
@@ -274,7 +275,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
 
     render() {
-        const {zoom, history, disabled} = this.props;
+        const {zoom, history, baseDisabled, runDisabled} = this.props;
 
         const current = history.current;
         const max = history.nodes.length;
@@ -283,17 +284,17 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         const undoDisabled = !(current - 1 >= 0);
         return <div>
             <div className={classnames(style.flow_toolbar)}>
-                <Save disabled={disabled} icon={"&#xE2C2"}
+                <Save disabled={baseDisabled} icon={"&#xE2C2"}
                       onClick={(e) => this.onClickSave()}>保存</Save>
-                <DataSourceImport disabled={disabled} icon={"&#xE2C2"}
+                <DataSourceImport disabled={baseDisabled} icon={"&#xE2C2"}
                                   onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport>
-                <Run disabled={disabled} icon={"&#xE037"}
+                <Run disabled={runDisabled} icon={"&#xE037"}
                      onClick={(e) => this.onClickProjectRun()}>このフローを実行</Run>
-                <Note disabled={disabled} icon={"comment"}
+                <Note disabled={baseDisabled} icon={"comment"}
                       onClick={() => this.onClickNote()}>メモ</Note>
-                <Undo disabled={undoDisabled} icon={"undo"}
+                <Undo disabled={baseDisabled || undoDisabled} icon={"undo"}
                       onClick={() => this.props.undo()}>もとに戻す</Undo>
-                <Redo disabled={redoDisabled} icon={"redo"}
+                <Redo disabled={baseDisabled || redoDisabled} icon={"redo"}
                       onClick={() => this.props.redo()}>繰り返す</Redo>
             </div>
             <div className={classnames(style.paper_toolbar)}>
@@ -301,7 +302,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                       onClickZoomOut={(e) => this.onClickZoomOut(e)}
                       onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
                       zoom={zoom} />
-                <Sort disabled={disabled} icon={"&#xE42A"}
+                <Sort disabled={baseDisabled} icon={"&#xE42A"}
                       onClick={(e) => this.onClickSort()}>整列</Sort>
             </div>
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false}

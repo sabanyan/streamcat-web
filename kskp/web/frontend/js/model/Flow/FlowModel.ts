@@ -20,10 +20,15 @@ export enum FlowEditModeValue {
   ReadOnlyUpdateDisabled = 'ReadOnlyUpdateDisabled',
   ReadOnlyLocked = 'ReadOnlyLocked'
 }
+export enum FlowExecuteModeValue {
+  NotExecutable = 'NotExecutable',
+  Executable = 'Executable',
+}
 
 export type FlowModelProps = {
   allowlist: FlowAllowList
-  mode: FlowEditModeValue
+  editMode: FlowEditModeValue
+  executeMode: FlowExecuteModeValue
   createdAt?: string
   creator?: string
   label: string

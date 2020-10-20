@@ -1,7 +1,7 @@
 import Constants from "Constants/index";
 import {defaultGraphProps, defaultNodeProps} from "Utils/GraphUtil";
 import {FlowUtil, GraphUtil, StateUtil, ValidatorUtil, ZoomUtil} from "Utils/index";
-import FlowModel, {FlowEditModeValue} from 'Model/Flow/FlowModel';
+import FlowModel, {FlowEditModeValue, FlowExecuteModeValue} from 'Model/Flow/FlowModel';
 import {DataFrameStepModelProps} from "Model/Step/DataFrameStepModel";
 import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
 import {CommandPortType, StepModelType} from "../types";
@@ -38,7 +38,8 @@ const UPDATE_CACHE_ACTION = "update_cache_action";
 const MOVE_STEPS_ACTION = "move_steps_action";
 const RESIZE_INSPECTOR_ACTION = "resize_inspector_action";
 const ADD_NOTE_ACTION = "add_note_action";
-const SET_MODE_ACTION = "set_mode_action";
+const SET_EXECUTE_MODE_ACTION = "set_execute_mode_action";
+const SET_EDIT_MODE_ACTION = "set_edit_mode_action";
 const graph: GraphUtil = new GraphUtil();
 
 export let FlowEditorReducerInitialState = {
@@ -643,10 +644,18 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       break;
     }
 
-    case SET_MODE_ACTION: {
+    case SET_EDIT_MODE_ACTION: {
       newState = {
         ...newState,
-        mode: action.mode
+        editMode: action.mode
+      };
+      break;
+    }
+
+    case SET_EXECUTE_MODE_ACTION: {
+      newState = {
+        ...newState,
+        executeMode: action.mode
       };
       break;
     }
@@ -1042,9 +1051,16 @@ export const resizeInspectorAction = (width: number) => {
   };
 };
 
-export const setModeAction = (mode: FlowEditModeValue) => {
+export const setExecuteModeAction = (mode: FlowExecuteModeValue) => {
   return {
-    type: SET_MODE_ACTION,
+    type: SET_EXECUTE_MODE_ACTION,
+    mode: mode
+  };
+};
+
+export const setEditModeAction = (mode: FlowEditModeValue) => {
+  return {
+    type: SET_EDIT_MODE_ACTION,
     mode: mode
   };
 };

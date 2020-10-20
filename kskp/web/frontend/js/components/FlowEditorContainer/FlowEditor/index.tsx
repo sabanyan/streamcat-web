@@ -31,7 +31,8 @@ import {
     redoAction,
     resizeInspectorAction,
     selectStepsAction,
-    setModeAction,
+    setEditModeAction,
+    setExecuteModeAction,
     setZoomAction,
     sortFlowAction,
     sortStepSrcEndAction,
@@ -44,7 +45,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {Paper} from 'FlowEditorContainer/Paper';
 import {PaperZoom} from 'FlowEditorContainer/PaperZoom';
 import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
-import {FlowEditModeValue} from 'Model/Flow/FlowModel';
+import {FlowEditModeValue, FlowExecuteModeValue} from 'Model/Flow/FlowModel';
 import {NotAllowed} from 'Components/NotAllowedContainer';
 
 interface Props {
@@ -66,7 +67,8 @@ const FlowEditor = (props: Props) => {
     const zoom = useSelector(state => state.FlowEditorReducer.zoom);
     const inspector = useSelector(state => state.FlowEditorReducer.inspector);
     const editor = useSelector(state => state.FlowEditorReducer.editor);
-    const mode = useSelector(state => state.FlowEditorReducer.mode);
+    const editMode = useSelector(state => state.FlowEditorReducer.editMode);
+    const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
 
     const loadFlowJSON = useCallback((context: {}) => {
         return dispatch(loadFlowJSONAction(context));
@@ -154,8 +156,11 @@ const FlowEditor = (props: Props) => {
     const resizeInspector = useCallback((width: number) => {
         dispatch(resizeInspectorAction(width));
     },[]);
-    const setMode = useCallback((mode: FlowEditModeValue) => {
-        dispatch(setModeAction(mode));
+    const setExecuteMode = useCallback((mode: FlowExecuteModeValue) => {
+        dispatch(setExecuteModeAction(mode));
+    },[]);
+    const setEditMode = useCallback((mode: FlowEditModeValue) => {
+        dispatch(setEditModeAction(mode));
     },[]);
 
     const notify = (context) => dispatch(addNotification(context));
@@ -169,7 +174,6 @@ const FlowEditor = (props: Props) => {
     const [lockUUID, setLockUUID] = useState<string | undefined>(undefined);
     const [readOnly, setReadOnly] = useState<boolean>(false);
     const hasLockedUUID = useMemo(()=>!!(lockUUID),[lockUUID]); // lockUUIDを保持している際は、編集可能な状態
-    const disabled = useMemo(()=>(isLoading || !hasLockedUUID),[isLoading,hasLockedUUID]);
 
     useEffect(()=>{
         const handleLeavePage = () => {
@@ -241,15 +245,21 @@ const FlowEditor = (props: Props) => {
             Promise.all(flowRequest).then(() => {
                 const flowUUID = inject_flow_uuid;
                 let lockUUID;
-                // ロックの処理
+                // 実行モードの設定
+                const executeMode = (allowlist.execute)?FlowExecuteModeValue.Executable:FlowExecuteModeValue.NotExecutable;
+                setExecuteMode(executeMode);
+                allowlist.update = false;
+                // 編集モードの設定
                 if(!allowlist.read){
                     // read が無効な場合は NotAllowed に飛ばす
-                    setMode(FlowEditModeValue.NotAllowed)
+                    setEditMode(FlowEditModeValue.NotAllowed)
+                    setIsLoading(false);
                     return;
                 }
                 if(!allowlist.update){
-                    // // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
-                    setMode(FlowEditModeValue.ReadOnlyUpdateDisabled)
+                    // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
+                    setEditMode(FlowEditModeValue.ReadOnlyUpdateDisabled)
+                    setIsLoading(false);
                     return;
                 }
                 // update が有効な場合は、排他ロックを取得する
@@ -257,7 +267,7 @@ const FlowEditor = (props: Props) => {
                     .then((res) => {
                         lockUUID = API.response.post.locks(res).uuid;
                         setLockUUID(lockUUID);
-                        setMode(FlowEditModeValue.Editable)
+                        setEditMode(FlowEditModeValue.Editable)
                     })
                     .catch(e => {
                         if (!lockUUID) {
@@ -270,7 +280,7 @@ const FlowEditor = (props: Props) => {
                             });
                             setReadOnly(true);
                             // ロック失敗 => [読み取り専用モード2]
-                            setMode(FlowEditModeValue.ReadOnlyLocked);
+                            setEditMode(FlowEditModeValue.ReadOnlyLocked);
                         } else {
                             notify({
                                 title: e.title,
@@ -385,13 +395,35 @@ const FlowEditor = (props: Props) => {
     },[drag,zoom]);
 
 
-    if(mode === undefined){
+    if(editMode === undefined || executeMode === undefined){
         // モードが設定前はローディング中にする
         return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true}/>
-    }else if(mode === FlowEditModeValue.NotAllowed){
+    }else if(editMode === FlowEditModeValue.NotAllowed){
         // 利用できないモードの場合は、操作不可にする
         return <NotAllowed/>
     }
+
+    // 読み取り専用モードの場合は disabled にする
+    // ☁️保存　☁️データソース追加　💬メモ　↩︎もとに戻す　↪︎繰り返す の制御
+    const baseToolBarDisabled = (editMode === FlowEditModeValue.ReadOnlyLocked ||
+        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled)
+
+    // 編集可能で実行可能な場合のみフロー以外は disabled にする
+    // ▶︎このフローを実行の制御
+    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable);
+
+    // 実行可能で編集可能orUpdate可能以外の場合は、プレビュー機能を disabled にする
+    // プレビューを開くリンクの制御
+    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && (editMode === FlowEditModeValue.Editable || editMode === FlowEditModeValue.ReadOnlyUpdateDisabled))
+
+    // 編集モード以外は、フロー変数の追加機能を hidden にする
+    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable)
+
+    // 編集モード以外は、コマンドセレクター機能を hidden にする
+    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable)
+
+    // 編集モード以外は、コマンド・データのペイン機能を disabled にする
+    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable)
 
     return <div className={style.flow_editor_container}>
         <div className={style.flow_editor}>
@@ -411,7 +443,8 @@ const FlowEditor = (props: Props) => {
                      setZoom={setZoom}
                      undo={undo}
                      redo={redo}
-                     disabled={disabled || readOnly}
+                     baseDisabled={baseToolBarDisabled}
+                     runDisabled={runDisabled}
             />
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
                     message={"フローを構築中です"} />
@@ -460,7 +493,10 @@ const FlowEditor = (props: Props) => {
                 updateStep={updateStep}
                 sortStepSrcEnd={sortStepSrcEnd}
                 resizeInspector={resizeInspector}
-                readOnly={readOnly}
+                addFlowVariableHidden={addFlowVariableHidden}
+                previewDisabled={previewDisabled}
+                commandSelectorHidden={commandSelectorHidden}
+                baseInspectorDisabled={baseInspectorDisabled}
             />
             <NotificationManager/>
         </div>
