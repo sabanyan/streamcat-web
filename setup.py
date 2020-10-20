@@ -5,8 +5,11 @@ setup(
     packages=['kskp.web'],
     description='Web Frontend of KSKP',
     url='https://www.ksk-anl.com/products/kskp',
-    version_format='{tag}',
-    setup_requires=['setuptools-git-version'],
+    version_config={
+        'version_format': '{tag}',
+        'starting_version': '2.0.0'
+    },
+    setup_requires=['better-setuptools-git-version'],
     include_package_data=True,
     install_requires=[
         'flask',
