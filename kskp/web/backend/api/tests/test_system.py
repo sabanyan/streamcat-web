@@ -59,6 +59,52 @@ class SystemTestCase(ApiTestCaseBase):
         with self.assertRaises(Exception):
             self.factory.user.find_by_uuid(user_uuid)
 
+    def test_create_user_with_myproject(self):
+        """
+        Userの登録処理時にMyProjectが作成されること
+        """
+        # 金さんを作成する
+        result = self.post_uri('/api/v0/users', {'email':'kin@kitamchi.go.jp', 'name':'遠山　金四郎', 'password':'sakurafubuki'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        user_email = result['data']['email']
+
+        # 金さんを登録状態にする
+        self.post_register_complete(user_email, 'ououou_sakkikaradamatte_kiiterayou', self.USER1)
+
+        # 金さんを取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], user_uuid)
+        self.assertEqual(result['data']['email'], 'kin@kitamchi.go.jp')
+        self.assertEqual(result['data']['name'], '遠山　金四郎')
+        self.assertEqual(result['data']['state'], 'active')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        # MyProjectが作成されること
+        self.assertEqual(len(result['data']['projects']), 1)
+        self.assertIsNotNone(result['data']['projects'][0]['uuid'])
+        self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['data']['projects'][0]['label'], 'MyProject')
+        self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
+        self.assertIsNotNone(result['data']['projects'][0]['creator'])
+        self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
+
+        # MyProjectが作成されること
+        project_uuid = result['data']['projects'][0]['uuid']
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+        self.assertEqual(result['data']['label'], 'MyProject')
+
+        # 金さんを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # 金さんは論理削除状態になること
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # MyProjectを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
     def test_update_user(self):
         """
         ユーザ情報を変更する
@@ -427,7 +473,7 @@ class SystemTestCase(ApiTestCaseBase):
         root = self.factory.data.load_root()
 
         # ユーザ2は、本登録処理をする
-        # (MyProjectが作成される)
+        # (USER2は、TestCaseBase.setUpClass()で登録済みなので、MyProjectは作成されない)
         self.post_register_complete(self.USER2.email, 'adminpass0', self.USER2)
 
         # プロジェクトを作成する
@@ -459,28 +505,21 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
         # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
-        self.assertEqual(len(result['data']['projects']), 3)
-        # MyProject
+        self.assertEqual(len(result['data']['projects']), 2)
+        # プロジェクトX
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][0]['label'], 'MyProject')
+        self.assertEqual(result['data']['projects'][0]['label'], 'プロジェクトX')
         self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][0]['creator'])
         self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
-        # プロジェクトX
+        # プロジェクトY
         self.assertIsNotNone(result['data']['projects'][1]['uuid'])
         self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトX')
+        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトY')
         self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][1]['creator'])
         self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
-        # プロジェクトY
-        self.assertIsNotNone(result['data']['projects'][2]['uuid'])
-        self.assertEqual(result['data']['projects'][2]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][2]['label'], 'プロジェクトY')
-        self.assertIsNone(result['data']['projects'][2]['prevFolderPath'])
-        self.assertIsNotNone(result['data']['projects'][2]['creator'])
-        self.assertIsNotNone(result['data']['projects'][2]['createdAt'])
 
     def test_get_tmp_user_with_roles(self):
         """
