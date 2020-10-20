@@ -3,6 +3,10 @@ from setuptools import setup
 setup(
     name='kskp.web',
     packages=['kskp.web'],
+    description='Web Frontend of KSKP',
+    url='https://www.ksk-anl.com/products/kskp',
+    version_format='{tag}',
+    setup_requires=['setuptools-git-version'],
     include_package_data=True,
     install_requires=[
         'flask',
