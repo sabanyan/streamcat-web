@@ -18,7 +18,9 @@ type FlowSettingsInspectorProps = {
   flow: FlowModelProps;
   updateFlow: Function;
   addHistory: Function;
-  readOnly: boolean;
+  addFlowVariableHidden: boolean;
+  commandSelectorHidden: boolean;
+  baseInspectorDisabled: boolean;
 }
 
 class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> {
@@ -126,7 +128,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   }
 
   render () {
-    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory, readOnly} = this.props
+    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled} = this.props
     if (!flow) return null
     const {params} = flow
 
@@ -160,18 +162,20 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
         フロー変数の設定がありません
       </div>
     }
-    addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()} disabled={(readOnly)}>フロー変数を追加する</AddButton>
+    if(!addFlowVariableHidden){
+      addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
+    }
 
     return <BaseInspector header={''} label={this.props.flow.label}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}
-                          disabled={readOnly}>
+                          disabled={baseInspectorDisabled}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8}
-                onChange={(e) => this.onDescriptionChange(e)} disabled={(readOnly)}></textarea>
+                onChange={(e) => this.onDescriptionChange(e)} disabled={(baseInspectorDisabled)}></textarea>
       {inputParamsContainer}
       {addFlowParams}
       {
-        (!readOnly) ?
+        (!commandSelectorHidden) ?
           <Fragment>
             <div className={style.full_hr} />
             <CommandSelector
