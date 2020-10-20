@@ -248,7 +248,6 @@ const FlowEditor = (props: Props) => {
                 // 実行モードの設定
                 const executeMode = (allowlist.execute)?FlowExecuteModeValue.Executable:FlowExecuteModeValue.NotExecutable;
                 setExecuteMode(executeMode);
-                allowlist.update = false;
                 // 編集モードの設定
                 if(!allowlist.read){
                     // read が無効な場合は NotAllowed に飛ばす
