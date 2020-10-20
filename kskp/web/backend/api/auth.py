@@ -20,6 +20,10 @@ mod = Blueprint('auth', __name__)
 
 # FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
 # STRETCH_COUNT = 100
+
+# MyProjectのラベル名
+MY_PROJECT = 'MyProject'
+
 app.secret_key = '-jm624cqpry89e'
 
 
@@ -225,7 +229,7 @@ def complete_sign_up():
         user.load_self_role()
         # 初めて登録状態に遷移する時に、MyProjectを作成する
         root = factory.data.load_root()
-        project =root.create_project_folder('MyProject')
+        project =root.create_project_folder(MY_PROJECT)
         project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
