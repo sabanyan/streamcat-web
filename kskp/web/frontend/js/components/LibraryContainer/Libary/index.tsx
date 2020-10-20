@@ -1473,6 +1473,21 @@ const Library = (_: Props) => {
             });
         };
 
+        const emitMemberForm = (members, searchRows, onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged) => {
+            ModalUtil.emitModal({
+                id: Constants.modal.MEMBER_INFO,
+                visible: true,
+                done: "保存する",
+                content: <MemberForm
+                    rows={members}
+                    searchedRows={searchRows}
+                    onSearchTextInputed={onSearchTextInputed}
+                    onSearchedMemberClicked={onSearchedMemberClicked}
+                    onMemberRoleChanged={onMemberRoleChanged}
+                />
+            });
+        }
+
         const onMemberRoleChanged = (e, members: any[], user: any) => {
             const value = e.currentTarget.value
 
@@ -1490,35 +1505,12 @@ const Library = (_: Props) => {
                 })
             }
 
-            ModalUtil.emitModal({
-                id: Constants.modal.MEMBER_INFO,
-                visible: true,
-                done: "保存する",
-                content: <MemberForm
-                    rows={members}
-                    searchedRows={[]}
-                    onSearchTextInputed={onSearchTextInputed}
-                    onSearchedMemberClicked={onSearchedMemberClicked}
-                    onMemberRoleChanged={onMemberRoleChanged}
-                />
-            });
-
+            emitMemberForm(members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         }
 
         const onSearchedMemberClicked = (e, members: any[], addMember: any) => {
             members.unshift(addMember)
-            ModalUtil.emitModal({
-                id: Constants.modal.MEMBER_INFO,
-                visible: true,
-                done: "保存する",
-                content: <MemberForm
-                    rows={members}
-                    searchedRows={[]}
-                    onSearchTextInputed={onSearchTextInputed}
-                    onSearchedMemberClicked={onSearchedMemberClicked}
-                    onMemberRoleChanged={onMemberRoleChanged}
-                />
-            });
+            emitMemberForm(members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         }
 
         const onSearchTextInputed = async (e, members: any[], addMember: any) => {
@@ -1535,19 +1527,8 @@ const Library = (_: Props) => {
                     })
                 }
             }
-            ModalUtil.emitModal({
-                id: Constants.modal.MEMBER_INFO,
-                visible: true,
-                done: "保存する",
-                content: <MemberForm
-                    rows={members}
-                    searchedRows={seachResult}
-                    onSearchTextInputed={onSearchTextInputed}
-                    onSearchedMemberClicked={onSearchedMemberClicked}
-                    onMemberRoleChanged={onMemberRoleChanged}
-                />
-            });
 
+            emitMemberForm(members, seachResult, onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         }
 
 
@@ -1558,25 +1539,29 @@ const Library = (_: Props) => {
                         "members" : members,
                         "lastModifiedAt" : lastModifiedAt
                     }
-                    APIUtil.put("/projects/" + projectUUID).then((response) => {
-
+                    APIUtil.put("projects/" + projectUUID, putBody).then((response) => {
+                        
+                        if (response.data.success) {
+                            notify({
+                                title: "メンバー情報保存",
+                                message: "プロジェクトのメンバー情報を保存しました。",
+                                status: "success"
+                            });
+                        } else {
+                            notify({
+                                title: "",
+                                message: response.data.message,
+                                status: "warning",
+                                dismissAfter: 0,
+                                closeButton: true
+                            });
+                        }
                     })
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
                 }
             });
 
-            ModalUtil.emitModal({
-                id: Constants.modal.MEMBER_INFO,
-                visible: true,
-                done: "保存する",
-                content: <MemberForm
-                    rows={members}
-                    searchedRows={[]}
-                    onSearchTextInputed={onSearchTextInputed}
-                    onSearchedMemberClicked={onSearchedMemberClicked}
-                    onMemberRoleChanged={onMemberRoleChanged}
-                />
-            });
+            emitMemberForm(members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         };
 
 

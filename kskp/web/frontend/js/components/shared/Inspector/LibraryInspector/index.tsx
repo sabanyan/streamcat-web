@@ -62,7 +62,7 @@ class LibraryInspector extends React.Component<Props, State> {
         if (response.data.success && response.data.data.members) {
           this.setState({
             members: response.data.data.members,
-            projectModifiedAt: response.data.data.modified_at
+            projectModifiedAt: response.data.data.modifiedAt
           })
         }
       })
