@@ -413,7 +413,7 @@ const FlowEditor = (props: Props) => {
 
     // 実行可能で編集可能orUpdate可能以外の場合は、プレビュー機能を disabled にする
     // プレビューを開くリンクの制御
-    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && (editMode === FlowEditModeValue.Editable || editMode === FlowEditModeValue.ReadOnlyUpdateDisabled))
+    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable)
 
     // 編集モード以外は、フロー変数の追加機能を hidden にする
     const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable)
