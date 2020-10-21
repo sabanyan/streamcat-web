@@ -443,6 +443,7 @@ class LibraryTestCase(ApiTestCaseBase):
             ,'type'     : 'frame'
             ,'encoding' : 'UTF-8'
             ,'newline'  : 'LF'
+            ,'fileSize' : 16
             ,'creator'  : 'ユーザ管理者'
         }
 
@@ -452,6 +453,7 @@ class LibraryTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['encoding'], expected_result['encoding'])
         self.assertEqual(result['data']['newline'], expected_result['newline'])
+        self.assertEqual(result['data']['fileSize'], expected_result['fileSize'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
         self.assertNotEqual(result['data']['createdAt'], None)
 
