@@ -7,7 +7,6 @@ import { Helper } from 'Shared/Inspector'
 import Constants from 'Constants/index'
 
 import style from './style.scss'
-import classnames from 'classnames';
 
 type Props = {
   label?: string;
@@ -106,10 +105,10 @@ export default class ParamString extends React.Component<Props, State> {
     let openHelper: boolean = Boolean(helperTargetedInput)
 
     return <React.Fragment>
-
-      <textarea
+      <input
         name={param.name}
-        className={classnames("form-control", style.input)}
+        type="text"
+        className="form-control"
         data-paramtype={param.type}
         placeholder={param.name}
         value={currentValue}

@@ -1,0 +1,33 @@
+.helper {
+  border: solid 2px lighten(#00469d, 20%);
+  border-radius: 5px;
+  resize:vertical;
+  width: 900px;
+  height: 600px;
+  background-color: white;
+  overflow-y: scroll;
+}
+
+.toolbar {
+  background: lighten(#00469d, 10%);
+  font-size: small;
+  text-align: right;
+  color: white;
+}
+
+.contents {
+  overflow-y: auto;
+  padding: 5px;
+
+}
+
+.data {
+  padding : 5px;
+  span {
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .shortcuts {
+    padding : 5px 5px 5px 10px;
+  }
+}
