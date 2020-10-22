@@ -1497,8 +1497,6 @@ const Library = (_: Props) => {
 
         const onMemberRoleChanged = (e, members: any[], user: any) => {
             const value = e.currentTarget.value
-
-
             if (value === "Del") {
                 members = members.filter((mem) => {
                     return mem.uuid !== user.uuid
@@ -1516,6 +1514,7 @@ const Library = (_: Props) => {
         }
 
         const onSearchedMemberClicked = (e, members: any[], addMember: any) => {
+            addMember.type = "Reader"
             members.unshift(addMember)
             emitMemberForm(members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         }
@@ -1542,6 +1541,7 @@ const Library = (_: Props) => {
         _onClickMemberInfo = (e, members, projectUUID, lastModifiedAt) => {
             ModalUtil.registerModal({
                 id: Constants.modal.MEMBER_INFO, onClickDone: () => {
+                
                     let putBody = {
                         "members": members,
                         "lastModifiedAt": lastModifiedAt
