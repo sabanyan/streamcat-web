@@ -18,8 +18,6 @@ const MenuList = (props: Props) => {
     let createMenu: any = null;
     let uploadMenu: any = null;
 
-    console.log("menu")
-    console.log(allowlist)
     createMenu = allowlist.create ? <React.Fragment>
         <FlatButton icon={"icon-add"} onClick={onClickNewFlow}>フローの新規作成</FlatButton>
         <Spacer height={8} />
