@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
   "devDependencies": {
+    "@material-ui/core": "^4.11.0",
     "@types/ajv": "^1.0.0",
     "@types/classnames": "^2.2.8",
     "@types/moment": "^2.13.0",

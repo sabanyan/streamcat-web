@@ -1,161 +1,44 @@
 @import "../../../../../../sass/common";
 
-.description {
-    width: 100%;
-    word-wrap: normal;
-    white-space: pre-wrap;
-    color: lighten($kskp-text, 15%);
-    font-size: 13px;
-    padding: 0px 8px 0px 8px;
-    margin: 0;
-  }
+.list {
+    .elements {
+        display: flex;
+        flex-direction: row;
 
-.labelContainer {
-    clear:both;
-    font-size: 12px;
-    height: 32px;
+        .row {
+            display: flex;
+            flex-direction: row;
+ 
+            .elementContainer {
+                border: 1px solid lightgray;
+                border-radius: 5px;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
 
-    /* one item */
-    label:first-child:nth-last-child(1) {
-        width: calc(100% - 80px);
-    }
+                .element {
+                    display: flex;
+                    flex-direction: column;
+                    margin: 4px;
+                    justify-content: space-between;
+                    width: calc(50% - 8px);
 
-    /* two items */
-    label:first-child:nth-last-child(2),
-    label:first-child:nth-last-child(2) ~ label {
-        width: calc(100% - 80px);
-    }
+                    .label {
+                    }
 
-    /* three items */
-    label:first-child:nth-last-child(3) {
-        width: calc(40% - 40px);
-    }
-    label:first-child:nth-last-child(3) ~ label {
-        width: calc(60% - 40px);
-    }
+                    .input {
+                    }
+                }
 
-    /* two items */
-    label:first-child:nth-last-child(4),
-    label:first-child:nth-last-child(4) ~ label {
-        width: calc(33% - 25px);
-    }
-
-    label:first-child:nth-last-child(5),
-    label:first-child:nth-last-child(5) ~ label {
-        width: calc(25% - 20px);
-    }
-
-    label {
-        float: left;
-        margin-left: 2px;
-        
-    }
-}
-
-.elements {
-    width   : 100%;
-    border-radius: 4px;
-    
-    .paramElements {
-        border: 1px solid #CED4DA;
-        padding : 7px;
-        height: 55px;
-        margin-top: 10px;
-
-        .select {
-            position: relative;
-            bottom: 26px
-        }
-
-        /* one item */
-        .paramElementArg:first-child:nth-last-child(1) {
-            width: calc(100% - 80px);
-        }
-    
-        /* two items */
-        .paramElementArg:first-child:nth-last-child(2),
-        .paramElementArg:first-child:nth-last-child(2) ~ .paramElementArg {
-            width: calc(50% - 40px);
-        }
-    
-        /* three items */
-        .paramElementArg:first-child:nth-last-child(3) {
-            width: calc(40% - 40px);
-        }
-        .paramElementArg:first-child:nth-last-child(3) ~ .paramElementArg {
-            width: calc(60% - 40px);
-        }
-    
-        /* four items */
-        .paramElementArg:first-child:nth-last-child(4),
-        .paramElementArg:first-child:nth-last-child(4) ~ .paramElementArg {
-            width: calc(33% - 25px);
-        }
-
-        /* five items */
-        .paramElementArg:first-child:nth-last-child(5),
-        .paramElementArg:first-child:nth-last-child(5) ~ .paramElementArg {
-            width: calc(25% - 20px);
-        }
-
-        .paramElementArg:nth-child(n) {
-            float: left;
-            margin: 0px 4px 0px 0px;
-        }
-    
-        button {
-            min-width: 56px;
-            float: right;
-            margin: 3px 3px 0px 3px;
-        }
-    }
-
-    .paramElementsNoButton {
-        //border: 1px solid #CED4DA;
-        padding : 4px;
-        height: 48px;
-        margin-top: 10px;
-
-        .select {
-            position: relative;
-            bottom: 26px;
-            height: 48px;
-        }
-
-        /* one item */
-        .paramElementArg:first-child:nth-last-child(1) {
-            width: calc(100% - 10px);
-        }
-    
-        /* two items */
-        .paramElementArg:first-child:nth-last-child(2) {
-            width: calc(30% - 5px);
-        }
-        .paramElementArg:first-child:nth-last-child(2) ~ .paramElementArg {
-            width: calc(50% - 5px);
-        }
-    
-        /* three items */
-        .paramElementArg:first-child:nth-last-child(3),
-        .paramElementArg:first-child:nth-last-child(3) ~ .paramElementArg {
-            width: calc(33% - 4px);
-        }
-    
-        /* four items */
-        .paramElementArg:first-child:nth-last-child(4),
-        .paramElementArg:first-child:nth-last-child(4) ~ .paramElementArg {
-            width: calc(25% - 3px);
-        }
-
-        .paramElementArg:nth-child(n) {
-            float: left;
-            margin: 0px 4px 0px 0px;
-        }
-    
-        button {
-            min-width: 56px;
-            float: right;
-            margin: 3px 3px 0px 3px;
+                .oneRow {
+                    width: 100%;
+                }
+            }
+            .buttons {
+                display: flex;
+                align-self: flex-end;
+                padding-left:8px;
+            }
         }
     }
 }

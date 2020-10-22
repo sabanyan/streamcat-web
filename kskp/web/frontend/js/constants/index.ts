@@ -107,6 +107,7 @@ const Constants = {
     ADD_USER_CONFIRM: 'add_user_confirm',
     EDIT_DATABASE: 'edit_database',
     EDIT_ENCODING: 'edit_encoding',
+    MEMBER_INFO: 'member_info',
     RUN_FLOW: 'run_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
