@@ -151,7 +151,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
                               onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
 
-      subFlowLink = <a disabled={readOnly} href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
+      subFlowLink = <a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
     }
 
     let form
