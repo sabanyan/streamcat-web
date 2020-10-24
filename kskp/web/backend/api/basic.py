@@ -445,7 +445,7 @@ def get_navigation():
         'flow_uuid': '',
         'flow_name': '',
         'user': {},
-        'allowlist': {}, 
+        'allowlist': {},
         'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
     }
 
