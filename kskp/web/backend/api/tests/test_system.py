@@ -817,6 +817,118 @@ class SystemTestCase(ApiTestCaseBase):
         # 登録ユーザに戻っていること
         self.assertEqual(result['data']['state'], 'active')
 
+        # ユーザを取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?roles=on', self.USER1)
+        
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'inactive-user!@ksk-anl.com')
+        self.assertEqual(result['data']['name'], '論理削除ユーザです！')
+        self.assertEqual(result['data']['state'], 'active')
+        # 本人ロールは存在しないので所属するロールはeveryoneのみである
+        self.assertEqual(len(result['data']['roles']), 2)
+        # EveryOneロールに復帰していること
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][0]['creator'])
+        self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
+        # 本人ロールに所属していること
+        self.assertEqual(result['data']['roles'][1]['uuid'], new_user.load_self_role().uuid)
+        self.assertEqual(result['data']['roles'][1]['name'], new_user.load_self_role().name)
+        self.assertEqual(result['data']['roles'][1]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][1]['creator'])
+        self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
+
+    def test_delete_sys_admin(self):
+        """
+        デフォルトのシステム管理者を削除できること
+        """
+        # デフォルトのシステム管理者を取得する
+        user0_result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
+        
+        # デフォルトのユーザを削除する
+        self.delete_uri(f'/api/v0/users/{self.USER0.uuid}', self.USER1)
+
+        # ユーザは論理削除状態になること
+        result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?projects=on', self.USER1)
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # 論理削除されたユーザは認証されないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/library', self.USER0)
+
+        # kskp.store.__init__.pyを再読み込みする
+        # (Docker再起動を再現する)
+        import importlib
+        kskp_store = importlib.import_module('kskp.store')
+        importlib.reload(kskp_store)
+
+        # 論理削除ユーザを登録ユーザに戻す
+        result = self.put_uri(f'/api/v0/users/{self.USER0.uuid}/undelete', {}, self.USER1)
+
+        # 管理者権限を再び与える
+        result = self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', {}, self.USER1)
+
+        # デフォルトのシステム管理者を取得する
+        result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
+
+        # 削除前と同じ結果が得られることを確認する
+        self.assertDictEqual(result, user0_result)
+
+    def test_delete_usr_admin(self):
+        """
+        デフォルトのユーザ管理者を削除できること
+        """
+        # コッコロちゃんを作成する
+        result = self.post_uri('/api/v0/users', {'email':'kokkoro@elf.org', 'name':'コッコロちゃん', 'password':'seikatsuhi0'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        user_email = result['data']['email']
+
+        # コッコロちゃんを取得する
+        new_user = self.factory.user.find_by_uuid(user_uuid)
+
+        # コッコロちゃんを本登録処理をする
+        self.post_register_complete(user_email, 'adminpass0', self.USER1)
+
+        # コッコロちゃんに管理者権限を与える
+        result = self.put_uri(f'/api/v0/roles/usr_admin/users/{user_uuid}', {}, self.USER1)
+
+        # デフォルトのユーザ管理者を取得する
+        user1_result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', new_user)
+        
+        # デフォルトのユーザを削除する
+        self.delete_uri(f'/api/v0/users/{self.USER1.uuid}', self.USER1)
+
+        # ユーザは論理削除状態になること
+        result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?projects=on', new_user)
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # 論理削除されたユーザは認証されないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/library', self.USER1)
+
+        # kskp.store.__init__.pyを再読み込みする
+        # (Docker再起動を再現する)
+        import importlib
+        kskp_store = importlib.import_module('kskp.store')
+        importlib.reload(kskp_store)
+
+        # 論理削除ユーザを登録ユーザに戻す
+        result = self.put_uri(f'/api/v0/users/{self.USER1.uuid}/undelete', {}, new_user)
+
+        # 管理者権限を再び与える
+        result = self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', {}, new_user)
+
+        # デフォルトのユーザ管理者を取得する
+        result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', new_user)
+
+        # 削除前と同じ結果が得られることを確認する
+        self.assertDictEqual(result, user1_result)
+
+        # コッコロちゃんを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
     def test_get_no_uer(self):
         """
         存在しないUserを取得しようとすると例外を送出する
