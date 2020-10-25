@@ -40,6 +40,23 @@ export interface Database {
     password?: string;
 }
 
+export interface Allowlist {
+    copy: boolean;
+    createFile: boolean;
+    createFolder: boolean;
+    createProject: boolean;
+    delete: boolean;
+    download: boolean;
+    execute: boolean;
+    findMember: boolean;
+    lock: boolean;
+    move: boolean;
+    read: boolean;
+    update: boolean;
+    updateMember: boolean;
+    upload: boolean;
+}
+
 export const getDataBaseRules = () => {
     // TODO rulesの型定義
     return {
@@ -120,6 +137,22 @@ const getInitialDatabase = (): Database => {
     };
 };
 
+export interface Member {
+    createdAt: string;
+    creator: string;
+    email: string;
+    name: string;
+    state: string;
+    type: string;
+    uuid: string;
+}
+
+export interface ProjectInfo {
+    members?: Member[];
+    projectModifiedAt?: string;
+    allowlist?: Allowlist;
+}
+
 interface Props {
     navigation?: NavigationModelProps
 }
@@ -153,7 +186,26 @@ const Library = (_: Props) => {
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
-    const [allowlist, setAllowlist] = useState<{}>({});
+    const [allowlist, setAllowlist] = useState<Allowlist>({
+        copy: false,
+        createFile: false,
+        createFolder: false,
+        createProject: false,
+        delete: false,
+        download: false,
+        execute: false,
+        findMember: false,
+        lock: false,
+        move: false,
+        read: false,
+        update: false,
+        updateMember: false,
+        upload: false
+    });
+    const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
+    const [remountCount, setRemountCount] = useState(0);
+    const refresh = () => setRemountCount(remountCount + 1);
+
 
     useEffect(() => {
         if (isDialog) {
@@ -541,6 +593,10 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
+                    setAllowlist(json.allowlist);
+                    setCurrentProject({
+                        ...currentProject, allowlist: json.allowlist
+                    })
                 });
             }
             //該当フォルダを取得
@@ -551,6 +607,10 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
+                    setAllowlist(json.allowlist);
+                    setCurrentProject({
+                        ...currentProject, allowlist: json.allowlist
+                    })
                 } else {
                     APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
                         if (response.data.success) {
@@ -559,6 +619,10 @@ const Library = (_: Props) => {
                             setInitialLibraryChildren(children);
                             setLibraryChildren(children);
                             setFolderPath(folderPath);
+                            setAllowlist(json.allowlist);
+                            setCurrentProject({
+                                ...currentProject, allowlist: json.allowlist
+                            })
                         }
                     });
                 }
@@ -598,6 +662,10 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
+                    setAllowlist(json.allowlist);
+                    setCurrentProject({
+                        ...currentProject, allowlist: json.allowlist
+                    })
                 }
             });
         }
@@ -710,6 +778,18 @@ const Library = (_: Props) => {
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
             let data: LibraryListDataType = cell;
+            if (data && data.type === "project") {
+                APIUtil.get("/projects/" + data.uuid + "?members=on&allowlist=on").then((response) => {
+                    if (response.data.success && response.data.data.members) {
+                        setCurrentProject({
+                            members: response.data.data.members,
+                            projectModifiedAt: response.data.data.modifiedAt,
+                            allowlist: response.data.data.allowlist
+                        })
+                    }
+                })
+            }
+
             if (event && (event.metaKey || event.ctrlKey)) {
                 data.selected = true;
                 // command or ctrl + click
@@ -758,6 +838,7 @@ const Library = (_: Props) => {
                 }
                 clickedLibraryCell.current = false;
             }, 100);
+
         };
 
         const onClickDeleteAll = () => {
@@ -1180,10 +1261,6 @@ const Library = (_: Props) => {
         window.close();
     };
 
-    const updateAllowlist = (allowlist:{}) => {
-        setAllowlist(allowlist);
-    };
-
     const renderLibraryInspector = (): React.ReactNode => {
         if (!lastSelected) return null;
 
@@ -1495,59 +1572,74 @@ const Library = (_: Props) => {
             });
         }
 
-        const onMemberRoleChanged = (e, members: any[], user: any) => {
+        const onMemberRoleChanged = (e, user: any) => {
             const value = e.currentTarget.value
-            if (value === "Del") {
-                members = members.filter((mem) => {
-                    return mem.uuid !== user.uuid
-                })
-            } else {
-                members = members.map((mem) => {
-                    if (mem.uuid === user.uuid) {
-                        mem.type = value
-                    }
-                    return mem
-                })
-            }
+            let currentMembers = currentProject.members;
 
-            emitMemberForm(members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
-        }
-
-        const onSearchedMemberClicked = (e, members: any[], addMember: any) => {
-            addMember.type = "Reader"
-            members.unshift(addMember)
-            emitMemberForm(members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
-        }
-
-        const onSearchTextInputed = async (e, members: any[], addMember: any) => {
-            const searchText = e.currentTarget.value ? e.currentTarget.value : ""
-            let seachResult = []
-            if (searchText !== "") {
-                let response = await APIUtil.get("/users?q=" + searchText + "&roles=off&projects=on")
-                if (response.data.success && response.data.data) {
-                    seachResult = response.data.data
-                    seachResult = seachResult.filter((user: any) => {
-                        return members.filter((member) => {
-                            return user.uuid !== member.uuid
-                        }).length
+            if (currentMembers) {
+                if (value === "Del") {
+                    currentMembers = currentMembers.filter((mem) => {
+                        return mem.uuid !== user.uuid
+                    })
+                } else if (value !== "Del") {
+                    currentMembers = currentMembers.map((mem) => {
+                        if (mem.uuid === user.uuid) {
+                            mem.type = value
+                        }
+                        return mem
                     })
                 }
+
+                currentProject.members = currentMembers;
+                emitMemberForm(currentMembers, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
+            }
+        }
+
+        const onSearchedMemberClicked = (e, addMember: any) => {
+            addMember.type = "Reader"
+            let currentMembers = currentProject.members;
+
+            if (currentMembers) {
+                currentMembers.unshift(addMember)
+                emitMemberForm(currentMembers, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
             }
 
-            emitMemberForm(members, seachResult, onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
+        }
+
+        const onSearchTextInputed = async (e) => {
+            const searchText = e.currentTarget.value ? e.currentTarget.value : "";
+            const currentMembers = currentProject.members;
+            let seachResult = []
+
+            if (currentMembers) {
+                if (searchText !== "") {
+                    let response = await APIUtil.get("/users?q=" + searchText + "&roles=off&projects=on")
+                    if (response.data.success && response.data.data) {
+                        seachResult = response.data.data
+                        seachResult = seachResult.filter((user: any) => {
+                            let result = false;
+                            if (currentMembers && currentMembers.filter((member) => { return user.uuid !== member.uuid })) {
+                                result = true;
+                            }
+                            return result;
+                        })
+                    }
+                }
+
+                emitMemberForm(currentMembers, seachResult, onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
+            }
         }
 
 
-        _onClickMemberInfo = (e, members, projectUUID, lastModifiedAt) => {
+        _onClickMemberInfo = (e, projectUUID) => {
             ModalUtil.registerModal({
                 id: Constants.modal.MEMBER_INFO, onClickDone: () => {
-                
                     let putBody = {
-                        "members": members,
-                        "lastModifiedAt": lastModifiedAt
+                        "members": currentProject.members,
+                        "lastModifiedAt": currentProject.projectModifiedAt
                     }
-                    APIUtil.put("projects/" + projectUUID, putBody).then((response) => {
 
+                    APIUtil.put("projects/" + projectUUID, putBody).then((response) => {
                         if (response.data.success) {
                             notify({
                                 title: "メンバー情報保存",
@@ -1563,16 +1655,21 @@ const Library = (_: Props) => {
                                 closeButton: true
                             });
                         }
+                        refresh();
                     })
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
                 }
             });
 
-            emitMemberForm(members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
+            emitMemberForm(currentProject.members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         };
 
+        const _onChangeFlowLock = (e) => {
+            const checked = e.currentTarget.checked
+        }
 
         return <LibraryInspector
+            currentProject={currentProject}
             selected={selectedDatas}
             lastSelected={lastSelected}
             onClickDelete={_onClickDelete}
@@ -1582,8 +1679,8 @@ const Library = (_: Props) => {
             onClickEditEncoding={_onClickEditEncoding}
             onClickCleanTrash={_onClickCleanTrash}
             onClickMemberInfo={_onClickMemberInfo}
+            onChangeFlowLock={_onChangeFlowLock}
             onBlurTitle={_onBlurTitle}
-            updateAllowlist={updateAllowlist}
             visualizers={visualizers}
         />;
     };

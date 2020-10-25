@@ -16,6 +16,7 @@ export type LibraryChild = {
   type: string
   label: string
   encoding?: string
+  fileSize?: string
   newline?: string
   creator: string
   createdAt: string
