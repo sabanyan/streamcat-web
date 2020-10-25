@@ -59,6 +59,52 @@ class SystemTestCase(ApiTestCaseBase):
         with self.assertRaises(Exception):
             self.factory.user.find_by_uuid(user_uuid)
 
+    def test_create_user_with_myproject(self):
+        """
+        Userの登録処理時にMyProjectが作成されること
+        """
+        # 金さんを作成する
+        result = self.post_uri('/api/v0/users', {'email':'kin@kitamchi.go.jp', 'name':'遠山　金四郎', 'password':'sakurafubuki'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        user_email = result['data']['email']
+
+        # 金さんを登録状態にする
+        self.post_register_complete(user_email, 'ououou_sakkikaradamatte_kiiterayou', self.USER1)
+
+        # 金さんを取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], user_uuid)
+        self.assertEqual(result['data']['email'], 'kin@kitamchi.go.jp')
+        self.assertEqual(result['data']['name'], '遠山　金四郎')
+        self.assertEqual(result['data']['state'], 'active')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        # MyProjectが作成されること
+        self.assertEqual(len(result['data']['projects']), 1)
+        self.assertIsNotNone(result['data']['projects'][0]['uuid'])
+        self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['data']['projects'][0]['label'], 'MyProject')
+        self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
+        self.assertIsNotNone(result['data']['projects'][0]['creator'])
+        self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
+
+        # MyProjectが作成されること
+        project_uuid = result['data']['projects'][0]['uuid']
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+        self.assertEqual(result['data']['label'], 'MyProject')
+
+        # 金さんを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # 金さんは論理削除状態になること
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # MyProjectを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
     def test_update_user(self):
         """
         ユーザ情報を変更する
@@ -427,7 +473,7 @@ class SystemTestCase(ApiTestCaseBase):
         root = self.factory.data.load_root()
 
         # ユーザ2は、本登録処理をする
-        # (MyProjectが作成される)
+        # (USER2は、TestCaseBase.setUpClass()で登録済みなので、MyProjectは作成されない)
         self.post_register_complete(self.USER2.email, 'adminpass0', self.USER2)
 
         # プロジェクトを作成する
@@ -459,28 +505,21 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
         # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
-        self.assertEqual(len(result['data']['projects']), 3)
-        # MyProject
+        self.assertEqual(len(result['data']['projects']), 2)
+        # プロジェクトX
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][0]['label'], 'MyProject')
+        self.assertEqual(result['data']['projects'][0]['label'], 'プロジェクトX')
         self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][0]['creator'])
         self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
-        # プロジェクトX
+        # プロジェクトY
         self.assertIsNotNone(result['data']['projects'][1]['uuid'])
         self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトX')
+        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトY')
         self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][1]['creator'])
         self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
-        # プロジェクトY
-        self.assertIsNotNone(result['data']['projects'][2]['uuid'])
-        self.assertEqual(result['data']['projects'][2]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][2]['label'], 'プロジェクトY')
-        self.assertIsNone(result['data']['projects'][2]['prevFolderPath'])
-        self.assertIsNotNone(result['data']['projects'][2]['creator'])
-        self.assertIsNotNone(result['data']['projects'][2]['createdAt'])
 
     def test_get_tmp_user_with_roles(self):
         """
@@ -778,6 +817,118 @@ class SystemTestCase(ApiTestCaseBase):
         # 登録ユーザに戻っていること
         self.assertEqual(result['data']['state'], 'active')
 
+        # ユーザを取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?roles=on', self.USER1)
+        
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], 'inactive-user!@ksk-anl.com')
+        self.assertEqual(result['data']['name'], '論理削除ユーザです！')
+        self.assertEqual(result['data']['state'], 'active')
+        # 本人ロールは存在しないので所属するロールはeveryoneのみである
+        self.assertEqual(len(result['data']['roles']), 2)
+        # EveryOneロールに復帰していること
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][0]['creator'])
+        self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
+        # 本人ロールに所属していること
+        self.assertEqual(result['data']['roles'][1]['uuid'], new_user.load_self_role().uuid)
+        self.assertEqual(result['data']['roles'][1]['name'], new_user.load_self_role().name)
+        self.assertEqual(result['data']['roles'][1]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][1]['creator'])
+        self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
+
+    def test_delete_sys_admin(self):
+        """
+        デフォルトのシステム管理者を削除できること
+        """
+        # デフォルトのシステム管理者を取得する
+        user0_result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
+        
+        # デフォルトのユーザを削除する
+        self.delete_uri(f'/api/v0/users/{self.USER0.uuid}', self.USER1)
+
+        # ユーザは論理削除状態になること
+        result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?projects=on', self.USER1)
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # 論理削除されたユーザは認証されないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/library', self.USER0)
+
+        # kskp.store.__init__.pyを再読み込みする
+        # (Docker再起動を再現する)
+        import importlib
+        kskp_store = importlib.import_module('kskp.store')
+        importlib.reload(kskp_store)
+
+        # 論理削除ユーザを登録ユーザに戻す
+        result = self.put_uri(f'/api/v0/users/{self.USER0.uuid}/undelete', {}, self.USER1)
+
+        # 管理者権限を再び与える
+        result = self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', {}, self.USER1)
+
+        # デフォルトのシステム管理者を取得する
+        result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
+
+        # 削除前と同じ結果が得られることを確認する
+        self.assertDictEqual(result, user0_result)
+
+    def test_delete_usr_admin(self):
+        """
+        デフォルトのユーザ管理者を削除できること
+        """
+        # コッコロちゃんを作成する
+        result = self.post_uri('/api/v0/users', {'email':'kokkoro@elf.org', 'name':'コッコロちゃん', 'password':'seikatsuhi0'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        user_email = result['data']['email']
+
+        # コッコロちゃんを取得する
+        new_user = self.factory.user.find_by_uuid(user_uuid)
+
+        # コッコロちゃんを本登録処理をする
+        self.post_register_complete(user_email, 'adminpass0', self.USER1)
+
+        # コッコロちゃんに管理者権限を与える
+        result = self.put_uri(f'/api/v0/roles/usr_admin/users/{user_uuid}', {}, self.USER1)
+
+        # デフォルトのユーザ管理者を取得する
+        user1_result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', new_user)
+        
+        # デフォルトのユーザを削除する
+        self.delete_uri(f'/api/v0/users/{self.USER1.uuid}', self.USER1)
+
+        # ユーザは論理削除状態になること
+        result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?projects=on', new_user)
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # 論理削除されたユーザは認証されないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/library', self.USER1)
+
+        # kskp.store.__init__.pyを再読み込みする
+        # (Docker再起動を再現する)
+        import importlib
+        kskp_store = importlib.import_module('kskp.store')
+        importlib.reload(kskp_store)
+
+        # 論理削除ユーザを登録ユーザに戻す
+        result = self.put_uri(f'/api/v0/users/{self.USER1.uuid}/undelete', {}, new_user)
+
+        # 管理者権限を再び与える
+        result = self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', {}, new_user)
+
+        # デフォルトのユーザ管理者を取得する
+        result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', new_user)
+
+        # 削除前と同じ結果が得られることを確認する
+        self.assertDictEqual(result, user1_result)
+
+        # コッコロちゃんを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
     def test_get_no_uer(self):
         """
         存在しないUserを取得しようとすると例外を送出する
@@ -1040,9 +1191,11 @@ class SystemTestCase(ApiTestCaseBase):
         with self.assertRaises(AssertionError):
             self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER2)
 
-        # システム管理者から最後のユーザを脱退できないこと
-        with self.assertRaises(AssertionError):
-            self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER1)
+        # システム管理者から最後のユーザを脱退できること
+        self.delete_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', self.USER1)
+
+        # ユーザを戻す
+        self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', {}, self.USER1)
 
     def test_join_leave_usr_admin_role(self):
         """
@@ -1163,7 +1316,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
         # 作成ユーザ
-        self.assertEqual(len(result['data']['members']), 3)
+        self.assertEqual(len(result['data']['members']), 2)
         self.assertEqual(result['data']['members'][0]['uuid'], self.USER0.uuid)
         self.assertEqual(result['data']['members'][0]['email'], self.USER0.email)
         self.assertEqual(result['data']['members'][0]['name'], self.USER0.name)
@@ -1171,22 +1324,14 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['members'][0]['creator'], self.USER0.creator_str)
         self.assertEqual(result['data']['members'][0]['createdAt'], self.USER0.created_at_str)
         self.assertEqual(result['data']['members'][0]['type'], 'Owner')
-        # ユーザ管理者
-        self.assertEqual(result['data']['members'][1]['uuid'], self.USER1.uuid)
-        self.assertEqual(result['data']['members'][1]['email'], self.USER1.email)
-        self.assertEqual(result['data']['members'][1]['name'], self.USER1.name)
-        self.assertEqual(result['data']['members'][1]['state'], self.USER1.state)
-        self.assertEqual(result['data']['members'][1]['creator'], self.USER1.creator_str)
-        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER1.created_at_str)
-        self.assertEqual(result['data']['members'][1]['type'], 'Owner')
         # 参加ユーザ
-        self.assertEqual(result['data']['members'][2]['uuid'], self.USER2.uuid)
-        self.assertEqual(result['data']['members'][2]['email'], self.USER2.email)
-        self.assertEqual(result['data']['members'][2]['name'], self.USER2.name)
-        self.assertEqual(result['data']['members'][2]['state'], self.USER2.state)
-        self.assertEqual(result['data']['members'][2]['creator'], self.USER2.creator_str)
-        self.assertEqual(result['data']['members'][2]['createdAt'], self.USER2.created_at_str)
-        self.assertEqual(result['data']['members'][2]['type'], 'Reader')
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
 
         # ユーザを脱退させる
         result = self.delete_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', self.USER0)
@@ -1194,8 +1339,8 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを検索する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER0)
 
-        # 参加ユーザは2人である
-        self.assertEqual(len(result['data']['members']), 2)
+        # 参加ユーザは1人である
+        self.assertEqual(len(result['data']['members']), 1)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER0)
@@ -1235,6 +1380,76 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
         # 参加ユーザ(USER2)
+        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(result['data']['members'][0]['type'], 'Owner')
+        # 参加ユーザ(USER3)
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER3.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
+
+        # ユーザを脱退させる
+        data = {
+            'members': [{'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+
+        # 参加ユーザは1人である
+        self.assertEqual(len(result['data']['members']), 1)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
+
+    def test_join_leave_user_to_project3(self):
+        """
+        Projectにユーザを参加・脱退させる
+        (ユーザ管理者ロールに属するユーザもメンバに参加する場合)
+        (PUT /projects を用いる)
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトですよ'}, self.USER0)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER0)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER3)
+        project_modified_at = result['data']['modifiedAt']
+        
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project_uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], 'プロジェクトですよ')
+        self.assertEqual(result['data']['children'], [])
+        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        # 参加ユーザ(USER2)
         self.assertEqual(len(result['data']['members']), 3)
         self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
         self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
@@ -1243,27 +1458,27 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
         self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
         self.assertEqual(result['data']['members'][0]['type'], 'Owner')
-        # ユーザ管理者
-        # (ユーザ管理者はプロジェクト管理者から外すことはできないこと)
-        self.assertEqual(result['data']['members'][1]['uuid'], self.USER1.uuid)
-        self.assertEqual(result['data']['members'][1]['email'], self.USER1.email)
-        self.assertEqual(result['data']['members'][1]['name'], self.USER1.name)
-        self.assertEqual(result['data']['members'][1]['state'], self.USER1.state)
-        self.assertEqual(result['data']['members'][1]['creator'], self.USER1.creator_str)
-        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER1.created_at_str)
-        self.assertEqual(result['data']['members'][1]['type'], 'Owner')
         # 参加ユーザ(USER3)
-        self.assertEqual(result['data']['members'][2]['uuid'], self.USER3.uuid)
-        self.assertEqual(result['data']['members'][2]['email'], self.USER3.email)
-        self.assertEqual(result['data']['members'][2]['name'], self.USER3.name)
-        self.assertEqual(result['data']['members'][2]['state'], self.USER3.state)
-        self.assertEqual(result['data']['members'][2]['creator'], self.USER3.creator_str)
-        self.assertEqual(result['data']['members'][2]['createdAt'], self.USER3.created_at_str)
-        self.assertEqual(result['data']['members'][2]['type'], 'Reader')
+        self.assertEqual(result['data']['members'][1]['uuid'], self.USER3.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], self.USER3.email)
+        self.assertEqual(result['data']['members'][1]['name'], self.USER3.name)
+        self.assertEqual(result['data']['members'][1]['state'], self.USER3.state)
+        self.assertEqual(result['data']['members'][1]['creator'], self.USER3.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], self.USER3.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
+        # 参加ユーザ(USER1)
+        self.assertEqual(result['data']['members'][2]['uuid'], self.USER1.uuid)
+        self.assertEqual(result['data']['members'][2]['email'], self.USER1.email)
+        self.assertEqual(result['data']['members'][2]['name'], self.USER1.name)
+        self.assertEqual(result['data']['members'][2]['state'], self.USER1.state)
+        self.assertEqual(result['data']['members'][2]['creator'], self.USER1.creator_str)
+        self.assertEqual(result['data']['members'][2]['createdAt'], self.USER1.created_at_str)
+        self.assertEqual(result['data']['members'][2]['type'], 'Writer')
 
         # ユーザを脱退させる
         data = {
-            'members': [{'uuid' : self.USER3.uuid, 'type': 'Owner'}],
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Owner'}],
             'lastModifiedAt' : project_modified_at
         }
         result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
@@ -1700,6 +1915,134 @@ class SystemTestCase(ApiTestCaseBase):
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER2)
 
+    def test_move_inter_projects(self):
+        """
+        プロジェクト間でファイルを移動した場合、
+        ファイルの権限は移動先プロジェクトの権限に従うこと
+        """
+        # ルートフォルダを取得する
+        root = self.factory.data.load_root()
+        # ルートフォルダの下にプロジェクトAを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'格さん'}, self.USER0)
+        project_a_uuid = result['data']['uuid']
+        project_a_modified_at = result['data']['modifiedAt']
+
+        # ルートフォルダの下にプロジェクトBを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'助さん'}, self.USER3)
+        project_b_uuid = result['data']['uuid']
+        project_b_modified_at = result['data']['modifiedAt']
+
+        # USER2をプロジェクトAとBの編集者にする
+        result = self.put_uri(f'/api/v0/projects/{project_a_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER0)
+        result = self.put_uri(f'/api/v0/projects/{project_b_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER3)
+
+        # プロジェクトAの下にフレームを作成する
+        f = (io.BytesIO(b'I am a chilimen byer'), 'frame1.csv')
+        result = self.post_frames('御隠居', project_a_uuid, f, self.USER0)
+        frame_uuid = result['data']['uuid']
+
+        # USER2は、フレームをプロジェクトAからプロジェクトBへ移動できること
+        result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {"parent": project_b_uuid}, self.USER2)
+
+        # プロジェクトAのメンバは、フレームを参照できないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER0)
+
+        # プロジェクトAのメンバは、フレームをプレビューできないこと
+        # Visデータのポイント引数の作成
+        data = {
+            "args" : {
+                "visualizer" : "csvtohtmltable",
+                "offset" : 0,
+                "limit"  : 100
+            }
+        }
+        with self.assertRaises(AssertionError):
+            self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER0)
+
+        # プロジェクトBのメンバは、フレームの参照・更新ができること
+        result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': '水戸光圀公であらせられるぞ'}, self.USER3)
+
+        # USER2は、フレームを削除する
+        self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_a_uuid}', self.USER0)
+        self.delete_uri(f'/api/v0/projects/{project_b_uuid}', self.USER3)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER0)
+        self.delete_uri('/api/v0/trashes', self.USER3)
+
+    def test_move_folder_inter_projects(self):
+        """
+        プロジェクト間でフォルダを移動した場合、
+        フォルダ内のファイルの権限は移動先プロジェクトの権限に従うこと
+        """
+        # ルートフォルダを取得する
+        root = self.factory.data.load_root()
+        # ルートフォルダの下にプロジェクトAを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'関西電気保安協会'}, self.USER0)
+        project_a_uuid = result['data']['uuid']
+        project_a_modified_at = result['data']['modifiedAt']
+
+        # ルートフォルダの下にプロジェクトBを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'とんかつとんかつKYK'}, self.USER3)
+        project_b_uuid = result['data']['uuid']
+        project_b_modified_at = result['data']['modifiedAt']
+
+        # USER2をプロジェクトAとBの編集者にする
+        result = self.put_uri(f'/api/v0/projects/{project_a_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER0)
+        result = self.put_uri(f'/api/v0/projects/{project_b_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER3)
+
+        # プロジェクトAの下にフォルダを作成する
+        result = self.post_uri('/api/v0/folders', {"label": 'グランシャトーへいらっしゃい', 'parent': project_a_uuid}, self.USER0)
+        folder_uuid = result['data']['uuid']
+
+        # フォルダの下にフレームを作成する
+        f = (io.BytesIO(b'I am a chilimen byer'), 'frame1.csv')
+        result = self.post_frames('はぎや整形', folder_uuid, f, self.USER0)
+        frame_uuid = result['data']['uuid']
+
+        # USER2は、フォルダをプロジェクトAからプロジェクトBへ移動できること
+        result = self.put_uri(f'/api/v0/folders/{folder_uuid}', {"parent": project_b_uuid}, self.USER2)
+
+        # プロジェクトAのメンバは、フレームを参照できないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER0)
+
+        # プロジェクトAのメンバは、フレームをプレビューできないこと
+        # Visデータのポイント引数の作成
+        data = {
+            "args" : {
+                "visualizer" : "csvtohtmltable",
+                "offset" : 0,
+                "limit"  : 100
+            }
+        }
+        with self.assertRaises(AssertionError):
+            self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER0)
+
+        # プロジェクトBのメンバは、フレームの参照・更新ができること
+        result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': 'カタツムリ大作戦'}, self.USER3)
+
+        # USER3は、フレームを削除する
+        self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER3)
+
+        # USER3は、ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER3)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_a_uuid}', self.USER0)
+        self.delete_uri(f'/api/v0/projects/{project_b_uuid}', self.USER3)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER0)
+        self.delete_uri('/api/v0/trashes', self.USER3)
+
     def test_exec_flow_in_project(self):
         """
         プロジェクトメンバはプロジェクト内のFlowを実行できること
@@ -1870,11 +2213,29 @@ class SystemTestCase(ApiTestCaseBase):
         # result = self.post_uri('/api/v0/awss3s', data, self.USER2)
         # awss3_uuid = result['data']['uuid']
 
+        # 編集者メンバは、ルートフォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{root.uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['createProject'])
+        self.assertFalse(result['data']['allowlist']['createFolder'])
+        self.assertFalse(result['data']['allowlist']['createFile'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['allowlist']['upload'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # 編集者メンバは、プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertTrue(result['data']['allowlist']['create'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertTrue(result['data']['allowlist']['createFolder'])
+        self.assertTrue(result['data']['allowlist']['createFile'])
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -1889,7 +2250,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 編集者メンバは、フォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertTrue(result['data']['allowlist']['create'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertTrue(result['data']['allowlist']['createFolder'])
+        self.assertTrue(result['data']['allowlist']['createFile'])
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -1904,7 +2267,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 編集者メンバは、フローを取得する
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertTrue(result['data']['allowlist']['execute'])
@@ -1920,7 +2285,9 @@ class SystemTestCase(ApiTestCaseBase):
         # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
         # print(result)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertTrue(result['data']['allowlist']['update'])
         # self.assertTrue(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])
@@ -1935,7 +2302,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 編集者メンバは、Databaseを取得する
         result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -1950,7 +2319,9 @@ class SystemTestCase(ApiTestCaseBase):
         # # 編集者メンバは、リモートフォルダを取得する
         # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertTrue(result['data']['allowlist']['update'])
         # self.assertTrue(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])
@@ -1965,7 +2336,9 @@ class SystemTestCase(ApiTestCaseBase):
         # # 編集者メンバは、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertTrue(result['data']['allowlist']['update'])
         # self.assertTrue(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])
@@ -1982,10 +2355,29 @@ class SystemTestCase(ApiTestCaseBase):
         # 
         result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Reader'}, self.USER1)
  
+        # 編集者メンバは、ルートフォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{root.uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['createProject'])
+        self.assertFalse(result['data']['allowlist']['createFolder'])
+        self.assertFalse(result['data']['allowlist']['createFile'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['allowlist']['upload'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
         # 閲覧者メンバは、プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertFalse(result['data']['allowlist']['create'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertFalse(result['data']['allowlist']['createFolder'])
+        self.assertFalse(result['data']['allowlist']['createFile'])
         self.assertFalse(result['data']['allowlist']['update'])
         self.assertFalse(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -2000,7 +2392,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 閲覧者メンバは、フォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertFalse(result['data']['allowlist']['create'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertFalse(result['data']['allowlist']['createFolder'])
+        self.assertFalse(result['data']['allowlist']['createFile'])
         self.assertFalse(result['data']['allowlist']['update'])
         self.assertFalse(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -2015,7 +2409,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 閲覧者メンバは、フローを取得する
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
         self.assertFalse(result['data']['allowlist']['update'])
         self.assertFalse(result['data']['allowlist']['delete'])
         self.assertTrue(result['data']['allowlist']['execute'])
@@ -2030,7 +2426,9 @@ class SystemTestCase(ApiTestCaseBase):
         # # 閲覧者メンバは、フレームを取得する
         # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertFalse(result['data']['allowlist']['update'])
         # self.assertFalse(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])
@@ -2045,7 +2443,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 閲覧者メンバは、Databaseを取得する
         result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
         self.assertFalse(result['data']['allowlist']['update'])
         self.assertFalse(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -2060,7 +2460,9 @@ class SystemTestCase(ApiTestCaseBase):
         # # 閲覧者メンバは、リモートフォルダを取得する
         # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertFalse(result['data']['allowlist']['update'])
         # self.assertFalse(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])
@@ -2075,7 +2477,9 @@ class SystemTestCase(ApiTestCaseBase):
         # # 閲覧者メンバは、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertFalse(result['data']['allowlist']['update'])
         # self.assertFalse(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])
@@ -2092,10 +2496,29 @@ class SystemTestCase(ApiTestCaseBase):
         # 
         result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Owner'}, self.USER1)
  
+        # 編集者メンバは、ルートフォルダを取得する
+        result = self.get_uri(f'/api/v0/folders/{root.uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['createProject'])
+        self.assertFalse(result['data']['allowlist']['createFolder'])
+        self.assertFalse(result['data']['allowlist']['createFile'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['allowlist']['upload'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
+
         # プロジェクト管理者は、プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertTrue(result['data']['allowlist']['create'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertTrue(result['data']['allowlist']['createFolder'])
+        self.assertTrue(result['data']['allowlist']['createFile'])
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -2110,7 +2533,9 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクト管理者は、フォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertTrue(result['data']['allowlist']['create'])
+        self.assertFalse(result['data']['allowlist']['createProject'])
+        self.assertTrue(result['data']['allowlist']['createFolder'])
+        self.assertTrue(result['data']['allowlist']['createFile'])
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -2125,7 +2550,9 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクト管理者は、フローを取得する
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertTrue(result['data']['allowlist']['execute'])
@@ -2140,7 +2567,9 @@ class SystemTestCase(ApiTestCaseBase):
         # # プロジェクト管理者は、フレームを取得する
         # result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER2)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertTrue(result['data']['allowlist']['update'])
         # self.assertTrue(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])
@@ -2155,7 +2584,9 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクト管理者は、Databaseを取得する
         result = self.get_uri(f'/api/v0/databases/{database_uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
-        self.assertNotIn('create', result['data']['allowlist'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
@@ -2170,7 +2601,9 @@ class SystemTestCase(ApiTestCaseBase):
         # # プロジェクト管理者は、リモートフォルダを取得する
         # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertTrue(result['data']['allowlist']['update'])
         # self.assertTrue(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])
@@ -2185,7 +2618,9 @@ class SystemTestCase(ApiTestCaseBase):
         # # プロジェクト管理者は、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
         # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('create', result['data']['allowlist'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
         # self.assertTrue(result['data']['allowlist']['update'])
         # self.assertTrue(result['data']['allowlist']['delete'])
         # self.assertFalse(result['data']['allowlist']['execute'])

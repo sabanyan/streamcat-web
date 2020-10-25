@@ -1,11 +1,8 @@
 import os
 from flask import Blueprint, request, jsonify, g
-from kskp.store import (
-    Datum,
-    Folder,
-    ProjectFolder
-)
-from .auth import login_required_api
+from kskp.core import Datum
+from kskp.store import Folder, ProjectFolder
+from .auth import login_required_api, MY_PROJECT
 from .utils import (
     api_base,
     lock_required,
@@ -27,7 +24,12 @@ def get_projects():
     """
     全てのプロジェクトを返却する
     """
-    return g.factory.data.find_all(type=Datum.PROJECT_TYPE)
+    if request.args.get('except_myproject') == 'on':
+        except_label = MY_PROJECT
+    else:
+        except_label = None
+
+    return g.factory.data.find_all(type=Datum.PROJECT_TYPE, except_label=except_label)
 
 @mod.route('/projects/<project_uuid>', methods=['GET'])
 @login_required_api
@@ -443,7 +445,7 @@ def get_navigation():
         'flow_uuid': '',
         'flow_name': '',
         'user': {},
-        'allowlist': {}, 
+        'allowlist': {},
         'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
     }
 

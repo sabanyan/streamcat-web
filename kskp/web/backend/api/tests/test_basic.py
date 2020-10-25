@@ -51,7 +51,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/projects', data, self.USER1)
         project_uuid = result['data']['uuid']
 
-        # 保存されたフォルダを取得する
+        # 保存されたプロジェクトを取得する
         sql = f"""
         select * from data D
         where D.type = 'project'
@@ -76,6 +76,9 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['created_at'])
         self.assertIsNotNone(result['modified_at'])
 
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
     def test_get_projects_api(self):
         """
         GET /projects APIをテストする
@@ -86,9 +89,10 @@ class ProjectApiTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         data = {'parent': root.uuid,
                 'label' : '新しいプロジェクト'}
-        self.post_uri('/api/v0/projects', data, self.USER2)
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project_uuid = result['data']['uuid']
 
-        # フォルダを取得する
+        # プロジェクトを取得する
         results = self.get_uri('/api/v0/projects', self.USER2)
 
         # 結果の件数は1件以上である
@@ -111,17 +115,60 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertEqual(navi['user_name'], self.USER2.name)
         self.assertEqual(navi['depo_name'], 'Unit Test')
 
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+    def test_get_project_except_my_project(self):
+        """
+        GET /projects?except_myproject=on APIをテストする
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        data = {'parent': root.uuid,
+                'label' : 'MyProject'}
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project1_uuid = result['data']['uuid']
+
+        data = {'parent': root.uuid,
+                'label' : 'myproject'}
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project2_uuid = result['data']['uuid']
+
+        data = {'parent': root.uuid,
+                'label' : 'MyProject '}
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project3_uuid = result['data']['uuid']
+
+        # 作成したプロジェクトが取得できること
+        results = self.get_uri('/api/v0/projects?except_myproject=off', self.USER1)
+        self.assertEqual(len(results['data']), 3)
+        self.assertEqual(results['data'][0]['label'], 'MyProject ')
+        self.assertEqual(results['data'][1]['label'], 'myproject')
+        self.assertEqual(results['data'][2]['label'], 'MyProject')
+
+        # MyProjectを除外して取得できること
+        results = self.get_uri('/api/v0/projects?except_myproject=on', self.USER1)
+        self.assertEqual(len(results['data']), 2)
+        self.assertEqual(results['data'][0]['label'], 'MyProject ')
+        self.assertEqual(results['data'][1]['label'], 'myproject')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER2)
+        self.delete_uri(f'/api/v0/projects/{project2_uuid}', self.USER2)
+        self.delete_uri(f'/api/v0/projects/{project3_uuid}', self.USER2)
 
     def test_get_project(self):
         """
         GET /projects APIをテストする
         """
-        # フォルダを作成する
+        # プロジェクトを作成する
         root = self.factory.data.load_root()
         project = root.create_project_folder('フロー格納フォルダA')
         project.save()
 
-        # フォルダを取得する
+        # プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project.uuid}', self.USER1)
 
         # 期待するJSONが返ることを確認する
@@ -130,6 +177,12 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['label'], 'フロー格納フォルダA')
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project.uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_update_project(self):
         """
@@ -209,6 +262,9 @@ class ProjectApiTestCase(ApiTestCaseBase):
         # プロジェクトはゴミ箱に移動していること
         project = self.factory.data.find_by_uuid(project_uuid)
         self.assertEqual(project.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
 class FrameApiTestCase(ApiTestCaseBase):
 
