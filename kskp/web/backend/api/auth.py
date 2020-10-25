@@ -20,6 +20,10 @@ mod = Blueprint('auth', __name__)
 
 # FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
 # STRETCH_COUNT = 100
+
+# MyProjectのラベル名
+MY_PROJECT = 'MyProject'
+
 app.secret_key = '-jm624cqpry89e'
 
 
@@ -47,7 +51,7 @@ def login_required(func):
                 if user.authenticate(f['password']):
 
                     # 仮登録状態の場合はパスワード登録画面に遷移する
-                    if user.is_temp:
+                    if user.is_init_or_temp:
                         session['signup_email'] = f.get('email')
                         return render_template('register_password.html', email=f.get('email'))
 
@@ -117,7 +121,7 @@ def login_required_api(func):
                 if user.is_inactive:
                     # 認証エラー
                     return jsonify({'success': False, 'message': 'not authorized'}) 
-                elif user.is_temp:
+                elif user.is_init_or_temp:
                     # 本パスワード登録画面に遷移する
                     session['signup_email'] = user.email
                     return render_template('register_password.html', email=user.email)
@@ -209,6 +213,7 @@ def complete_sign_up():
 
     with Factory(user) as factory:
         user = factory.user.find_by_id(user.id)
+        user_is_init = user.is_init
         # 本パスワードへの変更
         try:
             user.update_password(new_password, modifier=user)
@@ -221,12 +226,11 @@ def complete_sign_up():
         # ユーザID保存
         session['user_id'] = user.id
 
-        # 本人ロールを作成する
-        user.load_self_role()
         # 初めて登録状態に遷移する時に、MyProjectを作成する
-        root = factory.data.load_root()
-        project =root.create_project_folder('MyProject')
-        project.save()
+        if user_is_init:
+            root = factory.data.load_root()
+            project =root.create_project_folder(MY_PROJECT)
+            project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
     return redirect(url_for('basic_template.library'))

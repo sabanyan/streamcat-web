@@ -70,7 +70,8 @@ def update_projects_info2(func):
 
 def _update_project_info_inner(project_data):
     from kskp.core import Datum
+    from kskp.store.auth import Role
     if g.factory.data.exists(project_data['uuid'], type=Datum.PROJECT_TYPE):
         project = g.factory.data.find_by_uuid(project_data['uuid'], type=Datum.PROJECT_TYPE)
-        project_data.update({'members' : project.get_joined_members()})
+        project_data.update({'members' : project.get_joined_members(except_role_uuid=Role.USR_ADMIN_ROLE_UUID)})
     return project_data
