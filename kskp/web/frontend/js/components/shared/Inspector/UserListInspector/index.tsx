@@ -47,9 +47,6 @@ const UserListInspector = (props: Props) => {
     const [userAdminChecked, setUserAdminChecked] = useState<boolean>(false)
 
     useEffect(() => {
-        console.log(lastSelected)
-        console.log(AdminUtil.hasSystemAdmin(lastSelected.roles))
-        console.log(AdminUtil.hasUserAdmin(lastSelected.roles))
         setSystemAdminChecked(AdminUtil.hasSystemAdmin(lastSelected.roles))
         setUserAdminChecked(AdminUtil.hasUserAdmin(lastSelected.roles))
     }, [lastSelected])
