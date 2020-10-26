@@ -36,7 +36,10 @@ type InspectorProps = {
   updateStep: Function;
   sortStepSrcEnd: Function;
   resizeInspector:Function;
-  readOnly: boolean;
+  addFlowVariableHidden: boolean;
+  previewDisabled: boolean;
+  commandSelectorHidden: boolean;
+  baseInspectorDisabled: boolean;
 }
 
 class Inspector extends React.Component<InspectorProps> {
@@ -45,7 +48,7 @@ class Inspector extends React.Component<InspectorProps> {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, selectSteps, flow,
       updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
       loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd,
-      resizeInspector, inspector, readOnly } = this.props
+      resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled, previewDisabled } = this.props
 
     let property
 
@@ -59,7 +62,9 @@ class Inspector extends React.Component<InspectorProps> {
           flow={flow}
           updateFlow={updateFlow}
           addHistory={addHistory}
-          readOnly={readOnly}
+          addFlowVariableHidden={addFlowVariableHidden}
+          commandSelectorHidden={commandSelectorHidden}
+          baseInspectorDisabled={baseInspectorDisabled}
         />
       } else {
         const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
@@ -82,7 +87,9 @@ class Inspector extends React.Component<InspectorProps> {
             deleteCache={deleteCache}
             addStep={addStep}
             updateStep={updateStep}
-            readOnly={readOnly}
+            previewDisabled={previewDisabled}
+            commandSelectorHidden={commandSelectorHidden}
+            baseInspectorDisabled={baseInspectorDisabled}
           />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector
@@ -94,7 +101,7 @@ class Inspector extends React.Component<InspectorProps> {
             selectSteps={selectSteps}
             deleteSteps={deleteSteps}
             sortStepSrcEnd={sortStepSrcEnd}
-            readOnly={readOnly}
+            baseInspectorDisabled={baseInspectorDisabled}
           />
         } else if (selected_step instanceof NoteStepModel) {
           property = <NoteInspector
@@ -103,8 +110,7 @@ class Inspector extends React.Component<InspectorProps> {
             selectSteps={selectSteps}
             updateStep={updateStep}
             deleteSteps={deleteSteps}
-            readOnly={readOnly}
-          />
+            baseInspectorDisabled={baseInspectorDisabled}          />
         }
       }
     } else if (!selected_step_ids.length) {
@@ -116,7 +122,9 @@ class Inspector extends React.Component<InspectorProps> {
         flow={flow}
         updateFlow={updateFlow}
         addHistory={addHistory}
-        readOnly={readOnly}
+        addFlowVariableHidden={addFlowVariableHidden}
+        commandSelectorHidden={commandSelectorHidden}
+        baseInspectorDisabled={baseInspectorDisabled}
       />
     } else {
       property = <MultiInspector
@@ -127,7 +135,9 @@ class Inspector extends React.Component<InspectorProps> {
         selected_step_ids={selected_step_ids}
         addStep={addStep}
         addHistory={addHistory}
-        readOnly={readOnly} />
+        baseInspectorDisabled={baseInspectorDisabled}
+        commandSelectorHidden={commandSelectorHidden}
+      />
     }
 
     return <React.Fragment>
