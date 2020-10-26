@@ -1700,11 +1700,11 @@ class SystemTestCase(ApiTestCaseBase):
         Projectに論理削除状態のユーザを追加できないこと
         """
         # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'goemon@ishikawa.jp', 'name':'五右衛門', 'password':None}, self.USER1)
+        result = self.post_uri('/api/v0/users', {'email':'goemon@samurai.jp', 'name':'五右衛門', 'password':None}, self.USER1)
         user_uuid = result['data']['uuid']
 
         # ユーザを登録状態にする
-        self.post_register_complete('goemon@ishikawa.jp', 'abedgiykekd*&()', self.USER1)
+        self.post_register_complete('goemon@samurai.jp', 'abedgiykekd*&()', self.USER1)
 
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
