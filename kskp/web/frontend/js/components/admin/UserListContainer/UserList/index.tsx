@@ -103,7 +103,7 @@ const UserList = (props: Props) => {
     };
 
     // ユーザを新規に作成する
-    const createNewUser = async (name: string,email: string, projectUUIDs: [string] | null ) => {
+    const createNewUser = async (name: string,email: string, projectUUIDs: string[] | null ) => {
         // APIをたたく
         const body = {
             email: email,
@@ -130,7 +130,7 @@ const UserList = (props: Props) => {
     }
 
     // ユーザをプロジェクトに紐付ける
-    const joinProject = (userUUID: string, projectUUIDs: [string]) => {
+    const joinProject = (userUUID: string, projectUUIDs: string[]) => {
         projectUUIDs.forEach(projectUUID => {
             const url = 'projects/' + projectUUID + '/users/' + userUUID;
             const body = {
@@ -384,7 +384,7 @@ const UserList = (props: Props) => {
                     alert("E-mailを入力してください")
                     return
                 }
-                const projectUUIDs = selectedOption.map(option=>option.value);
+                const projectUUIDs = Array.isArray(selectedOption)?selectedOption.map(option=>option.value as string):null;
                 createNewUser(newUserName,newUserEmail, projectUUIDs).then((response) => {
                     setIsLoading(false);
                     fetchUsers();
