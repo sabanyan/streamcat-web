@@ -36,3 +36,15 @@
 .dropdown a:hover {
   background-color: #ddd;
 }
+
+.role {
+  option,
+  optgroup {
+    -webkit-appearance: none;
+  }
+}
+
+.highlight {
+  background-color: white;
+  color:red!important;
+}
