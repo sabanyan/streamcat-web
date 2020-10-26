@@ -579,6 +579,42 @@ class SystemTestCase(ApiTestCaseBase):
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
 
+    def test_get_inactive_user(self):
+        """
+        except_inactive=onで論理削除状態のユーザを
+        抽出結果から除外できること
+        """
+        # 桃太郎侍を作成する
+        result = self.post_uri('/api/v0/users', {'email':'momotarou@hatamoto.jp', 'name':'桃太郎侍', 'password':'taijitekureyou'}, self.USER1)
+        user_uuid = result['data']['uuid']
+        user_email = result['data']['email']
+
+        # 桃太郎侍を取得する
+        new_user = self.factory.user.find_by_uuid(user_uuid)
+
+        # 桃太郎侍を本登録処理をする
+        self.post_register_complete(user_email, 'momotarou!', self.USER1)
+
+        # 桃太郎侍を削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}?except_inactive=on', self.USER1)
+
+        # 桃太郎侍は取得できないこと1
+        with self.assertRaises(Exception):
+            self.get_uri(f'/api/v0/users/{user_uuid}?except_inactive=on', self.USER1)
+
+        # 桃太郎侍は取得できないこと2
+        with self.assertRaises(Exception):
+            self.get_uri(f'/api/v0/users/self?except_inactive=on', new_user)
+
+        # 桃太郎侍は取得できないこと3
+        results = self.get_uri(f'/api/v0/users?q=桃太郎?except_inactive=on', self.USER1)
+        self.assertEqual(results['data'], [])
+
+        # 桃太郎侍は取得できないこと4
+        results = self.get_uri(f'/api/v0/users?except_inactive=on', self.USER1)
+        for result in results['data']:
+            self.assertNotEqual(result['uuid'], user_uuid)
+
     def test_delete_tmp_user(self):
         """
         一旦登録状態になったUserが仮登録状態になった後、
