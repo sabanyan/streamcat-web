@@ -27,10 +27,11 @@ def get_users():
     全てのユーザ、またはキーワードに一致するユーザを返す
     """
     search_keyword = request.args.get('q')
+    states = _get_except_states(request.args)
     if search_keyword is None:
-        return g.factory.user.find_all()
+        return g.factory.user.find_all(except_states=states)
     else:
-        return g.factory.user.find_by_keyword(search_keyword)
+        return g.factory.user.find_by_keyword(search_keyword, except_states=states)
 
 @mod.route('/users/<user_uuid>', methods=['GET'])
 @login_required_api
@@ -40,7 +41,8 @@ def get_user(user_uuid):
     """
     ユーザを返却する
     """
-    return g.factory.user.find_by_uuid(user_uuid)
+    states = _get_except_states(request.args)
+    return g.factory.user.find_by_uuid(user_uuid, except_states=states)
 
 @mod.route('/users/self', methods=['GET'])
 @login_required_api
@@ -50,7 +52,8 @@ def get_self():
     """
     自分ユーザを返却する
     """
-    return g.factory.user.find_by_id(g.user.id)
+    states = _get_except_states(request.args)
+    return g.factory.user.find_by_id(g.user.id, except_states=states)
 
 @mod.route('/users', methods=['POST'])
 @login_required_api
@@ -98,6 +101,13 @@ def update_self():
         raise Exception('パスワードを指定してください')
 
     return _update_user_inner(user, req)
+
+def _get_except_states(request_args):
+    if request_args.get('except_inactive') == 'on':
+        from kskp.store.auth import User
+        return [User.INACTIVE_STATE]
+    else:
+        return None
 
 def _update_user_inner(user, req):
     if req.has_no_all('email', 'name') and not req.isnull('password') and not req.has('password'):
