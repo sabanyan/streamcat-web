@@ -50,16 +50,21 @@ const UserList = (props: Props) => {
     const clickedUserListCell = useRef(false);
     const [keyword,setKeyword] = useState<string>("");
     const [projects,setProjects] = useState<UserProject[]>([]);
+    const [selectableProjects,setSelectableProjects] = useState<UserProject[]>([]);
 
-    const fetchProjects = () => {
-        const url = '/projects'
+    const fetchProjects = (exceptMyProject:boolean = false) => {
+        const except_my_project = (exceptMyProject)?"on":"off"
+        const url = '/projects?except_myproject=' + except_my_project
         return APIUtil.get(url).then((response) => {
             const projects: UserProject[] = response.data.data;
-            setProjects(projects);
+            if(!exceptMyProject){
+                setProjects(projects);
+            }else{
+                setSelectableProjects(projects)
+            }
             setIsLoading(false);
             setIsFinished(true);
         }).catch((error) => {
-            console.log(error);
             notify({
                 title: 'プロジェクト取得エラー',
                 message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
@@ -71,7 +76,6 @@ const UserList = (props: Props) => {
             setIsFinished(true);
         });
     }
-
     // ユーザ一覧を取得する
     const fetchUsers = (keyword?: string) => {
         // APIをたたく
@@ -103,7 +107,7 @@ const UserList = (props: Props) => {
     };
 
     // ユーザを新規に作成する
-    const createNewUser = async (name: string,email: string, projectUUID: string | null ) => {
+    const createNewUser = async (name: string,email: string, projectUUIDs: string[] | null ) => {
         // APIをたたく
         const body = {
             email: email,
@@ -121,28 +125,33 @@ const UserList = (props: Props) => {
             ErrorUtil.notifyError(notify,"ユーザー作成エラー",newUserResponse.data.message)
             return Promise.reject()
         }
-        if(projectUUID){
+        if(projectUUIDs){
             // プロジェクトへの追加
             const json = newUserResponse.data.data;
-            const joinProjectResponse = await joinProject(json.uuid,projectUUID).catch(error=>{
-                ErrorUtil.notifyError(notify,"プロジェクト追加エラー",error)
-                return Promise.reject()
-            })
-            if(!joinProjectResponse.data.success){
-                ErrorUtil.notifyError(notify,"プロジェクト追加エラー",newUserResponse.data.message)
-                return Promise.reject()
-            }
+            joinProject(json.uuid,projectUUIDs)
         }
         return Promise.resolve(newUserResponse)
     }
 
     // ユーザをプロジェクトに紐付ける
-    const joinProject = (userUUID: string, projectUUID: string) => {
-        const url = 'projects/' + projectUUID + '/users/' + userUUID;
-        const body = {
-            "memberType" : "Reader"
-        };
-        return APIUtil.put(url,body);
+    const joinProject = (userUUID: string, projectUUIDs: string[]) => {
+        projectUUIDs.forEach(projectUUID => {
+            const url = 'projects/' + projectUUID + '/users/' + userUUID;
+            const body = {
+                'memberType': 'Reader'
+            };
+            (async() => {
+                const response = await APIUtil.put(url, body).catch(error => {
+                    ErrorUtil.notifyError(notify, 'プロジェクト追加エラー', error)
+                    return Promise.reject()
+                });
+                if (!response.data.success) {
+                    ErrorUtil.notifyError(notify, 'プロジェクト追加エラー', response.data.message)
+                    return Promise.reject()
+                }
+                return Promise.resolve(response);
+            })();
+        });
     }
 
     // ユーザを削除する
@@ -190,7 +199,8 @@ const UserList = (props: Props) => {
 
     useEffect(() => {
         fetchUsers();
-        fetchProjects();
+        fetchProjects(false);
+        fetchProjects(true);
     }, []);
 
     useEffect(()=>{
@@ -366,6 +376,7 @@ const UserList = (props: Props) => {
     const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
     const [selectedOption, setSelectedOption] = useState<UserProject | null>(null);
 
+
     useEffect(()=>{
         if (newUserName === null || newUserEmail === null) return;
         ModalUtil.registerModal({
@@ -378,8 +389,8 @@ const UserList = (props: Props) => {
                     alert("E-mailを入力してください")
                     return
                 }
-                const projectUUID = (selectedOption)?selectedOption.value:null;
-                createNewUser(newUserName,newUserEmail, projectUUID).then((response) => {
+                const projectUUIDs = Array.isArray(selectedOption)?selectedOption.map(option=>option.value as string):null;
+                createNewUser(newUserName,newUserEmail, projectUUIDs).then((response) => {
                     setIsLoading(false);
                     fetchUsers();
                     if(!response.data.success){
@@ -439,7 +450,7 @@ const UserList = (props: Props) => {
 
         const onClickNewUser = () => {
             // モーダル表示
-            const options = projects.map((project:UserProject)=>{
+            const options = selectableProjects.map((project:UserProject)=>{
                 return {
                     label: project.label,
                     value: project.uuid
@@ -475,7 +486,9 @@ const UserList = (props: Props) => {
                                 onChange={setSelectedOption}
                                 options={options}
                                 placeholder={""}
+                                isMulti={true}
                                 isSearchable={false}
+                                noOptionsMessage={_=>"選択できるプロジェクトがありません"}
                             />
                         </div>
                     </form>
@@ -559,6 +572,7 @@ const UserList = (props: Props) => {
             onClickDelete={(availableDelete)?onClickDelete:undefined}
             onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
             onChangedUserSystemAdminRole={onChangedUserSystemAdminRole}
+            onChangedList={fetchUsers}
         />
     };
 
