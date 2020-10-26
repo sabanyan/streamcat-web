@@ -118,6 +118,7 @@ const Constants = {
     CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN: 'confirm_update_kskp_system_admin',
     CONFIRM_UPDATE_KSKP_USER_ADMIN: 'confirm_update_kskp_user_admin',
     CONFIRM_REMOVE_MY_USER_ADMIN: 'confirm_update_my_user_admin',
+    CONFIRM_UNDELETE_USER: 'confirm_undelete_user',
     property: {
       title: 'title',
       message: 'message',
