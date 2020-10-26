@@ -143,23 +143,32 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
             if (ref) {
               this.paramRefs.push(ref)
             }
-          }} type={'text'} className={'form-control'} defaultValue={param.name}
+          }} type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} defaultValue={param.name}
                  onChange={(e) => {this.onParamChange(e)}}/>
         </div>
         <div className={style.right}>
-          <Button danger={true} onClick={() => this.onClickDeleteParam(param)}>削除</Button>
+          <Button danger={true} disabled={baseInspectorDisabled} onClick={() => this.onClickDeleteParam(param)}>削除</Button>
         </div>
       </div>
     })
 
-    if (inputParams) {
-      inputParamsContainer = <div>
+    if (inputParams && inputParams.length) {
+      inputParamsContainer = <div className={"mt-8px"}>
         <label>フロー変数</label>
         {inputParams}
       </div>
-    } else {
-      <div>
-        フロー変数の設定がありません
+    } else if(baseInspectorDisabled) {
+      inputParamsContainer = <div className={"mt-8px"}>
+        <label>フロー変数</label>
+        <div className={"text-center"}>
+          <div className={style.label}>
+            フロー変数が設定されていません
+          </div>
+        </div>
+      </div>
+    }else{
+      inputParamsContainer = <div className={"mt-8px"}>
+        <label>フロー変数</label>
       </div>
     }
     if(!addFlowVariableHidden){
