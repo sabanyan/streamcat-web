@@ -42,6 +42,10 @@ def update_users_info(func):
         # 所属プロジェクトの情報を含めるか否か
         update_projects = request.args.get('projects') == 'on'
 
+        # 所属ロールも所属プロジェクトの情報も含めない場合は処理を終える
+        if not update_roles and not update_projects:
+            return func(**kwargs)
+
         # デコレート対象関数の呼び出し
         results = json.loads(func(**kwargs).data.decode())
 
