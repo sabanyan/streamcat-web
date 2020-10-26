@@ -637,6 +637,10 @@ const Library = (_: Props) => {
                             setInitialLibraryChildren(model.children);
                             setLibraryChildren(model.children);
                             setFolderPath(model.folderPath);
+                            setAllowlist(response.data.data.allowlist);
+                            setCurrentProject({
+                                ...currentProject, allowlist: response.data.data.allowlist
+                            })
                         } else {
                             throw response.data;
                         }
@@ -1197,6 +1201,7 @@ const Library = (_: Props) => {
         };
 
         return <TrashInspector data={data}
+            allowlist={currentProject.allowlist}
             onClickRecovery={(e, data) => onClickRecovery(e, data)}
             onClickMove={(e, data) => onClickMove(e, data)}
         />;
