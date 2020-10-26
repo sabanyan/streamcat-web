@@ -24,6 +24,7 @@ interface Props {
     onClickPasswordReset?: Function;
     onClickShowPassword?: Function;
     onChangedUserSystemAdminRole?: Function;
+    onChangedList?: Function;
     notify: Function;
     navigation?: NavigationModelProps
 }
@@ -40,7 +41,7 @@ const display = {
 
 
 const UserListInspector = (props: Props) => {
-    const {notify, navigation} = props;
+    const {notify, navigation, onChangedList} = props;
     const {selected, lastSelected, onBlurTitle} = props
     const [showPassword, setShowPassword] = useState<boolean>(false)
     const [systemAdminChecked, setSystemAdminChecked] = useState<boolean>(false)
@@ -98,7 +99,45 @@ const UserListInspector = (props: Props) => {
                 ModalUtil.closeModal(Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN)
             }
         })
+        // 削除済みのユーザーをもとに戻す
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM_UNDELETE_USER, onClickDone: async () => {
+                await unDeleteUser(lastSelected.uuid);
+                if(onChangedList)onChangedList();
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
+            },onClickCancel: ()=>{
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
+            },onClickClose: ()=>{
+                ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
+            }
+        })
     }, [lastSelected,systemAdminChecked,userAdminChecked])
+
+    const unDeleteUser = async (uuid:string)=>{
+        const url = 'users/' + uuid + "/undelete";
+        return APIUtil.put(url).then((response)=>{
+            if(response.data.success){
+                return Promise.resolve(response)
+            }else {
+                notify({
+                    title: 'システム権限更新エラー',
+                    message: ReactDomUtil.renderToString(response.data.message),
+                    status: 'error',
+                    dismissAfter: 0,
+                    closeButton: true
+                })
+                return Promise.reject()
+            }
+        }).catch((error) => {
+            notify({
+                title: 'ユーザー削除エラー',
+                message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+                status: 'error',
+                dismissAfter: 0,
+                closeButton: true
+            })
+        });
+    }
 
     // システム権限を更新する
     const _activateAdminRole = async (role:string, uuid: string,active: boolean) =>{
@@ -313,6 +352,27 @@ const UserListInspector = (props: Props) => {
             if (data.state === 'active' && onClickPasswordReset) {
                 let resetPasswordEelement = <div key={"resetPassword"} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
                 result.push(resetPasswordEelement)
+            }
+            if (data.state === 'inactive'){
+                const onClickUndelete = ()=>{
+                    ModalUtil.emitModal({
+                        id: Constants.modal.CONFIRM_UNDELETE_USER,
+                        visible: true,
+                        done: "利用中に戻す",
+                        danger: false,
+                        content: <div className={style.modal}>
+                            <form>
+                                <div>
+                                    利用中に戻しますがよろしいですか？
+                                </div>
+                            </form>
+                        </div>
+                    });
+                }
+                let unDeleteElement = <div key={"undelete"} className={'mb-8px'}>
+                    <Button danger={false} onClick={()=>{onClickUndelete()}}>利用中に戻す</Button>
+                </div>
+                result.push(unDeleteElement);
             }
         }
 
