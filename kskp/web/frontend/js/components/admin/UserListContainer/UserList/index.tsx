@@ -566,6 +566,7 @@ const UserList = (props: Props) => {
             onClickDelete={(availableDelete)?onClickDelete:undefined}
             onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
             onChangedUserSystemAdminRole={onChangedUserSystemAdminRole}
+            onChangedList={fetchUsers}
         />
     };
 
