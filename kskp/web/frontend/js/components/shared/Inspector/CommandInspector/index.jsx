@@ -23,7 +23,7 @@ type CommandInspectorProps = {
   updateStep: Function;
   children?: React.Node;
   sortStepSrcEnd: Function;
-  readOnly: boolean;
+  baseInspectorDisabled: boolean;
 }
 
 class CommandInspector extends React.Component<CommandInspectorProps> {
@@ -116,7 +116,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   }
 
   render () {
-    const {selectedStep, updateStep, sortStepSrcEnd, readOnly} = this.props;
+    const {selectedStep, updateStep, sortStepSrcEnd, baseInspectorDisabled} = this.props;
     const {commands, subflows} = this.props.mast
     let selected_step: StepModelType = this.getSelectedStep()
     let inputForm = []
@@ -135,7 +135,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm disabled={readOnly} params={params} args={args} invalids={invalids} command={command} invalids={invalids}
+      inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command} invalids={invalids}
                               onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
 
     } else if (selected_step.type === Constants.step.type.subflow) {
@@ -148,10 +148,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm disabled={readOnly} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
+      inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
                               onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
 
-      subFlowLink = <a disabled={readOnly} href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
+      subFlowLink = <a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
     }
 
     let form
@@ -181,12 +181,12 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
             onChangeInEdge={(e, data) => this.onChangeInEdge(e, data)}
             onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)} selectedStep={selected_step}
             selectedSubFlow={this.selectedSubFlow}
-            disabled={readOnly}
+            disabled={baseInspectorDisabled}
         />
         {form}
         <div className={style.full_hr} />
         {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
-        <Button onClick={(e) => this.onClickDelete(e)} danger={true} disabled={readOnly}>削除</Button>
+        <Button onClick={(e) => this.onClickDelete(e)} danger={true} disabled={baseInspectorDisabled}>削除</Button>
       </div>
     }
 
@@ -194,7 +194,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     return <BaseInspector key={selected_step.id} header={''} label={label} subLabel={subLabel}
                           name={selected_step.id} onHide={() => this.onHide()}
                           onBlurTitle={(e) => this.onBlurTitle(e)}
-                          disabled={readOnly}>
+                          disabled={baseInspectorDisabled}>
       {content}
     </BaseInspector>
   }
