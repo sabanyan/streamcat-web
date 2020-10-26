@@ -1,8 +1,34 @@
-import Constants from "Constants/index";
-
 import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
+import Constants from 'Constants/index';
+
+export interface FlowAllowList {
+  copy: boolean
+  delete: boolean
+  download: boolean
+  execute: boolean
+  findMember: boolean
+  lock: boolean
+  move: boolean
+  read: boolean
+  update: boolean
+  updateMember: boolean
+}
+
+export enum FlowEditModeValue {
+  NotAllowed = 'NotAllowed',
+  Editable = 'Editable',
+  ReadOnlyUpdateDisabled = 'ReadOnlyUpdateDisabled',
+  ReadOnlyLocked = 'ReadOnlyLocked'
+}
+export enum FlowExecuteModeValue {
+  NotExecutable = 'NotExecutable',
+  Executable = 'Executable',
+}
 
 export type FlowModelProps = {
+  allowlist: FlowAllowList
+  editMode: FlowEditModeValue
+  executeMode: FlowExecuteModeValue
   createdAt?: string
   creator?: string
   label: string
