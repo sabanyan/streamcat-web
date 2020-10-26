@@ -38,12 +38,13 @@ export default function Member(props: Props) {
       native
       value={row.type ? row.type : "Reader"}
       onChange={(e) => onMemberRoleChanged(e, row)}
+      className={style.role}
 
     >
-      <option value="Owner">P管理者</option>
+      <option value="Owner">プロジェクト管理者</option>
       <option value="Writer">編集者</option>
       <option value="Reader">閲覧者</option>
-      <option value="Del">削除する</option>
+      <option className={style.highlight} value="Del">削除する</option>
     </Select>
   }
 

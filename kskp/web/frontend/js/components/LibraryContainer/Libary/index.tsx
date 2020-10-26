@@ -1624,7 +1624,6 @@ const Library = (_: Props) => {
                         seachResult = seachResult.filter((user: any) => {   
                             return currentMembers.filter((member) => { return user.uuid !== member.uuid }).length;
                         })
-                        console.log(seachResult)
                     }
                 }
 
@@ -1660,6 +1659,30 @@ const Library = (_: Props) => {
                         refresh();
                     })
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
+                }, onClickClose: () => {
+                    if (lastSelected && lastSelected.type === "project") {
+                        APIUtil.get("/projects/" + lastSelected.uuid + "?members=on&allowlist=on").then((response) => {
+                            if (response.data.success && response.data.data.members) {
+                                setCurrentProject({
+                                    members: response.data.data.members,
+                                    projectModifiedAt: response.data.data.modifiedAt,
+                                    allowlist: response.data.data.allowlist
+                                })
+                            }
+                        })
+                    }
+                }, onClickCancel: () => {
+                    if (lastSelected && lastSelected.type === "project") {
+                        APIUtil.get("/projects/" + lastSelected.uuid + "?members=on&allowlist=on").then((response) => {
+                            if (response.data.success && response.data.data.members) {
+                                setCurrentProject({
+                                    members: response.data.data.members,
+                                    projectModifiedAt: response.data.data.modifiedAt,
+                                    allowlist: response.data.data.allowlist
+                                })
+                            }
+                        })
+                    }
                 }
             });
 
