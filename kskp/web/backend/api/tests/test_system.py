@@ -1515,6 +1515,214 @@ class SystemTestCase(ApiTestCaseBase):
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
 
+    def test_join_project_init_user(self):
+        """
+        Projectに初期状態のユーザを追加できること
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'rupin@the.thrid', 'name':'ルパーンⅢ世', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # ユーザは仮登録状態である
+        self.assertEqual(result['data']['state'], 'tmp')
+
+        # ユーザを取得する
+        user = self.factory.user.find_by_uuid(user_uuid)
+        # DBでの状態は初期状態(=init)である
+        self.assertEqual(user.state, 'init')
+
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'そりゃないよとっつぁん'}, self.USER0)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : user_uuid,       'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER0)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project_uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], 'そりゃないよとっつぁん')
+        self.assertEqual(result['data']['children'], [])
+        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['modifiedAt'], project_modified_at)
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        # 参加ユーザ(USER2)
+        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(result['data']['members'][0]['type'], 'Owner')
+        # 参加ユーザ(ルパーンⅢ世)
+        self.assertEqual(result['data']['members'][1]['uuid'], user.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], user.email)
+        self.assertEqual(result['data']['members'][1]['name'], user.name)
+        self.assertEqual(result['data']['members'][1]['state'], 'tmp')
+        self.assertEqual(result['data']['members'][1]['creator'], user.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], user.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Reader')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
+    def test_join_project_tmp_user(self):
+        """
+        Projectに仮登録状態のユーザを追加できること
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'jigen@magnum44', 'name':'次元大介', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # ユーザを登録状態にする
+        self.post_register_complete('jigen@magnum44', 'abedgiykekd*&()', self.USER1)
+
+        # ユーザのパスワードをリセットする
+        # (ユーザを仮登録状態にする)
+        result = self.put_uri(f'/api/v0/users/{user_uuid}', {'password':None}, self.USER1)
+
+        # ユーザは仮登録状態である
+        self.assertEqual(result['data']['state'], 'tmp')
+
+        # ユーザを取得する
+        user = self.factory.user.find_by_uuid(user_uuid)
+        self.assertEqual(user.state, 'tmp')
+
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'とっつぁーん'}, self.USER2)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : user_uuid,       'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project_uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], 'とっつぁーん')
+        self.assertEqual(result['data']['children'], [])
+        self.assertEqual(result['data']['creator'], self.USER2.name)
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['modifiedAt'], project_modified_at)
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        # 参加ユーザ(USER2)
+        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(result['data']['members'][0]['type'], 'Owner')
+        # 参加ユーザ(次元大介)
+        self.assertEqual(result['data']['members'][1]['uuid'], user.uuid)
+        self.assertEqual(result['data']['members'][1]['email'], user.email)
+        self.assertEqual(result['data']['members'][1]['name'], user.name)
+        self.assertEqual(result['data']['members'][1]['state'], 'tmp')
+        self.assertEqual(result['data']['members'][1]['creator'], user.creator_str)
+        self.assertEqual(result['data']['members'][1]['createdAt'], user.created_at_str)
+        self.assertEqual(result['data']['members'][1]['type'], 'Writer')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
+    def test_join_project_inactive_user(self):
+        """
+        Projectに論理削除状態のユーザを追加できないこと
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'goemon@ishikawa.jp', 'name':'五右衛門', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # ユーザを登録状態にする
+        self.post_register_complete('goemon@ishikawa.jp', 'abedgiykekd*&()', self.USER1)
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+        # ユーザは論理削除状態である
+        result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+        self.assertEqual(result['data']['state'], 'inactive')
+
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'斬鉄剣'}, self.USER2)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # ユーザを参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : user_uuid,       'type': 'Owner'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER1)
+
+        # プロジェクトを検索する
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?members=on', self.USER2)
+
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(result['data']['uuid'], project_uuid)
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['label'], '斬鉄剣')
+        self.assertEqual(result['data']['children'], [])
+        self.assertEqual(result['data']['creator'], self.USER2.name)
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertEqual(result['data']['modifiedAt'], project_modified_at)
+        self.assertEqual(result['data']['folderPath'][0]['uuid'], root.uuid)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        # 参加ユーザ(USER2)
+        self.assertEqual(len(result['data']['members']), 1)
+        self.assertEqual(result['data']['members'][0]['uuid'], self.USER2.uuid)
+        self.assertEqual(result['data']['members'][0]['email'], self.USER2.email)
+        self.assertEqual(result['data']['members'][0]['name'], self.USER2.name)
+        self.assertEqual(result['data']['members'][0]['state'], self.USER2.state)
+        self.assertEqual(result['data']['members'][0]['creator'], self.USER2.creator_str)
+        self.assertEqual(result['data']['members'][0]['createdAt'], self.USER2.created_at_str)
+        self.assertEqual(result['data']['members'][0]['type'], 'Owner')
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
     def test_join_project_without_owner(self):
         """
         プロジェクト管理者は必ず指定すること
