@@ -5,12 +5,13 @@ import style from "../style.scss";
 import {BaseInspector, Resizer} from "Shared/Inspector";
 import {Button} from "Shared/Input";
 import {LibraryChild} from "Model/index";
+import { Allowlist} from 'Components/LibraryContainer/Libary/index';
 
 
 type Props = {
     data?: LibraryChild
     customStyle?: any
-
+    allowlist?: Allowlist
     onClickRecovery: Function
     onClickMove: Function
 }
@@ -32,10 +33,10 @@ export default class TrashInspector extends React.Component<Props, State> {
     }
 
     renderButtons(data) {
-        const {onClickRecovery, onClickMove} = this.props;
+        const {onClickRecovery, onClickMove, allowlist} = this.props;
 
         let recovery, move;
-        if (data) {
+        if (data && allowlist && allowlist.update) {
             recovery = <Button onClick={(e) => onClickRecovery(e, data)} icon={"undo"}>元に戻す</Button>;
             move = <Button onClick={(e) => onClickMove(e, data)} icon={"arrow_right_alt"}>移動する</Button>;
         }

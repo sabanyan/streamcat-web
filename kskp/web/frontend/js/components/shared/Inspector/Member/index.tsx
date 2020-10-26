@@ -17,7 +17,6 @@ type Row = {
 type Props = {
   rows: Row[];
   searchedRows: Row[];
-
   onSearchTextInputed: Function;
   onSearchedMemberClicked: Function;
   onMemberRoleChanged: Function;
@@ -26,26 +25,26 @@ type Props = {
 
 export default function Member(props: Props) {
   const { rows, searchedRows } = props
-  const { onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged, onMemberSaveClicked} = props
+  const { onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged, onMemberSaveClicked } = props
 
   const searchedList = searchedRows.map((row) => {
     return <a key={row.email}
       href="javascript:void(0)"
-      onClick={(e) => onSearchedMemberClicked(e, rows, row)}>{row.name + " (" + row.email + ")"}</a>
+      onClick={(e) => onSearchedMemberClicked(e, row)}>{row.name + " (" + row.email + ")"}</a>
   })
 
   const roleForm = (row) => {
     return <Select
       native
       value={row.type ? row.type : "Reader"}
-      onChange={(e) => onMemberRoleChanged(e, rows, row)}
-    
+      onChange={(e) => onMemberRoleChanged(e, row)}
+      className={style.role}
+
     >
-      <option aria-label="None" value="Unkown" />
-      <option value="Owner">P管理者</option>
+      <option value="Owner">プロジェクト管理者</option>
       <option value="Writer">編集者</option>
       <option value="Reader">閲覧者</option>
-      <option value="Del">削除する</option>
+      <option className={style.highlight} value="Del">削除する</option>
     </Select>
   }
 
@@ -54,7 +53,7 @@ export default function Member(props: Props) {
       <TextField
         id="seachFiled"
         label="追加するユーザーの名前、Email"
-        onChange={(e) => onSearchTextInputed(e, rows)}
+        onChange={(e) => onSearchTextInputed(e)}
         className={style.searchField}
       />
       <div className={style.dropdown}>
