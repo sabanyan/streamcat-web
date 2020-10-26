@@ -103,7 +103,7 @@ const UserList = (props: Props) => {
     };
 
     // ユーザを新規に作成する
-    const createNewUser = async (name: string,email: string, projectUUID: string | null ) => {
+    const createNewUser = async (name: string,email: string, projectUUIDs: [string] | null ) => {
         // APIをたたく
         const body = {
             email: email,
@@ -121,28 +121,33 @@ const UserList = (props: Props) => {
             ErrorUtil.notifyError(notify,"ユーザー作成エラー",newUserResponse.data.message)
             return Promise.reject()
         }
-        if(projectUUID){
+        if(projectUUIDs){
             // プロジェクトへの追加
             const json = newUserResponse.data.data;
-            const joinProjectResponse = await joinProject(json.uuid,projectUUID).catch(error=>{
-                ErrorUtil.notifyError(notify,"プロジェクト追加エラー",error)
-                return Promise.reject()
-            })
-            if(!joinProjectResponse.data.success){
-                ErrorUtil.notifyError(notify,"プロジェクト追加エラー",newUserResponse.data.message)
-                return Promise.reject()
-            }
+            joinProject(json.uuid,projectUUIDs)
         }
         return Promise.resolve(newUserResponse)
     }
 
     // ユーザをプロジェクトに紐付ける
-    const joinProject = (userUUID: string, projectUUID: string) => {
-        const url = 'projects/' + projectUUID + '/users/' + userUUID;
-        const body = {
-            "memberType" : "Reader"
-        };
-        return APIUtil.put(url,body);
+    const joinProject = (userUUID: string, projectUUIDs: [string]) => {
+        projectUUIDs.forEach(projectUUID => {
+            const url = 'projects/' + projectUUID + '/users/' + userUUID;
+            const body = {
+                'memberType': 'Reader'
+            };
+            (async() => {
+                const response = await APIUtil.put(url, body).catch(error => {
+                    ErrorUtil.notifyError(notify, 'プロジェクト追加エラー', error)
+                    return Promise.reject()
+                });
+                if (!response.data.success) {
+                    ErrorUtil.notifyError(notify, 'プロジェクト追加エラー', response.data.message)
+                    return Promise.reject()
+                }
+                return Promise.resolve(response);
+            })();
+        });
     }
 
     // ユーザを削除する
@@ -366,6 +371,7 @@ const UserList = (props: Props) => {
     const [newUserEmail, setNewUserEmail] = useState<string | null>(null);
     const [selectedOption, setSelectedOption] = useState<UserProject | null>(null);
 
+
     useEffect(()=>{
         if (newUserName === null || newUserEmail === null) return;
         ModalUtil.registerModal({
@@ -378,8 +384,8 @@ const UserList = (props: Props) => {
                     alert("E-mailを入力してください")
                     return
                 }
-                const projectUUID = (selectedOption)?selectedOption.value:null;
-                createNewUser(newUserName,newUserEmail, projectUUID).then((response) => {
+                const projectUUIDs = selectedOption.map(option=>option.value);
+                createNewUser(newUserName,newUserEmail, projectUUIDs).then((response) => {
                     setIsLoading(false);
                     fetchUsers();
                     if(!response.data.success){
@@ -475,6 +481,7 @@ const UserList = (props: Props) => {
                                 onChange={setSelectedOption}
                                 options={options}
                                 placeholder={""}
+                                isMulti={true}
                                 isSearchable={false}
                             />
                         </div>
