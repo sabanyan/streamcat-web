@@ -50,16 +50,21 @@ const UserList = (props: Props) => {
     const clickedUserListCell = useRef(false);
     const [keyword,setKeyword] = useState<string>("");
     const [projects,setProjects] = useState<UserProject[]>([]);
+    const [selectableProjects,setSelectableProjects] = useState<UserProject[]>([]);
 
-    const fetchProjects = () => {
-        const url = '/projects'
+    const fetchProjects = (exceptMyProject:boolean = false) => {
+        const except_my_project = (exceptMyProject)?"on":"off"
+        const url = '/projects?except_myproject=' + except_my_project
         return APIUtil.get(url).then((response) => {
             const projects: UserProject[] = response.data.data;
-            setProjects(projects);
+            if(!exceptMyProject){
+                setProjects(projects);
+            }else{
+                setSelectableProjects(projects)
+            }
             setIsLoading(false);
             setIsFinished(true);
         }).catch((error) => {
-            console.log(error);
             notify({
                 title: 'プロジェクト取得エラー',
                 message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
@@ -71,7 +76,6 @@ const UserList = (props: Props) => {
             setIsFinished(true);
         });
     }
-
     // ユーザ一覧を取得する
     const fetchUsers = (keyword?: string) => {
         // APIをたたく
@@ -195,7 +199,8 @@ const UserList = (props: Props) => {
 
     useEffect(() => {
         fetchUsers();
-        fetchProjects();
+        fetchProjects(false);
+        fetchProjects(true);
     }, []);
 
     useEffect(()=>{
@@ -445,7 +450,7 @@ const UserList = (props: Props) => {
 
         const onClickNewUser = () => {
             // モーダル表示
-            const options = projects.map((project:UserProject)=>{
+            const options = selectableProjects.map((project:UserProject)=>{
                 return {
                     label: project.label,
                     value: project.uuid
@@ -483,6 +488,7 @@ const UserList = (props: Props) => {
                                 placeholder={""}
                                 isMulti={true}
                                 isSearchable={false}
+                                noOptionsMessage={_=>"選択できるプロジェクトがありません"}
                             />
                         </div>
                     </form>
