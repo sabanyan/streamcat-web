@@ -1621,13 +1621,10 @@ const Library = (_: Props) => {
                     let response = await APIUtil.get("/users?q=" + searchText + "&roles=off&projects=on")
                     if (response.data.success && response.data.data) {
                         seachResult = response.data.data
-                        seachResult = seachResult.filter((user: any) => {
-                            let result = false;
-                            if (currentMembers && currentMembers.filter((member) => { return user.uuid !== member.uuid })) {
-                                result = true;
-                            }
-                            return result;
+                        seachResult = seachResult.filter((user: any) => {   
+                            return currentMembers.filter((member) => { return user.uuid !== member.uuid }).length;
                         })
+                        console.log(seachResult)
                     }
                 }
 
