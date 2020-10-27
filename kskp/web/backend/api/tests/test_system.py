@@ -2389,6 +2389,11 @@ class SystemTestCase(ApiTestCaseBase):
         # ROOTを取得する
         root = self.factory.data.load_root()
 
+        # キャッシュフォルダの下にフレームを作成する
+        f = (io.BytesIO(b'teihenda'), 'cache1')
+        result = self.post_frames('一心太助', Datum.CACHE_FOLDER_UUID, f, self.USER2)
+        cache_uuid = result['data']['uuid']
+
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'暴れん坊将軍'}, self.USER1)
         project_uuid = result['data']['uuid']
@@ -2490,6 +2495,23 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['findMember'])
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
+
+        # # 編集者メンバは、キャッシュを取得する
+        # result = self.get_uri(f'/api/v0/frames/{cache_uuid}', self.USER2)
+        # self.assertTrue(result['data']['allowlist']['read'])
+        # self.assertNotIn('createProject', result['data']['allowlist'])
+        # self.assertNotIn('createFolder', result['data']['allowlist'])
+        # self.assertNotIn('createFile', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['update'])
+        # self.assertTrue(result['data']['allowlist']['delete'])
+        # self.assertFalse(result['data']['allowlist']['execute'])
+        # self.assertTrue(result['data']['allowlist']['move'])
+        # self.assertTrue(result['data']['allowlist']['copy'])
+        # self.assertNotIn('upload', result['data']['allowlist'])
+        # self.assertTrue(result['data']['allowlist']['download'])
+        # self.assertFalse(result['data']['allowlist']['findMember'])
+        # self.assertFalse(result['data']['allowlist']['updateMember'])
+        # self.assertFalse(result['data']['allowlist']['lock'])
 
         # 編集者メンバは、プロジェクトを取得する
         result = self.get_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -2616,7 +2638,7 @@ class SystemTestCase(ApiTestCaseBase):
         # 
         result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Reader'}, self.USER1)
  
-        # 編集者メンバは、ルートフォルダを取得する
+        # 閲覧者メンバは、ルートフォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{root.uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
         self.assertTrue(result['data']['allowlist']['createProject'])
@@ -2633,7 +2655,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # 編集者メンバは、キャッシュフォルダを取得する
+        # 閲覧者メンバは、キャッシュフォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
         self.assertFalse(result['data']['allowlist']['createProject'])
@@ -2774,7 +2796,7 @@ class SystemTestCase(ApiTestCaseBase):
         # 
         result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Owner'}, self.USER1)
  
-        # 編集者メンバは、ルートフォルダを取得する
+        # プロジェクト管理者は、ルートフォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{root.uuid}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
         self.assertTrue(result['data']['allowlist']['createProject'])
@@ -2791,7 +2813,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # 編集者メンバは、キャッシュフォルダを取得する
+        # プロジェクト管理者は、キャッシュフォルダを取得する
         result = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER2)
         self.assertTrue(result['data']['allowlist']['read'])
         self.assertFalse(result['data']['allowlist']['createProject'])
@@ -2817,7 +2839,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertTrue(result['data']['allowlist']['update'])
         self.assertTrue(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
-        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['move'])
         self.assertTrue(result['data']['allowlist']['copy'])
         self.assertTrue(result['data']['allowlist']['upload'])
         self.assertTrue(result['data']['allowlist']['download'])
