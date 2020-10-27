@@ -150,7 +150,23 @@ export interface Member {
 export interface ProjectInfo {
     members?: Member[];
     projectModifiedAt?: string;
-    allowlist?: Allowlist;
+}
+
+const defaultAllowlist = {
+    copy: false,
+    createFile: false,
+    createFolder: false,
+    createProject: false,
+    delete: false,
+    download: false,
+    execute: false,
+    findMember: false,
+    lock: false,
+    move: false,
+    read: false,
+    update: false,
+    updateMember: false,
+    upload: false
 }
 
 interface Props {
@@ -186,22 +202,9 @@ const Library = (_: Props) => {
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
-    const [allowlist, setAllowlist] = useState<Allowlist>({
-        copy: false,
-        createFile: false,
-        createFolder: false,
-        createProject: false,
-        delete: false,
-        download: false,
-        execute: false,
-        findMember: false,
-        lock: false,
-        move: false,
-        read: false,
-        update: false,
-        updateMember: false,
-        upload: false
-    });
+    const [allowlists, setAllowlists] = useState
+        <{parent: Allowlist, selected: Allowlist}>
+        ({parent: defaultAllowlist, selected: defaultAllowlist})
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
@@ -593,10 +596,7 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                    setAllowlist(json.allowlist);
-                    setCurrentProject({
-                        ...currentProject, allowlist: json.allowlist
-                    })
+                    setAllowlists({...allowlists, parent:json.allowlist});
                 });
             }
             //該当フォルダを取得
@@ -607,10 +607,7 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                    setAllowlist(json.allowlist);
-                    setCurrentProject({
-                        ...currentProject, allowlist: json.allowlist
-                    })
+                    setAllowlists({...allowlists, parent:json.allowlist});
                 } else {
                     APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
                         if (response.data.success) {
@@ -619,10 +616,7 @@ const Library = (_: Props) => {
                             setInitialLibraryChildren(children);
                             setLibraryChildren(children);
                             setFolderPath(folderPath);
-                            setAllowlist(json.allowlist);
-                            setCurrentProject({
-                                ...currentProject, allowlist: json.allowlist
-                            })
+                            setAllowlists({...allowlists, parent:json.allowlist});
                         }
                     });
                 }
@@ -637,10 +631,7 @@ const Library = (_: Props) => {
                             setInitialLibraryChildren(model.children);
                             setLibraryChildren(model.children);
                             setFolderPath(model.folderPath);
-                            setAllowlist(response.data.data.allowlist);
-                            setCurrentProject({
-                                ...currentProject, allowlist: response.data.data.allowlist
-                            })
+                            setAllowlists({...allowlists, parent:response.data.data.allowlist});
                         } else {
                             throw response.data;
                         }
@@ -666,10 +657,7 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                    setAllowlist(json.allowlist);
-                    setCurrentProject({
-                        ...currentProject, allowlist: json.allowlist
-                    })
+                    setAllowlists({...allowlists, parent:json.allowlist});
                 }
             });
         }
@@ -782,14 +770,17 @@ const Library = (_: Props) => {
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
             let data: LibraryListDataType = cell;
+            if (data.allowlist) {
+                setAllowlists({...allowlists, selected:data.allowlist})
+            }
             if (data && data.type === "project") {
                 APIUtil.get("/projects/" + data.uuid + "?members=on&allowlist=on").then((response) => {
                     if (response.data.success && response.data.data.members) {
                         setCurrentProject({
                             members: response.data.data.members,
-                            projectModifiedAt: response.data.data.modifiedAt,
-                            allowlist: response.data.data.allowlist
+                            projectModifiedAt: response.data.data.modifiedAt
                         })
+                        setAllowlists({...allowlists, selected:response.data.data.allowlist});
                     }
                 })
             }
@@ -861,7 +852,7 @@ const Library = (_: Props) => {
             } else {
                 if (!inject_is_trash) {
                     menuList = <MenuList
-                        allowlist={allowlist}
+                        allowlist={allowlists.parent}
                         onClickAddDatabase={onClickAddDatabase}
                         onClickCSVUpload={onClickCSVUpload}
                         onClickNewFlow={onClickNewFlow}
@@ -1201,7 +1192,7 @@ const Library = (_: Props) => {
         };
 
         return <TrashInspector data={data}
-            allowlist={currentProject.allowlist}
+            allowlist={allowlists.selected}
             onClickRecovery={(e, data) => onClickRecovery(e, data)}
             onClickMove={(e, data) => onClickMove(e, data)}
         />;
@@ -1665,9 +1656,9 @@ const Library = (_: Props) => {
                             if (response.data.success && response.data.data.members) {
                                 setCurrentProject({
                                     members: response.data.data.members,
-                                    projectModifiedAt: response.data.data.modifiedAt,
-                                    allowlist: response.data.data.allowlist
+                                    projectModifiedAt: response.data.data.modifiedAt
                                 })
+                                setAllowlists({...allowlists, selected:response.data.data.allowlist});
                             }
                         })
                     }
@@ -1677,9 +1668,9 @@ const Library = (_: Props) => {
                             if (response.data.success && response.data.data.members) {
                                 setCurrentProject({
                                     members: response.data.data.members,
-                                    projectModifiedAt: response.data.data.modifiedAt,
-                                    allowlist: response.data.data.allowlist
+                                    projectModifiedAt: response.data.data.modifiedAt
                                 })
+                                setAllowlists({...allowlists, selected:response.data.data.allowlist});
                             }
                         })
                     }
@@ -1695,6 +1686,7 @@ const Library = (_: Props) => {
 
         return <LibraryInspector
             currentProject={currentProject}
+            allowlist={allowlists.selected}
             selected={selectedDatas}
             lastSelected={lastSelected}
             onClickDelete={_onClickDelete}
