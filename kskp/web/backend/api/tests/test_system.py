@@ -692,7 +692,16 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(results['data'][0]['email'], 'yoshiaki@muromachi.go.jp')
         self.assertEqual(results['data'][13]['email'], 'yoshizumi@muromachi.go.jp')
 
-        # 公方様を検索する
+        # 公方様を検索する(大文字)
+        keyword = 'KA'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 3)
+        self.assertEqual(results['data'][0]['email'], 'takauji@muromachi.go.jp')
+        self.assertEqual(results['data'][1]['email'], 'yoshikatsu@muromachi.go.jp')
+        self.assertEqual(results['data'][2]['email'], 'yoshikazu@muromachi.go.jp')
+
+        # 公方様を検索する(小文字)
         keyword = 'ka'
         results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
         # 期待するJSONが返ることを確認する
@@ -782,7 +791,13 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(len(results['data']), 1)
         self.assertEqual(results['data'][0]['email'], 'hide@edo.co.jp')
 
-        # ユーザを検索する
+        # ユーザを検索する(大文字)
+        keyword = 'JP Edo '
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 5)
+
+        # ユーザを検索する(小文字)
         keyword = 'jp edo '
         results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
         # 期待するJSONが返ることを確認する
