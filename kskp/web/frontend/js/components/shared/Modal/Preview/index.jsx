@@ -87,7 +87,7 @@ export default class PreviewModal extends React.Component<Props, State> {
     const {id, close_button, visible, title, footer} = this.props
     let {contents} = this.props
     const className = (this.isDialog()) ? 'modal fade previewDialog top' : 'modal fade preview top';
-    const modal_class = classnames(className, {
+    const modal_class = classnames(style.previewModal,className, {
       'show in': visible,
       'none-pointer-events': !visible,
     })
