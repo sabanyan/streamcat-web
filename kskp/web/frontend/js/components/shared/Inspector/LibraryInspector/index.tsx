@@ -14,6 +14,7 @@ import { Allowlist, ProjectInfo } from 'Components/LibraryContainer/Libary/index
 type Props = {
   visualizers: any[];
   currentProject: ProjectInfo;
+  allowlist:Allowlist;
   selected: LibraryChild[];
   lastSelected?: LibraryChild;
   onClickDelete?: Function;
@@ -68,25 +69,24 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderButtons(data?: LibraryChild) {
-    const { selected, currentProject, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash, onChangeFlowLock } = this.props
+    const { selected, currentProject, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash, onChangeFlowLock } = this.props
 
     let preview, download, del, apply, move, edit, editEncoding, trashClean, lock
-    const allowlist = currentProject.allowlist
 
     if (selected.length == 1) {
       // preview button
-      if (allowlist && allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
+      if (allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
         preview = <Button onClick={(e) => this.onClickPreview(e)} icon={"visibility"}>プレビューする</Button>
       }
 
       // download button
-      if (allowlist && allowlist.download && data && data.label && data.type === Constants.library.type.frame) {
+      if (allowlist.download && data && data.label && data.type === Constants.library.type.frame) {
         const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
         download = <DownloadButton href={href} icon={"get_app"}>CSVをダウンロードする</DownloadButton>
       }
 
       // edit
-      if (onClickEdit && data && data.type === Constants.library.type.database) {
+      if (allowlist.update && onClickEdit && data && data.type === Constants.library.type.database) {
         edit = <Button onClick={(e) => this.onClickEdit(e)} icon={"settings"}>設定を開く</Button>
       }
 
@@ -94,12 +94,12 @@ class LibraryInspector extends React.Component<Props> {
       if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
 
       // editEncoding
-      if (allowlist && allowlist.update && onClickEditEncoding && data && data.type === Constants.library.type.frame) {
+      if (allowlist.update && onClickEditEncoding && data && data.type === Constants.library.type.frame) {
         editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コードを編集する</Button>
       }
 
       // clean trash button
-      if (allowlist && allowlist.delete && onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>
+      if (allowlist.delete && onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>
 
       // flow lock button
       if (data && data.type == Constants.library.type.flow && onChangeFlowLock) {
@@ -113,10 +113,10 @@ class LibraryInspector extends React.Component<Props> {
     // 複数選択の場合
     if (selected.length >= 1) {
       // delete button
-      if (allowlist && allowlist.delete && onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>
+      if (allowlist.delete && onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>
 
       // move button
-      if (onClickMove && allowlist && allowlist.move) move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>
+      if (allowlist.move && onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>
     }
 
     if (onClickCleanTrash) {
@@ -250,10 +250,9 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderProjectInfo(project: any) {
-    const { currentProject, onClickMemberInfo } = this.props;
+    const { currentProject, allowlist, onClickMemberInfo } = this.props;
 
     const members = currentProject.members;
-    const allowlist = currentProject.allowlist
     const memberCount = members ? members.length : 0;
     let membersForm: any = null
     if (members) {
@@ -272,11 +271,11 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   render() {
-    const { currentProject, selected, lastSelected } = this.props
+    const { currentProject, allowlist, selected, lastSelected } = this.props
     let label = (lastSelected && selected.length <= 1) ? lastSelected.label : undefined
     let content = (selected.length <= 1) ? this.renderSelect(lastSelected) : this.renderSelects(selected, lastSelected)
 
-    const disabled = currentProject.allowlist && currentProject.allowlist.update ? false : true
+    const disabled = allowlist && allowlist.update ? false : true
     
     return <Resizer>
       <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={disabled}>
