@@ -42,18 +42,19 @@ def login_required(func):
                 # 認証を要求している場合
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
+                request_email = request.form.get('email') or ''
                 with UnAuthzFactory() as factory:
                     try:
-                        user = factory.find_user_by_email(f.get('email'))
+                        user = factory.find_user_by_email(request_email)
                     except Exception:
-                        return render_template('login.html', email=f.get('email'), login_failed=True)
+                        return render_template('login.html', email=request_email, login_failed=True)
 
                 if user.authenticate(f['password']):
 
                     # 仮登録状態の場合はパスワード登録画面に遷移する
                     if user.is_init_or_temp:
-                        session['signup_email'] = f.get('email')
-                        return render_template('register_password.html', email=f.get('email'))
+                        session['signup_email'] = request_email
+                        return render_template('register_password.html', email=request_email)
 
                     # ユーザID保存
                     session['user_id'] = user.id
@@ -70,7 +71,7 @@ def login_required(func):
                     # メールアドレスは残してパスワードだけにする
                     # この仕様はセキュリティ上あまりよろしくはないが、
                     # ちゃんと画面が遷移したテストとしてわかりやすいので一時的にそうしている
-                    return render_template('login.html', email=f.get('email'), login_failed=True)
+                    return render_template('login.html', email=request_email, login_failed=True)
             elif request.args['session'] == 'off':
                 # ログアウト処理
                 # TODO: セッションを消すだけで良いか要検討
