@@ -95,10 +95,10 @@ def update_self():
 
     if req.has('currentPassword'):
         if not user.authenticate(req['currentPassword']):
-            raise Exception('パスワードが誤っています')
+            raise Exception('現在のパスワードが誤っています')
     elif req.has_at_least('email','password') or req.isnull('password'):
         # emailまたはpasswordを修正する場合は、現在のパスワードによる認証が必要である
-        raise Exception('パスワードを指定してください')
+        raise Exception('現在のパスワードを指定してください')
 
     return _update_user_inner(user, req)
 
