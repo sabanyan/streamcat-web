@@ -563,6 +563,13 @@ const UserList = (props: Props) => {
             fetchUsers();
         }
 
+        const onChangedList = ()=>{
+            // ユーザー一覧を再更新
+            fetchUsers();
+            // 選択されているセルを解除（ペインを閉じる）
+            clearSelectedCell();
+        }
+
         return <UserListInspector
             navigation={navigation}
             notify={notify}
@@ -572,7 +579,7 @@ const UserList = (props: Props) => {
             onClickDelete={(availableDelete)?onClickDelete:undefined}
             onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
             onChangedUserSystemAdminRole={onChangedUserSystemAdminRole}
-            onChangedList={fetchUsers}
+            onChangedList={onChangedList}
         />
     };
 
