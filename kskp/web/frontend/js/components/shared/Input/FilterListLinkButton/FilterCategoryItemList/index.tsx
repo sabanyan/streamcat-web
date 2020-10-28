@@ -71,14 +71,15 @@ const FilterCategoryItemList = (props: Props) => {
     let listElement;
     if (!selectedCategory) {
         // カテゴリ（一階層目の表示）
-        listElement = list.map((categoryItem) => {
-            return <FilterCategoryItem
+        listElement = list.map((categoryItem,index) => {
+            return <FilterCategoryItem key={index} disabled={categoryItem.disabled}
                 onClick={() => _onClickCategoryItem(categoryItem)}>{categoryItem.label}</FilterCategoryItem>
         })
     } else {
         // リスト（二階層目の表示）
-        listElement = selectedCategory.data.map((filterItem: IFilterListItem) => {
+        listElement = selectedCategory.data.map((filterItem: IFilterListItem,index) => {
             return <FilterListItem
+                key={index}
                 onClick={() => _onClickListItem(filterItem)}
                 onChecked={(checked) => _onCheckedListItem(filterItem, checked)}
                 multiple={selectedCategory.multiple}
