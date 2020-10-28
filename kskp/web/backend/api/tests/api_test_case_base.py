@@ -132,6 +132,20 @@ class ApiTestCaseBase(TestCaseBase):
         self.assertTrue(result['success'], 'POST %s is failed. %s' % (uri, error_detail))
         return result
 
+    def post_locks(self, uri, json_data, user):
+        """
+        URIへPOSTする
+        """
+        with app.test_client() as client:
+            with client.session_transaction() as session:
+                session['user_id'] = user.id
+            response = client.post(uri,
+                                   content_type='application/json',
+                                   data=json.dumps(json_data))
+            result = json.loads(response.get_data())
+        error_detail = result['message'] if 'message' in result else ''
+        return result
+
     def post_frames(self, label, parent_uuid, frame_stream, user):
         """
         URI(/api/v0/frames)へPOSTする
