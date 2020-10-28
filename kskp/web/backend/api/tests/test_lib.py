@@ -1546,6 +1546,135 @@ class TrashTestCase(ApiTestCaseBase):
         trashed = trash_folder.find_children()
         self.assertEqual(len(trashed), 0)
 
+    def test_delete_frame_refered(self):
+        """
+        フローから参照されているフレームはゴミ箱に捨てられないこと
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダ1を作成する(POST /folders)
+        folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!1", "parent": root.uuid}, self.USER1)
+        folder1_uuid = folder1['data']['uuid']
+
+        # フォルダ1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!2", "parent": folder1_uuid}, self.USER1)
+        folder2_uuid = folder2['data']['uuid']
+
+        # フォルダ2内にフォルダ3を作成する
+        folder3 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!3", "parent": folder2_uuid}, self.USER1)
+        folder3_uuid = folder3['data']['uuid']
+
+        # フォルダ3内にフレームを作成する
+        import io
+        f = (io.BytesIO(b'abcABC'), 'frame')
+        result = self.post_frames('フレームファイル', folder3_uuid, f, self.USER1)
+        frame_uuid= result['data']['uuid']
+
+        # フォルダ1内にフローを作成する
+        data_source = {
+            "id": "i",
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": frame_uuid,
+            "label": "test"
+        }
+        data = {
+            'project_uuid': folder1_uuid,
+            'name': 'フロー',
+            'datasource': data_source
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローのUUIDを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
+        if result['data']['children'][0]['uuid'] == folder2_uuid:
+            flow_uuid = result['data']['children'][1]['uuid']
+        else:
+            flow_uuid = result['data']['children'][0]['uuid']
+
+        # 参照するフレームはほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
+
+        # フォルダ2内にはフローが参照するフレームがあるのでほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER1)
+
+        # フローをロックする
+        result = self.post_locks('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # フローはほかせること
+        result = self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER1)
+                                            
+        # フローをほかしたあとはフレームをほかせること
+        # (ゴミ箱内のフローから参照されているフレームはゴミ箱に捨てられること)
+        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_delete_folder_has_refered_file(self):
+        """
+        フローと参照されているフレームが同じフォルダに存在する場合
+        そのフォルダを削除できること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクト1を作成する(POST /folders)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "プロジェクトどす!1", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+
+        # フォルダ1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダどす!2", "parent": project1_uuid}, self.USER1)
+        folder2_uuid = folder2['data']['uuid']
+
+        # フォルダ2内にフォルダ3を作成する
+        folder3 = self.post_uri('/api/v0/folders', {"label" : "フォルダどす!3", "parent": folder2_uuid}, self.USER1)
+        folder3_uuid = folder3['data']['uuid']
+
+        # フォルダ3内にフレームを作成する
+        import io
+        f = (io.BytesIO(b'abcABC'), 'frame')
+        result = self.post_frames('フレームファイル', folder3_uuid, f, self.USER1)
+        frame_uuid= result['data']['uuid']
+
+        # フォルダ3内にフローを作成する
+        data_source = {
+            "id": "i",
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": frame_uuid,
+            "label": "test"
+        }
+        data = {
+            'project_uuid': folder3_uuid,
+            'name': 'フロー',
+            'datasource': data_source
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローのUUIDを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder3_uuid}', self.USER1)
+        if result['data']['children'][0]['uuid'] == folder2_uuid:
+            flow_uuid = result['data']['children'][1]['uuid']
+        else:
+            flow_uuid = result['data']['children'][0]['uuid']
+
+        # 参照するフレームはほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
+
+        # プロジェクトを丸ごとほかせること
+        self.delete_uri(f'/api/v0/folders/{project1_uuid}', self.USER1)
+                         
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_delete_root_folder(self):
         """
         ルートフォルダは削除できない
