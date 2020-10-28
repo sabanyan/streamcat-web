@@ -32,9 +32,11 @@
   border-top: 1px solid $kskp-property-border-color;
   color: #00469d;
   margin: 16px -16px 16px -16px;
-  padding: 4px 16px 4px 16px;
+  padding: 0 16px 0 16px;
   height: 30px;
   font-size: 14px;
+  display: flex;
+  align-items: center;
 }
 
 .colored {
