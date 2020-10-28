@@ -6,6 +6,7 @@
   cursor: pointer;
   margin: 5px;
   padding: 5px;
+  font-size: 14px;
   &:hover {
     color: darken($primary-link-color, 10%);
   }
