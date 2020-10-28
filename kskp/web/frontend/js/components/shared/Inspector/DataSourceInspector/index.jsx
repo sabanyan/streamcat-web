@@ -305,7 +305,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         const selected_step = this.getSelectedStep()
         if (selected_step.hasData()) {
           //TODO 将来的にはページングなどの対応が必要
-          APIUtil.get('frames/' + selected_step.uuid + '?no_contents=1').then((response) => {
+          APIUtil.get('frames/' + selected_step.uuid).then((response) => {
             const json = response.data
             this.props.updateDataFrameDetail(json.data)
           })
