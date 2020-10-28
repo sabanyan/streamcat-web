@@ -138,7 +138,7 @@ export default class FlowUtil {
     }
 
     return new Promise((resolve, reject) => {
-      APIUtil.get('frames?from=' + flowUUID + '&no_contents=1').then((response) => {
+      APIUtil.get('frames?from=' + flowUUID).then((response) => {
         if (dismissNotify) dismissNotify(runNotify.id)
         if (!response.data.success) {
           notify({
