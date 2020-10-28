@@ -167,10 +167,10 @@ export default class ParamsForm extends React.Component<Props, State> {
 
     return <React.Fragment>
       <div className={className}>
-        <div className={style.label}>
-          <span>{param.label}</span>
+        <div className={style.labelContainer}>
+          <div className={style.label}>{param.label}</div>
           <div className={style.description}>
-            <p>{param.description}</p>
+            <div>{param.description}</div>
           </div>
         </div>
         {paramElement}
@@ -184,14 +184,14 @@ export default class ParamsForm extends React.Component<Props, State> {
 
     let className = group.hide_background ? style.group : classnames(style.group, style.colored)
 
-    return <React.Fragment key={key}>
+    return <div className={"mb-12px"} key={key}>
       <div className={className}>
         {group.label}
       </div>
-      <p className={style.description}>
+      <div className={style.description}>
         {group.description}
-      </p>
-    </React.Fragment>
+      </div>
+    </div>
   }
 
 
@@ -202,7 +202,7 @@ export default class ParamsForm extends React.Component<Props, State> {
     const paramElement = this.getParamElement(param, disabled, param.label, value, onChange, headers)
     const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
 
-    return <div key={key} className={classnames('mb-8px', {
+    return <div key={key} className={classnames('mb-12px', {
       [style.presence]: isPresence,
       [style.invalid]: (invalidMessageEelement)
     })}>
