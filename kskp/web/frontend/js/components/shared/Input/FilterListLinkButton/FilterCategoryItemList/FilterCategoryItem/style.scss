@@ -9,6 +9,10 @@
   &:hover{
     background: #f8f9fa;
   }
-
+  &.disabled{
+    cursor: inherit;
+    background: inherit;
+    color: #CACACA
+  }
   cursor: pointer;
 }
