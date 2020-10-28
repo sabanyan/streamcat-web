@@ -18,7 +18,7 @@ const FilterSelectedList = (props: Props) => {
 
 
     let listItemElements:React.ReactNode[] = [];
-    list.forEach((categoryItem) => {
+    list.forEach((categoryItem,index) => {
         let labelText = '';
         const selectedListItem: IFilterFilterItem[] = []
         categoryItem.data.forEach((filterItem: IFilterFilterItem) => {
@@ -34,7 +34,7 @@ const FilterSelectedList = (props: Props) => {
         if (!selectedListItem.length) return
         if (labelText === "") return
 
-        const listElement = <div className={style.listItem} onClick={()=>onClickRemove(categoryItem)}>
+        const listElement = <div key={index} className={style.listItem} onClick={()=>onClickRemove(categoryItem)}>
             {labelText}
             <div className={style.icon}>
                 {ImageUtil.getIconElement("icon-remove-circle")}
