@@ -56,7 +56,7 @@ const BaseInspector = (props: Props) => {
         labelContainer = <div className={style.label}>{label}</div>;
     }
     if (subLabel) {
-        subLabelContainer = <div>
+        subLabelContainer = <div className={style.sublabel}>
             {subLabel}
         </div>;
     }
