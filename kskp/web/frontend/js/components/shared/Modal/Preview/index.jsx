@@ -9,7 +9,6 @@ import Visualizer from 'Shared/Visualizer/Core';
 type Props = {
   id: string;
   contents: [{}];
-  close_button: React.Node;
   visible: boolean;
   title: string;
   footer: React.Node
@@ -84,7 +83,7 @@ export default class PreviewModal extends React.Component<Props, State> {
   }
 
   render () {
-    const {id, close_button, visible, title, footer} = this.props
+    const {id, visible, title, footer} = this.props
     let {contents} = this.props
     const className = (this.isDialog()) ? 'modal fade previewDialog top' : 'modal fade preview top';
     const modal_class = classnames(style.previewModal,className, {
@@ -120,7 +119,6 @@ export default class PreviewModal extends React.Component<Props, State> {
                 </TabBar>
               </div>
             </div>
-            {close_button}
           </div>
           <div className="modal-body">
             {this.renderTabContent(selected_tab_id)}
