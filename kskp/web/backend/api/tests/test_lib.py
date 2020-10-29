@@ -497,6 +497,42 @@ class LibraryTestCase(ApiTestCaseBase):
         # フォルダに対応するディレクトリが存在することを検証する
         self.assertTrue(os.path.isfile((root.path / '新しいフォルダ1B' / 'フレームファイル_1B').as_posix()))
 
+    def test_escape_path(self):
+        """
+        Datum.pathに%や_が含まれる値を格納できること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダ1を作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {'label': 'F O L \% E R', 'parent': root.uuid}, self.USER1)
+        folder1_uuid = result['data']['uuid']
+
+        # フォルダ2を作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {'label': 'f o l d e r', 'parent': folder1_uuid}, self.USER1)
+        folder2_uuid = result['data']['uuid']
+
+        # フレームを作成する(POST /frames)
+        import io
+        f = (io.BytesIO(b"thisisaframefile"), 'aaa.csv')
+        result = self.post_frames('フレームファイルAA', folder2_uuid, f, self.USER1)
+
+        # フォルダ1のラベル名を変更する(PUT /folders)
+        result = self.put_uri(f'/api/v0/folders/{folder1_uuid}', {'label': 'F O L \% E R 2'}, self.USER1)
+
+        # フォルダ2を削除する
+        self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+        # フォルダ1を削除する
+        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+
 @unittest.skip('ASW S3のIDとアカウントが必要')
 class AwsS3TestCase(ApiTestCaseBase):
     def test_create_get_awss3(self):

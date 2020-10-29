@@ -718,42 +718,6 @@ class SystemTestCase(ApiTestCaseBase):
 
     def test_search_user2(self):
         """
-        Userを検索する
-        """
-        # ユーザを作成する
-        result = self.post_uri('/api/v0/users', {'email':'aaa%bbb@gmail.com', 'name':'アウアウ\\あー', 'password':None}, self.USER1)
-        result = self.post_uri('/api/v0/users', {'email':'aui_eo@yahoo.co.jp', 'name':'😄', 'password':None}, self.USER1)
-
-        # ユーザを検索する
-        keyword = '%'
-        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
-        # 期待するJSONが返ることを確認する
-        self.assertEqual(len(results['data']), 1)
-        self.assertEqual(results['data'][0]['email'], 'aaa%bbb@gmail.com')
-
-        # ユーザを検索する
-        keyword = '\\'
-        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
-        # 期待するJSONが返ることを確認する
-        self.assertEqual(len(results['data']), 1)
-        self.assertEqual(results['data'][0]['email'], 'aaa%bbb@gmail.com')
-
-        # ユーザを検索する
-        keyword = '_'
-        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
-        # 期待するJSONが返ることを確認する
-        self.assertEqual(len(results['data']), 1)
-        self.assertEqual(results['data'][0]['email'], 'aui_eo@yahoo.co.jp')
-
-        # ユーザを検索する
-        keyword = '😄'
-        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
-        # 期待するJSONが返ることを確認する
-        self.assertEqual(len(results['data']), 1)
-        self.assertEqual(results['data'][0]['email'], 'aui_eo@yahoo.co.jp')
-
-    def test_search_user3(self):
-        """
         仕事人をAND検索する
         """
         # 仕事人を作成する
@@ -815,6 +779,105 @@ class SystemTestCase(ApiTestCaseBase):
         results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
         # 期待するJSONが返ることを確認する
         self.assertEqual(len(results['data']), 0)
+
+    def test_search_user3(self):
+        """
+        Userを検索する
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'aaa%bbb@gmail.com', 'name':'アウアウ\\あー', 'password':None}, self.USER1)
+        user_uuid1 = result['data']['uuid']
+        result = self.post_uri('/api/v0/users', {'email':'aui_eo@yahoo.co.jp', 'name':'😄', 'password':None}, self.USER1)
+        user_uuid2 = result['data']['uuid']
+
+        # ユーザを検索する
+        keyword = '%'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'aaa%bbb@gmail.com')
+
+        # ユーザを検索する
+        keyword = '\\'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'aaa%bbb@gmail.com')
+
+        # ユーザを検索する
+        keyword = '_'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'aui_eo@yahoo.co.jp')
+
+        # ユーザを検索する
+        keyword = '😄'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], 'aui_eo@yahoo.co.jp')
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid1}', self.USER1)
+        self.delete_uri(f'/api/v0/users/{user_uuid2}', self.USER1)
+
+    def test_search_user4(self):
+        """
+        Userを検索する
+        """
+        # ユーザを作成する
+        email = '^ \% % \_ _  *#(.*)+ \\ @ugoge.co.jp$'
+        result = self.post_uri('/api/v0/users', {'email':email, 'name':'うごゲ〜', 'password':None}, self.USER1)
+        user_uuid1 = result['data']['uuid']
+        result = self.post_uri('/api/v0/users', {'email':'abc@abc.jp', 'name':'とうぜんですわ', 'password':None}, self.USER1)
+        user_uuid2 = result['data']['uuid']
+        result = self.post_uri('/api/v0/users', {'email':'\%@com', 'name':'ウゲー爆弾', 'password':None}, self.USER1)
+        user_uuid3 = result['data']['uuid']
+
+        # ユーザを検索する
+        keyword = '%'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 2)
+        self.assertEqual(results['data'][0]['email'], '\%@com', msg=str(results['data']))
+        self.assertEqual(results['data'][1]['email'], email)
+
+        # ユーザを検索する
+        keyword = '\%'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 2)
+        self.assertEqual(results['data'][0]['email'], '\%@com')
+        self.assertEqual(results['data'][1]['email'], email)
+
+        # ユーザを検索する
+        keyword = '_'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], email)
+
+        # ユーザを検索する
+        # (検索語の前後の空白は削除するが
+        #  空白のみの場合はその空白で検索する)
+        keyword = '  '
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER2)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1, msg=str(results['data']))
+        self.assertEqual(results['data'][0]['email'], email)
+
+        # ユーザを検索する
+        keyword = 'ugoge'
+        results = self.get_uri(f'/api/v0/users?q={keyword}', self.USER3)
+        # 期待するJSONが返ることを確認する
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['email'], email)
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid1}', self.USER1)
+        self.delete_uri(f'/api/v0/users/{user_uuid2}', self.USER1)
+        self.delete_uri(f'/api/v0/users/{user_uuid3}', self.USER1)
 
     def test_api_by_inactive_user(self):
         """
