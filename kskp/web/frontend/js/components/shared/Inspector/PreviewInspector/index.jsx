@@ -74,8 +74,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps, State> {
       <div>
         <div className={style.full_hr} />
         <Button onClick={(e) => this.onClickApply(e)}>表示</Button>
-        <div>
-          <div className="kskp-form"></div>
+        <div className={"mt-12px"}>
           <ParamsForm
              key={label} 
              headers={headers} params={params} args={this.state.args} 

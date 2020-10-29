@@ -223,6 +223,7 @@ export interface IFilterCategoryItem {
   label: string;
   multiple: boolean;
   data: IFilterListItem[];
+  disabled?: boolean;
 }
 
 export interface IFilterListItem {

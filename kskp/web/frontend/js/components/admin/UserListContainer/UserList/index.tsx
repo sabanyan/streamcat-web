@@ -563,6 +563,13 @@ const UserList = (props: Props) => {
             fetchUsers();
         }
 
+        const onChangedList = ()=>{
+            // ユーザー一覧を再更新
+            fetchUsers();
+            // 選択されているセルを解除（ペインを閉じる）
+            clearSelectedCell();
+        }
+
         return <UserListInspector
             navigation={navigation}
             notify={notify}
@@ -572,7 +579,7 @@ const UserList = (props: Props) => {
             onClickDelete={(availableDelete)?onClickDelete:undefined}
             onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
             onChangedUserSystemAdminRole={onChangedUserSystemAdminRole}
-            onChangedList={fetchUsers}
+            onChangedList={onChangedList}
         />
     };
 
@@ -584,7 +591,7 @@ const UserList = (props: Props) => {
     };
 
     const setInitialFilterList = () => {
-        const projectData: IFilterListItem[] = projects.map((project) => {
+        const projectData: IFilterListItem[] = selectableProjects.map((project) => {
             return {
                 id: project.uuid,
                 label: project.label,
@@ -605,12 +612,14 @@ const UserList = (props: Props) => {
             label: '削除済',
             selected: false
         }];
+
         const list: IFilterCategoryItem[] = [
             {
                 id: "project",
                 label: '所属プロジェクト',
                 multiple: false,
                 data: projectData,
+                disabled: !(projectData.length)
             },
             {
                 id: "status",
@@ -623,10 +632,10 @@ const UserList = (props: Props) => {
     }
 
     useEffect(() => {
-        if (!filterList.length && projects.length) {
+        if (isFinished) {
             setInitialFilterList()
         }
-    }, [projects])
+    }, [selectableProjects,isFinished])
 
     const [filterList, setFilterList] = useState<IFilterCategoryItem[]>([])
     const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null)
@@ -678,7 +687,11 @@ const UserList = (props: Props) => {
                 let hasFound = false
                 user.projects.forEach((project:UserProject)=>{
                     // 該当するプロジェクトがあるか
-                    hasFound = true
+                    selectedProjectUUIDs.forEach((selectedProjectUUID)=>{
+                        if(project.uuid === selectedProjectUUID){
+                            hasFound = true
+                        }
+                    })
                 })
                 return hasFound
             })

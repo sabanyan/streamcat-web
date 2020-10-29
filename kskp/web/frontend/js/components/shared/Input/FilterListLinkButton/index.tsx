@@ -15,8 +15,9 @@ interface Props {
 const FilterListLinkButton = (props: Props) => {
     const {children, list, onClickFilterListItem, onClickFilterCategoryItem} = props;
     const [hasShown, setHasShown] = useState(false);
-    const onClick = () => {
+    const onClick = (e) => {
         setHasShown(!hasShown);
+        e.preventDefault();
     }
 
     const _onClickFilterListItem = (item: IFilterListItem) => {
@@ -30,9 +31,9 @@ const FilterListLinkButton = (props: Props) => {
         onClickFilterCategoryItem(item);
     }
 
-    return <div className={style.container}><a href="#" className={style.filterListLinkButton} onClick={onClick}>
+    return <div className={style.container}><div className={style.filterListLinkButton} onClick={onClick}>
         {children}
-    </a>
+    </div>
         {(hasShown) ? <FilterCategoryItemList
             list={list}
             onClickFilterCategoryItem={_onClickFilterCategoryItem}
