@@ -505,7 +505,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
         # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
-        self.assertEqual(len(result['data']['projects']), 2)
+        self.assertEqual(len(result['data']['projects']), 2, msg=result['data']['projects'])
         # プロジェクトX
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
@@ -1328,7 +1328,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         # 参加ユーザ
-        self.assertEqual(len(result['data']['members']), 2)
+        self.assertEqual(len(result['data']['members']), 2, msg=result['data']['members'])
         # USER1
         self.assertEqual(result['data']['members'][0]['uuid'], self.USER1.uuid)
         self.assertEqual(result['data']['members'][0]['email'], self.USER1.email)
@@ -2597,7 +2597,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['createProject'])
         self.assertTrue(result['data']['allowlist']['createFolder'])
         self.assertTrue(result['data']['allowlist']['createFile'])
-        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['update'])
         self.assertFalse(result['data']['allowlist']['delete'])
         self.assertFalse(result['data']['allowlist']['execute'])
         self.assertFalse(result['data']['allowlist']['move'])
