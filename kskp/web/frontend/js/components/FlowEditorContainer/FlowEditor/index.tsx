@@ -238,7 +238,6 @@ const FlowEditor = (props: Props) => {
             flowRequest.push(APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
                 const json = response.data.data;
                 allowlist = json.allowlist;
-                console.log("json",allowlist)
                 loadFlowJSON(json)
             }));
 
