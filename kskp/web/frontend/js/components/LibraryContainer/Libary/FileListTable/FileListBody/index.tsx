@@ -1,5 +1,5 @@
 import * as React from "react";
-import {LinkButton} from "Shared/Input";
+import { LinkButton } from "Shared/Input";
 import moment from "moment";
 import classnames from "classnames";
 import style from "./style.scss";
@@ -22,7 +22,7 @@ interface Props {
 }
 
 const FileListBody = (props: Props) => {
-    const {bodies, onClickCell, onClickFileName} = props;
+    const { bodies, onClickCell, onClickFileName } = props;
 
     const getIconElement = (icon: string | null) => {
         const baseUrl = "/front_static/";
@@ -52,13 +52,13 @@ const FileListBody = (props: Props) => {
                 return null;
         }
     };
-    const onClick = (event,body)=>{
+    const onClick = (event, body) => {
         onClickCell(body, event)
     };
 
     const bodiesElement = bodies.map((body: ITableBody, index) => {
-        return <tr className={classnames(style.row,{[style.selected]: body.selected})}
-                   onClick={(event)=>onClick(event,body)} key={index}>
+        return <tr className={classnames(style.row, { [style.selected]: body.selected })}
+            onClick={(event) => onClick(event, body)} key={index}>
             <td>
                 {getIconElement(getIconFromBodyType(body.type))}
                 {(body.clickable) ?
@@ -75,14 +75,16 @@ const FileListBody = (props: Props) => {
             <td>
                 {body.creator}
             </td>
-            <td>
-                {moment(body.createdAt).format("YYYY/MM/DD hh:mm")}
+            <td className={style.date}>
+                {moment(body.createdAt, 'YYYY-MM-DD hh:mm:ss', false).format('YYYY-MM-DD HH:mm')}
             </td>
         </tr>;
     });
+
+
     return <tbody>
-    {bodiesElement}
+        {bodiesElement}
     </tbody>;
 };
 
-export {FileListBody};
+export { FileListBody };
