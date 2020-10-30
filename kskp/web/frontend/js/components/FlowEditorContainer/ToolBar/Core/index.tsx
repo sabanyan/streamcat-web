@@ -183,7 +183,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
     flowUpdate() {
         APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
-            const json = response.data;
+            const json = response.data.data;
             this.props.loadFlowJSON(json);
         });
     }
