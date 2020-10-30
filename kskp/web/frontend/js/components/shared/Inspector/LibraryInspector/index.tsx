@@ -202,7 +202,7 @@ class LibraryInspector extends React.Component<Props> {
     if (data.createdAt) {
       createdAt = <React.Fragment key={data.createdAt}>
         <div><label>{this.display.createdAt}</label></div>
-        <div className={"mb-8px"}>{moment(data.createdAt).format(Constants.format.dateTime)}</div>
+        <div className={"mb-8px"}>{moment(data.createdAt, 'YYYY-MM-DD hh:mm:ss', false).format('YYYY-MM-DD HH:mm')}</div>
       </React.Fragment>
 
       result.push(createdAt)
