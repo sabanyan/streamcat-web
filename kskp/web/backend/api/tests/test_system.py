@@ -25,6 +25,82 @@ class SystemTestCase(ApiTestCaseBase):
         "systemRole": Role.USR_ADMIN_ROLE_LABEL
     }
 
+    # フローJSON
+    # mnewnumber -> d(cache=on) -> mcut -> d1(out=on)
+    flow_json = {
+        "label": "flow", 
+        "nodes": [
+        {
+            "id": "d", 
+            "type": "frame", 
+            "uuid": None, 
+            "label": "d", 
+            "makeCache": True, 
+            "dataSource": "csv", 
+            "cacheCreatedAt": None
+        }, 
+        {
+            "id": "c", 
+            "args": {
+            "I": "1", 
+            "S": "1", 
+            "a": "a", 
+            "l": "10"
+            }, 
+            "dsts": {
+            "o": "d"
+            },
+            "srcs": {}, 
+            "type": "command", 
+            "label": "c", 
+            "commandId": "mnewnumber", 
+            "srcsOrder": []
+        }, 
+        {
+            "id": "d1", 
+            "type": "frame", 
+            "uuid": None, 
+            "label": "d1", 
+            "makeCache": False, 
+            "dataSource": "csv", 
+            "cacheCreatedAt": None
+        }, 
+        {
+            "id": "c1", 
+            "args": {
+            "f": "*"
+            }, 
+            "dsts": {
+            "o": "d1"
+            }, 
+            "srcs": {
+            "i": "d"
+            }, 
+            "type": "command", 
+            "label": "c1", 
+            "commandId": "mcut", 
+            "srcsOrder": [
+            "i"
+            ]
+        }
+        ], 
+        "ports": [
+        [], 
+        [
+            {
+            "type": "frame", 
+            "label": "d1", 
+            "nodeId": "d1"
+            }
+        ]
+        ], 
+        "params": [], 
+        "creator": "ユーザ管理者", 
+        "createdAt": "2020-10-04 17:45:16", 
+        "projectId": None, 
+        "description": ""
+    }
+
     # 
     # Users
     # 
@@ -2404,6 +2480,91 @@ class SystemTestCase(ApiTestCaseBase):
     #
     # Other Datum
     # 
+
+    def test_cannot_read_cache_by_creator(self):
+        """
+        キャッシュの作成者であっても
+        プロジェクトメンバでなければキャッシュを参照できないこと
+        """
+        # ROOTを取得する
+        root = self.factory2.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'上様を語る不届き者じゃ'}, self.USER2)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # 編集者は、プロジェクト内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': '出逢え出逢え！',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER3)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # 編集者は、フローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+
+        # 編集者は、フローを変更する
+        data = {
+            'flow' : self.flow_json,
+            'label': '構わん、此奴を切って捨てえい！',
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # 編集者は、フローをプレビュー実行して、キャッシュファイルを作成する
+        vis_args = { "d1" : 
+                        {"args" :
+                            {"visualizer" : "csvtohtmltable",
+                             "offset" : 0,
+                             "limit"  : 100
+                            }
+                        }
+                    }
+        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER3)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+
+        # 作成したキャッシュのUUIDを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        # プレビューを持つポイントが存在すること
+        self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
+        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'])
+        cache_uuid = result['data']['flow']['nodes'][0]['uuid']
+
+        # 編集者をプロジェクトから脱退させる
+        result = self.delete_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER3.uuid}', self.USER2)
+
+        # USER3は、プロジェクトから外れたのでUSER3はキャッシュを参照できないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/frames/{cache_uuid}', self.USER3)
+
+        # プロジェクト管理者はキャッシュを参照できること
+        result = self.get_uri(f'/api/v0/frames/{cache_uuid}', self.USER2)
+
+        # プロジェクトとキャッシュを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+        self.delete_uri(f'/api/v0/frames/{cache_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
 
     def test_download_file(self):
         """
