@@ -1,4 +1,5 @@
 import io
+import copy
 import unittest
 import pprint
 from kskp.core.datum import Datum
@@ -23,6 +24,12 @@ class SystemTestCase(ApiTestCaseBase):
         "uuid": Role.USR_ADMIN_ROLE_UUID,
         "name": Role.USR_ADMIN_ROLE_LABEL,
         "systemRole": Role.USR_ADMIN_ROLE_LABEL
+    }
+
+    expected_edit_lock = {
+        "uuid": Role.EDIT_LOCK_ROLE_UUID,
+        "name": Role.EDIT_LOCK_ROLE_LABEL,
+        "systemRole": Role.EDIT_LOCK_ROLE_LABEL
     }
 
     # フローJSON
@@ -495,24 +502,31 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'Admin@kskp.io')
         self.assertEqual(result['data']['name'], 'システム管理者')
         self.assertEqual(result['data']['state'], 'active')
-        # EveryOneロール
-        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
-        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
-        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        # 編集ロックロール
+        self.assertEqual(len(result['data']['roles']), 4)
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
         self.assertIsNotNone(result['data']['roles'][0]['creator'])
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
-        # システム管理者ロール
-        self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_sys_admin['uuid'])
-        self.assertEqual(result['data']['roles'][1]['name'], self.expected_sys_admin['name'])
-        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_sys_admin['systemRole'])
+        # EveryOneロール
+        self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][1]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_everyone['systemRole'])
         self.assertIsNotNone(result['data']['roles'][1]['creator'])
         self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
-        # 本人ロール
-        self.assertIsNotNone(result['data']['roles'][2]['uuid'])
-        self.assertEqual(result['data']['roles'][2]['name'], 'システム管理者')
-        self.assertEqual(result['data']['roles'][2]['systemRole'], '')
+        # システム管理者ロール
+        self.assertEqual(result['data']['roles'][2]['uuid'], self.expected_sys_admin['uuid'])
+        self.assertEqual(result['data']['roles'][2]['name'], self.expected_sys_admin['name'])
+        self.assertEqual(result['data']['roles'][2]['systemRole'], self.expected_sys_admin['systemRole'])
         self.assertIsNotNone(result['data']['roles'][2]['creator'])
         self.assertIsNotNone(result['data']['roles'][2]['createdAt'])
+        # 本人ロール
+        self.assertIsNotNone(result['data']['roles'][3]['uuid'])
+        self.assertEqual(result['data']['roles'][3]['name'], 'システム管理者')
+        self.assertEqual(result['data']['roles'][3]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][3]['creator'])
+        self.assertIsNotNone(result['data']['roles'][3]['createdAt'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
@@ -525,18 +539,31 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'admin@kskp.io')
         self.assertEqual(result['data']['name'], 'ユーザ管理者')
         self.assertEqual(result['data']['state'], 'active')
-        # EveryOneロール
-        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
-        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
-        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        # 編集ロックロール
+        self.assertEqual(len(result['data']['roles']), 4)
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
         self.assertIsNotNone(result['data']['roles'][0]['creator'])
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
-        # ユーザ管理者ロール
-        self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_usr_admin['uuid'])
-        self.assertEqual(result['data']['roles'][1]['name'], self.expected_usr_admin['name'])
-        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
+        # EveryOneロール
+        self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][1]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_everyone['systemRole'])
         self.assertIsNotNone(result['data']['roles'][1]['creator'])
         self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
+        # ユーザ管理者ロール
+        self.assertEqual(result['data']['roles'][2]['uuid'], self.expected_usr_admin['uuid'])
+        self.assertEqual(result['data']['roles'][2]['name'], self.expected_usr_admin['name'])
+        self.assertEqual(result['data']['roles'][2]['systemRole'], self.expected_usr_admin['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][2]['creator'])
+        self.assertIsNotNone(result['data']['roles'][2]['createdAt'])
+        # 本人ロール
+        self.assertIsNotNone(result['data']['roles'][3]['uuid'])
+        self.assertEqual(result['data']['roles'][3]['name'], 'ユーザ管理者')
+        self.assertEqual(result['data']['roles'][3]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][3]['creator'])
+        self.assertIsNotNone(result['data']['roles'][3]['createdAt'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
@@ -613,14 +640,20 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'メール@アドレス.co.jp')
         self.assertEqual(result['data']['name'], '平将門')
         self.assertEqual(result['data']['state'], 'tmp')
-        # 本人ロールは存在しないので所属するロールはeveryoneのみである
-        self.assertEqual(len(result['data']['roles']), 1)
-        # EveryOneロール
-        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
-        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
-        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        # 本人ロールは存在しないので所属するロールはeveryoneと編集ロックロールのみである
+        self.assertEqual(len(result['data']['roles']), 2)
+        # 編集ロックロール
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
         self.assertIsNotNone(result['data']['roles'][0]['creator'])
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
+        # EveryOneロール
+        self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][1]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][1]['creator'])
+        self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertIsNotNone(result['data']['password'])
         self.assertEqual(result['data']['creator'], 'ユーザ管理者')
@@ -996,10 +1029,17 @@ class SystemTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
 
         # ユーザを取得する
-        result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?roles=on', self.USER1)
 
         # 登録ユーザは論理削除されていること
         self.assertEqual(result['data']['state'], 'inactive')
+        # 編集ロックロールから外されていないこと
+        self.assertEqual(len(result['data']['roles']), 2)
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
+        self.assertIsNotNone(result['data']['roles'][0]['creator'])
+        self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
 
         # 論理削除ユーザを登録ユーザに戻す
         result = self.put_uri(f'/api/v0/users/{user_uuid}/undelete', {}, self.USER1)
@@ -1016,19 +1056,25 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], '論理削除ユーザです！')
         self.assertEqual(result['data']['state'], 'active')
         # 本人ロールは存在しないので所属するロールはeveryoneのみである
-        self.assertEqual(len(result['data']['roles']), 2)
-        # EveryOneロールに復帰していること
-        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_everyone['uuid'])
-        self.assertEqual(result['data']['roles'][0]['name'], self.expected_everyone['name'])
-        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_everyone['systemRole'])
+        self.assertEqual(len(result['data']['roles']), 3)
+        # 編集ロックロールに所属していること
+        self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
+        self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
+        self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
         self.assertIsNotNone(result['data']['roles'][0]['creator'])
         self.assertIsNotNone(result['data']['roles'][0]['createdAt'])
-        # 本人ロールに所属していること
-        self.assertEqual(result['data']['roles'][1]['uuid'], new_user.load_self_role().uuid)
-        self.assertEqual(result['data']['roles'][1]['name'], new_user.load_self_role().name)
-        self.assertEqual(result['data']['roles'][1]['systemRole'], '')
+        # EveryOneロールに復帰していること
+        self.assertEqual(result['data']['roles'][1]['uuid'], self.expected_everyone['uuid'])
+        self.assertEqual(result['data']['roles'][1]['name'], self.expected_everyone['name'])
+        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_everyone['systemRole'])
         self.assertIsNotNone(result['data']['roles'][1]['creator'])
         self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
+        # 本人ロールに所属していること
+        self.assertEqual(result['data']['roles'][2]['uuid'], new_user.load_self_role().uuid)
+        self.assertEqual(result['data']['roles'][2]['name'], new_user.load_self_role().name)
+        self.assertEqual(result['data']['roles'][2]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][2]['creator'])
+        self.assertIsNotNone(result['data']['roles'][2]['createdAt'])
 
     def test_delete_sys_admin(self):
         """
@@ -1464,8 +1510,13 @@ class SystemTestCase(ApiTestCaseBase):
         usr_admin_uuid = result['data']['uuid']
 
         # ユーザ管理者ロールを取得する
-        self.assertEqual(result['data']['roles'][1]['systemRole'], self.expected_usr_admin['systemRole'])
-        usr_admin_role = result['data']['roles'][1]['uuid']
+        usr_admin_role = None
+        for data_role in result['data']['roles']:
+            if data_role['systemRole'] == self.expected_usr_admin['systemRole']:
+                usr_admin_role = data_role['uuid']
+                break
+        if usr_admin_role is None:
+            self.assertTrue(False, msg=f'{self.USER1}にユーザ管理者ロールが見つかりませんでした')
 
         # 最後の一人のメンバをロールから外せないこと
         with self.assertRaises(Exception):
@@ -2477,6 +2528,361 @@ class SystemTestCase(ApiTestCaseBase):
         """
         pass
 
+    # 
+    # Edit Lock
+    # 
+
+    def test_edit_locked_flow(self):
+        """
+        フローの情報にeditLock属性が設定されていること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'後白河上皇'}, self.USER1)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': '山法師と鴨川と賽子',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER1)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # 編集ロックはFalseであること
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
+        self.assertFalse(result['data']['editLock'])
+
+        # フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # フローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER1)
+
+        # フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
+        # 編集ロックはTrueであること
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
+        self.assertTrue(result['data']['editLock'])
+
+        # フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # フローを編集ロックする
+        data = {
+            'editLock' : False,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER1)
+
+        # フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
+        # 編集ロックはFalseであること
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
+        self.assertFalse(result['data']['editLock'])
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_exec_edit_locked_flow(self):
+        """
+        編集ロックがONのFlowを実行できること
+        """
+        # ROOTを取得する
+        root = self.factory2.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'後鳥羽上皇'}, self.USER2)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # 編集者は、プロジェクト内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': '隠岐に島流し',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER3)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # 編集者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+
+        # 編集者は、フローを変更する
+        data = {
+            'flow' : copy.deepcopy(self.flow_json),
+            'label': 'いやでおじゃる',
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # 編集者は、フローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
+        # プロジェクト管理者は、編集ロックされたフローをプレビューできるない
+        # (キャッシュ出力を行うフローは編集ロックによりエラーになる)
+        vis_args = { "d1" : 
+                        {"args" :
+                            {"visualizer" : "csvtohtmltable",
+                             "offset" : 0,
+                             "limit"  : 100
+                            }
+                        }
+                    }
+        with self.assertRaises(AssertionError):
+            self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
+
+        # プロジェクト管理者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
+        lock_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、フローの編集ロックを解除する
+        data = {
+            'editLock' : False,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # フローのキャッシュ出力をOFFにする
+        flow_json = copy.deepcopy(self.flow_json)
+        flow_json['nodes'][0]['makeCache'] = False
+
+        # プロジェクト管理者は、フローを変更する
+        data = {
+            'flow' : flow_json,
+            'label': '都落ちなどしとうない',
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
+
+        # プロジェクト管理者は、フローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
+
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+
+        # プロジェクト管理者は、編集ロックされたフローをプレビューできること
+        vis_args = { "d1" : 
+                        {"args" :
+                            {"visualizer" : "csvtohtmltable",
+                             "offset" : 0,
+                             "limit"  : 100
+                            }
+                        }
+                    }
+        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
+
+        # プロジェクト管理者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
+        lock_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、フローの編集ロックを解除する
+        data = {
+            'editLock' : False,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # プロジェクト管理者は、フローを削除する
+        self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER2)
+
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+
+        # プロジェクト管理者は、プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
+    def test_cannot_update_edit_locked_flow(self):
+        """
+        編集ロックがONのFlowは更新・削除ができないこと
+        """
+        # ROOTを取得する
+        root = self.factory2.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'にゃゴーにゃゴー'}, self.USER2)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # 編集者は、プロジェクト内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': 'ニャお〜ん',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER3)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # 編集者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+
+        # 編集者は、フローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
+        # 編集者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+
+        # 編集者は、フローを変更できないこと
+        data = {
+            'flow' : copy.deepcopy(self.flow_json),
+            'label': 'ワオーン',
+            'lock' : lock_uuid
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
+        # プロジェクト管理者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
+        lock_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、プロジェクトを削除できないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # プロジェクト管理者は、フローの編集ロックを解除する
+        data = {
+            'editLock' : False,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
+
+        # プロジェクト管理者は、プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
+    def test_cannot_edit_lock_locked_flow(self):
+        """
+        排他ロック中のFlowの編集ロックは変更できないこと
+        """
+        # ROOTを取得する
+        root = self.factory2.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'後醍醐天皇'}, self.USER2)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # 編集者は、プロジェクト内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': '足利髙氏',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER3)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # 編集者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、他ユーザが排他ロック中のフローの排他ロックを取得できないこと
+        with self.assertRaises(AssertionError):
+            self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
+
+        # プロジェクト管理者は、他ユーザが排他ロック中のフローを編集ロックできないこと
+        data = {
+            'editLock' : True
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
+
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
+        # プロジェクト管理者は、プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
     #
     # Other Datum
     # 
@@ -2521,7 +2927,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集者は、フローを変更する
         data = {
-            'flow' : self.flow_json,
+            'flow' : copy.deepcopy(self.flow_json),
             'label': '構わん、此奴を切って捨てえい！',
             'lock' : lock_uuid
         }
