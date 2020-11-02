@@ -215,6 +215,11 @@ def update_flow(flow_uuid):
         new_parent = request.json['parent']
         flow = g.factory.data.find_by_uuid(flow_uuid)
         return flow.move(new_parent)
+    elif 'editLock' in request.json:
+        edit_lock_value = request.json['editLock']
+        flow = g.factory.data.find_by_uuid(flow_uuid)
+        flow.edit_lock = edit_lock_value
+        return flow
     else:
         # 指定したフローの内容を渡されたdataの内容と結合する
         # 同じキーが含まれる場合は新しいもので上書きされる
