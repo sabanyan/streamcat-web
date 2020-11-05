@@ -226,10 +226,8 @@ const Library = (_: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.ADD_FRAME, onClickClose: onClickAddFrameDone
         });
-    }, []);
-
-    useEffect(() => {
         getVisualizers();
+        fetchFolder();
     }, []);
 
     useEffect(() => {
@@ -308,10 +306,6 @@ const Library = (_: Props) => {
             }
         });
     }, [formFlowName]);
-
-    useEffect(() => {
-        fetchFolder();
-    }, []);
 
     useEffect(() => {
         // データベースの編集
