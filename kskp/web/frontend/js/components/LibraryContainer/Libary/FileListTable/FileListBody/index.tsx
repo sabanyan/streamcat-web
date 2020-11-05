@@ -53,13 +53,14 @@ const FileListBody = (props: Props) => {
         }
     };
     const onClick = (event,body)=>{
-        event.stopPropagation();
         onClickCell(body, event)
     };
 
     const bodiesElement = bodies.map((body: ITableBody, index) => {
         return <tr className={classnames(style.row,{[style.selected]: body.selected})}
-                   onClick={(event)=>onClick(event,body)} key={index}>
+                   onClick={(event)=>onClick(event,body)}
+                   onMouseDown={(event)=>event.stopPropagation()}
+                   key={index}>
             <td>
                 {getIconElement(getIconFromBodyType(body.type))}
                 {(body.clickable) ?
