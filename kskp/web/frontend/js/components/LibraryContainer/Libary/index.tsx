@@ -220,7 +220,7 @@ const Library = (_: Props) => {
     useEffect(() => {
         if (!folderPath) return;
         setLinks(makeBreadCrumbLinks(folderPath));
-    }, folderPath);
+    }, [folderPath]);
 
     useEffect(() => {
         ModalUtil.registerModal({
