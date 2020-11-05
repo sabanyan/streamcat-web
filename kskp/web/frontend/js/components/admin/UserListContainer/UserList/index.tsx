@@ -303,7 +303,6 @@ const UserList = (props: Props) => {
 
         };
         const onClickHeader= (header: ITableHeader) => {
-            clickedUserListCell.current = true;
             if (header.sort) {
                 if(header.key === "projects"){
                     setUsers(lodash.orderBy(users, (e: UserListUser)=>{
@@ -516,8 +515,6 @@ const UserList = (props: Props) => {
     const renderInspector = ():React.ReactNode => {
         if (!lastSelected) return null;
 
-        clickedUserListCell.current = true;
-
         const onClickDelete = () => {
             let targets: string[] = [];
             selectedDatas.forEach((user) => {
@@ -724,20 +721,17 @@ const UserList = (props: Props) => {
     }
     // 描画する
     const renderAll = () => {
-        const onClickUserList = () => {
-            setTimeout(() => {
-                if (!clickedUserListCell.current) {
-                    clearSelected();// 選択状態を一旦解除
-                    setLastSelected(null);
-                }
+        const onMouseDownUserList = () => {
+            if (clickedUserListCell.current) {
+                clearSelected();// 選択状態を一旦解除
+                setLastSelected(null);
                 clickedUserListCell.current = false;
-            }, 100);
+            }
         };
 
         const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
             setKeyword(e.target.value)
         }
-
 
         const removeSelectedCategory = (selectedCategory: IFilterCategoryItem)=>{
             return filterList.map(category =>{
@@ -787,7 +781,7 @@ const UserList = (props: Props) => {
             <Flex justifyContent={'center'} fluid={true}>
                 {renderInspector()}
                 <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
-                      onClick={onClickUserList}>
+                      onMouseDown={onMouseDownUserList}>
                     <Spacer width={40}/>
                     <Flex flexDirection={'column'}>
                         <Spacer height={40}/>
