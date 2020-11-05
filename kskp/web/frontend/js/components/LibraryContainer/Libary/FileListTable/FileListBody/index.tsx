@@ -53,6 +53,7 @@ const FileListBody = (props: Props) => {
         }
     };
     const onClick = (event,body)=>{
+        event.stopPropagation();
         onClickCell(body, event)
     };
 
@@ -63,8 +64,8 @@ const FileListBody = (props: Props) => {
                 {getIconElement(getIconFromBodyType(body.type))}
                 {(body.clickable) ?
                     <LinkButton onClick={(event: React.SyntheticEvent<any, Event>) => {
-                        onClickFileName(body, event);
                         event.stopPropagation();
+                        onClickFileName(body, event);
                     }}>
                         {body.label}
                     </LinkButton>
