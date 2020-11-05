@@ -821,7 +821,7 @@ const Library = (_: Props) => {
             clickedLibraryCell.current = true;
         };
 
-        const onClickLibrary = () => {
+        const onMouseDownLibrary = () => {
             if (clickedLibraryCell.current) {
                 clearSelected();// 選択状態を一旦解除
                 setLastSelected(null);
@@ -878,7 +878,7 @@ const Library = (_: Props) => {
 
             }
             <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true}
-                onClick={onClickLibrary}>
+                onMouseDown={onMouseDownLibrary}>
                 <Spacer width={40} />
                 <Flex flexDirection={"column"} fluid={true}>
                     <Spacer height={40} />
