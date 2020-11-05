@@ -738,7 +738,8 @@ const Library = (_: Props) => {
         if (!is_finished) return null;
         if (isEmptyLibraryList() && mode === Constants.library.mode.dialog) return renderEmptyState();
 
-        const onClickFileName = (body: ITableBody) => {
+        const onClickFileName = (body: ITableBody, event?: React.SyntheticEvent<any, Event> ) => {
+            if (event) event.stopPropagation();
             const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
 
             if (body.type === "trash") {
@@ -770,6 +771,7 @@ const Library = (_: Props) => {
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
             let data: LibraryListDataType = cell;
+            if (event) event.stopPropagation();
             if (data.allowlist) {
                 setAllowlists({...allowlists, selected:data.allowlist})
             }
@@ -826,14 +828,11 @@ const Library = (_: Props) => {
         };
 
         const onClickLibrary = () => {
-            setTimeout(() => {
-                if (!clickedLibraryCell.current) {
-                    clearSelected();// 選択状態を一旦解除
-                    setLastSelected(null);
-                }
+            if (clickedLibraryCell.current) {
+                clearSelected();// 選択状態を一旦解除
+                setLastSelected(null);
                 clickedLibraryCell.current = false;
-            }, 100);
-
+            }
         };
 
         const onClickDeleteAll = () => {
@@ -895,7 +894,8 @@ const Library = (_: Props) => {
                         minWidth={800}
                         onClickCell={onClickCell}
                         onClickFileName={onClickFileName}
-                        onClickHeader={(header: ITableHeader) => {
+                        onClickHeader={(header: ITableHeader, event) => {
+                            if (event) event.stopPropagation();
                             clickedLibraryCell.current = true;
                             if (header.sort) {
                                 setLibraryChildren(lodash.orderBy(libraryChildren, header.key, header.sort));
@@ -1358,11 +1358,6 @@ const Library = (_: Props) => {
             e: React.FocusEvent<HTMLInputElement>, selected_data: any) => {
             // Label の修正
             if (!selected_data) {
-                return;
-            }
-
-            // セルをクリックして切り替えしている最中の場合はイベントをキャンセルする
-            if (clickedLibraryCell.current) {
                 return;
             }
 
