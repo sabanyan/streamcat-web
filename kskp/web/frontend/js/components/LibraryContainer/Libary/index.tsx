@@ -890,7 +890,6 @@ const Library = (_: Props) => {
                         onClickFileName={onClickFileName}
                         onClickHeader={(header: ITableHeader, event) => {
                             if (event) event.stopPropagation();
-                            clickedLibraryCell.current = true;
                             if (header.sort) {
                                 setLibraryChildren(lodash.orderBy(libraryChildren, header.key, header.sort));
                             } else {
@@ -1064,7 +1063,6 @@ const Library = (_: Props) => {
 
     const renderTrashInspector = (): React.ReactNode => {
         if (!lastSelected) return null;
-        clickedLibraryCell.current = true;
         const data: LibraryListDataType = lastSelected;
 
         const doRecovery = (data) => {
@@ -1253,8 +1251,6 @@ const Library = (_: Props) => {
 
     const renderLibraryInspector = (): React.ReactNode => {
         if (!lastSelected) return null;
-
-        clickedLibraryCell.current = true;
 
         const data: LibraryListDataType = lastSelected;
         let _onClickApply: any = null;
