@@ -29,6 +29,7 @@ import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList"
 import LibraryUtil from "Utils/LibraryUtil";
 import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
 import { project } from '../../shared/IconRenderer/icon/index';
+import LibraryMultiInspector from 'Shared/Inspector/LibraryMultiInspector';
 
 export interface Database {
     label?: string;
@@ -192,7 +193,7 @@ const Library = (_: Props) => {
     const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
-    const [lastSelected, setLastSelected] = useState<LibraryChild | null>(null);
+    const [lastSelectedCell, setLastSelectedCell] = useState<LibraryChild | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const clickedLibraryCell = useRef(false);
     const [folderPath, setFolderPath] = useState<any>();
@@ -208,7 +209,6 @@ const Library = (_: Props) => {
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
-
 
     useEffect(() => {
         if (isDialog) {
@@ -370,7 +370,7 @@ const Library = (_: Props) => {
             onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
         ModalUtil.registerModal({
             id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
-                editLibraryChild(lastSelected);
+                editLibraryChild(selectedDatas[0]);
                 setEditDatabase(null);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -575,6 +575,7 @@ const Library = (_: Props) => {
     };
 
     const clearSelected = () => {
+        setSelectedDatas([]);
         setLibraryChildren(libraryChildren.map((libraryChildren: LibraryListDataType) => {
             libraryChildren.selected = false;
             return libraryChildren;
@@ -746,7 +747,6 @@ const Library = (_: Props) => {
                 WebUtil.navigateURL(WebUtil.webURL("/projects/" + body.uuid + dialogOption));
             }
             if (body.type === "database") {
-                setLastSelected(body);
                 onClickEditDatabase(body);
             }
             if (body.type === "frame") {
@@ -765,6 +765,7 @@ const Library = (_: Props) => {
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
             let data: LibraryListDataType = cell;
+            if (isLoading)return;
             if (event) event.stopPropagation();
             if (data.allowlist) {
                 setAllowlists({...allowlists, selected:data.allowlist})
@@ -787,16 +788,19 @@ const Library = (_: Props) => {
                 if (selectedDatas.includes(data)) {
                     data.selected = !data.selected;
                     setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
+                    if(!data.selected){
+                        setLastSelectedCell(null);
+                    }
                 } else {
                     selectedDatas.push(data);
+                    setLastSelectedCell(data);
                 }
-                setLastSelected(data);
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
                 let current = libraryChildren.findIndex(libraryChild => data.uuid === libraryChild.uuid);
-                if (lastSelected) {
-                    let last = libraryChildren.findIndex(libraryChild => lastSelected.uuid === libraryChild.uuid);
+                if (lastSelectedCell) {
+                    let last = libraryChildren.findIndex(libraryChild => lastSelectedCell.uuid === libraryChild.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -816,7 +820,7 @@ const Library = (_: Props) => {
                 clearSelected();
                 data.selected = true;
                 setSelectedDatas([data]);
-                setLastSelected(data);
+                setLastSelectedCell(data);
             }
             clickedLibraryCell.current = true;
         };
@@ -824,7 +828,7 @@ const Library = (_: Props) => {
         const onMouseDownLibrary = () => {
             if (clickedLibraryCell.current) {
                 clearSelected();// 選択状態を一旦解除
-                setLastSelected(null);
+                setLastSelectedCell(null);
                 clickedLibraryCell.current = false;
             }
         };
@@ -1062,8 +1066,8 @@ const Library = (_: Props) => {
     };
 
     const renderTrashInspector = (): React.ReactNode => {
-        if (!lastSelected) return null;
-        const data: LibraryListDataType = lastSelected;
+        if (!selectedDatas.length) return null;
+        const data: LibraryListDataType = selectedDatas[0];
 
         const doRecovery = (data) => {
             API.request.doPut.trash({ trashUUID: data.uuid })
@@ -1250,9 +1254,8 @@ const Library = (_: Props) => {
     };
 
     const renderLibraryInspector = (): React.ReactNode => {
-        if (!lastSelected) return null;
+        if (!selectedDatas.length) return null;
 
-        const data: LibraryListDataType = lastSelected;
         let _onClickApply: any = null;
         let _onClickEdit: any = null;
         let _onClickCleanTrash: any = null;
@@ -1261,6 +1264,7 @@ const Library = (_: Props) => {
         let _onClickEditEncoding: any = null;
         let _onBlurTitle: any = null;
         let _onClickMemberInfo: any = null;
+        let _onChangeFlowLock: any = null
 
         const onClickMove = () => {
             let queue = Queue(
@@ -1284,6 +1288,71 @@ const Library = (_: Props) => {
             });
         };
 
+        const onClickDelete = () => {
+            ModalUtil.registerModal({
+                id: Constants.modal.CONFIRM, onClickDone: () => {
+                    let queue = Queue(
+                        1, // concurrency
+                        {
+                            "retry": 0               //Number of retries
+                            , "retryIsJump": false     //retry now?
+                            , "timeout": 0            //The timeout period
+                        }
+                    );
+                    let lock = { uuid: null };
+                    setIsLoading(true);
+                    selectedDatas.forEach((selectedData: LibraryChild) => {
+                        queue.push(deleteLibrary, [selectedData, lock]);
+                    });
+                    queue.push(setIsLoading, [false]);
+                    queue.push(fetchFolder, []);
+                    queue.start();
+                    ModalUtil.closeModal(Constants.modal.CONFIRM);
+                    setLastSelectedCell(null);
+                }
+            });
+            let targets: string[] = [];
+            selectedDatas.forEach((data) => {
+                targets.push(data.label);
+            });
+
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM,
+                visible: true,
+                done: "削除する",
+                danger: true,
+                content: <div>
+                    {targets.join(",")} を削除しますか？
+                </div>
+            });
+        };
+
+
+        // 選択されているのが 2件以上の場合は LibraryMultiInspector を使う
+        if(selectedDatas.length >= 2){
+            // モードに応じた処理
+            switch (mode) {
+                case Constants.library.mode.frame_select:
+                    break;
+                case Constants.library.mode.folder_select:
+                    break;
+                case Constants.library.mode.list:
+                    _onClickDelete = () => onClickDelete();
+                    _onClickMove = () => onClickMove();
+            }
+            return <LibraryMultiInspector
+                allowlist={allowlists.selected}
+                selectedDatas={selectedDatas}
+                onClickDelete={_onClickDelete}
+                onClickMove={_onClickMove}
+            />;
+        }
+
+        // 選択されているのが 1件 の場合の処理
+        const selectedData: LibraryListDataType = selectedDatas[0];
+
+
+        // モードに応じた処理
         switch (mode) {
             case Constants.library.mode.frame_select:
                 // if (data && data.type === Constants.library.type.frame) {
@@ -1296,18 +1365,17 @@ const Library = (_: Props) => {
                 _onClickDelete = () => onClickDelete();
                 _onClickMove = () => onClickMove();
                 _onClickEditEncoding = (data) => onClickEditEncoding(data);
-                _onBlurTitle = (e) => onBlurTitle(e, data);
-                if (data && data.type === Constants.library.type.database) {
+                _onBlurTitle = (e,data) => onBlurTitle(e, data);
+                if (selectedData && selectedData.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
-                } else if (data && data.type === Constants.library.type.trash) {
+                } else if (selectedData && selectedData.type === Constants.library.type.trash) {
                     _onBlurTitle = null;
                     _onClickCleanTrash = onClickCleanTrash;
-                } else if (data && data.type === Constants.library.type.database) {
+                } else if (selectedData && selectedData.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 }
                 break;
         }
-
 
         const getEndPoint = (libraryType: string): string | null => {
             let endPoint: string | null = null;
@@ -1375,6 +1443,8 @@ const Library = (_: Props) => {
                 };
             }
 
+            setIsLoading(true);
+
             APIUtil.put(endPoint + uuid, body).then((response) => {
                 if (response.data.success) {
 
@@ -1396,52 +1466,15 @@ const Library = (_: Props) => {
                         selected_data = updateLibrary;
                     }
 
-
                     setLibraryChildren(newLibraryChildren);
                     setSelectedDatas(selected_data);
                     // forceUpdate
                 }
+            }).finally(()=>{
+                setIsLoading(false);
             });
         };
 
-        const onClickDelete = () => {
-            ModalUtil.registerModal({
-                id: Constants.modal.CONFIRM, onClickDone: () => {
-                    let queue = Queue(
-                        1, // concurrency
-                        {
-                            "retry": 0               //Number of retries
-                            , "retryIsJump": false     //retry now?
-                            , "timeout": 0            //The timeout period
-                        }
-                    );
-                    let lock = { uuid: null };
-                    setIsLoading(true);
-                    selectedDatas.forEach((selectedData: LibraryChild) => {
-                        queue.push(deleteLibrary, [selectedData, lock]);
-                    });
-                    queue.push(setIsLoading, [false]);
-                    queue.push(fetchFolder, []);
-                    queue.start();
-                    ModalUtil.closeModal(Constants.modal.CONFIRM);
-                    setLastSelected(null);
-                }
-            });
-            let targets: string[] = [];
-            selectedDatas.forEach((data) => {
-                targets.push(data.label);
-            });
-
-            ModalUtil.emitModal({
-                id: Constants.modal.CONFIRM,
-                visible: true,
-                done: "削除する",
-                danger: true,
-                content: <div>
-                    {targets.join(",")} を削除しますか？
-                </div>
-            });
-        };
 
         const onClickEditEncoding = (data: LibraryChild) => {
 
@@ -1643,8 +1676,8 @@ const Library = (_: Props) => {
                     })
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
                 }, onClickClose: () => {
-                    if (lastSelected && lastSelected.type === "project") {
-                        APIUtil.get("/projects/" + lastSelected.uuid + "?members=on&allowlist=on").then((response) => {
+                    if (selectedData && selectedData.type === "project") {
+                        APIUtil.get("/projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
                             if (response.data.success && response.data.data.members) {
                                 setCurrentProject({
                                     members: response.data.data.members,
@@ -1655,8 +1688,8 @@ const Library = (_: Props) => {
                         })
                     }
                 }, onClickCancel: () => {
-                    if (lastSelected && lastSelected.type === "project") {
-                        APIUtil.get("/projects/" + lastSelected.uuid + "?members=on&allowlist=on").then((response) => {
+                    if (selectedData && selectedData.type === "project") {
+                        APIUtil.get("/projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
                             if (response.data.success && response.data.data.members) {
                                 setCurrentProject({
                                     members: response.data.data.members,
@@ -1672,15 +1705,14 @@ const Library = (_: Props) => {
             emitMemberForm(currentProject.members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         };
 
-        const _onChangeFlowLock = (e) => {
+        _onChangeFlowLock = (e) => {
             const checked = e.currentTarget.checked
         }
 
         return <LibraryInspector
             currentProject={currentProject}
             allowlist={allowlists.selected}
-            selected={selectedDatas}
-            lastSelected={lastSelected}
+            selectedData={selectedData}
             onClickDelete={_onClickDelete}
             onClickApply={_onClickApply}
             onClickMove={_onClickMove}
@@ -1690,7 +1722,6 @@ const Library = (_: Props) => {
             onClickMemberInfo={_onClickMemberInfo}
             onChangeFlowLock={_onChangeFlowLock}
             onBlurTitle={_onBlurTitle}
-            visualizers={visualizers}
         />;
     };
 
@@ -1711,6 +1742,8 @@ const Library = (_: Props) => {
 
 
     return <>
+        <div>    {(selectedDatas[0])?selectedDatas[0].label:null}
+            {selectedDatas.length}</div>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
 

@@ -7,16 +7,12 @@ import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
 import { APIUtil, ModalUtil, StringUtil } from "Utils/index";
 import { LibraryChild } from 'Model/index';
-import { get } from '../../../../modules/api/response/index';
-import { readyException } from 'jquery'
 import { Allowlist, ProjectInfo } from 'Components/LibraryContainer/Libary/index';
 
 type Props = {
-  visualizers: any[];
   currentProject: ProjectInfo;
-  allowlist:Allowlist;
-  selected: LibraryChild[];
-  lastSelected?: LibraryChild;
+  allowlist: Allowlist;
+  selectedData: LibraryChild;
   onClickDelete?: Function;
   onClickApply?: Function;
   onClickMove?: Function;
@@ -44,8 +40,6 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   componentWillMount() {
-
-
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.modal.PREVIEW_DATASOURCE, onClickOK: () => {
@@ -56,68 +50,67 @@ class LibraryInspector extends React.Component<Props> {
 
   onClickPreview(e) {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
-    let { lastSelected } = this.props;
-    let library: LibraryListDataType = lastSelected;
+    let { selectedData } = this.props;
+    let library: LibraryListDataType = selectedData;
     let uuid = library.uuid
     // uuidだけでプレビュー
     window.open('/preview?step_id=' + null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
   }
 
   onClickEdit(e) {
-    const { lastSelected, onClickEdit } = this.props
-    if (onClickEdit) onClickEdit(lastSelected)
+    const { selectedData, onClickEdit } = this.props
+    if (onClickEdit) onClickEdit(selectedData)
   }
 
   renderButtons(data?: LibraryChild) {
-    const { selected, currentProject, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash, onChangeFlowLock } = this.props
+    const { selectedData, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash, onChangeFlowLock } = this.props
 
-    let preview, download, del, apply, move, edit, editEncoding, trashClean, lock
+    let preview, download, del, apply, move, edit, editEncoding, trashClean, lock, projectInfo
 
-    if (selected.length == 1) {
-      // preview button
-      if (allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
-        preview = <Button onClick={(e) => this.onClickPreview(e)} icon={"visibility"}>プレビューする</Button>
-      }
-
-      // download button
-      if (allowlist.download && data && data.label && data.type === Constants.library.type.frame) {
-        const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
-        download = <DownloadButton href={href} icon={"get_app"}>CSVをダウンロードする</DownloadButton>
-      }
-
-      // edit
-      if (allowlist.update && onClickEdit && data && data.type === Constants.library.type.database) {
-        edit = <Button onClick={(e) => this.onClickEdit(e)} icon={"settings"}>設定を開く</Button>
-      }
-
-      // apply button
-      if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
-
-      // editEncoding
-      if (allowlist.update && onClickEditEncoding && data && data.type === Constants.library.type.frame) {
-        editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コードを編集する</Button>
-      }
-
-      // clean trash button
-      if (allowlist.delete && onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>
-
-      // flow lock button
-      if (data && data.type == Constants.library.type.flow && onChangeFlowLock) {
-        lock = <div className={style.flowLock}>
-          <input type="checkbox" onChange={(e) => onChangeFlowLock(e)}></input>
-          <label>編集ロック</label>
-        </div>
-      }
+    // preview button
+    if (allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
+      preview = <Button onClick={(e) => this.onClickPreview(e)} icon={"visibility"}>プレビューする</Button>
     }
 
-    // 複数選択の場合
-    if (selected.length >= 1) {
-      // delete button
-      if (allowlist.delete && onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>
-
-      // move button
-      if (allowlist.move && onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>
+    // download button
+    if (allowlist.download && data && data.label && data.type === Constants.library.type.frame) {
+      const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
+      download = <DownloadButton href={href} icon={"get_app"}>CSVをダウンロードする</DownloadButton>
     }
+
+    // edit
+    if (allowlist.update && onClickEdit && data && data.type === Constants.library.type.database) {
+      edit = <Button onClick={(e) => this.onClickEdit(e)} icon={"settings"}>設定を開く</Button>
+    }
+
+    // apply button
+    if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
+
+    // editEncoding
+    if (allowlist.update && onClickEditEncoding && data && data.type === Constants.library.type.frame) {
+      editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コードを編集する</Button>
+    }
+
+    // clean trash button
+    if (allowlist.delete && onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>
+
+    // flow lock button
+    if (data && data.type == Constants.library.type.flow && onChangeFlowLock) {
+      lock = <div className={style.flowLock}>
+        <input type="checkbox" onChange={(e) => onChangeFlowLock(e)}></input>
+        <label>編集ロック</label>
+      </div>
+    }
+
+    if(data && data.type == "project"){
+      projectInfo = this.renderProjectInfo(selectedData)
+    }
+
+    // delete button
+    if (allowlist.delete && onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>
+
+    // move button
+    if (allowlist.move && onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>
 
     if (onClickCleanTrash) {
       // ゴミ箱の場合、削除と移動を非表示にする
@@ -135,6 +128,7 @@ class LibraryInspector extends React.Component<Props> {
       {del}
       {trashClean}
       {lock}
+      {projectInfo}
     </React.Fragment>
   }
 
@@ -208,17 +202,6 @@ class LibraryInspector extends React.Component<Props> {
       result.push(createdAt)
     }
 
-    /*
-    let prevFolderPath
-    if (data.prevFolderPath) {
-      prevFolderPath = <React.Fragment key={data.prevFolderPath}>
-        <div><label>{this.display.prevFolderPath}</label></div>
-        <div className={"mb-8px"}>{data.prevFolderPath}</div>
-      </React.Fragment>
-      result.push(prevFolderPath)
-    }
-    */
-
     return <React.Fragment>
       {result}
     </React.Fragment>
@@ -231,18 +214,6 @@ class LibraryInspector extends React.Component<Props> {
       </div>
       <div className={style.detail}>
         {this.renderDetail(data)}
-      </div>
-    </div>
-
-    return content
-  }
-
-  renderSelects(selected: LibraryChild[], data?: LibraryChild) {
-    let content = <div className={style.inspector}>
-      <div className={style.actions}>
-        {this.renderButtons(data)}
-      </div>
-      <div className={style.detail}>
       </div>
     </div>
 
@@ -271,16 +242,16 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   render() {
-    const { currentProject, allowlist, selected, lastSelected } = this.props
-    let label = (lastSelected && selected.length <= 1) ? lastSelected.label : undefined
-    let content = (selected.length <= 1) ? this.renderSelect(lastSelected) : this.renderSelects(selected, lastSelected)
+    const { allowlist, selectedData,onBlurTitle } = this.props
+    if(!selectedData) return;
+    let label = selectedData.label
+    let content = this.renderSelect(selectedData)
 
     const disabled = allowlist && allowlist.update ? false : true
-    
+
     return <Resizer>
-      <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={disabled}>
+      <BaseInspector label={label} onBlurTitle={(onBlurTitle)?(e)=>{onBlurTitle(e,selectedData)}:null} disabled={disabled}>
         {content}
-        {(lastSelected && lastSelected.type === "project") ? this.renderProjectInfo(lastSelected) : null}
       </BaseInspector>
     </Resizer>
   }
