@@ -1351,6 +1351,10 @@ const Library = (_: Props) => {
         // 選択されているのが 1件 の場合の処理
         const selectedData: LibraryListDataType = selectedDatas[0];
 
+        console.assert(selectedData.uuid !== "d8d2fec5-066c-48ec-9ee4-314559aa7ae4", "起きた")
+        if(selectedData.uuid === "d8d2fec5-066c-48ec-9ee4-314559aa7ae4"){
+            console.trace("起きたよ");
+        }
 
         // モードに応じた処理
         switch (mode) {
@@ -1689,7 +1693,7 @@ const Library = (_: Props) => {
                     }
                 }, onClickCancel: () => {
                     if (selectedData && selectedData.type === "project") {
-                        APIUtil.get("/projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
+                        APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
                             if (response.data.success && response.data.data.members) {
                                 setCurrentProject({
                                     members: response.data.data.members,
