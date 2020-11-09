@@ -234,13 +234,23 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
     指定されたフローを実行し実行結果を取得する
     """
     try:
-        from kskp.store import NoResultsException
+        from kskp.store import Activity, NoResultsException
         from kskp.engine import execute, FlowJsonLink
         link = FlowJsonLink(flow, session, vis_args)
-        activity = execute(link=link, args=args, inputs=inputs)
-        if not activity:
-            raise NoResultsException('実行結果は出力されませんでした')
-        return activity
+        lasts = execute(link=link, args=args, inputs=inputs)
+
+        # Activityを取得して返り値とする
+        for point_id, datum in lasts.items():
+            if isinstance(datum, Activity):
+                activity = datum
+                # 実行に失敗した場合、例外を送出する
+                activity.is_success or activity.raise_one()
+                # 実行に成功した場合、Activityを返す
+                return activity
+
+        # Activityを取得できなかった場合
+        raise NoResultsException('実行結果は出力されませんでした')
+
     except Exception as e:
         # import traceback
         # traceback.print_exc()
@@ -249,12 +259,12 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
 
 def format_result(activity):
     from kskp.store import Activity
-    return [{'id':point.id, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.result]
+    return [{'id':point.id, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.lasts]
 
 def format_vis(activity):
     from kskp.store import Activity
     # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
-    return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.result]
+    return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.lasts]
 
 def _make_flow_inputs(factory, flow_uuid, request):
     """
