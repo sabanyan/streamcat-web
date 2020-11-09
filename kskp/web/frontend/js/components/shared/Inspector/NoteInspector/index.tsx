@@ -179,7 +179,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
         </div>
     </div>;
 
-    return <BaseInspector header={''} label={selected_step.label} style={style}>
+    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label} style={style}>
       {content}
     </BaseInspector>
   }

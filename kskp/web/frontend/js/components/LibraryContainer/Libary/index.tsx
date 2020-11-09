@@ -1732,8 +1732,6 @@ const Library = (_: Props) => {
 
 
     return <>
-        <div>    {(selectedDatas[0])?selectedDatas[0].label:null}
-            {selectedDatas.length}</div>
         <Loader center={true} absolute={true} visible={isLoading} />
         {renderAll()}
 
