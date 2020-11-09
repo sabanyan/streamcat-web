@@ -1,0 +1,46 @@
+@import "../../../../../../sass/common";
+
+.listHeader {
+  color: #fff;
+  display: block;
+  padding-top: 16px;
+  text-align: center;
+  width: 70%;
+  .icon {
+    display: inline-start;
+    text-align: left;
+    vertical-align: middle;
+    width:50px;
+    padding:16px;
+    float: left;
+  }
+
+  .columns {
+    display: flex;
+  }
+
+  .columns div:nth-child(1) {
+   
+    text-align: left;
+    vertical-align: middle;
+    padding:16px;
+    width:calc(100% - 20% - 200px - 80px)
+  }
+
+  .columns div:nth-child(2) {
+  
+    text-align: left;
+    vertical-align: middle;
+    padding:16px;
+    width:20%;
+  }
+
+  .columns div:nth-child(n + 3) {
+
+    text-align: left;
+    vertical-align: middle;
+    padding:16px;
+    width:200px;
+  }
+
+}

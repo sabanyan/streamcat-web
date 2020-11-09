@@ -18,6 +18,7 @@ type InOutConnectorProps = {
   onChangeInEdge: Function;
   onChangeOutEdge: Function;
   selectedSubFlow: FlowModel;
+  disabled?: boolean;
 }
 
 class InOutConnector extends React.Component<InOutConnectorProps>{
@@ -81,7 +82,7 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
   }
 
   render () {
-    const {nodes,selectedStep} = this.props
+    const {nodes,selectedStep, disabled} = this.props
     //すべてのデータフレーム先をリスト化
 
     let dataFrameOnlyNodes:[DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
@@ -110,7 +111,7 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
         } : null
 
         const item = <div key={index} className={style.param}>
-          <DropDownList disabled={false}
+          <DropDownList disabled={disabled}
                         key={"in_edge"}
                         onChange={(e, data, label) => this.onChangeInEdge(e, data, label)}
                         defaultValue={dataFrameId}

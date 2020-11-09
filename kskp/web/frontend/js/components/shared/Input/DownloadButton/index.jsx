@@ -10,9 +10,9 @@ export default class DownloadButton extends React.Component<DownloadButtonType> 
     const material_icon = (icon)
       ? <i className={icon_class} dangerouslySetInnerHTML={{__html: icon}}></i>
       : null
-    return <a download={download} href={href}
-              className={classnames(style.button, {[style.danger]: danger})}
-              disabled={disabled} onClick={onClick}>
+    return <a download={(!disabled)?download:null} href={(!disabled)?href:null}
+              className={classnames(style.button, {[style.danger]: danger,[style.disabled]: disabled})}
+              onClick={(!disabled)?onClick:null}>
       {material_icon}
       <div className={style.text}>
         {children}

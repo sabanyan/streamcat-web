@@ -1,8 +1,34 @@
+import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
 import Constants from 'Constants/index';
 
-import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
+export interface FlowAllowList {
+  copy: boolean
+  delete: boolean
+  download: boolean
+  execute: boolean
+  findMember: boolean
+  lock: boolean
+  move: boolean
+  read: boolean
+  update: boolean
+  updateMember: boolean
+}
+
+export enum FlowEditModeValue {
+  NotAllowed = 'NotAllowed',
+  Editable = 'Editable',
+  ReadOnlyUpdateDisabled = 'ReadOnlyUpdateDisabled',
+  ReadOnlyLocked = 'ReadOnlyLocked'
+}
+export enum FlowExecuteModeValue {
+  NotExecutable = 'NotExecutable',
+  Executable = 'Executable',
+}
 
 export type FlowModelProps = {
+  allowlist: FlowAllowList
+  editMode: FlowEditModeValue
+  executeMode: FlowExecuteModeValue
   createdAt?: string
   creator?: string
   label: string
@@ -11,6 +37,23 @@ export type FlowModelProps = {
   ports: [[], []]
   projectId?: number
   description: string
+  hasInPortWithId: (id: string) => boolean;
+  hasOutPortWithId: (id: string) => boolean;
+}
+
+export interface DatumAllowList{
+  read: boolean;
+  create: boolean;
+  update: boolean;
+  delete: boolean;
+  execute: boolean;
+  upload: boolean;
+  download: boolean;
+  copy: boolean;
+  move: boolean;
+  lock: boolean;
+  findMember: boolean;
+  updateMember: boolean;
 }
 
 export default class FlowModel {

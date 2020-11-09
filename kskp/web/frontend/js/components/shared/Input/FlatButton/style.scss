@@ -1,0 +1,54 @@
+@import "../../../../../sass/common";
+
+.button {
+  display: inline-block;
+  outline: none !important;
+  cursor: pointer;
+  background: #F5F7F8;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  padding: 12px 16px;
+  text-align: left;
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+
+  &.danger {
+    border: 1px solid $kskp-danger;
+
+    .text, .icon {
+      color: $kskp-danger !important;
+    }
+  }
+
+  &:hover, &:active {
+    background-color: #ffffff;
+    transition: all 0.3s;
+  }
+
+  &.primary {
+    background-color: #ffffff;
+    transition: all 0.3s;
+  }
+
+  &.primary:hover {
+    background-color: #ffffff;
+    transition: all 0.3s;
+  }
+}
+
+.text {
+  position: relative;
+  color: #007bff;
+  font-size: 16px;
+  display: inline-block;
+  top: 1px;
+}
+
+.icon {
+  display: inline-block;
+  color: $kskp-primary !important;
+  padding-right: 16px;
+}

@@ -1,4 +1,3 @@
-//@flow
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubflowCommandModel, SubFlowStepModel } from 'Model/index'
 import * as React from 'react'
 import CommandModel from 'Model/Command/CommandModel'
@@ -8,6 +7,7 @@ export type CommandParamType = {
   label: string;
   name: string;
   optional?: boolean;
+  options: any;
   type: string;
   default?: string | number;
 }
@@ -56,6 +56,7 @@ export type LibraryListDataType = {
   label: string;
   type: string;
   uuid: string;
+  selected: boolean;
 }
 
 export type ServersDataType = {
@@ -128,7 +129,7 @@ export type DragType = {
 
 export type ToolBarButtonType = {
   onClick: Function;
-  children: React.Node;
+  children: React.ReactNode;
   disabled: boolean;
   icon: string;
   is_paper_toolbar_button: boolean;
@@ -145,7 +146,7 @@ export type ZoomToolBarButtonType = {
 
 export type DownloadButtonType = {
   onClick: Function;
-  children: React.Children;
+  children: React.ReactChildren;
   disabled: boolean;
   icon: string;
   danger: boolean;
@@ -177,4 +178,56 @@ export type GraphType = {
   height: number;
   edges: any[];
   nodes: any[];
+}
+
+export type dropDownListItem = {
+  label: string,
+  value: string,
+  object?: {}
+}
+
+export interface UserListUser extends TableCell{
+  uuid:      string;
+  email:     string;
+  name:      string;
+  state:     string;
+  creator:   string;
+  createdAt: Date;
+  roles:     UserRole[];
+  password?: string;
+  projects?: UserProject[];
+}
+
+export interface TableCell {
+  selected?: boolean;
+}
+
+export interface UserRole {
+  uuid:       string;
+  name:       string;
+  systemRole: string;
+  creator:    string;
+  createdAt:  Date;
+}
+
+export interface UserProject {
+  uuid:      string;
+  type:      string;
+  label:     string;
+  creator:   string;
+  createdAt: Date;
+}
+
+export interface IFilterCategoryItem {
+  id: string;
+  label: string;
+  multiple: boolean;
+  data: IFilterListItem[];
+  disabled?: boolean;
+}
+
+export interface IFilterListItem {
+  id: string;
+  label: string;
+  selected: boolean;
 }

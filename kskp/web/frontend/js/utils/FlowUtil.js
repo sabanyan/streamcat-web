@@ -1,7 +1,7 @@
 //@flow
 import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType, SubFlowParamType } from 'Types/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel } from 'Model/index'
+import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, MessageModel} from 'Model/index'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
 import { APIUtil, ErrorUtil, ReactDomUtil, ValidatorUtil } from 'Utils/index'
 
@@ -138,7 +138,7 @@ export default class FlowUtil {
     }
 
     return new Promise((resolve, reject) => {
-      APIUtil.get('frames?from=' + flowUUID + '&no_contents=1').then((response) => {
+      APIUtil.get('frames?from=' + flowUUID).then((response) => {
         if (dismissNotify) dismissNotify(runNotify.id)
         if (!response.data.success) {
           notify({
@@ -193,22 +193,17 @@ export default class FlowUtil {
     return new Promise((resolve, reject) => {
       APIUtil.post('frames', body).then((response) => {
         if (dismissNotify) dismissNotify(runNotify.id)
-        if (!response.data.success) {
-          notify({
-            title: '実行エラー',
-            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
-            status: 'error',
-            dismissAfter: 0,
-            closeButton: true
-          })
-        }
+        if (!response.data.success) throw response
+
         resolve(response)
-      }, () => {
+      })
+      .catch((error) => {
         if (dismissNotify) dismissNotify(runNotify.id)
+        let message = new MessageModel(error.data)
         notify({
-          title: '実行エラー',
+          title: message.title,
           message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: 'error',
+          status: message.messageStatus,
           dismissAfter: 0,
           closeButton: true
         })
