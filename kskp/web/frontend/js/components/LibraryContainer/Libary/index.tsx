@@ -1386,6 +1386,7 @@ const Library = (_: Props) => {
                 } else if (selectedData && selectedData.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 }
+                _onClickMemberInfo = (e,uuid) => onClickMemberInfo(e,uuid);
                 break;
         }
 
@@ -1639,7 +1640,7 @@ const Library = (_: Props) => {
         }
 
 
-        _onClickMemberInfo = (e, projectUUID) => {
+        const onClickMemberInfo = (e, projectUUID) => {
             ModalUtil.registerModal({
                 id: Constants.modal.MEMBER_INFO, onClickDone: () => {
                     let putBody = {

@@ -5,7 +5,7 @@ import { LibraryListDataType } from 'Types/index'
 import moment from 'moment/moment'
 import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
-import { APIUtil, ModalUtil, StringUtil } from "Utils/index";
+import { APIUtil, ModalUtil, StringUtil, HttpUtil } from "Utils/index";
 import { LibraryChild } from 'Model/index';
 import { Allowlist, ProjectInfo } from 'Components/LibraryContainer/Libary/index';
 
@@ -222,7 +222,7 @@ class LibraryInspector extends React.Component<Props> {
 
   renderProjectInfo(project: any) {
     const { currentProject, allowlist, onClickMemberInfo } = this.props;
-
+    if(!onClickMemberInfo) return null;
     const members = currentProject.members;
     const memberCount = members ? members.length : 0;
     let membersForm: any = null
