@@ -147,7 +147,7 @@ class FlowInspector extends React.Component<Props> {
         <label>作成日時</label>
       </div>
       <div>
-        {moment(createdAt).format(Constants.format.dateTime)}
+        {moment(createdAt, 'YYYY-MM-DD hh:mm:ss', false).format('YYYY-MM-DD HH:mm')}
       </div>
     </div>
 
