@@ -783,13 +783,14 @@ const Library = (_: Props) => {
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
             let data: LibraryListDataType = cell;
+            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list)?true:false;// ライブラリ画面の単体表示時のみ複数選択を許可
             if (isLoading)return;
             if (event) event.stopPropagation();
             if (data.allowlist) {
                 setAllowlists({...allowlists, selected:data.allowlist})
             }
 
-            if (event && (event.metaKey || event.ctrlKey)) {
+            if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
                 data.selected = true;
                 // command or ctrl + click
                 if (selectedDatas.includes(data)) {
@@ -802,7 +803,7 @@ const Library = (_: Props) => {
                     selectedDatas.push(data);
                     setLastSelectedCell(data);
                 }
-            } else if (event && event.shiftKey) {
+            } else if (event && event.shiftKey && enableMultiSelect) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
                 let current = libraryChildren.findIndex(libraryChild => data.uuid === libraryChild.uuid);
