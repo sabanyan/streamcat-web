@@ -1458,28 +1458,7 @@ const Library = (_: Props) => {
 
             APIUtil.put(endPoint + uuid, body).then((response) => {
                 if (response.data.success) {
-
-                    const resultLabel = response.data.data.label;
-
-                    if (!(libraryChildren)) {
-                        return;
-                    }
-
-                    let updateLibraryChild = findLibrary(libraryChildren, uuid);
-
-                    if (!updateLibrary) {
-                        return;
-                    }
-                    updateLibraryChild.label = resultLabel;
-                    const newLibraryChildren = updateLibrary(libraryChildren, uuid, updateLibraryChild);
-
-                    if (selected_data) {
-                        selected_data = updateLibrary;
-                    }
-
-                    setLibraryChildren(newLibraryChildren);
-                    setSelectedDatas(selected_data);
-                    // forceUpdate
+                    fetchFolder();
                 }
             }).finally(()=>{
                 setIsLoading(false);
