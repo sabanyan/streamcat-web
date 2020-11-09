@@ -213,9 +213,10 @@ const UserListInspector = (props: Props) => {
     }
 
     const renderButtons = (data?: UserListUser) => {
-        const {onClickDelete} = props
+        const {onClickDelete,selectedData} = props
         let del
-        if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
+        const availableDelete = (selectedData.state !== Constants.admin.userStatus.inactive);
+        if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
         return <React.Fragment>
             {del}
         </React.Fragment>
@@ -418,7 +419,7 @@ const UserListInspector = (props: Props) => {
             </div>
         </div>
     }
-    let label = selectedData.label
+    let label = selectedData.name
     let content = renderSelect(selectedData)
 
     return <Resizer>
