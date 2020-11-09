@@ -253,6 +253,24 @@ const Library = (_: Props) => {
         });
     }, [formProjectName]);
 
+
+    useEffect(()=>{
+        if(selectedDatas.length === 1){
+            const selectedData = selectedDatas[0];
+            if (selectedData && selectedData.type === "project") {
+                APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
+                    if (response.data.success && response.data.data.members) {
+                        setCurrentProject({
+                            members: response.data.data.members,
+                            projectModifiedAt: response.data.data.modifiedAt
+                        })
+                        setAllowlists({...allowlists, selected:response.data.data.allowlist});
+                    }
+                })
+            }
+        }
+    },[selectedDatas])
+
     useEffect(() => {
         // フォルダの作成
         ModalUtil.registerModal({
@@ -769,17 +787,6 @@ const Library = (_: Props) => {
             if (event) event.stopPropagation();
             if (data.allowlist) {
                 setAllowlists({...allowlists, selected:data.allowlist})
-            }
-            if (data && data.type === "project") {
-                APIUtil.get("/projects/" + data.uuid + "?members=on&allowlist=on").then((response) => {
-                    if (response.data.success && response.data.data.members) {
-                        setCurrentProject({
-                            members: response.data.data.members,
-                            projectModifiedAt: response.data.data.modifiedAt
-                        })
-                        setAllowlists({...allowlists, selected:response.data.data.allowlist});
-                    }
-                })
             }
 
             if (event && (event.metaKey || event.ctrlKey)) {
