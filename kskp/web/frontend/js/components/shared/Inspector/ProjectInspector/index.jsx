@@ -24,7 +24,7 @@ class ProjectInspector extends React.Component<Props> {
 
   nullInspector () {
     return <Resizer>
-      <BaseInspector>
+      <BaseInspector key={"null"}>
       </BaseInspector>
     </Resizer>
   }
