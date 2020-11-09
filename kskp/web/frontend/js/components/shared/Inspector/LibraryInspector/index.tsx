@@ -250,7 +250,7 @@ class LibraryInspector extends React.Component<Props> {
     const disabled = allowlist && allowlist.update ? false : true
 
     return <Resizer>
-      <BaseInspector label={label} onBlurTitle={(onBlurTitle)?(e)=>{onBlurTitle(e,selectedData)}:null} disabled={disabled}>
+      <BaseInspector key={selectedData.uuid} label={label} onBlurTitle={(onBlurTitle)?(e)=>{onBlurTitle(e,selectedData)}:null} disabled={disabled}>
         {content}
       </BaseInspector>
     </Resizer>
