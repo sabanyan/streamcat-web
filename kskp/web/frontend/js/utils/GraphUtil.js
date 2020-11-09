@@ -247,7 +247,7 @@ class GraphUtil {
     const self = this
     let hasPosition = false
 
-    if (!json.nodes) return new FlowModel()
+    if (!json || !json.nodes) return new FlowModel()
 
     let newNodes = []
     json.nodes.forEach((node) => {
@@ -338,6 +338,8 @@ class GraphUtil {
             position: note.position,
             type: note.type,
             size: note.size,
+            fontSize: note.fontSize,
+            color: note.color,
           }
           node = new NoteStepModel(model)
           newNodes.push(node)

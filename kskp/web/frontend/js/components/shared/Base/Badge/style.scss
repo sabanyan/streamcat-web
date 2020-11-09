@@ -1,0 +1,21 @@
+@import "../../../../../sass/common";
+
+.badge{
+  padding: 4px 12px;
+  border-radius: 4px;
+  min-width: 60px;
+  display: inline-block;
+  font-size: 12px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.darkBlue{
+  color: #fff;
+  background: #1C4698;
+}
+
+.darkGreen{
+  color: #fff;
+  background: #3D7343;
+}
