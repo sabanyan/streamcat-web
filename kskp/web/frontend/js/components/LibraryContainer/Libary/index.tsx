@@ -1681,7 +1681,7 @@ const Library = (_: Props) => {
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
                 }, onClickClose: () => {
                     if (selectedData && selectedData.type === "project") {
-                        APIUtil.get("/projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
+                        APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
                             if (response.data.success && response.data.data.members) {
                                 setCurrentProject({
                                     members: response.data.data.members,
