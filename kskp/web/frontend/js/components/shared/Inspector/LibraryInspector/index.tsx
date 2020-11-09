@@ -102,10 +102,6 @@ class LibraryInspector extends React.Component<Props> {
       </div>
     }
 
-    if(data && data.type == "project"){
-      projectInfo = this.renderProjectInfo(selectedData)
-    }
-
     // delete button
     if (allowlist.delete && onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>
 
@@ -128,11 +124,11 @@ class LibraryInspector extends React.Component<Props> {
       {del}
       {trashClean}
       {lock}
-      {projectInfo}
     </React.Fragment>
   }
 
   renderDetail(data?: LibraryChild) {
+    const {selectedData} = this.props;
     let result: any = []
     if (!data) return result
 
@@ -202,6 +198,11 @@ class LibraryInspector extends React.Component<Props> {
       result.push(createdAt)
     }
 
+    if(data && data.type == "project"){
+      const projectInfo = this.renderProjectInfo(selectedData)
+      result.push(projectInfo)
+    }
+
     return <React.Fragment>
       {result}
     </React.Fragment>
@@ -212,6 +213,7 @@ class LibraryInspector extends React.Component<Props> {
       <div className={style.actions}>
         {this.renderButtons(data)}
       </div>
+      <div className={style.full_hr}/>
       <div className={style.detail}>
         {this.renderDetail(data)}
       </div>
@@ -233,6 +235,7 @@ class LibraryInspector extends React.Component<Props> {
     }
 
     return <React.Fragment>
+      <div className={style.full_hr}/>
       <label>{"このプロジェクトのメンバー（" + memberCount + ")"}</label>
       {(allowlist && allowlist.updateMember && onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, project.uuid)} icon={"people"}>メンバーを編集する</Button> : null}
       <div className={style.memberList}>
