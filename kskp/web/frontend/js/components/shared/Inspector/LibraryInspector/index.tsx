@@ -234,7 +234,7 @@ class LibraryInspector extends React.Component<Props> {
       })
     }
 
-    return <React.Fragment>
+    return <React.Fragment key={"project-info"}>
       <div className={style.full_hr}/>
       <label>{"このプロジェクトのメンバー（" + memberCount + ")"}</label>
       {(allowlist && allowlist.updateMember && onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, project.uuid)} icon={"people"}>メンバーを編集する</Button> : null}
