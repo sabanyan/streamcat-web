@@ -22,6 +22,7 @@ export type LibraryChild = {
   createdAt: string
   prevFolderPath?: string // ごみの場合、元の場所
   selected? : boolean;
+  editLock? : boolean;
 }
 
 type Folder = {
