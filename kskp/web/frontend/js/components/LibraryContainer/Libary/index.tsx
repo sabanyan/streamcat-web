@@ -204,8 +204,8 @@ const Library = (_: Props) => {
     const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
     const [allowlists, setAllowlists] = useState
-        <{parent: Allowlist, selected: Allowlist}>
-        ({parent: defaultAllowlist, selected: defaultAllowlist})
+        <{ parent: Allowlist, selected: Allowlist }>
+        ({ parent: defaultAllowlist, selected: defaultAllowlist })
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
@@ -254,8 +254,8 @@ const Library = (_: Props) => {
     }, [formProjectName]);
 
 
-    useEffect(()=>{
-        if(selectedDatas.length === 1){
+    useEffect(() => {
+        if (selectedDatas.length === 1) {
             const selectedData = selectedDatas[0];
             if (selectedData && selectedData.type === "project") {
                 APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
@@ -264,12 +264,12 @@ const Library = (_: Props) => {
                             members: response.data.data.members,
                             projectModifiedAt: response.data.data.modifiedAt
                         })
-                        setAllowlists({...allowlists, selected:response.data.data.allowlist});
+                        setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
                     }
                 })
             }
         }
-    },[selectedDatas])
+    }, [selectedDatas])
 
     useEffect(() => {
         // フォルダの作成
@@ -609,7 +609,7 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                    setAllowlists({...allowlists, parent:json.allowlist});
+                    setAllowlists({ ...allowlists, parent: json.allowlist });
                 });
             }
             //該当フォルダを取得
@@ -620,7 +620,7 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                    setAllowlists({...allowlists, parent:json.allowlist});
+                    setAllowlists({ ...allowlists, parent: json.allowlist });
                 } else {
                     APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
                         if (response.data.success) {
@@ -629,7 +629,7 @@ const Library = (_: Props) => {
                             setInitialLibraryChildren(children);
                             setLibraryChildren(children);
                             setFolderPath(folderPath);
-                            setAllowlists({...allowlists, parent:json.allowlist});
+                            setAllowlists({ ...allowlists, parent: json.allowlist });
                         }
                     });
                 }
@@ -644,7 +644,7 @@ const Library = (_: Props) => {
                             setInitialLibraryChildren(model.children);
                             setLibraryChildren(model.children);
                             setFolderPath(model.folderPath);
-                            setAllowlists({...allowlists, parent:response.data.data.allowlist});
+                            setAllowlists({ ...allowlists, parent: response.data.data.allowlist });
                         } else {
                             throw response.data;
                         }
@@ -670,7 +670,7 @@ const Library = (_: Props) => {
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
                     setFolderPath(folderPath);
-                    setAllowlists({...allowlists, parent:json.allowlist});
+                    setAllowlists({ ...allowlists, parent: json.allowlist });
                 }
             });
         }
@@ -751,7 +751,7 @@ const Library = (_: Props) => {
         if (!is_finished) return null;
         if (isEmptyLibraryList() && mode === Constants.library.mode.dialog) return renderEmptyState();
 
-        const onClickFileName = (body: ITableBody, event?: React.SyntheticEvent<any, Event> ) => {
+        const onClickFileName = (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => {
             if (event) event.stopPropagation();
             const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
 
@@ -783,11 +783,11 @@ const Library = (_: Props) => {
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
             let data: LibraryListDataType = cell;
-            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list)?true:false;// ライブラリ画面の単体表示時のみ複数選択を許可
-            if (isLoading)return;
+            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;// ライブラリ画面の単体表示時のみ複数選択を許可
+            if (isLoading) return;
             if (event) event.stopPropagation();
             if (data.allowlist) {
-                setAllowlists({...allowlists, selected:data.allowlist})
+                setAllowlists({ ...allowlists, selected: data.allowlist })
             }
 
             if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
@@ -796,7 +796,7 @@ const Library = (_: Props) => {
                 if (selectedDatas.includes(data)) {
                     data.selected = !data.selected;
                     setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
-                    if(!data.selected){
+                    if (!data.selected) {
                         setLastSelectedCell(null);
                     }
                 } else {
@@ -1337,7 +1337,7 @@ const Library = (_: Props) => {
 
 
         // 選択されているのが 2件以上の場合は LibraryMultiInspector を使う
-        if(selectedDatas.length >= 2){
+        if (selectedDatas.length >= 2) {
             // モードに応じた処理
             switch (mode) {
                 case Constants.library.mode.frame_select:
@@ -1360,7 +1360,7 @@ const Library = (_: Props) => {
         const selectedData: LibraryListDataType = selectedDatas[0];
 
         console.assert(selectedData.uuid !== "d8d2fec5-066c-48ec-9ee4-314559aa7ae4", "起きた")
-        if(selectedData.uuid === "d8d2fec5-066c-48ec-9ee4-314559aa7ae4"){
+        if (selectedData.uuid === "d8d2fec5-066c-48ec-9ee4-314559aa7ae4") {
             console.trace("起きたよ");
         }
 
@@ -1377,7 +1377,7 @@ const Library = (_: Props) => {
                 _onClickDelete = () => onClickDelete();
                 _onClickMove = () => onClickMove();
                 _onClickEditEncoding = (data) => onClickEditEncoding(data);
-                _onBlurTitle = (e,data) => onBlurTitle(e, data);
+                _onBlurTitle = (e, data) => onBlurTitle(e, data);
                 if (selectedData && selectedData.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 } else if (selectedData && selectedData.type === Constants.library.type.trash) {
@@ -1386,7 +1386,7 @@ const Library = (_: Props) => {
                 } else if (selectedData && selectedData.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 }
-                _onClickMemberInfo = (e,uuid) => onClickMemberInfo(e,uuid);
+                _onClickMemberInfo = (e, uuid) => onClickMemberInfo(e, uuid);
                 break;
         }
 
@@ -1462,7 +1462,7 @@ const Library = (_: Props) => {
                 if (response.data.success) {
                     fetchFolder();
                 }
-            }).finally(()=>{
+            }).finally(() => {
                 setIsLoading(false);
             });
         };
@@ -1619,17 +1619,17 @@ const Library = (_: Props) => {
 
             if (currentMembers) {
                 if (searchText !== "") {
-                    
+
                     let response = await APIUtil.get("/users?q=" + searchText + "&roles=off&projects=on&&except_inactive=on")
                     if (response.data.success && response.data.data) {
                         seachResult = response.data.data
-                        
-                        seachResult = seachResult.filter((user: any) => {   
+
+                        seachResult = seachResult.filter((user: any) => {
                             let result = true;
-                            if (currentMembers.some((currentMember:any) => {return currentMember.uuid == user.uuid})) {
+                            if (currentMembers.some((currentMember: any) => { return currentMember.uuid == user.uuid })) {
                                 result = false;
                             }
-                       
+
                             return result
                         })
                     }
@@ -1675,7 +1675,7 @@ const Library = (_: Props) => {
                                     members: response.data.data.members,
                                     projectModifiedAt: response.data.data.modifiedAt
                                 })
-                                setAllowlists({...allowlists, selected:response.data.data.allowlist});
+                                setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
                             }
                         })
                     }
@@ -1687,7 +1687,7 @@ const Library = (_: Props) => {
                                     members: response.data.data.members,
                                     projectModifiedAt: response.data.data.modifiedAt
                                 })
-                                setAllowlists({...allowlists, selected:response.data.data.allowlist});
+                                setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
                             }
                         })
                     }
@@ -1697,8 +1697,50 @@ const Library = (_: Props) => {
             emitMemberForm(currentProject.members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
         };
 
-        _onChangeFlowLock = (e) => {
-            const checked = e.currentTarget.checked
+        _onChangeFlowLock = (e, data) => {
+            const checked = e.currentTarget.checked;
+
+            const editFlow = (flow_uuid, editLock) => {
+                let body = { target: flow_uuid };
+                let locks = new LocksModel(flow_uuid);
+
+                return axios.post("/api/v0/locks", body).then((response) => {
+                    let locksModel = locks.Parse(response);
+                    let lockId = locksModel.getLockId();
+                    if (lockId) {
+                        axios.put("/api/v0/flows/" + flow_uuid, {
+                            editLock: editLock,
+                            lock: lockId
+                        }).then((response) => {
+                            data.editLock = response.data.data.editLock;
+                            navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
+                        }, (response) => {
+                            navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
+                            notify({
+                                title: "エラー",
+                                message: response.data.message,
+                                status: "error",
+                                dismissAfter: 0,
+                                closeButton: true
+                            });
+                        }).then(() => {
+                            setSelectedDatas([data]);
+                        })
+                    } else {
+                        // lockが出来なかった場合
+                        notify({
+                            title: "エラー",
+                            message: response.data.message,
+                            status: "error",
+                            dismissAfter: 0,
+                            closeButton: true
+                        });
+                    }
+                });
+            };
+
+
+            editFlow(data.uuid, checked);
         }
 
         return <LibraryInspector
