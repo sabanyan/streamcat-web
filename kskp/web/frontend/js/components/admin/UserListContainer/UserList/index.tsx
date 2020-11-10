@@ -25,6 +25,8 @@ import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader
 import * as lodash from 'lodash';
 import Queue from "promise-queue-plus";
 import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
+import LibraryMultiInspector from 'Shared/Inspector/LibraryMultiInspector';
+import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
 
 interface Props {
     navigation?: NavigationModelProps
@@ -45,7 +47,7 @@ const UserList = (props: Props) => {
     const [isFinished, setIsFinished] = useState<Boolean>(false);
     const [isLoading, setIsLoading] = useState<Boolean>(true);
     const [users, setUsers] = useState<UserListUser[]>([]);
-    const [lastSelected, setLastSelected] = useState<UserListUser | null>(null);
+    const [lastSelectedCell, setLastSelectedCell] = useState<UserListUser | null>(null);
     const [selectedDatas, setSelectedDatas] = useState<UserListUser[]>([]);
     const clickedUserListCell = useRef(false);
     const [keyword,setKeyword] = useState<string>("");
@@ -193,7 +195,6 @@ const UserList = (props: Props) => {
     }
 
     const clearSelectedCell = ()=>{
-        setLastSelected(null);
         setSelectedDatas([]);
     }
 
@@ -209,22 +210,25 @@ const UserList = (props: Props) => {
     },[keyword])
 
     useEffect(()=>{
-        // パスワードリセットの処理
-        ModalUtil.registerModal({
-            id: Constants.modal.RESET_USER_PASSWORD, onClickDone: () => {
-                resetUserPassword(lastSelected.uuid).finally(() => {
-                    ModalUtil.closeModal(Constants.modal.RESET_USER_PASSWORD);
-                    clearSelectedCell();
-                })
-            },
-        })
-        // ユーザ作成後の確認ダイアログ
-        ModalUtil.registerModal({
-            id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
-                ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
-            }
-        })
-    }, [lastSelected])
+        if(selectedDatas.length === 1){
+            const selectedData = selectedDatas[0];
+            // パスワードリセットの処理
+            ModalUtil.registerModal({
+                id: Constants.modal.RESET_USER_PASSWORD, onClickDone: () => {
+                    resetUserPassword(selectedData.uuid).finally(() => {
+                        ModalUtil.closeModal(Constants.modal.RESET_USER_PASSWORD);
+                        clearSelectedCell();
+                    })
+                },
+            })
+            // ユーザ作成後の確認ダイアログ
+            ModalUtil.registerModal({
+                id: Constants.modal.ADD_USER_CONFIRM, onClickDone: () => {
+                    ModalUtil.closeModal(Constants.modal.ADD_USER_CONFIRM);
+                }
+            })
+        }
+    }, [selectedDatas])
 
     useEffect(()=>{
         // ユーザ削除の確認ダイアログ
@@ -266,16 +270,19 @@ const UserList = (props: Props) => {
                 if (selectedDatas.includes(data)) {
                     data.selected = !data.selected;
                     setSelectedDatas(selectedDatas.filter(d => d.uuid !== data.uuid));
+                    if(!data.selected){
+                        setLastSelectedCell(null);
+                    }
                 } else {
-                    setSelectedDatas([...selectedDatas,data]);
+                    selectedDatas.push(data);
+                    setLastSelectedCell(data);
                 }
-                setLastSelected(data);
             } else if (event && event.shiftKey) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
                 let current = users.findIndex(user=> data.uuid === user.uuid);
-                if (lastSelected) {
-                    let last =  users.findIndex(user=> lastSelected.uuid === user.uuid);
+                if (lastSelectedCell) {
+                    let last =  users.findIndex(user=> lastSelectedCell.uuid === user.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -295,7 +302,7 @@ const UserList = (props: Props) => {
                 clearSelected();
                 data.selected = true;
                 setSelectedDatas([data]);
-                setLastSelected(data);
+                setLastSelectedCell(data);
             }
             clickedUserListCell.current = true;
         };
@@ -303,7 +310,6 @@ const UserList = (props: Props) => {
 
         };
         const onClickHeader= (header: ITableHeader) => {
-            clickedUserListCell.current = true;
             if (header.sort) {
                 if(header.key === "projects"){
                     setUsers(lodash.orderBy(users, (e: UserListUser)=>{
@@ -514,9 +520,7 @@ const UserList = (props: Props) => {
 
     // ペインを表示
     const renderInspector = ():React.ReactNode => {
-        if (!lastSelected) return null;
-
-        clickedUserListCell.current = true;
+        if (!selectedDatas.length) return null;
 
         const onClickDelete = () => {
             let targets: string[] = [];
@@ -536,8 +540,19 @@ const UserList = (props: Props) => {
                 </div>
             });
         };
+
+        // 選択されているのが 2件以上の場合は LibraryMultiInspector を使う
+        if(selectedDatas.length >= 2){
+            return <UserListMultiInspector
+                selectedDatas={selectedDatas}
+                onClickDelete={onClickDelete}
+            />;
+        }
+
+        const selectedData = selectedDatas[0];
+
         const onClickPasswordReset = ()=>{
-            const name = lastSelected.name;
+            const name = selectedData.name;
             ModalUtil.emitModal({
                 id: Constants.modal.RESET_USER_PASSWORD,
                 visible: true,
@@ -551,7 +566,6 @@ const UserList = (props: Props) => {
                 </div>
             });
         }
-
         // 実処理自体は Inspector 内に記述、props に定義がある場合は「仮パスワードの表示」ボタンを表示する
         const onClickShowPassword = ()=>{};
 
@@ -573,8 +587,7 @@ const UserList = (props: Props) => {
         return <UserListInspector
             navigation={navigation}
             notify={notify}
-            selected={selectedDatas}
-            lastSelected={lastSelected}
+            selectedData={selectedData}
             onClickShowPassword = {(availableShowPassword)?onClickShowPassword:undefined}
             onClickDelete={(availableDelete)?onClickDelete:undefined}
             onClickPasswordReset={(availablePasswordReset)?onClickPasswordReset:undefined}
@@ -724,20 +737,17 @@ const UserList = (props: Props) => {
     }
     // 描画する
     const renderAll = () => {
-        const onClickUserList = () => {
-            setTimeout(() => {
-                if (!clickedUserListCell.current) {
-                    clearSelected();// 選択状態を一旦解除
-                    setLastSelected(null);
-                }
+        const onMouseDownUserList = () => {
+            if (clickedUserListCell.current) {
+                clearSelected();// 選択状態を一旦解除
+                setLastSelectedCell(null);
                 clickedUserListCell.current = false;
-            }, 100);
+            }
         };
 
         const onChangeKeyword = (e: React.ChangeEvent<HTMLInputElement>) => {
             setKeyword(e.target.value)
         }
-
 
         const removeSelectedCategory = (selectedCategory: IFilterCategoryItem)=>{
             return filterList.map(category =>{
@@ -752,7 +762,6 @@ const UserList = (props: Props) => {
                 }
                 return category
             });
-
         }
 
         const onClickRemove = (selectedCategory: IFilterCategoryItem)=>{
@@ -787,7 +796,7 @@ const UserList = (props: Props) => {
             <Flex justifyContent={'center'} fluid={true}>
                 {renderInspector()}
                 <Flex flexDirection={'row'} width={1480 + 40 + 40} minHeight={'calc(100vh - 64px)'} fluid={true}
-                      onClick={onClickUserList}>
+                      onMouseDown={onMouseDownUserList}>
                     <Spacer width={40}/>
                     <Flex flexDirection={'column'}>
                         <Spacer height={40}/>
