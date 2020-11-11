@@ -23,6 +23,22 @@ export type LibraryChild = {
   prevFolderPath?: string // ごみの場合、元の場所
   selected? : boolean;
   editLock? : boolean;
+  allowlist : {
+    copy: boolean;
+    createFile: boolean;
+    createFolder: boolean;
+    createProject: boolean;
+    delete: boolean;
+    download: boolean;
+    execute: boolean;
+    findMember: boolean;
+    lock: boolean;
+    move: boolean;
+    read: boolean;
+    update: boolean;
+    updateMember: boolean;
+    upload: boolean;
+  }
 }
 
 type Folder = {
