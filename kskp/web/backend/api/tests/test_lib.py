@@ -196,7 +196,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : ' NEW FOLDER '
             ,'type'     : 'folder'
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -239,7 +239,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'folder'
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -285,7 +285,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'folder'
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -356,7 +356,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : '新しいフレームファイル!'
             ,'type'     : 'frame'
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # Post /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -401,7 +401,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : ' F L A M E-F I L E '
             ,'type'     : 'frame'
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -444,7 +444,7 @@ class LibraryTestCase(ApiTestCaseBase):
             ,'encoding' : 'UTF-8'
             ,'newline'  : 'LF'
             ,'fileSize' : 16
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -482,7 +482,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : 'フレームファイル_1B'
             ,'type'     : 'frame'
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # PUT /frames apiが正常終了することを検証する
@@ -553,7 +553,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         awss3_uuid = result['data']['uuid']
@@ -570,7 +570,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertIsNotNone(result['data']['children'])
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
@@ -616,7 +616,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], '大根の卸金が欲しい')
         self.assertEqual(result['data']['bucket'], 'abc')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
@@ -728,7 +728,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp')
         self.assertEqual(result['data']['user_id'], 'postgres')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         database_uuid = result['data']['uuid']
@@ -746,7 +746,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp')
         self.assertEqual(result['data']['user_id'], 'postgres')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
@@ -798,7 +798,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp!')
         self.assertEqual(result['data']['user_id'], 'tiger')
         self.assertEqual(result['data']['password'], 'scott')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
@@ -839,7 +839,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "user_id"  : "postgres",
             "password" : "",
             'type'     : 'database',
-            'creator'  : 'ユーザ管理者'
+            'creator'  : 'ユーザー管理者'
         }
 
         # PUT /databases apiの戻り値が正しいことを検証する(createdAtは検証できない)
@@ -1135,7 +1135,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['directory'], 'share')
         self.assertEqual(result['data']['user_id'], 'ksk-ds')
         self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         folder_uuid = result['data']['uuid']
@@ -1153,7 +1153,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['directory'], 'share')
         self.assertEqual(result['data']['user_id'], 'ksk-ds')
         self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # RemoteFolderをほかす(DELETE /remote-folders)
@@ -1208,7 +1208,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['directory'], 'share2')
         self.assertEqual(result['data']['user_id'], 'user2')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # RemoteFolderをほかす(DELETE /remote-folders)
@@ -1410,22 +1410,22 @@ class TrashTestCase(ApiTestCaseBase):
         expected_result = {
             "type"     : "trash",
             "label"    : "ゴミ箱",
-            "creator"  : 'ユーザ管理者'
+            "creator"  : 'ユーザー管理者'
         }
         expected_child1 = {
             "type"     : "folder",
             "label"    : "フォルダですよ1",
-            "creator"  : 'ユーザ管理者'
+            "creator"  : 'ユーザー管理者'
         }
         expected_child2 = {
             "type"     : "folder",
             "label"    : "フォルダですよ2",
-            "creator"  : 'ユーザ管理者'
+            "creator"  : 'ユーザー管理者'
         }
         expected_child3 = {
             "type"     : "frame",
             "label"    : "フレームファイル_1",
-            "creator"  : 'ユーザ管理者'
+            "creator"  : 'ユーザー管理者'
         }
         folder_path1 = {
             "type"     : "folder",
@@ -1441,7 +1441,7 @@ class TrashTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['label'], expected_result['label'])
         # テストではLibrary._init_library_folders()でゴミ箱を作成しているのでcreator=None
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertNotEqual(result['data']['createdAt'], None)
         # フォルダ2
         # (ゴミ箱内のフォルダは新規作成するのでUUIDは新規取得される)

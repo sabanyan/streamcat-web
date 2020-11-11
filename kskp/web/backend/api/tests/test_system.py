@@ -102,7 +102,7 @@ class SystemTestCase(ApiTestCaseBase):
         ]
         ], 
         "params": [], 
-        "creator": "ユーザ管理者", 
+        "creator": "ユーザー管理者", 
         "createdAt": "2020-10-04 17:45:16", 
         "projectId": None, 
         "description": ""
@@ -132,7 +132,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertEqual(result['data']['password'], 'abcdefghij')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザを削除する
@@ -162,7 +162,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'kin@kitamchi.go.jp')
         self.assertEqual(result['data']['name'], '遠山　金四郎')
         self.assertEqual(result['data']['state'], 'active')
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         # MyProjectが作成されること
         self.assertEqual(len(result['data']['projects']), 1)
@@ -217,7 +217,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザを削除する
@@ -233,7 +233,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # 論理削除状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
     def test_update_self(self):
@@ -266,7 +266,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザを削除する
@@ -282,7 +282,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # 論理削除状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
     def test_update_self_without_pass(self):
@@ -312,7 +312,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # パスワード認証をして名前を変更してもよいこと
@@ -332,7 +332,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # emailの変更にはパスワード認証が必要であること
@@ -387,7 +387,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザを削除する
@@ -403,7 +403,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotIn('projects', result['data'])
         # 論理削除状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
     def test_generate_password_and_create_user(self):
@@ -427,7 +427,7 @@ class SystemTestCase(ApiTestCaseBase):
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertIsInstance(result['data']['password'], str)
         self.assertEqual(len(result['data']['password']), 10)
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザを削除する
@@ -459,7 +459,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertNotEqual(result['data']['password'], 'AIUEOKAKIKU')
         self.assertIsInstance(result['data']['password'], str)
         self.assertEqual(len(result['data']['password']), 10)
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザを削除する
@@ -537,7 +537,7 @@ class SystemTestCase(ApiTestCaseBase):
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
         self.assertEqual(result['data']['email'], 'admin@kskp.io')
-        self.assertEqual(result['data']['name'], 'ユーザ管理者')
+        self.assertEqual(result['data']['name'], 'ユーザー管理者')
         self.assertEqual(result['data']['state'], 'active')
         # 編集ロックロール
         self.assertEqual(len(result['data']['roles']), 4)
@@ -560,7 +560,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['roles'][2]['createdAt'])
         # 本人ロール
         self.assertIsNotNone(result['data']['roles'][3]['uuid'])
-        self.assertEqual(result['data']['roles'][3]['name'], 'ユーザ管理者')
+        self.assertEqual(result['data']['roles'][3]['name'], 'ユーザー管理者')
         self.assertEqual(result['data']['roles'][3]['systemRole'], '')
         self.assertIsNotNone(result['data']['roles'][3]['creator'])
         self.assertIsNotNone(result['data']['roles'][3]['createdAt'])
@@ -656,7 +656,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['roles'][1]['createdAt'])
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertIsNotNone(result['data']['password'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザを削除する
@@ -682,7 +682,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(len(result['data']['projects']), 0)
         # ユーザ管理者は仮パスワードは確認することができる
         self.assertIsNotNone(result['data']['password'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ユーザを削除する
@@ -1193,7 +1193,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'テストロール')
         self.assertEqual(result['data']['systemRole'], '')
         self.assertNotIn('members', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ロールを削除する
@@ -1219,7 +1219,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'ロールケーキ')
         self.assertEqual(result['data']['systemRole'], '')
         self.assertNotIn('members', result['data'])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # ロールを削除する
@@ -1447,7 +1447,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['uuid'], Role.USR_ADMIN_ROLE_UUID)
         self.assertEqual(result['data']['name'], Role.USR_ADMIN_ROLE_LABEL)
         self.assertEqual(result['data']['systemRole'], Role.USR_ADMIN_ROLE_LABEL)
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         # 参加ユーザ
         self.assertEqual(len(result['data']['members']), 2, msg=result['data']['members'])
