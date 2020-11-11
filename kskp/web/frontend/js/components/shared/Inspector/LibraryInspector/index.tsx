@@ -22,6 +22,7 @@ type Props = {
   onClickCleanTrash?: Function;
   onClickMemberInfo?: Function;
   onChangeFlowLock?: Function;
+  onClickCopy?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
@@ -63,9 +64,9 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderButtons(data?: LibraryChild) {
-    const { selectedData, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash, onChangeFlowLock } = this.props
+    const { selectedData, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash, onChangeFlowLock, onClickCopy } = this.props
 
-    let preview, download, del, apply, move, edit, editEncoding, trashClean, lock, projectInfo
+    let preview, download, del, apply, move, edit, editEncoding, trashClean, lock, projectInfo, copy;
 
     // preview button
     if (allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
@@ -95,7 +96,7 @@ class LibraryInspector extends React.Component<Props> {
     if (allowlist.delete && onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>
 
     // flow lock button
-    if (data && data.type == Constants.library.type.flow && onChangeFlowLock) {
+    if (allowlist.lock && data && data.type == Constants.library.type.flow && onChangeFlowLock) {
       lock = <div className={style.flowLock}>
         <input type="checkbox" checked={data.editLock ? true : false} onChange={(e) => onChangeFlowLock(e, data)}></input>
         <label>編集ロック</label>
@@ -114,11 +115,16 @@ class LibraryInspector extends React.Component<Props> {
       move = null;
     }
 
+    if (allowlist.copy && data &&  data.type == Constants.library.type.flow && onClickCopy) {
+      copy = <Button onClick={(e) => onClickCopy(e, data)} icon={"content_copy"}>複製する</Button>
+    }
+
     return <React.Fragment>
       {preview}
       {download}
       {edit}
       {move}
+      {copy}
       {apply}
       {editEncoding}
       {del}
@@ -128,7 +134,7 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderDetail(data?: LibraryChild) {
-    const {selectedData} = this.props;
+    const { selectedData } = this.props;
     let result: any = []
     if (!data) return result
 
@@ -198,7 +204,7 @@ class LibraryInspector extends React.Component<Props> {
       result.push(createdAt)
     }
 
-    if(data && data.type == "project"){
+    if (data && data.type == "project") {
       const projectInfo = this.renderProjectInfo(selectedData)
       result.push(projectInfo)
     }
@@ -213,7 +219,7 @@ class LibraryInspector extends React.Component<Props> {
       <div className={style.actions}>
         {this.renderButtons(data)}
       </div>
-      <div className={style.full_hr}/>
+      <div className={style.full_hr} />
       <div className={style.detail}>
         {this.renderDetail(data)}
       </div>
@@ -224,7 +230,7 @@ class LibraryInspector extends React.Component<Props> {
 
   renderProjectInfo(project: any) {
     const { currentProject, allowlist, onClickMemberInfo } = this.props;
-    if(!onClickMemberInfo) return null;
+    if (!onClickMemberInfo) return null;
     const members = currentProject.members;
     const memberCount = members ? members.length : 0;
     let membersForm: any = null
@@ -235,7 +241,7 @@ class LibraryInspector extends React.Component<Props> {
     }
 
     return <React.Fragment key={"project-info"}>
-      <div className={style.full_hr}/>
+      <div className={style.full_hr} />
       <label>{"このプロジェクトのメンバー(" + memberCount + ")"}</label>
       {(allowlist && allowlist.updateMember && onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, project.uuid)} icon={"people"}>メンバーを編集する</Button> : null}
       <div className={style.memberList}>
@@ -245,15 +251,15 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   render() {
-    const { allowlist, selectedData,onBlurTitle } = this.props
-    if(!selectedData) return;
+    const { allowlist, selectedData, onBlurTitle } = this.props
+    if (!selectedData) return;
     let label = selectedData.label
     let content = this.renderSelect(selectedData)
 
     const disabled = allowlist && allowlist.update ? false : true
 
     return <Resizer>
-      <BaseInspector key={selectedData.uuid} label={label} onBlurTitle={(onBlurTitle)?(e)=>{onBlurTitle(e,selectedData)}:null} disabled={disabled}>
+      <BaseInspector key={selectedData.uuid} label={label} onBlurTitle={(onBlurTitle) ? (e) => { onBlurTitle(e, selectedData) } : null} disabled={disabled}>
         {content}
       </BaseInspector>
     </Resizer>

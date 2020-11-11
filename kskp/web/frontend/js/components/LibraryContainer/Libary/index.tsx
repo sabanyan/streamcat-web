@@ -1296,6 +1296,19 @@ const Library = (_: Props) => {
             });
         };
 
+        const _onClickCopy = (e, data: LibraryChild) => {
+            if (data.type == "flow") {
+                APIUtil.post("flows", { original_flow_uuid: data.uuid }).then((response) => {
+                    fetchFolder();
+                    notify({
+                        title: "フローを複製しました", message:  response.data.data.label + "を作成しました",
+                        status: "success"
+                    });
+                });
+            }
+
+        }
+
         const onClickDelete = () => {
             ModalUtil.registerModal({
                 id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -1747,6 +1760,7 @@ const Library = (_: Props) => {
             currentProject={currentProject}
             allowlist={allowlists.selected}
             selectedData={selectedData}
+            onClickCopy={_onClickCopy}
             onClickDelete={_onClickDelete}
             onClickApply={_onClickApply}
             onClickMove={_onClickMove}
