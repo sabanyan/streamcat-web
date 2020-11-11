@@ -227,7 +227,7 @@ class ProjectApiTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'project'
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # PUT /projects apiが正常終了することを検証する
@@ -416,7 +416,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['projectId'], None)
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertEqual(result['data']['label'], new_flow_name)
         self.assertEqual(result['data']['nodes'][0]['dataSource'], 'csv')
@@ -491,7 +491,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['description'],'')
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
 
@@ -516,7 +516,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['description'],'')
         self.assertEqual(result['data']['params'], [])
         self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # 同じフローを2回コピーする
@@ -528,7 +528,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result2['data']['description'],'')
         self.assertEqual(result2['data']['params'], [])
         self.assertEqual(result2['data']['ports'], [[],[]])
-        self.assertEqual(result2['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result2['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result2['data']['createdAt'])
 
     def test_copy_flow_using_cache(self):
@@ -639,14 +639,14 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], 'flow')
         self.assertEqual(result['data']['label'], test_flow_label)
         self.assertEqual(result['data']['prevFolderPath'], None)
-        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertEqual(result['data']['flow']['projectId'], None)
         self.assertEqual(result['data']['flow']['label'], test_flow_label)
         self.assertEqual(result['data']['flow']['params'], [])
         self.assertEqual(result['data']['flow']['ports'], [[],[]])
         self.assertEqual(result['navigation']['user_id'], self.USER1.id)
-        self.assertEqual(result['navigation']['user_name'], 'ユーザ管理者')
+        self.assertEqual(result['navigation']['user_name'], 'ユーザー管理者')
         # self.assertEqual(result['navigation']['project_uuid'], )
         self.assertEqual(result['navigation']['project_name'], 'ライブラリ')
         self.assertEqual(result['navigation']['flow_name'], test_flow_label)
@@ -685,12 +685,12 @@ class FlowApiTestCase(ApiTestCaseBase):
         # self.assertEqual(results['data'][0]['description'],'')
         # self.assertEqual(results['data'][0]['params'], [])
         # self.assertEqual(results['data'][0]['ports'], [[],[]])
-        self.assertEqual(results['data'][0]['creator'], 'ユーザ管理者')
+        self.assertEqual(results['data'][0]['creator'], 'ユーザー管理者')
         self.assertIsNotNone(results['data'][0]['createdAt'])
 
         # ナビゲーションを検証する
         self.assertEqual(results['navigation']['user_id'], self.USER1.id)
-        self.assertEqual(results['navigation']['user_name'], 'ユーザ管理者')
+        self.assertEqual(results['navigation']['user_name'], 'ユーザー管理者')
         self.assertEqual(results['navigation']['project_uuid'], flow_folder.uuid)
         self.assertEqual(results['navigation']['project_name'], flow_folder.label)
 
@@ -769,7 +769,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : 'フロー1C'
             ,'type'     : 'flow'
-            ,'creator'  : 'ユーザ管理者'
+            ,'creator'  : 'ユーザー管理者'
         }
 
         # PUT /frames apiが正常終了することを検証する
