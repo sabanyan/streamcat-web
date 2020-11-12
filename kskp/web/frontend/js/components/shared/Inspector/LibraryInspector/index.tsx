@@ -7,9 +7,14 @@ import Constants from 'Constants/index'
 import { Button, DownloadButton } from 'Shared/Input'
 import { APIUtil, ModalUtil, StringUtil } from "Utils/index";
 import { LibraryChild } from 'Model/index';
+import { get } from '../../../../modules/api/response/index';
+import { readyException } from 'jquery'
+import { Allowlist, ProjectInfo } from 'Components/LibraryContainer/Libary/index';
 
 type Props = {
   visualizers: any[];
+  currentProject: ProjectInfo;
+  allowlist:Allowlist;
   selected: LibraryChild[];
   lastSelected?: LibraryChild;
   onClickDelete?: Function;
@@ -19,6 +24,8 @@ type Props = {
   onClickEdit?: Function;
   onClickEditEncoding?: Function;
   onClickCleanTrash?: Function;
+  onClickMemberInfo?: Function;
+  onChangeFlowLock?: Function;
 }
 
 class LibraryInspector extends React.Component<Props> {
@@ -28,7 +35,8 @@ class LibraryInspector extends React.Component<Props> {
     newline: '改行コード',
     creator: '作成者',
     createdAt: '作成日時',
-    prevFolderPath: "捨てる前の場所"
+    prevFolderPath: "捨てる前の場所",
+    fileSize: 'サイズ(byte)'
   }
 
   constructor(props: Props) {
@@ -36,6 +44,8 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   componentWillMount() {
+
+
     //モーダル処理の登録
     ModalUtil.registerModal({
       id: Constants.modal.PREVIEW_DATASOURCE, onClickOK: () => {
@@ -50,7 +60,7 @@ class LibraryInspector extends React.Component<Props> {
     let library: LibraryListDataType = lastSelected;
     let uuid = library.uuid
     // uuidだけでプレビュー
-    window.open('/preview?step_id='+ null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
+    window.open('/preview?step_id=' + null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
   }
 
   onClickEdit(e) {
@@ -58,28 +68,25 @@ class LibraryInspector extends React.Component<Props> {
     if (onClickEdit) onClickEdit(lastSelected)
   }
 
-  renderDownloadButton() {
-
-  }
   renderButtons(data?: LibraryChild) {
-    const { selected, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash } = this.props
+    const { selected, currentProject, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash, onChangeFlowLock } = this.props
 
-    let preview, download, del, apply, move, edit, editEncoding, trashClean
+    let preview, download, del, apply, move, edit, editEncoding, trashClean, lock
 
     if (selected.length == 1) {
       // preview button
-      if (data && data.label && data.type === Constants.library.type.frame) {
+      if (allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
         preview = <Button onClick={(e) => this.onClickPreview(e)} icon={"visibility"}>プレビューする</Button>
       }
 
       // download button
-      if (data && data.label && data.type === Constants.library.type.frame) {
+      if (allowlist.download && data && data.label && data.type === Constants.library.type.frame) {
         const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label
         download = <DownloadButton href={href} icon={"get_app"}>CSVをダウンロードする</DownloadButton>
       }
 
       // edit
-      if (onClickEdit && data && data.type === Constants.library.type.database) {
+      if (allowlist.update && onClickEdit && data && data.type === Constants.library.type.database) {
         edit = <Button onClick={(e) => this.onClickEdit(e)} icon={"settings"}>設定を開く</Button>
       }
 
@@ -87,23 +94,32 @@ class LibraryInspector extends React.Component<Props> {
       if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>
 
       // editEncoding
-      if (onClickEditEncoding && data && data.type === Constants.library.type.frame) editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コードを編集する</Button>
+      if (allowlist.update && onClickEditEncoding && data && data.type === Constants.library.type.frame) {
+        editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コードを編集する</Button>
+      }
 
       // clean trash button
-      if (onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>
+      if (allowlist.delete && onClickCleanTrash) trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>
 
+      // flow lock button
+      if (data && data.type == Constants.library.type.flow && onChangeFlowLock) {
+        lock = <div className={style.flowLock}>
+          <input type="checkbox" onChange={(e) => onChangeFlowLock(e)}></input>
+          <label>編集ロック</label>
+        </div>
+      }
     }
 
     // 複数選択の場合
     if (selected.length >= 1) {
       // delete button
-      if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>
+      if (allowlist.delete && onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>
 
       // move button
-      if (onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>
+      if (allowlist.move && onClickMove) move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>
     }
 
-    if(onClickCleanTrash){
+    if (onClickCleanTrash) {
       // ゴミ箱の場合、削除と移動を非表示にする
       del = null;
       move = null;
@@ -114,10 +130,11 @@ class LibraryInspector extends React.Component<Props> {
       {download}
       {edit}
       {move}
-      {del}
       {apply}
       {editEncoding}
+      {del}
       {trashClean}
+      {lock}
     </React.Fragment>
   }
 
@@ -138,7 +155,7 @@ class LibraryInspector extends React.Component<Props> {
 
     if (data.type === Constants.library.type.frame) {
       // 文字コードがあれば、表示する
-      let encoding
+      let encoding, fileSize
       if (data.encoding) {
         encoding = <React.Fragment key={data.encoding}>
           <div><label>{this.display.encoding}</label></div>
@@ -146,6 +163,14 @@ class LibraryInspector extends React.Component<Props> {
         </React.Fragment>
 
         result.push(encoding)
+      }
+
+      if (data.fileSize) {
+        fileSize = <React.Fragment key={data.fileSize}>
+          <div><label>{this.display.fileSize}</label></div>
+          <div className={"mb-8px"}>{data.fileSize}</div>
+        </React.Fragment>
+        result.push(fileSize)
       }
 
       // 改行コードがあれば、表示する
@@ -177,7 +202,7 @@ class LibraryInspector extends React.Component<Props> {
     if (data.createdAt) {
       createdAt = <React.Fragment key={data.createdAt}>
         <div><label>{this.display.createdAt}</label></div>
-        <div className={"mb-8px"}>{moment(data.createdAt).format(Constants.format.dateTime)}</div>
+        <div className={"mb-8px"}>{moment(data.createdAt, 'YYYY-MM-DD hh:mm:ss', false).format('YYYY-MM-DD HH:mm')}</div>
       </React.Fragment>
 
       result.push(createdAt)
@@ -224,14 +249,38 @@ class LibraryInspector extends React.Component<Props> {
     return content
   }
 
+  renderProjectInfo(project: any) {
+    const { currentProject, allowlist, onClickMemberInfo } = this.props;
+
+    const members = currentProject.members;
+    const memberCount = members ? members.length : 0;
+    let membersForm: any = null
+    if (members) {
+      membersForm = members.map((member) => {
+        return <div key={member.email}>{member.name + "(" + member.type + ")"}</div>
+      })
+    }
+
+    return <React.Fragment>
+      <label>{"このプロジェクトのメンバー（" + memberCount + ")"}</label>
+      {(allowlist && allowlist.updateMember && onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, project.uuid)} icon={"people"}>メンバーを編集する</Button> : null}
+      <div className={style.memberList}>
+        {allowlist && allowlist.findMember && members ? membersForm : null}
+      </div>
+    </React.Fragment>
+  }
+
   render() {
-    const { selected, lastSelected } = this.props
+    const { currentProject, allowlist, selected, lastSelected } = this.props
     let label = (lastSelected && selected.length <= 1) ? lastSelected.label : undefined
     let content = (selected.length <= 1) ? this.renderSelect(lastSelected) : this.renderSelects(selected, lastSelected)
 
+    const disabled = allowlist && allowlist.update ? false : true
+    
     return <Resizer>
-      <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={true}>
+      <BaseInspector label={label} onBlurTitle={this.props.onBlurTitle} disabled={disabled}>
         {content}
+        {(lastSelected && lastSelected.type === "project") ? this.renderProjectInfo(lastSelected) : null}
       </BaseInspector>
     </Resizer>
   }

@@ -1,13 +1,15 @@
-from flask import Blueprint, request, jsonify, send_from_directory, g
-from .auth import login_required_api
-from .utils.navigation import update_navigation
-from .utils.api_base import api_base
+from flask import Blueprint, request, send_from_directory, g
 from kskp.web.backend import app
 from kskp.store import (
     DatabaseConn,
     RemoteFolderConn
 )
-
+from .auth import login_required_api
+from .utils import (
+    api_base,
+    update_navigation,
+    update_projects_info
+)
 
 mod = Blueprint('lib', __name__)
 
@@ -28,15 +30,18 @@ def download_flow(uuid):
 @login_required_api
 @api_base  
 def upload_flow():
+    from pathlib import Path
+
     if 'file' not in request.files or request.files.get('file') is None:
         raise Exception('No archive file found.')
 
     root = g.factory.data.load_root()
+    filename = Path(request.files.get('file').filename).stem
     stream = request.files.get('file').stream
-    
+
     from kskp.store import FlowDumper
     flow_dumper = FlowDumper(g.factory)
-    flow_dumper.restore_archive(root, stream)
+    flow_dumper.restore_archive(root, filename, stream)
 
 @mod.route('/stores', methods=['GET'])
 @login_required_api
@@ -104,6 +109,7 @@ def _jsonify_folder(folder):
 @mod.route('/library', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_projects_info
 @api_base
 def fecth_library():
     """
@@ -121,7 +127,6 @@ def fetch_trashes():
     ゴミ箱を返却する
     """
     trash_folder = g.factory.data.find_trashcan()
-    
     return _jsonify_folder(trash_folder)
 
 @mod.route('/trashes/<datum_uuid>', methods=['PUT'])
@@ -203,6 +208,7 @@ def delete_lock(lock_uuid):
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_projects_info
 @api_base
 def fetch_folder(folder_uuid):
     """
@@ -262,6 +268,7 @@ def throw_away_folder(folder_uuid):
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_projects_info
 @api_base
 def fetch_awss3_folder(awss3_uuid):
     """
@@ -387,6 +394,7 @@ def throw_away_database(database_uuid):
 @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_projects_info
 @api_base
 def fetch_remote_folder(folder_uuid):
     """

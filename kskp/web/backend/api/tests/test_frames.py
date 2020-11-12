@@ -1,6 +1,6 @@
 import unittest
 import copy
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 class FrameApiTestCase(ApiTestCaseBase):
     """
@@ -39,8 +39,6 @@ class FrameApiTestCase(ApiTestCaseBase):
         result = self.get_uri('/api/v0/frames/%s' % frame_uuid, self.USER1)
 
         self.assertEqual(result['success'], True)
-        # 中身をテストしてもいいけど面倒臭いので、Noneじゃないことだけテストする
-        self.assertIsNotNone(result['data'].get('contents'))
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
@@ -102,11 +100,7 @@ class FrameApiTestCase(ApiTestCaseBase):
 
         result = self.get_uri('/api/v0/frames/%s?offset=2&limit=1' % frame_uuid, self.USER1)
 
-        correct = {'顧客': ['B'], '数量': ['1'], '金額\n': ['30\n']}
-
         self.assertEqual(result['success'], True)
-        # no_contentsをつけているのでNoneのはず
-        self.assertEqual(result['data']['contents'], correct)
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
@@ -137,7 +131,10 @@ class FrameApiTestCase(ApiTestCaseBase):
         result = self.get_uri('/api/v0/frames/%s?header_only=1' % frame_uuid, self.USER1)
 
         self.assertEqual(result['success'], True)
-        self.assertEqual(result['data'], ['顧客', '数量', '金額'])
+        self.assertEqual(result['data']['fileSize'], 56)
+        self.assertEqual(result['data']['encoding'], 'UTF-8')
+        self.assertEqual(result['data']['newline'], 'LF')
+        self.assertEqual(result['data']['lastModifiedAt'], now)
 
 
     # @unittest.skip

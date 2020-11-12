@@ -1,6 +1,6 @@
 
 from bokeh.resources import INLINE
-from flask import render_template, redirect, session, request, Blueprint, url_for, g
+from flask import render_template, redirect, session, Blueprint, url_for, g
 from kskp.web.backend.api.auth import login_required, login_required_api
 
 mod = Blueprint('basic_template', __name__)
@@ -9,6 +9,16 @@ mod = Blueprint('basic_template', __name__)
 def top():
     return redirect(url_for('basic_template.library'))
 
+#
+# ユーザ管理機能
+# TODO: ルーティングの確認
+#
+@mod.route('/admin/users', methods=['GET', 'POST'])
+@login_required
+def admin_users():
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    return render_template('admin/users.html',js_resources=js_resources,css_resources=css_resources)
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
@@ -49,7 +59,7 @@ def projects(project_uuid):
     project_uuid = project_uuid.rsplit('?')[0]
     return render_template('library.html',folder_uuid=project_uuid,is_project=1,js_resources=js_resources,css_resources=css_resources)
 
-@mod.route('/profile', methods=['GET', 'POST'])
+@mod.route('/settings/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
     return render_template('profile.html', user_id=session['user_id'])

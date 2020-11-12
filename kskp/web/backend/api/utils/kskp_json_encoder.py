@@ -2,6 +2,7 @@ from flask.json import JSONEncoder
 from kskp.store import StoreModel as Store
 from kskp.store import Vis
 from kskp.store import FlowData
+from kskp.store import ProjectFolder
 from kskp.core import Datum
 from kskp.store.lock_manager import Lock
 from kskp.store.auth import User, Role
@@ -27,7 +28,7 @@ class KSKPJSONEncoder(JSONEncoder):
 
         if isinstance(obj, Vis):
             return obj.to_html()
-        elif isinstance(obj, (Store, Lock, Datum, FlowData, User, Role)):
+        elif isinstance(obj, (Store, Lock, Datum, FlowData, User, Role, ProjectFolder.Member, Role.Member)):
             return obj.to_json()
         else:
             # 上記以外のクラスはデフォルトのデコード処理とする

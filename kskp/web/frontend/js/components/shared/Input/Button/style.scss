@@ -75,3 +75,8 @@
   position: relative;
   top: 3px;
 }
+
+.disabled {
+  cursor: default;
+  opacity: 0.5;
+}

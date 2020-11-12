@@ -1,10 +1,47 @@
 import React from 'react'
-import {ParamString, ParamBoolean, ParamSelect, ParamList } from 'Shared/Inspector/index'
+import { ParamString, ParamNumber, ParamBoolean, ParamSelect, ParamList, Param } from 'Shared/Inspector/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { CommandParamType } from 'Types/index'
 import Constants from 'Constants/index'
 import classnames from 'classnames'
 import style from './style.scss'
+import { param } from 'jquery'
+
+
+export type Element = {
+  name: string;
+  type: string;
+  label: string;
+  input_balluon?: {
+    text?: ""
+  };
+  section?: boolean;
+}
+
+export type Param = {
+  name: string;
+  type: string;
+  label: string;
+  input_ballon: {
+    text: string;
+  };
+  description: string;
+  elements: Element[];
+  default: {};
+  helper: {};
+  options: {
+    labels?: string[];
+    values?: string[];
+    multiple: boolean;
+  };
+}
+
+export type Group = {
+  name: string;
+  label: string;
+  params: string[];
+  hide_background: boolean;
+}
 
 type Props = {
   params: CommandParamType[];//パラメーター定義
@@ -13,14 +50,30 @@ type Props = {
   invalids: {}; // Validationチェック内容
   command?: CommandModel;
   headers?: string[];//カラム情報
+  disabled?: boolean;
   // event
   onChange: (e: React.ChangeEvent<HTMLInputElement>, param: CommandParamType, value: any) => void
 }
 
-export default class ParamsForm extends React.Component<Props> {
+type State = {
+  helperTargetedInput: any;
+}
 
-  constructor (props: Props) {
+export default class ParamsForm extends React.Component<Props, State> {
+
+  constructor(props: Props) {
     super(props)
+
+    this.state = {
+      helperTargetedInput: null
+    }
+  }
+
+  setHelperTargetedInput(inputEl) {
+
+    this.setState({
+      helperTargetedInput: inputEl
+    })
   }
 
   /**
@@ -29,8 +82,8 @@ export default class ParamsForm extends React.Component<Props> {
    * @param param
    * @returns {*}
    */
-  getDefaultValueOrArgsValue (args: {} | [], param: CommandParamType) {
-    return args[param.name]
+  getDefaultValueOrArgsValue(args: {} | [], param: CommandParamType) {
+    return args[param.name] ? args[param.name] : param.default 
   }
 
   /**
@@ -39,7 +92,7 @@ export default class ParamsForm extends React.Component<Props> {
    * @param param
    * @returns {boolean}
    */
-  isPresence (command: CommandModel, param: CommandParamType) {
+  isPresence(command: CommandModel, param: CommandParamType) {
     let isPresence = false
     if (command) {
       if (command.rules &&
@@ -56,7 +109,7 @@ export default class ParamsForm extends React.Component<Props> {
    * @param invalid
    * @returns {*}
    */
-  getInvalidMessageElement (invalid: ([] | string)) {
+  getInvalidMessageElement(invalid: ([] | string)) {
     const invalidMessage: ([] | string) = invalid
     if (invalidMessage) {
       if (Array.isArray(invalidMessage)) {
@@ -74,21 +127,25 @@ export default class ParamsForm extends React.Component<Props> {
     return null
   }
 
-  getParamElement(param:CommandParamType, disabled:boolean=false,label?:string,value?:any, onChange?:Function, headers?:string[]) {
-    let paramElement:any
+  getParamElement(param: CommandParamType, disabled: boolean = false, label?: string, value?: any, onChange?: Function, headers?: string[]) {
+    let paramElement: any
+    let className = param.type === Constants.param.type.boolean ? classnames(style.param, style.flex) : style.param
     try {
       switch (param.type) {
-        case Constants.param.type.number  :
-        case Constants.param.type.string  :
-          paramElement = <ParamString label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
+        case Constants.param.type.number:
+        case Constants.param.type.string:
+          paramElement = <ParamString
+            label={label} param={param} disabled={disabled} value={value} helperTargetedInput={this.state.helperTargetedInput}
+            helper={param.helper}
+            setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange} />
           break
-        case Constants.param.type.boolean :
+        case Constants.param.type.boolean:
           paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
-        case Constants.param.type.select  :
+        case Constants.param.type.select:
           paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
-        case Constants.param.type.column  :
+        case Constants.param.type.column:
           //カラム情報を付与
           param.options = {
             labels: headers,
@@ -97,37 +154,55 @@ export default class ParamsForm extends React.Component<Props> {
           }
           paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
           break
-        case Constants.param.type.list    :
-          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value} onChange={onChange} headers={headers} />
+        case Constants.param.type.list:
+          paramElement = <ParamList label={label} param={param} disabled={disabled} value={value}
+            helperTargetedInput={this.state.helperTargetedInput} headers={headers}
+            helper={param.helper}
+            setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange} />
           break
       }
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
 
-    return paramElement
+    return <React.Fragment>
+      <div className={className}>
+        <div className={style.labelContainer}>
+          <div className={style.label}>{param.label}</div>
+          <div className={style.description}>
+            <div>{param.description}</div>
+          </div>
+        </div>
+        {paramElement}
+      </div>
+    </React.Fragment>
+
+
   }
 
   renderGroup(group, key) {
-    return <React.Fragment key={key}>
-      <div className={style.group}>
+
+    let className = group.hide_background ? style.group : classnames(style.group, style.colored)
+
+    return <div className={"mb-12px"} key={key}>
+      <div className={className}>
         {group.label}
       </div>
-      <p className={style.description}>
-      {group.description}
-    </p>
-    </React.Fragment>
+      <div className={style.description}>
+        {group.description}
+      </div>
+    </div>
   }
 
 
   renderParam(param, key) {
-    const {args, command, invalids, onChange, headers} = this.props
+    const { args, command, invalids, onChange, headers, disabled } = this.props
     let isPresence = (command) ? this.isPresence(command, param) : false
     const value = this.getDefaultValueOrArgsValue(args, param)
-    const paramElement = this.getParamElement(param, false, param.label, value, onChange, headers)
+    const paramElement = this.getParamElement(param, disabled, param.label, value, onChange, headers)
     const invalidMessageEelement = this.getInvalidMessageElement(invalids[param.name])
 
-    return <div key={key} className={classnames('mb-8px', {
+    return <div key={key} className={classnames('mb-12px', {
       [style.presence]: isPresence,
       [style.invalid]: (invalidMessageEelement)
     })}>
@@ -137,10 +212,10 @@ export default class ParamsForm extends React.Component<Props> {
   }
 
   renderParamsForm(params, groups) {
-    let paramsForm:JSX.Element[] = []
-  
-    try {      
-      if(!params) throw "params is undefined in renderParamsForm"
+    let paramsForm: JSX.Element[] = []
+
+    try {
+      if (!params) throw "params is undefined in renderParamsForm"
       if (groups) {
         groups.forEach(group => {
           paramsForm.push(this.renderGroup(group, group.name + "_group"))
@@ -160,15 +235,15 @@ export default class ParamsForm extends React.Component<Props> {
         })
       }
 
-    } catch(e) {
+    } catch (e) {
       console.log(e)
     }
 
     return paramsForm
   }
 
-  render () {
-    const {params, groups} = this.props
+  render() {
+    const { params, groups } = this.props
     //パラメータフォームの作成
 
     return this.renderParamsForm(params, groups)

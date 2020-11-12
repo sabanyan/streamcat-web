@@ -17,7 +17,8 @@ type Props = {
   close?: boolean,
   done?: string,
   children?: React.Node,
-  primary?: boolean
+  primary?: boolean,
+  overflow?: boolean
 }
 
 type State = {
@@ -26,7 +27,7 @@ type State = {
   contents?: [React.Node],
   title?: string,
   done?: string,
-  danger?: boolean,
+  danger?: boolean
 }
 
 export default class Modal extends React.Component<Props, State> {
@@ -45,7 +46,7 @@ export default class Modal extends React.Component<Props, State> {
     this.state = { visible: false, content: null, contents: null, title: this.props.title }
   }
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     const self = this
     /**
      * モーダルのリスナー処理
@@ -59,7 +60,7 @@ export default class Modal extends React.Component<Props, State> {
           contents: context.contents,
           title: (context.title !== undefined) ? context.title : this.state.title,
           done: context.done,
-          danger: context.danger,
+          danger: context.danger
         })
       })
   }
@@ -116,7 +117,7 @@ export default class Modal extends React.Component<Props, State> {
 
     const done = (this.state.done) ? this.state.done : this.props.done
     const { visible, title, content, contents, danger } = this.state
-    const { preview, ok, close, footer, cancel, children, primary } = this.props
+    const { preview, ok, close, footer, cancel, children, primary ,overflow } = this.props
 
     /**
      * 背景
@@ -196,7 +197,7 @@ export default class Modal extends React.Component<Props, State> {
       </PreviewModal>
     } else {
       modal = <StandardModal id={id} title={title} footer={modal_footer}
-        close_button={close_button} visible={visible}>
+        close_button={close_button} visible={visible} overflow={overflow}>
         {(visible) ? modal_body : null}
       </StandardModal>
     }

@@ -11,6 +11,7 @@ interface Props {
     children?: React.ReactNode;
     onBlurTitle?: Function;
     onHide?: Function;
+    disabled: boolean;
 }
 
 const BaseInspector = (props: Props) => {
@@ -39,8 +40,8 @@ const BaseInspector = (props: Props) => {
     },[]);
 
 
-    const {header, label, children, onBlurTitle, subLabel} = props;
-    const disabled = (!onBlurTitle);
+    const {header, label, children, onBlurTitle, subLabel, disabled} = props;
+    const _disabled = (!onBlurTitle || disabled);
     let labelContainer, subLabelContainer;
     if (onBlurTitle && label !== undefined) {
         labelContainer = <input key={label}
@@ -50,12 +51,12 @@ const BaseInspector = (props: Props) => {
                                 } : undefined}
                                 className={classnames(style.label, style.clickable)}
                                 defaultValue={label}
-                                disabled={disabled} />;
+                                disabled={_disabled} />;
     } else {
         labelContainer = <div className={style.label}>{label}</div>;
     }
     if (subLabel) {
-        subLabelContainer = <div>
+        subLabelContainer = <div className={style.sublabel}>
             {subLabel}
         </div>;
     }

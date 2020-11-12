@@ -1,0 +1,28 @@
+@import "../../../../../../../sass/common";
+
+.listItem,.listItemMultiple{
+  padding: 14px;
+  height: 48px;
+  color: #606C7D;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  &:hover{
+    background: #f8f9fa;
+  }
+  img{
+    margin-right: 0!important;
+  }
+  .listItemLabel{
+
+  }
+  cursor: pointer;
+}
+
+.listItemMultiple{
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  img{
+    margin-right: 12px!important;
+  }
+}

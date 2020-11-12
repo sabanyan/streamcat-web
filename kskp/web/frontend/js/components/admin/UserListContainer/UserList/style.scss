@@ -1,0 +1,86 @@
+@import "../../../../../sass/common";
+
+.pageTitleHeader {
+  width: 100%;
+  border-radius: 8px;
+  background-color: #F5F7F8;
+  padding: 12px 16px 12px 24px;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  color: #606c7a;
+}
+
+.pageTitle {
+  display: inline-flex;
+  white-space: nowrap;
+  min-width: 200px;
+}
+
+.searchHeaderContainer{
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.searchBarContainer,.filterLinkContainer {
+  display: inline-flex;
+  max-width: 600px;
+  width: 100%;
+  min-width: 160px;
+  align-items: center;
+  input{
+  }
+}
+
+.resultCount{
+  min-width: 200px;
+  color: #606c7a;
+  white-space: nowrap;
+}
+
+.resultAndFilterContainer{
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  height: 44px;
+}
+
+.label{
+  display: inline-flex;
+  font-size: 16px;
+  color: #606c7a;
+  width: 140px;
+}
+
+.addUserLabel{
+  font-size: 16px;
+  color: #606c7a;
+}
+.addUserDetail{
+  display: flex;
+  font-size: 16px;
+  color: #606c7a;
+}
+
+.textField{
+  display: inline-flex;
+  input{
+    width: 300px;
+  }
+}
+
+.select{
+  display: inline-flex;
+  > div{
+    width: 300px;
+  }
+  div[class*="menu"]{
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+  }
+}

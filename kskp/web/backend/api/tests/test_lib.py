@@ -5,9 +5,8 @@ import pprint
 from pathlib import Path
 
 from kskp.web.backend import app
-from kskp.store import StoreModel as Store
 from kskp.store import Mountable
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 class DataStoreTestCase(ApiTestCaseBase):
 
@@ -16,26 +15,26 @@ class DataStoreTestCase(ApiTestCaseBase):
         fetch_stores APIをテストする
         """
         # storesテーブルへのセット
-        store1 = self.factory.store.create(
+        store1 = self.factory0.store.create(
                             'Directory',
                             '1.0.0',
                             'ディレクトリ',
                             '',
                             '',
                             [{'name':'filePath', 'type':'string', 'label':'CSVファイル格納パス名'}])
-        store2 = self.factory.store.create(
+        store2 = self.factory0.store.create(
                             'PostgreSQL',
                             '1.0.0',
                             'PostgreSQLへの接続設定(ODBC)',
                             '',
                             '',
                             [{'name':'connectionString', 'type':'string', 'label':'postgreSQLへの接続文字列'}])
-        self.factory._session.add(store1)
-        self.factory._session.add(store2)
-        self.factory._session.commit()
+        self.factory0._session.add(store1)
+        self.factory0._session.add(store2)
+        self.factory0._session.commit()
 
         # GET /stores
-        result = self.get_uri('/api/v0/stores', self.USER1)
+        result = self.get_uri('/api/v0/stores', self.USER0)
 
         # 期待するAPIの戻り値
         expected_result = [
@@ -69,8 +68,8 @@ class DataStoreTestCase(ApiTestCaseBase):
         self.assertEqual(result['data'], expected_result)
 
         # DELETE /stores
-        self.delete_uri('/api/v0/stores/%s' % expected_result[0]['id'], self.USER1)
-        self.delete_uri('/api/v0/stores/%s' % expected_result[1]['id'], self.USER1)
+        self.delete_uri('/api/v0/stores/%s' % expected_result[0]['id'], self.USER0)
+        self.delete_uri('/api/v0/stores/%s' % expected_result[1]['id'], self.USER0)
 
     def test_create_fetch_delete_store(self):
         """
@@ -95,24 +94,24 @@ class DataStoreTestCase(ApiTestCaseBase):
                }
 
         # POST /stores
-        result = self.post_uri('/api/v0/stores', data, self.USER1)
+        result = self.post_uri('/api/v0/stores', data, self.USER0)
 
         # POST /stores　apiが正常終了することを検証する
         expected_result = data
         self.assertEqual(result['data'], expected_result)
 
         # GET /stores
-        result = self.get_uri('/api/v0/stores/%s' % expected_result['id'], self.USER1)
+        result = self.get_uri('/api/v0/stores/%s' % expected_result['id'], self.USER0)
 
         # POST /storesした値をGET /stores apiで取得できることを検証する
         self.assertEqual(result['data'], data)
 
         # DELETE /stores
-        result = self.delete_uri('/api/v0/stores/%s' % expected_result['id'], self.USER1)
+        result = self.delete_uri('/api/v0/stores/%s' % expected_result['id'], self.USER0)
 
         # GET /stores
         with self.assertRaises(AssertionError) as e:
-            result = self.get_uri('/api/v0/stores/%s' % expected_result['id'], self.USER1)
+            result = self.get_uri('/api/v0/stores/%s' % expected_result['id'], self.USER0)
 
 class LibraryTestCase(ApiTestCaseBase):
     def test_get_root(self):
@@ -197,7 +196,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : ' NEW FOLDER '
             ,'type'     : 'folder'
-            ,'creator'  : 'システム管理者'
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -240,7 +239,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'folder'
-            ,'creator'  : 'システム管理者'
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -286,7 +285,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : '新しいフォルダ1'
             ,'type'     : 'folder'
-            ,'creator'  : 'システム管理者'
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # PUT /folders apiが正常終了することを検証する
@@ -357,7 +356,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : '新しいフレームファイル!'
             ,'type'     : 'frame'
-            ,'creator'  : 'システム管理者'
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # Post /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -402,7 +401,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : ' F L A M E-F I L E '
             ,'type'     : 'frame'
-            ,'creator'  : 'システム管理者'
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -444,7 +443,8 @@ class LibraryTestCase(ApiTestCaseBase):
             ,'type'     : 'frame'
             ,'encoding' : 'UTF-8'
             ,'newline'  : 'LF'
-            ,'creator'  : 'システム管理者'
+            ,'fileSize' : 16
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # PUT /frames apiの戻り値が正しいことを検証する(uuidとcreatedAtは検証できない)
@@ -453,6 +453,7 @@ class LibraryTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['encoding'], expected_result['encoding'])
         self.assertEqual(result['data']['newline'], expected_result['newline'])
+        self.assertEqual(result['data']['fileSize'], expected_result['fileSize'])
         self.assertEqual(result['data']['creator'], expected_result['creator'])
         self.assertNotEqual(result['data']['createdAt'], None)
 
@@ -481,7 +482,7 @@ class LibraryTestCase(ApiTestCaseBase):
         expected_result = {
              'label'    : 'フレームファイル_1B'
             ,'type'     : 'frame'
-            ,'creator'  : 'システム管理者'
+            ,'creator'  : 'ユーザ管理者'
         }
 
         # PUT /frames apiが正常終了することを検証する
@@ -495,6 +496,42 @@ class LibraryTestCase(ApiTestCaseBase):
 
         # フォルダに対応するディレクトリが存在することを検証する
         self.assertTrue(os.path.isfile((root.path / '新しいフォルダ1B' / 'フレームファイル_1B').as_posix()))
+
+    def test_escape_path(self):
+        """
+        Datum.pathに%や_が含まれる値を格納できること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダ1を作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {'label': 'F O L \% E R', 'parent': root.uuid}, self.USER1)
+        folder1_uuid = result['data']['uuid']
+
+        # フォルダ2を作成する(POST /folders)
+        result = self.post_uri('/api/v0/folders', {'label': 'f o l d e r', 'parent': folder1_uuid}, self.USER1)
+        folder2_uuid = result['data']['uuid']
+
+        # フレームを作成する(POST /frames)
+        import io
+        f = (io.BytesIO(b"thisisaframefile"), 'aaa.csv')
+        result = self.post_frames('フレームファイルAA', folder2_uuid, f, self.USER1)
+
+        # フォルダ1のラベル名を変更する(PUT /folders)
+        result = self.put_uri(f'/api/v0/folders/{folder1_uuid}', {'label': 'F O L \% E R 2'}, self.USER1)
+
+        # フォルダ2を削除する
+        self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+        # フォルダ1を削除する
+        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
 
 @unittest.skip('ASW S3のIDとアカウントが必要')
 class AwsS3TestCase(ApiTestCaseBase):
@@ -516,7 +553,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         awss3_uuid = result['data']['uuid']
@@ -533,7 +570,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], 'Amazonに感謝')
         self.assertEqual(result['data']['bucket'], 'kskp-test')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
         self.assertIsNotNone(result['data']['children'])
         self.assertEqual(result['data']['folderPath'][0]['uuid'], root_uuid)
@@ -579,7 +616,7 @@ class AwsS3TestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], 'awss3')
         self.assertEqual(result['data']['label'], '大根の卸金が欲しい')
         self.assertEqual(result['data']['bucket'], 'abc')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # AWS S3フォルダを削除(unmount)する(DELETE /awss3s)
@@ -691,7 +728,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp')
         self.assertEqual(result['data']['user_id'], 'postgres')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         database_uuid = result['data']['uuid']
@@ -709,7 +746,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp')
         self.assertEqual(result['data']['user_id'], 'postgres')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
@@ -761,7 +798,7 @@ class DatabaseTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['database'], 'kskp!')
         self.assertEqual(result['data']['user_id'], 'tiger')
         self.assertEqual(result['data']['password'], 'scott')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # Databaseを削除(unmount)する(DELETE /databases)
@@ -802,7 +839,7 @@ class DatabaseTestCase(ApiTestCaseBase):
             "user_id"  : "postgres",
             "password" : "",
             'type'     : 'database',
-            'creator'  : 'システム管理者'
+            'creator'  : 'ユーザ管理者'
         }
 
         # PUT /databases apiの戻り値が正しいことを検証する(createdAtは検証できない)
@@ -1098,7 +1135,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['directory'], 'share')
         self.assertEqual(result['data']['user_id'], 'ksk-ds')
         self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         folder_uuid = result['data']['uuid']
@@ -1116,7 +1153,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['directory'], 'share')
         self.assertEqual(result['data']['user_id'], 'ksk-ds')
         self.assertEqual(result['data']['password'], 'kskanalytics')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # RemoteFolderをほかす(DELETE /remote-folders)
@@ -1171,7 +1208,7 @@ class RemoteFolderTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['directory'], 'share2')
         self.assertEqual(result['data']['user_id'], 'user2')
         self.assertEqual(result['data']['password'], '')
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
         # RemoteFolderをほかす(DELETE /remote-folders)
@@ -1373,22 +1410,22 @@ class TrashTestCase(ApiTestCaseBase):
         expected_result = {
             "type"     : "trash",
             "label"    : "ゴミ箱",
-            "creator"  : 'システム管理者'
+            "creator"  : 'ユーザ管理者'
         }
         expected_child1 = {
             "type"     : "folder",
             "label"    : "フォルダですよ1",
-            "creator"  : 'システム管理者'
+            "creator"  : 'ユーザ管理者'
         }
         expected_child2 = {
             "type"     : "folder",
             "label"    : "フォルダですよ2",
-            "creator"  : 'システム管理者'
+            "creator"  : 'ユーザ管理者'
         }
         expected_child3 = {
             "type"     : "frame",
             "label"    : "フレームファイル_1",
-            "creator"  : 'システム管理者'
+            "creator"  : 'ユーザ管理者'
         }
         folder_path1 = {
             "type"     : "folder",
@@ -1404,7 +1441,7 @@ class TrashTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['type'], expected_result['type'])
         self.assertEqual(result['data']['label'], expected_result['label'])
         # テストではLibrary._init_library_folders()でゴミ箱を作成しているのでcreator=None
-        self.assertEqual(result['data']['creator'], 'システム管理者')
+        self.assertEqual(result['data']['creator'], 'ユーザ管理者')
         self.assertNotEqual(result['data']['createdAt'], None)
         # フォルダ2
         # (ゴミ箱内のフォルダは新規作成するのでUUIDは新規取得される)
@@ -1545,6 +1582,134 @@ class TrashTestCase(ApiTestCaseBase):
         trashed = trash_folder.find_children()
         self.assertEqual(len(trashed), 0)
 
+    def test_delete_frame_refered(self):
+        """
+        フローから参照されているフレームはゴミ箱に捨てられないこと
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダ1を作成する(POST /folders)
+        folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!1", "parent": root.uuid}, self.USER1)
+        folder1_uuid = folder1['data']['uuid']
+
+        # フォルダ1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!2", "parent": folder1_uuid}, self.USER1)
+        folder2_uuid = folder2['data']['uuid']
+
+        # フォルダ2内にフォルダ3を作成する
+        folder3 = self.post_uri('/api/v0/folders', {"label" : "フォルダやで!3", "parent": folder2_uuid}, self.USER1)
+        folder3_uuid = folder3['data']['uuid']
+
+        # フォルダ3内にフレームを作成する
+        import io
+        f = (io.BytesIO(b'abcABC'), 'frame')
+        result = self.post_frames('フレームファイル', folder3_uuid, f, self.USER1)
+        frame_uuid= result['data']['uuid']
+
+        # フォルダ1内にフローを作成する
+        data_source = {
+            "id": "i",
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": frame_uuid,
+            "label": "test"
+        }
+        data = {
+            'project_uuid': folder1_uuid,
+            'name': 'フロー',
+            'datasource': data_source
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローのUUIDを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
+        if result['data']['children'][0]['uuid'] == folder2_uuid:
+            flow_uuid = result['data']['children'][1]['uuid']
+        else:
+            flow_uuid = result['data']['children'][0]['uuid']
+
+        # 参照するフレームはほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
+
+        # フォルダ2内にはフローが参照するフレームがあるのでほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER1)
+
+        # フローをロックする
+        result = self.post_locks('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # フローはほかせること
+        result = self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER1)
+                                            
+        # フローをほかしたあとはフレームをほかせること
+        # (ゴミ箱内のフローから参照されているフレームはゴミ箱に捨てられること)
+        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_delete_folder_has_refered_file(self):
+        """
+        フローと参照されているフレームが同じフォルダに存在する場合
+        そのフォルダを削除できること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクト1を作成する(POST /folders)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "プロジェクトどす!1", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+
+        # フォルダ1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダどす!2", "parent": project1_uuid}, self.USER1)
+        folder2_uuid = folder2['data']['uuid']
+
+        # フォルダ2内にフォルダ3を作成する
+        folder3 = self.post_uri('/api/v0/folders', {"label" : "フォルダどす!3", "parent": folder2_uuid}, self.USER1)
+        folder3_uuid = folder3['data']['uuid']
+
+        # フォルダ3内にフレームを作成する
+        import io
+        f = (io.BytesIO(b'abcABC'), 'frame')
+        result = self.post_frames('フレームファイル', folder3_uuid, f, self.USER1)
+        frame_uuid= result['data']['uuid']
+
+        # フォルダ3内にフローを作成する
+        data_source = {
+            "id": "i",
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": frame_uuid,
+            "label": "test"
+        }
+        data = {
+            'project_uuid': folder3_uuid,
+            'name': 'フロー',
+            'datasource': data_source
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローのUUIDを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder3_uuid}', self.USER1)
+        if result['data']['children'][0]['uuid'] == folder2_uuid:
+            flow_uuid = result['data']['children'][1]['uuid']
+        else:
+            flow_uuid = result['data']['children'][0]['uuid']
+
+        # 参照するフレームはほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
+
+        # プロジェクトを丸ごとほかせること
+        self.delete_uri(f'/api/v0/folders/{project1_uuid}', self.USER1)
+                         
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_delete_root_folder(self):
         """
@@ -1575,12 +1740,12 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
-        # フォルダ1を作成する(POST /folders)
-        folder1 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ1!!", "parent": root.uuid}, self.USER1)
-        folder1_uuid = folder1['data']['uuid']
+        # プロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "プロジェクトですよ1!!", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
 
-        # フォルダ1内にフォルダ2を作成する
-        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": folder1_uuid}, self.USER1)
+        # プロジェクト1内にフォルダ2を作成する
+        folder2 = self.post_uri('/api/v0/folders', {"label" : "フォルダですよ2", "parent": project1_uuid}, self.USER1)
         folder2_uuid = folder2['data']['uuid']
 
         # フォルダ2内にフレームを作成する
@@ -1592,22 +1757,22 @@ class TrashTestCase(ApiTestCaseBase):
 
         # 移動したことのないフォルダは戻せない
         with self.assertRaises(AssertionError):
-            self.put_uri(f'/api/v0/trashes/{folder1_uuid}', {}, self.USER1)
+            self.put_uri(f'/api/v0/trashes/{project1_uuid}', {}, self.USER1)
 
-        # フォルダ1をほかす
-        self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
+        # プロジェクト1をほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
         
-        # フォルダ1を戻す
-        self.put_uri(f'/api/v0/trashes/{folder1_uuid}', {}, self.USER1)
+        # プロジェクト1を戻す
+        self.put_uri(f'/api/v0/trashes/{project1_uuid}', {}, self.USER1)
 
-        # フォルダ1はゴミ箱にないこと
+        # プロジェクト1はゴミ箱にないこと
         trash_can = self.factory.data.load_trash_folder()
         trashed1 = trash_can.find_children()
-        self.assertNotIn(folder1_uuid, [t.uuid for t in trashed1])
+        self.assertNotIn(project1_uuid, [t.uuid for t in trashed1])
 
-        # フォルダ1は元の場所に戻っていること
+        # プロジェクト1は元の場所に戻っていること
         data = root.find_children()
-        self.assertIn(folder1_uuid, [d.uuid for d in data])
+        self.assertIn(project1_uuid, [d.uuid for d in data])
 
         # フォルダ2は変更されていないこと
         folder2 = self.factory.data.find_by_uuid(folder2_uuid)
@@ -1616,6 +1781,9 @@ class TrashTestCase(ApiTestCaseBase):
         # フレームは変更されていないこと
         frame = self.factory.data.find_by_uuid(frame_uuid_1)
         self.assertEqual(frame.modified_at, frame.modified_at)
+
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -1900,12 +2068,16 @@ class TrashTestCase(ApiTestCaseBase):
         self.put_uri(f'/api/v0/trashes/{frame2_parent_parent.uuid}', {}, self.USER1)
 
         # フォルダ2は元の場所に戻っていること
-        folder2 = self.factory2.data.find_by_uuid(folder2_uuid)
-        self.assertEqual(folder2.find_parent().uuid, folder1.uuid)
+        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        result = self.get_uri(f'/api/v0/folders/{folder1.uuid}', self.USER1)
+        self.assertEqual(len(result['data']['children']), 2)
+        self.assertEqual(result['data']['children'][0]['uuid'], folder2_uuid)
 
         # フレーム2は元の場所に戻っていること
-        frame2 = self.factory2.data.find_by_uuid(frame_uuid_2)
-        self.assertEqual(frame2.find_parent().uuid, folder2.uuid)
+        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        result = self.get_uri(f'/api/v0/folders/{folder2.uuid}', self.USER1)
+        self.assertEqual(len(result['data']['children']), 1)
+        self.assertEqual(result['data']['children'][0]['uuid'], frame_uuid_2)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -1939,7 +2111,7 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱に形代が作成されていること
         trash_can = self.factory.data.load_trash_folder()
         trashes = trash_can.find_children()
-        self.assertNotEqual(trashes[0].uuid, flow_folder)
+        self.assertNotEqual(trashes[0], flow_folder)
         self.assertEqual(trashes[0].label, FLOW_FOLDER_LABEL)
 
         # フレーム1は形代フォルダ内にあること
@@ -1950,9 +2122,10 @@ class TrashTestCase(ApiTestCaseBase):
         self.put_uri(f'/api/v0/trashes/{frame.find_parent().uuid}', {}, self.USER1)
 
         # フレーム1は元の場所に戻っていること
-        # (factoryには上でキャッシュされてるのでfactory2を使う)
-        frame = self.factory2.data.find_by_uuid(frame_uuid_1)
-        self.assertEqual(frame.find_parent().uuid, FLOW_FOLDER_UUID)
+        # (factoryには上でキャッシュされてるのでGET /foldersを使う)
+        result = self.get_uri(f'/api/v0/folders/{FLOW_FOLDER_UUID}', self.USER1)
+        self.assertEqual(len(result['data']['children']), 1)
+        self.assertEqual(result['data']['children'][0]['uuid'], frame_uuid_1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -2005,9 +2178,13 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
+        # プロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "I am project", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+
         # Databaseを作成する(POST /databases)
         data = {
-            "parent"   : root.uuid,
+            "parent"   : project1_uuid,
             "label"    : "リモートフォルダ1",
             "dbms"     : "postgresql",
             "hostname" : "db",
@@ -2037,6 +2214,12 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱から戻す
         self.put_uri(f'/api/v0/trashes/{database_uuid}', {}, self.USER1)
 
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_update_then_return_flow(self):
         """
         ゴミ箱へほかした後にdata列を更新する操作を行っても
@@ -2045,13 +2228,18 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
+        # プロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "I am project!", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+        project1 = self.factory.data.find_by_uuid(project1_uuid)
+
         # フローを作成する
         import uuid
-        flow = root.create_flow('サブフロー1', self.get_flow_with_source(str(uuid.uuid4())))
+        flow = project1.create_flow('サブフロー1', self.get_flow_with_source(str(uuid.uuid4())))
         flow.save()
         flow = self.factory.data.find_by_uuid(flow.uuid)
 
-        # 削除前にフローのロックを取得する
+        # 削除前にフローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
         lock_uuid = result['data']['uuid']
 
@@ -2060,7 +2248,7 @@ class TrashTestCase(ApiTestCaseBase):
             
         # フローを変更する
         data = {
-            'flow' : flow.flow_data,
+            'flow' : flow.flow_data.to_json(),
             'label': 'フローです',
             'lock' : lock_uuid
         }
@@ -2072,6 +2260,12 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱から戻す
         self.put_uri(f'/api/v0/trashes/{flow.uuid}', {}, self.USER1)
 
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
     def test_update_then_return_frame(self):
         """
         ゴミ箱へほかした後にdata列を更新する操作を行っても
@@ -2080,11 +2274,15 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
+        # プロジェクトを作成する(POST /projects)
+        project1 = self.post_uri('/api/v0/projects', {"label" : "I am project!!", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+
         # フレーム1を作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
         # フレームデータを作成する(POST /frames)
-        result = self.post_frames('フレームファイル_AA', root.uuid, f, self.USER1)
+        result = self.post_frames('フレームファイル_AA', project1_uuid, f, self.USER1)
         frame_uuid_1 = result['data']['uuid']
 
         # ゴミ箱へほかす
@@ -2096,6 +2294,13 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱から戻す
         self.put_uri(f'/api/v0/trashes/{frame_uuid_1}', {}, self.USER1)
 
+        # プロジェクトをほかす
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+    @unittest.skip('権限機能実装後のリモートフォルダの修正ができてからテストする')
     def test_update_then_return_remote_folder(self):
         """
         ゴミ箱へほかした後にdata列を更新する操作を行っても
@@ -2206,6 +2411,162 @@ class TrashTestCase(ApiTestCaseBase):
         self.delete_uri('/api/v0/trashes', self.USER1)
         trashed = trash_can.find_children()
         self.assertEqual(len(trashed), 0)     
+
+class FlowFilesTestCase(ApiTestCaseBase):
+
+    def _save_file(self, path, stream):
+        # 1MB
+        READ_BUFFER_SIZE = 1 * 1024 * 1024
+        with open(path, mode='wb') as f:
+            while True:
+                buff = stream.read(READ_BUFFER_SIZE)
+                f.write(buff)
+                if buff is None or len(buff)==0:
+                    break
+
+    def test_export_import_flow(self):
+        """
+        フローをエクスポート/インポートできること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # データソースを作成する
+        import io
+        frame = root.create_frame('データソース', io.BytesIO(b'abcdef'))
+        frame.save()
+
+        # フローを作成する
+        flow = root.create_simple_flow('Export用フロー', frame)
+        flow.save()
+
+        # フローをエクスポートする
+        result = self.get_file(f'/api/v0/flow_files/{flow.uuid}', self.USER1)
+        self._save_file(root.path/'フローファイル.tgz', io.BytesIO(result))
+
+        # フローをインポートする
+        with open(root.path/'フローファイル.tgz', mode='rb') as f:
+            self.post_flows(f, self.USER1)
+
+        # フローはインポートされていること
+        children = root.find_children_by_label('フローファイル')
+        result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
+
+        # プロジェクトフォルダが作成されていること
+        self.assertEqual(result['data']['label'], 'フローファイル')
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        # プロジェクトフォルダ以下にフローとフレームが作成されていること
+        self.assertEqual(result['data']['children'][0]['label'], 'Export用フロー')
+        self.assertEqual(result['data']['children'][0]['type'], 'flow')
+        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['data']['children'][1]['label'], 'データソース')
+        self.assertEqual(result['data']['children'][1]['type'], 'frame')
+        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
+
+        # インポートしたプロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
+        # 作成したフローを削除する
+        result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+        self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+        # 作成したフレームを削除する
+        self.delete_uri(f'/api/v0/frames/{frame.uuid}', self.USER1)
+        # 作成したファイルを削除する
+        (root.path/'フローファイル.tgz').unlink()
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+        
+    def test_export_import_folder(self):
+        """
+        フォルダ以下の全てのフローをエクスポート/インポートできること
+        """
+        # ルートを取得する
+        root = self.factory.data.load_root()
+
+        # ルートの下にプロジェクト1を作成する
+        project1 = root.create_project_folder('プロジェクト')
+        project1.save()
+
+        # プロジェクト1の下にデータソース1を作成する
+        import io
+        frame1 = project1.create_frame('データソース1', io.BytesIO(b'abcdef0123'))
+        frame1.save()
+
+        # プロジェクト1の下にフロー1を作成する
+        flow1 = project1.create_simple_flow('Export用フロー1', frame1)
+        flow1.save()
+
+        # プロジェクト1の下にフォルダ2を作成する
+        folder2 = project1.create_folder('フォルダ！！')
+        folder2.save()
+
+        # フォルダ2の下にデータソース2を作成する
+        frame2 = folder2.create_frame('データソース2', io.BytesIO(b'abcdef0123'))
+        frame2.save()
+
+        # フォルダ2の下にフロー2を作成する
+        flow2 = folder2.create_simple_flow('Export用フロー2', frame2)
+        flow2.save()
+
+        # フローをエクスポートする
+        result = self.get_file(f'/api/v0/flow_files/{project1.uuid}', self.USER1)
+        self._save_file(root.path/'フォルダ丸ごと.tgz', io.BytesIO(result))
+
+        # インポートしたプロジェクトと区別するため、エクスポート元のプロジェクトのラベル名を変更する
+        project1.update_data('うごげ〜')
+
+        # フローをインポートする
+        with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:
+            self.post_flows(f, self.USER1)
+
+        # フローはインポートされていること
+        children = root.find_children_by_label('プロジェクト')
+        result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
+
+        # プロジェクトフォルダが作成されていること
+        self.assertEqual(result['data']['label'], 'プロジェクト')
+        self.assertEqual(result['data']['type'], 'project')
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        # プロジェクトフォルダ以下にフローとフレームが作成されていること
+        folder2_uuid = result['data']['children'][0]['uuid']
+        self.assertEqual(result['data']['children'][0]['label'], 'フォルダ！！')
+        self.assertEqual(result['data']['children'][0]['type'], 'folder')
+        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['data']['children'][1]['label'], 'Export用フロー1')
+        self.assertEqual(result['data']['children'][1]['type'], 'flow')
+        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
+        self.assertEqual(result['data']['children'][2]['label'], 'データソース1')
+        self.assertEqual(result['data']['children'][2]['type'], 'frame')
+        self.assertEqual(result['data']['children'][2]['creator'], self.USER1.name)
+
+        # フォルダ2もインポートされていること
+        result = self.get_uri(f'/api/v0/projects/{folder2_uuid}', self.USER1)
+
+        # フォルダ2が作成されていること
+        self.assertEqual(result['data']['label'], 'フォルダ！！')
+        self.assertEqual(result['data']['type'], 'folder')
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        # フォルダ2以下にフローとフレームが作成されていること
+        self.assertEqual(result['data']['children'][0]['label'], 'Export用フロー2')
+        self.assertEqual(result['data']['children'][0]['type'], 'flow')
+        self.assertEqual(result['data']['children'][0]['creator'], self.USER1.name)
+        self.assertEqual(result['data']['children'][1]['label'], 'データソース2')
+        self.assertEqual(result['data']['children'][1]['type'], 'frame')
+        self.assertEqual(result['data']['children'][1]['creator'], self.USER1.name)
+
+        # 作成したプロジェクト等を削除する
+        self.delete_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
+        self.delete_uri(f'/api/v0/projects/{project1.uuid}', self.USER1)
+        (root.path/'フォルダ丸ごと.tgz').unlink()
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
 
 @unittest.skip

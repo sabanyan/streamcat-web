@@ -5,7 +5,7 @@ import pprint
 import unittest
 
 from kskp.web.backend import app
-from kskp.web.backend.api.tests.api_test_case_base import ApiTestCaseBase
+from .api_test_case_base import ApiTestCaseBase
 
 class LockFlowTestCase(ApiTestCaseBase):
 
@@ -50,20 +50,6 @@ class LockFlowTestCase(ApiTestCaseBase):
         else:
             d = {'label': 'ラベル', 'flow': data1, 'lock': lock_uuid}
         return self.put_uri(f'/api/v0/flows/{flow_uuid}', d, self.USER1)
-
-    def post_locks(self, uri, json_data, user):
-        """
-        URIへPOSTする
-        """
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = user.id
-            response = client.post(uri,
-                                   content_type='application/json',
-                                   data=json.dumps(json_data))
-            result = json.loads(response.get_data())
-        error_detail = result['message'] if 'message' in result else ''
-        return result
 
     # @unittest.skip
     def test_lock(self):
