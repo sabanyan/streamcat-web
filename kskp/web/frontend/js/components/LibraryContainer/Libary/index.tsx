@@ -30,6 +30,7 @@ import LibraryUtil from "Utils/LibraryUtil";
 import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
 import { project } from '../../shared/IconRenderer/icon/index';
 import LibraryMultiInspector from 'Shared/Inspector/LibraryMultiInspector';
+import { reject } from "lodash";
 
 export interface Database {
     label?: string;
@@ -1298,15 +1299,39 @@ const Library = (_: Props) => {
 
         const _onClickCopy = (e, data: LibraryChild) => {
             if (data.type == "flow") {
-                APIUtil.post("flows", { original_flow_uuid: data.uuid }).then((response) => {
-                    fetchFolder();
-                    notify({
-                        title: "フローを複製しました", message:  response.data.data.label + "を作成しました",
-                        status: "success"
-                    });
+                ModalUtil.registerModal({
+                    id: Constants.modal.CONFIRM, onClickDone: () => {
+                        APIUtil.post("flows", { original_flow_uuid: data.uuid }).then((response) => {
+                            if (response.data.success) {
+                                fetchFolder();
+                                notify({
+                                    title: "フローを複製しました", message: response.data.data.label + "を作成しました",
+                                    status: "success"
+                                });
+                            } else {
+                                reject(response)
+                            }
+              
+                        }).catch((response) => {
+                            notify({
+                                title: "複製エラー", message: response.data.message,
+                                status: "error"
+                            });
+                        });
+                        ModalUtil.closeModal(Constants.modal.CONFIRM);
+                    }
+                });
+
+                ModalUtil.emitModal({
+                    id: Constants.modal.CONFIRM,
+                    visible: true,
+                    done: "複製する",
+                    danger: false,
+                    content: <div>
+                        {selectedDatas[0].label} を複製しますか？
+                    </div>
                 });
             }
-
         }
 
         const onClickDelete = () => {
