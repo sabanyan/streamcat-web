@@ -22,16 +22,8 @@ class LibraryMultiInspector extends React.Component<Props> {
     let del,move
     let isDeletable, isMoveable
 
-    isDeletable = datas.filter((data) => {
-      return !data.allowlist.delete ? true : false
-    }).length >= 1 ? false : true
-
-    isMoveable = datas.filter((data) => {
-      return !data.allowlist.move ? true : false
-    }).length >= 1 ? false : true
-
-    if (allowlist.delete && onClickDelete && isDeletable) del = <Button danger={true} onClick={() => onClickDelete(datas)} icon={"delete"}>削除する</Button>
-    if (allowlist.move && onClickMove && isMoveable) move = <Button onClick={(data) => onClickMove(datas)} icon={"open_in_browser"}>移動する</Button>
+    if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(datas)} icon={"delete"}>削除する</Button>
+    if (onClickMove) move = <Button onClick={(data) => onClickMove(datas)} icon={"open_in_browser"}>移動する</Button>
     return <React.Fragment>
       {move}
       {del}
