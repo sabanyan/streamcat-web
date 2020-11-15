@@ -362,25 +362,10 @@ class FrameApiTestCase(ApiTestCaseBase):
 
 class FlowApiTestCase(ApiTestCaseBase):
 
-    # フロー(833fdb62-2bb6-4a77-a0e1-77941ad951a3)の入力フレーム
-    INPUT_FRAME_UUID = '86365ce9-9b01-4ec3-b672-7739e8f1e507'
-    INPUT_FRAME_UUID2 = '2c72275f-2019-49ae-b36d-a29d1507f8dd'
-
     def setUp(self):
         self.db_fd, os.environ['SQLITE_PATH'] = tempfile.mkstemp()
         app.testing = True
         self.client = app.test_client()
-        # with app.app_context():
-        #     model.init_db()
-
-        # # テスト用フレームをライブラリに登録する
-        # # input_frame_path = os.path.join('kskp/data/frames', self.INPUT_FRAME_UUID + '.csv')
-        # input_frame_path = 'kskp/web/backend/api/tests/frames/test_frame.csv'
-        # self.save_frame_to_library(self.INPUT_FRAME_UUID, input_frame_path)
-
-        # # テスト用フレームをライブラリに登録する
-        # input_frame_path2 = 'kskp/web/backend/api/tests/flows/2C72275F-2019-49AE-B36D-A29D1507F8DD.json'
-        # self.save_frame_to_library(self.INPUT_FRAME_UUID2, input_frame_path2)
 
     def tearDown(self):
         os.close(self.db_fd)
@@ -394,19 +379,24 @@ class FlowApiTestCase(ApiTestCaseBase):
         # まずプロジェクトを作る
         project_uuid = self.factory.data.load_root().uuid
 
-        new_flow_name = '新しいフローです'
+        # データソースを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        result = self.post_frames('データソース', project_uuid, f, self.USER1)
+        frame_uuid= result['data']['uuid']
 
+        # フローを作成する
         data_source = {
             "id": "i",
             "type": "frame",
             "dataSource": "csv",
-            "uuid": self.INPUT_FRAME_UUID2,
+            "uuid": frame_uuid,
             "label": "test"
         }
 
         data1 = {
             'project_uuid': project_uuid,
-            'name': new_flow_name,
+            'name': '新しいフローです',
             'datasource': data_source
         }
 
@@ -418,12 +408,12 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['ports'], [[],[]])
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
-        self.assertEqual(result['data']['label'], new_flow_name)
+        self.assertEqual(result['data']['label'], '新しいフローです')
         self.assertEqual(result['data']['nodes'][0]['dataSource'], 'csv')
         self.assertEqual(result['data']['nodes'][0]['id'], 'i')
         self.assertEqual(result['data']['nodes'][0]['label'], 'test')
         self.assertEqual(result['data']['nodes'][0]['type'], 'frame')
-        self.assertEqual(result['data']['nodes'][0]['uuid'], self.INPUT_FRAME_UUID2)
+        self.assertEqual(result['data']['nodes'][0]['uuid'], frame_uuid)
 
 
     def test_new_flow_nothing_datasource(self):
