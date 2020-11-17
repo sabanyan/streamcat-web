@@ -120,7 +120,7 @@ class ProjectInspector extends React.Component<Props> {
       {/*<div>*/}
       {/*1個*/}
       {/*</div>*/}
-      {/*<label>サブフロー</label>*/}
+      {/*<label>共有フロー</label>*/}
       {/*<div>*/}
       {/*3個*/}
       {/*</div>*/}
