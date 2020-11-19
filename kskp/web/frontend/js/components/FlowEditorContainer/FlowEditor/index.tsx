@@ -39,7 +39,8 @@ import {
     undoAction,
     updateDataFrameDetailAction,
     updateFlowAction,
-    updateStepAction
+    updateStepAction,
+    refreshCanvasSizeAction
 } from 'Modules/application';
 import {useDispatch, useSelector} from 'react-redux';
 import {Paper} from 'FlowEditorContainer/Paper';
@@ -69,6 +70,7 @@ const FlowEditor = (props: Props) => {
     const editor = useSelector(state => state.FlowEditorReducer.editor);
     const editMode = useSelector(state => state.FlowEditorReducer.editMode);
     const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
+
 
     const loadFlowJSON = useCallback((context: {}) => {
         return dispatch(loadFlowJSONAction(context));
@@ -162,6 +164,9 @@ const FlowEditor = (props: Props) => {
     const setEditMode = useCallback((mode: FlowEditModeValue) => {
         dispatch(setEditModeAction(mode));
     },[]);
+    const refreshCanvasSize = useCallback(() => {
+        dispatch(refreshCanvasSizeAction());
+    },[]);
 
     const notify = (context) => dispatch(addNotification(context));
     const dismissNotify = (id: string) => {
@@ -174,6 +179,12 @@ const FlowEditor = (props: Props) => {
     const [lockUUID, setLockUUID] = useState<string | undefined>(undefined);
     const [readOnly, setReadOnly] = useState<boolean>(false);
     const hasLockedUUID = useMemo(()=>!!(lockUUID),[lockUUID]); // lockUUIDを保持している際は、編集可能な状態
+
+    useEffect(()=>{
+        window.onresize = () =>{
+            refreshCanvasSize();
+        }
+    },[refreshCanvasSize]);
 
     useEffect(()=>{
         const handleLeavePage = () => {
