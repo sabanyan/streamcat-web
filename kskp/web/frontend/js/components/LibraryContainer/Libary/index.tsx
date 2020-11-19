@@ -1311,7 +1311,7 @@ const Library = (_: Props) => {
                             } else {
                                 reject(response)
                             }
-              
+
                         }).catch((response) => {
                             notify({
                                 title: "複製エラー", message: response.data.message,
@@ -1431,6 +1431,9 @@ const Library = (_: Props) => {
         const getEndPoint = (libraryType: string): string | null => {
             let endPoint: string | null = null;
             switch (libraryType) {
+                case Constants.library.type.flow:
+                    endPoint = "flows/";
+                    break;
                 case Constants.library.type.frame:
                     endPoint = "frames/";
                     break;
@@ -1495,12 +1498,38 @@ const Library = (_: Props) => {
             }
 
             setIsLoading(true);
+            let locksModel = new LocksModel(uuid);
+            let lock, lockId, response
 
-            APIUtil.put(endPoint + uuid, body).then((response) => {
-                if (response.data.success) {
-                    fetchFolder();
+            new Promise(async (resolve, reject) => {
+                // lockが必要な場合、lockを取得
+                if (libraryType === Constants.library.type.flow) {
+                    const lockBody = { target: uuid };
+                    // lockの取得
+                    response = await APIUtil.post("locks", lockBody);
+                    if (!response.data.success) reject(response.data)
+                    lock = locksModel.Parse(response);
+                    lockId = lock.getLockId();
+                    if (!lockId) reject(response.data);
+                    // flowの取得
+                    response = await APIUtil.get("flows/" + uuid, body)
+                    if (!response.data.success) reject(response.data)
+                    body = { ...body, lock: lockId, flow: response.data.data.flow }
                 }
-            }).finally(() => {
+                resolve(body);
+            }).then(async (body) => {
+                response = await APIUtil.put(endPoint + uuid, body)
+                if (lockId) navigator.sendBeacon("/api/v0/delete-locks/" + lockId);
+                if (response.data.success) fetchFolder();
+            }).catch((exception) => {
+                notify({
+                    title: "エラー",
+                    message: exception.message,
+                    status: "error",
+                    dismissAfter: 0,
+                    closeButton: true
+                });
+            }).then(() => {
                 setIsLoading(false);
             });
         };
@@ -1658,7 +1687,7 @@ const Library = (_: Props) => {
             if (currentMembers) {
                 if (searchText !== "") {
 
-                    let response = await APIUtil.get("/users?q=" + searchText + "&roles=off&projects=on&&except_inactive=on")
+                    let response = await APIUtil.get("users?q=" + searchText + "&roles=off&projects=on&&except_inactive=on")
                     if (response.data.success && response.data.data) {
                         seachResult = response.data.data
 
@@ -1742,11 +1771,11 @@ const Library = (_: Props) => {
                 let body = { target: flow_uuid };
                 let locks = new LocksModel(flow_uuid);
 
-                return axios.post("/api/v0/locks", body).then((response) => {
+                return APIUtil.post("api/v0/locks", body).then((response) => {
                     let locksModel = locks.Parse(response);
                     let lockId = locksModel.getLockId();
                     if (lockId) {
-                        axios.put("/api/v0/flows/" + flow_uuid, {
+                        APIUtil.put("api/v0/flows/" + flow_uuid, {
                             editLock: editLock,
                             lock: lockId
                         }).then((response) => {
