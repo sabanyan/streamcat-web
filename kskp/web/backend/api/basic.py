@@ -220,21 +220,20 @@ def update_flow(flow_uuid):
         flow = g.factory.data.find_by_uuid(flow_uuid)
         flow.edit_lock = edit_lock_value
         return flow
-    else:
-        # 指定したフローの内容を渡されたdataの内容と結合する
-        # 同じキーが含まれる場合は新しいもので上書きされる
+    elif 'flow' in request.json:
+        flow_json = request.json['flow']
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        # flow_data = flow.flow_data
-        # フローエディタで指定するラベル名をフローのラベル名とする
-        if 'label' not in request.json or request.json['label'] == '':
-            flow_label = flow.label
+        if 'label' in request.json:
+            label = request.json['label']
         else:
-            flow_label = request.json['label']
-
-        # flow_data.update(request.json['flow'])
-        # 変更を保存する
-        flow.update_data(flow_label, request.json['flow'])
-        return flow.flow_data
+            label = flow.label
+        return flow.update_data(label, flow_json)
+    elif 'label' in request.json:
+        label = request.json['label']
+        flow = g.factory.data.find_by_uuid(flow_uuid)
+        return flow.update_label(label)
+    else:
+        raise Exception('parent,editlock,label,flowのいずれか一つを指定してください')
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
