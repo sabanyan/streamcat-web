@@ -709,29 +709,42 @@ class FlowApiTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/locks', {'target':test_flow_uuid}, self.USER1)
         lock_uuid = result['data']['uuid']
 
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = self.USER1.id
-            endpoint = '/api/v0/flows/%s' % test_flow_uuid
-            updated_flow_name = '変更後だよ'
-            new_item = 'vjq@aer'
-            response = client.put(endpoint,
-                content_type='application/json',
-                data=json.dumps({
-                    'flow': {'label': updated_flow_name, 'b':new_item},
-                    'label': updated_flow_name,
-                    'lock' : lock_uuid
-                })
-            )
-            result = json.loads(response.get_data())
+        # フローを変更する
+        updated_flow_name = '変更後のフローラベル名!'
+        data = {
+            'flow': {'label': updated_flow_name, 'b':'vjq@aer'},
+            'label': updated_flow_name,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{test_flow_uuid}', data, self.USER1)
 
-        self.assertEqual(result['success'], True)
-        # self.assertEqual(result['data']['projectId'], None)
-        # 名前は正しく変更されている
+        # PUT /flowsの戻り値を検証する
+        self.assertIsNotNone(result['data']['uuid'])
         self.assertEqual(result['data']['label'], updated_flow_name)
-        # 新しい内容も入っている
-        self.assertEqual(result['data']['b'], new_item)
+        self.assertEqual(result['data']['editLock'], False)
+        self.assertIsNone(result['data']['prevFolderPath'])
+        self.assertEqual(result['data']['type'], 'flow')
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # フローJsonを取得する
+        result = self.get_uri(f'/api/v0/flows/{test_flow_uuid}', self.USER1)
+
+        # GET /flowsの戻り値を検証する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['label'], updated_flow_name)
+        self.assertEqual(result['data']['editLock'], False)
+        self.assertIsNone(result['data']['prevFolderPath'])
+        self.assertEqual(result['data']['type'], 'flow')
+        self.assertEqual(result['data']['creator'], self.USER1.name)
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # フローJsonが更新さていること
+        self.assertEqual(result['data']['flow']['label'], updated_flow_name)
+        self.assertEqual(result['data']['flow']['b'], 'vjq@aer')
+
+        # フローを削除する
+        self.delete_uri_with_json(f'/api/v0/flows/{test_flow_uuid}', {'lock':lock_uuid}, self.USER1)
 
         # ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
