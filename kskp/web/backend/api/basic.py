@@ -233,7 +233,9 @@ def update_flow(flow_uuid):
 
         # flow_data.update(request.json['flow'])
         # 変更を保存する
-        flow.update_data(flow_label, request.json['flow'])
+        from kskp.store import FlowData
+        flow_data = FlowData(request.json['flow'])
+        flow.update_data(flow_label, flow_data)
         return flow.flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
@@ -431,7 +433,7 @@ def delete_cache():
             node['cacheCreatedAt'] = None
             cache_uuids.append(frame_uuid)
 
-    flow.update_data(flow.label, flow_data.to_json())
+    flow.update_data(flow.label, flow_data)
 
     # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
     for cache_uuid in cache_uuids:
