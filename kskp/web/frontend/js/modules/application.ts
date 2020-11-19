@@ -37,6 +37,7 @@ const UPDATE_DATA_SOURCE_DETAIL_ACTION = "update_data_source_detail_action";
 const UPDATE_CACHE_ACTION = "update_cache_action";
 const MOVE_STEPS_ACTION = "move_steps_action";
 const RESIZE_INSPECTOR_ACTION = "resize_inspector_action";
+const REFRESH_CANVAS_SIZE_ACTION = "refresh_canvas_size_action";
 const ADD_NOTE_ACTION = "add_note_action";
 const SET_EXECUTE_MODE_ACTION = "set_execute_mode_action";
 const SET_EDIT_MODE_ACTION = "set_edit_mode_action";
@@ -644,6 +645,16 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       break;
     }
 
+    case REFRESH_CANVAS_SIZE_ACTION: {
+      newState = {
+        ...newState,
+        editor: {
+          width: (window as any).innerWidth
+        }
+      };
+      break;
+    }
+
     case SET_EDIT_MODE_ACTION: {
       newState = {
         ...newState,
@@ -1048,6 +1059,12 @@ export const resizeInspectorAction = (width: number) => {
   return {
     type: RESIZE_INSPECTOR_ACTION,
     width: width
+  };
+};
+
+export const refreshCanvasSizeAction = () => {
+  return {
+    type: REFRESH_CANVAS_SIZE_ACTION
   };
 };
 
