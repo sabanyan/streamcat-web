@@ -1511,10 +1511,7 @@ const Library = (_: Props) => {
                     lock = locksModel.Parse(response);
                     lockId = lock.getLockId();
                     if (!lockId) reject(response.data);
-                    // flowの取得
-                    response = await APIUtil.get("flows/" + uuid, body)
-                    if (!response.data.success) reject(response.data)
-                    body = { ...body, lock: lockId, flow: response.data.data.flow }
+                    body = { ...body, lock: lockId}
                 }
                 resolve(body);
             }).then(async (body) => {
