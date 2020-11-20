@@ -120,6 +120,7 @@ export const getDataBaseParams = () => {
         },
         {
             "name": "password",
+            "isPassword" : true,
             "type": "string",
             "label": "パスワード",
             "default": ""
