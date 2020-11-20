@@ -31,6 +31,8 @@ export type FlowModelProps = {
   executeMode: FlowExecuteModeValue
   createdAt?: string
   creator?: string
+  folderPath?: string
+  folderUuid?: string
   label: string
   nodes: any[]
   params: []
@@ -59,6 +61,8 @@ export interface DatumAllowList{
 export default class FlowModel {
   createdAt?: string
   creator?: string
+  folderPath?: string
+  folderUuid?: string
   label: string = ""
   nodes?: any[] = []
   params: [] = []
@@ -76,6 +80,8 @@ export default class FlowModel {
     this.ports = props.ports
     this.projectId = props.projectId
     this.description = props.description
+    this.folderPath = props.folderPath
+    this.folderUuid = props.folderUuid
   }
 
   toNodeModels(nodes?: any[]) {
