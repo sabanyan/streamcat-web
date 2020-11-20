@@ -1771,11 +1771,11 @@ const Library = (_: Props) => {
                 let body = { target: flow_uuid };
                 let locks = new LocksModel(flow_uuid);
 
-                return APIUtil.post("api/v0/locks", body).then((response) => {
+                return APIUtil.post("locks", body).then((response) => {
                     let locksModel = locks.Parse(response);
                     let lockId = locksModel.getLockId();
                     if (lockId) {
-                        APIUtil.put("api/v0/flows/" + flow_uuid, {
+                        APIUtil.put("flows/" + flow_uuid, {
                             editLock: editLock,
                             lock: lockId
                         }).then((response) => {

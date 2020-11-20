@@ -98,8 +98,8 @@ class LibraryInspector extends React.Component<Props> {
     // flow lock button
     if (allowlist.lock && data && data.type == Constants.library.type.flow && onChangeFlowLock) {
       lock = <div className={style.flowLock}>
-        <input type="checkbox" checked={data.editLock ? true : false} onChange={(e) => onChangeFlowLock(e, data)}></input>
-        <label>編集ロック</label>
+        <input id="flowLock" type="checkbox" checked={data.editLock ? true : false} onChange={(e) => onChangeFlowLock(e, data)}></input>
+        <label htmlFor="flowLock">編集ロック</label>
       </div>
     }
 
