@@ -171,7 +171,6 @@ def new_flow():
     新しいフローを作成する
     TODO: JSONに必要な項目があるかどうかのValidationを追加したい
     """
-
     j = request.json
 
     if 'original_flow_uuid' in j:
@@ -182,11 +181,7 @@ def new_flow():
         new_label = parent.make_unique_label(original_label)
         # フローを複製する
         new_flow = original_flow.duplicate(new_label)
-        flow_data = new_flow.flow_data
-        # 複製したフローを保存する
-        new_flow.save()
-        new_flow = new_flow.reload()
-        return flow_data
+        return new_flow.flow_data
     else:
         parent_uuid = j.get('project_uuid')
         label = j.get('name')
