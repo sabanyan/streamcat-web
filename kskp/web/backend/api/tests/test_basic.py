@@ -521,7 +521,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         キャッシュデータを持つフローをコピーした場合は、
         そのキャッシュデータもコピーすることを確認する
         """
-
         # mnewstrコマンド1つのフロー
         flow_json = {
             "label": "テストフロ",
