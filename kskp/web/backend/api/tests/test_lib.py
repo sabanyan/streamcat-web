@@ -1649,6 +1649,9 @@ class TrashTestCase(ApiTestCaseBase):
         # (ゴミ箱内のフローから参照されているフレームはゴミ箱に捨てられること)
         self.delete_uri(f'/api/v0/folders/{folder1_uuid}', self.USER1)
 
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
 
@@ -2470,6 +2473,9 @@ class FlowFilesTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
         lock_uuid = result['data']['uuid']
         self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
+
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)

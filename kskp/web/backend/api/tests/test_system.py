@@ -2820,6 +2820,9 @@ class SystemTestCase(ApiTestCaseBase):
         }
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
+        # 編集者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
         # プロジェクト管理者は、プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
 
@@ -2964,6 +2967,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト管理者はキャッシュを参照できること
         result = self.get_uri(f'/api/v0/frames/{cache_uuid}', self.USER2)
+
+        # フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
 
         # プロジェクトとキャッシュを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
