@@ -202,23 +202,27 @@ def new_flow():
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
-@lock_required
+# @lock_required
 @api_base
 def update_flow(flow_uuid):
     """
     フローのラベルを修正する、またはフローを移動する
     """
+    req = RequestJson(request.json)
+    if not req.has('lock'):
+        raise Exception('ロックのUUIDを指定してください')
+
     if 'parent' in request.json:
         if 'label' in request.json:
             raise Exception('labelとはparent属性は同時に指定できません')
         # flowを移動する
         new_parent = request.json['parent']
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        return flow.move(new_parent)
+        return flow.move(new_parent, lock_uuid=req['lock'])
     elif 'editLock' in request.json:
         edit_lock_value = request.json['editLock']
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        flow.edit_lock = edit_lock_value
+        flow.set_edit_lock(edit_lock_value, lock_uuid=req['lock'])
         return flow
     elif 'flow' in request.json:
         flow_json = request.json['flow']
@@ -227,24 +231,30 @@ def update_flow(flow_uuid):
             label = request.json['label']
         else:
             label = flow.label
-        return flow.update_data(label, flow_json)
+        return flow.update_data(label, flow_json, lock_uuid=req['lock'])
     elif 'label' in request.json:
         label = request.json['label']
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        return flow.update_label(label)
+        return flow.update_label(label, lock_uuid=req['lock'])
     else:
         raise Exception('parent,editlock,label,flowのいずれか一つを指定してください')
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
-@lock_required
+# @lock_required
 @api_base
 def throw_away_flow(flow_uuid):
     """
     指定されたフローをほかす
     """
+    try:
+        req = RequestJson(request.json)
+        lock_uuid = req['lock']
+    except Exception:
+        raise Exception('ロックのUUIDを指定してください')
+
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    flow.throw_away()
+    flow.throw_away(lock_uuid=lock_uuid)
 
 @mod.route('/subflows', methods=['GET'])
 @login_required_api
@@ -430,7 +440,8 @@ def delete_cache():
             node['cacheCreatedAt'] = None
             cache_uuids.append(frame_uuid)
 
-    flow.update_data(flow.label, flow_data.to_json())
+    # TODO: 暫定的に、キャッシュの設定ではフローJsonの排他制御をしない
+    flow.update_data(flow.label, flow_data.to_json(), ignore_lock=True)
 
     # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
     for cache_uuid in cache_uuids:

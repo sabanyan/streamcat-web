@@ -188,6 +188,128 @@ class LockFlowTestCase(ApiTestCaseBase):
         有効期間を過ぎたロックは解除される
         """
 
+    def test_delete_locked_flow(self):
+        """
+        排他ロックされたフローはゴミ箱にほかせないこと
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダを作成する
+        result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'伊右衛門'}, self.USER1)
+        folder_uuid = result['data']['uuid']
+
+        # USER1は、フォルダ内にFlowを作成する
+        data = {
+            'project_uuid': folder_uuid,
+            'name': 'お〜いお茶',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}?projects=on', self.USER1)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # 排他ロックをせずに、フローをゴミ箱にほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
+
+        # USER1は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # 誤った排他ロックのUUIDで、フローをゴミ箱にほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':None}, self.USER1)
+
+        # 排他ロックを指定すれば、フローをゴミ箱にほかせること
+        self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER1)
+
+        # USER1は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_delete_locked_flow_in_folder(self):
+        """
+        フォルダ内にある排他ロックされたフローを、フォルダごとゴミ箱にほかせないこと
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダを作成する
+        result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'三ツ矢サイダー'}, self.USER1)
+        folder_uuid = result['data']['uuid']
+
+        # USER1は、フォルダ内にFlowを作成する
+        data = {
+            'project_uuid': folder_uuid,
+            'name': '養老サイダー',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}?projects=on', self.USER1)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # USER1は、フォルダ内にFrameを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummyD.csv')
+        # フレームデータを作成する(POST /frames)
+        result = self.post_frames('コケかけコケかけコケコーラ', folder_uuid, f, self.USER1)
+        frame_uuid = result['data']['uuid']
+
+        # USER1は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # フォルダをゴミ箱にほかす
+        self.delete_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
+
+        # ゴミ箱に形代が作成されていること
+        result = self.get_uri(f'/api/v0/trashes', self.USER1)
+        self.assertNotEqual(result['data']['children'][0]['uuid'], folder_uuid)
+        self.assertEqual(result['data']['children'][0]['label'], '三ツ矢サイダー')
+        katashiro_folder_uuid = result['data']['children'][0]['uuid']
+
+        # フォルダはゴミ箱にほかされていないこと
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        self.assertEqual(result['data']['folderPath'][1]['label'], '三ツ矢サイダー')
+        # 排他ロック中のフローはゴミ箱にほかされていないこと
+        self.assertEqual(result['data']['children'][0]['uuid'], flow_uuid)
+
+        # フレームはゴミ箱にほかされていること
+        result = self.get_uri(f'/api/v0/folders/{katashiro_folder_uuid}', self.USER1)
+        self.assertEqual(result['data']['children'][0]['uuid'], frame_uuid)
+        self.assertEqual(result['data']['children'][0]['label'], 'コケかけコケかけコケコーラ')
+
+        # USER1は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
+        # フォルダをゴミ箱にほかす
+        self.delete_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
+
+        # フォルダはゴミ箱にほかされていること
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
+        self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
+        self.assertEqual(result['data']['folderPath'][1]['label'], 'ゴミ箱')
+        self.assertEqual(result['data']['folderPath'][2]['label'], '三ツ矢サイダー_2')
+        # 排他ロックが解除されたフローはゴミ箱にほかされていること
+        self.assertEqual(result['data']['children'][0]['uuid'], flow_uuid)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+        # ゴミ箱は空になっていること
+        result = self.get_uri(f'/api/v0/trashes', self.USER1)
+        self.assertEqual(len(result['data']['children']), 0)
+
     @unittest.skip
     def test_simulutaneous_lock(self):
         """

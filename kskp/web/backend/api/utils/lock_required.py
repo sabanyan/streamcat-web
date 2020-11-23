@@ -1,6 +1,7 @@
 import functools
 from flask import request, jsonify
-from kskp.web.backend import app
+# from kskp.web.backend import app
+from kskp.store import lock_manager
 
 def lock_required(func):
     """
@@ -15,7 +16,7 @@ def lock_required(func):
                             'message': 'ロックのUUIDを指定してください'
                         })
         lock_uuid = request.json['lock']
-        lock_manager = app.config['LOCK_MANAGER'] 
+        # lock_manager = app.config['LOCK_MANAGER'] 
         if not lock_manager.contains(lock_uuid):
             return jsonify({
                             'success': False,

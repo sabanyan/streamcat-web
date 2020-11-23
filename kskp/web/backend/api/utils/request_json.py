@@ -3,6 +3,8 @@ class RequestJson():
     _request_json = {}
 
     def __init__(self, request_json):
+        if request_json is None:
+            raise Exception('リクエストJsonが指定されていません')
         self._request_json = request_json
 
     def __getitem__(self, key):
