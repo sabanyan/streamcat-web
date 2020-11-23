@@ -5,7 +5,6 @@ from kskp.store import Folder, ProjectFolder
 from .auth import login_required_api, MY_PROJECT
 from .utils import (
     api_base,
-    lock_required,
     update_navigation,
     update_project_info,
     update_projects_info2,
@@ -202,7 +201,6 @@ def new_flow():
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
-# @lock_required
 @api_base
 def update_flow(flow_uuid):
     """
@@ -241,7 +239,6 @@ def update_flow(flow_uuid):
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
-# @lock_required
 @api_base
 def throw_away_flow(flow_uuid):
     """

@@ -159,7 +159,6 @@ def make_new_lock():
     """
     if request.json is None or 'target' not in request.json:
         raise Exception('ロック対象データのuuidを指定してください')
-    # lock_manager = app.config['LOCK_MANAGER'] 
     lock = lock_manager.lock(request.json['target'], creator=g.user)
     return lock.to_json()
 
@@ -171,7 +170,6 @@ def extend_lock(lock_uuid):
     ロックの有効期間を延長する
     """
     from kskp.store import LockedDatumException
-    # lock_manager = app.config['LOCK_MANAGER']
     if not lock_manager.contains(lock_uuid):
         raise LockedDatumException(f'Lock ({lock_uuid}) is already expired')
 
@@ -183,8 +181,6 @@ def delete_all_locks():
     指定したuuidのロックを解除する
     全てのロックを解除する
     """
-    # lock_manager = app.config['LOCK_MANAGER'] 
-
     if 'of' in request.args:
         target_uuid = request.args['of']
         return lock_manager.unlock_target(target_uuid)
@@ -202,8 +198,7 @@ url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
 def delete_lock(lock_uuid):
     """
     ロックを解除する
-    """
-    # lock_manager = app.config['LOCK_MANAGER'] 
+    """ 
     return lock_manager.unlock(lock_uuid)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
