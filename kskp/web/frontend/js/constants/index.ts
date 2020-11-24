@@ -248,7 +248,8 @@ const Constants = {
     userStatus: {
       tmp: "tmp",
       active: "active",
-      inactive: "inactive"
+      inactive: "inactive",
+      expired: "expired"
     }
   }
 }

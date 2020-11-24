@@ -340,11 +340,11 @@ const UserListInspector = (props: Props) => {
                 result.push(showPasswordElement)
             }
             const {onClickPasswordReset} = props;
-            if (data.state === 'active' && onClickPasswordReset) {
+            if ((data.state === Constants.admin.userStatus.active || data.state === Constants.admin.userStatus.expired) && onClickPasswordReset) {
                 let resetPasswordEelement = <div key={"resetPassword"} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
                 result.push(resetPasswordEelement)
             }
-            if (data.state === 'inactive'){
+            if (data.state === Constants.admin.userStatus.inactive){
                 const onClickUndelete = ()=>{
                     ModalUtil.emitModal({
                         id: Constants.modal.CONFIRM_UNDELETE_USER,
