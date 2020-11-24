@@ -182,6 +182,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     } else {
       content = <div>
         {subFlowLink}
+        <div className={style.actions}>
+          <Button onClick={(e) => this.onClickDelete(e)} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
+        </div>
         <div className={style.full_hr} />
         <InOutConnector
           selectedStep={selectedStep}
@@ -197,9 +200,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         <div className={style.full_hr} />
         {folderLink}
         {detail}
-        <div className={style.full_hr} />
-        {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
-        <Button onClick={(e) => this.onClickDelete(e)} danger={true} disabled={baseInspectorDisabled}>削除</Button>
       </div>
     }
 
