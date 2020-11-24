@@ -1276,68 +1276,71 @@ class RemoteFolderTestCase(ApiTestCaseBase):
 class TrashTestCase(ApiTestCaseBase):
   
     def get_flow_with_source(self, source_frame_uuid):
-        return {
-            "label": "q", 
-            "nodes": [
+        from kskp.store import FlowData
+        return FlowData(
             {
-                "id": "d", 
-                "type": "frame", 
-                "uuid": source_frame_uuid,
-                "label": "testData", 
-                "makeCache": False, 
-                "dataSource": "csv", 
-                "cacheCreatedAt": None
-            }, 
-            {
-                "id": "d1", 
-                "type": "frame", 
-                "uuid": None, 
-                "label": "d1",
-                "makeCache": False, 
-                "dataSource": "csv", 
-                "cacheCreatedAt": None
-            }, 
-            {
-                "id": "c1", 
-                "args": {
-                "a": "add,add1", 
-                "c": "1,2", 
-                "precision": 10
-                }, 
-                "dsts": {
-                "o": "d1"
-                }, 
-                "size": {
-                "width": 38, 
-                "height": 38
-                }, 
-                "srcs": {
-                "i": "d"
-                }, 
-                "type": "command", 
-                "label": "計算", 
-                "commandId": "mcal", 
-                "srcsOrder": [
-                "i"
-                ]
-            }
-            ], 
-            "ports": [
-            [], 
-            [
+                "label": "q", 
+                "nodes": [
                 {
-                "type": "frame", 
-                "label": "testData", 
-                "nodeId": "d"
+                    "id": "d", 
+                    "type": "frame", 
+                    "uuid": source_frame_uuid,
+                    "label": "testData", 
+                    "makeCache": False, 
+                    "dataSource": "csv", 
+                    "cacheCreatedAt": None
+                }, 
+                {
+                    "id": "d1", 
+                    "type": "frame", 
+                    "uuid": None, 
+                    "label": "d1",
+                    "makeCache": False, 
+                    "dataSource": "csv", 
+                    "cacheCreatedAt": None
+                }, 
+                {
+                    "id": "c1", 
+                    "args": {
+                    "a": "add,add1", 
+                    "c": "1,2", 
+                    "precision": 10
+                    }, 
+                    "dsts": {
+                    "o": "d1"
+                    }, 
+                    "size": {
+                    "width": 38, 
+                    "height": 38
+                    }, 
+                    "srcs": {
+                    "i": "d"
+                    }, 
+                    "type": "command", 
+                    "label": "計算", 
+                    "commandId": "mcal", 
+                    "srcsOrder": [
+                    "i"
+                    ]
                 }
-            ]
-            ], 
-            "params": [], 
-            "creator": "開発用", 
-            "createdAt": "2019-12-04 13:54:46", 
-            "projectId": None, 
-            "description": ""
-        }
+                ], 
+                "ports": [
+                [], 
+                [
+                    {
+                    "type": "frame", 
+                    "label": "testData", 
+                    "nodeId": "d"
+                    }
+                ]
+                ], 
+                "params": [], 
+                "creator": "開発用", 
+                "createdAt": "2019-12-04 13:54:46", 
+                "projectId": None, 
+                "description": ""
+            }
+        )
 
     def get_flow_with_subflow(self, subflow_uuid):
         return {

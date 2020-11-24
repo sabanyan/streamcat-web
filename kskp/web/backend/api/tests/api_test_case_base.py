@@ -76,10 +76,12 @@ class ApiTestCaseBase(TestCaseBase):
             class_name = self.__class__.__name__
             # フローJSONファイルからフローデータを取得する
             import pathlib
+            from kskp.store import FlowData
             flow_path = pathlib.Path(app.root_path).parent / flow_file_path
             flow_json = json.loads(flow_path.read_text(encoding='utf-8'))
+            flow_data = FlowData(flow_json)
             # フローオブジェクトを作成する
-            test_flow = flow_folder.create_flow('テストフロー！(%s)' % class_name, flow_json)
+            test_flow = flow_folder.create_flow('テストフロー！(%s)' % class_name, flow_data)
             # フローをライブラリに保存する
             test_flow.uuid = flow_uuid
             test_flow.save()
