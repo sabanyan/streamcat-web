@@ -194,10 +194,6 @@ const UserList = (props: Props) => {
         });
     }
 
-    const clearSelectedCell = ()=>{
-        setSelectedDatas([]);
-    }
-
     useEffect(() => {
         fetchUsers();
         fetchProjects(false);
@@ -217,7 +213,7 @@ const UserList = (props: Props) => {
                 id: Constants.modal.RESET_USER_PASSWORD, onClickDone: () => {
                     resetUserPassword(selectedData.uuid).finally(() => {
                         ModalUtil.closeModal(Constants.modal.RESET_USER_PASSWORD);
-                        clearSelectedCell();
+                        clearSelected();
                     })
                 },
             })
@@ -250,7 +246,7 @@ const UserList = (props: Props) => {
                 queue.push(fetchUsers, []);
                 queue.start();
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
-                clearSelectedCell();
+                clearSelected();
             },
         })
     },[selectedDatas])
@@ -264,6 +260,7 @@ const UserList = (props: Props) => {
     const renderUserList = () => {
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>) => {
             let data: UserListUser = users.find(user=>(cell.uuid === user.uuid));
+            if (event) event.stopPropagation();
             if (event && (event.metaKey || event.ctrlKey)) {
                 data.selected = true;
                 // command or ctrl + click
@@ -581,7 +578,7 @@ const UserList = (props: Props) => {
             // ユーザー一覧を再更新
             fetchUsers();
             // 選択されているセルを解除（ペインを閉じる）
-            clearSelectedCell();
+            clearSelected();
         }
 
         return <UserListInspector
@@ -597,6 +594,7 @@ const UserList = (props: Props) => {
     };
 
     const clearSelected = () => {
+        setSelectedDatas([]);
         setUsers(users.map((user: UserListUser) => {
             user.selected = false;
             return user;
@@ -623,6 +621,10 @@ const UserList = (props: Props) => {
         }, {
             id: Constants.admin.userStatus.inactive,
             label: '削除済',
+            selected: false
+        }, {
+            id: Constants.admin.userStatus.expired,
+            label: '失効中',
             selected: false
         }];
 

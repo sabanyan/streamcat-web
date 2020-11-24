@@ -688,6 +688,136 @@ class SystemTestCase(ApiTestCaseBase):
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
 
+    def test_get_expired_user(self):
+        """
+        仮パスワードが環境変数で設定した期間を過ぎたユーザは、
+        失効状態になること
+        """
+        # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
+        from kskp.store.auth import User
+        devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
+        User.TMP_PASS_EXPIRE_SECONDS = 0
+
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'🐱@neko.co.jp', 'name':'🚢', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+
+        # ユーザを取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
+        password = result['data']['password']
+
+        # 期待するJSONが返ることを確認する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['email'], '🐱@neko.co.jp')
+        self.assertEqual(result['data']['name'], '🚢')
+        self.assertEqual(result['data']['state'], 'expired')
+        # MyProjectも含め所属するプロジェクトは存在しない
+        self.assertEqual(len(result['data']['projects']), 0)
+        # 失効状態でも仮パスワードは確認できること
+        self.assertIsNotNone(result['data']['password'])
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['data']['createdAt'])
+
+        # パスワードをリセットできること
+        result = self.put_uri(f'/api/v0/users/{user_uuid}', {'password':None}, self.USER1)
+        self.assertNotEqual(result['data']['password'], password)
+
+        # 他のテストケースに影響しないよう有効日数を初期値に戻す
+        User.TMP_PASS_EXPIRE_SECONDS = devault_seconds
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+    def test_cannot_login_by_expired_user1(self):
+        """
+        失効状態のユーザはログインできないこと
+        """
+        # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
+        from kskp.store.auth import User
+        devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
+        User.TMP_PASS_EXPIRE_SECONDS = 0
+
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'ruiji@nintendo.co.jp', 'name':'ルイージ', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+        user_email = result['data']['email']
+        user_passwd = result['data']['password']
+
+        # ユーザ1を取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+        # 失効状態であること
+        self.assertEqual(result['data']['state'], 'expired')
+        # 失効状態でも仮パスワードは確認できること
+        self.assertEqual(result['data']['password'], user_passwd)
+
+        # ユーザは失効状態なのでログインできないこと
+        with self.assertRaises(AssertionError):
+            self.post_login(user_email, user_passwd)
+        with self.assertRaises(AssertionError):
+            self.post_login(user_email, '')
+
+        # 他のテストケースに影響しないよう有効日数を初期値に戻す
+        User.TMP_PASS_EXPIRE_SECONDS = devault_seconds
+
+        # パスワードをリセットすれば失効状態から仮パスワード状態に遷移すること
+        result = self.put_uri(f'/api/v0/users/{user_uuid}', {'password':None}, self.USER1)
+        self.assertEqual(result['data']['state'], 'tmp')
+        user_passwd = result['data']['password']
+
+        # ユーザを登録状態にできること
+        self.post_register_complete(user_email, 'hohho-hhoho-', self.USER1)
+
+        # ユーザはログインできること
+        result = self.post_login(user_email, 'hohho-hhoho-')
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
+    def test_cannot_login_by_expired_user2(self):
+        """
+        登録状態のユーザでも、失効状態になったユーザはログインできないこと
+        """
+        # ユーザを作成する
+        result = self.post_uri('/api/v0/users', {'email':'mario@nintendo.co.jp', 'name':'マリオ', 'password':None}, self.USER1)
+        user_uuid = result['data']['uuid']
+        user_email = result['data']['email']
+
+        # ユーザを登録状態にする
+        self.post_register_complete(user_email, 'pokemon-get-daze', self.USER1)
+
+        # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
+        from kskp.store.auth import User
+        devault_seconds = User.TMP_PASS_EXPIRE_SECONDS
+        User.TMP_PASS_EXPIRE_SECONDS = 0
+
+        # パスワードをリセットして仮登録状態にする
+        result = self.put_uri(f'/api/v0/users/{user_uuid}', {'password':None}, self.USER1)
+        user_passwd = result['data']['password']
+
+        # ユーザ1を取得する
+        result = self.get_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+        # 失効状態であること
+        self.assertEqual(result['data']['state'], 'expired')
+        # 失効状態でも仮パスワードは確認できること
+        self.assertEqual(result['data']['password'], user_passwd)
+
+        # ユーザは失効状態なのでログインできないこと
+        with self.assertRaises(AssertionError):
+            self.post_login(user_email, user_passwd)
+        with self.assertRaises(AssertionError):
+            self.post_login(user_email, 'pokemon-get-daze')
+
+        # ユーザは失効状態なのでパスワードを登録できないこと
+        # TODO: メールアドレスをSessionに格納すれば誰でも(失効状態でも)パスワード登録できてしまう
+        # with self.assertRaises(AssertionError):
+        #     self.post_register_complete(user_email, 'i-love-peach-princess', self.USER1)
+
+        # 他のテストケースに影響しないよう有効日数を初期値に戻す
+        User.TMP_PASS_EXPIRE_SECONDS = devault_seconds
+
+        # ユーザを削除する
+        self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
+
     def test_get_inactive_user(self):
         """
         except_inactive=onで論理削除状態のユーザを
