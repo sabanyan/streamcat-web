@@ -18,9 +18,6 @@ from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
 
-# FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
-# STRETCH_COUNT = 100
-
 # MyProjectのラベル名
 MY_PROJECT = 'MyProject'
 
