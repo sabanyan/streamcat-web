@@ -9,6 +9,8 @@ export default class AdminUtil {
                 return '仮登録';
             case Constants.admin.userStatus.inactive:
                 return '削除済';
+            case Constants.admin.userStatus.expired:
+                return '失効中';
         }
         return '';
     };
