@@ -11,7 +11,8 @@ class FrameApiTestCase(ApiTestCaseBase):
         self.root_path = self.root.path
     
     def save_flow(self, parent, label, flow_json):
-        new_flow = parent.create_flow(label, flow_json)
+        from kskp.store import FlowData
+        new_flow = parent.create_flow(label, FlowData(flow_json))
         new_flow.save()
         # save()によりreadable=Noneになるため再取得する
         return self.factory.data.find_by_uuid(new_flow.uuid)

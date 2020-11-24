@@ -9,7 +9,7 @@ import pprint
 from pathlib import Path
 
 from kskp.web.backend import app
-from kskp.store import Datum, Flow
+from kskp.store import Datum, Flow, FlowData
 from .api_test_case_base import ApiTestCaseBase
 
 # 
@@ -375,7 +375,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         """
         new_flow APIをテストする
         """
-
         # まずプロジェクトを作る
         project_uuid = self.factory.data.load_root().uuid
 
@@ -414,7 +413,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['nodes'][0]['label'], 'test')
         self.assertEqual(result['data']['nodes'][0]['type'], 'frame')
         self.assertEqual(result['data']['nodes'][0]['uuid'], frame_uuid)
-
 
     def test_new_flow_nothing_datasource(self):
         """
@@ -460,7 +458,6 @@ class FlowApiTestCase(ApiTestCaseBase):
             # 後片付け
             # app.config['FLOW_PATH'] = flow_path
 
-
     def test_new_flow_for_copy(self):
         """
         new_flow APIをテストする
@@ -484,13 +481,11 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
         self.assertIsNotNone(result['data']['createdAt'])
 
-
     def test_new_flow_for_copy_multi(self):
         """
         new_flow APIをテストする
         フローコピー用
         """
-
         # まずユーザとプロジェクトとフローを作る
         with app.app_context():
             test_flow_uuid = setUpFlow(self)
@@ -526,9 +521,8 @@ class FlowApiTestCase(ApiTestCaseBase):
         キャッシュデータを持つフローをコピーした場合は、
         そのキャッシュデータもコピーすることを確認する
         """
-
         # mnewstrコマンド1つのフロー
-        test_flow = {
+        flow_json = {
             "label": "テストフロ",
             "params": [],
             "description": "",
@@ -578,7 +572,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         }
 
         # フローを新規作成する
-        test_flow_uuid = setUpFlow(self, save_flow=test_flow)
+        test_flow_uuid = setUpFlow(self, flow_json=flow_json)
 
         # 新規作成したフローを実行してキャッシュを生成する
         self.get_uri(f'/api/v0/frames?from={test_flow_uuid}', self.USER1)
@@ -642,7 +636,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['navigation']['flow_name'], test_flow_label)
         self.assertEqual(result['navigation']['flow_uuid'], test_flow_uuid)
 
-
     def test_fetch_flows(self):
         """
         fecth_flowsをテストする
@@ -683,7 +676,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(results['navigation']['user_name'], 'ユーザー管理者')
         self.assertEqual(results['navigation']['project_uuid'], flow_folder.uuid)
         self.assertEqual(results['navigation']['project_name'], flow_folder.label)
-
 
     def test_fetch_flows_project_uuid_Nothing(self):
         """
@@ -816,7 +808,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         """
         fetch_subflows APIをテストする
         """
-
         # まずユーザとプロジェクトを作る
         with app.app_context():
             # まずプロジェクトを作る
@@ -859,113 +850,216 @@ class FlowApiTestCase(ApiTestCaseBase):
         # 作成したサブフローを削除する
         os.unlink(flow_path)
 
+    def test_fetch_subflows(self):
+        flow1_json = {
+            "label": "INPUTだけがあるサブフロー", 
+            "nodes": [
+                {
+                "id": "d", 
+                "type": "frame", 
+                "uuid": None, 
+                "label": "testData",
+                "makeCache": False, 
+                "dataSource": "csv", 
+                "cacheCreatedAt": None
+                }, 
+                {
+                "id": "d1", 
+                "type": "frame", 
+                "uuid": None, 
+                "label": "d1", 
+                "makeCache": False, 
+                "dataSource": "csv", 
+                "cacheCreatedAt": None
+                }, 
+                {
+                "id": "c1", 
+                "args": {
+                    "d": "^^"
+                }, 
+                "dsts": {
+                    "o": "d1"
+                }, 
+                "srcs": {
+                    "i": "d"
+                }, 
+                "type": "command", 
+                "label": "c1", 
+                "commandId": "column_unique_name", 
+                "srcsOrder": [
+                    "i"
+                ]
+                }
+            ], 
+            "ports": [
+                [
+                {
+                    "type": "frame", 
+                    "label": "testData", 
+                    "nodeId": "d"
+                }
+                ], 
+                []
+            ], 
+            "params": [], 
+            "creator": "ユーザ管理者", 
+            "createdAt": "2020-11-19 11:31:10", 
+            "projectId": None, 
+            "description": ""
+        }
 
-    def test_fetch_subflows_no_inputs(self):
-        """
-        fetch_subflows APIをテストする
-        portにinputがないものは出力しない
-        """
-        with app.app_context():
-            # サブフロー1を作成する
-            data1 = {'project_uuid': None, 'name': 'INPUTだけがあるサブフロー', 'datasource': None}
-            subflow1_data = Flow.create_flow(data1, self.USER1)
-            subflow1_data['ports'][0] = {"name": "i","type": "frame"}
-            # サブフロー1をライブラリに保存する
-            root = self.factory.data.load_root()
-            subflow1 = root.create_flow('INPUTだけがあるサブフローA', subflow1_data)
-            subflow1_uuid = subflow1.uuid
-            subflow1.save()
+        flow2_json = {
+            "label": "OUTPUTだけがあるサブフロー", 
+            "nodes": [
+                {
+                "id": "d", 
+                "type": "frame", 
+                "uuid": None, 
+                "label": "testData", 
+                "makeCache": False, 
+                "dataSource": "csv", 
+                "cacheCreatedAt": None
+                }, 
+                {
+                "id": "d1", 
+                "type": "frame", 
+                "uuid": None, 
+                "label": "d1", 
+                "makeCache": False, 
+                "dataSource": "csv", 
+                "cacheCreatedAt": None
+                }, 
+                {
+                "id": "c1", 
+                "args": {
+                    "d": "^^"
+                }, 
+                "dsts": {
+                    "o": "d1"
+                }, 
+                "srcs": {
+                    "i": "d"
+                }, 
+                "type": "command", 
+                "label": "c1", 
+                "commandId": "column_unique_name", 
+                "srcsOrder": [
+                    "i"
+                ]
+                }
+            ], 
+            "ports": [
+                [], 
+                [
+                {
+                    "type": "frame", 
+                    "label": "d1", 
+                    "nodeId": "d1"
+                }
+                ]
+            ], 
+            "params": [], 
+            "creator": "ユーザ管理者", 
+            "createdAt": "2020-11-19 11:31:10", 
+            "projectId": None, 
+            "description": ""
+        }
+    
+        # ROOTを取得する
+        root = self.factory.data.load_root()
 
-            # サブフロー2を作成する
-            data2 = {'project_uuid': None, 'name': 'OUTPUTだけがあるサブフロー', 'datasource': None}
-            subflow2_data = Flow.create_flow(data2, self.USER1)
-            subflow2_data['ports'][1] = {"name": "o","type": "frame"}
-            # サブフロー2をライブラリに保存する
-            root = self.factory.data.load_root()
-            subflow2 = root.create_flow('OUTPUTだけがあるサブフローA', subflow2_data)
-            subflow2_uuid = subflow2.uuid
-            subflow2.save()
+        # ROOTの下にフォルダ1を作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'flows1'}, self.USER3)
+        project1_uuid = result['data']['uuid']
 
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = self.USER1.id
-            endpoint = '/api/v0/subflows?no_inputs=on'
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
+        # フォルダ1の下にフローを作成する
+        data = {
+            'project_uuid': project1_uuid,
+            'name': 'INPUTだけがあるサブフロー',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
 
-        self.assertEqual(result['success'], True)
+        # サブフロー1を取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project1_uuid}?roles=on', self.USER3)
+        flow1_uuid = result['data']['children'][0]['uuid']
 
-        # テストで作成した以外のフローもあるので、テスト対象のサブフローを探す
-        # 取得すべきフローを取得できたかのフラグ
-        found_flag = False
-        for subflow in result['data']:
-            # ブロック句
-            # 取得すべきではないフローがあった場合、テストを失敗させる
-            if subflow['uuid'] == subflow2_uuid:
-                self.assertEqual(True, False)
+        # サブフロー1の排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow1_uuid}, self.USER3)
+        lock1_uuid = result['data']['uuid']
 
-            if subflow['uuid'] == subflow1_uuid:
-                found_flag = True
-                self.assertEqual(subflow['label'], 'INPUTだけがあるサブフロー')
-                self.assertEqual(subflow['projectName'], 'ライブラリ')
-                self.assertEqual(subflow['ports'][0], {"name": "i","type": "frame"})
+        # サブフロー1を編集する
+        self.put_uri(f'/api/v0/flows/{flow1_uuid}', {'flow': flow1_json, 'lock':lock1_uuid}, self.USER3)
 
-        self.assertEqual(found_flag, True)
+        # サブフロー2の排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock1_uuid}', {}, self.USER3)
 
+        # ROOTの下にフォルダ2を作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'flows2'}, self.USER3)
+        project2_uuid = result['data']['uuid']
 
-    def test_fetch_subflows_has_outputs(self):
-        """
-        fetch_subflows APIをテストする
-        portにoutputがあるものを取得する
-        """
-        with app.app_context():
-            # サブフロー1を作成する
-            data1 = {'project_uuid': None, 'name': 'OUTPUTだけがあるサブフローです', 'datasource': None}
-            subflow1_data = Flow.create_flow(data1, self.USER1)
-            subflow1_data['ports'][1] = {"name": "o","type": "frame"}
-            # サブフロー1をライブラリに保存する
-            root = self.factory.data.load_root()
-            subflow1 = root.create_flow('OUTPUTだけがあるサブフローAA', subflow1_data)
-            subflow1_uuid = subflow1.uuid
-            subflow1.save()
+        # フォルダ2の下にフロー2を作成する
+        data = {
+            'project_uuid': project2_uuid,
+            'name': 'OUTPUTだけがあるサブフロー',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
 
-            # サブフロー2を作成する
-            data2 = {'project_uuid': None, 'name': 'INPUTだけがあるサブフローです', 'datasource': None}
-            subflow2_data = Flow.create_flow(data2, self.USER1)
-            subflow2_data['ports'][0] = {"name": "i","type": "frame"}
-            # サブフロー2をライブラリに保存する
-            root = self.factory.data.load_root()
-            subflow2 = root.create_flow('INPUTだけがあるサブフローAA', subflow2_data)
-            subflow2_uuid = subflow2.uuid
-            subflow2.save()
+        # サブフロー2を取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project2_uuid}?roles=on', self.USER3)
+        flow2_uuid = result['data']['children'][0]['uuid']
 
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_id'] = self.USER1.id
-            endpoint = '/api/v0/subflows?no_outputs=on'
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
+        # サブフロー2の排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow2_uuid}, self.USER3)
+        lock2_uuid = result['data']['uuid']
 
-        self.assertEqual(result['success'], True)
+        # サブフロー2を編集する
+        self.put_uri(f'/api/v0/flows/{flow2_uuid}', {'flow': flow2_json, 'lock':lock2_uuid}, self.USER3)
 
-        # テストで作成した以外のフローもあるので、テスト対象のサブフローを探す
-        # 取得すべきフローを取得できたかのフラグ
-        found_flag = False
-        for subflow in result['data']:
-            # ブロック句
-            # 取得すべきではないフローがあった場合、テストを失敗させる
-            if subflow['uuid'] == subflow2_uuid:
-                self.assertEqual(True, False)
+        # サブフロー2の排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock2_uuid}', {}, self.USER3)
 
-            if subflow['uuid'] == subflow1_uuid:
-                found_flag = True
-                self.assertEqual(subflow['label'], 'OUTPUTだけがあるサブフローです')
-                self.assertEqual(subflow['projectName'], 'ライブラリ')
-                self.assertEqual(subflow['ports'][1], {"name": "o","type": "frame"})
+        # 1入力のサブフローを取得する
+        # (no_inputs=onの引数指定はおかしい気がする)
+        results = self.get_uri(f'/api/v0/subflows?no_inputs=on', self.USER3)
 
-        self.assertEqual(found_flag, True)
+        # 1入力のサブフローが1つ取得できること
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['uuid'], flow1_uuid)
+        self.assertEqual(results['data'][0]['label'], 'INPUTだけがあるサブフロー')
+        self.assertEqual(results['data'][0]['projectName'], 'flows1')
+        self.assertEqual(results['data'][0]['ports'][0], [{'type':'frame','label':'testData','nodeId':'d'}])
+        self.assertEqual(results['data'][0]['ports'][1], [])
+        self.assertEqual(results['data'][0]['params'], [])
+        self.assertEqual(results['data'][0]['description'], '')
+        self.assertEqual(results['data'][0]['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(results['data'][0]['createdAt'])
+
+        # 1出力のサブフローを取得する
+        # (これもなぜno_outputs=onなんだろう?)
+        results = self.get_uri(f'api/v0/subflows?no_outputs=on', self.USER3)
+
+        # 1出力のサブフローが1つ取得できること
+        self.assertEqual(len(results['data']), 1)
+        self.assertEqual(results['data'][0]['uuid'], flow2_uuid)
+        self.assertEqual(results['data'][0]['label'], 'OUTPUTだけがあるサブフロー')
+        self.assertEqual(results['data'][0]['projectName'], 'flows2')
+        self.assertEqual(results['data'][0]['ports'][0], [])
+        self.assertEqual(results['data'][0]['ports'][1], [{'type':'frame','label':'d1','nodeId':'d1'}])
+        self.assertEqual(results['data'][0]['params'], [])
+        self.assertEqual(results['data'][0]['description'], '')
+        self.assertEqual(results['data'][0]['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(results['data'][0]['createdAt'])
+
+        # プロジェクトフォルダを削除する
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER3)
+        self.delete_uri(f'/api/v0/projects/{project2_uuid}', self.USER3)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER3)
 
 class CacheApiTestCase(ApiTestCaseBase):
 
@@ -997,7 +1091,7 @@ class CacheApiTestCase(ApiTestCaseBase):
         flow_json['nodes'].append(node)
 
         # フローをライブラリに保存する
-        test_flow = root.create_flow('テストフローです', flow_json)
+        test_flow = root.create_flow('テストフローです', FlowData(flow_json))
         test_flow.save()
 
         self.delete_uri('/api/v0/caches?of=%s.%s' % (test_flow.uuid, datum_id), self.USER1)
@@ -1040,7 +1134,7 @@ class NavigationApiTestCase(ApiTestCaseBase):
         flow_json['nodes']=[]
         flow_json['nodes'].append(node)
 
-        test_flow = root.create_flow('テストフローです', flow_json)
+        test_flow = root.create_flow('テストフローです', FlowData(flow_json))
         test_flow.save()
 
         flow_uuid = test_flow.uuid
@@ -1118,7 +1212,7 @@ def setUpProject(self):
     return (user1, None, default_flow.uuid)
 
 
-def setUpFlow(self, save_flow=None):
+def setUpFlow(self, flow_json=None):
     # ルートストアフォルダを取得する
     root = self.factory.data.load_root()
 
@@ -1132,10 +1226,12 @@ def setUpFlow(self, save_flow=None):
         'datasouce': None
     }
 
-    if save_flow is None:
-        save_flow = Flow.create_flow(request_data, self.USER1, None)
+    if flow_json is None:
+        flow_data = Flow.create_flow(request_data, self.USER1, None)
+    else:
+        flow_data = FlowData(flow_json)
 
-    test_flow = root.create_flow(flow_label, save_flow)
+    test_flow = root.create_flow(flow_label, flow_data)
     test_flow_uuid = test_flow.uuid
 
     # フローデータをライブラリに保存する
