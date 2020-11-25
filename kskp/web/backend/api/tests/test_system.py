@@ -3169,6 +3169,9 @@ class SystemTestCase(ApiTestCaseBase):
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
 
+        # 編集者は、フローのロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
         # プロジェクト管理者は、フローを複製する
         data = {
             'original_flow_uuid': flow_uuid
