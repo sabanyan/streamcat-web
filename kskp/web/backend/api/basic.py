@@ -170,7 +170,6 @@ def new_flow():
     新しいフローを作成する
     TODO: JSONに必要な項目があるかどうかのValidationを追加したい
     """
-
     j = request.json
 
     if 'original_flow_uuid' in j:
@@ -181,11 +180,7 @@ def new_flow():
         new_label = parent.make_unique_label(original_label)
         # フローを複製する
         new_flow = original_flow.duplicate(new_label)
-        flow_data = new_flow.flow_data
-        # 複製したフローを保存する
-        new_flow.save()
-        new_flow = new_flow.reload()
-        return flow_data
+        return new_flow.flow_data
     else:
         parent_uuid = j.get('project_uuid')
         label = j.get('name')
@@ -223,13 +218,14 @@ def update_flow(flow_uuid):
         flow.set_edit_lock(edit_lock_value, lock_uuid=req['lock'])
         return flow
     elif 'flow' in request.json:
-        flow_json = request.json['flow']
+        from kskp.store import FlowData
         flow = g.factory.data.find_by_uuid(flow_uuid)
         if 'label' in request.json:
             label = request.json['label']
         else:
             label = flow.label
-        return flow.update_data(label, flow_json, lock_uuid=req['lock'])
+        flow_data = FlowData(request.json['flow'])
+        return flow.update_data(label, flow_data, lock_uuid=req['lock'])
     elif 'label' in request.json:
         label = request.json['label']
         flow = g.factory.data.find_by_uuid(flow_uuid)
@@ -438,7 +434,7 @@ def delete_cache():
             cache_uuids.append(frame_uuid)
 
     # TODO: 暫定的に、キャッシュの設定ではフローJsonの排他制御をしない
-    flow.update_data(flow.label, flow_data.to_json(), ignore_lock=True)
+    flow.update_data(flow.label, flow_data, ignore_lock=True)
 
     # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
     for cache_uuid in cache_uuids:

@@ -4,7 +4,7 @@ setup(
     name='kskp.web',
     packages=['kskp.web'],
     description='Web Frontend of KSKP',
-    url='https://www.ksk-anl.com/products/kskp',
+    url='https://www.kskp.io',
     include_package_data=True,
     install_requires=[
         'flask',

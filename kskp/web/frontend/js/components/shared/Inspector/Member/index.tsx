@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Paper, TextField, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Select } from '@material-ui/core';
 import style from './style.scss'
 import { Tab } from 'Components/shared/Base';
+import Constants from 'Constants/index';
 
 type Row = {
   createdAt: string;
@@ -41,9 +42,9 @@ export default function Member(props: Props) {
       className={style.role}
 
     >
-      <option value="Owner">プロジェクト管理者</option>
-      <option value="Writer">編集者</option>
-      <option value="Reader">閲覧者</option>
+      <option value="Owner">{Constants.projectMemberRole.OWNER}</option>
+      <option value="Writer">{Constants.projectMemberRole.WRITER}</option>
+      <option value="Reader">{Constants.projectMemberRole.READER}</option>
       <option className={style.highlight} value="Del">削除する</option>
     </Select>
   }
