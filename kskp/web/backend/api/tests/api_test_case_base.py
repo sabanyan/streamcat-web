@@ -76,10 +76,12 @@ class ApiTestCaseBase(TestCaseBase):
             class_name = self.__class__.__name__
             # フローJSONファイルからフローデータを取得する
             import pathlib
+            from kskp.store import FlowData
             flow_path = pathlib.Path(app.root_path).parent / flow_file_path
             flow_json = json.loads(flow_path.read_text(encoding='utf-8'))
+            flow_data = FlowData(flow_json)
             # フローオブジェクトを作成する
-            test_flow = flow_folder.create_flow('テストフロー！(%s)' % class_name, flow_json)
+            test_flow = flow_folder.create_flow('テストフロー！(%s)' % class_name, flow_data)
             # フローをライブラリに保存する
             test_flow.uuid = flow_uuid
             test_flow.save()
@@ -229,9 +231,26 @@ class ApiTestCaseBase(TestCaseBase):
         self.assertTrue(result['success'], 'DELETE %s is failed. %s' % (uri, error_detail))
         return result
 
+    def post_login(self, email, password):
+        """
+        POST /library?session=on でログインする
+        """
+        uri = '/library?session=on'
+        with app.test_client() as client:
+            # with client.session_transaction() as session:
+            #     session['user_id'] = user.id
+            #     session['signup_email'] = email
+            response = client.post(uri,
+                                   content_type='multipart/form-data',
+                                   data={'email'   : email,
+                                         'password': password})
+        self.assertEqual(response.status_code, 302, msg=f'POST {uri} is failed. response status: {response.status}')
+        return response.get_data()
+
+
     def post_register_complete(self, email, new_password, user):
         """
-        POST /signup/complete でユーザの登録状態にする
+        POST /signup/complete でユーザを登録状態にする
         """
         uri = '/signup/complete'
         with app.test_client() as client:
