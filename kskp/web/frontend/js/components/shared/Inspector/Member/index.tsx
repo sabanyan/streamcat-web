@@ -43,8 +43,8 @@ export default function Member(props: Props) {
 
     >
       <option value="Owner">{Constants.projectMemberRole.OWNER}</option>
-      <option value="Writer">{Constants.projectMemberRole.READER}</option>
-      <option value="Reader">{Constants.projectMemberRole.WRITER}</option>
+      <option value="Writer">{Constants.projectMemberRole.WRITER}</option>
+      <option value="Reader">{Constants.projectMemberRole.READER}</option>
       <option className={style.highlight} value="Del">削除する</option>
     </Select>
   }
