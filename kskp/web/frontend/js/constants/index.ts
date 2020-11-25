@@ -251,6 +251,11 @@ const Constants = {
       inactive: "inactive",
       expired: "expired"
     }
+  },
+  projectMemberRole: {
+    READER: "閲覧者",
+    WRITER: "編集者",
+    OWNER: "プロジェクト管理者"
   }
 }
 export default Constants
