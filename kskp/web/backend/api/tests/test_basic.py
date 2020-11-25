@@ -741,6 +741,80 @@ class FlowApiTestCase(ApiTestCaseBase):
         # ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
 
+    def test_update_flow_label(self):
+        """
+        PUT /flows でラベル名だけを指定すればラベル名だけを変更できること
+        """
+        # ROOTを取得する
+        root = self.factory3.data.load_root()
+
+        # ROOTの下にプロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'flows1'}, self.USER3)
+        project_uuid = result['data']['uuid']
+
+        # プロジェクトの下にフローを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': '金さん',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
+        flow_json_ports = result['data']['ports']
+        flow_json_params = result['data']['params']
+        flow_json_description = result['data']['description']
+        flow_json_creator = result['data']['creator']
+        flow_json_created_at = result['data']['createdAt']
+        # POST /flowsの戻り値を検証する
+        self.assertNotIn('nodes', result['data'])
+        self.assertEqual(result['data']['label'], '金さん')
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER3)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # フローを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        # GET /flowsの戻り値を検証する
+        self.assertEqual(result['data']['flow']['label'], '金さん')
+
+        # フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+
+        # フローを編集する
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', {'label':'遠山金四郎🌸', 'lock':lock_uuid}, self.USER3)
+
+        # フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
+        # フローを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+
+        # GET /flowsの戻り値を検証する
+        self.assertEqual(result['data']['uuid'], flow_uuid)
+        self.assertEqual(result['data']['label'], '遠山金四郎🌸')
+        self.assertEqual(result['data']['editLock'], False)
+        self.assertIsNone(result['data']['prevFolderPath'])
+        self.assertEqual(result['data']['type'], 'flow')
+        self.assertEqual(result['data']['creator'], self.USER3.name)
+        self.assertIsNotNone(result['data']['createdAt'])
+        # フローJsonにあるlabelは廃止予定だが、label列と同期されること
+        self.assertEqual(result['data']['flow']['label'], '遠山金四郎🌸')
+        # label以外のフローJsonは変更されないこと
+        self.assertNotIn('nodes', result['data']['flow'])
+        self.assertEqual(result['data']['flow']['ports'], flow_json_ports)
+        self.assertEqual(result['data']['flow']['params'], flow_json_params)
+        self.assertEqual(result['data']['flow']['description'], flow_json_description)
+        self.assertEqual(result['data']['flow']['creator'], flow_json_creator)
+        self.assertEqual(result['data']['flow']['createdAt'], flow_json_created_at)
+
+        # プロジェクトフォルダを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER3)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER3)
+
     def test_move_flow(self):
         # ルートを取得する
         root = self.factory.data.load_root()
@@ -968,11 +1042,11 @@ class FlowApiTestCase(ApiTestCaseBase):
         # ROOTを取得する
         root = self.factory.data.load_root()
 
-        # ROOTの下にフォルダ1を作成する
+        # ROOTの下にプロジェクト1を作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'flows1'}, self.USER3)
         project1_uuid = result['data']['uuid']
 
-        # フォルダ1の下にフローを作成する
+        # プロジェクト1の下にフローを作成する
         data = {
             'project_uuid': project1_uuid,
             'name': 'INPUTだけがあるサブフロー',
@@ -995,11 +1069,11 @@ class FlowApiTestCase(ApiTestCaseBase):
         # サブフロー2の排他ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock1_uuid}', {}, self.USER3)
 
-        # ROOTの下にフォルダ2を作成する
+        # ROOTの下にプロジェクト2を作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'flows2'}, self.USER3)
         project2_uuid = result['data']['uuid']
 
-        # フォルダ2の下にフロー2を作成する
+        # プロジェクト2の下にフロー2を作成する
         data = {
             'project_uuid': project2_uuid,
             'name': 'OUTPUTだけがあるサブフロー',
