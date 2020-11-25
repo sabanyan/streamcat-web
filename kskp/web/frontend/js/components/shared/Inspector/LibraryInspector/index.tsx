@@ -228,6 +228,28 @@ class LibraryInspector extends React.Component<Props> {
     return content
   }
 
+  memberTypeToRoleName(type:string) {
+    let result:string;
+
+    switch(type) {
+      case 'Reader' :
+        result = Constants.projectMemberRole.READER;
+        break;
+      case 'Writer' :
+        result = Constants.projectMemberRole.WRITER;
+        break;
+      case 'Owner'  :
+          result = Constants.projectMemberRole.OWNER;
+        break;
+
+      default: 
+        result = "unknown";
+        break;
+    }
+
+    return result
+  }
+
   renderProjectInfo(project: any) {
     const { currentProject, allowlist, onClickMemberInfo } = this.props;
     if (!onClickMemberInfo) return null;
@@ -236,7 +258,7 @@ class LibraryInspector extends React.Component<Props> {
     let membersForm: any = null
     if (members) {
       membersForm = members.map((member) => {
-        return <div key={member.email}>{member.name + "(" + member.type + ")"}</div>
+        return <div key={member.email}>{member.name + "(" + this.memberTypeToRoleName(member.type) + ")"}</div>
       })
     }
 
