@@ -244,12 +244,20 @@ const FlowEditor = (props: Props) => {
             }));
 
         Promise.all(preRequest).then(() => {
-            console.log("preRequest")
             let allowlist;
             flowRequest.push(APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
                 const json = response.data.data;
                 allowlist = json.allowlist;
                 loadFlowJSON(json)
+                if (json.editLock) {
+                    notify({
+                        title: "警告：読取専用フロー",
+                        message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+                        status: "warning",
+                        dismissAfter: -1,
+                        closeButton: true
+                    });
+                }
             }));
 
             Promise.all(flowRequest).then(() => {
