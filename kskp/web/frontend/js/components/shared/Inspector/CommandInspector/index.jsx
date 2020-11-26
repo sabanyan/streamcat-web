@@ -45,7 +45,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       if (selected_step.type === Constants.step.type.subflow && selected_step.uuid) {
         //共有フローの場合のみ詳細を取得
         APIUtil.get('flows/' + selected_step.uuid + '?navigation=off').then((response) => {
-          this.selectedSubFlow = new FlowModel(response.data.data)
+          let flowProps = {...response.data.data.flow, folderPath: response.data.data.folderPath, folderUuid: response.data.data.folderUuid};
+          flowProps.label = response.data.data.label;
+          this.selectedSubFlow = new FlowModel(flowProps)
+          console.log(this.selectedSubFlow)
           this.loaded = true
           this.forceUpdate()
         })
