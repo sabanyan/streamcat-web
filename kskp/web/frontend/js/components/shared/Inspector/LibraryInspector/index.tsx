@@ -161,10 +161,10 @@ class LibraryInspector extends React.Component<Props> {
         result.push(encoding)
       }
 
-      if (data.fileSize) {
+      if (data.fileSize　!== undefined) {
         fileSize = <React.Fragment key={data.fileSize}>
           <div><label>{this.display.fileSize}</label></div>
-          <div className={"mb-8px"}>{data.fileSize}</div>
+          {data.fileSize ? <div className={"mb-8px"}>{data.fileSize}</div> : 0}
         </React.Fragment>
         result.push(fileSize)
       }
