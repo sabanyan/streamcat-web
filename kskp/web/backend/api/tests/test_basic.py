@@ -363,13 +363,11 @@ class FrameApiTestCase(ApiTestCaseBase):
 class FlowApiTestCase(ApiTestCaseBase):
 
     def setUp(self):
-        self.db_fd, os.environ['SQLITE_PATH'] = tempfile.mkstemp()
         app.testing = True
         self.client = app.test_client()
 
     def tearDown(self):
-        os.close(self.db_fd)
-        os.unlink(os.environ['SQLITE_PATH'])
+        pass
 
     def test_new_flow(self):
         """
