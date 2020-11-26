@@ -83,7 +83,7 @@ export default class ParamsForm extends React.Component<Props, State> {
    * @returns {*}
    */
   getDefaultValueOrArgsValue(args: {} | [], param: CommandParamType) {
-    return args[param.name] ? args[param.name] : param.default 
+    return args[param.name]
   }
 
   /**
