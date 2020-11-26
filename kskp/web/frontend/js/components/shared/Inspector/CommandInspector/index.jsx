@@ -152,13 +152,11 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
           onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups} />
         subFlowLink = <div><a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a></div>
-        if (this.selectedSubFlow) {
-          folderLink = <a href={'/folders/' + this.selectedSubFlow.folderUuid} target={'_blank'}>親フォルダーを開く</a>
-          detail = <div>
+        if (this.selectedSubFlow && this.selectedSubFlow.folderPath) {
+          detail =
             <div>
-              {this.selectedSubFlow.folderPath}
+              <a href={'/folders/' + this.selectedSubFlow.folderUuid} target={'_blank'}>{this.selectedSubFlow.folderPath}</a>
             </div>
-          </div>
         }
 
       }
@@ -186,6 +184,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           <Button onClick={(e) => this.onClickDelete(e)} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
         </div>
         <div className={style.full_hr} />
+        <div><label>ライブラリーの場所</label></div>
+        {detail}
         <InOutConnector
           selectedStep={selectedStep}
           updateStep={updateStep}
@@ -197,9 +197,6 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
           disabled={baseInspectorDisabled}
         />
         {form}
-        <div className={style.full_hr} />
-        {folderLink}
-        {detail}
       </div>
     }
 
