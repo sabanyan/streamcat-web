@@ -46,7 +46,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {Paper} from 'FlowEditorContainer/Paper';
 import {PaperZoom} from 'FlowEditorContainer/PaperZoom';
 import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
-import {FlowEditModeValue, FlowExecuteModeValue} from 'Model/Flow/FlowModel';
+import {FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue} from 'Model/Flow/FlowModel';
 import {NotAllowed} from 'Components/NotAllowedContainer';
 
 interface Props {
@@ -70,7 +70,39 @@ const FlowEditor = (props: Props) => {
     const editor = useSelector(state => state.FlowEditorReducer.editor);
     const editMode = useSelector(state => state.FlowEditorReducer.editMode);
     const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
+    const networkStatus = useSelector(state => state.FlowEditorReducer.networkStatus);
 
+    const [offLineNotify,setOffLineNotify] = useState<any|null>(null);
+    const [initialEditMode,setInitialEditMode] = useState<FlowEditModeValue|null>(null);
+
+    useEffect(()=>{
+        if(initialEditMode === null){
+            setInitialEditMode(editMode);
+        }
+    },[editMode]);
+
+    useEffect(()=>{
+        if(networkStatus === NetworkStatusValue.Online){
+            if(offLineNotify){
+                dismissNotify(offLineNotify.id,1);
+                notify({
+                    title: "ネットワークに再接続しています",
+                    status: "success",
+                    dismissAfter: 2000
+                });
+                setOffLineNotify(null);
+            }
+        }else if(networkStatus === NetworkStatusValue.Offline){
+            const _offLineNotify = notify({
+                title: "現在ネットワークがオフラインです",
+                message: "ネットワークの状態を確認してください",
+                status: "warning",
+                dismissAfter: -1,
+                closeButton: true
+            });
+            setOffLineNotify(_offLineNotify);
+        }
+    },[networkStatus]);
 
     const loadFlowJSON = useCallback((context: {}) => {
         return dispatch(loadFlowJSONAction(context));
@@ -169,10 +201,10 @@ const FlowEditor = (props: Props) => {
     },[]);
 
     const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
+    const dismissNotify = (id: string, delay?: number) => {
         setTimeout(() => {
             dispatch(removeNotification(id));
-        }, 1000);
+        }, (delay)?delay:1000);
     };
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -326,6 +358,7 @@ const FlowEditor = (props: Props) => {
         if (Array.isArray(nodes)) {
             steps = nodes.map((step: StepModelType) => {
                 let selected = (step.id === selected_step_ids[0]);
+                const stepReadOnly = readOnly || networkStatus === NetworkStatusValue.Offline;
                 return <Step
                     key={step.id}
                     model={step}
@@ -346,7 +379,7 @@ const FlowEditor = (props: Props) => {
                     updateDataFrameDetail={updateDataFrameDetail}
                     updateStep={updateStep}
                     moveSteps={moveSteps}
-                    readOnly={readOnly}
+                    readOnly={stepReadOnly}
                 />;
             });
         }
@@ -412,6 +445,7 @@ const FlowEditor = (props: Props) => {
     },[drag,zoom]);
 
 
+
     if(editMode === undefined || executeMode === undefined){
         // モードが設定前はローディング中にする
         return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true}/>
@@ -423,24 +457,24 @@ const FlowEditor = (props: Props) => {
     // 読み取り専用モードの場合は disabled にする
     // ☁️保存　☁️データソース追加　💬メモ　↩︎もとに戻す　↪︎繰り返す の制御
     const baseToolBarDisabled = (editMode === FlowEditModeValue.ReadOnlyLocked ||
-        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled)
+        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || networkStatus === NetworkStatusValue.Offline
 
     // 編集可能で実行可能な場合のみフロー以外は disabled にする
     // ▶︎このフローを実行の制御
-    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable);
+    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline
 
     // 実行可能で編集可能orUpdate可能以外の場合は、プレビュー機能を disabled にする
     // プレビューを開くリンクの制御
-    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable)
+    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline
 
     // 編集モード以外は、フロー変数の追加機能を hidden にする
-    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable)
+    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline
 
     // 編集モード以外は、コマンドセレクター機能を hidden にする
-    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable)
+    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline
 
     // 編集モード以外は、コマンド・データのペイン機能を disabled にする
-    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable)
+    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline
 
     return <div className={style.flow_editor_container}>
         <div className={style.flow_editor}>
