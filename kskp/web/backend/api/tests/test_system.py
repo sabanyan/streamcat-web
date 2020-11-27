@@ -2689,6 +2689,8 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集ロックはFalseであること
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
+        self.assertTrue(result['data']['allowlist']['lock'])
+        self.assertTrue(result['data']['allowlist']['copy'])
         self.assertFalse(result['data']['editLock'])
 
         # フローの排他ロックを取得する
@@ -2706,7 +2708,10 @@ class SystemTestCase(ApiTestCaseBase):
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
 
         # 編集ロックはTrueであること
+        # allowlistのlockとcopyは編集ロックの値に影響されないこと
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
+        self.assertTrue(result['data']['allowlist']['lock'])
+        self.assertTrue(result['data']['allowlist']['copy'])
         self.assertTrue(result['data']['editLock'])
 
         # フローの排他ロックを取得する
@@ -2725,7 +2730,119 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 編集ロックはFalseであること
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
+        self.assertTrue(result['data']['allowlist']['lock'])
+        self.assertTrue(result['data']['allowlist']['copy'])
         self.assertFalse(result['data']['editLock'])
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
+
+    def test_edit_locked_by_reader(self):
+        """
+        閲覧者は編集ロックの値を変更できないこと
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'猫耳モード'}, self.USER2)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # プロジェクト内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': 'うにゃあ',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+
+        # 閲覧者は、フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER3)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # 閲覧者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+
+        # 閲覧者は、フローを編集ロックできないこと
+        data = {
+            'editLock' : True,
+            'lock' : lock_uuid
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # 編集ロックはFalseであること
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        self.assertFalse(result['data']['allowlist']['lock'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertFalse(result['data']['editLock'])
+
+        # 閲覧者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
+
+
+        # プロジェクト管理者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
+        lock_uuid = result['data']['uuid']
+
+        # プロジェクト管理者は、フローを編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
+
+        # 編集ロックはTrueであること
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['lock'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['editLock'])
+
+        # プロジェクト管理者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+
+
+        # 閲覧者は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
+        lock_uuid = result['data']['uuid']
+
+        # 閲覧者は、フローの編集ロックを解除できないこと
+        data = {
+            'editLock' : False,
+            'lock' : lock_uuid
+        }
+        with self.assertRaises(AssertionError):
+            self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
+
+        # 編集ロックはTrueのままであること
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        self.assertFalse(result['data']['allowlist']['lock'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['editLock'])
+
+        # プロジェクト管理者は、フローの編集ロックを解除する
+        data = {
+            'editLock' : False,
+            'lock' : lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
+
+        # 閲覧者は、フローの排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
