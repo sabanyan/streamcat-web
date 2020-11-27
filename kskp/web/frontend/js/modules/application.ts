@@ -1,7 +1,7 @@
 import Constants from "Constants/index";
 import {defaultGraphProps, defaultNodeProps} from "Utils/GraphUtil";
 import {FlowUtil, GraphUtil, StateUtil, ValidatorUtil, ZoomUtil} from "Utils/index";
-import FlowModel, {FlowEditModeValue, FlowExecuteModeValue} from 'Model/Flow/FlowModel';
+import FlowModel, {FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue} from 'Model/Flow/FlowModel';
 import {DataFrameStepModelProps} from "Model/Step/DataFrameStepModel";
 import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
 import {CommandPortType, StepModelType} from "../types";
@@ -41,6 +41,7 @@ const REFRESH_CANVAS_SIZE_ACTION = "refresh_canvas_size_action";
 const ADD_NOTE_ACTION = "add_note_action";
 const SET_EXECUTE_MODE_ACTION = "set_execute_mode_action";
 const SET_EDIT_MODE_ACTION = "set_edit_mode_action";
+const SET_NETWORK_STATUS = "set_network_status_action";
 const graph: GraphUtil = new GraphUtil();
 
 export let FlowEditorReducerInitialState = {
@@ -70,7 +71,8 @@ export let FlowEditorReducerInitialState = {
   // inspector
   inspector: {
     width: Constants.default.inspector.width
-  }
+  },
+  networkStatus: NetworkStatusValue.UnKnown
 };
 
 const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) => {
@@ -664,6 +666,14 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       break;
     }
 
+    case SET_NETWORK_STATUS: {
+      newState = {
+        ...newState,
+        networkStatus: action.status
+      };
+      break;
+    }
+
     case SET_EXECUTE_MODE_ACTION: {
       newState = {
         ...newState,
@@ -1082,3 +1092,11 @@ export const setEditModeAction = (mode: FlowEditModeValue) => {
     mode: mode
   };
 };
+
+export const setNetworkStatusAction = (status: NetworkStatusValue) => {
+  return {
+    type: SET_NETWORK_STATUS,
+    status: status
+  };
+};
+
