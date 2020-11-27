@@ -554,7 +554,7 @@
     vertical-align: top;
     box-sizing: border-box;
     width: 100%;
-    padding: 10px 20px;
+    padding: 8px 12px;
     word-break: break-all;
 }
 
@@ -622,14 +622,16 @@
 }
 
 :local .notification-title {
-    margin: 0 0 10px;
     font-size: 15px;
     font-weight: 700;
     line-height: 1.428571429;
+    margin: 0;
 }
 
 :local .notification-message {
-    margin: 0;
+    margin: 4px 0 0 0;
+    font-size: 12px;
+    color: #606C7A;
 }
 
 :local .notification--dismissible {
@@ -637,6 +639,7 @@
 }
 
 :local .notification--default {
+    padding: 10px 20px;
     background-color: #ffffff;
     border-left: 2px solid #ffffff;
     color: #524c4c;
