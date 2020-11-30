@@ -23,10 +23,10 @@ export default class StringUtil {
     return tmp.textContent || tmp.innerText || ''
   }
 
-  static getTextWidth (text, font) {
+  static getTextWidth (text, fontSize) {
     let canvas = StringUtil.getTextWidth.canvas || (StringUtil.getTextWidth.canvas = document.createElement('canvas'))
     let context = canvas.getContext('2d')
-    context.font = font
+    context.font = fontSize + "px " + '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"';
     let metrics = context.measureText(text)
 
     return metrics.width
@@ -34,6 +34,13 @@ export default class StringUtil {
 
   static generateUUID(): string{
     return uuidv4();
+  }
+  static urlEncode(value:string):string{
+   return encodeURIComponent(value);
+  }
+
+  static urlDecode(value:string):string{
+    return decodeURIComponent(value);
   }
 }
 

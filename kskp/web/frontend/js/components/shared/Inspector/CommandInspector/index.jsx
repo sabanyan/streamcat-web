@@ -23,6 +23,7 @@ type CommandInspectorProps = {
   updateStep: Function;
   children?: React.Node;
   sortStepSrcEnd: Function;
+  baseInspectorDisabled: boolean;
 }
 
 class CommandInspector extends React.Component<CommandInspectorProps> {
@@ -31,46 +32,48 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   selectedSubFlow: FlowModel
   loaded: boolean = false
 
-  constructor (props: CommandInspectorProps) {
+  constructor(props: CommandInspectorProps) {
     super(props)
   }
 
-  componentWillMount () {
+  componentWillMount() {
     //データフレームの詳細を取得する
-    const {updateStep} = this.props
+    const { updateStep } = this.props
     const selected_step: StepModelType = this.getSelectedStep()
     this.selectedSubFlow = null
     if (selected_step instanceof CommandStepModel) {
-      if (selected_step.type === Constants.step.type.subflow) {
-        //サブフローの場合のみ詳細を取得
+      if (selected_step.type === Constants.step.type.subflow && selected_step.uuid) {
+        //共有フローの場合のみ詳細を取得
         APIUtil.get('flows/' + selected_step.uuid + '?navigation=off').then((response) => {
-          this.selectedSubFlow = new FlowModel(response.data.data)
+          let flowProps = { ...response.data.data.flow, folderPath: response.data.data.folderPath, folderUuid: response.data.data.folderUuid };
+          flowProps.label = response.data.data.label;
+          this.selectedSubFlow = new FlowModel(flowProps)
           this.loaded = true
           this.forceUpdate()
         })
       } else {
-        //サブフロー以外の場合は読み込み完了
+        //共有フロー以外の場合は読み込み完了
         this.loaded = true
       }
     }
   }
 
-  getSelectedStep () {
-    let {selected_step_ids, nodes} = this.props
+  getSelectedStep() {
+    let { selected_step_ids, nodes } = this.props
     return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
-  onHide () {
+  onHide() {
     //this.props.addHistory()
   }
 
-  deleteStep () {
+  deleteStep() {
     let selected_step = this.getSelectedStep()
     this.props.deleteSteps([selected_step.id])
     this.props.selectSteps()
   }
 
-  onClickDelete (e: Event) {
+  onClickDelete(e: Event) {
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
         this.deleteStep()
@@ -88,38 +91,42 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     })
   }
 
-  onChangeInEdge (e, data) {
+  onClickOpenSubFlow(e: Event, flowUUID: any) {
+    window.location.href = '/flows/' + flowUUID;
+  }
+
+  onChangeInEdge(e, data) {
     console.log(e)
     console.log(data)
   }
 
-  onChangeOutEdge (e, data) {
+  onChangeOutEdge(e, data) {
     console.log(e)
     console.log(data)
   }
 
-  onArgChange (e, param, value) {
+  onArgChange(e, param, value) {
     this.update((step) => {
       if (step.args) {
         step.args[param.name] = value
-        if(!value) delete step.args[param.name]
+        if (!value) delete step.args[param.name]
       }
       return step
     })
   }
 
-  update (getNewStep: Function) {
+  update(getNewStep: Function) {
     let selectedStep = this.getSelectedStep()
     const newStep = getNewStep(selectedStep)
     this.props.updateStep(newStep)
   }
 
-  render () {
-    const {selectedStep, updateStep, sortStepSrcEnd} = this.props;
-    const {commands, subflows} = this.props.mast
+  render() {
+    const { selectedStep, updateStep, sortStepSrcEnd, baseInspectorDisabled } = this.props;
+    const { commands, subflows } = this.props.mast
     let selected_step: StepModelType = this.getSelectedStep()
     let inputForm = []
-    let subFlowLink, content, label, subLabel, groups
+    let subFlowLink, content, label, subLabel, groups, folderLink, detail
     if (selected_step.type === Constants.step.type.command) {
       //指定されたステップの元コマンドを取得
       const command: CommandModel = selected_step.getCommand()
@@ -128,29 +135,37 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       //コマンドのラベルを取得
       subLabel = command.label
       this.inputRefs = []
-      
+
       groups = (command.groups) ? command.groups : null
       const params: [CommandParamType] = command.params
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={command} invalids={invalids}
-                              onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
+      inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command} invalids={invalids}
+        onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups} />
 
     } else if (selected_step.type === Constants.step.type.subflow) {
       const subflowCommand: SubflowCommandModel = selected_step.getCommand()
       label = selected_step.getLabel()
-      subLabel = subflowCommand.label
-      this.inputRefs = []
+      if (subflowCommand) {
+        subLabel = subflowCommand.label
+        this.inputRefs = []
 
-      const params: [CommandParamType] = subflowCommand.params
-      const args: {} = selected_step.args
-      const invalids: {} = selected_step.invalid
+        const params: [CommandParamType] = subflowCommand.params
+        const args: {} = selected_step.args
+        const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm params={params} args={args} invalids={invalids} command={null} invalids={invalids}
-                              onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups}/>
+        inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
+          onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups} />
+        subFlowLink = <Button onClick={(e) => this.onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>
+        if (this.selectedSubFlow && this.selectedSubFlow.folderPath) {
+          detail =
+            <div>
+              <a href={'/folders/' + this.selectedSubFlow.folderUuid} target={'_blank'}>{this.selectedSubFlow.folderPath}</a>
+            </div>
+        }
 
-      subFlowLink = <a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a>
+      }
     }
 
     let form
@@ -170,33 +185,37 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       content = <Loader center={true} absolute={false} fixed={false} visible={true} />
     } else {
       content = <div>
-        {subFlowLink}
+        <div className={style.actions}>
+          {subFlowLink}
+          <Button onClick={(e) => this.onClickDelete(e)} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
+        </div>
         <div className={style.full_hr} />
+        <div><label>場所</label></div>
+        {detail}
         <InOutConnector
-            selectedStep={selectedStep}
-            updateStep={updateStep}
-            nodes={nodes}
-            sortStepSrcEnd={sortStepSrcEnd}
-            onChangeInEdge={(e, data) => this.onChangeInEdge(e, data)}
-            onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)} selectedStep={selected_step}
-            selectedSubFlow={this.selectedSubFlow}
+          selectedStep={selectedStep}
+          updateStep={updateStep}
+          nodes={nodes}
+          sortStepSrcEnd={sortStepSrcEnd}
+          onChangeInEdge={(e, data) => this.onChangeInEdge(e, data)}
+          onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)} selectedStep={selected_step}
+          selectedSubFlow={this.selectedSubFlow}
+          disabled={baseInspectorDisabled}
         />
         {form}
-        <div className={style.full_hr} />
-        {/*<Button onClick={(e) => this.onClickSave(e)}>適用</Button>*/}
-        <Button onClick={(e) => this.onClickDelete(e)} danger={true}>削除</Button>
       </div>
     }
 
     // FIXIT onBlurTitle to onChange #164
     return <BaseInspector key={selected_step.id} header={''} label={label} subLabel={subLabel}
-                          name={selected_step.id} onHide={() => this.onHide()}
-                          onBlurTitle={(e) => this.onBlurTitle(e)}>
+      name={selected_step.id} onHide={() => this.onHide()}
+      onBlurTitle={(e) => this.onBlurTitle(e)}
+      disabled={baseInspectorDisabled}>
       {content}
     </BaseInspector>
   }
 
-  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
+  onBlurTitle(e: SyntheticInputEvent<EventTarget>) {
     const selectedStep = this.getSelectedStep()
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     newSelectedStep.label = e.target.value

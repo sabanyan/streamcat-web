@@ -49,7 +49,7 @@ $preview-height: 100%;
     height: 100%;
     .modal-content {
       border-radius: 0;
-      height: calc(100% - 56px);
+      height: 100%;
       background: #F4F4F4 !important;
       .modal-body{
         max-height: inherit!important;
@@ -82,9 +82,11 @@ $preview-height: 100%;
     border: none;
     .modal-body{
       max-height: 700px;
-      overflow: scroll;
       @extend .user-select;
     }
+  }
+  &.overflow-content .modal-body{
+    overflow: scroll;
   }
   .modal-header{
     display: block;

@@ -9,6 +9,7 @@
   transition: opacity 0.2s linear, right 0.2s ease-in;
   transition: width 0.1s;
   opacity: 0;
+  z-index: 1;
   @extend .user-select;
   box-shadow: 0 1px 3px $kskp-property-shadow;
 
@@ -28,13 +29,14 @@
 
 .property_dialog {
   position: fixed;
+  top: 0;
   width: 400px;
   right: -400px;
-  top: 64px;
   height: 100%;
   transition: opacity 0.2s linear, right 0.2s ease-in;
   transition: width 0.1s;
   opacity: 0;
+  z-index: 1;
   @extend .user-select;
   box-shadow: 0 1px 3px $kskp-property-shadow;
 
@@ -138,6 +140,7 @@
   float: left;
   width: calc(100% - 120px);
   text-align: left;
+  font-size: 14px;
   color: $kskp-property-overview-value-color;
 }
 
@@ -178,21 +181,28 @@
   padding: 4px 0;
   position: relative;
   color: $kskp-text;
+  font-size: 16px;
   border-bottom: 1px dotted transparent;
+  &.clickable{
+    &:hover {
+      border-bottom: 1px dotted $kskp-text;
+      cursor: pointer;
+    }
 
-  &:hover {
-    border-bottom: 1px dotted $kskp-text;
-    cursor: pointer;
-  }
+    &:active, &:focus {
+      border-bottom: 1px solid transparent;
+    }
 
-  &:active, &:focus {
-    border: inherit;
+    &:disabled {
+      border-bottom: 1px solid transparent;
+      cursor: default;
+    }
   }
+}
 
-  &:disabled {
-    border: none !important;
-    cursor: default;
-  }
+.sublabel{
+  font-size: 14px;
+  color: #606C7A;
 }
 
 .left {
@@ -384,9 +394,27 @@ li {
   }
 }
 
-
 .encoding, .newline  {
   height: 31px;
   margin-right:5px;
 } 
 
+.project{
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.memberList {
+  padding-top : 8px;
+}
+
+.flowLock {
+  margin-top: 10px;
+}
+.flowLock input {
+  margin: 5px;
+}
+
+.isDialog{
+  top: 0!important;
+}
