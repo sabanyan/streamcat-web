@@ -360,6 +360,8 @@ const Library = (_: Props) => {
                 completeEditDatabase(response);
             }, () => {
                 unhandledNotify("データベース修正エラー");
+            }).then(() => {
+                setIsLoading(false);
             });
         };
 
