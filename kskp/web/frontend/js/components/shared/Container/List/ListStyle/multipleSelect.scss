@@ -1,0 +1,108 @@
+/*
+ *    checkbox icon  名前  作成者  作成日時
+ *    
+ *
+ */
+
+.list {
+  .headers {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 2.5em;
+
+    .columns {
+      display: flex;
+      flex-direction: column;
+      height: 50px;
+      font-size: medium;
+    }
+
+    .columns:nth-child(1) {
+      // checkbox
+      width: 25px;
+    }
+
+    .columns:nth-child(2) {
+      // icon
+      width: 25px;
+    }
+
+    .columns:nth-child(3) {
+      // label
+      width: 400px;
+    }
+
+    .columns:nth-child(4) {
+      // label
+      width: 100px;
+    }
+
+    .columns:nth-child(n + 5) {
+      // label
+      width: 300px;
+    }
+  }
+
+  .rows {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 3.5em;
+    color: #606c7a;
+    background: #fff;
+    font-size: medium;
+    border-top: 1px solid #e5e5e5;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.75;
+    }
+
+    .columns {
+      display: flex;
+      flex-direction: column;
+      height: 56px;
+      justify-content: center;
+    }
+
+    .columns:nth-child(1) {
+      width: 25px;
+
+      // checkbox
+      text-align: center;
+      font-size: 18px;
+      padding: 8px;
+    }
+
+    .columns:nth-child(2) {
+      width: 25px;
+
+      > * {
+        // icon
+        text-align: right;
+        font-size: 18px;
+        padding: 4px;
+      }
+    }
+
+    .columns:nth-child(3) {
+      // label
+      width: 400px;
+    }
+
+    .columns:nth-child(4) {
+      // label
+      width: 100px;
+    }
+
+    .columns:nth-child(n + 5) {
+      // label
+      width: 300px;
+    }
+
+    .selected {
+      opacity: 0.75;
+    }
+  }
+}

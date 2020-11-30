@@ -4,8 +4,10 @@
 {% block content %}
 <script>
   const inject_project_uuid = '{{ project_uuid }}'
+  const inject_is_project = {{ "true" if is_project else "false"  }}
   const inject_flow_uuid  = undefined
   const inject_folder_uuid = '{{ folder_uuid }}'
+  const inject_is_trash = {{ "true" if is_trash else "false" }}
 </script>
-<div id="library_list"></div>
+<div id="library"></div>
 {% endblock %}

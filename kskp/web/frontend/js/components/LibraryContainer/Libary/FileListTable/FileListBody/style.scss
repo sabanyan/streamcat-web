@@ -1,0 +1,30 @@
+@import "../../../../../../sass/common";
+.row{
+  @extend .selectDisable;
+}
+.selected{
+  td{
+    background: #f6faff;
+  }
+}
+
+.selectDisable {
+  user-select: none;
+  a::selection,img::selection,td::selection{
+    background: transparent!important;
+  }
+}
+
+.icon{
+  margin-right: 16px;
+  position: relative;
+  top: -1px;
+}
+
+.filename{
+  
+}
+
+.date {
+  white-space: nowrap;
+}

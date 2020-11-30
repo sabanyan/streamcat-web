@@ -57,7 +57,7 @@ export default class JobFrameList extends React.Component<JobFrameProps, JobFram
 //        <DataTable json={ChartUtil.jsonToChart(json.data.contents)} title={name} uuid={uuid} selected_data_source_detail={response.data.data}></DataTable>
 //      </div>
 //      ModalUtil.emitModal({
-//        id: Constants.preview.DATASOURCE,
+//        id: Constants.modal.PREVIEW_DATASOURCE,
 //        visible: true,
 //        contents: [{title:"データの表示",content:contentTable},{title:"グラフの表示",content:contentGraph}],
 //        title: name,
@@ -77,7 +77,7 @@ export default class JobFrameList extends React.Component<JobFrameProps, JobFram
       }
 
       ModalUtil.emitModal({
-        id: Constants.preview.DATASOURCE,
+        id: Constants.modal.PREVIEW_DATASOURCE,
         visible: true,
         contents: contents,
         title: name

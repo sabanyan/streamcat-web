@@ -1,5 +1,4 @@
 import { API } from 'Modules/api/index'
-import { MessageModel } from 'Model/index';
 
 export function lockedDo(flowUUID, promisedTask: Function, promisedProps: {}) {
 

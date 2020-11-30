@@ -1,0 +1,64 @@
+@import "../../../../../sass/common";
+
+.listRow {
+  display: block;
+  color: #fff;
+  background: darken(darkgray,40%);;
+  border-top: 1px solid #E5E5E5;
+  cursor: pointer;
+  width: 70%;
+  
+  &:hover {
+    color: $kskp-text;
+    text-decoration: none !important;
+    opacity: 0.5;
+  }
+
+  .icon {
+    color: #fff;
+
+    text-align: left;
+    width: 22px;
+    height:56px;
+    float: left;
+    padding: 18px 0px 0px 10px;
+ 
+    i {
+      font-size: 18px;
+    }
+  }
+
+  .columns {
+    height: 56px;
+    display: flex;
+  }
+
+  .columns div:nth-child(1) {
+   
+    text-align: left;
+    vertical-align: middle;
+    padding:16px;
+    width:calc(100% - 20% - 200px - 80px)
+  }
+
+  .columns div:nth-child(2) {
+  
+    text-align: left;
+    vertical-align: middle;
+    padding:16px;
+    width:20%;
+  }
+
+  .columns div:nth-child(n + 3) {
+
+    text-align: left;
+    vertical-align: middle;
+    padding:16px;
+    width:200px;
+  }
+}
+
+.selected {
+  opacity: 0.5;
+    
+}

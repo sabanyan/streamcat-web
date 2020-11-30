@@ -11,6 +11,7 @@
   min-width: 80px;
   min-height: 30px;
   padding: 1px 7px 2px;
+  background-image: linear-gradient(to bottom, #fefefe, #f1f3f6);
 
   &:disabled {
     cursor: default;
@@ -18,7 +19,7 @@
   }
 
   &.danger {
-    border: 1px solid $kskp-danger;
+    border: 1px solid $kskp-danger!important;
 
     .text, .icon {
       color: $kskp-danger !important;
@@ -42,10 +43,15 @@
     border: 1px solid lighten($kskp-dark-gray, 5%);
     transition: all 0.3s;
   }
+  &.primary{
+    .icon{
+      color: #fff!important;
+    }
+  }
 }
 
 .text {
-  top: -2px;
+  top: -0.5px;
   position: relative;
   color: $kskp-text !important;
   font-size: 12px;
@@ -53,7 +59,7 @@
 }
 
 .whiteText {
-  top: -2px;
+  top: -0.5px;
   position: relative;
   color: #fff;
   font-size: 12px;
@@ -68,4 +74,9 @@
   padding-right: 4px;
   position: relative;
   top: 3px;
+}
+
+.disabled {
+  cursor: default;
+  opacity: 0.5;
 }

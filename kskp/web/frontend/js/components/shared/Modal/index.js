@@ -1,4 +1,0 @@
-export {default as Modal} from './Core'
-export {default as ModalManager} from './ModalManager'
-export {default as PreviewModal} from './Preview'
-export {default as StandardModal} from './Standard'

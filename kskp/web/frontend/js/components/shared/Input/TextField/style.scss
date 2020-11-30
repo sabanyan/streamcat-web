@@ -13,3 +13,13 @@
   font-size: 12px;
   color: $kskp-danger;
 }
+
+.textField {
+  margin : 4px 0px 0px 0px;
+}
+
+.readOnly{
+  border: transparent;
+  transition: none;
+  background-color: inherit!important;
+}
