@@ -930,6 +930,7 @@ const Library = (_: Props) => {
                                     }
                                 } else {
                                     body.clickable = true;
+                                    if (body.type === "database") body.clickable = false;
                                 }
                                 if (inject_is_trash) {
                                     // ゴミ箱の場合は全て選択不可
@@ -1246,6 +1247,7 @@ const Library = (_: Props) => {
         if (data.type !== Constants.library.type.database) {
             return;
         }
+
         const database: Database = {
             "label": data.label,
             "dbms": data.dbms,
