@@ -351,7 +351,8 @@ const Library = (_: Props) => {
             setEditDatabase(null);
             ModalUtil.closeModal(Constants.modal.EDIT_DATABASE);
             fetchFolder();
-
+            // hotfix 編集後Paneが持っているseletedDatasの情報が更新されない
+            setSelectedDatas([]);
         };
 
         const editLibraryChild = (data: LibraryListDataType) => {
