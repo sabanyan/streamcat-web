@@ -1,4 +1,3 @@
-//@flow
 const Constants = {
   default: {
     uuid: {
@@ -104,8 +103,11 @@ const Constants = {
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
     ADD_DATABASE: 'add_database',
+    ADD_USER: 'add_user',
+    ADD_USER_CONFIRM: 'add_user_confirm',
     EDIT_DATABASE: 'edit_database',
     EDIT_ENCODING: 'edit_encoding',
+    MEMBER_INFO: 'member_info',
     RUN_FLOW: 'run_flow',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
@@ -113,6 +115,11 @@ const Constants = {
     SHOW_RUN_RESULT: 'show_run_result',
     SHOW_RUN_ERROR: 'show_run_error',
     PREVIEW_DATASOURCE: 'preview_datasource',
+    RESET_USER_PASSWORD: 'reset_user_password',
+    CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN: 'confirm_update_kskp_system_admin',
+    CONFIRM_UPDATE_KSKP_USER_ADMIN: 'confirm_update_kskp_user_admin',
+    CONFIRM_REMOVE_MY_USER_ADMIN: 'confirm_update_my_user_admin',
+    CONFIRM_UNDELETE_USER: 'confirm_undelete_user',
     property: {
       title: 'title',
       message: 'message',
@@ -145,7 +152,7 @@ const Constants = {
   },
   lang: {
     classification: {
-      subflow: 'サブフロー',
+      subflow: '共有フロー',
       calculation: '項目間の計算',
       col_edit: '列に対する選択・加工',
       data_format: 'フォーマットの整形',
@@ -231,6 +238,24 @@ const Constants = {
     "CR",
     "LF",
     "CR+LF"
-  ]
+  ],
+  admin:{
+    systemRole: {
+      EVERYONE:"EVERYONE",
+      USR_ADMIN:"USR_ADMIN",
+      SYS_ADMIN:"SYS_ADMIN"
+    },
+    userStatus: {
+      tmp: "tmp",
+      active: "active",
+      inactive: "inactive",
+      expired: "expired"
+    }
+  },
+  projectMemberRole: {
+    READER: "閲覧者",
+    WRITER: "編集者",
+    OWNER: "プロジェクト管理者"
+  }
 }
 export default Constants

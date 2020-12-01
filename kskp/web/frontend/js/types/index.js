@@ -185,3 +185,49 @@ export type dropDownListItem = {
   value: string,
   object?: {}
 }
+
+export interface UserListUser extends TableCell{
+  uuid:      string;
+  email:     string;
+  name:      string;
+  state:     string;
+  creator:   string;
+  createdAt: Date;
+  roles:     UserRole[];
+  password?: string;
+  projects?: UserProject[];
+}
+
+export interface TableCell {
+  selected?: boolean;
+}
+
+export interface UserRole {
+  uuid:       string;
+  name:       string;
+  systemRole: string;
+  creator:    string;
+  createdAt:  Date;
+}
+
+export interface UserProject {
+  uuid:      string;
+  type:      string;
+  label:     string;
+  creator:   string;
+  createdAt: Date;
+}
+
+export interface IFilterCategoryItem {
+  id: string;
+  label: string;
+  multiple: boolean;
+  data: IFilterListItem[];
+  disabled?: boolean;
+}
+
+export interface IFilterListItem {
+  id: string;
+  label: string;
+  selected: boolean;
+}

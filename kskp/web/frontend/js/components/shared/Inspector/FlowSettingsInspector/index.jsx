@@ -1,13 +1,13 @@
 //@flow
-import React from 'react'
+import React, { Fragment } from 'react'
 import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import { AddButton, Button } from 'Shared/Input'
-import { ModalUtil } from 'Utils/index'
+import { ModalUtil,StringUtil } from 'Utils/index'
 import Constants from 'Constants/index'
+import { CommandSelector } from 'FlowEditorContainer/Command';
+import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import type { MastType, SubFlowParamType } from 'Types/index'
-import { CommandSelector } from "FlowEditorContainer/Command";
 import type { FlowModelProps } from "Model/Flow/FlowModel";
 
 type FlowSettingsInspectorProps = {
@@ -18,6 +18,9 @@ type FlowSettingsInspectorProps = {
   flow: FlowModelProps;
   updateFlow: Function;
   addHistory: Function;
+  addFlowVariableHidden: boolean;
+  commandSelectorHidden: boolean;
+  baseInspectorDisabled: boolean;
 }
 
 class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> {
@@ -51,6 +54,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
       let param: SubFlowParamType = {}
       param['label'] = elem.value
       param['name'] = elem.value
+      param['uuid'] = elem.uuid
       param['type'] = 'string'
       params.push(param)
     })
@@ -66,7 +70,8 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   onClickAddFlowParam () {
     let {flow} = this.props
     const name = this.setNewParamName('new_param', 1)
-    flow.params.push({label:name, name: name, type: 'string'})
+    const uuid = StringUtil.generateUUID();
+    flow.params.push({label:name, name: name, type: 'string',uuid: uuid})
     this.props.updateFlow(flow)
   }
 
@@ -125,58 +130,77 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   }
 
   render () {
-    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory} = this.props
+    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled} = this.props
     if (!flow) return null
     const {params} = flow
 
     let inputParams, inputParamsContainer, addFlowParams
     this.paramRefs = []
     inputParams = params.map((param, index) => {
-      return <div key={index} className={style.flow_param}>
+      return <div key={param.uuid} className={style.flow_param}>
         <div className={style.left}>
           <input ref={(ref) => {
             //render時にrefがnullのケースでcallされる場合があるので、
             //refがあることを確認してから入れる
             if (ref) {
+              ref.uuid = param.uuid;
               this.paramRefs.push(ref)
             }
-          }} type={'text'} className={'form-control'} defaultValue={param.name}
-                 onChange={(e) => {this.onParamChange(e)}} />
+          }} type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} defaultValue={param.name}
+                 onChange={(e) => {this.onParamChange(e)}}/>
         </div>
         <div className={style.right}>
-          <Button danger={true} onClick={() => this.onClickDeleteParam(param)}>削除</Button>
+          <Button danger={true} disabled={baseInspectorDisabled} onClick={() => this.onClickDeleteParam(param)}>削除</Button>
         </div>
       </div>
     })
 
-    if (inputParams) {
-      inputParamsContainer = <div>
+    if (inputParams && inputParams.length) {
+      inputParamsContainer = <div className={"mt-8px"}>
         <label>フロー変数</label>
         {inputParams}
       </div>
-    } else {
-      <div>
-        フロー変数の設定がありません
+    } else if(baseInspectorDisabled) {
+      inputParamsContainer = <div className={"mt-8px"}>
+        <label>フロー変数</label>
+        <div className={"text-center"}>
+          <div className={style.label}>
+            フロー変数が設定されていません
+          </div>
+        </div>
+      </div>
+    }else{
+      inputParamsContainer = <div className={"mt-8px"}>
+        <label>フロー変数</label>
       </div>
     }
-    addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
+    if(!addFlowVariableHidden){
+      addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
+    }
 
-    return <BaseInspector header={''} label={this.props.flow.label}
-                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}>
+    return <BaseInspector key={flow.uuid} header={''} label={flow.label}
+                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}
+                          disabled={baseInspectorDisabled}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8}
-                onChange={(e) => this.onDescriptionChange(e)}></textarea>
+                onChange={(e) => this.onDescriptionChange(e)} disabled={(baseInspectorDisabled)}></textarea>
       {inputParamsContainer}
       {addFlowParams}
-      <div className={style.full_hr} />
-      <CommandSelector
-          mast={mast}
-          numberOfInput={0}
-          selected_step_ids={selected_step_ids}
-          addStep={addStep}
-          selectSteps={selectSteps}
-          addHistory={addHistory}
-      />
+      {
+        (!commandSelectorHidden) ?
+          <Fragment>
+            <div className={style.full_hr} />
+            <CommandSelector
+              mast={mast}
+              numberOfInput={0}
+              selected_step_ids={selected_step_ids}
+              addStep={addStep}
+              selectSteps={selectSteps}
+              addHistory={addHistory}
+            />
+          </Fragment>
+          : null
+      }
     </BaseInspector>
   }
 }

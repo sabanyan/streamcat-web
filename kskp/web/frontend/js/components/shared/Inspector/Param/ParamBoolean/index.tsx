@@ -52,18 +52,15 @@ export default class ParamBoolean extends React.Component<Props> {
     const isChecked = (value) ? true : false
     let labelContainer = (label) ? <React.Fragment>{label}{this.renderDescription()}</React.Fragment> : null
  
-    return <div className={style.param}>
-      <label className={style.label}>
-        <input 
-          name={param.name}
-          className={style.checkbox}
-          data-paramtype={param.type}
-          type="checkbox"
-          checked={isChecked}
-          disabled={isDisabled}
-          onChange={(e) => this.onChange(e)} />
-        {labelContainer}
-      </label>
-    </div>
+    return <React.Fragment>
+      <input 
+        name={param.name}
+        className={style.checkbox}
+        data-paramtype={param.type}
+        type="checkbox"
+        checked={isChecked}
+        disabled={isDisabled}
+        onChange={(e) => this.onChange(e)} />
+    </React.Fragment>
   }
 }

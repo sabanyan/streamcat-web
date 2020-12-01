@@ -29,6 +29,7 @@
 
 .property_dialog {
   position: fixed;
+  top: 0;
   width: 400px;
   right: -400px;
   height: 100%;
@@ -139,6 +140,7 @@
   float: left;
   width: calc(100% - 120px);
   text-align: left;
+  font-size: 14px;
   color: $kskp-property-overview-value-color;
 }
 
@@ -179,6 +181,7 @@
   padding: 4px 0;
   position: relative;
   color: $kskp-text;
+  font-size: 16px;
   border-bottom: 1px dotted transparent;
   &.clickable{
     &:hover {
@@ -195,6 +198,11 @@
       cursor: default;
     }
   }
+}
+
+.sublabel{
+  font-size: 14px;
+  color: #606C7A;
 }
 
 .left {
@@ -386,9 +394,27 @@ li {
   }
 }
 
-
 .encoding, .newline  {
   height: 31px;
   margin-right:5px;
 } 
 
+.project{
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.memberList {
+  padding-top : 8px;
+}
+
+.flowLock {
+  margin-top: 10px;
+}
+.flowLock input {
+  margin: 5px;
+}
+
+.isDialog{
+  top: 0!important;
+}

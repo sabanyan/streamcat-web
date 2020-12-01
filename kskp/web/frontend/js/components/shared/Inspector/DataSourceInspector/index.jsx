@@ -1,5 +1,5 @@
 //@flow
-import React from 'react'
+import React, { Fragment } from 'react'
 import Constants from 'Constants/index'
 import {
   APIUtil,
@@ -50,6 +50,9 @@ type DataSourceInspectorProps = {
   addStep: Function;
   updateStep: Function;
   updateFlow: Function;
+  previewDisabled: boolean;
+  baseInspectorDisabled: boolean;
+  commandSelectorHidden: boolean;
 }
 
 class DataSourceInspector extends React.Component<DataSourceInspectorProps, State> {
@@ -131,7 +134,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
             let contents = []
             for (const v of visualizers) {
               let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
-              contents.push({ title: v.label, content: content, id: id })
+              contents.push({ title: v.label, content: content, id: id, afterViz: this.updateCache  })
             }
             if(selected_step.uuid){
               // uuidだけでプレビュー
@@ -149,7 +152,6 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           this.setState({
             loading: false
           })
-          this.updateCache()
         })
     })
   }
@@ -161,7 +163,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       .then((response) => {
         console.log(response)
         if (response.data.success === false) throw response.data
-        const json = response.data
+        const json = response.data.data
         this.props.loadFlowJSON(json)
       })
       .catch((error) => {
@@ -302,7 +304,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         const selected_step = this.getSelectedStep()
         if (selected_step.hasData()) {
           //TODO 将来的にはページングなどの対応が必要
-          APIUtil.get('frames/' + selected_step.uuid + '?no_contents=1').then((response) => {
+          APIUtil.get('frames/' + selected_step.uuid).then((response) => {
             const json = response.data
             this.props.updateDataFrameDetail(json.data)
           })
@@ -340,7 +342,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render() {
-    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, disabled } = this.props;
+    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden} = this.props;
     let step_text
     let dataSource
     let preview
@@ -348,10 +350,10 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const selected_step = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
       preview = <Button onClick={(e) => this.onClickPreview(e)}
-        icon={'visibility'} disabled={disabled}>プレビュー</Button>
+        icon={'visibility'} disabled={previewDisabled}>プレビュー</Button>
       if (selected_step.hasData()) {
         const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label
-        download = <DownloadButton href={href} icon={'get_app'}>CSVダウンロード</DownloadButton>
+        download = <DownloadButton href={href} disabled={baseInspectorDisabled} icon={'get_app'}>CSVダウンロード</DownloadButton>
       }
     }
 
@@ -359,14 +361,14 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const flowInOutForm = <div className={style.flowInOut}>
       <div>
         <label><input type="checkbox" checked={flow.hasInPortWithId(selected_step.id)} ref={'flowIn'}
-          onChange={(e) => this.onChangeFlowInOut(e)} />
+          onChange={(e) => this.onChangeFlowInOut(e)} disabled={baseInspectorDisabled} />
           &nbsp;入力
         </label>
       </div>
       <div>
         <label><input type="checkbox" checked={flow.hasOutPortWithId(selected_step.id)}
           ref={'flowOut'}
-          onChange={(e) => this.onChangeFlowInOut(e)} />
+          onChange={(e) => this.onChangeFlowInOut(e)} disabled={baseInspectorDisabled}/>
           &nbsp;出力
         </label>
       </div>
@@ -374,7 +376,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const cacheCheckForm = <div>
       <div>
         <label><input type="checkbox" checked={selected_step.makeCache ? 'checked' : ''}
-          ref={'cache'} disabled=""
+          ref={'cache'} disabled={baseInspectorDisabled}
           onChange={(e) => this.onChangeCacheCheck(e)} />
         </label>
       </div>
@@ -398,7 +400,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
             {preview}
             {download}
             <Button onClick={(e) => this.onClickDelete(e)} icon={'delete'}
-              danger={true}>削除</Button>
+              danger={true} disabled={baseInspectorDisabled}>削除</Button>
           </div>
           <div className={style.full_hr} />
           <div className={style.overviews}>
@@ -446,8 +448,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           </div>
           <div className={style.cache_delete}>
             <Button icon={'delete'} danger={true}
-              disabled={!selected_step.isCached()}
-
+              disabled={!selected_step.isCached() | baseInspectorDisabled}
               onClick={(e) => { this.onClickDeleteCache() }}>
               キャッシュ削除
             </Button>
@@ -464,21 +465,27 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           }
 
         </div>
-        <div className={style.full_hr} />
-        <CommandSelector
-          mast={mast}
-          numberOfInput={1}
-          selected_step_ids={selected_step_ids}
-          addStep={addStep}
-          selectSteps={selectSteps}
-          addHistory={addHistory}
-        />
+        {
+          (!commandSelectorHidden) ?
+            <Fragment>
+              <div className={style.full_hr} />
+              <CommandSelector
+                mast={mast}
+                numberOfInput={1}
+                selected_step_ids={selected_step_ids}
+                addStep={addStep}
+                selectSteps={selectSteps}
+                addHistory={addHistory}
+              />
+            </Fragment>
+            : null
+        }
       </div>
     }
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector header={''} label={selected_step.label}
-      onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }}>
+    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label}
+      onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }} disabled={baseInspectorDisabled}>
       {content}
     </BaseInspector>
   }

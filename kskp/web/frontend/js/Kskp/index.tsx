@@ -10,13 +10,13 @@ import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
 import {ModalManager} from "Shared/Modal";
 import {addNotification, removeNotification} from "reapop";
 
-import {
-    FlowEditorContainer,
-    ProfileContainer,
-} from "Components/index";
-import {NavigationBar} from "Shared/Base";
+import {Loader, NavigationBar} from 'Shared/Base';
 import {Preview} from "PreviewContainer/Preview";
-import {Library} from "Components/LibraryContainer/Libary";
+import {FlowEditor} from "FlowEditorContainer/FlowEditor";
+import {UserList} from 'UserListContainer/UserList';
+import {Library} from 'LibraryContainer/Libary';
+import {Profile} from 'ProfileContainer/Profile';
+import {NotAllowed} from 'Components/NotAllowedContainer';
 
 export type Props = {
     viewId: ViewId
@@ -34,22 +34,16 @@ export enum ViewId {
     Project_List,
     Preview,
     TrashCan,
+    User_List,
     Undefined = -1,
 }
-
-const contentSelector = state => state.CommonReducer.content;
-const inspectorSelector = state => state.CommonReducer.inspector;
 
 const Kskp = (props: Props) => {
 
     const dispatch = useDispatch();
-    const content = useSelector(contentSelector);
-    const inspector = useSelector(inspectorSelector);
     const {viewId} = props;
 
     const notify = (context) => dispatch(addNotification(context));
-
-    const updateNotify = (context) => dispatch(addNotification(context));
     const dismissNotify = (id: string) => {
         setTimeout(() => {
             dispatch(removeNotification(id));
@@ -69,7 +63,7 @@ const Kskp = (props: Props) => {
     };
 
     useEffect(() => {
-        getNavigation();
+        if(viewId !== ViewId.Undefined)getNavigation();
     }, []);
 
     const renderNavigationBar = () => {
@@ -82,18 +76,26 @@ const Kskp = (props: Props) => {
 
     const renderView = (viewId: ViewId) => {
         let viewComponent: React.ReactNode = null;
+        if(viewId === ViewId.Undefined) return null;
+        if (nav === undefined) {
+            return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true}/>
+        }
+
         switch (viewId) {
             case ViewId.Flow_Editor:
-                viewComponent = <FlowEditorContainer />;
+                viewComponent = <FlowEditor navigation={nav}/>;
                 break;
             case ViewId.Library:
-                viewComponent = <Library />;
+                viewComponent = <Library navigation={nav}/>;
                 break;
             case ViewId.Profile:
-                viewComponent = <ProfileContainer />;
+                viewComponent = <Profile navigation={nav}/>;
                 break;
             case ViewId.Preview:
-                viewComponent = <Preview />;
+                viewComponent = <Preview navigation={nav}/>;
+                break;
+            case ViewId.User_List:
+                viewComponent = (nav && nav.allowlist && nav.allowlist.findUsers)?<UserList navigation={nav}/>:<NotAllowed/>;
                 break;
             default:
                 break;
@@ -105,6 +107,7 @@ const Kskp = (props: Props) => {
             </div>
         );
     };
+
 
     let result: any = null;
 
