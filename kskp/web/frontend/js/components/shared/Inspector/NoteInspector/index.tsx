@@ -5,7 +5,6 @@ import {Button, DropDownList} from "Shared/Input";
 import Constants from "Constants/index";
 import style from "../style.scss";
 import {NoteStepModel} from "Model/index";
-import {FlowEditorProps} from "FlowEditorContainer/index";
 import {dropDownListItem} from "Types/index";
 import {Spacer} from "Shared/Base";
 
@@ -13,12 +12,13 @@ type State = {
   loading: boolean;
 }
 
-interface NoteInspectorProps extends FlowEditorProps  {
+interface NoteInspectorProps  {
   selected_step_ids: string[];
   nodes: [];
   selectSteps: Function;
   updateStep: Function;
   deleteSteps: Function;
+  baseInspectorDisabled: boolean;
 }
 
 class NoteInspector extends React.Component<NoteInspectorProps, State> {
@@ -32,7 +32,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
       if(element)element.focus();
   }
 
-    getSelectedStep (): NoteStepModel {
+    getSelectedStep (): NoteStepModel | null {
       let {selected_step_ids, nodes} = this.props;
       if (Array.isArray(selected_step_ids) && selected_step_ids.length > 0) {
           return GraphUtil.getNode(nodes, selected_step_ids[0]);
@@ -69,7 +69,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
   onTitleChange (e: React.ChangeEvent<HTMLInputElement>) {
     this.update((step) => {
         if(e.target){
-            step.title = e.target.value
+            step.setTitle(e.target.value)
         }
       return step
     })
@@ -77,27 +77,22 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
 
   onContentChange (e: React.ChangeEvent<HTMLTextAreaElement>) {
     this.update((step) => {
-      step.content = e.target.value;
+      step.setContent(e.target.value);
       return step
     })
   }
 
   onChangeFontSize (e: React.ChangeEvent<HTMLInputElement>, data, label) {
-    console.log(e);
-    console.log(data);
-    console.log(label);
     this.update((step) => {
-      step.fontSize = e.target.value;
+      const fontSize = parseInt(e.target.value)
+      step.setFontSize(fontSize);
       return step;
     })
   }
 
   onChangeColor (e: React.ChangeEvent<HTMLInputElement>, data, label) {
-    console.log(e);
-    console.log(data);
-    console.log(label);
     this.update((step) => {
-      step.color = e.target.value;
+      step.setColor(e.target.value);
       return step;
     })
   }
@@ -131,6 +126,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
 
   render () {
     let selected_step = this.getSelectedStep();
+    if(!selected_step) return null;
     const noteTitle = selected_step.title;
     const noteContent = selected_step.content;
     const fontSize = selected_step.fontSize;
@@ -178,7 +174,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
         </div>
     </div>;
 
-    return <BaseInspector header={''} label={selected_step.label} style={style}>
+    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label} style={style}>
       {content}
     </BaseInspector>
   }

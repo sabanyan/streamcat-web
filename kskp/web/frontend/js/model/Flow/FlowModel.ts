@@ -1,38 +1,90 @@
+import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
 import Constants from 'Constants/index';
 
-import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
+export interface FlowAllowList {
+  copy: boolean
+  delete: boolean
+  download: boolean
+  execute: boolean
+  findMember: boolean
+  lock: boolean
+  move: boolean
+  read: boolean
+  update: boolean
+  updateMember: boolean
+}
+
+export enum FlowEditModeValue {
+  NotAllowed = 'NotAllowed',
+  Editable = 'Editable',
+  ReadOnlyUpdateDisabled = 'ReadOnlyUpdateDisabled',
+  ReadOnlyLocked = 'ReadOnlyLocked'
+}
+export enum FlowExecuteModeValue {
+  NotExecutable = 'NotExecutable',
+  Executable = 'Executable',
+}
 
 export type FlowModelProps = {
+  allowlist: FlowAllowList
+  editMode: FlowEditModeValue
+  executeMode: FlowExecuteModeValue
   createdAt?: string
   creator?: string
+  folderPath?: string
+  folderUuid?: string
   label: string
   nodes: any[]
   params: []
   ports: [[], []]
   projectId?: number
   description: string
+  masked?:boolean
+  hasInPortWithId: (id: string) => boolean;
+  hasOutPortWithId: (id: string) => boolean;
+}
+
+export interface DatumAllowList{
+  read: boolean;
+  create: boolean;
+  update: boolean;
+  delete: boolean;
+  execute: boolean;
+  upload: boolean;
+  download: boolean;
+  copy: boolean;
+  move: boolean;
+  lock: boolean;
+  findMember: boolean;
+  updateMember: boolean;
 }
 
 export default class FlowModel {
   createdAt?: string
   creator?: string
+  folderPath?: string
+  folderUuid?: string
   label: string = ""
   nodes?: any[] = []
   params: [] = []
   ports: [any[], any[]] = [[], []]
   projectId?: number
   description: string = ""
+  masked?: boolean
 
   constructor(props?: FlowModelProps) {
     if (!props) return
     this.createdAt = props.createdAt
     this.creator = props.creator
     this.label = props.label
+    this.masked = props.masked
     this.nodes = this.toNodeModels(props.nodes)
     this.params = props.params
     this.ports = props.ports
     this.projectId = props.projectId
     this.description = props.description
+    this.folderPath = props.folderPath
+    this.folderUuid = props.folderUuid
   }
 
   toNodeModels(nodes?: any[]) {
@@ -40,13 +92,14 @@ export default class FlowModel {
     
     let results: any[] = []
     nodes.forEach((node, index) => {
-      const baseProps = {
+      const baseProps:any = {
         id: node.id,
         type: node.type,
         label: node.label,
         position: node.position,
         size: node.size
       }
+      if (node.masked) baseProps.masked = node.masked
       let model
       let props
       switch (node.type) {

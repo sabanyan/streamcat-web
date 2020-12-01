@@ -18,6 +18,7 @@ type MultiInspectorProps = {
   addStep: Function;
   selectSteps: Function;
   addHistory: Function;
+  baseInspectorDisabled: boolean;
 }
 
 class MultiInspector extends React.Component<MultiInspectorProps> {
@@ -61,7 +62,7 @@ class MultiInspector extends React.Component<MultiInspectorProps> {
   }
 
   render () {
-    const {mast,selected_step_ids,addStep,selectSteps,addHistory} = this.props;
+    const {mast,selected_step_ids,addStep,selectSteps,addHistory, baseInspectorDisabled, commandSelectorHidden} = this.props;
     const numberOfSelectedDataSources = this.getNumberOfSelectedDataSources()
 
     let commandSelector
@@ -77,10 +78,17 @@ class MultiInspector extends React.Component<MultiInspectorProps> {
       </div>
     }
 
-    return <BaseInspector header={''}
-                          title={this.props.selected_step_ids.length + ' files'}>
+    if(commandSelectorHidden){
+      // コマンドセレクタ非表示の扱いの場合は表示しない
+      commandSelector = null;
+    }
+
+    return <BaseInspector key={JSON.stringify(selected_step_ids)}
+                          header={''}
+                          title={selected_step_ids.length + ' files'}
+                          disabled={baseInspectorDisabled}>
       <div className="kskp-form">
-        <Button onClick={(e) => this.onClickDelete(e)} danger={true}>
+        <Button onClick={(e) => this.onClickDelete(e)} danger={true} disabled={baseInspectorDisabled}>
           削除する
         </Button>
       </div>

@@ -13,6 +13,9 @@
   height: 480px;
   overflow: scroll;
   border: 1px solid #ccc;
+  svg{
+    overflow: visible;
+  }
 }
 
 .command_separator {

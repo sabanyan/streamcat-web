@@ -1,4 +1,3 @@
-import os
 from flask import Flask
 
 app = Flask('kskp.web.backend')
@@ -29,21 +28,17 @@ PREFIX = '/api/v0'
 from .api import basic
 from .api import frames
 from .api import lib
+from .api import system
 app.register_blueprint(basic.mod, url_prefix=PREFIX)
 app.register_blueprint(frames.mod, url_prefix=PREFIX)
 app.register_blueprint(lib.mod, url_prefix=PREFIX)
+app.register_blueprint(system.mod, url_prefix=PREFIX)
 
 # static用
 from kskp.web.frontend import mod
 app.register_blueprint(mod)
 
-# 環境変数からロックの有効期間(分)を取得する
-# (設定値がない場合は1時間とする)
-lock_expire_minutes = int(os.getenv('LOCK_EXPIRE_MIN', 60))
-# LockManagerオブジェクトを作成する
 from flask import session
-from kskp.store import LockManager
-app.config['LOCK_MANAGER'] = LockManager(60 * lock_expire_minutes)
 # sessionを31日間保持する場合はTrue
 # session.permanent = True
 
