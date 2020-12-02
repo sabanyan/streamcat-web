@@ -351,7 +351,8 @@ const Library = (_: Props) => {
             setEditDatabase(null);
             ModalUtil.closeModal(Constants.modal.EDIT_DATABASE);
             fetchFolder();
-
+            // hotfix 編集後Paneが持っているseletedDatasの情報が更新されない
+            setSelectedDatas([]);
         };
 
         const editLibraryChild = (data: LibraryListDataType) => {
@@ -360,6 +361,8 @@ const Library = (_: Props) => {
                 completeEditDatabase(response);
             }, () => {
                 unhandledNotify("データベース修正エラー");
+            }).then(() => {
+                setIsLoading(false);
             });
         };
 
@@ -928,6 +931,7 @@ const Library = (_: Props) => {
                                     }
                                 } else {
                                     body.clickable = true;
+                                    if (body.type === "database") body.clickable = false;
                                 }
                                 if (inject_is_trash) {
                                     // ゴミ箱の場合は全て選択不可
@@ -1244,6 +1248,7 @@ const Library = (_: Props) => {
         if (data.type !== Constants.library.type.database) {
             return;
         }
+
         const database: Database = {
             "label": data.label,
             "dbms": data.dbms,

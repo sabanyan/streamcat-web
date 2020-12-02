@@ -46,6 +46,7 @@ export type FlowModelProps = {
   ports: [[], []]
   projectId?: number
   description: string
+  masked?:boolean
   hasInPortWithId: (id: string) => boolean;
   hasOutPortWithId: (id: string) => boolean;
 }
@@ -76,12 +77,14 @@ export default class FlowModel {
   ports: [any[], any[]] = [[], []]
   projectId?: number
   description: string = ""
+  masked?: boolean
 
   constructor(props?: FlowModelProps) {
     if (!props) return
     this.createdAt = props.createdAt
     this.creator = props.creator
     this.label = props.label
+    this.masked = props.masked
     this.nodes = this.toNodeModels(props.nodes)
     this.params = props.params
     this.ports = props.ports
@@ -96,13 +99,14 @@ export default class FlowModel {
     
     let results: any[] = []
     nodes.forEach((node, index) => {
-      const baseProps = {
+      const baseProps:any = {
         id: node.id,
         type: node.type,
         label: node.label,
         position: node.position,
         size: node.size
       }
+      if (node.masked) baseProps.masked = node.masked
       let model
       let props
       switch (node.type) {

@@ -276,7 +276,6 @@ class GraphUtil {
         case Constants.step.type.subflow:
           //コマンド
           const step = node
-
           let model = {
             id: step.id,
             name: step.name,
@@ -286,6 +285,7 @@ class GraphUtil {
             args: step.args,
             position: step.position,
             size: step.size,
+            masked: step.masked
           }
 
           if (type === Constants.step.type.command) {
