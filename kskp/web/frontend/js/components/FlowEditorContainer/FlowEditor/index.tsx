@@ -284,7 +284,7 @@ const FlowEditor = (props: Props) => {
                 if (json.editLock) {
                     notify({
                         title: "警告：読取専用フロー",
-                        message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+                        message: "このフローは編集ロック中のため、 編集権限が取得できませんでした。",
                         status: "warning",
                         dismissAfter: -1,
                         closeButton: true

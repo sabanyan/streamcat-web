@@ -45,10 +45,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       if (selected_step.type === Constants.step.type.subflow && selected_step.uuid) {
         //共有フローの場合のみ詳細を取得
         APIUtil.get('flows/' + selected_step.uuid + '?navigation=off').then((response) => {
-          let flowProps = {...response.data.data.flow, folderPath: response.data.data.folderPath, folderUuid: response.data.data.folderUuid};
+          let flowProps = { ...response.data.data.flow, folderPath: response.data.data.folderPath, folderUuid: response.data.data.folderUuid };
           flowProps.label = response.data.data.label;
           this.selectedSubFlow = new FlowModel(flowProps)
-          console.log(this.selectedSubFlow)
           this.loaded = true
           this.forceUpdate()
         })
@@ -90,6 +89,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         選択されたステップを削除しますか？
       </div>,
     })
+  }
+
+  onClickOpenSubFlow(e: Event, flowUUID: any) {
+    window.location.href = '/flows/' + flowUUID;
   }
 
   onChangeInEdge(e, data) {
@@ -154,7 +157,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
 
         inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
           onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups} />
-        subFlowLink = <div><a href={'/flows/' + selected_step.uuid} target={'_blank'}>フローを開く</a></div>
+        subFlowLink = <Button onClick={(e) => this.onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>
         if (this.selectedSubFlow && this.selectedSubFlow.folderPath) {
           detail =
             <div>
@@ -182,12 +185,12 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       content = <Loader center={true} absolute={false} fixed={false} visible={true} />
     } else {
       content = <div>
-        {subFlowLink}
         <div className={style.actions}>
+          {subFlowLink}
           <Button onClick={(e) => this.onClickDelete(e)} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
         </div>
         <div className={style.full_hr} />
-        <div><label>ライブラリーの場所</label></div>
+        <div><label>場所</label></div>
         {detail}
         <InOutConnector
           selectedStep={selectedStep}
