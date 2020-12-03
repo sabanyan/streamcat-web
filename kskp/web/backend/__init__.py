@@ -42,8 +42,8 @@ from flask import session
 # sessionを31日間保持する場合はTrue
 # session.permanent = True
 
-def run():
-    app.run(debug=True)
+def run(port=5000):
+    app.run(host='0.0.0.0', port=port)
 
 if __name__ == '__main__':
     main()
