@@ -64,7 +64,7 @@ def login_required(func):
                         return render_template('register_password.html', email=request_email)
 
                     # ユーザID保存
-                    session['user_id'] = user.id
+                    session['user_uuid'] = user.uuid
                     # 認証成功 本来のページへ遷移する
                     if session.get('last_URL'):
                         last_url = session['last_URL']
@@ -88,7 +88,7 @@ def login_required(func):
             elif request.args['session'] == 'off':
                 # ログアウト処理
                 # TODO: セッションを消すだけで良いか要検討
-                session.pop('user_id', None)
+                session.pop('user_uuid', None)
                 # 再度やり直し
 
                 # 'session=off'だけを消し去ったURLを作りたいがための記述
@@ -107,7 +107,7 @@ def login_required(func):
                 return _render_login_template(original_url=request.base_url+'?session=on', args=request.args)
         else:
             # クエリパラメータに'session'がない、普通のアクセス
-            if 'user_id' in session:
+            if 'user_uuid' in session:
                 return func(**kwargs)
             else:
                 # ログインページを返す
@@ -122,11 +122,11 @@ def login_required_api(func):
     """
     @functools.wraps(func)
     def deco(**kwargs):
-        if 'user_id' in session:
+        if 'user_uuid' in session:
             # Userオブジェクトをflask.gに設定する
             with UnAuthzFactory() as factory:
                 try:
-                    user = factory.find_user_by_id(session['user_id'])
+                    user = factory.find_user_by_uuid(session['user_uuid'])
                 except Exception:
                     # 存在しないuser_idはSessonから削除する
                     session.clear()
@@ -241,7 +241,7 @@ def complete_sign_up():
             return render_template('register_password.html', email=email)
 
         # ユーザID保存
-        session['user_id'] = user.id
+        session['user_uuid'] = user.uuid
 
         # 初めて登録状態に遷移する時に、MyProjectを作成する
         if user_is_init:
