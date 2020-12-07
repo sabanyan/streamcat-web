@@ -20,6 +20,7 @@ setup(
         'holoviews==1.12.7',
         'bokeh==1.4.0',
         'ptvsd',
-        'matplotlib'
+        'matplotlib',
+        'uwsgi'
     ],
 )
