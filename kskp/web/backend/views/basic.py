@@ -62,13 +62,13 @@ def projects(project_uuid):
 @mod.route('/settings/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    return render_template('profile.html', user_id=session['user_id'])
+    return render_template('profile.html')
 
 @mod.route('/trashes', methods=['GET', 'POST'])
 @login_required
 def trashes():
     is_trash = 1
-    return render_template('library.html', is_trash=is_trash , user_id=session['user_id'])
+    return render_template('library.html', is_trash=is_trash)
 
 
 # 開発用画面
