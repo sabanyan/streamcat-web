@@ -35,25 +35,33 @@ app.config['PERMANENT_SESSION_LIFETIME'] = 5 * 24 * 60 * 60
 # session.permanent = False
 
 # flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
-from .api.utils.kskp_json_encoder import KSKPJSONEncoder
+# from .api.utils.kskp_json_encoder import KSKPJSONEncoder
+from kskp.web.backend.api.utils.kskp_json_encoder import KSKPJSONEncoder
 app.json_encoder = KSKPJSONEncoder
-
 # render_template
 # 将来的にvisualizeどうなるかわからないので、とりあえず別に隔離しておく
-from .views import visualize
-from .views import basic
+# from .views import visualize
+# from .views import basic
+from kskp.web.backend.views import visualize
+from kskp.web.backend.views import basic
 app.register_blueprint(visualize.mod)
 app.register_blueprint(basic.mod)
 # api
-from .api import auth
+# from .api import auth
+from kskp.web.backend.api import auth
 app.register_blueprint(auth.mod, url_prefix='/signup')
 
 PREFIX = '/api/v0'
-from .api import domain
-from .api import basic
-from .api import frames
-from .api import lib
-from .api import system
+# from .api import domain
+# from .api import basic
+# from .api import frames
+# from .api import lib
+# from .api import system
+from kskp.web.backend.api import domain
+from kskp.web.backend.api import basic
+from kskp.web.backend.api import frames
+from kskp.web.backend.api import lib
+from kskp.web.backend.api import system
 app.register_blueprint(domain.mod)
 app.register_blueprint(basic.mod, url_prefix=PREFIX)
 app.register_blueprint(frames.mod, url_prefix=PREFIX)
