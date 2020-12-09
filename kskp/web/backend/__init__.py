@@ -1,7 +1,10 @@
+import os
 from flask import Flask, session
-from flask.helpers import url_for
 
 app = Flask('kskp.web.backend')
+
+# HTTPSで接続する場合はTrue
+is_https=bool(os.getenv('KSKP_HTTPS', 0))
 
 # SessionのCookieを署名するための秘密鍵
 # SessionのCookieを秘密鍵で署名して改竄を防ぐ
@@ -21,7 +24,7 @@ app.config['SESSION_COOKIE_NAME'] = 'S'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 # True: WebブラウザのSessionのCookieの送信はHTTPSによる送信だけに制限される
 # "http://www.host.com:443"のようなURLにアクセスさせてSessionのCookieを平文で送信することを防ぐ
-app.config['SESSION_COOKIE_SECURE'] = False
+app.config['SESSION_COOKIE_SECURE'] = is_https
 # Cross-Site Request Forgeries対策
 # Lax   : 他ドメインへの遷移(top-level navigation)でも、GETメソッドであればSessionのCookieの送信を許可する
 #         (URLにアクセスしてもSessionのCookieを保持していればログイン画面をスキップできる)
@@ -64,8 +67,27 @@ app.register_blueprint(system.mod, url_prefix=PREFIX)
 from kskp.web.frontend import mod
 app.register_blueprint(mod)
 
+@app.after_request
+def after_request(response):
+    # Webブラウザに対し、HTTPSだけで接続することを要求する
+    # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Strict-Transport-Security
+    if is_https:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    # Webブラウザに対し、コンテンツの取得元をディレクティブに従い制限するよう要求する
+    # https://developer.mozilla.org/ja/docs/Web/HTTP/CSP
+    response.headers['Content-Security-Policy-Report-Only'] = \
+        "default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+     # Webブラウザに対し、レスポンスヘッダのContent-type以外のタイプで解釈しないように要求する
+    # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Content-Type-Options
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    # Webブラウザに対し、<frame>,<iframe>,<embed>,<object>から取得するコンテンツを自身のドメインに制限するよう要求する
+    # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Frame-Options
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+
+    return response
+
 def run(port=5000):
     app.run(host='0.0.0.0', port=port)
 
 if __name__ == '__main__':
-    main()
+    run(port=5000)
