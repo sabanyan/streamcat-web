@@ -1,4 +1,3 @@
-import sys
 from kskp.web.backend import run
 
 # Flaskを起動する
