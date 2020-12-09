@@ -56,7 +56,7 @@ const UserList = (props: Props) => {
 
     const fetchProjects = (exceptMyProject:boolean = false) => {
         const except_my_project = (exceptMyProject)?"on":"off"
-        const url = '/projects?except_myproject=' + except_my_project
+        const url = 'projects?except_myproject=' + except_my_project
         return APIUtil.get(url).then((response) => {
             const projects: UserProject[] = response.data.data;
             if(!exceptMyProject){
