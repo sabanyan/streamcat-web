@@ -21,7 +21,7 @@ mod = Blueprint('auth', __name__)
 # MyProjectのラベル名
 MY_PROJECT = 'MyProject'
 
-app.secret_key = '-jm624cqpry89e'
+# app.secret_key = '-jm624cqpry89e'
 
 
 def _render_login_template(email='', login_failed=False, alert_message='', original_url='', args=''):

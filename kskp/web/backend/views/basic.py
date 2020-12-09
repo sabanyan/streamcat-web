@@ -1,13 +1,19 @@
 
 from bokeh.resources import INLINE
-from flask import render_template, redirect, Blueprint, url_for, g
+from flask import render_template, Blueprint
 from kskp.web.backend.api.auth import login_required, login_required_api
 
 mod = Blueprint('basic_template', __name__)
 
 @mod.route('/')
 def top():
+    from flask import redirect, url_for
     return redirect(url_for('basic_template.library'))
+
+@mod.route('/favicon.ico')
+def favicon():
+    from flask import send_from_directory
+    return send_from_directory('../frontend/static/images', 'kskp.ico', mimetype = 'image/x-icon')
 
 #
 # ユーザ管理機能
@@ -31,6 +37,7 @@ def flow_designer(flow_uuid):
 @login_required
 @login_required_api
 def library():
+    from flask import g
     root = g.factory.data.load_root()
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
