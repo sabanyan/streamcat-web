@@ -212,6 +212,87 @@ const FlowEditor = (props: Props) => {
     const [readOnly, setReadOnly] = useState<boolean>(false);
     const hasLockedUUID = useMemo(()=>!!(lockUUID),[lockUUID]); // lockUUIDを保持している際は、編集可能な状態
 
+    // 新規に排他ロックを取得・設定する
+    // もし取得済みの場合は延長する
+    const getAndSetNewLockUUID = (lockUUID: string | undefined) => {
+        if(!lockUUID) {
+            // 取得処理
+            API.request.doPost.locks({flowUUID: inject_flow_uuid})
+                .then((res) => {
+                    const newLockUUID = API.response.post.locks(res).uuid;
+                    console.log("newlock uuid",newLockUUID);
+                    setLockUUID(newLockUUID);
+                    setEditMode(FlowEditModeValue.Editable)
+                })
+                .catch(e => {
+                    if (!lockUUID) {
+                        notify({
+                            title: "警告：読取専用フロー",
+                            message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+                            status: "warning",
+                            dismissAfter: -1,
+                            closeButton: true
+                        });
+                        setReadOnly(true);
+                        // ロック失敗 => [読み取り専用モード2]
+                        setEditMode(FlowEditModeValue.ReadOnlyLocked);
+                    } else {
+                        notify({
+                            title: e.title,
+                            message: e.message,
+                            status: e.messageStatus,
+                            dismissAfter: -1,
+                            closeButton: true
+                        });
+                    }
+                }).finally(() => {
+                setIsLoading(false);
+            });
+        }else{
+            // 延長処理
+            API.request.doPost.extendLocks({lockUUID: lockUUID})
+                .then((res) => {
+                    const newLockUUID = API.response.post.extendLocks(res).uuid;
+                    setLockUUID(newLockUUID);
+                })
+                .catch(e => {
+                    // 編集中通知API に失敗した場合は、排他ロックを再取得する
+
+
+                    // if (!lockUUID) {
+                    //     notify({
+                    //         title: "警告：読取専用フロー",
+                    //         message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+                    //         status: "warning",
+                    //         dismissAfter: -1,
+                    //         closeButton: true
+                    //     });
+                    //     setReadOnly(true);
+                    //     // ロック失敗 => [読み取り専用モード2]
+                    //     setEditMode(FlowEditModeValue.ReadOnlyLocked);
+                    // } else {
+                    //     notify({
+                    //         title: e.title,
+                    //         message: e.message,
+                    //         status: e.messageStatus,
+                    //         dismissAfter: -1,
+                    //         closeButton: true
+                    //     });
+                    // }
+                }).finally(() => {
+                setIsLoading(false);
+            });
+        }
+    };
+
+    useEffect(() => {
+        const extendLockInterval = 1000 * 10 * 1; // 1分ごとに延長
+        if(lockUUID){
+            console.log("lockUUID useEffect",lockUUID)
+            setInterval(()=>{getAndSetNewLockUUID(lockUUID)}, extendLockInterval)
+        }
+    }, [lockUUID]);
+
     useEffect(()=>{
         window.onresize = () =>{
             refreshCanvasSize();
@@ -312,36 +393,7 @@ const FlowEditor = (props: Props) => {
                     return;
                 }
                 // update が有効な場合は、排他ロックを取得する
-                API.request.doPost.locks({flowUUID: flowUUID})
-                    .then((res) => {
-                        lockUUID = API.response.post.locks(res).uuid;
-                        setLockUUID(lockUUID);
-                        setEditMode(FlowEditModeValue.Editable)
-                    })
-                    .catch(e => {
-                        if (!lockUUID) {
-                            notify({
-                                title: "警告：読取専用フロー",
-                                message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
-                                status: "warning",
-                                dismissAfter: -1,
-                                closeButton: true
-                            });
-                            setReadOnly(true);
-                            // ロック失敗 => [読み取り専用モード2]
-                            setEditMode(FlowEditModeValue.ReadOnlyLocked);
-                        } else {
-                            notify({
-                                title: e.title,
-                                message: e.message,
-                                status: e.messageStatus,
-                                dismissAfter: -1,
-                                closeButton: true
-                            });
-                        }
-                    }).finally(()=>{
-                    setIsLoading(false);
-                });
+                getAndSetNewLockUUID(lockUUID);
 
             }).catch((error) => {
                 console.log(error);
