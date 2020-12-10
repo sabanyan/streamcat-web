@@ -5,15 +5,15 @@ from kskp.web.backend.api.auth import login_required, login_required_api
 
 mod = Blueprint('basic_template', __name__)
 
-@mod.route('/')
+@mod.route('/', methods=['GET'])
 def top():
     from flask import redirect, url_for
     return redirect(url_for('basic_template.library'))
 
-@mod.route('/favicon.ico')
+@mod.route('/favicon.ico', methods=['GET'])
 def favicon():
     from flask import send_from_directory
-    return send_from_directory('../frontend/static/images', 'kskp.ico', mimetype = 'image/x-icon')
+    return send_from_directory('../frontend/static/images', 'kskp.ico', mimetype='image/x-icon')
 
 #
 # ユーザ管理機能
