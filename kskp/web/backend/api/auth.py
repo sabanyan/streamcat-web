@@ -13,7 +13,7 @@ from flask import (
 )
 from flask_mail import Mail, Message
 
-from kskp.web.backend import app
+from kskp.web.backend import app, security_level
 from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
@@ -42,6 +42,13 @@ def login_required(func):
     """
     @functools.wraps(func)
     def deco(**kwargs):
+        # AWSではロードバランサーから各EC2インスタンスへの通信はHTTPである
+        # そのような構成の場合、request.urlにはhttp:/が設定される
+        if security_level >= 2 and not request.is_secure:
+            request_base_url = request.base_url.replace('http://', 'https://', 1)
+        else:
+            request_base_url = request.base_url
+
         if 'session' in request.args:
             if request.args['session'] == 'on':
                 # 認証を要求している場合
@@ -68,7 +75,7 @@ def login_required(func):
                         session.pop('last_url', None)
                         return redirect(last_url)
                     else:
-                        return redirect(request.base_url)
+                        return redirect(request_base_url)
 
                 elif user.password_expired():
                     # 仮パスワードが有効期限切れの場合、その旨を通知する
@@ -96,19 +103,19 @@ def login_required(func):
                             query += '&'
                         query += key + '=' + arg
 
-                session['last_URL'] = request.base_url + query
+                session['last_URL'] = request_base_url + query
                 return redirect(session['last_URL'])
             else:
                 # 無効なクエリパラメータの値
                 # ひとまずログインページを返しておく
-                return _render_login_template(original_url=request.base_url+'?session=on', args=request.args)
+                return _render_login_template(original_url=request_base_url+'?session=on', args=request.args)
         else:
             # クエリパラメータに'session'がない、普通のアクセス
             if 'user_uuid' in session:
                 return func(**kwargs)
             else:
                 # ログインページを返す
-                return _render_login_template(original_url=request.base_url+'?session=on', args=request.args)
+                return _render_login_template(original_url=request_base_url+'?session=on', args=request.args)
 
     return deco
 
@@ -131,10 +138,10 @@ def login_required_api(func):
                     return _render_login_template()
                 if user.is_inactive:
                     # 認証エラー
-                    return jsonify({'success': False, 'message': 'not authorized'})
+                    return jsonify({'success': False, 'message': 'not authorized..'})
                 elif user.password_expired():
                     # 仮パスワードが有効期間切れの場合、認証エラー
-                    return jsonify({'success': False, 'message': 'not authorized'})
+                    return jsonify({'success': False, 'message': 'not authorized.'})
                 elif user.is_init_or_temp:
                     # 本パスワード登録画面に遷移する
                     session['signup_email'] = user.email
