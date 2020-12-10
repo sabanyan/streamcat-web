@@ -68,10 +68,7 @@ from .api.utils.kskp_json_encoder import KSKPJSONEncoder
 app.json_encoder = KSKPJSONEncoder
 
 # render_template
-# 将来的にvisualizeどうなるかわからないので、とりあえず別に隔離しておく
-from .views import visualize
 from .views import basic
-app.register_blueprint(visualize.mod)
 app.register_blueprint(basic.mod)
 # api
 from .api import auth
