@@ -93,7 +93,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             response = client.get(uri)
             result = json.loads(response.get_data())
         error_detail = result['message'] if 'message' in result else ''
@@ -106,7 +106,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             # response = client.get(uri)
             with client.get(uri) as response:
                 self.assertEqual(response.status_code, 200, msg=f'GET {uri} is failed. response status: {response.status}')
@@ -125,7 +125,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             response = client.post(uri,
                                    content_type='application/json',
                                    data=json.dumps(json_data))
@@ -140,7 +140,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             response = client.post(uri,
                                    content_type='application/json',
                                    data=json.dumps(json_data))
@@ -155,7 +155,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             response = client.post('/api/v0/frames',
                                    content_type='multipart/form-data',
                                    data={
@@ -176,7 +176,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             response = client.post('/api/v0/flow_files',
                                    content_type='multipart/form-data',
                                    data={
@@ -194,7 +194,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             response = client.put(uri,
                                   content_type='application/json',
                                   data=json.dumps(json_data))
@@ -209,7 +209,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             response = client.delete(uri)
             result = json.loads(response.get_data())
         error_detail = result['message'] if 'message' in result else ''
@@ -222,7 +222,7 @@ class ApiTestCaseBase(TestCaseBase):
         """
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
             response = client.delete(uri,
                                      content_type='application/json',
                                      data=json.dumps(json_data))
@@ -255,7 +255,7 @@ class ApiTestCaseBase(TestCaseBase):
         uri = '/signup/complete'
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user.id
+                session['user_uuid'] = user.uuid
                 session['signup_email'] = email
             response = client.post(uri,
                                    content_type='multipart/form-data',

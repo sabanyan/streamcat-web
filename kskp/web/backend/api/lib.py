@@ -1,5 +1,4 @@
 from flask import Blueprint, request, send_from_directory, g
-from kskp.web.backend import app
 from kskp.store import (
     DatabaseConn,
     RemoteFolderConn,
