@@ -28,7 +28,6 @@ export default class BaseStepModel extends Model {
     this.initialize(props, 'label')
     this.initialize(props, 'invalid')
     this.initialize(props, 'error')
-    this.initialize(props, 'masked')
     this.setPosition(props.position)
     this.setSize(props.size)
     if (!this.id) {

@@ -16,7 +16,8 @@ import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
 
 interface Props {
-    selectedData?: UserListUser;
+    selected: UserListUser[];
+    lastSelected?: UserListUser;
     onClickDelete?: Function;
     onBlurTitle?: Function;
     onClickEdit?: Function;
@@ -41,21 +42,21 @@ const display = {
 
 const UserListInspector = (props: Props) => {
     const {notify, navigation, onChangedList} = props;
-    const {selectedData, onBlurTitle} = props
+    const {selected, lastSelected, onBlurTitle} = props
     const [showPassword, setShowPassword] = useState<boolean>(false)
     const [systemAdminChecked, setSystemAdminChecked] = useState<boolean>(false)
     const [userAdminChecked, setUserAdminChecked] = useState<boolean>(false)
 
     useEffect(() => {
-        setSystemAdminChecked(AdminUtil.hasSystemAdmin(selectedData.roles))
-        setUserAdminChecked(AdminUtil.hasUserAdmin(selectedData.roles))
-    }, [selectedData])
+        setSystemAdminChecked(AdminUtil.hasSystemAdmin(lastSelected.roles))
+        setUserAdminChecked(AdminUtil.hasUserAdmin(lastSelected.roles))
+    }, [lastSelected])
 
     useEffect(()=>{
         // 権限更新確認ダイアログ
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN, onClickDone: () => {
-                activateSystemAdminRole(selectedData.uuid,systemAdminChecked).catch(_=>{
+                activateSystemAdminRole(lastSelected.uuid,systemAdminChecked).catch(_=>{
                     setSystemAdminChecked(!systemAdminChecked);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_SYSTEM_ADMIN)
@@ -69,7 +70,7 @@ const UserListInspector = (props: Props) => {
         })
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(selectedData.uuid,userAdminChecked).catch(_=>{
+                activateUserAdminRole(lastSelected.uuid,userAdminChecked).catch(_=>{
                     setUserAdminChecked(!userAdminChecked);
                 })
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UPDATE_KSKP_USER_ADMIN)
@@ -84,7 +85,7 @@ const UserListInspector = (props: Props) => {
         // 自分のユーザー管理権限を剥奪する場合
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_REMOVE_MY_USER_ADMIN, onClickDone: () => {
-                activateUserAdminRole(selectedData.uuid,false).then((res)=>{
+                activateUserAdminRole(lastSelected.uuid,false).then((res)=>{
                     WebUtil.logout();
                 }).catch(_=>{
                     setUserAdminChecked(true);
@@ -101,7 +102,7 @@ const UserListInspector = (props: Props) => {
         // 削除済みのユーザーをもとに戻す
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_UNDELETE_USER, onClickDone: async () => {
-                await unDeleteUser(selectedData.uuid);
+                await unDeleteUser(lastSelected.uuid);
                 if(onChangedList)onChangedList();
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
             },onClickCancel: ()=>{
@@ -110,7 +111,7 @@ const UserListInspector = (props: Props) => {
                 ModalUtil.closeModal(Constants.modal.CONFIRM_UNDELETE_USER)
             }
         })
-    }, [selectedData,systemAdminChecked,userAdminChecked])
+    }, [lastSelected,systemAdminChecked,userAdminChecked])
 
     const unDeleteUser = async (uuid:string)=>{
         const url = 'users/' + uuid + "/undelete";
@@ -213,17 +214,25 @@ const UserListInspector = (props: Props) => {
     }
 
     const renderButtons = (data?: UserListUser) => {
-        const {onClickDelete,selectedData} = props
+        const {selected, onClickDelete} = props
+
         let del
-        const availableDelete = (selectedData.state !== Constants.admin.userStatus.inactive);
-        if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
+
+        const availableDelete = ([...selected].findIndex((user)=>{
+            return (user.state !== Constants.admin.userStatus.inactive)
+        }) !== -1);
+
+        // 複数選択の場合
+        if (selected.length >= 1) {
+            if (onClickDelete && availableDelete) del = <Button danger={true} onClick={() => onClickDelete(data)} icon={'delete'}>削除する</Button>
+        }
         return <React.Fragment>
             {del}
         </React.Fragment>
     }
 
     const onChangeSystemAdmin = (e:React.ChangeEvent<HTMLInputElement>)=>{
-        const {selectedData} = props;
+        const {lastSelected} = props;
         if(e.target.value === Constants.admin.systemRole.SYS_ADMIN){
             setSystemAdminChecked(e.target.checked);
             // システム管理者がチェックされていた場合
@@ -249,7 +258,7 @@ const UserListInspector = (props: Props) => {
         }else if(e.target.value === Constants.admin.systemRole.USR_ADMIN){
             // ユーザー管理者がチェックされていた場合
             setUserAdminChecked(e.target.checked);
-            const isMe = (navigation && navigation.user.uuid === selectedData.uuid)
+            const isMe = (navigation && navigation.user.uuid === lastSelected.uuid)
             const needLogout = isMe && !e.target.checked
             if(needLogout){
                 ModalUtil.emitModal({
@@ -340,11 +349,11 @@ const UserListInspector = (props: Props) => {
                 result.push(showPasswordElement)
             }
             const {onClickPasswordReset} = props;
-            if ((data.state === Constants.admin.userStatus.active || data.state === Constants.admin.userStatus.expired) && onClickPasswordReset) {
+            if (data.state === 'active' && onClickPasswordReset) {
                 let resetPasswordEelement = <div key={"resetPassword"} className={'mb-8px'}><Button danger={true} onClick={()=>{onClickPasswordReset()}}>パスワードリセット</Button></div>
                 result.push(resetPasswordEelement)
             }
-            if (data.state === Constants.admin.userStatus.inactive){
+            if (data.state === 'inactive'){
                 const onClickUndelete = ()=>{
                     ModalUtil.emitModal({
                         id: Constants.modal.CONFIRM_UNDELETE_USER,
@@ -419,11 +428,24 @@ const UserListInspector = (props: Props) => {
             </div>
         </div>
     }
-    let label = selectedData.name
-    let content = renderSelect(selectedData)
+
+    const renderSelects = (selected: UserListUser[], data?: UserListUser) => {
+        return <div className={style.inspector}>
+            <div className={style.actions}>
+                {renderButtons(data)}
+            </div>
+            <div className={style.detail}>
+
+            </div>
+        </div>
+    }
+
+
+    let label = (lastSelected && selected.length <= 1) ? lastSelected.name : undefined
+    let content = (selected.length <= 1) ? renderSelect(lastSelected) : renderSelects(selected, lastSelected)
 
     return <Resizer>
-        <BaseInspector key={selectedData.uuid} label={label} onBlurTitle={onBlurTitle} disabled={true}>
+        <BaseInspector key={lastSelected.uuid} label={label} onBlurTitle={onBlurTitle} disabled={true}>
             {content}
         </BaseInspector>
     </Resizer>

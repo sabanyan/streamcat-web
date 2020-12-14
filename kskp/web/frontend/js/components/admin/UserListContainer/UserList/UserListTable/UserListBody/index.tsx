@@ -38,7 +38,6 @@ const UserListBody = (props: Props) => {
     const {bodies, onClickCell, onClickFileName} = props;
 
     const onClick = (event, body) => {
-        event.stopPropagation();
         onClickCell(body, event)
     };
 

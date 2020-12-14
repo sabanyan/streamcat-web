@@ -10,7 +10,7 @@ class HtmlTestCase(ApiTestCaseBase):
         self.client = app.test_client()
         # ログインするとsessinにuser_idが格納される
         with self.client.session_transaction() as session:
-            session['user_uuid'] = self.USER0.uuid
+            session['user_id'] = self.USER0.id
 
     def assertRenderTemplate(self, path, file_name):
         templates = []

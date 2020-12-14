@@ -28,7 +28,7 @@ type State = {
 
 
 export default class ParamString extends React.Component<Props, State> {
-  inputRef: any = null;
+  inputRef:any = null;
 
   constructor(props: Props) {
     super(props)
@@ -98,7 +98,7 @@ export default class ParamString extends React.Component<Props, State> {
 
   //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
   render() {
-    const { label, param, helper, disabled, value, helperTargetedInput} = this.props
+    const { label, param, helper, disabled, value, helperTargetedInput } = this.props
     const { onChange } = this.props
 
     let isDisabled = (disabled) ? true : false
@@ -106,34 +106,18 @@ export default class ParamString extends React.Component<Props, State> {
     let openHelper: boolean = Boolean(helperTargetedInput)
 
     return <React.Fragment>
-      {
-        param.isPassword ?
-          <input
-            name={param.name}
-            type="password"
-            className="form-control"
-            data-paramtype={param.type}
-            placeholder={param.name}
-            value={currentValue}
-            disabled={isDisabled}
-            onChange={(e) => this.onChange(e)}
-            onFocus={(e) => this.onFocusInput(e)}
-            ref={this.inputRef}
-          />
-          :
-          <textarea
-            name={param.name}
-            className={classnames("form-control", style.input)}
-            data-paramtype={param.type}
-            placeholder={param.name}
-            value={currentValue}
-            disabled={isDisabled}
-            onChange={(e) => this.onChange(e)}
-            onFocus={(e) => this.onFocusInput(e)}
-            ref={this.inputRef}
-          />
-      }
 
+      <textarea
+        name={param.name}
+        className={classnames("form-control", style.input)}
+        data-paramtype={param.type}
+        placeholder={param.name}
+        value={currentValue}
+        disabled={isDisabled}
+        onChange={(e) => this.onChange(e)}
+        onFocus={(e) => this.onFocusInput(e)}
+        ref={this.inputRef}
+      />
       {
         helper && helper[param.name] && this.inputRef.current === helperTargetedInput ?
           <Popper className={style.popper} open={openHelper} anchorEl={helperTargetedInput} transition placement="right-start">

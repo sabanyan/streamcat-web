@@ -129,7 +129,7 @@ export default class TrashInspector extends React.Component<Props, State> {
         const className = (customStyle) ? customStyle : style;
 
         return <Resizer>
-            <BaseInspector key={(data)?data.uuid:"trash"}>
+            <BaseInspector>
                 <div className={style.inspector}>
                     <div className={style.actions}>
                         {this.renderButtons(data)}

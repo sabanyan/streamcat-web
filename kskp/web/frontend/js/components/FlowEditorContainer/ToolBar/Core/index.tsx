@@ -263,6 +263,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         const props: NoteStepModelProps = {
             type: Constants.step.type.note,
             position: notOverlapNodePosition,
+            size: {width: 30, height: 20},
             title: "新しいメモ",
             content: "新しいメモ"
         };

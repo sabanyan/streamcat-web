@@ -5,6 +5,7 @@ from kskp.store import Folder, ProjectFolder
 from .auth import login_required_api, MY_PROJECT
 from .utils import (
     api_base,
+    lock_required,
     update_navigation,
     update_project_info,
     update_projects_info2,
@@ -170,6 +171,7 @@ def new_flow():
     新しいフローを作成する
     TODO: JSONに必要な項目があるかどうかのValidationを追加したい
     """
+
     j = request.json
 
     if 'original_flow_uuid' in j:
@@ -180,7 +182,11 @@ def new_flow():
         new_label = parent.make_unique_label(original_label)
         # フローを複製する
         new_flow = original_flow.duplicate(new_label)
-        return new_flow.flow_data
+        flow_data = new_flow.flow_data
+        # 複製したフローを保存する
+        new_flow.save()
+        new_flow = new_flow.reload()
+        return flow_data
     else:
         parent_uuid = j.get('project_uuid')
         label = j.get('name')
@@ -196,58 +202,50 @@ def new_flow():
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
+@lock_required
 @api_base
 def update_flow(flow_uuid):
     """
     フローのラベルを修正する、またはフローを移動する
     """
-    req = RequestJson(request.json)
-    if not req.has('lock'):
-        raise Exception('ロックのUUIDを指定してください')
-
     if 'parent' in request.json:
         if 'label' in request.json:
             raise Exception('labelとはparent属性は同時に指定できません')
         # flowを移動する
         new_parent = request.json['parent']
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        return flow.move(new_parent, lock_uuid=req['lock'])
+        return flow.move(new_parent)
     elif 'editLock' in request.json:
         edit_lock_value = request.json['editLock']
         flow = g.factory.data.find_by_uuid(flow_uuid)
-        flow.set_edit_lock(edit_lock_value, lock_uuid=req['lock'])
+        flow.edit_lock = edit_lock_value
         return flow
-    elif 'flow' in request.json:
-        from kskp.store import FlowData
-        flow = g.factory.data.find_by_uuid(flow_uuid)
-        if 'label' in request.json:
-            label = request.json['label']
-        else:
-            label = flow.label
-        flow_data = FlowData(request.json['flow'])
-        return flow.update_data(label, flow_data, lock_uuid=req['lock'])
-    elif 'label' in request.json:
-        label = request.json['label']
-        flow = g.factory.data.find_by_uuid(flow_uuid)
-        return flow.update_label(label, lock_uuid=req['lock'])
     else:
-        raise Exception('parent,editlock,label,flowのいずれか一つを指定してください')
+        # 指定したフローの内容を渡されたdataの内容と結合する
+        # 同じキーが含まれる場合は新しいもので上書きされる
+        flow = g.factory.data.find_by_uuid(flow_uuid)
+        # flow_data = flow.flow_data
+        # フローエディタで指定するラベル名をフローのラベル名とする
+        if 'label' not in request.json or request.json['label'] == '':
+            flow_label = flow.label
+        else:
+            flow_label = request.json['label']
+
+        # flow_data.update(request.json['flow'])
+        # 変更を保存する
+        flow.update_data(flow_label, request.json['flow'])
+        return flow.flow_data
 
 @mod.route('/flows/<flow_uuid>', methods=['DELETE'])
 @login_required_api
+@lock_required
 @api_base
 def throw_away_flow(flow_uuid):
     """
     指定されたフローをほかす
     """
-    try:
-        req = RequestJson(request.json)
-        lock_uuid = req['lock']
-    except Exception:
-        raise Exception('ロックのUUIDを指定してください')
-
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    flow.throw_away(lock_uuid=lock_uuid)
+    flow.throw_away()
 
 @mod.route('/subflows', methods=['GET'])
 @login_required_api
@@ -433,8 +431,7 @@ def delete_cache():
             node['cacheCreatedAt'] = None
             cache_uuids.append(frame_uuid)
 
-    # TODO: 暫定的に、キャッシュの設定ではフローJsonの排他制御をしない
-    flow.update_data(flow.label, flow_data, ignore_lock=True)
+    flow.update_data(flow.label, flow_data.to_json())
 
     # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
     for cache_uuid in cache_uuids:

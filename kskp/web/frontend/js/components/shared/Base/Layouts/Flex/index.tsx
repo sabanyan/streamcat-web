@@ -12,13 +12,12 @@ type Props = {
     width?: number | string;
     minWidth?: number | string;
     onClick?: ()=>void;
-    onMouseDown?: ()=>void;
     height?: number | string;
     minHeight?: number | string;
 }
 
 const Flex = (props: Props) => {
-    const {children, justifyContent, alignItems, flexDirection, inline, fluid, width, onClick, height,minHeight, minWidth, onMouseDown} = props;
+    const {children, justifyContent, alignItems, flexDirection, inline, fluid, width, onClick, height,minHeight, minWidth} = props;
     return <div className={style.flex}
                 style={{
                     justifyContent: justifyContent,
@@ -31,8 +30,7 @@ const Flex = (props: Props) => {
                     minWidth: minWidth,
                     minHeight: minHeight
                 }}
-                onClick={onClick}
-                onMouseDown={onMouseDown}>
+                onClick={onClick}>
         {children}
     </div>;
 };

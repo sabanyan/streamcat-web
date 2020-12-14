@@ -24,7 +24,7 @@ class ProjectInspector extends React.Component<Props> {
 
   nullInspector () {
     return <Resizer>
-      <BaseInspector key={"null"}>
+      <BaseInspector>
       </BaseInspector>
     </Resizer>
   }
@@ -120,7 +120,7 @@ class ProjectInspector extends React.Component<Props> {
       {/*<div>*/}
       {/*1個*/}
       {/*</div>*/}
-      {/*<label>共有フロー</label>*/}
+      {/*<label>サブフロー</label>*/}
       {/*<div>*/}
       {/*3個*/}
       {/*</div>*/}

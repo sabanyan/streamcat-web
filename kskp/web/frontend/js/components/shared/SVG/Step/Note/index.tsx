@@ -12,6 +12,28 @@ type Props = {
 }
 
 const Note = (props: Props) => {
+    const calculateSize = () => {
+        let {model} = props;
+        const fontSize = model.getFontSize();
+        let width = StringUtil.getTextWidth(model.title, fontSize);
+        const style = ContentStyle;
+        const minWidth = Constants.default.note.width;
+        style.width = minWidth;
+        style.height = fontSize + Constants.default.note.padding;
+        let textWidth = width + Constants.default.note.padding;
+
+        if (minWidth < textWidth) {
+            style.width = textWidth;
+        }
+
+        const size = {
+            width: style.width,
+            height: style.height
+        };
+
+        return size;
+    };
+
     const getColor = () => {
         const {model} = props;
         const color = model.getColor();
@@ -55,7 +77,7 @@ const Note = (props: Props) => {
 
     const renderContent = (size) => {
         const {model} = props;
-        const style = NoteContentStyle;
+        const style = ContentStyle;
         style.width = size.width;
         style.height = size.height;
         style.fontSize = model.getFontSize();
@@ -68,10 +90,8 @@ const Note = (props: Props) => {
         </foreignObject>;
     };
 
-    const {model} = props;
-    const size = model.size
-    const {width, height} = model.size;
-
+    const size = calculateSize();
+    const {width, height} = size;
     return <g>
         <svg width={width}
              height={height}>
@@ -95,7 +115,7 @@ export const NoteStyle = {
     stroke: ""
 };
 
-export const NoteContentStyle = {
+export const ContentStyle = {
     x: 0,
     y: 0,
     width: 50,

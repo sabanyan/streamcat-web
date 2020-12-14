@@ -19,7 +19,7 @@ class ApiTestCase(unittest.TestCase):
         # APIを投げる
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_uuid'] = '1'
+                session['user_id'] = '1'
 
             # apiを投げる
             response = client.get('/api/v0/commands')

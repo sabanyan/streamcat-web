@@ -83,9 +83,8 @@ class MultiInspector extends React.Component<MultiInspectorProps> {
       commandSelector = null;
     }
 
-    return <BaseInspector key={JSON.stringify(selected_step_ids)}
-                          header={''}
-                          title={selected_step_ids.length + ' files'}
+    return <BaseInspector header={''}
+                          title={this.props.selected_step_ids.length + ' files'}
                           disabled={baseInspectorDisabled}>
       <div className="kskp-form">
         <Button onClick={(e) => this.onClickDelete(e)} danger={true} disabled={baseInspectorDisabled}>

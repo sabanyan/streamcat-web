@@ -85,7 +85,7 @@ const Profile = (props: Props) => {
         setIsLoading(true)
         // user_idはナビゲーションモデルから取得できない
         // APIをたたかないと取得できないため、injectされたuser_idを使う
-        APIUtil.get('users/self').then((response) => {
+        APIUtil.get('/users/self').then((response) => {
             const json = response.data
             setIsLoading(true);
             setIsFinished(true);

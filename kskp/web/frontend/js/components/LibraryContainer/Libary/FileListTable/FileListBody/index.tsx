@@ -57,16 +57,14 @@ const FileListBody = (props: Props) => {
     };
 
     const bodiesElement = bodies.map((body: ITableBody, index) => {
-        return <tr className={classnames(style.row,{[style.selected]: body.selected})}
-                   onClick={(event)=>onClick(event,body)}
-                   onMouseDown={(event)=>event.stopPropagation()}
-                   key={index}>
+        return <tr className={classnames(style.row, { [style.selected]: body.selected })}
+            onClick={(event) => onClick(event, body)} key={index}>
             <td>
                 {getIconElement(getIconFromBodyType(body.type))}
                 {(body.clickable) ?
                     <LinkButton onClick={(event: React.SyntheticEvent<any, Event>) => {
-                        event.stopPropagation();
                         onClickFileName(body, event);
+                        event.stopPropagation();
                     }}>
                         {body.label}
                     </LinkButton>

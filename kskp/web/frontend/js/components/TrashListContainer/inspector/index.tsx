@@ -130,7 +130,7 @@ export default class TrashInspector extends React.Component<Props, State> {
     const className = (customStyle) ? customStyle : style
 
     return <React.Fragment>
-      <BaseInspector key={(data)?data.uuid:""}>
+      <BaseInspector>
         <div className={style.inspector}>
           <div className={style.actions}>
             {this.renderButtons(data)}

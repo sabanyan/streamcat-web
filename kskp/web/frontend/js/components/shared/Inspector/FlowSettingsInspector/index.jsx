@@ -178,7 +178,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
       addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
     }
 
-    return <BaseInspector key={flow.uuid} header={''} label={flow.label}
+    return <BaseInspector header={''} label={this.props.flow.label}
                           onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}
                           disabled={baseInspectorDisabled}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}

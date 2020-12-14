@@ -314,7 +314,7 @@ def leave_user_outof_usr_admin_role(user_uuid):
     try:
         _leave_user_outof_role(usr_admin_role.uuid, user_uuid)
     except NoRoleOwnerException:
-        raise NoRoleOwnerException('ユーザー管理者権限を持つユーザがいなくなるのでこの操作はできません')
+        raise NoRoleOwnerException('ユーザ管理者権限を持つユーザがいなくなるのでこの操作はできません')
 
 def _leave_user_outof_role(role_uuid, user_uuid, raise_on_no_owner=True):
     from kskp.store.auth import NoRoleOwnerException

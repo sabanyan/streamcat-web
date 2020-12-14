@@ -110,7 +110,7 @@ class Resizer extends React.Component<Props, State> {
       const newWidth = window.innerWidth - e.pageX
       if (newWidth >= Constants.default.inspector.width && newWidth <=
         Constants.default.inspector.maxWidth) {
-        this.setState({isClosed: false, willClosed: false, width: newWidth},
+        this.setState({willClosed: false, width: newWidth},
           () => {
             //　redux 使うケース（FlowEditor)
             if (resizeInspector) resizeInspector(newWidth)

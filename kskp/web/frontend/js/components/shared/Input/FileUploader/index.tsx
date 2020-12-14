@@ -171,7 +171,7 @@ export default class FileUploader extends React.Component<Props, State> {
         title: 'アップロードしました',
         message: content,
         status: 'success',
-        dismissAfter: 2000,
+        dismissAfter: 0,
         allowHTML: true
       })
 

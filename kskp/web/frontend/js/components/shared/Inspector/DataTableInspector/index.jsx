@@ -32,7 +32,7 @@ class DataTableInspector extends React.Component<Props> {
   }
 
   render () {
-    const {title,uuid} = this.props
+    const {title} = this.props
     const numberOfLines = StringUtil.separate(this.props.selected_data_source_detail.numberOfLines)
     const fileSize = StringUtil.convertToFileSize(this.props.selected_data_source_detail.fileSize)
     const lastModifiedAt = StringUtil.separate(this.props.selected_data_source_detail.lastModifiedAt)
@@ -78,7 +78,7 @@ class DataTableInspector extends React.Component<Props> {
       </div>
     </div>
 
-    return <BaseInspector key={uuid} header={''} label={title}>
+    return <BaseInspector header={''} label={title}>
       {content}
     </BaseInspector>
   }

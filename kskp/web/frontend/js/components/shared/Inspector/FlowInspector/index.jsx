@@ -36,7 +36,7 @@ class FlowInspector extends React.Component<Props> {
 
   nullInspector () {
     return <Resizer>
-      <BaseInspector key={"null"}/>
+      <BaseInspector/>
     </Resizer>
   }
 

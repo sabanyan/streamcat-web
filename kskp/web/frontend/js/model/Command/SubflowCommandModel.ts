@@ -18,7 +18,7 @@ export default class SubflowCommandModel extends Model {
 
     constructor(props: SubFlowCommandParamType) {
         super();
-        this.id = props.uuid; //共有フローのIDはUUIDとする
+        this.id = props.uuid; //サブフローのIDはUUIDとする
         this.initialize(props, "createdAt");
         this.initialize(props, "creator");
         this.initialize(props, "description");

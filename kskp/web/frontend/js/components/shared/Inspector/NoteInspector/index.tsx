@@ -69,7 +69,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
   onTitleChange (e: React.ChangeEvent<HTMLInputElement>) {
     this.update((step) => {
         if(e.target){
-            step.setTitle(e.target.value)
+            step.title = e.target.value
         }
       return step
     })
@@ -77,22 +77,27 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
 
   onContentChange (e: React.ChangeEvent<HTMLTextAreaElement>) {
     this.update((step) => {
-      step.setContent(e.target.value);
+      step.content = e.target.value;
       return step
     })
   }
 
   onChangeFontSize (e: React.ChangeEvent<HTMLInputElement>, data, label) {
+    console.log(e);
+    console.log(data);
+    console.log(label);
     this.update((step) => {
-      const fontSize = parseInt(e.target.value)
-      step.setFontSize(fontSize);
+      step.fontSize = e.target.value;
       return step;
     })
   }
 
   onChangeColor (e: React.ChangeEvent<HTMLInputElement>, data, label) {
+    console.log(e);
+    console.log(data);
+    console.log(label);
     this.update((step) => {
-      step.setColor(e.target.value);
+      step.color = e.target.value;
       return step;
     })
   }
@@ -174,7 +179,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
         </div>
     </div>;
 
-    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label} style={style}>
+    return <BaseInspector header={''} label={selected_step.label} style={style}>
       {content}
     </BaseInspector>
   }
