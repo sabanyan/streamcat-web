@@ -484,7 +484,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     }
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector header={''} label={selected_step.label}
+    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label}
       onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => { }} disabled={baseInspectorDisabled}>
       {content}
     </BaseInspector>

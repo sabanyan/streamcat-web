@@ -152,7 +152,7 @@ const Constants = {
   },
   lang: {
     classification: {
-      subflow: 'サブフロー',
+      subflow: '共有フロー',
       calculation: '項目間の計算',
       col_edit: '列に対する選択・加工',
       data_format: 'フォーマットの整形',
@@ -248,8 +248,14 @@ const Constants = {
     userStatus: {
       tmp: "tmp",
       active: "active",
-      inactive: "inactive"
+      inactive: "inactive",
+      expired: "expired"
     }
+  },
+  projectMemberRole: {
+    READER: "閲覧者",
+    WRITER: "編集者",
+    OWNER: "プロジェクト管理者"
   }
 }
 export default Constants

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}ログイン{% endblock %}
+{% block title %}KSKP{% endblock %}
 {% block content %}
 <div class="container">
     <div class="row mt-40px">
@@ -22,7 +22,11 @@
                       </div>
                         {% if login_failed %}
                         <div class="alert alert-danger small">
-                            ユーザーアカウントもしくはパスワードが正しくありません。
+                            {% if alert_message == "" %}
+                                ユーザーアカウントもしくはパスワードが正しくありません。
+                            {% else %}
+                                {{ alert_message }}
+                            {% endif %}
                         </div>
                         {% endif %}
                     </form>
