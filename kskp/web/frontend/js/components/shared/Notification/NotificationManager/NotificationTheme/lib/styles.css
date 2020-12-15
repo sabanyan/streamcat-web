@@ -215,7 +215,7 @@
 
 :local .notifications-container {
     position: fixed;
-    user-select: all;
+    user-select: text;
     z-index: 99999;
 }
 
