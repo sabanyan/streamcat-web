@@ -13,16 +13,24 @@ from flask import (
 )
 from flask_mail import Mail, Message
 
-from kskp.web.backend import app
-from kskp.store import NoResultFound
+from kskp.web.backend import app, security_level
 from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
 
-# FIXED_SALT = b'd0d68c0d5bb78d78265c0d588f23bc60'
-# STRETCH_COUNT = 100
-app.secret_key = '-jm624cqpry89e'
+# MyProjectのラベル名
+MY_PROJECT = 'MyProject'
 
+def _render_login_template(email='', login_failed=False, alert_message='', original_url='', args=''):
+    """
+    ログイン画面に遷移する
+    """
+    return render_template( 'login.html',
+                            email=email,
+                            login_failed=login_failed,
+                            alert_message=alert_message,
+                            original_url=original_url,
+                            args=args)
 
 def login_required(func):
     """
@@ -34,44 +42,57 @@ def login_required(func):
     """
     @functools.wraps(func)
     def deco(**kwargs):
+        # AWSではロードバランサーから各EC2インスタンスへの通信はHTTPである
+        # そのような構成の場合、request.urlにはhttp:/が設定される
+        if security_level >= 2 and not request.is_secure:
+            request_base_url = request.base_url.replace('http://', 'https://', 1)
+        else:
+            request_base_url = request.base_url
+
         if 'session' in request.args:
             if request.args['session'] == 'on':
                 # 認証を要求している場合
                 # すでに認証が通っている場合でも、再認証する
                 f = request.form
+                request_email = request.form.get('email') or ''
                 with UnAuthzFactory() as factory:
                     try:
-                        user = factory.find_user_by_email(f['email'])
-                    except NoResultFound:
-                        return render_template('login.html', email=f['email'])
+                        user = factory.find_user_by_email(request_email)
+                    except Exception:
+                        return _render_login_template(email=request_email, login_failed=True)
 
                 if user.authenticate(f['password']):
-
                     # 仮登録状態の場合はパスワード登録画面に遷移する
-                    if user.is_temp:
-                        session['signup_email'] = f['email']
-                        return render_template('register_password.html', email=f['email'])
+                    if user.is_init_or_temp:
+                        session['signup_email'] = request_email
+                        return render_template('register_password.html', email=request_email)
 
                     # ユーザID保存
-                    session['user_id'] = user.id
+                    session['user_uuid'] = user.uuid
                     # 認証成功 本来のページへ遷移する
                     if session.get('last_URL'):
                         last_url = session['last_URL']
                         session.pop('last_url', None)
                         return redirect(last_url)
                     else:
-                        return redirect(request.base_url)
+                        return redirect(request_base_url)
+
+                elif user.password_expired():
+                    # 仮パスワードが有効期限切れの場合、その旨を通知する
+                    message = '仮パスワードの有効期限が切れています。ユーザ管理者に問い合わせて下さい。'
+                    return _render_login_template(email=request_email, login_failed=True, alert_message=message)
 
                 else:
                     # 認証失敗
                     # メールアドレスは残してパスワードだけにする
                     # この仕様はセキュリティ上あまりよろしくはないが、
                     # ちゃんと画面が遷移したテストとしてわかりやすいので一時的にそうしている
-                    return render_template('login.html', email=f['email'])
+                    return _render_login_template(email=request_email, login_failed=True)
+
             elif request.args['session'] == 'off':
                 # ログアウト処理
                 # TODO: セッションを消すだけで良いか要検討
-                session.pop('user_id', None)
+                session.pop('user_uuid', None)
                 # 再度やり直し
 
                 # 'session=off'だけを消し去ったURLを作りたいがための記述
@@ -82,19 +103,19 @@ def login_required(func):
                             query += '&'
                         query += key + '=' + arg
 
-                session['last_URL'] = request.base_url + query
+                session['last_URL'] = request_base_url + query
                 return redirect(session['last_URL'])
             else:
                 # 無効なクエリパラメータの値
                 # ひとまずログインページを返しておく
-                return render_template('login.html', original_url=request.base_url+'?session=on', args=request.args)
+                return _render_login_template(original_url=request_base_url+'?session=on', args=request.args)
         else:
             # クエリパラメータに'session'がない、普通のアクセス
-            if 'user_id' in session:
+            if 'user_uuid' in session:
                 return func(**kwargs)
             else:
                 # ログインページを返す
-                return render_template('login.html', original_url=request.base_url+'?session=on', args=request.args)
+                return _render_login_template(original_url=request_base_url+'?session=on', args=request.args)
 
     return deco
 
@@ -105,13 +126,23 @@ def login_required_api(func):
     """
     @functools.wraps(func)
     def deco(**kwargs):
-        if 'user_id' in session:
+        if 'user_uuid' in session:
             # Userオブジェクトをflask.gに設定する
             with UnAuthzFactory() as factory:
-                user = factory.find_user_by_id(session['user_id'])
-                if user is None:
-                    raise Exception('user is None !')
-                elif user.is_temp:
+                try:
+                    user = factory.find_user_by_uuid(session['user_uuid'])
+                except Exception:
+                    # 存在しないuser_idはSessonから削除する
+                    session.clear()
+                    # ログインページを返す
+                    return _render_login_template()
+                if user.is_inactive:
+                    # 認証エラー
+                    return jsonify({'success': False, 'message': 'not authorized..'})
+                elif user.password_expired():
+                    # 仮パスワードが有効期間切れの場合、認証エラー
+                    return jsonify({'success': False, 'message': 'not authorized.'})
+                elif user.is_init_or_temp:
                     # 本パスワード登録画面に遷移する
                     session['signup_email'] = user.email
                     return render_template('register_password.html', email=user.email)
@@ -123,7 +154,7 @@ def login_required_api(func):
                 g.factory = factory
                 return func(**kwargs)
         else:
-            # ログインページを返す
+            # 認証エラー
             return jsonify({'success': False, 'message': 'not authorized'})
     return deco
 
@@ -198,11 +229,12 @@ def complete_sign_up():
     with UnAuthzFactory() as factory:
         try:
             user = factory.find_user_by_email(email)
-        except NoResultFound:
-            return render_template('login.html', email=email)
+        except Exception:
+            return _render_login_template(email=email, login_failed=True)
 
     with Factory(user) as factory:
         user = factory.user.find_by_id(user.id)
+        user_is_init = user.is_init
         # 本パスワードへの変更
         try:
             user.update_password(new_password, modifier=user)
@@ -213,9 +245,13 @@ def complete_sign_up():
             return render_template('register_password.html', email=email)
 
         # ユーザID保存
-        session['user_id'] = user.id
+        session['user_uuid'] = user.uuid
 
-    flash('ユーザー登録が完了しました。')
+        # 初めて登録状態に遷移する時に、MyProjectを作成する
+        if user_is_init:
+            root = factory.data.load_root()
+            project =root.create_project_folder(MY_PROJECT)
+            project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
     return redirect(url_for('basic_template.library'))

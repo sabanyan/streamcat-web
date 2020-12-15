@@ -1,14 +1,30 @@
 
 from bokeh.resources import INLINE
-from flask import render_template, redirect, session, request, Blueprint, url_for, g
+from flask import render_template, Blueprint
 from kskp.web.backend.api.auth import login_required, login_required_api
 
 mod = Blueprint('basic_template', __name__)
 
-@mod.route('/')
+@mod.route('/', methods=['GET'])
 def top():
+    from flask import redirect, url_for
     return redirect(url_for('basic_template.library'))
 
+@mod.route('/favicon.ico', methods=['GET'])
+def favicon():
+    from flask import send_from_directory
+    return send_from_directory('../frontend/static/images', 'kskp.ico', mimetype='image/x-icon')
+
+#
+# ユーザ管理機能
+# TODO: ルーティングの確認
+#
+@mod.route('/admin/users', methods=['GET', 'POST'])
+@login_required
+def admin_users():
+    js_resources = INLINE.render_js()
+    css_resources = INLINE.render_css()
+    return render_template('admin/users.html',js_resources=js_resources,css_resources=css_resources)
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
@@ -21,6 +37,7 @@ def flow_designer(flow_uuid):
 @login_required
 @login_required_api
 def library():
+    from flask import g
     root = g.factory.data.load_root()
     js_resources = INLINE.render_js()
     css_resources = INLINE.render_css()
@@ -49,16 +66,16 @@ def projects(project_uuid):
     project_uuid = project_uuid.rsplit('?')[0]
     return render_template('library.html',folder_uuid=project_uuid,is_project=1,js_resources=js_resources,css_resources=css_resources)
 
-@mod.route('/profile', methods=['GET', 'POST'])
+@mod.route('/settings/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    return render_template('profile.html', user_id=session['user_id'])
+    return render_template('profile.html')
 
 @mod.route('/trashes', methods=['GET', 'POST'])
 @login_required
 def trashes():
     is_trash = 1
-    return render_template('library.html', is_trash=is_trash , user_id=session['user_id'])
+    return render_template('library.html', is_trash=is_trash)
 
 
 # 開発用画面

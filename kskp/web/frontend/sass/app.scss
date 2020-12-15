@@ -6,7 +6,7 @@
 @import "modal";
 @import "margins";
 //@import "../../node_modules/boiler_strap/sass/boilerstrap.import";
-//
+
 body {
   padding-top: 64px; //navigation-header-height
   &.dialog{
@@ -20,12 +20,19 @@ body {
   }
 }
 
+.flashes{
+  list-style-type: none!important;
+  li:last-of-type{
+    margin-bottom: 0!important;
+  }
+  border-radius: 0;
+}
+
 #project_list,#flow_list,#library_list{
   .container{
     min-width: 800px;
   }
 }
-
 
 .container{
   min-width: 1024px;
@@ -40,6 +47,10 @@ input::placeholder,textarea::placeholder {
   *{
     pointer-events: none;
   }
+}
+
+#navbarDropdownMenuLink{
+  cursor: pointer;
 }
 
 .kskp-list-link{

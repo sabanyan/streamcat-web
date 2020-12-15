@@ -6,12 +6,17 @@ from flask import request, jsonify, g
 def update_navigation(func):
     @functools.wraps(func)
     def deco(**kwargs):
-
+        from kskp.store import KSKP_VER
+        
         # ブロック句
         if request.args.get('navigation') == 'off':
             return func(**kwargs)
 
         data = json.loads(func(**kwargs).data.decode())
+
+        # APIの実行に失敗した場合はnavigationを付加しない
+        if 'success' not in data or not data['success']:
+            return jsonify(data)
 
         navigation = {
             'user_id': g.user.id,
@@ -20,6 +25,7 @@ def update_navigation(func):
             'project_name': '',
             'flow_uuid': '',
             'flow_name': '',
+            'version': KSKP_VER,
             'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
         }
 
@@ -41,8 +47,8 @@ def update_navigation(func):
         # プロジェクトが指定された場合
         elif 'project' in request.args:
             project_uuid = request.args['project']
-            navigation['project_uuid'] = project_uuid
             project = g.factory.data.find_by_uuid(project_uuid)
+            navigation['project_uuid'] = project_uuid
             navigation['project_name'] = project.label
 
         data['navigation'] = navigation

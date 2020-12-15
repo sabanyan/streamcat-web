@@ -21,10 +21,11 @@
         "Components/*": ["./web/frontend/js/components/*"],
         "FlowEditorContainer/*": ["./web/frontend/js/components/FlowEditorContainer/*"],
         "FlowListContainer/*": ["./web/frontend/js/components/FlowListContainer/*"],
-        "LibraryListContainer/*": ["./web/frontend/js/components/LibraryListContainer/*"],
+        "LibraryContainer/*": ["./web/frontend/js/components/LibraryContainer/*"],
         "ProfileContainer/*": ["./web/frontend/js/components/ProfileContainer/*"],
         "ProjectListContainer/*": ["./web/frontend/js/components/ProjectListContainer/*"],
         "PreviewContainer/*": ["./web/frontend/js/components/PreviewContainer/*"],
+        "UserListContainer/*": ["./web/frontend/js/components/admin/UserListContainer/*"],
         "Shared/*": ["./web/frontend/js/components/shared/*"],
         "Constants/*": ["./web/frontend/js/constants/*"],
         "Model/*": ["./web/frontend/js/model/*"],
@@ -36,7 +37,8 @@
 
       /* Module Resolution Options */
       "moduleResolution": "node",            /* http://js.studio-kingdom.com/typescript/handbook/module_resolution 参照 */
-      "esModuleInterop": true                /* ESModuleと同じ動作をする. */
+      "esModuleInterop": true,                /* ESModuleと同じ動作をする. */
+      "resolveJsonModule": true,
     },
     "exclude": [
       "node_modules",

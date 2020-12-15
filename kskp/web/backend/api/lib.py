@@ -1,13 +1,15 @@
-from flask import Blueprint, request, jsonify, send_from_directory, g
-from .auth import login_required_api
-from .utils.navigation import update_navigation
-from .utils.api_base import api_base
-from kskp.web.backend import app
+from flask import Blueprint, request, send_from_directory, g
 from kskp.store import (
     DatabaseConn,
-    RemoteFolderConn
+    RemoteFolderConn,
+    lock_manager
 )
-
+from .auth import login_required_api
+from .utils import (
+    api_base,
+    update_navigation,
+    update_projects_info
+)
 
 mod = Blueprint('lib', __name__)
 
@@ -28,15 +30,18 @@ def download_flow(uuid):
 @login_required_api
 @api_base  
 def upload_flow():
+    from pathlib import Path
+
     if 'file' not in request.files or request.files.get('file') is None:
         raise Exception('No archive file found.')
 
     root = g.factory.data.load_root()
+    filename = Path(request.files.get('file').filename).stem
     stream = request.files.get('file').stream
-    
+
     from kskp.store import FlowDumper
     flow_dumper = FlowDumper(g.factory)
-    flow_dumper.restore_archive(root, stream)
+    flow_dumper.restore_archive(root, filename, stream)
 
 @mod.route('/stores', methods=['GET'])
 @login_required_api
@@ -104,6 +109,7 @@ def _jsonify_folder(folder):
 @mod.route('/library', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_projects_info
 @api_base
 def fecth_library():
     """
@@ -121,7 +127,6 @@ def fetch_trashes():
     ゴミ箱を返却する
     """
     trash_folder = g.factory.data.find_trashcan()
-    
     return _jsonify_folder(trash_folder)
 
 @mod.route('/trashes/<datum_uuid>', methods=['PUT'])
@@ -153,7 +158,6 @@ def make_new_lock():
     """
     if request.json is None or 'target' not in request.json:
         raise Exception('ロック対象データのuuidを指定してください')
-    lock_manager = app.config['LOCK_MANAGER'] 
     lock = lock_manager.lock(request.json['target'], creator=g.user)
     return lock.to_json()
 
@@ -165,7 +169,6 @@ def extend_lock(lock_uuid):
     ロックの有効期間を延長する
     """
     from kskp.store import LockedDatumException
-    lock_manager = app.config['LOCK_MANAGER']
     if not lock_manager.contains(lock_uuid):
         raise LockedDatumException(f'Lock ({lock_uuid}) is already expired')
 
@@ -177,8 +180,6 @@ def delete_all_locks():
     指定したuuidのロックを解除する
     全てのロックを解除する
     """
-    lock_manager = app.config['LOCK_MANAGER'] 
-
     if 'of' in request.args:
         target_uuid = request.args['of']
         return lock_manager.unlock_target(target_uuid)
@@ -196,13 +197,13 @@ url=/locks/<lock_uuid> => /delete-locks/<lock_uuid>に変更
 def delete_lock(lock_uuid):
     """
     ロックを解除する
-    """
-    lock_manager = app.config['LOCK_MANAGER'] 
+    """ 
     return lock_manager.unlock(lock_uuid)
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_projects_info
 @api_base
 def fetch_folder(folder_uuid):
     """
@@ -262,6 +263,7 @@ def throw_away_folder(folder_uuid):
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_projects_info
 @api_base
 def fetch_awss3_folder(awss3_uuid):
     """
@@ -387,6 +389,7 @@ def throw_away_database(database_uuid):
 @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
 @login_required_api
 @update_navigation
+@update_projects_info
 @api_base
 def fetch_remote_folder(folder_uuid):
     """

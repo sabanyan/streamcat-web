@@ -13,6 +13,9 @@ type Props = {
     formKey?: any;//指定されたフォーム要素のキー
     useForm?: boolean;//onChange時に指定された共通のFormイベントを叩くようにするため
     disabled?: boolean;
+    name?: string;
+    inputRef?: any;
+    readOnly?: boolean;
 };
 
 type State = Validation;
@@ -30,7 +33,8 @@ export default class TextField extends React.Component<Props, State> {
         defaultValue: "",
         type: "text",
         useForm: false,
-        formKey: ""
+        formKey: "",
+        readOnly: false
     };
 
     constructor(props: Props) {
@@ -141,19 +145,24 @@ export default class TextField extends React.Component<Props, State> {
      * @returns {*}
      */
     render() {
-        const {placeholder, defaultValue, type, disabled} = this.props;
+        const {placeholder, defaultValue, type, disabled, name, inputRef, readOnly} = this.props;
         const {validation} = this.state;
         const input_class = classnames("form-control", {
             [style.error]: !validation,
-            [this.props.className]: (this.props.className)
+            [this.props.className]: (this.props.className),
+            [style.readOnly]: readOnly
         });
 
         return <div className={style.textField}>
-            <input type={type} ref={"input"} className={input_class}
+            <input type={type} className={input_class}
                    placeholder={placeholder}
                    onChange={(e) => this.onChange(e)}
                    defaultValue={defaultValue}
-                   disabled={disabled}/>
+                   disabled={disabled}
+                   name={name}
+                   ref={inputRef}
+                   readOnly={readOnly}
+            />
             {this.renderValidationMessage()}
         </div>;
     }
