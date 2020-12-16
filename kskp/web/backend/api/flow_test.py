@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify, g, render_template, redirect, url
 from .auth import login_required_api
 from .frames import execute_flow
 from .utils.navigation import update_navigation
-from .utils import api_base, lock_required
+from .utils import api_base
 from kskp.store import *
 from kskp.engine import execute, FlowJsonLink
 from kskp.web.backend import app
