@@ -98,7 +98,7 @@ export default class ParamString extends React.Component<Props, State> {
 
   //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
   render() {
-    const { label, param, helper, disabled, value, helperTargetedInput} = this.props
+    const { label, param, helper, disabled, value, helperTargetedInput } = this.props
     const { onChange } = this.props
 
     let isDisabled = (disabled) ? true : false
@@ -107,20 +107,7 @@ export default class ParamString extends React.Component<Props, State> {
 
     return <React.Fragment>
       {
-        param.isPassword ?
-          <input
-            name={param.name}
-            type="password"
-            className="form-control"
-            data-paramtype={param.type}
-            placeholder={param.name}
-            value={currentValue}
-            disabled={isDisabled}
-            onChange={(e) => this.onChange(e)}
-            onFocus={(e) => this.onFocusInput(e)}
-            ref={this.inputRef}
-          />
-          :
+        param.resizable ?
           <textarea
             name={param.name}
             className={classnames("form-control", style.input)}
@@ -132,6 +119,19 @@ export default class ParamString extends React.Component<Props, State> {
             onFocus={(e) => this.onFocusInput(e)}
             ref={this.inputRef}
           />
+          :
+          <input
+          name={param.name}
+          type={param.isPassword ? "password" : "text"}
+          className="form-control"
+          data-paramtype={param.type}
+          placeholder={param.name}
+          value={currentValue}
+          disabled={isDisabled}
+          onChange={(e) => this.onChange(e)}
+          onFocus={(e) => this.onFocusInput(e)}
+          ref={this.inputRef}
+        />
       }
 
       {
