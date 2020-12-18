@@ -1642,7 +1642,7 @@ class TrashTestCase(ApiTestCaseBase):
             self.delete_uri(f'/api/v0/folders/{folder2_uuid}', self.USER1)
 
         # フローをロックする
-        result = self.post_locks('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
+        result = self.post_uri('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
         lock_uuid = result['data']['uuid']
 
         # フローはほかせること
