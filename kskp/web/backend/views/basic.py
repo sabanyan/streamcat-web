@@ -28,30 +28,30 @@ def admin_users():
 @login_required_api
 def library():
     from flask import g
-    root = g.factory.data.load_root()
-    return _render_template('library.html',folder_uuid=root.uuid)
+    uuid = g.factory.data.load_root().uuid
+    return _render_template('library.html', folder_uuid=uuid, is_project='false', is_trash='false')
+
+@mod.route('/projects/<project_uuid>', methods=['GET', 'POST'])
+@login_required
+def projects(uuid):
+    uuid = uuid.rstrip('?')
+    return _render_template('library.html', folder_uuid=uuid, is_project='true', is_trash='false')
 
 @mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
 @login_required
 def folders(folder_uuid):
-    folder_uuid = folder_uuid.rsplit('?')[0]
-    return _render_template('library.html', folder_uuid=folder_uuid, is_project=0)
-
-@mod.route('/projects/<project_uuid>', methods=['GET', 'POST'])
-@login_required
-def projects(project_uuid):
-    project_uuid = project_uuid.rsplit('?')[0]
-    return _render_template('library.html', folder_uuid=project_uuid, is_project=1)
+    uuid = folder_uuid.rstrip('?')
+    return _render_template('library.html', folder_uuid=uuid, is_project='false', is_trash='false')
 
 @mod.route('/trashes', methods=['GET', 'POST'])
 @login_required
 def trashes():
-    return render_template('library.html', is_trash=1)
+    return render_template('library.html', is_project='false', is_trash='true')
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
 def flow_designer(flow_uuid):
-    return _render_template('flow_designer.html',flow_uuid=flow_uuid)
+    return _render_template('flow_designer.html', flow_uuid=flow_uuid)
 
 @mod.route('/preview', methods=['GET', 'POST'])
 @login_required

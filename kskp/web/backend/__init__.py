@@ -10,7 +10,6 @@ SECURITY_LEVEL=int(os.getenv('KSKP_SECURITY_LEVEL', 1))
 
 # SessionのCookieを署名するための秘密鍵
 # SessionのCookieを秘密鍵で署名して改竄を防ぐ
-# TODO: 毎回ランダムに変更した方がいい？
 app.secret_key = '-jm624cqpry89e'
 
 # コマンド一覧で表示させるコマンドのリスト
