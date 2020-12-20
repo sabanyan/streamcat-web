@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, jsonify, request, g
 from kskp.core import Datum
 from kskp.store import Folder, ProjectFolder
 from ..views.auth import MY_PROJECT
@@ -7,7 +7,6 @@ from .utils import (
     Constraints,
     RequestJson,
     api_base,
-    update_navigation,
     update_project_info,
     update_projects_info2,
     login_required_api
@@ -17,7 +16,6 @@ mod = Blueprint('api', __name__)
 
 @mod.route('/projects')
 @login_required_api
-@update_navigation
 @update_projects_info2
 @api_base
 def get_projects():
@@ -33,7 +31,6 @@ def get_projects():
 
 @mod.route('/projects/<project_uuid>', methods=['GET'])
 @login_required_api
-@update_navigation
 @update_project_info
 @api_base
 def fetch_project(project_uuid):
@@ -61,7 +58,6 @@ def new_project():
 
 @mod.route('/projects/<project_uuid>', methods=['PUT'])
 @login_required_api
-@update_navigation
 @api_base
 def update_project(project_uuid):
     """
@@ -120,7 +116,6 @@ def throw_away_project(project_uuid):
 
 @mod.route('/flows', methods=['GET'])
 @login_required_api
-@update_navigation
 @api_base
 def fecth_flows():
     """
@@ -152,7 +147,6 @@ def fecth_flows():
 
 @mod.route('/flows/<flow_uuid>', methods=['GET'])
 @login_required_api
-@update_navigation
 @api_base
 def fetch_flow(flow_uuid):
     """
