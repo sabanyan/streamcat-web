@@ -13,15 +13,15 @@ def favicon():
     from flask import send_from_directory
     return send_from_directory('../frontend/static/images', 'kskp.ico', mimetype='image/x-icon')
 
+@mod.route('/settings/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    return render_template('profile.html')
+
 @mod.route('/admin/users', methods=['GET', 'POST'])
 @login_required
 def admin_users():
     return _render_template('admin/users.html')
-
-@mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
-@login_required
-def flow_designer(flow_uuid):
-    return _render_template('flow_designer.html',flow_uuid=flow_uuid)
 
 @mod.route('/library', methods=['GET', 'POST'])
 @login_required
@@ -30,11 +30,6 @@ def library():
     from flask import g
     root = g.factory.data.load_root()
     return _render_template('library.html',folder_uuid=root.uuid)
-
-@mod.route('/preview', methods=['GET', 'POST'])
-@login_required
-def preview():
-    return _render_template('preview.html')
 
 @mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
 @login_required
@@ -48,16 +43,20 @@ def projects(project_uuid):
     project_uuid = project_uuid.rsplit('?')[0]
     return _render_template('library.html', folder_uuid=project_uuid, is_project=1)
 
-@mod.route('/settings/profile', methods=['GET', 'POST'])
-@login_required
-def profile():
-    return render_template('profile.html')
-
 @mod.route('/trashes', methods=['GET', 'POST'])
 @login_required
 def trashes():
-    is_trash = 1
-    return render_template('library.html', is_trash=is_trash)
+    return render_template('library.html', is_trash=1)
+
+@mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
+@login_required
+def flow_designer(flow_uuid):
+    return _render_template('flow_designer.html',flow_uuid=flow_uuid)
+
+@mod.route('/preview', methods=['GET', 'POST'])
+@login_required
+def preview():
+    return _render_template('preview.html')
 
 # 開発用画面
 # TODO: 将来、見れる権限の検討が必要かも
@@ -78,7 +77,7 @@ def _render_template(template_name, **context):
                                 nonce=nonce,
                                 js_resources=INLINE.render_js(),
                                 css_resources=INLINE.render_css(),
-                                context=context)
+                                **context)
     response = make_response(contents)
 
     if SECURITY_LEVEL >= 1:
