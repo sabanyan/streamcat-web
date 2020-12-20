@@ -30,7 +30,9 @@
 {% endif %}
 {% endwith %}
 {% block content %}{% endblock %}
-{% include "common/script.html" %}
+{# Content-Security-Policy対応のため使用しないインラインスクリプトを削除する
+    {% include "common/script.html" %}
+#}
 <a id="csv_download" download="download"></a>
 <div class="modal" style="display: none" id="error_modal">
     <div class="modal-dialog">
