@@ -33,8 +33,8 @@ def library():
 
 @mod.route('/projects/<project_uuid>', methods=['GET', 'POST'])
 @login_required
-def projects(uuid):
-    uuid = uuid.rstrip('?')
+def projects(project_uuid):
+    uuid = project_uuid.rstrip('?')
     return _render_template('library.html', folder_uuid=uuid, is_project='true', is_trash='false')
 
 @mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
