@@ -1,7 +1,5 @@
-
-from bokeh.resources import INLINE
-from flask import render_template, Blueprint
-from kskp.web.backend.api.auth import login_required, login_required_api
+from flask import Blueprint, render_template
+from ..api.utils import login_required, login_required_api
 
 mod = Blueprint('basic_template', __name__)
 
@@ -15,23 +13,15 @@ def favicon():
     from flask import send_from_directory
     return send_from_directory('../frontend/static/images', 'kskp.ico', mimetype='image/x-icon')
 
-#
-# ユーザ管理機能
-# TODO: ルーティングの確認
-#
 @mod.route('/admin/users', methods=['GET', 'POST'])
 @login_required
 def admin_users():
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    return render_template('admin/users.html',js_resources=js_resources,css_resources=css_resources)
+    return _render_template('admin/users.html')
 
 @mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
 @login_required
 def flow_designer(flow_uuid):
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    return render_template('flow_designer.html',flow_uuid=flow_uuid,js_resources=js_resources,css_resources=css_resources)
+    return _render_template('flow_designer.html',flow_uuid=flow_uuid)
 
 @mod.route('/library', methods=['GET', 'POST'])
 @login_required
@@ -39,32 +29,24 @@ def flow_designer(flow_uuid):
 def library():
     from flask import g
     root = g.factory.data.load_root()
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    return render_template('library.html',folder_uuid=root.uuid,js_resources=js_resources,css_resources=css_resources)
+    return _render_template('library.html',folder_uuid=root.uuid)
 
 @mod.route('/preview', methods=['GET', 'POST'])
 @login_required
 def preview():
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    return render_template('preview.html',js_resources=js_resources,css_resources=css_resources)
+    return _render_template('preview.html')
 
 @mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
 @login_required
 def folders(folder_uuid):
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
     folder_uuid = folder_uuid.rsplit('?')[0]
-    return render_template('library.html',folder_uuid=folder_uuid,is_project=0,js_resources=js_resources,css_resources=css_resources)
+    return _render_template('library.html', folder_uuid=folder_uuid, is_project=0)
 
 @mod.route('/projects/<project_uuid>', methods=['GET', 'POST'])
 @login_required
 def projects(project_uuid):
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
     project_uuid = project_uuid.rsplit('?')[0]
-    return render_template('library.html',folder_uuid=project_uuid,is_project=1,js_resources=js_resources,css_resources=css_resources)
+    return _render_template('library.html', folder_uuid=project_uuid, is_project=1)
 
 @mod.route('/settings/profile', methods=['GET', 'POST'])
 @login_required
@@ -77,11 +59,37 @@ def trashes():
     is_trash = 1
     return render_template('library.html', is_trash=is_trash)
 
-
 # 開発用画面
 # TODO: 将来、見れる権限の検討が必要かも
 @mod.route('/dev', methods=['GET', 'PUT'])
 @login_required
 def dev():
     return render_template('dev/dev.html')
+
+def _render_template(template_name, **context):
+    import uuid
+    from flask import make_response
+    from bokeh.resources import INLINE
+    from kskp.web.backend import SECURITY_LEVEL
+
+    nonce = str(uuid.uuid4()).upper()[0:6]
+
+    contents = render_template(template_name,
+                                nonce=nonce,
+                                js_resources=INLINE.render_js(),
+                                css_resources=INLINE.render_css(),
+                                context=context)
+    response = make_response(contents)
+
+    if SECURITY_LEVEL >= 1:
+        # Webブラウザに対し、コンテンツの取得元をディレクティブに従い制限するよう要求する
+        # https://developer.mozilla.org/ja/docs/Web/HTTP/CSP
+        response.headers['Content-Security-Policy-Report-Only'] = \
+            f"default-src 'self'; script-src 'self' 'nonce-{nonce}' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+
+        # Webブラウザに対し、<frame>,<iframe>,<embed>,<object>から取得するコンテンツを自身のドメインに制限するよう要求する
+        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Frame-Options
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+
+    return response
 

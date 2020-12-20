@@ -2,14 +2,15 @@ import os
 from flask import Blueprint, request, jsonify, g
 from kskp.core import Datum
 from kskp.store import Folder, ProjectFolder
-from .auth import login_required_api, MY_PROJECT
+from ..views.auth import MY_PROJECT
 from .utils import (
+    Constraints,
+    RequestJson,
     api_base,
     update_navigation,
     update_project_info,
     update_projects_info2,
-    Constraints,
-    RequestJson
+    login_required_api
 )
 
 mod = Blueprint('api', __name__)

@@ -4,12 +4,12 @@ from kskp.store import (
     RemoteFolderConn,
     lock_manager
 )
-from .auth import login_required_api
 from .utils import (
+    RequestJson,
     api_base,
     update_navigation,
     update_projects_info,
-    RequestJson
+    login_required_api
 )
 
 mod = Blueprint('lib', __name__)

@@ -2,11 +2,11 @@
 
 from pathlib import Path
 from flask import Blueprint, jsonify, request, g
-from .auth import login_required_api
 from .utils import (
+    RequestJson,
     api_base,
     frame_api_base,
-    RequestJson
+    login_required_api
 )
 
 mod = Blueprint('frames', __name__)

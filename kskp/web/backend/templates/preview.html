@@ -2,7 +2,7 @@
 {% block title %}
 {% endblock %}
 {% block content %}
-<script>
+<script nonce="{{ nonce }}">
   const inject_project_uuid = '{{ project_uuid }}';
   const inject_flow_uuid = undefined;
 </script>
