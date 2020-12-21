@@ -60,6 +60,15 @@ const FlowEditor = (props: Props) => {
 
     const dispatch = useDispatch();
     const folderUuid = useSelector(state => state.FlowEditorReducer.folderUuid);
+
+    const _modifiedAt = useSelector(state => state.FlowEditorReducer.modifiedAt);
+    useEffect(()=>{
+        if(_modifiedAt){
+            setModifiedAt(_modifiedAt);
+        }
+    },[_modifiedAt])
+    const [modifiedAt,setModifiedAt]= useState<string>();
+    console.log(modifiedAt);
     const flow = useSelector(state => state.FlowEditorReducer.flow);
     const drag = useSelector(state => state.FlowEditorReducer.drag);
     const selected_step_ids = useSelector(state => state.FlowEditorReducer.selected_step_ids);
@@ -360,11 +369,13 @@ const FlowEditor = (props: Props) => {
 
     const onClickSaveFlow = () => {
         const targetFlow = flow;
-        return saveFlowPromise(targetFlow);
+        return saveFlowPromise(targetFlow).then(res=>{
+            setModifiedAt(res.data.modifiedAt);
+        });
     }
 
     /**
-     * lock の新規再取得処理
+     * lock の再取得処理
      */
     const regenerateNewLockUUID = () => {
         // 取得処理
@@ -461,15 +472,15 @@ const FlowEditor = (props: Props) => {
         API.request.doPost.extendLocks({lockUUID: lockUUID})
             .then((res) => {
                 // レスポンスチェック
-                const rand = Math.random();
-                console.log(rand);
-                if(rand > 0.2){
-                    regenerateNewLockUUID();
-                    setReadOnly(true);
-                }else{
-                    API.response.post.extendLocks(res);
-                    setLockUUID(lockUUID);
-                }
+                //const rand = Math.random();
+                //console.log(rand);
+                // if(rand > 0.2){
+                //     regenerateNewLockUUID();
+                //     setReadOnly(true);
+                // }else{
+                API.response.post.extendLocks(res);
+                setLockUUID(lockUUID);
+                //}
             })
             .catch(e => {
                 // 編集中通知API に失敗した場合は、排他ロックを新規に再取得する
