@@ -125,6 +125,12 @@ export default class ModalManager extends React.Component<Props> {
                      <Modal key={Constants.modal.CONFIRM_UNDELETE_USER} id={Constants.modal.CONFIRM_UNDELETE_USER}
                             title="" dynamic={true} footer={true}>
                      </Modal>
+                     <Modal key={Constants.modal.CONFIRM_RELOAD_FLOW} id={Constants.modal.CONFIRM_RELOAD_FLOW}
+                            title="" close={false} dynamic={true} footer={true} >
+                     </Modal>
+                     <Modal key={Constants.modal.SAVE_AS_FLOW} id={Constants.modal.SAVE_AS_FLOW}
+                            title="フローを別名で保存" close={false}  dynamic={true} footer={true} >
+                     </Modal>
               </>;
        }
 }
