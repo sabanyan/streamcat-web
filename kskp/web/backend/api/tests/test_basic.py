@@ -422,7 +422,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = self.USER1.id
+                session['user_uuid'] = self.USER1.uuid
 
             new_flow_name = '新しいフローです'
             new_flow_data_source_name = str(uuid.uuid4())
@@ -607,7 +607,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = self.USER1.id
+                session['user_uuid'] = self.USER1.uuid
             endpoint = '/api/v0/flows/%s' % test_flow_uuid
             response = client.get(endpoint)
             result = json.loads(response.get_data())
@@ -905,7 +905,7 @@ class FlowApiTestCase(ApiTestCaseBase):
         # 実際のAPIを投げるテストを開始する
         with app.test_client() as client:
             with client.session_transaction() as session:
-                session['user_id'] = user1.id
+                session['user_uuid'] = user1.uuid
             endpoint = '/api/v0/subflows'
             response = client.get(endpoint)
             result = json.loads(response.get_data())
@@ -1275,7 +1275,7 @@ def setUpProject(self):
     user1 = setUpUser(self)
 
     with self.client.session_transaction() as session:
-        session['user_id'] = user1.id
+        session['user_uuid'] = user1.uuid
 
     # model.create_project('proj1', session)
 

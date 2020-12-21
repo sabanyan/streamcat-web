@@ -29,7 +29,7 @@ class LockFlowTestCase(ApiTestCaseBase):
         }
         return self.post_uri('/api/v0/flows', data1, self.USER1)
 
-    def update_flow(self, flow_uuid, source_uuid, lock_uuid=None):
+    def update_flow(self, flow_uuid, source_uuid, lock_uuid=None, user=None):
         data_source = {
             "id": "i1",
             "type": "frame",
@@ -49,7 +49,7 @@ class LockFlowTestCase(ApiTestCaseBase):
             d = {'label': 'ラベル', 'flow': data1}
         else:
             d = {'label': 'ラベル', 'flow': data1, 'lock': lock_uuid}
-        return self.put_uri(f'/api/v0/flows/{flow_uuid}', d, self.USER1)
+        return self.put_uri(f'/api/v0/flows/{flow_uuid}', d, user or self.USER1)
 
     # @unittest.skip
     def test_lock(self):
@@ -74,7 +74,7 @@ class LockFlowTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
         flow_uuid = result['data']['children'][0]['uuid']
         # フローをロックする
-        result = self.post_locks('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
+        result = self.post_uri('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
         self.assertTrue(result['success'], 'POST locks is failed.')
         lock_uuid = result['data']['uuid']
         # ロックUUIDなしで更新を試みる
@@ -175,7 +175,7 @@ class LockFlowTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/folders/{folder_uuid}', self.USER1)
         flow_uuid = result['data']['children'][0]['uuid']
         # フローをロックする
-        result = self.post_locks('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
+        result = self.post_uri('/api/v0/locks', {'target' : flow_uuid}, self.USER1)
         self.assertTrue(result['success'], 'POST locks is failed.')
         lock_uuid = result['data']['uuid']
         # 正しいロックUUIDで更新する
@@ -185,8 +185,221 @@ class LockFlowTestCase(ApiTestCaseBase):
 
     def test_expire_lock(self):
         """
-        有効期間を過ぎたロックは解除される
+        有効期間を過ぎたロックは解除されること
         """
+        # ロックの有効期限を1秒にする
+        from kskp.store import lock_manager
+        backup_valid_seconds = lock_manager._valid_seconds
+        lock_manager._valid_seconds = 1
+        
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダを作成する
+        result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'DHCの健康食品'}, self.USER1)
+        folder_uuid = result['data']['uuid']
+
+        # USER1は、フォルダ内にFlowを作成する
+        data = {
+            'project_uuid': folder_uuid,
+            'name': 'ビタミンD',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}?roles=on', self.USER1)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # USER1は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # ロックの有効期限が切れるまで待つ
+        import time
+        time.sleep(1.1)
+
+        # ロックの有効期限が切れたため、フローを更新できないこと
+        with self.assertRaises(AssertionError):
+            self.update_flow(flow_uuid, source_uuid=None, lock_uuid=lock_uuid)        
+
+        # ロックの有効期限が切れたため、フローをゴミ箱にほかせないこと
+        with self.assertRaises(AssertionError):
+            self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid}, self.USER1)
+
+        # ロックの有効期限が切れたため、フローの排他ロックを解除できないこと
+        with self.assertRaises(AssertionError):
+            self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
+        # ロックの有効期限を戻す
+        lock_manager._valid_seconds = backup_valid_seconds
+
+    @unittest.skip
+    def test_extend_lock(self):
+        """
+        ロックの有効期間を延長できること
+        """
+        # ロックの有効期限を1秒にする
+        from kskp.store import lock_manager
+        backup_valid_seconds = lock_manager._valid_seconds
+        lock_manager._valid_seconds = 1
+        
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダを作成する
+        result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'(=^ェ^=)'}, self.USER1)
+        folder_uuid = result['data']['uuid']
+
+        # USER1は、フォルダ内にFlowを作成する
+        data = {
+            'project_uuid': folder_uuid,
+            'name': '🐱😽',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}?roles=on', self.USER1)
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # USER1は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        import time
+        for i in range(10):
+            # 少し待つ
+            time.sleep(0.4)
+            # ロックの有効期間を延長する
+            self.post_locks(f'/api/v0/extend-locks/{lock_uuid}', {}, self.USER1)
+            self.assertTrue(result['success'], 'POST extend-locks is failed.')
+
+        # ロックの有効期間が延長されたため、フローを更新できること
+        self.update_flow(flow_uuid, source_uuid=None, lock_uuid=lock_uuid) 
+
+        # フローのロックを解除する
+        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
+        # ロックの有効期限を戻す
+        lock_manager._valid_seconds = backup_valid_seconds
+
+    def test_relock(self):
+        """
+        有効期間を過ぎた後にロックを再取得できること
+        """
+        # ロックの有効期限を1秒にする
+        from kskp.store import lock_manager
+        backup_valid_seconds = lock_manager._valid_seconds
+        lock_manager._valid_seconds = 1
+        
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # フォルダを作成する
+        result = self.post_uri('/api/v0/folders', {'parent':root.uuid, 'label':'Belkin'}, self.USER1)
+        folder_uuid = result['data']['uuid']
+
+        # USER1は、フォルダ内にFlowを作成する
+        data = {
+            'project_uuid': folder_uuid,
+            'name': 'Anker',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/folders/{folder_uuid}?roles=on', self.USER1)
+        modifiedAt = result['data']['children'][0]['modifiedAt']
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # USER1は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # ロックの有効期限が切れるまで待つ
+        import time
+        time.sleep(1.1)
+
+        # ロックの有効期限が切れたため、フローを更新できないこと
+        with self.assertRaises(AssertionError):
+            self.update_flow(flow_uuid, source_uuid=None, lock_uuid=lock_uuid) 
+
+        # ロックの有効期限が切れた後、ロックを再取得できること
+        result = self.post_locks(f'/api/v0/locks', {'target':flow_uuid, 'lastModifiedAt':modifiedAt}, self.USER1)
+        self.assertTrue(result['success'])
+        relock_uuid = result['data']['uuid']
+
+        # 先に取得したロックと再取得したロックのUUIDは異なる
+        self.assertNotEqual(lock_uuid, relock_uuid)
+
+        # フローのロックを解除する
+        result = self.post_uri(f'/api/v0/delete-locks/{relock_uuid}', {}, self.USER1)
+
+        # ロックの有効期限を戻す
+        lock_manager._valid_seconds = backup_valid_seconds
+
+    def test_cannot_relock(self):
+        """
+        有効期間を過ぎた後にフローが編集された場合は、ロックを再取得できないこと
+        """
+        # ロックの有効期限を1秒にする
+        from kskp.store import lock_manager
+        backup_valid_seconds = lock_manager._valid_seconds
+        lock_manager._valid_seconds = 1
+        
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Belkin'}, self.USER1)
+        project_uuid = result['data']['uuid']
+
+        # USER2をプロジェクトメンバに追加する
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}/users/{self.USER2.uuid}', {'memberType':'Writer'}, self.USER1)
+
+        # USER1は、プロジェクト内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid,
+            'name': 'Anker',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER1)
+
+        # フローを取得する
+        # (POST /flowsは作成したフローのUUIDを返さないので)
+        result = self.get_uri(f'/api/v0/projects/{project_uuid}?roles=on', self.USER1)
+        modifiedAt = result['data']['children'][0]['modifiedAt']
+        flow_uuid = result['data']['children'][0]['uuid']
+
+        # USER1は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # ロックの有効期限が切れるまで待つ
+        import time
+        time.sleep(1.1)
+
+        # USER2は、フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
+        lock_uuid = result['data']['uuid']
+
+        # USER2は、フローを更新する
+        self.update_flow(flow_uuid, source_uuid=None, lock_uuid=lock_uuid, user=self.USER2)
+
+        # USER2は、フローの排他ロックを解除する
+        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+
+        # USER1は、フローの排他ロックを再取得できないこと
+        result = self.post_locks(f'/api/v0/locks', {'target':flow_uuid, 'lastModifiedAt':modifiedAt}, self.USER1)
+        self.assertFalse(result['success'])
+
+        # ロックの有効期限を戻す
+        lock_manager._valid_seconds = backup_valid_seconds
+
 
     def test_delete_locked_flow(self):
         """

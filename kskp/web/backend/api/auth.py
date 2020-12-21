@@ -13,16 +13,13 @@ from flask import (
 )
 from flask_mail import Mail, Message
 
-from kskp.web.backend import app
+from kskp.web.backend import app, security_level
 from kskp.store.factory import Factory, UnAuthzFactory
 
 mod = Blueprint('auth', __name__)
 
 # MyProjectのラベル名
 MY_PROJECT = 'MyProject'
-
-app.secret_key = '-jm624cqpry89e'
-
 
 def _render_login_template(email='', login_failed=False, alert_message='', original_url='', args=''):
     """
@@ -45,6 +42,13 @@ def login_required(func):
     """
     @functools.wraps(func)
     def deco(**kwargs):
+        # AWSではロードバランサーから各EC2インスタンスへの通信はHTTPである
+        # そのような構成の場合、request.urlにはhttp:/が設定される
+        if security_level >= 2 and not request.is_secure:
+            request_base_url = request.base_url.replace('http://', 'https://', 1)
+        else:
+            request_base_url = request.base_url
+
         if 'session' in request.args:
             if request.args['session'] == 'on':
                 # 認証を要求している場合
@@ -64,14 +68,14 @@ def login_required(func):
                         return render_template('register_password.html', email=request_email)
 
                     # ユーザID保存
-                    session['user_id'] = user.id
+                    session['user_uuid'] = user.uuid
                     # 認証成功 本来のページへ遷移する
                     if session.get('last_URL'):
                         last_url = session['last_URL']
                         session.pop('last_url', None)
                         return redirect(last_url)
                     else:
-                        return redirect(request.base_url)
+                        return redirect(request_base_url)
 
                 elif user.password_expired():
                     # 仮パスワードが有効期限切れの場合、その旨を通知する
@@ -88,7 +92,7 @@ def login_required(func):
             elif request.args['session'] == 'off':
                 # ログアウト処理
                 # TODO: セッションを消すだけで良いか要検討
-                session.pop('user_id', None)
+                session.pop('user_uuid', None)
                 # 再度やり直し
 
                 # 'session=off'だけを消し去ったURLを作りたいがための記述
@@ -99,19 +103,19 @@ def login_required(func):
                             query += '&'
                         query += key + '=' + arg
 
-                session['last_URL'] = request.base_url + query
+                session['last_URL'] = request_base_url + query
                 return redirect(session['last_URL'])
             else:
                 # 無効なクエリパラメータの値
                 # ひとまずログインページを返しておく
-                return _render_login_template(original_url=request.base_url+'?session=on', args=request.args)
+                return _render_login_template(original_url=request_base_url+'?session=on', args=request.args)
         else:
             # クエリパラメータに'session'がない、普通のアクセス
-            if 'user_id' in session:
+            if 'user_uuid' in session:
                 return func(**kwargs)
             else:
                 # ログインページを返す
-                return _render_login_template(original_url=request.base_url+'?session=on', args=request.args)
+                return _render_login_template(original_url=request_base_url+'?session=on', args=request.args)
 
     return deco
 
@@ -122,11 +126,11 @@ def login_required_api(func):
     """
     @functools.wraps(func)
     def deco(**kwargs):
-        if 'user_id' in session:
+        if 'user_uuid' in session:
             # Userオブジェクトをflask.gに設定する
             with UnAuthzFactory() as factory:
                 try:
-                    user = factory.find_user_by_id(session['user_id'])
+                    user = factory.find_user_by_uuid(session['user_uuid'])
                 except Exception:
                     # 存在しないuser_idはSessonから削除する
                     session.clear()
@@ -134,10 +138,10 @@ def login_required_api(func):
                     return _render_login_template()
                 if user.is_inactive:
                     # 認証エラー
-                    return jsonify({'success': False, 'message': 'not authorized'})
+                    return jsonify({'success': False, 'message': 'not authorized..'})
                 elif user.password_expired():
                     # 仮パスワードが有効期間切れの場合、認証エラー
-                    return jsonify({'success': False, 'message': 'not authorized'})
+                    return jsonify({'success': False, 'message': 'not authorized.'})
                 elif user.is_init_or_temp:
                     # 本パスワード登録画面に遷移する
                     session['signup_email'] = user.email
@@ -241,7 +245,7 @@ def complete_sign_up():
             return render_template('register_password.html', email=email)
 
         # ユーザID保存
-        session['user_id'] = user.id
+        session['user_uuid'] = user.uuid
 
         # 初めて登録状態に遷移する時に、MyProjectを作成する
         if user_is_init:
