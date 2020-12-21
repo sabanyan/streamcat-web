@@ -30,7 +30,9 @@ type ToolBarProps = {
     undo: Function;
     redo: Function;
     baseDisabled: boolean
-    runDisabled: boolean
+    runDisabled: boolean;
+    onClickSaveFlow: ()=>{};
+    onClickRunFlowPromise: any;
 }
 
 export default class ToolBar extends React.Component<ToolBarProps> {
@@ -44,63 +46,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
 
     onClickSave() {
-        this.saveFlow();
-    }
-
-    saveFlow() {
-        const {flow, nodes, lockUUID, notify, dismissNotify} = this.props;
-
-        let saveNotify = notify({
-            title: "フロー保存中",
-            message: "フローの設定を保存しています",
-            status: "loading",
-            dismissAfter: 0
-        });
-
-        flow.nodes = nodes;
-
-        return new Promise(async (reslove, reject) => {
-            // 編集権限がないと、保存不可
-            if (!lockUUID) {
-                reject(new MessageModel({
-                    title: "警告：読取専用フロー",
-                    message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
-                    messageStatus: "warning"
-                }));
-            } else {
-
-                //　フロー保存
-                await API.request.doPut.flow({
-                    flowUUID: inject_flow_uuid,
-                    flow: flow,
-                    lockUUID: lockUUID
-                })
-                    .then((response) => {
-                        if (!response.data.success) {
-                            console.log(response);
-                            reject(new MessageModel({
-                                title: "フロー保存エラー",
-                                message: response.data.message,
-                                messageStatus: "error"
-                            }));
-                        }
-                        dismissNotify(saveNotify.id);
-                        reslove(response.data);
-                    });
-            }
-
-
-        })
-        // 保存失敗した場合、エラーメッセージ出力
-            .catch(e => {
-                notify({
-                    title: e.title,
-                    message: e.message,
-                    status: e.messageStatus,
-                    dismissAfter: -1,
-                    closeButton: true
-                });
-            });
+        this.props.onClickSaveFlow();
     }
 
     onClickSort() {
@@ -169,16 +115,13 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
     onClickProjectRun() {
         const {lockUUID} = this.props;
-
         this.loading = true;
         this.loadingMessage = "";
 
-        this.saveFlow()
-            .then((result: any) => {
-
-                if (result.success === true) this.run();
-                this.loading = false;
-            });
+        this.props.onClickRunFlowPromise().then((result: any) => {
+            if (result.success === true) this.run();
+            this.loading = false;
+        });
     }
 
     flowUpdate() {
