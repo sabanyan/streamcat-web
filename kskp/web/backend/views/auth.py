@@ -1,6 +1,5 @@
 from flask import (
     Blueprint,
-    render_template,
     redirect,
     url_for,
     flash,
@@ -9,6 +8,7 @@ from flask import (
 )
 from flask_mail import Mail, Message
 from kskp.web.backend import app
+from .utils import make_response
 
 # MyProjectのラベル名
 MY_PROJECT = 'MyProject'
@@ -28,7 +28,7 @@ mod = Blueprint('auth', __name__)
 
 @mod.route('/')
 def signup():
-    return render_template('signup.html')
+    return make_response('signup.html')
 
 @mod.route('/confirm', methods=['POST'])
 def confirm_email():
@@ -69,14 +69,14 @@ def confirm_email():
 
     session['signup_email'] = email
 
-    return render_template('signup.html')
+    return make_response('signup.html')
 
 @mod.route('/register/<mail_hash>')
 def register_email(mail_hash):
     """
     メールの確認ができたので、パスワード入力画面を返す
     """
-    return render_template('register_password.html', email=session['signup_email'])
+    return make_response('register_password.html', email=session['signup_email'])
 
 @mod.route('/complete', methods=['POST'])
 def complete_sign_up():
@@ -95,7 +95,7 @@ def complete_sign_up():
         try:
             user = factory.find_user_by_email(email)
         except Exception:
-            return render_template('login.html', email=email, login_failed=True)
+            return make_response('login.html', email=email, login_failed=True)
 
     with Factory(user) as factory:
         user = factory.user.find_by_id(user.id)
@@ -107,7 +107,7 @@ def complete_sign_up():
             # もう一度パスワード入力を促す
             session['signup_email'] = email
             flash(str(e))
-            return render_template('register_password.html', email=email)
+            return make_response('register_password.html', email=email)
 
         # ユーザID保存
         session['user_uuid'] = user.uuid

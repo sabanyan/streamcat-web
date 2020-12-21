@@ -59,12 +59,13 @@ if SECURITY_LEVEL >= 1:
 from .api.utils.kskp_json_encoder import KSKPJSONEncoder
 app.json_encoder = KSKPJSONEncoder
 
-# render_template
+# End points of HTML
 from .views import basic
 from .views import auth
 app.register_blueprint(basic.mod)
 app.register_blueprint(auth.mod, url_prefix='/signup')
 
+# End points of API
 PREFIX = '/api/v0'
 from .api import domain
 from .api import basic

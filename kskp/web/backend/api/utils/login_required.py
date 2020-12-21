@@ -1,6 +1,5 @@
 import functools # wraps for decorator
 from flask import (
-    render_template,
     redirect,
     jsonify,
     session,
@@ -8,6 +7,7 @@ from flask import (
     g
 )
 from kskp.store.factory import Factory, UnAuthzFactory
+from kskp.web.backend.views.utils import make_response
 
 def login_required(func):
     """
@@ -44,7 +44,7 @@ def login_required(func):
                     # 仮登録状態の場合はパスワード登録画面に遷移する
                     if user.is_init_or_temp:
                         session['signup_email'] = request_email
-                        return render_template('register_password.html', email=request_email)
+                        return make_response('register_password.html', email=request_email)
 
                     # ユーザID保存
                     session['user_uuid'] = user.uuid
@@ -124,7 +124,7 @@ def login_required_api(func):
                 elif user.is_init_or_temp:
                     # 本パスワード登録画面に遷移する
                     session['signup_email'] = user.email
-                    return render_template('register_password.html', email=user.email)
+                    return make_response('register_password.html', email=user.email)
                 g.user = user
             # Sessionオブジェクトをflask.gに設定する
             with Factory(user) as factory:
@@ -141,9 +141,9 @@ def _render_login_template(email='', login_failed=False, alert_message='', origi
     """
     ログイン画面に遷移する
     """
-    return render_template( 'login.html',
-                            email=email,
-                            login_failed=login_failed,
-                            alert_message=alert_message,
-                            original_url=original_url,
-                            args=args)
+    return make_response('login.html',
+                         email=email,
+                         login_failed=login_failed,
+                         alert_message=alert_message,
+                         original_url=original_url,
+                         args=args)
