@@ -72,6 +72,9 @@ export let FlowEditorReducerInitialState = {
   inspector: {
     width: Constants.default.inspector.width
   },
+  folderPath: undefined,
+  folderUuid: undefined,
+  modifiedAt: undefined,
   networkStatus: NetworkStatusValue.UnKnown
 };
 
@@ -82,8 +85,8 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
       let {context, onSuccess} = action;
+      console.log("load flow json action",context);
       const flowJson = graph.load(context.flow);
-
       newState.originalFlow = {...flowJson};
       context.flow.label = context.label;
       newState.flow = new FlowModel(context.flow);
@@ -92,7 +95,9 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       newState.history.current = 0;
       newState.history.nodes = [[...newState.nodes]];
       newState.allowlist = flowJson.allowlist;
-
+      newState.folderPath = context.folderPath;
+      newState.folderUuid = context.folderUuid;
+      newState.modifiedAt = context.modifiedAt;
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history);
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
