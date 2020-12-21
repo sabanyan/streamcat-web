@@ -1,5 +1,4 @@
 from flask import Blueprint, request, send_from_directory, g
-from kskp.web.backend import app
 from kskp.store import (
     DatabaseConn,
     RemoteFolderConn,
@@ -9,7 +8,8 @@ from .auth import login_required_api
 from .utils import (
     api_base,
     update_navigation,
-    update_projects_info
+    update_projects_info,
+    RequestJson
 )
 
 mod = Blueprint('lib', __name__)
@@ -157,9 +157,23 @@ def make_new_lock():
     """
     ロックを獲得する
     """
-    if request.json is None or 'target' not in request.json:
-        raise Exception('ロック対象データのuuidを指定してください')
-    lock = lock_manager.lock(request.json['target'], creator=g.user)
+    req = RequestJson(request.json)
+    if not req.has('target'):
+        raise Exception('排他ロック対象データのuuidを指定してください')
+
+    if req.has('lastModifiedAt'):
+        # 排他ロックの再取得の場合
+        from datetime import datetime
+        target_uuid = request.json['target']
+        target = g.factory.data.find_by_uuid(target_uuid)
+        last_modified_at = datetime.strptime(req['lastModifiedAt'], '%Y-%m-%d %H:%M:%S.%f')
+        lock = lock_manager.relock(target, lastModifiedAt=last_modified_at, creator=g.user)
+    else:
+        # 排他ロックの新規取得の場合
+        # (新規取得の場合はfind_by_uuid()の実行で遅くしたくない)
+        target_uuid = request.json['target']
+        lock = lock_manager.lock(target_uuid, creator=g.user)
+    
     return lock.to_json()
 
 @mod.route('/extend-locks/<lock_uuid>', methods=['POST'])

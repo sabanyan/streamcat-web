@@ -6,7 +6,8 @@ from flask import request, jsonify, g
 def update_navigation(func):
     @functools.wraps(func)
     def deco(**kwargs):
-
+        from kskp.store import KSKP_VER
+        
         # ブロック句
         if request.args.get('navigation') == 'off':
             return func(**kwargs)
@@ -24,6 +25,7 @@ def update_navigation(func):
             'project_name': '',
             'flow_uuid': '',
             'flow_name': '',
+            'version': KSKP_VER,
             'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
         }
 

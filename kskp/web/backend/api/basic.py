@@ -445,6 +445,8 @@ def delete_cache():
 @mod.route('/navigation', methods=['GET'])
 @login_required_api
 def get_navigation():
+    from kskp.store import KSKP_VER
+
     navigation = {
         'user_id': '',
         'user_name': '',
@@ -454,6 +456,7 @@ def get_navigation():
         'flow_name': '',
         'user': {},
         'allowlist': {},
+        'version': KSKP_VER,
         'depo_name': os.environ.get('KSKP_DEPO') or 'Unit Test'
     }
 
