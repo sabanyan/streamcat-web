@@ -14,6 +14,7 @@ export const URL = {
     },
     POST: {
         locks: baseUrl + "/locks",
+        extend_locks: baseUrl + "/extend-locks",
         vizs: baseUrl + "/vizs"
     },
     DELETE: {
