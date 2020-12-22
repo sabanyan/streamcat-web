@@ -51,6 +51,7 @@ import {NotAllowed} from 'Components/NotAllowedContainer';
 import {TextField} from 'Shared/Input';
 import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
+import {AxiosResponse} from "axios";
 
 interface Props {
     navigation?: NavigationModelProps
@@ -64,11 +65,12 @@ const FlowEditor = (props: Props) => {
     const _modifiedAt = useSelector(state => state.FlowEditorReducer.modifiedAt);
     useEffect(()=>{
         if(_modifiedAt){
+            // modifiedAt が reducer 経由での取得になる
+            // 取得タイミングに差があるため取得ができ次第 State にセットする
             setModifiedAt(_modifiedAt);
         }
     },[_modifiedAt])
     const [modifiedAt,setModifiedAt]= useState<string>();
-    console.log(modifiedAt);
     const flow = useSelector(state => state.FlowEditorReducer.flow);
     const drag = useSelector(state => state.FlowEditorReducer.drag);
     const selected_step_ids = useSelector(state => state.FlowEditorReducer.selected_step_ids);
@@ -208,7 +210,6 @@ const FlowEditor = (props: Props) => {
                     alert("フロー名を指定してください")
                 }else{
                     // フローを新規作成
-                    console.log(folderUuid);
                     APIUtil.post("flows", {
                         name: saveAsFlowName,
                         project_uuid: folderUuid,// 現在のフォルダーのUUIDに作成する
@@ -343,7 +344,6 @@ const FlowEditor = (props: Props) => {
                 })
                     .then((response) => {
                         if (!response.data.success) {
-                            console.log(response);
                             reject(new MessageModel({
                                 title: "フロー保存エラー",
                                 message: response.data.message,
@@ -369,7 +369,7 @@ const FlowEditor = (props: Props) => {
 
     const onClickSaveFlow = () => {
         const targetFlow = flow;
-        return saveFlowPromise(targetFlow).then(res=>{
+        return saveFlowPromise(targetFlow).then((res:any) =>{
             setModifiedAt(res.data.modifiedAt);
         });
     }
@@ -379,7 +379,7 @@ const FlowEditor = (props: Props) => {
      */
     const regenerateNewLockUUID = () => {
         // 取得処理
-        API.request.doPost.locks({flowUUID: inject_flow_uuid})
+        API.request.doPost.locks({flowUUID: inject_flow_uuid,lastModifiedAt: modifiedAt})
             .then((res) => {
                 const newLockUUID = API.response.post.locks(res).uuid;
                 setLockUUID(newLockUUID);
@@ -397,7 +397,7 @@ const FlowEditor = (props: Props) => {
                 };
                 notify({
                     title: "フローが編集できません",
-                    message: "他ユーザー(◯◯◯)がフローを編集した可能性があります",
+                    message: e.message,
                     status: "warning",
                     dismissAfter: 0,
                     closeButton: false,
@@ -471,16 +471,9 @@ const FlowEditor = (props: Props) => {
         // 延長処理
         API.request.doPost.extendLocks({lockUUID: lockUUID})
             .then((res) => {
-                // レスポンスチェック
-                //const rand = Math.random();
-                //console.log(rand);
-                // if(rand > 0.2){
-                //     regenerateNewLockUUID();
-                //     setReadOnly(true);
-                // }else{
                 API.response.post.extendLocks(res);
+                // 取得した lockUUID を設定
                 setLockUUID(lockUUID);
-                //}
             })
             .catch(e => {
                 // 編集中通知API に失敗した場合は、排他ロックを新規に再取得する
@@ -491,8 +484,7 @@ const FlowEditor = (props: Props) => {
         });
     }
 
-
-    const extendLockInterval = 1000 * 60 * 2 / 60; // 2分ごとに延長
+    const extendLockInterval = inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
     useInterval(()=>{
         if(lockUUID && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline){
             extendLock(lockUUID)
@@ -736,7 +728,6 @@ const FlowEditor = (props: Props) => {
     const onClickRunFlowPromise = ()=>{
         return onClickSaveFlow();
     }
-
 
     return <div className={style.flow_editor_container}>
         <div className={style.flow_editor}>
