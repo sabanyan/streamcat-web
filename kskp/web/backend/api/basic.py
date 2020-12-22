@@ -192,7 +192,7 @@ def new_flow():
         # flowをDBに格納する
         new_flow.save()
         new_flow = new_flow.reload()
-        return flow_data
+        return new_flow
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
