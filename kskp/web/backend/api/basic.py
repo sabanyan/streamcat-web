@@ -180,7 +180,7 @@ def new_flow():
         new_label = parent.make_unique_label(original_label)
         # フローを複製する
         new_flow = original_flow.duplicate(new_label)
-        return new_flow.flow_data
+        return new_flow
     else:
         parent_uuid = j.get('project_uuid')
         label = j.get('name')
@@ -191,8 +191,7 @@ def new_flow():
         new_flow = parent.create_flow(label, flow_data)
         # flowをDBに格納する
         new_flow.save()
-        new_flow = new_flow.reload()
-        return flow_data
+        return new_flow.reload()
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
