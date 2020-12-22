@@ -373,13 +373,13 @@ class FlowApiTestCase(ApiTestCaseBase):
         """
         new_flow APIをテストする
         """
-        # まずプロジェクトを作る
-        project_uuid = self.factory.data.load_root().uuid
+        # ルートフォルダを取得する
+        root = self.factory.data.load_root()
 
         # データソースを作成する
         import io
         f = (io.BytesIO(b"abcdef"), 'dummy.csv')
-        result = self.post_frames('データソース', project_uuid, f, self.USER1)
+        result = self.post_frames('データソース', root.uuid, f, self.USER1)
         frame_uuid= result['data']['uuid']
 
         # フローを作成する
@@ -392,25 +392,34 @@ class FlowApiTestCase(ApiTestCaseBase):
         }
 
         data1 = {
-            'project_uuid': project_uuid,
+            'project_uuid': root.uuid,
             'name': '新しいフローです',
             'datasource': data_source
         }
 
         result = self.post_uri('/api/v0/flows', data1, self.USER1)
 
-        self.assertEqual(result['data']['description'], "")
-        self.assertEqual(result['data']['projectId'], None)
-        self.assertEqual(result['data']['params'], [])
-        self.assertEqual(result['data']['ports'], [[],[]])
-        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result['data']['createdAt'])
+        # APIの返り値を検証する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertEqual(result['data']['type'], 'flow')
         self.assertEqual(result['data']['label'], '新しいフローです')
-        self.assertEqual(result['data']['nodes'][0]['dataSource'], 'csv')
-        self.assertEqual(result['data']['nodes'][0]['id'], 'i')
-        self.assertEqual(result['data']['nodes'][0]['label'], 'test')
-        self.assertEqual(result['data']['nodes'][0]['type'], 'frame')
-        self.assertEqual(result['data']['nodes'][0]['uuid'], frame_uuid)
+        self.assertFalse(result['data']['editLock'])
+        self.assertEqual(result['data']['folderPath'], root.label)
+        self.assertEqual(result['data']['folderUuid'], root.uuid)
+        self.assertEqual(result['data']['prevFolderPath'], None)
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['data']['modifiedAt'])
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertTrue(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['lock'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
 
     def test_new_flow_nothing_datasource(self):
         """
@@ -461,6 +470,9 @@ class FlowApiTestCase(ApiTestCaseBase):
         new_flow APIをテストする
         フローコピー用
         """
+        # ルートフォルダを取得する
+        root = self.factory.data.load_root()
+        
         # まずユーザとプロジェクトとフローを作る
         with app.app_context():
             test_flow_uuid = setUpFlow(self)
@@ -470,20 +482,37 @@ class FlowApiTestCase(ApiTestCaseBase):
         data_copy_flow = {'original_flow_uuid': test_flow_uuid}
         result = self.post_uri('/api/v0/flows', data_copy_flow, self.USER1)
 
-        # コピーされていることを検証する
-        self.assertEqual(result['data']['projectId'], None)
+        # APIの返り値を検証する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertNotEqual(result['data']['uuid'], test_flow_uuid)
+        self.assertEqual(result['data']['type'], 'flow')
         self.assertEqual(result['data']['label'], test_flow_label + ' のコピー')
-        self.assertEqual(result['data']['description'],'')
-        self.assertEqual(result['data']['params'], [])
-        self.assertEqual(result['data']['ports'], [[],[]])
+        self.assertFalse(result['data']['editLock'])
+        self.assertEqual(result['data']['folderPath'], root.label)
+        self.assertEqual(result['data']['folderUuid'], root.uuid)
+        self.assertEqual(result['data']['prevFolderPath'], None)
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['data']['modifiedAt'])
         self.assertIsNotNone(result['data']['createdAt'])
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertTrue(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['lock'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
 
     def test_new_flow_for_copy_multi(self):
         """
         new_flow APIをテストする
         フローコピー用
         """
+        # ルートフォルダを取得する
+        root = self.factory.data.load_root()
+
         # まずユーザとプロジェクトとフローを作る
         with app.app_context():
             test_flow_uuid = setUpFlow(self)
@@ -494,25 +523,55 @@ class FlowApiTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/flows', data_copy_flow, self.USER1)
 
         # コピーされていることを検証する
-        self.assertEqual(result['data']['projectId'], None)
+
+        # APIの返り値を検証する
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertNotEqual(result['data']['uuid'], test_flow_uuid)
+        self.assertEqual(result['data']['type'], 'flow')
         self.assertEqual(result['data']['label'], test_flow_label + ' のコピー')
-        self.assertEqual(result['data']['description'],'')
-        self.assertEqual(result['data']['params'], [])
-        self.assertEqual(result['data']['ports'], [[],[]])
+        self.assertFalse(result['data']['editLock'])
+        self.assertEqual(result['data']['folderPath'], root.label)
+        self.assertEqual(result['data']['folderUuid'], root.uuid)
+        self.assertEqual(result['data']['prevFolderPath'], None)
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['data']['modifiedAt'])
         self.assertIsNotNone(result['data']['createdAt'])
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertTrue(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['lock'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
 
         # 同じフローを2回コピーする
-        result2 = self.post_uri('/api/v0/flows', data_copy_flow, self.USER1)
+        result = self.post_uri('/api/v0/flows', data_copy_flow, self.USER1)
 
         # コピーされていることを検証する
-        self.assertEqual(result2['data']['projectId'], None)
-        self.assertEqual(result2['data']['label'], test_flow_label + ' のコピー_2')
-        self.assertEqual(result2['data']['description'],'')
-        self.assertEqual(result2['data']['params'], [])
-        self.assertEqual(result2['data']['ports'], [[],[]])
-        self.assertEqual(result2['data']['creator'], 'ユーザー管理者')
-        self.assertIsNotNone(result2['data']['createdAt'])
+        self.assertIsNotNone(result['data']['uuid'])
+        self.assertNotEqual(result['data']['uuid'], test_flow_uuid)
+        self.assertEqual(result['data']['type'], 'flow')
+        self.assertEqual(result['data']['label'], test_flow_label + ' のコピー_2')
+        self.assertFalse(result['data']['editLock'])
+        self.assertEqual(result['data']['folderPath'], root.label)
+        self.assertEqual(result['data']['folderUuid'], root.uuid)
+        self.assertEqual(result['data']['prevFolderPath'], None)
+        self.assertEqual(result['data']['creator'], 'ユーザー管理者')
+        self.assertIsNotNone(result['data']['modifiedAt'])
+        self.assertIsNotNone(result['data']['createdAt'])
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertTrue(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['lock'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
 
     def test_copy_flow_using_cache(self):
         """
@@ -582,9 +641,14 @@ class FlowApiTestCase(ApiTestCaseBase):
         # フローをコピーする
         data_copy_flow = {'original_flow_uuid': test_flow_uuid}
         result = self.post_uri('/api/v0/flows', data_copy_flow, self.USER1)
+        flow_uuid = result['data']['uuid']
+
+        # コピー元のUUIDとは異なる値であること
+        self.assertNotEqual(flow_uuid, test_flow_uuid)
 
         # 複製したキャッシュのUUIDを取得する
-        cache_uuid2 = result['data']['nodes'][1]['uuid']
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER1)
+        cache_uuid2 = result['data']['flow']['nodes'][1]['uuid']
 
         # キャッシュが存在することを検証する
         # (no frame existsの例外が送出されたいことを検証する)
@@ -757,11 +821,6 @@ class FlowApiTestCase(ApiTestCaseBase):
             'datasource': None
         }
         result = self.post_uri('/api/v0/flows', data, self.USER3)
-        flow_json_ports = result['data']['ports']
-        flow_json_params = result['data']['params']
-        flow_json_description = result['data']['description']
-        flow_json_creator = result['data']['creator']
-        flow_json_created_at = result['data']['createdAt']
         # POST /flowsの戻り値を検証する
         self.assertNotIn('nodes', result['data'])
         self.assertEqual(result['data']['label'], '金さん')
@@ -775,6 +834,12 @@ class FlowApiTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
         # GET /flowsの戻り値を検証する
         self.assertEqual(result['data']['flow']['label'], '金さん')
+
+        flow_json_ports = result['data']['flow']['ports']
+        flow_json_params = result['data']['flow']['params']
+        flow_json_description = result['data']['flow']['description']
+        flow_json_creator = result['data']['flow']['creator']
+        flow_json_created_at = result['data']['flow']['createdAt']
 
         # フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER3)
