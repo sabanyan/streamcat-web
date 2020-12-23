@@ -1,22 +1,24 @@
-import * as React from "react";
-import {useEffect, useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
+import * as React from 'react';
+import {useEffect, useState} from 'react';
+import {useDispatch} from 'react-redux';
 
-import {API} from "Modules/api";
-import style from "./style.scss";
+import {API} from 'Modules/api';
+import style from './style.scss';
 
-import {NavigationModel} from "Model/index";
-import {Props as NavigationModelProps} from "Model/Navigation/NavigationModel";
-import {ModalManager} from "Shared/Modal";
-import {addNotification, removeNotification} from "reapop";
+import {NavigationModel} from 'Model/index';
+import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
+import {ModalManager} from 'Shared/Modal';
+import {addNotification, removeNotification} from 'reapop';
 
 import {Loader, NavigationBar} from 'Shared/Base';
-import {Preview} from "PreviewContainer/Preview";
-import {FlowEditor} from "FlowEditorContainer/FlowEditor";
+import {Preview} from 'PreviewContainer/Preview';
+import {FlowEditor} from 'FlowEditorContainer/FlowEditor';
 import {UserList} from 'UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
 import {NotAllowed} from 'Components/NotAllowedContainer';
+import {setNetworkStatusAction} from 'Modules/application';
+import {NetworkStatusValue} from 'Model/Flow/FlowModel';
 
 export type Props = {
     viewId: ViewId
@@ -62,8 +64,25 @@ const Kskp = (props: Props) => {
             });
     };
 
+    const addNetworkStatusHandler = ()=>{
+        const getNavigatorNetworkStatus = () => {
+            if(navigator.onLine){
+                return NetworkStatusValue.Online;
+            }else{
+                return NetworkStatusValue.Offline;
+            }
+        }
+        const dispatchNetworkStatus = ()=>{
+            dispatch(setNetworkStatusAction(getNavigatorNetworkStatus()));
+        }
+        dispatchNetworkStatus();
+        window.addEventListener("online",dispatchNetworkStatus);
+        window.addEventListener("offline",dispatchNetworkStatus);
+    }
+
     useEffect(() => {
         if(viewId !== ViewId.Undefined)getNavigation();
+        if(viewId === ViewId.Flow_Editor)addNetworkStatusHandler();
     }, []);
 
     const renderNavigationBar = () => {
