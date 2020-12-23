@@ -179,8 +179,7 @@ def new_flow():
         parent = original_flow.find_parent()
         new_label = parent.make_unique_label(original_label)
         # フローを複製する
-        new_flow = original_flow.duplicate(new_label)
-        return new_flow
+        return original_flow.duplicate(new_label)
     else:
         parent_uuid = j.get('project_uuid')
         label = j.get('name')

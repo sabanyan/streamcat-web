@@ -4,12 +4,12 @@ import {Edge, Selector, Step} from 'Shared/SVG';
 import ToolBar from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
-import {APIUtil, GraphUtil, ZoomUtil} from 'Utils/index';
+import {APIUtil, GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
 import {Loader} from 'Shared/Base';
 import {DataFrameDetailType, StepModelType, SubFlowParamType} from 'Types/index';
 import {Inspector} from 'Shared/Inspector';
-import {DataFrameStepModel, SubflowCommandModel, VisualizeModel} from 'Model/index';
+import {DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel} from 'Model/index';
 import {NotificationManager} from 'Shared/Notification';
 import {API} from 'Modules/api/index';
 import {addNotification, removeNotification} from 'reapop';
@@ -46,8 +46,12 @@ import {useDispatch, useSelector} from 'react-redux';
 import {Paper} from 'FlowEditorContainer/Paper';
 import {PaperZoom} from 'FlowEditorContainer/PaperZoom';
 import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
-import {FlowEditModeValue, FlowExecuteModeValue} from 'Model/Flow/FlowModel';
+import {FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue} from 'Model/Flow/FlowModel';
 import {NotAllowed} from 'Components/NotAllowedContainer';
+import {TextField} from 'Shared/Input';
+import useInterval from 'use-interval';
+import WebUtil from "Utils/WebUtil";
+import {AxiosResponse} from "axios";
 
 interface Props {
     navigation?: NavigationModelProps
@@ -56,6 +60,17 @@ interface Props {
 const FlowEditor = (props: Props) => {
 
     const dispatch = useDispatch();
+    const folderUuid = useSelector(state => state.FlowEditorReducer.folderUuid);
+
+    const _modifiedAt = useSelector(state => state.FlowEditorReducer.modifiedAt);
+    useEffect(()=>{
+        if(_modifiedAt){
+            // modifiedAt が reducer 経由での取得になる
+            // 取得タイミングに差があるため取得ができ次第 State にセットする
+            setModifiedAt(_modifiedAt);
+        }
+    },[_modifiedAt])
+    const [modifiedAt,setModifiedAt]= useState<string>();
     const flow = useSelector(state => state.FlowEditorReducer.flow);
     const drag = useSelector(state => state.FlowEditorReducer.drag);
     const selected_step_ids = useSelector(state => state.FlowEditorReducer.selected_step_ids);
@@ -70,7 +85,10 @@ const FlowEditor = (props: Props) => {
     const editor = useSelector(state => state.FlowEditorReducer.editor);
     const editMode = useSelector(state => state.FlowEditorReducer.editMode);
     const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
+    const networkStatus = useSelector(state => state.FlowEditorReducer.networkStatus);
 
+    const [offLineNotify,setOffLineNotify] = useState<any|null>(null);
+    const [initialEditMode,setInitialEditMode] = useState<FlowEditModeValue|null>(null);
 
     const loadFlowJSON = useCallback((context: {}) => {
         return dispatch(loadFlowJSONAction(context));
@@ -169,16 +187,309 @@ const FlowEditor = (props: Props) => {
     },[]);
 
     const notify = (context) => dispatch(addNotification(context));
-    const dismissNotify = (id: string) => {
+    const dismissNotify = (id: string, delay?: number) => {
         setTimeout(() => {
             dispatch(removeNotification(id));
-        }, 1000);
+        }, (delay)?delay:1000);
     };
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [lockUUID, setLockUUID] = useState<string | undefined>(undefined);
     const [readOnly, setReadOnly] = useState<boolean>(false);
+    const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(false);
     const hasLockedUUID = useMemo(()=>!!(lockUUID),[lockUUID]); // lockUUIDを保持している際は、編集可能な状態
+
+    const [saveAsFlowName,setSaveAsFlowName] = useState<string>();
+    const [hasShowSaveAsFlowModal,setHasShowSaveAsFlowModal] = useState<boolean>(false);
+    const [hasShowConfirmReloadFlowModal,setHasShowConfirmReloadFlowModal] = useState<boolean>(false);
+    useEffect(() => {
+        if (!hasShowSaveAsFlowModal) return;
+        ModalUtil.registerModal({
+            id: Constants.modal.SAVE_AS_FLOW, onClickDone: () => {
+                if(!saveAsFlowName || !saveAsFlowName.length) {
+                    alert("フロー名を指定してください")
+                }else{
+                    // フローを新規作成
+                    APIUtil.post("flows", {
+                        name: saveAsFlowName,
+                        project_uuid: folderUuid,// 現在のフォルダーのUUIDに作成する
+                        datasource: {
+                            "type": "frame"
+                        }
+                    }).then((newFlow) => {
+                        // 別名保存するための現在表示されている flow
+                        const targetFlow = flow;
+                        targetFlow.label = saveAsFlowName;
+                        const saveAsFlowUUID = newFlow.data.data.uuid;
+                        // 新規に作成した newFlow の uuid を設定して保存する
+                        saveFlowPromise(targetFlow,saveAsFlowUUID).then(()=>{
+                            // 保存後に作成したフローに遷移する
+                            WebUtil.navigateURL(WebUtil.webURL("/flows/" + saveAsFlowUUID));
+                        }).catch((e)=>{
+                            notify({
+                                title: "エラー",
+                                message: e.message,
+                                status: "error",
+                                dismissAfter: 0,
+                                closeButton: true
+                            });
+                        })
+                    }).catch((e)=>{
+                        notify({
+                            title: "エラー",
+                            message: e.message,
+                            status: "error",
+                            dismissAfter: 0,
+                            closeButton: true
+                        });
+                    });
+                }
+            }, onClickCancel: () => {
+                setHasEnableAutoLockExtended(true);
+                setHasShowSaveAsFlowModal(false);
+                ModalUtil.closeModal(Constants.modal.SAVE_AS_FLOW)
+            }
+        })
+        ModalUtil.emitModal({
+            id: Constants.modal.SAVE_AS_FLOW,
+            visible: true,
+            done: '別名で保存する',
+            danger: false,
+            content: <div>
+                <TextField placeholder={'別名保存するフロー名'}
+                           onChange={(e) => setSaveAsFlowName(e.target.value)}/>
+            </div>,
+        })
+    }, [hasShowSaveAsFlowModal,saveAsFlowName,flow]);
+
+    useEffect(() => {
+        if (!hasShowConfirmReloadFlowModal) return;
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM_RELOAD_FLOW, onClickDone: () => {
+                location.reload(true);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_RELOAD_FLOW);
+            }, onClickCancel: () => {
+                setHasEnableAutoLockExtended(true);
+                setHasShowConfirmReloadFlowModal(false);
+                ModalUtil.closeModal(Constants.modal.CONFIRM_RELOAD_FLOW)
+            }
+        })
+        ModalUtil.emitModal({
+            id: Constants.modal.CONFIRM_RELOAD_FLOW,
+            visible: true,
+            done: '現在のフローを破棄して再読込み',
+            danger: true,
+            content: <div>
+                現在の編集中のフローを破棄してフローを再読込みしますがよろしいですか？
+            </div>,
+        })
+    }, [hasShowConfirmReloadFlowModal]);
+
+    useEffect(()=>{
+        if(initialEditMode === null){
+            setInitialEditMode(editMode);
+        }
+    },[editMode]);
+
+    useEffect(()=>{
+        if(networkStatus === NetworkStatusValue.Online){
+            if(offLineNotify){
+                dismissNotify(offLineNotify.id,1);
+                notify({
+                    title: "ネットワークに再接続しています",
+                    status: "success",
+                    dismissAfter: 2000
+                });
+                setOffLineNotify(null);
+                // ロックを延長する
+                extendLock(lockUUID);
+            }
+        }else if(networkStatus === NetworkStatusValue.Offline){
+            const _offLineNotify = notify({
+                title: "現在ネットワークがオフラインです",
+                message: "ネットワークの状態を確認してください",
+                status: "warning",
+                dismissAfter: -1,
+                closeButton: true
+            });
+            setOffLineNotify(_offLineNotify);
+        }
+    },[networkStatus,lockUUID]);
+
+
+    // 現在表示中のフローの保存処理
+
+    const saveFlowPromise = (targetFlow, saveAsFlowUUID?: string)=>{
+        let saveNotify = notify({
+            title: "フロー保存中",
+            message: "フローの設定を保存しています",
+            status: "loading",
+            dismissAfter: 0
+        });
+        targetFlow.nodes = nodes;
+        return new Promise(async (reslove, reject) => {
+            // 編集権限がないと、保存不可
+            if (!lockUUID) {
+                reject(new MessageModel({
+                    title: "警告：読取専用フロー",
+                    message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+                    messageStatus: "warning"
+                }));
+            } else {
+                //　フロー保存
+                await API.request.doPut.flow({
+                    flowUUID: !(saveAsFlowUUID)?inject_flow_uuid:saveAsFlowUUID,// 別名保存する場合は、saveAsFlowUUIDを指定する
+                    flow: flow,
+                    lockUUID: lockUUID
+                })
+                    .then((response) => {
+                        if (!response.data.success) {
+                            reject(new MessageModel({
+                                title: "フロー保存エラー",
+                                message: response.data.message,
+                                messageStatus: "error"
+                            }));
+                        }
+                        dismissNotify(saveNotify.id);
+                        reslove(response.data);
+                    });
+            }
+        })
+            // 保存失敗した場合、エラーメッセージ出力
+            .catch(e => {
+                notify({
+                    title: e.title,
+                    message: e.message,
+                    status: e.messageStatus,
+                    dismissAfter: -1,
+                    closeButton: true
+                });
+            });
+    }
+
+    const onClickSaveFlow = () => {
+        const targetFlow = flow;
+        return saveFlowPromise(targetFlow).then((res:any) =>{
+            setModifiedAt(res.data.modifiedAt);
+        });
+    }
+
+    /**
+     * lock の再取得処理
+     */
+    const regenerateNewLockUUID = () => {
+        // 取得処理
+        API.request.doPost.locks({flowUUID: inject_flow_uuid,lastModifiedAt: modifiedAt})
+            .then((res) => {
+                const newLockUUID = API.response.post.locks(res).uuid;
+                setLockUUID(newLockUUID);
+                // モードは変更せずに ReadOnly だけオフにする
+                setReadOnly(false);
+            })
+            .catch(e => {
+                const onClickReload = ()=>{
+                    setHasShowConfirmReloadFlowModal(true);
+                    return false;
+                };
+                const onClickSaveAs = ()=>{
+                    setHasShowSaveAsFlowModal(true);
+                    return false;
+                };
+                notify({
+                    title: "フローが編集できません",
+                    message: e.message,
+                    status: "warning",
+                    dismissAfter: 0,
+                    closeButton: false,
+                    dismissible: false,
+                    buttons: [{
+                        name: "別名保存",
+                        primary: true,
+                        onClick: onClickSaveAs
+                    },{
+                        name: "再読込",
+                        primary: true,
+                        onClick: onClickReload
+                    }]
+                });
+                // モードは変更せずに ReadOnly だけオンにする
+                setReadOnly(true);
+                setHasEnableAutoLockExtended(false);
+                // 通知したら自動排他ロックは解除する
+            }).finally(() => {
+            setIsLoading(false);
+        });
+    }
+
+    /**
+     * lock の新規取得
+     * @param lockUUID
+     */
+    const getNewLockUUID = () =>{
+        // 取得処理
+        API.request.doPost.locks({flowUUID: inject_flow_uuid})
+            .then((res) => {
+                const newLockUUID = API.response.post.locks(res).uuid;
+                setLockUUID(newLockUUID);
+                setEditMode(FlowEditModeValue.Editable)
+                // ロックの自動更新を有効にする
+                setHasEnableAutoLockExtended(true);
+            })
+            .catch(e => {
+                if (!lockUUID) {
+                    notify({
+                        title: "警告：読取専用フロー",
+                        message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
+                        status: "warning",
+                        dismissAfter: -1,
+                        closeButton: true
+                    });
+                    setReadOnly(true);
+                    // ロック失敗 => [読み取り専用モード2]
+                    setEditMode(FlowEditModeValue.ReadOnlyLocked);
+                } else {
+                    notify({
+                        title: e.title,
+                        message: e.message,
+                        status: e.messageStatus,
+                        dismissAfter: -1,
+                        closeButton: true
+                    });
+                }
+                // 開いた時点で読み取り専用の場合は、ロックの自動更新は行わない
+                setHasEnableAutoLockExtended(false);
+            }).finally(() => {
+            setIsLoading(false);
+        });
+    }
+    /**
+     * lock の延長処理
+     * @param lockUUID
+     */
+    const extendLock = (lockUUID:string|undefined) =>{
+        if(!lockUUID)return;
+        // 延長処理
+        API.request.doPost.extendLocks({lockUUID: lockUUID})
+            .then((res) => {
+                API.response.post.extendLocks(res);
+                // 取得した lockUUID を設定
+                setLockUUID(lockUUID);
+            })
+            .catch(e => {
+                // 編集中通知API に失敗した場合は、排他ロックを新規に再取得する
+                regenerateNewLockUUID();
+                setReadOnly(true);
+            }).finally(() => {
+            setIsLoading(false);
+        });
+    }
+
+    const extendLockInterval:number = (window as any).inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
+    useInterval(()=>{
+        if(lockUUID && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline){
+            extendLock(lockUUID)
+        }
+    }, extendLockInterval);
 
     useEffect(()=>{
         window.onresize = () =>{
@@ -262,7 +573,6 @@ const FlowEditor = (props: Props) => {
 
             Promise.all(flowRequest).then(() => {
                 const flowUUID = inject_flow_uuid;
-                let lockUUID;
                 // 実行モードの設定
                 const executeMode = (allowlist.execute)?FlowExecuteModeValue.Executable:FlowExecuteModeValue.NotExecutable;
                 setExecuteMode(executeMode);
@@ -280,36 +590,7 @@ const FlowEditor = (props: Props) => {
                     return;
                 }
                 // update が有効な場合は、排他ロックを取得する
-                API.request.doPost.locks({flowUUID: flowUUID})
-                    .then((res) => {
-                        lockUUID = API.response.post.locks(res).uuid;
-                        setLockUUID(lockUUID);
-                        setEditMode(FlowEditModeValue.Editable)
-                    })
-                    .catch(e => {
-                        if (!lockUUID) {
-                            notify({
-                                title: "警告：読取専用フロー",
-                                message: "このフローはすでに編集中のため、 編集権限が取得できませんでした。",
-                                status: "warning",
-                                dismissAfter: -1,
-                                closeButton: true
-                            });
-                            setReadOnly(true);
-                            // ロック失敗 => [読み取り専用モード2]
-                            setEditMode(FlowEditModeValue.ReadOnlyLocked);
-                        } else {
-                            notify({
-                                title: e.title,
-                                message: e.message,
-                                status: e.messageStatus,
-                                dismissAfter: -1,
-                                closeButton: true
-                            });
-                        }
-                    }).finally(()=>{
-                    setIsLoading(false);
-                });
+                getNewLockUUID();
 
             }).catch((error) => {
                 console.log(error);
@@ -326,6 +607,7 @@ const FlowEditor = (props: Props) => {
         if (Array.isArray(nodes)) {
             steps = nodes.map((step: StepModelType) => {
                 let selected = (step.id === selected_step_ids[0]);
+                const stepReadOnly = readOnly || networkStatus === NetworkStatusValue.Offline;
                 return <Step
                     key={step.id}
                     model={step}
@@ -346,7 +628,7 @@ const FlowEditor = (props: Props) => {
                     updateDataFrameDetail={updateDataFrameDetail}
                     updateStep={updateStep}
                     moveSteps={moveSteps}
-                    readOnly={readOnly}
+                    readOnly={stepReadOnly}
                 />;
             });
         }
@@ -412,6 +694,7 @@ const FlowEditor = (props: Props) => {
     },[drag,zoom]);
 
 
+
     if(editMode === undefined || executeMode === undefined){
         // モードが設定前はローディング中にする
         return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true}/>
@@ -423,24 +706,28 @@ const FlowEditor = (props: Props) => {
     // 読み取り専用モードの場合は disabled にする
     // ☁️保存　☁️データソース追加　💬メモ　↩︎もとに戻す　↪︎繰り返す の制御
     const baseToolBarDisabled = (editMode === FlowEditModeValue.ReadOnlyLocked ||
-        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled)
+        editMode === FlowEditModeValue.ReadOnlyUpdateDisabled) || networkStatus === NetworkStatusValue.Offline || readOnly
 
     // 編集可能で実行可能な場合のみフロー以外は disabled にする
     // ▶︎このフローを実行の制御
-    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable);
+    const runDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
 
     // 実行可能で編集可能orUpdate可能以外の場合は、プレビュー機能を disabled にする
     // プレビューを開くリンクの制御
-    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable)
+    const previewDisabled = !(executeMode === FlowExecuteModeValue.Executable && editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
 
     // 編集モード以外は、フロー変数の追加機能を hidden にする
-    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable)
+    const addFlowVariableHidden = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
 
     // 編集モード以外は、コマンドセレクター機能を hidden にする
-    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable)
+    const commandSelectorHidden = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
 
     // 編集モード以外は、コマンド・データのペイン機能を disabled にする
-    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable)
+    const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
+
+    const onClickRunFlowPromise = ()=>{
+        return onClickSaveFlow();
+    }
 
     return <div className={style.flow_editor_container}>
         <div className={style.flow_editor}>
@@ -462,6 +749,8 @@ const FlowEditor = (props: Props) => {
                      redo={redo}
                      baseDisabled={baseToolBarDisabled}
                      runDisabled={runDisabled}
+                     onClickRunFlowPromise={onClickRunFlowPromise}
+                     onClickSaveFlow={onClickSaveFlow}
             />
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
                     message={"フローを構築中です"} />
