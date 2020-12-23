@@ -215,7 +215,7 @@ def fetch_vis(frame_uuid):
 @mod.route('/vizs', methods=['POST'])
 @login_required_api
 @frame_api_base
-def make_new_viss():
+def make_new_vizs():
     """
     Visデータを取得する
     """
@@ -258,13 +258,12 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
         raise
 
 def format_result(activity):
-    from kskp.store import Activity
     return [{'id':point.id, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.lasts]
 
 def format_vis(activity):
-    from kskp.store import Activity
+    from .utils import VisConverter
     # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
-    return [{'id':point.id, 'args':{'column_names': vis.column_names}, 'contents': vis} for point, vis in activity.lasts]
+    return [{'id':point.id, 'args':{'column_names':vis.column_names}, 'contents':VisConverter(vis)} for point, vis in activity.lasts]
 
 def _make_flow_inputs(factory, flow_uuid, request):
     """
