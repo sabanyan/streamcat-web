@@ -371,6 +371,7 @@ const FlowEditor = (props: Props) => {
         const targetFlow = flow;
         return saveFlowPromise(targetFlow).then((res:any) =>{
             setModifiedAt(res.data.modifiedAt);
+            return res;
         });
     }
 
@@ -484,7 +485,7 @@ const FlowEditor = (props: Props) => {
         });
     }
 
-    const extendLockInterval:number = (window as any).inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
+    const extendLockInterval:number = inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
     useInterval(()=>{
         if(lockUUID && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline){
             extendLock(lockUUID)

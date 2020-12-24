@@ -8,6 +8,7 @@ declare const inject_data_frame_uuid: string;
 declare const inject_data_frame_id: string;
 declare const inject_generate_data_frame: boolean;
 declare const inject_user_id: string;
+declare const inject_lock_interval: number;
 declare const inject_is_trash: boolean;
 declare const inject_is_project: boolean;
 
