@@ -371,6 +371,7 @@ const FlowEditor = (props: Props) => {
         const targetFlow = flow;
         return saveFlowPromise(targetFlow).then((res:any) =>{
             setModifiedAt(res.data.modifiedAt);
+            return res;
         });
     }
 
