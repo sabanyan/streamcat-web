@@ -3,14 +3,14 @@
 # 
 
 from flask import Blueprint, request, g
-from .auth import login_required_api
 from .utils import (
-    api_base,
     RequestJson,
+    api_base,
     update_user_info,
     update_users_info,
     update_role_info,
-    update_roles_info
+    update_roles_info,
+    login_required_api
 )
 mod = Blueprint('system', __name__)
 

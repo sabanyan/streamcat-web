@@ -9,7 +9,7 @@ import pprint
 from pathlib import Path
 
 from kskp.web.backend import app
-from kskp.store import Datum, Flow, FlowData
+from kskp.store import Datum, Flow, FlowData, KSKP_VER
 from .api_test_case_base import ApiTestCaseBase
 
 # 
@@ -104,16 +104,6 @@ class ProjectApiTestCase(ApiTestCaseBase):
         self.assertEqual(result0['type'], 'project')
         self.assertIsNotNone(result0['creator'])
         self.assertIsNotNone(result0['createdAt'])
-
-        # ナビが取得できることを検証する
-        navi = results['navigation']
-        self.assertEqual(navi['flow_name'], '')
-        self.assertEqual(navi['flow_uuid'], '')
-        self.assertEqual(navi['project_name'], '')
-        self.assertEqual(navi['project_uuid'], '')
-        self.assertEqual(navi['user_id'], self.USER2.id)
-        self.assertEqual(navi['user_name'], self.USER2.name)
-        self.assertEqual(navi['depo_name'], 'Unit Test')
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
@@ -691,12 +681,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['flow']['label'], test_flow_label)
         self.assertEqual(result['data']['flow']['params'], [])
         self.assertEqual(result['data']['flow']['ports'], [[],[]])
-        self.assertEqual(result['navigation']['user_id'], self.USER1.id)
-        self.assertEqual(result['navigation']['user_name'], 'ユーザー管理者')
-        # self.assertEqual(result['navigation']['project_uuid'], )
-        self.assertEqual(result['navigation']['project_name'], 'ライブラリ')
-        self.assertEqual(result['navigation']['flow_name'], test_flow_label)
-        self.assertEqual(result['navigation']['flow_uuid'], test_flow_uuid)
 
     def test_fetch_flows(self):
         """
@@ -732,12 +716,6 @@ class FlowApiTestCase(ApiTestCaseBase):
         # self.assertEqual(results['data'][0]['ports'], [[],[]])
         self.assertEqual(results['data'][0]['creator'], 'ユーザー管理者')
         self.assertIsNotNone(results['data'][0]['createdAt'])
-
-        # ナビゲーションを検証する
-        self.assertEqual(results['navigation']['user_id'], self.USER1.id)
-        self.assertEqual(results['navigation']['user_name'], 'ユーザー管理者')
-        self.assertEqual(results['navigation']['project_uuid'], flow_folder.uuid)
-        self.assertEqual(results['navigation']['project_name'], flow_folder.label)
 
     def test_fetch_flows_project_uuid_Nothing(self):
         """
@@ -1250,6 +1228,9 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['project_name'], '')
         self.assertEqual(data['flow_uuid'], '')
         self.assertEqual(data['flow_name'], '')
+        self.assertEqual(data['version'], KSKP_VER)
+        self.assertEqual(data['depo_name'], 'Unit Test')
+        
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
         
@@ -1287,6 +1268,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['flow_name'], test_flow.label)
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+        self.assertEqual(data['version'], KSKP_VER)
+        self.assertEqual(data['depo_name'], 'Unit Test')
 
         project_uuid = data['project_uuid']
         # project_uuidあり, flow_uuidなし
@@ -1301,6 +1284,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['flow_name'], '')
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+        self.assertEqual(data['version'], KSKP_VER)
+        self.assertEqual(data['depo_name'], 'Unit Test')
 
         # project_uuidあり, flow_uuidあり
         uri = '/api/v0/navigation?project_uuid=' + project_uuid + '&flow_uuid=' + flow_uuid
@@ -1314,6 +1299,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['flow_name'], test_flow.label)
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
+        self.assertEqual(data['version'], KSKP_VER)
+        self.assertEqual(data['depo_name'], 'Unit Test')
 
     def test_get_sys_admin_navi(self):
         """
@@ -1329,6 +1316,8 @@ class NavigationApiTestCase(ApiTestCaseBase):
         self.assertEqual(data['flow_name'], '')
         self.assertDictEqual(data['user'], self.USER0.to_json())
         self.assertDictEqual(data['allowlist'], self.USER0.get_allowlist())
+        self.assertEqual(data['version'], KSKP_VER)
+        self.assertEqual(data['depo_name'], 'Unit Test')
 
 
 def setUpUser(self):

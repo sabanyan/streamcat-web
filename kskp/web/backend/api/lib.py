@@ -1,15 +1,14 @@
-from flask import Blueprint, request, send_from_directory, g
+from flask import Blueprint, send_from_directory, request, g
 from kskp.store import (
     DatabaseConn,
     RemoteFolderConn,
     lock_manager
 )
-from .auth import login_required_api
 from .utils import (
+    RequestJson,
     api_base,
-    update_navigation,
     update_projects_info,
-    RequestJson
+    login_required_api
 )
 
 mod = Blueprint('lib', __name__)
@@ -109,7 +108,6 @@ def _jsonify_folder(folder):
 
 @mod.route('/library', methods=['GET'])
 @login_required_api
-@update_navigation
 @update_projects_info
 @api_base
 def fecth_library():
@@ -121,7 +119,6 @@ def fecth_library():
 
 @mod.route('/trashes', methods=['GET'])
 @login_required_api
-@update_navigation
 @api_base
 def fetch_trashes():
     """
@@ -217,7 +214,6 @@ def delete_lock(lock_uuid):
 
 @mod.route('/folders/<folder_uuid>', methods=['GET'])
 @login_required_api
-@update_navigation
 @update_projects_info
 @api_base
 def fetch_folder(folder_uuid):
@@ -277,7 +273,6 @@ def throw_away_folder(folder_uuid):
 
 @mod.route('/awss3s/<awss3_uuid>', methods=['GET'])
 @login_required_api
-@update_navigation
 @update_projects_info
 @api_base
 def fetch_awss3_folder(awss3_uuid):
@@ -330,7 +325,6 @@ def throw_away_awss3(awss3_uuid):
 
 @mod.route('/databases/<database_uuid>', methods=['GET'])
 @login_required_api
-@update_navigation
 @api_base
 def fetch_database(database_uuid):
     """
@@ -403,7 +397,6 @@ def throw_away_database(database_uuid):
 
 @mod.route('/remote-folders/<folder_uuid>', methods=['GET'])
 @login_required_api
-@update_navigation
 @update_projects_info
 @api_base
 def fetch_remote_folder(folder_uuid):

@@ -1,7 +1,7 @@
-{% extends "base.html" %}
+{% extends "common/base.html" %}
 {% block title %}ユーザー情報変更{% endblock %}
 {% block content %}
-<script>
+<script nonce="{{ nonce }}">
   const inject_user_id = '{{ user_id }}'
   const inject_project_uuid = undefined
   const inject_flow_uuid = undefined

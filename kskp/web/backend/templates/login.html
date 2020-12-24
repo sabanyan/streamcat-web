@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "common/base.html" %}
 {% block title %}KSKP{% endblock %}
 {% block content %}
 <div class="container">
@@ -35,7 +35,7 @@
         </div>
     </div>
 </div>
-<script>
+<script nonce="{{ nonce }}">
     const inject_project_uuid = undefined
     const inject_flow_uuid = undefined
 </script>

@@ -1,7 +1,6 @@
-
-from bokeh.resources import INLINE
-from flask import render_template, Blueprint
-from kskp.web.backend.api.auth import login_required, login_required_api
+from flask import Blueprint
+from .utils import make_response
+from ..api.utils import login_required, login_required_api
 
 mod = Blueprint('basic_template', __name__)
 
@@ -15,73 +14,54 @@ def favicon():
     from flask import send_from_directory
     return send_from_directory('../frontend/static/images', 'kskp.ico', mimetype='image/x-icon')
 
-#
-# ユーザ管理機能
-# TODO: ルーティングの確認
-#
+@mod.route('/settings/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    return make_response('profile.html')
+
 @mod.route('/admin/users', methods=['GET', 'POST'])
 @login_required
 def admin_users():
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    return render_template('admin/users.html',js_resources=js_resources,css_resources=css_resources)
-
-@mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
-@login_required
-def flow_designer(flow_uuid):
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    return render_template('flow_designer.html',flow_uuid=flow_uuid,js_resources=js_resources,css_resources=css_resources)
+    return make_response('admin/users.html')
 
 @mod.route('/library', methods=['GET', 'POST'])
 @login_required
 @login_required_api
 def library():
     from flask import g
-    root = g.factory.data.load_root()
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    return render_template('library.html',folder_uuid=root.uuid,js_resources=js_resources,css_resources=css_resources)
-
-@mod.route('/preview', methods=['GET', 'POST'])
-@login_required
-def preview():
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    return render_template('preview.html',js_resources=js_resources,css_resources=css_resources)
-
-@mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
-@login_required
-def folders(folder_uuid):
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    folder_uuid = folder_uuid.rsplit('?')[0]
-    return render_template('library.html',folder_uuid=folder_uuid,is_project=0,js_resources=js_resources,css_resources=css_resources)
+    uuid = g.factory.data.load_root().uuid
+    return make_response('library.html', folder_uuid=uuid, is_project='false', is_trash='false')
 
 @mod.route('/projects/<project_uuid>', methods=['GET', 'POST'])
 @login_required
 def projects(project_uuid):
-    js_resources = INLINE.render_js()
-    css_resources = INLINE.render_css()
-    project_uuid = project_uuid.rsplit('?')[0]
-    return render_template('library.html',folder_uuid=project_uuid,is_project=1,js_resources=js_resources,css_resources=css_resources)
+    uuid = project_uuid.rstrip('?')
+    return make_response('library.html', folder_uuid=uuid, is_project='true', is_trash='false')
 
-@mod.route('/settings/profile', methods=['GET', 'POST'])
+@mod.route('/folders/<folder_uuid>', methods=['GET', 'POST'])
 @login_required
-def profile():
-    return render_template('profile.html')
+def folders(folder_uuid):
+    uuid = folder_uuid.rstrip('?')
+    return make_response('library.html', folder_uuid=uuid, is_project='false', is_trash='false')
 
 @mod.route('/trashes', methods=['GET', 'POST'])
 @login_required
 def trashes():
-    is_trash = 1
-    return render_template('library.html', is_trash=is_trash)
+    return make_response('library.html', is_project='false', is_trash='true')
 
+@mod.route('/flows/<flow_uuid>', methods=['GET', 'POST'])
+@login_required
+def flow_designer(flow_uuid):
+    return make_response('flow_designer.html', flow_uuid=flow_uuid)
+
+@mod.route('/preview', methods=['GET', 'POST'])
+@login_required
+def preview():
+    return make_response('preview.html')
 
 # 開発用画面
 # TODO: 将来、見れる権限の検討が必要かも
 @mod.route('/dev', methods=['GET', 'PUT'])
 @login_required
 def dev():
-    return render_template('dev/dev.html')
-
+    return make_response('dev/dev.html')
