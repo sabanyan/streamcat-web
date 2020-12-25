@@ -235,7 +235,71 @@ class LockFlowTestCase(ApiTestCaseBase):
         # ロックの有効期限を戻す
         lock_manager._valid_seconds = backup_valid_seconds
 
-    @unittest.skip
+    def test_locked_after_download(self):
+        """
+        排他ロック中にGET /filesを発行しても排他ロックが解除されないこと
+        """
+        # ROOTを取得する
+        root = self.factory2.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'Mojave'}, self.USER2)
+        project_uuid = result['data']['uuid']
+
+        # USER2は、プロジェクト内にFrameを作成する
+        import io
+        f = (io.BytesIO(b"abcdef"), 'dummy.csv')
+        result = self.post_frames('Yosemite', project_uuid, f, self.USER2)
+        frame_uuid= result['data']['uuid']
+
+        # USER2は、プロジェクト内にFlowを作成する
+        data_source = {
+            "id": "i",
+            "type": "frame",
+            "dataSource": "csv",
+            "uuid": frame_uuid,
+            "label": "test"
+        }
+        data = {
+            'project_uuid': project_uuid,
+            'name': 'Catalina',
+            'datasource': data_source
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+        flow_uuid = result['data']['uuid']
+        modifiedAt = result['data']['modifiedAt']
+
+        # USER2は、Flowの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid, 'lastModifiedAt':modifiedAt}, self.USER2)
+        lock_uuid = result['data']['uuid']
+
+        # USER2は、Flowを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER2)
+        flow_data = result['data']['flow']
+
+        # Frameをダウンロードする
+        result = self.get_file(f'/api/v0/files?type=frame&uuid={frame_uuid}&ext=csv', self.USER2)
+
+        # Flowを更新する
+        data = {
+            'flow': flow_data,
+            'lock': lock_uuid
+        }
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
+
+        # Frameをプレビューする
+        vis_args = {"args" :
+                        {"visualizer" : "csvtohtmltable",
+                            "offset" : 0,
+                            "limit"  : 100
+                        }
+                    }
+        result = self.post_uri(f'/api/v0/vizs/{frame_uuid}', vis_args, self.USER2)
+
+        # Flowのロックを解除する
+        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+
+    # @unittest.skip
     def test_extend_lock(self):
         """
         ロックの有効期間を延長できること
@@ -399,7 +463,6 @@ class LockFlowTestCase(ApiTestCaseBase):
 
         # ロックの有効期限を戻す
         lock_manager._valid_seconds = backup_valid_seconds
-
 
     def test_delete_locked_flow(self):
         """
