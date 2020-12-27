@@ -131,7 +131,7 @@ class LibraryTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        from kskp.store import Datum
+        from kskp.core import Datum
         self.assertTrue(os.path.isdir(Datum.STORE_DIR))
 
         # ルートフォルダを削除する(DELETE /folders)
@@ -152,7 +152,7 @@ class LibraryTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['folderPath'][0]['label'], 'ライブラリ')
 
         # 作成したフォルダに対応するディレクトリが存在することを検証する
-        from kskp.store import Datum
+        from kskp.core import Datum
         self.assertTrue(os.path.isdir(Datum.STORE_DIR))
 
         # ルートフォルダを削除する(DELETE /folders)

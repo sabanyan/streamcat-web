@@ -9,7 +9,8 @@ import pprint
 from pathlib import Path
 
 from kskp.web.backend import app
-from kskp.store import Datum, Flow, FlowData, KSKP_VER
+from kskp.core import Datum, KSKP_VER
+from kskp.store import Flow, FlowData
 from .api_test_case_base import ApiTestCaseBase
 
 # 

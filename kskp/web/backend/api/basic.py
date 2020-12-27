@@ -438,7 +438,7 @@ def delete_cache():
 @mod.route('/navigation', methods=['GET'])
 @login_required_api
 def get_navigation():
-    from kskp.store import KSKP_VER
+    from kskp.core import KSKP_VER
 
     navigation = {
         'user_id': '',

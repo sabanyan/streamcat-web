@@ -3,7 +3,7 @@ from kskp.store import StoreModel as Store
 from kskp.store import FlowData
 from kskp.store import ProjectFolder
 from kskp.core import Datum
-from kskp.store.lock_manager import Lock
+from kskp.store.lock import Lock
 from kskp.store.auth import User, Role
 from .vis_converter import VisConverter
 
