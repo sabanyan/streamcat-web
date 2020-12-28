@@ -1,17 +1,18 @@
 from flask.json import JSONEncoder
-from kskp.store import StoreModel as Store
-from kskp.store import FlowData
-from kskp.store import ProjectFolder
-from kskp.core import Datum
-from kskp.store.lock import Lock
-from kskp.store.auth import User, Role
-from .vis_converter import VisConverter
 
 class KSKPJSONEncoder(JSONEncoder):
     """
     ライブラリにおいて定義したクラスのJSONへのデコード処理を定義する
     """
     def default(self, obj):
+        from kskp.core import Datum
+        from kskp.store import StoreModel as Store
+        from kskp.store import FlowData
+        from kskp.store import ProjectFolder
+        from kskp.store.lock import Lock
+        from kskp.store.auth import User, Role
+        from .vis_converter import VisConverter
+
         if isinstance(obj, VisConverter):
             return obj.to_html()
         elif isinstance(obj, (Store, Lock, Datum, FlowData, User, Role, ProjectFolder.Member, Role.Member)):
