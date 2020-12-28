@@ -7,7 +7,7 @@ from flask import (
     request
 )
 from flask_mail import Mail, Message
-from kskp.web.backend import app
+from .. import app
 from .utils import make_response
 
 # MyProjectのラベル名

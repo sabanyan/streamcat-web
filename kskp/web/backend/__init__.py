@@ -79,7 +79,7 @@ app.register_blueprint(lib.mod, url_prefix=PREFIX)
 app.register_blueprint(system.mod, url_prefix=PREFIX)
 
 # static用
-from kskp.web.frontend import mod
+from ..frontend import mod
 app.register_blueprint(mod)
 
 def run(port=5000):
