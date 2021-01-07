@@ -3,6 +3,10 @@ from flask import Flask, session
 
 app = Flask('kskp.web.backend')
 
+# production : evalを使用しない(セキュリティ高いがデバッグできない、ビルドに時間を要する)
+# development: evalを使用する
+FRONTEND_BUILD=os.getenv('KSKP_FRONTEND_BUILD', 'production')
+
 # 0: セキュリティ設定をしない
 # 1: 基本的なセキュリティ設定をする
 # 2: HTTPS通信を前提としたセキュリティ設定をする
