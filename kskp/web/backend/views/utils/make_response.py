@@ -5,7 +5,7 @@ def make_response(template_name, **context):
     import uuid
     from flask import render_template, make_response
     from bokeh.resources import INLINE
-    from .. import FRONTEND_BUILD, SECURITY_LEVEL
+    from ... import FRONTEND_BUILD, SECURITY_LEVEL
 
     # Nonce値を生成する
     nonce = str(uuid.uuid4()).upper()[0:6]
