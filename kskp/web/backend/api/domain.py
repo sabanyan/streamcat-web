@@ -1,7 +1,14 @@
-
+import os
 from flask import Blueprint
+
 mod = Blueprint('domain', __name__)
 
-@mod.route('/.well-known/acme-challenge/wV3LsPZFb65LXXXOmdQqahi_mBsnh7pfBjKsZ09WDo8', methods=['GET'])
-def auau():
-    return 'wV3LsPZFb65LXXXOmdQqahi_mBsnh7pfBjKsZ09WDo8.bbFNSSp2hSSuvPpTtjfAj_P6HAhvna6AsW-KwNnPBzs'
+DOMAIN_AUTHN_PATH = os.environ.get('KSKP_DOMAIN_AUTHN_PATH', '/.well-known/pki-validation/dummy')
+DOMAIN_AUTHN_KEY= os.environ.get('KSKP_DOMAIN_AUTHN_KEY', '')
+
+@mod.route(DOMAIN_AUTHN_PATH, methods=['GET'])
+def authz_domain():
+    """
+    ドメイン認証API
+    """
+    return DOMAIN_AUTHN_KEY
