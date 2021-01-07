@@ -8,7 +8,8 @@ def api_base(func):
     """
     @functools.wraps(func)
     def wrapper(**kwargs):
-        from kskp.store import LockedDatumException, NothingToPutbackException
+        from kskp.store import NothingToPutbackException
+        from kskp.store.lock import LockedDatumException
 
         try:
             # デコレート対象関数の呼び出し

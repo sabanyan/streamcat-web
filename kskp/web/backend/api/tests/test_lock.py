@@ -1,13 +1,9 @@
-import os
-import json
 import uuid
-import pprint
 import unittest
-
-from kskp.web.backend import app
+import pprint
 from .api_test_case_base import ApiTestCaseBase
 
-class LockFlowTestCase(ApiTestCaseBase):
+class LockTestCase(ApiTestCaseBase):
 
     def create_flow(self, parent_uuid, source_uuid):
         new_flow_name = '新しいフローでーす！'
@@ -188,7 +184,7 @@ class LockFlowTestCase(ApiTestCaseBase):
         有効期間を過ぎたロックは解除されること
         """
         # ロックの有効期限を1秒にする
-        from kskp.store import lock_manager
+        from kskp.store.lock import lock_manager
         backup_valid_seconds = lock_manager._valid_seconds
         lock_manager._valid_seconds = 1
         
@@ -305,7 +301,7 @@ class LockFlowTestCase(ApiTestCaseBase):
         ロックの有効期間を延長できること
         """
         # ロックの有効期限を1秒にする
-        from kskp.store import lock_manager
+        from kskp.store.lock import lock_manager
         backup_valid_seconds = lock_manager._valid_seconds
         lock_manager._valid_seconds = 1
         
@@ -355,7 +351,7 @@ class LockFlowTestCase(ApiTestCaseBase):
         有効期間を過ぎた後にロックを再取得できること
         """
         # ロックの有効期限を1秒にする
-        from kskp.store import lock_manager
+        from kskp.store.lock import lock_manager
         backup_valid_seconds = lock_manager._valid_seconds
         lock_manager._valid_seconds = 1
         
@@ -411,7 +407,7 @@ class LockFlowTestCase(ApiTestCaseBase):
         有効期間を過ぎた後にフローが編集された場合は、ロックを再取得できないこと
         """
         # ロックの有効期限を1秒にする
-        from kskp.store import lock_manager
+        from kskp.store.lock import lock_manager
         backup_valid_seconds = lock_manager._valid_seconds
         lock_manager._valid_seconds = 1
         

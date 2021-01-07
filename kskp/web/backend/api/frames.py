@@ -34,7 +34,7 @@ def make_new_frames():
         # 普通の実行
         flow_uuid = request.args['from']
 
-    flow = g.factory.data.find_by_uuid(flow_uuid)     
+    flow = g.factory.data.find_by_uuid(flow_uuid)
     activity = execute_flow(flow, g.factory)
     return format_result(activity)
 
@@ -236,6 +236,7 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
     try:
         from kskp.store import Activity, NoResultsException
         from kskp.engine import execute, FlowJsonLink
+
         link = FlowJsonLink(flow, session, vis_args)
         lasts = execute(link=link, args=args, inputs=inputs)
 

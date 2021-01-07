@@ -6,8 +6,7 @@ from flask import (
     session,
     request
 )
-from flask_mail import Mail, Message
-from kskp.web.backend import app
+from .. import app
 from .utils import make_response
 
 # MyProjectのラベル名
@@ -32,6 +31,8 @@ def signup():
 
 @mod.route('/confirm', methods=['POST'])
 def confirm_email():
+    from flask_mail import Mail, Message
+    
     def make_temporal_url(email):
         """
         ユーザー新規登録用のURLを作成する

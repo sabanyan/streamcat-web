@@ -1,8 +1,7 @@
-import unittest
 import copy
 from .api_test_case_base import ApiTestCaseBase
 
-class FrameApiTestCase(ApiTestCaseBase):
+class FrameTestCase(ApiTestCaseBase):
     """
     実行以外のFramesAPIのテストを行う
     """

@@ -1,9 +1,6 @@
 from flask import Blueprint, send_from_directory, request, g
-from kskp.store import (
-    DatabaseConn,
-    RemoteFolderConn,
-    lock_manager
-)
+from kskp.store import DatabaseConn, RemoteFolderConn
+from kskp.store.lock import lock_manager
 from .utils import (
     RequestJson,
     api_base,
@@ -180,7 +177,7 @@ def extend_lock(lock_uuid):
     """
     ロックの有効期間を延長する
     """
-    from kskp.store import LockedDatumException
+    from kskp.store.lock import LockedDatumException
     if not lock_manager.contains(lock_uuid):
         raise LockedDatumException(f'Lock ({lock_uuid}) is already expired')
 

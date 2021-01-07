@@ -356,7 +356,7 @@ def download_file():
 
     # 環境変数からダウンロードファイルの文字コード設定値を取得する
     # (設定値がない場合は'UTF-8'とする)
-    target_encoding = os.getenv('FRAME_CHARACTER_CODE', 'UTF-8').lower()
+    target_encoding = os.getenv('KSKP_FRAME_CHARACTER_CODE', 'UTF-8').lower()
     target_newline = '\r\n' if target_encoding in ('cp932', 'CP932') else '\n'
 
     # ダウンロードファイルのサイズを計算する
@@ -438,7 +438,7 @@ def delete_cache():
 @mod.route('/navigation', methods=['GET'])
 @login_required_api
 def get_navigation():
-    from kskp.store import KSKP_VER
+    from kskp.core import KSKP_VER
 
     navigation = {
         'user_id': '',

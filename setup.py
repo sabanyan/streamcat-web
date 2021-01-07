@@ -9,6 +9,6 @@ setup(
     include_package_data=True,
     install_requires=[
         'flask',
-        'flask_mail',
+        # 'flask_mail',
     ],
 )

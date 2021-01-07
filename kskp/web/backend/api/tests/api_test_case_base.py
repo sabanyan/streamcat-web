@@ -1,8 +1,5 @@
-import os
 import json
-import unittest
 import pprint
-from pathlib import Path
 
 from kskp.web.backend import app
 from kskp.store.tests.test_case_base import TestCaseBase
