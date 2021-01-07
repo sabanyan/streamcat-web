@@ -1,4 +1,4 @@
-
+import os
 from flask import Blueprint
 
 mod = Blueprint('domain', __name__)
