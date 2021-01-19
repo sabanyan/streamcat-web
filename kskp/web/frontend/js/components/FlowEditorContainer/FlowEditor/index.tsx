@@ -1,18 +1,18 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {PaperScroller} from 'FlowEditorContainer/PaperScroller';
-import {Edge, Selector, Step} from 'Shared/SVG';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
+import { Edge, Selector, Step } from 'Shared/SVG';
 import ToolBar from 'FlowEditorContainer/ToolBar/Core';
 import Constants from 'Constants/index';
 import style from './style.scss';
-import {APIUtil, GraphUtil, ZoomUtil, ModalUtil} from 'Utils/index';
+import { APIUtil, GraphUtil, ZoomUtil, ModalUtil } from 'Utils/index';
 import CommandModel from 'Model/Command/CommandModel';
-import {Loader} from 'Shared/Base';
-import {DataFrameDetailType, StepModelType, SubFlowParamType} from 'Types/index';
-import {Inspector} from 'Shared/Inspector';
-import {DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel} from 'Model/index';
-import {NotificationManager} from 'Shared/Notification';
-import {API} from 'Modules/api/index';
-import {addNotification, removeNotification} from 'reapop';
+import { Loader } from 'Shared/Base';
+import { DataFrameDetailType, StepModelType, SubFlowParamType } from 'Types/index';
+import { Inspector } from 'Shared/Inspector';
+import { DataFrameStepModel, MessageModel, SubflowCommandModel, VisualizeModel } from 'Model/index';
+import { NotificationManager } from 'Shared/Notification';
+import { API } from 'Modules/api/index';
+import { addNotification, removeNotification } from 'reapop';
 import {
     addHistoryAction,
     addMasterAction,
@@ -42,16 +42,16 @@ import {
     updateStepAction,
     refreshCanvasSizeAction
 } from 'Modules/application';
-import {useDispatch, useSelector} from 'react-redux';
-import {Paper} from 'FlowEditorContainer/Paper';
-import {PaperZoom} from 'FlowEditorContainer/PaperZoom';
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
-import {FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue} from 'Model/Flow/FlowModel';
-import {NotAllowed} from 'Components/NotAllowedContainer';
-import {TextField} from 'Shared/Input';
+import { useDispatch, useSelector } from 'react-redux';
+import { Paper } from 'FlowEditorContainer/Paper';
+import { PaperZoom } from 'FlowEditorContainer/PaperZoom';
+import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
+import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
+import { NotAllowed } from 'Components/NotAllowedContainer';
+import { TextField } from 'Shared/Input';
 import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
-import {AxiosResponse} from "axios";
+import { AxiosResponse } from "axios";
 
 interface Props {
     navigation?: NavigationModelProps
@@ -63,14 +63,14 @@ const FlowEditor = (props: Props) => {
     const folderUuid = useSelector(state => state.FlowEditorReducer.folderUuid);
 
     const _modifiedAt = useSelector(state => state.FlowEditorReducer.modifiedAt);
-    useEffect(()=>{
-        if(_modifiedAt){
+    useEffect(() => {
+        if (_modifiedAt) {
             // modifiedAt が reducer 経由での取得になる
             // 取得タイミングに差があるため取得ができ次第 State にセットする
             setModifiedAt(_modifiedAt);
         }
-    },[_modifiedAt])
-    const [modifiedAt,setModifiedAt]= useState<string>();
+    }, [_modifiedAt])
+    const [modifiedAt, setModifiedAt] = useState<string>();
     const flow = useSelector(state => state.FlowEditorReducer.flow);
     const drag = useSelector(state => state.FlowEditorReducer.drag);
     const selected_step_ids = useSelector(state => state.FlowEditorReducer.selected_step_ids);
@@ -87,60 +87,60 @@ const FlowEditor = (props: Props) => {
     const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
     const networkStatus = useSelector(state => state.FlowEditorReducer.networkStatus);
 
-    const [offLineNotify,setOffLineNotify] = useState<any|null>(null);
-    const [initialEditMode,setInitialEditMode] = useState<FlowEditModeValue|null>(null);
+    const [offLineNotify, setOffLineNotify] = useState<any | null>(null);
+    const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
 
     const loadFlowJSON = useCallback((context: {}) => {
         return dispatch(loadFlowJSONAction(context));
-    },[]);
+    }, []);
     const addMaster = useCallback((context: {}) => {
         dispatch(addMasterAction(context));
-    },[]);
+    }, []);
     const addStep = useCallback((add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) => {
         dispatch(addStepAction(add_step, src_step_ids, dst_step_ids));
-    },[]);
+    }, []);
     const updateStep = useCallback((step: StepModelType) => {
         dispatch(updateStepAction(step));
-    },[]);
+    }, []);
     const updateFlow = useCallback((flow) => {
         dispatch(updateFlowAction(flow));
-    },[]);
+    }, []);
     const selectSteps = useCallback((selected_steps: []) => {
         dispatch(selectStepsAction(selected_steps));
-    },[]);
+    }, []);
     const addSelectStep = useCallback((selected_step_id: string) => {
         dispatch(addSelectStepAction(selected_step_id));
-    },[]);
+    }, []);
     const deleteSelectStep = useCallback((selected_step_id: string) => {
         dispatch(deleteSelectStepAction(selected_step_id));
-    },[]);
+    }, []);
     const deleteSteps = useCallback((step_ids: []) => {
         dispatch(deleteStepsAction(step_ids));
-    },[]);
+    }, []);
     const deleteCache = useCallback((selected_step_id: string) => {
         dispatch(deleteCacheAction(selected_step_id));
-    },[]);
+    }, []);
     // const cutSteps = useCallback((step_ids: []) => {
     //     dispatch(cutStepsAction(step_ids));
     // },[]);
     const copySteps = useCallback((step_ids: []) => {
         dispatch(copyStepsAction(step_ids));
-    },[]);
+    }, []);
     const pasteSteps = useCallback((paste_nodes: []) => {
         dispatch(pasteStepsAction(paste_nodes));
-    },[]);
+    }, []);
     const addHistory = useCallback(() => {
         dispatch(addHistoryAction());
-    },[]);
+    }, []);
     const undo = useCallback(() => {
         dispatch(undoAction());
-    },[]);
+    }, []);
     const redo = useCallback(() => {
         dispatch(redoAction());
-    },[]);
+    }, []);
     const sortFlow = useCallback(() => {
         dispatch(sortFlowAction());
-    },[]);
+    }, []);
     // const executeFlow = useCallback((flowid: string) => {
     //     // flowidは未使用
     //     dispatch(executeFlowAction(flowid));
@@ -150,65 +150,65 @@ const FlowEditor = (props: Props) => {
     // },[]);
     const dragStart = useCallback((x: number, y: number) => {
         dispatch(dragStartAction(x, y));
-    },[]);
+    }, []);
     const dragging = useCallback((x: number, y: number) => {
         dispatch(draggingAction(x, y));
-    },[]);
+    }, []);
     const dragEnd = useCallback((x: number, y: number) => {
         dispatch(dragEndAction(x, y));
-    },[]);
-    const setZoom = useCallback(({offset, value}) => {
-        dispatch(setZoomAction({offset, value}));
-    },[]);
+    }, []);
+    const setZoom = useCallback(({ offset, value }) => {
+        dispatch(setZoomAction({ offset, value }));
+    }, []);
     const updateDataFrameDetail = useCallback((detail: DataFrameDetailType) => {
         dispatch(updateDataFrameDetailAction(detail));
-    },[]);
+    }, []);
     // const addNote = useCallback((x: number, y: number) => {
     //     dispatch(addNoteAction(x, y));
     // },[]);
     const sortStepSrcEnd = useCallback((detail: {}, mouseEvent: {}) => {
         // mouseEventは未使用
         dispatch(sortStepSrcEndAction(detail, mouseEvent));
-    },[]);
+    }, []);
     const moveSteps = useCallback((x: number, y: number, step) => {
         dispatch(moveStepsAction(x, y, step));
-    },[]);
+    }, []);
     const resizeInspector = useCallback((width: number) => {
         dispatch(resizeInspectorAction(width));
-    },[]);
+    }, []);
     const setExecuteMode = useCallback((mode: FlowExecuteModeValue) => {
         dispatch(setExecuteModeAction(mode));
-    },[]);
+    }, []);
     const setEditMode = useCallback((mode: FlowEditModeValue) => {
         dispatch(setEditModeAction(mode));
-    },[]);
+    }, []);
     const refreshCanvasSize = useCallback(() => {
         dispatch(refreshCanvasSizeAction());
-    },[]);
+    }, []);
 
     const notify = (context) => dispatch(addNotification(context));
     const dismissNotify = (id: string, delay?: number) => {
         setTimeout(() => {
             dispatch(removeNotification(id));
-        }, (delay)?delay:1000);
+        }, (delay) ? delay : 1000);
     };
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [lockUUID, setLockUUID] = useState<string | undefined>(undefined);
     const [readOnly, setReadOnly] = useState<boolean>(false);
     const [hasEnableAutoLockExtended, setHasEnableAutoLockExtended] = useState<boolean>(false);
-    const hasLockedUUID = useMemo(()=>!!(lockUUID),[lockUUID]); // lockUUIDを保持している際は、編集可能な状態
+    const hasLockedUUID = useMemo(() => !!(lockUUID), [lockUUID]); // lockUUIDを保持している際は、編集可能な状態
 
-    const [saveAsFlowName,setSaveAsFlowName] = useState<string>();
-    const [hasShowSaveAsFlowModal,setHasShowSaveAsFlowModal] = useState<boolean>(false);
-    const [hasShowConfirmReloadFlowModal,setHasShowConfirmReloadFlowModal] = useState<boolean>(false);
+    const [saveAsFlowName, setSaveAsFlowName] = useState<string>();
+    const [hasShowSaveAsFlowModal, setHasShowSaveAsFlowModal] = useState<boolean>(false);
+    const [hasShowConfirmReloadFlowModal, setHasShowConfirmReloadFlowModal] = useState<boolean>(false);
     useEffect(() => {
         if (!hasShowSaveAsFlowModal) return;
         ModalUtil.registerModal({
-            id: Constants.modal.SAVE_AS_FLOW, onClickDone: () => {
-                if(!saveAsFlowName || !saveAsFlowName.length) {
+            id: Constants.modal.SAVE_AS_FLOW, onClickDone: async () => {
+                if (!saveAsFlowName || !saveAsFlowName.length) {
                     alert("フロー名を指定してください")
-                }else{
+                } else {
                     // フローを新規作成
                     APIUtil.post("flows", {
                         name: saveAsFlowName,
@@ -221,20 +221,29 @@ const FlowEditor = (props: Props) => {
                         const targetFlow = flow;
                         targetFlow.label = saveAsFlowName;
                         const saveAsFlowUUID = newFlow.data.data.uuid;
-                        // 新規に作成した newFlow の uuid を設定して保存する
-                        saveFlowPromise(targetFlow,saveAsFlowUUID).then(()=>{
-                            // 保存後に作成したフローに遷移する
-                            WebUtil.navigateURL(WebUtil.webURL("/flows/" + saveAsFlowUUID));
-                        }).catch((e)=>{
-                            notify({
-                                title: "エラー",
-                                message: e.message,
-                                status: "error",
-                                dismissAfter: 0,
-                                closeButton: true
-                            });
-                        })
-                    }).catch((e)=>{
+                        // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
+                        API.request.doPost.locks({ flowUUID: saveAsFlowUUID })
+                            .then((res) => {
+                                const newLockUUID = API.response.post.locks(res).uuid;
+                                // 新規に作成した newFlow の uuid を設定して保存する
+                                saveFlowPromise(targetFlow, saveAsFlowUUID, newLockUUID).then(() => {
+                                    // 転移する前にnewFlowのロックは一度解除する
+                                    if (newLockUUID) {
+                                        API.request.doDelete.locks({ lockUUID: newLockUUID })
+                                    }
+                                    // 保存後に作成したフローに遷移する
+                                    WebUtil.navigateURL(WebUtil.webURL("/flows/" + saveAsFlowUUID));
+                                }).catch((e) => {
+                                    notify({
+                                        title: "エラー",
+                                        message: e.message,
+                                        status: "error",
+                                        dismissAfter: 0,
+                                        closeButton: true
+                                    });
+                                })
+                            })
+                    }).catch((e) => {
                         notify({
                             title: "エラー",
                             message: e.message,
@@ -257,10 +266,10 @@ const FlowEditor = (props: Props) => {
             danger: false,
             content: <div>
                 <TextField placeholder={'別名保存するフロー名'}
-                           onChange={(e) => setSaveAsFlowName(e.target.value)}/>
+                    onChange={(e) => setSaveAsFlowName(e.target.value)} />
             </div>,
         })
-    }, [hasShowSaveAsFlowModal,saveAsFlowName,flow]);
+    }, [hasShowSaveAsFlowModal, saveAsFlowName, flow]);
 
     useEffect(() => {
         if (!hasShowConfirmReloadFlowModal) return;
@@ -285,16 +294,16 @@ const FlowEditor = (props: Props) => {
         })
     }, [hasShowConfirmReloadFlowModal]);
 
-    useEffect(()=>{
-        if(initialEditMode === null){
+    useEffect(() => {
+        if (initialEditMode === null) {
             setInitialEditMode(editMode);
         }
-    },[editMode]);
+    }, [editMode]);
 
-    useEffect(()=>{
-        if(networkStatus === NetworkStatusValue.Online){
-            if(offLineNotify){
-                dismissNotify(offLineNotify.id,1);
+    useEffect(() => {
+        if (networkStatus === NetworkStatusValue.Online) {
+            if (offLineNotify) {
+                dismissNotify(offLineNotify.id, 1);
                 notify({
                     title: "ネットワークに再接続しています",
                     status: "success",
@@ -304,7 +313,7 @@ const FlowEditor = (props: Props) => {
                 // ロックを延長する
                 extendLock(lockUUID);
             }
-        }else if(networkStatus === NetworkStatusValue.Offline){
+        } else if (networkStatus === NetworkStatusValue.Offline) {
             const _offLineNotify = notify({
                 title: "現在ネットワークがオフラインです",
                 message: "ネットワークの状態を確認してください",
@@ -314,12 +323,12 @@ const FlowEditor = (props: Props) => {
             });
             setOffLineNotify(_offLineNotify);
         }
-    },[networkStatus,lockUUID]);
+    }, [networkStatus, lockUUID]);
 
 
     // 現在表示中のフローの保存処理
-
-    const saveFlowPromise = (targetFlow, saveAsFlowUUID?: string)=>{
+    const saveFlowPromise = (targetFlow, saveAsFlowUUID?: string, newLockUUID?: string) => {
+        // newLockUUIDがあれば、別名保存として判断する
         let saveNotify = notify({
             title: "フロー保存中",
             message: "フローの設定を保存しています",
@@ -338,9 +347,9 @@ const FlowEditor = (props: Props) => {
             } else {
                 //　フロー保存
                 await API.request.doPut.flow({
-                    flowUUID: !(saveAsFlowUUID)?inject_flow_uuid:saveAsFlowUUID,// 別名保存する場合は、saveAsFlowUUIDを指定する
+                    flowUUID: !(saveAsFlowUUID) ? inject_flow_uuid : saveAsFlowUUID,// 別名保存する場合は、saveAsFlowUUIDを指定する
                     flow: flow,
-                    lockUUID: lockUUID
+                    lockUUID: newLockUUID ? newLockUUID : lockUUID
                 })
                     .then((response) => {
                         if (!response.data.success) {
@@ -369,7 +378,7 @@ const FlowEditor = (props: Props) => {
 
     const onClickSaveFlow = () => {
         const targetFlow = flow;
-        return saveFlowPromise(targetFlow).then((res:any) =>{
+        return saveFlowPromise(targetFlow).then((res: any) => {
             setModifiedAt(res.data.modifiedAt);
             return res;
         });
@@ -380,7 +389,7 @@ const FlowEditor = (props: Props) => {
      */
     const regenerateNewLockUUID = () => {
         // 取得処理
-        API.request.doPost.locks({flowUUID: inject_flow_uuid,lastModifiedAt: modifiedAt})
+        API.request.doPost.locks({ flowUUID: inject_flow_uuid, lastModifiedAt: modifiedAt })
             .then((res) => {
                 const newLockUUID = API.response.post.locks(res).uuid;
                 setLockUUID(newLockUUID);
@@ -388,11 +397,11 @@ const FlowEditor = (props: Props) => {
                 setReadOnly(false);
             })
             .catch(e => {
-                const onClickReload = ()=>{
+                const onClickReload = () => {
                     setHasShowConfirmReloadFlowModal(true);
                     return false;
                 };
-                const onClickSaveAs = ()=>{
+                const onClickSaveAs = () => {
                     setHasShowSaveAsFlowModal(true);
                     return false;
                 };
@@ -407,7 +416,7 @@ const FlowEditor = (props: Props) => {
                         name: "別名保存",
                         primary: true,
                         onClick: onClickSaveAs
-                    },{
+                    }, {
                         name: "再読込",
                         primary: true,
                         onClick: onClickReload
@@ -418,17 +427,17 @@ const FlowEditor = (props: Props) => {
                 setHasEnableAutoLockExtended(false);
                 // 通知したら自動排他ロックは解除する
             }).finally(() => {
-            setIsLoading(false);
-        });
+                setIsLoading(false);
+            });
     }
 
     /**
      * lock の新規取得
      * @param lockUUID
      */
-    const getNewLockUUID = () =>{
+    const getNewLockUUID = () => {
         // 取得処理
-        API.request.doPost.locks({flowUUID: inject_flow_uuid})
+        API.request.doPost.locks({ flowUUID: inject_flow_uuid })
             .then((res) => {
                 const newLockUUID = API.response.post.locks(res).uuid;
                 setLockUUID(newLockUUID);
@@ -460,17 +469,17 @@ const FlowEditor = (props: Props) => {
                 // 開いた時点で読み取り専用の場合は、ロックの自動更新は行わない
                 setHasEnableAutoLockExtended(false);
             }).finally(() => {
-            setIsLoading(false);
-        });
+                setIsLoading(false);
+            });
     }
     /**
      * lock の延長処理
      * @param lockUUID
      */
-    const extendLock = (lockUUID:string|undefined) =>{
-        if(!lockUUID)return;
+    const extendLock = (lockUUID: string | undefined) => {
+        if (!lockUUID) return;
         // 延長処理
-        API.request.doPost.extendLocks({lockUUID: lockUUID})
+        API.request.doPost.extendLocks({ lockUUID: lockUUID })
             .then((res) => {
                 API.response.post.extendLocks(res);
                 // 取得した lockUUID を設定
@@ -481,36 +490,36 @@ const FlowEditor = (props: Props) => {
                 regenerateNewLockUUID();
                 setReadOnly(true);
             }).finally(() => {
-            setIsLoading(false);
-        });
+                setIsLoading(false);
+            });
     }
 
-    const extendLockInterval:number = inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
-    useInterval(()=>{
-        if(lockUUID && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline){
+    const extendLockInterval: number = inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
+    useInterval(() => {
+        if (lockUUID && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline) {
             extendLock(lockUUID)
         }
     }, extendLockInterval);
 
-    useEffect(()=>{
-        window.onresize = () =>{
+    useEffect(() => {
+        window.onresize = () => {
             refreshCanvasSize();
         }
-    },[refreshCanvasSize]);
+    }, [refreshCanvasSize]);
 
-    useEffect(()=>{
+    useEffect(() => {
         const handleLeavePage = () => {
             if (lockUUID) {
-                API.request.doDelete.locks({lockUUID: lockUUID}).finally(() => {
+                API.request.doDelete.locks({ lockUUID: lockUUID }).finally(() => {
 
                 });
             }
         };
         window.addEventListener("beforeunload", handleLeavePage);
-        return ()=>{
+        return () => {
             window.removeEventListener("beforeunload", handleLeavePage);
         }
-    },[lockUUID]);
+    }, [lockUUID]);
 
     useEffect(() => {
         let preRequest: any = [];
@@ -522,9 +531,9 @@ const FlowEditor = (props: Props) => {
                 return new CommandModel(command);
             });
             window.commands = commands;
-            addMaster({commands: commands});
+            addMaster({ commands: commands });
         }).then(() => {
-            },
+        },
             (error) => {
                 console.log(error);
             }));
@@ -535,9 +544,9 @@ const FlowEditor = (props: Props) => {
                 return new VisualizeModel(visualize);
             });
             window.visualizers = visualizers;
-            addMaster({visualizers: visualizers})
+            addMaster({ visualizers: visualizers })
         }).then(() => {
-            },
+        },
             (error) => {
                 console.log(error);
             }));
@@ -548,9 +557,9 @@ const FlowEditor = (props: Props) => {
                 return new SubflowCommandModel(subflow);
             });
             window.subflows = subflows;
-            addMaster({subflows: subflows})
+            addMaster({ subflows: subflows })
         }).then(() => {
-            },
+        },
             (error) => {
                 console.log(error);
             }));
@@ -575,16 +584,16 @@ const FlowEditor = (props: Props) => {
             Promise.all(flowRequest).then(() => {
                 const flowUUID = inject_flow_uuid;
                 // 実行モードの設定
-                const executeMode = (allowlist.execute)?FlowExecuteModeValue.Executable:FlowExecuteModeValue.NotExecutable;
+                const executeMode = (allowlist.execute) ? FlowExecuteModeValue.Executable : FlowExecuteModeValue.NotExecutable;
                 setExecuteMode(executeMode);
                 // 編集モードの設定
-                if(!allowlist.read){
+                if (!allowlist.read) {
                     // read が無効な場合は NotAllowed に飛ばす
                     setEditMode(FlowEditModeValue.NotAllowed)
                     setIsLoading(false);
                     return;
                 }
-                if(!allowlist.update){
+                if (!allowlist.update) {
                     // update が無効な場合は、排他ロックの取得を行ずに [読み取り専用モード1] にする
                     setEditMode(FlowEditModeValue.ReadOnlyUpdateDisabled)
                     setIsLoading(false);
@@ -675,33 +684,33 @@ const FlowEditor = (props: Props) => {
                     }
 
                     let e = <Edge outPortLabel={outPortLabel} inPortLabel={inPortLabel} vx={vx} vy={vy} wx={wx} wy={wy}
-                                  key={index} />;
+                        key={index} />;
                     edges.push(e);
                 }
             });
         }
         return edges;
-    },[graph,nodes]);
+    }, [graph, nodes]);
 
     const renderSelector = useCallback(() => {
         let selector: any = null;
         if (Object.keys(drag).length) {
             selector = <Selector sx={ZoomUtil.zoomReverse(drag.start.x, zoom)}
-                                 sy={ZoomUtil.zoomReverse(drag.start.y, zoom)}
-                                 ex={ZoomUtil.zoomReverse(drag.end.x, zoom)}
-                                 ey={ZoomUtil.zoomReverse(drag.end.y, zoom)} />;
+                sy={ZoomUtil.zoomReverse(drag.start.y, zoom)}
+                ex={ZoomUtil.zoomReverse(drag.end.x, zoom)}
+                ey={ZoomUtil.zoomReverse(drag.end.y, zoom)} />;
         }
         return selector;
-    },[drag,zoom]);
+    }, [drag, zoom]);
 
 
 
-    if(editMode === undefined || executeMode === undefined){
+    if (editMode === undefined || executeMode === undefined) {
         // モードが設定前はローディング中にする
-        return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true}/>
-    }else if(editMode === FlowEditModeValue.NotAllowed){
+        return <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={true} />
+    } else if (editMode === FlowEditModeValue.NotAllowed) {
         // 利用できないモードの場合は、操作不可にする
-        return <NotAllowed/>
+        return <NotAllowed />
     }
 
     // 読み取り専用モードの場合は disabled にする
@@ -726,7 +735,7 @@ const FlowEditor = (props: Props) => {
     // 編集モード以外は、コマンド・データのペイン機能を disabled にする
     const baseInspectorDisabled = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly
 
-    const onClickRunFlowPromise = ()=>{
+    const onClickRunFlowPromise = () => {
         return onClickSaveFlow();
     }
 
@@ -734,27 +743,27 @@ const FlowEditor = (props: Props) => {
         <div className={style.flow_editor}>
             <PaperZoom />
             <ToolBar flow={flow}
-                     zoom={zoom}
-                     lockUUID={lockUUID}
-                     nodes={nodes}
-                     history={history}
-                     notify={notify}
-                     dismissNotify={dismissNotify}
-                     addStep={addStep}
-                     addHistory={addHistory}
-                     sortFlow={sortFlow}
-                     loadFlowJSON={loadFlowJSON}
-                     selectSteps={selectSteps}
-                     setZoom={setZoom}
-                     undo={undo}
-                     redo={redo}
-                     baseDisabled={baseToolBarDisabled}
-                     runDisabled={runDisabled}
-                     onClickRunFlowPromise={onClickRunFlowPromise}
-                     onClickSaveFlow={onClickSaveFlow}
+                zoom={zoom}
+                lockUUID={lockUUID}
+                nodes={nodes}
+                history={history}
+                notify={notify}
+                dismissNotify={dismissNotify}
+                addStep={addStep}
+                addHistory={addHistory}
+                sortFlow={sortFlow}
+                loadFlowJSON={loadFlowJSON}
+                selectSteps={selectSteps}
+                setZoom={setZoom}
+                undo={undo}
+                redo={redo}
+                baseDisabled={baseToolBarDisabled}
+                runDisabled={runDisabled}
+                onClickRunFlowPromise={onClickRunFlowPromise}
+                onClickSaveFlow={onClickSaveFlow}
             />
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false} visible={isLoading}
-                    message={"フローを構築中です"} />
+                message={"フローを構築中です"} />
             <PaperScroller
                 editor={editor}
                 pasteSteps={pasteSteps}
@@ -805,9 +814,9 @@ const FlowEditor = (props: Props) => {
                 commandSelectorHidden={commandSelectorHidden}
                 baseInspectorDisabled={baseInspectorDisabled}
             />
-            <NotificationManager/>
+            <NotificationManager />
         </div>
     </div>;
 };
 
-export {FlowEditor};
+export { FlowEditor };
