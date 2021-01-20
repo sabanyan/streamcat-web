@@ -413,7 +413,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       });
       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
 
-      newState.graph = graph.getGraph(newState)
+      newState.graph = graph.getGraph(newState);
 
       (window as any).nodes = newState.nodes;
       return newState;
