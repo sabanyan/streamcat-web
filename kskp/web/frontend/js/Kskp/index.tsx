@@ -17,7 +17,7 @@ import {UserList} from 'UserListContainer/UserList';
 import {Library} from 'LibraryContainer/Libary';
 import {Profile} from 'ProfileContainer/Profile';
 import {NotAllowed} from 'Components/NotAllowedContainer';
-import {setNetworkStatusAction} from 'Modules/application';
+import {setNetworkStatusAction} from 'Modules/flowEditor';
 import {NetworkStatusValue} from 'Model/Flow/FlowModel';
 
 export type Props = {
