@@ -5,7 +5,7 @@ import style from './style.scss';
 import classnames from 'classnames';
 import {DataFrameStepModelProps} from 'Model/Step/DataFrameStepModel';
 import {DataFrameStepModel, FlowModel, MessageModel, NoteStepModel} from 'Model/index';
-import {APIUtil, FlowUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil} from 'Utils/index';
+import {APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil} from 'Utils/index';
 import {Loader} from 'Shared/Base';
 import {HistoryType, LibraryListDataType, RunResponseType, UploadedFileType} from 'Types/index';
 import {NoteStepModelProps} from 'Model/Step/NoteStepModel';
@@ -118,10 +118,31 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         this.loading = true;
         this.loadingMessage = "";
 
-        this.props.onClickRunFlowPromise().then((result: any) => {
-            if (result.success === true) this.run();
-            this.loading = false;
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM_SAVE, onClickDone: () => {
+                this.props.onClickRunFlowPromise().then((result: any) => {
+                    if (result.success === true) this.run();
+                    this.loading = false;
+                });
+                ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+            },onClickCancel: ()=>{
+                ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+            }
+        })
+
+        ModalUtil.emitModal({
+            id: Constants.modal.CONFIRM_SAVE,
+            visible: true,
+            done: '確認',
+            danger: true,
+            content: <div className={style.modal}>
+                <div>
+                    現在のフローを保存します。<br/>
+                    よろしいですか？
+                </div>
+            </div>
         });
+      
     }
 
     flowUpdate() {

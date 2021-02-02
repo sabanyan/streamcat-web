@@ -131,6 +131,9 @@ export default class ModalManager extends React.Component<Props> {
                      <Modal key={Constants.modal.SAVE_AS_FLOW} id={Constants.modal.SAVE_AS_FLOW}
                             title="フローを別名で保存" close={false}  dynamic={true} footer={true} >
                      </Modal>
+                     <Modal key={Constants.modal.CONFIRM_SAVE} id={Constants.modal.CONFIRM_SAVE}
+                            title="保存の確認" close={false}  dynamic={true} footer={true} >
+                     </Modal>
               </>;
        }
 }

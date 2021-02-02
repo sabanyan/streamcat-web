@@ -116,6 +116,30 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   onClickPreview(e: Event) {
+    ModalUtil.registerModal({
+      id: Constants.modal.CONFIRM_SAVE, onClickDone: () => {
+        this.preview();
+        ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+      },onClickCancel: ()=>{
+       ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);   
+      }
+    })
+
+    ModalUtil.emitModal({
+      id: Constants.modal.CONFIRM_SAVE,
+      visible: true,
+      done: '確認',
+      danger: true,
+      content: <div className={style.modal}>
+          <div>
+              現在のフローを保存します。<br/>
+              よろしいですか？
+          </div>
+      </div>
+    });
+  }
+
+  preview() {
     const flow_uuid = inject_flow_uuid
     const selected_step = this.getSelectedStep()
     let id = selected_step.id
