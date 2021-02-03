@@ -108,7 +108,6 @@ export default class ToolBar extends React.Component<ToolBarProps> {
             })
             .catch((e) => {
                 this.loading = false;
-                this.loading = false;
                 this.forceUpdate();
             });
     }
@@ -126,6 +125,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 });
                 ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
             },onClickCancel: ()=>{
+                this.loading = false;
                 ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
             }
         })
