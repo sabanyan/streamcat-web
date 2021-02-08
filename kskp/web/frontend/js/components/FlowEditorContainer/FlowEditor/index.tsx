@@ -508,12 +508,16 @@ const FlowEditor = (props: Props) => {
     }, [refreshCanvasSize]);
 
     useEffect(() => {
-        const handleLeavePage = () => {
+        const handleLeavePage = (e) => {
             if (lockUUID) {
                 API.request.doDelete.locks({ lockUUID: lockUUID }).finally(() => {
 
                 });
             }
+            e.preventDefault();
+            let dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
+            e.returnValue = dialogText;
+            return dialogText;
         };
         window.addEventListener("beforeunload", handleLeavePage);
         return () => {
