@@ -208,7 +208,9 @@ def fetch_vis(frame_uuid):
     frame = g.factory.data.find_by_uuid(frame_uuid)
     parent_folder = frame.find_parent()
     loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
-    datasource = g.factory.data.create_datasource(None, 'tmp_source', parent_folder, loader_step)
+    # datasource = g.factory.data.create_datasource(None, 'tmp_source', parent_folder, loader_step)
+    # datasourceは保存しないので、親フォルダはどこでも良い
+    datasource = parent_folder.create_datasource('tmp_source', parent_folder, loader_step)
     activity = execute_flow(datasource, g.factory, vis_args=vis_args)
     return format_vis(activity)
 
@@ -301,9 +303,9 @@ def _make_flow_inputs(factory, flow_uuid, request):
 def _load_frame(frame_uuid):
     # Loaderを用いて指定したuuidのframeを取得する
     from kskp.depo.std.commands import CommandLink
-    store = g.factory.data.find_by_uuid(frame_uuid).find_parent()
+    folder = g.factory.data.find_by_uuid(frame_uuid).find_parent()
     loader = CommandLink('loader').resolve()
-    result = loader.run({'uuid':frame_uuid}, {'store':store})
+    result = loader.run({'uuid':frame_uuid}, {'folder':folder})
     # NYSOLコマンドを返す
     nysol_module = result['o']
     return nysol_module
