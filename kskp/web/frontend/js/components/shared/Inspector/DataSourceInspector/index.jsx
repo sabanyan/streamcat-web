@@ -207,7 +207,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         console.log(response)
         if (response.data.success === false) throw response.data
         const json = response.data.data
-        this.props.loadFlowJSON(json)
+        this.props.refreshFlow(json)
       })
       .catch((error) => {
         console.log(error)

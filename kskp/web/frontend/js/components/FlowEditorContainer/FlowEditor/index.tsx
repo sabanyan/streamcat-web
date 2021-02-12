@@ -40,7 +40,8 @@ import {
     updateDataFrameDetailAction,
     updateFlowAction,
     updateStepAction,
-    refreshCanvasSizeAction
+    refreshCanvasSizeAction,
+    refreshFlowAction
 } from 'Modules/application';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
@@ -184,6 +185,9 @@ const FlowEditor = (props: Props) => {
     }, []);
     const refreshCanvasSize = useCallback(() => {
         dispatch(refreshCanvasSizeAction());
+    }, []);
+    const refreshFlow = useCallback((context) => {
+        dispatch(refreshFlowAction(context));
     }, []);
 
     const notify = (context) => dispatch(addNotification(context));
@@ -763,6 +767,7 @@ const FlowEditor = (props: Props) => {
                 redo={redo}
                 baseDisabled={baseToolBarDisabled}
                 runDisabled={runDisabled}
+                refreshFlow={refreshFlow}
                 onClickRunFlowPromise={onClickRunFlowPromise}
                 onClickSaveFlow={onClickSaveFlow}
             />
@@ -813,6 +818,7 @@ const FlowEditor = (props: Props) => {
                 updateStep={updateStep}
                 sortStepSrcEnd={sortStepSrcEnd}
                 resizeInspector={resizeInspector}
+                refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
                 previewDisabled={previewDisabled}
                 commandSelectorHidden={commandSelectorHidden}
