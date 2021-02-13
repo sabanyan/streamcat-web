@@ -3426,19 +3426,19 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/databases', data, self.USER2)
         database_uuid = result['data']['uuid']
 
-        # # フォルダの下にリモートフォルダを作成する
-        # data = {
-        #     "parent"   : folder_uuid,
-        #     "label"    : "中村主水",
-        #     "protocol" : "smb",
-        #     "hostname" : "kskds-HP-Workstation-z620.local",
-        #     "domain"   : "WORKGROUP",
-        #     "directory": "share",
-        #     "user_id"  : "ksk-ds",
-        #     "password" : "kskanalytics"
-        # }
-        # result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
-        # remote_folder_uuid = result['data']['uuid']
+        # フォルダの下にリモートフォルダを作成する
+        data = {
+            "parent"   : folder_uuid,
+            "label"    : "中村主水",
+            'protocol' : 'smb',
+            'hostname' : "18.178.64.116",
+            'domain'   : "WORKGROUP",
+            'directory': "share",
+            'user_id'  : "samba",
+            'password' : "kskanalytics"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
+        remote_folder_uuid = result['data']['uuid']
 
         # # フォルダの下にAWS S3を作成する
         # data = {
@@ -3586,22 +3586,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 編集者メンバは、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 編集者メンバは、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # 編集者メンバは、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
@@ -3744,22 +3744,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 閲覧者メンバは、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['update'])
-        # self.assertFalse(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertFalse(result['data']['allowlist']['move'])
-        # self.assertFalse(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 閲覧者メンバは、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # 閲覧者メンバは、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
@@ -3902,22 +3902,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # プロジェクト管理者は、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # プロジェクト管理者は、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # プロジェクト管理者は、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)

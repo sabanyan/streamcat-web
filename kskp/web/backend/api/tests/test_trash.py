@@ -1036,7 +1036,6 @@ class TrashTestCase(ApiTestCaseBase):
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
 
-    @unittest.skip('権限機能実装後のリモートフォルダの修正ができてからテストする')
     def test_update_then_return_remote_folder(self):
         """
         ゴミ箱へほかした後にdata列を更新する操作を行っても
@@ -1045,16 +1044,21 @@ class TrashTestCase(ApiTestCaseBase):
         # ルートを取得する
         root = self.factory.data.load_root()
 
+        # プロジェクトを作成する(POST /projects)
+        # ファイルパスに空白が含まれていてもエラーにならないこと
+        project1 = self.post_uri('/api/v0/projects', {"label" : "iPhone12 mini", "parent": root.uuid}, self.USER1)
+        project1_uuid = project1['data']['uuid']
+
         # RemoteFolderを作成する(POST /remote-folders)
         data = {
-            "parent"   : root.uuid,
+            "parent"   : project1_uuid,
             "label"    : "リモートフォルダ1",
-            "protocol" : "smb",
-            "hostname" : "kskds-HP-Workstation-z620.local",
-            "domain"   : "WORKGROUP",
-            "directory": "share",
-            "user_id"  : "ksk-ds",
-            "password" : "kskanalytics"
+            'protocol' : 'smb',
+            'hostname' : "18.178.64.116",
+            'domain'   : "WORKGROUP",
+            'directory': "share",
+            'user_id'  : "samba",
+            'password' : "kskanalytics"
         }
         result = self.post_uri('/api/v0/remote-folders', data, self.USER1)
         folder_uuid = result['data']['uuid']
@@ -1065,12 +1069,12 @@ class TrashTestCase(ApiTestCaseBase):
         # リモートフォルダを変更する
         data = {
             "label"    : "リモートフォルダ2",
-            "protocol" : "smb",
-            "hostname" : "kskds-HP-Workstation-z620.local",
-            "domain"   : "WORKGROUP",
-            "directory": "share",
-            "user_id"  : "ksk-ds",
-            "password" : "kskanalytics"
+            'protocol' : 'smb',
+            'hostname' : "18.178.64.116",
+            'domain'   : "WORKGROUP",
+            'directory': "share",
+            'user_id'  : "samba",
+            'password' : "kskanalytics"
         }
         self.put_uri(f'/api/v0/remote-folders/{folder_uuid}', data, self.USER1)
 
