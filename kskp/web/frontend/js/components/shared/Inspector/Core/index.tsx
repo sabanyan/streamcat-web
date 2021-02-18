@@ -109,6 +109,7 @@ class Inspector extends React.Component<InspectorProps> {
           property = <NoteInspector
             selected_step_ids={selected_step_ids}
             nodes={nodes}
+            addHistory={addHistory}
             selectSteps={selectSteps}
             updateStep={updateStep}
             deleteSteps={deleteSteps}
