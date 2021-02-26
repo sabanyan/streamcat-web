@@ -41,7 +41,7 @@ import {
     updateFlowAction,
     updateStepAction,
     refreshCanvasSizeAction
-} from 'Modules/application';
+} from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
 import { PaperZoom } from 'FlowEditorContainer/PaperZoom';
@@ -494,7 +494,7 @@ const FlowEditor = (props: Props) => {
             });
     }
 
-    const extendLockInterval: number = inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
+    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
     useInterval(() => {
         if (lockUUID && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline) {
             extendLock(lockUUID)
