@@ -42,6 +42,7 @@ const ADD_NOTE_ACTION = "add_note_action";
 const SET_EXECUTE_MODE_ACTION = "set_execute_mode_action";
 const SET_EDIT_MODE_ACTION = "set_edit_mode_action";
 const SET_NETWORK_STATUS = "set_network_status_action";
+const REFRESH_FLOW_ACTION = "refresh_flow_action";
 const graph: GraphUtil = new GraphUtil();
 
 export let FlowEditorReducerInitialState = {
@@ -85,7 +86,6 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
   switch (action.type) {
     case LOAD_FLOW_JSON_ACTION: {
       let {context, onSuccess} = action;
-      console.log("load flow json action",context);
       const flowJson = graph.load(context.flow);
       newState.originalFlow = {...flowJson};
       context.flow.label = context.label;
@@ -94,6 +94,28 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       newState.graph = graph.getGraph(newState);
       newState.history.current = 0;
       newState.history.nodes = [[...newState.nodes]];
+      newState.allowlist = flowJson.allowlist;
+      newState.folderPath = context.folderPath;
+      newState.folderUuid = context.folderUuid;
+      newState.modifiedAt = context.modifiedAt;
+      // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
+      newState.history = StateUtil.deepCopy(newState.history);
+      //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
+      ValidatorUtil.isFlowModelSchema(newState);
+      ValidatorUtil.isGraphModelSchema(newState);
+      ValidatorUtil.isNodesSchema(newState);
+      ValidatorUtil.nodesValidate(newState.nodes);
+      newState.flow.nodes = newState.nodes;
+      break;
+    }
+    case REFRESH_FLOW_ACTION: {
+      let {context, onSuccess} = action;
+      const flowJson = graph.load(context.flow);
+      newState.originalFlow = {...flowJson};
+      context.flow.label = context.label;
+      newState.flow = new FlowModel(context.flow);
+      newState.nodes = flowJson.nodes;
+      newState.graph = graph.getGraph(newState);
       newState.allowlist = flowJson.allowlist;
       newState.folderPath = context.folderPath;
       newState.folderUuid = context.folderUuid;
@@ -1109,3 +1131,9 @@ export const setNetworkStatusAction = (status: NetworkStatusValue) => {
   };
 };
 
+export const refreshFlowAction = (context: {}) => {
+  return {
+    type: REFRESH_FLOW_ACTION,
+    context: context
+  };
+};

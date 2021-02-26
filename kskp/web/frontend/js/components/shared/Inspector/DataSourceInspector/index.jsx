@@ -116,6 +116,49 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   onClickPreview(e: Event) {
+
+
+
+    let IGNORE_CONFIRM_SAVE = window.localStorage.getItem('IGNORE_CONFIRM_SAVE');
+    if (!IGNORE_CONFIRM_SAVE) {
+      ModalUtil.registerModal({
+        id: Constants.modal.CONFIRM_SAVE, onClickDone: () => {
+          this.preview();
+          ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+        }, onClickCancel: () => {
+          ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+        }
+      })
+
+      ModalUtil.emitModal({
+        id: Constants.modal.CONFIRM_SAVE,
+        visible: true,
+        done: '確認',
+        danger: true,
+        content: <div className={style.modal}>
+          <div>
+            現在のフローを保存します。<br />
+                よろしいですか？
+            </div>
+
+          <p>
+            <br />
+            <input type="checkbox" id="checkbox_confirm" checked={IGNORE_CONFIRM_SAVE} onChange={this.onChangeIgnoreConfirmSave}></input>
+            <label for="checkbox_confirm">次回から表示しない</label>
+          </p>
+        </div>
+      });
+    } else {
+      this.preview();
+    }
+  }
+
+  onChangeIgnoreConfirmSave(e) {
+    let checked = e.target.checked;
+    window.localStorage.setItem('IGNORE_CONFIRM_SAVE', checked);
+  }
+
+  preview() {
     const flow_uuid = inject_flow_uuid
     const selected_step = this.getSelectedStep()
     let id = selected_step.id
@@ -134,14 +177,14 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
             let contents = []
             for (const v of visualizers) {
               let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
-              contents.push({ title: v.label, content: content, id: id, afterViz: this.updateCache  })
+              contents.push({ title: v.label, content: content, id: id, afterViz: this.updateCache })
             }
-            if(selected_step.uuid){
+            if (selected_step.uuid) {
               // uuidだけでプレビュー
-              window.open('/preview?step_id='+ id + '&dialog=true&frame_uuid=' + selected_step.uuid + '&title=' + StringUtil.urlEncode(selected_step.label)) ;
-            }else{
+              window.open('/preview?step_id=' + id + '&dialog=true&frame_uuid=' + selected_step.uuid + '&title=' + StringUtil.urlEncode(selected_step.label));
+            } else {
               // 新規生成するので、step_id と flow_uuid と step_ids でデータを生成する
-              window.open('/preview?step_id='+ id + '&dialog=true&step_ids=' + StringUtil.urlEncode(JSON.stringify(stepIds)) + '&flow_uuid=' + flow_uuid + '&title=' + StringUtil.urlEncode(selected_step.label)) ;
+              window.open('/preview?step_id=' + id + '&dialog=true&step_ids=' + StringUtil.urlEncode(JSON.stringify(stepIds)) + '&flow_uuid=' + flow_uuid + '&title=' + StringUtil.urlEncode(selected_step.label));
             }
           }
         })
@@ -157,14 +200,14 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   updateCache() {
-    const {notify} = this.props
+    const { notify } = this.props
 
     APIUtil.get('flows/' + inject_flow_uuid + "?navigation=off")
       .then((response) => {
         console.log(response)
         if (response.data.success === false) throw response.data
         const json = response.data.data
-        this.props.loadFlowJSON(json)
+        this.props.refreshFlow(json)
       })
       .catch((error) => {
         console.log(error)
@@ -342,7 +385,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render() {
-    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden} = this.props;
+    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden } = this.props;
     let step_text
     let dataSource
     let preview
@@ -368,7 +411,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       <div>
         <label><input type="checkbox" checked={flow.hasOutPortWithId(selected_step.id)}
           ref={'flowOut'}
-          onChange={(e) => this.onChangeFlowInOut(e)} disabled={baseInspectorDisabled}/>
+          onChange={(e) => this.onChangeFlowInOut(e)} disabled={baseInspectorDisabled} />
           &nbsp;出力
         </label>
       </div>

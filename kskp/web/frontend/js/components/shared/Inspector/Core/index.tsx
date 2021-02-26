@@ -30,6 +30,7 @@ type InspectorProps = {
   notify: Function;
   dismissNotify: Function;
   loadFlowJSON: Function;
+  refreshFlow:Function;
   deleteSteps: Function;
   addHistory: Function;
   deleteCache: Function;
@@ -47,7 +48,7 @@ class Inspector extends React.Component<InspectorProps> {
   render() {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, selectSteps, flow,
       updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
-      loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd,
+      loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, refreshFlow,
       resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled, previewDisabled } = this.props
 
     let property
@@ -87,6 +88,7 @@ class Inspector extends React.Component<InspectorProps> {
             deleteCache={deleteCache}
             addStep={addStep}
             updateStep={updateStep}
+            refreshFlow={refreshFlow}
             previewDisabled={previewDisabled}
             commandSelectorHidden={commandSelectorHidden}
             baseInspectorDisabled={baseInspectorDisabled}
@@ -107,6 +109,7 @@ class Inspector extends React.Component<InspectorProps> {
           property = <NoteInspector
             selected_step_ids={selected_step_ids}
             nodes={nodes}
+            addHistory={addHistory}
             selectSteps={selectSteps}
             updateStep={updateStep}
             deleteSteps={deleteSteps}

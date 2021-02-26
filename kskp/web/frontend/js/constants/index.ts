@@ -122,6 +122,7 @@ const Constants = {
     CONFIRM_UNDELETE_USER: 'confirm_undelete_user',
     CONFIRM_RELOAD_FLOW: 'CONFIRM_RELOAD_FLOW',
     SAVE_AS_FLOW: 'SAVE_AS_FLOW',
+    CONFIRM_SAVE: 'CONFIRM_SAVE',
     property: {
       title: 'title',
       message: 'message',
