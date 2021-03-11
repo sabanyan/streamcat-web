@@ -404,7 +404,7 @@ class FlowTestCase(ApiTestCaseBase):
         # フローを変更する
         updated_flow_name = '変更後のフローラベル名!'
         data = {
-            'flow': {'label': updated_flow_name, 'b':'vjq@aer'},
+            'flow': {'label': updated_flow_name, 'description':'vjq@aer'},
             'label': updated_flow_name,
             'lock' : lock_uuid
         }
@@ -433,7 +433,7 @@ class FlowTestCase(ApiTestCaseBase):
 
         # フローJsonが更新さていること
         self.assertEqual(result['data']['flow']['label'], updated_flow_name)
-        self.assertEqual(result['data']['flow']['b'], 'vjq@aer')
+        self.assertEqual(result['data']['flow']['description'], 'vjq@aer')
 
         # フローを削除する
         self.delete_uri_with_json(f'/api/v0/flows/{test_flow_uuid}', {'lock':lock_uuid}, self.USER1)
