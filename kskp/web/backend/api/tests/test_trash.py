@@ -1105,8 +1105,9 @@ class TrashTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/frames/{frame_uuid_1}', self.USER1)
 
         # フレーム1を参照するフローを作成する
+        flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
         with self.assertRaises(Exception):
-            flow = root.create_flow('フロー', self.get_flow_with_source(frame_uuid_1))
+            flow.save()
 
         # ゴミ箱を空にする
         trash_can = self.factory.data.load_trash_folder()
@@ -1143,8 +1144,10 @@ class TrashTestCase(ApiTestCaseBase):
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
 
         # サブフローを参照するフローを作成する
+        from kskp.store import FlowData
+        flow = root.create_flow('フロー', FlowData(self.get_flow_with_subflow(subflow.uuid)))
         with self.assertRaises(Exception):
-            flow = root.create_flow(root.uuid, 'フロー', self.get_flow_with_subflow(subflow.uuid))
+            flow.save()
 
         # ゴミ箱を空にする
         trash_can = self.factory.data.load_trash_folder()
