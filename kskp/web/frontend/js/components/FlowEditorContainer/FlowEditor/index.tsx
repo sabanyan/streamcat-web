@@ -42,7 +42,7 @@ import {
     updateStepAction,
     refreshCanvasSizeAction,
     refreshFlowAction
-} from 'Modules/application';
+} from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
 import { PaperZoom } from 'FlowEditorContainer/PaperZoom';
