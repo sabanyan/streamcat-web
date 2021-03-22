@@ -6,9 +6,11 @@
   const inject_project_uuid = '{{ project_uuid }}';
   const inject_flow_uuid = undefined;
 </script>
-<script src="{{ url_for('front_static.static', filename='js/bokeh-2.3.0.min.js') }}"></script>
-<script src="{{ url_for('front_static.static', filename='js/bokeh-tables-2.3.0.min.js') }}"></script>
-<script src="{{ url_for('front_static.static', filename='js/bokeh-widgets-2.3.0.min.js') }}"></script>
-<script src="{{ url_for('front_static.static', filename='js/bokeh-api-2.3.0.min.js') }}"></script>
+
+{% if css_resources and js_resources %}
+{{ css_resources | safe }}
+{{ js_resources | safe }}
+{% endif %}
+
 <div id="preview"></div>
 {% endblock %}
