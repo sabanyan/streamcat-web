@@ -14,7 +14,7 @@ class FrameTestCase(ApiTestCaseBase):
         new_flow = parent.create_flow(label, FlowData(flow_json))
         new_flow.save()
         # save()によりreadable=Noneになるため再取得する
-        return self.factory.data.find_by_uuid(new_flow.uuid)
+        return new_flow.reload()
 
     # @unittest.skip
     def test_fetch_frame(self):
@@ -261,12 +261,12 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ1",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
 
-        flow_json = self.flow_json
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['nodes'].append(input_node)
         flow = self.save_flow(self.root, 'test', flow_json)
 
@@ -305,7 +305,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ2",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
@@ -372,7 +372,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": input_node_id,
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ3",
           "dataSource": "csv",
           "uuid": None
         }
@@ -439,7 +439,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": input_node_id,
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ4",
           "dataSource": "csv",
           "uuid": None
         }
@@ -523,7 +523,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ5",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
