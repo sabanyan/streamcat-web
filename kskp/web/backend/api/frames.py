@@ -35,7 +35,7 @@ def make_new_frames():
         flow_uuid = request.args['from']
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow, g.factory)
+    activity = execute_flow(flow)
     return format_result(activity)
 
 @mod.route('/frames/<frame_uuid>')
@@ -120,7 +120,7 @@ def create_frame():
             inputs = _make_flow_inputs(g.factory, flow_uuid, request)
             # フローの実行
             flow = g.factory.data.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, g.factory, args=args, inputs=inputs)
+            result = execute_flow(flow, args=args, inputs=inputs)
             result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
@@ -211,7 +211,7 @@ def fetch_vis(frame_uuid):
     # datasource = g.factory.data.create_datasource(None, 'tmp_source', parent_folder, loader_step)
     # datasourceは保存しないので、親フォルダはどこでも良い
     datasource = parent_folder.create_datasource('tmp_source', parent_folder, loader_step)
-    activity = execute_flow(datasource, g.factory, vis_args=vis_args)
+    activity = execute_flow(datasource, vis_args=vis_args)
     return format_vis(activity)
 
 @mod.route('/vizs', methods=['POST'])
@@ -228,10 +228,10 @@ def make_new_vizs():
     vis_args = request.json
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow, g.factory, vis_args=vis_args)
+    activity = execute_flow(flow, vis_args=vis_args)
     return format_vis(activity)
 
-def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
+def execute_flow(flow, args={}, inputs={}, vis_args={}):
     """
     指定されたフローを実行し実行結果を取得する
     """
@@ -239,8 +239,8 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
         from kskp.store import Activity, NoResultsException
         from kskp.engine import execute, FlowCommand
 
-        link = FlowCommand(flow, session, vis_args)
-        lasts = execute(runnable=link, args=args, inputs=inputs)
+        cmd = FlowCommand(flow, vis_args)
+        lasts = execute(runnable=cmd, args=args, inputs=inputs)
 
         # Activityを取得して返り値とする
         for point_id, datum in lasts.items():
