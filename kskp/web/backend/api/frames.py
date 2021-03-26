@@ -237,9 +237,9 @@ def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
     """
     try:
         from kskp.store import Activity, NoResultsException
-        from kskp.engine import execute, FlowJsonLink
+        from kskp.engine import execute, FlowRunnable
 
-        link = FlowJsonLink(flow, session, vis_args)
+        link = FlowRunnable(flow, session, vis_args)
         lasts = execute(runnable=link, args=args, inputs=inputs)
 
         # Activityを取得して返り値とする
