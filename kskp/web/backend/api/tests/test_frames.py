@@ -383,16 +383,8 @@ class FrameTestCase(ApiTestCaseBase):
             'type':'frame'
         }
 
-        # outputも一応設定しておく（結果は変わらないけど）
-        output_port = {
-            'label': '出力1',
-            'nodeId': 'd1',
-            'type':'frame'
-        }
-
         flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
-        flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
         flow = self.save_flow(self.root, 'test', flow_json)
 
@@ -450,16 +442,8 @@ class FrameTestCase(ApiTestCaseBase):
             'type':'frame'
         }
 
-        # outputも一応設定しておく（結果は変わらないけど）
-        output_port = {
-            'label': '出力1',
-            'nodeId': 'd1',
-            'type':'frame'
-        }
-
         flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
-        flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
 
         # フロー変数を使うようにする
