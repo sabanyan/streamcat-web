@@ -92,7 +92,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       newState.originalFlow = {...flowJson};
       context.flow.label = context.label;
       newState.flow = new FlowModel(context.flow);
-      newState.lastSavedFlow = newState.flow;
+      newState.lastSavedFlow = {...newState.flow};
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState);
       newState.history.current = 0;
