@@ -43,6 +43,7 @@ const SET_EXECUTE_MODE_ACTION = "set_execute_mode_action";
 const SET_EDIT_MODE_ACTION = "set_edit_mode_action";
 const SET_NETWORK_STATUS = "set_network_status_action";
 const REFRESH_FLOW_ACTION = "refresh_flow_action";
+const UPDATE_LAST_SAVED_FLOW_ACTION = "update_last_saved_flow_action";
 const graph: GraphUtil = new GraphUtil();
 
 export let FlowEditorReducerInitialState = {
@@ -76,7 +77,8 @@ export let FlowEditorReducerInitialState = {
   folderPath: undefined,
   folderUuid: undefined,
   modifiedAt: undefined,
-  networkStatus: NetworkStatusValue.UnKnown
+  networkStatus: NetworkStatusValue.UnKnown,
+  lastSavedFlow: FlowModel
 };
 
 const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) => {
@@ -90,6 +92,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       newState.originalFlow = {...flowJson};
       context.flow.label = context.label;
       newState.flow = new FlowModel(context.flow);
+      newState.lastSavedFlow =  StateUtil.deepCopy(newState.flow);
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState);
       newState.history.current = 0;
@@ -713,6 +716,14 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       break;
     }
 
+    case UPDATE_LAST_SAVED_FLOW_ACTION: {
+      newState = {
+        ...newState,
+        lastSavedFlow: newState.flow
+      };
+      break;
+    }
+
     default:
       (window as any).nodes = state.nodes;
       return state;
@@ -1137,3 +1148,9 @@ export const refreshFlowAction = (context: {}) => {
     context: context
   };
 };
+
+export const updateLastSavedFlowAction = () => {
+  return {
+    type: UPDATE_LAST_SAVED_FLOW_ACTION
+  }
+}
