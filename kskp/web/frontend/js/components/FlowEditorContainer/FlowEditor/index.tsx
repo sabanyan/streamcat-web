@@ -192,8 +192,8 @@ const FlowEditor = (props: Props) => {
     const refreshFlow = useCallback((context) => {
         dispatch(refreshFlowAction(context));
     }, []);
-    const updateLastSavedFlow = useCallback((flow) => {
-        dispatch(updateLastSavedFlowAction(flow));
+    const updateLastSavedFlow = useCallback(() => {
+        dispatch(updateLastSavedFlowAction());
     }, []);
 
     const notify = (context) => dispatch(addNotification(context));
@@ -369,7 +369,7 @@ const FlowEditor = (props: Props) => {
                                 messageStatus: "error"
                             }));
                         } else {
-                            updateLastSavedFlow(targetFlow)
+                            updateLastSavedFlow()
                         }
                         dismissNotify(saveNotify.id);
                         reslove(response.data);
@@ -520,7 +520,7 @@ const FlowEditor = (props: Props) => {
     }, [refreshCanvasSize]);
 
     useEffect(() => {
-        const handleLeavePage = async (e) => {
+        const handleLeavePage = (e) => {
             e.preventDefault();
             let dialogText
             let isSame = _.isEqual(flow, lastSavedFlow)
@@ -528,20 +528,21 @@ const FlowEditor = (props: Props) => {
                 dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
                 e.returnValue = dialogText;
             }
-
-            // FIXIT
-            // このままだと、Dialogでキャンセル押した場合、lock解除されてしまう
+            return dialogText;
+        };
+        const handleUnload = (e) => {
             if (lockUUID) {
                 API.request.doDelete.locks({ lockUUID: lockUUID }).finally(() => {
 
                 });
             }
-
-            return dialogText;
         };
         window.addEventListener("beforeunload", handleLeavePage);
+        window.addEventListener("unload", handleUnload);
+        
         return () => {
             window.removeEventListener("beforeunload", handleLeavePage);
+            window.removeEventListener("unload", handleUnload);
         }
     }, [lockUUID, flow, lastSavedFlow]);
 

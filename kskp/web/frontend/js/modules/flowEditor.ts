@@ -92,7 +92,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       newState.originalFlow = {...flowJson};
       context.flow.label = context.label;
       newState.flow = new FlowModel(context.flow);
-      newState.lastSavedFlow = {...newState.flow};
+      newState.lastSavedFlow =  StateUtil.deepCopy(newState.flow);
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState);
       newState.history.current = 0;
@@ -719,8 +719,9 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
     case UPDATE_LAST_SAVED_FLOW_ACTION: {
       newState = {
         ...newState,
-        lastSavedFlow: action.lastSavedFlow
-      }
+        lastSavedFlow: newState.flow
+      };
+      break;
     }
 
     default:
@@ -1148,9 +1149,8 @@ export const refreshFlowAction = (context: {}) => {
   };
 };
 
-export const updateLastSavedFlowAction = (lastSavedFlow: FlowModel) => {
+export const updateLastSavedFlowAction = () => {
   return {
-    type: UPDATE_LAST_SAVED_FLOW_ACTION,
-    lastSavedFlow: lastSavedFlow
+    type: UPDATE_LAST_SAVED_FLOW_ACTION
   }
 }
