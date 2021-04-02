@@ -4,7 +4,7 @@
   "description": "kskp-beta",
   "main": "index.js",
   "scripts": {
-    "start": "npx webpack --watch -d",
+    "start": "npx webpack --config webpack.dll.config.js --env.production && npx webpack --env.production --watch",
     "dll": "npx webpack --config webpack.dll.config.js",
     "build": "npx webpack --config webpack.dll.config.js --env.production && npx webpack --env.production",
     "test": "jest",
