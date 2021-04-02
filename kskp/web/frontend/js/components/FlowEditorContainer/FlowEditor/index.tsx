@@ -41,7 +41,8 @@ import {
     updateFlowAction,
     updateStepAction,
     refreshCanvasSizeAction,
-    refreshFlowAction
+    refreshFlowAction,
+    updateLastSavedFlowAction
 } from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
@@ -53,6 +54,7 @@ import { TextField } from 'Shared/Input';
 import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
 import { AxiosResponse } from "axios";
+import _ from 'lodash';
 
 interface Props {
     navigation?: NavigationModelProps
@@ -87,6 +89,7 @@ const FlowEditor = (props: Props) => {
     const editMode = useSelector(state => state.FlowEditorReducer.editMode);
     const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
     const networkStatus = useSelector(state => state.FlowEditorReducer.networkStatus);
+    const lastSavedFlow = useSelector(state => state.FlowEditorReducer.lastSavedFlow);
 
     const [offLineNotify, setOffLineNotify] = useState<any | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
@@ -188,6 +191,9 @@ const FlowEditor = (props: Props) => {
     }, []);
     const refreshFlow = useCallback((context) => {
         dispatch(refreshFlowAction(context));
+    }, []);
+    const updateLastSavedFlow = useCallback((flow) => {
+        dispatch(updateLastSavedFlowAction(flow));
     }, []);
 
     const notify = (context) => dispatch(addNotification(context));
@@ -362,6 +368,8 @@ const FlowEditor = (props: Props) => {
                                 message: response.data.message,
                                 messageStatus: "error"
                             }));
+                        } else {
+                            updateLastSavedFlow(targetFlow)
                         }
                         dismissNotify(saveNotify.id);
                         reslove(response.data);
@@ -512,22 +520,30 @@ const FlowEditor = (props: Props) => {
     }, [refreshCanvasSize]);
 
     useEffect(() => {
-        const handleLeavePage = (e) => {
+        const handleLeavePage = async (e) => {
+            e.preventDefault();
+            let dialogText
+            let isSame = _.isEqual(flow, lastSavedFlow)
+            if (!isSame) {
+                dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
+                e.returnValue = dialogText;
+            }
+
+            // FIXIT
+            // このままだと、Dialogでキャンセル押した場合、lock解除されてしまう
             if (lockUUID) {
                 API.request.doDelete.locks({ lockUUID: lockUUID }).finally(() => {
 
                 });
             }
-            e.preventDefault();
-            let dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
-            e.returnValue = dialogText;
+
             return dialogText;
         };
         window.addEventListener("beforeunload", handleLeavePage);
         return () => {
             window.removeEventListener("beforeunload", handleLeavePage);
         }
-    }, [lockUUID]);
+    }, [lockUUID, flow, lastSavedFlow]);
 
     useEffect(() => {
         let preRequest: any = [];
