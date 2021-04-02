@@ -408,32 +408,22 @@ def delete_cache():
     """
     キャッシュを削除する
     """
-    frame_uuid = ''
-
-    # パース
+    # 引数から削除対象のノードidを取得する
     ofs = request.args['of'].split('.')
     flow_uuid = ofs[0]
-    datum_id = ofs[1]
+    node_id = ofs[1]
 
+    # 対象のフローを取得する
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    flow_data = flow.flow_data
-
-    cache_uuids = []
-    for i, node in enumerate(flow_data.get_nodes()):
-        if node['id'] == datum_id:
-            frame_uuid = node['uuid']
-            node['uuid'] = None
-            node['cacheCreatedAt'] = None
-            cache_uuids.append(frame_uuid)
-
-    # TODO: 暫定的に、キャッシュの設定ではフローJsonの排他制御をしない
-    flow.update_data(flow.label, flow_data, ignore_lock=True)
+    
+    # フローに記録されたキャッシュをクリアする
+    unset_cache_uuid = flow.unset_cache(node_id, ignore_lock=True)
+    if unset_cache_uuid is None:
+        return
 
     # フローからキャッシュUUIDを削除してからキャッシュファイルを削除すること
-    for cache_uuid in cache_uuids:
-        cache = g.factory.data.find_by_uuid(cache_uuid)
-        if cache is not None:
-            cache.delete()
+    cache = g.factory.data.find_by_uuid(unset_cache_uuid)
+    cache.throw_away()
 
 @mod.route('/navigation', methods=['GET'])
 @login_required_api
