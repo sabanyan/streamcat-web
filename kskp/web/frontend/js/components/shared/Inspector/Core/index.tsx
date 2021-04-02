@@ -13,6 +13,7 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index
 import { GraphUtil } from 'Utils/index'
 import { DataFrameDetailType, MastType } from "Types/index";
 import { FlowModelProps } from "Model/Flow/FlowModel";
+import { updateLastSavedFlowAction } from '../../../../modules/flowEditor';
 
 type InspectorProps = {
   inspector: {width:number};
@@ -37,6 +38,7 @@ type InspectorProps = {
   updateStep: Function;
   sortStepSrcEnd: Function;
   resizeInspector:Function;
+  updateLastSavedFlow: Function;
   addFlowVariableHidden: boolean;
   previewDisabled: boolean;
   commandSelectorHidden: boolean;
@@ -49,7 +51,8 @@ class Inspector extends React.Component<InspectorProps> {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, selectSteps, flow,
       updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
       loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, refreshFlow,
-      resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled, previewDisabled } = this.props
+      resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled, 
+      updateLastSavedFlow, previewDisabled } = this.props
 
     let property
 
@@ -92,6 +95,7 @@ class Inspector extends React.Component<InspectorProps> {
             previewDisabled={previewDisabled}
             commandSelectorHidden={commandSelectorHidden}
             baseInspectorDisabled={baseInspectorDisabled}
+            updateLastSavedFlow={updateLastSavedFlow}
           />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector
