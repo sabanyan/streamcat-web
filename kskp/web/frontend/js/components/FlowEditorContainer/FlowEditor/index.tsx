@@ -840,6 +840,7 @@ const FlowEditor = (props: Props) => {
                 previewDisabled={previewDisabled}
                 commandSelectorHidden={commandSelectorHidden}
                 baseInspectorDisabled={baseInspectorDisabled}
+                updateLastSavedFlow={updateLastSavedFlow}
             />
             <NotificationManager />
         </div>
