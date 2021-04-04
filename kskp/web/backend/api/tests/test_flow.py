@@ -579,7 +579,7 @@ class FlowTestCase(ApiTestCaseBase):
         self.assertEqual(flow.find_parent().uuid, self.factory.data.load_trash_folder().uuid)
 
     @unittest.skip('とりあえず手動でテストする')
-    def test_fetch_subflows(self):
+    def test_fetch_subflows0(self):
         """
         fetch_subflows APIをテストする
         """
@@ -799,37 +799,32 @@ class FlowTestCase(ApiTestCaseBase):
         # サブフロー2の排他ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock2_uuid}', {}, self.USER3)
 
-        # 1入力のサブフローを取得する
+        # 全てのサブフローを取得する
         # (no_inputs=onの引数指定はおかしい気がする)
-        results = self.get_uri(f'/api/v0/subflows?no_inputs=on', self.USER3)
+        results = self.get_uri(f'/api/v0/subflows', self.USER3)
 
-        # 1入力のサブフローが1つ取得できること
-        self.assertEqual(len(results['data']), 1)
+        # サブフローが2つ取得できること
+        self.assertEqual(len(results['data']), 2)
+        # サブフロー1
         self.assertEqual(results['data'][0]['uuid'], flow1_uuid)
         self.assertEqual(results['data'][0]['label'], 'INPUTだけがあるサブフロー')
-        self.assertEqual(results['data'][0]['projectName'], 'flows1')
+        self.assertEqual(results['data'][0]['projectName'], '')
         self.assertEqual(results['data'][0]['ports'][0], [{'type':'frame','label':'testData','nodeId':'d'}])
         self.assertEqual(results['data'][0]['ports'][1], [])
         self.assertEqual(results['data'][0]['params'], [])
         self.assertEqual(results['data'][0]['description'], '')
         self.assertEqual(results['data'][0]['creator'], 'ユーザ管理者')
         self.assertIsNotNone(results['data'][0]['createdAt'])
-
-        # 1出力のサブフローを取得する
-        # (これもなぜno_outputs=onなんだろう?)
-        results = self.get_uri(f'api/v0/subflows?no_outputs=on', self.USER3)
-
-        # 1出力のサブフローが1つ取得できること
-        self.assertEqual(len(results['data']), 1)
-        self.assertEqual(results['data'][0]['uuid'], flow2_uuid)
-        self.assertEqual(results['data'][0]['label'], 'OUTPUTだけがあるサブフロー')
-        self.assertEqual(results['data'][0]['projectName'], 'flows2')
-        self.assertEqual(results['data'][0]['ports'][0], [])
-        self.assertEqual(results['data'][0]['ports'][1], [{'type':'frame','label':'d1','nodeId':'d1'}])
-        self.assertEqual(results['data'][0]['params'], [])
-        self.assertEqual(results['data'][0]['description'], '')
-        self.assertEqual(results['data'][0]['creator'], 'ユーザ管理者')
-        self.assertIsNotNone(results['data'][0]['createdAt'])
+        # サブフロー2
+        self.assertEqual(results['data'][1]['uuid'], flow2_uuid)
+        self.assertEqual(results['data'][1]['label'], 'OUTPUTだけがあるサブフロー')
+        self.assertEqual(results['data'][1]['projectName'], '')
+        self.assertEqual(results['data'][1]['ports'][0], [])
+        self.assertEqual(results['data'][1]['ports'][1], [{'type':'frame','label':'d1','nodeId':'d1'}])
+        self.assertEqual(results['data'][1]['params'], [])
+        self.assertEqual(results['data'][1]['description'], '')
+        self.assertEqual(results['data'][1]['creator'], 'ユーザ管理者')
+        self.assertIsNotNone(results['data'][1]['createdAt'])
 
         # プロジェクトフォルダを削除する
         self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER3)
