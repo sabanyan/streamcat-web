@@ -33,7 +33,7 @@ class LibraryInspector extends React.Component<Props> {
     creator: '作成者',
     createdAt: '作成日時',
     prevFolderPath: "捨てる前の場所",
-    fileSize: 'サイズ(byte)'
+    fileSize: 'ファイルサイズ'
   }
 
   constructor(props: Props) {
@@ -164,7 +164,7 @@ class LibraryInspector extends React.Component<Props> {
       if (data.fileSize　!== undefined) {
         fileSize = <React.Fragment key={data.fileSize}>
           <div><label>{this.display.fileSize}</label></div>
-          {data.fileSize ? <div className={"mb-8px"}>{data.fileSize}</div> : 0}
+          {data.fileSize ? <div className={"mb-8px"}>{StringUtil.convertToFileSize(data.fileSize)}</div> : 0}
         </React.Fragment>
         result.push(fileSize)
       }
