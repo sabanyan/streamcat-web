@@ -78,7 +78,10 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                 if (response.data.success) {
                     const json: RunResponseType = response.data;
                     const content = this.renderRunResult(json);
-
+                    console.log("^^^^^^^^^")
+                    console.log(json)
+                    // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
+                    const parentFolderUUID = json.lasts[0].parent; //　今はlasts[0]
                     // 結果出力
                     let notifyId = notify({
                         title: "フロー実行完了",
@@ -97,7 +100,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                                 name: "開く",
                                 primary: true,
                                 onClick: () => {
-                                    window.open("/library", "_blank");
+                                    window.open("/folders/" + parentFolderUUID, "_blank");
                                 }
                             }]
                     });
