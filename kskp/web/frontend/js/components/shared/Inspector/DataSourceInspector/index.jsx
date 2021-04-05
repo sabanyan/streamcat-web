@@ -50,6 +50,7 @@ type DataSourceInspectorProps = {
   addStep: Function;
   updateStep: Function;
   updateFlow: Function;
+  updateLastSavedFlow: Function;
   previewDisabled: boolean;
   baseInspectorDisabled: boolean;
   commandSelectorHidden: boolean;
@@ -76,7 +77,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   saveFlow() {
-    const { flow, lockUUID, notify, dismissNotify } = this.props
+    const { flow, lockUUID, notify, dismissNotify, updateLastSavedFlow } = this.props
 
     let saveNotify = notify({
       title: 'フロー保存中',
@@ -97,6 +98,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         .then((response) => {
           dismissNotify(saveNotify.id)
           if (response.data.success === true) {
+            updateLastSavedFlow();
             reslove(response.data)
           } else {
             reject(response.data)

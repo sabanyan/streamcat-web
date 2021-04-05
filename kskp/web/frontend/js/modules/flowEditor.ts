@@ -43,6 +43,7 @@ const SET_EXECUTE_MODE_ACTION = "set_execute_mode_action";
 const SET_EDIT_MODE_ACTION = "set_edit_mode_action";
 const SET_NETWORK_STATUS = "set_network_status_action";
 const REFRESH_FLOW_ACTION = "refresh_flow_action";
+const UPDATE_LAST_SAVED_FLOW_ACTION = "update_last_saved_flow_action";
 const graph: GraphUtil = new GraphUtil();
 
 export let FlowEditorReducerInitialState = {
@@ -76,7 +77,8 @@ export let FlowEditorReducerInitialState = {
   folderPath: undefined,
   folderUuid: undefined,
   modifiedAt: undefined,
-  networkStatus: NetworkStatusValue.UnKnown
+  networkStatus: NetworkStatusValue.UnKnown,
+  lastSavedFlow: FlowModel
 };
 
 const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) => {
@@ -90,6 +92,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       newState.originalFlow = {...flowJson};
       context.flow.label = context.label;
       newState.flow = new FlowModel(context.flow);
+      newState.lastSavedFlow =  StateUtil.deepCopy(newState.flow);
       newState.nodes = flowJson.nodes;
       newState.graph = graph.getGraph(newState);
       newState.history.current = 0;
@@ -390,6 +393,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       //IDが新規に振られるので、旧のIDを新規のIDに置き換え
       //コマンドのノード間の関連(srcs,dsts)を維持する
       //let convertMap = {}
+      newState.selected_step_ids = []
       add_nodes.forEach((json) => {
         const cacheId = json.id;
         let label = (json.label) ? json.label : cacheId;
@@ -399,6 +403,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
 
         //ノード本体をコピー
         graph.addNode(newNode.id);
+        newState.selected_step_ids.push(newNode.id);
 
         //入力値をコピー
         newNode = FlowUtil.copySrcs(newNode);
@@ -422,6 +427,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
           newState.nodes.push(add_step);
           //ノード本体をコピー
           graph.addNode(add_step.id);
+          newState.selected_step_ids.push(add_step.id);
           newDsts[key] = add_step.id;
         });
         //convertMap[cacheId] = newNode.id
@@ -430,14 +436,15 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
 
         const action_step = _.cloneDeep(newNode);
         action_step.dsts = newDsts;
+
         newState.nodes = rebuildNodesEdges(newState, {step: action_step});
         newState.flow.nodes = newState.nodes;
       });
       //newState.nodes = FlowUtil.replaceNodeIds(convertMap,newState.nodes)
-
+      
       newState.graph = graph.getGraph(newState);
-
       (window as any).nodes = newState.nodes;
+      
       return newState;
     }
     case ADD_HISTORY_ACTION: {
@@ -705,6 +712,14 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
       newState = {
         ...newState,
         executeMode: action.mode
+      };
+      break;
+    }
+
+    case UPDATE_LAST_SAVED_FLOW_ACTION: {
+      newState = {
+        ...newState,
+        lastSavedFlow: newState.flow
       };
       break;
     }
@@ -1133,3 +1148,9 @@ export const refreshFlowAction = (context: {}) => {
     context: context
   };
 };
+
+export const updateLastSavedFlowAction = () => {
+  return {
+    type: UPDATE_LAST_SAVED_FLOW_ACTION
+  }
+}
