@@ -19,6 +19,7 @@ interface NoteInspectorProps  {
   updateStep: Function;
   deleteSteps: Function;
   baseInspectorDisabled: boolean;
+  addHistory:Function;
 }
 
 class NoteInspector extends React.Component<NoteInspectorProps, State> {
@@ -46,6 +47,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
         let {selected_step_ids} = this.props;
         this.props.deleteSteps(selected_step_ids);
         this.props.selectSteps();
+        this.props.addHistory();
         ModalUtil.closeModal(Constants.modal.CONFIRM)
       },
     });

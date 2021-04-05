@@ -1,17 +1,17 @@
 import React from 'react';
 import Constants from 'Constants/index';
-import {DataSourceImport, Note, Redo, Run, Save, Sort, Undo, Zoom} from 'FlowEditorContainer/ToolBar';
+import { DataSourceImport, Note, Redo, Run, Save, Sort, Undo, Zoom } from 'FlowEditorContainer/ToolBar';
 import style from './style.scss';
 import classnames from 'classnames';
-import {DataFrameStepModelProps} from 'Model/Step/DataFrameStepModel';
-import {DataFrameStepModel, FlowModel, MessageModel, NoteStepModel} from 'Model/index';
-import {APIUtil, FlowUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil} from 'Utils/index';
-import {Loader} from 'Shared/Base';
-import {HistoryType, LibraryListDataType, RunResponseType, UploadedFileType} from 'Types/index';
-import {NoteStepModelProps} from 'Model/Step/NoteStepModel';
-import {defaultGraphProps} from 'Utils/GraphUtil';
-import {API} from 'Modules/api/index';
-import {FlowEditModeValue, FlowExecuteModeValue} from 'Model/Flow/FlowModel';
+import { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel';
+import { DataFrameStepModel, FlowModel, MessageModel, NoteStepModel } from 'Model/index';
+import { APIUtil, FlowUtil, ModalUtil, HttpUtil, PositionUtil, ReactDomUtil, ZoomUtil } from 'Utils/index';
+import { Loader } from 'Shared/Base';
+import { HistoryType, LibraryListDataType, RunResponseType, UploadedFileType } from 'Types/index';
+import { NoteStepModelProps } from 'Model/Step/NoteStepModel';
+import { defaultGraphProps } from 'Utils/GraphUtil';
+import { API } from 'Modules/api/index';
+import { FlowEditModeValue, FlowExecuteModeValue } from 'Model/Flow/FlowModel';
 
 type ToolBarProps = {
     flow: FlowModel;
@@ -31,11 +31,16 @@ type ToolBarProps = {
     redo: Function;
     baseDisabled: boolean
     runDisabled: boolean;
-    onClickSaveFlow: ()=>{};
+    refreshFlow: Function;
+    onClickSaveFlow: () => {};
     onClickRunFlowPromise: any;
 }
 
-export default class ToolBar extends React.Component<ToolBarProps> {
+type ToolBarState = {
+    isLoading: boolean
+}
+
+export default class ToolBar extends React.Component<ToolBarProps, ToolBarState> {
 
     loading: boolean = false;
     loadingMessage: string = "";
@@ -43,6 +48,9 @@ export default class ToolBar extends React.Component<ToolBarProps> {
 
     constructor(props: ToolBarProps) {
         super(props);
+        this.setState({
+            isLoading: false
+        })
     }
 
     onClickSave() {
@@ -67,7 +75,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
 
     run() {
-        let {notify, dismissNotify} = this.props;
+        let { notify, dismissNotify } = this.props;
         const runArgs = {
             "flow_uuid": inject_flow_uuid,
             "flows": [],
@@ -102,32 +110,62 @@ export default class ToolBar extends React.Component<ToolBarProps> {
                             }]
                     });
                 }
-                this.loading = false;
                 // 実行後、各ノードのキャッシュ情報（キャッシュ作成日、uuid)を最新化するため
                 this.flowUpdate();
             })
             .catch((e) => {
-                this.loading = false;
-                this.loading = false;
-                this.forceUpdate();
-            });
+                this.setState({
+                    isLoading:false
+                })
+            })
     }
 
     onClickProjectRun() {
-        const {lockUUID} = this.props;
-        this.loading = true;
+        const { lockUUID } = this.props;
+
         this.loadingMessage = "";
 
-        this.props.onClickRunFlowPromise().then((result: any) => {
-            if (result.success === true) this.run();
-            this.loading = false;
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM_SAVE, onClickDone: () => {
+                this.props.onClickRunFlowPromise().then((result: any) => {
+                    if (result.success === true) {
+                        this.setState({
+                            isLoading: true
+                        }, () => {
+                            this.run();
+                        })
+                    }
+                });
+                ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+            }, onClickCancel: () => {
+                ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+            }
+        })
+        ModalUtil.emitModal({
+            id: Constants.modal.CONFIRM_SAVE,
+            visible: true,
+            done: '確認',
+            danger: true,
+            content: <div className={style.modal}>
+                <div>
+                    現在のフローを保存します。<br />
+                    よろしいですか？
+                </div>
+            </div>
         });
+
     }
 
     flowUpdate() {
         APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
             const json = response.data.data;
-            this.props.loadFlowJSON(json);
+            console.log("flowupdate")
+            console.log(json)
+            this.props.refreshFlow(json);
+        }).then(() => {
+            this.setState({
+                isLoading:false
+            })
         });
     }
 
@@ -163,7 +201,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         if (selectedFiles) {
             const uploadFile: File = selectedFiles[0];
             APIUtil.frameUpload(uploadFile, uploadFile.name).then((response) => {
-                const {success} = response.data;
+                const { success } = response.data;
                 const json = response.data;
                 if (success) {
                     this.uploadedFile = {
@@ -178,20 +216,20 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
 
     onClickZoomIn(e: Event) {
-        this.props.setZoom({offset: 10});
+        this.props.setZoom({ offset: 10 });
     }
 
     onClickZoomOut(e: Event) {
-        this.props.setZoom({offset: -10});
+        this.props.setZoom({ offset: -10 });
     }
 
     onClickDefaultZoom(e: Event) {
-        this.props.setZoom({value: 100});
+        this.props.setZoom({ value: 100 });
     }
 
     onClickNote() {
 
-        const {zoom, nodes} = this.props;
+        const { zoom, nodes } = this.props;
         let position = PositionUtil.getCenterPosition("#flow_editor>div");
         position = {
             x: ZoomUtil.zoomReverse(position.x, zoom),
@@ -201,7 +239,7 @@ export default class ToolBar extends React.Component<ToolBarProps> {
         };
 
         const notOverlapNodePosition = FlowUtil.getNotOverlapNodePosition(
-            {...position}, nodes);
+            { ...position }, nodes);
 
         const props: NoteStepModelProps = {
             type: Constants.step.type.note,
@@ -217,38 +255,39 @@ export default class ToolBar extends React.Component<ToolBarProps> {
     }
 
     render() {
-        const {zoom, history, baseDisabled, runDisabled} = this.props;
+        const { zoom, history, baseDisabled, runDisabled } = this.props;
 
         const current = history.current;
         const max = history.nodes.length;
+        const isLoading = this.state && this.state.isLoading ? true : false;
 
         const redoDisabled = !(current + 1 < max);
         const undoDisabled = !(current - 1 >= 0);
         return <div>
             <div className={classnames(style.flow_toolbar)}>
                 <Save disabled={baseDisabled} icon={"&#xE2C2"}
-                      onClick={(e) => this.onClickSave()}>保存</Save>
+                    onClick={(e) => this.onClickSave()}>保存</Save>
                 <DataSourceImport disabled={baseDisabled} icon={"&#xE2C2"}
-                                  onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport>
+                    onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport>
                 <Run disabled={runDisabled} icon={"&#xE037"}
-                     onClick={(e) => this.onClickProjectRun()}>このフローを実行</Run>
+                    onClick={(e) => this.onClickProjectRun()}>このフローを実行</Run>
                 <Note disabled={baseDisabled} icon={"comment"}
-                      onClick={() => this.onClickNote()}>メモ</Note>
+                    onClick={() => this.onClickNote()}>メモ</Note>
                 <Undo disabled={baseDisabled || undoDisabled} icon={"undo"}
-                      onClick={() => this.props.undo()}>もとに戻す</Undo>
+                    onClick={() => this.props.undo()}>もとに戻す</Undo>
                 <Redo disabled={baseDisabled || redoDisabled} icon={"redo"}
-                      onClick={() => this.props.redo()}>繰り返す</Redo>
+                    onClick={() => this.props.redo()}>繰り返す</Redo>
             </div>
             <div className={classnames(style.paper_toolbar)}>
                 <Zoom onClickZoomIn={(e) => this.onClickZoomIn(e)}
-                      onClickZoomOut={(e) => this.onClickZoomOut(e)}
-                      onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
-                      zoom={zoom} />
+                    onClickZoomOut={(e) => this.onClickZoomOut(e)}
+                    onClickDefaultZoom={(e) => this.onClickDefaultZoom(e)}
+                    zoom={zoom} />
                 <Sort disabled={baseDisabled} icon={"&#xE42A"}
-                      onClick={(e) => this.onClickSort()}>整列</Sort>
+                    onClick={(e) => this.onClickSort()}>整列</Sort>
             </div>
             <Loader whiteBackground={true} center={true} absolute={true} fixed={false}
-                    visible={this.loading} message={this.loadingMessage} />
+                visible={isLoading} message={this.loadingMessage} />
         </div>;
     }
 }
