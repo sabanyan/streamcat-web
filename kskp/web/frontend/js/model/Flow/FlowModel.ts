@@ -33,6 +33,7 @@ export enum FlowExecuteModeValue {
 }
 
 export type FlowModelProps = {
+  uuid:string
   allowlist: FlowAllowList
   editMode: FlowEditModeValue
   executeMode: FlowExecuteModeValue
@@ -42,7 +43,7 @@ export type FlowModelProps = {
   folderUuid?: string
   label: string
   nodes: any[]
-  params: []
+  params: any[]
   ports: [[], []]
   projectId?: number
   description: string
@@ -73,7 +74,7 @@ export default class FlowModel {
   folderUuid?: string
   label: string = ""
   nodes?: any[] = []
-  params: [] = []
+  params: any[] = []
   ports: [any[], any[]] = [[], []]
   projectId?: number
   description: string = ""
