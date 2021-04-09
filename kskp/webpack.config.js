@@ -12,6 +12,7 @@ module.exports = (env) => {
         path: `${__dirname}/web/frontend/static/js`,
         filename: 'common.js',
       },
+      devtool: 'source-map',
       module: {
         rules: [
           {
@@ -32,11 +33,12 @@ module.exports = (env) => {
       // development に設定するとソースマップ有効でJSファイルが出力される
       mode: mode,
       // メインとなるJavaScriptファイル（エントリーポイント）ls
-      entry: ['babel-polyfill','./web/frontend/js/index.tsx'],
+      entry: ['babel-polyfill', './web/frontend/js/index.tsx'],
       output: {
         path: `${__dirname}/web/frontend/static/js`,
         filename: 'app.js',
       },
+      devtool: 'source-map',
       module: {
         rules: [
           {
@@ -46,7 +48,7 @@ module.exports = (env) => {
           },
           {
             test: /\.tsx?$/,
-            use: ['babel-loader','ts-loader'],
+            use: ['babel-loader', 'ts-loader'],
             exclude: /node_modules/,
           },
           {
@@ -65,7 +67,7 @@ module.exports = (env) => {
           ProfileContainer: path.resolve(__dirname, './web/frontend/js/components/ProfileContainer/'),
           ProjectListContainer: path.resolve(__dirname, './web/frontend/js/components/ProjectListContainer/'),
           PreviewContainer: path.resolve(__dirname, './web/frontend/js/components/PreviewContainer/'),
-          UserListContainer:  path.resolve(__dirname, './web/frontend/js/components/admin/UserListContainer/'),
+          UserListContainer: path.resolve(__dirname, './web/frontend/js/components/admin/UserListContainer/'),
           Shared: path.resolve(__dirname, './web/frontend/js/components/shared/'),
           Constants: path.resolve(__dirname, './web/frontend/js/constants/'),
           Model: path.resolve(__dirname, './web/frontend/js/model/'),
@@ -75,7 +77,7 @@ module.exports = (env) => {
           Utils: path.resolve(__dirname, './web/frontend/js/utils/')
         },
         modules: ['node_modules'],
-        extensions: ['.js', '.jsx','.ts','.tsx'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
       },
       plugins: [
         new webpack.DllReferencePlugin({
@@ -86,7 +88,7 @@ module.exports = (env) => {
           manifest: require(`./web/frontend/static/js/dist/vendor-manifest.json`),
         }),
       ],
-      performance: {hints: false}
+      performance: { hints: false }
     },
     {
       mode: mode,
@@ -95,6 +97,7 @@ module.exports = (env) => {
         path: `${__dirname}/web/frontend/static/css`,
         filename: 'app.css',
       },
+      devtool: 'source-map',
       module: {
         rules: [
           {

@@ -4,7 +4,7 @@ import { FlowEditorReducer } from 'Modules/index'
 import { reducer as notificationsReducer } from 'reapop'
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { CommonReducer } from 'Modules/reducers/index'
-import {FlowEditorReducerInitialState} from "Modules/application";
+import {FlowEditorReducerInitialState} from "Modules/flowEditor";
 import {CommonReducerInitialState} from "Modules/reducers/common";
 
 

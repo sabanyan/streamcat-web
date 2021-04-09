@@ -71,6 +71,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     let selected_step = this.getSelectedStep()
     this.props.deleteSteps([selected_step.id])
     this.props.selectSteps()
+    this.props.addHistory()
   }
 
   onClickDelete(e: Event) {
