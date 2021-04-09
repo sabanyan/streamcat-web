@@ -664,7 +664,7 @@ const Library = (_: Props) => {
                             closeButton: true
                         });
                     });
-                resolve();
+                resolve(undefined);
             });
         } else {
             //ルートを取得
@@ -991,7 +991,7 @@ const Library = (_: Props) => {
                         reject(e);
                     });
             }
-            resolve();
+            resolve(undefined);
         })
             .then(() => {
                 // 成功
@@ -1057,7 +1057,7 @@ const Library = (_: Props) => {
                         reject(e);
                     });
             }
-            resolve();
+            resolve(undefined);
         })
             .then(() => {
                 // 成功
@@ -1267,6 +1267,24 @@ const Library = (_: Props) => {
         }
         window.close();
     };
+
+    const onClickFlowExport = (data: LibraryListDataType) => {
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM, onClickDone: () => {
+           
+                ModalUtil.closeModal(Constants.modal.CONFIRM);
+            }
+        });
+        ModalUtil.emitModal({
+            id: Constants.modal.CONFIRM,
+            visible: true,
+            done: "エクスポートする",
+            danger: true,
+            content: <div>
+                {data.label}をエクスポートしますか？
+            </div>
+        });
+    }
 
     const renderLibraryInspector = (): React.ReactNode => {
         if (!selectedDatas.length) return null;
