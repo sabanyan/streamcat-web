@@ -119,17 +119,24 @@ class FileTestCase(ApiTestCaseBase):
         result = self.get_file(f'/api/v0/flow_files/{flow.uuid}', self.USER1)
         self._save_file(root.path/'フローファイル.tgz', io.BytesIO(result))
 
+        # インポート先のフォルダを作成する
+        data = {'parent': root.uuid,
+                'label' : '午後正午'}
+        result = self.post_uri(f'/api/v0/projects', data, self.USER1)
+        project_uuid = result['data']['uuid']
+
         # フローをインポートする
         with open(root.path/'フローファイル.tgz', mode='rb') as f:
-            self.post_flows(f, self.USER1)
+            self.post_flows('宇宙ヤバイ', project_uuid, f, self.USER1)
 
         # フローはインポートされていること
-        children = root.find_children_by_label('フローファイル')
+        project = self.factory.data.find_by_uuid(project_uuid)
+        children = project.find_children_by_label('宇宙ヤバイ')
         result = self.get_uri(f'/api/v0/projects/{children[0].uuid}', self.USER1)
 
-        # プロジェクトフォルダが作成されていること
-        self.assertEqual(result['data']['label'], 'フローファイル')
-        self.assertEqual(result['data']['type'], 'project')
+        # フォルダが作成されていること
+        self.assertEqual(result['data']['label'], '宇宙ヤバイ')
+        self.assertEqual(result['data']['type'], 'folder')
         self.assertEqual(result['data']['creator'], self.USER1.name)
         # プロジェクトフォルダ以下にフローとフレームが作成されていること
         self.assertEqual(result['data']['children'][0]['label'], 'Export用フロー')
@@ -156,6 +163,8 @@ class FileTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/frames/{frame.uuid}', self.USER1)
         # 作成したファイルを削除する
         (root.path/'フローファイル.tgz').unlink()
+        # 作成したプロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -201,7 +210,7 @@ class FileTestCase(ApiTestCaseBase):
 
         # フローをインポートする
         with open(root.path/'フォルダ丸ごと.tgz', mode='rb') as f:
-            self.post_flows(f, self.USER1)
+            self.post_flows(None, root.uuid, f, self.USER1)
 
         # フローはインポートされていること
         children = root.find_children_by_label('プロジェクト')
