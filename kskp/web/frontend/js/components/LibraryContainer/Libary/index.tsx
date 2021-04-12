@@ -197,6 +197,7 @@ const Library = (_: Props) => {
     const [editDatabase, setEditDatabase] = useState<Database | null>(null);
     const [, setStores] = useState();
     const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
+    const [importFlowtName, setImportFlowName] = useState<string>("");
     const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
     const [lastSelectedCell, setLastSelectedCell] = useState<LibraryChild | null>(null);
@@ -233,6 +234,9 @@ const Library = (_: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.ADD_FRAME, onClickClose: onClickAddFrameDone
         });
+        ModalUtil.registerModal({
+            id: Constants.modal.IMPORT_FLOW, onClickClose: onClickImportFlow
+        });
         getVisualizers();
         fetchFolder();
     }, []);
@@ -259,26 +263,7 @@ const Library = (_: Props) => {
             }
         });
 
-        // プロジェクトのインポート
-        ModalUtil.registerModal({
-            id: Constants.modal.IMPORT_PROJECT, onClickDone: () => {
-                if (formProjectName.length === 0) {
-                    alert("プロジェクト名を入力して下さい");
-                    return;
-                }
-                setIsLoading(true);
-                APIUtil.post("flow_files", { label: formProjectName, parent: inject_folder_uuid }).then(() => {
-                    ModalUtil.emitModal(
-                        { id: Constants.modal.ADD_PROJECT, visible: false });
-                    fetchFolder();
-                    setFormProjectName("");
-                    notify({
-                        title: "プロジェクトを作成しました", message: formProjectName + "を作成しました",
-                        status: "success"
-                    });
-                });
-            }
-        });
+      
     }, [formProjectName]);
 
 
@@ -729,13 +714,15 @@ const Library = (_: Props) => {
         });
     };
 
-    const onClickImportProject = () => {
+    const onClickImportFlow = () => {
+        let url = location.protocol + "//" + location.host + "/api/v0/flow_files";
         ModalUtil.emitModal({
-            id: Constants.modal.IMPORT_PROJECT,
+            id: Constants.modal.IMPORT_FLOW,
             visible: true,
-            done: "インポートする",
-            content: <TextField placeholder={"プロジェクト名"}
-                onChange={(e) => setFormProjectName(e.target.value)} />
+            done: "アップロードする",
+            content: <div>
+                <FileUploader accept={[".tgz"]} url={url} parentUUID={inject_folder_uuid} notify={notify} />
+            </div>
         });
     };
 
@@ -905,7 +892,7 @@ const Library = (_: Props) => {
                         onClickNewFlow={onClickNewFlow}
                         onClickNewFolder={onClickNewFolder}
                         onClickNewProject={onClickNewProject}
-                        onClickImportProject={onClickImportProject}
+                        onClickImportFlow={onClickImportFlow}
                     />;
                 } else {
                     menuList = <TrashMenuList

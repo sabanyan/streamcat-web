@@ -182,7 +182,7 @@ export default class Modal extends React.Component<Props, State> {
 
     let modal
     let modal_body = (dynamic) ? content : children
-    if (id === Constants.modal.ADD_FRAME) {
+    if (id === Constants.modal.ADD_FRAME　|| id === Constants.modal.IMPORT_FLOW) {
       modal = <EmptyModal id={id} title={title} footer={modal_footer}
         close_button={close_button} visible={visible}>
         {(visible) ? modal_body : null}

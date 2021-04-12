@@ -70,8 +70,8 @@ export default class ModalManager extends React.Component<Props> {
                      <Modal key={Constants.modal.ADD_PROJECT} id={Constants.modal.ADD_PROJECT}
                             title="プロジェクトの新規作成" dynamic={true} done={"作成する"} primary={true}>
                      </Modal>
-                     <Modal key={Constants.modal.IMPORT_PROJECT} id={Constants.modal.IMPORT_PROJECT}
-                            title="プロジェクトのインポート" dynamic={true} done={"作成する"} primary={true}>
+                     <Modal key={Constants.modal.IMPORT_FLOW} id={Constants.modal.IMPORT_FLOW}
+                            title="フローのインポート" dynamic={true} done={"インポートする"} primary={true}>
                      </Modal>
                      <Modal key={Constants.modal.ADD_FLOW} id={Constants.modal.ADD_FLOW}
                             title="フローの新規作成" dynamic={true} done={"作成する"} primary={true}>
