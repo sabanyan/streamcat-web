@@ -235,7 +235,7 @@ const Library = (_: Props) => {
             id: Constants.modal.ADD_FRAME, onClickClose: onClickAddFrameDone
         });
         ModalUtil.registerModal({
-            id: Constants.modal.IMPORT_FLOW, onClickClose: onClickImportFlow
+            id: Constants.modal.IMPORT_FLOW, onClickClose: onClickImportFlowDone
         });
         getVisualizers();
         fetchFolder();
@@ -482,6 +482,10 @@ const Library = (_: Props) => {
     };
 
     const onClickAddFrameDone = () => {
+        fetchFolder();
+    };
+
+    const onClickImportFlowDone = () => {
         fetchFolder();
     };
 
