@@ -25,8 +25,8 @@ const MenuList = (props: Props) => {
     </React.Fragment> : null;
 
     // 現状は、プロジェクト単位でインポートされる
-    importProject = allowlist.import ? <React.Fragment>
-    <FlatButton icon={""} onClick={onClickImportProject}>インポート</FlatButton>
+    importProject = allowlist ? <React.Fragment>
+    <FlatButton icon={"icon-upload"} onClick={onClickImportProject}>インポート</FlatButton>
         <Spacer height={8} />
     </React.Fragment> : null;
 

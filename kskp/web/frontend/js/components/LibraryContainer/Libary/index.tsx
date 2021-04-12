@@ -258,6 +258,27 @@ const Library = (_: Props) => {
                 });
             }
         });
+
+        // プロジェクトのインポート
+        ModalUtil.registerModal({
+            id: Constants.modal.IMPORT_PROJECT, onClickDone: () => {
+                if (formProjectName.length === 0) {
+                    alert("プロジェクト名を入力して下さい");
+                    return;
+                }
+                setIsLoading(true);
+                APIUtil.post("flow_files", { label: formProjectName, parent: inject_folder_uuid }).then(() => {
+                    ModalUtil.emitModal(
+                        { id: Constants.modal.ADD_PROJECT, visible: false });
+                    fetchFolder();
+                    setFormProjectName("");
+                    notify({
+                        title: "プロジェクトを作成しました", message: formProjectName + "を作成しました",
+                        status: "success"
+                    });
+                });
+            }
+        });
     }, [formProjectName]);
 
 
@@ -712,7 +733,7 @@ const Library = (_: Props) => {
         ModalUtil.emitModal({
             id: Constants.modal.IMPORT_PROJECT,
             visible: true,
-            done: "作成する",
+            done: "インポートする",
             content: <TextField placeholder={"プロジェクト名"}
                 onChange={(e) => setFormProjectName(e.target.value)} />
         });

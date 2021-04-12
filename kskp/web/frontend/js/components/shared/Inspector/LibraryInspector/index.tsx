@@ -121,7 +121,7 @@ class LibraryInspector extends React.Component<Props> {
       copy = <Button onClick={(e) => onClickCopy(e, data)} icon={"content_copy"}>複製する</Button>
     }
 
-    if (allowlist.export && data && (data.type == Constants.library.type.flow || Constants.library.type.folder || Constants.library.type.project) && onClickFlowExport) {
+    if (allowlist && data && (data.type == Constants.library.type.flow || Constants.library.type.folder || Constants.library.type.project) && onClickFlowExport) {
       flowExport = <Button onClick={() => onClickFlowExport(data)} icon={""}>エクスポートする</Button>
     }
 
