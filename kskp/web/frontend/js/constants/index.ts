@@ -109,6 +109,7 @@ const Constants = {
     EDIT_ENCODING: 'edit_encoding',
     MEMBER_INFO: 'member_info',
     RUN_FLOW: 'run_flow',
+    IMPORT_PROJECT: 'import_project',
     IMPORT_DATASOURCE: 'import_datasource',
     SHOW_MESSAGE: 'show_message_modal',
     CONFIRM: 'confirm',
@@ -122,6 +123,7 @@ const Constants = {
     CONFIRM_UNDELETE_USER: 'confirm_undelete_user',
     CONFIRM_RELOAD_FLOW: 'CONFIRM_RELOAD_FLOW',
     SAVE_AS_FLOW: 'SAVE_AS_FLOW',
+    CONFIRM_SAVE: 'CONFIRM_SAVE',
     property: {
       title: 'title',
       message: 'message',

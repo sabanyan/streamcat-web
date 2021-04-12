@@ -34,7 +34,7 @@ class LibraryInspector extends React.Component<Props> {
     creator: '作成者',
     createdAt: '作成日時',
     prevFolderPath: "捨てる前の場所",
-    fileSize: 'サイズ(byte)'
+    fileSize: 'ファイルサイズ'
   }
 
   constructor(props: Props) {
@@ -121,8 +121,8 @@ class LibraryInspector extends React.Component<Props> {
       copy = <Button onClick={(e) => onClickCopy(e, data)} icon={"content_copy"}>複製する</Button>
     }
 
-    if (allowlist && data && (data.type == Constants.library.type.flow || Constants.library.type.folder || Constants.library.type.project) && onClickFlowExport) {
-      flowExport = <Button onClick={(e) => onClickFlowExport(e, data)} icon={"content_copy"}>エクスポートする</Button>
+    if (allowlist.export && data && (data.type == Constants.library.type.flow || Constants.library.type.folder || Constants.library.type.project) && onClickFlowExport) {
+      flowExport = <Button onClick={() => onClickFlowExport(data)} icon={""}>エクスポートする</Button>
     }
 
     return <React.Fragment>
@@ -135,6 +135,7 @@ class LibraryInspector extends React.Component<Props> {
       {editEncoding}
       {del}
       {trashClean}
+      {flowExport}
       {lock}
     </React.Fragment>
   }
@@ -170,7 +171,7 @@ class LibraryInspector extends React.Component<Props> {
       if (data.fileSize　!== undefined) {
         fileSize = <React.Fragment key={data.fileSize}>
           <div><label>{this.display.fileSize}</label></div>
-          {data.fileSize ? <div className={"mb-8px"}>{data.fileSize}</div> : 0}
+          {data.fileSize ? <div className={"mb-8px"}>{StringUtil.convertToFileSize(data.fileSize)}</div> : 0}
         </React.Fragment>
         result.push(fileSize)
       }

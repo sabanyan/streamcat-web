@@ -57,6 +57,8 @@ export interface Allowlist {
     update: boolean;
     updateMember: boolean;
     upload: boolean;
+    export: boolean;
+    import: boolean;
 }
 
 export const getDataBaseRules = () => {
@@ -120,7 +122,7 @@ export const getDataBaseParams = () => {
         },
         {
             "name": "password",
-            "isPassword" : true,
+            "isPassword": true,
             "type": "string",
             "label": "パスワード",
             "default": ""
@@ -169,7 +171,9 @@ const defaultAllowlist = {
     read: false,
     update: false,
     updateMember: false,
-    upload: false
+    upload: false,
+    export: false,
+    import: false
 }
 
 interface Props {
@@ -211,6 +215,7 @@ const Library = (_: Props) => {
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
+    const [exportName, setExportName] = useState<string>("");
 
     useEffect(() => {
         if (isDialog) {
@@ -702,6 +707,17 @@ const Library = (_: Props) => {
                 onChange={(e) => setFormProjectName(e.target.value)} />
         });
     };
+
+    const onClickImportProject = () => {
+        ModalUtil.emitModal({
+            id: Constants.modal.IMPORT_PROJECT,
+            visible: true,
+            done: "作成する",
+            content: <TextField placeholder={"プロジェクト名"}
+                onChange={(e) => setFormProjectName(e.target.value)} />
+        });
+    };
+
     const onClickNewFolder = () => {
         ModalUtil.emitModal({
             id: Constants.modal.ADD_FOLDER,
@@ -868,6 +884,7 @@ const Library = (_: Props) => {
                         onClickNewFlow={onClickNewFlow}
                         onClickNewFolder={onClickNewFolder}
                         onClickNewProject={onClickNewProject}
+                        onClickImportProject={onClickImportProject}
                     />;
                 } else {
                     menuList = <TrashMenuList
@@ -1271,7 +1288,25 @@ const Library = (_: Props) => {
     const onClickFlowExport = (data: LibraryListDataType) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM, onClickDone: () => {
-           
+                APIUtil.get("flow_files/" + data.uuid).then((response) => {
+                    if (response.data.success) {
+                        console.log(response)
+                        /*
+                        notify({
+                            title: "フローを複製しました", message: response.data.data.label + "をエクスポートしました",
+                            status: "success"
+                        });
+                        */
+                    } else {
+                        reject(response)
+                    }
+
+                }).catch((response) => {
+                    notify({
+                        title: "エクスポートエラー", message: response.data.message,
+                        status: "error"
+                    });
+                });
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
         });
@@ -1281,7 +1316,9 @@ const Library = (_: Props) => {
             done: "エクスポートする",
             danger: true,
             content: <div>
-                {data.label}をエクスポートしますか？
+                <TextField placeholder={"エクスポート名"}
+                    onChange={(e) => setExportName(e.target.value)} />
+                <div className={"mt-8px"} />
             </div>
         });
     }
@@ -1297,7 +1334,8 @@ const Library = (_: Props) => {
         let _onClickEditEncoding: any = null;
         let _onBlurTitle: any = null;
         let _onClickMemberInfo: any = null;
-        let _onChangeFlowLock: any = null
+        let _onChangeFlowLock: any = null;
+        let _onClickFlowExport: any = null;
 
         const onClickMove = () => {
             let queue = Queue(
@@ -1448,6 +1486,7 @@ const Library = (_: Props) => {
                 } else if (selectedData && selectedData.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 }
+                _onClickFlowExport = (data) => onClickFlowExport(data);
                 _onClickMemberInfo = (e, uuid) => onClickMemberInfo(e, uuid);
                 break;
         }
@@ -1535,7 +1574,7 @@ const Library = (_: Props) => {
                     lock = locksModel.Parse(response);
                     lockId = lock.getLockId();
                     if (!lockId) reject(response.data);
-                    body = { ...body, lock: lockId}
+                    body = { ...body, lock: lockId }
                 }
                 resolve(body);
             }).then(async (body) => {
@@ -1844,6 +1883,7 @@ const Library = (_: Props) => {
             onClickCleanTrash={_onClickCleanTrash}
             onClickMemberInfo={_onClickMemberInfo}
             onChangeFlowLock={_onChangeFlowLock}
+            onClickFlowExport={_onClickFlowExport}
             onBlurTitle={_onBlurTitle}
         />;
     };
