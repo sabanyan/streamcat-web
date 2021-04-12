@@ -15,7 +15,7 @@ export function locks(props: Props) {
      * なので、データを送信の信頼性を高めるためには、同期のXMLHttpRequestを送るかsendbeaconを使う必要がある
      * https://developer.mozilla.org/ja/docs/Web/API/Navigator/sendBeacon
      */
-    return new Promise((resolve, reject) => { // API ModuleのmethodはPromiseを返すべき
+    return new Promise<void>((resolve, reject) => { // API ModuleのmethodはPromiseを返すべき
         
         /*
         var xhr = new XMLHttpRequest();

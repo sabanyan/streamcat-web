@@ -56,7 +56,7 @@ export default class TrashList extends React.Component<Props, State> {
   }
 
   setStateAsync(state) {
-    return new Promise((resolve) => {
+    return new Promise((resolve:any) => {
       this.setState(state, resolve)
     });
   }
@@ -77,7 +77,7 @@ export default class TrashList extends React.Component<Props, State> {
   fetch() {
     const { notify } = this.props
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise<void>(async (resolve, reject) => {
       await API.request.doGet.trashes({})
         .then((response) => {
           if (response.data.data) {

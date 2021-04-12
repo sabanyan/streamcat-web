@@ -641,7 +641,7 @@ const Library = (_: Props) => {
             });
         } else if (inject_is_trash) {
             // ゴミ箱の場合
-            return new Promise(async (resolve) => {
+            return new Promise<void>(async (resolve) => {
                 await API.request.doGet.trashes({})
                     .then((response) => {
                         if (response.data.data) {
@@ -951,7 +951,7 @@ const Library = (_: Props) => {
 
     const deleteLibrary = async (library: LibraryChild, lock: { uuid: string | null }) => {
 
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
             if (library.type === Constants.library.type.flow) {
                 await API.request.doPost.locks({ flowUUID: library.uuid })
@@ -1016,7 +1016,7 @@ const Library = (_: Props) => {
 
     const moveLibrary = async (library: LibraryChild, parentFolderUUID: string, lock: { uuid: string | null }) => {
 
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
             if (library.type === Constants.library.type.flow) {
                 await API.request.doPost.locks({ flowUUID: library.uuid })

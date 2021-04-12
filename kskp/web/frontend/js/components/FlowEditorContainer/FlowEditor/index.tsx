@@ -63,9 +63,9 @@ interface Props {
 const FlowEditor = (props: Props) => {
 
     const dispatch = useDispatch();
-    const folderUuid = useSelector(state => state.FlowEditorReducer.folderUuid);
+    const folderUuid = useSelector((state:any) => state.FlowEditorReducer.folderUuid);
 
-    const _modifiedAt = useSelector(state => state.FlowEditorReducer.modifiedAt);
+    const _modifiedAt = useSelector((state:any)=> state.FlowEditorReducer.modifiedAt);
     useEffect(() => {
         if (_modifiedAt) {
             // modifiedAt が reducer 経由での取得になる
@@ -74,22 +74,22 @@ const FlowEditor = (props: Props) => {
         }
     }, [_modifiedAt])
     const [modifiedAt, setModifiedAt] = useState<string>();
-    const flow = useSelector(state => state.FlowEditorReducer.flow);
-    const drag = useSelector(state => state.FlowEditorReducer.drag);
-    const selected_step_ids = useSelector(state => state.FlowEditorReducer.selected_step_ids);
-    const nodes = useSelector(state => state.FlowEditorReducer.nodes);
-    const history = useSelector(state => state.FlowEditorReducer.history);
-    const mast = useSelector(state => state.FlowEditorReducer.mast);
-    const selected_tab_id = useSelector(state => state.FlowEditorReducer.selected_tab_id);
-    const selected_data_source_detail = useSelector(state => state.FlowEditorReducer.selected_data_source_detail);
-    const graph = useSelector(state => state.FlowEditorReducer.graph);
-    const zoom = useSelector(state => state.FlowEditorReducer.zoom);
-    const inspector = useSelector(state => state.FlowEditorReducer.inspector);
-    const editor = useSelector(state => state.FlowEditorReducer.editor);
-    const editMode = useSelector(state => state.FlowEditorReducer.editMode);
-    const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
-    const networkStatus = useSelector(state => state.FlowEditorReducer.networkStatus);
-    const lastSavedFlow = useSelector(state => state.FlowEditorReducer.lastSavedFlow);
+    const flow = useSelector((state:any) => state.FlowEditorReducer.flow);
+    const drag = useSelector((state:any) => state.FlowEditorReducer.drag);
+    const selected_step_ids = useSelector((state:any) => state.FlowEditorReducer.selected_step_ids);
+    const nodes = useSelector((state:any) => state.FlowEditorReducer.nodes);
+    const history = useSelector((state:any) => state.FlowEditorReducer.history);
+    const mast = useSelector((state:any) => state.FlowEditorReducer.mast);
+    const selected_tab_id = useSelector((state:any) => state.FlowEditorReducer.selected_tab_id);
+    const selected_data_source_detail = useSelector((state:any) => state.FlowEditorReducer.selected_data_source_detail);
+    const graph = useSelector((state:any) => state.FlowEditorReducer.graph);
+    const zoom = useSelector((state:any) => state.FlowEditorReducer.zoom);
+    const inspector = useSelector((state:any) => state.FlowEditorReducer.inspector);
+    const editor = useSelector((state:any) => state.FlowEditorReducer.editor);
+    const editMode = useSelector((state:any) => state.FlowEditorReducer.editMode);
+    const executeMode = useSelector((state:any) => state.FlowEditorReducer.executeMode);
+    const networkStatus = useSelector((state:any) => state.FlowEditorReducer.networkStatus);
+    const lastSavedFlow = useSelector((state:any) => state.FlowEditorReducer.lastSavedFlow);
 
     const [offLineNotify, setOffLineNotify] = useState<any | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);

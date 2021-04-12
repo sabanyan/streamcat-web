@@ -11,7 +11,7 @@
     "testwatch": "jest --watchAll",
     "testcoverage": "jest --coverage",
     "flow": "flow",
-    "flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text"
+    "flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text",
   },
   "jest": {
     "moduleNameMapper": {
@@ -54,6 +54,7 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^26.6.3",
     "node-sass": "^4.12.0",
+    "prettier": "^2.2.1",
     "promise-queue-plus": "^1.2.2",
     "react-hook-form": "^6.8.4",
     "react-sortable-hoc": "^1.9.1",
