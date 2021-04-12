@@ -13,6 +13,7 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index
 import { GraphUtil } from 'Utils/index'
 import { DataFrameDetailType, MastType } from "Types/index";
 import { FlowModelProps } from "Model/Flow/FlowModel";
+import { updateLastSavedFlowAction } from '../../../../modules/flowEditor';
 
 type InspectorProps = {
   inspector: {width:number};
@@ -30,12 +31,14 @@ type InspectorProps = {
   notify: Function;
   dismissNotify: Function;
   loadFlowJSON: Function;
+  refreshFlow:Function;
   deleteSteps: Function;
   addHistory: Function;
   deleteCache: Function;
   updateStep: Function;
   sortStepSrcEnd: Function;
   resizeInspector:Function;
+  updateLastSavedFlow: Function;
   addFlowVariableHidden: boolean;
   previewDisabled: boolean;
   commandSelectorHidden: boolean;
@@ -47,8 +50,9 @@ class Inspector extends React.Component<InspectorProps> {
   render() {
     let { selected_step_ids, lockUUID, nodes, mast, addStep, selectSteps, flow,
       updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
-      loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd,
-      resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled, previewDisabled } = this.props
+      loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, refreshFlow,
+      resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled, 
+      updateLastSavedFlow, previewDisabled } = this.props
 
     let property
 
@@ -87,9 +91,11 @@ class Inspector extends React.Component<InspectorProps> {
             deleteCache={deleteCache}
             addStep={addStep}
             updateStep={updateStep}
+            refreshFlow={refreshFlow}
             previewDisabled={previewDisabled}
             commandSelectorHidden={commandSelectorHidden}
             baseInspectorDisabled={baseInspectorDisabled}
+            updateLastSavedFlow={updateLastSavedFlow}
           />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector
@@ -107,6 +113,7 @@ class Inspector extends React.Component<InspectorProps> {
           property = <NoteInspector
             selected_step_ids={selected_step_ids}
             nodes={nodes}
+            addHistory={addHistory}
             selectSteps={selectSteps}
             updateStep={updateStep}
             deleteSteps={deleteSteps}

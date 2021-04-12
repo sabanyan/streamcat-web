@@ -40,8 +40,10 @@ import {
     updateDataFrameDetailAction,
     updateFlowAction,
     updateStepAction,
-    refreshCanvasSizeAction
-} from 'Modules/application';
+    refreshCanvasSizeAction,
+    refreshFlowAction,
+    updateLastSavedFlowAction
+} from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
 import { PaperZoom } from 'FlowEditorContainer/PaperZoom';
@@ -52,6 +54,7 @@ import { TextField } from 'Shared/Input';
 import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
 import { AxiosResponse } from "axios";
+import _ from 'lodash';
 
 interface Props {
     navigation?: NavigationModelProps
@@ -86,6 +89,7 @@ const FlowEditor = (props: Props) => {
     const editMode = useSelector(state => state.FlowEditorReducer.editMode);
     const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
     const networkStatus = useSelector(state => state.FlowEditorReducer.networkStatus);
+    const lastSavedFlow = useSelector(state => state.FlowEditorReducer.lastSavedFlow);
 
     const [offLineNotify, setOffLineNotify] = useState<any | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
@@ -184,6 +188,12 @@ const FlowEditor = (props: Props) => {
     }, []);
     const refreshCanvasSize = useCallback(() => {
         dispatch(refreshCanvasSizeAction());
+    }, []);
+    const refreshFlow = useCallback((context) => {
+        dispatch(refreshFlowAction(context));
+    }, []);
+    const updateLastSavedFlow = useCallback(() => {
+        dispatch(updateLastSavedFlowAction());
     }, []);
 
     const notify = (context) => dispatch(addNotification(context));
@@ -358,6 +368,8 @@ const FlowEditor = (props: Props) => {
                                 message: response.data.message,
                                 messageStatus: "error"
                             }));
+                        } else {
+                            updateLastSavedFlow()
                         }
                         dismissNotify(saveNotify.id);
                         reslove(response.data);
@@ -494,7 +506,7 @@ const FlowEditor = (props: Props) => {
             });
     }
 
-    const extendLockInterval: number = inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
+    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
     useInterval(() => {
         if (lockUUID && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline) {
             extendLock(lockUUID)
@@ -508,7 +520,17 @@ const FlowEditor = (props: Props) => {
     }, [refreshCanvasSize]);
 
     useEffect(() => {
-        const handleLeavePage = () => {
+        const handleLeavePage = (e) => {
+            e.preventDefault();
+            let dialogText
+            let isSame = _.isEqual(flow, lastSavedFlow)
+            if (!isSame) {
+                dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
+                e.returnValue = dialogText;
+            }
+            return dialogText;
+        };
+        const handleUnload = (e) => {
             if (lockUUID) {
                 API.request.doDelete.locks({ lockUUID: lockUUID }).finally(() => {
 
@@ -516,10 +538,13 @@ const FlowEditor = (props: Props) => {
             }
         };
         window.addEventListener("beforeunload", handleLeavePage);
+        window.addEventListener("unload", handleUnload);
+        
         return () => {
             window.removeEventListener("beforeunload", handleLeavePage);
+            window.removeEventListener("unload", handleUnload);
         }
-    }, [lockUUID]);
+    }, [lockUUID, flow, lastSavedFlow]);
 
     useEffect(() => {
         let preRequest: any = [];
@@ -759,6 +784,7 @@ const FlowEditor = (props: Props) => {
                 redo={redo}
                 baseDisabled={baseToolBarDisabled}
                 runDisabled={runDisabled}
+                refreshFlow={refreshFlow}
                 onClickRunFlowPromise={onClickRunFlowPromise}
                 onClickSaveFlow={onClickSaveFlow}
             />
@@ -809,10 +835,12 @@ const FlowEditor = (props: Props) => {
                 updateStep={updateStep}
                 sortStepSrcEnd={sortStepSrcEnd}
                 resizeInspector={resizeInspector}
+                refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
                 previewDisabled={previewDisabled}
                 commandSelectorHidden={commandSelectorHidden}
                 baseInspectorDisabled={baseInspectorDisabled}
+                updateLastSavedFlow={updateLastSavedFlow}
             />
             <NotificationManager />
         </div>
