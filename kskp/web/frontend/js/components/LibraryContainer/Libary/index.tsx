@@ -868,6 +868,7 @@ const Library = (_: Props) => {
                         onClickNewFlow={onClickNewFlow}
                         onClickNewFolder={onClickNewFolder}
                         onClickNewProject={onClickNewProject}
+                        onClickRemoteFolder={onClickAddRemoteFolder}
                     />;
                 } else {
                     menuList = <TrashMenuList
