@@ -1297,44 +1297,6 @@ const Library = (_: Props) => {
         window.close();
     };
 
-    const onClickFlowExport = (data: LibraryListDataType) => {
-        ModalUtil.registerModal({
-            id: Constants.modal.CONFIRM, onClickDone: () => {
-                APIUtil.get("flow_files/" + data.uuid).then((response) => {
-                    if (response.data.success) {
-                        console.log(response)
-                        /*
-                        notify({
-                            title: "フローを複製しました", message: response.data.data.label + "をエクスポートしました",
-                            status: "success"
-                        });
-                        */
-                    } else {
-                        reject(response)
-                    }
-
-                }).catch((response) => {
-                    notify({
-                        title: "エクスポートエラー", message: response.data.message,
-                        status: "error"
-                    });
-                });
-                ModalUtil.closeModal(Constants.modal.CONFIRM);
-            }
-        });
-        ModalUtil.emitModal({
-            id: Constants.modal.CONFIRM,
-            visible: true,
-            done: "エクスポートする",
-            danger: true,
-            content: <div>
-                <TextField placeholder={"エクスポート名"}
-                    onChange={(e) => setExportName(e.target.value)} />
-                <div className={"mt-8px"} />
-            </div>
-        });
-    }
-
     const renderLibraryInspector = (): React.ReactNode => {
         if (!selectedDatas.length) return null;
 
@@ -1347,7 +1309,6 @@ const Library = (_: Props) => {
         let _onBlurTitle: any = null;
         let _onClickMemberInfo: any = null;
         let _onChangeFlowLock: any = null;
-        let _onClickFlowExport: any = null;
 
         const onClickMove = () => {
             let queue = Queue(
@@ -1498,7 +1459,6 @@ const Library = (_: Props) => {
                 } else if (selectedData && selectedData.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
                 }
-                _onClickFlowExport = (data) => onClickFlowExport(data);
                 _onClickMemberInfo = (e, uuid) => onClickMemberInfo(e, uuid);
                 break;
         }
@@ -1895,7 +1855,6 @@ const Library = (_: Props) => {
             onClickCleanTrash={_onClickCleanTrash}
             onClickMemberInfo={_onClickMemberInfo}
             onChangeFlowLock={_onChangeFlowLock}
-            onClickFlowExport={_onClickFlowExport}
             onBlurTitle={_onBlurTitle}
         />;
     };
