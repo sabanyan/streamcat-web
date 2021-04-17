@@ -152,9 +152,10 @@ def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
     """
+    minimize = request.args.get('mini') is not None
     flow = g.factory.data.find_by_uuid(flow_uuid)
     ret = flow.to_json()
-    ret.update({'flow' : flow.flow_data})
+    ret.update({'flow' : flow.flow_data.to_json(minimize=minimize)})
     return ret
 
 @mod.route('/flows', methods=['POST'])
