@@ -116,11 +116,11 @@ def create_frame():
             # フロー一覧から実行する
             # 
             flow_uuid = request.json.get('flow_uuid')
-            args = request.json.get('args') if request.json.get('args') else {}
+            params = request.json.get('args') if request.json.get('args') else {}
             inputs = _make_flow_inputs(g.factory, flow_uuid, request)
             # フローの実行
             flow = g.factory.data.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, args=args, inputs=inputs)
+            result = execute_flow(flow, args={'params':params}, inputs=inputs)
             result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
@@ -201,7 +201,6 @@ def fetch_vis(frame_uuid):
     """
     vis_args = {"d" : request.json}
 
-    import uuid
     from kskp.depo.std.commands import LoaderCommand
     from kskp.engine import Step
 
