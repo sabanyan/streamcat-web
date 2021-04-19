@@ -199,11 +199,10 @@ def fetch_vis(frame_uuid):
     """
     指定したframeのVisデータを直接UUIDで指定して取得する
     """
-    vis_args = {"d" : request.json}
-
     from kskp.depo.std.commands import LoaderCommand
     from kskp.engine import Step
 
+    vis_args = {'vis':{'d':request.json}}
     frame = g.factory.data.find_by_uuid(frame_uuid)
     parent_folder = frame.find_parent()
     loader_step = Step(f'loader_{frame.label}', LoaderCommand(), {'uuid': frame_uuid})
@@ -224,7 +223,7 @@ def make_new_vizs():
         raise Exception('from引数を指定してください')
 
     flow_uuid = request.args['from']
-    vis_args = request.json
+    vis_args = {'vis': request.json}
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
     activity = execute_flow(flow, vis_args=vis_args)
@@ -238,8 +237,9 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
         from kskp.store import Activity, NoResultsException
         from kskp.engine import execute, FlowCommand
 
-        cmd = FlowCommand(flow, vis_args)
-        lasts = execute(runnable=cmd, args=args, inputs=inputs)
+        args = args.copy()
+        args.update(vis_args)
+        lasts = execute(runnable=FlowCommand(flow), args=args, inputs=inputs)
 
         # Activityを取得して返り値とする
         for point_id, datum in lasts.items():

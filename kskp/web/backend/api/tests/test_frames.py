@@ -1,4 +1,5 @@
 import copy
+import unittest
 from .api_test_case_base import ApiTestCaseBase
 
 class FrameTestCase(ApiTestCaseBase):
@@ -487,6 +488,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['id'], 'd1')
         self.assertEqual(lasts[0]['label'], '出力結果')
 
+    # @unittest.skip
     def test_empty_vizs(self):
         """
         offset=limit=0を指定してヘッダ行だけを取得する
@@ -535,6 +537,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
         self.assertIsNotNone(lasts[0].get('contents'))
 
+    # @unittest.skip
     def test_bad_csv_vizs(self):
         """
         不正なCSVをVis実行する
