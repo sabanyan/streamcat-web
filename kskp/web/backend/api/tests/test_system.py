@@ -3445,7 +3445,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
         # プレビューを持つポイントが存在すること
         self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
-        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'])
+        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
         cache_uuid = result['data']['flow']['nodes'][0]['uuid']
 
         # 編集者をプロジェクトから脱退させる
@@ -3528,6 +3528,12 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
+
+        # 作成したキャッシュのUUIDを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        # プレビューを持つポイントが存在すること
+        self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
+        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
 
         # 編集者は、フローのロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)

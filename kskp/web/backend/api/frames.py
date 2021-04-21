@@ -117,10 +117,11 @@ def create_frame():
             # 
             flow_uuid = request.json.get('flow_uuid')
             params = request.json.get('args') if request.json.get('args') else {}
+            lock_uuid = request.json.get('lock')
             inputs = _make_flow_inputs(g.factory, flow_uuid, request)
             # フローの実行
             flow = g.factory.data.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, args={'params':params}, inputs=inputs)
+            result = execute_flow(flow, args={'params':params}, inputs=inputs, lock_uuid=lock_uuid)
             result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
@@ -229,7 +230,7 @@ def make_new_vizs():
     activity = execute_flow(flow, vis_args=vis_args)
     return format_vis(activity)
 
-def execute_flow(flow, args={}, inputs={}, vis_args={}):
+def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     """
     指定されたフローを実行し実行結果を取得する
     """
@@ -239,7 +240,7 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}):
 
         args = args.copy()
         args.update(vis_args)
-        lasts = execute(runnable=FlowCommand(flow), args=args, inputs=inputs)
+        lasts = execute(runnable=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
 
         # Activityを取得して返り値とする
         for point_id, datum in lasts.items():

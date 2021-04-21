@@ -405,11 +405,18 @@ def delete_cache():
     flow_uuid = ofs[0]
     node_id = ofs[1]
 
+    # 対象のフローのロックのUUIDを取得する
+    if request.json is None:
+        lock_uuid = None
+    else:
+        req = RequestJson(request.json)
+        lock_uuid = req.get('lock')
+
     # 対象のフローを取得する
     flow = g.factory.data.find_by_uuid(flow_uuid)
     
     # フローに記録されたキャッシュをクリアする
-    unset_cache_uuid = flow.unset_cache(node_id, ignore_lock=True)
+    unset_cache_uuid = flow.unset_cache(node_id, ignore_lock=True, lock_uuid=lock_uuid)
     if unset_cache_uuid is None:
         return
 
