@@ -3148,8 +3148,8 @@ class SystemTestCase(ApiTestCaseBase):
         # 編集者は、フローの排他ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
 
-        # プロジェクト管理者は、編集ロックされたフローをプレビューできるない
-        # (キャッシュ出力を行うフローは編集ロックによりエラーになる)
+        # プロジェクト管理者は、編集ロックされた、かつキャッシュ出力をするフローをプレビューできること
+        # (編集ロックによりキャッシュ出力をしない)
         vis_args = { "d1" : 
                         {"args" :
                             {"visualizer" : "csvtohtmltable",
@@ -3158,8 +3158,11 @@ class SystemTestCase(ApiTestCaseBase):
                             }
                         }
                     }
-        with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
+        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
 
         # プロジェクト管理者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
@@ -3445,6 +3448,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
         # プレビューを持つポイントが存在すること
         self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
+        # TODO: POST /vizsでロックのUUIDを指定可能にして、キャッシュを作成できるようにする予定
         self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
         cache_uuid = result['data']['flow']['nodes'][0]['uuid']
 
@@ -3533,6 +3537,7 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
         # プレビューを持つポイントが存在すること
         self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
+        # TODO: POST /vizsでロックのUUIDを指定可能にして、キャッシュを作成できるようにする予定
         self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
 
         # 編集者は、フローのロックを解除する
