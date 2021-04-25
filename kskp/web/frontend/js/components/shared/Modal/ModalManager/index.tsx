@@ -82,6 +82,12 @@ export default class ModalManager extends React.Component<Props> {
                      <Modal key={Constants.modal.EDIT_DATABASE} id={Constants.modal.EDIT_DATABASE}
                             title="データベースを設定" dynamic={true} done={"設定する"} primary={true}>
                      </Modal>
+                     <Modal key={Constants.modal.ADD_REMOTE_FOLDER} id={Constants.modal.ADD_REMOTE_FOLDER}
+                            title="新しいリモートフォルダを追加" dynamic={true} done={"追加する"} primary={true}>
+                     </Modal>
+                     <Modal key={Constants.modal.EDIT_REMOTE_FOLDER} id={Constants.modal.EDIT_REMOTE_FOLDER}
+                            title="リモートフォルダを設定" dynamic={true} done={"設定する"} primary={true}>
+                     </Modal>
                      <Modal key={Constants.modal.EDIT_ENCODING} id={Constants.modal.EDIT_ENCODING}
                             title="文字コードを編集" dynamic={true} done={"編集する"} primary={true}>
                      </Modal>
@@ -129,10 +135,10 @@ export default class ModalManager extends React.Component<Props> {
                             title="" close={false} dynamic={true} footer={true} >
                      </Modal>
                      <Modal key={Constants.modal.SAVE_AS_FLOW} id={Constants.modal.SAVE_AS_FLOW}
-                            title="フローを別名で保存" close={false}  dynamic={true} footer={true} >
+                            title="フローを別名で保存" close={false} dynamic={true} footer={true} >
                      </Modal>
                      <Modal key={Constants.modal.CONFIRM_SAVE} id={Constants.modal.CONFIRM_SAVE}
-                            title="" close={false}  dynamic={true} footer={true} >
+                            title="" close={false} dynamic={true} footer={true} >
                      </Modal>
               </>;
        }

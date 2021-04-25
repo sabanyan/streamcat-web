@@ -45,7 +45,7 @@ const FileListBody = (props: Props) => {
                 return "icon-flow";
             case "database":
                 return "icon-database";
-            case "remote-folder":
+            case "rfolder":
                 return "icon-remote-folder";
             default:
                 console.log(type);

@@ -1,9 +1,10 @@
-import ParamsForm, { Param } from "Shared/Inspector/ParamsForm/index";
+import { RemoteFolder } from 'Components/LibraryContainer/Libary/RemoteFolder/types'
+import ParamsForm from "Shared/Inspector/ParamsForm";
 
-import { useDispatch, useSelector } from 'react-redux';
-import { useEffect } from "react";
+import React, { useEffect } from 'react';
 
-export const params = [
+
+const params = [
   {
     "name": "label",
     "type": "string",
@@ -27,12 +28,12 @@ export const params = [
   },
   {
     "name": "domain",
-    "type": "number",
+    "type": "string",
     "label": "ドメイン",
     "default": ""
   },
   {
-    "name": "path",
+    "name": "directory",
     "type": "string",
     "label": "ディレクトリ",
     "default": ""
@@ -52,29 +53,16 @@ export const params = [
   }
 ];
 
-function useRemoteFolder() {
-  const args = useSelector(state => state.remoteFolder.args);
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-
-  }, [dispatch])
-
-  const onAdd = () => {
-
-  }
-
-  const onEdit = () = {
-
-  }
-
-  return { add, edit, dispatch };
+type Props = {
+  remoteFolder: RemoteFolder
+  onChange: Function
 }
 
-export function addRemoteFolder() {
+// view
+export const RemoteFolderForm = (props: Props) => {
+  const { remoteFolder, onChange } = props;
 
-}
-
-export function editRemoteFolder() {
-
+  return <React.Fragment>
+    <ParamsForm params={params} onChange={(e,param,value) => onChange(e, param, value)} args={remoteFolder} invalids={{}}></ParamsForm>
+  </React.Fragment>
 }

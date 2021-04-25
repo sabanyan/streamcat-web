@@ -11,7 +11,7 @@ interface Props {
     onClickNewFolder: () => void;
     onClickCSVUpload: () => void;
     onClickAddDatabase: () => void;
-    onClickRemoteFolder: () => void;
+    onClickAddRemoteFolder: () => void;
 }
 
 const MenuList = (props: Props) => {

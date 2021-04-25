@@ -31,6 +31,9 @@ import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel'
 import { project } from '../../shared/IconRenderer/icon/index';
 import LibraryMultiInspector from 'Shared/Inspector/LibraryMultiInspector';
 import { reject } from "lodash";
+import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/LibraryContainer/Libary/RemoteFolder/model"
+import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
+import { RemoteFolder } from 'Components/LibraryContainer/Libary/RemoteFolder/types'
 
 export interface Database {
     label?: string;
@@ -120,7 +123,7 @@ export const getDataBaseParams = () => {
         },
         {
             "name": "password",
-            "isPassword" : true,
+            "isPassword": true,
             "type": "string",
             "label": "パスワード",
             "default": ""
@@ -211,6 +214,123 @@ const Library = (_: Props) => {
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
+
+    // custom hooks
+    const { onAddRemoteFolder, onEditRemoteFolder, onChangeRemoteFolder, clearRemoteFolder, setRemoteFolder, remoteFolder, isEmptyRemoteFolder, remoteFolderMode, setRemoteFolderMode } = useRemoteFolderHooks();
+
+    useEffect(() => {
+        if (remoteFolderMode === RemoteFolderMode.INIT) return;
+        if (remoteFolderMode === RemoteFolderMode.ADD) {
+            // add_remote_folder
+            ModalUtil.registerModal({
+                id: Constants.modal.ADD_REMOTE_FOLDER, onClickDone: () => {
+                    if (remoteFolder.label === "") {
+                        alert("名称を入力してください");
+                        return;
+                    }
+                    if (remoteFolder.protocol === "") {
+                        alert("プロトコルを入力してください");
+                        return;
+                    }
+                    if (remoteFolder.hostname === "") {
+                        alert("ホスト名を入力してください");
+                        return;
+                    }
+                    if (remoteFolder.domain === "") {
+                        alert("ドメインを入力してください");
+                        return;
+                    }
+                    if (remoteFolder.directory === "") {
+                        alert("ディレクトリーを入力してください");
+                        return;
+                    }
+                    onAddRemoteFolder(inject_folder_uuid, remoteFolder)
+                        .then((response) => {
+                            fetchFolder();
+                            if (!response.data.success) {
+                                notify({
+                                    title: "リモートフォルダ作成エラー",
+                                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                                    status: "error",
+                                    dismissAfter: 0,
+                                    closeButton: true
+                                });
+                            } else {
+                                notify({
+                                    title: "リモートフォルダを保存しました", message: remoteFolder.label + "を保存しました",
+                                    status: "success"
+                                });
+                            }
+                        })
+                    setIsLoading(false);
+                    setRemoteFolderMode(RemoteFolderMode.INIT);
+                    ModalUtil.closeModal(Constants.modal.ADD_REMOTE_FOLDER);
+                }
+            });
+            ModalUtil.emitModal({
+                id: Constants.modal.ADD_REMOTE_FOLDER,
+                visible: true,
+                done: "追加する",
+                dynamic: true,
+                content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
+            });
+        } else if (remoteFolderMode === RemoteFolderMode.EDIT) {
+            // edit_remote_folder
+            ModalUtil.registerModal({
+                id: Constants.modal.EDIT_REMOTE_FOLDER, onClickDone: () => {
+                    if (remoteFolder.label === "") {
+                        alert("名称を入力してください");
+                        return;
+                    }
+                    if (remoteFolder.protocol === "") {
+                        alert("プロトコルを入力してください");
+                        return;
+                    }
+                    if (remoteFolder.hostname === "") {
+                        alert("ホスト名を入力してください");
+                        return;
+                    }
+                    if (remoteFolder.domain === "") {
+                        alert("ドメインを入力してください");
+                        return;
+                    }
+                    if (remoteFolder.directory === "") {
+                        alert("ディレクトリーを入力してください");
+                        return;
+                    }
+                    onEditRemoteFolder(remoteFolder.uuid, remoteFolder)
+                        .then((response) => {
+                            console.log(response)
+                            fetchFolder();
+                            if (!response.data.success) {
+                                notify({
+                                    title: "リモートフォルダ設定エラー",
+                                    message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(response)),
+                                    status: "error",
+                                    dismissAfter: 0,
+                                    closeButton: true
+                                });
+                            } else {
+                                notify({
+                                    title: "リモートフォルダを保存しました", message: remoteFolder.label + "を保存しました",
+                                    status: "success"
+                                });
+                            }
+                        })
+                    setIsLoading(false);
+                    setRemoteFolderMode(RemoteFolderMode.INIT);
+                    ModalUtil.closeModal(Constants.modal.EDIT_REMOTE_FOLDER);
+                }
+            });
+            ModalUtil.emitModal({
+                id: Constants.modal.EDIT_REMOTE_FOLDER,
+                visible: true,
+                done: "設定する",
+                dynamic: true,
+                content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
+            });
+        }
+    }, [remoteFolder]);
 
     useEffect(() => {
         if (isDialog) {
@@ -641,7 +761,7 @@ const Library = (_: Props) => {
             });
         } else if (inject_is_trash) {
             // ゴミ箱の場合
-            return new Promise(async (resolve) => {
+            return new Promise<void>(async (resolve) => {
                 await API.request.doGet.trashes({})
                     .then((response) => {
                         if (response.data.data) {
@@ -734,6 +854,32 @@ const Library = (_: Props) => {
     const onClickAddDatabase = () => {
         setAddDatabase(getInitialDatabase());
     };
+
+    const onClickAddRemoteFolder = () => {
+        clearRemoteFolder();
+        setRemoteFolderMode(RemoteFolderMode.ADD);
+        ModalUtil.emitModal({
+            id: Constants.modal.ADD_REMOTE_FOLDER,
+            visible: true,
+            done: "追加する",
+            dynamic: true,
+            content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
+        });
+    }
+
+    const onClickEditRemoteFolder = (data:any) => {
+        console.log("onClickData");
+        console.log(data)
+        setRemoteFolder(data);
+        setRemoteFolderMode(RemoteFolderMode.EDIT);
+        ModalUtil.emitModal({
+            id: Constants.modal.EDIT_REMOTE_FOLDER,
+            visible: true,
+            done: "設定する",
+            dynamic: true,
+            content: <RemoteFolderForm remoteFolder={remoteFolder} onChange={(e, param, value) => onChangeRemoteFolder(param.name, value)} />
+        });
+    }
 
     const onChangeNewDatabase = (e: React.ChangeEvent<HTMLInputElement>, param, value) => {
         try {
@@ -868,7 +1014,7 @@ const Library = (_: Props) => {
                         onClickNewFlow={onClickNewFlow}
                         onClickNewFolder={onClickNewFolder}
                         onClickNewProject={onClickNewProject}
-                        onClickRemoteFolder={onClickAddRemoteFolder}
+                        onClickAddRemoteFolder={onClickAddRemoteFolder}
                     />;
                 } else {
                     menuList = <TrashMenuList
@@ -951,8 +1097,7 @@ const Library = (_: Props) => {
     };
 
     const deleteLibrary = async (library: LibraryChild, lock: { uuid: string | null }) => {
-
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
             if (library.type === Constants.library.type.flow) {
                 await API.request.doPost.locks({ flowUUID: library.uuid })
@@ -1017,7 +1162,7 @@ const Library = (_: Props) => {
 
     const moveLibrary = async (library: LibraryChild, parentFolderUUID: string, lock: { uuid: string | null }) => {
 
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
             if (library.type === Constants.library.type.flow) {
                 await API.request.doPost.locks({ flowUUID: library.uuid })
@@ -1425,11 +1570,11 @@ const Library = (_: Props) => {
                 _onBlurTitle = (e, data) => onBlurTitle(e, data);
                 if (selectedData && selectedData.type === Constants.library.type.database) {
                     _onClickEdit = (data) => onClickEditDatabase(data);
+                } else if (selectedData && selectedData.type === Constants.library.type.remoteFolder) {
+                    _onClickEdit = (data) => onClickEditRemoteFolder(data);
                 } else if (selectedData && selectedData.type === Constants.library.type.trash) {
                     _onBlurTitle = null;
                     _onClickCleanTrash = onClickCleanTrash;
-                } else if (selectedData && selectedData.type === Constants.library.type.database) {
-                    _onClickEdit = (data) => onClickEditDatabase(data);
                 }
                 _onClickMemberInfo = (e, uuid) => onClickMemberInfo(e, uuid);
                 break;
@@ -1518,7 +1663,7 @@ const Library = (_: Props) => {
                     lock = locksModel.Parse(response);
                     lockId = lock.getLockId();
                     if (!lockId) reject(response.data);
-                    body = { ...body, lock: lockId}
+                    body = { ...body, lock: lockId }
                 }
                 resolve(body);
             }).then(async (body) => {

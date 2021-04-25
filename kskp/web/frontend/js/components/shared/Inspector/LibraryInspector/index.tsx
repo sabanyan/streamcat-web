@@ -80,7 +80,7 @@ class LibraryInspector extends React.Component<Props> {
     }
 
     // edit
-    if (allowlist.update && onClickEdit && data && data.type === Constants.library.type.database) {
+    if (allowlist.update && onClickEdit) {
       edit = <Button onClick={(e) => this.onClickEdit(e)} icon={"settings"}>設定を開く</Button>
     }
 
