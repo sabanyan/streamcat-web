@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, jsonify, request, g
 from kskp.core import Datum
-from kskp.store import Folder, ProjectFolder
+from kskp.store import ProjectFolder
 from ..views.auth import MY_PROJECT
 from .utils import (
     Constraints,
@@ -152,9 +152,10 @@ def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
     """
+    minimize = request.args.get('mini') is not None
     flow = g.factory.data.find_by_uuid(flow_uuid)
     ret = flow.to_json()
-    ret.update({'flow' : flow.flow_data})
+    ret.update({'flow' : flow.flow_data.to_json(minimize=minimize)})
     return ret
 
 @mod.route('/flows', methods=['POST'])
@@ -248,29 +249,20 @@ def fetch_subflows():
     """
     サブフロー一覧を取得する。
     """
-    no_inputs  = request.args.get('no_inputs') == 'on'
-    no_outputs = request.args.get('no_outputs') == 'on'
-
     subflow_data_list = []
-    for subflow in g.factory.data.find_all_subflows(no_inputs, no_outputs):
-        # 親フォルダのラベルを取得する
-        parent = subflow.find_parent()
-        # 親フォルダのないサブフローは取得しない
-        if parent is None:
-            continue
+    for subflow in g.factory.data.find_all_subflows():
         # 実行権限のないサブフローは取得しない
         if not subflow.executable:
             continue
         # ゴミ箱にあるサブフローは取得しない
         if g.factory.data.trashed(subflow.uuid):
             continue
-        # subflow_data = subflow.flow_data.to_json()
         subflow_data = subflow.flow_data.to_json(contains_nodes=False)
         subflow_data['uuid'] = subflow.uuid
+        # TODO: フロントエンドから参照された場合に備える、実質的に使用していない(後方互換)
+        subflow_data['projectName'] = ''
         subflow_data_list.append(subflow_data)
-        if isinstance(parent, Folder):
-            parent_label = parent.label
-            subflow_data['projectName'] = parent_label
+
     return jsonify({'success': True, 'data': subflow_data_list})
 
 @mod.route('/commands')
@@ -281,7 +273,7 @@ def fetch_commands():
     visible_commands_json = []
     if len(request.args) == 0 or request.args.get('all') == 'on':
         visible_commands_json.append('mcmd')
-        visible_commands_json.append('kcmd')
+        # visible_commands_json.append('kcmd')
         visible_commands_json.append('pcmd')
         visible_commands_json.append('scmd')
     else:
@@ -413,11 +405,18 @@ def delete_cache():
     flow_uuid = ofs[0]
     node_id = ofs[1]
 
+    # 対象のフローのロックのUUIDを取得する
+    if request.json is None:
+        lock_uuid = None
+    else:
+        req = RequestJson(request.json)
+        lock_uuid = req.get('lock')
+
     # 対象のフローを取得する
     flow = g.factory.data.find_by_uuid(flow_uuid)
     
     # フローに記録されたキャッシュをクリアする
-    unset_cache_uuid = flow.unset_cache(node_id, ignore_lock=True)
+    unset_cache_uuid = flow.unset_cache(node_id, ignore_lock=True, lock_uuid=lock_uuid)
     if unset_cache_uuid is None:
         return
 

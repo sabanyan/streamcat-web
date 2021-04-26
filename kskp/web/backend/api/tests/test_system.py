@@ -2636,27 +2636,270 @@ class SystemTestCase(ApiTestCaseBase):
 
     def test_exec_flow_using_source_outside_project(self):
         """
-        データソースが他のプロジェクトに存在するFlowを実行できること
+        全てのプロジェクトのメンバの場合、データソースが他のプロジェクトに存在するFlowを実行できること
+        全てのプロジェクトのメンバでない場合、実行できないこと
         """
-        pass
+        folder_dst_json = {
+            "label": "Folderデータデスト",
+            "creator": "開発用",
+            "createdAt": "2021-03-20 09:29:00",
+            "projectId": None,
+            "description": "",
+            "params": [],
+            "ports": [
+            [
+                {
+                "type": "frame",
+                "label": "d1",
+                "nodeId": "d1"
+                }
+            ],
+            []
+            ],
+            "nodes": [
+                {
+                    "id": "d1",
+                    "label": "d1",
+                    "type": "frame",
+                    "uuid": None,
+                    "makeCache": False,
+                    "dataSource": "csv",
+                    "cacheCreatedAt": None
+                },
+                {
+                    "id": "c1",
+                    "label": "c1",
+                    "type": "command",
+                    "commandId": "saver",
+                    "args": {},
+                    "srcs": {
+                        "i": "d1"
+                    },
+                    "dsts": {
+                        "o": "d2"
+                    }
+                },
+                {
+                    "id": "d2",
+                    "label": "d2",
+                    "type": "frame",
+                    "uuid": None,
+                    "makeCache": False,
+                    "dataSource": "csv",
+                    "cacheCreatedAt": None
+                }
+            ]
+        }
 
-    def test_exec_flow_using_subflow_outside_project(self):
-        """
-        サブフローが他のプロジェクトに存在するFlowを実行できること
-        """
-        pass
+        sub_flow_json = {
+            "label": "test用",
+            "creator": "開発用",
+            "createdAt": "2021-3-21 11:41:00",
+            "projectId": None,
+            "description": "",
+            "params": [],
+            "ports": [
+                [
+                    {
+                        "type": "frame", 
+                        "label": "d", 
+                        "nodeId": "d"
+                    }
+                ],
+                []
+            ],
+            "nodes": [
+                {
+                    "id": "d",
+                    "label": "d",
+                    "type": "frame",
+                    "uuid": None,
+                    "makeCache": False,
+                    "dataSource": "csv",
+                    "cacheCreatedAt": None
+                },
+                {
+                    "id": "f1",
+                    "label": "Folderデータデスト",
+                    "type": "flow",
+                    "uuid": None,
+                    "args": {},
+                    "srcs": {
+                        "d1": "d"
+                    },
+                    "dsts": {}
+                }
+            ]
+        }
 
-    def test_cannot_exec_flow_using_source_outside_project(self):
-        """
-        データソースが他のプロジェクトに存在するFlowを実行できないこと
-        """
-        pass
+        flow_json = {
+            "label": "main",
+            "params": [],
+            "ports": [[],[]],
+            "nodes": [
+                {
+                    "id": "d",
+                    "label": "d",
+                    "type": "frame",
+                    "uuid": None,
+                    "value": [["顧客", "数量", "金額"],
+                                ["x", 1, 10],
+                                ["x", 2, 20],
+                                ["y", 1, 30],
+                                ["y", 3, 40],
+                                ["z", 1, 50]],
+                    "makeCache": False,
+                    "dataSource": "csv",
+                    "cacheCreatedAt": None
+                },
+                {
+                    "id": "f0",
+                    "label": "f0",
+                    "type": "flow",
+                    "uuid": None,
+                    "args": {},
+                    "srcs": {
+                        "d": "d"
+                    },
+                    "dsts": {},
+                    "srcsOrder": []
+                }
+            ]
+        }
 
-    def test_cannot_exec_flow_using_subflow_outside_project(self):
-        """
-        サブフローが他のプロジェクトに存在するFlowを実行できないこと
-        """
-        pass
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトAを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトA'}, self.USER1)
+        project_uuid1 = result['data']['uuid']
+        project_modified_at1 = result['data']['modifiedAt']
+
+        # プロジェクトBを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトB'}, self.USER1)
+        project_uuid2 = result['data']['uuid']
+        project_modified_at2 = result['data']['modifiedAt']
+
+        # プロジェクトCを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'プロジェクトC'}, self.USER1)
+        project_uuid3 = result['data']['uuid']
+        project_modified_at3 = result['data']['modifiedAt']
+
+        # プロジェクトA管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER2.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER0.uuid, 'type': 'Writer'}],
+            'lastModifiedAt' : project_modified_at1
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid1}', data, self.USER1)
+
+        # プロジェクトB管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER2.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER0.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at2
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid2}', data, self.USER1)
+
+        # プロジェクトC管理者は、プロジェクトメンバを設定する
+        data = {
+            'members': [{'uuid' : self.USER1.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Writer'},
+                        {'uuid' : self.USER0.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at3
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid3}', data, self.USER1)
+
+
+        # プロジェクトC編集者は、プロジェクトC内にデータデストを作成する
+        data = {
+            'project_uuid': project_uuid3,
+            'name': 'データデスト!',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER3)
+        datadest_uuid = result['data']['uuid']
+
+        # プロジェクトC編集者は、データデストのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':datadest_uuid}, self.USER3)
+        lock_uuid3 = result['data']['uuid']
+
+        # プロジェクトC編集者は、データデストを編集する
+        result = self.put_uri(f'/api/v0/flows/{datadest_uuid}', {'flow':folder_dst_json, 'lock':lock_uuid3}, self.USER3)
+
+
+        # プロジェクトB編集者は、プロジェクトB内にサブフローを作成する
+        data = {
+            'project_uuid': project_uuid2,
+            'name': '私のSubフロー',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+        sub_flow_uuid = result['data']['uuid']
+
+        # プロジェクトB編集者は、サブフローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':sub_flow_uuid}, self.USER2)
+        lock_uuid2 = result['data']['uuid']
+
+        # プロジェクトB編集者は、サブフローを編集する
+        sub_flow_json['nodes'][1]['uuid'] = datadest_uuid
+        result = self.put_uri(f'/api/v0/flows/{sub_flow_uuid}', {'flow':sub_flow_json, 'lock':lock_uuid2}, self.USER2)
+
+
+        # プロジェクトA編集者は、プロジェクトA内にFlowを作成する
+        data = {
+            'project_uuid': project_uuid1,
+            'name': '私のフロー',
+            'datasource': None
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER0)
+        flow_uuid = result['data']['uuid']
+
+        # プロジェクトA編集者は、フローのロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER0)
+        lock_uuid1 = result['data']['uuid']
+
+        # プロジェクトA編集者は、フローを編集する
+        flow_json['nodes'][1]['uuid'] = sub_flow_uuid
+        result = self.put_uri(f'/api/v0/flows/{flow_uuid}', {'flow':flow_json, 'lock':lock_uuid1}, self.USER0)
+
+        # 
+        # USER0は、Flowを実行できること
+        # 
+        result = self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER0)
+        lasts = result['lasts']
+
+        # 
+        # USER1は、Flowを実行できること
+        # 
+        result = self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER1)
+        lasts = result['lasts']
+
+        # 
+        # USER2は、Flowを実行できないこと!
+        # 
+        with self.assertRaises(AssertionError):
+            self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER2)
+
+        # 編集者は、フローをゴミ箱へほかす
+        self.delete_uri_with_json(f'/api/v0/flows/{flow_uuid}', {'lock':lock_uuid1}, self.USER0)
+        self.delete_uri_with_json(f'/api/v0/flows/{sub_flow_uuid}', {'lock':lock_uuid2}, self.USER2)
+        self.delete_uri_with_json(f'/api/v0/flows/{datadest_uuid}', {'lock':lock_uuid3}, self.USER3)
+
+        # ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid1}', {}, self.USER0)
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid2}', {}, self.USER2)
+        self.post_uri(f'/api/v0/delete-locks/{lock_uuid3}', {}, self.USER3)
+
+        # プロジェクト管理者はプロジェクトをゴミ箱へほかす
+        self.delete_uri(f'/api/v0/projects/{project_uuid3}', self.USER1)
+        self.delete_uri(f'/api/v0/projects/{project_uuid2}', self.USER1)
+        self.delete_uri(f'/api/v0/projects/{project_uuid1}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
     # 
     # Edit Lock
@@ -2905,8 +3148,8 @@ class SystemTestCase(ApiTestCaseBase):
         # 編集者は、フローの排他ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
 
-        # プロジェクト管理者は、編集ロックされたフローをプレビューできるない
-        # (キャッシュ出力を行うフローは編集ロックによりエラーになる)
+        # プロジェクト管理者は、編集ロックされた、かつキャッシュ出力をするフローをプレビューできること
+        # (編集ロックによりキャッシュ出力をしない)
         vis_args = { "d1" : 
                         {"args" :
                             {"visualizer" : "csvtohtmltable",
@@ -2915,8 +3158,11 @@ class SystemTestCase(ApiTestCaseBase):
                             }
                         }
                     }
-        with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
+        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
+        lasts = result['lasts']
+
+        # ラベルとIDチェック
+        self.assertEqual(lasts[0]['id'], 'd1')
 
         # プロジェクト管理者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
@@ -3202,7 +3448,8 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
         # プレビューを持つポイントが存在すること
         self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
-        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'])
+        # TODO: POST /vizsでロックのUUIDを指定可能にして、キャッシュを作成できるようにする予定
+        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
         cache_uuid = result['data']['flow']['nodes'][0]['uuid']
 
         # 編集者をプロジェクトから脱退させる
@@ -3285,6 +3532,13 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ラベルとIDチェック
         self.assertEqual(lasts[0]['id'], 'd1')
+
+        # 作成したキャッシュのUUIDを取得する
+        result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
+        # プレビューを持つポイントが存在すること
+        self.assertEqual(result['data']['flow']['nodes'][0]['id'], 'd')
+        # TODO: POST /vizsでロックのUUIDを指定可能にして、キャッシュを作成できるようにする予定
+        self.assertIsNotNone(result['data']['flow']['nodes'][0]['uuid'], msg='キャッシュが作成できませんでした')
 
         # 編集者は、フローのロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
@@ -3426,19 +3680,19 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.post_uri('/api/v0/databases', data, self.USER2)
         database_uuid = result['data']['uuid']
 
-        # # フォルダの下にリモートフォルダを作成する
-        # data = {
-        #     "parent"   : folder_uuid,
-        #     "label"    : "中村主水",
-        #     "protocol" : "smb",
-        #     "hostname" : "kskds-HP-Workstation-z620.local",
-        #     "domain"   : "WORKGROUP",
-        #     "directory": "share",
-        #     "user_id"  : "ksk-ds",
-        #     "password" : "kskanalytics"
-        # }
-        # result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
-        # remote_folder_uuid = result['data']['uuid']
+        # フォルダの下にリモートフォルダを作成する
+        data = {
+            "parent"   : folder_uuid,
+            "label"    : "中村主水",
+            'protocol' : 'smb',
+            'hostname' : "18.178.64.116",
+            'domain'   : "WORKGROUP",
+            'directory': "share",
+            'user_id'  : "samba",
+            'password' : "kskanalytics"
+        }
+        result = self.post_uri('/api/v0/remote-folders', data, self.USER2)
+        remote_folder_uuid = result['data']['uuid']
 
         # # フォルダの下にAWS S3を作成する
         # data = {
@@ -3586,22 +3840,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 編集者メンバは、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 編集者メンバは、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # 編集者メンバは、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
@@ -3744,22 +3998,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # 閲覧者メンバは、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['update'])
-        # self.assertFalse(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertFalse(result['data']['allowlist']['move'])
-        # self.assertFalse(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertFalse(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # 閲覧者メンバは、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['update'])
+        self.assertFalse(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertFalse(result['data']['allowlist']['move'])
+        self.assertFalse(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertFalse(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # 閲覧者メンバは、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)
@@ -3902,22 +4156,22 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertFalse(result['data']['allowlist']['updateMember'])
         self.assertFalse(result['data']['allowlist']['lock'])
 
-        # # プロジェクト管理者は、リモートフォルダを取得する
-        # result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
-        # self.assertTrue(result['data']['allowlist']['read'])
-        # self.assertNotIn('createProject', result['data']['allowlist'])
-        # self.assertNotIn('createFolder', result['data']['allowlist'])
-        # self.assertNotIn('createFile', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['update'])
-        # self.assertTrue(result['data']['allowlist']['delete'])
-        # self.assertFalse(result['data']['allowlist']['execute'])
-        # self.assertTrue(result['data']['allowlist']['move'])
-        # self.assertTrue(result['data']['allowlist']['copy'])
-        # self.assertNotIn('upload', result['data']['allowlist'])
-        # self.assertTrue(result['data']['allowlist']['download'])
-        # self.assertFalse(result['data']['allowlist']['findMember'])
-        # self.assertFalse(result['data']['allowlist']['updateMember'])
-        # self.assertFalse(result['data']['allowlist']['lock'])
+        # プロジェクト管理者は、リモートフォルダを取得する
+        result = self.get_uri(f'/api/v0/remote-folders/{remote_folder_uuid}', self.USER2)
+        self.assertTrue(result['data']['allowlist']['read'])
+        self.assertNotIn('createProject', result['data']['allowlist'])
+        self.assertNotIn('createFolder', result['data']['allowlist'])
+        self.assertNotIn('createFile', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['update'])
+        self.assertTrue(result['data']['allowlist']['delete'])
+        self.assertFalse(result['data']['allowlist']['execute'])
+        self.assertTrue(result['data']['allowlist']['move'])
+        self.assertTrue(result['data']['allowlist']['copy'])
+        self.assertNotIn('upload', result['data']['allowlist'])
+        self.assertTrue(result['data']['allowlist']['download'])
+        self.assertFalse(result['data']['allowlist']['findMember'])
+        self.assertFalse(result['data']['allowlist']['updateMember'])
+        self.assertFalse(result['data']['allowlist']['lock'])
 
         # # プロジェクト管理者は、AWS S3を取得する
         # result = self.get_uri(f'/api/v0/awss3s/{awss3_uuid}', self.USER2)

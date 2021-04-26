@@ -39,7 +39,7 @@ class NavigationTestCase(ApiTestCaseBase):
             "id": datum_id,
             "type": "frame",
             "dataSource": "csv",
-            "uuid": "",
+            "uuid": None,
             "cacheCreatedAt": '2019/01/01'
         }
         flow_json['nodes']=[]

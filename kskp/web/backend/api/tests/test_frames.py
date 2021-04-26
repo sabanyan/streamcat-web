@@ -1,4 +1,5 @@
 import copy
+import unittest
 from .api_test_case_base import ApiTestCaseBase
 
 class FrameTestCase(ApiTestCaseBase):
@@ -14,7 +15,7 @@ class FrameTestCase(ApiTestCaseBase):
         new_flow = parent.create_flow(label, FlowData(flow_json))
         new_flow.save()
         # save()によりreadable=Noneになるため再取得する
-        return self.factory.data.find_by_uuid(new_flow.uuid)
+        return new_flow.reload()
 
     # @unittest.skip
     def test_fetch_frame(self):
@@ -261,12 +262,12 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ1",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
 
-        flow_json = self.flow_json
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['nodes'].append(input_node)
         flow = self.save_flow(self.root, 'test', flow_json)
 
@@ -305,7 +306,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ2",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
@@ -372,7 +373,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": input_node_id,
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ3",
           "dataSource": "csv",
           "uuid": None
         }
@@ -383,16 +384,8 @@ class FrameTestCase(ApiTestCaseBase):
             'type':'frame'
         }
 
-        # outputも一応設定しておく（結果は変わらないけど）
-        output_port = {
-            'label': '出力1',
-            'nodeId': 'd1',
-            'type':'frame'
-        }
-
         flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
-        flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
         flow = self.save_flow(self.root, 'test', flow_json)
 
@@ -439,7 +432,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": input_node_id,
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ4",
           "dataSource": "csv",
           "uuid": None
         }
@@ -450,16 +443,8 @@ class FrameTestCase(ApiTestCaseBase):
             'type':'frame'
         }
 
-        # outputも一応設定しておく（結果は変わらないけど）
-        output_port = {
-            'label': '出力1',
-            'nodeId': 'd1',
-            'type':'frame'
-        }
-
         flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
-        flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
 
         # フロー変数を使うようにする
@@ -503,6 +488,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['id'], 'd1')
         self.assertEqual(lasts[0]['label'], '出力結果')
 
+    # @unittest.skip
     def test_empty_vizs(self):
         """
         offset=limit=0を指定してヘッダ行だけを取得する
@@ -523,7 +509,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ5",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
@@ -551,6 +537,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
         self.assertIsNotNone(lasts[0].get('contents'))
 
+    # @unittest.skip
     def test_bad_csv_vizs(self):
         """
         不正なCSVをVis実行する
