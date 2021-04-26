@@ -1097,10 +1097,6 @@ const Library = (_: Props) => {
     };
 
     const deleteLibrary = async (library: LibraryChild, lock: { uuid: string | null }) => {
-<<<<<<< HEAD
-
-=======
->>>>>>> issues/#185
         return new Promise<void>(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
             if (library.type === Constants.library.type.flow) {
