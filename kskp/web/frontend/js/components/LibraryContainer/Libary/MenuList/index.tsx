@@ -11,10 +11,12 @@ interface Props {
     onClickNewFolder: () => void;
     onClickCSVUpload: () => void;
     onClickAddDatabase: () => void;
+    onClickAddRemoteFolder: () => void;
 }
 
 const MenuList = (props: Props) => {
-    const { allowlist, onClickNewFlow, onClickNewProject, onClickNewFolder, onClickCSVUpload, onClickAddDatabase } = props;
+    const { allowlist, onClickNewFlow, onClickNewProject, onClickNewFolder, 
+        onClickCSVUpload, onClickAddDatabase, onClickAddRemoteFolder } = props;
 
     let createFile: any, createFolder: any, createProject: any, upload: any
 
@@ -32,6 +34,8 @@ const MenuList = (props: Props) => {
         <FlatButton icon={"icon-add"} onClick={onClickNewFlow}>フローの新規作成</FlatButton>
         <Spacer height={8} />
         <FlatButton icon={"icon-add"} onClick={onClickAddDatabase}>データベースの追加</FlatButton>
+        <Spacer height={8} />
+        <FlatButton icon={"icon-add"} onClick={onClickAddRemoteFolder}>リモートフォルダーの追加</FlatButton>
         <Spacer height={8} />
     </React.Fragment> : null;
 
