@@ -243,11 +243,154 @@ def throw_away_flow(flow_uuid):
     flow = g.factory.data.find_by_uuid(flow_uuid)
     flow.throw_away(lock_uuid=lock_uuid)
 
+@mod.route('/datasrcs', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_datasrcs():
+    """
+    データソースの一覧を取得する
+    """
+    from kskp.depo.std.commands import CommandLink
+
+    datasrcs_json = []
+
+    # create_datasource()を呼び出すためにRootを用いる
+    root = g.factory.data.load_root()
+
+    # # ライブラリデータソースを作成する
+    # label = 'ライブラリ'
+    # loader_cmd = CommandLink('loader').resolve()
+    # args = {'file_path':'@[filePath]'}
+    # params = [
+    #     {
+    #         "name": "filePath",
+    #         "type": "string",
+    #         "label": "ファイルパスを指定する",
+    #         "optional": False
+    #     }
+    # ]
+
+    for store in g.factory.data.find_all_stores():
+        # 参照権限のないデータストアは取得しない
+        if not store.readable:
+            continue
+        # ゴミ箱にあるデータストアは取得しない
+        if g.factory.data.trashed(store.uuid):
+            continue
+
+        if store.type == Datum.DATABASE_TYPE:
+            # DBデータソースを作成する
+            label = store.label
+            loader_cmd = CommandLink('db_loader').resolve()
+            args = {'schema':'@[schema]', 'table':'@[table]'}
+            params = [
+                {
+                    "name": "schema",
+                    "type": "string",
+                    "label": "スキーマ名を指定する",
+                    "optional": True
+                },
+                {
+                    "name": "table",
+                    "type": "string",
+                    "label": "テーブル名を指定する",
+                    "optional": False
+                }
+            ]
+            
+        elif store.type == Datum.RFOLDER_TYPE:
+            # リモートフォルダデータソースを作成する
+            label = store.label
+            loader_cmd = CommandLink('remotefolder_loader').resolve()
+            args = {'file_path':'@[filePath]'}
+            params = [
+                {
+                    "name": "filePath",
+                    "type": "string",
+                    "label": "ファイルパスを指定する",
+                    "optional": False
+                }
+            ]
+
+        # データソースを作成する
+        datasource = root.create_datasource(label, store, loader_cmd, args, params)
+        # 戻り値のJSONを作成する
+        datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+        datasrc_json['flow'] = datasource.flow_data.to_json()
+        datasrcs_json.append(datasrc_json)
+
+    return datasrcs_json
+
+@mod.route('/datadsts', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_datadsts():
+    """
+    データデストの一覧を取得する
+    """
+    from kskp.depo.std.commands import CommandLink
+
+    datadsts_json = []
+
+    # create_datasource()を呼び出すためにRootを用いる
+    root = g.factory.data.load_root()
+
+    for store in g.factory.data.find_all_stores():
+        # 参照権限のないデータストアは取得しない
+        if not store.readable:
+            continue
+        # ゴミ箱にあるデータストアは取得しない
+        if g.factory.data.trashed(store.uuid):
+            continue
+
+        if store.type == Datum.DATABASE_TYPE:
+            # DBデータデストを作成する
+            label = store.label
+            saver_cmd = CommandLink('db_saver').resolve()
+            args = {'schema':'@[schema]', 'table':'@[table]'}
+            params = [
+                {
+                    "name": "schema",
+                    "type": "string",
+                    "label": "スキーマ名を指定する",
+                    "optional": True
+                },
+                {
+                    "name": "table",
+                    "type": "string",
+                    "label": "テーブル名を指定する",
+                    "optional": False
+                }
+            ]
+            
+        elif store.type == Datum.RFOLDER_TYPE:
+            # リモートフォルダデータデストを作成する
+            label = store.label
+            saver_cmd = CommandLink('remotefolder_saver').resolve()
+            args = {'dir_path':'@[dirPath]'}
+            params = [
+                {
+                    "name": "dirPath",
+                    "type": "string",
+                    "label": "フォルダパスを指定する",
+                    "optional": False
+                }
+            ]
+
+        # データソースを作成する
+        datadest = root.create_datadest(label, store, saver_cmd, args, params)
+        # 戻り値のJSONを作成する
+        datadst_json = datadest.flow_data.to_json(contains_nodes=False)
+        datadst_json['flow'] = datadest.flow_data.to_json()
+        datadsts_json.append(datadst_json)
+
+    return datadsts_json
+
 @mod.route('/subflows', methods=['GET'])
 @login_required_api
 def fetch_subflows():
     """
-    サブフロー一覧を取得する。
+    サブフロー一覧を取得する
     """
     subflow_data_list = []
     for subflow in g.factory.data.find_all_subflows():

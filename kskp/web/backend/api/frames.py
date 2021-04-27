@@ -201,15 +201,12 @@ def fetch_vis(frame_uuid):
     指定したframeのVisデータを直接UUIDで指定して取得する
     """
     from kskp.depo.std.commands import LoaderCommand
-    from kskp.engine import Step
 
     vis_args = {'vis':{'d':request.json}}
     frame = g.factory.data.find_by_uuid(frame_uuid)
     parent_folder = frame.find_parent()
-    loader_step = Step(f'loader_{frame.label}', LoaderCommand(), {'uuid': frame_uuid})
-    # datasource = g.factory.data.create_datasource(None, 'tmp_source', parent_folder, loader_step)
     # datasourceは保存しないので、親フォルダはどこでも良い
-    datasource = parent_folder.create_datasource('tmp_source', parent_folder, loader_step)
+    datasource = parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame_uuid})
     activity = execute_flow(datasource, vis_args=vis_args)
     return format_vis(activity)
 
