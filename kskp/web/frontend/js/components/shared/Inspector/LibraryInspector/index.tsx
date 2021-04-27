@@ -64,9 +64,10 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderButtons(data?: LibraryChild) {
-    const { selectedData, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, onClickEditEncoding, onClickCleanTrash, onChangeFlowLock, onClickCopy } = this.props
+    const { selectedData, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, 
+      onClickEditEncoding, onClickCleanTrash, onChangeFlowLock, onClickCopy} = this.props
 
-    let preview, download, del, apply, move, edit, editEncoding, trashClean, lock, projectInfo, copy;
+    let preview, download, del, apply, move, edit, editEncoding, trashClean, lock, projectInfo, copy, flowExport;
 
     // preview button
     if (allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
@@ -119,6 +120,11 @@ class LibraryInspector extends React.Component<Props> {
       copy = <Button onClick={(e) => onClickCopy(e, data)} icon={"content_copy"}>複製する</Button>
     }
 
+    if (allowlist.export && data && (data.type == Constants.library.type.flow || Constants.library.type.folder || Constants.library.type.project)) {
+      const href = APIUtil.apiUrl("flow_files") + "/" + data.uuid
+      flowExport = <DownloadButton href={href} icon={"get_app"}>フローをダウンロードする</DownloadButton>
+    }
+
     return <React.Fragment>
       {preview}
       {download}
@@ -129,6 +135,7 @@ class LibraryInspector extends React.Component<Props> {
       {editEncoding}
       {del}
       {trashClean}
+      {flowExport}
       {lock}
     </React.Fragment>
   }

@@ -31,14 +31,21 @@ def upload_flow():
 
     if 'file' not in request.files or request.files.get('file') is None:
         raise Exception('No archive file found.')
+    if 'parent' not in request.form:
+        raise Exception('No parent is designated.')
 
-    root = g.factory.data.load_root()
-    filename = Path(request.files.get('file').filename).stem
+    if 'label' in request.form:
+        folder_label = request.form['label']
+    else:
+        folder_label = None
+
+    parent = g.factory.data.find_by_uuid(request.form['parent'])
+    file_name = Path(request.files.get('file').filename).stem
     stream = request.files.get('file').stream
 
     from kskp.store import FlowDumper
     flow_dumper = FlowDumper(g.factory)
-    flow_dumper.restore_archive(root, filename, stream)
+    flow_dumper.restore_archive(parent, folder_label, file_name, stream)
 
 @mod.route('/stores', methods=['GET'])
 @login_required_api
