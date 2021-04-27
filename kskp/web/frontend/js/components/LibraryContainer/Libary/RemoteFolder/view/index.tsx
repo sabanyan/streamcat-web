@@ -15,10 +15,10 @@ const params = [
     "type": "select",
     "label": "プロトコル",
     "options": {
-      "labels": ["Samba", "NFS"],
-      "values": ["Samba", "NFS"]
+      "labels": ["Samba"],
+      "values": ["smb"]
     },
-    "default": "Samba"
+    "default": "smb"
   },
   {
     "name": "hostname",
