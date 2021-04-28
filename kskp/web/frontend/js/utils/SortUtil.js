@@ -1,5 +1,5 @@
 export default class SortUtil { 
-    static getSortedContents(contents:[], compare = (a,b) => SortUtil.defaultCompare(a,b)) : [] {
+    static getSortedContents(contents, compare = (a,b) => SortUtil.defaultCompare(a,b)) {
       return contents.sort((a, b) => compare(a,b))
   }
 

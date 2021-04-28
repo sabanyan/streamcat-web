@@ -95,6 +95,7 @@ venv.bak/
 
 # Rope project settings
 .ropeproject
+.map
 
 # mkdocs documentation
 /site
@@ -106,3 +107,4 @@ venv.bak/
 .DS_Store
 
 .idea
+vendor.js.LICENSE.txt

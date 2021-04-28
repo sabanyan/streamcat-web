@@ -207,8 +207,8 @@ const Library = (_: Props) => {
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const clickedLibraryCell = useRef(false);
     const [folderPath, setFolderPath] = useState<any>();
-    const [isLoading, setIsLoading] = useState<Boolean>();
-    const [is_finished, setIsFinished] = useState<Boolean>();
+    const [isLoading, setIsLoading] = useState<boolean>();
+    const [is_finished, setIsFinished] = useState<boolean>();
     const [isDialog] = useState<Boolean>((HttpUtil.getURLParam("dialog") === "true"));
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = inject_is_project;

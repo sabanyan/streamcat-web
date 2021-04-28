@@ -2,6 +2,8 @@
 import axios from 'axios'
 
 class APIUtil {
+  config:{}
+
   constructor () {
     //default config
     this.config = {}
@@ -11,6 +13,7 @@ class APIUtil {
     if (config) {
       return Object.assign(this.config, config)
     }
+    return {}
   }
 
   apiUrl (path: string) {
@@ -20,7 +23,7 @@ class APIUtil {
   get (path: string, data?: {}, config?: {}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
-    return axios.get(url, {params: data}, merged_config)
+    return axios.get(url, {params: data})
   }
 
   post (path: string, data: {}, config?: {}) {
@@ -38,10 +41,10 @@ class APIUtil {
   delete (path: string, data?: {}, config?: {}) {
     const merged_config = this.mergeConfig(config)
     const url = this.apiUrl(path)
-    return axios.delete(url, data, merged_config)
+    return axios.delete(url, data)
   }
 
-  frameUpload (file: FileList, fileName: string, label: string, parentUUID: string) {
+  frameUpload (file: any, fileName: string, label: string, parentUUID: string) {
     const options = {
       headers: {'enctype': 'multipart/form-data'}
     }

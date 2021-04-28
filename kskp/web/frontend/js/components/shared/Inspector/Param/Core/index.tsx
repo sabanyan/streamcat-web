@@ -1,5 +1,8 @@
-//@flow
 import React from 'react'
+
+export type Props = {
+  param: any
+}
 
 export default class Param extends React.Component<Props> {
 

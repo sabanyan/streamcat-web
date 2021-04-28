@@ -1,4 +1,3 @@
-//@flow
 import * as React from 'react'
 import classnames from 'classnames'
 import { Tab, TabBar, TabList, TabPanel } from 'Shared/Base'
@@ -11,11 +10,15 @@ type Props = {
   contents: [{}];
   visible: boolean;
   title: string;
-  footer: React.Node
+  footer: React.ReactNode;
+  notify: any,
+  dismissNotify: any
+  close_button:any
 }
 type State = {
   selected_tab_id: number,
-  results: [{}]
+  results: any[],
+  headers: any[]
 }
 
 export default class PreviewModal extends React.Component<Props, State> {
@@ -53,7 +56,7 @@ export default class PreviewModal extends React.Component<Props, State> {
 
   renderTabContent(index) {
     const {notify, dismissNotify, title} = this.props
-    const contents = this.props.contents
+    const contents:any = this.props.contents
     const {flow_uuid, stepIds, frame_uuid,  visualize} = contents[index].content
     const {id, afterViz} = contents[index]
 
@@ -69,6 +72,7 @@ export default class PreviewModal extends React.Component<Props, State> {
       dismissNotify={dismissNotify}
       />
     }
+    return null
   }
 
   UNSAFE_componentWillReceiveProps(nextProps){
@@ -97,11 +101,11 @@ export default class PreviewModal extends React.Component<Props, State> {
 
     if (!Array.isArray(contents)) contents = [contents]
 
-    let tabs = []
+    let tabs:any = []
     
     //順番を維持するためForEachでLoop
-    contents.forEach((content,index)=>{
-      const tab = <Tab key={"tab_" + index} width={"auto"} tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
+    contents.forEach((content:any,index)=>{
+      const tab:any = <Tab key={"tab_" + index} width={"auto"} tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
       tabs.push(tab)
     })
 

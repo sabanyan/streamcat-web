@@ -1,4 +1,4 @@
-import Ajv from 'ajv/lib/ajv'
+import Ajv from 'ajv'
 import FlowModelSchema from 'Schema/flow/FlowModelSchema.json'
 import GraphModelSchema from 'Schema/graph/GraphModelSchema.json'
 import CommandStepModelSchema from 'Schema/steps/CommandStepModelSchema.json'

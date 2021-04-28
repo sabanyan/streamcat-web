@@ -2,8 +2,10 @@ export default class PositionUtil {
 
   static getLeftTopPosition (htmlElement: string) {
 
+    let target = document.querySelector(htmlElement)
+    
     return {
-      x: document.querySelector(htmlElement).scrollLeft,
+      x: target ? target.scrollLeft : 0,
       y: window.pageYOffset
     }
   }

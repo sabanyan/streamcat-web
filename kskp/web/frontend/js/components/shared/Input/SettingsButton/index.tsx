@@ -1,10 +1,11 @@
-//@flow
 import React from 'react'
 import { SettingIcon } from 'Shared/SVG'
 //import classnames from 'classnames'
 import style from './style.scss'
 
-type Props = {}
+type Props = {
+  addSelectStep:Function;
+}
 
 export default class SettingsButton extends React.Component<Props> {
 

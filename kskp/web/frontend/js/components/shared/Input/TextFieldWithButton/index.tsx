@@ -1,4 +1,3 @@
-//@flow
 import * as React from 'react'
 import style from './style.scss'
 import { Button, TextField } from 'Shared/Input'
@@ -7,7 +6,7 @@ type Props = {
   placeholder?: string;
   onChange?: Function;
   onClick?: Function;
-  children?: React.Children;
+  children?: React.ReactChildren;
   disabled?: boolean;
   icon?: string;
   danger?: boolean;
@@ -24,19 +23,20 @@ export default class TextFieldWithButton extends React.Component<Props> {
     danger: false
   }
 
-  constructor (props: Props) {
+  constructor(props: Props) {
     super(props)
   }
 
-  render () {
-    const {placeholder, onChange, onClick, children, disabled, icon, danger} = this.props
+  render() {
+    const { placeholder, onChange, onClick, children, disabled, icon, danger } = this.props
+
     return <div className={style.container}>
       <div className={style.textfield}><TextField placeholder={placeholder}
-                                                  onChange={onChange}></TextField>
+        onChange={(e) => { onChange ? onChange(e) : void (e) }}></TextField>
       </div>
-      <div className={style.button}><Button onClick={onClick}
-                                            disabled={disabled} icon={icon}
-                                            danger={danger}>{children}</Button>
+      <div className={style.button}><Button onClick={(e) => { onClick ? onClick(e) : void (e) }}
+        disabled={disabled} icon={icon}
+        danger={danger}>{children}</Button>
       </div>
     </div>
   }

@@ -16,9 +16,9 @@ export default class ConversionUtil {
   ToDo: 将来、必要であれば、平行処理（Parallel Loop）を検討してもいいかも
   */
   static convertPortsTo147 (inOrOutPorts: [], nodes: []): [] {
-    let newPorts = []
-    inOrOutPorts.forEach((port) => {
-      const target = nodes.find((node) => {
+    let newPorts:any = []
+    inOrOutPorts.forEach((port:any) => {
+      const target:any = nodes.find((node:any) => {
         return (port.name === node.id)
       })
       let newPort = {

@@ -1,4 +1,3 @@
-//@flow
 import dagre from 'dagre'
 import Constants from 'Constants/index'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
@@ -17,13 +16,15 @@ export const defaultGraphProps = {
   marginY: 100,
   rankSeparator: Constants.default.graph.rankSeparator,
 }
-
+/*
 type GraphType = {
   nodes: {};
   zoom: number;
 }
+*/
 
 class GraphUtil {
+  g:any
 
   constructor() {
     this.g = new dagre.graphlib.Graph({ multigraph: true })
@@ -117,7 +118,7 @@ class GraphUtil {
    * @param edges
    */
   removeAllEdges(edges: []) {
-    edges.forEach((edge) => {
+    edges.forEach((edge:any) => {
       const from = edge.v
       const to = edge.w
       const portName = edge.name
@@ -168,7 +169,7 @@ class GraphUtil {
       let graph_node = self.g.node(v)
       if (graph_node) {
         const key = graph_node.label //グラフ構造のlabelにidを設定しています
-        let node = GraphUtil.getNode(nodes, key)
+        let node:any = GraphUtil.getNode(nodes, key)
         if (node) {
           node.setFrame({
             x: graph_node.x,
@@ -189,7 +190,7 @@ class GraphUtil {
    * @returns {*}
    */
   static getNode(nodes: [], key: string) {
-    let node = nodes.find((node) => {
+    let node = nodes.find((node:any) => {
       return node.id === key
     })
     return node
@@ -219,8 +220,8 @@ class GraphUtil {
    * @returns {*}
    */
   static getNewNodesWithIncludeKeys(nodes: [], keySet: any) {
-    let node = nodes.filter((node) => {
-      return (key_set.has(node.id))
+    let node = nodes.filter((node:any) => {
+      return (keySet.has(node.id))
     })
     return node
   }
@@ -231,8 +232,8 @@ class GraphUtil {
    * @param keySet
    * @returns {*}
    */
-  static getNewNodesWithExculudeKeys(nodes: [], keySet: Set) {
-    let node = nodes.filter((node) => {
+  static getNewNodesWithExculudeKeys(nodes: [], keySet: Set<any>) {
+    let node = nodes.filter((node:any) => {
       return !(keySet.has(node.id))
     })
     return node
@@ -243,14 +244,14 @@ class GraphUtil {
    * @param json
    * @returns {*}
    */
-  load(json: {}) {
+  load(json: any) {
     const self = this
     let hasPosition = false
 
     if (!json || !json.nodes) return new FlowModel()
 
-    let newNodes = []
-    json.nodes.forEach((node) => {
+    let newNodes:any = []
+    json.nodes.forEach((node:any) => {
       self.addNode(node.id)
       const type = node.type
       switch (type) {
@@ -276,7 +277,8 @@ class GraphUtil {
         case Constants.step.type.subflow:
           //コマンド
           const step = node
-          let model = {
+          let model:any
+          model = {
             id: step.id,
             name: step.name,
             label: step.label,

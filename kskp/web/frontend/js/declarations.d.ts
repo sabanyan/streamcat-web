@@ -13,7 +13,7 @@ declare const inject_is_trash: boolean;
 declare const inject_is_project: boolean;
 
 declare interface Window {
-    nodes: {}
+    nodes: any
     commands: {}
     visualizers: {}
     subflows: {}

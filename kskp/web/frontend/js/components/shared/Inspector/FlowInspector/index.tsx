@@ -5,9 +5,9 @@ import { FlowUtil, ModalUtil, ReactDomUtil } from 'Utils/index'
 import style from '../style.scss'
 import { Button } from 'Shared/Input'
 import { BaseInspector, InputFlowForm, Resizer } from 'Shared/Inspector'
-import type { FlowListDataType, RunArgsType } from 'Types/index'
+import { FlowListDataType, RunArgsType } from 'Types/index'
 import moment from 'moment/moment'
-import type { FlowModelProps } from "Model/Flow/FlowModel";
+import { FlowModelProps } from "Model/Flow/FlowModel";
 
 type Props = {
   onClickDelete: Function;
@@ -79,7 +79,7 @@ class FlowInspector extends React.Component<Props> {
     FlowUtil.runWithArgs(runArgs, notify, dismissNotify).then((response) => {
       this.resetRunArgsValue()
       if (response.data.success) {
-        const json: RunResponseType = response.data
+        const json: any = response.data
         const result = json.lasts.map((n, index) => {
           return <li key={index}>{n.id}</li>
         })
@@ -111,7 +111,7 @@ class FlowInspector extends React.Component<Props> {
     if (!flow) {
       return this.nullInspector()
     }
-    let content = null
+    let content:any = null
     const uuid = flow.uuid
     const label = flow.label
     const creator = flow.creator

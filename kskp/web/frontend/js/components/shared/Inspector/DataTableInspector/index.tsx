@@ -4,12 +4,14 @@ import style from '../style.scss'
 import { DownloadButton } from 'Shared/Input'
 import { BaseInspector } from 'Shared/Inspector'
 import { HttpUtil, StringUtil } from 'Utils/index'
-import type { CSVModelProps } from 'Model/CSV/CSVModel'
+import { CSVModelProps } from 'Model/CSV/CSVModel'
 import { CSVModel } from 'Model/index'
 
 type Props = {
   uuid: string,
-  title: string
+  title: string,
+  selected_data_source_detail:any,
+  image_url: string,
 }
 
 class DataTableInspector extends React.Component<Props> {
@@ -25,6 +27,7 @@ class DataTableInspector extends React.Component<Props> {
       let props: CSVModelProps = {
         uuid: uuid,
         data: response.data,
+        label: ""
       }
       const csv: CSVModel = new CSVModel(props)
       csv.handleDownload()

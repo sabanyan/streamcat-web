@@ -7,14 +7,17 @@
       "jsx": "react",                    /* reactを書くときに必要, 'react-native', or 'react'. */
       
       /* Strict Type-Checking Options */
-      "strict": true,                        /* すべての strict タイプ・オプション(noImplicitAny, strictNullChecks, noImplicitThis(thisの型チェック), alwaysStrict(strictモードのjs出力)) を 有効化する */
+      "strict": false,                        /* すべての strict タイプ・オプション(noImplicitAny, strictNullChecks, noImplicitThis(thisの型チェック), alwaysStrict(strictモードのjs出力)) を 有効化する */
       "noImplicitAny": false,                 /* any型の使用不可 */
       "strictNullChecks": true,              /* nullable型以外でnullを許容しない */
       "allowSyntheticDefaultImports": true,
+      "strictBindCallApply": false,
       /* Additional Checks */
       "noUnusedLocals": false,                /* 未使用の変数を許容しない */
       "noUnusedParameters": false,            /* 未使用の変数を許容しない */
       "noImplicitReturns": true,             /* メソッド内で返り値の型があっているかをチェック */
+      "checkJs": false,
+      "skipLibCheck": true,
 
       /* Alias Path */
       "paths": {// WebPackのAlias設定も忘れずに

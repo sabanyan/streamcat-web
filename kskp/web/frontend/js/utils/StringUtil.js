@@ -2,12 +2,14 @@
 import { v4 as uuidv4 } from 'uuid';
 export default class StringUtil {
 
-  static separate (num: number): string {
+  // static separate (num: number): string
+  static separate (num) {
     if (!num && num !== 0) return ''
     return String(num).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,')
   }
 
-  static convertToFileSize (size: number): string {
+  // static convertToFileSize (size: number): string
+  static convertToFileSize (size) {
     if (!size && size !== 0) return ''
     const units = [' B', ' KB', ' MB', ' GB', ' TB']
     let i = 0
@@ -17,7 +19,8 @@ export default class StringUtil {
     return this.separate(Math.round(size * 100 / 100)) + units[i]
   }
 
-  static stripHtmlToText (html: string) {
+  // static stripHtmlToText (html: string)
+  static stripHtmlToText (html) {
     let tmp = document.createElement('DIV')
     tmp.innerHTML = html
     return tmp.textContent || tmp.innerText || ''
@@ -32,14 +35,18 @@ export default class StringUtil {
     return metrics.width
   }
 
-  static generateUUID(): string{
+  // static generateUUID(): string
+  static generateUUID(){
     return uuidv4();
   }
-  static urlEncode(value:string):string{
+
+  // static urlEncode(value:string):string
+  static urlEncode(value){
    return encodeURIComponent(value);
   }
 
-  static urlDecode(value:string):string{
+  // static urlDecode(value:string):string
+  static urlDecode(value){
     return decodeURIComponent(value);
   }
 }

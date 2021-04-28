@@ -6,8 +6,8 @@ import { Button } from 'Shared/Input'
 type Props = {
   id: string,
   title?: string,
-  content?: React.Node,
-  contents?: [React.Node],
+  content?: React.ReactNode,
+  contents?: [React.ReactNode],
   dynamic?: boolean,
   preview?: boolean,
   footer?: boolean,
@@ -16,15 +16,17 @@ type Props = {
   cancel?: string,
   close?: boolean,
   done?: string,
-  children?: React.Node,
+  children?: React.ReactNode,
   primary?: boolean,
-  overflow?: boolean
+  overflow?: boolean,
+  notify?:any,
+  dismissNotify?:any
 }
 
 type State = {
   visible: boolean,
   content?: any,
-  contents?: [React.Node],
+  contents?: [React.ReactNode] | any,
   title?: string,
   done?: string,
   danger?: boolean
@@ -183,14 +185,14 @@ export default class Modal extends React.Component<Props, State> {
     let modal
     let modal_body = (dynamic) ? content : children
     if (id === Constants.modal.ADD_FRAME　|| id === Constants.modal.IMPORT_FLOW) {
-      modal = <EmptyModal id={id} title={title} footer={modal_footer}
+      modal = <EmptyModal id={id} title={title ? title : ""} footer={modal_footer}
         close_button={close_button} visible={visible}>
         {(visible) ? modal_body : null}
       </EmptyModal>
     } else if (preview) {
       let key = (contents) ? contents[0].id : null
       modal = <PreviewModal key={key}
-        id={id} title={title} footer={modal_footer}
+        id={id} title={title ? title : ""} footer={modal_footer}
         close_button={close_button} visible={visible}
         contents={(visible) ? contents : null}
         notify={notify} dismissNotify={dismissNotify}>

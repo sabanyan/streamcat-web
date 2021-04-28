@@ -23,7 +23,7 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
   onClickInput (e) {
     const name = e.currentTarget.getAttribute('name')
     HttpUtil.windowOpen('library?dialog=true&mode=frame_select', (args) => {
-      const selected_data: LibraryListDataType = args
+      const selected_data: any = args
       const label = selected_data.label
       const uuid = selected_data.uuid
       // update
@@ -61,7 +61,7 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
       return null
     }
 
-    const result = []
+    const result:any = []
     for (const f of runArgs.flows) {
       const key = f.label
       const value = f.value
@@ -85,7 +85,7 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
       return null
     }
 
-    let forms = []
+    let forms:any = []
     for (const v of params) {
       const form = <div key={v.name} className={style.flow_param}>
         <div className={style.left}>

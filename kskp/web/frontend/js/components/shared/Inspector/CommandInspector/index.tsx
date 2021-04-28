@@ -1,4 +1,3 @@
-//@flow
 import * as React from 'react'
 import { BaseInspector, InOutConnector, ParamsForm } from 'Shared/Inspector'
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
@@ -13,23 +12,22 @@ import FlowModel from 'Model/Flow/FlowModel'
 import { Loader } from 'Shared/Base'
 
 type CommandInspectorProps = {
-  selected_step_ids: [];
+  selected_step_ids: any[];
   mast: MastType;
   nodes: [];
-  updateStep: Function;
   addHistory: Function;
   selectSteps: Function;
   deleteSteps: Function;
   updateStep: Function;
-  children?: React.Node;
+  children?: React.ReactNode;
   sortStepSrcEnd: Function;
   baseInspectorDisabled: boolean;
 }
 
 class CommandInspector extends React.Component<CommandInspectorProps> {
-  inputRefs: any[]
+  inputRefs: any[] = []
 
-  selectedSubFlow: FlowModel
+  selectedSubFlow: FlowModel | null = null
   loaded: boolean = false
 
   constructor(props: CommandInspectorProps) {
@@ -39,7 +37,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   componentWillMount() {
     //データフレームの詳細を取得する
     const { updateStep } = this.props
-    const selected_step: StepModelType = this.getSelectedStep()
+    const selected_step: any = this.getSelectedStep()
     this.selectedSubFlow = null
     if (selected_step instanceof CommandStepModel) {
       if (selected_step.type === Constants.step.type.subflow && selected_step.uuid) {
@@ -123,10 +121,10 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   }
 
   render() {
-    const { selectedStep, updateStep, sortStepSrcEnd, baseInspectorDisabled } = this.props;
+    const { nodes, updateStep, sortStepSrcEnd, baseInspectorDisabled } = this.props;
     const { commands, subflows } = this.props.mast
     let selected_step: StepModelType = this.getSelectedStep()
-    let inputForm = []
+    let inputForm:any = []
     let subFlowLink, content, label, subLabel, groups, folderLink, detail
     if (selected_step.type === Constants.step.type.command) {
       //指定されたステップの元コマンドを取得
@@ -142,7 +140,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
-      inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command} invalids={invalids}
+      inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} command={command} invalids={invalids}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups} />
 
     } else if (selected_step.type === Constants.step.type.subflow) {
@@ -156,9 +154,9 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         const args: {} = selected_step.args
         const invalids: {} = selected_step.invalid
 
-        inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={null} invalids={invalids}
+        inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} command={null} invalids={invalids}
           onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups} />
-        subFlowLink = <Button onClick={(e) => this.onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>
+        subFlowLink = <Button onClick={(e:any) => this.onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>
         if (this.selectedSubFlow && this.selectedSubFlow.folderPath) {
           detail =
             <div>
@@ -188,18 +186,18 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       content = <div>
         <div className={style.actions}>
           {subFlowLink}
-          <Button onClick={(e) => this.onClickDelete(e)} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
+          <Button onClick={(e:any) => this.onClickDelete(e)} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
         </div>
         <div className={style.full_hr} />
         <div><label>場所</label></div>
         {detail}
         <InOutConnector
-          selectedStep={selectedStep}
+          selectedStep={selected_step}
           updateStep={updateStep}
           nodes={nodes}
           sortStepSrcEnd={sortStepSrcEnd}
           onChangeInEdge={(e, data) => this.onChangeInEdge(e, data)}
-          onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)} selectedStep={selected_step}
+          onChangeOutEdge={(e, data) => this.onChangeOutEdge(e, data)}
           selectedSubFlow={this.selectedSubFlow}
           disabled={baseInspectorDisabled}
         />
@@ -216,7 +214,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
     </BaseInspector>
   }
 
-  onBlurTitle(e: SyntheticInputEvent<EventTarget>) {
+  onBlurTitle(e: any) {
     const selectedStep = this.getSelectedStep()
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     newSelectedStep.label = e.target.value

@@ -22,8 +22,6 @@ import FlowModel from 'Model/Flow/FlowModel'
 import type { DataFrameDetailType, MastType } from 'Types/index'
 import type { CSVModelProps } from 'Model/CSV/CSVModel'
 import { Loader } from 'Shared/Base'
-import { Visualizer } from 'Shared/Visualizer'
-import type { FlowModelProps } from "Model/Flow/FlowModel";
 import { API } from 'Modules/api/index'
 
 type State = {
@@ -41,12 +39,9 @@ type DataSourceInspectorProps = {
   deleteSteps: Function;
   selectSteps: Function;
   addHistory: Function;
-  flow: FlowModelProps;
-  updateFlow: Function;
-  selected_step_ids: [];
+  flow: FlowModel;
+  selected_step_ids: any[];
   deleteCache: Function;
-  updateFlow: Function;
-  nodes: [];
   addStep: Function;
   updateStep: Function;
   updateFlow: Function;
@@ -54,13 +49,17 @@ type DataSourceInspectorProps = {
   previewDisabled: boolean;
   baseInspectorDisabled: boolean;
   commandSelectorHidden: boolean;
+  lockUUID:string;
+  refreshFlow: Function;
+  updateDataFrameDetail: Function;
 }
 
 class DataSourceInspector extends React.Component<DataSourceInspectorProps, State> {
 
   loading: boolean = false
+  refs:any
 
-  constructor(props: FlowEditorProps) {
+  constructor(props:DataSourceInspectorProps) {
     super(props)
     this.state = {
       loading: false
@@ -117,9 +116,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       })
   }
 
-  onClickPreview(e: Event) {
-
-
+  onClickPreview(e: any) {
 
     let IGNORE_CONFIRM_SAVE = window.localStorage.getItem('IGNORE_CONFIRM_SAVE');
     if (!IGNORE_CONFIRM_SAVE) {
@@ -145,8 +142,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
           <p>
             <br />
-            <input type="checkbox" id="checkbox_confirm" checked={IGNORE_CONFIRM_SAVE} onChange={this.onChangeIgnoreConfirmSave}></input>
-            <label for="checkbox_confirm">次回から表示しない</label>
+            <input type="checkbox" id="checkbox_confirm" checked={IGNORE_CONFIRM_SAVE === "true"} onChange={this.onChangeIgnoreConfirmSave}></input>
+            <label htmlFor="checkbox_confirm">次回から表示しない</label>
           </p>
         </div>
       });
@@ -164,7 +161,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     const flow_uuid = inject_flow_uuid
     const selected_step = this.getSelectedStep()
     let id = selected_step.id
-    let stepIds = []
+    let stepIds:any = []
     stepIds.push(id)
     let visualizers = this.props.mast.visualizers
     visualizers = SortUtil.getSortedContents(visualizers)
@@ -176,7 +173,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
         .then((result: any) => {
           if (result.success === true) {
             // preview
-            let contents = []
+            let contents:any = []
             for (const v of visualizers) {
               let content = { flow_uuid: flow_uuid, stepIds: stepIds, frame_uuid: selected_step.uuid, visualize: v }
               contents.push({ title: v.label, content: content, id: id, afterViz: this.updateCache })
@@ -223,7 +220,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       })
   }
 
-  onClickCSVDownload(e: Event) {
+  onClickCSVDownload(e: any) {
     const selected_step = this.getSelectedStep()
     const param = {
       type: 'frame',
@@ -232,7 +229,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
       label: selected_step.label
     }
     APIUtil.get('files', param).then((response) => {
-      let props: CSVModelProps = {
+      let props: any = {
         uuid: selected_step.uuid,
         data: response.data,
       }
@@ -241,7 +238,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     })
   }
 
-  onClickDelete(e: Event) {
+  onClickDelete(e: any) {
 
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -264,14 +261,14 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     })
   }
 
-  onChangeFlowInOut(e: Event) {
+  onChangeFlowInOut(e: any) {
     let flow: FlowModel = this.props.flow
     const flowInChecked = this.refs.flowIn.checked
     const flowOutChecked = this.refs.flowOut.checked
 
-    let selected_step = this.getSelectedStep()
+    let selected_step:any = this.getSelectedStep()
     //パラメーターを更新
-    const port = {
+    const port:any = {
       label: selected_step.getLabel(),
       nodeId: selected_step.id,
       type: selected_step.type
@@ -297,7 +294,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     return GraphUtil.getNode(nodes, selected_step_ids[0])
   }
 
-  onChangeCacheCheck(e: Event) {
+  onChangeCacheCheck(e: any) {
 
     let selected_step = this.getSelectedStep()
     if (selected_step.isMakeCache()) {
@@ -330,7 +327,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   deleteCache() {
-    const { selected_step_ids } = this.props
+    const { selected_step_ids, notify } = this.props
     const id = selected_step_ids[0]
     const url = 'caches?of=' + inject_flow_uuid + '.' + id
 
@@ -361,7 +358,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   renderFrameDetail(data_source_detail) {
-    let result = null
+    let result:any = null
     if (data_source_detail && data_source_detail.encoding && data_source_detail.newline) {
       result = <React.Fragment>
         <div className={style.overview}>
@@ -392,7 +389,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     let dataSource
     let preview
     let download
-    const selected_step = this.getSelectedStep()
+    const selected_step:any = this.getSelectedStep()
     if (selected_step instanceof DataFrameStepModel) {
       preview = <Button onClick={(e) => this.onClickPreview(e)}
         icon={'visibility'} disabled={previewDisabled}>プレビュー</Button>
@@ -420,7 +417,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     </div>
     const cacheCheckForm = <div>
       <div>
-        <label><input type="checkbox" checked={selected_step.makeCache ? 'checked' : ''}
+        <label><input type="checkbox" checked={selected_step.makeCache ? true : false}
           ref={'cache'} disabled={baseInspectorDisabled}
           onChange={(e) => this.onChangeCacheCheck(e)} />
         </label>
@@ -493,7 +490,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
           </div>
           <div className={style.cache_delete}>
             <Button icon={'delete'} danger={true}
-              disabled={!selected_step.isCached() | baseInspectorDisabled}
+              disabled={!selected_step.isCached() || baseInspectorDisabled}
               onClick={(e) => { this.onClickDeleteCache() }}>
               キャッシュ削除
             </Button>
@@ -535,7 +532,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
     </BaseInspector>
   }
 
-  onBlurTitle(e: SyntheticInputEvent<EventTarget>) {
+  onBlurTitle(e: any) {
     const selectedStep = this.getSelectedStep()
     let newSelectedStep = StateUtil.deepCopy(selectedStep)
     newSelectedStep.label = e.target.value

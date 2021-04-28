@@ -1,12 +1,13 @@
 import React from "react";
 import * as style from "./style.scss";
-import {AlignItemsProperty, FlexDirectionProperty, JustifyContentProperty} from "csstype";
 
 type Props = {
+    // Module '"csstype"' has no exported member エラーにより、
+    // AlignItemsProperty, FlexDirectionProperty, JustifyContentProperty -> anyにhotfix
     children: React.ReactNode
-    justifyContent?: JustifyContentProperty;
-    alignItems?: AlignItemsProperty;
-    flexDirection?: FlexDirectionProperty;
+    justifyContent?: any; 
+    alignItems?: any;
+    flexDirection?: any;
     inline?: boolean;
     fluid?: boolean;
     width?: number | string;

@@ -1,7 +1,7 @@
 //@flow
 import * as React from 'react'
 import { BaseInspector, ParamsForm, Resizer} from 'Shared/Inspector'
-import { FlowEditorProps } from 'FlowEditorContainer/index'
+import {  } from 'FlowEditorContainer/index'
 import style from './style.scss'
 import { Button } from 'Shared/Input'
 import FlowModel from 'Model/Flow/FlowModel'
@@ -9,14 +9,15 @@ import { ParamUtil, StateUtil } from 'Utils/index'
 import classnames from 'classnames'
 
 type PreviewInspectorProps = {
-  ...FlowEditorProps,
-  children?: React.Node,
+  FlowEditorProps,
+  children?: React.ReactNode,
   label: string,
   params: [],
   args: {},
   headers: [],
   // event
-  onApply: Function
+  onApply: Function,
+  groups: any
 }
 
 type State = {
@@ -57,7 +58,7 @@ class PreviewInspector extends React.Component<PreviewInspectorProps, State> {
     }
   }
 
-  onClickApply () {
+  onClickApply (e) {
     try {
       const {onApply} = this.props
       const args = this.state.args

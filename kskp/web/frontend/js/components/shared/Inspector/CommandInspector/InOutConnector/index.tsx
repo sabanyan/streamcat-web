@@ -5,15 +5,14 @@ import { AddButton, DropDownList } from 'Shared/Input'
 import { CommandStepModel, DataFrameStepModel, FlowModel, SubFlowStepModel } from 'Model/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { FlowUtil, ModalUtil, StateUtil } from 'Utils/index'
-import type { StepModelType } from 'Types/index'
+import { StepModelType } from 'Types/index'
 import Constants from 'Constants/index'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 
 type InOutConnectorProps = {
-  selectedStep: Function;
+  selectedStep: any;
   updateStep: Function;
   nodes: [];
-  selectedStep: Function;
   sortStepSrcEnd: Function;
   onChangeInEdge: Function;
   onChangeOutEdge: Function;
@@ -87,14 +86,14 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
 
     let dataFrameOnlyNodes: [DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
 
-    let dataSourceOptions = []
+    let dataSourceOptions:any = []
 
     dataFrameOnlyNodes.forEach((dataFrame) => {
       dataSourceOptions.push({ value: dataFrame.id, label: dataFrame.getLabel(), object: dataFrame })
     })
 
     let command: CommandModel
-    let inEdgeSelect = []
+    let inEdgeSelect:any = []
     let addEdgeContainer
     if (selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
 
@@ -139,7 +138,7 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
 
 
 
-    let output = null
+    let output:any = null
     if (selectedStep instanceof SubFlowStepModel) {
       const subflow = selectedStep.getCommand()
       if (subflow) {
@@ -182,7 +181,7 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
 
     return <div className="kskp-form">
       <label>入力</label>
-      <SortableList items={inEdgeSelect} onSortEnd={this.props.sortStepSrcEnd} distance={1} />
+      <SortableList items={inEdgeSelect} onSortEnd={(sort, event) => this.props.sortStepSrcEnd} distance={1} />
       {addEdgeContainer}
       <label>出力</label>
       {output}

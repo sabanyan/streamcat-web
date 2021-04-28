@@ -8,14 +8,14 @@ import Constants from 'Constants/index'
 import { CommandSelector } from 'FlowEditorContainer/Command';
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import type { MastType, SubFlowParamType } from 'Types/index'
-import type { FlowModelProps } from "Model/Flow/FlowModel";
+import classNames from 'classnames'
 
 type FlowSettingsInspectorProps = {
   mast: MastType;
   selected_step_ids: [];
   addStep: Function;
   selectSteps: Function;
-  flow: FlowModelProps;
+  flow: any;
   updateFlow: Function;
   addHistory: Function;
   addFlowVariableHidden: boolean;
@@ -24,10 +24,11 @@ type FlowSettingsInspectorProps = {
 }
 
 class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> {
-  paramRefs: [] = []
+  paramRefs: any = []
   loading: boolean = false
+  refs:any
 
-  constructor (props: FlowEditorProps) {
+  constructor (props: FlowSettingsInspectorProps) {
     super(props)
   }
 
@@ -49,8 +50,8 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
 
   getCurrentParams () {
     //現在入力中のすべてのParamsを取得する
-    let params = []
-    this.paramRefs.forEach(elem => {
+    let params:any = []
+    this.paramRefs.forEach((elem:any) => {
       let param: SubFlowParamType = {}
       param['label'] = elem.value
       param['name'] = elem.value
@@ -61,7 +62,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     return params
   }
 
-  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
+  onBlurTitle (e: any) {
     let {flow} = this.props
     flow.label = e.target.value
     this.props.updateFlow(flow)
@@ -139,7 +140,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     inputParams = params.map((param, index) => {
       return <div key={param.uuid} className={style.flow_param}>
         <div className={style.left}>
-          <input ref={(ref) => {
+          <input ref={(ref:any) => {
             //render時にrefがnullのケースでcallされる場合があるので、
             //refがあることを確認してから入れる
             if (ref) {
@@ -179,9 +180,9 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     }
 
     return <BaseInspector key={flow.uuid} header={''} label={flow.label}
-                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}
+                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={(e) => this.onHide(e)}
                           disabled={baseInspectorDisabled}>
-      <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
+      <textarea className={classNames('mb-8px', 'form-control')} placeholder={'フローの説明'} ref={'description'}
                 defaultValue={this.props.flow.description} rows={8}
                 onChange={(e) => this.onDescriptionChange(e)} disabled={(baseInspectorDisabled)}></textarea>
       {inputParamsContainer}

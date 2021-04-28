@@ -4,6 +4,7 @@ import type { CommandParamType, StepModelType, SubFlowParamType } from 'Types/in
 import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, MessageModel} from 'Model/index'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
 import { APIUtil, ErrorUtil, ReactDomUtil, ValidatorUtil } from 'Utils/index'
+import { IsAny } from 'react-hook-form'
 
 export default class FlowUtil {
 
@@ -25,7 +26,7 @@ export default class FlowUtil {
     })
   }
 
-  static getCommandParam (paramName: string, command: CommandModel): (CommandParamType | {}) {
+  static getCommandParam (paramName: string, command: any): (CommandParamType | {}) {
     let param = {}
     if (command && command.getParams()) {
       command.getParams().map((_param) => {
@@ -37,7 +38,7 @@ export default class FlowUtil {
     return param
   }
 
-  static getSubFlowParam (subflow: SubFlowStepModel, paramName: string): (SubFlowParamType | {}) {
+  static getSubFlowParam (subflow: any, paramName: string): (SubFlowParamType | {}) {
     let result = {}
     if (!subflow || !paramName) return null
     if (!subflow.params) return null
@@ -65,7 +66,7 @@ export default class FlowUtil {
    * @param nodes
    */
   static replaceNodeIds (replaceKeyPairs: {}, nodes: []) {
-    nodes.map((node) => {
+    nodes.map((node:any) => {
       if (node.dsts) {
         let newDsts = {}
         Object.keys(node.dsts).forEach((from) => {
@@ -104,7 +105,7 @@ export default class FlowUtil {
 
   static removeNodeId (nodes: [], node_ids: []) {
     node_ids.forEach((removeId) => {
-      nodes.forEach((node) => {
+      nodes.forEach((node:any) => {
         if (node.dsts) {
           Object.keys(node.dsts).forEach((from) => {
             const to = node.dsts[from]
@@ -154,17 +155,17 @@ export default class FlowUtil {
         if (dismissNotify) dismissNotify(runNotify.id)
         notify({
           title: '実行エラー',
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody()),
           status: 'error',
           dismissAfter: 0,
           closeButton: true
         })
-        reject(error)
+        reject()
       })
     })
   }
 
-  static runWithArgs (runArgs: {}, notify: Function, dismissNotify: Function): any {
+  static runWithArgs (runArgs: any, notify: Function, dismissNotify: Function): any {
     let runNotify
     if (notify) {
       runNotify = notify({
@@ -215,7 +216,7 @@ export default class FlowUtil {
   /**
    * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
    */
-  static getNotOverlapNodePosition ({x, y}: { x: number, y: number }, nodes: []) {
+  static getNotOverlapNodePosition ({x, y}: { x: any, y: any }, nodes: any) {
     let result = {x: x, y: y}
     const threshold = 3
     nodes.forEach((node) => {
@@ -272,7 +273,6 @@ export default class FlowUtil {
           dismissAfter: 0,
           closeButton: true
         })
-        reject(message)
       })
   }
 
@@ -301,11 +301,11 @@ export default class FlowUtil {
    * @param step
    * @returns {StepModelType}
    */
-  static copyDsts (step: StepModelType, addStepFunc): StepModelType {
+  static copyDsts (step: any, addStepFunc): StepModelType {
     Object.keys(step.dsts).forEach((key) => {
       //出力先を作成し、接続先を変更する
-      const copiedStep: DataFrameStepModel = FlowUtil.getNodeFromID(key)
-      const props: DataFrameStepModelProps = {
+      const copiedStep: DataFrameStepModel = FlowUtil.getNodeFromID(window.nodes, key)
+      const props: any = {
         id: null,
         type: Constants.step.type.frame,
         uuid: null,
@@ -321,7 +321,7 @@ export default class FlowUtil {
     return step
   }
 
-  static setModelType (json: {}): StepModelType {
+  static setModelType (json: any): StepModelType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
     if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
       let node = new CommandStepModel(json)

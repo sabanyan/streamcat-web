@@ -9,10 +9,11 @@ class HTTPUtil {
     this.config = {}
   }
 
-  mergeConfig (config?: {}) {
+  mergeConfig (config?: {}): {} {
     if (config) {
       return Object.assign(this.config, config)
     }
+    return {}
   }
 
   httpUrl (path: string) {
@@ -27,7 +28,7 @@ class HTTPUtil {
   get (path: string, data?: {}, config?: {}) {
     const merged_config = this.mergeConfig(config)
     const url = this.httpUrl(path)
-    return axios.get(url, {params: data}, merged_config)
+    return axios.get(url, {params: data})
   }
 
   post (path: string, data: {}, config?: {}) {
@@ -45,7 +46,7 @@ class HTTPUtil {
   delete (path: string, data: {}, config: {}) {
     const merged_config = this.mergeConfig(config)
     const url = this.httpUrl(path)
-    return axios.delete(url, data, merged_config)
+    return axios.delete(url, data)
   }
 
   getURLParam (paramName: string) {

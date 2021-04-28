@@ -3,7 +3,7 @@ import ModelUtil from "Utils/ModelUtil";
 import Model from "Model/Core";
 
 export type BaseModelProps = {
-  id?: string | null | undefined;
+  uuid?: string | null | undefined;
   type: string;
   label?: string | null | undefined;
   position?: { x: number, y: number };
@@ -13,6 +13,7 @@ export type BaseModelProps = {
 }
 
 export default class BaseStepModel extends Model {
+  uuid: string | null | undefined = undefined;
   id: string | null | undefined = undefined;
   type: string | undefined = undefined;
   label: string | null | undefined = undefined;
@@ -23,6 +24,7 @@ export default class BaseStepModel extends Model {
 
   constructor (props: BaseModelProps) {
     super()
+    this.initialize(props, 'uuid')
     this.initialize(props, 'id')
     this.initialize(props, 'type')
     this.initialize(props, 'label')
@@ -31,8 +33,8 @@ export default class BaseStepModel extends Model {
     this.initialize(props, 'masked')
     this.setPosition(props.position)
     this.setSize(props.size)
-    if (!this.id) {
-      this.id = ModelUtil.getNewId(this.type)
+    if (!this.id  && this.type) {
+      this.id = ModelUtil.getNewId(this.type, window.nodes)
     }
     if (!this.label) {
       this.label = this.id

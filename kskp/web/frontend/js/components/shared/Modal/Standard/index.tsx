@@ -2,9 +2,18 @@
 import React from 'react'
 import classnames from 'classnames'
 
-export default class StandardModal extends React.Component {
+export type Props = {
+  id:any
+  close_button:any 
+  visible:any 
+  title:any 
+  footer:any 
+  overflow:any
+}
 
-  constructor (props) {
+export default class StandardModal extends React.Component<Props> {
+
+  constructor (props:Props) {
     super(props)
   }
 

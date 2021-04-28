@@ -4,9 +4,9 @@ import style from './style.scss'
 import classnames from 'classnames'
 
 type Props = {
-  onMouseDown: Function;
-  onMouseMove: Function;
-  onMouseUp: Function;
+  onMouseDown: any;
+  onMouseMove: any;
+  onMouseUp: any;
   isClosed: boolean;
 }
 

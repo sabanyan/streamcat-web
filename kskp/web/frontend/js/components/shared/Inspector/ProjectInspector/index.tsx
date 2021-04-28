@@ -6,11 +6,16 @@ import { BaseInspector } from 'Shared/Inspector'
 import Resizer from '../Resizer'
 
 type Props = {
-  project: {};
+  project: any;
   onClickDelete: Function;
+  onBlurTitle:Function;
 }
 
-class ProjectInspector extends React.Component<Props> {
+type State = {
+  selected_tab_id: any;
+}
+
+class ProjectInspector extends React.Component<Props, State> {
   constructor (props) {
     super(props)
     this.state = {
@@ -34,7 +39,7 @@ class ProjectInspector extends React.Component<Props> {
     if (!project) {
       return this.nullInspector()
     }
-    let content = null
+    let content:any = null
     const uuid = project.uuid
     const name = project.name
     const creator_name = project.creator_name

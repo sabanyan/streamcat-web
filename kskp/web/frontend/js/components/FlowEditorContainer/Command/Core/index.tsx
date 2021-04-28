@@ -81,10 +81,9 @@ const Command = (props: Props) => {
         const {selected_step_ids, addStep, selectSteps, addHistory} = props;
         const output_steps = command.getOutPorts().map((port: CommandPortType) => {
             const output_step = new DataFrameStepModel({
-                id: null,
+                uuid: null,
                 label: null,
                 type: Constants.step.type.frame,
-                uuid: null,
                 dataSource: Constants.data.dataSource.csv
             });
             addStep(output_step);
