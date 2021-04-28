@@ -227,6 +227,50 @@ def make_new_vizs():
     activity = execute_flow(flow, vis_args=vis_args)
     return format_vis(activity)
 
+@mod.route('/activities', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_acitivity():
+    """
+    フローを実行してActivityを作成する
+    """
+    from kskp.store import FlowData
+    from .utils import VisConverter
+
+    req = RequestJson(request.json)
+
+    if req.has_no_all('flow', 'uuid'):
+        raise Exception('flowまたはuuid属性を指定してください')
+    elif req.has('flow') and req.has('uuid'):
+        raise Exception('flow属性とuuid属性は同時に指定できません')
+
+    if req.has('flow'):
+        # フローリテラルが指定された場合
+        root = g.factory.data.load_root()
+        flow = root.create_flow('LITERAL', FlowData(req['flow']))
+        args = req.get('args') or {}
+        activity = execute_flow(flow, args=args, lock_uuid=req.get('lock'))
+    elif req.has('uuid'):
+        # UUIDでフローが指定された場合
+        flow = g.factory.data.find_by_uuid(req['uuid'])
+        args = req.get('args') or {}
+        activity = execute_flow(flow, args=args, lock_uuid=req.get('lock'))
+    else:
+        raise Exception(f'Either flow or uuid key is required')
+
+    def is_vis(last):
+        from kskp.store import Vis
+        return isinstance(last, Vis)
+
+    return [{'id'    : point.id, 
+             'label' : point.label,
+             'uuid'  : last.uuid,
+             'parent': None if is_vis(last) else last.find_parent().uuid,
+             'args': {'column_names':last.column_names} if is_vis(last) else {},
+             'contents': VisConverter(last) if is_vis(last) else None
+            }
+            for point, last in activity.lasts]
+
 def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     """
     指定されたフローを実行し実行結果を取得する
@@ -274,7 +318,7 @@ def _make_flow_inputs(factory, flow_uuid, request):
     # executeの引数
     inputs = {}
 
-    for port in flow_data.ports[0]:
+    for port in flow_data.i_ports:
         # frame（既にkskpに存在するデータソース）の場合
         if request.json.get(port['nodeId']) is not None:
             # フレームのUUIDを取得する
