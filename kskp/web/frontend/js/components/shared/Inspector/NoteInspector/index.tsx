@@ -155,7 +155,7 @@ class NoteInspector extends React.Component<NoteInspectorProps, State> {
             <DropDownList disabled={false}
                           key={"fontSize"}
                           onChange={(e, data, label) => this.onChangeFontSize(e, data, label)}
-                          defaultValue={fontSize}
+                          defaultValue={String(fontSize)}
                           list={NoteInspector.getFontSizeList()}
                           label={"文字"}
                           hiddenNoSelect={true}

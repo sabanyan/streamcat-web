@@ -105,7 +105,7 @@ export default class PreviewModal extends React.Component<Props, State> {
     
     //順番を維持するためForEachでLoop
     contents.forEach((content:any,index)=>{
-      const tab:any = <Tab key={"tab_" + index} width={"auto"} tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
+      const tab:any = <Tab key={"tab_" + index} width={"auto"} tab_id={String(index)} selected_tab_id={String(selected_tab_id)} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
       tabs.push(tab)
     })
 

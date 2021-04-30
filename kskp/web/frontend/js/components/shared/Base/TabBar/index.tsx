@@ -19,7 +19,11 @@ import classnames from 'classnames'
 
  */
 
-export default class TabBar extends React.Component {
+export type Props = {
+  className?:string
+}
+
+export default class TabBar extends React.Component<Props> {
   onChangeBefore () {
 
   }
@@ -29,13 +33,14 @@ export default class TabBar extends React.Component {
   }
 
   render () {
+    let className = this.props.className ? this.props.className : "";
     let element_cnt = 0
     let children
     /**
      * 自動的に子要素に対して tab_id や key を追加する処理
      */
     if (Array.isArray(this.props.children)) {
-      children = this.props.children.map((element) => {
+      children = this.props.children.map((element:any) => {
         if (element.type === TabPanel) {
           return React.cloneElement(
             element,
@@ -47,7 +52,7 @@ export default class TabBar extends React.Component {
     } else {
       children = this.props.children
     }
-    return <div className={classnames(style.tabbar, {[this.props.className]: (this.props.className)})}>
+    return <div className={classnames(style.tabbar, {[className]: (className)})}>
       {children}
     </div>
   }

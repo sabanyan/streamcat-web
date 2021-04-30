@@ -3,7 +3,7 @@ import * as React from 'react'
 import style from 'Shared/Input/Button/style.scss'
 import classnames from 'classnames'
 
-export default class DownloadButton extends React.Component<DownloadButtonType> {
+export default class DownloadButton extends React.Component<any> {
   render () {
     const {onClick, children, disabled, icon, danger, href, download} = this.props
     const icon_class = classnames('material-icons', [style.icon])

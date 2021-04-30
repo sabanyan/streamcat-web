@@ -8,7 +8,7 @@ import { DownloadButton } from 'Shared/Input'
 import { BaseInspector } from 'Shared/Inspector'
 
 type Props = {
-  ...FlowEditorProps,
+  FlowEditorProps,
   onChange: Function;
   title: string;
   chart_instance: any;
@@ -29,13 +29,13 @@ class DataPreviewInspector extends React.Component<Props, State> {
     }
   }
 
-  onChangeChart (e: SyntheticInputEvent<EventTarget>) {
+  onChangeChart (e: any) {
     const type = e.target.value
     this.setState({type: type})
     this.props.onChange(type)
   }
 
-  onClickSave (e: SyntheticInputEvent<EventTarget>) {
+  onClickSave (e: any) {
     let chart_instance = this.props.chart_instance
     let url_base64 = chart_instance.toBase64Image()
     this.setState({image_url: url_base64})

@@ -2,7 +2,11 @@
 import React from 'react'
 import style from './style.scss'
 
-export default class TabList extends React.Component {
+export type Props = {
+  children:any;
+}
+
+export default class TabList extends React.Component<Props> {
   render () {
     /**
      * 自動的に子要素に対して tab_id や key を追加する処理

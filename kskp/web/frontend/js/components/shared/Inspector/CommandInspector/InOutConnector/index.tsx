@@ -110,7 +110,7 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
         } : null
 
         const item = <div key={index} className={style.param}>
-          <DropDownList disabled={disabled}
+          <DropDownList disabled={(disabled ? disabled : false)}
             key={"in_edge"}
             onChange={(e, data, label) => this.onChangeInEdge(e, data, label)}
             defaultValue={dataFrameId}
