@@ -316,7 +316,9 @@ def fetch_datasrcs():
         datasource = root.create_datasource(label, store, loader_cmd, args, params)
         # 戻り値のJSONを作成する
         datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+        datasrc_json['classification'] = 'data_source'
         datasrc_json['flow'] = datasource.flow_data.to_json()
+        # データソースの一覧に格納する
         datasrcs_json.append(datasrc_json)
 
     return datasrcs_json
@@ -377,11 +379,13 @@ def fetch_datadsts():
                 }
             ]
 
-        # データソースを作成する
+        # データデストを作成する
         datadest = root.create_datadest(label, store, saver_cmd, args, params)
         # 戻り値のJSONを作成する
         datadst_json = datadest.flow_data.to_json(contains_nodes=False)
+        datadst_json['classification'] = 'data_dest'
         datadst_json['flow'] = datadest.flow_data.to_json()
+        # データデストの一覧に格納する
         datadsts_json.append(datadst_json)
 
     return datadsts_json
