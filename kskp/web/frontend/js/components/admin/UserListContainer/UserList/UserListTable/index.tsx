@@ -1,6 +1,6 @@
 import * as React from "react";
 import {useState} from "react";
-import * as style from "./style.scss";
+import style from "./style.scss";
 import {
     ITableHeader,
     TTableHeaderSortType,

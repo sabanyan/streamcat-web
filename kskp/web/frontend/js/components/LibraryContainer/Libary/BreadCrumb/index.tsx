@@ -1,6 +1,6 @@
 import * as React from "react";
 import {Fragment} from "react";
-import * as style from "./style.scss";
+import style from "./style.scss";
 import {Text} from "Shared/Base/Texts/Text";
 import {LinkButton} from "Shared/Input";
 import classnames from "classnames";

@@ -1072,7 +1072,7 @@ const Library = (_: Props) => {
             }
             <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true}
                 onMouseDown={onMouseDownLibrary}>
-                <Spacer width={40} />
+                <Spacer width={40} minWidth={40}/>
                 <Flex flexDirection={"column"} fluid={true}>
                     <Spacer height={40} />
                     <BreadCrumb links={links} />
@@ -1120,7 +1120,7 @@ const Library = (_: Props) => {
                     <Spacer height={80} />
                 </Flex>
                 {renderMenuList()}
-                <Spacer width={40} />
+                <Spacer width={40} minWidth={40}/>
             </Flex>
         </Flex>;
     };

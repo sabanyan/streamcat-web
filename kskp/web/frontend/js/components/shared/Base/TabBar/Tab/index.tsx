@@ -17,7 +17,7 @@ export default class Tab extends React.Component<Props> {
   }
 
   render () {
-    const active = (this.props.tab_id === this.props.selected_tab_id)
+    const active = (String(this.props.tab_id) === this.props.selected_tab_id)
     let activeClassName = this.props.activeClassName ? this.props.activeClassName : "";
     let className = this.props.className ? this.props.className : "";
     const tabClass = classnames(

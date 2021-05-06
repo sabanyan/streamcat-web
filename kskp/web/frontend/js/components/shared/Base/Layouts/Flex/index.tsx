@@ -1,5 +1,5 @@
 import React from "react";
-import * as style from "./style.scss";
+import style from "./style.scss";
 
 type Props = {
     // Module '"csstype"' has no exported member エラーにより、
