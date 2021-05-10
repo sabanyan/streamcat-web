@@ -1,4 +1,5 @@
 import os
+import uuid
 from flask import Flask, session
 
 app = Flask('kskp.web.backend')
@@ -40,12 +41,14 @@ if SECURITY_LEVEL >= 1:
         # レスポンスを返す
         return response
 
+    if SECURITY_LEVEL >= 2:
+        # Cookieの秘密鍵をランダム文字列にする
+        app.secret_key = str(uuid.uuid4())
+        # True: WebブラウザのSessionのCookieの送信はHTTPSによる送信だけに制限される
+        # "http://www.host.com:443"のようなURLにアクセスさせてSessionのCookieを平文で送信することを防ぐ
+        app.config['SESSION_COOKIE_SECURE'] = True
     # True: WebブラウザはJavaScriptによるSessionのCookieへのアクセスが禁止される
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    # True: WebブラウザのSessionのCookieの送信はHTTPSによる送信だけに制限される
-    # "http://www.host.com:443"のようなURLにアクセスさせてSessionのCookieを平文で送信することを防ぐ
-    if SECURITY_LEVEL >= 2:
-        app.config['SESSION_COOKIE_SECURE'] = True
     # Cross-Site Request Forgeries対策
     # Lax   : 他ドメインへの遷移(top-level navigation)でも、GETメソッドであればSessionのCookieの送信を許可する
     #         (URLにアクセスしてもSessionのCookieを保持していればログイン画面をスキップできる)
