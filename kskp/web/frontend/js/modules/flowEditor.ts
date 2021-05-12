@@ -250,7 +250,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
           const inPorts: [CommandPortType] = command.getInPorts();
           const outPorts: [CommandPortType] = command.getOutPorts();
           src_step_ids.forEach((id, index) => {
-            const newPort = inPorts[index];
+            const newPort:any = inPorts[index];
             let portName = isAddable ? "*" + index : newPort.name;
             if (add_step instanceof SubFlowStepModel) {
               portName = newPort.nodeId;
@@ -271,7 +271,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
 
           });
           dst_step_ids.forEach((id, index) => {
-            const newPort = outPorts[index];
+            const newPort:any = outPorts[index];
             let portName = newPort.name;
             if (add_step instanceof SubFlowStepModel) {
               portName = newPort.nodeId;
@@ -399,7 +399,7 @@ const FlowEditorReducer = (state = FlowEditorReducerInitialState, action: any) =
         let label = (json.label) ? json.label : cacheId;
         json.id = null;
         json.label = "コピー " + label;
-        let newNode: StepModelType = FlowUtil.setModelType(json);
+        let newNode: any = FlowUtil.setModelType(json);
 
         //ノード本体をコピー
         graph.addNode(newNode.id);
