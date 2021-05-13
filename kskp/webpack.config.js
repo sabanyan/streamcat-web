@@ -85,7 +85,8 @@ module.exports = (env) => {
           Modules: path.resolve(__dirname, './web/frontend/js/modules/'),
           Schema: path.resolve(__dirname, './web/frontend/js/schema/'),
           Types: path.resolve(__dirname, './web/frontend/js/types/'),
-          Utils: path.resolve(__dirname, './web/frontend/js/utils/')
+          Utils: path.resolve(__dirname, './web/frontend/js/utils/'),
+          Features: path.resolve(__dirname, './web/frontend/js/features/'),
         },
         modules: ['node_modules'],
         extensions: ['.js', '.jsx', '.ts', '.tsx'],

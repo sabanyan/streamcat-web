@@ -35,7 +35,8 @@
         "Modules/*": ["./web/frontend/js/modules/*"],
         "Schema/*": ["./web/frontend/js/schema/*"],
         "Types/*": ["./web/frontend/js/types/*"],
-        "Utils/*": ["./web/frontend/js/utils/*"]
+        "Utils/*": ["./web/frontend/js/utils/*"],
+        "Features/*": ["./web/frontend/js/features/*"]
       },
 
       /* Module Resolution Options */
