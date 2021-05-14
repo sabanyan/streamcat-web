@@ -7,19 +7,19 @@
             <div class="panel panel-default">
                 <div class="panel-body">
                     <form action="{{ original_url }}" method="post">
-                      <div class="form-group">
-                          <label for="login_email">ユーザーアカウント</label>
-                          <input id="login_email" name="email" type="text" class="form-control form-control-sm"
-                                 placeholder="メールアドレス" name="email" value="{{ email }}">
-                      </div>
-                      <div class="form-group">
-                          <label for="login_password">パスワード</label>
-                          <input id="login_password" type="password" class="form-control form-control-sm"
-                                 placeholder="パスワード"  name="password">
-                      </div>
-                      <div class="form-group">
-                          <input type="submit" class="btn btn-primary btn-default btn-block" value="ログイン">
-                      </div>
+                        <div class="form-group">
+                            <label for="login_email">ユーザーアカウント</label>
+                            <input id="login_email" name="email" type="text" class="form-control form-control-sm"
+                                    placeholder="メールアドレス" name="email" value="{{ email }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="login_password">パスワード</label>
+                            <input id="login_password" type="password" class="form-control form-control-sm"
+                                    placeholder="パスワード"  name="password">
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" class="btn btn-primary btn-default btn-block" value="ログイン">
+                        </div>
                         {% if login_failed %}
                         <div class="alert alert-danger small">
                             {% if alert_message == "" %}
@@ -30,6 +30,11 @@
                         </div>
                         {% endif %}
                     </form>
+                    <div>
+                        <button type="image" onclick="location.href='/signup/login'"
+                                src="{{ url_for('front_static.static', filename='images/icon/google_signin.svg') }}"
+                                class="btn btn-primary btn-default btn-block">Googleでログイン</button>
+                    </div>
                 </div>
             </div>
         </div>

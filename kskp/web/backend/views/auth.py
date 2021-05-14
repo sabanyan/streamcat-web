@@ -6,6 +6,7 @@ from flask import (
     session,
     request
 )
+from oauthlib.oauth2 import WebApplicationClient
 from .. import app
 from .utils import make_response
 
@@ -120,4 +121,86 @@ def complete_sign_up():
             project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
+    return redirect(url_for('basic_template.library'))
+
+
+# TODO: テスト用にHTTPS制限を解除している
+import os 
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+# 認証サーバのエンドポイント
+GOOGLE_AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
+GOOGLE_TOKEN_URL = 'https://www.googleapis.com/oauth2/v4/token'
+
+# 認証クライアントのパラメタ
+# (Googleデベロッパーコンソールで設定する)
+GOOGLE_API_CLIENT_ID = '296110041118-98dj1pfcu1lh641kvlm2d4j5l2bpesia.apps.googleusercontent.com'
+GOOGLE_API_CLIENT_SECRET = 'jzRN1JTzjFLtPjr1ME7m_-Rj'
+GOOGLE_API_SCOPE = ['https://www.googleapis.com/auth/userinfo.profile','https://www.googleapis.com/auth/userinfo.email']
+REDIRECT_URL_PATH = 'signup/callback'
+
+@mod.route('/login', methods=['GET'])
+def login():
+    client = WebApplicationClient(GOOGLE_API_CLIENT_ID)
+    # リダイレクト先のURLを作成する
+    url, headers, body = client.prepare_authorization_request(
+        GOOGLE_AUTHORIZATION_URL,
+        redirect_url=request.url_root + REDIRECT_URL_PATH,
+        scope=GOOGLE_API_SCOPE)
+    # 認証URLにリダイレクトする (Googleへの認可リクエスト)
+    return redirect(url)
+
+@mod.route('/callback', methods=['GET'])
+def callback():
+    import json
+    import jwt
+    import urllib.request
+    from jwt.algorithms import RSAAlgorithm
+    from kskp.store.factory import UnAuthzFactory, Factory
+
+    client = WebApplicationClient(GOOGLE_API_CLIENT_ID)
+
+    # JWTトークン取得のリクエストを作成する
+    url, headers, body = client.prepare_token_request(
+        GOOGLE_TOKEN_URL,
+        authorization_response=request.url,
+        redirect_url=request.url_root + REDIRECT_URL_PATH,
+        code=request.args.get('code'),
+        client_secret=GOOGLE_API_CLIENT_SECRET)
+
+    # JWTトークンを取得する
+    req = urllib.request.Request(url, body.encode(), headers=headers)
+    with urllib.request.urlopen(req) as res:
+        ret = res.read()
+        id_token = json.loads(ret)['id_token']
+
+    # JWTトークンの公開鍵を取得する
+    jwks_url = 'https://www.googleapis.com/oauth2/v3/certs'
+    req = urllib.request.Request(jwks_url)
+    with urllib.request.urlopen(req) as res:
+        ret = res.read()
+        jwk_json = json.loads(ret).get('keys')[1]
+        public_key = RSAAlgorithm.from_jwk(jwk_json)
+
+    # JWTトークンの署名を検証する
+    claims = jwt.decode(id_token,
+                        public_key,
+                        issuer='https://accounts.google.com',
+                        audience=GOOGLE_API_CLIENT_ID,
+                        algorithms=["RS256"])
+
+    email=claims['email']
+    name=claims['name']
+    issuer=claims['iss']
+    subject=claims['sub']
+
+    # ユーザ管理者を取得する
+    with UnAuthzFactory() as factory:
+        usr_admin_user = factory.load_usr_admin_user()
+    # ユーザを取得する
+    with Factory(usr_admin_user) as factory:
+        user = factory.user.load_openid_user(email, name, issuer, subject)
+        session['user_uuid'] = user.uuid
+
+    # とりあえずライブラリ画面にリダイレクトする
     return redirect(url_for('basic_template.library'))
