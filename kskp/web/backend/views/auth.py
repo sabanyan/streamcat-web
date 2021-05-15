@@ -133,10 +133,11 @@ GOOGLE_AUTHORIZATION_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
 GOOGLE_TOKEN_URL = 'https://www.googleapis.com/oauth2/v4/token'
 
 # 認証クライアントのパラメタ
-# (Googleデベロッパーコンソールで設定する)
+# (Google Developer Consoleで設定した値)
 GOOGLE_API_CLIENT_ID = '296110041118-98dj1pfcu1lh641kvlm2d4j5l2bpesia.apps.googleusercontent.com'
 GOOGLE_API_CLIENT_SECRET = 'jzRN1JTzjFLtPjr1ME7m_-Rj'
 GOOGLE_API_SCOPE = ['https://www.googleapis.com/auth/userinfo.profile','https://www.googleapis.com/auth/userinfo.email']
+# (Google Developer Consoleの認証済リダイレクトURIに設定する必要がある)
 REDIRECT_URL_PATH = 'signup/callback'
 
 @mod.route('/login', methods=['GET'])
