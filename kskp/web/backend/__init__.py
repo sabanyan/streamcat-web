@@ -1,6 +1,7 @@
 import os
-from flask import Flask
+from flask import Flask, Response
 
+# Flask
 app = Flask('kskp.web.backend')
 
 # production : evalを使用しない(セキュリティ高いがデバッグできない、ビルドに時間を要する)
@@ -27,19 +28,6 @@ app.config['JSON_SORT_KEYS'] = False
 app.config['SESSION_COOKIE_NAME'] = 'S'
 
 if SECURITY_LEVEL >= 1:
-
-    @app.after_request
-    def after_request(response):
-        # Webブラウザに対し、レスポンスヘッダのContent-type以外のタイプで解釈しないように要求する
-        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Content-Type-Options
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        # Webブラウザに対し、HTTPSだけで接続することを要求する
-        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Strict-Transport-Security
-        if SECURITY_LEVEL >= 2:
-            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-        # レスポンスを返す
-        return response
-
     # True: WebブラウザはJavaScriptによるSessionのCookieへのアクセスが禁止される
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     # True: WebブラウザのSessionのCookieの送信はHTTPSによる送信だけに制限される
@@ -59,8 +47,49 @@ if SECURITY_LEVEL >= 1:
     # TODO: Request-Context内で記述する必要がある
     # session.permanent = False
 
+@app.after_request
+def after_request(response:Response):
+    if SECURITY_LEVEL >= 1:
+        # Webブラウザに対し、レスポンスヘッダのContent-type以外のタイプで解釈しないように要求する
+        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Content-Type-Options
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        # Webブラウザに対し、HTTPSだけで接続することを要求する
+        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Strict-Transport-Security
+        if SECURITY_LEVEL >= 2:
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+
+    # FlaskからHTTPリクエストログを出力する
+    app.logger.info(response.status_code)
+
+    # レスポンスを返す
+    return response
+
+# 
+# ログ出力の設定
+# 
+import logging
+from flask.logging import default_handler
+from .api.utils import KSKPLogFormatter, XHRFilter
+
+# WerkzeugサーバのHTTPリクエストログの出力を停止する
+werkzeug_logger = logging.getLogger('werkzeug')
+werkzeug_logger.disabled = True
+
+# ログの書式を定義する
+log_formatter = KSKPLogFormatter(
+    '"%(asctime)s","%(user_uuid)s","%(remote_addr)s","%(method)s","%(path)s","%(message)s"'
+)
+
+# Flaskのログ書式を設定する
+default_handler.setFormatter(log_formatter)
+default_handler.setLevel(logging.INFO)
+
+# Flaskのloggerに設定する
+app.logger.addHandler(default_handler)
+app.logger.addFilter(XHRFilter())
+
 # flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
-from .api.utils.kskp_json_encoder import KSKPJSONEncoder
+from .api.utils import KSKPJSONEncoder
 app.json_encoder = KSKPJSONEncoder
 
 # End points of HTML
