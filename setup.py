@@ -12,5 +12,7 @@ setup(
         'blinker',
         'Flask',
         # 'flask_mail',
+        'oauthlib',
+        'PyJWT',
     ],
 )
