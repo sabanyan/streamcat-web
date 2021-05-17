@@ -344,9 +344,8 @@ def _make_flow_inputs(factory, flow_uuid, request):
 def _load_frame(frame_uuid):
     # Loaderを用いて指定したuuidのframeを取得する
     from kskp.depo.std.commands import CommandLink
-    folder = g.factory.data.find_by_uuid(frame_uuid).find_parent()
     loader = CommandLink('loader').resolve()
-    result = loader.run({'uuid':frame_uuid}, {'folder':folder})
+    result = loader.run(args={'uuid':frame_uuid, 'datum_factory':g.factory.data}, inputs={})
     # NYSOLコマンドを返す
     nysol_module = result['o']
     return nysol_module

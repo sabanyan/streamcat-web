@@ -257,18 +257,27 @@ def fetch_datasrcs():
     # create_datasource()を呼び出すためにRootを用いる
     root = g.factory.data.load_root()
 
-    # # ライブラリデータソースを作成する
-    # label = 'ライブラリ'
-    # loader_cmd = CommandLink('loader').resolve()
-    # args = {'file_path':'@[filePath]'}
-    # params = [
-    #     {
-    #         "name": "filePath",
-    #         "type": "string",
-    #         "label": "ファイルパスを指定する",
-    #         "optional": False
-    #     }
-    # ]
+    # ライブラリデータソースを作成する
+    label = 'ライブラリ'
+    loader_cmd = CommandLink('loader').resolve()
+    args = {'uuid':'@[uuid]'}
+    params = [
+        {
+            "name": "uuid",
+            "type": "string",
+            "label": "ファイルを指定する",
+            "optional": False
+        }
+    ]
+    # データソースを作成する
+    # (store引数にはとりあえずrootを入れておく)
+    datasource = root.create_datasource(label, root, loader_cmd, args, params)
+    # 戻り値のJSONを作成する
+    datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+    datasrc_json['classification'] = 'data_source'
+    datasrc_json['flow'] = datasource.flow_data.to_json()
+    # データソースの一覧に格納する
+    datasrcs_json.append(datasrc_json)
 
     for store in g.factory.data.find_all_stores():
         # 参照権限のないデータストアは取得しない
@@ -334,8 +343,23 @@ def fetch_datadsts():
 
     datadsts_json = []
 
-    # create_datasource()を呼び出すためにRootを用いる
+    # create_datadest()を呼び出すためにRootを用いる
     root = g.factory.data.load_root()
+
+    # ライブラリデータデストを作成する
+    label = 'ライブラリ'
+    loader_cmd = CommandLink('saver').resolve()
+    args = {}
+    params = []
+    # データデストを作成する
+    # (store引数にはとりあえずrootを入れておく)
+    datadest = root.create_datadest(label, root, loader_cmd, args, params)
+    # 戻り値のJSONを作成する
+    datadst_json = datadest.flow_data.to_json(contains_nodes=False)
+    datadst_json['classification'] = 'data_dest'
+    datadst_json['flow'] = datadest.flow_data.to_json()
+    # データソースの一覧に格納する
+    datadsts_json.append(datadst_json)
 
     for store in g.factory.data.find_all_stores():
         # 参照権限のないデータストアは取得しない
