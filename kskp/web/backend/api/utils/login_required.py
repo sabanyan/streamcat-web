@@ -7,6 +7,7 @@ from flask import (
     g
 )
 from kskp.store.factory import Factory, UnAuthzFactory
+from kskp.web.backend import GOOGLE_LOGIN
 from kskp.web.backend.views.utils import make_response
 
 def login_required(func):
@@ -145,5 +146,6 @@ def _render_login_template(email='', login_failed=False, alert_message='', origi
                          email=email,
                          login_failed=login_failed,
                          alert_message=alert_message,
+                         google_login=GOOGLE_LOGIN,
                          original_url=original_url,
                          args=args)

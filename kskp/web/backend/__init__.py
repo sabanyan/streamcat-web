@@ -8,6 +8,9 @@ app = Flask('kskp.web.backend')
 # development: evalを使用する
 FRONTEND_BUILD=os.getenv('KSKP_FRONTEND_BUILD', 'production')
 
+# True : Googleログインボタンを表示してGoogleログイン機能を有効にする
+GOOGLE_LOGIN=bool(os.getenv('KSKP_GOOGLE_LOGIN', 0))
+
 # 0: セキュリティ設定をしない
 # 1: 基本的なセキュリティ設定をする
 # 2: HTTPS通信を前提としたセキュリティ設定をする
