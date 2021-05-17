@@ -4,7 +4,7 @@
   "description": "kskp-beta",
   "main": "index.js",
   "scripts": {
-    "start": "npx webpack --watch -d",
+    "start": "npx webpack --config webpack.dll.config.js --env.production && npx webpack --env.production --watch",
     "dll": "npx webpack --config webpack.dll.config.js",
     "build": "npx webpack --config webpack.dll.config.js --env.production && npx webpack --env.production",
     "test": "jest",
@@ -33,8 +33,9 @@
     "@types/ajv": "^1.0.0",
     "@types/classnames": "^2.2.8",
     "@types/moment": "^2.13.0",
-    "@types/react": "^16.8.22",
+    "@types/react": "^17.0.3",
     "@types/react-dom": "^16.8.4",
+    "@types/react-redux": "^7.1.16",
     "@types/uuid": "^8.0.0",
     "@types/validate.js": "^0.11.0",
     "array-move": "^2.1.0",
@@ -74,6 +75,7 @@
     "webpack-dev-server": "^3.7.2"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^1.5.1",
     "@types/jquery": "^3.3.32",
     "@types/lodash": "^4.14.149",
     "ajv": "^6.5.4",

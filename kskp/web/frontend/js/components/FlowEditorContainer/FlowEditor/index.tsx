@@ -40,8 +40,10 @@ import {
     updateDataFrameDetailAction,
     updateFlowAction,
     updateStepAction,
-    refreshCanvasSizeAction
-} from 'Modules/application';
+    refreshCanvasSizeAction,
+    refreshFlowAction,
+    updateLastSavedFlowAction
+} from 'Modules/flowEditor';
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
 import { PaperZoom } from 'FlowEditorContainer/PaperZoom';
@@ -52,6 +54,7 @@ import { TextField } from 'Shared/Input';
 import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
 import { AxiosResponse } from "axios";
+import _ from 'lodash';
 
 interface Props {
     navigation?: NavigationModelProps
@@ -60,9 +63,9 @@ interface Props {
 const FlowEditor = (props: Props) => {
 
     const dispatch = useDispatch();
-    const folderUuid = useSelector(state => state.FlowEditorReducer.folderUuid);
+    const folderUuid = useSelector((state:any) => state.FlowEditorReducer.folderUuid);
 
-    const _modifiedAt = useSelector(state => state.FlowEditorReducer.modifiedAt);
+    const _modifiedAt = useSelector((state:any) => state.FlowEditorReducer.modifiedAt);
     useEffect(() => {
         if (_modifiedAt) {
             // modifiedAt が reducer 経由での取得になる
@@ -71,21 +74,22 @@ const FlowEditor = (props: Props) => {
         }
     }, [_modifiedAt])
     const [modifiedAt, setModifiedAt] = useState<string>();
-    const flow = useSelector(state => state.FlowEditorReducer.flow);
-    const drag = useSelector(state => state.FlowEditorReducer.drag);
-    const selected_step_ids = useSelector(state => state.FlowEditorReducer.selected_step_ids);
-    const nodes = useSelector(state => state.FlowEditorReducer.nodes);
-    const history = useSelector(state => state.FlowEditorReducer.history);
-    const mast = useSelector(state => state.FlowEditorReducer.mast);
-    const selected_tab_id = useSelector(state => state.FlowEditorReducer.selected_tab_id);
-    const selected_data_source_detail = useSelector(state => state.FlowEditorReducer.selected_data_source_detail);
-    const graph = useSelector(state => state.FlowEditorReducer.graph);
-    const zoom = useSelector(state => state.FlowEditorReducer.zoom);
-    const inspector = useSelector(state => state.FlowEditorReducer.inspector);
-    const editor = useSelector(state => state.FlowEditorReducer.editor);
-    const editMode = useSelector(state => state.FlowEditorReducer.editMode);
-    const executeMode = useSelector(state => state.FlowEditorReducer.executeMode);
-    const networkStatus = useSelector(state => state.FlowEditorReducer.networkStatus);
+    const flow = useSelector((state:any) => state.FlowEditorReducer.flow);
+    const drag = useSelector((state:any) => state.FlowEditorReducer.drag);
+    const selected_step_ids = useSelector((state:any) => state.FlowEditorReducer.selected_step_ids);
+    const nodes = useSelector((state:any) => state.FlowEditorReducer.nodes);
+    const history = useSelector((state:any) => state.FlowEditorReducer.history);
+    const mast = useSelector((state:any) => state.FlowEditorReducer.mast);
+    const selected_tab_id = useSelector((state:any) => state.FlowEditorReducer.selected_tab_id);
+    const selected_data_source_detail = useSelector((state:any) => state.FlowEditorReducer.selected_data_source_detail);
+    const graph = useSelector((state:any) => state.FlowEditorReducer.graph);
+    const zoom = useSelector((state:any) => state.FlowEditorReducer.zoom);
+    const inspector = useSelector((state:any) => state.FlowEditorReducer.inspector);
+    const editor = useSelector((state:any) => state.FlowEditorReducer.editor);
+    const editMode = useSelector((state:any) => state.FlowEditorReducer.editMode);
+    const executeMode = useSelector((state:any) => state.FlowEditorReducer.executeMode);
+    const networkStatus = useSelector((state:any) => state.FlowEditorReducer.networkStatus);
+    const lastSavedFlow = useSelector((state:any) => state.FlowEditorReducer.lastSavedFlow);
 
     const [offLineNotify, setOffLineNotify] = useState<any | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
@@ -184,6 +188,12 @@ const FlowEditor = (props: Props) => {
     }, []);
     const refreshCanvasSize = useCallback(() => {
         dispatch(refreshCanvasSizeAction());
+    }, []);
+    const refreshFlow = useCallback((context) => {
+        dispatch(refreshFlowAction(context));
+    }, []);
+    const updateLastSavedFlow = useCallback(() => {
+        dispatch(updateLastSavedFlowAction());
     }, []);
 
     const notify = (context) => dispatch(addNotification(context));
@@ -358,6 +368,8 @@ const FlowEditor = (props: Props) => {
                                 message: response.data.message,
                                 messageStatus: "error"
                             }));
+                        } else {
+                            updateLastSavedFlow()
                         }
                         dismissNotify(saveNotify.id);
                         reslove(response.data);
@@ -494,7 +506,7 @@ const FlowEditor = (props: Props) => {
             });
     }
 
-    const extendLockInterval: number = inject_lock_interval || 1000 * 60 * 1; // 1分ごとに延長
+    const extendLockInterval: number = inject_lock_interval ? inject_lock_interval : 1000 * 60 * 1; // 1分ごとに延長
     useInterval(() => {
         if (lockUUID && hasEnableAutoLockExtended && networkStatus !== NetworkStatusValue.Offline) {
             extendLock(lockUUID)
@@ -508,7 +520,17 @@ const FlowEditor = (props: Props) => {
     }, [refreshCanvasSize]);
 
     useEffect(() => {
-        const handleLeavePage = () => {
+        const handleLeavePage = (e) => {
+            e.preventDefault();
+            let dialogText
+            let isSame = _.isEqual(flow, lastSavedFlow)
+            if (!isSame) {
+                dialogText = 'Dialog text here'; // カスタムメッセージは動作しない（Chrome）
+                e.returnValue = dialogText;
+            }
+            return dialogText;
+        };
+        const handleUnload = (e) => {
             if (lockUUID) {
                 API.request.doDelete.locks({ lockUUID: lockUUID }).finally(() => {
 
@@ -516,10 +538,13 @@ const FlowEditor = (props: Props) => {
             }
         };
         window.addEventListener("beforeunload", handleLeavePage);
+        window.addEventListener("unload", handleUnload);
+        
         return () => {
             window.removeEventListener("beforeunload", handleLeavePage);
+            window.removeEventListener("unload", handleUnload);
         }
-    }, [lockUUID]);
+    }, [lockUUID, flow, lastSavedFlow]);
 
     useEffect(() => {
         let preRequest: any = [];
@@ -759,6 +784,7 @@ const FlowEditor = (props: Props) => {
                 redo={redo}
                 baseDisabled={baseToolBarDisabled}
                 runDisabled={runDisabled}
+                refreshFlow={refreshFlow}
                 onClickRunFlowPromise={onClickRunFlowPromise}
                 onClickSaveFlow={onClickSaveFlow}
             />
@@ -809,10 +835,12 @@ const FlowEditor = (props: Props) => {
                 updateStep={updateStep}
                 sortStepSrcEnd={sortStepSrcEnd}
                 resizeInspector={resizeInspector}
+                refreshFlow={refreshFlowAction}
                 addFlowVariableHidden={addFlowVariableHidden}
                 previewDisabled={previewDisabled}
                 commandSelectorHidden={commandSelectorHidden}
                 baseInspectorDisabled={baseInspectorDisabled}
+                updateLastSavedFlow={updateLastSavedFlow}
             />
             <NotificationManager />
         </div>

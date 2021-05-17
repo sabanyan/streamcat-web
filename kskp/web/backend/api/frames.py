@@ -302,7 +302,7 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
         raise
 
 def format_result(activity):
-    return [{'id':point.id, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.lasts]
+    return [{'id':point.id, 'parent':frame.parent_uuid, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.lasts]
 
 def format_vis(activity):
     from .utils import VisConverter

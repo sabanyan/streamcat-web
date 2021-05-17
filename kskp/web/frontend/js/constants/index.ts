@@ -103,6 +103,8 @@ const Constants = {
     ADD_DOCUMENT: 'add_document',
     ADD_FRAME: 'add_frame',
     ADD_DATABASE: 'add_database',
+    ADD_REMOTE_FOLDER: 'add_remote_folder',
+    EDIT_REMOTE_FOLDER: 'edit_remote_folder',
     ADD_USER: 'add_user',
     ADD_USER_CONFIRM: 'add_user_confirm',
     EDIT_DATABASE: 'edit_database',
@@ -122,6 +124,7 @@ const Constants = {
     CONFIRM_UNDELETE_USER: 'confirm_undelete_user',
     CONFIRM_RELOAD_FLOW: 'CONFIRM_RELOAD_FLOW',
     SAVE_AS_FLOW: 'SAVE_AS_FLOW',
+    CONFIRM_SAVE: 'CONFIRM_SAVE',
     property: {
       title: 'title',
       message: 'message',
@@ -185,7 +188,7 @@ const Constants = {
       folder: 'folder',
       database: 'database',
       flow: 'flow',
-      remoteFolder: 'remote-folder',
+      remoteFolder: 'rfolder',
       trash: 'trash'
     },
     mode: {
