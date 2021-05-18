@@ -41,12 +41,12 @@ class FlowInspector extends React.Component<Props> {
   }
 
   resetRunArgsValue () {
-    const runArgs = this.props.runArgs
-    runArgs.flows = runArgs.flows.map((f) => {
+    const runArgs:any = this.props.runArgs
+    runArgs.flows = runArgs.flows.map((f:any) => {
       f.uuid = null
       return f
     })
-    runArgs.variables = runArgs.variables.map((v) => {
+    runArgs.variables = runArgs.variables.map((v:any) => {
       v.value = null
       return v
     })
@@ -107,7 +107,7 @@ class FlowInspector extends React.Component<Props> {
   }
 
   render () {
-    const flow: FlowListDataType = this.props.flow
+    const flow: any = this.props.flow
     if (!flow) {
       return this.nullInspector()
     }

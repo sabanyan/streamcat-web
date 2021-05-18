@@ -14,7 +14,7 @@ interface Props {
 const UserListMultiInspector = (props: Props) => {
     const {selectedDatas} = props
 
-    const renderButtons = (data?: UserListUser) => {
+    const renderButtons = (data?: any) => {
         const {selectedDatas, onClickDelete} = props
 
         let del

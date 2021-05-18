@@ -1,29 +1,29 @@
 import * as React from 'react';
 import style from './style.scss';
 import classnames from 'classnames';
-import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
-import {useState} from 'react';
-import {FilterCategoryItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterCategoryItem';
-import {FilterListItem} from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterListItem';
+import { IFilterCategoryItem, IFilterListItem } from 'Types/index'
+import { useState } from 'react';
+import { FilterCategoryItem } from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterCategoryItem';
+import { FilterListItem } from 'Shared/Input/FilterListLinkButton/FilterCategoryItemList/FilterListItem';
 
 interface Props {
     list: IFilterCategoryItem[];
-    onClickFilterListItem: (item: IFilterListItem) => void;
+    onClickFilterListItem: (item: any) => void;
     onClickFilterCategoryItem: (item: IFilterCategoryItem) => void;
 }
 
 const FilterCategoryItemList = (props: Props) => {
-    const {list, onClickFilterCategoryItem, onClickFilterListItem} = props;
+    const { list, onClickFilterCategoryItem, onClickFilterListItem } = props;
     const [selectedCategory, setSelectedCategory] = useState<IFilterCategoryItem | null>(null);
     const [selectedList, setSelectedList] = useState<IFilterListItem | null>(null);
 
-    const getInitialCheckedArray = ():string[] => {
+    const getInitialCheckedArray = (): string[] => {
         // list から 初期値でチェックが入っている ID を抽出する
         let initialChecked: string[] = []
         list.forEach((categoryItem: IFilterCategoryItem) => {
-            if(categoryItem.multiple){
+            if (categoryItem.multiple) {
                 // 複数選択可能なカテゴリで、選択状態になっているもの
-                categoryItem.data.forEach((listItem: IFilterListItem)=> {
+                categoryItem.data.forEach((listItem: IFilterListItem) => {
                     if (listItem.selected) {
                         initialChecked.push(listItem.id)
                     }
@@ -60,7 +60,7 @@ const FilterCategoryItemList = (props: Props) => {
             if (!checkedArray.includes(listItem.id)) {
                 setCheckedArray([...checkedArray, listItem.id])
             }
-        }else{
+        } else {
             // チェックを外す
             setCheckedArray(checkedArray.filter(checkedId => {
                 return !(listItem.id === checkedId)
@@ -71,13 +71,13 @@ const FilterCategoryItemList = (props: Props) => {
     let listElement;
     if (!selectedCategory) {
         // カテゴリ（一階層目の表示）
-        listElement = list.map((categoryItem,index) => {
+        listElement = list.map((categoryItem, index) => {
             return <FilterCategoryItem key={index} disabled={categoryItem.disabled}
                 onClick={() => _onClickCategoryItem(categoryItem)}>{categoryItem.label}</FilterCategoryItem>
         })
     } else {
         // リスト（二階層目の表示）
-        listElement = selectedCategory.data.map((filterItem: IFilterListItem,index) => {
+        listElement = selectedCategory.data.map((filterItem: IFilterListItem, index) => {
             return <FilterListItem
                 key={index}
                 onClick={() => _onClickListItem(filterItem)}
@@ -99,7 +99,7 @@ const FilterCategoryItemList = (props: Props) => {
             })
             // チェックされたリストを selected を true にする
             checkedListItems = checkedListItems.map(checkedListItem => {
-                return {...checkedListItem,selected: true}
+                return { ...checkedListItem, selected: true }
             })
             onClickFilterListItem(checkedListItems)
         }
@@ -115,4 +115,4 @@ const FilterCategoryItemList = (props: Props) => {
     </div>
 };
 
-export {FilterCategoryItemList};
+export { FilterCategoryItemList };

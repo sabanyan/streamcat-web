@@ -4,7 +4,7 @@ import ParamsForm from "Shared/Inspector/ParamsForm";
 import React, { useEffect } from 'react';
 
 
-const params = [
+const params:any = [
   {
     "name": "label",
     "type": "string",

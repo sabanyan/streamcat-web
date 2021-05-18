@@ -1,9 +1,9 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import style from "./style.scss";
-import {Command} from "FlowEditorContainer/Command";
+import { Command } from "FlowEditorContainer/Command";
 import Constants from "Constants/index";
-import {CommandModelType, MastType} from "Types/index";
-import {TextField} from "Shared/Input";
+import { CommandModelType, MastType } from "Types/index";
+import { TextField } from "Shared/Input";
 
 type Props = {
     mast: MastType;
@@ -49,7 +49,7 @@ const CommandSelector = (props: Props) => {
         return (command.getInPorts()[0].name === "*");
     };
 
-    const {numberOfInput, selected_step_ids, addStep, selectSteps, addHistory, disabled} = props;
+    const { numberOfInput, selected_step_ids, addStep, selectSteps, addHistory, disabled } = props;
     const isNoKeyword = (keyword.length == 0);
     let noOperators = true;
     let sortedCommands: [];
@@ -82,8 +82,8 @@ const CommandSelector = (props: Props) => {
         return (foundLabelWithKeyword || foundDescriptionWithKeyword || foundCommandIdWithKeyword);
     });
     let operatorsContainer: React.ReactNode[] = [];
-    let beforeCommand: CommandModelType = null;
-    operators.map((command: CommandModelType, index) => {
+    let beforeCommand: any = null;
+    operators.map((command: any, index) => {
         if (!beforeCommand || beforeCommand.classification != command.classification) {
             //区切りを表示
             let label = Constants.lang.classification[command.classification];
@@ -107,7 +107,7 @@ const CommandSelector = (props: Props) => {
 
         commandSelector = <div>
             <TextField className={"mb-8px"} onChange={(e) => onChangeKeyword(e)}
-                       placeholder={"キーワード"} />
+                placeholder={"キーワード"} />
             <div className={style.command_selector_container}>
                 {(operatorsContainer.length) ? operatorsContainer : <div
                     className={style.command_not_found}>コマンドが見つかりませんでした</div>}
@@ -120,4 +120,4 @@ const CommandSelector = (props: Props) => {
     </div>;
 };
 
-export {CommandSelector};
+export { CommandSelector };

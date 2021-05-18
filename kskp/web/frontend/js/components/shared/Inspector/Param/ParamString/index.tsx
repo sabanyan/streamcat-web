@@ -11,7 +11,7 @@ import classnames from 'classnames';
 
 type Props = {
   label?: string;
-  param: CommandParamType;
+  param: any;
   disabled?: boolean;
   value?: string;
   helperTargetedInput?: any;
@@ -121,17 +121,17 @@ export default class ParamString extends React.Component<Props, State> {
           />
           :
           <input
-          name={param.name}
-          type={param.isPassword ? "password" : "text"}
-          className="form-control"
-          data-paramtype={param.type}
-          placeholder={param.name}
-          value={currentValue}
-          disabled={isDisabled}
-          onChange={(e) => this.onChange(e)}
-          onFocus={(e) => this.onFocusInput(e)}
-          ref={this.inputRef}
-        />
+            name={param.name}
+            type={param.isPassword ? "password" : "text"}
+            className="form-control"
+            data-paramtype={param.type}
+            placeholder={param.name}
+            value={currentValue}
+            disabled={isDisabled}
+            onChange={(e) => this.onChange(e)}
+            onFocus={(e) => this.onFocusInput(e)}
+            ref={this.inputRef}
+          />
       }
 
       {

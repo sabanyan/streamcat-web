@@ -9,7 +9,7 @@
       /* Strict Type-Checking Options */
       "strict": false,                        /* すべての strict タイプ・オプション(noImplicitAny, strictNullChecks, noImplicitThis(thisの型チェック), alwaysStrict(strictモードのjs出力)) を 有効化する */
       "noImplicitAny": false,                 /* any型の使用不可 */
-      "strictNullChecks": true,              /* nullable型以外でnullを許容しない */
+      "strictNullChecks": false,              /* nullable型以外でnullを許容しない */
       "allowSyntheticDefaultImports": true,
       "strictBindCallApply": false,
       /* Additional Checks */

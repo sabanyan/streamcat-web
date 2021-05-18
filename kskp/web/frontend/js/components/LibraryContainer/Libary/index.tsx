@@ -383,7 +383,7 @@ const Library = (_: Props) => {
             }
         });
 
-      
+
     }, [formProjectName]);
 
 
@@ -462,7 +462,7 @@ const Library = (_: Props) => {
         // データベースの編集
         const database = editDatabase;
         if (!database) return;
-        const params = getDataBaseParams();
+        const params:any = getDataBaseParams();
         const completeEditDatabase = (response: any) => {
             if (!response.data.success) {
                 notify({
@@ -504,7 +504,7 @@ const Library = (_: Props) => {
                 if (newDatabase) {
                     newDatabase[param.name] = value;
                     setEditDatabase(newDatabase);
-                    const params = getDataBaseParams();
+                    const params: any = getDataBaseParams();
                     const paramsForm = <ParamsForm params={params} args={newDatabase} invalids={{}}
                         onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
                     ModalUtil.emitModal({
@@ -524,7 +524,8 @@ const Library = (_: Props) => {
             onChange={(e, param, value) => onChangeEditDatabase(e, param, value)} />;
         ModalUtil.registerModal({
             id: Constants.modal.EDIT_DATABASE, onClickDone: () => {
-                editLibraryChild(selectedDatas[0]);
+                let selectedData: any = selectedDatas[0]
+                editLibraryChild(selectedData);
                 setEditDatabase(null);
                 ModalUtil.closeModal(Constants.modal.CONFIRM);
             }
@@ -544,7 +545,7 @@ const Library = (_: Props) => {
         // データベースの新規作成
         const database = addDatabase;
         if (!database) return;
-        const params = getDataBaseParams();
+        const params:any = getDataBaseParams();
         const paramsForm = <ParamsForm params={params} args={database} invalids={{}}
             onChange={(e, param, value) => onChangeNewDatabase(e, param, value)} />;
         ModalUtil.registerModal({
@@ -780,7 +781,7 @@ const Library = (_: Props) => {
                 await API.request.doGet.trashes({})
                     .then((response) => {
                         if (response.data.data) {
-                            let model = new LibraryModel(response.data.data);
+                            let model:any = new LibraryModel(response.data.data);
                             setInitialLibraryChildren(model.children);
                             setLibraryChildren(model.children);
                             setFolderPath(model.folderPath);
@@ -895,7 +896,7 @@ const Library = (_: Props) => {
         });
     }
 
-    const onClickEditRemoteFolder = (data:any) => {
+    const onClickEditRemoteFolder = (data: any) => {
         console.log("onClickData");
         console.log(data)
         setRemoteFolder(data);
@@ -930,7 +931,7 @@ const Library = (_: Props) => {
         if (!is_finished) return null;
         if (isEmptyLibraryList() && mode === Constants.library.mode.dialog) return renderEmptyState();
 
-        const onClickFileName = (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => {
+        const onClickFileName = (body: any, event?: React.SyntheticEvent<any, Event>) => {
             if (event) event.stopPropagation();
             const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
 
@@ -961,7 +962,7 @@ const Library = (_: Props) => {
         };
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
-            let data: LibraryListDataType = cell;
+            let data: any = cell;
             let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;// ライブラリ画面の単体表示時のみ複数選択を許可
             if (isLoading) return;
             if (event) event.stopPropagation();
@@ -996,7 +997,7 @@ const Library = (_: Props) => {
                         min = current;
                         max = last;
                     }
-                    const selectedDatas: LibraryListDataType[] = libraryChildren.slice(min, max + 1).map((libraryChild) => {
+                    const selectedDatas: any[] = libraryChildren.slice(min, max + 1).map((libraryChild) => {
                         libraryChild.selected = true;
                         return libraryChild;
                     });
@@ -1072,7 +1073,7 @@ const Library = (_: Props) => {
             }
             <Flex flexDirection={"row"} width={1480 + 40 + 40} minHeight={"calc(100vh - 64px)"} fluid={true}
                 onMouseDown={onMouseDownLibrary}>
-                <Spacer width={40} minWidth={40}/>
+                <Spacer width={40} minWidth={40} />
                 <Flex flexDirection={"column"} fluid={true}>
                     <Spacer height={40} />
                     <BreadCrumb links={links} />
@@ -1120,7 +1121,7 @@ const Library = (_: Props) => {
                     <Spacer height={80} />
                 </Flex>
                 {renderMenuList()}
-                <Spacer width={40} minWidth={40}/>
+                <Spacer width={40} minWidth={40} />
             </Flex>
         </Flex>;
     };
@@ -1256,7 +1257,7 @@ const Library = (_: Props) => {
 
     const renderTrashInspector = (): React.ReactNode => {
         if (!selectedDatas.length) return null;
-        const data: LibraryListDataType = selectedDatas[0];
+        const data: any = selectedDatas[0];
 
         const doRecovery = (data) => {
             API.request.doPut.trash({ trashUUID: data.uuid })
@@ -1419,7 +1420,7 @@ const Library = (_: Props) => {
         });
     };
 
-    const onClickEditDatabase = (data: LibraryListDataType) => {
+    const onClickEditDatabase = (data: any) => {
         if (data.type !== Constants.library.type.database) {
             return;
         }
@@ -1576,7 +1577,7 @@ const Library = (_: Props) => {
         }
 
         // 選択されているのが 1件 の場合の処理
-        const selectedData: LibraryListDataType = selectedDatas[0];
+        const selectedData: any = selectedDatas[0];
 
         console.assert(selectedData.uuid !== "d8d2fec5-066c-48ec-9ee4-314559aa7ae4", "起きた")
         if (selectedData.uuid === "d8d2fec5-066c-48ec-9ee4-314559aa7ae4") {

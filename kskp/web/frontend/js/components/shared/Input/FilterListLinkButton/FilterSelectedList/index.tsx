@@ -1,7 +1,7 @@
 import * as React from 'react';
 import style from './style.scss';
 import classnames from 'classnames';
-import {IFilterCategoryItem, IFilterFilterItem} from 'Types/index'
+import { IFilterCategoryItem, IFilterListItem } from 'Types/index'
 import ImageUtil from "Utils/ImageUtil";
 
 interface Props {
@@ -10,18 +10,18 @@ interface Props {
 }
 
 const FilterSelectedList = (props: Props) => {
-    const {onClickRemove, list} = props;
+    const { onClickRemove, list } = props;
 
     if (!list || !list.length) {
         return null;
     }
 
 
-    let listItemElements:React.ReactNode[] = [];
-    list.forEach((categoryItem,index) => {
+    let listItemElements: React.ReactNode[] = [];
+    list.forEach((categoryItem, index) => {
         let labelText = '';
-        const selectedListItem: IFilterFilterItem[] = []
-        categoryItem.data.forEach((filterItem: IFilterFilterItem) => {
+        const selectedListItem: IFilterListItem[] = []
+        categoryItem.data.forEach((filterItem: IFilterListItem) => {
             if (filterItem.selected) {
                 selectedListItem.push(filterItem)
             }
@@ -34,7 +34,7 @@ const FilterSelectedList = (props: Props) => {
         if (!selectedListItem.length) return
         if (labelText === "") return
 
-        const listElement = <div key={index} className={style.listItem} onClick={()=>onClickRemove(categoryItem)}>
+        const listElement = <div key={index} className={style.listItem} onClick={() => onClickRemove(categoryItem)}>
             {labelText}
             <div className={style.icon}>
                 {ImageUtil.getIconElement("icon-remove-circle")}
@@ -46,4 +46,4 @@ const FilterSelectedList = (props: Props) => {
     return <>{listItemElements}</>;
 };
 
-export {FilterSelectedList};
+export { FilterSelectedList };

@@ -13,7 +13,7 @@ import arrayMove from 'array-move'
 import classnames from 'classnames'
 
 type Props = {
-    param: CommandParamType;
+    param: any;
     value: Array<CommandParamType>;
     label?: string;
     headers?: string[];
@@ -138,10 +138,10 @@ export default class ParamList extends React.Component<Props, State>{
                 case Constants.param.type.number:
                 case Constants.param.type.string:
                     paramElement = <ParamString
-                    label={label} param={param} disabled={disabled} value={value} helperTargetedInput={helperTargetedInput}
-                    helper={helper}
-                    setHelperTargetedInput={setHelperTargetedInput} onChange={onChange} />
-                  break
+                        label={label} param={param} disabled={disabled} value={value} helperTargetedInput={helperTargetedInput}
+                        helper={helper}
+                        setHelperTargetedInput={setHelperTargetedInput} onChange={onChange} />
+                    break
                 case Constants.param.type.boolean:
                     paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
                     break
@@ -165,7 +165,7 @@ export default class ParamList extends React.Component<Props, State>{
         return paramElement
     }
 
-    renderElement(param: CommandParamType, argIndex: number, arg: Array<CommandParamType>): JSX.Element {
+    renderElement(param: any, argIndex: number, arg: Array<CommandParamType>): JSX.Element {
         let elements: Array<JSX.Element> = []
         const { headers } = this.props
         if (!(param.elements) || !(Array.isArray(param.elements))) {
@@ -211,7 +211,7 @@ export default class ParamList extends React.Component<Props, State>{
         </React.Fragment>
     }
 
-    renderElements(param: CommandParamType, arg: Array<CommandParamType>) {
+    renderElements(param: any, arg: Array<CommandParamType>) {
         let paramElements: Array<JSX.Element> = []
 
         if (!(param) || param.type !== Constants.param.type.list) {

@@ -3,7 +3,7 @@ import {ToolBarButton} from "FlowEditorContainer/ToolBar";
 import style from "./style.scss";
 import {ZoomToolBarButtonType} from "Types/index";
 
-const Zoom = (props: ZoomToolBarButtonType) => {
+const Zoom = (props: any) => {
     const {onClickZoomIn, onClickZoomOut, onClickDefaultZoom, disabled, zoom} = props;
     return <div className={style.zoom}>
         <ToolBarButton onClick={onClickZoomIn} disabled={disabled} is_paper_toolbar_button={true}>+</ToolBarButton>

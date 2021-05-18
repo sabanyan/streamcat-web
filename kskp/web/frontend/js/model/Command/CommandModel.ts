@@ -1,4 +1,4 @@
-import {CommandParamType, CommandPortType} from "Types/index";
+import { CommandParamType, CommandPortType } from "Types/index";
 import Model from "Model/Core";
 
 type stepType = 'command' | 'frame'
@@ -19,13 +19,13 @@ export default class CommandModel extends Model {
   description: string | undefined = undefined
   id: string | undefined | null = undefined
   label: string | null = null
-  params: any[CommandParamType] = []
+  params: any[] = []
   groups: string[] | undefined = undefined
-  ports: any[CommandPortType] = [[], []]
+  ports: any[] = [[], []]
   rules: {} = {}
   version: string | undefined = undefined
 
-  constructor (props: CommandModelProps) {
+  constructor(props: CommandModelProps) {
     super()
     this.initialize(props, 'classification')
     this.initialize(props, 'description')
@@ -38,31 +38,31 @@ export default class CommandModel extends Model {
     this.initialize(props, 'rules')
   }
 
-  getInPorts (): [CommandPortType] {
+  getInPorts(): [CommandPortType] {
     return this.ports[0]
   }
 
-  getOutPorts (): [CommandPortType] {
+  getOutPorts(): [CommandPortType] {
     return this.ports[1]
   }
 
-  getParams (): [CommandParamType] {
+  getParams(): any[] {
     return this.params
   }
 
-  getLabel () {
+  getLabel() {
     return this.label
   }
 
-  getParam (key: string): CommandParamType {
-    let result: CommandParamType = {}
+  getParam(key: string): CommandParamType {
+    let result: any = {}
     this.params.find(param => {
       if (param.name === key) result = param
     })
     return result
   }
 
-  isInPortsAddable():boolean {
+  isInPortsAddable(): boolean {
     let result = false
     const ports = this.getInPorts()
     if (ports[0] && ports[0].name === '*') result = true
@@ -70,7 +70,7 @@ export default class CommandModel extends Model {
     return result
   }
 
-  isOutPortsAddable():boolean {
+  isOutPortsAddable(): boolean {
     let result = false
     const ports = this.getOutPorts()
     if (ports[0] && ports[0].name === '*') result = true

@@ -123,8 +123,8 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
   render() {
     const { nodes, updateStep, sortStepSrcEnd, baseInspectorDisabled } = this.props;
     const { commands, subflows } = this.props.mast
-    let selected_step: StepModelType = this.getSelectedStep()
-    let inputForm:any = []
+    let selected_step: any = this.getSelectedStep()
+    let inputForm: any = []
     let subFlowLink, content, label, subLabel, groups, folderLink, detail
     if (selected_step.type === Constants.step.type.command) {
       //指定されたステップの元コマンドを取得
@@ -136,7 +136,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       this.inputRefs = []
 
       groups = (command.groups) ? command.groups : null
-      const params: [CommandParamType] = command.params
+      const params: any[] = command.params
       const args: {} = selected_step.args
       const invalids: {} = selected_step.invalid
 
@@ -150,13 +150,13 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
         subLabel = subflowCommand.label
         this.inputRefs = []
 
-        const params: [CommandParamType] = subflowCommand.params
+        const params: any[] = subflowCommand.params
         const args: {} = selected_step.args
         const invalids: {} = selected_step.invalid
 
         inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} command={null} invalids={invalids}
           onChange={(e, param, value) => this.onArgChange(e, param, value)} groups={groups} />
-        subFlowLink = <Button onClick={(e:any) => this.onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>
+        subFlowLink = <Button onClick={(e: any) => this.onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>
         if (this.selectedSubFlow && this.selectedSubFlow.folderPath) {
           detail =
             <div>
@@ -186,7 +186,7 @@ class CommandInspector extends React.Component<CommandInspectorProps> {
       content = <div>
         <div className={style.actions}>
           {subFlowLink}
-          <Button onClick={(e:any) => this.onClickDelete(e)} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
+          <Button onClick={(e: any) => this.onClickDelete(e)} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
         </div>
         <div className={style.full_hr} />
         <div><label>場所</label></div>

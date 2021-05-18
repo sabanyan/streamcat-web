@@ -1,9 +1,9 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {Provider} from "react-redux";
+import { Provider } from "react-redux";
 import EventEmitter from "eventemitter3";
-import store from "Modules/store/index";
-import {Kskp, ViewId} from "./Kskp";
+import { store } from "Modules/store/index";
+import { Kskp, ViewId } from "./Kskp";
 
 window.emitter = new EventEmitter();
 

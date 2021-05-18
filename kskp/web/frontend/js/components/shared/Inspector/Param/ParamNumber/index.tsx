@@ -26,7 +26,7 @@ type State = {
 }
 
 export default class ParamNumber extends React.Component<Props, State> {
-  inputRef:any = null;
+  inputRef: any = null;
 
   constructor(props: Props) {
     super(props)
@@ -79,7 +79,7 @@ export default class ParamNumber extends React.Component<Props, State> {
   }
 
   renderDescription() {
-    let result = undefined
+    let result: any = undefined
     try {
       const { param } = this.props
       if (param.description) {

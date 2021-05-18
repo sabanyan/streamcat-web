@@ -8,8 +8,8 @@ export default class SubflowCommandModel extends Model {
     description: string | undefined = undefined;
     label: string | undefined = undefined;
     nodes: [] = [];
-    params: any[CommandParamType] = [];
-    ports: any[CommandPortType] = [[], []];
+    params: any[] = [];
+    ports: any[] = [[], []];
     projectId: string | undefined = undefined;
     projectName: string | undefined = undefined;
     uuid: string | undefined = undefined;
@@ -51,7 +51,7 @@ export default class SubflowCommandModel extends Model {
         return this.ports[1];
     }
 
-    getParams(): [CommandParamType] {
+    getParams(): any[] {
         return this.params;
     }
 
@@ -60,7 +60,7 @@ export default class SubflowCommandModel extends Model {
     }
 
     getParam(key: string): CommandParamType {
-        let result: CommandParamType = {};
+        let result: any = {};
         this.params.find(param => {
             if (param.name === key) result = param;
         });

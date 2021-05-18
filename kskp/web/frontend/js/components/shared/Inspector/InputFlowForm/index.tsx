@@ -16,19 +16,19 @@ type State = {
 }
 
 export default class InputFlowForm extends React.Component<InputFlowFormProps, State> {
-  constructor (props) {
+  constructor(props) {
     super(props)
   }
 
-  onClickInput (e) {
+  onClickInput(e) {
     const name = e.currentTarget.getAttribute('name')
     HttpUtil.windowOpen('library?dialog=true&mode=frame_select', (args) => {
       const selected_data: any = args
       const label = selected_data.label
       const uuid = selected_data.uuid
       // update
-      let runArgs = this.props.runArgs
-      const flows = runArgs.flows.map((f) => {
+      let runArgs: any = this.props.runArgs
+      const flows = runArgs.flows.map((f: any) => {
         if (f.label == name) {
           f.value = label
           f.uuid = uuid
@@ -41,7 +41,7 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
     })
   }
 
-  renderAddInputFlowButton (key, value) {
+  renderAddInputFlowButton(key, value) {
     const content = (value) ?
       key + ' : ' + value
       :
@@ -54,14 +54,14 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
     </AddButton>
   }
 
-  renderInputFlowForm (flow) {
-    const runArgs = this.props.runArgs
+  renderInputFlowForm(flow) {
+    const runArgs: any = this.props.runArgs
 
     if (runArgs.length === 0) {
       return null
     }
 
-    const result:any = []
+    const result: any = []
     for (const f of runArgs.flows) {
       const key = f.label
       const value = f.value
@@ -78,20 +78,20 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
     return result
   }
 
-  renderFlowVariableForm (flow) {
+  renderFlowVariableForm(flow) {
     const params = flow.params
 
     if (params.length === 0) {
       return null
     }
 
-    let forms:any = []
+    let forms: any = []
     for (const v of params) {
       const form = <div key={v.name} className={style.flow_param}>
         <div className={style.left}>
-          <input onChange={(e) => {this.onChangeVariable(e)}}
-                 name={v.name}
-                 type={'text'} className={style.flow_param_input} placeholder={v.name} />
+          <input onChange={(e) => { this.onChangeVariable(e) }}
+            name={v.name}
+            type={'text'} className={style.flow_param_input} placeholder={v.name} />
         </div>
       </div>
       forms.push(form)
@@ -102,12 +102,12 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
     </div>
   }
 
-  onChangeVariable (e) {
+  onChangeVariable(e) {
     const value = e.currentTarget.value
     const name = e.currentTarget.name
 
-    let runArgs = this.props.runArgs
-    let vars = runArgs.variables.map((v) => {
+    let runArgs: any = this.props.runArgs
+    let vars = runArgs.variables.map((v: any) => {
       if (v.name == name) {
         v.value = value
       }
@@ -118,8 +118,8 @@ export default class InputFlowForm extends React.Component<InputFlowFormProps, S
     this.forceUpdate()
   }
 
-  render () {
-    const {flow} = this.props
+  render() {
+    const { flow } = this.props
     const inputFlowForm = this.renderInputFlowForm(flow)
     const inputVariableForm = this.renderFlowVariableForm(flow)
 

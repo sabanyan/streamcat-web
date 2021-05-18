@@ -1,14 +1,14 @@
 //@flow
 import Constants from 'Constants/index'
 import type { CommandParamType, StepModelType, SubFlowParamType } from 'Types/index'
-import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, MessageModel} from 'Model/index'
+import { CommandStepModel, DataFrameStepModel, SubFlowStepModel, MessageModel } from 'Model/index'
 import type { DataFrameStepModelProps } from 'Model/Step/DataFrameStepModel'
 import { APIUtil, ErrorUtil, ReactDomUtil, ValidatorUtil } from 'Utils/index'
 import { IsAny } from 'react-hook-form'
 
 export default class FlowUtil {
 
-  static getAllDataFrame (nodes: [StepModelType]) {
+  static getAllDataFrame(nodes: [StepModelType]) {
     return nodes.filter((node) => {
       if (node instanceof DataFrameStepModel) {
         return true
@@ -17,7 +17,7 @@ export default class FlowUtil {
     })
   }
 
-  static getNodeFromID (nodes: [StepModelType], id: string) {
+  static getNodeFromID(nodes: [StepModelType], id: string) {
     return nodes.find((node) => {
       if (node instanceof DataFrameStepModel) {
         return (node.id === id)
@@ -26,7 +26,7 @@ export default class FlowUtil {
     })
   }
 
-  static getCommandParam (paramName: string, command: any): (CommandParamType | {}) {
+  static getCommandParam(paramName: string, command: any): (CommandParamType | {}) {
     let param = {}
     if (command && command.getParams()) {
       command.getParams().map((_param) => {
@@ -38,7 +38,7 @@ export default class FlowUtil {
     return param
   }
 
-  static getSubFlowParam (subflow: any, paramName: string): (SubFlowParamType | {}) {
+  static getSubFlowParam(subflow: any, paramName: string): (SubFlowParamType | {} | null) {
     let result = {}
     if (!subflow || !paramName) return null
     if (!subflow.params) return null
@@ -51,7 +51,7 @@ export default class FlowUtil {
     return result
   }
 
-  static getFlowJson (nodes: [], projectId: string, projectName: string): {} {
+  static getFlowJson(nodes: [], projectId: string, projectName: string): {} {
     const flow_json = {
       projectId: projectId,
       name: projectName,
@@ -65,8 +65,8 @@ export default class FlowUtil {
    * @param replaceKeyPairs
    * @param nodes
    */
-  static replaceNodeIds (replaceKeyPairs: {}, nodes: []) {
-    nodes.map((node:any) => {
+  static replaceNodeIds(replaceKeyPairs: {}, nodes: []) {
+    nodes.map((node: any) => {
       if (node.dsts) {
         let newDsts = {}
         Object.keys(node.dsts).forEach((from) => {
@@ -93,7 +93,7 @@ export default class FlowUtil {
     return nodes
   }
 
-  static replaceNodeId (replaceKeyPairs: {}, nodeId: string): string {
+  static replaceNodeId(replaceKeyPairs: {}, nodeId: string): string {
     let newNodeId = nodeId
     Object.keys(replaceKeyPairs).forEach((key) => {
       if (nodeId === key) {
@@ -103,9 +103,9 @@ export default class FlowUtil {
     return newNodeId
   }
 
-  static removeNodeId (nodes: [], node_ids: []) {
+  static removeNodeId(nodes: [], node_ids: []) {
     node_ids.forEach((removeId) => {
-      nodes.forEach((node:any) => {
+      nodes.forEach((node: any) => {
         if (node.dsts) {
           Object.keys(node.dsts).forEach((from) => {
             const to = node.dsts[from]
@@ -127,7 +127,7 @@ export default class FlowUtil {
     return nodes
   }
 
-  static runNodes (flowUUID: string, notify: Function, dismissNotify: Function): any {
+  static runNodes(flowUUID: string, notify: Function, dismissNotify: Function): any {
     let runNotify
     if (notify) {
       runNotify = notify({
@@ -165,7 +165,7 @@ export default class FlowUtil {
     })
   }
 
-  static runWithArgs (runArgs: any, notify: Function, dismissNotify: Function): any {
+  static runWithArgs(runArgs: any, notify: Function, dismissNotify: Function): any {
     let runNotify
     if (notify) {
       runNotify = notify({
@@ -198,26 +198,26 @@ export default class FlowUtil {
 
         resolve(response)
       })
-      .catch((error) => {
-        if (dismissNotify) dismissNotify(runNotify.id)
-        let message = new MessageModel(error.data)
-        notify({
-          title: message.title,
-          message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
-          status: message.messageStatus,
-          dismissAfter: 0,
-          closeButton: true
+        .catch((error) => {
+          if (dismissNotify) dismissNotify(runNotify.id)
+          let message = new MessageModel(error.data)
+          notify({
+            title: message.title,
+            message: ReactDomUtil.renderToString(ErrorUtil.getErrorBody(error)),
+            status: message.messageStatus,
+            dismissAfter: 0,
+            closeButton: true
+          })
+          reject(error)
         })
-        reject(error)
-      })
     })
   }
 
   /**
    * 指定位置の付近に別のノードがないか調べて、ある場合は重ならない位置を再帰的に計算する
    */
-  static getNotOverlapNodePosition ({x, y}: { x: any, y: any }, nodes: any) {
-    let result = {x: x, y: y}
+  static getNotOverlapNodePosition({ x, y }: { x: any, y: any }, nodes: any) {
+    let result = { x: x, y: y }
     const threshold = 3
     nodes.forEach((node) => {
       //座標位置に対して前後 3pxの範囲で重複する場合のみ再度位置調整をする
@@ -226,27 +226,27 @@ export default class FlowUtil {
         parseInt(node.position.y) >= parseInt(y) - threshold &&
         parseInt(node.position.y) <= parseInt(y) + threshold) {
         //合致していた場合新しい座標を計算
-        result = FlowUtil.getNotOverlapNodePosition({x: x + 10, y: y + 10}, nodes)
+        result = FlowUtil.getNotOverlapNodePosition({ x: x + 10, y: y + 10 }, nodes)
       }
     })
     return result
   }
 
-  static saveFlow (flowUUID: string, flowModel, locksModel, nodes:{}, notify: Function, dismissNotify: Function): any {
+  static saveFlow(flowUUID: string, flowModel, locksModel, nodes: {}, notify: Function, dismissNotify: Function): any {
     //validation
     ValidatorUtil.nodesValidate(nodes)
 
     let flow = {}
-    if (flowModel.label)       flow['label']       = flowModel.label
+    if (flowModel.label) flow['label'] = flowModel.label
     if (flowModel.description) flow['description'] = flowModel.description
-    if (flowModel.params)      flow['params']      = flowModel.params
-    if (flowModel.ports)       flow['ports']       = flowModel.ports
-    if (flowModel.nodes)       flow['nodes']       = nodes
+    if (flowModel.params) flow['params'] = flowModel.params
+    if (flowModel.ports) flow['ports'] = flowModel.ports
+    if (flowModel.nodes) flow['nodes'] = nodes
 
     let putBody = {
-      label :flowModel.label,
-      flow  :flow,
-      lock  :(locksModel && locksModel.lockId) ? locksModel.lockId : undefined
+      label: flowModel.label,
+      flow: flow,
+      lock: (locksModel && locksModel.lockId) ? locksModel.lockId : undefined
     }
 
     let saveNotify
@@ -279,7 +279,7 @@ export default class FlowUtil {
   /**
    * Srcsをコピーする
    */
-  static copySrcs (step: StepModelType): StepModelType {
+  static copySrcs(step: any): StepModelType {
     Object.keys(step.srcs).forEach((key) => {
       //入力はポートは残して、接続先を空にする
       step.srcs[key] = null
@@ -290,7 +290,7 @@ export default class FlowUtil {
   /**
    * Positionを少しずらしてコピーする
    */
-  static copyPositionWithOffsetX (step: StepModelType): StepModelType {
+  static copyPositionWithOffsetX(step: StepModelType): StepModelType {
     step.position.x = step.position.x + Constants.default.graph.nodeSeparator
     step.position.y = step.position.y + Constants.default.graph.rankSeparator
     return step
@@ -301,10 +301,10 @@ export default class FlowUtil {
    * @param step
    * @returns {StepModelType}
    */
-  static copyDsts (step: any, addStepFunc): StepModelType {
+  static copyDsts(step: any, addStepFunc): StepModelType {
     Object.keys(step.dsts).forEach((key) => {
       //出力先を作成し、接続先を変更する
-      const copiedStep: DataFrameStepModel = FlowUtil.getNodeFromID(window.nodes, key)
+      const copiedStep: any = FlowUtil.getNodeFromID(window.nodes, key)
       const props: any = {
         id: null,
         type: Constants.step.type.frame,
@@ -321,7 +321,7 @@ export default class FlowUtil {
     return step
   }
 
-  static setModelType (json: any): StepModelType {
+  static setModelType(json: any): StepModelType {
     if (json['srcs'] !== undefined && json['dsts'] !== undefined && json['uuid'] !== undefined) return new SubFlowStepModel(json)
     if (json['srcs'] !== undefined && json['dsts'] !== undefined) {
       let node = new CommandStepModel(json)
@@ -338,7 +338,7 @@ export default class FlowUtil {
    * @param flowB
    * @returns {boolean}
    */
-  static isSameFlow (flowA: {}, flowB: {}) {
+  static isSameFlow(flowA: {}, flowB: {}) {
     return JSON.stringify(flowA) === JSON.stringify(flowB)
   }
 
@@ -348,7 +348,7 @@ export default class FlowUtil {
    * @param nodesB
    * @returns {boolean}
    */
-  static isSameNodes (nodesA: [], nodesB: []) {
+  static isSameNodes(nodesA: [], nodesB: []) {
     return JSON.stringify(nodesA) === JSON.stringify(nodesB)
   }
 
@@ -358,7 +358,7 @@ export default class FlowUtil {
    * @param currentNodes
    * @returns {boolean}
    */
-  static isSameCurrentNodesToBeforeHistoryNodes (history, currentNodes) {
+  static isSameCurrentNodesToBeforeHistoryNodes(history, currentNodes) {
     if (!history) return false
     if (history.nodes[history.current].length !== currentNodes.length) return false
     return JSON.stringify(history.nodes[history.current]) === JSON.stringify(currentNodes)

@@ -1,12 +1,12 @@
 import React from 'react'
 import style from '../style.scss'
 import { BaseInspector, Resizer } from 'Shared/Inspector'
-import { Button} from 'Shared/Input'
+import { Button } from 'Shared/Input'
 import { LibraryChild } from 'Model/index';
 import { Allowlist, ProjectInfo } from 'Components/LibraryContainer/Libary/index';
 
 type Props = {
-  allowlist:Allowlist;
+  allowlist: Allowlist;
   selectedDatas: LibraryChild[];
   onClickDelete?: Function;
   onClickMove?: Function;
@@ -19,7 +19,7 @@ class LibraryMultiInspector extends React.Component<Props> {
 
   renderButtons(datas: LibraryChild[]) {
     const { allowlist, onClickDelete, onClickMove } = this.props
-    let del,move
+    let del, move
     let isDeletable, isMoveable
 
     if (onClickDelete) del = <Button danger={true} onClick={() => onClickDelete(datas)} icon={"delete"}>削除する</Button>
@@ -31,8 +31,8 @@ class LibraryMultiInspector extends React.Component<Props> {
   }
 
   render() {
-    const { allowlist, selectedDatas} = this.props
-    if(!selectedDatas.length)return;
+    const { allowlist, selectedDatas } = this.props
+    if (!selectedDatas.length) return undefined;
     const disabled = allowlist && allowlist.update ? false : true
     return <Resizer>
       <BaseInspector key={JSON.stringify(selectedDatas)} label={null} disabled={disabled}>

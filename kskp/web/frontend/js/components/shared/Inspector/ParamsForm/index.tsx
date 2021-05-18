@@ -127,7 +127,7 @@ export default class ParamsForm extends React.Component<Props, State> {
     return null
   }
 
-  getParamElement(param: CommandParamType, disabled: boolean = false, label?: string, value?: any, onChange?: Function, headers?: string[]) {
+  getParamElement(param: any, disabled: boolean = false, label?: string, value?: any, onChange?: Function, headers?: string[]) {
     let paramElement: any
     let className = param.type === Constants.param.type.boolean ? classnames(style.param, style.flex) : style.param
     try {

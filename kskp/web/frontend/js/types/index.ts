@@ -2,6 +2,25 @@ import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubflowCommandMode
 import * as React from 'react'
 import CommandModel from 'Model/Command/CommandModel'
 
+export type Allowlist = {
+  copy: boolean;
+  createFile: boolean;
+  createFolder: boolean;
+  createProject: boolean;
+  delete: boolean;
+  download: boolean;
+  execute: boolean;
+  findMember: boolean;
+  lock: boolean;
+  move: boolean;
+  read: boolean;
+  update: boolean;
+  updateMember: boolean;
+  upload: boolean;
+  export: boolean;
+  import: boolean;
+}
+
 export type StepModelType = CommandStepModel | SubFlowStepModel | DataFrameStepModel | NoteStepModel
 export type CommandParamType = {
   label: string;
@@ -10,6 +29,7 @@ export type CommandParamType = {
   options: any;
   type: string;
   default?: string | number;
+  description: string;
 }
 
 export type SubFlowCommandParamType = {
@@ -95,6 +115,7 @@ export type RunResponseNameType = {
 }
 
 export type RunResponseType = {
+  lasts: any;
   name: [RunResponseNameType];
   success: boolean;
 }
@@ -105,7 +126,7 @@ export type UploadedFileType = {
   label?: string
 }
 
-export type MastType =  {
+export type MastType = {
   commands: any[],
   subflows: any[],
   visualizers: any[]
@@ -128,12 +149,12 @@ export type DragType = {
 }
 
 export type ToolBarButtonType = {
-  onClick: Function;
+  onClick: any;
   children: React.ReactNode;
   disabled: boolean;
-  icon: string;
-  is_paper_toolbar_button: boolean;
-  style: object;
+  icon?: string;
+  is_paper_toolbar_button?: boolean;
+  style?: object;
 }
 
 export type ZoomToolBarButtonType = {
@@ -186,14 +207,14 @@ export type dropDownListItem = {
   object?: {}
 }
 
-export interface UserListUser extends TableCell{
-  uuid:      string;
-  email:     string;
-  name:      string;
-  state:     string;
-  creator:   string;
+export interface UserListUser extends TableCell {
+  uuid: string;
+  email: string;
+  name: string;
+  state: string;
+  creator: string;
   createdAt: Date;
-  roles:     UserRole[];
+  roles: UserRole[];
   password?: string;
   projects?: UserProject[];
 }
@@ -203,18 +224,18 @@ export interface TableCell {
 }
 
 export interface UserRole {
-  uuid:       string;
-  name:       string;
+  uuid: string;
+  name: string;
   systemRole: string;
-  creator:    string;
-  createdAt:  Date;
+  creator: string;
+  createdAt: Date;
 }
 
 export interface UserProject {
-  uuid:      string;
-  type:      string;
-  label:     string;
-  creator:   string;
+  uuid: string;
+  type: string;
+  label: string;
+  creator: string;
   createdAt: Date;
 }
 

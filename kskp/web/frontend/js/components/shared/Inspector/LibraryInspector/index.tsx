@@ -52,7 +52,7 @@ class LibraryInspector extends React.Component<Props> {
   onClickPreview(e) {
     // dataがない（Null)の場合はPreviwボタンは表示しない（render)
     let { selectedData } = this.props;
-    let library: LibraryListDataType = selectedData;
+    let library: any = selectedData;
     let uuid = library.uuid
     // uuidだけでプレビュー
     window.open('/preview?step_id=' + null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
@@ -64,8 +64,8 @@ class LibraryInspector extends React.Component<Props> {
   }
 
   renderButtons(data?: LibraryChild) {
-    const { selectedData, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit, 
-      onClickEditEncoding, onClickCleanTrash, onChangeFlowLock, onClickCopy} = this.props
+    const { selectedData, allowlist, onClickDelete, onClickApply, onClickMove, onClickEdit,
+      onClickEditEncoding, onClickCleanTrash, onChangeFlowLock, onClickCopy } = this.props
 
     let preview, download, del, apply, move, edit, editEncoding, trashClean, lock, projectInfo, copy, flowExport;
 
@@ -116,7 +116,7 @@ class LibraryInspector extends React.Component<Props> {
       move = null;
     }
 
-    if (allowlist.copy && data &&  data.type == Constants.library.type.flow && onClickCopy) {
+    if (allowlist.copy && data && data.type == Constants.library.type.flow && onClickCopy) {
       copy = <Button onClick={(e) => onClickCopy(e, data)} icon={"content_copy"}>複製する</Button>
     }
 
@@ -168,7 +168,7 @@ class LibraryInspector extends React.Component<Props> {
         result.push(encoding)
       }
 
-      if (data.fileSize　!== undefined) {
+      if (data.fileSize !== undefined) {
         fileSize = <React.Fragment key={data.fileSize}>
           <div><label>{this.display.fileSize}</label></div>
           {data.fileSize ? <div className={"mb-8px"}>{StringUtil.convertToFileSize(data.fileSize)}</div> : 0}
@@ -235,21 +235,21 @@ class LibraryInspector extends React.Component<Props> {
     return content
   }
 
-  memberTypeToRoleName(type:string) {
-    let result:string;
+  memberTypeToRoleName(type: string) {
+    let result: string;
 
-    switch(type) {
-      case 'Reader' :
+    switch (type) {
+      case 'Reader':
         result = Constants.projectMemberRole.READER;
         break;
-      case 'Writer' :
+      case 'Writer':
         result = Constants.projectMemberRole.WRITER;
         break;
-      case 'Owner'  :
-          result = Constants.projectMemberRole.OWNER;
+      case 'Owner':
+        result = Constants.projectMemberRole.OWNER;
         break;
 
-      default: 
+      default:
         result = "unknown";
         break;
     }
@@ -281,7 +281,7 @@ class LibraryInspector extends React.Component<Props> {
 
   render() {
     const { allowlist, selectedData, onBlurTitle } = this.props
-    if (!selectedData) return;
+    if (!selectedData) return undefined;
     let label = selectedData.label
     let content = this.renderSelect(selectedData)
 

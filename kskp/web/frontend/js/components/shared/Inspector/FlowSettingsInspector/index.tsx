@@ -52,7 +52,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     //現在入力中のすべてのParamsを取得する
     let params:any = []
     this.paramRefs.forEach((elem:any) => {
-      let param: SubFlowParamType = {}
+      let param: any = {}
       param['label'] = elem.value
       param['name'] = elem.value
       param['uuid'] = elem.uuid

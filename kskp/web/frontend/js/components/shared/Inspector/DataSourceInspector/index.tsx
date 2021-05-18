@@ -33,7 +33,7 @@ type DataSourceInspectorProps = {
   nodes: [];
   notify: Function;
   dismissNotify: Function;
-  selected_data_source_detail: DataFrameDetailType;
+  selected_data_source_detail: any;
   mast: MastType;
   loadFlowJSON: Function;
   deleteSteps: Function;

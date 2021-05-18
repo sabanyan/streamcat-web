@@ -64,7 +64,10 @@ const Constants = {
       command: 'command',
       frame: 'frame',
       subflow: 'flow',
-      note: 'note'
+      note: 'note',
+      sharedFlow: 'sharedFlow',
+      dataSource: 'dataSource',
+      dataDest: 'dataDest'
     }
   },
   param: {
@@ -79,7 +82,9 @@ const Constants = {
   },
   data: {
     dataSource: {
-      csv: 'csv'
+      csv: 'csv',
+      rdb: 'rdb',
+      remoteFolder: 'rf'
     }
   },
   api: {

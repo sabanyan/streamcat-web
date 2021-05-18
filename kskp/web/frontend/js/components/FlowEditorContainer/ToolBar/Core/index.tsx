@@ -62,7 +62,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
         this.props.addHistory();
     }
 
-    renderRunResult(json: RunResponseType) {
+    renderRunResult(json: any) {
         const result = json.lasts.map((n) => {
             return <li>{n.id}</li>;
         });
@@ -84,10 +84,8 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
         return FlowUtil.runWithArgs(runArgs, notify, dismissNotify)
             .then((response) => {
                 if (response.data.success) {
-                    const json: RunResponseType = response.data;
+                    const json: any = response.data;
                     const content = this.renderRunResult(json);
-                    console.log("^^^^^^^^^")
-                    console.log(json)
                     // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
                     const parentFolderUUID = json.lasts[0].parent; //　今はlasts[0]
                     // 結果出力
@@ -118,7 +116,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             })
             .catch((e) => {
                 this.setState({
-                    isLoading:false
+                    isLoading: false
                 })
             })
     }
@@ -167,7 +165,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             this.props.refreshFlow(json);
         }).then(() => {
             this.setState({
-                isLoading:false
+                isLoading: false
             })
         });
     }
