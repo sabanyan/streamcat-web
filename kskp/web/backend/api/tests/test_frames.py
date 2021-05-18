@@ -1,10 +1,23 @@
 import copy
+import unittest
+from kskp.core import Datum
+from kskp.store import DatabaseConn
 from .api_test_case_base import ApiTestCaseBase
 
 class FrameTestCase(ApiTestCaseBase):
     """
     実行以外のFramesAPIのテストを行う
     """
+    conn_json = {
+      'dbms'     : "postgresql",
+      'hostname' : "db", 
+      'port'     : 5432, 
+      'database' : "kskp", 
+      'user_id'  : "kskp", 
+      'password' : 'ZQZtVgL6G32Vy6p6WJtG3C3K84yuJ4zz'
+    }
+    database_conn = DatabaseConn(conn_json)
+
     def setUp(self):
         self.root = self.factory.data.load_root()
         self.root_path = self.root.path
@@ -14,7 +27,7 @@ class FrameTestCase(ApiTestCaseBase):
         new_flow = parent.create_flow(label, FlowData(flow_json))
         new_flow.save()
         # save()によりreadable=Noneになるため再取得する
-        return self.factory.data.find_by_uuid(new_flow.uuid)
+        return new_flow.reload()
 
     # @unittest.skip
     def test_fetch_frame(self):
@@ -261,12 +274,12 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ1",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
 
-        flow_json = self.flow_json
+        flow_json = copy.deepcopy(self.flow_json)
         flow_json['nodes'].append(input_node)
         flow = self.save_flow(self.root, 'test', flow_json)
 
@@ -305,7 +318,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ2",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
@@ -372,7 +385,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": input_node_id,
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ3",
           "dataSource": "csv",
           "uuid": None
         }
@@ -383,16 +396,8 @@ class FrameTestCase(ApiTestCaseBase):
             'type':'frame'
         }
 
-        # outputも一応設定しておく（結果は変わらないけど）
-        output_port = {
-            'label': '出力1',
-            'nodeId': 'd1',
-            'type':'frame'
-        }
-
         flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
-        flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
         flow = self.save_flow(self.root, 'test', flow_json)
 
@@ -439,7 +444,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": input_node_id,
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ4",
           "dataSource": "csv",
           "uuid": None
         }
@@ -450,16 +455,8 @@ class FrameTestCase(ApiTestCaseBase):
             'type':'frame'
         }
 
-        # outputも一応設定しておく（結果は変わらないけど）
-        output_port = {
-            'label': '出力1',
-            'nodeId': 'd1',
-            'type':'frame'
-        }
-
         flow_json = copy.deepcopy(self.flow_json)
         flow_json['ports'][0].append(input_port)
-        flow_json['ports'][1].append(output_port)
         flow_json['nodes'].append(input_node)
 
         # フロー変数を使うようにする
@@ -503,6 +500,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['id'], 'd1')
         self.assertEqual(lasts[0]['label'], '出力結果')
 
+    # @unittest.skip
     def test_empty_vizs(self):
         """
         offset=limit=0を指定してヘッダ行だけを取得する
@@ -523,7 +521,7 @@ class FrameTestCase(ApiTestCaseBase):
         input_node = {
           "id": "i",
           "type": "frame",
-          "label": "テストデータ",
+          "label": "テストデータ5",
           "uuid": frame_uuid,
           "dataSource": "csv"
         }
@@ -551,6 +549,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
         self.assertIsNotNone(lasts[0].get('contents'))
 
+    # @unittest.skip
     def test_bad_csv_vizs(self):
         """
         不正なCSVをVis実行する
@@ -585,3 +584,456 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['args']['column_names'], ['顧客','','顧客'])
         self.assertIsNotNone(lasts[0].get('contents'))
 
+    def test_activity_with_flow(self):
+        """
+        POST /activities でflow属性にフローリテラルを指定して実行できること
+        """
+        flow_json = {
+            "label": "私のフロー", 
+            "nodes": [
+                {
+                    "id": "d", 
+                    "type": "frame", 
+                    "label": "d", 
+                    "dataSource": "csv"
+                }, 
+                {
+                    "id": "c", 
+                    "args": {
+                        "I": "1", 
+                        "S": "1", 
+                        "a": "id", 
+                        "l": "10"
+                    }, 
+                    "dsts": {
+                        "o": "d"
+                    }, 
+                    "srcs": {}, 
+                    "type": "command", 
+                    "label": "c", 
+                    "commandId": "mnewnumber"
+                }
+            ], 
+            "ports": [
+                [], 
+                [
+                    {
+                        "type": "frame", 
+                        "label": "d", 
+                        "nodeId": "d"
+                    }
+                ]
+            ], 
+            "params": [], 
+            "creator": "ユーザー管理者", 
+            "createdAt": "2021-04-28 11:11:05",
+            "description": ""
+        }
+
+        # 'vis'を指定してプレビュー実行する
+        args = {
+            "use_cache": True,
+            "vis": {
+                "d": {
+                    "command_id": "csvtohtmltable",
+                    "args": {
+                        "offset": 0,
+                        "limit": 100
+                    }
+                }
+            }
+        }
+
+        # POST /activitiesを発行する
+        lasts = self.post_uri(f'/api/v0/activities', {'flow':flow_json,'args':args}, self.USER1)
+        data = lasts['data']
+
+        # POST /activitiesの結果を検証する
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['id'], 'd')
+        self.assertEqual(data[0]['label'], 'd')
+        self.assertIsNotNone(data[0]['uuid'])
+        self.assertIsNone(data[0]['parent'])
+        self.assertEqual(data[0]['args']['column_names'], ['id'])
+        self.assertIsNotNone(data[0].get('contents'))
+
+    def test_activity_with_uuid(self):
+        """
+        POST /activities でflow属性にフローのUUIDを指定して実行できること
+        """
+        flow_json = {
+            "label": "私のフロー", 
+            "nodes": [
+                {
+                    "id": "d", 
+                    "type": "frame", 
+                    "label": "d", 
+                    "dataSource": "csv"
+                }, 
+                {
+                    "id": "c", 
+                    "args": {
+                        "I": "1", 
+                        "S": "1", 
+                        "a": "id", 
+                        "l": "10"
+                    }, 
+                    "dsts": {
+                        "o": "d"
+                    }, 
+                    "srcs": {}, 
+                    "type": "command", 
+                    "label": "c", 
+                    "commandId": "mnewnumber"
+                }
+            ], 
+            "ports": [
+                [], 
+                [
+                    {
+                        "type": "frame", 
+                        "label": "d", 
+                        "nodeId": "d"
+                    }
+                ]
+            ], 
+            "params": [], 
+            "creator": "ユーザー管理者", 
+            "createdAt": "2021-04-28 11:11:05",
+            "description": ""
+        }
+
+        # フローを作成する
+        flow = self.save_flow(self.root, 'それにつけてもおやつはカール', flow_json)
+
+        # 'vis'を指定してプレビュー実行する
+        args = {
+            "use_cache": True,
+            "vis": {
+                "d": {
+                    "command_id": "csvtohtmltable",
+                    "args": {
+                        "offset": 0,
+                        "limit": 100
+                    }
+                }
+            }
+        }
+
+        # POST /activitiesを発行する
+        lasts = self.post_uri(f'/api/v0/activities', {'uuid':flow.uuid,'args':args}, self.USER1)
+        data = lasts['data']
+
+        # POST /activitiesの結果を検証する
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['id'], 'd')
+        self.assertEqual(data[0]['label'], 'd')
+        self.assertIsNotNone(data[0]['uuid'])
+        self.assertIsNone(data[0]['parent'])
+        self.assertEqual(data[0]['args']['column_names'], ['id'])
+        self.assertIsNotNone(data[0].get('contents'))
+
+        # フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # フローを削除する
+        self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
+
+        # フローのロックを解除する
+        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
+    def test_activity_with_lock(self):
+        """
+        POST /activities でlock属性の指定でキャッシュが作成できること
+        """
+        # キャッシュを出力するフロー
+        flow_json = {
+            "label": "私のフロー",
+            "nodes": [
+                {
+                    "id": "c",
+                    "label": "c",
+                    "type": "command",
+                    "commandId": "mnewnumber",
+                    "args": {
+                        "I": "1",
+                        "S": "1",
+                        "a": "id",
+                        "l": "10"
+                    },
+                    "srcs": {},
+                    "dsts": {
+                        "o": "d"
+                    }
+                },
+                {
+                    "id": "d",
+                    "label": "d",
+                    "type": "frame",
+                    "dataSource": "csv"
+                },
+                {
+                    "id": "c1",
+                    "label": "c1",
+                    "type": "command",
+                    "commandId": "mcal",
+                    "args": {
+                        "a": "amount",
+                        "c": "#{id}+${id}",
+                        "precision": 10
+                    },
+                    "srcs": {
+                        "i": "d"
+                    },
+                    "dsts": {
+                        "o": "d1"
+                    }
+                },
+                {
+                    "id": "d1",
+                    "label": "d1",
+                    "type": "frame",
+                    "makeCache": True,
+                    "dataSource": "csv"
+                },
+                {
+                    "id": "c2",
+                    "label": "c2",
+                    "type": "command",
+                    "commandId": "mnumber",
+                    "args": {
+                        "I": "1",
+                        "S": "1",
+                        "a": "seq",
+                        "e": "seq",
+                        "s": "id%n"
+                    },
+                    "srcs": {
+                        "i": "d1"
+                    },
+                    "dsts": {
+                        "o": "d2"
+                    }
+                },
+                {
+                    "id": "d2",
+                    "label": "d2",
+                    "type": "frame",
+                    "dataSource": "csv"
+                }
+            ],
+            "ports": [
+                [],
+                [
+                    {
+                        "type": "frame",
+                        "label": "d",
+                        "nodeId": "d"
+                    }
+                ]
+            ],
+            "params": [],
+            "creator": "ユーザー管理者",
+            "createdAt": "2021-04-28 11:11:05",
+            "description": ""
+        }
+
+        # フローを作成する
+        flow = self.save_flow(self.root, 'Have a KitKat!', flow_json)
+
+        # フローの排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
+        lock_uuid = result['data']['uuid']
+
+        # フロー実行前のキャッシュファイル数を数えておく
+        results = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER1)
+        len_caches1 = len(results['data']['children'])
+
+        # 'vis'を指定してプレビュー実行する
+        args = {
+            "use_cache": True,
+            "vis": {
+                "d2": {
+                    "command_id": "csvtohtmltable",
+                    "args": {
+                        "offset": 0,
+                        "limit": 100
+                    }
+                }
+            }
+        }
+
+        # POST /activitiesを発行する
+        lasts = self.post_uri(f'/api/v0/activities', {'uuid':flow.uuid,'args':args,'lock':lock_uuid}, self.USER1)
+        data = lasts['data']
+
+        # POST /activitiesの結果を検証する
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['id'], 'd2')
+        self.assertEqual(data[0]['label'], 'd2')
+        self.assertIsNotNone(data[0]['uuid'])
+        self.assertIsNone(data[0]['parent'])
+        self.assertEqual(data[0]['args']['column_names'], ['id%0n','amount','seq'])
+        self.assertIsNotNone(data[0].get('contents'))
+
+        # キャッシュが作成されていること
+        results = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER1)
+        len_caches2 = len(results['data']['children'])
+        self.assertGreater(len_caches2, len_caches1, msg='キャッシュファイルが作成されませんでした')
+
+        # フローを削除する
+        self.delete_uri_with_json(f'/api/v0/flows/{flow.uuid}', {'lock':lock_uuid}, self.USER1)
+
+        # フローのロックを解除する
+        result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER1)
+
+    def test_activity_with_datasrcs_dsts(self):
+        """
+        POST /activities でデータソース・デストを変更できること
+        """
+        flow_json = {
+            "label": "私のフロー", 
+            "nodes": [
+                {
+                    "id": "d", 
+                    "type": "frame", 
+                    "label": "d", 
+                    "value": [['id'],[0],[1],[2],[3],[4],[5],[6],[7]],
+                    "dataSource": "csv"
+                }, 
+                {
+                    "id": "c1", 
+                    "args": {
+                        "a": "amount", 
+                        "c": "#{id}+${id}", 
+                        "precision": 10
+                    }, 
+                    "dsts": {
+                        "o": "d1"
+                    }, 
+                    "srcs": {
+                        "i": "d"
+                    }, 
+                    "type": "command", 
+                    "label": "c1", 
+                    "commandId": "mcal"
+                }, 
+                {
+                    "id": "d1", 
+                    "type": "frame", 
+                    "label": "d1", 
+                    "dataSource": "csv"
+                }, 
+                {
+                    "id": "c2", 
+                    "args": {
+                        "I": "1", 
+                        "S": "1", 
+                        "a": "seq", 
+                        "e": "seq", 
+                        "s": "id%n"
+                    }, 
+                    "dsts": {
+                        "o": "d2"
+                    }, 
+                    "srcs": {
+                        "i": "d1"
+                    }, 
+                    "type": "command", 
+                    "label": "c2", 
+                    "commandId": "mnumber"
+                },
+                {
+                    "id": "d2", 
+                    "type": "frame", 
+                    "label": "d2", 
+                    "dataSource": "csv"
+                }
+            ], 
+            "ports": [
+                [
+                    {
+                        "type": "frame", 
+                        "label": "d", 
+                        "nodeId": "d"
+                    }
+                ], 
+                [
+                    {
+                        "type": "frame", 
+                        "label": "d2", 
+                        "nodeId": "d2"
+                    }
+                ]
+            ], 
+            "params": [], 
+            "creator": "ユーザー管理者", 
+            "createdAt": "2021-04-28 11:11:05", 
+            "description": ""
+        }
+
+        # フローを作成する
+        flow = self.save_flow(self.root, 'まずーい！もう一杯！🥤', flow_json)
+
+        # DBストアの作成
+        db = self.root.create_database('postgresql', self.database_conn)
+        db.uuid = 'c410cd16-2529-498d-8e7f-490ffa58dc95'
+        db.save()
+
+        from kskp.engine.tests.make_flow_json import postgre_src, postgre_dst
+
+        literal_flow_json = {
+            "nodes": [
+                {
+                    "id": "f", 
+                    "type": "flow",
+                    "flow": postgre_src, 
+                    "dsts": {
+                        "d1": "d"
+                    }
+                },
+                {
+                    "id": "d", 
+                    "label": "d", 
+                    "type": "frame"
+                }, 
+                {
+                    "id": "f", 
+                    "type": "flow",
+                    "uuid": flow.uuid,  
+                    "srcs": {
+                        "d": "d"
+                    }, 
+                    "dsts": {
+                        "d2": "d1"
+                    }
+                },
+                {
+                    "id": "d1", 
+                    "label": "d1", 
+                    "type": "frame"
+                },
+                {
+                    "id": "f", 
+                    "type": "flow",
+                    "flow": postgre_dst, 
+                    "srcs": {
+                        "d1": "d1"
+                    }
+                }
+            ]
+        }
+
+        # POST /activitiesを発行する
+        lasts = self.post_uri(f'/api/v0/activities', {'flow':literal_flow_json}, self.USER1)
+        data = lasts['data']
+
+        # POST /activitiesの結果を検証する
+        self.assertEqual(len(data), 1)
+        self.assertEqual(data[0]['id'], 'f_d2')
+        self.assertEqual(data[0]['label'], '')
+        self.assertIsNotNone(data[0]['uuid'])
+        self.assertIsNotNone(data[0]['parent'])
+        self.assertEqual(data[0]['args'], {})
+        self.assertIsNone(data[0].get('contents'))

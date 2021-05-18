@@ -1,11 +1,15 @@
-import os
-from flask import Flask, session
+import os, uuid
+from flask import Flask, Response
 
+# Flask
 app = Flask('kskp.web.backend')
 
 # production : evalを使用しない(セキュリティ高いがデバッグできない、ビルドに時間を要する)
 # development: evalを使用する
 FRONTEND_BUILD=os.getenv('KSKP_FRONTEND_BUILD', 'production')
+
+# 1 : Googleログインボタンを表示してGoogleログイン機能を有効にする
+GOOGLE_LOGIN=bool(os.getenv('KSKP_GOOGLE_LOGIN', 0))
 
 # 0: セキュリティ設定をしない
 # 1: 基本的なセキュリティ設定をする
@@ -27,25 +31,16 @@ app.config['JSON_SORT_KEYS'] = False
 app.config['SESSION_COOKIE_NAME'] = 'S'
 
 if SECURITY_LEVEL >= 1:
-
-    @app.after_request
-    def after_request(response):
-        # Webブラウザに対し、レスポンスヘッダのContent-type以外のタイプで解釈しないように要求する
-        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Content-Type-Options
-        response.headers['X-Content-Type-Options'] = 'nosniff'
-        # Webブラウザに対し、HTTPSだけで接続することを要求する
-        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Strict-Transport-Security
-        if SECURITY_LEVEL >= 2:
-            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-        # レスポンスを返す
-        return response
-
-    # True: WebブラウザはJavaScriptによるSessionのCookieへのアクセスが禁止される
-    app.config['SESSION_COOKIE_HTTPONLY'] = True
     # True: WebブラウザのSessionのCookieの送信はHTTPSによる送信だけに制限される
     # "http://www.host.com:443"のようなURLにアクセスさせてSessionのCookieを平文で送信することを防ぐ
     if SECURITY_LEVEL >= 2:
+        # Cookieの秘密鍵をランダム文字列にする
+        app.secret_key = str(uuid.uuid4())
+        # True: WebブラウザのSessionのCookieの送信はHTTPSによる送信だけに制限される
+        # "http://www.host.com:443"のようなURLにアクセスさせてSessionのCookieを平文で送信することを防ぐ
         app.config['SESSION_COOKIE_SECURE'] = True
+    # True: WebブラウザはJavaScriptによるSessionのCookieへのアクセスが禁止される
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
     # Cross-Site Request Forgeries対策
     # Lax   : 他ドメインへの遷移(top-level navigation)でも、GETメソッドであればSessionのCookieの送信を許可する
     #         (URLにアクセスしてもSessionのCookieを保持していればログイン画面をスキップできる)
@@ -53,23 +48,67 @@ if SECURITY_LEVEL >= 1:
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     # session.permanent=Trueの場合にのみ有効、SessionのCookieの有効期間(秒)を設定する
     app.config['PERMANENT_SESSION_LIFETIME'] = 5 * 24 * 60 * 60
-    
     # True : SessionのCookieを永続化する
     # False: SessionのCookieは永続化しない、Webブラウザが閉じられたらSessionのCookieは削除される
     # TODO: Request-Context内で記述する必要がある
     # session.permanent = False
 
+@app.after_request
+def after_request(response:Response):
+    if SECURITY_LEVEL >= 1:
+        # Webブラウザに対し、レスポンスヘッダのContent-type以外のタイプで解釈しないように要求する
+        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/X-Content-Type-Options
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        # Webブラウザに対し、HTTPSだけで接続することを要求する
+        # https://developer.mozilla.org/ja/docs/Web/HTTP/Headers/Strict-Transport-Security
+        if SECURITY_LEVEL >= 2:
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+
+    # FlaskからHTTPリクエストログを出力する
+    app.logger.info(response.status_code)
+
+    # レスポンスを返す
+    return response
+
+# 
+# ログ出力の設定
+# 
+import logging
+from flask.logging import default_handler
+from .api.utils import KSKPLogFormatter, XHRFilter
+
+# WerkzeugサーバのHTTPリクエストログの出力を停止する
+werkzeug_logger = logging.getLogger('werkzeug')
+werkzeug_logger.disabled = True
+
+# ログの書式を定義する
+log_formatter = KSKPLogFormatter(
+    '"%(asctime)s","%(user_uuid)s","%(remote_addr)s","%(method)s","%(path)s","%(message)s"'
+)
+
+# Flaskのログ書式を設定する
+default_handler.setFormatter(log_formatter)
+default_handler.setLevel(logging.INFO)
+
+# Flaskのloggerに設定する
+app.logger.addHandler(default_handler)
+app.logger.addFilter(XHRFilter())
+
 # flaskのjsonifyによるJSONへのデコード処理を、独自に定義したデコード処理に置き換える
-from .api.utils.kskp_json_encoder import KSKPJSONEncoder
+from .api.utils import KSKPJSONEncoder
 app.json_encoder = KSKPJSONEncoder
 
+# 
 # End points of HTML
+# 
 from .views import basic
 from .views import auth
 app.register_blueprint(basic.mod)
 app.register_blueprint(auth.mod, url_prefix='/signup')
 
+# 
 # End points of API
+# 
 PREFIX = '/api/v0'
 from .api import domain
 from .api import basic

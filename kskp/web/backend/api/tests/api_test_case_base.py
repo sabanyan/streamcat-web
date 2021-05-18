@@ -17,6 +17,8 @@ class ApiTestCaseBase(TestCaseBase):
     def setUpClass(cls):
         # 親クラスのsetUpClass()を実行する
         TestCaseBase.setUpClass()
+        # テスト実行時はFlaskからログ出力しない
+        app.logger.disabled = True
 
     @classmethod
     def tearDownClass(cls):

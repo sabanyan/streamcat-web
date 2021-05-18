@@ -16,7 +16,8 @@ class ProjectTestCase(ApiTestCaseBase):
         """
         指定したSQL文を発行し、一つの結果行を取得する
         """
-        results = self.factory._session.execute(sql)
+        from sqlalchemy import text
+        results = self.factory._session.execute(text(sql))
         # 結果行の最初の1件目を返す
         for result in results:
             return result
