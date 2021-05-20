@@ -2,15 +2,16 @@ import unittest
 from flask import template_rendered
 from kskp.web.backend import app
 from kskp.core import Datum
+from ...api.utils import make_access_token
 from ...api.tests.api_test_case_base import ApiTestCaseBase
 
 class HtmlTestCase(ApiTestCaseBase):
     def setUp(self):
         app.testing = True
         self.client = app.test_client()
-        # ログインするとsessinにuser_idが格納される
-        with self.client.session_transaction() as session:
-            session['user_uuid'] = self.USER0.uuid
+        # ログインするとCookieにトークンが格納される
+        token = make_access_token(self.USER0.uuid)
+        self.client.set_cookie(None, 'S', token)
 
     def assertRenderTemplate(self, path, file_name):
         templates = []

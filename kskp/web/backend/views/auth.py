@@ -8,7 +8,9 @@ from flask import (
 )
 from oauthlib.oauth2 import WebApplicationClient
 from .. import app, GOOGLE_LOGIN
+from ..api.utils import make_access_token
 from .utils import make_response
+from .utils.login_required import _make_login_response, _make_response_with_token, _get_claims
 
 # MyProjectのラベル名
 MY_PROJECT = 'MyProject'
@@ -88,16 +90,15 @@ def complete_sign_up():
     from kskp.store.factory import Factory, UnAuthzFactory
     from kskp.store.auth import InvalidPassword
 
-    email = session['signup_email']
-    del session['signup_email']
+    # FORMの値は送信者が容易に改竄できるので、FORMからE-Mailを取得しないこと
+    user_uuid = _get_claims(request.cookies).get('sub')
     new_password = request.form['password']
-    # user_name = request.form['user_name']
 
     with UnAuthzFactory() as factory:
         try:
-            user = factory.find_user_by_email(email)
+            user = factory.find_user_by_uuid(user_uuid)
         except Exception:
-            return make_response('login.html', email=email, login_failed=True, google_login=GOOGLE_LOGIN)
+            return make_response('login.html', login_failed=True, google_login=GOOGLE_LOGIN)
 
     with Factory(user) as factory:
         user = factory.user.find_by_id(user.id)
@@ -107,12 +108,7 @@ def complete_sign_up():
             user.update_password(new_password, modifier=user)
         except InvalidPassword as e:
             # もう一度パスワード入力を促す
-            session['signup_email'] = email
-            flash(str(e))
-            return make_response('register_password.html', email=email)
-
-        # ユーザID保存
-        session['user_uuid'] = user.uuid
+            return make_response('register_password.html', login_failed=True, alert_message=str(e), email=user.email)
 
         # 初めて登録状態に遷移する時に、MyProjectを作成する
         if user_is_init:
@@ -121,7 +117,10 @@ def complete_sign_up():
             project.save()
 
     # TODO: ひとまずは初期ページをプロジェクト一覧にしておく
-    return redirect(url_for('basic_template.library'))
+    response = redirect(url_for('basic_template.library'))
+    # アクセストークンをCookieに格納してWebブラウザに渡す
+    access_token = make_access_token(user_uuid)
+    return _make_response_with_token(response, access_token)
 
 
 # 環境変数KSKP_GOOGLE_LOGIN=Trueの場合は、Googleによる認証APIを公開する
@@ -182,15 +181,24 @@ if GOOGLE_LOGIN:
         req = urllib.request.Request(jwks_url)
         with urllib.request.urlopen(req) as res:
             ret = res.read()
-            jwk_json = json.loads(ret).get('keys')[1]
-            public_key = RSAAlgorithm.from_jwk(jwk_json)
+            jwk_jsons = json.loads(ret).get('keys')
 
-        # JWTトークンの署名を検証する
-        claims = jwt.decode(id_token,
-                            public_key,
-                            issuer='https://accounts.google.com',
-                            audience=GOOGLE_API_CLIENT_ID,
-                            algorithms=["RS256"])
+        # 取得した公開鍵のうち解錠できるものを探す
+        claims = None
+        for jwk_json in jwk_jsons:
+            public_key = RSAAlgorithm.from_jwk(jwk_json)
+            # JWTトークンの署名を検証する
+            try:
+                claims = jwt.decode(id_token,
+                                    public_key,
+                                    issuer='https://accounts.google.com',
+                                    audience=GOOGLE_API_CLIENT_ID,
+                                    algorithms=["RS256"])
+            except jwt.InvalidSignatureError:
+                continue
+
+        if claims is None:
+            return _make_login_response(login_failed=True, alert_message='Googleでのログインに失敗しました')
 
         email=claims['email']
         name=claims['name']
@@ -203,7 +211,10 @@ if GOOGLE_LOGIN:
         # ユーザを取得する
         with Factory(usr_admin_user) as factory:
             user = factory.user.load_openid_user(email, name, issuer, subject)
-            session['user_uuid'] = user.uuid
+            user_uuid = user.uuid
 
         # とりあえずライブラリ画面にリダイレクトする
-        return redirect(url_for('basic_template.library'))
+        response = redirect(url_for('basic_template.library'))
+        # アクセストークンをCookieに格納してWebブラウザに渡す
+        access_token = make_access_token(user_uuid)
+        return _make_response_with_token(response, access_token)

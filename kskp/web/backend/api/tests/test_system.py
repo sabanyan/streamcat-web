@@ -149,10 +149,9 @@ class SystemTestCase(ApiTestCaseBase):
         # 金さんを作成する
         result = self.post_uri('/api/v0/users', {'email':'kin@kitamchi.go.jp', 'name':'遠山　金四郎', 'password':'sakurafubuki'}, self.USER1)
         user_uuid = result['data']['uuid']
-        user_email = result['data']['email']
 
         # 金さんを登録状態にする
-        self.post_register_complete(user_email, 'ououou_sakkikaradamatte_kiiterayou', self.USER1)
+        self.post_register_complete(user_uuid, 'ououou_sakkikaradamatte_kiiterayou')
 
         # 金さんを取得する
         result = self.get_uri(f'/api/v0/users/{user_uuid}?projects=on', self.USER1)
@@ -295,7 +294,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 作成したユーザを登録状態にする
         new_user = self.factory.user.find_by_uuid(user_uuid)
-        self.post_register_complete('ujiyasu@odawara.co.jp', 'jurujurujuru', new_user)
+        self.post_register_complete(user_uuid, 'jurujurujuru')
 
         # 名前だけの変更であればパスワード認証は必要ないこと
         expected = {
@@ -577,7 +576,7 @@ class SystemTestCase(ApiTestCaseBase):
 
         # ユーザ2は、本登録処理をする
         # (USER2は、TestCaseBase.setUpClass()で登録済みなので、MyProjectは作成されない)
-        self.post_register_complete(self.USER2.email, 'adminpass0', self.USER2)
+        self.post_register_complete(self.USER2.uuid, 'adminpass0')
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
@@ -765,7 +764,7 @@ class SystemTestCase(ApiTestCaseBase):
         user_passwd = result['data']['password']
 
         # ユーザを登録状態にできること
-        self.post_register_complete(user_email, 'hohho-hhoho-', self.USER1)
+        self.post_register_complete(user_uuid, 'hohho-hhoho-')
 
         # ユーザはログインできること
         result = self.post_login(user_email, 'hohho-hhoho-')
@@ -783,7 +782,7 @@ class SystemTestCase(ApiTestCaseBase):
         user_email = result['data']['email']
 
         # ユーザを登録状態にする
-        self.post_register_complete(user_email, 'pokemon-get-daze', self.USER1)
+        self.post_register_complete(user_uuid, 'pokemon-get-daze')
 
         # 失効状態のユーザを用意するため、仮パスワードの有効日数を設定する
         from kskp.store.auth import User
@@ -810,7 +809,7 @@ class SystemTestCase(ApiTestCaseBase):
         # ユーザは失効状態なのでパスワードを登録できないこと
         # TODO: メールアドレスをSessionに格納すれば誰でも(失効状態でも)パスワード登録できてしまう
         # with self.assertRaises(AssertionError):
-        #     self.post_register_complete(user_email, 'i-love-peach-princess', self.USER1)
+        #     self.post_register_complete(user_uuid, 'i-love-peach-princess')
 
         # 他のテストケースに影響しないよう有効日数を初期値に戻す
         User.TMP_PASS_EXPIRE_SECONDS = devault_seconds
@@ -832,7 +831,7 @@ class SystemTestCase(ApiTestCaseBase):
         new_user = self.factory.user.find_by_uuid(user_uuid)
 
         # 桃太郎侍を本登録処理をする
-        self.post_register_complete(user_email, 'momotarou!', self.USER1)
+        self.post_register_complete(user_uuid, 'momotarou!')
 
         # 桃太郎侍を削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}?except_inactive=on', self.USER1)
@@ -867,7 +866,7 @@ class SystemTestCase(ApiTestCaseBase):
         new_user = self.factory.user.find_by_uuid(user_uuid)
 
         # ユーザを登録状態にする
-        self.post_register_complete(new_user.email, 'password012345', new_user)
+        self.post_register_complete(user_uuid, 'password012345')
 
         # ユーザのパスワードをリセットする
         # (ユーザを仮登録状態にする)
@@ -1249,13 +1248,12 @@ class SystemTestCase(ApiTestCaseBase):
         # コッコロちゃんを作成する
         result = self.post_uri('/api/v0/users', {'email':'kokkoro@elf.org', 'name':'コッコロちゃん', 'password':'seikatsuhi0'}, self.USER1)
         user_uuid = result['data']['uuid']
-        user_email = result['data']['email']
 
         # コッコロちゃんを取得する
         new_user = self.factory.user.find_by_uuid(user_uuid)
 
         # コッコロちゃんを本登録処理をする
-        self.post_register_complete(user_email, 'adminpass0', self.USER1)
+        self.post_register_complete(user_uuid, 'adminpass0')
 
         # コッコロちゃんに管理者権限を与える
         result = self.put_uri(f'/api/v0/roles/usr_admin/users/{user_uuid}', {}, self.USER1)
@@ -1964,7 +1962,7 @@ class SystemTestCase(ApiTestCaseBase):
         user_uuid = result['data']['uuid']
 
         # ユーザを登録状態にする
-        self.post_register_complete('jigen@magnum44', 'abedgiykekd*&()', self.USER1)
+        self.post_register_complete(user_uuid, 'abedgiykekd*&()')
 
         # ユーザのパスワードをリセットする
         # (ユーザを仮登録状態にする)
@@ -2039,7 +2037,7 @@ class SystemTestCase(ApiTestCaseBase):
         user_uuid = result['data']['uuid']
 
         # ユーザを登録状態にする
-        self.post_register_complete('goemon@samurai.jp', 'abedgiykekd*&()', self.USER1)
+        self.post_register_complete(user_uuid, 'abedgiykekd*&()')
 
         # ユーザを削除する
         self.delete_uri(f'/api/v0/users/{user_uuid}', self.USER1)
@@ -2248,14 +2246,14 @@ class SystemTestCase(ApiTestCaseBase):
         user_uuid = result['data']['uuid']
         # 作成したユーザを登録状態にする
         new_user1 = self.factory.user.find_by_uuid(user_uuid)
-        self.post_register_complete('donald@mcdonalds.co.jp', 'mcdonald!!!!!!0', new_user1)
+        self.post_register_complete(user_uuid, 'mcdonald!!!!!!0')
 
         # ユーザ2を作成する
         result = self.post_uri('/api/v0/users', {'email':'kernel@kfc.co.jp', 'name':'カーネルサンダース', 'password':'kfc!kfc!kfc!'}, self.USER1)
         user_uuid = result['data']['uuid']
         # 作成したユーザを登録状態にする
         new_user2 = self.factory.user.find_by_uuid(user_uuid)
-        self.post_register_complete('kernel@kfc.co.jp', 'kfc!kfc!kfc!0', new_user2)
+        self.post_register_complete(user_uuid, 'kfc!kfc!kfc!0')
 
         # プロジェクトを作成する
         result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'うにゃあ'}, new_user1)

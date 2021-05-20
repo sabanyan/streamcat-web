@@ -1,6 +1,6 @@
 from flask import Blueprint
-from .utils import make_response
-from ..api.utils import login_required, login_required_api
+from ..api.utils import login_required_api
+from .utils import login_required, make_response
 
 mod = Blueprint('basic_template', __name__)
 
