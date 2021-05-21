@@ -83,11 +83,13 @@ from .api import basic
 from .api import frames
 from .api import lib
 from .api import system
+from .api import token
 app.register_blueprint(domain.mod)
 app.register_blueprint(basic.mod, url_prefix=PREFIX)
 app.register_blueprint(frames.mod, url_prefix=PREFIX)
 app.register_blueprint(lib.mod, url_prefix=PREFIX)
 app.register_blueprint(system.mod, url_prefix=PREFIX)
+app.register_blueprint(token.mod, url_prefix=PREFIX)
 
 # static用
 from ..frontend import mod

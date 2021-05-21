@@ -5,18 +5,32 @@ from flask import (
     g
 )
 from kskp.store.factory import Factory, UnAuthzFactory
-from ...views.utils.login_required import _get_claims
+from .token import decode_token
 
 def login_required_api(func):
     """
     このデコレータがついたエンドポイントは、
     ログインされていないとエラー用JSONを返却する
     """
+    def get_token_from_auth_header(headers:dict):
+        """
+        HTTPリクエストのAuthorizationからトークンを取得する
+        """
+        str_list = headers.get('Authorization').split('Bearer ')
+        if len(str_list) < 2:
+            return None
+        return str.strip(str_list[1])
+
     @functools.wraps(func)
     def deco(**kwargs):
+        # CookieまたはAuthorizationヘッダからアクセストークンを取得する
+        access_token = request.cookies.get('S') or get_token_from_auth_header(request.headers)
+
+        if access_token is None:
+            raise Exception('No access token found')
         try:
             # 例外が送出されなければ認証成功
-            claims = _get_claims(request.cookies)
+            claims = decode_token(access_token)
         except:
             # 認証失敗の場合はエラーメッセージを返す
             return jsonify({'success':False, 'message':'not authorized'})
@@ -38,7 +52,6 @@ def login_required_api(func):
                 return jsonify({'success':False, 'message':'not authorized.'})
             elif user.is_init_or_temp:
                 # 本パスワード登録画面に遷移する
-                # return make_response('register_password.html', email=user.email)
                 return jsonify({'success':False, 'message':'user password is not registered'})
             g.user = user
 
