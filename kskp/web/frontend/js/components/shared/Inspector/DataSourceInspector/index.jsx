@@ -48,6 +48,8 @@ type DataSourceInspectorProps = {
   updateFlow: Function;
   nodes: [];
   addStep: Function;
+  addDataSrcStep: Function;
+  addDataDstStep: Function;
   updateStep: Function;
   updateFlow: Function;
   updateLastSavedFlow: Function;
@@ -387,7 +389,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render() {
-    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden } = this.props;
+    const { mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
+       selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden } = this.props;
     let step_text
     let dataSource
     let preview
@@ -519,6 +522,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
                 numberOfInput={1}
                 selected_step_ids={selected_step_ids}
                 addStep={addStep}
+                addDataSrcStep={addDataSrcStep}
+                addDataDstStep={addDataDstStep}
                 selectSteps={selectSteps}
                 addHistory={addHistory}
               />

@@ -183,7 +183,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             const selected_data: LibraryListDataType = args;
             let parameters = {};
             //データソースを追加
-            const props: DataFrameStepModelProps = {
+            const props: any = {
                 type: selected_data.type,
                 uuid: selected_data.uuid,
                 label: selected_data.label,
