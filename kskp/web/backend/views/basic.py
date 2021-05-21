@@ -57,7 +57,7 @@ def flow_designer(flow_uuid):
 @mod.route('/preview', methods=['GET', 'POST'])
 @login_required
 def preview():
-    return make_response('preview.html')
+    return make_response('preview.html', is_preview=True)
 
 # 開発用画面
 # TODO: 将来、見れる権限の検討が必要かも
