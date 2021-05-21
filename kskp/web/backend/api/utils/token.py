@@ -1,7 +1,21 @@
+import os
+import time
 import uuid
 import jwt
 from datetime import datetime, timedelta, timezone
 from ... import SECURITY_LEVEL
+
+# 環境変数からアクセストークンの有効期間(分)を取得する
+# (設定値がない場合は5日とする)
+_access_expire_timedelta = timedelta(minutes=int(os.getenv('KSKP_ACCESS_TOKEN_EXPIRE_MIN', 5*24*60)))
+
+# 環境変数からトークンの有効期間(日)を取得する
+# (設定値がない場合は6ヶ月とする)
+_refresh_expire_timedelta = timedelta(days=int(os.getenv('KSKP_REFRESH_TOKEN_EXPIRE_DAYS', 6*30)))
+
+# トークンの有効期限切れ迄の猶予時間(分)
+# (アクセストークンの有効期間の半分とする)
+_grace_seconds = (_access_expire_timedelta * 0.5).seconds
 
 # トークンを署名するための秘密鍵
 # トークンを秘密鍵で署名して改竄を防ぐ
@@ -24,20 +38,23 @@ def make_access_token(user_uuid):
     """
     アクセストークンを作成する
     """
-    return _make_token(user_uuid, timedelta(minutes=15))
+    return _make_token(user_uuid, _access_expire_timedelta)
 
 def make_refresh_token(user_uuid):
     """
     リフレッシュトークンを作成する
     """
-    return _make_token(user_uuid, timedelta(days=30*6))
+    return _make_token(user_uuid, _refresh_expire_timedelta)
 
-def expired_soon(expire_time):
+def expired_soon(expire_time:int):
     """
     トークンの有効期限がもうすぐ切れる場合Trueを返す
     """
-    after_time = datetime.timestamp(datetime.now(timezone.utc) + timedelta(minutes=10))
-    return expire_time > after_time
+    # 
+    # now     expired_soon       expire_time
+    # |-----------|----(_grace_seconds)----|
+    now_time = time.time()
+    return now_time > expire_time - _grace_seconds
 
 def decode_token(token):
     """
@@ -50,7 +67,7 @@ def decode_token(token):
                 token,
                 key=_SECRET,
                 algorithms=['HS256'],
-                options={"verify_signature": True})
+                options={'verify_signature': True})
     except jwt.exceptions.ExpiredSignatureError as e:
         # トークンの有効が切れている場合
         raise e
