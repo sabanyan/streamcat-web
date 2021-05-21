@@ -16,7 +16,9 @@ def login_required_api(func):
         """
         HTTPリクエストのAuthorizationからトークンを取得する
         """
-        str_list = headers.get('Authorization').split('Bearer ')
+        if 'Authorization' not in headers:
+            return None
+        str_list = headers['Authorization'].split('Bearer ')
         if len(str_list) < 2:
             return None
         return str.strip(str_list[1])
