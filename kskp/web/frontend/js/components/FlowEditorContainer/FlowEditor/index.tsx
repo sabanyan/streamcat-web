@@ -65,7 +65,7 @@ const FlowEditor = (props: Props) => {
     const dispatch = useDispatch();
     const folderUuid = useSelector((state:any) => state.FlowEditorReducer.folderUuid);
 
-    const _modifiedAt = useSelector((state:any) => state.FlowEditorReducer.modifiedAt);
+    const _modifiedAt = useSelector((state:any)=> state.FlowEditorReducer.modifiedAt);
     useEffect(() => {
         if (_modifiedAt) {
             // modifiedAt が reducer 経由での取得になる

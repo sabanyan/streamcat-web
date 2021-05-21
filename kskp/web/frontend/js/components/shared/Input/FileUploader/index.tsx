@@ -135,7 +135,7 @@ export default class FileUploader extends React.Component<Props, State> {
     formData.append('label', uploadFile.uploadName)
     formData.append('parent', parentUUID)
 
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       axios.post(url, formData, options)
         .then((response) => {
           if (!response.data.success) throw response

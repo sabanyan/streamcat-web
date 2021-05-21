@@ -25,7 +25,7 @@ type Props = {
 }
 
 const PaperScroller = (props: Props) => {
-    const [coords, setCoords] = useState();
+    const [coords, setCoords] = useState<{x:number, y:number}>();
     const pasteSteps = () => {
         const {pasteSteps} = props;
         navigator.clipboard.readText().then((data: any) => {

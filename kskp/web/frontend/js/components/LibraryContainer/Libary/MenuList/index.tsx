@@ -8,6 +8,7 @@ interface Props {
     allowlist: Allowlist;
     onClickNewFlow: () => void;
     onClickNewProject: () => void;
+    onClickImportFlow: () => void;
     onClickNewFolder: () => void;
     onClickCSVUpload: () => void;
     onClickAddDatabase: () => void;
@@ -15,13 +16,19 @@ interface Props {
 }
 
 const MenuList = (props: Props) => {
-    const { allowlist, onClickNewFlow, onClickNewProject, onClickNewFolder, 
-        onClickCSVUpload, onClickAddDatabase, onClickAddRemoteFolder } = props;
+    const { allowlist, onClickNewFlow, onClickNewProject, onClickNewFolder,
+        onClickCSVUpload, onClickAddDatabase, onClickAddRemoteFolder, onClickImportFlow } = props;
 
-    let createFile: any, createFolder: any, createProject: any, upload: any
+    let createFile: any, createFolder: any, createProject: any, upload: any, importProject: any
 
     createProject = allowlist.createProject ? <React.Fragment>
         <FlatButton icon={"icon-add"} onClick={onClickNewProject}>プロジェクトの新規作成</FlatButton>
+        <Spacer height={8} />
+    </React.Fragment> : null;
+
+    // 現状は、プロジェクト単位でインポートされる
+    importProject = allowlist.import ? <React.Fragment>
+        <FlatButton icon={"icon-upload"} onClick={onClickImportFlow}>フローのアップロード</FlatButton>
         <Spacer height={8} />
     </React.Fragment> : null;
 
@@ -49,6 +56,7 @@ const MenuList = (props: Props) => {
         {createFolder}
         {createFile}
         {upload}
+        {importProject}
     </div>;
 };
 

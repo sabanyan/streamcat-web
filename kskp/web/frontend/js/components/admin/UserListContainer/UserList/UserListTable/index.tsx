@@ -29,7 +29,7 @@ const UserListTable = (props: Props) => {
     ];
     const [headers, setHeaders] = useState<ITableHeader[]>(initialHeaders);
 
-    const [, updateState] = React.useState();
+    const [, updateState] = React.useState<{}>();
     const forceUpdate = React.useCallback(() => updateState({}), []);
 
     const _onClickHeader = (clickHeader: ITableHeader) => {
