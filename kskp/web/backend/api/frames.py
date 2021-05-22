@@ -102,14 +102,19 @@ def create_frame():
                 raise Exception('No parent is designated.')
             if 'label' not in request.form:
                 raise Exception('No label is designated.')
-            
+
             # parentとlabel属性があれば新形式のPOST /framesだとみなす
             parent = g.factory.data.find_by_uuid(request.form.get('parent'))
+
+            # HTTPのContent-Typeからファイルタイプを判定する
+            # (HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される)
+            mime_type = request.files['file'].content_type
+
             new_frame = parent.create_frame(request.form.get('label')
                                             , request.files.get('file').stream)
             # documentレコードをDBに格納する
             new_frame.save()
-            return jsonify({'success': True, 'data': new_frame})
+            return jsonify({'success':True, 'data':new_frame})
 
         elif request.json.get('flow_uuid'):
             # 
