@@ -746,9 +746,7 @@ const FlowEditor = (props: Props) => {
                 }
             });
         }
-
-        console.log("edges")
-        console.log(edges)
+        
         return edges;
     }, [graph, nodes]);
 

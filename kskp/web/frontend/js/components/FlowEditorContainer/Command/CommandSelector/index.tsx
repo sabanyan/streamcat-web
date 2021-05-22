@@ -11,7 +11,7 @@ type Props = {
     mast: typeof flowEditorReducerInitialState.mast;
 
     numberOfInput: number;
-    selected_step_ids: [];
+    selected_step_ids: string[];
     addStep: Function;
     selectSteps: Function;
     addHistory: Function;

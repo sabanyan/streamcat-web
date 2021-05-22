@@ -739,8 +739,8 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
 
       const dstNodeIds = newNodeId('d', newState.flow.nodes, outPorts.length);
       const { newNodePositionAndSize, dstNodesPositionAndSize } = newNodesPositionAndSize(GraphUtil, newState.flow.nodes, [], dstNodeIds);
-      // default value
       let args = {};
+      // default value
       dataSrc.params.map((param: any) => {
         // default値の適用
         if (param.default) args[param.name] = param.default;
@@ -815,9 +815,8 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
           return node;
         })
       })
-
-      // default value
       let args = {};
+      // default value
       dataDest.params.map((param: any) => {
         // default値の適用
         if (param.default) args[param.name] = param.default;
@@ -1082,7 +1081,6 @@ function newNodesPositionAndSize(graph: GraphUtil, nodes: any[], srcNodeIds: str
 function newDstNodes(dstNodeIds: string[], dstNodesPositionAndSize: Object, props: any) {
   let result: any[] = [];
 
-
   dstNodeIds.forEach((key: string) => {
     props.id = dstNodeIds[key];
     props.label = key;
@@ -1098,8 +1096,6 @@ function newDstNodes(dstNodeIds: string[], dstNodesPositionAndSize: Object, prop
 
 function addToGraph(graph: GraphUtil, node: any) {
   // node
-  console.log("addTo")
-  console.log(node)
   graph.addNode(node.id);
   // src edges
   Object.keys(node.srcs).forEach((key) => {
@@ -1170,13 +1166,13 @@ export function newDataDest(props: DataDestProps) {
   });
 
   let DataDstProps = {
+    ...dataDest,
     id: id,
     label: label,
     position: position,
     srcs: srcs,
     dsts: {},
     size: size,
-    dataSource: dataDest,
     args: args
   }
 

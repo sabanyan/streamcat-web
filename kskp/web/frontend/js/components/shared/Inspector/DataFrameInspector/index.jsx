@@ -1,4 +1,3 @@
-//@flow
 import React, { Fragment } from 'react'
 import Constants from 'Constants/index'
 import {
@@ -31,7 +30,8 @@ type State = {
   loading: boolean;
 }
 
-type DataSourceInspectorProps = {
+// データフレームステップのペイン
+type DataFrameInspectorProps = {
   nodes: [];
   notify: Function;
   dismissNotify: Function;
@@ -58,7 +58,7 @@ type DataSourceInspectorProps = {
   commandSelectorHidden: boolean;
 }
 
-class DataSourceInspector extends React.Component<DataSourceInspectorProps, State> {
+class DataFrameInspector extends React.Component<DataFrameInspectorProps, State> {
 
   loading: boolean = false
 
@@ -390,9 +390,7 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
   render() {
     const { mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
-       selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden } = this.props;
-    let step_text
-    let dataSource
+      selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden } = this.props;
     let preview
     let download
     const selected_step = this.getSelectedStep()
@@ -549,4 +547,4 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
 }
 
-export default DataSourceInspector
+export default DataFrameInspector

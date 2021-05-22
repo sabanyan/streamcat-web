@@ -13,7 +13,7 @@ type MultiInspectorProps = {
   selectSteps: Function;
   nodes: [];
   mast: typeof flowEditorReducerInitialState.mast;
-  selected_step_ids: [];
+  selected_step_ids: string[];
   addStep: Function;
   addDataSrcStep: Function;
   addDataDstStep: Function;
