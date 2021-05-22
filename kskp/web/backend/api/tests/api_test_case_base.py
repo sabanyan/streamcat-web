@@ -1,8 +1,9 @@
 import json
 import pprint
 
-from kskp.web.backend import app
 from kskp.store.tests.test_case_base import TestCaseBase
+from kskp.web.backend import app
+from ..utils import make_access_token
 
 class ApiTestCaseBase(TestCaseBase):
     """
@@ -48,7 +49,6 @@ class ApiTestCaseBase(TestCaseBase):
         指定したパスのフレームを、指定したUUIDでライブラリに登録する
         """
         # from flask import g
-
         # with app.test_client() as client:
         #     with client.session_transaction() as session:
         #         session['user_id'] = self.USER1.id
@@ -91,8 +91,8 @@ class ApiTestCaseBase(TestCaseBase):
         URIをGETする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             response = client.get(uri)
             result = json.loads(response.get_data())
         error_detail = result['message'] if 'message' in result else ''
@@ -104,8 +104,8 @@ class ApiTestCaseBase(TestCaseBase):
         URIからファイルをダウンロードする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             # response = client.get(uri)
             with client.get(uri) as response:
                 self.assertEqual(response.status_code, 200, msg=f'GET {uri} is failed. response status: {response.status}')
@@ -123,8 +123,8 @@ class ApiTestCaseBase(TestCaseBase):
         URIへPOSTする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             response = client.post(uri,
                                    content_type='application/json',
                                    data=json.dumps(json_data))
@@ -138,8 +138,8 @@ class ApiTestCaseBase(TestCaseBase):
         URIへPOSTする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             response = client.post(uri,
                                    content_type='application/json',
                                    data=json.dumps(json_data))
@@ -153,8 +153,8 @@ class ApiTestCaseBase(TestCaseBase):
         指定するストリームをフレームデータとしてアップロードする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             response = client.post('/api/v0/frames',
                                    content_type='multipart/form-data',
                                    data={
@@ -174,8 +174,8 @@ class ApiTestCaseBase(TestCaseBase):
         指定するストリームをフローとしてアップロードする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             response = client.post('/api/v0/flow_files',
                                    content_type='multipart/form-data',
                                    data={
@@ -192,8 +192,8 @@ class ApiTestCaseBase(TestCaseBase):
         URIへPUTする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             response = client.put(uri,
                                   content_type='application/json',
                                   data=json.dumps(json_data))
@@ -207,8 +207,8 @@ class ApiTestCaseBase(TestCaseBase):
         URIへDELETEする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             response = client.delete(uri)
             result = json.loads(response.get_data())
         error_detail = result['message'] if 'message' in result else ''
@@ -220,8 +220,8 @@ class ApiTestCaseBase(TestCaseBase):
         URIへDELETEする
         """
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
+            token = make_access_token(user.uuid)
+            client.set_cookie(None, 'S', token)
             response = client.delete(uri,
                                      content_type='application/json',
                                      data=json.dumps(json_data))
@@ -236,9 +236,6 @@ class ApiTestCaseBase(TestCaseBase):
         """
         uri = '/library?session=on'
         with app.test_client() as client:
-            # with client.session_transaction() as session:
-            #     session['user_id'] = user.id
-            #     session['signup_email'] = email
             response = client.post(uri,
                                    content_type='multipart/form-data',
                                    data={'email'   : email,
@@ -247,17 +244,16 @@ class ApiTestCaseBase(TestCaseBase):
         return response.get_data()
 
 
-    def post_register_complete(self, email, new_password, user):
+    def post_register_complete(self, user_uuid, new_password):
         """
         POST /signup/complete でユーザを登録状態にする
         """
         uri = '/signup/complete'
         with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = user.uuid
-                session['signup_email'] = email
+            token = make_access_token(user_uuid)
+            client.set_cookie(None, 'S', token)
             response = client.post(uri,
                                    content_type='multipart/form-data',
-                                   data={'password':new_password})
+                                   data={'password': new_password})
         self.assertEqual(response.status_code, 302, msg=f'POST {uri} is failed. response status: {response.status}')
         return response.get_data()

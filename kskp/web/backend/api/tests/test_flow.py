@@ -78,42 +78,26 @@ class FlowTestCase(ApiTestCaseBase):
         # まずプロジェクトを作る
         project_uuid = self.factory.data.load_root().uuid
 
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = self.USER1.uuid
+        # 必要最低限の項目だけを送る
+        self.assertIsNotNone(project_uuid)
 
-            new_flow_name = '新しいフローです'
-            new_flow_data_source_name = str(uuid.uuid4())
+        data = {
+            'project_uuid': project_uuid,
+            'name': '新しいフローです'
+        }
 
-            # 必要最低限の項目だけを送る
-            self.assertIsNotNone(project_uuid)
+        # フローを作成する
+        result = self.post_uri(f'/api/v0/flows', data, self.USER1)
 
-            data = {
-                'project_uuid': project_uuid,
-                'name': new_flow_name
-            }
+        # result_project_id = model.get_project_id_by_uuid(project_uuid)
 
-            with tempfile.TemporaryDirectory() as temp_dir:
-                # app.config['FLOW_PATH'] = temp_dir
+        self.assertEqual(result['success'], True)
+        # フローJsonのprojectIdはもやは利用していない
+        # self.assertEqual(result['data']['projectId'], result_project_id)
+        self.assertEqual(result['data']['label'], '新しいフローです')
 
-                endpoint = '/api/v0/flows'
-                response = client.post(endpoint,
-                    content_type='application/json',
-                    data=json.dumps(data)
-                    )
-
-            result = json.loads(response.get_data())
-
-            # result_project_id = model.get_project_id_by_uuid(project_uuid)
-
-            self.assertEqual(result['success'], True)
-            # フローJsonのprojectIdはもやは利用していない
-            # self.assertEqual(result['data']['projectId'], result_project_id)
-            self.assertEqual(result['data']['label'], new_flow_name)
-
-            # 後片付け
-            # app.config['FLOW_PATH'] = flow_path
+        # 後片付け
+        # app.config['FLOW_PATH'] = flow_path
 
     def test_new_flow_for_copy(self):
         """
@@ -313,22 +297,12 @@ class FlowTestCase(ApiTestCaseBase):
         """
         fetch_flowをテストする
         """
-        # まずユーザとプロジェクトを作る
-        with app.app_context():
-            test_flow_uuid = setUpFlow(self)
-            test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
+        # フローを作成する
+        test_flow_uuid = setUpFlow(self)
+        test_flow_label = self.factory.data.find_by_uuid(test_flow_uuid).label
 
-        # 実際のAPIを投げるテストを開始する
-        with app.test_client() as client:
-            with client.session_transaction() as session:
-                session['user_uuid'] = self.USER1.uuid
-            endpoint = '/api/v0/flows/%s' % test_flow_uuid
-            response = client.get(endpoint)
-            result = json.loads(response.get_data())
-
-        self.assertEqual(result['success'], True)
-
-        # self.assertEqual(flow_path.stem, data_source_name)
+        # フローを取得する
+        result = self.get_uri(f'/api/v0/flows/{test_flow_uuid}', self.USER1)
 
         # GET /flows/<uuid>の結果を検証する
         self.assertEqual(result['data']['uuid'], test_flow_uuid)
