@@ -106,10 +106,6 @@ def create_frame():
             # parentとlabel属性があれば新形式のPOST /framesだとみなす
             parent = g.factory.data.find_by_uuid(request.form.get('parent'))
 
-            # HTTPのContent-Typeからファイルタイプを判定する
-            # (HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される)
-            mime_type = request.files['file'].content_type
-
             new_frame = parent.create_frame(request.form.get('label')
                                             , request.files.get('file').stream)
             # documentレコードをDBに格納する
