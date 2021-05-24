@@ -35,7 +35,7 @@ def make_new_frames():
         flow_uuid = request.args['from']
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow, g.factory)
+    activity = execute_flow(flow)
     return format_result(activity)
 
 @mod.route('/frames/<frame_uuid>')
@@ -116,11 +116,12 @@ def create_frame():
             # フロー一覧から実行する
             # 
             flow_uuid = request.json.get('flow_uuid')
-            args = request.json.get('args') if request.json.get('args') else {}
+            params = request.json.get('args') if request.json.get('args') else {}
+            lock_uuid = request.json.get('lock')
             inputs = _make_flow_inputs(g.factory, flow_uuid, request)
             # フローの実行
             flow = g.factory.data.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, g.factory, args=args, inputs=inputs)
+            result = execute_flow(flow, args={'params':params}, inputs=inputs, lock_uuid=lock_uuid)
             result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
@@ -199,17 +200,14 @@ def fetch_vis(frame_uuid):
     """
     指定したframeのVisデータを直接UUIDで指定して取得する
     """
-    vis_args = {"d" : request.json}
-
-    import uuid
     from kskp.depo.std.commands import LoaderCommand
-    from kskp.engine import Step
 
+    vis_args = {'vis':{'d':request.json}}
     frame = g.factory.data.find_by_uuid(frame_uuid)
     parent_folder = frame.find_parent()
-    loader_step = Step(str(uuid.uuid4()), LoaderCommand(), {'uuid': frame_uuid})
-    datasource = g.factory.data.create_datasource(None, 'tmp_source', parent_folder, loader_step)
-    activity = execute_flow(datasource, g.factory, vis_args=vis_args)
+    # datasourceは保存しないので、親フォルダはどこでも良い
+    datasource = parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame_uuid})
+    activity = execute_flow(datasource, vis_args=vis_args)
     return format_vis(activity)
 
 @mod.route('/vizs', methods=['POST'])
@@ -223,22 +221,67 @@ def make_new_vizs():
         raise Exception('from引数を指定してください')
 
     flow_uuid = request.args['from']
-    vis_args = request.json
+    vis_args = {'vis': request.json}
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow, g.factory, vis_args=vis_args)
+    activity = execute_flow(flow, vis_args=vis_args)
     return format_vis(activity)
 
-def execute_flow(flow, session, args={}, inputs={}, vis_args={}):
+@mod.route('/activities', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_acitivity():
+    """
+    フローを実行してActivityを作成する
+    """
+    from kskp.store import FlowData
+    from .utils import VisConverter
+
+    req = RequestJson(request.json)
+
+    if req.has_no_all('flow', 'uuid'):
+        raise Exception('flowまたはuuid属性を指定してください')
+    elif req.has('flow') and req.has('uuid'):
+        raise Exception('flow属性とuuid属性は同時に指定できません')
+
+    if req.has('flow'):
+        # フローリテラルが指定された場合
+        root = g.factory.data.load_root()
+        flow = root.create_flow('LITERAL', FlowData(req['flow']))
+        args = req.get('args') or {}
+        activity = execute_flow(flow, args=args, lock_uuid=req.get('lock'))
+    elif req.has('uuid'):
+        # UUIDでフローが指定された場合
+        flow = g.factory.data.find_by_uuid(req['uuid'])
+        args = req.get('args') or {}
+        activity = execute_flow(flow, args=args, lock_uuid=req.get('lock'))
+    else:
+        raise Exception(f'Either flow or uuid key is required')
+
+    def is_vis(last):
+        from kskp.store import Vis
+        return isinstance(last, Vis)
+
+    return [{'id'    : point.id, 
+             'label' : point.label,
+             'uuid'  : last.uuid,
+             'parent': None if is_vis(last) else last.find_parent().uuid,
+             'args': {'column_names':last.column_names} if is_vis(last) else {},
+             'contents': VisConverter(last) if is_vis(last) else None
+            }
+            for point, last in activity.lasts]
+
+def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     """
     指定されたフローを実行し実行結果を取得する
     """
     try:
         from kskp.store import Activity, NoResultsException
-        from kskp.engine import execute, FlowJsonLink
+        from kskp.engine import execute, FlowCommand
 
-        link = FlowJsonLink(flow, session, vis_args)
-        lasts = execute(link=link, args=args, inputs=inputs)
+        args = args.copy()
+        args.update(vis_args)
+        lasts = execute(runnable=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
 
         # Activityを取得して返り値とする
         for point_id, datum in lasts.items():
@@ -275,7 +318,7 @@ def _make_flow_inputs(factory, flow_uuid, request):
     # executeの引数
     inputs = {}
 
-    for port in flow_data.ports[0]:
+    for port in flow_data.i_ports:
         # frame（既にkskpに存在するデータソース）の場合
         if request.json.get(port['nodeId']) is not None:
             # フレームのUUIDを取得する
@@ -301,9 +344,8 @@ def _make_flow_inputs(factory, flow_uuid, request):
 def _load_frame(frame_uuid):
     # Loaderを用いて指定したuuidのframeを取得する
     from kskp.depo.std.commands import CommandLink
-    store = g.factory.data.find_by_uuid(frame_uuid).find_parent()
     loader = CommandLink('loader').resolve()
-    result = loader.run({'uuid':frame_uuid}, {'store':store})
+    result = loader.run(args={'uuid':frame_uuid, 'datum_factory':g.factory.data}, inputs={})
     # NYSOLコマンドを返す
     nysol_module = result['o']
     return nysol_module

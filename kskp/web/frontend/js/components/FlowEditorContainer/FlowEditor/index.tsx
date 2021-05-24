@@ -18,6 +18,8 @@ import {
     addMasterAction,
     addSelectStepAction,
     addStepAction,
+    addDataDstStepAction,
+    addDataSrcStepAction,
     copyStepsAction,
     deleteCacheAction,
     deleteSelectStepAction,
@@ -63,9 +65,9 @@ interface Props {
 const FlowEditor = (props: Props) => {
 
     const dispatch = useDispatch();
-    const folderUuid = useSelector((state:any) => state.FlowEditorReducer.folderUuid);
+    const folderUuid = useSelector((state: any) => state.FlowEditorReducer.folderUuid);
 
-    const _modifiedAt = useSelector((state:any)=> state.FlowEditorReducer.modifiedAt);
+    const _modifiedAt = useSelector((state: any) => state.FlowEditorReducer.modifiedAt);
     useEffect(() => {
         if (_modifiedAt) {
             // modifiedAt が reducer 経由での取得になる
@@ -74,22 +76,22 @@ const FlowEditor = (props: Props) => {
         }
     }, [_modifiedAt])
     const [modifiedAt, setModifiedAt] = useState<string>();
-    const flow = useSelector((state:any) => state.FlowEditorReducer.flow);
-    const drag = useSelector((state:any) => state.FlowEditorReducer.drag);
-    const selected_step_ids = useSelector((state:any) => state.FlowEditorReducer.selected_step_ids);
-    const nodes = useSelector((state:any) => state.FlowEditorReducer.nodes);
-    const history = useSelector((state:any) => state.FlowEditorReducer.history);
-    const mast = useSelector((state:any) => state.FlowEditorReducer.mast);
-    const selected_tab_id = useSelector((state:any) => state.FlowEditorReducer.selected_tab_id);
-    const selected_data_source_detail = useSelector((state:any) => state.FlowEditorReducer.selected_data_source_detail);
-    const graph = useSelector((state:any) => state.FlowEditorReducer.graph);
-    const zoom = useSelector((state:any) => state.FlowEditorReducer.zoom);
-    const inspector = useSelector((state:any) => state.FlowEditorReducer.inspector);
-    const editor = useSelector((state:any) => state.FlowEditorReducer.editor);
-    const editMode = useSelector((state:any) => state.FlowEditorReducer.editMode);
-    const executeMode = useSelector((state:any) => state.FlowEditorReducer.executeMode);
-    const networkStatus = useSelector((state:any) => state.FlowEditorReducer.networkStatus);
-    const lastSavedFlow = useSelector((state:any) => state.FlowEditorReducer.lastSavedFlow);
+    const flow = useSelector((state: any) => state.FlowEditorReducer.flow);
+    const drag = useSelector((state: any) => state.FlowEditorReducer.drag);
+    const selected_step_ids = useSelector((state: any) => state.FlowEditorReducer.selected_step_ids);
+    const nodes = useSelector((state: any) => state.FlowEditorReducer.nodes);
+    const history = useSelector((state: any) => state.FlowEditorReducer.history);
+    const mast = useSelector((state: any) => state.FlowEditorReducer.mast);
+    const selected_tab_id = useSelector((state: any) => state.FlowEditorReducer.selected_tab_id);
+    const selected_data_source_detail = useSelector((state: any) => state.FlowEditorReducer.selected_data_source_detail);
+    const graph = useSelector((state: any) => state.FlowEditorReducer.graph);
+    const zoom = useSelector((state: any) => state.FlowEditorReducer.zoom);
+    const inspector = useSelector((state: any) => state.FlowEditorReducer.inspector);
+    const editor = useSelector((state: any) => state.FlowEditorReducer.editor);
+    const editMode = useSelector((state: any) => state.FlowEditorReducer.editMode);
+    const executeMode = useSelector((state: any) => state.FlowEditorReducer.executeMode);
+    const networkStatus = useSelector((state: any) => state.FlowEditorReducer.networkStatus);
+    const lastSavedFlow = useSelector((state: any) => state.FlowEditorReducer.lastSavedFlow);
 
     const [offLineNotify, setOffLineNotify] = useState<any | null>(null);
     const [initialEditMode, setInitialEditMode] = useState<FlowEditModeValue | null>(null);
@@ -102,6 +104,12 @@ const FlowEditor = (props: Props) => {
     }, []);
     const addStep = useCallback((add_step: StepModelType, src_step_ids: [] = [], dst_step_ids: [] = []) => {
         dispatch(addStepAction(add_step, src_step_ids, dst_step_ids));
+    }, []);
+    const addDataDstStep = useCallback((dataDst: any, selectedDataNodeId: string) => {
+        dispatch(addDataDstStepAction(dataDst, selectedDataNodeId));
+    }, []);
+    const addDataSrcStep = useCallback((dataSrc: any) => {
+        dispatch(addDataSrcStepAction(dataSrc));
     }, []);
     const updateStep = useCallback((step: StepModelType) => {
         dispatch(updateStepAction(step));
@@ -539,7 +547,7 @@ const FlowEditor = (props: Props) => {
         };
         window.addEventListener("beforeunload", handleLeavePage);
         window.addEventListener("unload", handleUnload);
-        
+
         return () => {
             window.removeEventListener("beforeunload", handleLeavePage);
             window.removeEventListener("unload", handleUnload);
@@ -583,6 +591,30 @@ const FlowEditor = (props: Props) => {
             });
             window.subflows = subflows;
             addMaster({ subflows: subflows })
+        }).then(() => {
+        },
+            (error) => {
+                console.log(error);
+            }));
+
+        preRequest.push(APIUtil.get("datasrcs").then((response) => {
+            const json = response.data;
+            const datasrcs = json.data.map((datasrc: any) => {
+                return datasrc
+            });
+            addMaster({ datasrcs: datasrcs })
+        }).then(() => {
+        },
+            (error) => {
+                console.log(error);
+            }));
+
+        preRequest.push(APIUtil.get("datadsts").then((response) => {
+            const json = response.data;
+            const datadsts = json.data.map((datadst: any) => {
+                return datadst
+            });
+            addMaster({ datadsts: datadsts })
         }).then(() => {
         },
             (error) => {
@@ -714,6 +746,7 @@ const FlowEditor = (props: Props) => {
                 }
             });
         }
+        
         return edges;
     }, [graph, nodes]);
 
@@ -819,6 +852,8 @@ const FlowEditor = (props: Props) => {
                 mast={mast}
                 selected_tab_id={selected_tab_id}
                 addStep={addStep}
+                addDataSrcStep={addDataSrcStep}
+                addDataDstStep={addDataDstStep}
                 selectSteps={selectSteps}
                 flow={flow}
                 lockUUID={lockUUID}

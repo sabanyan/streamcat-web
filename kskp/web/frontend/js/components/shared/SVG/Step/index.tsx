@@ -298,7 +298,7 @@ const Step = (props: Props) => {
     const flowIn = flow.hasInPortWithId(step.id);
     const flowOut = flow.hasOutPortWithId(step.id);
 
-    let stepLabel = step.getLabel();
+    let stepLabel = step.label;
 
     if (flowIn || flowOut) {
         icon = <g>
@@ -336,6 +336,8 @@ const Step = (props: Props) => {
     } else if (isNote(step)) {
         icon = <Note hover={hover} selected={selected} model={step} />;
 
+    } else {
+        icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
     }
 
     let invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;

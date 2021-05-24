@@ -6,5 +6,11 @@
   const inject_project_uuid = '{{ project_uuid }}';
   const inject_flow_uuid = undefined;
 </script>
+
+{% if css_resources and js_resources %}
+{{ css_resources | safe }}
+{{ js_resources | safe }}
+{% endif %}
+
 <div id="preview"></div>
 {% endblock %}

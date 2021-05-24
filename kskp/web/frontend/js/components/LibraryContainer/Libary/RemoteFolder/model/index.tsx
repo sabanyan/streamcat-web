@@ -9,7 +9,7 @@ const initState = {
   parentUUID: "",
   uuid: "",
   label: "",
-  protocol: "Samba",
+  protocol: "smb",
   hostname: "",
   domain: "",
   directory: "",

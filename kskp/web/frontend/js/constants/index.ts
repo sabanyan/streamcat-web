@@ -159,6 +159,7 @@ const Constants = {
   lang: {
     classification: {
       subflow: '共有フロー',
+      data_dest: "データデスト",
       calculation: '項目間の計算',
       col_edit: '列に対する選択・加工',
       data_format: 'フォーマットの整形',
@@ -245,11 +246,11 @@ const Constants = {
     "LF",
     "CR+LF"
   ],
-  admin:{
+  admin: {
     systemRole: {
-      EVERYONE:"EVERYONE",
-      USR_ADMIN:"USR_ADMIN",
-      SYS_ADMIN:"SYS_ADMIN"
+      EVERYONE: "EVERYONE",
+      USR_ADMIN: "USR_ADMIN",
+      SYS_ADMIN: "SYS_ADMIN"
     },
     userStatus: {
       tmp: "tmp",

@@ -33,7 +33,7 @@ const UserListMultiInspector = (props: Props) => {
     }
 
     return <Resizer>
-        <BaseInspector key={JSON.stringify(selectedDatas)} label={null} disabled={true}>
+        <BaseInspector key={JSON.stringify(selectedDatas)} label={""} disabled={true}>
             <div className={style.inspector}>
                 <div className={style.actions}>
                     {renderButtons(selectedDatas)}

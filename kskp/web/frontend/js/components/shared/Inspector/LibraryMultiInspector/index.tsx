@@ -35,7 +35,7 @@ class LibraryMultiInspector extends React.Component<Props> {
     if(!selectedDatas.length)return;
     const disabled = allowlist && allowlist.update ? false : true
     return <Resizer>
-      <BaseInspector key={JSON.stringify(selectedDatas)} label={null} disabled={disabled}>
+      <BaseInspector key={JSON.stringify(selectedDatas)} label={undefined} disabled={disabled}>
         <div className={style.inspector}>
           <div className={style.actions}>
             {this.renderButtons(selectedDatas)}

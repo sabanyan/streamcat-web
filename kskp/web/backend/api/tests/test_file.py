@@ -17,23 +17,14 @@ class FileTestCase(ApiTestCaseBase):
         """
         upload_frame APIをテストする
         """
+        root_uuid = self.factory.data.load_root().uuid
+
         # アップロード用に一時ファイルを作成する
-        f, file_name = tempfile.mkstemp()
+        i, file_name = tempfile.mkstemp()
 
-        with app.test_client() as client:
-            response = client.post('/api/v0/frames',
-                # content_type='multipart/form-data',
-                # content_type='application/x-www-form-urlencoded',
-                data={
-                    # 'file_name': file_name
-                    # ,
-                    'file': f
-                }
-            )
-            result = json.loads(response.get_data())
-
-        # self.assertEqual(result['message'], '')
-        # self.assertEqual(result['success'], True)
+        # ファイルをアップロードする
+        with open(file_name, mode='rb') as f:
+            result = self.post_frames('UPロードファイル', root_uuid, f, self.USER1)
 
     def test_download_file(self):
         """

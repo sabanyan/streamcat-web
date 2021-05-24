@@ -1,6 +1,6 @@
 from flask import Blueprint
-from .utils import make_response
-from ..api.utils import login_required, login_required_api
+from ..api.utils import login_required_api
+from .utils import login_required, make_response
 
 mod = Blueprint('basic_template', __name__)
 
@@ -57,7 +57,7 @@ def flow_designer(flow_uuid):
 @mod.route('/preview', methods=['GET', 'POST'])
 @login_required
 def preview():
-    return make_response('preview.html')
+    return make_response('preview.html', is_preview=True)
 
 # 開発用画面
 # TODO: 将来、見れる権限の検討が必要かも

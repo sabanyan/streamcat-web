@@ -4,8 +4,8 @@ import { FlowEditorReducer } from 'Modules/index'
 import { reducer as notificationsReducer } from 'reapop'
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { CommonReducer } from 'Modules/reducers/index'
-import {FlowEditorReducerInitialState} from "Modules/flowEditor";
-import {CommonReducerInitialState} from "Modules/reducers/common";
+import { flowEditorReducerInitialState } from "Modules/flowEditor";
+import { CommonReducerInitialState } from "Modules/reducers/common";
 
 
 // default value for notifications
@@ -19,7 +19,7 @@ export const defaultNotification = {
 
 export const rootReducerInitialState = {
     notifications: [],
-    FlowEditorReducer: FlowEditorReducerInitialState,
+    FlowEditorReducer: flowEditorReducerInitialState,
     CommonReducer: CommonReducerInitialState
 }
 
@@ -29,7 +29,7 @@ const rootReducer = combineReducers({
     CommonReducer
 });
 
-export {rootReducer}
+export { rootReducer }
 
 const enhancers = composeWithDevTools(
     applyMiddleware(thunk),

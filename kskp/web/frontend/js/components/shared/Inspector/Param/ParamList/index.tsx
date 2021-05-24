@@ -18,6 +18,7 @@ type Props = {
     label?: string;
     headers?: string[];
     helperTargetedInput?: any;
+    disabled: boolean;
 
     helper: any;
     setHelperTargetedInput?: Function;
@@ -138,10 +139,10 @@ export default class ParamList extends React.Component<Props, State>{
                 case Constants.param.type.number:
                 case Constants.param.type.string:
                     paramElement = <ParamString
-                    label={label} param={param} disabled={disabled} value={value} helperTargetedInput={helperTargetedInput}
-                    helper={helper}
-                    setHelperTargetedInput={setHelperTargetedInput} onChange={onChange} />
-                  break
+                        label={label} param={param} disabled={disabled} value={value} helperTargetedInput={helperTargetedInput}
+                        helper={helper}
+                        setHelperTargetedInput={setHelperTargetedInput} onChange={onChange} />
+                    break
                 case Constants.param.type.boolean:
                     paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
                     break

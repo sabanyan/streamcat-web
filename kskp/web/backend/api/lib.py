@@ -19,7 +19,7 @@ def download_flow(uuid):
 
     # アーカイブファイルを返す
     ret = send_from_directory(archive_path.parent, archive_path.name, as_attachment = True,
-                              attachment_filename = archive_name + '.tgz', mimetype = 'application/x-tar')
+                              download_name = archive_name + '.tgz', mimetype = 'application/x-tar')
     archive_path.unlink()
     return ret
 

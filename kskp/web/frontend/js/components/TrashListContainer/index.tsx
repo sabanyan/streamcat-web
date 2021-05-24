@@ -56,7 +56,7 @@ export default class TrashList extends React.Component<Props, State> {
   }
 
   setStateAsync(state) {
-    return new Promise((resolve:any) => {
+    return new Promise<void>((resolve) => {
       this.setState(state, resolve)
     });
   }

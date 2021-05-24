@@ -3,17 +3,21 @@ import React, { Fragment } from 'react'
 import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
 import { AddButton, Button } from 'Shared/Input'
-import { ModalUtil,StringUtil } from 'Utils/index'
+import { ModalUtil, StringUtil } from 'Utils/index'
 import Constants from 'Constants/index'
 import { CommandSelector } from 'FlowEditorContainer/Command';
 import type { FlowEditorProps } from 'FlowEditorContainer/index'
 import type { MastType, SubFlowParamType } from 'Types/index'
 import type { FlowModelProps } from "Model/Flow/FlowModel";
+import { flowEditorReducerInitialState } from "Modules/flowEditor";
+
 
 type FlowSettingsInspectorProps = {
-  mast: MastType;
+  mast: typeof flowEditorReducerInitialState.mast;
   selected_step_ids: [];
   addStep: Function;
+  addDataSrcStep: Function;
+  addDataDstStep: Function;
   selectSteps: Function;
   flow: FlowModelProps;
   updateFlow: Function;
@@ -27,19 +31,19 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   paramRefs: [] = []
   loading: boolean = false
 
-  constructor (props: FlowEditorProps) {
+  constructor(props: FlowEditorProps) {
     super(props)
   }
 
-  componentWillMount () {
+  componentWillMount() {
 
   }
 
-  onHide (e: Event) {
-    const {flow} = this.props
-    const {label} = this.props.flow
+  onHide(e: Event) {
+    const { flow } = this.props
+    const { label } = this.props.flow
 
-    const beforeFlow = Object.assign({}, {...flow})
+    const beforeFlow = Object.assign({}, { ...flow })
 
     flow.description = this.refs['description'].value
     flow.params = this.getCurrentParams()
@@ -47,7 +51,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     this.props.updateFlow(flow)
   }
 
-  getCurrentParams () {
+  getCurrentParams() {
     //現在入力中のすべてのParamsを取得する
     let params = []
     this.paramRefs.forEach(elem => {
@@ -61,22 +65,22 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     return params
   }
 
-  onBlurTitle (e: SyntheticInputEvent<EventTarget>) {
-    let {flow} = this.props
+  onBlurTitle(e: SyntheticInputEvent<EventTarget>) {
+    let { flow } = this.props
     flow.label = e.target.value
     this.props.updateFlow(flow)
   }
 
-  onClickAddFlowParam () {
-    let {flow} = this.props
+  onClickAddFlowParam() {
+    let { flow } = this.props
     const name = this.setNewParamName('new_param', 1)
     const uuid = StringUtil.generateUUID();
-    flow.params.push({label:name, name: name, type: 'string',uuid: uuid})
+    flow.params.push({ label: name, name: name, type: 'string', uuid: uuid })
     this.props.updateFlow(flow)
   }
 
-  setNewParamName (name: string, cnt: number): string {
-    let {flow} = this.props
+  setNewParamName(name: string, cnt: number): string {
+    let { flow } = this.props
 
     const findResult = flow.params.find(param => {
       return param.name === (name + cnt)
@@ -87,17 +91,17 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     return name + cnt
   }
 
-  onDeleteParam (param) {
-    let {flow} = this.props
+  onDeleteParam(param) {
+    let { flow } = this.props
     const newParams = flow.params.filter(p => {
       return (p.name !== param.name)
     })
-    
+
     flow.params = newParams
     this.props.updateFlow(flow)
   }
 
-  onClickDeleteParam (param) {
+  onClickDeleteParam(param) {
 
     ModalUtil.registerModal({
       id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -116,23 +120,25 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     })
   }
 
-  onDescriptionChange (e) {
-    let {flow} = this.props
+  onDescriptionChange(e) {
+    let { flow } = this.props
     flow.description = e.currentTarget.value
     this.props.updateFlow(flow)
   }
 
-  onParamChange (e) {
-    let {flow} = this.props
+  onParamChange(e) {
+    let { flow } = this.props
     let params = this.getCurrentParams()
     flow.params = params
     this.props.updateFlow(flow)
   }
 
-  render () {
-    const {flow, mast, addStep, selectSteps, selected_step_ids, addHistory, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled} = this.props
+  render() {
+    const { flow, mast, addStep, addDataDstStep, addDataSrcStep,
+      selectSteps, selected_step_ids, addHistory, addFlowVariableHidden,
+      commandSelectorHidden, baseInspectorDisabled } = this.props
     if (!flow) return null
-    const {params} = flow
+    const { params } = flow
 
     let inputParams, inputParamsContainer, addFlowParams
     this.paramRefs = []
@@ -147,7 +153,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
               this.paramRefs.push(ref)
             }
           }} type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} defaultValue={param.name}
-                 onChange={(e) => {this.onParamChange(e)}}/>
+            onChange={(e) => { this.onParamChange(e) }} />
         </div>
         <div className={style.right}>
           <Button danger={true} disabled={baseInspectorDisabled} onClick={() => this.onClickDeleteParam(param)}>削除</Button>
@@ -160,7 +166,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
         <label>フロー変数</label>
         {inputParams}
       </div>
-    } else if(baseInspectorDisabled) {
+    } else if (baseInspectorDisabled) {
       inputParamsContainer = <div className={"mt-8px"}>
         <label>フロー変数</label>
         <div className={"text-center"}>
@@ -169,21 +175,21 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
           </div>
         </div>
       </div>
-    }else{
+    } else {
       inputParamsContainer = <div className={"mt-8px"}>
         <label>フロー変数</label>
       </div>
     }
-    if(!addFlowVariableHidden){
+    if (!addFlowVariableHidden) {
       addFlowParams = <AddButton onClick={() => this.onClickAddFlowParam()}>フロー変数を追加する</AddButton>
     }
 
     return <BaseInspector key={flow.uuid} header={''} label={flow.label}
-                          onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}
-                          disabled={baseInspectorDisabled}>
+      onBlurTitle={(e) => this.onBlurTitle(e)} onHide={() => this.onHide()}
+      disabled={baseInspectorDisabled}>
       <textarea className={'mb-8px'} placeholder={'フローの説明'} className={'form-control'} ref={'description'}
-                defaultValue={this.props.flow.description} rows={8}
-                onChange={(e) => this.onDescriptionChange(e)} disabled={(baseInspectorDisabled)}></textarea>
+        defaultValue={this.props.flow.description} rows={8}
+        onChange={(e) => this.onDescriptionChange(e)} disabled={(baseInspectorDisabled)}></textarea>
       {inputParamsContainer}
       {addFlowParams}
       {
@@ -195,6 +201,8 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
               numberOfInput={0}
               selected_step_ids={selected_step_ids}
               addStep={addStep}
+              addDataSrcStep={addDataSrcStep}
+              addDataDstStep={addDataDstStep}
               selectSteps={selectSteps}
               addHistory={addHistory}
             />

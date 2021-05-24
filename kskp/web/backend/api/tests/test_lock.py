@@ -37,7 +37,7 @@ class LockTestCase(ApiTestCaseBase):
         }
 
         data1 = {
-            'name': '変更後のフローでーす',
+            'label': '変更後のフローでーす',
             'datasource': data_source
         }
 

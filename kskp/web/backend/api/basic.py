@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, jsonify, request, g
 from kskp.core import Datum
-from kskp.store import Folder, ProjectFolder
+from kskp.store import ProjectFolder
 from ..views.auth import MY_PROJECT
 from .utils import (
     Constraints,
@@ -152,9 +152,10 @@ def fetch_flow(flow_uuid):
     """
     指定されたフローを取得する
     """
+    minimize = request.args.get('mini') is not None
     flow = g.factory.data.find_by_uuid(flow_uuid)
     ret = flow.to_json()
-    ret.update({'flow' : flow.flow_data})
+    ret.update({'flow' : flow.flow_data.to_json(minimize=minimize)})
     return ret
 
 @mod.route('/flows', methods=['POST'])
@@ -242,35 +243,197 @@ def throw_away_flow(flow_uuid):
     flow = g.factory.data.find_by_uuid(flow_uuid)
     flow.throw_away(lock_uuid=lock_uuid)
 
+@mod.route('/datasrcs', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_datasrcs():
+    """
+    データソースの一覧を取得する
+    """
+    from kskp.depo.std.commands import CommandLink
+
+    datasrcs_json = []
+
+    # create_datasource()を呼び出すためにRootを用いる
+    root = g.factory.data.load_root()
+
+    # ライブラリデータソースを作成する
+    label = 'ライブラリ'
+    loader_cmd = CommandLink('loader').resolve()
+    args = {'uuid':'@[uuid]'}
+    params = [
+        {
+            "name": "uuid",
+            "type": "string",
+            "label": "ファイルを指定する",
+            "optional": False
+        }
+    ]
+    # データソースを作成する
+    # (store引数にはとりあえずrootを入れておく)
+    datasource = root.create_datasource(label, root, loader_cmd, args, params)
+    # 戻り値のJSONを作成する
+    datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+    datasrc_json['classification'] = 'data_source'
+    datasrc_json['flow'] = datasource.flow_data.to_json()
+    # データソースの一覧に格納する
+    datasrcs_json.append(datasrc_json)
+
+    for store in g.factory.data.find_all_stores():
+        # 参照権限のないデータストアは取得しない
+        if not store.readable:
+            continue
+        # ゴミ箱にあるデータストアは取得しない
+        if g.factory.data.trashed(store.uuid):
+            continue
+
+        if store.type == Datum.DATABASE_TYPE:
+            # DBデータソースを作成する
+            label = store.label
+            loader_cmd = CommandLink('db_loader').resolve()
+            args = {'schema':'@[schema]', 'table':'@[table]'}
+            params = [
+                {
+                    "name": "schema",
+                    "type": "string",
+                    "label": "スキーマ名を指定する",
+                    "optional": True
+                },
+                {
+                    "name": "table",
+                    "type": "string",
+                    "label": "テーブル名を指定する",
+                    "optional": False
+                }
+            ]
+            
+        elif store.type == Datum.RFOLDER_TYPE:
+            # リモートフォルダデータソースを作成する
+            label = store.label
+            loader_cmd = CommandLink('remotefolder_loader').resolve()
+            args = {'file_path':'@[filePath]'}
+            params = [
+                {
+                    "name": "filePath",
+                    "type": "string",
+                    "label": "ファイルパスを指定する",
+                    "optional": False
+                }
+            ]
+
+        # データソースを作成する
+        datasource = root.create_datasource(label, store, loader_cmd, args, params)
+        # 戻り値のJSONを作成する
+        datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+        datasrc_json['classification'] = 'data_source'
+        datasrc_json['flow'] = datasource.flow_data.to_json()
+        # データソースの一覧に格納する
+        datasrcs_json.append(datasrc_json)
+
+    return datasrcs_json
+
+@mod.route('/datadsts', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_datadsts():
+    """
+    データデストの一覧を取得する
+    """
+    from kskp.depo.std.commands import CommandLink
+
+    datadsts_json = []
+
+    # create_datadest()を呼び出すためにRootを用いる
+    root = g.factory.data.load_root()
+
+    # ライブラリデータデストを作成する
+    label = 'ライブラリ'
+    loader_cmd = CommandLink('saver').resolve()
+    args = {}
+    params = []
+    # データデストを作成する
+    # (store引数にはとりあえずrootを入れておく)
+    datadest = root.create_datadest(label, root, loader_cmd, args, params)
+    # 戻り値のJSONを作成する
+    datadst_json = datadest.flow_data.to_json(contains_nodes=False)
+    datadst_json['classification'] = 'data_dest'
+    datadst_json['flow'] = datadest.flow_data.to_json()
+    # データソースの一覧に格納する
+    datadsts_json.append(datadst_json)
+
+    for store in g.factory.data.find_all_stores():
+        # 参照権限のないデータストアは取得しない
+        if not store.readable:
+            continue
+        # ゴミ箱にあるデータストアは取得しない
+        if g.factory.data.trashed(store.uuid):
+            continue
+
+        if store.type == Datum.DATABASE_TYPE:
+            # DBデータデストを作成する
+            label = store.label
+            saver_cmd = CommandLink('db_saver').resolve()
+            args = {'schema':'@[schema]', 'table':'@[table]'}
+            params = [
+                {
+                    "name": "schema",
+                    "type": "string",
+                    "label": "スキーマ名を指定する",
+                    "optional": True
+                },
+                {
+                    "name": "table",
+                    "type": "string",
+                    "label": "テーブル名を指定する",
+                    "optional": False
+                }
+            ]
+            
+        elif store.type == Datum.RFOLDER_TYPE:
+            # リモートフォルダデータデストを作成する
+            label = store.label
+            saver_cmd = CommandLink('remotefolder_saver').resolve()
+            args = {'dir_path':'@[dirPath]'}
+            params = [
+                {
+                    "name": "dirPath",
+                    "type": "string",
+                    "label": "フォルダパスを指定する",
+                    "optional": False
+                }
+            ]
+
+        # データデストを作成する
+        datadest = root.create_datadest(label, store, saver_cmd, args, params)
+        # 戻り値のJSONを作成する
+        datadst_json = datadest.flow_data.to_json(contains_nodes=False)
+        datadst_json['classification'] = 'data_dest'
+        datadst_json['flow'] = datadest.flow_data.to_json()
+        # データデストの一覧に格納する
+        datadsts_json.append(datadst_json)
+
+    return datadsts_json
+
 @mod.route('/subflows', methods=['GET'])
 @login_required_api
 def fetch_subflows():
     """
-    サブフロー一覧を取得する。
+    サブフロー一覧を取得する
     """
-    no_inputs  = request.args.get('no_inputs') == 'on'
-    no_outputs = request.args.get('no_outputs') == 'on'
-
     subflow_data_list = []
-    for subflow in g.factory.data.find_all_subflows(no_inputs, no_outputs):
-        # 親フォルダのラベルを取得する
-        parent = subflow.find_parent()
-        # 親フォルダのないサブフローは取得しない
-        if parent is None:
-            continue
+    for subflow in g.factory.data.find_all_subflows():
         # 実行権限のないサブフローは取得しない
         if not subflow.executable:
             continue
         # ゴミ箱にあるサブフローは取得しない
         if g.factory.data.trashed(subflow.uuid):
             continue
-        # subflow_data = subflow.flow_data.to_json()
         subflow_data = subflow.flow_data.to_json(contains_nodes=False)
         subflow_data['uuid'] = subflow.uuid
+        # TODO: フロントエンドから参照された場合に備える、実質的に使用していない(後方互換)
+        subflow_data['projectName'] = ''
         subflow_data_list.append(subflow_data)
-        if isinstance(parent, Folder):
-            parent_label = parent.label
-            subflow_data['projectName'] = parent_label
+
     return jsonify({'success': True, 'data': subflow_data_list})
 
 @mod.route('/commands')
@@ -281,7 +444,7 @@ def fetch_commands():
     visible_commands_json = []
     if len(request.args) == 0 or request.args.get('all') == 'on':
         visible_commands_json.append('mcmd')
-        visible_commands_json.append('kcmd')
+        # visible_commands_json.append('kcmd')
         visible_commands_json.append('pcmd')
         visible_commands_json.append('scmd')
     else:
@@ -413,11 +576,18 @@ def delete_cache():
     flow_uuid = ofs[0]
     node_id = ofs[1]
 
+    # 対象のフローのロックのUUIDを取得する
+    if request.json is None:
+        lock_uuid = None
+    else:
+        req = RequestJson(request.json)
+        lock_uuid = req.get('lock')
+
     # 対象のフローを取得する
     flow = g.factory.data.find_by_uuid(flow_uuid)
     
     # フローに記録されたキャッシュをクリアする
-    unset_cache_uuid = flow.unset_cache(node_id, ignore_lock=True)
+    unset_cache_uuid = flow.unset_cache(node_id, ignore_lock=True, lock_uuid=lock_uuid)
     if unset_cache_uuid is None:
         return
 

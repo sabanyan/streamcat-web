@@ -158,7 +158,7 @@ export default class ParamsForm extends React.Component<Props, State> {
           paramElement = <ParamList label={label} param={param} disabled={disabled} value={value}
             helperTargetedInput={this.state.helperTargetedInput} headers={headers}
             helper={param.helper}
-            setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange} />
+            setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange ? onChange : () => { }} />
           break
       }
     } catch (e) {

@@ -2,10 +2,10 @@ import * as React from "react";
 
 import style from "../style.scss";
 
-import {BaseInspector, Resizer} from "Shared/Inspector";
-import {Button} from "Shared/Input";
-import {LibraryChild} from "Model/index";
-import { Allowlist} from 'Components/LibraryContainer/Libary/index';
+import { BaseInspector, Resizer } from "Shared/Inspector";
+import { Button } from "Shared/Input";
+import { LibraryChild } from "Model/index";
+import { Allowlist } from 'Components/LibraryContainer/Libary/index';
 
 
 type Props = {
@@ -33,7 +33,7 @@ export default class TrashInspector extends React.Component<Props, State> {
     }
 
     renderButtons(data) {
-        const {onClickRecovery, onClickMove, allowlist} = this.props;
+        const { onClickRecovery, onClickMove, allowlist } = this.props;
 
         let recovery, move;
         if (data && allowlist && allowlist.update) {
@@ -48,7 +48,7 @@ export default class TrashInspector extends React.Component<Props, State> {
     }
 
     renderDetail() {
-        const {data} = this.props;
+        const { data } = this.props;
         let result: any = [];
         if (!data) return result;
 
@@ -114,7 +114,7 @@ export default class TrashInspector extends React.Component<Props, State> {
                 <div className={"mb-8px"}>{data.prevFolderPath}</div>
             </React.Fragment>;
             result.push(prevFolderPath);
-        }else{
+        } else {
             // TODO ライブラリのルートの場合でない？
         }
 
@@ -124,12 +124,12 @@ export default class TrashInspector extends React.Component<Props, State> {
     }
 
     render() {
-        const {data, customStyle} = this.props;
+        const { data, customStyle } = this.props;
 
         const className = (customStyle) ? customStyle : style;
 
         return <Resizer>
-            <BaseInspector key={(data)?data.uuid:"trash"}>
+            <BaseInspector key={(data) ? data.uuid : "trash"} disabled={false}>
                 <div className={style.inspector}>
                     <div className={style.actions}>
                         {this.renderButtons(data)}

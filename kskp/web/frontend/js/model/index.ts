@@ -13,6 +13,8 @@ export { default as VisualizeModel } from './Visualize/VisualizeModel'
 export { default as LocksModel } from './Locks/index'
 export { default as MessageModel } from './Message/index'
 export { default as LibraryModel } from './Library/index'
+export { default as DataSrcStepModel } from './Step/DataSrcStepModel'
+export { default as DataDstStepModel } from './Step/DataDstStepModel'
 
 
 // Props
