@@ -183,7 +183,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             const selected_data: LibraryListDataType = args;
             let parameters = {};
             //データソースを追加
-            const props: DataFrameStepModelProps = {
+            const props: any = {
                 type: selected_data.type,
                 uuid: selected_data.uuid,
                 label: selected_data.label,
@@ -270,8 +270,9 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             <div className={classnames(style.flow_toolbar)}>
                 <Save disabled={baseDisabled} icon={"&#xE2C2"}
                     onClick={(e) => this.onClickSave()}>保存</Save>
-                <DataSourceImport disabled={baseDisabled} icon={"&#xE2C2"}
-                    onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport>
+                    
+                {/* <DataSourceImport disabled={baseDisabled} icon={"&#xE2C2"}
+                    onClick={(e) => this.onClickDataSourceImport()}>データソースの追加</DataSourceImport> */}
                 <Run disabled={runDisabled} icon={"&#xE037"}
                     onClick={(e) => this.onClickProjectRun()}>このフローを実行</Run>
                 <Note disabled={baseDisabled} icon={"comment"}

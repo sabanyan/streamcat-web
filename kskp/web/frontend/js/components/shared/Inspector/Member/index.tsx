@@ -21,12 +21,11 @@ type Props = {
   onSearchTextInputed: Function;
   onSearchedMemberClicked: Function;
   onMemberRoleChanged: Function;
-  onMemberSaveClicked: Function;
 }
 
 export default function Member(props: Props) {
   const { rows, searchedRows } = props
-  const { onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged, onMemberSaveClicked } = props
+  const { onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged } = props
 
   const searchedList = searchedRows.map((row) => {
     return <a key={row.email}

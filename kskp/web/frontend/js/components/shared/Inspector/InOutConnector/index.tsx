@@ -1,23 +1,21 @@
-//@flow
 import * as React from 'react'
-import style from '../../style.scss'
+import style from '../style.scss'
 import { AddButton, DropDownList } from 'Shared/Input'
 import { CommandStepModel, DataFrameStepModel, FlowModel, SubFlowStepModel } from 'Model/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { FlowUtil, ModalUtil, StateUtil } from 'Utils/index'
-import type { StepModelType } from 'Types/index'
+import { StepModelType } from 'Types/index'
 import Constants from 'Constants/index'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc'
 
 type InOutConnectorProps = {
-  selectedStep: Function;
+  selectedStep: any;
   updateStep: Function;
   nodes: [];
-  selectedStep: Function;
-  sortStepSrcEnd: Function;
+  sortStepSrcEnd: any;
   onChangeInEdge: Function;
   onChangeOutEdge: Function;
-  selectedSubFlow: FlowModel;
+  selectedSubFlow?: FlowModel;
   disabled?: boolean;
 }
 
@@ -87,14 +85,14 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
 
     let dataFrameOnlyNodes: [DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
 
-    let dataSourceOptions = []
+    let dataSourceOptions: any = []
 
     dataFrameOnlyNodes.forEach((dataFrame) => {
       dataSourceOptions.push({ value: dataFrame.id, label: dataFrame.getLabel(), object: dataFrame })
     })
 
     let command: CommandModel
-    let inEdgeSelect = []
+    let inEdgeSelect: any[] = []
     let addEdgeContainer
     if (selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
 
@@ -124,7 +122,22 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
         </div>
         inEdgeSelect.push(item)
       })
+    } else if (selectedStep.srcs) { // for datasource & datadst
+      Object.keys(selectedStep.srcs).forEach((key, index) => {
+        const item = <div key={index} className={style.param}>
+          <DropDownList disabled={disabled}
+            key={index}
+            onChange={(e, data, label) => this.onChangeInEdge(e, data, label)}
+            defaultValue={selectedStep.srcs[key]}
+            list={dataSourceOptions}
+            label={key}
+            hiddenNoSelect={false}
+          ></DropDownList>
+        </div>
+        inEdgeSelect.push(item)
+      })
     }
+
     const SortableItem = SortableElement(({ value }) => <li>{value}</li>);
 
     const SortableList = SortableContainer(({ items }) => {
@@ -139,7 +152,7 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
 
 
 
-    let output = null
+    let output: any = null
     if (selectedStep instanceof SubFlowStepModel) {
       const subflow = selectedStep.getCommand()
       if (subflow) {
@@ -167,6 +180,19 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
       output = Object.keys(commandStepDsts).map((key, index) => {
         let dataFrameId: string
         dataFrameId = commandStepDsts[key]
+        const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
+        return <div key={index} className={style.outPort_}>
+          <div className={style.outPort_Port}>
+            {key}
+          </div>
+          <div className={style.outPort_Node}>
+            {node.getLabel()}
+          </div>
+        </div>
+      })
+    } else if (selectedStep.dsts) {
+      output = Object.keys(selectedStep.dsts).map((key, index) => {
+        let dataFrameId: string = selectedStep.dsts[key]
         const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
         return <div key={index} className={style.outPort_}>
           <div className={style.outPort_Port}>

@@ -1,4 +1,3 @@
-//@flow
 import React, { Fragment } from 'react'
 import Constants from 'Constants/index'
 import {
@@ -31,7 +30,8 @@ type State = {
   loading: boolean;
 }
 
-type DataSourceInspectorProps = {
+// データフレームステップのペイン
+type DataFrameInspectorProps = {
   nodes: [];
   notify: Function;
   dismissNotify: Function;
@@ -48,6 +48,8 @@ type DataSourceInspectorProps = {
   updateFlow: Function;
   nodes: [];
   addStep: Function;
+  addDataSrcStep: Function;
+  addDataDstStep: Function;
   updateStep: Function;
   updateFlow: Function;
   updateLastSavedFlow: Function;
@@ -56,7 +58,7 @@ type DataSourceInspectorProps = {
   commandSelectorHidden: boolean;
 }
 
-class DataSourceInspector extends React.Component<DataSourceInspectorProps, State> {
+class DataFrameInspector extends React.Component<DataFrameInspectorProps, State> {
 
   loading: boolean = false
 
@@ -387,9 +389,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
   }
 
   render() {
-    const { mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden } = this.props;
-    let step_text
-    let dataSource
+    const { mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
+      selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden } = this.props;
     let preview
     let download
     const selected_step = this.getSelectedStep()
@@ -519,6 +520,8 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
                 numberOfInput={1}
                 selected_step_ids={selected_step_ids}
                 addStep={addStep}
+                addDataSrcStep={addDataSrcStep}
+                addDataDstStep={addDataDstStep}
                 selectSteps={selectSteps}
                 addHistory={addHistory}
               />
@@ -544,4 +547,4 @@ class DataSourceInspector extends React.Component<DataSourceInspectorProps, Stat
 
 }
 
-export default DataSourceInspector
+export default DataFrameInspector

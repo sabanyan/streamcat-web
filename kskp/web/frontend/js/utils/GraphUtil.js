@@ -1,7 +1,7 @@
 //@flow
 import dagre from 'dagre'
 import Constants from 'Constants/index'
-import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from 'Model/index'
+import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from 'Model/index'
 import { FlowUtil, ZoomUtil } from 'Utils/index'
 import FlowModel from 'Model/Flow/FlowModel'
 
@@ -76,6 +76,10 @@ class GraphUtil {
   }
 
   static edgeName(v: string, w: string, port_name: string) {
+    return JSON.stringify({ v: v, w: w, port_name: port_name })
+  }
+
+  edgeName(v: string, w: string, port_name: string) {
     return JSON.stringify({ v: v, w: w, port_name: port_name })
   }
 
@@ -296,7 +300,11 @@ class GraphUtil {
           } else if (type === Constants.step.type.subflow) {
             model.type = Constants.step.type.subflow
             model.uuid = step.uuid
-            node = new SubFlowStepModel(model)
+            if (model.classification === "data_source" || model.classification === "data_dest") {
+              node = { ...model };
+            } else {
+              node = new SubFlowStepModel(model);
+            }
           }
 
           newNodes.push(node)
@@ -345,6 +353,13 @@ class GraphUtil {
           newNodes.push(node)
 
           break
+
+        default:
+          if (model.flow && model.classification === "data_source") {
+            node = new DataSrcStepModel({ ...model })
+          } else if (model.flow && model.classification === "data_dest") {
+            node = new DataDstStepModel({ ...model })
+          }
       }
     })
 

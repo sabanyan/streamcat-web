@@ -9,7 +9,7 @@ interface Props {
     header?: string;
     title?: (string | React.ReactNode);
     children?: React.ReactNode;
-    onBlurTitle?: Function;
+    onBlurTitle?: any;
     onHide?: Function;
     disabled: boolean;
 }

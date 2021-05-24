@@ -1103,6 +1103,9 @@ const Library = (_: Props) => {
                                         case "frame":
                                         case "folder":
                                         case "project":
+                                        case Constants.library.type.remoteFolder:
+                                        case Constants.library.type.database:
+
                                             body.clickable = true;
                                     }
                                 } else {

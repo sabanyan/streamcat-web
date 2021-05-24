@@ -1,7 +1,9 @@
 import React from 'react'
 import {
   CommandInspector,
-  DataSourceInspector,
+  DataFrameInspector,
+  DataSrcInspector,
+  DataDstInspector,
   FlowSettingsInspector,
   MultiInspector,
   NoteInspector,
@@ -16,28 +18,30 @@ import { FlowModelProps } from "Model/Flow/FlowModel";
 import { updateLastSavedFlowAction } from '../../../../modules/flowEditor';
 
 type InspectorProps = {
-  inspector: {width:number};
+  inspector: { width: number };
   flow: FlowModelProps;
   selected_step_ids: Array<string>;
   nodes: [];
   mast: MastType;
   selected_tab_id: string;
   selected_data_source_detail: DataFrameDetailType;
-  lockUUID: string;
+  lockUUID: any;
   updateDataFrameDetail: Function
   addStep: Function;
+  addDataSrcStep: Function;
+  addDataDstStep: Function;
   selectSteps: Function;
   updateFlow: Function;
   notify: Function;
   dismissNotify: Function;
   loadFlowJSON: Function;
-  refreshFlow:Function;
+  refreshFlow: Function;
   deleteSteps: Function;
   addHistory: Function;
   deleteCache: Function;
   updateStep: Function;
   sortStepSrcEnd: Function;
-  resizeInspector:Function;
+  resizeInspector: Function;
   updateLastSavedFlow: Function;
   addFlowVariableHidden: boolean;
   previewDisabled: boolean;
@@ -48,13 +52,15 @@ type InspectorProps = {
 class Inspector extends React.Component<InspectorProps> {
 
   render() {
-    let { selected_step_ids, lockUUID, nodes, mast, addStep, selectSteps, flow,
+    let { selected_step_ids, lockUUID, nodes, mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, flow,
       updateFlow, notify, dismissNotify, selected_data_source_detail, updateDataFrameDetail,
       loadFlowJSON, deleteSteps, addHistory, deleteCache, updateStep, sortStepSrcEnd, refreshFlow,
-      resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled, 
+      resizeInspector, inspector, addFlowVariableHidden, commandSelectorHidden, baseInspectorDisabled,
       updateLastSavedFlow, previewDisabled } = this.props
 
     let property
+
+    const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
 
     if (selected_step_ids.length === 1) {
       if (selected_step_ids[0] === 'flow') {
@@ -62,6 +68,8 @@ class Inspector extends React.Component<InspectorProps> {
           mast={mast}
           selected_step_ids={selected_step_ids}
           addStep={addStep}
+          addDataSrcStep={addDataSrcStep}
+          addDataDstStep={addDataDstStep}
           selectSteps={selectSteps}
           flow={flow}
           updateFlow={updateFlow}
@@ -71,9 +79,9 @@ class Inspector extends React.Component<InspectorProps> {
           baseInspectorDisabled={baseInspectorDisabled}
         />
       } else {
-        const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
+
         if (selected_step instanceof DataFrameStepModel) {
-          property = <DataSourceInspector
+          property = <DataFrameInspector
             nodes={nodes}
             notify={notify}
             dismissNotify={dismissNotify}
@@ -90,6 +98,8 @@ class Inspector extends React.Component<InspectorProps> {
             selected_step_ids={selected_step_ids}
             deleteCache={deleteCache}
             addStep={addStep}
+            addDataSrcStep={addDataSrcStep}
+            addDataDstStep={addDataDstStep}
             updateStep={updateStep}
             refreshFlow={refreshFlow}
             previewDisabled={previewDisabled}
@@ -117,7 +127,35 @@ class Inspector extends React.Component<InspectorProps> {
             selectSteps={selectSteps}
             updateStep={updateStep}
             deleteSteps={deleteSteps}
-            baseInspectorDisabled={baseInspectorDisabled}          />
+            baseInspectorDisabled={baseInspectorDisabled} />
+        } else if (!selected_step.type && selected_step.classification == "data_source") {
+          console.log("dataSrc")
+          console.log(selected_step)
+          property = <DataSrcInspector
+            nodes={nodes}
+            selected_step_ids={selected_step_ids}
+            baseInspectorDisabled={baseInspectorDisabled}
+
+            sortStepSrcEnd={sortStepSrcEnd}
+            updateStep={updateStep}
+            addHistory={addHistory}
+            selectSteps={selectSteps}
+            deleteSteps={deleteSteps}
+          />
+        } else if (!selected_step.type && selected_step.classification == "data_dest") {
+          console.log("dataDst")
+          console.log(selected_step)
+          property = <DataDstInspector
+          nodes={nodes}
+          selected_step_ids={selected_step_ids}
+          baseInspectorDisabled={baseInspectorDisabled}
+
+          sortStepSrcEnd={sortStepSrcEnd}
+          updateStep={updateStep}
+          addHistory={addHistory}
+          selectSteps={selectSteps}
+          deleteSteps={deleteSteps}
+        />
         }
       }
     } else if (!selected_step_ids.length) {
@@ -125,6 +163,8 @@ class Inspector extends React.Component<InspectorProps> {
         mast={mast}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
+        addDataSrcStep={addDataSrcStep}
+        addDataDstStep={addDataDstStep}
         selectSteps={selectSteps}
         flow={flow}
         updateFlow={updateFlow}
@@ -141,6 +181,8 @@ class Inspector extends React.Component<InspectorProps> {
         mast={mast}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
+        addDataSrcStep={addDataSrcStep}
+        addDataDstStep={addDataDstStep}
         addHistory={addHistory}
         baseInspectorDisabled={baseInspectorDisabled}
         commandSelectorHidden={commandSelectorHidden}
