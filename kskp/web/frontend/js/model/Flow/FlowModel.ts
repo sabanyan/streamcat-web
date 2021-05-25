@@ -1,4 +1,4 @@
-import {CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel} from "Model/index";
+import { CommandStepModel, DataDstStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataSrcStepModel } from "Model/index";
 import Constants from 'Constants/index';
 
 export interface FlowAllowList {
@@ -46,12 +46,12 @@ export type FlowModelProps = {
   ports: [[], []]
   projectId?: number
   description: string
-  masked?:boolean
+  masked?: boolean
   hasInPortWithId: (id: string) => boolean;
   hasOutPortWithId: (id: string) => boolean;
 }
 
-export interface DatumAllowList{
+export interface DatumAllowList {
   read: boolean;
   create: boolean;
   update: boolean;
@@ -96,10 +96,10 @@ export default class FlowModel {
 
   toNodeModels(nodes?: any[]) {
     if (!nodes) return []
-    
+
     let results: any[] = []
     nodes.forEach((node, index) => {
-      const baseProps:any = {
+      const baseProps: any = {
         id: node.id,
         type: node.type,
         label: node.label,
@@ -132,6 +132,12 @@ export default class FlowModel {
           if (node.type === Constants.step.type.command) {
             props.commandId = node.commandId
             model = new CommandStepModel(props)
+          } else if (node.type === Constants.step.type.subflow && node.flow && node.classification === "data_source") {
+            model = new DataSrcStepModel(node);
+
+          } else if (node.type === Constants.step.type.subflow && node.flow && node.classification === "data_dest") {
+            model = new DataDstStepModel(node);
+
           } else if (node.type === Constants.step.type.subflow) {
             props.uuid = node.uuid
             model = new SubFlowStepModel(props)

@@ -62,6 +62,7 @@ class Inspector extends React.Component<InspectorProps> {
 
     const selected_step = GraphUtil.getNode(nodes, selected_step_ids[0])
 
+
     if (selected_step_ids.length === 1) {
       if (selected_step_ids[0] === 'flow') {
         property = <FlowSettingsInspector
@@ -79,7 +80,6 @@ class Inspector extends React.Component<InspectorProps> {
           baseInspectorDisabled={baseInspectorDisabled}
         />
       } else {
-
         if (selected_step instanceof DataFrameStepModel) {
           property = <DataFrameInspector
             nodes={nodes}
@@ -107,6 +107,30 @@ class Inspector extends React.Component<InspectorProps> {
             baseInspectorDisabled={baseInspectorDisabled}
             updateLastSavedFlow={updateLastSavedFlow}
           />
+        } else if (selected_step.flow && selected_step.classification == "data_source") {
+          property = <DataSrcInspector
+            nodes={nodes}
+            selected_step_ids={selected_step_ids}
+            baseInspectorDisabled={baseInspectorDisabled}
+
+            sortStepSrcEnd={sortStepSrcEnd}
+            updateStep={updateStep}
+            addHistory={addHistory}
+            selectSteps={selectSteps}
+            deleteSteps={deleteSteps}
+          />
+        } else if (selected_step.flow && selected_step.classification == "data_dest") {
+          property = <DataDstInspector
+            nodes={nodes}
+            selected_step_ids={selected_step_ids}
+            baseInspectorDisabled={baseInspectorDisabled}
+
+            sortStepSrcEnd={sortStepSrcEnd}
+            updateStep={updateStep}
+            addHistory={addHistory}
+            selectSteps={selectSteps}
+            deleteSteps={deleteSteps}
+          />
         } else if (selected_step instanceof CommandStepModel) {
           property = <CommandInspector
             selected_step_ids={selected_step_ids}
@@ -128,34 +152,6 @@ class Inspector extends React.Component<InspectorProps> {
             updateStep={updateStep}
             deleteSteps={deleteSteps}
             baseInspectorDisabled={baseInspectorDisabled} />
-        } else if (!selected_step.type && selected_step.classification == "data_source") {
-          console.log("dataSrc")
-          console.log(selected_step)
-          property = <DataSrcInspector
-            nodes={nodes}
-            selected_step_ids={selected_step_ids}
-            baseInspectorDisabled={baseInspectorDisabled}
-
-            sortStepSrcEnd={sortStepSrcEnd}
-            updateStep={updateStep}
-            addHistory={addHistory}
-            selectSteps={selectSteps}
-            deleteSteps={deleteSteps}
-          />
-        } else if (!selected_step.type && selected_step.classification == "data_dest") {
-          console.log("dataDst")
-          console.log(selected_step)
-          property = <DataDstInspector
-          nodes={nodes}
-          selected_step_ids={selected_step_ids}
-          baseInspectorDisabled={baseInspectorDisabled}
-
-          sortStepSrcEnd={sortStepSrcEnd}
-          updateStep={updateStep}
-          addHistory={addHistory}
-          selectSteps={selectSteps}
-          deleteSteps={deleteSteps}
-        />
         }
       }
     } else if (!selected_step_ids.length) {

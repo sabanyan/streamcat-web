@@ -99,7 +99,7 @@ export default class DataSrcInspector extends React.Component<Props, State> {
     }
 
     if (selected_step.params) {
-      paramsForm = <ParamsForm params={selected_step.params} args={selected_step.args} invalids={{}}
+      paramsForm = <ParamsForm params={selected_step.flow.params} args={selected_step.args} invalids={{}}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} />;
     }
 
