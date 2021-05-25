@@ -79,6 +79,8 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
     #     result['contents'] = contents
     #     # 行数は一旦返さないことにする
     #     # result['numberOfLines'] = number_of_lines
+    result['folderPath'] = frame.folder_path
+    result['folderUuid'] = frame.parent_uuid
     result['encoding'] = frame.encoding_str
     result['newline'] = frame.newline_str
     result['fileSize'] = frame.file_size
