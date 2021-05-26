@@ -1134,7 +1134,8 @@ export function newDataSrc(props: DataSrcProps) {
   });
 
   let dataSrcProps = {
-    ...dataSrc,
+    label: dataSrc.label,
+    flow: dataSrc.flow,
     id: id,
     type: Constants.step.type.subflow,
     position: position,
@@ -1167,10 +1168,10 @@ export function newDataDest(props: DataDestProps) {
   });
 
   let DataDstProps = {
-    ...dataDest,
+    flow: dataDest.flow,
+    label: dataDest.label,
     id: id,
     type: Constants.step.type.subflow,
-    label: dataDest.label,
     position: position,
     srcs: srcs,
     dsts: {},
