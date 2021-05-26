@@ -98,7 +98,9 @@ export default class DataDstInspector extends React.Component<Props, State> {
       />
     }
 
-    if (selected_step.params) {
+    console.log("ffffskdjls")
+
+    if (selected_step.flow.params) {
       paramsForm = <ParamsForm params={selected_step.flow.params} args={selected_step.args} invalids={{}}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} />;
     }
@@ -173,7 +175,7 @@ export default class DataDstInspector extends React.Component<Props, State> {
         </div>
         <div className={style.full_hr} />
         <div className={style.overviews}>
-          {(selected_step.params) ? this.renderContents() : null}
+          {(selected_step.flow.params) ? this.renderContents() : null}
         </div>
       </div>
     </BaseInspector >

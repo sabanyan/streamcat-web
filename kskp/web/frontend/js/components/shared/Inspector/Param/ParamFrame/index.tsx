@@ -24,7 +24,7 @@ type State = {
 }
 
 const initialState: State = {
-  path: "ライブラリーのデータフレームを指定してください。"
+  path: "データフレームを指定してください"
 }
 
 
@@ -40,15 +40,13 @@ export default class ParamFrame extends React.Component<Props, State> {
     const { param, value } = this.props
     if (value) {
       APIUtil.get("frames/" + value).then((response) => {
-        const json = response.data;
+        console.log(response.data.data.folderPath)
         this.setState({
-          path: json.folderPath
+          path: response.data.data.folderPath
         })
-        console.log(json)
-
+      }).catch((exception) => {
+        this.setState(initialState);
       });
-    } else {
-      this.setState(initialState);
     }
   }
 
@@ -77,7 +75,7 @@ export default class ParamFrame extends React.Component<Props, State> {
 
     return <React.Fragment>
       <div>
-        <a href={"javascript:void(0)"} target={'_blank'} onClick={(e) => this.onClick(e)}>{this.state.path}</a>
+        <a href={"javascript:void(0)"} target={'_blank'} onClick={(e) => this.onClick(e)} className={style.path}>{this.state.path}</a>
       </div>
     </React.Fragment>
   }

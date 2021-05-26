@@ -109,6 +109,9 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
       newState.folderPath = context.folderPath;
       newState.folderUuid = context.folderUuid;
       newState.modifiedAt = context.modifiedAt;
+
+      console.log("load")
+      console.log(newState);
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history);
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
@@ -765,15 +768,13 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
         dataSource: undefined,
         makeCache: false,
         cacheCreatedAt: "",
-        visiblePort: true,
-        port: {
-          in: true,
-          out: false
-        }
       }
 
       const newNode = newDataSrc(props);
       const dstNodes = newDstNodes(dstNodeIds, dstNodesPositionAndSize, dstProps);
+      // ポートの追加
+      
+
       let nodes: any[] = newState.flow.nodes;
       nodes.push(newNode);
       dstNodes.forEach((dstNode) => {
@@ -787,18 +788,6 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
       break;
     case ADD_DATADST_ACTION: {
       const { dataDest, selctedDataNodeId } = action.payload;
-
-      newState.flow.nodes = newState.flow.nodes.map((node) => {
-        if (node.id === selctedDataNodeId) {
-          node.visiblePort = false;
-          node.port = {
-            in: false,
-            out: true
-          }
-
-        }
-        return node;
-      })
 
       let srcNodeIds = [selctedDataNodeId];
 
@@ -1135,6 +1124,7 @@ export function newDataSrc(props: DataSrcProps) {
 
   let dataSrcProps = {
     label: dataSrc.label,
+    classification: dataSrc.classification,
     flow: dataSrc.flow,
     id: id,
     type: Constants.step.type.subflow,
@@ -1170,6 +1160,7 @@ export function newDataDest(props: DataDestProps) {
   let DataDstProps = {
     flow: dataDest.flow,
     label: dataDest.label,
+    classification: dataDest.classification,
     id: id,
     type: Constants.step.type.subflow,
     position: position,

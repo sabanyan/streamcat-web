@@ -291,8 +291,6 @@ class GraphUtil {
             size: step.size,
             masked: step.masked
           }
-          console.log("graph")
-          console.log(step)
           if (type === Constants.step.type.command) {
             model.type = Constants.step.type.command
             model.commandId = step.commandId
