@@ -1,0 +1,84 @@
+import React from 'react'
+import { Popper } from '@material-ui/core';
+
+import { CommandParamType } from 'Types/index'
+import { Helper } from 'Shared/Inspector'
+import { HttpUtil, APIUtil } from 'Utils/index';
+
+import Constants from 'Constants/index'
+
+import style from './style.scss'
+import classnames from 'classnames';
+
+type Props = {
+  param: CommandParamType;
+  disabled?: boolean;
+  value?: string;
+
+  // event
+  onChange?: Function; // onChange(e, param)
+}
+
+type State = {
+  path: string;
+}
+
+const initialState: State = {
+  path: "ライブラリーのデータフレームを指定してください。"
+}
+
+
+// ライブラリーからフレームを選択する
+export default class ParamFrame extends React.Component<Props, State> {
+
+  constructor(props: Props) {
+    super(props)
+    this.state = initialState;
+  }
+
+  componentDidMount() {
+    const { param, value } = this.props
+    if (value) {
+      APIUtil.get("frames/" + value).then((response) => {
+        const json = response.data;
+        this.setState({
+          path: json.folderPath
+        })
+        console.log(json)
+
+      });
+    } else {
+      this.setState(initialState);
+    }
+  }
+
+  onClick(e) {
+    const { param, onChange } = this.props;
+    const mode = "frame_select"
+    HttpUtil.windowOpen("library?dialog=true&mode=" + mode, (args) => {
+      const selected_data: any = args;
+      let value = "undefined";
+      let path = "undefined";
+      if (selected_data && selected_data.uuid) {
+        value = selected_data.uuid;
+        this.setState({
+          path: selected_data.folderPath + "/" + selected_data.label
+        })
+      }
+      if (onChange) onChange(e, param, value);
+    });
+  }
+
+  //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
+  render() {
+    const { param, value } = this.props
+    const { onChange } = this.props
+
+
+    return <React.Fragment>
+      <div>
+        <a href={"javascript:void(0)"} target={'_blank'} onClick={(e) => this.onClick(e)}>{this.state.path}</a>
+      </div>
+    </React.Fragment>
+  }
+}

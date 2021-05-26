@@ -1,5 +1,5 @@
 import React from 'react'
-import { ParamString, ParamNumber, ParamBoolean, ParamSelect, ParamList, Param } from 'Shared/Inspector/index'
+import { ParamString, ParamNumber, ParamBoolean, ParamSelect, ParamList, Param, ParamFrame } from 'Shared/Inspector/index'
 import CommandModel from 'Model/Command/CommandModel'
 import { CommandParamType } from 'Types/index'
 import Constants from 'Constants/index'
@@ -160,6 +160,10 @@ export default class ParamsForm extends React.Component<Props, State> {
             helper={param.helper}
             setHelperTargetedInput={this.setHelperTargetedInput.bind(this)} onChange={onChange ? onChange : () => { }} />
           break
+        case Constants.param.type.frame:
+          paramElement = <ParamFrame param={param} disabled={disabled} value={value} onChange={onChange} />
+          break;
+
       }
     } catch (e) {
       console.log(e)
