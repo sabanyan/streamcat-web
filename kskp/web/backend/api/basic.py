@@ -264,7 +264,7 @@ def fetch_datasrcs():
     params = [
         {
             "name": "uuid",
-            "type": "string",
+            "type": "frame",
             "label": "ファイルを指定する",
             "optional": False
         }

@@ -168,19 +168,24 @@ class ApiTestCaseBase(TestCaseBase):
         self.assertTrue(result['success'], 'POST %s is failed. %s' % ('/api/v0/frames', error_detail))
         return result
 
-    def post_flows(self, stream, user):
+    def post_flows(self, label, parent_uuid, stream, user):
         """
         URI(/api/v0/flow_files)へPOSTする
         指定するストリームをフローとしてアップロードする
         """
+        data = {
+            'parent': parent_uuid,
+            'file'  : stream
+        }
+        if label is not None:
+            data['label'] = label
+        
         with app.test_client() as client:
             token = make_access_token(user.uuid)
             client.set_cookie(None, 'S', token)
             response = client.post('/api/v0/flow_files',
                                    content_type='multipart/form-data',
-                                   data={
-                                        'file' : stream
-                                        }
+                                   data=data
                                   )
             result = json.loads(response.get_data())
         error_detail = result['message'] if 'message' in result else ''

@@ -54,7 +54,7 @@ const Profile = (props: Props) => {
         name: '',
         email: ''
     });
-    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm<FormInputs>({
+    const {handleSubmit, register, errors, watch, clearErrors, reset} = useForm<FormInputs | any>({
         shouldUnregister: false
     });
     const [editing, setEditing] = useState<EditingMode>(null);

@@ -401,7 +401,7 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
       //IDが新規に振られるので、旧のIDを新規のIDに置き換え
       //コマンドのノード間の関連(srcs,dsts)を維持する
       //let convertMap = {}
-      newState.selected_step_ids = []
+      //newState.selected_step_ids = []
       add_nodes.forEach((json) => {
         const cacheId = json.id;
         let label = (json.label) ? json.label : cacheId;
@@ -411,7 +411,7 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
 
         //ノード本体をコピー
         graph.addNode(newNode.id);
-        newState.selected_step_ids.push(newNode.id);
+        //newState.selected_step_ids.push(newNode.id);
 
         //入力値をコピー
         newNode = FlowUtil.copySrcs(newNode);
@@ -435,7 +435,7 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
           newState.nodes.push(add_step);
           //ノード本体をコピー
           graph.addNode(add_step.id);
-          newState.selected_step_ids.push(add_step.id);
+          //newState.selected_step_ids.push(add_step.id);
           newDsts[key] = add_step.id;
         });
         //convertMap[cacheId] = newNode.id

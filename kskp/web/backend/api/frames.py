@@ -79,6 +79,8 @@ def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
     #     result['contents'] = contents
     #     # 行数は一旦返さないことにする
     #     # result['numberOfLines'] = number_of_lines
+    result['folderPath'] = frame.folder_path
+    result['folderUuid'] = frame.parent_uuid
     result['encoding'] = frame.encoding_str
     result['newline'] = frame.newline_str
     result['fileSize'] = frame.file_size
@@ -281,7 +283,7 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
 
         args = args.copy()
         args.update(vis_args)
-        lasts = execute(runnable=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
+        lasts = execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
 
         # Activityを取得して返り値とする
         for point_id, datum in lasts.items():
