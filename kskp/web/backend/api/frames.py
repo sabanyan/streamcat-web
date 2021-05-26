@@ -283,7 +283,7 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
 
         args = args.copy()
         args.update(vis_args)
-        lasts = execute(runnable=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
+        lasts = execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
 
         # Activityを取得して返り値とする
         for point_id, datum in lasts.items():
