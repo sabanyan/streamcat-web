@@ -291,20 +291,21 @@ class GraphUtil {
             size: step.size,
             masked: step.masked
           }
-
+          console.log("graph")
+          console.log(step)
           if (type === Constants.step.type.command) {
             model.type = Constants.step.type.command
             model.commandId = step.commandId
             node = new CommandStepModel(model)
             node.loadArgs()
+          } else if (model.flow && model.flow.classification === "data_source") {
+            node = new DataSrcStepModel({ ...step })
+          } else if (model.flow && model.flow.classification === "data_dest") {
+            node = new DataDstStepModel({ ...step })
           } else if (type === Constants.step.type.subflow) {
             model.type = Constants.step.type.subflow
             model.uuid = step.uuid
-            if (model.classification === "data_source" || model.classification === "data_dest") {
-              node = { ...model };
-            } else {
-              node = new SubFlowStepModel(model);
-            }
+            node = new SubFlowStepModel(model);
           }
 
           newNodes.push(node)
@@ -355,11 +356,6 @@ class GraphUtil {
           break
 
         default:
-          if (model.flow && model.classification === "data_source") {
-            node = new DataSrcStepModel({ ...model })
-          } else if (model.flow && model.classification === "data_dest") {
-            node = new DataDstStepModel({ ...model })
-          }
       }
     })
 

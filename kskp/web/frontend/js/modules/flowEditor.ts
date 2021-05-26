@@ -6,7 +6,7 @@ import { DataFrameStepModelProps } from "Model/Step/DataFrameStepModel";
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel, DataDstStepModel, DataSrcStepModel } from "Model/index";
 import { CommandPortType, StepModelType } from "../types";
 import { DataFrameDetailType } from "Types/index";
-import _ from "lodash";
+import _, { flow } from "lodash";
 
 const LOAD_FLOW_JSON_ACTION = "load_flow_json_action";
 const ADD_MASTER_ACTION = "add_master_action";
@@ -1134,7 +1134,8 @@ export function newDataSrc(props: DataSrcProps) {
   });
 
   let dataSrcProps = {
-    ...dataSrc,
+    label: dataSrc.label,
+    flow: dataSrc.flow,
     id: id,
     type: Constants.step.type.subflow,
     position: position,
@@ -1167,10 +1168,10 @@ export function newDataDest(props: DataDestProps) {
   });
 
   let DataDstProps = {
-    ...dataDest,
+    flow: dataDest.flow,
+    label: dataDest.label,
     id: id,
     type: Constants.step.type.subflow,
-    label: label,
     position: position,
     srcs: srcs,
     dsts: {},
