@@ -773,7 +773,14 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
       const newNode = newDataSrc(props);
       const dstNodes = newDstNodes(dstNodeIds, dstNodesPositionAndSize, dstProps);
       // ポートの追加
-      
+      dstNodes.forEach((dstNode) => {
+        const port = {
+          label: dstNode.label,
+          nodeId: dstNode.id,
+          type: dstNode.type
+        }
+        newState.flow.setInPort(port);
+      })
 
       let nodes: any[] = newState.flow.nodes;
       nodes.push(newNode);
@@ -795,11 +802,16 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
 
       const { newNodePositionAndSize } = newNodesPositionAndSize(GraphUtil, newState.flow.nodes, srcNodeIds, []);
 
-
+      // portの追加
       srcNodeIds.forEach((srcNodeId) => {
         newState.flow.nodes = newState.flow.nodes.map((node) => {
           if (node.id === srcNodeId && Constants.step.type.frame) {
-            node.port.out = true;
+            const port = {
+              label: node.label,
+              nodeId: node.id,
+              type: node.type
+            }
+            newState.flow.setOutPort(port);
           }
           return node;
         })
