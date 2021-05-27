@@ -5,7 +5,7 @@ import style from "./style.scss";
 import classnames from "classnames";
 import { CommandStepModelProps } from "Model/Step/CommandStepModel";
 import CommandModel from "Model/Command/CommandModel";
-import { CommandIcon, SubFlowIcon } from "Shared/SVG";
+import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { CommandModelType, CommandParamType, CommandPortType } from "Types/index";
 import { ParamUtil, WebUtil } from "Utils/index";
 
@@ -134,7 +134,11 @@ const Command = (props: Props) => {
     }
 
     let icon: React.ReactNode;
-    if (command instanceof SubflowCommandModel) {
+    if (command.flow && command.classification === "data_source") {
+        icon = <DataSrcIcon />;
+    } else if (command.flow && command.classification === "data_dest") {
+        icon = <DataDstIcon />;
+    } else if (command instanceof SubflowCommandModel) {
         icon = <SubFlowIcon />;
     } else {
         icon = <CommandIcon command={command} />;

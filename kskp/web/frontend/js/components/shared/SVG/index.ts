@@ -6,6 +6,8 @@ export * from "./Icon/ErrorIcon";
 export * from "./Icon/InOutIcon";
 export * from "./Icon/SettingIcon";
 export * from "./Icon/SubFlowIcon";
+export * from "./Icon/DataSrcIcon";
+export * from "./Icon/DataDstIcon";
 export * from "./Selector";
 export * from "./Edge";
 export * from "./Edge/Arrow";
