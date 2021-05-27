@@ -306,7 +306,6 @@ const Library = (_: Props) => {
                     }
                     onEditRemoteFolder(remoteFolder.uuid, remoteFolder)
                         .then((response) => {
-                            console.log(response)
                             fetchFolder();
                             if (!response.data.success) {
                                 notify({
@@ -896,8 +895,6 @@ const Library = (_: Props) => {
     }
 
     const onClickEditRemoteFolder = (data:any) => {
-        console.log("onClickData");
-        console.log(data)
         setRemoteFolder(data);
         setRemoteFolderMode(RemoteFolderMode.EDIT);
         ModalUtil.emitModal({

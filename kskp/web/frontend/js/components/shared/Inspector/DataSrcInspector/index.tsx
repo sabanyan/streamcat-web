@@ -145,10 +145,6 @@ export default class DataSrcInspector extends React.Component<Props, State> {
   onClickPlace() {
     HttpUtil.windowOpen("library?dialog=true&mode=frame_select", (args) => {
       const selected_data: any = args;
-      console.log("click")
-      console.log(selected_data)
-
-
       //ステップの選択をキャンセル
       this.props.addHistory();
     });

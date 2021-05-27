@@ -110,8 +110,6 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
       newState.folderUuid = context.folderUuid;
       newState.modifiedAt = context.modifiedAt;
 
-      console.log("load")
-      console.log(newState);
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history);
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
@@ -137,10 +135,10 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
       // newState.nodesとnewState.history.nodesの参照先が同じ場合、undoがうまくいかないため、一度ディープコピーする
       newState.history = StateUtil.deepCopy(newState.history);
       //読み込み時に Flow、Graph、Nodesの値のバリデーションチェックを行う
-      ValidatorUtil.isFlowModelSchema(newState);
-      ValidatorUtil.isGraphModelSchema(newState);
-      ValidatorUtil.isNodesSchema(newState);
-      ValidatorUtil.nodesValidate(newState.nodes);
+      //ValidatorUtil.isFlowModelSchema(newState);
+      //ValidatorUtil.isGraphModelSchema(newState);
+      //ValidatorUtil.isNodesSchema(newState);
+      //ValidatorUtil.nodesValidate(newState.nodes);
       newState.flow.nodes = newState.nodes;
       break;
     }
@@ -773,7 +771,14 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
       const newNode = newDataSrc(props);
       const dstNodes = newDstNodes(dstNodeIds, dstNodesPositionAndSize, dstProps);
       // ポートの追加
-      
+      dstNodes.forEach((dstNode) => {
+        const port = {
+          label: dstNode.label,
+          nodeId: dstNode.id,
+          type: dstNode.type
+        }
+        newState.flow.setInPort(port);
+      })
 
       let nodes: any[] = newState.flow.nodes;
       nodes.push(newNode);
@@ -795,11 +800,16 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
 
       const { newNodePositionAndSize } = newNodesPositionAndSize(GraphUtil, newState.flow.nodes, srcNodeIds, []);
 
-
+      // portの追加
       srcNodeIds.forEach((srcNodeId) => {
         newState.flow.nodes = newState.flow.nodes.map((node) => {
           if (node.id === srcNodeId && Constants.step.type.frame) {
-            node.port.out = true;
+            const port = {
+              label: node.label,
+              nodeId: node.id,
+              type: node.type
+            }
+            newState.flow.setOutPort(port);
           }
           return node;
         })
@@ -1021,9 +1031,6 @@ function newNodesPositionAndSize(graph: GraphUtil, nodes: any[], srcNodeIds: str
   if (srcNodeIds.length > 0) {
     srcNodeIds.forEach((id: string) => {
       const node = graph.getNode(nodes, id);
-      console.log(id)
-      console.log(nodes)
-      console.log(node)
       totalSX = totalSX + node.position.x;
       totalSY = totalSY + node.position.y;
     });
@@ -1119,7 +1126,7 @@ export function newDataSrc(props: DataSrcProps) {
   let dsts = {};
   const outPorts: any[] = dataSrc.ports[1];
   outPorts.forEach((outPort, index) => {
-    dsts[outPort.label] = dstNodeIds[index];
+    dsts[outPort.nodeId] = dstNodeIds[index];
   });
 
   let dataSrcProps = {
@@ -1154,7 +1161,7 @@ export function newDataDest(props: DataDestProps) {
   let srcs = {};
   const inPorts: any[] = dataDest.ports[0];
   inPorts.forEach((inPort, index) => {
-    srcs[inPort.label] = srcNodeIds[index];
+    srcs[inPort.nodeId] = srcNodeIds[index];
   });
 
   let DataDstProps = {

@@ -208,7 +208,6 @@ class DataFrameInspector extends React.Component<DataFrameInspectorProps, State>
 
     APIUtil.get('flows/' + inject_flow_uuid + "?navigation=off")
       .then((response) => {
-        console.log(response)
         if (response.data.success === false) throw response.data
         const json = response.data.data
         this.props.refreshFlow(json)

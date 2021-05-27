@@ -73,7 +73,7 @@ export default class DataDstInspector extends React.Component<Props, State> {
       done: '削除する',
       danger: true,
       content: <div>
-        選択されたデータソースを削除しますか？
+        選択されたデータデスト削除しますか？
       </div>,
     })
   }
@@ -97,8 +97,6 @@ export default class DataDstInspector extends React.Component<Props, State> {
         disabled={baseInspectorDisabled}
       />
     }
-
-    console.log("ffffskdjls")
 
     if (selected_step.flow.params) {
       paramsForm = <ParamsForm params={selected_step.flow.params} args={selected_step.args} invalids={{}}
@@ -145,9 +143,6 @@ export default class DataDstInspector extends React.Component<Props, State> {
   onClickPlace() {
     HttpUtil.windowOpen("library?dialog=true&mode=frame_select", (args) => {
       const selected_data: any = args;
-      console.log("click")
-      console.log(selected_data)
-
 
       //ステップの選択をキャンセル
       this.props.addHistory();
