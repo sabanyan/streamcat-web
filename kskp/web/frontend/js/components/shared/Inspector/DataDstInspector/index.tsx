@@ -73,7 +73,7 @@ export default class DataDstInspector extends React.Component<Props, State> {
       done: '削除する',
       danger: true,
       content: <div>
-        選択されたデータソースを削除しますか？
+        選択されたデータデスト削除しますか？
       </div>,
     })
   }
