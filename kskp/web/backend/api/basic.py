@@ -291,7 +291,7 @@ def fetch_datasrcs():
             # DBデータソースを作成する
             label = store.label
             loader_cmd = CommandLink('db_loader').resolve()
-            args = {'schema':'@[schema]', 'table':'@[table]'}
+            args = {'schema_name':'@[schema]', 'table_name':'@[table]'}
             params = [
                 {
                     "name": "schema",
@@ -373,7 +373,7 @@ def fetch_datadsts():
             # DBデータデストを作成する
             label = store.label
             saver_cmd = CommandLink('db_saver').resolve()
-            args = {'schema':'@[schema]', 'table':'@[table]'}
+            args = {'schema_name':'@[schema]', 'table_name':'@[table]'}
             params = [
                 {
                     "name": "schema",
