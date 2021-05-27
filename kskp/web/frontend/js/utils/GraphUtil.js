@@ -291,26 +291,20 @@ class GraphUtil {
             size: step.size,
             masked: step.masked
           }
-          console.log("dattaas")
-          console.log(step)
           if (type === Constants.step.type.command) {
-            console.log("11")
             model.type = Constants.step.type.command
             model.commandId = step.commandId
             node = new CommandStepModel(model)
             node.loadArgs()
           } else if (step.flow && step.classification === "data_source") {
-            console.log("22")
             node = new DataSrcStepModel({ ...step })
           } else if (step.flow && step.classification === "data_dest") {
             node = new DataDstStepModel({ ...step })
           } else if (type === Constants.step.type.subflow) {
-            console.log("33")
             model.type = Constants.step.type.subflow
             model.uuid = step.uuid
             node = new SubFlowStepModel(model);
           } else {
-            console.log("44")
           }
 
           newNodes.push(node)

@@ -86,8 +86,6 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
                 if (response.data.success) {
                     const json: RunResponseType = response.data;
                     const content = this.renderRunResult(json);
-                    console.log("^^^^^^^^^")
-                    console.log(json)
                     // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
                     const parentFolderUUID = json.lasts[0].parent; //　今はlasts[0]
                     // 結果出力
@@ -162,8 +160,6 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     flowUpdate() {
         APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
             const json = response.data.data;
-            console.log("flowupdate")
-            console.log(json)
             this.props.refreshFlow(json);
         }).then(() => {
             this.setState({

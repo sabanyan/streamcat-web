@@ -98,8 +98,6 @@ export default class DataDstInspector extends React.Component<Props, State> {
       />
     }
 
-    console.log("ffffskdjls")
-
     if (selected_step.flow.params) {
       paramsForm = <ParamsForm params={selected_step.flow.params} args={selected_step.args} invalids={{}}
         onChange={(e, param, value) => this.onArgChange(e, param, value)} />;
@@ -145,9 +143,6 @@ export default class DataDstInspector extends React.Component<Props, State> {
   onClickPlace() {
     HttpUtil.windowOpen("library?dialog=true&mode=frame_select", (args) => {
       const selected_data: any = args;
-      console.log("click")
-      console.log(selected_data)
-
 
       //ステップの選択をキャンセル
       this.props.addHistory();

@@ -52,8 +52,6 @@ export default class ChartUtil {
       }
     })
 
-    console.log(datasets)
-
     return {
       datasets: datasets,
       labels: labels,

@@ -145,7 +145,6 @@ export default class Visualizer extends React.Component<Props, State> {
             closeButton: true
           })
         }
-        console.log(exception)
         let args = this.state.args
         const result = {
           html: null,

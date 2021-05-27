@@ -40,7 +40,6 @@ export default class ParamFrame extends React.Component<Props, State> {
     const { param, value } = this.props
     if (value) {
       APIUtil.get("frames/" + value).then((response) => {
-        console.log(response.data.data.folderPath)
         this.setState({
           path: response.data.data.folderPath
         })
