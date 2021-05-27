@@ -1131,7 +1131,7 @@ export function newDataSrc(props: DataSrcProps) {
   let dsts = {};
   const outPorts: any[] = dataSrc.ports[1];
   outPorts.forEach((outPort, index) => {
-    dsts[outPort.label] = dstNodeIds[index];
+    dsts[outPort.nodeId] = dstNodeIds[index];
   });
 
   let dataSrcProps = {
@@ -1166,7 +1166,7 @@ export function newDataDest(props: DataDestProps) {
   let srcs = {};
   const inPorts: any[] = dataDest.ports[0];
   inPorts.forEach((inPort, index) => {
-    srcs[inPort.label] = srcNodeIds[index];
+    srcs[inPort.nodeId] = srcNodeIds[index];
   });
 
   let DataDstProps = {
