@@ -1630,6 +1630,7 @@ const Library = (_: Props) => {
                     endPoint = "databases/";
                     break;
                 case Constants.library.type.remoteFolder:
+                    endPoint = "remote-folders/"
                     break;
                 default:
                     break;
@@ -1666,6 +1667,8 @@ const Library = (_: Props) => {
             let body: any = {
                 label: e.target.value
             };
+            console.log("onblur")
+            console.log(selected_data)
             if (selected_data.type === Constants.library.type.database) {
                 body = {
                     label: e.target.value,
@@ -1676,6 +1679,16 @@ const Library = (_: Props) => {
                     user_id: selected_data.user_id,
                     password: selected_data.password
                 };
+            } else if (selected_data.type === Constants.library.type.remoteFolder) {
+                body = {
+                    label: e.target.value,
+                    protocol: selected_data.protocol,
+                    hostname: selected_data.hostname,
+                    domain: selected_data.domain,
+                    directory: selected_data.directory,
+                    user_id: selected_data.user_id,
+                    password: selected_data.password
+                }
             }
 
             setIsLoading(true);
