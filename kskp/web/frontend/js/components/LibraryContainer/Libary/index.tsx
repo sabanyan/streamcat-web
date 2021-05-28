@@ -1667,8 +1667,6 @@ const Library = (_: Props) => {
             let body: any = {
                 label: e.target.value
             };
-            console.log("onblur")
-            console.log(selected_data)
             if (selected_data.type === Constants.library.type.database) {
                 body = {
                     label: e.target.value,
