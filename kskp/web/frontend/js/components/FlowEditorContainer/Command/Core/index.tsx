@@ -10,6 +10,7 @@ import { CommandModelType, CommandParamType, CommandPortType } from "Types/index
 import { ParamUtil, WebUtil } from "Utils/index";
 
 type Props = {
+    nodes: any[];
     command: CommandModelType;
     selected_step_ids: string[];
     addStep: Function;

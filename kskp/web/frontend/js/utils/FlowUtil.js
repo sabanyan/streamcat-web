@@ -110,7 +110,8 @@ export default class FlowUtil {
             const to = node.dsts[from]
             //if (from === removeId || to === removeId)
             if (to === removeId)
-              delete node.dsts[from]
+            //node.dsts[from] = null;
+            delete node.dsts[from]
           })
         }
         if (node.srcs) {
@@ -118,6 +119,7 @@ export default class FlowUtil {
             const to = node.srcs[from]
             //if (from === removeId || to === removeId)
             if (to === removeId)
+              //node.srcs[from] = null;
               delete node.srcs[from]
           })
         }

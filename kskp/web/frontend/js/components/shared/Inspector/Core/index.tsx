@@ -82,7 +82,7 @@ class Inspector extends React.Component<InspectorProps> {
       } else {
         if (selected_step instanceof DataFrameStepModel) {
           property = <DataFrameInspector
-            nodes={nodes}
+            nodes={flow.nodes}
             notify={notify}
             dismissNotify={dismissNotify}
             selected_data_source_detail={selected_data_source_detail}
@@ -156,6 +156,7 @@ class Inspector extends React.Component<InspectorProps> {
       }
     } else if (!selected_step_ids.length) {
       property = <FlowSettingsInspector
+        nodes={flow.nodes}
         mast={mast}
         selected_step_ids={selected_step_ids}
         addStep={addStep}
@@ -173,7 +174,7 @@ class Inspector extends React.Component<InspectorProps> {
       property = <MultiInspector
         deleteSteps={deleteSteps}
         selectSteps={selectSteps}
-        nodes={nodes}
+        nodes={flow.nodes}
         mast={mast}
         selected_step_ids={selected_step_ids}
         addStep={addStep}

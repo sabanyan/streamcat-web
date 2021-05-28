@@ -122,8 +122,15 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
         </div>
         inEdgeSelect.push(item)
       })
-    } else if (selectedStep.srcs) { // for datasource & datadst
-      Object.keys(selectedStep.srcs).forEach((key, index) => {
+    } else if (selectedStep.srcs && selectedStep.flow) { // for datasource & datadst
+      let srcs = selectedStep.srcs;
+      selectedStep.flow.ports[0].forEach((port) => {
+        let key= port.nodeId;
+        if (!srcs[key]) {
+          srcs[key] = null;
+        }
+      });
+      Object.keys(srcs).forEach((key, index) => {
         const item = <div key={index} className={style.param}>
           <DropDownList disabled={disabled}
             key={index}
@@ -199,7 +206,7 @@ class InOutConnector extends React.Component<InOutConnectorProps>{
             {key}
           </div>
           <div className={style.outPort_Node}>
-            {node.getLabel()}
+            {node.label}
           </div>
         </div>
       })

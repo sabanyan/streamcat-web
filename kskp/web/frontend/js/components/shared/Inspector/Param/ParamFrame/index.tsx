@@ -75,7 +75,7 @@ export default class ParamFrame extends React.Component<Props, State> {
 
     return <React.Fragment>
       <div>
-        <a href={"javascript:void(0)"} target={'_blank'} onClick={(e) => this.onClick(e)} className={style.path}>{this.state.path}</a>
+        <a href={"#!"} target={'_blank'} onClick={(e) => this.onClick(e)} className={style.path}>{this.state.path}</a>
       </div>
     </React.Fragment>
   }

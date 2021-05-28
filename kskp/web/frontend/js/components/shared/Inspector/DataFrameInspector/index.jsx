@@ -518,6 +518,7 @@ class DataFrameInspector extends React.Component<DataFrameInspectorProps, State>
             <Fragment>
               <div className={style.full_hr} />
               <CommandSelector
+                nodes={nodes}
                 mast={mast}
                 numberOfInput={1}
                 selected_step_ids={selected_step_ids}

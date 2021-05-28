@@ -309,6 +309,9 @@ const Step = (props: Props) => {
                 <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#ccc"} fill={"#ccc"} />
             </Rect>
         </g>;
+    } else if (isSubFlow(step)) {
+        icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
+        stepLabel = step.getLabel();
     } else if (isStep(step)) {
         //ステップ
         let command;
@@ -337,9 +340,6 @@ const Step = (props: Props) => {
         icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
     } else if (step.flow && step.classification === "data_dest") {
         icon = <DataDstIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
-    } else if (isSubFlow(step)) {
-        icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
-        stepLabel = step.getLabel();
     } else {
         icon = null;
     }

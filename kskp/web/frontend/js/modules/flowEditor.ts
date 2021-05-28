@@ -1,5 +1,5 @@
-import Constants from "Constants/index";
 import { defaultGraphProps, defaultNodeProps } from "Utils/GraphUtil";
+import Constants from "Constants/index";
 import { FlowUtil, GraphUtil, StateUtil, ValidatorUtil, ZoomUtil } from "Utils/index";
 import FlowModel, { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { DataFrameStepModelProps } from "Model/Step/DataFrameStepModel";
@@ -351,7 +351,8 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
             const deleteTargetStepId = graph.g.inEdges(id)[0].v;
             const deleteTargetStep = GraphUtil.getNode(newState.nodes, deleteTargetStepId);
             if (deleteTargetStep instanceof CommandStepModel ||
-              deleteTargetStep instanceof SubFlowStepModel) {
+              deleteTargetStep instanceof SubFlowStepModel ||
+              (deleteTargetStep.flow && deleteTargetStep.classification === "data_source")) {
               //親のコマンドの出力先が対象のデータフレームだけの場合親を削除
               const isSingleDsts = (Object.keys(deleteTargetStep.dsts).length === 1 && deleteTargetStep.dsts[Object.keys(deleteTargetStep.dsts)[0]] === id);
               if (isSingleDsts) {
@@ -862,11 +863,13 @@ export default FlowEditorReducer;
  * @returns {*}
  */
 const rebuildNodesEdges = (newState, action) => {
-  return newState.nodes.map((node, index) => {
+  return newState.nodes.map((node:any, index) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
     if (node.id === action.step.id) {
       if (node instanceof CommandStepModel ||
-        node instanceof SubFlowStepModel) {
+        node instanceof SubFlowStepModel || 
+        node.classification === "data_source" || 
+        node.classification === "data_dest") {
         if (!_.isEqual(node.srcs, action.step.srcs)) {
           //ノードのつながりを削除
           Object.keys(node.srcs).forEach(portName => {
@@ -949,10 +952,11 @@ const allRebuildNodesEdges = (newState) => {
   });
 };
 
-function newNodeId(prefix: string, nodes: any[], count: number = 1) {
+export function newNodeId(prefix: string, nodes: any[], count: number = 1) {
   let idNumber: string = "";
   let result: string[] = [];
   let tempId = prefix + idNumber;
+
 
   let index: number = 0;
   while (index <= nodes.length + 1 && count > 0) {
@@ -967,7 +971,6 @@ function newNodeId(prefix: string, nodes: any[], count: number = 1) {
     tempId = String(prefix + (index + 1));
     index = index + 1;
   }
-
   return result;
 }
 
@@ -1077,8 +1080,8 @@ function newNodesPositionAndSize(graph: GraphUtil, nodes: any[], srcNodeIds: str
 function newDstNodes(dstNodeIds: string[], dstNodesPositionAndSize: Object, props: any) {
   let result: any[] = [];
 
-  dstNodeIds.forEach((key: string) => {
-    props.id = dstNodeIds[key];
+  dstNodeIds.forEach((key: string, index) => {
+    props.id = dstNodeIds[index];
     props.label = key;
     props.size = dstNodesPositionAndSize[key].size;
     props.position = dstNodesPositionAndSize[key].position;

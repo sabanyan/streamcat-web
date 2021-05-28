@@ -48,9 +48,9 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
 
     constructor(props: ToolBarProps) {
         super(props);
-        this.setState({
+        this.state = {
             isLoading: false
-        })
+        };
     }
 
     onClickSave() {

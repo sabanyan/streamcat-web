@@ -35,10 +35,6 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
     super(props)
   }
 
-  componentWillMount() {
-
-  }
-
   onHide(e: Event) {
     const { flow } = this.props
     const { label } = this.props.flow
@@ -136,7 +132,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
   render() {
     const { flow, mast, addStep, addDataDstStep, addDataSrcStep,
       selectSteps, selected_step_ids, addHistory, addFlowVariableHidden,
-      commandSelectorHidden, baseInspectorDisabled } = this.props
+      commandSelectorHidden, baseInspectorDisabled, nodes } = this.props
     if (!flow) return null
     const { params } = flow
 
@@ -197,6 +193,7 @@ class FlowSettingsInspector extends React.Component<FlowSettingsInspectorProps> 
           <Fragment>
             <div className={style.full_hr} />
             <CommandSelector
+              nodes={nodes}
               mast={mast}
               numberOfInput={0}
               selected_step_ids={selected_step_ids}

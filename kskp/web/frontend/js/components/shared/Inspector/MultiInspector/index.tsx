@@ -11,7 +11,7 @@ import { flowEditorReducerInitialState } from "Modules/flowEditor";
 type MultiInspectorProps = {
   deleteSteps: Function;
   selectSteps: Function;
-  nodes: [];
+  nodes: any[];
   mast: typeof flowEditorReducerInitialState.mast;
   selected_step_ids: string[];
   addStep: Function;
@@ -64,13 +64,14 @@ class MultiInspector extends React.Component<MultiInspectorProps> {
 
   render() {
     const { mast, selected_step_ids, addStep, addDataSrcStep, addDataDstStep,
-      selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden } = this.props;
+      selectSteps, addHistory, baseInspectorDisabled, commandSelectorHidden, nodes } = this.props;
     const numberOfSelectedDataSources = this.getNumberOfSelectedDataSources()
 
     let commandSelector
     if (numberOfSelectedDataSources) {
       commandSelector = <div>
         <CommandSelector
+          nodes={nodes}
           mast={mast}
           numberOfInput={numberOfSelectedDataSources}
           selected_step_ids={selected_step_ids}
