@@ -160,11 +160,11 @@ const Constants = {
   lang: {
     classification: {
       subflow: '共有フロー',
-      data_dest: "データデスト",
+      data_dest: "データデスト（フローからの出力）",
       calculation: '項目間の計算',
       col_edit: '列に対する選択・加工',
       data_format: 'フォーマットの整形',
-      data_source: 'データソース出力',
+      data_source: 'データソース（フローへの入力）',
       row_edit: '行に対する選択・加工',
       row_sort: '行のソート',
       table_grouping: 'テーブルの集計',
