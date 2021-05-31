@@ -340,11 +340,11 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
 
     case DELETE_STEPS_ACTION: {
       let deleteKeySet = new Set();
-
       //削除対象がデータフレームの場合、srcも削除対象とする
       //ただしsrcが別のデータフレームを複数出力している場合があるので、
       //一つでもデータフレームが残っていると削除は行わない
       action.step_ids.forEach((id) => {
+        const step = GraphUtil.getNode(newState.nodes, id);
         if (GraphUtil.getNode(newState.nodes, id) instanceof DataFrameStepModel) {
           //削除対象のノードの親がある場合、親を調べる
           if (graph.g.inEdges(id) && graph.g.inEdges(id).length > 0) {
@@ -362,7 +362,18 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
               }
             }
           }
+        } else if (step.flow && step.classification === "data_dest") { // データデスト削除時、OutPortを解除する
+          Object.keys(step.srcs).forEach((key) => {
+            let srcId = step.srcs[key];
+            newState.flow.deleteOutPortWithId(srcId);
+          })
+        } else if (step.flow && step.classification === "data_source") {// データソース削除時、InPortを解除する
+          Object.keys(step.dsts).forEach((key) => {
+            let srcId = step.dsts[key];
+            newState.flow.deleteInPortWithId(srcId);
+          })
         }
+
         //削除対象のノードがIn・OutPortの場合、Portから削除する
         newState.flow.deleteInPortWithId(id);
         newState.flow.deleteOutPortWithId(id);
@@ -863,12 +874,12 @@ export default FlowEditorReducer;
  * @returns {*}
  */
 const rebuildNodesEdges = (newState, action) => {
-  return newState.nodes.map((node:any, index) => {
+  return newState.nodes.map((node: any, index) => {
     //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
     if (node.id === action.step.id) {
       if (node instanceof CommandStepModel ||
-        node instanceof SubFlowStepModel || 
-        node.classification === "data_source" || 
+        node instanceof SubFlowStepModel ||
+        node.classification === "data_source" ||
         node.classification === "data_dest") {
         if (!_.isEqual(node.srcs, action.step.srcs)) {
           //ノードのつながりを削除
