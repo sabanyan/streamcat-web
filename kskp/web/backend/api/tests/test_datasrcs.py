@@ -138,8 +138,8 @@ class DatasrcsTest(ApiTestCaseBase):
                 "type": "command",
                 "commandId": "db_loader",
                 "args": {
-                    "schema": "@[schema]",
-                    "table": "@[table]"
+                    "schema_name": "@[schema]",
+                    "table_name": "@[table]"
                 },
                 "srcs": {
                     "i": "s"
@@ -366,8 +366,8 @@ class DatasrcsTest(ApiTestCaseBase):
                 "type": "command",
                 "commandId": "db_saver",
                 "args": {
-                    "schema": "@[schema]",
-                    "table": "@[table]"
+                    "schema_name": "@[schema]",
+                    "table_name": "@[table]"
                 },
                 "srcs": {
                     "i": "d",
