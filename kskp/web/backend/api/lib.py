@@ -481,7 +481,7 @@ def fetch_document(document_uuid):
     ドキュメントを返却する
     """
     document = g.factory.data.find_by_uuid(document_uuid)
-    return send_from_directory(document.path.parent, document.path.name, mimetype='text/text')
+    return send_from_directory(document.path.parent, document.path.name, mimetype=document.content_type)
 
 @mod.route('/documents', methods=['POST'])
 @login_required_api
