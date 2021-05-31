@@ -6,7 +6,7 @@
 
 .validation_messages {
   list-style: none;
-  padding: 4px
+  padding: 4px;
 }
 
 .message {
@@ -15,11 +15,15 @@
 }
 
 .textField {
-  margin : 4px 0px 0px 0px;
+  margin: 4px 0px 0px 0px;
 }
 
-.readOnly{
+.readOnly {
   border: transparent;
   transition: none;
-  background-color: inherit!important;
+  background-color: inherit !important;
+  margin: 4px 0 0 0;
+  input:read-only {
+    background-color: #fafafa;
+  }
 }

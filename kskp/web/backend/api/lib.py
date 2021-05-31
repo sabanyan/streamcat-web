@@ -473,110 +473,75 @@ def throw_away_remote_folder(folder_uuid):
     folder.throw_away()
 
 
-# @mod.route('/documents/<doc_uuid>', methods=['GET'])
-# @login_required_api
-# def fetch_document(doc_uuid):
-#     """
-#     ドキュメントを返却する
-#     """
-#     try:
-#         doc = DocumentStore.find_by_uuid(doc_uuid)
+@mod.route('/documents/<document_uuid>', methods=['GET'])
+@login_required_api
+def fetch_document(document_uuid):
+    """
+    ドキュメントを返却する
+    """
+    document = g.factory.data.find_by_uuid(document_uuid)
+    return send_from_directory(document.path.parent, document.path.name, mimetype=document.content_type)
 
-#         data = {}
-#         data['fileSize'] = doc.get_file_size()
-#         data['lastModifiedAt'] = doc.modified_at
-#         no_contents = request.args.get('no_contents') is not None
-#         if not no_contents:
-#             import base64
-#             data['contents'] = base64.b64encode(doc.get_file()).decode("utf-8")
+@mod.route('/documents', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_document():
+    """
+    ドキュメントを作成する
+    """
+    if request.files.get('file') is None:
+        raise Exception('No file found.')
+    if 'parent' not in request.form:
+        raise Exception('No parent is designated.')
+    if 'label' not in request.form:
+        raise Exception('No label is designated.')
 
-#         return jsonify({'success': True, 'data': data})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
+    # 格納先フォルダを取得する
+    parent = g.factory.data.find_by_uuid(request.form.get('parent'))
 
-# @mod.route('/documents', methods=['POST'])
-# @login_required_api
-# def make_new_document():
-#     """
-#     ドキュメントを作成する
-#     """
-#     try:
-#         # new_doc = Document(str(uuid.uuid4())
-#         #                  , request.form.get('parent')
-#         #                  , request.form.get('label')
-#         #                  , request.files.get('file').stream
-#         #                  , creator=g.user)
-#         # set_file2(new_doc)
-#         # return jsonify({'success': True, 'data': new_doc.to_json()})
+    # HTTPのContent-Typeからファイルタイプを判定する
+    # (HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される)
+    content_type = request.files['file'].content_type
 
-#         new_doc = DocumentStore(request.form.get('parent')
-#                               , request.form.get('label')
-#                               , request.files.get('file').stream
-#                               , g.user)
-#         # documentレコードをDBに格納する
-#         new_doc.save()
-#         # ドキュメントに紐付くファイル(path列で指定されるファイル)がなければ作成する
-#         new_doc.make_file()
-#         return jsonify({'success': True, 'data': new_doc.to_json()})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code': -1,
-#                         'message': str(e)
-#                         })
+    new_document = parent.create_document(request.form.get('label'),
+                                          content_type,
+                                          request.files.get('file').stream)
+    # ドキュメントをDBに格納する
+    new_document.save()
 
-# @mod.route('/documents/<doc_uuid>', methods=['PUT'])
-# @login_required_api
-# def update_document(doc_uuid):
-#     """
-#     指定したdocumentのラベル名を変更する
-#     """
-#     try:
-#         # doc = Document(doc_uuid
-#         #              , None
-#         #              , request.json['label']
-#         #              , None
-#         #              , g.user)
-#         # upd_file2(doc)
-#         # return jsonify({'success': True, 'data': doc.to_json()})
+@mod.route('/documents/<document_uuid>', methods=['PUT'])
+@login_required_api
+@api_base
+def update_document(document_uuid):
+    """
+    指定したdocumentのラベル名を変更する、または移動する
+    """
+    req = RequestJson(request.json)
 
-#         doc = DocumentStore.find_by_uuid(doc_uuid)
-#         if doc is None:
-#             raise Exception('no document exists.')
-#         doc.data = json.dumps({'label' : request.json['label']})
-#         doc.modifier = g.user
-#         doc.update_data()
-#         return jsonify({'success': True, 'data': doc.to_json()})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
+    if req.has_no_all('parent', 'label'):
+        raise Exception('labelまたはparent属性を指定してください')
+    elif req.has_all('parent', 'label') and req.has('label'):
+        raise Exception('labelとparent属性は同時に指定できません')
 
-# @mod.route('/documents/<doc_uuid>', methods=['DELETE'])
-# @login_required_api
-# def delete_document(doc_uuid):
-#     """
-#     指定したdocumentを物理削除する
-#     """
-#     try:
-#         # del_file2(doc_uuid)
-#         # return jsonify({'success': True})
+    document = g.factory.data.find_by_uuid(document_uuid)
 
-#         doc = DocumentStore.find_by_uuid(doc_uuid)
-#         if doc is None:
-#             raise Exception('no document exists.')
-#         doc.delete()
-#         doc.remove_file()
-#         return jsonify({'success': True})
-#     except Exception as e:
-#         return jsonify({
-#                         'success': False,
-#                         'code'   : -1,
-#                         'message': str(e)
-#                         })
+    if req.has('parent'):
+        # ドキュメントを移動する
+        new_parent = req['parent']
+        return document.move(new_parent)
+    elif req.has('label'):
+        # ドキュメントのラベルを修正する
+        label = req['label']
+        return document.update_label(label)
+    else:
+        raise Exception('update_document parameter error!')
+
+@mod.route('/documents/<document_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def throw_away_document(document_uuid):
+    """
+    指定したdocumentをほかす
+    """
+    document = g.factory.data.find_by_uuid(document_uuid)
+    document.throw_away()
