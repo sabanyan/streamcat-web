@@ -475,7 +475,6 @@ def throw_away_remote_folder(folder_uuid):
 
 @mod.route('/documents/<document_uuid>', methods=['GET'])
 @login_required_api
-@api_base
 def fetch_document(document_uuid):
     """
     ドキュメントを返却する

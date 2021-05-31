@@ -16,10 +16,8 @@ def api_base(func):
             result = func(**kwargs)
             if result is None:
                 return jsonify({'success': True})
-            elif isinstance(result, dict):
-                return jsonify({'success': True, 'data': result})
             else:
-                return result
+                return jsonify({'success': True, 'data': result})
         except LockedDatumException as e:
             return jsonify({
                             'success': False,
