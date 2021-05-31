@@ -474,7 +474,6 @@ class DataFrameInspector extends React.Component<DataFrameInspectorProps, State>
                 {lastModifier}{/*{property.overview.created_user_name || ""}*/}
               </div>
             </div>
-            {/*
             <div className={style.overview}>
               <div className={style.overview_label}>
                 フロー入出力
@@ -483,8 +482,6 @@ class DataFrameInspector extends React.Component<DataFrameInspectorProps, State>
                 {flowInOutForm}
               </div>
             </div>
-            */}
-
           </div>
         </div>
         <div className={style.cache}>
