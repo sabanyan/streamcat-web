@@ -24,7 +24,7 @@ type State = {
 }
 
 const initialState: State = {
-  path: "データフレームを指定してください"
+  path: "ライブラリ上のファイルを選択する"
 }
 
 
