@@ -747,7 +747,14 @@ class FlowTestCase(ApiTestCaseBase):
         # サブフロー1を編集する
         self.put_uri(f'/api/v0/flows/{flow1_uuid}', {'flow': flow1_json, 'lock':lock1_uuid}, self.USER3)
 
-        # サブフロー2の排他ロックを解除する
+        # サブフロー1の編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : lock1_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{flow1_uuid}', data, self.USER3)
+
+        # サブフロー1の排他ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock1_uuid}', {}, self.USER3)
 
         # ROOTの下にプロジェクト2を作成する
@@ -773,6 +780,13 @@ class FlowTestCase(ApiTestCaseBase):
 
         # サブフロー2を編集する
         self.put_uri(f'/api/v0/flows/{flow2_uuid}', {'flow': flow2_json, 'lock':lock2_uuid}, self.USER3)
+
+        # サブフロー1の編集ロックする
+        data = {
+            'editLock' : True,
+            'lock' : lock2_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{flow2_uuid}', data, self.USER3)
 
         # サブフロー2の排他ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock2_uuid}', {}, self.USER3)
@@ -803,6 +817,34 @@ class FlowTestCase(ApiTestCaseBase):
         self.assertEqual(results['data'][1]['description'], '')
         self.assertEqual(results['data'][1]['creator'], 'ユーザ管理者')
         self.assertIsNotNone(results['data'][1]['createdAt'])
+
+        # サブフロー1の排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow1_uuid}, self.USER3)
+        lock1_uuid = result['data']['uuid']
+
+        # サブフロー2の排他ロックを取得する
+        result = self.post_uri('/api/v0/locks', {'target':flow2_uuid}, self.USER3)
+        lock2_uuid = result['data']['uuid']
+
+        # サブフロー1の編集ロックを解除する
+        data = {
+            'editLock' : False,
+            'lock' : lock1_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{flow1_uuid}', data, self.USER3)
+
+        # サブフロー2の編集ロックを解除する
+        data = {
+            'editLock' : False,
+            'lock' : lock2_uuid
+        }
+        self.put_uri(f'/api/v0/flows/{flow2_uuid}', data, self.USER3)
+
+        # サブフロー1の排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock1_uuid}', {}, self.USER3)
+
+        # サブフロー2の排他ロックを解除する
+        self.post_uri(f'/api/v0/delete-locks/{lock2_uuid}', {}, self.USER3)
 
         # プロジェクトフォルダを削除する
         self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER3)
