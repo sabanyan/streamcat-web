@@ -122,12 +122,12 @@ def create_frame():
             # フロー一覧から実行する
             # 
             flow_uuid = request.json.get('flow_uuid')
-            params = request.json.get('args') if request.json.get('args') else {}
+            flow_args = request.json.get('args') if request.json.get('args') else {}
             lock_uuid = request.json.get('lock')
             inputs = _make_flow_inputs(g.factory, flow_uuid, request)
             # フローの実行
             flow = g.factory.data.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, args={'params':params}, inputs=inputs, lock_uuid=lock_uuid)
+            result = execute_flow(flow, args={'flow_args':flow_args}, inputs=inputs, lock_uuid=lock_uuid)
             result = format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
