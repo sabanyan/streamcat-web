@@ -123,16 +123,18 @@ class ProjectTestCase(ApiTestCaseBase):
 
         # 作成したプロジェクトが取得できること
         results = self.get_uri('/api/v0/projects?except_myproject=off', self.USER1)
-        self.assertEqual(len(results['data']), 3)
+        self.assertEqual(len(results['data']), 4)
         self.assertEqual(results['data'][0]['label'], 'MyProject ')
         self.assertEqual(results['data'][1]['label'], 'myproject')
         self.assertEqual(results['data'][2]['label'], 'MyProject')
+        self.assertEqual(results['data'][3]['label'], 'データデスト📂')
 
         # MyProjectを除外して取得できること
         results = self.get_uri('/api/v0/projects?except_myproject=on', self.USER1)
-        self.assertEqual(len(results['data']), 2)
+        self.assertEqual(len(results['data']), 3)
         self.assertEqual(results['data'][0]['label'], 'MyProject ')
         self.assertEqual(results['data'][1]['label'], 'myproject')
+        self.assertEqual(results['data'][2]['label'], 'データデスト📂')
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER2)

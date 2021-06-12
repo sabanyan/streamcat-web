@@ -21,6 +21,58 @@ class FrameTestCase(ApiTestCaseBase):
     def setUp(self):
         self.root = self.factory.data.load_root()
         self.root_path = self.root.path
+        # テスト用のフロー
+        self.flow_json = {
+            "label": "テストフロ",
+            "params": [],
+            "description": "",
+            "ports": [
+                [],
+                [
+                    {
+                    "type": "frame", 
+                    "label": "d1", 
+                    "nodeId": "d1"
+                    }
+                ]
+            ],
+            "nodes": [
+                {
+                    "type": "frame",
+                    "id": "d1",
+                    "label": "出力結果",
+                    "uuid": None,
+                    "dataSource": "csv"
+                },
+                {
+                    "type": "command",
+                    "id": "c1",
+                    "label": "c1",
+                    "srcs": {
+                        "i": "i"
+                    },
+                    "dsts": {
+                        "o": "d1"
+                    },
+                    "args": {
+                        "f": "0,1",
+                        "x": True
+                    },
+                    "commandId": "mcut"
+                },
+                {
+                    "id": 'o0', 
+                    "label": "ライブラリ出力🖨", 
+                    "type": "flow", 
+                    "classification": "data_dest",
+                    "srcs": {
+                        "d": 'd1'
+                    },
+                    "dsts": {}, 
+                    "uuid": self.data_dst.uuid
+                }
+            ]
+        }
     
     def save_flow(self, parent, label, flow_json):
         from kskp.store import FlowData
@@ -207,47 +259,6 @@ class FrameTestCase(ApiTestCaseBase):
     """
     実行のFramesAPIをテストする
     """
-    # テスト用のフロー
-    flow_json = {
-      "label": "テストフロ",
-      "params": [],
-      "description": "",
-      "ports": [
-        [],
-        [
-            {
-            "type": "frame", 
-            "label": "d1", 
-            "nodeId": "d1"
-            }
-        ]
-      ],
-      "nodes": [
-        {
-          "type": "frame",
-          "id": "d1",
-          "label": "出力結果",
-          "uuid": None,
-          "dataSource": "csv"
-        },
-        {
-          "type": "command",
-          "id": "c1",
-          "label": "c1",
-          "srcs": {
-            "i": "i"
-          },
-          "dsts": {
-            "o": "d1"
-          },
-          "args": {
-            "f": "0,1",
-            "x": True
-          },
-          "commandId": "mcut"
-        }
-      ]
-    }
 
     # @unittest.skip
     def test_flow_execute(self):

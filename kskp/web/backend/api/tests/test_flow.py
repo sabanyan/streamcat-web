@@ -262,6 +262,17 @@ class FlowTestCase(ApiTestCaseBase):
                     "makeCache": True, 
                     "dataSource": "csv", 
                     "cacheCreatedAt": ""
+                },
+                {
+                    "id": 'o0', 
+                    "label": "ライブラリ出力🖨", 
+                    "type": "flow", 
+                    "classification": "data_dest",
+                    "srcs": {
+                        "d": 'd'
+                    },
+                    "dsts": {}, 
+                    "uuid": self.data_dst.uuid
                 }
             ]
         }

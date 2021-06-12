@@ -502,7 +502,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'システム管理者')
         self.assertEqual(result['data']['state'], 'active')
         # 編集ロックロール
-        self.assertEqual(len(result['data']['roles']), 4)
+        self.assertEqual(len(result['data']['roles']), 5)
         self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
         self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
         self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
@@ -526,6 +526,13 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['roles'][3]['systemRole'], '')
         self.assertIsNotNone(result['data']['roles'][3]['creator'])
         self.assertIsNotNone(result['data']['roles'][3]['createdAt'])
+        # データデストプロジェクトのロール
+        self.assertIsNotNone(result['data']['roles'][4]['uuid'])
+        self.assertEqual(result['data']['roles'][4]['name'], 'データデスト📂_readers')
+        self.assertEqual(result['data']['roles'][4]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][4]['creator'])
+        self.assertIsNotNone(result['data']['roles'][4]['createdAt'])
+
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
@@ -539,7 +546,7 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['name'], 'ユーザー管理者')
         self.assertEqual(result['data']['state'], 'active')
         # 編集ロックロール
-        self.assertEqual(len(result['data']['roles']), 4)
+        self.assertEqual(len(result['data']['roles']), 7)
         self.assertEqual(result['data']['roles'][0]['uuid'], self.expected_edit_lock['uuid'])
         self.assertEqual(result['data']['roles'][0]['name'], self.expected_edit_lock['name'])
         self.assertEqual(result['data']['roles'][0]['systemRole'], self.expected_edit_lock['systemRole'])
@@ -557,12 +564,30 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['roles'][2]['systemRole'], self.expected_usr_admin['systemRole'])
         self.assertIsNotNone(result['data']['roles'][2]['creator'])
         self.assertIsNotNone(result['data']['roles'][2]['createdAt'])
-        # 本人ロール
+        # データデストプロジェクトのロール
         self.assertIsNotNone(result['data']['roles'][3]['uuid'])
-        self.assertEqual(result['data']['roles'][3]['name'], 'ユーザー管理者')
+        self.assertEqual(result['data']['roles'][3]['name'], 'データデスト📂_owners')
         self.assertEqual(result['data']['roles'][3]['systemRole'], '')
         self.assertIsNotNone(result['data']['roles'][3]['creator'])
         self.assertIsNotNone(result['data']['roles'][3]['createdAt'])
+        # データデストプロジェクトのロール
+        self.assertIsNotNone(result['data']['roles'][4]['uuid'])
+        self.assertEqual(result['data']['roles'][4]['name'], 'データデスト📂_readers')
+        self.assertEqual(result['data']['roles'][4]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][4]['creator'])
+        self.assertIsNotNone(result['data']['roles'][4]['createdAt'])
+        # データデストプロジェクトのロール
+        self.assertIsNotNone(result['data']['roles'][5]['uuid'])
+        self.assertEqual(result['data']['roles'][5]['name'], 'データデスト📂_writers')
+        self.assertEqual(result['data']['roles'][5]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][5]['creator'])
+        self.assertIsNotNone(result['data']['roles'][5]['createdAt'])
+        # 本人ロール
+        self.assertIsNotNone(result['data']['roles'][6]['uuid'])
+        self.assertEqual(result['data']['roles'][6]['name'], 'ユーザー管理者')
+        self.assertEqual(result['data']['roles'][6]['systemRole'], '')
+        self.assertIsNotNone(result['data']['roles'][6]['creator'])
+        self.assertIsNotNone(result['data']['roles'][6]['createdAt'])
         # 登録状態なのでpassword属性は返されない
         self.assertNotIn('password', result['data'])
         self.assertIsNotNone(result['data']['createdAt'])
@@ -1211,6 +1236,8 @@ class SystemTestCase(ApiTestCaseBase):
         """
         # デフォルトのシステム管理者を取得する
         user0_result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
+        # データデストを入れたプロジェクトへのロールを取得する
+        data_dst_role_uuid = user0_result['data']['roles'][4]['uuid']
         
         # デフォルトのユーザを削除する
         self.delete_uri(f'/api/v0/users/{self.USER0.uuid}', self.USER1)
@@ -1234,6 +1261,9 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 管理者権限を再び与える
         result = self.put_uri(f'/api/v0/roles/sys_admin/users/{self.USER0.uuid}', {}, self.USER1)
+
+        # データデストを入れたプロジェクトに再び所属させる
+        result = self.put_uri(f'/api/v0/roles/{data_dst_role_uuid}/users/{self.USER0.uuid}', {'owner':False}, self.USER1)
 
         # デフォルトのシステム管理者を取得する
         result = self.get_uri(f'/api/v0/users/{self.USER0.uuid}?roles=on', self.USER1)
@@ -1260,7 +1290,11 @@ class SystemTestCase(ApiTestCaseBase):
 
         # デフォルトのユーザ管理者を取得する
         user1_result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', new_user)
-        
+        # データデストを入れたプロジェクトへのロールを取得する
+        data_dst_o_role_uuid = user1_result['data']['roles'][3]['uuid']
+        data_dst_r_role_uuid = user1_result['data']['roles'][4]['uuid']
+        data_dst_w_role_uuid = user1_result['data']['roles'][5]['uuid']
+
         # デフォルトのユーザを削除する
         self.delete_uri(f'/api/v0/users/{self.USER1.uuid}', self.USER1)
 
@@ -1283,6 +1317,11 @@ class SystemTestCase(ApiTestCaseBase):
 
         # 管理者権限を再び与える
         result = self.put_uri(f'/api/v0/roles/usr_admin/users/{self.USER1.uuid}', {}, new_user)
+
+        # データデストを入れたプロジェクトに再び所属させる
+        result = self.put_uri(f'/api/v0/roles/{data_dst_o_role_uuid}/users/{self.USER1.uuid}', {'owner':True}, new_user)
+        result = self.put_uri(f'/api/v0/roles/{data_dst_r_role_uuid}/users/{self.USER1.uuid}', {'owner':True}, new_user)
+        result = self.put_uri(f'/api/v0/roles/{data_dst_w_role_uuid}/users/{self.USER1.uuid}', {'owner':True}, new_user)
 
         # デフォルトのユーザ管理者を取得する
         result = self.get_uri(f'/api/v0/users/{self.USER1.uuid}?roles=on', new_user)
