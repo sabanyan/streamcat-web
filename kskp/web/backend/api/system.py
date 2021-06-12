@@ -269,7 +269,7 @@ def join_user_to_usr_admin_role(user_uuid):
     usr_admin_role = g.factory.role.load_usr_admin_role()
     _join_user_to_role(usr_admin_role.uuid, user_uuid, owner=True)
 
-def _join_user_to_role(role_uuid, user_uuid, owner):
+def _join_user_to_role(role_uuid, user_uuid, owner:bool):
     from kskp.store.auth import Role, NoRoleOwnerException
 
     role = g.factory.role.find_by_uuid(role_uuid)
