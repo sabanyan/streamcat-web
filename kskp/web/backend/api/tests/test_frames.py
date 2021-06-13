@@ -1043,7 +1043,7 @@ class FrameTestCase(ApiTestCaseBase):
         # POST /activitiesの結果を検証する
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]['id'], 'f_d2')
-        self.assertEqual(data[0]['label'], '')
+        self.assertEqual(data[0]['label'], 'f_d2')
         self.assertIsNotNone(data[0]['uuid'])
         self.assertIsNotNone(data[0]['parent'])
         self.assertEqual(data[0]['args'], {})

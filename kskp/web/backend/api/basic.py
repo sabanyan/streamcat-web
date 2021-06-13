@@ -164,29 +164,39 @@ def fetch_flow(flow_uuid):
 def new_flow():
     """
     新しいフローを作成する
-    TODO: JSONに必要な項目があるかどうかのValidationを追加したい
     """
-    j = request.json
+    req = RequestJson(request.json)
 
-    if 'original_flow_uuid' in j:
-        original_flow = g.factory.data.find_by_uuid(j.get('original_flow_uuid'))
+    if req.has('original_flow_uuid'):
+        original_flow = g.factory.data.find_by_uuid(req['original_flow_uuid'])
         original_label = original_flow.label + ' のコピー'
         # 同じフォルダ内の他データと重複しないラベル名を取得する
         parent = original_flow.find_parent()
         new_label = parent.make_unique_label(original_label)
         # フローを複製する
         return original_flow.duplicate(new_label)
-    else:
-        parent_uuid = j.get('project_uuid')
-        label = j.get('name')
-        from kskp.store import Flow
-        flow_data = Flow.create_flow(j, g.user)
+    elif req.has_all('parent', 'label', 'flow'):
         # flowを作成する
-        parent = g.factory.data.find_by_uuid(parent_uuid)
-        new_flow = parent.create_flow(label, flow_data)
+        from kskp.store import FlowData
+        parent = g.factory.data.find_by_uuid(req['parent'])
+        new_flow = parent.create_flow(req['label'], FlowData(req['flow']))
         # flowをDBに格納する
         new_flow.save()
         return new_flow.reload()
+    elif req.has('project_uuid'):
+        # 
+        # TODO: 古いパラメタ形式なので廃止したい
+        # 
+        from kskp.store import Flow
+        flow_data = Flow.create_flow(request.json, g.user)
+        # flowを作成する
+        parent = g.factory.data.find_by_uuid(req['project_uuid'])
+        new_flow = parent.create_flow(req['name'], flow_data)
+        # flowをDBに格納する
+        new_flow.save()
+        return new_flow.reload()
+    else:
+        raise Exception('new_flow parameter error!')
 
 @mod.route('/flows/<flow_uuid>', methods=['PUT'])
 @login_required_api
