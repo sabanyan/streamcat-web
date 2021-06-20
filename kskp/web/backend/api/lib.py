@@ -408,7 +408,7 @@ def fetch_remote_folder(folder_uuid):
     リモートフォルダを返却する
     """
     folder = g.factory.data.find_by_uuid(folder_uuid)
-    return _jsonify_folder(folder)
+    return folder
 
 
 @mod.route('/remote-folders', methods=['POST'])
