@@ -639,13 +639,15 @@ def get_navigation():
         navigation['user'] = g.user.to_json()
         navigation['allowlist'] = g.user.get_allowlist()
 
-    if flow_uuid is not None :
-        flow = g.factory.data.find_by_uuid(flow_uuid)
-        parent = flow.find_parent()
-        navigation['project_uuid'] = parent.uuid
-        navigation['project_name'] = parent.label
-        navigation['flow_uuid'] = flow_uuid
-        navigation['flow_name'] = flow.label
+    # TODO: フローエディタの表示でクリティカルパスになっているので
+    # 以下の処理を省略してフローエディタに影響がないか検証する
+    # if flow_uuid is not None :
+    #     flow = g.factory.data.find_by_uuid(flow_uuid)
+    #     parent = flow.find_parent()
+    #     navigation['project_uuid'] = parent.uuid
+    #     navigation['project_name'] = parent.label
+    #     navigation['flow_uuid'] = flow_uuid
+    #     navigation['flow_name'] = flow.label
         
     # プロジェクトが指定された場合
     elif project_uuid is not None:
