@@ -334,9 +334,12 @@ def fetch_datasrcs():
         # データソースを作成する
         datasource = root.create_datasource(label, store, loader_cmd, args, params)
         # 戻り値のJSONを作成する
-        datasrc_json = datasource.flow_data.to_json(contains_nodes=False)
+        datasource_flow_data = datasource.flow_data
+        datasrc_json = datasource_flow_data.to_json(contains_nodes=False)
         datasrc_json['classification'] = 'data_source'
-        datasrc_json['flow'] = datasource.flow_data.to_json()
+        # データソースが参照するデータストアの参照権限は確認済みなので
+        # 速度低下を防ぐためto_json()ではノードのマスキングをしない
+        datasrc_json['flow'] = datasource_flow_data.to_json(ignore_authz=True)
         # データソースの一覧に格納する
         datasrcs_json.append(datasrc_json)
 
@@ -416,9 +419,12 @@ def fetch_datadsts():
         # データデストを作成する
         datadest = root.create_datadest(label, store, saver_cmd, args, params)
         # 戻り値のJSONを作成する
-        datadst_json = datadest.flow_data.to_json(contains_nodes=False)
+        datadest_flow_data = datadest.flow_data
+        datadst_json = datadest_flow_data.to_json(contains_nodes=False)
         datadst_json['classification'] = 'data_dest'
-        datadst_json['flow'] = datadest.flow_data.to_json()
+        # データデストが参照するデータストアの参照権限は確認済みなので
+        # 速度低下を防ぐためto_json()ではノードのマスキングをしない
+        datadst_json['flow'] = datadest_flow_data.to_json(ignore_authz=True)
         # データデストの一覧に格納する
         datadsts_json.append(datadst_json)
 

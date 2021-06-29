@@ -9,7 +9,7 @@ from ... import SECURITY_LEVEL
 # (設定値がない場合は5日とする)
 _access_expire_timedelta = timedelta(minutes=int(os.getenv('KSKP_ACCESS_TOKEN_EXPIRE_MIN', 5*24*60)))
 
-# 環境変数からトークンの有効期間(日)を取得する
+# 環境変数からリフレッシュトークンの有効期間(日)を取得する
 # (設定値がない場合は6ヶ月とする)
 _refresh_expire_timedelta = timedelta(days=int(os.getenv('KSKP_REFRESH_TOKEN_EXPIRE_DAYS', 6*30)))
 
