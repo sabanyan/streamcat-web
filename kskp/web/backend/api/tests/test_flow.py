@@ -340,8 +340,18 @@ class FlowTestCase(ApiTestCaseBase):
             test_flow_uuid = setUpFlow(self)
 
         # フロー格納フォルダを取得する
-        flow_folder = root_flow_folder = self.factory.data.load_flow_folder()
+        flow_folder = self.factory.data.load_flow_folder()
 
+        # 参照先フレームを作成する
+        frame1 = flow_folder.create_frame('CSV1', io.BytesIO(b''))
+        frame1.uuid = 'aca1c51f-ee97-43ca-bc6e-cd151220c518'
+        frame1.save()
+
+        # 参照先サブフローを作成する
+        sub_flow1 = flow_folder.create_flow('サブフロー1', FlowData({}))
+        sub_flow1.uuid = '833fdb62-2bb6-4a77-a0e1-77941ad951a3'
+        sub_flow1.save()
+    
         # フローを、フロー格納フォルダに格納する
         flow_uuid = str(uuid.uuid4())
         flow_path = 'backend/api/tests/flows/168d23c2-f835-4392-ba0e-76e94a08b719.json'

@@ -969,9 +969,13 @@ class TrashTestCase(ApiTestCaseBase):
         project1_uuid = project1['data']['uuid']
         project1 = self.factory.data.find_by_uuid(project1_uuid)
 
+        # 参照先フレームを作成する
+        import io
+        frame1 = root.create_frame('CSV1', io.BytesIO(b''))
+        frame1.save()
+
         # フローを作成する
-        import uuid
-        flow = project1.create_flow('サブフロー1', self.get_flow_with_source(str(uuid.uuid4())))
+        flow = project1.create_flow('サブフロー1', self.get_flow_with_source(frame1.uuid))
         flow.save()
         flow = self.factory.data.find_by_uuid(flow.uuid)
 
