@@ -277,6 +277,30 @@ def make_new_acitivity():
             }
             for point, last in activity.lasts]
 
+@mod.route('/schedules', methods=['POST'])
+@login_required_api
+@api_base
+def make_new_schedule():
+    """
+    スケジュールを作成する
+    """
+    req = RequestJson(request.json)
+    parent = g.factory.data.find_by_uuid(req['parent'])
+    args = req.get('args') or {}
+    schedule = parent.create_schedule(req['label'], req['flow'], args=args, trigger=req['trigger'])
+    schedule.save()
+    return schedule
+
+@mod.route('/schedules/<schedule_uuid>', methods=['DELETE'])
+@login_required_api
+@api_base
+def throw_away_schedule(schedule_uuid):
+    """
+    スケジュールをほかす
+    """
+    schedule = g.factory.data.find_by_uuid(schedule_uuid)
+    schedule.throw_away()
+
 def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     """
     指定されたフローを実行し実行結果を取得する
