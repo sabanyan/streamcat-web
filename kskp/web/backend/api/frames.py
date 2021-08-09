@@ -311,10 +311,10 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
 
         args = args.copy()
         args.update(vis_args)
-        lasts = execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
+        outs = execute(command=FlowCommand(flow, lock_uuid), args=args, inputs=inputs)
 
         # Activityを取得して返り値とする
-        for point_id, datum in lasts.items():
+        for port_label, datum in outs.items():
             if isinstance(datum, Activity):
                 activity = datum
                 # 実行に失敗した場合、例外を送出する
