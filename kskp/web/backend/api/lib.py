@@ -25,7 +25,7 @@ def download_flow(uuid):
 
 @mod.route('/flow_files', methods=['POST'])
 @login_required_api
-@api_base  
+@api_base
 def upload_flow():
     from pathlib import Path
 
