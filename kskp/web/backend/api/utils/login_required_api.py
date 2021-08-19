@@ -7,22 +7,22 @@ from flask import (
 from kskp.store.factory import Factory, UnAuthzFactory
 from .token import decode_token
 
+def get_token_from_auth_header(headers:dict):
+    """
+    HTTPリクエストのAuthorizationからトークンを取得する
+    """
+    if 'Authorization' not in headers:
+        return None
+    str_list = headers['Authorization'].split('Bearer ')
+    if len(str_list) < 2:
+        return None
+    return str.strip(str_list[1])
+
 def login_required_api(func):
     """
     このデコレータがついたエンドポイントは、
     ログインされていないとエラー用JSONを返却する
     """
-    def get_token_from_auth_header(headers:dict):
-        """
-        HTTPリクエストのAuthorizationからトークンを取得する
-        """
-        if 'Authorization' not in headers:
-            return None
-        str_list = headers['Authorization'].split('Bearer ')
-        if len(str_list) < 2:
-            return None
-        return str.strip(str_list[1])
-
     @functools.wraps(func)
     def deco(**kwargs):
         # CookieまたはAuthorizationヘッダからアクセストークンを取得する

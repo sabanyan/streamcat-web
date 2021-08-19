@@ -1,6 +1,8 @@
 import logging
 import datetime
-from flask import request, session, has_request_context
+from flask import has_request_context, request
+from .token import decode_token
+from .login_required_api import get_token_from_auth_header
 
 class KSKPLogFormatter(logging.Formatter):
     """
@@ -9,7 +11,13 @@ class KSKPLogFormatter(logging.Formatter):
     def format(self, record):
         if has_request_context():
             # requestインスタンスが存在する場合
-            record.user_uuid = session.get('user_uuid', '')[0:8]
+            # CookieまたはAuthorizationヘッダからアクセストークンを取得する
+            access_token = request.cookies.get('S') or get_token_from_auth_header(request.headers)
+            if access_token is None:
+                record.user_uuid = ''
+            else:
+                claims = decode_token(access_token)
+                record.user_uuid = claims['sub'][:8]
             record.remote_addr = request.remote_addr
             record.method = request.method
             record.path = request.path
