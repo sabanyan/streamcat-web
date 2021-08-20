@@ -264,18 +264,18 @@ def make_new_acitivity():
     else:
         raise Exception(f'Either flow or uuid key is required')
 
-    def is_vis(last):
+    def is_vis(out):
         from kskp.store import Vis
-        return isinstance(last, Vis)
+        return isinstance(out, Vis)
 
     return [{'id'    : point.id, 
              'label' : point.label,
-             'uuid'  : last.uuid,
-             'parent': None if is_vis(last) else last.find_parent().uuid,
-             'args': {'column_names':last.column_names} if is_vis(last) else {},
-             'contents': VisConverter(last) if is_vis(last) else None
+             'uuid'  : out.uuid,
+             'parent': None if is_vis(out) else out.find_parent().uuid,
+             'args': {'column_names':out.column_names} if is_vis(out) else {},
+             'contents': VisConverter(out) if is_vis(out) else None
             }
-            for point, last in activity.lasts]
+            for point, out in activity.outs]
 
 @mod.route('/schedules', methods=['POST'])
 @login_required_api
@@ -332,12 +332,12 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
         raise
 
 def format_result(activity):
-    return [{'id':point.id, 'parent':frame.parent_uuid, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.lasts]
+    return [{'id':point.id, 'parent':frame.parent_uuid, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.outs]
 
 def format_vis(activity):
     from .utils import VisConverter
     # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
-    return [{'id':point.id, 'args':{'column_names':vis.column_names}, 'contents':VisConverter(vis)} for point, vis in activity.lasts]
+    return [{'id':point.id, 'args':{'column_names':vis.column_names}, 'contents':VisConverter(vis)} for point, vis in activity.outs]
 
 def _make_flow_inputs(factory, flow_uuid, request):
     """
