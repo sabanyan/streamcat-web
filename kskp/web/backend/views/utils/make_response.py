@@ -8,32 +8,26 @@ def make_response(template_name, is_preview:bool=False, **context):
 
     def make_bokeh_script(nonce):
         """
-        Bokehが使用するインラインCSSとJavaScriptにnonce値を設定する
+        Bokehが使用するJavaScriptにnonce値を設定する
         """
-        from bokeh.resources import INLINE
-        render_css = ''
+        from bokeh.resources import CDN
         render_js = ''
-        for css_path in INLINE.css_files:
-            render_css += f'<link rel="stylesheet" href="{css_path}" type="text/css" nonce="{nonce}"/>'
-        for file_path in INLINE.js_files:
+        for file_path in CDN.js_files:
             render_js += f'<script type="text/javascript" src="{file_path}" nonce="{nonce}"></script>'
-        for script_str in INLINE.js_raw:
-            render_js += f'<script type="text/javascript" nonce="{nonce}">' + script_str + '</script>'
-        return render_js, render_css
+        return render_js
 
     # Nonce値を生成する
     nonce = str(uuid.uuid4()).upper()[0:6]
 
     # プレビューの場合はBokehスクリプトを作成する
     if is_preview:
-        render_js, render_css = make_bokeh_script(nonce)
+        render_js = make_bokeh_script(nonce)
     else:
-        render_js, render_css = ('', '')
+        render_js = ''
 
     # HTMLレスポンスを作成する
     contents = render_template(template_name,
                                 nonce=nonce,
-                                css_resources=render_css,
                                 js_resources=render_js,
                                 **context)
     response = make_response(contents)
