@@ -595,6 +595,169 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(lasts[0]['args']['column_names'], ['顧客','','顧客'])
         self.assertIsNotNone(lasts[0].get('contents'))
 
+    def test_get_activity(self):
+        """
+        GET /activities でActivityを取得できること
+        """
+        # ROOTを取得する
+        root = self.factory.data.load_root()
+
+        # プロジェクトを作成する
+        result = self.post_uri('/api/v0/projects', {'parent':root.uuid, 'label':'☀️'}, self.USER2)
+        project_uuid = result['data']['uuid']
+        project_modified_at = result['data']['modifiedAt']
+
+        # プロジェクト管理者は、プロジェクト内にフローを作成する
+        flow_json = {
+            "label": "⛅️", 
+            "nodes": [
+                {
+                    "id": "d", 
+                    "type": "frame", 
+                    "label": "d", 
+                    "dataSource": "csv"
+                }, 
+                {
+                    "id": "c", 
+                    "args": {
+                        "I": "1", 
+                        "S": "1", 
+                        "a": "a", 
+                        "l": "10"
+                    }, 
+                    "dsts": {
+                        "o": "d"
+                    }, 
+                    "srcs": {}, 
+                    "type": "command", 
+                    "label": "c", 
+                    "commandId": "mnewnumber"
+                }, 
+                {
+                    "id": "o", 
+                    "label": "ライブラリ", 
+                    "type": "flow", 
+                    "classification": "data_dest",
+                    "args": {}, 
+                    "srcs": {
+                        "d": "d"
+                    }, 
+                    "dsts": {}, 
+                    "flow": {
+                        "label": "ライブラリ", 
+                        "nodes": [
+                            {
+                                "id": "d", 
+                                "type": "frame", 
+                                "label": "d", 
+                                "dataSource": "csv"
+                            }, 
+                            {
+                                "id": "s", 
+                                "type": "store", 
+                                "uuid": project_uuid, 
+                                "label": "ライブラリ"
+                            }, 
+                            {
+                                "id": "c1", 
+                                "args": {}, 
+                                "dsts": {
+                                    "o": "d1"
+                                }, 
+                                "srcs": {
+                                    "i": "d", 
+                                    "folder": "s"
+                                }, 
+                                "type": "command", 
+                                "label": "c1", 
+                                "commandId": "saver"
+                            }, 
+                            {
+                                "id": "d1", 
+                                "type": "frame", 
+                                "label": "d1", 
+                                "dataSource": "csv"
+                            }
+                        ], 
+                        "ports": [
+                            [
+                                {
+                                "type": "frame", 
+                                "label": "i", 
+                                "nodeId": "d"
+                                }
+                            ], 
+                            []
+                        ], 
+                        "params": [], 
+                        "creator": "", 
+                        "createdAt": "2021-09-09 16:26:57",
+                        "description": ""
+                    }
+                }
+            ], 
+            "ports": [
+                [], 
+                [
+                    {
+                        "type": "frame", 
+                        "label": "d", 
+                        "nodeId": "d"
+                    }
+                ]
+            ], 
+            "params": [], 
+            "creator": "システム管理者", 
+            "createdAt": "2021-09-09 10:31:41",
+            "description": ""
+        }
+        data = {
+            'parent': project_uuid,
+            'label': '☔️',
+            'flow': flow_json
+        }
+        result = self.post_uri('/api/v0/flows', data, self.USER2)
+        flow_uuid = result['data']['uuid']
+
+        # USER3をメンバに参加させる
+        data = {
+            'members': [{'uuid' : self.USER2.uuid, 'type': 'Owner'},
+                        {'uuid' : self.USER3.uuid, 'type': 'Reader'}],
+            'lastModifiedAt' : project_modified_at
+        }
+        result = self.put_uri(f'/api/v0/projects/{project_uuid}', data, self.USER2)
+
+        # フローを実行する
+        result = self.post_uri(f'/api/v0/activities', {'uuid':flow_uuid}, self.USER2)
+        data = result['data']
+        activity_uuid = data['uuid']
+
+        # プロジェクトのメンバは、Activityを参照できること
+        result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER2)
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(result['data']['label'], '☔️')
+        self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
+        result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER3)
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(result['data']['label'], '☔️')
+        self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
+
+        # ユーザ管理者は、Activityを参照できること
+        result = self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER1)
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(result['data']['label'], '☔️')
+        self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
+
+        # プロジェクトのメンバ以外は、Activityを参照できないこと
+        with self.assertRaises(AssertionError):
+            self.get_uri(f'/api/v0/activities/{activity_uuid}', self.USER0)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+
     def test_activity_with_flow(self):
         """
         POST /activities でflow属性にフローリテラルを指定して実行できること
@@ -656,17 +819,21 @@ class FrameTestCase(ApiTestCaseBase):
         }
 
         # POST /activitiesを発行する
-        lasts = self.post_uri(f'/api/v0/activities', {'flow':flow_json,'args':args}, self.USER1)
-        data = lasts['data']
+        result = self.post_uri(f'/api/v0/activities', {'flow':flow_json,'args':args}, self.USER1)
+        data = result['data']
+        outs = data['outs']
 
         # POST /activitiesの結果を検証する
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['id'], 'd')
-        self.assertEqual(data[0]['label'], 'd')
-        self.assertIsNotNone(data[0]['uuid'])
-        self.assertIsNone(data[0]['parent'])
-        self.assertEqual(data[0]['args']['column_names'], ['id'])
-        self.assertIsNotNone(data[0].get('contents'))
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
+        self.assertEqual(data['label'], 'LITERAL')
+        self.assertEqual(len(outs), 1)
+        self.assertEqual(outs[0]['id'], 'd')
+        self.assertEqual(outs[0]['label'], 'd')
+        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNone(outs[0]['parent'])
+        self.assertEqual(outs[0]['args']['column_names'], ['id'])
+        self.assertIsNotNone(outs[0].get('contents'))
 
     def test_activity_with_uuid(self):
         """
@@ -732,17 +899,21 @@ class FrameTestCase(ApiTestCaseBase):
         }
 
         # POST /activitiesを発行する
-        lasts = self.post_uri(f'/api/v0/activities', {'uuid':flow.uuid,'args':args}, self.USER1)
-        data = lasts['data']
+        result = self.post_uri(f'/api/v0/activities', {'uuid':flow.uuid,'args':args}, self.USER1)
+        data = result['data']
+        outs = data['outs']
 
         # POST /activitiesの結果を検証する
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['id'], 'd')
-        self.assertEqual(data[0]['label'], 'd')
-        self.assertIsNotNone(data[0]['uuid'])
-        self.assertIsNone(data[0]['parent'])
-        self.assertEqual(data[0]['args']['column_names'], ['id'])
-        self.assertIsNotNone(data[0].get('contents'))
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
+        self.assertEqual(data['label'], 'それにつけてもおやつはカール')
+        self.assertEqual(len(outs), 1)
+        self.assertEqual(outs[0]['id'], 'd')
+        self.assertEqual(outs[0]['label'], 'd')
+        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNone(outs[0]['parent'])
+        self.assertEqual(outs[0]['args']['column_names'], ['id'])
+        self.assertIsNotNone(outs[0].get('contents'))
 
         # フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow.uuid}, self.USER1)
@@ -876,17 +1047,21 @@ class FrameTestCase(ApiTestCaseBase):
         }
 
         # POST /activitiesを発行する
-        lasts = self.post_uri(f'/api/v0/activities', {'uuid':flow.uuid,'args':args,'lock':lock_uuid}, self.USER1)
-        data = lasts['data']
+        result = self.post_uri(f'/api/v0/activities', {'uuid':flow.uuid,'args':args,'lock':lock_uuid}, self.USER1)
+        data = result['data']
+        outs = data['outs']
 
         # POST /activitiesの結果を検証する
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['id'], 'd2')
-        self.assertEqual(data[0]['label'], 'd2')
-        self.assertIsNotNone(data[0]['uuid'])
-        self.assertIsNone(data[0]['parent'])
-        self.assertEqual(data[0]['args']['column_names'], ['id%0n','amount','seq'])
-        self.assertIsNotNone(data[0].get('contents'))
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
+        self.assertEqual(data['label'], 'Have a KitKat!')
+        self.assertEqual(len(outs), 1)
+        self.assertEqual(outs[0]['id'], 'd2')
+        self.assertEqual(outs[0]['label'], 'd2')
+        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNone(outs[0]['parent'])
+        self.assertEqual(outs[0]['args']['column_names'], ['id%0n','amount','seq'])
+        self.assertIsNotNone(outs[0].get('contents'))
 
         # キャッシュが作成されていること
         results = self.get_uri(f'/api/v0/folders/{Datum.CACHE_FOLDER_UUID}', self.USER1)
@@ -1037,14 +1212,18 @@ class FrameTestCase(ApiTestCaseBase):
         }
 
         # POST /activitiesを発行する
-        lasts = self.post_uri(f'/api/v0/activities', {'flow':literal_flow_json}, self.USER1)
-        data = lasts['data']
+        result = self.post_uri(f'/api/v0/activities', {'flow':literal_flow_json}, self.USER1)
+        data = result['data']
+        outs = data['outs']
 
         # POST /activitiesの結果を検証する
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['id'], 'f_d2')
-        self.assertEqual(data[0]['label'], 'f_d2')
-        self.assertIsNotNone(data[0]['uuid'])
-        self.assertIsNotNone(data[0]['parent'])
-        self.assertEqual(data[0]['args'], {})
-        self.assertIsNone(data[0].get('contents'))
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
+        self.assertEqual(data['label'], 'LITERAL')
+        self.assertEqual(len(outs), 1)
+        self.assertEqual(outs[0]['id'], 'f_d2')
+        self.assertEqual(outs[0]['label'], 'f_d2')
+        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['parent'])
+        self.assertEqual(outs[0]['args'], {})
+        self.assertIsNone(outs[0].get('contents'))

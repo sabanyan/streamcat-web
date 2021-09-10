@@ -233,6 +233,15 @@ def make_new_vizs():
     activity = execute_flow(flow, vis_args=vis_args)
     return format_vis(activity)
 
+@mod.route('/activities/<activity_uuid>', methods=['GET'])
+@login_required_api
+@api_base
+def fetch_activity(activity_uuid):
+    """
+    指定されたActivityを取得する
+    """
+    return g.factory.data.find_by_uuid(activity_uuid)
+
 @mod.route('/activities', methods=['POST'])
 @login_required_api
 @api_base
@@ -268,14 +277,18 @@ def make_new_acitivity():
         from kskp.store import Vis
         return isinstance(out, Vis)
 
-    return [{'id'    : point.id, 
-             'label' : point.label,
-             'uuid'  : out.uuid,
-             'parent': None if is_vis(out) else out.find_parent().uuid,
-             'args': {'column_names':out.column_names} if is_vis(out) else {},
-             'contents': VisConverter(out) if is_vis(out) else None
-            }
-            for point, out in activity.outs]
+    return {'uuid' : activity.uuid,
+            'type' : activity.type,
+            'label': activity.label,
+            'outs' :  [{'id'    : point.id, 
+                        'label' : point.label,
+                        'uuid'  : out.uuid,
+                        'parent': None if is_vis(out) else out.find_parent().uuid,
+                        'args': {'column_names':out.column_names} if is_vis(out) else {},
+                        'contents': VisConverter(out) if is_vis(out) else None
+                        }
+                        for point, out in activity.outs]
+    }
 
 @mod.route('/schedules', methods=['POST'])
 @login_required_api
@@ -319,11 +332,14 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
                 activity = datum
                 # 実行に失敗した場合、例外を送出する
                 activity.is_success or activity.raise_one()
+                # 実行結果が出力されなかった場合、例外を送出する
+                if activity.count_outs() == 0:
+                     break
                 # 実行に成功した場合、Activityを返す
                 return activity
 
         # Activityを取得できなかった場合
-        raise NoResultsException('実行結果は出力されませんでした')
+        raise NoResultsException('実行結果は出力されませんでした.')
 
     except Exception as e:
         # import traceback
