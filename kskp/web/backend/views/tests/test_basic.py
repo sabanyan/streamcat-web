@@ -61,6 +61,12 @@ class HtmlTestCase(ApiTestCaseBase):
         """
         self.assertRenderTemplate(f'/folders/{Datum.CACHE_FOLDER_UUID}', 'library.html')
 
+    def test_activity_folders(self):
+        """
+        アクティビティフォルダを表示できること
+        """
+        self.assertRenderTemplate(f'/folders/{Datum.ACTIVITY_FOLDER_UUID}', 'library.html')
+
     def test_trashcans(self):
         """
         ゴミ箱を表示できること

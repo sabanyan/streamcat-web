@@ -367,18 +367,22 @@ class FileTestCase(ApiTestCaseBase):
         self.delete_uri('/api/v0/trashes', self.USER1)
 
         # インポートしたフローを実行できること
-        lasts = self.post_uri(f'/api/v0/activities', {'uuid':flow_uuid1}, self.USER1)
-        data = lasts['data']
+        result = self.post_uri(f'/api/v0/activities', {'uuid':flow_uuid1}, self.USER1)
+        data = result['data']
+        outs = data['outs']
 
         # POST /activitiesの結果を検証する
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['id'], 'f1_d1')
-        self.assertEqual(data[0]['label'], 'f1_d1')
-        self.assertIsNotNone(data[0]['uuid'])
-        self.assertIsNotNone(data[0]['parent'])
+        self.assertIsNotNone(data['uuid'])
+        self.assertEqual(data['label'], '半休電車')
+        self.assertEqual(data['type'], 'activity')
+        self.assertEqual(len(outs), 1)
+        self.assertEqual(outs[0]['id'], 'f1_d1')
+        self.assertEqual(outs[0]['label'], 'f1_d1')
+        self.assertIsNotNone(outs[0]['uuid'])
+        self.assertIsNotNone(outs[0]['parent'])
 
         # フローの実行結果が出力されていること
-        result = self.get_uri(f"/api/v0/flows/{data[0]['uuid']}", self.USER1)
+        result = self.get_uri(f"/api/v0/flows/{outs[0]['uuid']}", self.USER1)
         self.assertEqual(result['data']['type'], 'flow')
         self.assertTrue(result['data']['label'].startswith('京阪乗る人おけいはん'))
 
