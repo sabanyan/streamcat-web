@@ -650,7 +650,7 @@ def get_navigation():
     #     navigation['flow_name'] = flow.label
         
     # プロジェクトが指定された場合
-    elif project_uuid is not None:
+    if project_uuid is not None:
         project = g.factory.data.find_by_uuid(project_uuid)
         navigation['project_uuid'] = project.uuid
         navigation['project_name'] = project.label

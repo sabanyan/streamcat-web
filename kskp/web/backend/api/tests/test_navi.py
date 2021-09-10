@@ -55,16 +55,17 @@ class NavigationTestCase(ApiTestCaseBase):
         data = result['data']
         self.assertEqual(data['user_id'], self.USER1.id)
         self.assertEqual(data['user_name'], self.USER1.name)
-        self.assertEqual(data['project_uuid'], root.uuid)
-        self.assertEqual(data['project_name'], root.label)
-        self.assertEqual(data['flow_uuid'], flow_uuid)
-        self.assertEqual(data['flow_name'], test_flow.label)
+        # NOTE: flow_uuidオプションは廃止した
+        # self.assertEqual(data['project_uuid'], root.uuid)
+        # self.assertEqual(data['project_name'], root.label)
+        # self.assertEqual(data['flow_uuid'], flow_uuid)
+        # self.assertEqual(data['flow_name'], test_flow.label)
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
         self.assertEqual(data['version'], KSKP_VER)
         self.assertEqual(data['depo_name'], 'Unit Test')
 
-        project_uuid = data['project_uuid']
+        project_uuid = root.uuid
         # project_uuidあり, flow_uuidなし
         uri = '/api/v0/navigation?project_uuid=' + project_uuid
         result = self.get_uri(uri, self.USER1)
@@ -88,8 +89,9 @@ class NavigationTestCase(ApiTestCaseBase):
         self.assertEqual(data['user_name'], self.USER1.name)
         self.assertEqual(data['project_uuid'], root.uuid)
         self.assertEqual(data['project_name'], root.label)
-        self.assertEqual(data['flow_uuid'], flow_uuid)
-        self.assertEqual(data['flow_name'], test_flow.label)
+        # NOTE: flow_uuidオプションは廃止した
+        # self.assertEqual(data['flow_uuid'], flow_uuid)
+        # self.assertEqual(data['flow_name'], test_flow.label)
         self.assertDictEqual(data['user'], self.USER1.to_json())
         self.assertDictEqual(data['allowlist'], self.USER1.get_allowlist())
         self.assertEqual(data['version'], KSKP_VER)
