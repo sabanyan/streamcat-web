@@ -289,7 +289,7 @@ def make_new_schedule():
     args = req.get('args') or {}
     schedule = parent.create_schedule(req['label'], req['flow'], args=args, trigger=req['trigger'])
     schedule.save()
-    return schedule
+    return schedule.reload()
 
 @mod.route('/schedules/<schedule_uuid>', methods=['DELETE'])
 @login_required_api
