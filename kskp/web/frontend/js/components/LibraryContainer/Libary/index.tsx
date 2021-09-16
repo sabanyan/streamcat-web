@@ -572,6 +572,12 @@ const Library = (_: Props) => {
         const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
         return folderPath.map((path, index): IBreadCrumbsLink => {
             const isCurrent = ((folderPath.length - 1) === index);
+
+            // HTML headのtitleにカレントフォルダ名を設定する
+            if (isCurrent){
+                document.title = path.label;
+            }
+
             if (index === 0) {
                 // ルートはライブラリを指定
                 return {

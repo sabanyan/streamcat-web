@@ -83,6 +83,10 @@ const Preview = (_: Props) => {
         }
         const title = StringUtil.urlDecode(HttpUtil.getURLParam("title"));
 
+        // HTML headのtitleを設定する
+        // アイコンの候補: 👁‍🗨👁
+        document.title = "👁‍🗨" + title;
+
         ModalUtil.emitModal({
             id: Constants.modal.PREVIEW_DATASOURCE,
             visible: true,

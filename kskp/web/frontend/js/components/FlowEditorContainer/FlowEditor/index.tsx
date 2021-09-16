@@ -625,6 +625,11 @@ const FlowEditor = (props: Props) => {
             let allowlist;
             flowRequest.push(APIUtil.get("flows/" + inject_flow_uuid).then((response) => {
                 const json = response.data.data;
+                
+                // HTML headのtitleにフロー名を設定する
+                // アイコンの候補: 📝📃📄🖋🖊🔧🍴📐🔨🔧🛠⚒
+                document.title = "📐" + json.label;
+
                 allowlist = json.allowlist;
                 loadFlowJSON(json)
                 if (json.editLock) {
