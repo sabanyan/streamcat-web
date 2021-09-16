@@ -22,7 +22,7 @@ const MenuList = (props: Props) => {
     let createFile: any, createFolder: any, createProject: any, upload: any, importProject: any
 
     createProject = allowlist.createProject ? <React.Fragment>
-        <FlatButton icon={"icon-add"} onClick={onClickNewProject}>プロジェクトの新規作成</FlatButton>
+        <FlatButton icon={"icon-add"} onClick={onClickNewProject}>プロジェクトの追加</FlatButton>
         <Spacer height={8} />
     </React.Fragment> : null;
 
@@ -33,16 +33,16 @@ const MenuList = (props: Props) => {
     </React.Fragment> : null;
 
     createFolder = allowlist.createFolder ? <React.Fragment>
-        <FlatButton icon={"icon-add"} onClick={onClickNewFolder}>フォルダの作成</FlatButton>
+        <FlatButton icon={"icon-add"} onClick={onClickNewFolder}>フォルダの追加</FlatButton>
         <Spacer height={8} />
     </React.Fragment> : null;
 
     createFile = allowlist.createFile ? <React.Fragment>
-        <FlatButton icon={"icon-add"} onClick={onClickNewFlow}>フローの新規作成</FlatButton>
+        <FlatButton icon={"icon-add"} onClick={onClickNewFlow}>フローの追加</FlatButton>
         <Spacer height={8} />
         <FlatButton icon={"icon-add"} onClick={onClickAddDatabase}>データベースの追加</FlatButton>
         <Spacer height={8} />
-        <FlatButton icon={"icon-add"} onClick={onClickAddRemoteFolder}>リモートフォルダーの追加</FlatButton>
+        <FlatButton icon={"icon-add"} onClick={onClickAddRemoteFolder}>リモートフォルダの追加</FlatButton>
         <Spacer height={8} />
     </React.Fragment> : null;
 
