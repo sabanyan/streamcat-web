@@ -47,7 +47,7 @@ const MenuList = (props: Props) => {
     </React.Fragment> : null;
 
     upload = allowlist.upload ? <React.Fragment>
-        <FlatButton icon={"icon-upload"} onClick={onClickCSVUpload}>CSVファイルアップロード</FlatButton>
+        <FlatButton icon={"icon-upload"} onClick={onClickCSVUpload}>ファイルアップロード</FlatButton>
         <Spacer height={8} />
     </React.Fragment> : null;
 

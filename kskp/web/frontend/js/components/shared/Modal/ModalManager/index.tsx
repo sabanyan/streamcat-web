@@ -95,7 +95,7 @@ export default class ModalManager extends React.Component<Props> {
                             title="文字コードを編集" dynamic={true} done={"編集する"} primary={true}>
                      </Modal>
                      <Modal key={Constants.modal.ADD_DOCUMENT} id={Constants.modal.ADD_DOCUMENT}
-                            title="資料をアップロード" dynamic={true} done={"追加する"} primary={true}>
+                            title="ファイルをアップロード" dynamic={true} done={"追加する"} primary={true}>
                      </Modal>
                      <Modal key={Constants.modal.ADD_FRAME} id={Constants.modal.ADD_FRAME}
                             title="CSVをアップロード" dynamic={true} done={"追加する"} primary={true}>

@@ -351,7 +351,7 @@ const Library = (_: Props) => {
 
     useEffect(() => {
         ModalUtil.registerModal({
-            id: Constants.modal.ADD_FRAME, onClickClose: onClickAddFrameDone
+            id: Constants.modal.ADD_DOCUMENT, onClickClose: onClickAddDocumentDone
         });
         ModalUtil.registerModal({
             id: Constants.modal.IMPORT_FLOW, onClickClose: onClickImportFlowDone
@@ -606,7 +606,7 @@ const Library = (_: Props) => {
         });
     };
 
-    const onClickAddFrameDone = () => {
+    const onClickAddDocumentDone = () => {
         fetchFolder();
     };
 
@@ -866,13 +866,13 @@ const Library = (_: Props) => {
         });
     };
     const onClickCSVUpload = () => {
-        let url = location.protocol + "//" + location.host + "/api/v0/frames";
+        let url = location.protocol + "//" + location.host + "/api/v0/documents";
         ModalUtil.emitModal({
-            id: Constants.modal.ADD_FRAME,
+            id: Constants.modal.ADD_DOCUMENT,
             visible: true,
             done: "アップロードする",
             content: <div>
-                <FileUploader accept={[".csv"]} url={url} parentUUID={inject_folder_uuid} notify={notify} />
+                <FileUploader accept={["text/csv,application/pdf,image/*"]} url={url} parentUUID={inject_folder_uuid} notify={notify} />
             </div>
         });
     };
@@ -959,6 +959,9 @@ const Library = (_: Props) => {
             }
             if (body.type === "flow") {
                 window.open(WebUtil.webURL("/flows/" + body.uuid + dialogOption));
+            }
+            if (body.type === "document") {
+                window.open(WebUtil.webURL("/api/v0/documents/" + body.uuid));
             }
 
         };
@@ -1625,6 +1628,7 @@ const Library = (_: Props) => {
                     endPoint = "frames/";
                     break;
                 case Constants.library.type.document:
+                    endPoint = "documents/"
                     break;
                 case Constants.library.type.folder:
                     endPoint = "folders/";

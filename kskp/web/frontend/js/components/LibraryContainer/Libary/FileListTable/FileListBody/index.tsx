@@ -47,6 +47,8 @@ const FileListBody = (props: Props) => {
                 return "icon-database";
             case "rfolder":
                 return "icon-remote-folder";
+            case "document":
+                return "icon-file-csv";
             default:
                 console.log(type);
                 return null;

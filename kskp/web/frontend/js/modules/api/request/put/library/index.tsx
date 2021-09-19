@@ -16,7 +16,7 @@ const defaultUrl = {
   projects: '/api/v0/projects',
   flows: '/api/v0/flows',
   frame: '/api/v0/frames',
-  documents: '/api/v0/document',
+  documents: '/api/v0/documents',
   databases: '/api/v0/databases',
   remoteFolders: '/api/v0/remote-folders'
 }
