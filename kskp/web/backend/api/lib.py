@@ -487,7 +487,8 @@ def fetch_document(document_uuid):
 @api_base
 def make_new_document():
     """
-    ドキュメントを作成する
+    ファイルストリームからファイルタイプを判定して
+    FrameまたはDocumentを作成する
     """
     if request.files.get('file') is None:
         raise Exception('No file found.')
@@ -496,18 +497,44 @@ def make_new_document():
     if 'label' not in request.form:
         raise Exception('No label is designated.')
 
+    # NOTE: HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される
+    content_type = request.files['file'].content_type
+    maybe_csv = content_type == 'text/csv'
+    
     # 格納先フォルダを取得する
     parent = g.factory.data.find_by_uuid(request.form.get('parent'))
+    # ファイルを作成する
+    new_file = parent.create_file(request.form.get('label'),
+                                  request.files.get('file').stream,
+                                  maybe_csv=maybe_csv)
+    # ファイルをDBに格納する
+    new_file.save()
 
-    # HTTPのContent-Typeからファイルタイプを判定する
-    # (HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される)
-    content_type = request.files['file'].content_type
+# @mod.route('/documents', methods=['POST'])
+# @login_required_api
+# @api_base
+# def make_new_document():
+#     """
+#     ドキュメントを作成する
+#     """
+#     if request.files.get('file') is None:
+#         raise Exception('No file found.')
+#     if 'parent' not in request.form:
+#         raise Exception('No parent is designated.')
+#     if 'label' not in request.form:
+#         raise Exception('No label is designated.')
 
-    new_document = parent.create_document(request.form.get('label'),
-                                          content_type,
-                                          request.files.get('file').stream)
-    # ドキュメントをDBに格納する
-    new_document.save()
+#     # 格納先フォルダを取得する
+#     parent = g.factory.data.find_by_uuid(request.form.get('parent'))
+
+#     # NOTE: HTTPのContent-Typeからファイルタイプを判定しない
+#     # (HTTPのContent-TypeはWebブラウザの判定で殆どの場合はファイル名の拡張子から判定される)
+#     # content_type = request.files['file'].content_type
+
+#     new_document = parent.create_document(request.form.get('label'),
+#                                           request.files.get('file').stream)
+#     # ドキュメントをDBに格納する
+#     new_document.save()
 
 @mod.route('/documents/<document_uuid>', methods=['PUT'])
 @login_required_api
