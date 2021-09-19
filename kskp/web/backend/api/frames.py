@@ -111,9 +111,9 @@ def create_frame():
             # parentとlabel属性があれば新形式のPOST /framesだとみなす
             parent = g.factory.data.find_by_uuid(request.form.get('parent'))
 
-            new_frame = parent.create_frame(request.form.get('label')
-                                            , request.files.get('file').stream)
-            # documentレコードをDBに格納する
+            new_frame = parent.create_frame(request.form.get('label'),
+                                            request.files.get('file').stream)
+            # FrameをDBに格納する
             new_frame.save()
             return jsonify({'success':True, 'data':new_frame})
 
