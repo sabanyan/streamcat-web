@@ -7,16 +7,12 @@
     "start": "npx webpack --config webpack.dll.config.js --env.development && npx webpack --env.development --watch",
     "dll": "npx webpack --config webpack.dll.config.js",
     "build": "npx webpack --config webpack.dll.config.js --env.production && npx webpack --env.production",
+    "lint": "npx eslint .",
     "test": "jest",
     "testwatch": "jest --watchAll",
     "testcoverage": "jest --coverage",
     "flow": "flow",
     "flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text"
-  },
-  "jest": {
-    "moduleNameMapper": {
-      "\\.(css|scss)$": "identity-obj-proxy"
-    }
   },
   "repository": {
     "type": "git",
@@ -28,6 +24,50 @@
     "url": "https://github.com/ksk-anl/kskp-beta/issues"
   },
   "homepage": "https://github.com/ksk-anl/kskp-beta#readme",
+  "jest": {
+    "roots": [
+      "<rootDir>/web/frontend/js"
+    ],
+    "collectCoverageFrom": [
+      "js/**/*.{js,jsx,ts,tsx}",
+      "!js/**/*.d.ts"
+    ],
+    "setupFiles": [
+      "react-app-polyfill/jsdom"
+    ],
+    "testMatch": [
+      "<rootDir>/web/frontend/js/**/__tests__/**/*.{js,jsx,ts,tsx}",
+      "<rootDir>/web/frontend/js/**/*.{spec,test}.{js,jsx,ts,tsx}"
+    ],
+    "testEnvironment": "jsdom",
+    "transform": {
+      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/web/frontend/config/jest/babelTransform.js",
+      "^.+\\.css$": "<rootDir>/web/frontend/config/jest/cssTransform.js",
+      "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)": "<rootDir>/web/frontend/config/jest/fileTransform.js"
+    },
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+      "^.+\\.module\\.(css|sass|scss)$"
+    ],
+    "modulePaths": [],
+    "moduleNameMapper": {
+      "^react-native$": "react-native-web",
+      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
+    },
+    "moduleFileExtensions": [
+      "web.js",
+      "js",
+      "web.ts",
+      "ts",
+      "web.tsx",
+      "tsx",
+      "json",
+      "web.jsx",
+      "jsx",
+      "node"
+    ],
+    "resetMocks": true
+  },
   "devDependencies": {
     "@material-ui/core": "^4.11.0",
     "@types/ajv": "^1.0.0",
@@ -40,11 +80,14 @@
     "@types/validate.js": "^0.11.0",
     "array-move": "^2.1.0",
     "axios": "^0.18.1",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^24.9.0",
     "babel-loader": "^7.1.4",
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-flow": "^6.23.0",
     "babel-preset-react": "^6.24.1",
+    "babel-preset-react-app": "^10.0.0",
     "babel-preset-stage-2": "^6.24.1",
     "bootstrap": "4.1.1",
     "css-loader": "^0.28.11",
@@ -52,9 +95,10 @@
     "flow-bin": "^0.72.0",
     "flow-coverage-report": "^0.6.1",
     "identity-obj-proxy": "^3.0.0",
-    "jest": "^23.5.0",
+    "jest": "^24.9.0",
     "node-sass": "^4.12.0",
     "promise-queue-plus": "^1.2.2",
+    "react-app-polyfill": "^2.0.0",
     "react-hook-form": "^6.8.4",
     "react-i18next": "^10.11.2",
     "react-sortable-hoc": "^1.9.1",
