@@ -29,12 +29,12 @@ export default class ChartUtil {
     return colors[index % 12]
   }
 
-  static jsonToChart (json: {}): { datasets: [], labels: [] } {
+  static jsonToChart (json: {}): { datasets: dataSetType[], labels: string[] } {
 
     let data: {} = json
 
-    let labels: [] = []
-    let datasets: [] = []
+    let labels: string[] = []
+    let datasets: dataSetType[] = []
 
     labels = Object.keys(data).map((key: string, index: number): string => {
       return key
