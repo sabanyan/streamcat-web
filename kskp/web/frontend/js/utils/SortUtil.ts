@@ -1,18 +1,22 @@
+type Sortable = {
+  order: number;
+}
+
 export default class SortUtil { 
-  static getSortedContents(contents:[], compare = (a,b) => SortUtil.defaultCompare(a,b)) : [] {
-    return contents.sort((a, b) => compare(a,b))
+  public static getSortedContents<T extends Sortable>(contents:T[], compare=SortUtil.defaultCompare) {
+    return contents.sort((a, b) => compare(a,b));
   }
 
-  static defaultCompare (a, b) {
+  private static defaultCompare(a:Sortable, b:Sortable) {
     // ある順序の基準において a が b より小
     if (a.order < b.order) {
-      return -1
+      return -1;
     }
     //その順序の基準において a が b より大
     if (a.order > b.order) {
-      return 1
+      return 1;
     }
     // a は b と等しいはず
-    return 0
+    return 0;
   }
 }
