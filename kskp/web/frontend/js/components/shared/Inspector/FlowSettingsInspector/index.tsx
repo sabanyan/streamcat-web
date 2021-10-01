@@ -24,6 +24,9 @@ type FlowSettingsInspectorProps = {
   baseInspectorDisabled: boolean;
 }
 
+/*
+  フローエディタで表示中のフローのInspector
+*/
 class FlowSettingsInspector extends React.Component<any> {
   paramRefs: [] = []
   loading: boolean = false
