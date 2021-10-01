@@ -5,7 +5,7 @@ import { CommandParamType } from 'Types/index'
 import Constants from 'Constants/index'
 import classnames from 'classnames'
 import style from './style.scss'
-import { param } from 'jquery'
+// import { param } from 'jquery'
 
 
 export type Element = {
