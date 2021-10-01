@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "npx webpack --config webpack.dll.config.js --env.development && npx webpack --env.development --watch",
-    "dll": "npx webpack --config webpack.dll.config.js",
+    "dll"  : "npx webpack --config webpack.dll.config.js",
     "build": "npx webpack --config webpack.dll.config.js --env.production && npx webpack --env.production",
-    "lint": "npx eslint .",
-    "test": "jest --maxWorkers=1",
-    "testwatch": "jest --watchAll",
+    "lint" : "npx eslint .",
+    "test" : "jest --maxWorkers=1",
+    "testwatch"   : "jest --watchAll",
+    "testupdate"  : "jest --update-snapshot",
     "testcoverage": "jest --coverage",
     "flow": "flow",
     "flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text"
@@ -49,7 +50,10 @@
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
       "^.+\\.module\\.(css|sass|scss)$"
     ],
-    "modulePaths": [],
+    "modulePaths": [
+      "<rootDir>/web/frontend/js",
+      "<rootDir>/web/frontend/js/components"
+    ],
     "moduleNameMapper": {
       "^react-native$": "react-native-web",
       "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
@@ -102,7 +106,7 @@
     "react-hook-form": "^6.8.4",
     "react-i18next": "^10.11.2",
     "react-sortable-hoc": "^1.9.1",
-    "react-test-renderer": "^16.4.2",
+    "react-test-renderer": "^16.14.0",
     "reapop": "^2.1.0",
     "reapop-theme-wybo": "^1.0.2",
     "redux-devtools-extension": "^2.13.8",
