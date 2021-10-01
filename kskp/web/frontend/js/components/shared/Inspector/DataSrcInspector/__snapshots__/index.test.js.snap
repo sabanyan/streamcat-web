@@ -1,0 +1,121 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DataSrcInspector renderer 1`] = `
+<div
+  className=""
+  style={
+    Object {
+      "width": 400,
+    }
+  }
+>
+  <div
+    className=""
+    onMouseDown={[Function]}
+    onMouseMove={[Function]}
+    onMouseUp={[Function]}
+  />
+  <div
+    className="inspector-container"
+  >
+    <div>
+      
+    </div>
+    <div>
+      <div>
+        <input
+          className=""
+          defaultValue="ライブラリ"
+          onBlur={[Function]}
+          type="text"
+        />
+      </div>
+      <div>
+        <div>
+          <button
+            className=""
+            disabled={false}
+            onClick={[Function]}
+            type="button"
+          >
+            <i
+              className="material-icons "
+              dangerouslySetInnerHTML={
+                Object {
+                  "__html": "delete",
+                }
+              }
+            />
+            <div
+              className="undefined"
+            >
+              削除
+            </div>
+          </button>
+        </div>
+        <div />
+        <div>
+          <div>
+            <label>
+              場所
+            </label>
+          </div>
+          <div>
+            <a
+              href="/folders/undefined"
+              target="_blank"
+            />
+          </div>
+          <div
+            className="kskp-form"
+          >
+            <label>
+              入力
+            </label>
+            <ul
+              className="inPorts"
+            />
+            <label>
+              出力
+            </label>
+            <div>
+              <div>
+                d
+              </div>
+              <div>
+                d
+              </div>
+            </div>
+          </div>
+          <div />
+          <div>
+            <div
+              className="mb-12px"
+            >
+              <div>
+                <div>
+                  <div>
+                    ファイルを指定する
+                  </div>
+                  <div>
+                    <div />
+                  </div>
+                </div>
+                <div>
+                  <a
+                    href="#!"
+                    onClick={[Function]}
+                    target="_blank"
+                  >
+                    ライブラリ上のファイルを選択する
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
