@@ -1,5 +1,5 @@
-import {UserRole} from '../types/index';
-import Constants from '../constants/index';
+import {UserRole} from 'Types/index';
+import Constants from 'Constants/index';
 export default class AdminUtil {
     static getUserStatus = (status: string): string => {
         switch (status) {
