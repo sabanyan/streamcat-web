@@ -1,227 +1,228 @@
-import * as React from 'react'
-import style from '../style.scss'
-import { AddButton, DropDownList } from 'Shared/Input'
-import { CommandStepModel, DataFrameStepModel, FlowModel, SubFlowStepModel } from 'Model/index'
-import CommandModel from 'Model/Command/CommandModel'
-import { FlowUtil, ModalUtil, StateUtil } from 'Utils/index'
-import { StepModelType } from 'Types/index'
-import Constants from 'Constants/index'
-import { SortableContainer, SortableElement } from 'react-sortable-hoc'
+import * as React from "react";
+import style from "../style.scss";
+import {AddButton, DropDownList} from "Shared/Input";
+import {CommandStepModel, DataFrameStepModel, FlowModel, SubFlowStepModel} from "Model/index";
+import {FlowUtil, ModalUtil, StateUtil} from "Utils/index";
+import Constants from "Constants/index";
+import {SortableContainer, SortableElement, SortEndHandler} from "react-sortable-hoc";
+import {StepModelType} from "Types/index";
 
-type InOutConnectorProps = {
-  selectedStep: any;
-  updateStep: Function;
-  nodes: [];
-  sortStepSrcEnd: any;
-  onChangeInEdge: Function;
-  onChangeOutEdge: Function;
-  selectedSubFlow?: FlowModel;
-  disabled?: boolean;
+type Props = {
+    // TODO: 型指定をしたいがエラーになる箇所があるので保留する
+    // selectedStep: SubFlowStepModel | CommandStepModel;
+    selectedStep: any;
+    updateStep: Function;
+    nodes: [];
+    sortStepSrcEnd: SortEndHandler;
+    onChangeInEdge: Function;
+    onChangeOutEdge: Function;
+    // FIXIT: 使用していないプロパティ?
+    // selectedSubFlow: FlowModel | null;
+    disabled?: boolean;
 }
 
-class InOutConnector extends React.Component<InOutConnectorProps>{
+const InOutConnector = (props: Props) => {
 
-  onChangeInEdge(e, data, label) {
-    const { selectedStep } = this.props
-    let newSelectedStep = StateUtil.deepCopy(selectedStep)
-    //labelにポート名
-    //data.objectにデータフレームが格納されている
-    if (data.object) {
-      //ノードが選択されたとき
-      const dataSource: DataFrameStepModel = data.object
-      newSelectedStep.srcs[label] = dataSource.id
-      this.props.updateStep(newSelectedStep)
-    } else {
-      //「選択してください」が選択されたときはノードのつながりを削除する
-      const dataSource: DataFrameStepModel = data.object
-      newSelectedStep.srcs[label] = null
-      this.props.updateStep(newSelectedStep)
-    }
-  }
+    const onChangeInEdge = (e, data, label) => {
+        const {selectedStep, updateStep} = props;
+        let newSelectedStep = StateUtil.deepCopy(selectedStep);
+        //labelにポート名
+        //data.objectにデータフレームが格納されている
+        if (data.object) {
+            //ノードが選択されたとき
+            const dataSource: DataFrameStepModel = data.object;
+            newSelectedStep.srcs[label] = dataSource.id;
+            updateStep(newSelectedStep);
+        } else {
+            //「選択してください」が選択されたときはノードのつながりを削除する
+            newSelectedStep.srcs[label] = null;
+            updateStep(newSelectedStep);
+        }
+    };
 
-  onClickAddEdge(step) {
-    ModalUtil.registerModal({
-      id: Constants.modal.CONFIRM, onClickDone: () => {
-        const nextIndex = step.getInPortIndex() + 1
-        const newStep = StateUtil.deepCopy(step)
-        newStep.addInPort("*" + nextIndex)
-        this.props.updateStep(newStep)
-        ModalUtil.closeModal(Constants.modal.CONFIRM)
-      },
-    })
-    ModalUtil.emitModal({
-      id: Constants.modal.CONFIRM,
-      visible: true,
-      done: '追加する',
-      content: <div>
-        入力を追加しますか？
-      </div>,
-    })
-  }
+    const onClickAddEdge = (step) => {
+        const {updateStep} = props;
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM, onClickDone: () => {
+                const nextIndex = step.getInPortIndex() + 1;
+                const newStep = StateUtil.deepCopy(step);
+                newStep.addInPort("*" + nextIndex);
+                updateStep(newStep);
+                ModalUtil.closeModal(Constants.modal.CONFIRM);
+            }
+        });
+        ModalUtil.emitModal({
+            id: Constants.modal.CONFIRM,
+            visible: true,
+            done: "追加する",
+            content: <div>
+                入力を追加しますか？
+            </div>
+        });
+    };
 
-  deletePort(step: StepModelType, portName: string) {
-    ModalUtil.registerModal({
-      id: Constants.modal.CONFIRM, onClickDone: () => {
-        const newStep = StateUtil.deepCopy(step)
-        newStep.deleteInPort(portName)
-        this.props.updateStep(newStep)
-        ModalUtil.closeModal(Constants.modal.CONFIRM)
-      },
-    })
-    ModalUtil.emitModal({
-      id: Constants.modal.CONFIRM,
-      visible: true,
-      done: '削除する',
-      danger: true,
-      content: <div>
-        {portName} の入力を削除しますか？
-      </div>,
-    })
-  }
+    const deletePort = (step: StepModelType, portName: string) => {
+        const {updateStep} = props;
+        ModalUtil.registerModal({
+            id: Constants.modal.CONFIRM, onClickDone: () => {
+                const newStep = StateUtil.deepCopy(step);
+                newStep.deleteInPort(portName);
+                updateStep(newStep);
+                ModalUtil.closeModal(Constants.modal.CONFIRM);
+            }
+        });
+        ModalUtil.emitModal({
+            id: Constants.modal.CONFIRM,
+            visible: true,
+            done: "削除する",
+            danger: true,
+            content: <div>
+                {portName} の入力を削除しますか？
+            </div>
+        });
+    };
 
-  render() {
-    const { nodes, selectedStep, disabled } = this.props
+    const {nodes, selectedStep, disabled} = props;
     //すべてのデータフレーム先をリスト化
 
-    let dataFrameOnlyNodes: [DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes)
+    let dataFrameOnlyNodes: [DataFrameStepModel] = FlowUtil.getAllDataFrame(nodes);
 
-    let dataSourceOptions: any = []
+    let dataSourceOptions: { value: string | null | undefined, label: string | null | undefined, object: DataFrameStepModel }[] = [];
 
     dataFrameOnlyNodes.forEach((dataFrame) => {
-      dataSourceOptions.push({ value: dataFrame.id, label: dataFrame.getLabel(), object: dataFrame })
-    })
+        dataSourceOptions.push({value: dataFrame.id, label: dataFrame.getLabel(), object: dataFrame});
+    });
 
-    let command: CommandModel
-    let inEdgeSelect: any[] = []
-    let addEdgeContainer
+    let inEdgeSelect: React.ReactNode[] = [];
+    let addEdgeContainer;
     if (selectedStep instanceof SubFlowStepModel || selectedStep instanceof CommandStepModel) {
 
-      addEdgeContainer = (selectedStep.addableInPort()) ? <AddButton onClick={() => this.onClickAddEdge(selectedStep)}>入力を追加する</AddButton> : null
-      selectedStep.srcsOrder.forEach((key, index) => {
+        addEdgeContainer = (selectedStep.addableInPort()) ?
+            <AddButton onClick={() => onClickAddEdge(selectedStep)}>入力を追加する</AddButton> : null;
+        selectedStep.srcsOrder.forEach((key, index) => {
 
-        let dataFrameId: string
-        dataFrameId = selectedStep.srcs[key]
-        let portName = key
+            let dataFrameId: string;
+            dataFrameId = selectedStep.srcs[key];
+            let portName = key;
 
-        const actionProps = (selectedStep.addableInPort()) ? {
-          actionLabel: "削除",
-          onClickAction: () => this.deletePort(selectedStep, portName)
-        } : null
+            const actionProps = (selectedStep.addableInPort()) ? {
+                actionLabel: "削除",
+                onClickAction: () => deletePort(selectedStep, portName)
+            } : null;
 
-        const item = <div key={index} className={style.param}>
-          <DropDownList disabled={disabled}
-            key={"in_edge"}
-            onChange={(e, data, label) => this.onChangeInEdge(e, data, label)}
-            defaultValue={dataFrameId}
-            list={dataSourceOptions}
-            label={portName}
-            hiddenNoSelect={false}
-            {...actionProps}
-          ></DropDownList>
-
-        </div>
-        inEdgeSelect.push(item)
-      })
+            const item = <div key={index} className={style.param}>
+                <DropDownList disabled={disabled}
+                              key={"in_edge"}
+                              onChange={(e, data, label) => onChangeInEdge(e, data, label)}
+                              defaultValue={dataFrameId}
+                              list={dataSourceOptions}
+                              label={portName}
+                              hiddenNoSelect={false}
+                              {...actionProps}
+                />
+            </div>;
+            inEdgeSelect.push(item);
+        });
     } else if (selectedStep.srcs && selectedStep.flow) { // for datasource & datadst
-      let srcs = selectedStep.srcs;
-      selectedStep.flow.ports[0].forEach((port) => {
-        let key= port.nodeId;
-        if (!srcs[key]) {
-          srcs[key] = null;
-        }
-      });
-      Object.keys(srcs).forEach((key, index) => {
-        const item = <div key={index} className={style.param}>
-          <DropDownList disabled={disabled}
-            key={index}
-            onChange={(e, data, label) => this.onChangeInEdge(e, data, label)}
-            defaultValue={selectedStep.srcs[key]}
-            list={dataSourceOptions}
-            label={key}
-            hiddenNoSelect={false}
-          ></DropDownList>
-        </div>
-        inEdgeSelect.push(item)
-      })
+        let srcs = selectedStep.srcs;
+        selectedStep.flow.ports[0].forEach((port) => {
+            let key= port.nodeId;
+            if (!srcs[key]) {
+                srcs[key] = null;
+            }
+        });
+        Object.keys(srcs).forEach((key, index) => {
+            const item = <div key={index} className={style.param}>
+                <DropDownList disabled={disabled}
+                key={index}
+                onChange={(e, data, label) => onChangeInEdge(e, data, label)}
+                defaultValue={selectedStep.srcs[key]}
+                list={dataSourceOptions}
+                label={key}
+                hiddenNoSelect={false}
+                ></DropDownList>
+            </div>
+            inEdgeSelect.push(item);
+        });
     }
 
-    const SortableItem = SortableElement(({ value }) => <li>{value}</li>);
+    const {sortStepSrcEnd} = props;
+    const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 
-    const SortableList = SortableContainer(({ items }) => {
-      return (
-        <ul className="inPorts">
-          {items.map((value, index) => (
-            <SortableItem key={`item-${index}`} index={index} value={value} />
-          ))}
-        </ul>
-      );
+    const SortableList = SortableContainer(({items}) => {
+        return (
+            <ul className="inPorts">
+                {items.map((value, index) => (
+                    <SortableItem key={`item-${index}`} index={index} value={value} />
+                ))}
+            </ul>
+        );
     });
 
 
-
-    let output: any = null
+    let output: React.ReactNode = null;
     if (selectedStep instanceof SubFlowStepModel) {
-      const subflow = selectedStep.getCommand()
-      if (subflow) {
-        const subflowOutPorts = subflow.getOutPorts()
-        output = Object.keys(selectedStep.dsts).map((key, index) => {
-          let dataFrameId: string
-          dataFrameId = selectedStep.dsts[key]
-          const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
-          const subflowOutPort = subflowOutPorts.find((outPort) => {
-            return (outPort.nodeId == key)
-          })
-          return <div key={index} className={style.outPort_}>
-            <div className={style.outPort_Port}>
-              {(subflowOutPort) ? subflowOutPort.label : null}
-            </div>
-            <div className={style.outPort_Node}>
-              {node.getLabel()}
-            </div>
-          </div>
-        })
-      }
+        const subflow = selectedStep.getCommand();
+        if (subflow) {
+            const subflowOutPorts = subflow.getOutPorts();
+            output = Object.keys(selectedStep.dsts).map((key, index) => {
+                let dataFrameId: string;
+                dataFrameId = selectedStep.dsts[key];
+                const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
+                const subflowOutPort = subflowOutPorts.find((outPort) => {
+                    return (outPort.nodeId == key);
+                });
+                return <div key={index} className={style.outPort_}>
+                    <div className={style.outPort_Port}>
+                        {(subflowOutPort) ? subflowOutPort.label : null}
+                    </div>
+                    <div className={style.outPort_Node}>
+                        {node.getLabel()}
+                    </div>
+                </div>;
+            });
+        }
     } else if (selectedStep instanceof CommandStepModel) {
-      const commandStep = selectedStep
-      const commandStepDsts = commandStep.dsts
-      output = Object.keys(commandStepDsts).map((key, index) => {
-        let dataFrameId: string
-        dataFrameId = commandStepDsts[key]
-        const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
-        return <div key={index} className={style.outPort_}>
-          <div className={style.outPort_Port}>
-            {key}
-          </div>
-          <div className={style.outPort_Node}>
-            {node.getLabel()}
-          </div>
-        </div>
-      })
-    } else if (selectedStep.dsts) {
-      output = Object.keys(selectedStep.dsts).map((key, index) => {
-        let dataFrameId: string = selectedStep.dsts[key]
-        const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
-        return <div key={index} className={style.outPort_}>
-          <div className={style.outPort_Port}>
-            {key}
-          </div>
-          <div className={style.outPort_Node}>
-            {node.label}
-          </div>
-        </div>
-      })
+        const commandStep = selectedStep;
+        const commandStepDsts = commandStep.dsts;
+        output = Object.keys(commandStepDsts).map((key, index) => {
+            let dataFrameId: string;
+            dataFrameId = commandStepDsts[key];
+            const node = FlowUtil.getNodeFromID(nodes, dataFrameId);
+            return <div key={index} className={style.outPort_}>
+                <div className={style.outPort_Port}>
+                    {key}
+                </div>
+                <div className={style.outPort_Node}>
+                    {node.getLabel()}
+                </div>
+            </div>;
+        });
+    } else if(selectedStep.dsts) {
+        output = Object.keys(selectedStep.dsts).map((key, index) => {
+            let dataFrameId: string = selectedStep.dsts[key]
+            const node = FlowUtil.getNodeFromID(nodes, dataFrameId)
+            return <div key={index} className={style.outPort_}>
+                <div className={style.outPort_Port}>
+                    {key}
+                </div>
+                <div className={style.outPort_Node}>
+                    {node.label}
+                </div>
+            </div>;
+        });
     }
 
+    // FIXIT: React Hooks対応の後に、className={'kskp-form'}が出力されない、classnamesの不具合?
+    // https://github.com/JedWatson/classnames/issues/115
+    return <div className={'kskp-form'}>
+            <label>入力</label>
+            <SortableList items={inEdgeSelect} onSortEnd={sortStepSrcEnd} distance={1} />
+            {addEdgeContainer}
+            <label>出力</label>
+            {output}
+    </div>;
+};
 
-    return <div className="kskp-form">
-      <label>入力</label>
-      <SortableList items={inEdgeSelect} onSortEnd={this.props.sortStepSrcEnd} distance={1} />
-      {addEdgeContainer}
-      <label>出力</label>
-      {output}
-    </div>
-  }
 
-}
-
-export default InOutConnector
+export default InOutConnector;

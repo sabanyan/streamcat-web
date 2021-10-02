@@ -1,4 +1,5 @@
 import React from 'react'
+import {SortEndHandler} from "react-sortable-hoc";
 import {
   CommandInspector,
   DataFrameInspector,
@@ -40,7 +41,7 @@ type InspectorProps = {
   addHistory: Function;
   deleteCache: Function;
   updateStep: Function;
-  sortStepSrcEnd: Function;
+  sortStepSrcEnd: SortEndHandler;
   resizeInspector: Function;
   updateLastSavedFlow: Function;
   addFlowVariableHidden: boolean;

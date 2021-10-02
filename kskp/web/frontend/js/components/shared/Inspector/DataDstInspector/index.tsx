@@ -1,5 +1,5 @@
 import React, { Fragment } from 'react';
-
+import {SortEndHandler} from "react-sortable-hoc";
 import { flowEditorReducerInitialState } from 'Modules/flowEditor';
 import { GraphUtil, StateUtil, ModalUtil, HttpUtil } from 'Utils/index';
 import { BaseInspector, ParamsForm, InOutConnector } from 'Shared/Inspector'
@@ -20,7 +20,7 @@ type Props = {
   selected_step_ids: string[];
   baseInspectorDisabled: boolean;
 
-  sortStepSrcEnd: Function;
+  sortStepSrcEnd: SortEndHandler;
   updateStep: Function;
   addHistory: Function;
   selectSteps: Function;

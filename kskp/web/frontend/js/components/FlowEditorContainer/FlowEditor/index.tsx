@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {SortEndHandler} from "react-sortable-hoc";
 import { PaperScroller } from 'FlowEditorContainer/PaperScroller';
 import { Edge, Selector, Step } from 'Shared/SVG';
 import ToolBar from 'FlowEditorContainer/ToolBar/Core';
@@ -178,7 +179,7 @@ const FlowEditor = (props: Props) => {
     // const addNote = useCallback((x: number, y: number) => {
     //     dispatch(addNoteAction(x, y));
     // },[]);
-    const sortStepSrcEnd = useCallback((detail: {}, mouseEvent: {}) => {
+    const sortStepSrcEnd = useCallback<SortEndHandler>((detail: {}, mouseEvent: {}) => {
         // mouseEventは未使用
         dispatch(sortStepSrcEndAction(detail, mouseEvent));
     }, []);
