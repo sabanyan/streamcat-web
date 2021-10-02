@@ -39,7 +39,7 @@ exports[`DataSrcInspector renderer 1`] = `
             type="button"
           >
             <i
-              className="material-icons "
+              className="material-icons"
               dangerouslySetInnerHTML={
                 Object {
                   "__html": "delete",

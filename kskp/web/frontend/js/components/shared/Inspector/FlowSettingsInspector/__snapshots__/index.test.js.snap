@@ -49,7 +49,7 @@ exports[`FlowSettingsInspector renderer 1`] = `
         onClick={[Function]}
       >
         <i
-          className="material-icons "
+          className="material-icons"
         >
           add_circle_outline
         </i>
