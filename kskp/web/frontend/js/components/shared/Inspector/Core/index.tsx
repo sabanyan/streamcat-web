@@ -69,6 +69,7 @@ class Inspector extends React.Component<InspectorProps> {
         property = <FlowSettingsInspector
           mast={mast}
           selected_step_ids={selected_step_ids}
+          nodes={flow.nodes}
           addStep={addStep}
           addDataSrcStep={addDataSrcStep}
           addDataDstStep={addDataDstStep}
