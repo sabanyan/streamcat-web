@@ -26,7 +26,7 @@ type InspectorProps = {
   mast: MastType;
   selected_tab_id: string;
   selected_data_source_detail: DataFrameDetailType;
-  lockUUID: any;
+  lockUUID: string | undefined;
   updateDataFrameDetail: Function
   addStep: Function;
   addDataSrcStep: Function;
