@@ -44,7 +44,7 @@ class Resizer extends React.Component<Props, State> {
 
   }
 
-  onMouseDown (e: Event) {
+  onMouseDown (e: React.MouseEvent<HTMLDivElement,MouseEvent>) {
     const {resizeInspector} = this.props
 
     this.setState({
@@ -64,13 +64,13 @@ class Resizer extends React.Component<Props, State> {
     })
     
     //mousemoveイベントでハンドリング
-    mouseMoveEvent = (e: MouseEvent) => this.onMouseMove(e)
-    mouseUpEvent = (e: MouseEvent) => this.onMouseUp(e)
+    mouseMoveEvent = (e: React.MouseEvent<HTMLDivElement,MouseEvent>) => this.onMouseMove(e)
+    mouseUpEvent = (e: React.MouseEvent<HTMLDivElement,MouseEvent>) => this.onMouseUp(e)
     document.addEventListener('mousemove', mouseMoveEvent, false)
     document.addEventListener('mouseup', mouseUpEvent, false)
   }
 
-  onMouseUp (e: Event) {
+  onMouseUp (e: React.MouseEvent<HTMLDivElement,MouseEvent>) {
     this.setState({
       isDragging: false,
       willClosed: false,
@@ -79,13 +79,13 @@ class Resizer extends React.Component<Props, State> {
     document.removeEventListener('mouseup', mouseUpEvent)
   }
 
-  onMouseMove (e: MouseEvent) {
+  onMouseMove (e: React.MouseEvent<HTMLDivElement,MouseEvent>) {
     if (this.state.isDragging) {
       this.onResize(e)
     }
   }
 
-  onResize (e: MouseEvent) {
+  onResize (e: React.MouseEvent<HTMLDivElement,MouseEvent>) {
     const {resizeInspector} = this.props
     const zeroPoint = window.innerWidth - Constants.default.inspector.width
     const closedPoint = window.innerWidth - Constants.default.inspector.width +
