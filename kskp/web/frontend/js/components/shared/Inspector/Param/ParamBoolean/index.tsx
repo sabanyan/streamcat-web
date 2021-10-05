@@ -1,66 +1,60 @@
-import React from 'react'
-import { CommandParamType } from 'Types/index'
-import style from './style.scss'
+import React from 'react';
+import {CommandParamType} from 'Types/index';
+import style from './style.scss';
 
 type Props = {
-  label?      :string;
-  param       :CommandParamType;
-  disabled?   :boolean;
-  value?      :boolean;
-  // event
-  onChange?   :Function; // onChange(e, param)
+    label?: string;
+    param: CommandParamType;
+    disabled?: boolean;
+    value?: boolean;
+    // event
+    onChange?: Function; // onChange(e, param)
 }
 
-export default class ParamBoolean extends React.Component<Props> {
+const ParamBoolean = (props: Props) => {
 
-  constructor (props: Props) {
-    super(props)
-  }
+    const _onChange = (e) => {
+        try {
+            const {param, onChange} = props;
+            let value = e.currentTarget.checked;
+            if (onChange) onChange(e, param, value);
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
-  onChange(e) {
-    try {
-        const {param, onChange} = this.props
-        let value = e.currentTarget.checked
-        if (onChange) onChange(e, param, value)
-    } catch(e) {
-        console.log(e)
-    }
-  }
+    const renderDescription = () => {
+        let result = undefined;
+        try {
+            const {param} = props;
+            if (param.description) {
+                result = param.description;
+            }
+        } catch (e) {
+            console.log(e);
+        }
 
-  renderDescription() {
-    let result = undefined
-    try {
-      const {param} = this.props
-      if (param.description) {
-        result = param.description
-      }
-    } catch(e) {
-      console.log(e)
-    }
+        return <p className={style.description}>
+            {result}
+        </p>;
+    };
 
-    return <p className={style.description}>
-      {result}
-    </p>
-  }  
-
-  render () {
     //FIXIT: 将来、onBuildが要らなくなったら、onBuildは消した方がいいかも
-    const {label,param, disabled, value} = this.props
-    const {onChange} = this.props
+    const {label, param, disabled, value} = props;
 
-    const isDisabled = (disabled) ? true : false
-    const isChecked = (value) ? true : false
-    let labelContainer = (label) ? <React.Fragment>{label}{this.renderDescription()}</React.Fragment> : null
- 
+    // FIXIT: なぜチェックボックスのラベルを表示ここで表示させない?
+    let labelContainer = (label) ? <React.Fragment>{label}{renderDescription()}</React.Fragment> : null;
+
     return <React.Fragment>
-      <input 
-        name={param.name}
-        className={style.checkbox}
-        data-paramtype={param.type}
-        type="checkbox"
-        checked={isChecked}
-        disabled={isDisabled}
-        onChange={(e) => this.onChange(e)} />
+        <input
+            name={param.name}
+            className={style.checkbox}
+            data-paramtype={param.type}
+            type="checkbox"
+            checked={value}
+            disabled={disabled}
+            onChange={(e) => _onChange(e)} />
     </React.Fragment>
-  }
-}
+};
+
+export default ParamBoolean;

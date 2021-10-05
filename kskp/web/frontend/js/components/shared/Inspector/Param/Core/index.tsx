@@ -8,13 +8,11 @@ type Props = {
     }
 }
 
-export default class Param extends React.Component<Props> {
+const Param = (props: Props) => {
+    const getLabel = () => {
+        const {param} = props;
+        return (param.label) ? param.label : param.name;
+    };
+};
 
-    constructor (props: Props) {
-        super(props);
-    }
-
-    getLabel () {
-        return (this.props.param.label) ? this.props.param.label : this.props.param.name;
-    }
-}
+export default Param;
