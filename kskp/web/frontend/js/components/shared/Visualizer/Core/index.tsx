@@ -234,7 +234,7 @@ export default class Visualizer extends React.Component<Props, State> {
     return <div>
       {this.renderContents()}
       <PreviewInspector headers={this.state.headers}
-        onApply={(args) => this.apply(args)}
+        onApply={(args: {}) => this.apply(args)}
         params={visualize.params}
         args={this.state.args}
         groups={visualize.groups}
