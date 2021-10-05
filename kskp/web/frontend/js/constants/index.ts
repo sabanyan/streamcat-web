@@ -134,7 +134,7 @@ const Constants = {
   },
   format: {
     date: 'YYYY-MM-DD',
-    dateTime: 'YYYY-MM-DD HH:mm:ss'
+    dateTime: 'YYYY-MM-DD HH:mm'
   },
   event: {
     ON_LOAD_NAVIGATION: 'onLoadNavigation',
