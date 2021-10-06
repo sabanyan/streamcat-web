@@ -31,33 +31,6 @@ const FlowSettingsInspector = (props: Props) => {
 
     const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
-    /*
-    const onHide = () => {
-        const {updateFlow} = props;
-        const {flow}: { flow: FlowModelProps } = props;
-        if (descriptionRef && descriptionRef.current) {
-            flow.description = descriptionRef.current.value;
-            flow.params = getCurrentParams();
-            updateFlow(flow);
-        }
-    };
-    */
-
-    /*
-    const getCurrentParams = () => {
-        //現在入力中のすべてのParamsを取得する
-        let params: SubFlowParamType[] = [];
-        paramRefs.forEach(elem => {
-            let param: SubFlowParamType = {};
-            param["label"] = elem.value;
-            param["name"] = elem.value;
-            param["type"] = "string";
-            params.push(param);
-        });
-        return params;
-    };
-    */
-
     const onBlurTitle = (e: React.SyntheticEvent<HTMLInputElement>) => {
         let {flow} = props;
         flow.label = e.currentTarget.value;
@@ -172,7 +145,7 @@ const FlowSettingsInspector = (props: Props) => {
     }
 
     return <BaseInspector key={flow.uuid} header={""} label={flow.label}
-                          onBlurTitle={(e) => onBlurTitle(e)} onHide={() => {}}
+                          onBlurTitle={(e) => onBlurTitle(e)}
                           disabled={baseInspectorDisabled}>
         <textarea className={'form-control mb-8px'} placeholder={"フローの説明"} ref={descriptionRef}
                   defaultValue={flow.description} rows={8}

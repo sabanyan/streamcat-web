@@ -34,7 +34,7 @@ const CommandInspector = (props: Props) => {
     useEffect(() => {
         //データフレームの詳細を取得する
         const selected_step: StepModelType = getSelectedStep();
-        setSelectedSubFlow(null);
+        // setSelectedSubFlow(null);
         if (selected_step instanceof CommandStepModel) {
             const uuid = (selected_step as any).uuid;
             if (selected_step.type === Constants.step.type.subflow && uuid) {
