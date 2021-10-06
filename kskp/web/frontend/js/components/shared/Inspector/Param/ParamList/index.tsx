@@ -1,14 +1,14 @@
 import * as React from 'react'
-import { CommandParamType } from 'Types/index'
-import { AddButton, Button } from 'Shared/Input'
+import {CommandParamType} from 'Types/index'
+import {AddButton, Button} from 'Shared/Input'
 // 循環参照されるため一個一個Importする（ParamBoolean, ParamString, ParamSelect)
-import { default as ParamBoolean } from '../ParamBoolean/index'
-import { default as ParamString } from '../ParamString/index'
-import { default as ParamSelect } from '../ParamSelect/index'
+import {default as ParamBoolean} from '../ParamBoolean/index'
+import {default as ParamString} from '../ParamString/index'
+import {default as ParamSelect} from '../ParamSelect/index'
 import Constants from 'Constants/index'
-import { ParamUtil, ModalUtil, StateUtil } from 'Utils/index'
+import {ModalUtil, StateUtil} from 'Utils/index'
 import style from './style.scss'
-import { SortableContainer, SortableElement } from 'react-sortable-hoc'
+import {SortableContainer, SortableElement} from 'react-sortable-hoc'
 import arrayMove from 'array-move'
 import classnames from 'classnames'
 
@@ -27,15 +27,15 @@ type Props = {
 
 type State = {
     currentValue: Array<CommandParamType>;
-    addable: boolean,
-    deletable: boolean,
-    draggable: boolean,
+    addable: boolean;
+    deletable: boolean;
+    draggable: boolean;
     helperTargetedInput: any;
 }
 
-const SortableItem = SortableElement(({ value }) => <li>{value}</li>);
+const SortableItem = SortableElement(({value}) => <li>{value}</li>);
 const SortableList = SortableContainer(
-    ({ items }) => {
+    ({items}) => {
         return (
             <ul>
                 {items.map((value, index) => (
@@ -50,57 +50,57 @@ const SortableList = SortableContainer(
 export default class ParamList extends React.Component<Props, State>{
 
     constructor(props: Props) {
-        super(props)
+        super(props);
     }
 
     componentWillMount() {
-        const { param } = this.props
+        const {param} = this.props;
 
-        let isAddable = (param.options && 'visiable_button_add' in param.options && param.options.visiable_button_add === false) ? false : true
-        let isDeletable = (param.options && 'visiable_button_delete' in param.options && param.options.visiable_button_delete === false) ? false : true
-        let isDraggable = (param.options && 'draggable' in param.options && param.options.draggable === false) ? false : true
+        let isAddable = (param.options && 'visiable_button_add' in param.options && param.options.visiable_button_add === false) ? false : true;
+        let isDeletable = (param.options && 'visiable_button_delete' in param.options && param.options.visiable_button_delete === false) ? false : true;
+        let isDraggable = (param.options && 'draggable' in param.options && param.options.draggable === false) ? false : true;
 
         this.setState({
             currentValue: this.props.value,
             addable: isAddable,
             deletable: isDeletable,
             draggable: isDraggable
-        })
+        });
     }
 
-    onSortEnd({ oldIndex, newIndex, collection, isKeySorting }, e) {
+    onSortEnd({oldIndex, newIndex, collection, isKeySorting}, e) {
         try {
-            const { param, onChange } = this.props
-            let newValue = arrayMove(this.state.currentValue, oldIndex, newIndex)
+            const {param, onChange} = this.props;
+            let newValue = arrayMove(this.state.currentValue, oldIndex, newIndex);
             this.setState({
                 currentValue: newValue
             }, () => {
-                onChange(e, param, this.state.currentValue)
-            })
+                onChange(e, param, this.state.currentValue);
+            });
         } catch (e) {
-            console.log(e)
+            console.log(e);
         }
     }
 
     onDeleteElement(e, param, argIndex) {
         try {
-            e.preventDefault()
-            const { onChange } = this.props
+            e.preventDefault();
+            const {onChange} = this.props;
             if (this.state.currentValue.length <= 1) {
-                return
+                return;
             }
-            let newValue = this.state.currentValue.filter((element, index) => index !== argIndex)
+            let newValue = this.state.currentValue.filter((element, index) => index !== argIndex);
             ModalUtil.registerModal({
                 id: Constants.modal.CONFIRM,
                 onClickDone: () => {
                     this.setState({
                         currentValue: newValue
                     }, () => {
-                        onChange(e, param, newValue)
-                    })
-                    ModalUtil.closeModal(Constants.modal.CONFIRM)
-                },
-            })
+                        onChange(e, param, newValue);
+                    });
+                    ModalUtil.closeModal(Constants.modal.CONFIRM);
+                }
+            });
             ModalUtil.emitModal({
                 id: Constants.modal.CONFIRM,
                 visible: true,
@@ -108,32 +108,32 @@ export default class ParamList extends React.Component<Props, State>{
                 danger: true,
                 content: <div>
                     削除しますか？
-                </div>,
-            })
+                </div>
+            });
         } catch (e) {
-            console.log(e)
+            console.log(e);
         }
     }
 
     onChangeContent(e, element: CommandParamType, elementValue: any, argIndex: number) {
         try {
-            const { param, onChange } = this.props
-            let arg = this.state.currentValue
-            arg[argIndex][element.name] = elementValue
+            const {param, onChange} = this.props;
+            let arg = this.state.currentValue;
+            arg[argIndex][element.name] = elementValue;
             this.setState({
                 currentValue: arg
             }, () => {
-                onChange(e, param, this.state.currentValue)
-            })
+                onChange(e, param, this.state.currentValue);
+            });
         } catch (e) {
-            console.log(e)
+            console.log(e);
         }
     }
 
     getParamElement(param: CommandParamType, disabled: boolean = false, label?: string, value?: any, onChange?: Function, headers?: string[]) {
-        const { helperTargetedInput, setHelperTargetedInput, helper } = this.props;
+        const {helperTargetedInput, setHelperTargetedInput, helper} = this.props;
 
-        let paramElement: any
+        let paramElement: any;
         try {
             switch (param.type) {
                 case Constants.param.type.number:
@@ -141,51 +141,51 @@ export default class ParamList extends React.Component<Props, State>{
                     paramElement = <ParamString
                         label={label} param={param} disabled={disabled} value={value} helperTargetedInput={helperTargetedInput}
                         helper={helper}
-                        setHelperTargetedInput={setHelperTargetedInput} onChange={onChange} />
-                    break
+                        setHelperTargetedInput={setHelperTargetedInput} onChange={onChange} />;
+                    break;
                 case Constants.param.type.boolean:
-                    paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
-                    break
+                    paramElement = <ParamBoolean label={label} param={param} disabled={disabled} value={value} onChange={onChange} />;
+                    break;
                 case Constants.param.type.select:
-                    paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
-                    break
+                    paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />;
+                    break;
                 case Constants.param.type.column:
                     //カラム情報を付与
                     param.options = {
                         labels: headers,
                         values: headers,
                         multiple: (param.options && param.options.multiple) ? true : false
-                    }
-                    paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />
-                    break
+                    };
+                    paramElement = <ParamSelect label={label} param={param} disabled={disabled} value={value} onChange={onChange} />;
+                    break;
             }
         } catch (e) {
-            console.log(e)
+            console.log(e);
         }
 
-        return paramElement
+        return paramElement;
     }
 
     renderElement(param: CommandParamType, argIndex: number, arg: Array<CommandParamType>): JSX.Element {
-        let elements: Array<JSX.Element> = []
-        const { headers } = this.props
+        let elements: Array<JSX.Element> = [];
+        const {headers} = this.props;
         if (!(param.elements) || !(Array.isArray(param.elements))) {
             return <div>
                 {elements}
-            </div>
+            </div>;
         }
         param.elements.forEach((element: CommandParamType, index: number) => {
-            let ele: JSX.Element
-            let value
+            let ele: JSX.Element;
+            let value;
             if (arg && arg[argIndex]) {
-                value = arg[argIndex][element.name]
+                value = arg[argIndex][element.name];
             }
-            let className = style.element
+            let className = style.element;
             if (element.type === Constants.param.type.select || element.type === Constants.param.type.column) {
-                className = classnames(className, style.select)
+                className = classnames(className, style.select);
             }
             if (param.elements[index + 1] && param.elements[index + 1].section) {
-                className = classnames(className, style.oneRow)
+                className = classnames(className, style.oneRow);
             }
 
             ele = <div key={argIndex + element.name + index} className={className}>
@@ -193,13 +193,13 @@ export default class ParamList extends React.Component<Props, State>{
                     {element.label}
                 </div>
                 <div className={style.input}>
-                    {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => { this.onChangeContent(e, element, elementValue, argIndex) }, headers)}
+                    {this.getParamElement(element, false, undefined, value, (e, param, elementValue) => {this.onChangeContent(e, element, elementValue, argIndex) }, headers)}
                 </div>
-            </div>
-            elements.push(ele)
-        })
+            </div>;
+            elements.push(ele);
+        });
 
-        const deleteButton = (this.state.deletable) ? <Button danger={true} onClick={(e) => { this.onDeleteElement(e, param, argIndex) }}>削除</Button> : null
+        const deleteButton = (this.state.deletable) ? <Button danger={true} onClick={(e) => {this.onDeleteElement(e, param, argIndex) }}>削除</Button> : null;
         return <React.Fragment>
             <div className={style.row}>
                 <div className={style.elementContainer}>
@@ -209,62 +209,62 @@ export default class ParamList extends React.Component<Props, State>{
                     {deleteButton}
                 </div>
             </div>
-        </React.Fragment>
+        </React.Fragment>;
     }
 
     renderElements(param: CommandParamType, arg: Array<CommandParamType>) {
-        let paramElements: Array<JSX.Element> = []
+        let paramElements: Array<JSX.Element> = [];
 
         if (!(param) || param.type !== Constants.param.type.list) {
-            return null
+            return null;
         }
 
         if (!(param.elements) || !(Array.isArray(param.elements))) {
-            return null
+            return null;
         }
 
         arg.forEach((element, index) => {
-            let paramElement = this.renderElement(param, index, arg)
+            let paramElement = this.renderElement(param, index, arg);
             paramElements.push(<div key={index} className={style.elementContainer}>
                 {paramElement}
-            </div>)
+            </div>);
         })
 
-        let contents = (this.state.draggable) ? <SortableList distance={1} items={paramElements} onSortEnd={(value, e) => this.onSortEnd(value, e)} /> : paramElements
+        let contents = (this.state.draggable) ? <SortableList distance={1} items={paramElements} onSortEnd={(value, e) => this.onSortEnd(value, e)} /> : paramElements;
         return <React.Fragment>
             {contents}
-        </React.Fragment>
+        </React.Fragment>;
     }
 
     onAddElement(e) {
         try {
-            const { param, onChange } = this.props
-            let newValue = this.state.currentValue
-            newValue.push(StateUtil.deepCopy(param.default[0]))
+            const {param, onChange} = this.props;
+            let newValue = this.state.currentValue;
+            newValue.push(StateUtil.deepCopy(param.default[0]));
             this.setState({
                 currentValue: newValue
             }, () => {
-                onChange(e, param, this.state.currentValue)
-            })
+                onChange(e, param, this.state.currentValue);
+            });
         } catch (e) {
-            console.log(e)
+            console.log(e);
         }
     }
 
     addButton(): JSX.Element {
-        return <AddButton onClick={(e) => this.onAddElement(e)}></AddButton>
+        return <AddButton onClick={(e) => this.onAddElement(e)}></AddButton>;
     }
 
     render() {
-        const { param, label, onChange } = this.props
-        const listElements = this.renderElements(param, this.state.currentValue)
-        const addButton = (this.state.addable) ? this.addButton() : null
+        const {param, label, onChange} = this.props;
+        const listElements = this.renderElements(param, this.state.currentValue);
+        const addButton = (this.state.addable) ? this.addButton() : null;
 
         return <div key={param.name} className={style.list}>
             <div className={style.elements}>
                 {listElements}
             </div>
             {addButton}
-        </div>
+        </div>;
     }
 }
