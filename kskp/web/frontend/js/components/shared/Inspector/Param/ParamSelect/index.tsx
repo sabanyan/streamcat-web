@@ -11,7 +11,7 @@ type Props = {
     onChange?   :Function; // onChange(e, param)
 }
 
-export default class ParamSelect extends React.Component<Props> {
+export class ParamSelect extends React.Component<Props> {
     constructor(props: Props) {
         super(props);
     }

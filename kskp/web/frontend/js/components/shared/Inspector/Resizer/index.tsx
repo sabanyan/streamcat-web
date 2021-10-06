@@ -153,4 +153,4 @@ class Resizer extends React.Component<Props, State> {
 
 }
 
-export default Resizer
+export {Resizer};

@@ -430,4 +430,5 @@ const UserListInspector = (props: Props) => {
 
 }
 
-export default UserListInspector
+export {UserListInspector};
+

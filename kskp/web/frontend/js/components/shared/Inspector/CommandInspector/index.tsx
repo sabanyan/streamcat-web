@@ -216,4 +216,4 @@ const CommandInspector = (props: Props) => {
 };
 
 
-export default CommandInspector;
+export {CommandInspector};

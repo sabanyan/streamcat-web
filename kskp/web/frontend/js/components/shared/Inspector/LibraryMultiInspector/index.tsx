@@ -49,4 +49,4 @@ class LibraryMultiInspector extends React.Component<Props> {
 
 }
 
-export default LibraryMultiInspector
+export {LibraryMultiInspector};

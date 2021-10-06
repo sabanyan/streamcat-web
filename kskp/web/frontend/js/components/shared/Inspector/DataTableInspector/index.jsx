@@ -85,4 +85,4 @@ class DataTableInspector extends React.Component<Props> {
 
 }
 
-export default DataTableInspector
+export {DataTableInspector};

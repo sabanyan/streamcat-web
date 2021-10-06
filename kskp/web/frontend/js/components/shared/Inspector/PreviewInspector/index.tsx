@@ -71,4 +71,4 @@ const PreviewInspector = (props: Props) => {
     </Resizer>;
 };
 
-export default PreviewInspector;
+export {PreviewInspector};

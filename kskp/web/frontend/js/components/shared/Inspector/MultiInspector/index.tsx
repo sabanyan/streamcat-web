@@ -101,4 +101,4 @@ const MultiInspector = (props: Props) => {
     </BaseInspector>;
 };
 
-export default MultiInspector;
+export {MultiInspector};

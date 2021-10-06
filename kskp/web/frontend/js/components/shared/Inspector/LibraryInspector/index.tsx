@@ -286,4 +286,4 @@ const LibraryInspector = (props: Props) => {
 
 }
 
-export default LibraryInspector;
+export {LibraryInspector};

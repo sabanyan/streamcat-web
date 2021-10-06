@@ -225,4 +225,4 @@ const InOutConnector = (props: Props) => {
 };
 
 
-export default InOutConnector;
+export {InOutConnector};

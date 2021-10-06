@@ -160,4 +160,4 @@ class FlowInspector extends React.Component<Props> {
 
 }
 
-export default FlowInspector
+export {FlowInspector};

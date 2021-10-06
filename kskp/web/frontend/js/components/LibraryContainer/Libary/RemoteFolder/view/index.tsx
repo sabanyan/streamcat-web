@@ -1,5 +1,5 @@
 import { RemoteFolder } from 'Components/LibraryContainer/Libary/RemoteFolder/types'
-import ParamsForm from "Shared/Inspector/ParamsForm";
+import { ParamsForm } from "Shared/Inspector/ParamsForm";
 
 import React, { useEffect } from 'react';
 

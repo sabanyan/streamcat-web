@@ -199,4 +199,5 @@ class Inspector extends React.Component<InspectorProps> {
 
 }
 
-export default Inspector
+export {Inspector};
+

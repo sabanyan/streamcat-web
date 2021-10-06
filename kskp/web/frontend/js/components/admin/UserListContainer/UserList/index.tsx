@@ -14,7 +14,7 @@ import {addNotification, removeNotification} from 'reapop';
 import {InputForm, TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
 import Select from 'react-select';
-import UserListInspector from 'Shared/Inspector/UserListInspector';
+import {UserListInspector} from 'Shared/Inspector/UserListInspector';
 import {project} from 'Shared/IconRenderer/icon';
 import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
 import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelectedList";
@@ -25,7 +25,7 @@ import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader
 import * as lodash from 'lodash';
 import Queue from "promise-queue-plus";
 import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
-import LibraryMultiInspector from 'Shared/Inspector/LibraryMultiInspector';
+import {LibraryMultiInspector} from 'Shared/Inspector/LibraryMultiInspector';
 import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
 
 interface Props {

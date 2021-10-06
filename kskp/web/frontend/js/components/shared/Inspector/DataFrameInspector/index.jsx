@@ -13,16 +13,16 @@ import {
 } from 'Utils/index'
 import { BaseInspector } from 'Shared/Inspector'
 import style from '../style.scss'
-import type { FlowEditorProps } from 'FlowEditorContainer/index'
+import { FlowEditorProps } from 'FlowEditorContainer/index'
 import { Button, DownloadButton } from 'Shared/Input'
 import { CSVModel, DataFrameStepModel, MessageModel } from 'Model/index'
 import { CommandSelector } from "FlowEditorContainer/Command";
 import FlowModel from 'Model/Flow/FlowModel'
-import type { DataFrameDetailType, MastType } from 'Types/index'
-import type { CSVModelProps } from 'Model/CSV/CSVModel'
+import { DataFrameDetailType, MastType } from 'Types/index'
+import { CSVModelProps } from 'Model/CSV/CSVModel'
 import { Loader } from 'Shared/Base'
 import { Visualizer } from 'Shared/Visualizer'
-import type { FlowModelProps } from "Model/Flow/FlowModel";
+import { FlowModelProps } from "Model/Flow/FlowModel";
 import { API } from 'Modules/api/index'
 
 type State = {

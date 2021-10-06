@@ -125,4 +125,4 @@ const InputFlowForm = (props: Props) => {
     </div>;
 };
 
-export default InputFlowForm;
+export {InputFlowForm};

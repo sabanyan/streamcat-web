@@ -29,7 +29,7 @@ type Props = {
 
 
 // データソースステップのペイン
-export default class DataDstInspector extends React.Component<Props, State> {
+export class DataDstInspector extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props)

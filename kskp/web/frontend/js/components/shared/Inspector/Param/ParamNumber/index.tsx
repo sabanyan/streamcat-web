@@ -25,7 +25,7 @@ type State = {
     helperTargetedInput: any;
 }
 
-export default class ParamNumber extends React.Component<Props, State> {
+export class ParamNumber extends React.Component<Props, State> {
     inputRef: any = null;
 
     constructor(props: Props) {

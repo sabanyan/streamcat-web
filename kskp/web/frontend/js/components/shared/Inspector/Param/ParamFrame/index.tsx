@@ -29,7 +29,7 @@ const initialState: State = {
 
 
 // ライブラリーからフレームを選択する
-export default class ParamFrame extends React.Component<Props, State> {
+export class ParamFrame extends React.Component<Props, State> {
 
   constructor(props: Props) {
     super(props)

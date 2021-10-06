@@ -32,7 +32,7 @@ type Props = {
   onClickCloseHelper(event): void;
 }
 
-export default function Helper(props: Props) {
+export function Helper(props: Props) {
   const { helper, onClickShortcut, onClickCloseHelper } = props;
   const [tabIndex, setTabIndex] = React.useState(0);
   

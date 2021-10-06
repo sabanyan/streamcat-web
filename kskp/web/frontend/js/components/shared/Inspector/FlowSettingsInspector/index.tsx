@@ -201,4 +201,4 @@ const FlowSettingsInspector = (props: Props) => {
 };
 
 
-export default FlowSettingsInspector;
+export {FlowSettingsInspector};

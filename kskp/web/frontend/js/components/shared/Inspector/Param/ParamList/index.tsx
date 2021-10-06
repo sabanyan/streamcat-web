@@ -2,9 +2,9 @@ import * as React from 'react'
 import {CommandParamType} from 'Types/index'
 import {AddButton, Button} from 'Shared/Input'
 // 循環参照されるため一個一個Importする（ParamBoolean, ParamString, ParamSelect)
-import {default as ParamBoolean} from '../ParamBoolean/index'
-import {default as ParamString} from '../ParamString/index'
-import {default as ParamSelect} from '../ParamSelect/index'
+import {ParamBoolean} from '../ParamBoolean/index'
+import {ParamString} from '../ParamString/index'
+import {ParamSelect} from '../ParamSelect/index'
 import Constants from 'Constants/index'
 import {ModalUtil, StateUtil} from 'Utils/index'
 import style from './style.scss'
@@ -47,7 +47,7 @@ const SortableList = SortableContainer(
         );
     });
 
-export default class ParamList extends React.Component<Props, State>{
+export class ParamList extends React.Component<Props, State>{
 
     constructor(props: Props) {
         super(props);

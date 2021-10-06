@@ -18,4 +18,4 @@ const InspectorKnob = (props: Props) => {
                 onMouseUp={onMouseUp} />;
 };
 
-export default InspectorKnob;
+export {InspectorKnob};

@@ -13,7 +13,7 @@ import { MenuList } from "Components/LibraryContainer/Libary/MenuList";
 import { Flex } from "Shared/Base/Layouts/Flex";
 import { useDispatch } from "react-redux";
 import { addNotification, removeNotification } from "reapop";
-import ParamsForm from "Shared/Inspector/ParamsForm";
+import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { LibraryChild } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
@@ -29,7 +29,7 @@ import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList"
 import LibraryUtil from "Utils/LibraryUtil";
 import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
 import { project } from '../../shared/IconRenderer/icon/index';
-import LibraryMultiInspector from 'Shared/Inspector/LibraryMultiInspector';
+import {LibraryMultiInspector} from 'Shared/Inspector/LibraryMultiInspector';
 import { reject } from "lodash";
 import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/LibraryContainer/Libary/RemoteFolder/model"
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"

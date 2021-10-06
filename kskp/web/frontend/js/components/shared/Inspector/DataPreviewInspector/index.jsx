@@ -77,4 +77,4 @@ class DataPreviewInspector extends React.Component<Props, State> {
 
 }
 
-export default DataPreviewInspector
+export {DataPreviewInspector};

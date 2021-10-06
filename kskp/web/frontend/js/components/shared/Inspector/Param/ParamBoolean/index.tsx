@@ -57,4 +57,4 @@ const ParamBoolean = (props: Props) => {
     </React.Fragment>
 };
 
-export default ParamBoolean;
+export {ParamBoolean};

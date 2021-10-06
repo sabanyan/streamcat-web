@@ -27,7 +27,7 @@ type State = {
 }
 
 
-export default class ParamString extends React.Component<Props, State> {
+export class ParamString extends React.Component<Props, State> {
     inputRef: any = null;
 
     constructor(props: Props) {

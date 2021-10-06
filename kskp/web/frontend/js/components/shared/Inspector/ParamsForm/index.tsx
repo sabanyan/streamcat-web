@@ -59,7 +59,7 @@ type State = {
     helperTargetedInput: any;
 }
 
-export default class ParamsForm extends React.Component<Props, State> {
+export class ParamsForm extends React.Component<Props, State> {
 
     constructor(props: Props) {
         super(props);

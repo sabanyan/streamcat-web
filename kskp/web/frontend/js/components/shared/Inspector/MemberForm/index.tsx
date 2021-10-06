@@ -23,7 +23,7 @@ type Props = {
   onMemberRoleChanged: Function;
 }
 
-export default function Member(props: Props) {
+export function MemberForm(props: Props) {
   const { rows, searchedRows } = props
   const { onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged } = props
 
