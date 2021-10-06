@@ -294,7 +294,7 @@ const FlowEditor = (props: Props) => {
         if (!hasShowConfirmReloadFlowModal) return;
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM_RELOAD_FLOW, onClickDone: () => {
-                location.reload(true);
+                location.reload();
                 ModalUtil.closeModal(Constants.modal.CONFIRM_RELOAD_FLOW);
             }, onClickCancel: () => {
                 setHasEnableAutoLockExtended(true);
@@ -680,7 +680,7 @@ const FlowEditor = (props: Props) => {
         if (Array.isArray(nodes)) {
             steps = nodes.map((step: StepModelType) => {
                 let selected = (step.id === selected_step_ids[0]);
-                const stepReadOnly = readOnly || networkStatus === NetworkStatusValue.Offline;
+                const stepReadOnly = !(editMode === FlowEditModeValue.Editable) || networkStatus === NetworkStatusValue.Offline || readOnly ;
                 return <Step
                     key={step.id}
                     model={step}
