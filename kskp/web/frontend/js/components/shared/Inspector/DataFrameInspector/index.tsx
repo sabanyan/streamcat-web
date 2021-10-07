@@ -4,7 +4,7 @@ import {APIUtil, ErrorUtil, GraphUtil, ModalUtil, ReactDomUtil, SortUtil, StateU
 import {BaseInspector} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button, DownloadButton} from "Shared/Input";
-import {DataFrameStepModel, FlowModel, FlowModelProps} from "Model/index";
+import {DataFrameStepModel, FlowModelProps} from "Model/index";
 import {CommandSelector} from "FlowEditorContainer/Command";
 import {DataFrameDetailType, MastType} from "Types/index";
 import {Loader} from "Shared/Base";
@@ -22,16 +22,22 @@ type Props = {
     flow: FlowModelProps;
     selected_step_ids: string[];
     deleteCache: Function;
-    nodes: [];
+    nodes: any[];
     addStep: Function;
+    addDataSrcStep: Function;
+    addDataDstStep: Function;
     updateStep: Function;
     updateFlow: Function;
-    readOnly: boolean;
-    lockUUID: string;
+    updateLastSavedFlow: Function;
+    previewDisabled: boolean;
+    baseInspectorDisabled: boolean;
+    commandSelectorHidden: boolean;
+    lockUUID: string | undefined;
     updateDataFrameDetail: Function;
+    refreshFlow: Function;
 }
 
-const DataSourceInspector = (props: Props) => {
+const DataFrameInspector = (props: Props) => {
 
     const flowIn = useRef<HTMLInputElement>(null);
     const flowOut = useRef<HTMLInputElement>(null);
@@ -42,18 +48,16 @@ const DataSourceInspector = (props: Props) => {
     const [showPreview, setShowPreview] = useState<boolean>(false);
 
     useEffect(() => {
-
-            //モーダル処理の登録
-            ModalUtil.registerModal({
-                id: Constants.modal.PREVIEW_DATASOURCE, onClickOK: () => {
-                    ModalUtil.closeModal(Constants.modal.PREVIEW_DATASOURCE);
-                }
-            });
-        },
-        []);
+        //モーダル処理の登録
+        ModalUtil.registerModal({
+            id: Constants.modal.PREVIEW_DATASOURCE, onClickOK: () => {
+                ModalUtil.closeModal(Constants.modal.PREVIEW_DATASOURCE);
+            }
+        });
+    }, []);
 
     const saveFlow = () => {
-        const {flow, lockUUID, notify, dismissNotify} = props;
+        const {flow, lockUUID, notify, dismissNotify, updateLastSavedFlow} = props;
         let saveNotify = notify({
             title: "フロー保存中",
             message: "フローの設定を保存しています",
@@ -67,19 +71,21 @@ const DataSourceInspector = (props: Props) => {
                 {
                     flowUUID: inject_flow_uuid,
                     flow: flow,
-                    lockUUID: lockUUID
+                    // TODO: string|undefined -> string への間に合わせのキャスト
+                    lockUUID: lockUUID || ''
                 }
             )
                 .then((response) => {
                     dismissNotify(saveNotify.id);
                     if (response.data.success === true) {
+                        updateLastSavedFlow();
                         reslove(response.data);
                     } else {
                         reject(response.data);
                     }
                 });
         })
-        // 保存失敗した場合、エラーメッセージ出力
+            // 保存失敗した場合、エラーメッセージ出力
             .catch(e => {
                 notify({
                     title: "フロー保存エラー",
@@ -90,11 +96,46 @@ const DataSourceInspector = (props: Props) => {
                 });
             });
     };
-    const onClickPreview = () => {
-        setLoading(true);
-        setShowPreview(true);
-    };
 
+    const onChangeIgnoreConfirmSave = (e) => {
+        let checked = e.target.checked;
+        window.localStorage.setItem('IGNORE_CONFIRM_SAVE', checked);
+    }
+
+    const onClickPreview = () => {
+        const IGNORE_CONFIRM_SAVE = !!window.localStorage.getItem('IGNORE_CONFIRM_SAVE');
+        if (!IGNORE_CONFIRM_SAVE) {
+            ModalUtil.registerModal({
+                id: Constants.modal.CONFIRM_SAVE, onClickDone: () => {
+                    setShowPreview(true);
+                    ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+                }, onClickCancel: () => {
+                    ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
+                }
+            })
+
+            ModalUtil.emitModal({
+                id: Constants.modal.CONFIRM_SAVE,
+                visible: true,
+                done: '確認',
+                danger: true,
+                content: <div className={style.modal}>
+                    <div>
+                        現在のフローを保存します。<br />
+                        よろしいですか？
+                    </div>
+                    <p>
+                        <br />
+                        <input type="checkbox" id="checkbox_confirm" checked={IGNORE_CONFIRM_SAVE} onChange={onChangeIgnoreConfirmSave}></input>
+                        <label htmlFor="checkbox_confirm">次回から表示しない</label>
+                    </p>
+                </div>
+            });
+        } else {
+            setShowPreview(true);
+        }
+    }
+    
     useEffect(() => {
         if (showPreview) {
             const {mast} = props;
@@ -119,7 +160,7 @@ const DataSourceInspector = (props: Props) => {
                                 frame_uuid: selected_step.uuid,
                                 visualize: v
                             };
-                            contents.push({title: v.label, content: content, id: id});
+                            contents.push({title: v.label, content: content, id: id, afterViz: updateCache});
                         }
                         if (selected_step.uuid) {
                             // uuidだけでプレビュー
@@ -135,7 +176,6 @@ const DataSourceInspector = (props: Props) => {
                 })
                 .then(() => {
                     setLoading(false);
-                    updateCache();
                 }).finally(() => {
                     setShowPreview(false);
                 }
@@ -144,14 +184,13 @@ const DataSourceInspector = (props: Props) => {
     }, [showPreview]);
 
     const updateCache = () => {
-        const {notify, loadFlowJSON} = props;
+        const {notify, refreshFlow} = props;
 
         APIUtil.get("flows/" + inject_flow_uuid + "?navigation=off")
             .then((response) => {
-                console.log(response);
                 if (response.data.success === false) throw response.data;
                 const json = response.data;
-                loadFlowJSON(json);
+                refreshFlow(json);
             })
             .catch((error) => {
                 console.log(error);
@@ -191,7 +230,7 @@ const DataSourceInspector = (props: Props) => {
 
     const onChangeFlowInOut = () => {
         const {updateFlow} = props;
-        let {flow}: any = props;
+        let {flow }: any = props;
         const flowInChecked = (flowIn && flowIn.current) ? flowIn.current.checked : false;
         const flowOutChecked = (flowOut && flowOut.current) ? flowOut.current.checked : false;
 
@@ -275,7 +314,7 @@ const DataSourceInspector = (props: Props) => {
                 const selected_step = getSelectedStep();
                 if (selected_step.hasData()) {
                     //TODO 将来的にはページングなどの対応が必要
-                    APIUtil.get("frames/" + selected_step.uuid + "?no_contents=1").then((response) => {
+                    APIUtil.get("frames/" + selected_step.uuid).then((response) => {
                         const json = response.data;
                         updateDataFrameDetail(json.data);
                     });
@@ -320,16 +359,17 @@ const DataSourceInspector = (props: Props) => {
         updateStep(newSelectedStep);
     };
 
-    const {mast, addStep, selectSteps, selected_step_ids, addHistory, selected_data_source_detail, readOnly} = props;
+    const { mast, addStep, addDataSrcStep, addDataDstStep, selectSteps, selected_step_ids, addHistory,
+            selected_data_source_detail, previewDisabled, baseInspectorDisabled, commandSelectorHidden} = props;
     let preview;
     let download;
     const selected_step = getSelectedStep();
     if (selected_step instanceof DataFrameStepModel) {
         preview = <Button onClick={() => onClickPreview()}
-                          icon={"visibility"} disabled={(readOnly)}>プレビュー</Button>;
+            icon={"visibility"} disabled={previewDisabled}>プレビュー</Button>;
         if (selected_step.hasData()) {
             const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + selected_step.uuid + "&ext=csv&label=" + selected_step.label;
-            download = <DownloadButton href={href} icon={"get_app"}>CSVダウンロード</DownloadButton>;
+            download = <DownloadButton href={href} disabled={baseInspectorDisabled} icon={"get_app"}>CSVダウンロード</DownloadButton>;
         }
     }
 
@@ -337,14 +377,14 @@ const DataSourceInspector = (props: Props) => {
     const flowInOutForm = <div className={style.flowInOut}>
         <div>
             <label><input type="checkbox" checked={flow.hasInPortWithId(selected_step.id || "")} ref={flowIn}
-                          onChange={() => onChangeFlowInOut()} disabled={readOnly} />
+                onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;入力
             </label>
         </div>
         <div>
             <label><input type="checkbox" checked={flow.hasOutPortWithId(selected_step.id || "")}
-                          ref={flowOut}
-                          onChange={() => onChangeFlowInOut()} disabled={readOnly} />
+                ref={flowOut}
+                onChange={() => onChangeFlowInOut()} disabled={baseInspectorDisabled} />
                 &nbsp;出力
             </label>
         </div>
@@ -352,8 +392,8 @@ const DataSourceInspector = (props: Props) => {
     const cacheCheckForm = <div>
         <div>
             <label><input type="checkbox" checked={(selected_step.makeCache)}
-                          ref={cache} disabled={readOnly}
-                          onChange={() => onChangeCacheCheck()} />
+                ref={cache} disabled={baseInspectorDisabled}
+                onChange={() => onChangeCacheCheck()} />
             </label>
         </div>
     </div>;
@@ -363,7 +403,6 @@ const DataSourceInspector = (props: Props) => {
     if (loading) {
         content = <Loader center={true} absolute={true} fixed={false} visible={true} />;
     } else {
-
 
         let fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0;
         fileSize = StringUtil.convertToFileSize(fileSize);
@@ -376,7 +415,7 @@ const DataSourceInspector = (props: Props) => {
                     {preview}
                     {download}
                     <Button onClick={() => onClickDelete()} icon={"delete"}
-                            danger={true} disabled={readOnly}>削除</Button>
+                        danger={true} disabled={baseInspectorDisabled}>削除</Button>
                 </div>
                 <div className={style.full_hr} />
                 <div className={style.overviews}>
@@ -424,10 +463,10 @@ const DataSourceInspector = (props: Props) => {
                 </div>
                 <div className={style.cache_delete}>
                     <Button icon={"delete"} danger={true}
-                            disabled={(!selected_step.isCached() || readOnly)}
-                            onClick={() => {
-                                onClickDeleteCache();
-                            }}>
+                        disabled={(!selected_step.isCached() || baseInspectorDisabled)}
+                        onClick={() => {
+                            onClickDeleteCache();
+                        }}>
                         キャッシュ削除
                     </Button>
                 </div>
@@ -444,20 +483,19 @@ const DataSourceInspector = (props: Props) => {
 
             </div>
             {
-                (!readOnly) ?
+                (!commandSelectorHidden) ?
                     <Fragment>
                         <div className={style.full_hr} />
                         <CommandSelector
+                            nodes={[]}
                             mast={mast}
                             numberOfInput={1}
                             selected_step_ids={selected_step_ids}
                             addStep={addStep}
+                            addDataSrcStep={addDataSrcStep}
+                            addDataDstStep={addDataDstStep}
                             selectSteps={selectSteps}
                             addHistory={addHistory}
-                            nodes={[]}
-                            // TODO: 型チェックエラーを回避するための応急措置 on 2021/10/07
-                            addDataDstStep={()=>{}}
-                            addDataSrcStep={()=>{}}
                         />
                     </Fragment>
                     : null
@@ -466,12 +504,12 @@ const DataSourceInspector = (props: Props) => {
     }
 
     // FIXIT onBlurTitle to onChange #164
-    return <BaseInspector header={""} label={selected_step.label || ''}
-                          onBlurTitle={(e) => onBlurTitle(e)} onHide={() => {
-    }} disabled={readOnly}>
+    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label || ''}
+        onBlurTitle={(e) => onBlurTitle(e)} onHide={() => {
+        }} disabled={baseInspectorDisabled}>
         {content}
     </BaseInspector>;
 };
 
 
-export {DataSourceInspector};
+export {DataFrameInspector};
