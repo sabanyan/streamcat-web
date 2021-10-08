@@ -11,24 +11,21 @@ export default class ModalUtil {
    * @param context
    */
   static registerModal (context: {}) {
-    window.emitter.removeAllListeners(Constants.event.MODAL_ON_CLICK_DONE +
-      context.id)
+    window.emitter.removeAllListeners(Constants.event.MODAL_ON_CLICK_DONE + context.id)
     window.emitter.addListener(Constants.event.MODAL_ON_CLICK_DONE + context.id,
       (result_context) => {
         if (context.onClickDone) {
           context.onClickDone()
         }
       })
-    window.emitter.removeAllListeners(Constants.event.MODAL_ON_CLICK_CANCEL +
-      context.id)
+    window.emitter.removeAllListeners(Constants.event.MODAL_ON_CLICK_CANCEL + context.id)
     window.emitter.addListener(Constants.event.MODAL_ON_CLICK_CANCEL +
       context.id, (result_context) => {
       if (context.onClickCancel) {
         context.onClickCancel()
       }
     })
-    window.emitter.removeAllListeners(Constants.event.MODAL_ON_CLICK_CLOSE +
-      context.id)
+    window.emitter.removeAllListeners(Constants.event.MODAL_ON_CLICK_CLOSE + context.id)
     window.emitter.addListener(Constants.event.MODAL_ON_CLICK_CLOSE +
       context.id, (result_context) => {
       if (context.onClickClose) {

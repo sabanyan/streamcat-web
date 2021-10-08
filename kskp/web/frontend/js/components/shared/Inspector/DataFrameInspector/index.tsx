@@ -97,43 +97,9 @@ const DataFrameInspector = (props: Props) => {
             });
     };
 
-    const onChangeIgnoreConfirmSave = (e) => {
-        let checked = e.target.checked;
-        window.localStorage.setItem('IGNORE_CONFIRM_SAVE', checked);
-    }
 
     const onClickPreview = () => {
-        const IGNORE_CONFIRM_SAVE = !!window.localStorage.getItem('IGNORE_CONFIRM_SAVE');
-        if (!IGNORE_CONFIRM_SAVE) {
-            ModalUtil.registerModal({
-                id: Constants.modal.CONFIRM_SAVE, onClickDone: () => {
-                    setShowPreview(true);
-                    ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
-                }, onClickCancel: () => {
-                    ModalUtil.closeModal(Constants.modal.CONFIRM_SAVE);
-                }
-            })
-
-            ModalUtil.emitModal({
-                id: Constants.modal.CONFIRM_SAVE,
-                visible: true,
-                done: '確認',
-                danger: true,
-                content: <div className={style.modal}>
-                    <div>
-                        現在のフローを保存します。<br />
-                        よろしいですか？
-                    </div>
-                    <p>
-                        <br />
-                        <input type="checkbox" id="checkbox_confirm" checked={IGNORE_CONFIRM_SAVE} onChange={onChangeIgnoreConfirmSave}></input>
-                        <label htmlFor="checkbox_confirm">次回から表示しない</label>
-                    </p>
-                </div>
-            });
-        } else {
-            setShowPreview(true);
-        }
+        setShowPreview(true);
     }
     
     useEffect(() => {
