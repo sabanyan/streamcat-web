@@ -7,7 +7,7 @@ import { CommandStepModelProps } from "Model/Step/CommandStepModel";
 import CommandModel from "Model/Command/CommandModel";
 import { CommandIcon, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { CommandModelType, CommandParamType, CommandPortType } from "Types/index";
-import { ParamUtil, WebUtil } from "Utils/index";
+import { WebUtil } from "Utils/index";
 
 type Props = {
     nodes: any[];
@@ -25,26 +25,6 @@ const Command = (props: Props) => {
 
     const onBuild = (param, element) => {
         if (element) setInputRefs([...inputRefs, { param: param, element: element }]);
-    };
-
-    const buildParamsContent = () => {
-        const { command } = props;
-        setInputRefs([]); //クリア
-        let paramsInputs = command.params.map((param: CommandParamType) => {
-            const _onBuild = (param, element) => onBuild(param, element);
-            let paramElement = ParamUtil.getParamElement(param, _onBuild);
-            return <div key={command.id + "_" + param.name} className="mb-8px">
-                {paramElement}
-            </div>;
-        });
-
-        if (!paramsInputs.length) paramsInputs = <div>このフローには設定可能な変数がありません。</div>;
-
-        const content = <form onSubmit={onSubmitModal}>
-            {paramsInputs}
-        </form>;
-
-        return content;
     };
 
     const onSubmitModal = (e: React.FormEvent) => {
@@ -88,7 +68,7 @@ const Command = (props: Props) => {
             const args = {};
             const added_command_step: CommandStepModelProps = getNewStepWithArgs(command, args);
 
-            const output_steps = command.ports[1].map((port: CommandPortType) => {
+            const output_steps = command.ports[1].map(() => {
                 const output_step = new DataFrameStepModel({
                     id: null,
                     label: null,
