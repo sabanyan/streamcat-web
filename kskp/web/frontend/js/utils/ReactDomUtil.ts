@@ -2,8 +2,8 @@
 import { renderToString } from 'react-dom/server'
 import * as React from 'react'
 
-export default class ReactDomUtil {
-  static renderToString (element: React.Node) {
+export class ReactDomUtil {
+  static renderToString (element: React.ReactElement<any, string | React.JSXElementConstructor<any>>) {
     return renderToString(element)
   }
 }

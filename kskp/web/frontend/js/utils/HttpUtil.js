@@ -1,7 +1,7 @@
 //@flow
 import axios from 'axios'
 
-class HTTPUtil {
+class HttpUtil {
   config: {}
 
   constructor () {
@@ -57,4 +57,4 @@ class HTTPUtil {
 
 //Singleton
 //ref:https://qiita.com/hkusu/items/d9ac2bd135e9e579e018
-export default new HTTPUtil()
+export default new HttpUtil()

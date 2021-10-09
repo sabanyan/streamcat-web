@@ -1,7 +1,6 @@
 export {default as APIUtil} from './APIUtil'
 export {default as ChartUtil} from './ChartUtil'
 export {default as CommandUtil} from './CommandUtil'
-export {default as ConversionUtil} from './ConversionUtil'
 export {default as DetectUtil} from './DetectUtil'
 export {default as ErrorUtil} from './ErrorUtil'
 export {default as FlowUtil} from './FlowUtil'
