@@ -101,7 +101,7 @@ export class ParamNumber extends React.Component<Props, State> {
 
         let isDisabled = (disabled) ? true : false;
         let currentValue = (value) ? value : "";
-        let openHelper: boolean = Boolean(helperTargetedInput);
+        let openHelper: boolean = !!helperTargetedInput;
 
         return <React.Fragment>
             <input

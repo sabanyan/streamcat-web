@@ -48,8 +48,8 @@ const Profile = (props: Props) => {
     const {navigation} = props;
     const availableUpdateSelf = (navigation && navigation.allowlist && navigation.allowlist.updateSelfUser)
 
-    const [isLoading, setIsLoading] = useState<Boolean>(false);
-    const [isFinished, setIsFinished] = useState<Boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isFinished, setIsFinished] = useState<boolean>(false);
     const [profile, setProfile] = useState<Profile | null>({
         name: '',
         email: ''

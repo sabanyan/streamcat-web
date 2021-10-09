@@ -44,8 +44,8 @@ const UserList = (props: Props) => {
     };
 
     // 読み込み完了を設定する
-    const [isFinished, setIsFinished] = useState<Boolean>(false);
-    const [isLoading, setIsLoading] = useState<Boolean>(true);
+    const [isFinished, setIsFinished] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [users, setUsers] = useState<UserListUser[]>([]);
     const [lastSelectedCell, setLastSelectedCell] = useState<UserListUser | null>(null);
     const [selectedDatas, setSelectedDatas] = useState<UserListUser[]>([]);

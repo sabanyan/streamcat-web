@@ -3,7 +3,7 @@ import classnames from 'classnames'
 
 type Props<Data> = {
   index: number
-  isSelected: Boolean
+  isSelected: boolean
   columns: any[]
   // data
   data: Data

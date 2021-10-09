@@ -5,7 +5,7 @@ import { database } from './ListIcons/index'
 
 type Props = {
   index?: number
-  isSelected?: Boolean
+  isSelected?: boolean
   icon?: string
 
   // data
