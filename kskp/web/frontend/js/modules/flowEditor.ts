@@ -935,12 +935,14 @@ const rebuildNodesEdges = (newState, action) => {
  * @returns {*}
  */
 const allRebuildNodesEdges = (newState) => {
+  //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
   graph.removeAllEdges(newState.graph.edges);
   return newState.nodes.map((node, index) => {
-    //入力選択機能やクリップボードのコピーによって再度 結びつきが変更された場合のエッジのつなぎ直し対応
     if (node instanceof CommandStepModel ||
-      node instanceof SubFlowStepModel) {
-      //ノードのつながりを再構築
+        node instanceof SubFlowStepModel ||
+        node instanceof DataSrcStepModel ||
+        node instanceof DataDstStepModel) {
+      // 入力Edgeを再生成する
       Object.keys(node.srcs).forEach(portName => {
         const id = node.srcs[portName];
         const from = id;
@@ -949,7 +951,7 @@ const allRebuildNodesEdges = (newState) => {
           graph.addEdge(from, to, GraphUtil.edgeName(from, to, portName));
         }
       });
-      //ノードのつながりを再構築
+      // 出力Edgeを再生成する
       Object.keys(node.dsts).forEach(portName => {
         const id = node.dsts[portName];
         const from = node.id;

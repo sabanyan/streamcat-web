@@ -1,8 +1,19 @@
 import { BaseStepModel } from "Model/index";
+import {BaseModelProps} from "Model/Step/BaseStepModel";
 
+interface DataDstStepModelProps extends BaseModelProps {
+    srcs: {};
+    dsts: {};
+    args: {};
+}
 
 export default class DataDstStepModel extends BaseStepModel {
-    constructor(props: any) {
+    srcs: {} = {};
+    srcsOrder: any[] = [];
+    dsts: {} = {};
+    args: {} = {};
+    
+    constructor(props: DataDstStepModelProps) {
         super(props);
         Object.keys(props).forEach((key) => {
             this.initialize(props, key);
