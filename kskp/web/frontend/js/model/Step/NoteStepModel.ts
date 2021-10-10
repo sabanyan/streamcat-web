@@ -2,7 +2,6 @@ import {BaseModelProps} from "Model/Step/BaseStepModel";
 import {BaseStepModel} from "Model/index";
 import {StringUtil} from "Utils/index";
 import Constants from "Constants/index";
-import {NoteContentStyle} from 'Shared/SVG';
 
 export interface NoteStepModelProps extends BaseModelProps {
     title: string;
@@ -27,20 +26,21 @@ export default class NoteStepModel extends BaseStepModel {
         this.setAutoSize();
     }
 
-    _calcNoteSize () {
+    private _calcNoteSize () {
         const fontSize = this.getFontSize();
-        let width = StringUtil.getTextWidth(this.getTitle(), fontSize);
-        const style = NoteContentStyle;
+        const width = StringUtil.getTextWidth(this.getTitle(), fontSize);
         const minWidth = Constants.default.note.width;
-        style.width = minWidth;
-        style.height = fontSize + Constants.default.note.padding;
-        let textWidth = width + Constants.default.note.padding;
+        const textWidth = width + Constants.default.note.padding;
+        let style_width: number;
+        const style_height = fontSize + Constants.default.note.padding;
         if (minWidth < textWidth) {
-            style.width = textWidth;
+            style_width = textWidth;
+        } else {
+            style_width = minWidth;
         }
         return {
-            width: style.width,
-            height: style.height
+            width: style_width,
+            height: style_height
         };
     }
 

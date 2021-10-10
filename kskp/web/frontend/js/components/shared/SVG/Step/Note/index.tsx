@@ -1,6 +1,5 @@
 import * as React from "react";
 import {CSSProperties} from "react";
-import {StringUtil} from "Utils/index";
 import Constants from "Constants/index";
 import {NoteStepModel} from "Model/index";
 
@@ -12,6 +11,47 @@ type Props = {
 }
 
 const Note = (props: Props) => {
+
+    const NoteStyle = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        rx: 0,
+        ry: 0,
+        fill: "",
+        strokeWidth: Constants.default.step.borderWidth * 2,
+        stroke: ""
+    };
+
+    const NoteContentStyle = {
+        x: 0,
+        y: 0,
+        width: 50,
+        height: 100,
+        textAnchor: "middle",
+        dominantBaseline: "central",
+        fontSize: 10,
+        padding: 8,
+        // FIXITL: 以下のプロパティを有効にすると、
+        //         メモを新規配置したときにデータノードのIn/OUT表示が消える
+        // display: "table-cell",
+        verticalalign: "middle",
+        textalign: "right"
+    };
+
+    const NoteTextStyle: CSSProperties = {
+        width: "fit-content",
+        height: "auto",
+        display: "table-cell",
+        overflow: "visible",
+        verticalAlign: "middle",
+        textAlign: "left",
+        paddingLeft: 8,
+        wordBreak: "keep-all",
+        whiteSpace: "nowrap"
+    };
+
     const getColor = () => {
         const {model} = props;
         const color = model.getColor();
@@ -69,7 +109,7 @@ const Note = (props: Props) => {
     };
 
     const {model} = props;
-    const size = model.size
+    const size = model.size;
     const {width, height} = model.size;
 
     return <g>
@@ -82,42 +122,3 @@ const Note = (props: Props) => {
 };
 
 export {Note};
-
-export const NoteStyle = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-    rx: 0,
-    ry: 0,
-    fill: "",
-    strokeWidth: Constants.default.step.borderWidth * 2,
-    stroke: ""
-};
-
-export const NoteContentStyle = {
-    x: 0,
-    y: 0,
-    width: 50,
-    height: 100,
-    textAnchor: "middle",
-    dominantBaseline: "central",
-    fontSize: 10,
-    padding: 8,
-    display: "table-cell",
-    verticalalign: "middle",
-    textalign: "right"
-};
-
-
-export const NoteTextStyle: CSSProperties = {
-    width: "fit-content",
-    height: "auto",
-    display: "table-cell",
-    overflow: "visible",
-    verticalAlign: "middle",
-    textAlign: "left",
-    paddingLeft: 8,
-    wordBreak: "keep-all",
-    whiteSpace: "nowrap"
-};

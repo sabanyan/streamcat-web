@@ -6,7 +6,6 @@ import style from "./style.scss";
 import { APIUtil, ZoomUtil } from "Utils/index";
 import { DragType, MastType, StepModelType } from "Types/index";
 import { FlowModelProps } from "Model/Flow/FlowModel";
-import { PaperScroller } from "FlowEditorContainer/PaperScroller";
 
 let mouseMoveEvent;
 let mouseUpEvent;
@@ -246,7 +245,7 @@ const Step = (props: Props) => {
     };
 
 
-    const isStep = (model): boolean => {
+    const isCommandStep = (model): boolean => {
         return (model instanceof CommandStepModel);
     };
 
@@ -283,7 +282,7 @@ const Step = (props: Props) => {
 
     const { position, mast, flow, invalid, error, model } = props;
     const { x, y } = position;
-    let icon;
+    let icon: JSX.Element | null;
 
     let step: StepModelType = model;
 
@@ -300,42 +299,48 @@ const Step = (props: Props) => {
 
     let stepLabel = step.label;
 
-    if (flowIn || flowOut) {
-        icon = <g>
-            <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
-                hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
-                hover={hover} selected={selected} stroke={"#63CFFD"}
-                filter={filter} style={RectStyle}>
-                <InOutIcon flowIn={flowIn} flowOut={flowOut} width={50} height={50} stroke={"#ccc"} fill={"#ccc"} />
-            </Rect>
-        </g>;
+    if (isDataFrame(step)) {
+        // データノード
+        let innerIcon: JSX.Element;
+        if (flowIn || flowOut) {
+            // IN、OUT指定がある場合
+            innerIcon = <InOutIcon flowIn={flowIn}
+                                   flowOut={flowOut}
+                                   width={50}
+                                   height={50}
+                                   stroke={"#CCCCCC"}
+                                   fill={"#CCCCCC"} />;
+        } else {
+            // IN、OUT指定のない場合
+            innerIcon = <FileIcon fillColor={(step.hasData()) ? "#63CFFD" : "#CCCCCC"}
+                                  width={16}
+                                  height={20} />;
+        }
+
+        icon = <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
+                     hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
+                     hover={hover} selected={selected} stroke={"#63CFFD"}
+                     filter={filter} style={RectStyle}>
+            {innerIcon}
+        </Rect>;
     } else if (isSubFlow(step)) {
+        // サブフローノード
         icon = <SubFlowIcon hover={hover} selected={selected} filter={filter} />;
         stepLabel = step.getLabel();
-    } else if (isStep(step)) {
-        //ステップ
+    } else if (isCommandStep(step)) {
+        // コマンドノード
         let command;
         if (mast.commands) {
             mast.commands.forEach(c => {
                 if (c.id === step.commandId) command = c;
             });
             icon = <CommandIcon command={command} hover={hover} selected={selected} filter={filter} />;
+        } else {
+            icon = null;
         }
         stepLabel = step.getLabel();
-    } else if (isDataFrame(step)) {
-        //データソース
-        const stroke = (!step.hasData()) ? { stroke: "#CCCCCC" } : {};
-        icon =
-            <Rect selectedOutlineColor={"#93DFFF"} fillColor={"#FFFFFF"}
-                hoverFillColor={"#E8F8FF"} selectedFillColor={"#E8F8FF"}
-                hover={hover} selected={selected} stroke={"#63CFFD"}
-                filter={filter} style={RectStyle}>
-                <FileIcon fillColor={(step.hasData()) ? "#63CFFD" : "#CCCCCC"}
-                    width={16} height={20} />
-            </Rect>;
     } else if (isNote(step)) {
         icon = <Note hover={hover} selected={selected} model={step} />;
-
     } else if (step.flow && step.classification === "data_source") {
         icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
     } else if (step.flow && step.classification === "data_dest") {
@@ -343,8 +348,6 @@ const Step = (props: Props) => {
     } else {
         icon = null;
     }
-
-
 
 
     let invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;
