@@ -1,4 +1,4 @@
-export * from "./Step/Note";
+export * from "./Icon/NoteIcon";
 export * from "./Step/Rect";
 export * from "./Step";
 export * from "./Icon/CommandIcon";

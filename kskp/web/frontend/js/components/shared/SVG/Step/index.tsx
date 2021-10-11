@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Constants from "Constants/index";
-import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, Note, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
+import { CommandIcon, ErrorIcon, FileIcon, InOutIcon, NoteIcon, Rect, SubFlowIcon, DataSrcIcon, DataDstIcon } from "Shared/SVG";
 import { CommandStepModel, DataFrameStepModel, NoteStepModel, SubFlowStepModel } from "Model/index";
 import style from "./style.scss";
 import { APIUtil, ZoomUtil } from "Utils/index";
@@ -340,7 +340,7 @@ const Step = (props: Props) => {
         }
         stepLabel = step.getLabel();
     } else if (isNote(step)) {
-        icon = <Note hover={hover} selected={selected} model={step} />;
+        icon = <NoteIcon hover={hover} selected={selected} model={step} />;
     } else if (step.flow && step.classification === "data_source") {
         icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
     } else if (step.flow && step.classification === "data_dest") {

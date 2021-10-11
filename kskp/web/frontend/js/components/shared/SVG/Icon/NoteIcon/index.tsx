@@ -10,7 +10,7 @@ type Props = {
     filter?: string | null,
 }
 
-const Note = (props: Props) => {
+const NoteIcon = (props: Props) => {
 
     const NoteStyle = {
         x: 0,
@@ -121,4 +121,4 @@ const Note = (props: Props) => {
     </g>;
 };
 
-export {Note};
+export {NoteIcon};
