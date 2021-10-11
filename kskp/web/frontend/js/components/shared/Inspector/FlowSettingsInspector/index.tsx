@@ -40,8 +40,7 @@ const FlowSettingsInspector = (props: Props) => {
     const onClickAddFlowParam = () => {
         let {flow, updateFlow} = props;
         const name = setNewParamName("new_param", 1);
-        const uuid = StringUtil.generateUUID();
-        flow.params.push({label:name, name:name, type:'string', uuid:uuid});
+        flow.params.push({label:name, name:name, type:'string'});
         updateFlow(flow);
     };
 
@@ -109,7 +108,7 @@ const FlowSettingsInspector = (props: Props) => {
     let inputParams, inputParamsContainer, addFlowParams;
 
     inputParams = params.map((param: any, index) => {
-        return <div key={param.uuid} className={style.flow_param}>
+        return <div className={style.flow_param}>
             <div className={style.left}>
                 <input type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} value={param.name}
                        onChange={(e) => {onParamChange(e, index)}} />
