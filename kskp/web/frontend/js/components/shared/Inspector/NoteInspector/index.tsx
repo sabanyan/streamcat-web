@@ -24,7 +24,7 @@ const NoteInspector = (props: Props) => {
     }, []);
 
     const getSelectedStep = (): NoteStepModel | null => {
-        let {selected_step_ids, nodes} = props;
+        const {selected_step_ids, nodes} = props;
         if (Array.isArray(selected_step_ids) && selected_step_ids.length > 0) {
             return GraphUtil.getNode(nodes, selected_step_ids[0]);
         }
@@ -35,7 +35,7 @@ const NoteInspector = (props: Props) => {
         ModalUtil.registerModal({
             id: Constants.modal.CONFIRM,
             onClickDone: () => {
-                let {selected_step_ids, deleteSteps, selectSteps, addHistory} = props;
+                const {selected_step_ids, deleteSteps, selectSteps, addHistory} = props;
                 deleteSteps(selected_step_ids);
                 selectSteps();
                 addHistory();
@@ -55,7 +55,7 @@ const NoteInspector = (props: Props) => {
 
     const update = (getNewStep: Function) => {
         const {updateStep} = props;
-        let selectedStep = getSelectedStep();
+        const selectedStep = getSelectedStep();
         const newStep = getNewStep(selectedStep);
         updateStep(newStep);
     };
@@ -120,13 +120,13 @@ const NoteInspector = (props: Props) => {
 
     const {baseInspectorDisabled} = props;
 
-    let selected_step = getSelectedStep();
+    const selected_step = getSelectedStep();
     if (!selected_step) return null;
     const noteTitle = selected_step.title;
     const noteContent = selected_step.content;
     const fontSize = selected_step.fontSize;
     const color = selected_step.color;
-    let content = <div className='property_body'>
+    const content = <div className='property_body'>
         <div>
             <input
                 type='text'
@@ -175,7 +175,7 @@ const NoteInspector = (props: Props) => {
         </div>
     </div>;
 
-    return <BaseInspector key={selected_step.uuid} header={''} label={selected_step.label || ''} disabled={baseInspectorDisabled} >
+    return <BaseInspector key={selected_step.uuid} header={''} label={null} disabled={baseInspectorDisabled} >
         {content}
     </BaseInspector>;
 };

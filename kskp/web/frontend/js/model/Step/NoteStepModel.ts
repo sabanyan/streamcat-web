@@ -15,7 +15,7 @@ export default class NoteStepModel extends BaseStepModel {
     title: string | undefined = undefined;
     content: string | undefined = undefined;
     color: string = Constants.default.note.color.green;
-    fontSize: number = 10;
+    fontSize: number = 16;
 
     constructor(props: NoteStepModelProps) {
         super(props);

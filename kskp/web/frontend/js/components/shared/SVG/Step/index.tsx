@@ -341,6 +341,7 @@ const Step = (props: Props) => {
         stepLabel = step.getLabel();
     } else if (isNote(step)) {
         icon = <NoteIcon hover={hover} selected={selected} model={step} />;
+        stepLabel = step.getLabel();
     } else if (step.flow && step.classification === "data_source") {
         icon = <DataSrcIcon hover={hover} selected={selected} filter={filter} style={{ ...RectStyle, rx: 12, ry: 12 }} />
     } else if (step.flow && step.classification === "data_dest") {
@@ -350,8 +351,27 @@ const Step = (props: Props) => {
     }
 
 
-    let invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;
-    let error_icon = (Object.keys(error).length) ? <ErrorIcon /> : null;
+    const invalid_icon = (Object.keys(invalid).length) ? <ErrorIcon /> : null;
+    const error_icon = (Object.keys(error).length) ? <ErrorIcon /> : null;
+    const label_text = (!!stepLabel) ? 
+                        <g className={style.labelContainer}>
+                            <foreignObject {...StepTextStyle} transform={"translate(" + (-1 * StepTextStyle.width) + ",0)"}>
+                                <div style={{
+                                    display: "table",
+                                    width: "100%",
+                                    height: StepTextStyle.height,
+                                    paddingRight: StepTextStyle.padding + "px"
+                                }}>
+                                    <p style={{
+                                        display: "table-cell",
+                                        verticalAlign: "middle",
+                                        textAlign: "right",
+                                        wordBreak: "break-all"
+                                    }}>{stepLabel}</p>
+                                </div>
+                            </foreignObject>
+                        </g>
+                        : null;
 
     return (
         <g className={style.operator} transform={"translate(" + x + "," + y + ")"}>
@@ -362,23 +382,7 @@ const Step = (props: Props) => {
             </g>
             {invalid_icon}
             {error_icon}
-            <g className={style.labelContainer}>
-                <foreignObject {...StepTextStyle} transform={"translate(" + (-1 * StepTextStyle.width) + ",0)"}>
-                    <div style={{
-                        display: "table",
-                        width: "100%",
-                        height: StepTextStyle.height,
-                        paddingRight: StepTextStyle.padding + "px"
-                    }}>
-                        <p style={{
-                            display: "table-cell",
-                            verticalAlign: "middle",
-                            textAlign: "right",
-                            wordBreak: "break-all"
-                        }}>{stepLabel}</p>
-                    </div>
-                </foreignObject>
-            </g>
+            {label_text}
         </g>
     );
 };

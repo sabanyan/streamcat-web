@@ -244,7 +244,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
             type: Constants.step.type.note,
             position: notOverlapNodePosition,
             title: "新しいメモ",
-            content: "新しいメモ"
+            content: ""
         };
 
         const note = new NoteStepModel(props);
