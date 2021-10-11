@@ -64,43 +64,43 @@ export default class FlowUtil {
    * @param replaceKeyPairs
    * @param nodes
    */
-  static replaceNodeIds (replaceKeyPairs: {}, nodes: []) {
-    nodes.map((node) => {
-      if (node.dsts) {
-        let newDsts = {}
-        Object.keys(node.dsts).forEach((from) => {
-          const newFromId = this.replaceNodeId(replaceKeyPairs, from)
-          const to = node.dsts[from]
-          const newToId = this.replaceNodeId(replaceKeyPairs, to)
-          newDsts[newFromId] = newToId
-        })
-        node.dsts = newDsts
-      }
+  // static replaceNodeIds (replaceKeyPairs: {}, nodes: []) {
+  //   nodes.map((node) => {
+  //     if (node.dsts) {
+  //       let newDsts = {}
+  //       Object.keys(node.dsts).forEach((from) => {
+  //         const newFromId = this.replaceNodeId(replaceKeyPairs, from)
+  //         const to = node.dsts[from]
+  //         const newToId = this.replaceNodeId(replaceKeyPairs, to)
+  //         newDsts[newFromId] = newToId
+  //       })
+  //       node.dsts = newDsts
+  //     }
 
-      if (node.srcs) {
-        let newSrcs = {}
-        Object.keys(node.srcs).forEach((from) => {
-          const newFromId = this.replaceNodeId(replaceKeyPairs, from)
-          const to = node.srcs[from]
-          const newToId = this.replaceNodeId(replaceKeyPairs, to)
-          newSrcs[newFromId] = newToId
-        })
-        node.srcs = newSrcs
-      }
-      return node
-    })
-    return nodes
-  }
+  //     if (node.srcs) {
+  //       let newSrcs = {}
+  //       Object.keys(node.srcs).forEach((from) => {
+  //         const newFromId = this.replaceNodeId(replaceKeyPairs, from)
+  //         const to = node.srcs[from]
+  //         const newToId = this.replaceNodeId(replaceKeyPairs, to)
+  //         newSrcs[newFromId] = newToId
+  //       })
+  //       node.srcs = newSrcs
+  //     }
+  //     return node
+  //   })
+  //   return nodes
+  // }
 
-  static replaceNodeId (replaceKeyPairs: {}, nodeId: string): string {
-    let newNodeId = nodeId
-    Object.keys(replaceKeyPairs).forEach((key) => {
-      if (nodeId === key) {
-        newNodeId = replaceKeyPairs[key]
-      }
-    })
-    return newNodeId
-  }
+  // static replaceNodeId (replaceKeyPairs: {}, nodeId: string): string {
+  //   let newNodeId = nodeId
+  //   Object.keys(replaceKeyPairs).forEach((key) => {
+  //     if (nodeId === key) {
+  //       newNodeId = replaceKeyPairs[key]
+  //     }
+  //   })
+  //   return newNodeId
+  // }
 
   static removeNodeId (nodes: [], node_ids: []) {
     node_ids.forEach((removeId) => {
