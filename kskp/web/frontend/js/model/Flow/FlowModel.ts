@@ -180,14 +180,14 @@ export default class FlowModel {
     getInPortWithId(id: string) {
         const inPorts = this.getInPorts();
         return inPorts.find((port) => {
-            return (port.nodeId === id);
+            return (port.label === id);
         });
     }
 
     getOutPortWithId(id: string) {
         const inPorts = this.getOutPorts();
         return inPorts.find((port) => {
-            return (port.nodeId === id);
+            return (port.label === id);
         });
     }
 
@@ -202,7 +202,7 @@ export default class FlowModel {
     deletePortWithId(type: number, id: string) {
         let targetPorts = (type === 0) ? this.getInPorts() : this.getOutPorts();
         this.ports[type] = targetPorts.filter((port) => {
-            return (port.nodeId !== id);
+            return (port.label !== id);
         });
     }
 
@@ -218,7 +218,7 @@ export default class FlowModel {
         let targetPorts = (type === 0) ? this.getInPorts() : this.getOutPorts();
         let hasUpdate = false;
         this.ports[type] = targetPorts.map((p) => {
-            if (p.nodeId === port.nodeId) {
+            if (p.label === port.label) {
                 //ポートを更新
                 hasUpdate = true;
                 return port;

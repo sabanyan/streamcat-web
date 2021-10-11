@@ -262,7 +262,7 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
             const newPort = inPorts[index];
             let portName = isAddable ? "*" + index : newPort.name;
             if (add_step instanceof SubFlowStepModel) {
-              portName = newPort.nodeId;
+              portName = newPort.label;
             }
 
             add_step.addInPort(portName, id);
@@ -283,7 +283,7 @@ const FlowEditorReducer = (state = flowEditorReducerInitialState, action: any) =
             const newPort = outPorts[index];
             let portName = newPort.name;
             if (add_step instanceof SubFlowStepModel) {
-              portName = newPort.nodeId;
+              portName = newPort.label;
             }
             add_step.dsts[portName] = id;
 
@@ -1142,7 +1142,7 @@ export function newDataSrc(props: DataSrcProps) {
   let dsts = {};
   const outPorts: any[] = dataSrc.ports[1];
   outPorts.forEach((outPort, index) => {
-    dsts[outPort.nodeId] = dstNodeIds[index];
+    dsts[outPort.label] = dstNodeIds[index];
   });
 
   let dataSrcProps = {
@@ -1177,7 +1177,7 @@ export function newDataDest(props: DataDestProps) {
   let srcs = {};
   const inPorts: any[] = dataDest.ports[0];
   inPorts.forEach((inPort, index) => {
-    srcs[inPort.nodeId] = srcNodeIds[index];
+    srcs[inPort.label] = srcNodeIds[index];
   });
 
   let DataDstProps = {
