@@ -1,17 +1,17 @@
 //@flow
 import * as React from 'react'
 import classnames from 'classnames'
-import { Tab, TabBar, TabList, TabPanel } from 'Shared/Base'
+import { Tab, TabBar, TabList } from 'Shared/Base'
 import { HttpUtil } from 'Utils/index'
 import style from '../Core/style.scss'
-import Visualizer from 'Shared/Visualizer/Core';
+import Visualizer from 'Shared/Visualizer';
 
 type Props = {
   id: string;
   contents: [{}];
   visible: boolean;
   title: string;
-  footer: React.Node
+  footer: React.ReactNode
 }
 type State = {
   selected_tab_id: number,
