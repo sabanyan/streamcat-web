@@ -119,7 +119,7 @@ const DataFrameInspector = (props: Props) => {
     
     useEffect(() => {
         if (showPreview) {
-            const {mast} = props;
+            const {mast, lockUUID} = props;
             let visualizers = mast.visualizers;
             const flow_uuid = inject_flow_uuid;
             const selected_step = getSelectedStep();
@@ -133,6 +133,7 @@ const DataFrameInspector = (props: Props) => {
                 .then((result: any) => {
                     if (result.success === true) {
                         // preview
+                        /*
                         let contents: Contents[] = [];
                         for (const v of visualizers) {
                             let content : Content = {
@@ -140,16 +141,25 @@ const DataFrameInspector = (props: Props) => {
                                 stepIds: stepIds,
                                 frame_uuid: selected_step.uuid,
                                 visualize: v,
-                                lock_uuid: undefined
+                                lock_uuid: lockUUID
                             };
                             contents.push({title: v.label, content: content, id: id, afterViz: updateCache});
                         }
+                        */
                         if (selected_step.uuid) {
                             // uuidだけでプレビュー
-                            window.open("/preview?step_id=" + id + "&dialog=true&frame_uuid=" + selected_step.uuid + "&title=" + StringUtil.urlEncode(selected_step.label));
+                            window.open("/preview?step_id=" + id +
+                                        "&dialog=true" +
+                                        "&title=" + StringUtil.urlEncode(selected_step.label) +
+                                        "&frame_uuid=" + selected_step.uuid);
                         } else {
                             // 新規生成するので、step_id と flow_uuid と step_ids でデータを生成する
-                            window.open("/preview?step_id=" + id + "&dialog=true&step_ids=" + StringUtil.urlEncode(JSON.stringify(stepIds)) + "&flow_uuid=" + flow_uuid + "&title=" + StringUtil.urlEncode(selected_step.label));
+                            window.open("/preview?step_id=" + id +
+                                        "&dialog=true" +
+                                        "&title=" + StringUtil.urlEncode(selected_step.label) +
+                                        "&flow_uuid=" + flow_uuid +
+                                        "&lock_uuid=" + lockUUID +
+                                        "&step_ids=" + StringUtil.urlEncode(JSON.stringify(stepIds)));
                         }
                     }
                 })

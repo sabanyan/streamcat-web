@@ -62,21 +62,23 @@ const Preview = (_: Props) => {
         setIsLoading(false);
         let contents: any[] = [];
         for (const v of visualizers) {
-            let viz = {visualize: v};
             let content: any;
-            let frame_uuid = HttpUtil.getURLParam("frame_uuid");
+            const viz = {visualize: v};
+            const frame_uuid = HttpUtil.getURLParam("frame_uuid");
             if (frame_uuid) {
                 // データが存在している場合（ライブラリ）
                 content = {title: v.label, content: viz, parentProps: parentProps, id: frame_uuid};
                 viz["frame_uuid"] = frame_uuid;
             } else {
                 // データが存在しなくて生成する必要あり（フローエディターからのプレビュー）
-                let flow_uuid = HttpUtil.getURLParam("flow_uuid");
-                let frame_id = HttpUtil.getURLParam("step_id");
+                const frame_id = HttpUtil.getURLParam("step_id");
+                const flow_uuid = HttpUtil.getURLParam("flow_uuid");
+                const lock_uuid = HttpUtil.getURLParam("lock_uuid");
                 let step_ids = JSON.parse(StringUtil.urlDecode((HttpUtil.getURLParam("step_ids"))));
                 content = {title: v.label, content: viz, parentProps: parentProps, id: frame_id};
                 viz["frame_uuid"] = frame_uuid;
                 viz["flow_uuid"] = flow_uuid;
+                viz["lock_uuid"] = lock_uuid;
                 viz["stepIds"] = step_ids;
             }
             contents.push(content);
