@@ -87,7 +87,7 @@ class FrameTestCase(ApiTestCaseBase):
         fetch_frame APIをテストする
         """
         from datetime import datetime
-        now = datetime.now().strftime('%Y/%m/%d %H:%M')
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # テストフレーム作成
         csv_data = [
@@ -101,23 +101,25 @@ class FrameTestCase(ApiTestCaseBase):
         frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
-        result = self.get_uri('/api/v0/frames/%s' % frame_uuid, self.USER1)
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
 
-        self.assertEqual(result['success'], True)
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
-        self.assertEqual(result['data']['lastModifiedAt'], now)
+        self.assertEqual(result['data']['createdAt'], now)
 
+        # contents引数の指定がないのでargsとcontentsは返されない
+        self.assertIsNone(result['data'].get('args'))
+        self.assertIsNone(result['data'].get('contents'))
 
     # @unittest.skip
-    def test_fetch_frame_no_contents(self):
+    def test_fetch_frame_with_contents(self):
         """
         fetch_frame APIをテストする
-        no_contentsをつける
+        contents引数をつける
         """
         from datetime import datetime
-        now = datetime.now().strftime('%Y/%m/%d %H:%M')
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # テストフレーム作成
         csv_data = [
@@ -131,16 +133,17 @@ class FrameTestCase(ApiTestCaseBase):
         frame_path = self.root_path / 'test_data.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
-        result = self.get_uri('/api/v0/frames/%s?no_contents=1' % frame_uuid, self.USER1)
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER1)
 
-        self.assertEqual(result['success'], True)
-        # no_contentsをつけているのでNoneのはず
-        self.assertIsNone(result['data'].get('contents'))
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['fileSize'], 56)
-        self.assertEqual(result['data']['lastModifiedAt'], now)
+        self.assertEqual(result['data']['createdAt'], now)
 
+        self.assertIsNotNone(result['data'].get('args'))
+        self.assertIsNotNone(result['data'].get('contents'))
+        self.assertEqual(result['data']['args']['column_names'], ['顧客','数量','金額'])
+        self.assertTrue(result['data']['contents'].startswith('<!DOCTYPE html>'))
 
     # @unittest.skip
     def test_fetch_frame_offset_and_limit(self):
@@ -149,7 +152,7 @@ class FrameTestCase(ApiTestCaseBase):
         offsetとlimitをつける
         """
         from datetime import datetime
-        now = datetime.now().strftime('%Y/%m/%d %H:%M')
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # テストフレーム作成
         csv_data = [
@@ -169,7 +172,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
-        self.assertEqual(result['data']['lastModifiedAt'], now)
+        self.assertEqual(result['data']['createdAt'], now)
 
 
     # @unittest.skip
@@ -179,7 +182,7 @@ class FrameTestCase(ApiTestCaseBase):
         header_onlyをつける
         """
         from datetime import datetime
-        now = datetime.now().strftime('%Y/%m/%d %H:%M')
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # テストフレーム作成
         csv_data = [
@@ -199,7 +202,7 @@ class FrameTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
-        self.assertEqual(result['data']['lastModifiedAt'], now)
+        self.assertEqual(result['data']['createdAt'], now)
 
 
     # @unittest.skip

@@ -43,54 +43,46 @@ def make_new_frames():
 @api_base
 def fetch_frame(frame_uuid):
     """
-    指定したframeを直接UUIDで指定して取得する
+    frameを取得する
     """
-    # オフセットのデフォルトは最初から（なので０）、limitはとりあえず1000行
-    # offset = int(request.args.get('offset')) if request.args.get('offset') else 0
-    # limit = int(request.args.get('limit')) if request.args.get('limit') else 999
-    # no_contents = True if request.args.get('no_contents') else False
+    get_contents = request.args.get('contents') is not None
 
     frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
+    result = frame.to_json()
 
-    result = csv_to_frame(frame)  
-
-    # if request.args.get('header_only') == '1':
-    #     # headerのカラムに改行コードが含まれているケースの対応
-    #     if result.get('contents') is None:
-    #         raise Exception('not use "no_contents" in query parameter')
-    #     headers = []
-    #     for column in result['contents']:
-    #         headers.append(column.replace('\n',''))
-    #     result = headers
+    if get_contents:
+        from .utils import VisConverter
+        # frameの内容を取得する
+        vis = get_vis(frame, args={'offset':0,'limit':22})
+        result['args'] = {'column_names':vis.column_names}
+        result['contents'] = VisConverter(vis)
 
     return result
 
-def csv_to_frame(frame, no_contents=False, offset=0, limit=None):
+def get_vis(frame, args={}):
     """
-    指定されたCSVファイルを読み込んで、
-    詳細情報なども含んだframeを表すdictを返す
+    指定したframeのVisデータを取得する
     """
-    result = {}
-
-    # if not no_contents:
-    #     contents, number_of_lines = frame.load_as_data_frame(offset, limit)
-    #     result['contents'] = contents
-    #     # 行数は一旦返さないことにする
-    #     # result['numberOfLines'] = number_of_lines
-    result['uuid'] = frame.uuid
-    result['type'] = frame.type
-    result['label'] = frame.label
-    result['folderPath'] = frame.folder_path
-    result['folderUuid'] = frame.parent_uuid
-    result['encoding'] = frame.encoding_str
-    result['newline'] = frame.newline_str
-    result['fileSize'] = frame.file_size
-    result['lastModifier'] = frame.modifier_str
-    result['lastModifiedAt'] = frame.modified_at_str
-
-    return result
+    from kskp.depo.std.commands import LoaderCommand
+    VIZ_POINT_ID = 'd'
+    vis_args = {'vis': 
+                    {VIZ_POINT_ID: 
+                        {
+                            'command_id':'csvtohtmltable',
+                            'args':args
+                        }
+                    }
+               }
+    parent_folder = frame.find_parent()
+    # datasourceは保存しないので、親フォルダはどこでも良い
+    datasource = parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame.uuid})
+    # Visを取得する
+    activity = execute_flow(datasource, vis_args=vis_args)
+    if activity is None or len(activity.outs)==0:
+        raise Exception('No out exists in activity')
+    return activity.outs[0][1]
 
 @mod.route('/frames', methods=['POST'])
 @login_required_api
