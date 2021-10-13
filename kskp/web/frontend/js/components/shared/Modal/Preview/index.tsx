@@ -5,17 +5,28 @@ import { Tab, TabBar, TabList } from 'Shared/Base'
 import { HttpUtil } from 'Utils/index'
 import style from '../Core/style.scss'
 import Visualizer from 'Shared/Visualizer';
+import {Contents} from 'Shared/Inspector'
 
 type Props = {
   id: string;
-  contents: [{}];
-  visible: boolean;
   title: string;
-  footer: React.ReactNode
+  contents: Contents[];
+  footer: React.ReactNode;
+  visible: boolean;
+  close_button: Function;
+  notify: Function;
+  dismissNotify: Function;
 }
+
 type State = {
-  selected_tab_id: number,
-  results: [{}]
+  selected_tab_id: number;
+  results: Result[];
+  headers: any[];
+}
+
+type Result = {
+  html: any;
+  args: {}
 }
 
 export default class PreviewModal extends React.Component<Props, State> {
@@ -35,7 +46,7 @@ export default class PreviewModal extends React.Component<Props, State> {
     }
   }
 
-  saveResults (index: number, result: {}, headers=[]) {
+  saveResults (index: number, result: Result, headers=[]) {
     let results = this.state.results
     results[index] = result
     if (headers.length === 0) {
@@ -54,21 +65,29 @@ export default class PreviewModal extends React.Component<Props, State> {
   renderTabContent(index) {
     const {notify, dismissNotify, title} = this.props
     const contents = this.props.contents
-    const {flow_uuid, stepIds, frame_uuid,  visualize} = contents[index].content
+    const {flow_uuid, stepIds, frame_uuid, lock_uuid, visualize} = contents[index].content
     const {id, afterViz} = contents[index]
 
     const result = this.state.results[index]
 
-    if (title) {
-      return <Visualizer key={id + index}
-      flow_uuid={flow_uuid} stepIds={stepIds} frame_uuid={frame_uuid} visualize={visualize} headers={this.state.headers}
-      onSaveResult={(index, result, headers) => {this.saveResults(index, result, headers)}}
-      afterViz={afterViz}
-      index={index} result={result}
-      notify={notify}
-      dismissNotify={dismissNotify}
-      />
+    if (!title) {
+      return null;
     }
+      
+    return <Visualizer key={id + index}
+                       index={index}
+                       headers={this.state.headers}
+                       flow_uuid={flow_uuid}
+                       frame_uuid={frame_uuid}
+                       lock_uuid={lock_uuid}
+                       stepIds={stepIds}
+                       visualize={visualize} 
+                       afterViz={afterViz}
+                       result={result}
+                       onSaveResult={(index, result, headers) => {this.saveResults(index, result, headers)}}
+                       notify={notify}
+                       dismissNotify={dismissNotify} />
+    
   }
 
   UNSAFE_componentWillReceiveProps(nextProps){
@@ -97,11 +116,17 @@ export default class PreviewModal extends React.Component<Props, State> {
 
     if (!Array.isArray(contents)) contents = [contents]
 
-    let tabs = []
+    let tabs: Tab[] = []
     
     //順番を維持するためForEachでLoop
     contents.forEach((content,index)=>{
-      const tab = <Tab key={"tab_" + index} width={"auto"} tab_id={index} selected_tab_id={selected_tab_id} onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>{content.title}</Tab>
+      const tab = <Tab key={"tab_" + index}
+                       width={"auto"} 
+                       tab_id={index} 
+                       selected_tab_id={selected_tab_id} 
+                       onClickTab={(e,tab_id)=>this.onClickTab(e,tab_id)}>
+        {content.title}
+      </Tab>
       tabs.push(tab)
     })
 

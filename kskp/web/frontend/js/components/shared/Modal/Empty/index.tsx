@@ -9,7 +9,7 @@ import style from './style.scss'
 
 type Props = {
   id : string
-  chldren: React.ReactNode
+  children: React.ReactNode
   close_button: any
   visible: boolean
   title: string

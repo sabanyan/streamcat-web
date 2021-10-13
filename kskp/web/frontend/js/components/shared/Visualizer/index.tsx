@@ -15,14 +15,14 @@ type Props = {
     index: number;
     visualize: VisualizeModel<VisualizeModelProps>;
     flow_uuid: string;
-    stepIds: string[];
-    frame_uuid: string;
+    stepIds: (string | null | undefined)[];
+    frame_uuid: string | null;
+    lock_uuid?: string;
     result: {
         args: {},
         html: any
     };
     headers: string[];
-
     afterViz: Function;
     onSaveResult: Function;
     notify: Function;
@@ -111,22 +111,40 @@ export default class Visualizer extends React.Component<Props, State> {
     }
 
     requestVisualize() {
-        const {index, flow_uuid, stepIds, frame_uuid, visualize} = this.props;
+        const {index, flow_uuid, stepIds, frame_uuid, lock_uuid, visualize} = this.props;
         const {onSaveResult, notify} = this.props;
-        return API.request.doPost.vizs({
-            flowUUID: flow_uuid,
-            stepIds: stepIds,
-            frameUUID: frame_uuid,
-            vizId: visualize.id,
-            args: this.state.args
-        })
+
+        // stepIdのリストから、stepIdをプロパティに持つオブジェクトへ変換する
+        const stepIdsToObj = (stepIds: (string | null | undefined)[]) => {
+            const obj = {};
+            stepIds.forEach((stepId) => {
+                if(stepId){
+                    obj[stepId] = {
+                        command_id: visualize.id,
+                        args: this.state.args
+                    };
+                }
+            });
+            return obj;
+        };
+
+        // POST /activitiesを発行する
+        return API.request.doPost.activities({
+                uuid: flow_uuid,
+                args: {
+                    // プレビュー実行はキャッシュの作成を許可する
+                    use_cache: true,
+                    vis: stepIdsToObj(stepIds)
+                },
+                lock: lock_uuid
+            })
             .then((res) => {
                 // JSON Parser
-                let json = API.response.post.vizs(res);
+                const json = API.response.post.activities(res);
                 // TODO: 将来はModel
-                let headers = json[0].args.column_names;
-                let contents = json[0].contents;
-                let args = this.state.args;
+                const headers = json.outs[0].args.column_names;
+                const contents = json.outs[0].contents;
+                const args = this.state.args;
                 const result = {
                     html: contents,
                     args: args
@@ -135,7 +153,6 @@ export default class Visualizer extends React.Component<Props, State> {
                 this.setState({args: args, html: contents});
             })
             .catch((exception) => {
-
                 if (exception.message !== "VisualizeInitException") {
                     notify({
                         title: exception.title,
@@ -145,7 +162,7 @@ export default class Visualizer extends React.Component<Props, State> {
                         closeButton: true
                     });
                 }
-                let args = this.state.args;
+                const args = this.state.args;
                 const result = {
                     html: null,
                     args: args

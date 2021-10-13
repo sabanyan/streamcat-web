@@ -37,6 +37,21 @@ type Props = {
     refreshFlow: Function;
 }
 
+type Content = {
+    flow_uuid: string;
+    stepIds: (string | null | undefined)[];
+    frame_uuid: string | null;
+    lock_uuid?: string;
+    visualize: any;
+}
+
+type Contents = {
+    title: string;
+    content: Content;
+    id: string | null | undefined;
+    afterViz: Function;
+}
+
 const DataFrameInspector = (props: Props) => {
 
     const flowIn = useRef<HTMLInputElement>(null);
@@ -118,13 +133,14 @@ const DataFrameInspector = (props: Props) => {
                 .then((result: any) => {
                     if (result.success === true) {
                         // preview
-                        let contents: any[] = [];
+                        let contents: Contents[] = [];
                         for (const v of visualizers) {
-                            let content = {
+                            let content : Content = {
                                 flow_uuid: flow_uuid,
                                 stepIds: stepIds,
                                 frame_uuid: selected_step.uuid,
-                                visualize: v
+                                visualize: v,
+                                lock_uuid: undefined
                             };
                             contents.push({title: v.label, content: content, id: id, afterViz: updateCache});
                         }
@@ -478,4 +494,4 @@ const DataFrameInspector = (props: Props) => {
 };
 
 
-export {DataFrameInspector};
+export {DataFrameInspector, Contents};
