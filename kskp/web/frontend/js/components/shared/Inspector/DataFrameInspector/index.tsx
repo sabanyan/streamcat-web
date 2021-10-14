@@ -396,10 +396,10 @@ const DataFrameInspector = (props: Props) => {
         content = <Loader center={true} absolute={true} fixed={false} visible={true} />;
     } else {
 
-        let fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0;
-        fileSize = StringUtil.convertToFileSize(fileSize);
-        let lastModifiedAt = selected_data_source_detail ? selected_data_source_detail.lastModifiedAt : "";
-        let lastModifier = selected_data_source_detail ? selected_data_source_detail.lastModifier : "";
+        const fileSize = selected_data_source_detail && selected_data_source_detail.fileSize ? selected_data_source_detail.fileSize : 0;
+        const fileSizeStr = StringUtil.convertToFileSize(fileSize);
+        const createdAt = selected_data_source_detail ? selected_data_source_detail.createdAt : "";
+        const creator = selected_data_source_detail ? selected_data_source_detail.creator : "";
 
         content = <div>
             <div className={style.property_overview}>
@@ -416,7 +416,7 @@ const DataFrameInspector = (props: Props) => {
                             ファイルサイズ
                         </div>
                         <div className={style.overview_value}>
-                            {fileSize}
+                            {fileSizeStr}
                         </div>
                     </div>
                     {renderFrameDetail(selected_data_source_detail)}
@@ -425,7 +425,7 @@ const DataFrameInspector = (props: Props) => {
                             作成日時
                         </div>
                         <div className={style.overview_value}>
-                            {lastModifiedAt} {/*{property.overview.created_at || ""}*/}
+                            {createdAt} {/*{property.overview.created_at || ""}*/}
                         </div>
                     </div>
                     <div className={style.overview}>
@@ -433,7 +433,7 @@ const DataFrameInspector = (props: Props) => {
                             作成者
                         </div>
                         <div className={style.overview_value}>
-                            {lastModifier}{/*{property.overview.created_user_name || ""}*/}
+                            {creator}{/*{property.overview.created_user_name || ""}*/}
                         </div>
                     </div>
                     <div className={style.overview}>

@@ -3,6 +3,7 @@ const baseUrl = "/api/v0"
 export const URL = {
     GET: {
         flows: baseUrl + "/flows",
+        frames: baseUrl + "/frames",
         commands: baseUrl + "/commands",
         visualizers: baseUrl + "/visualizers",
         subflows: baseUrl + "/subflows",

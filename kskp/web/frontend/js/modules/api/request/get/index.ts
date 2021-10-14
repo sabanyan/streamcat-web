@@ -1,6 +1,6 @@
 export {commands} from './commands/index'
-export {flow} from './flow/index'
 export {flows} from './flows/index'
+export {frames} from './frames/index'
 export {navigation} from './navigation/index'
 export {subflows} from './subflows/index'
 export {visualizers} from './visualizers'

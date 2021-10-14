@@ -111,6 +111,63 @@ export default class Visualizer extends React.Component<Props, State> {
     }
 
     requestVisualize() {
+        if(this.props.frame_uuid){
+            // Frameファイルのプレビューする
+            return this.getFrame()
+        }else{
+            // フローを実行してプレビューする
+            return this.postActivity()
+        }
+    }
+
+    getFrame() {
+        const {index, frame_uuid} = this.props;
+        const {onSaveResult, notify} = this.props;
+
+        if(!frame_uuid){
+            return new Promise<void>((resolve, reject) => {})
+        }
+
+        // GET /frames?contents を発行する
+        return API.request.doGet.frames({
+                frameUUID: frame_uuid,
+                contents: true
+            })
+            .then((res) => {
+                const json = API.response.get.frames(res);
+                const headers = json.args.column_names;
+                const contents = json.contents;
+                const result = {
+                    html: contents,
+                    args: this.state.args
+                };
+                onSaveResult(index, result, headers);
+                this.setState(result);
+            })
+            .catch((exception) => {
+                if (exception.message !== "VisualizeInitException") {
+                    notify({
+                        title: exception.title,
+                        message: exception.message,
+                        status: (exception.messageStatus) ? exception.messageStatus : "error",
+                        dismissAfter: 0,
+                        closeButton: true
+                    });
+                }
+                const result = {
+                    html: null,
+                    args: this.state.args
+                };
+                onSaveResult(index, result, []);
+                this.setState(result);
+            })
+            .then(() => {
+                const {afterViz} = this.props;
+                if (afterViz) afterViz();
+            });
+    }
+
+    postActivity() {
         const {index, flow_uuid, stepIds, frame_uuid, lock_uuid, visualize} = this.props;
         const {onSaveResult, notify} = this.props;
 
