@@ -599,6 +599,13 @@ class SystemTestCase(ApiTestCaseBase):
         # ROOTを取得する
         root = self.factory.data.load_root()
 
+        # ユーザを作成する
+        USER_X = self.factory.user.create('test-x@kskp.io', 'TestX', '~!@#$%^&*()')
+        USER_X.save()
+
+        # 仮登録状態から登録状態にする
+        USER_X.update_password('_)(*&^%$#@!')
+
         # ユーザ2は、本登録処理をする
         # (USER2は、TestCaseBase.setUpClass()で登録済みなので、MyProjectは作成されない)
         self.post_register_complete(self.USER2.uuid, 'adminpass0')
@@ -606,15 +613,17 @@ class SystemTestCase(ApiTestCaseBase):
         # プロジェクトを作成する
         data = {'parent': root.uuid,
                 'label' : 'プロジェクトX'}
-        self.post_uri('/api/v0/projects', data, self.USER2)
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project_uuid1 = result['data']['uuid']
 
         # プロジェクトを作成する
         data = {'parent': root.uuid,
                 'label' : 'プロジェクトY'}
-        self.post_uri('/api/v0/projects', data, self.USER2)
+        result = self.post_uri('/api/v0/projects', data, self.USER2)
+        project_uuid2 = result['data']['uuid']
 
         # プロジェクトメンバでないユーザが、プロジェクト管理者を取得する
-        result = self.get_uri(f'/api/v0/users/{self.USER2.uuid}?projects=on', self.USER3)
+        result = self.get_uri(f'/api/v0/users/{self.USER2.uuid}?projects=on', USER_X)
 
         # 期待するJSONが返ることを確認する
         self.assertIsNotNone(result['data']['uuid'])
@@ -631,23 +640,38 @@ class SystemTestCase(ApiTestCaseBase):
         self.assertEqual(result['data']['email'], 'test@kskp.io')
         self.assertEqual(result['data']['name'], 'Test')
         self.assertEqual(result['data']['state'], 'active')
-        # プロジェクトメンバでないユーザが所属しないプロジェクトは取得できない
-        self.assertEqual(len(result['data']['projects']), 2, msg=result['data']['projects'])
-        # プロジェクトX
+        # 自分が所属するプロジェクトの数を取得する
+        # (TestCaseBaseで'全員がメンバのデータデスト📂'プロジェクトを作成していることに注意)
+        self.assertEqual(len(result['data']['projects']), 3, msg=result['data']['projects'])
+        # データデスト📂
         self.assertIsNotNone(result['data']['projects'][0]['uuid'])
         self.assertEqual(result['data']['projects'][0]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][0]['label'], 'プロジェクトX')
+        self.assertEqual(result['data']['projects'][0]['label'], 'データデスト📂')
         self.assertIsNone(result['data']['projects'][0]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][0]['creator'])
         self.assertIsNotNone(result['data']['projects'][0]['createdAt'])
-        # プロジェクトY
+        # プロジェクトX
         self.assertIsNotNone(result['data']['projects'][1]['uuid'])
         self.assertEqual(result['data']['projects'][1]['type'], Datum.PROJECT_TYPE)
-        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトY')
+        self.assertEqual(result['data']['projects'][1]['label'], 'プロジェクトX')
         self.assertIsNone(result['data']['projects'][1]['prevFolderPath'])
         self.assertIsNotNone(result['data']['projects'][1]['creator'])
         self.assertIsNotNone(result['data']['projects'][1]['createdAt'])
+        # プロジェクトY
+        self.assertIsNotNone(result['data']['projects'][2]['uuid'])
+        self.assertEqual(result['data']['projects'][2]['type'], Datum.PROJECT_TYPE)
+        self.assertEqual(result['data']['projects'][2]['label'], 'プロジェクトY')
+        self.assertIsNone(result['data']['projects'][2]['prevFolderPath'])
+        self.assertIsNotNone(result['data']['projects'][2]['creator'])
+        self.assertIsNotNone(result['data']['projects'][2]['createdAt'])
 
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid1}', self.USER2)
+        self.delete_uri(f'/api/v0/projects/{project_uuid2}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
+        
     def test_get_tmp_user_with_roles(self):
         """
         一度も登録状態になっていないUserの本人ロールは存在しない
@@ -2412,8 +2436,11 @@ class SystemTestCase(ApiTestCaseBase):
         # ロックを解除する
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER3)
 
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
         # ゴミ箱を空にする
-        self.delete_uri('/api/v0/trashes', self.USER3)
+        self.delete_uri('/api/v0/trashes', self.USER2)
 
     def test_cannot_update_database_in_project(self):
         """
@@ -2565,16 +2592,8 @@ class SystemTestCase(ApiTestCaseBase):
             self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER0)
 
         # プロジェクトAのメンバは、フレームをプレビューできないこと
-        # Visデータのポイント引数の作成
-        data = {
-            "args" : {
-                "visualizer" : "csvtohtmltable",
-                "offset" : 0,
-                "limit"  : 100
-            }
-        }
         with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER0)
+            self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER0)
 
         # プロジェクトBのメンバは、フレームの参照・更新ができること
         result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': '水戸光圀公であらせられるぞ'}, self.USER3)
@@ -2631,16 +2650,8 @@ class SystemTestCase(ApiTestCaseBase):
             self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER0)
 
         # プロジェクトAのメンバは、フレームをプレビューできないこと
-        # Visデータのポイント引数の作成
-        data = {
-            "args" : {
-                "visualizer" : "csvtohtmltable",
-                "offset" : 0,
-                "limit"  : 100
-            }
-        }
         with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER0)
+            self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER0)
 
         # プロジェクトBのメンバは、フレームの参照・更新ができること
         result = self.put_uri(f'/api/v0/frames/{frame_uuid}', {'label': 'カタツムリ大作戦'}, self.USER3)
@@ -2905,14 +2916,14 @@ class SystemTestCase(ApiTestCaseBase):
         # 
         # USER0は、Flowを実行できること
         # 
-        result = self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER0)
-        lasts = result['lasts']
+        result = self.post_uri('/api/v0/activities', {'uuid':flow_uuid}, self.USER0)
+        activity_uuid = result['data']['uuid']
 
-        # 
-        # USER1は、Flowを実行できること
-        # 
-        result = self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER1)
-        lasts = result['lasts']
+        # # 
+        # # USER1は、Flowを実行できること
+        # # 
+        # result = self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER1)
+        # lasts = result['lasts']
 
         # 
         # USER2は、Flowを実行できないこと!
@@ -2934,6 +2945,19 @@ class SystemTestCase(ApiTestCaseBase):
         self.delete_uri(f'/api/v0/projects/{project_uuid3}', self.USER1)
         self.delete_uri(f'/api/v0/projects/{project_uuid2}', self.USER1)
         self.delete_uri(f'/api/v0/projects/{project_uuid1}', self.USER1)
+
+        # 
+        # プロジェクトAを削除しても、プロジェクトAに属するActivityが残るため、'プロジェクトA_readers'ロールが残る
+        # ここでロールが残るとself.test_get_admin_user()などのテストケースがパスしなくなる
+        # そのため、ここで生成されたActivityを強制的に削除する
+        # 
+        project1 = self.factory.data.find_by_uuid(project_uuid1)
+        activity = self.factory.data.find_by_uuid(activity_uuid)
+        # プロジェクトAに更新権限を付与する
+        project1_writers_role = project1._find_writers_role()
+        project1_writers_role.init_authz(activity.id, read=True, write=True, own=True)
+        # Activityをほかす
+        activity.throw_away()
 
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
@@ -3187,19 +3211,24 @@ class SystemTestCase(ApiTestCaseBase):
 
         # プロジェクト管理者は、編集ロックされた、かつキャッシュ出力をするフローをプレビューできること
         # (編集ロックによりキャッシュ出力をしない)
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        vis_args = {"uuid": flow_uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER2)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(outs[0]['id'], 'd1')
 
         # プロジェクト管理者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
@@ -3235,19 +3264,24 @@ class SystemTestCase(ApiTestCaseBase):
         self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
 
         # プロジェクト管理者は、編集ロックされたフローをプレビューできること
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        vis_args = {"uuid": flow_uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER2)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER2)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(outs[0]['id'], 'd1')
 
         # プロジェクト管理者は、フローの排他ロックを取得する
         result = self.post_uri('/api/v0/locks', {'target':flow_uuid}, self.USER2)
@@ -3467,19 +3501,25 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローをプレビュー実行して、キャッシュファイルを作成する
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        vis_args = {"uuid": flow_uuid,
+                    "lock": lock_uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER3)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER3)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(outs[0]['id'], 'd1')
 
         # 作成したキャッシュのUUIDを取得する
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
@@ -3556,19 +3596,25 @@ class SystemTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER3)
 
         # 編集者は、フローをプレビュー実行して、キャッシュファイルを作成する
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        vis_args = {"uuid": flow_uuid,
+                    "lock": lock_uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER3)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER3)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
+        self.assertEqual(outs[0]['id'], 'd1')
 
         # 作成したキャッシュのUUIDを取得する
         result = self.get_uri(f'/api/v0/flows/{flow_uuid}', self.USER3)
@@ -3592,12 +3638,12 @@ class SystemTestCase(ApiTestCaseBase):
         flow_uuid = result['data']['children'][0]['uuid']
 
         # 編集者は、複製したフローをプレビュー実行できること
-        result = self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER3)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER3)
+        data = result['data']
 
         # プロジェクトに属さないユーザは、複製したフローをプレビュー実行できないこと
         with self.assertRaises(AssertionError):
-            self.post_uri(f'/api/v0/vizs?from={flow_uuid}', vis_args, self.USER0)
+            self.post_uri(f'/api/v0/activities', vis_args, self.USER0)
 
         # プロジェクトを削除する
         self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)

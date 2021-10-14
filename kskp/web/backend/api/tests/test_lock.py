@@ -284,16 +284,16 @@ class LockTestCase(ApiTestCaseBase):
         result = self.put_uri(f'/api/v0/flows/{flow_uuid}', data, self.USER2)
 
         # Frameをプレビューする
-        vis_args = {"args" :
-                        {"visualizer" : "csvtohtmltable",
-                            "offset" : 0,
-                            "limit"  : 100
-                        }
-                    }
-        result = self.post_uri(f'/api/v0/vizs/{frame_uuid}', vis_args, self.USER2)
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER2)
 
         # Flowのロックを解除する
         result = self.post_uri(f'/api/v0/delete-locks/{lock_uuid}', {}, self.USER2)
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER2)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER2)
 
     # @unittest.skip
     def test_extend_lock(self):
@@ -459,6 +459,12 @@ class LockTestCase(ApiTestCaseBase):
 
         # ロックの有効期限を戻す
         lock_manager._valid_seconds = backup_valid_seconds
+
+        # プロジェクトを削除する
+        self.delete_uri(f'/api/v0/projects/{project_uuid}', self.USER1)
+
+        # ゴミ箱を空にする
+        self.delete_uri('/api/v0/trashes', self.USER1)
 
     def test_delete_locked_flow(self):
         """
