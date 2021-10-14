@@ -87,7 +87,6 @@ class FrameTestCase(ApiTestCaseBase):
         fetch_frame APIをテストする
         """
         from datetime import datetime
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # テストフレーム作成
         csv_data = [
@@ -103,6 +102,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         result = self.get_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
 
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
@@ -119,7 +119,6 @@ class FrameTestCase(ApiTestCaseBase):
         contents引数をつける
         """
         from datetime import datetime
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # テストフレーム作成
         csv_data = [
@@ -135,6 +134,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER1)
 
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.assertEqual(result['data']['encoding'], 'UTF-8')
         self.assertEqual(result['data']['newline'], 'LF')
         self.assertEqual(result['data']['fileSize'], 56)
@@ -152,7 +152,6 @@ class FrameTestCase(ApiTestCaseBase):
         offsetとlimitをつける
         """
         from datetime import datetime
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # テストフレーム作成
         csv_data = [
@@ -168,6 +167,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         result = self.get_uri('/api/v0/frames/%s?offset=2&limit=1' % frame_uuid, self.USER1)
 
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.assertEqual(result['success'], True)
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['encoding'], 'UTF-8')
@@ -182,7 +182,6 @@ class FrameTestCase(ApiTestCaseBase):
         header_onlyをつける
         """
         from datetime import datetime
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         # テストフレーム作成
         csv_data = [
@@ -198,6 +197,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         result = self.get_uri('/api/v0/frames/%s?header_only=1' % frame_uuid, self.USER1)
 
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.assertEqual(result['success'], True)
         self.assertEqual(result['data']['fileSize'], 56)
         self.assertEqual(result['data']['encoding'], 'UTF-8')
@@ -369,20 +369,26 @@ class FrameTestCase(ApiTestCaseBase):
         flow = self.save_flow(self.root, 'test', flow_json)
         
         # フローの実行
-        vis_args = { "d1" : 
-                        {"args" :
-                            {"visualizer" : "csvtohtmltable",
-                             "offset" : 0,
-                             "limit"  : 100
+        vis_args = {"uuid": flow.uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 100
+                                    }
+                                }
                             }
                         }
                     }
-        result = self.post_uri(f'/api/v0/vizs?from={flow.uuid}', vis_args, self.USER1)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER1)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
-        self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
+        self.assertEqual(outs[0]['id'], 'd1')
+        self.assertEqual(outs[0]['args']['column_names'], ['顧客', '数量'])
+        self.assertIsNotNone(outs[0].get('contents'))
 
 
     # @unittest.skip
@@ -544,24 +550,27 @@ class FrameTestCase(ApiTestCaseBase):
         flow_json['nodes'].append(input_node)
         flow = self.save_flow(self.root, 'test', flow_json)
         # Visデータのポイント引数の作成
-        data = {
-			"d1" : {
-                "args" : {
-                    "visualizer" : "csvtohtmltable",
-                    "offset" : 0,
-                    "limit"  : 0
-                }
-			}
-        }
-
+        vis_args = {"uuid": flow.uuid,
+                    "args": {"use_cache": True,
+                             "vis": {
+                                "d1": {
+                                    "command_id": "csvtohtmltable",
+                                    "args": {
+                                        "offset": 0,
+                                        "limit": 0
+                                    }
+                                }
+                            }
+                        }
+                    }
         # Visの取得
-        result = self.post_uri(f'/api/v0/vizs?from={flow.uuid}', data, self.USER1)
-        lasts = result['lasts']
+        result = self.post_uri(f'/api/v0/activities', vis_args, self.USER1)
+        outs = result['data']['outs']
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd1')
-        self.assertEqual(lasts[0]['args']['column_names'], ['顧客', '数量'])
-        self.assertIsNotNone(lasts[0].get('contents'))
+        self.assertEqual(outs[0]['id'], 'd1')
+        self.assertEqual(outs[0]['args']['column_names'], ['顧客', '数量'])
+        self.assertIsNotNone(outs[0].get('contents'))
 
     # @unittest.skip
     def test_bad_csv_vizs(self):
@@ -580,23 +589,14 @@ class FrameTestCase(ApiTestCaseBase):
         frame_path = self.root_path / 'test_data_4.csv'
         frame_uuid = self.create_data(frame_path, csv_data)
 
-        # Visデータのポイント引数の作成
-        data = {
-            "args" : {
-                "visualizer" : "csvtohtmltable",
-                "offset" : 0,
-                "limit"  : 5
-            }
-        }
-
         # Visの取得
-        result = self.post_uri(f'/api/v0/vizs/{frame_uuid}', data, self.USER1)
-        lasts = result['lasts']
+        result = self.get_uri(f'/api/v0/frames/{frame_uuid}?contents', self.USER1)
 
         # ラベルとIDチェック
-        self.assertEqual(lasts[0]['id'], 'd')
-        self.assertEqual(lasts[0]['args']['column_names'], ['顧客','','顧客'])
-        self.assertIsNotNone(lasts[0].get('contents'))
+        self.assertIsNotNone(result['data'].get('args'))
+        self.assertIsNotNone(result['data'].get('contents'))
+        self.assertEqual(result['data']['args']['column_names'], ['顧客','','顧客'])
+        self.assertTrue(result['data']['contents'].startswith('<!DOCTYPE html>'))
 
     def test_get_activity(self):
         """

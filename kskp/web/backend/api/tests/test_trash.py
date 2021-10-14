@@ -442,7 +442,7 @@ class TrashTestCase(ApiTestCaseBase):
             self.delete_uri(f'/api/v0/frames/{frame_uuid}', self.USER1)
 
         # プロジェクトを丸ごとほかせること
-        self.delete_uri(f'/api/v0/folders/{project1_uuid}', self.USER1)
+        self.delete_uri(f'/api/v0/projects/{project1_uuid}', self.USER1)
                          
         # ゴミ箱を空にする
         self.delete_uri('/api/v0/trashes', self.USER1)
