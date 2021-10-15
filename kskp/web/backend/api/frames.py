@@ -35,33 +35,35 @@ def make_new_frames():
         flow_uuid = request.args['from']
 
     flow = g.factory.data.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow)
-    return format_result(activity)
+    activity = _execute_flow(flow)
+    return _format_result(activity)
 
-@mod.route('/frames/<frame_uuid>')
+@mod.route('/frames/<frame_uuid>', methods=['GET'])
 @login_required_api
 @api_base
 def fetch_frame(frame_uuid):
     """
     frameを取得する
     """
-    get_contents = request.args.get('contents') is not None
+    contents = request.args.get('contents') is not None
+    offset = request.args.get('offset') or 0
+    limit = request.args.get('limit') or 100
 
     frame = g.factory.data.find_by_uuid(frame_uuid)
     if frame is None:
         raise Exception('no frame exists.')
     result = frame.to_json()
 
-    if get_contents:
+    if contents:
         from .utils import VisConverter
         # frameの内容を取得する
-        vis = get_vis(frame, args={'offset':0,'limit':22})
+        vis = _get_vis(frame, args={'offset':offset, 'limit':limit})
         result['args'] = {'column_names':vis.column_names}
         result['contents'] = VisConverter(vis)
 
     return result
 
-def get_vis(frame, args={}):
+def _get_vis(frame, args={}):
     """
     指定したframeのVisデータを取得する
     """
@@ -79,7 +81,7 @@ def get_vis(frame, args={}):
     # datasourceは保存しないので、親フォルダはどこでも良い
     datasource = parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame.uuid})
     # Visを取得する
-    activity = execute_flow(datasource, vis_args=vis_args)
+    activity = _execute_flow(datasource, vis_args=vis_args)
     if activity is None or len(activity.outs)==0:
         raise Exception('No out exists in activity')
     return activity.outs[0][1]
@@ -119,8 +121,8 @@ def create_frame():
             inputs = _make_flow_inputs(g.factory, flow_uuid, request)
             # フローの実行
             flow = g.factory.data.find_by_uuid(flow_uuid)
-            result = execute_flow(flow, args={'flow_args':flow_args}, inputs=inputs, lock_uuid=lock_uuid)
-            result = format_result(result)
+            result = _execute_flow(flow, args={'flow_args':flow_args}, inputs=inputs, lock_uuid=lock_uuid)
+            result = _format_result(result)
             return jsonify({'success': True, 'lasts': result})
         
         else:
@@ -191,39 +193,22 @@ def throw_away_frame(frame_uuid):
         raise Exception('no frame exists.')
     frame.throw_away()
 
-@mod.route('/vizs/<frame_uuid>', methods=['POST'])
-@login_required_api
-@frame_api_base
-def fetch_vis(frame_uuid):
-    """
-    指定したframeのVisデータを直接UUIDで指定して取得する
-    """
-    from kskp.depo.std.commands import LoaderCommand
-
-    vis_args = {'vis':{'d':request.json}}
-    frame = g.factory.data.find_by_uuid(frame_uuid)
-    parent_folder = frame.find_parent()
-    # datasourceは保存しないので、親フォルダはどこでも良い
-    datasource = parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame_uuid})
-    activity = execute_flow(datasource, vis_args=vis_args)
-    return format_vis(activity)
-
 @mod.route('/vizs', methods=['POST'])
 @login_required_api
 @frame_api_base
-def make_new_vizs():
+def make_new_vis():
     """
-    Visデータを取得する
+    フローを実行してVisを作成する
     """
-    if 'from' not in request.args:
-        raise Exception('from引数を指定してください')
-
-    flow_uuid = request.args['from']
-    vis_args = {'vis': request.json}
-
-    flow = g.factory.data.find_by_uuid(flow_uuid)
-    activity = execute_flow(flow, vis_args=vis_args)
-    return format_vis(activity)
+    # Vizを取得するには'vis'属性の指定が必須である
+    req = RequestJson(request.json)
+    args = req.get('args') or {}
+    vis_is_specified = 'vis' in args and isinstance(args['vis'], dict) and len(args['vis'].keys) > 0
+    if not vis_is_specified:
+        raise Exception("Vizを取得するには'vis'属性の指定が必須です")
+    # Activityを作成する
+    activity = _make_new_acitivity(req.get('flow'), req.get('uuid'), req.get('lock'), req.get('args'))
+    return _format_vis(activity)
 
 @mod.route('/activities/<activity_uuid>', methods=['GET'])
 @login_required_api
@@ -241,27 +226,31 @@ def make_new_acitivity():
     """
     フローを実行してActivityを作成する
     """
+    # Activityを作成する
+    req = RequestJson(request.json)
+    return _make_new_acitivity(req.get('flow'), req.get('uuid'), req.get('lock'), req.get('args'))
+
+def _make_new_acitivity(flow:dict=None, flow_uuid:str=None, lock_uuid:str=None, args:dict={}) -> dict:
+    """
+    フローを実行してActivityを作成する
+    """
     from kskp.store import FlowData
     from .utils import VisConverter
 
-    req = RequestJson(request.json)
-
-    if req.has_no_all('flow', 'uuid'):
+    if flow is None and flow_uuid is None:
         raise Exception('flowまたはuuid属性を指定してください')
-    elif req.has('flow') and req.has('uuid'):
+    elif flow is not None and flow_uuid is not None:
         raise Exception('flow属性とuuid属性は同時に指定できません')
 
-    if req.has('flow'):
+    if flow is not None:
         # フローリテラルが指定された場合
         root = g.factory.data.load_root()
-        flow = root.create_flow('LITERAL', FlowData(req['flow']))
-        args = req.get('args') or {}
-        activity = execute_flow(flow, args=args, lock_uuid=req.get('lock'))
-    elif req.has('uuid'):
+        flow = root.create_flow('LITERAL', FlowData(flow))
+        activity = _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
+    elif flow_uuid is not None:
         # UUIDでフローが指定された場合
-        flow = g.factory.data.find_by_uuid(req['uuid'])
-        args = req.get('args') or {}
-        activity = execute_flow(flow, args=args, lock_uuid=req.get('lock'))
+        flow = g.factory.data.find_by_uuid(flow_uuid)
+        activity = _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
     else:
         raise Exception(f'Either flow or uuid key is required')
 
@@ -279,7 +268,8 @@ def make_new_acitivity():
                         'args': {'column_names':out.column_names} if is_vis(out) else {},
                         'contents': VisConverter(out) if is_vis(out) else None
                         }
-                        for point, out in activity.outs]
+                        for point, out in activity.outs
+                      ]
     }
 
 @mod.route('/schedules', methods=['POST'])
@@ -306,7 +296,7 @@ def throw_away_schedule(schedule_uuid):
     schedule = g.factory.data.find_by_uuid(schedule_uuid)
     schedule.throw_away()
 
-def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
+def _execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
     """
     指定されたフローを実行し実行結果を取得する
     """
@@ -339,10 +329,10 @@ def execute_flow(flow, args={}, inputs={}, vis_args={}, lock_uuid=None):
         # raise Exception(str(e))
         raise
 
-def format_result(activity):
+def _format_result(activity):
     return [{'id':point.id, 'parent':frame.parent_uuid, 'uuid':frame.uuid, 'label':point.label} for point, frame in activity.outs]
 
-def format_vis(activity):
+def _format_vis(activity):
     from .utils import VisConverter
     # キャッシュ設定=ONのポイントをプレビューするとactivity.resultには、そのポイントにCacheとVisが紐づく
     return [{'id':point.id, 'args':{'column_names':vis.column_names}, 'contents':VisConverter(vis)} for point, vis in activity.outs]
