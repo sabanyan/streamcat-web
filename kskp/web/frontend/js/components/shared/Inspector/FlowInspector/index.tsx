@@ -77,7 +77,7 @@ const FlowInspector = (props: Props) => {
             resetRunArgsValue();
             if (response.data.success) {
                 const json: RunResponseType = response.data;
-                const result = json.lasts.map((n, index) => {
+                const result = json.data.outs.map((n, index) => {
                     return <li key={index}>{n.id}</li>;
                 });
                 const content = <div>

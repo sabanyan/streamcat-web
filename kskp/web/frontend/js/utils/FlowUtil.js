@@ -177,15 +177,17 @@ export default class FlowUtil {
       })
     }
 
-    let args = {}
+    // フロー実行ではキャッシュ作成を許可する
+    let args = {use_cache: true}
 
     runArgs.variables.map((v) => {
       args[v.name] = v.value
     })
 
     let body = {
-      flow_uuid: runArgs.flow_uuid,
+      uuid: runArgs.flow_uuid,
       args: args,
+      lock: runArgs.lock_uuid
     }
 
     runArgs.flows.map((f) => {
@@ -193,7 +195,7 @@ export default class FlowUtil {
     })
 
     return new Promise((resolve, reject) => {
-      APIUtil.post('frames', body).then((response) => {
+      APIUtil.post('activities', body).then((response) => {
         if (dismissNotify) dismissNotify(runNotify.id)
         if (!response.data.success) throw response
 

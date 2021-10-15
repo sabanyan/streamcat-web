@@ -99,7 +99,7 @@ export default class Visualizer extends React.Component<Props, State> {
                     html: null,
                     args: this.initArgs(visualize, {})
                 }, () => {
-                    this.requestVisualize()
+                    this.selectApi()
                         .then(() => {
                             this.setState({
                                 isLoading: false
@@ -110,8 +110,12 @@ export default class Visualizer extends React.Component<Props, State> {
         });
     }
 
-    requestVisualize() {
-        if(this.props.frame_uuid){
+    // GET /framesでの取得はWebブラウザでのキャッシュを期待できる
+    selectApi() {
+        const {stepIds, frame_uuid, visualize} = this.props;
+        const args = this.state.args;
+
+        if(frame_uuid && visualize.id == 'csvtohtmltable'){
             // Frameファイルのプレビューする
             return this.getFrame()
         }else{
@@ -131,7 +135,8 @@ export default class Visualizer extends React.Component<Props, State> {
         // GET /frames?contents を発行する
         return API.request.doGet.frames({
                 frameUUID: frame_uuid,
-                contents: true
+                contents: true,
+                ...this.state.args
             })
             .then((res) => {
                 const json = API.response.get.frames(res);
@@ -168,8 +173,14 @@ export default class Visualizer extends React.Component<Props, State> {
     }
 
     postActivity() {
-        const {index, flow_uuid, stepIds, frame_uuid, lock_uuid, visualize} = this.props;
+        const {index, flow_uuid, frame_uuid, lock_uuid, visualize} = this.props;
         const {onSaveResult, notify} = this.props;
+        let stepIds = this.props.stepIds;
+        
+        if(!stepIds){
+            // datasourceによるプレビューでは対象Pointのidは'd'である
+            stepIds = ['d'];
+        }
 
         // stepIdのリストから、stepIdをプロパティに持つオブジェクトへ変換する
         const stepIdsToObj = (stepIds: (string | null | undefined)[]) => {
@@ -185,9 +196,10 @@ export default class Visualizer extends React.Component<Props, State> {
             return obj;
         };
 
-        // POST /activitiesを発行する
-        return API.request.doPost.activities({
+        // POST /vizsを発行する
+        return API.request.doPost.vizs({
                 uuid: flow_uuid,
+                frame: frame_uuid,
                 args: {
                     // プレビュー実行はキャッシュの作成を許可する
                     use_cache: true,
@@ -197,10 +209,10 @@ export default class Visualizer extends React.Component<Props, State> {
             })
             .then((res) => {
                 // JSON Parser
-                const json = API.response.post.activities(res);
+                const json = API.response.post.vizs(res);
                 // TODO: 将来はModel
-                const headers = json.outs[0].args.column_names;
-                const contents = json.outs[0].contents;
+                const headers = json[0].args.column_names;
+                const contents = json[0].contents;
                 const args = this.state.args;
                 const result = {
                     html: contents,
@@ -250,7 +262,7 @@ export default class Visualizer extends React.Component<Props, State> {
 
     apply(args: {}) {
         this.setState({args: args, isLoading: true}, () => {
-            this.requestVisualize()
+            this.selectApi()
                 .then(() => {
                     this.setState({isLoading: false});
                 });

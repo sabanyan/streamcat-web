@@ -60,7 +60,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     renderRunResult(json: RunResponseType) {
-        const result = json.lasts.map((n) => {
+        const result = json.data.outs.map((n) => {
             return <li>{n.id}</li>;
         });
         const content = <div>
@@ -72,9 +72,10 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     run() {
-        let { notify, dismissNotify } = this.props;
+        let { notify, dismissNotify, lockUUID } = this.props;
         const runArgs = {
             "flow_uuid": inject_flow_uuid,
+            "lock_uuid": lockUUID,
             "flows": [],
             "variables": []
         };
@@ -84,7 +85,7 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
                     const json: RunResponseType = response.data;
                     const content = this.renderRunResult(json);
                     // TODO：将来、複数出力ごとにparentが異なる場合、仕様から要検討
-                    const parentFolderUUID = json.lasts[0].parent; //　今はlasts[0]
+                    const parentFolderUUID = json.data.outs[0].parent; //　今はlasts[0]
                     // 結果出力
                     let notifyId = notify({
                         title: "フロー実行完了",
