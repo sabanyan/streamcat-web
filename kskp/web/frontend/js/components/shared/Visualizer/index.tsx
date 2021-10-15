@@ -211,8 +211,8 @@ export default class Visualizer extends React.Component<Props, State> {
                 // JSON Parser
                 const json = API.response.post.vizs(res);
                 // TODO: 将来はModel
-                const headers = json[0].args.column_names;
-                const contents = json[0].contents;
+                const headers = json.outs[0].args.column_names;
+                const contents = json.outs[0].contents;
                 const args = this.state.args;
                 const result = {
                     html: contents,

@@ -16,7 +16,7 @@ type Outs = {
     contents: string | null;
 }
 
-type ActivitiesData = {
+export type ActivitiesData = {
     // 新規作成したActivityのUUID
     uuid: string;
     // 固定値'activity'
