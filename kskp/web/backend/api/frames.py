@@ -43,31 +43,30 @@ def make_new_frames():
 @api_base
 def fetch_frame(frame_uuid):
     """
-    frameを取得する
+    Frameを取得する
     """
     contents = request.args.get('contents') is not None
     offset = request.args.get('offset') or 0
     limit = request.args.get('limit') or 100
 
+    # Frameを取得する
     frame = g.factory.data.find_by_uuid(frame_uuid)
-    if frame is None:
-        raise Exception('no frame exists.')
-    result = frame.to_json()
 
     if contents:
         from .utils import VisConverter
+        result_json = frame.to_json()
         # frameの内容を取得する
-        vis = _get_vis(frame, args={'offset':offset, 'limit':limit})
-        result['args'] = {'column_names':vis.column_names}
-        result['contents'] = VisConverter(vis)
+        vis = _get_vis(frame_uuid, args={'offset':offset, 'limit':limit})
+        result_json['args'] = {'column_names':vis.column_names}
+        result_json['contents'] = VisConverter(vis)
+        return result_json
+    else:
+        return frame
 
-    return result
-
-def _get_vis(frame, args={}):
+def _get_vis(frame_uuid:str, args={}):
     """
     指定したframeのVisデータを取得する
     """
-    from kskp.depo.std.commands import LoaderCommand
     VIZ_POINT_ID = 'd'
     vis_args = {'vis': 
                     {VIZ_POINT_ID: 
@@ -77,10 +76,8 @@ def _get_vis(frame, args={}):
                         }
                     }
                }
-    parent_folder = frame.find_parent()
-    # datasourceは保存しないので、親フォルダはどこでも良い
-    datasource = parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame.uuid})
     # Visを取得する
+    datasource = _make_flow(frame_uuid=frame_uuid)
     activity = _execute_flow(datasource, vis_args=vis_args)
     if activity is None or len(activity.outs)==0:
         raise Exception('No out exists in activity')
@@ -207,7 +204,8 @@ def make_new_vis():
     if not vis_is_specified:
         raise Exception("Vizを取得するには'vis'属性の指定が必須です")
     # Activityを作成する
-    activity = _make_new_acitivity(req.get('flow'), req.get('uuid'), req.get('lock'), req.get('args'))
+    flow = _make_flow(flow_uuid=req.get('uuid'), frame_uuid=req.get('frame'), flow_json=req.get('flow'))
+    activity = _make_new_acitivity(flow, req.get('lock'), req.get('args'))
     return _format_vis(activity)
 
 @mod.route('/activities/<activity_uuid>', methods=['GET'])
@@ -228,35 +226,56 @@ def make_new_acitivity():
     """
     # Activityを作成する
     req = RequestJson(request.json)
-    return _make_new_acitivity(req.get('flow'), req.get('uuid'), req.get('lock'), req.get('args'))
+    flow = _make_flow(flow_uuid=req.get('uuid'), flow_json=req.get('flow'))
+    return _make_new_acitivity(flow, req.get('lock'), req.get('args'))
 
-def _make_new_acitivity(flow:dict=None, flow_uuid:str=None, lock_uuid:str=None, args:dict={}) -> dict:
+def _make_flow(flow_uuid:str=None, frame_uuid:str=None, flow_json:dict=None) -> object:
+    """
+    リクエストJSONで指定された属性値からフローを用意する
+    """
+    # 引数の指定を検証する
+    if frame_uuid is not None:
+        if flow_uuid is not None or flow_json is not None:
+            raise Exception('flow,uuidまたはframe属性は同時に指定できません')
+    elif flow_uuid is not None:
+        if frame_uuid is not None or flow_json is not None:
+            raise Exception('flow,uuidまたはframe属性は同時に指定できません')
+    elif flow_json is not None:
+        if frame_uuid is not None or flow_uuid is not None:
+            raise Exception('flow,uuidまたはframe属性は同時に指定できません')
+    elif frame_uuid is None and flow_uuid is None and flow_json is None:
+        raise Exception('flow,uuidまたはframe属性を指定してください')
+
+    if frame_uuid is not None:
+        # FrameのUUIDが指定された場合
+        from kskp.depo.std.commands import LoaderCommand
+        frame = g.factory.data.find_by_uuid(frame_uuid)
+        parent_folder = frame.find_parent()
+        # datasourceは保存しないので、親フォルダはどこでも良い
+        return parent_folder.create_datasource('tmp_source', parent_folder, LoaderCommand(), {'uuid':frame.uuid})
+    elif flow_uuid is not None:
+        # FlowのUUIDが指定された場合
+        return g.factory.data.find_by_uuid(flow_uuid)
+    elif flow_json is not None:
+        # フローJSONが指定された場合
+        from kskp.store import FlowData
+        root = g.factory.data.load_root()
+        return root.create_flow('FLOW_LITERAL', FlowData(flow_json))
+    else:
+        raise Exception(f'Either flow or flow uuid or frame uuid is required')
+
+def _make_new_acitivity(flow:object, lock_uuid:str=None, args:dict={}) -> dict:
     """
     フローを実行してActivityを作成する
     """
-    from kskp.store import FlowData
     from .utils import VisConverter
-
-    if flow is None and flow_uuid is None:
-        raise Exception('flowまたはuuid属性を指定してください')
-    elif flow is not None and flow_uuid is not None:
-        raise Exception('flow属性とuuid属性は同時に指定できません')
-
-    if flow is not None:
-        # フローリテラルが指定された場合
-        root = g.factory.data.load_root()
-        flow = root.create_flow('LITERAL', FlowData(flow))
-        activity = _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
-    elif flow_uuid is not None:
-        # UUIDでフローが指定された場合
-        flow = g.factory.data.find_by_uuid(flow_uuid)
-        activity = _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
-    else:
-        raise Exception(f'Either flow or uuid key is required')
 
     def is_vis(out):
         from kskp.store import Vis
         return isinstance(out, Vis)
+
+    # フローを実行してActivityを作成する
+    activity = _execute_flow(flow, args=args or {}, lock_uuid=lock_uuid)
 
     return {'uuid' : activity.uuid,
             'type' : activity.type,

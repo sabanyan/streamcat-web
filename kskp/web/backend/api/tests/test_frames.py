@@ -829,7 +829,7 @@ class FrameTestCase(ApiTestCaseBase):
         # POST /activitiesの結果を検証する
         self.assertIsNotNone(data['uuid'])
         self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
-        self.assertEqual(data['label'], 'LITERAL')
+        self.assertEqual(data['label'], 'FLOW_LITERAL')
         self.assertEqual(len(outs), 1)
         self.assertEqual(outs[0]['id'], 'd')
         self.assertEqual(outs[0]['label'], 'd')
@@ -1222,7 +1222,7 @@ class FrameTestCase(ApiTestCaseBase):
         # POST /activitiesの結果を検証する
         self.assertIsNotNone(data['uuid'])
         self.assertEqual(data['type'], Datum.ACTIVITY_TYPE)
-        self.assertEqual(data['label'], 'LITERAL')
+        self.assertEqual(data['label'], 'FLOW_LITERAL')
         self.assertEqual(len(outs), 1)
         self.assertEqual(outs[0]['id'], 'f_d2')
         self.assertEqual(outs[0]['label'], 'f_d2')
