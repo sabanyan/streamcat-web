@@ -1,7 +1,6 @@
 import { ApiBase } from 'Modules/api/core/index'
 import { URL } from 'Modules/api/core/url/index';
 import { Url, LockUUID } from "Modules/api/core/types/request";
-import axios from 'axios'
 
 type Props = Url & LockUUID & {
     flowUUID: string
