@@ -40,7 +40,7 @@ class SchedulerTest(ApiTestCaseBase):
         self.assertIsNotNone(result['data']['uuid'])
         self.assertEqual(result['data']['type'], 'schedule')
         self.assertEqual(result['data']['label'], '私のスケジュール')
-        self.assertEqual(result['data']['folderPath'], f'/{root.label}/プロジェクトだよ')
+        self.assertIsNone(result['data']['folderPath'])
         self.assertEqual(result['data']['folderUuid'], project_uuid)
         self.assertEqual(result['data']['prevFolderPath'], None)
         self.assertEqual(result['data']['creator'], 'ユーザー管理者')

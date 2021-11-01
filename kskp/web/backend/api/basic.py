@@ -153,7 +153,7 @@ def fetch_flow(flow_uuid):
     指定されたフローを取得する
     """
     minimize = request.args.get('mini') is not None
-    flow = g.factory.data.find_by_uuid(flow_uuid)
+    flow = g.factory.data.find_by_uuid(flow_uuid, folder_path=True)
     ret = flow.to_json()
     ret.update({'flow' : flow.flow_data.to_json(minimize=minimize)})
     return ret
