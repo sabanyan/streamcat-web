@@ -56,7 +56,6 @@ import { NotAllowed } from 'Components/NotAllowedContainer';
 import { TextField } from 'Shared/Input';
 import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
-import { AxiosResponse } from "axios";
 import _ from 'lodash';
 
 interface Props {

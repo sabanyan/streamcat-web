@@ -961,7 +961,7 @@ const Library = (_: Props) => {
                 window.open(WebUtil.webURL("/flows/" + body.uuid + dialogOption));
             }
             if (body.type === "document") {
-                window.open(WebUtil.webURL("/api/v0/documents/" + body.uuid));
+                window.open(WebUtil.webURL("/documents/" + body.uuid));
             }
 
         };

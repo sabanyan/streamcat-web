@@ -91,7 +91,7 @@ def delete_store(store_id):
     store = g.factory.store.find_by_id(store_id)
     store.delete()
 
-def _jsonify_folder(folder):
+def _jsonify_folder(folder, prev_folder_path=False):
     """
     NOTE: この関数を呼び出す前にfolderがNoneで無いかチェックすること
     """
@@ -99,7 +99,7 @@ def _jsonify_folder(folder):
         raise Exception('The folder argument must not be None.')
 
     # フォルダ直下のフォルダとデータベースとドキュメントを取得する
-    children = folder.find_children()
+    children = folder.find_children(prev_folder_path=prev_folder_path)
 
     # children属性を作成する
     data = folder.to_json()
@@ -129,7 +129,7 @@ def fetch_trashes():
     ゴミ箱を返却する
     """
     trash_folder = g.factory.data.find_trashcan()
-    return _jsonify_folder(trash_folder)
+    return _jsonify_folder(trash_folder, prev_folder_path=True)
 
 @mod.route('/trashes/<datum_uuid>', methods=['PUT'])
 @login_required_api
@@ -480,7 +480,7 @@ def fetch_document(document_uuid):
     ドキュメントを返却する
     """
     document = g.factory.data.find_by_uuid(document_uuid)
-    return send_from_directory(document.path.parent, document.path.name, mimetype=document.content_type)
+    return send_from_directory(document.path.parent, document.path.name, download_name=document.label, mimetype=document.content_type)
 
 @mod.route('/documents', methods=['POST'])
 @login_required_api

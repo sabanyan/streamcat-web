@@ -59,6 +59,14 @@ def flow_designer(flow_uuid):
 def preview():
     return make_response('preview.html', is_preview=True)
 
+@mod.route('/documents/<document_uuid>', methods=['GET'])
+@login_required
+@login_required_api
+def document(document_uuid):
+    from flask import g
+    document = g.factory.data.find_by_uuid(document_uuid)
+    return make_response('document.html', document_uuid=document_uuid, label='👁' + document.label)
+
 # 開発用画面
 # TODO: 将来、見れる権限の検討が必要かも
 @mod.route('/dev', methods=['GET', 'PUT'])

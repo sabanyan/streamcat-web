@@ -152,23 +152,22 @@ const LibraryInspector = (props: Props) => {
         }
 
         if (data.type === Constants.library.type.frame) {
-            // 文字コードがあれば、表示する
-            let encoding, fileSize;
-            if (data.encoding) {
-                encoding = <React.Fragment key={data.encoding}>
-                    <div><label>{display.encoding}</label></div>
-                    <div className={"mb-8px"}>{data.encoding}</div>
-                </React.Fragment>;
-
-                result.push(encoding);
-            }
-
+            // ファイルサイズがあれば、表示する
             if (data.fileSize !== undefined) {
-                fileSize = <React.Fragment key={data.fileSize}>
+                const fileSize = <React.Fragment key={data.fileSize}>
                     <div><label>{display.fileSize}</label></div>
                     {data.fileSize ? <div className={"mb-8px"}>{StringUtil.convertToFileSize(data.fileSize)}</div> : 0}
                 </React.Fragment>;
                 result.push(fileSize);
+            }
+
+            // 文字コードがあれば、表示する
+            if (data.encoding) {
+                const encoding = <React.Fragment key={data.encoding}>
+                    <div><label>{display.encoding}</label></div>
+                    <div className={"mb-8px"}>{data.encoding}</div>
+                </React.Fragment>;
+                result.push(encoding);
             }
 
             // 改行コードがあれば、表示する
@@ -178,7 +177,6 @@ const LibraryInspector = (props: Props) => {
                     <div><label>{display.newline}</label></div>
                     <div className={"mb-8px"}>{data.newline}</div>
                 </React.Fragment>;
-
                 result.push(newline);
             }
         }
