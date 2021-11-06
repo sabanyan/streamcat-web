@@ -1,8 +1,7 @@
-export type CommonResponse<lasts, data> = {
+export type CommonResponse<DataType> = {
     data: {
         success     : boolean
-        lasts       : lasts
-        data        : data
+        data        : DataType
         message?    : string
         code?       : number
     }

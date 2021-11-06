@@ -4,7 +4,7 @@ import { MessageModel } from 'Model/index'
 import { FlowModelProps, FlowModel } from "Model/index";
 
 
-export type FlowResponse = CommonResponse<undefined, FlowModelProps>
+export type FlowResponse = CommonResponse<FlowModelProps>
 export function flow(res: any): FlowModel | undefined {
     let result
 

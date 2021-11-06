@@ -27,7 +27,7 @@ export type ActivitiesData = {
     outs: Outs[];
 }
 
-export type ActivitiesResponse = CommonResponse<undefined, ActivitiesData>
+export type ActivitiesResponse = CommonResponse<ActivitiesData>
 export function activities(res: Response<ActivitiesResponse>): ActivitiesData {
     if (!res.data.success) {
         throw new MessageModel({ title: "Post /activities Exception", messageStatus: "error", code: res.data.code, message: res.data.message });

@@ -14,7 +14,7 @@ type FramesData = {
     contents: string | null;   
 }
 
-export type FramesResponse = CommonResponse<undefined, FramesData>
+export type FramesResponse = CommonResponse<FramesData>
 export function frames(res: Response<FramesResponse>): FramesData {
     if (!res.data.success) {
         throw new MessageModel({ title: "Get /frames Exception", messageStatus: "error", code: res.data.code, message: res.data.message });

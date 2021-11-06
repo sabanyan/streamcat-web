@@ -9,7 +9,7 @@ type LocksData = {
     creater: number,
     created_at: string
 }
-export type LockResponse = CommonResponse<undefined, LocksData>
+export type LockResponse = CommonResponse<LocksData>
 export function locks(res: Response<LockResponse>): LocksData {
     if (!res.data.success) {
         throw new MessageModel({ title: "POST /locks Exception", messageStatus: "warning", code: res.data.code, message: res.data.message })

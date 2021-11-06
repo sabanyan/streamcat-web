@@ -4,7 +4,7 @@ import { MessageModel } from 'Model/index'
 import { NavigationModel, NavigationModelProps } from "Model/index";
 
 
-export type VizResponse = CommonResponse<undefined, NavigationModelProps>
+export type VizResponse = CommonResponse<NavigationModelProps>
 export function navigation(res: VizResponse): NavigationModel | undefined {
     let result
 

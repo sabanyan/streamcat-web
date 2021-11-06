@@ -7,7 +7,7 @@ type ExtendLocksData = {
 
 }
 
-export type ExtendLocksResponse = CommonResponse<undefined, ExtendLocksData>
+export type ExtendLocksResponse = CommonResponse<ExtendLocksData>
 export function extendLocks(res: Response<ExtendLocksResponse>): ExtendLocksData {
     if (!res.data.success) {
         throw new MessageModel({ title: "POST /extend-locks Exception", messageStatus: "warning", code: res.data.code, message: res.data.message })

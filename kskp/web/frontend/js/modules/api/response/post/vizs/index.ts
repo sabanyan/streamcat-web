@@ -4,13 +4,13 @@ import { ActivitiesData } from '../activities'
 
 type VisData = ActivitiesData;
 
-export type VisResponse = CommonResponse<VisData, undefined>
+export type VisResponse = CommonResponse<VisData>
 export function vizs(res: Response<VisResponse>): VisData {
     if (!res.data.success) {
         throw new MessageModel({ title: "Post /vizs Exception", messageStatus: "error", code: res.data.code, message: res.data.message })
-    } else if (!res.data.lasts) {
+    } else if (!res.data.data) {
         throw new MessageModel({ title: "Post /vizs JSON Parsing Exception", messageStatus: "error", code: res.data.code, message: res.data.message })
     }
 
-    return res.data.lasts
+    return res.data.data
 }
