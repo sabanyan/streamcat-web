@@ -2923,7 +2923,7 @@ class SystemTestCase(ApiTestCaseBase):
         # # USER1は、Flowを実行できること
         # # 
         # result = self.post_uri('/api/v0/frames', {'flow_uuid':flow_uuid}, self.USER1)
-        # lasts = result['lasts']
+        # lasts = result['data']
 
         # 
         # USER2は、Flowを実行できないこと!

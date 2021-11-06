@@ -8,7 +8,7 @@ def api_base(func):
     """
     @functools.wraps(func)
     def wrapper(**kwargs):
-        from kskp.store import NothingToPutbackException
+        from kskp.store import NothingToPutbackException, NoResultsException
         from kskp.store.lock import LockedDatumException
 
         try:
@@ -30,33 +30,6 @@ def api_base(func):
                             'code'   : -3,
                             'message': str(e)
                         })
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            return jsonify({
-                            'success': False,
-                            'code'   : -1,
-                            'message': str(e)
-                        })
-    return wrapper
-
-
-def frame_api_base(func):
-    """
-    Frame関連のAPIは戻り値を'lasts'属性に格納して返す
-    そのためapi_baseとは別のクラスを用意する
-    """
-    @functools.wraps(func)
-    def wrapper(**kwargs):
-        from kskp.store import NoResultsException
-
-        try:
-            # デコレート対象関数の呼び出し
-            result = func(**kwargs)
-            if result is None:
-                return jsonify({'success': True})
-            else:
-                return jsonify({'success': True, 'lasts': result})
         except NoResultsException as e:
             return jsonify({
                             'success': False,
