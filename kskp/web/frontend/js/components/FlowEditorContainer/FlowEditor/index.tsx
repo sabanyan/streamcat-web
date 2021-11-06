@@ -242,7 +242,7 @@ const FlowEditor = (props: Props) => {
                         // 別名保存時は、新しいフロー（別名フロー）のロックを取得する
                         API.request.doPost.locks({ flowUUID: saveAsFlowUUID })
                             .then((res) => {
-                                const newLockUUID = API.response.post.locks(res).uuid;
+                                const newLockUUID = API.response.post.locks(res.data).uuid;
                                 // 新規に作成した newFlow の uuid を設定して保存する
                                 saveFlowPromise(targetFlow, saveAsFlowUUID, newLockUUID).then(() => {
                                     // 転移する前にnewFlowのロックは一度解除する
@@ -411,7 +411,7 @@ const FlowEditor = (props: Props) => {
         // 取得処理
         API.request.doPost.locks({ flowUUID: inject_flow_uuid, lastModifiedAt: modifiedAt })
             .then((res) => {
-                const newLockUUID = API.response.post.locks(res).uuid;
+                const newLockUUID = API.response.post.locks(res.data).uuid;
                 setLockUUID(newLockUUID);
                 // モードは変更せずに ReadOnly だけオフにする
                 setReadOnly(false);
@@ -459,7 +459,7 @@ const FlowEditor = (props: Props) => {
         // 取得処理
         API.request.doPost.locks({ flowUUID: inject_flow_uuid })
             .then((res) => {
-                const newLockUUID = API.response.post.locks(res).uuid;
+                const newLockUUID = API.response.post.locks(res.data).uuid;
                 setLockUUID(newLockUUID);
                 setEditMode(FlowEditModeValue.Editable)
                 // ロックの自動更新を有効にする
@@ -501,7 +501,7 @@ const FlowEditor = (props: Props) => {
         // 延長処理
         API.request.doPost.extendLocks({ lockUUID: lockUUID })
             .then((res) => {
-                API.response.post.extendLocks(res);
+                API.response.post.extendLocks(res.data);
                 // 取得した lockUUID を設定
                 setLockUUID(lockUUID);
             })

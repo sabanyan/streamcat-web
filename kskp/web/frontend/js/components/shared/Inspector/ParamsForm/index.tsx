@@ -45,7 +45,7 @@ export type Group = {
 
 type Props = {
     params: CommandParamType[];//パラメーター定義
-    groups?: [];　//パラメータのグルプ定義
+    groups?: string[];　//パラメータのグルプ定義
     args: {};//入力値
     invalids: {}; // Validationチェック内容
     command?: CommandModel;

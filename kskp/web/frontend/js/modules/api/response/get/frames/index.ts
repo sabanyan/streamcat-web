@@ -15,11 +15,11 @@ type FramesData = {
 }
 
 export type FramesResponse = CommonResponse<FramesData>
-export function frames(res: Response<FramesResponse>): FramesData {
-    if (!res.data.success) {
-        throw new MessageModel({ title: "Get /frames Exception", messageStatus: "error", code: res.data.code, message: res.data.message });
-    } else if (!res.data.data) {
-        throw new MessageModel({ title: "Get /frames JSON Parsing Exception", messageStatus: "error", code: res.data.code, message: res.data.message });
+export function frames(res: FramesResponse): FramesData {
+    if (!res.success) {
+        throw new MessageModel({ title: "Get /frames Exception", messageStatus: "error", code: res.code, message: res.message });
+    } else if (!res.data) {
+        throw new MessageModel({ title: "Get /frames JSON Parsing Exception", messageStatus: "error", code: res.code, message: res.message });
     }
-    return res.data.data;
+    return res.data;
 }

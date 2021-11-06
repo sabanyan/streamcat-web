@@ -5,17 +5,16 @@ import { FlowModelProps, FlowModel } from "Model/index";
 
 
 export type FlowResponse = CommonResponse<FlowModelProps>
-export function flow(res: any): FlowModel | undefined {
-    let result
+export function flow(res: FlowResponse): FlowModel | undefined {
 
-    if (!res.data.success) {
-        throw new MessageModel({ title: "Get Flow Exception", messageStatus: "error", code: res.data.code, message: res.data.message })
+    if (!res.success) {
+        throw new MessageModel({ title: "Get Flow Exception", messageStatus: "error", code: res.code, message: res.message })
     }
-    if (!res.data.data) {
-        throw new MessageModel({ title: "Get /Flow JSON Parsing Exception", messageStatus: "error", code: res.data.code, message: res.data.message })
+    if (!res.data) {
+        throw new MessageModel({ title: "Get /Flow JSON Parsing Exception", messageStatus: "error", code: res.code, message: res.message })
     }
-    let props = {...res.data.data.flow, folderPath: res.data.data.folderPath, folderUuid: res.data.data.folderUuid};
-    props.label = res.data.data.label;
+    let props = {...res.data, folderPath: res.data.folderPath, folderUuid: res.data.folderUuid};
+    props.label = res.data.label;
     return new FlowModel(props)
 }
 

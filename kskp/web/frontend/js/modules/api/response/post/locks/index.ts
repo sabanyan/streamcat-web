@@ -11,11 +11,11 @@ type LocksData = {
 }
 export type LockResponse = CommonResponse<LocksData>
 export function locks(res: Response<LockResponse>): LocksData {
-    if (!res.data.success) {
-        throw new MessageModel({ title: "POST /locks Exception", messageStatus: "warning", code: res.data.code, message: res.data.message })
-    } else if (!res.data.data) {
-        throw new MessageModel({ title: "POST /locks JSON Parsing Exception", messageStatus: "error", code: res.data.code, message: res.data.message })
+    if (!res.success) {
+        throw new MessageModel({ title: "POST /locks Exception", messageStatus: "warning", code: res.code, message: res.message })
+    } else if (!res.data) {
+        throw new MessageModel({ title: "POST /locks JSON Parsing Exception", messageStatus: "error", code: res.code, message: res.message })
     }
 
-    return res.data.data
+    return res.data
 }

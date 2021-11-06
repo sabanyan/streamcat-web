@@ -1,4 +1,4 @@
-import React from 'react'
+import React, {Suspense} from 'react'
 import {SortEndHandler} from "react-sortable-hoc";
 import {
   CommandInspector,
@@ -192,7 +192,9 @@ class Inspector extends React.Component<InspectorProps> {
       <Resizer
         inspector={inspector}
         resizeInspector={resizeInspector}>
-        {property}
+        <Suspense fallback={<p>Loading...</p>}>
+          {property}
+        </Suspense>
       </Resizer>
     </React.Fragment>
   }

@@ -1,16 +1,15 @@
 import * as React from "react";
-import {useEffect, useState} from "react";
+import {useAsyncResource} from 'use-async-resource';
 import {SortEndHandler} from "react-sortable-hoc";
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
-import {CommandStepModel, SubflowCommandModel} from "Model/index";
+import {LibraryModel, SubflowCommandModel} from "Model/index";
 import Constants from "Constants/index";
-import {APIUtil, GraphUtil, ModalUtil, StateUtil} from "Utils/index";
+import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
+import {CommonResponse} from 'Modules/api/core/index';
 import {CommandParamType, MastType, StepModelType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
-import FlowModel from "Model/Flow/FlowModel";
-import {Loader} from "Shared/Base";
 
 type Props = {
     selected_step_ids: string[];
@@ -25,39 +24,29 @@ type Props = {
     baseInspectorDisabled: boolean;
 }
 
+// GET /flowsを発行する関数を定義する
+type LibraryResponse = CommonResponse<LibraryModel>;
+const fetchFlow = (uuid: number): Promise<LibraryResponse> => {
+    if(uuid){
+        return fetch('/api/v0/flows/' + uuid).then<LibraryResponse>(res => res.json());
+    }else{
+        // uuidがない場合はAPIを発行しない
+        return new Promise<LibraryResponse>(() => {});
+    }
+}
+
 const CommandInspector = (props: Props) => {
-
-    const [selectedSubFlow, setSelectedSubFlow] = useState<FlowModel | null>(null);
-    const [loaded, setLoaded] = useState<boolean>(false);
-
-
-    useEffect(() => {
-        //データフレームの詳細を取得する
-        const selected_step: StepModelType = getSelectedStep();
-        // setSelectedSubFlow(null);
-        if (selected_step instanceof CommandStepModel) {
-            const uuid = (selected_step as any).uuid;
-            if (selected_step.type === Constants.step.type.subflow && uuid) {
-                //サブフローの場合のみ詳細を取得
-                APIUtil.get("flows/" + uuid + "?navigation=off").then((response) => {
-                    let flowProps = { ...response.data.data.flow, folderPath: response.data.data.folderPath, folderUuid: response.data.data.folderUuid };
-                    flowProps.label = response.data.data.label;
-                    setSelectedSubFlow(new FlowModel(flowProps));
-                    setLoaded(true);
-                    // this.forceUpdate();
-                });
-            } else {
-                //サブフロー以外の場合は読み込み完了
-                setLoaded(true);
-            }
-        }
-
-    }, []);
 
     const getSelectedStep = () => {
         let {selected_step_ids, nodes} = props;
         return GraphUtil.getNode(nodes, (selected_step_ids as any)[0]);
     };
+
+    // 選択中のステップを取得する
+    const selected_step: StepModelType = getSelectedStep();
+
+    // ここでFlowの取得を開始する
+    const [flowReader] = useAsyncResource(fetchFlow, (selected_step as any).uuid);
 
     const onHide = () => {
         //this.props.addHistory()
@@ -131,9 +120,8 @@ const CommandInspector = (props: Props) => {
 
 
     const {updateStep, sortStepSrcEnd, baseInspectorDisabled, nodes} = props;
-    let selected_step: StepModelType = getSelectedStep();
     let inputForm: React.ReactNode = [];
-    let subFlowLink, content, label, subLabel, groups, detail;
+    let subFlowLink, label, subLabel, detail;
     if (selected_step.type === Constants.step.type.command) {
         //指定されたステップの元コマンドを取得
         const command: CommandModel = selected_step.getCommand();
@@ -141,13 +129,12 @@ const CommandInspector = (props: Props) => {
         label = selected_step.getLabel();
         //コマンドのラベルを取得
         subLabel = command.label;
-        groups = (command.groups) ? command.groups : null;
         const params: [CommandParamType] = command.params;
         const args: {} = selected_step.args;
         const invalids: {} = selected_step.invalid;
 
         inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids} command={command}
-                                onChange={(e, param, value) => onArgChange(e, param, value)} groups={groups} />;
+                                onChange={(e, param, value) => onArgChange(e, param, value)} groups={command.groups} />;
 
     } else if (selected_step.type === Constants.step.type.subflow) {
         const subflowCommand: SubflowCommandModel = selected_step.getCommand();
@@ -161,9 +148,13 @@ const CommandInspector = (props: Props) => {
             inputForm = <ParamsForm disabled={baseInspectorDisabled} params={params} args={args} invalids={invalids}
                                     onChange={(e, param, value) => onArgChange(e, param, value)}/>;
             subFlowLink = <Button onClick={(e) => onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>;
-            if (selectedSubFlow && selectedSubFlow.folderPath) {
+
+            // サブフローがライブラリに存在する場合(リテラルでない場合)はそのサブフローの格納フォルダへのリンクを表示する
+            if(subflowCommand.uuid){
+                const response = flowReader();
+                const datum = response.data;
                 detail = <div>
-                    <a href={'/folders/' + selectedSubFlow.folderUuid} target={'_blank'}>{selectedSubFlow.folderPath}</a>
+                    <a href={'/folders/' + datum.folderUuid} target={'_blank'}>{datum.folderPath}</a>
                 </div>
             }
         }
@@ -182,28 +173,24 @@ const CommandInspector = (props: Props) => {
         </div>;
     }
 
-    if (!loaded) {
-        content = <Loader center={true} absolute={false} fixed={false} visible={true} />;
-    } else {
-        content = <div>
-            <div className={style.actions}>
-                {subFlowLink}
-                <Button onClick={() => onClickDelete()} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
-            </div>
-            <div className={style.full_hr} />
-            <div><label>場所</label></div>
-            {detail}
-            <InOutConnector
-                updateStep={updateStep}
-                nodes={nodes}
-                sortStepSrcEnd={sortStepSrcEnd}
-                onChangeInEdge={(e, data) => onChangeInEdge(e, data)}
-                onChangeOutEdge={(e, data) => onChangeOutEdge(e, data)} selectedStep={selected_step}
-                disabled={baseInspectorDisabled}
-            />
-            {form}
-        </div>;
-    }
+    const content = <div>
+        <div className={style.actions}>
+            {subFlowLink}
+            <Button onClick={() => onClickDelete()} danger={true} icon={'delete'} disabled={baseInspectorDisabled}>削除</Button>
+        </div>
+        <div className={style.full_hr} />
+        <div><label>場所</label></div>
+        {detail}
+        <InOutConnector
+            updateStep={updateStep}
+            nodes={nodes}
+            sortStepSrcEnd={sortStepSrcEnd}
+            onChangeInEdge={(e, data) => onChangeInEdge(e, data)}
+            onChangeOutEdge={(e, data) => onChangeOutEdge(e, data)} selectedStep={selected_step}
+            disabled={baseInspectorDisabled}
+        />
+        {form}
+    </div>;
 
     // FIXIT onBlurTitle to onChange #164
     return <BaseInspector key={selected_step.id} header={""} label={label} subLabel={subLabel}

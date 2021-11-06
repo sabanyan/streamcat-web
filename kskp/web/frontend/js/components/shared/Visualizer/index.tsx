@@ -139,7 +139,7 @@ export default class Visualizer extends React.Component<Props, State> {
                 ...this.state.args
             })
             .then((res) => {
-                const json = API.response.get.frames(res);
+                const json = API.response.get.frames(res.data);
                 const headers = json.args.column_names;
                 const contents = json.contents;
                 const result = {
@@ -209,7 +209,7 @@ export default class Visualizer extends React.Component<Props, State> {
             })
             .then((res) => {
                 // JSON Parser
-                const json = API.response.post.vizs(res);
+                const json = API.response.post.vizs(res.data);
                 // TODO: 将来はModel
                 const headers = json.outs[0].args.column_names;
                 const contents = json.outs[0].contents;

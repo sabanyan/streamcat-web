@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "start": "npx webpack --config webpack.dll.config.js --env.development && npx webpack --env.development --watch",
-    "dll"  : "npx webpack --config webpack.dll.config.js",
+    "dll": "npx webpack --config webpack.dll.config.js",
     "build": "npx webpack --config webpack.dll.config.js --env.production && npx webpack --env.production",
-    "lint" : "npx eslint .",
-    "test" : "jest --maxWorkers=1",
-    "testwatch"   : "jest --watchAll",
-    "testupdate"  : "jest --update-snapshot",
+    "lint": "npx eslint .",
+    "test": "jest --maxWorkers=1",
+    "testwatch": "jest --watchAll",
+    "testupdate": "jest --update-snapshot",
     "testcoverage": "jest --coverage",
     "flow": "flow",
     "flowcoverage": "flow-coverage-report -i 'src/**/*.js' -i 'src/**/*.jsx' -x 'src/test/**' -t html -t json -t text"
@@ -139,6 +139,7 @@
     "react-redux": "^7.2.0",
     "react-select": "^3.1.0",
     "redux": "^4.0.0",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "use-async-resource": "^2.2.2"
   }
 }

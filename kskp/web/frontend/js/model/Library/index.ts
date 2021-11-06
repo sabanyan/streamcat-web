@@ -55,6 +55,7 @@ type Props = {
   createdAt: string
   // children
   children: LibraryChild[]
+  folderUuid: string
   // folderPath
   folderPath: Folder[]
 }
@@ -67,6 +68,7 @@ export default class LibraryModel {
   createdAt: string
   // children
   children: LibraryChild[]
+  folderUuid: string
   // folderPath
   folderPath: Folder[]
 
@@ -77,6 +79,7 @@ export default class LibraryModel {
     this.creator = json.creator
     this.createdAt = json.createdAt
     this.children = json.children
+    this.folderUuid = json.folderUuid
     this.folderPath = json.folderPath
   }
 
@@ -98,6 +101,7 @@ export default class LibraryModel {
       creator: this.creator,
       createdAt: this.createdAt,
       children: this.children,
+      folderUuid: this.folderUuid,
       folderPath: this.folderPath
     }
   }

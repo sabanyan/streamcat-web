@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useEffect, useState} from 'react';
+import {Suspense, useEffect, useState} from 'react';
 import {useDispatch} from 'react-redux';
 
 import {API} from 'Modules/api';
@@ -58,7 +58,7 @@ const Kskp = (props: Props) => {
     const getNavigation = () => {
         API.request.doGet.navigation({flowUUID: inject_flow_uuid, projectUUID: inject_project_uuid})
             .then((res) => {
-                setNav(API.response.get.navigation(res));
+                setNav(API.response.get.navigation(res.data));
             }, (err) => {
                 console.log(err);
             });
@@ -121,9 +121,11 @@ const Kskp = (props: Props) => {
         }
 
         return (
+            <Suspense fallback={<p>Loading...</p>}>
             <div className={style.view}>
                 {viewComponent}
             </div>
+            </Suspense>
         );
     };
 

@@ -29,10 +29,10 @@ export type ActivitiesData = {
 
 export type ActivitiesResponse = CommonResponse<ActivitiesData>
 export function activities(res: Response<ActivitiesResponse>): ActivitiesData {
-    if (!res.data.success) {
-        throw new MessageModel({ title: "Post /activities Exception", messageStatus: "error", code: res.data.code, message: res.data.message });
-    } else if (!res.data.data) {
-        throw new MessageModel({ title: "Post /activities JSON Parsing Exception", messageStatus: "error", code: res.data.code, message: res.data.message });
+    if (!res.success) {
+        throw new MessageModel({ title: "Post /activities Exception", messageStatus: "error", code: res.code, message: res.message });
+    } else if (!res.data) {
+        throw new MessageModel({ title: "Post /activities JSON Parsing Exception", messageStatus: "error", code: res.code, message: res.message });
     }
-    return res.data.data;
+    return res.data;
 }

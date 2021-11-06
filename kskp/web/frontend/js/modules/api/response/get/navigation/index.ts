@@ -8,13 +8,13 @@ export type VizResponse = CommonResponse<NavigationModelProps>
 export function navigation(res: VizResponse): NavigationModel | undefined {
     let result
 
-    if (!res.data.success) {
-        throw new MessageModel({ title: "Get Navi Exception", messageStatus: "error", code: res.data.code, message: res.data.message })
+    if (!res.success) {
+        throw new MessageModel({ title: "Get Navi Exception", messageStatus: "error", code: res.code, message: res.message })
     }
-    if (!res.data.data) {
-        throw new MessageModel({ title: "Get /navigaion JSON Parsing Exception", messageStatus: "error", code: res.data.code, message: res.data.message })
+    if (!res.data) {
+        throw new MessageModel({ title: "Get /navigaion JSON Parsing Exception", messageStatus: "error", code: res.code, message: res.message })
     }
 
-    return new NavigationModel(res.data.data)
+    return new NavigationModel(res.data)
 }
 

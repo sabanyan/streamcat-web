@@ -1141,7 +1141,7 @@ const Library = (_: Props) => {
                 await API.request.doPost.locks({ flowUUID: library.uuid })
                     .then((res) => {
                         if (res && !res.data.success) throw res.data;
-                        lock.uuid = API.response.post.locks(res).uuid;
+                        lock.uuid = API.response.post.locks(res.data).uuid;
                     })
                     .catch((e) => {
                         console.log(e);
@@ -1206,7 +1206,7 @@ const Library = (_: Props) => {
                 await API.request.doPost.locks({ flowUUID: library.uuid })
                     .then((res) => {
                         if (res && !res.data.success) throw res.data;
-                        lock.uuid = API.response.post.locks(res).uuid;
+                        lock.uuid = API.response.post.locks(res.data).uuid;
                     })
                     .catch((e) => {
                         console.log(e);
