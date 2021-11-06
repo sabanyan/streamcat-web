@@ -5,7 +5,6 @@ from flask import Blueprint, jsonify, request, g
 from .utils import (
     RequestJson,
     api_base,
-    frame_api_base,
     login_required_api
 )
 
@@ -13,10 +12,11 @@ mod = Blueprint('frames', __name__)
 
 @mod.route('/frames', methods=['GET'])
 @login_required_api
-@frame_api_base
+@api_base
 def make_new_frames():
     """
     フローを実行してフレームを取得する
+    TODO: 廃止予定
     """
     step_ids = []
 
@@ -111,7 +111,7 @@ def create_frame():
         elif request.json.get('flow_uuid'):
             # 
             # フロー一覧から実行する
-            # 
+            # TODO: 廃止予定
             flow_uuid = request.json.get('flow_uuid')
             flow_args = request.json.get('args') if request.json.get('args') else {}
             lock_uuid = request.json.get('lock')
@@ -120,7 +120,7 @@ def create_frame():
             flow = g.factory.data.find_by_uuid(flow_uuid)
             result = _execute_flow(flow, args={'flow_args':flow_args}, inputs=inputs, lock_uuid=lock_uuid)
             result = _format_result(result)
-            return jsonify({'success': True, 'lasts': result})
+            return jsonify({'success': True, 'data':result})
         
         else:
             raise Exception('引数等の指定が誤っています')
@@ -192,10 +192,11 @@ def throw_away_frame(frame_uuid):
 
 @mod.route('/vizs', methods=['POST'])
 @login_required_api
-@frame_api_base
+@api_base
 def make_new_vis():
     """
     フローを実行してVisを作成する
+    TODO: 廃止予定
     """
     # Vizを取得するには'vis'属性の指定が必須である
     req = RequestJson(request.json)

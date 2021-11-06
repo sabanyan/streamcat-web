@@ -299,7 +299,7 @@ class FrameTestCase(ApiTestCaseBase):
 
         # フローの実行
         result = self.get_uri(f'/api/v0/frames?from={flow.uuid}', self.USER1)
-        lasts = result['lasts']
+        lasts = result['data']
 
         # DBにframeデータが生成されているか
         self.assertIsNotNone(self.factory.data.find_by_uuid(lasts[0]['uuid']))
@@ -440,7 +440,7 @@ class FrameTestCase(ApiTestCaseBase):
             'i': frame_uuid
         }
         result = self.post_uri('/api/v0/frames', data, self.USER1)
-        lasts = result['lasts']
+        lasts = result['data']
 
         # DBにframeデータが生成されているか
         self.assertIsNotNone(self.factory.data.find_by_uuid(lasts[0]['uuid']))
@@ -511,7 +511,7 @@ class FrameTestCase(ApiTestCaseBase):
             'i': frame_uuid
         }
         result = self.post_uri('/api/v0/frames', data, self.USER1)
-        lasts = result['lasts']
+        lasts = result['data']
 
         # DBにframeデータが生成されているか
         self.assertIsNotNone(self.factory.data.find_by_uuid(lasts[0]['uuid']))
