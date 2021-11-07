@@ -4,7 +4,7 @@ import {SortEndHandler} from "react-sortable-hoc";
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
-import {LibraryModel, SubflowCommandModel} from "Model/index";
+import {DatumType, SubflowCommandModel} from "Model/index";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import {CommonResponse} from 'Modules/api/core/index';
@@ -25,7 +25,7 @@ type Props = {
 }
 
 // GET /flowsを発行する関数を定義する
-type LibraryResponse = CommonResponse<LibraryModel>;
+type LibraryResponse = CommonResponse<DatumType>;
 const fetchFlow = (uuid: number): Promise<LibraryResponse> => {
     if(uuid){
         return fetch('/api/v0/flows/' + uuid).then<LibraryResponse>(res => res.json());

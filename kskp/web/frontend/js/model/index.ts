@@ -26,7 +26,7 @@ export { NoteStepModelProps } from './Step/NoteStepModel'
 export { SubFlowStepModelProps } from './Step/SubFlowStepModel'
 
 // type
-export {LibraryModel} from './Library/index'
+export {DatumType, FolderType} from './Library/index'
 export { LibraryChild, TYPE as LIBRARY_TYPE } from './Library/index'
 export {Props as NavigationModelProps} from './Navigation/NavigationModel'
 

@@ -1,5 +1,4 @@
 
-
 export const TYPE = {
   FOLDER: 'folder',
   AWSS3: 'awss3',
@@ -41,34 +40,46 @@ export type LibraryChild = {
   }
 }
 
-type Folder = {
-  type: string
-  uuid: string
-  label: string
+// Datumのallowlist
+type Allowlist = {
+  read: boolean;
+  update: boolean;
+  delete: boolean;
+  execute: boolean;
+  move: boolean;
+  copy: boolean;
+  download: boolean;
+  export: boolean;
+  findMember: boolean;
+  updateMember: boolean;
+  lock: boolean
+};
+
+// Folderのallowlist
+type FolderAllowlist = Allowlist & {
+  createProject: boolean;
+  createFolder: boolean;
+  createFile: boolean;
+  upload: boolean;
+  import: boolean;
 }
 
-type Props = {
-  uuid: string
-  type: string
-  label: string
-  creator: string
-  createdAt: string
-  // children
-  children: LibraryChild[]
-  folderUuid: string
-  // folderPath
-  folderPath: Folder[]
-}
-
-export type LibraryModel = {
+type DatumBaseType<TAllowlist> = {
   uuid: string;
   type: string;
   label: string;
+  folderUuid: string | null;
+  folderPath: string | null;
+  prevFolderPath: string | null;
+  allowlist: TAllowlist;
   creator: string;
   createdAt: string;
-  // children
-  children: LibraryChild[];
-  folderUuid: string;
-  // folderPath
-  folderPath: Folder[];
 }
+
+// Datum
+export type DatumType = DatumBaseType<Allowlist>;
+
+// Folder
+export type FolderType = DatumBaseType<FolderAllowlist> & {
+  children: LibraryChild[];
+};

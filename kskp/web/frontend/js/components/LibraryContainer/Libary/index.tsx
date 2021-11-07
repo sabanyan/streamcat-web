@@ -17,7 +17,7 @@ import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { LibraryChild } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
-import { LibraryModel, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
+import { FolderType, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
 import { LibraryListDataType } from "Types/index";
 import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
@@ -785,7 +785,7 @@ const Library = (_: Props) => {
                 await API.request.doGet.trashes({})
                     .then((response) => {
                         if (response.data.data) {
-                            let model:LibraryModel = response.data.data;
+                            let model:FolderType = response.data.data;
                             setInitialLibraryChildren(model.children);
                             setLibraryChildren(model.children);
                             setFolderPath(model.folderPath);
