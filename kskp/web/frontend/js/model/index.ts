@@ -12,7 +12,6 @@ export { default as SubFlowStepModel } from './Step/SubFlowStepModel'
 export { default as VisualizeModel } from './Visualize/VisualizeModel'
 export { default as LocksModel } from './Locks/index'
 export { default as MessageModel } from './Message/index'
-export { default as LibraryModel } from './Library/index'
 export { default as DataSrcStepModel } from './Step/DataSrcStepModel'
 export { default as DataDstStepModel } from './Step/DataDstStepModel'
 
@@ -27,6 +26,7 @@ export { NoteStepModelProps } from './Step/NoteStepModel'
 export { SubFlowStepModelProps } from './Step/SubFlowStepModel'
 
 // type
+export {LibraryModel} from './Library/index'
 export { LibraryChild, TYPE as LIBRARY_TYPE } from './Library/index'
 export {Props as NavigationModelProps} from './Navigation/NavigationModel'
 

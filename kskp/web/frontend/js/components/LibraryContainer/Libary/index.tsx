@@ -785,7 +785,7 @@ const Library = (_: Props) => {
                 await API.request.doGet.trashes({})
                     .then((response) => {
                         if (response.data.data) {
-                            let model = new LibraryModel(response.data.data);
+                            let model:LibraryModel = response.data.data;
                             setInitialLibraryChildren(model.children);
                             setLibraryChildren(model.children);
                             setFolderPath(model.folderPath);

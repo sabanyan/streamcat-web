@@ -60,53 +60,15 @@ type Props = {
   folderPath: Folder[]
 }
 
-export default class LibraryModel {
-  uuid: string
-  type: string
-  label: string
-  creator: string
-  createdAt: string
+export type LibraryModel = {
+  uuid: string;
+  type: string;
+  label: string;
+  creator: string;
+  createdAt: string;
   // children
-  children: LibraryChild[]
-  folderUuid: string
+  children: LibraryChild[];
+  folderUuid: string;
   // folderPath
-  folderPath: Folder[]
-
-  constructor(json: Props) {
-    this.uuid = json.uuid
-    this.type = json.type
-    this.label = json.label
-    this.creator = json.creator
-    this.createdAt = json.createdAt
-    this.children = json.children
-    this.folderUuid = json.folderUuid
-    this.folderPath = json.folderPath
-  }
-
-  jsonToModel(json: Props) {
-    this.uuid = json.uuid
-    this.type = json.type
-    this.label = json.label
-    this.creator = json.creator
-    this.createdAt = json.createdAt
-    this.children = json.children
-    this.folderPath = json.folderPath
-  }
-
-  modelToJson(): Props {
-    return {
-      uuid: this.uuid,
-      type: this.type,
-      label: this.label,
-      creator: this.creator,
-      createdAt: this.createdAt,
-      children: this.children,
-      folderUuid: this.folderUuid,
-      folderPath: this.folderPath
-    }
-  }
-
-  isNotEmpty(): boolean {
-    return (this.uuid) ? true : false
-  }
+  folderPath: Folder[];
 }
