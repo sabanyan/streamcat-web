@@ -4,10 +4,10 @@ import {SortEndHandler} from "react-sortable-hoc";
 import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
-import {DatumType, SubflowCommandModel} from "Model/index";
+import {SubflowCommandModel} from "Model/index";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
-import {CommonResponse} from 'Modules/api/core/index';
+import {APIUtil2} from 'Utils/index';
 import {CommandParamType, MastType, StepModelType} from "Types/index";
 import CommandModel from "Model/Command/CommandModel";
 
@@ -24,17 +24,6 @@ type Props = {
     baseInspectorDisabled: boolean;
 }
 
-// GET /flowsを発行する関数を定義する
-type LibraryResponse = CommonResponse<DatumType>;
-const fetchFlow = (uuid: number): Promise<LibraryResponse> => {
-    if(uuid){
-        return fetch('/api/v0/flows/' + uuid).then<LibraryResponse>(res => res.json());
-    }else{
-        // uuidがない場合はAPIを発行しない
-        return new Promise<LibraryResponse>(() => {});
-    }
-}
-
 const CommandInspector = (props: Props) => {
 
     const getSelectedStep = () => {
@@ -46,7 +35,7 @@ const CommandInspector = (props: Props) => {
     const selected_step: StepModelType = getSelectedStep();
 
     // ここでFlowの取得を開始する
-    const [flowReader] = useAsyncResource(fetchFlow, (selected_step as any).uuid);
+    const [flowReader] = useAsyncResource(APIUtil2.getFlow, (selected_step as any).uuid);
 
     const onHide = () => {
         //this.props.addHistory()
@@ -151,10 +140,9 @@ const CommandInspector = (props: Props) => {
 
             // サブフローがライブラリに存在する場合(リテラルでない場合)はそのサブフローの格納フォルダへのリンクを表示する
             if(subflowCommand.uuid){
-                const response = flowReader();
-                const datum = response.data;
+                const flow = flowReader();
                 detail = <div>
-                    <a href={'/folders/' + datum.folderUuid} target={'_blank'}>{datum.folderPath}</a>
+                    <a href={'/folders/' + flow.folderUuid} target={'_blank'}>{flow.folderPath}</a>
                 </div>
             }
         }

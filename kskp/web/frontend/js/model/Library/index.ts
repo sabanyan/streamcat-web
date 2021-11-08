@@ -80,6 +80,48 @@ type DatumBaseType<TAllowlist> = {
 export type DatumType = DatumBaseType<Allowlist>;
 
 // Folder
-export type FolderType = DatumBaseType<FolderAllowlist> & {
-  children: LibraryChild[];
+export type FolderType = DatumBaseType<FolderAllowlist>;
+
+// Parent Folder
+export type ParentFolderType = FolderType & {
+  children: DatumType[];
 };
+
+// Project
+export type ProjectType = FolderType & {
+  modifiedAt: string;
+};
+
+// Flow
+export type FlowType = DatumType & {
+  editLock: boolean;
+  modifiedAt: string;
+};
+
+// Frame
+export type FrameType = DatumType & {
+  fileSize: number;
+  encoding: string;
+  newline: string;
+};
+
+// RemoteFolder
+export type RemoteFolderType = DatumType & {
+  protocol: string;
+  hostname: string;
+  domain: string;
+  directory: string;
+  user_id: string;
+  password: string;
+};
+  
+// Database
+export type DatabaseType = DatumType & {
+  dbms: string;
+  hostname: string;
+  port: number;
+  database: string;
+  user_id: string;
+  password: string;
+}
+

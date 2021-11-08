@@ -6,7 +6,7 @@ import { FileUploader, TextField } from "Shared/Input";
 import { FileListTable } from "Components/LibraryContainer/Libary/FileListTable";
 import { BreadCrumb, IBreadCrumbsLink } from "Components/LibraryContainer/Libary/BreadCrumb";
 import Constants from "Constants/index";
-import { APIUtil, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
+import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
 import { EmptyState, Loader, Spacer } from "Shared/Base";
 import { ITableBody } from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 import { MenuList } from "Components/LibraryContainer/Libary/MenuList";
@@ -17,7 +17,7 @@ import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
 import { LibraryChild } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
-import { FolderType, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
+import { ParentFolderType, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
 import { LibraryListDataType } from "Types/index";
 import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
@@ -28,12 +28,10 @@ import TrashInspector from "Shared/Inspector/TrashInspector";
 import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";
 import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
-import { project } from '../../shared/IconRenderer/icon/index';
 import {LibraryMultiInspector} from 'Shared/Inspector/LibraryMultiInspector';
 import { reject } from "lodash";
 import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/LibraryContainer/Libary/RemoteFolder/model"
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
-import { RemoteFolder } from 'Components/LibraryContainer/Libary/RemoteFolder/types'
 
 export interface Database {
     label?: string;
@@ -437,13 +435,8 @@ const Library = (_: Props) => {
                     return false;
                 }
                 setIsLoading(true);
-                APIUtil.post("flows", {
-                    name: formFlowName,
-                    project_uuid: inject_folder_uuid, // TODO project_uuid のキーが将来的に変更になる可能性あり、実態はfolderのuuidが利用できる
-                    datasource: {
-                        "type": "frame"
-                    }
-                }).then(() => {
+                // POST /flowsを発行してフローを新規作成する
+                APIUtil2.postFlow(inject_folder_uuid, formFlowName).then(() => {
                     ModalUtil.closeModal(Constants.modal.ADD_FLOW);
                     setFormFlowName("");
                     fetchFolder();
@@ -785,7 +778,7 @@ const Library = (_: Props) => {
                 await API.request.doGet.trashes({})
                     .then((response) => {
                         if (response.data.data) {
-                            let model:FolderType = response.data.data;
+                            let model:ParentFolderType = response.data.data;
                             setInitialLibraryChildren(model.children);
                             setLibraryChildren(model.children);
                             setFolderPath(model.folderPath);

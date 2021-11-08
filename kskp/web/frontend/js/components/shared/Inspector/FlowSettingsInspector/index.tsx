@@ -107,7 +107,7 @@ const FlowSettingsInspector = (props: Props) => {
 
     let inputParams, inputParamsContainer, addFlowParams;
 
-    inputParams = params.map((param: any, index) => {
+    inputParams = params && params.map((param: any, index) => {
         return <div className={style.flow_param}>
             <div className={style.left}>
                 <input type={'text'} readOnly={baseInspectorDisabled} className={'form-control'} value={param.name}
