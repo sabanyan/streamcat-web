@@ -4,12 +4,12 @@ import style from "../style.scss";
 
 import { BaseInspector, Resizer } from "Shared/Inspector";
 import { Button } from "Shared/Input";
-import { LibraryChild } from "Model/index";
+import { DatumType, FrameType } from "Model/index";
 import { Allowlist } from 'Components/LibraryContainer/Libary/index';
 
 
 type Props = {
-    data?: LibraryChild
+    data?: DatumType
     customStyle?: any
     allowlist?: Allowlist
     onClickRecovery: Function
@@ -63,26 +63,30 @@ export default class TrashInspector extends React.Component<Props, State> {
             result.push(label);
         }
 
-        // 文字コードがあれば、表示する
-        let encoding;
-        if (data.encoding) {
-            encoding = <React.Fragment key={data.encoding}>
-                <div><label>{this.display.encoding}</label></div>
-                <div className={"mb-8px"}>{data.encoding}</div>
-            </React.Fragment>;
+        // DatumがFrameの場合は文字コードと改行コードを表示する
+        if(data.type==='frame'){
+            const frame = data as FrameType;
+            // 文字コードがあれば、表示する
+            let encoding;
+            if (frame.encoding) {
+                encoding = <React.Fragment key={frame.encoding}>
+                    <div><label>{this.display.encoding}</label></div>
+                    <div className={"mb-8px"}>{frame.encoding}</div>
+                </React.Fragment>;
 
-            result.push(encoding);
-        }
+                result.push(encoding);
+            }
 
-        // 改行コードがあれば、表示する
-        let newline;
-        if (data.newline) {
-            newline = <React.Fragment key={data.newline}>
-                <div><label>{this.display.newline}</label></div>
-                <div className={"mb-8px"}>{data.newline}</div>
-            </React.Fragment>;
+            // 改行コードがあれば、表示する
+            let newline;
+            if (frame.newline) {
+                newline = <React.Fragment key={frame.newline}>
+                    <div><label>{this.display.newline}</label></div>
+                    <div className={"mb-8px"}>{frame.newline}</div>
+                </React.Fragment>;
 
-            result.push(newline);
+                result.push(newline);
+            }
         }
 
         // 作成者があれば、表示する

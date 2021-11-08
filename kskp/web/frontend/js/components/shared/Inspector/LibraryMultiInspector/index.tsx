@@ -2,12 +2,12 @@ import React from 'react'
 import style from '../style.scss'
 import { BaseInspector, Resizer } from 'Shared/Inspector'
 import { Button} from 'Shared/Input'
-import { LibraryChild } from 'Model/index';
+import { DatumType } from 'Model/index';
 import { Allowlist, ProjectInfo } from 'Components/LibraryContainer/Libary/index';
 
 type Props = {
   allowlist:Allowlist;
-  selectedDatas: LibraryChild[];
+  selectedDatas: DatumType[];
   onClickDelete?: Function;
   onClickMove?: Function;
 }
@@ -17,7 +17,7 @@ class LibraryMultiInspector extends React.Component<Props> {
     super(props)
   }
 
-  renderButtons(datas: LibraryChild[]) {
+  renderButtons(datas: DatumType[]) {
     const { allowlist, onClickDelete, onClickMove } = this.props
     let del,move
     let isDeletable, isMoveable

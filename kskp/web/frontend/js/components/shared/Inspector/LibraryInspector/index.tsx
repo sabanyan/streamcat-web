@@ -6,13 +6,13 @@ import moment from 'moment/moment';
 import Constants from 'Constants/index';
 import {Button, DownloadButton} from 'Shared/Input';
 import {APIUtil, ModalUtil, StringUtil} from "Utils/index";
-import {LibraryChild} from 'Model/index';
+import {DatumType, FlowType, FrameType} from 'Model/index';
 import {Allowlist, ProjectInfo} from 'Components/LibraryContainer/Libary/index';
 
 type Props = {
     currentProject: ProjectInfo;
     allowlist: Allowlist;
-    selectedData: LibraryChild;
+    selectedData: DatumType;
     onClickDelete?: Function;
     onClickApply?: Function;
     onClickMove?: Function;
@@ -55,7 +55,7 @@ const LibraryInspector = (props: Props) => {
         window.open('/preview?step_id=' + null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
     };
 
-    const renderButtons = (data?: LibraryChild) => {
+    const renderButtons = (data?: DatumType) => {
         const { allowlist, selectedData, onClickDelete, onClickApply, onClickMove, onClickEdit,
                 onClickEditEncoding, onClickCleanTrash, onChangeFlowLock, onClickCopy} = props;
 
@@ -91,8 +91,9 @@ const LibraryInspector = (props: Props) => {
 
         // flow lock button
         if (allowlist.lock && data && data.type == Constants.library.type.flow && onChangeFlowLock) {
+            const flow = data as FlowType;
             lock = <div className={style.flowLock}>
-                <input id="flowLock" type="checkbox" checked={data.editLock ? true : false} onChange={(e) => onChangeFlowLock(e, data)}></input>
+                <input id="flowLock" type="checkbox" checked={flow.editLock ? true : false} onChange={(e) => onChangeFlowLock(e, flow)}></input>
                 <label htmlFor="flowLock">編集ロック</label>
             </div>;
         }
@@ -135,7 +136,7 @@ const LibraryInspector = (props: Props) => {
         </React.Fragment>;
     };
 
-    const renderDetail = (data?: LibraryChild) => {
+    const renderDetail = (data?: DatumType) => {
         const {selectedData} = props;
         let result: any = [];
         if (!data) return result;
@@ -152,30 +153,31 @@ const LibraryInspector = (props: Props) => {
         }
 
         if (data.type === Constants.library.type.frame) {
+            const frame = data as FrameType;
             // ファイルサイズがあれば、表示する
-            if (data.fileSize !== undefined) {
-                const fileSize = <React.Fragment key={data.fileSize}>
+            if (frame.fileSize !== undefined) {
+                const fileSize = <React.Fragment key={frame.fileSize}>
                     <div><label>{display.fileSize}</label></div>
-                    {data.fileSize ? <div className={"mb-8px"}>{StringUtil.convertToFileSize(data.fileSize)}</div> : 0}
+                    {frame.fileSize ? <div className={"mb-8px"}>{StringUtil.convertToFileSize(frame.fileSize)}</div> : 0}
                 </React.Fragment>;
                 result.push(fileSize);
             }
 
             // 文字コードがあれば、表示する
-            if (data.encoding) {
-                const encoding = <React.Fragment key={data.encoding}>
+            if (frame.encoding) {
+                const encoding = <React.Fragment key={frame.encoding}>
                     <div><label>{display.encoding}</label></div>
-                    <div className={"mb-8px"}>{data.encoding}</div>
+                    <div className={"mb-8px"}>{frame.encoding}</div>
                 </React.Fragment>;
                 result.push(encoding);
             }
 
             // 改行コードがあれば、表示する
             let newline;
-            if (data.newline) {
-                newline = <React.Fragment key={data.newline}>
+            if (frame.newline) {
+                newline = <React.Fragment key={frame.newline}>
                     <div><label>{display.newline}</label></div>
-                    <div className={"mb-8px"}>{data.newline}</div>
+                    <div className={"mb-8px"}>{frame.newline}</div>
                 </React.Fragment>;
                 result.push(newline);
             }
@@ -214,7 +216,7 @@ const LibraryInspector = (props: Props) => {
         </React.Fragment>;
     };
 
-    const renderSelect = (data?: LibraryChild) => {
+    const renderSelect = (data?: DatumType) => {
         return <div className={style.inspector}>
             <div className={style.actions}>
                 {renderButtons(data)}

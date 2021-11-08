@@ -1,46 +1,23 @@
 
-export const TYPE = {
-  FOLDER: 'folder',
-  AWSS3: 'awss3',
-  RFOLDER: 'rfolder',
-  DATABASE: 'database',
-  FLOW: 'flow',
-  FRAME: 'frame',
-  TRASH: 'trash',
-  UNDEFINED: 'undefined'
-}
+/**
+ * Datumの種別
+ */
+type Type =
+    'project'
+  | 'folder'
+  | 'trash'
+  | 'rfolder'
+  | 'database'
+  | 'flow'
+  | 'frame'
+  | 'document'
+  | 'activity'
+  ;
 
-export type LibraryChild = {
-  uuid: string
-  type: string
-  label: string
-  encoding?: string
-  fileSize?: string
-  newline?: string
-  creator: string
-  createdAt: string
-  prevFolderPath?: string // ごみの場合、元の場所
-  selected? : boolean;
-  editLock? : boolean;
-  allowlist : {
-    copy: boolean;
-    createFile: boolean;
-    createFolder: boolean;
-    createProject: boolean;
-    delete: boolean;
-    download: boolean;
-    execute: boolean;
-    findMember: boolean;
-    lock: boolean;
-    move: boolean;
-    read: boolean;
-    update: boolean;
-    updateMember: boolean;
-    upload: boolean;
-  }
-}
 
-// Datumのallowlist
+/**
+ * Datumのallowlist
+ */
 type Allowlist = {
   read: boolean;
   update: boolean;
@@ -55,7 +32,9 @@ type Allowlist = {
   lock: boolean
 };
 
-// Folderのallowlist
+/**
+ * Folderのallowlist
+ */
 type FolderAllowlist = Allowlist & {
   createProject: boolean;
   createFolder: boolean;
@@ -66,7 +45,7 @@ type FolderAllowlist = Allowlist & {
 
 type DatumBaseType<TAllowlist> = {
   uuid: string;
-  type: string;
+  type: Type;
   label: string;
   folderUuid: string | null;
   folderPath: string | null;
@@ -76,36 +55,50 @@ type DatumBaseType<TAllowlist> = {
   createdAt: string;
 }
 
-// Datum
+/**
+ * Datumを格納するオブジェクト型
+ */
 export type DatumType = DatumBaseType<Allowlist>;
 
-// Folder
+/**
+ * Folderを格納するオブジェクト型
+ */
 export type FolderType = DatumBaseType<FolderAllowlist>;
 
-// Parent Folder
+/**
+ * 子Datumを持つFolderを格納するオブジェクト型
+ */
 export type ParentFolderType = FolderType & {
   children: DatumType[];
 };
 
-// Project
+/**
+ * Projectを格納するオブジェクト型
+ */
 export type ProjectType = FolderType & {
   modifiedAt: string;
 };
 
-// Flow
+/**
+ * Flowを格納するオブジェクト型
+ */
 export type FlowType = DatumType & {
   editLock: boolean;
   modifiedAt: string;
 };
 
-// Frame
+/**
+ * Frameを格納するオブジェクト型
+ */
 export type FrameType = DatumType & {
   fileSize: number;
   encoding: string;
   newline: string;
 };
 
-// RemoteFolder
+/**
+ * RemoteFolderを格納するオブジェクト型
+ */
 export type RemoteFolderType = DatumType & {
   protocol: string;
   hostname: string;
@@ -114,8 +107,10 @@ export type RemoteFolderType = DatumType & {
   user_id: string;
   password: string;
 };
-  
-// Database
+
+/**
+ * Databaseを格納するオブジェクト型
+ */
 export type DatabaseType = DatumType & {
   dbms: string;
   hostname: string;

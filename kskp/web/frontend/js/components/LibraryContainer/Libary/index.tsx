@@ -15,7 +15,7 @@ import { useDispatch } from "react-redux";
 import { addNotification, removeNotification } from "reapop";
 import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import { LibraryChild } from "Model/Library";
+import { DatumType, FrameType } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
 import { ParentFolderType, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
 import { LibraryListDataType } from "Types/index";
@@ -200,8 +200,8 @@ const Library = (_: Props) => {
     const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [importFlowtName, setImportFlowName] = useState<string>("");
     const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
-    const [selectedDatas, setSelectedDatas] = useState<LibraryChild[]>([]);
-    const [lastSelectedCell, setLastSelectedCell] = useState<LibraryChild | null>(null);
+    const [selectedDatas, setSelectedDatas] = useState<DatumType[]>([]);
+    const [lastSelectedCell, setLastSelectedCell] = useState<DatumType | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const clickedLibraryCell = useRef(false);
     const [folderPath, setFolderPath] = useState<any>();
@@ -1127,7 +1127,7 @@ const Library = (_: Props) => {
         </Flex>;
     };
 
-    const deleteLibrary = async (library: LibraryChild, lock: { uuid: string | null }) => {
+    const deleteLibrary = async (library: DatumType, lock: { uuid: string | null }) => {
         return new Promise<void>(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
             if (library.type === Constants.library.type.flow) {
@@ -1191,7 +1191,7 @@ const Library = (_: Props) => {
             });
     };
 
-    const moveLibrary = async (library: LibraryChild, parentFolderUUID: string, lock: { uuid: string | null }) => {
+    const moveLibrary = async (library: DatumType, parentFolderUUID: string, lock: { uuid: string | null }) => {
 
         return new Promise<void>(async (resolve, reject) => {
             // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
@@ -1471,7 +1471,7 @@ const Library = (_: Props) => {
             HttpUtil.windowOpen("library?dialog=true&mode=folder_select", (folder_uuid) => {
                 setIsLoading(true);
 
-                selectedDatas.forEach((selectedData: LibraryChild) => {
+                selectedDatas.forEach((selectedData: DatumType) => {
                     queue.push(moveLibrary, [selectedData, folder_uuid, lock]);
                 });
                 queue.push(setIsLoading, [false]);
@@ -1480,7 +1480,7 @@ const Library = (_: Props) => {
             });
         };
 
-        const _onClickCopy = (e, data: LibraryChild) => {
+        const _onClickCopy = (e, data: DatumType) => {
             if (data.type == "flow") {
                 ModalUtil.registerModal({
                     id: Constants.modal.CONFIRM, onClickDone: () => {
@@ -1530,7 +1530,7 @@ const Library = (_: Props) => {
                     );
                     let lock = { uuid: null };
                     setIsLoading(true);
-                    selectedDatas.forEach((selectedData: LibraryChild) => {
+                    selectedDatas.forEach((selectedData: DatumType) => {
                         queue.push(deleteLibrary, [selectedData, lock]);
                     });
                     queue.push(setIsLoading, [false]);
@@ -1642,7 +1642,7 @@ const Library = (_: Props) => {
             return endPoint;
         };
 
-        const updateLibrary = (libraryChildren: any[], uuid: string, library): LibraryChild[] => {
+        const updateLibrary = (libraryChildren: any[], uuid: string, library): DatumType[] => {
             return libraryChildren.map((child: any) => {
                 if (uuid === child.uuid) {
                     return library;
@@ -1727,7 +1727,7 @@ const Library = (_: Props) => {
         };
 
 
-        const onClickEditEncoding = (data: LibraryChild) => {
+        const onClickEditEncoding = (data: DatumType) => {
 
 
             const onChangeEncoding = (e, data) => {
@@ -1792,19 +1792,19 @@ const Library = (_: Props) => {
             ModalUtil.registerModal({
                 id: Constants.modal.EDIT_ENCODING, onClickDone: () => {
                     if (data.type === Constants.library.type.frame) {
-
+                        const frame = data as FrameType;
                         setIsLoading(true);
                         APIUtil.put("frames/" + data.uuid, {
-                            encoding: data.encoding,
-                            newline: data.newline
+                            encoding: frame.encoding,
+                            newline: frame.newline
                         })
                             .then(() => {
                                 setIsLoading(false);
 
-                                const typeLabel = LibraryUtil.getTypeLabel(data.type);
+                                const typeLabel = LibraryUtil.getTypeLabel(frame.type);
                                 notify({
                                     title: typeLabel + "の文字コードを変更しました",
-                                    message: data.label + "の文字コードを変更しました",
+                                    message: frame.label + "の文字コードを変更しました",
                                     status: "success"
                                 });
                             });
@@ -2019,7 +2019,7 @@ const Library = (_: Props) => {
         />;
     };
 
-    const findLibrary = (libraryChildren: any[], uuid: string): LibraryChild => {
+    const findLibrary = (libraryChildren: any[], uuid: string): DatumType => {
         return libraryChildren.find((child: any) => {
             return (child.uuid === uuid);
         });

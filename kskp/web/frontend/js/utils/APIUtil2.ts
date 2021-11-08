@@ -7,10 +7,16 @@ type ErrorResponse = {
     message: string;
 };
 
+/**
+ * Web APIを発行する関数を纏めるクラス
+ */
 export class APIUtil2 {
 
-    // GET /flowsを発行してPromiseを返す
-    static getFlow = (uuid: number): Promise<FlowType> => {
+    /**
+     * GET /flowsを発行してフローを取得する
+     * @param uuid 取得するフローのUUID
+     */
+    static getFlow = (uuid: string): Promise<FlowType> => {
         // uuidが指定されない場合はAPIを発行しない
         if(!uuid){
             return new Promise<FlowType>(() => {});
@@ -32,7 +38,12 @@ export class APIUtil2 {
             );
     };
 
-    // POST /flowsを発行してPromiseを返す
+    /**
+     * POST /flowsを発行してフローを新規作成する
+     * @param parent 新規作成するフローの親フォルダのUUID
+     * @param label 新規作成するフローのラベル名
+     * @param flow 新規作成するフローのJSON
+     */
     static postFlow = (parent: string, label:string, flow={}): Promise<FlowType> => {
         return fetch('/api/v0/flows',
                     {
