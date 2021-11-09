@@ -139,25 +139,6 @@ export interface ProjectInfo {
     projectModifiedAt?: string;
 }
 
-const defaultAllowlist = {
-    copy: false,
-    createFile: false,
-    createFolder: false,
-    createProject: false,
-    delete: false,
-    download: false,
-    execute: false,
-    findMember: false,
-    lock: false,
-    move: false,
-    read: false,
-    update: false,
-    updateMember: false,
-    upload: false,
-    export: false,
-    import: false
-}
-
 interface Props {
     navigation?: NavigationModelProps
 }
@@ -179,7 +160,6 @@ const Library = (_: Props) => {
     const [editDatabase, setEditDatabase] = useState<Database | null>(null);
     const [, setStores] = useState();
     const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
-    const [importFlowtName, setImportFlowName] = useState<string>("");
     const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
     const [selectedDatas, setSelectedDatas] = useState<DatumType[]>([]);
     const [lastSelectedCell, setLastSelectedCell] = useState<DatumType | null>(null);
@@ -195,7 +175,6 @@ const Library = (_: Props) => {
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
-    const [exportName, setExportName] = useState<string>("");
 
     // custom hooks
     const { onAddRemoteFolder, onEditRemoteFolder, onChangeRemoteFolder, clearRemoteFolder, setRemoteFolder, remoteFolder, isEmptyRemoteFolder, remoteFolderMode, setRemoteFolderMode } = useRemoteFolderHooks();
