@@ -35,13 +35,26 @@ type Allowlist = {
 /**
  * Folderのallowlist
  */
-type FolderAllowlist = Allowlist & {
+export type FolderAllowlist = Allowlist & {
   createProject: boolean;
   createFolder: boolean;
   createFile: boolean;
   upload: boolean;
   import: boolean;
 }
+
+/**
+ * ProjectのMember
+ */
+type Member = {
+  uuid: string;
+  email: string;
+  name: string;
+  state: 'tmp' | 'active' | 'inactive' | 'expired';
+  creator: string;
+  createdAt: string;
+  type: 'Reader' | 'Writer' | 'Owner';
+};
 
 type DatumBaseType<TAllowlist> = {
   uuid: string;
@@ -76,6 +89,7 @@ export type ParentFolderType = FolderType & {
  * Projectを格納するオブジェクト型
  */
 export type ProjectType = FolderType & {
+  members?: Member[];
   modifiedAt: string;
 };
 

@@ -2,10 +2,10 @@ import * as React from "react";
 import * as style from "./style.scss";
 import { Spacer } from "Shared/Base";
 import { FlatButton } from "Shared/Input";
-import { Allowlist } from 'Components/LibraryContainer/Libary/index';
+import { FolderAllowlist } from 'Model/index'
 
 interface Props {
-    allowlist: Allowlist;
+    allowlist: FolderAllowlist;
     onClickNewFlow: () => void;
     onClickNewProject: () => void;
     onClickImportFlow: () => void;

@@ -5,13 +5,11 @@ import style from "../style.scss";
 import { BaseInspector, Resizer } from "Shared/Inspector";
 import { Button } from "Shared/Input";
 import { DatumType, FrameType } from "Model/index";
-import { Allowlist } from 'Components/LibraryContainer/Libary/index';
 
 
 type Props = {
     data?: DatumType
     customStyle?: any
-    allowlist?: Allowlist
     onClickRecovery: Function
     onClickMove: Function
 }
@@ -33,10 +31,10 @@ export default class TrashInspector extends React.Component<Props, State> {
     }
 
     renderButtons(data) {
-        const { onClickRecovery, onClickMove, allowlist } = this.props;
+        const { onClickRecovery, onClickMove } = this.props;
 
         let recovery, move;
-        if (data && allowlist && allowlist.update) {
+        if (data && data.allowlist && data.allowlist.update) {
             recovery = <Button onClick={(e) => onClickRecovery(e, data)} icon={"undo"}>元に戻す</Button>;
             move = <Button onClick={(e) => onClickMove(e, data)} icon={"arrow_right_alt"}>移動する</Button>;
         }

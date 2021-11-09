@@ -7,11 +7,12 @@ import Constants from 'Constants/index';
 import {Button, DownloadButton} from 'Shared/Input';
 import {APIUtil, ModalUtil, StringUtil} from "Utils/index";
 import {DatumType, FlowType, FrameType} from 'Model/index';
-import {Allowlist, ProjectInfo} from 'Components/LibraryContainer/Libary/index';
+import {ProjectInfo} from 'Components/LibraryContainer/Libary/index';
 
 type Props = {
+    // TODO: currentProjectの退治はLibraryコンポーネントの改修が複雑なので保留する
     currentProject: ProjectInfo;
-    allowlist: Allowlist;
+    // allowlist: Allowlist;
     selectedData: DatumType;
     onClickDelete?: Function;
     onClickApply?: Function;
@@ -55,25 +56,25 @@ const LibraryInspector = (props: Props) => {
         window.open('/preview?step_id=' + null + '&dialog=true&frame_uuid=' + uuid + '&title=' + StringUtil.urlEncode(library.label));
     };
 
-    const renderButtons = (data?: DatumType) => {
-        const { allowlist, selectedData, onClickDelete, onClickApply, onClickMove, onClickEdit,
+    const renderButtons = (data: DatumType) => {
+        const { selectedData, onClickDelete, onClickApply, onClickMove, onClickEdit,
                 onClickEditEncoding, onClickCleanTrash, onChangeFlowLock, onClickCopy} = props;
 
         let preview, download, del, apply, move, edit, editEncoding, trashClean, lock, copy, flowExport;
 
         // preview button
-        if (allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
+        if (data.allowlist.read && data && data.label && data.type === Constants.library.type.frame) {
             preview = <Button onClick={() => onClickPreview()} icon={"visibility"}>プレビューする</Button>;
         }
 
         // download button
-        if (allowlist.download && data && data.label && data.type === Constants.library.type.frame) {
+        if (data.allowlist.download && data && data.label && data.type === Constants.library.type.frame) {
             const href = APIUtil.apiUrl("files") + "?type=frame&uuid=" + data.uuid + "&ext=csv&label=" + data.label;
             download = <DownloadButton href={href} icon={"get_app"}>CSVをダウンロードする</DownloadButton>;
         }
 
         // edit
-        if (allowlist.update && onClickEdit) {
+        if (data.allowlist.update && onClickEdit) {
             edit = <Button onClick={() => onClickEdit(selectedData)} icon={"settings"}>設定を開く</Button>;
         }
 
@@ -81,16 +82,16 @@ const LibraryInspector = (props: Props) => {
         if (onClickApply) apply = <Button primary={true} onClick={() => onClickApply(data)}>選択する</Button>;
 
         // editEncoding
-        if (allowlist.update && onClickEditEncoding && data && data.type === Constants.library.type.frame) {
+        if (data.allowlist.update && onClickEditEncoding && data && data.type === Constants.library.type.frame) {
             editEncoding = <Button onClick={() => onClickEditEncoding(data)} icon={'edit'}>文字コードを編集する</Button>;
         }
 
         // clean trash button
-        if (allowlist.delete && onClickCleanTrash)
+        if (data.allowlist.delete && onClickCleanTrash)
             trashClean = <Button onClick={(data) => onClickCleanTrash(data)} danger={true} icon={"delete"}>ゴミ箱を空にする</Button>;
 
         // flow lock button
-        if (allowlist.lock && data && data.type == Constants.library.type.flow && onChangeFlowLock) {
+        if (data.allowlist.lock && data && data.type == Constants.library.type.flow && onChangeFlowLock) {
             const flow = data as FlowType;
             lock = <div className={style.flowLock}>
                 <input id="flowLock" type="checkbox" checked={flow.editLock ? true : false} onChange={(e) => onChangeFlowLock(e, flow)}></input>
@@ -99,11 +100,11 @@ const LibraryInspector = (props: Props) => {
         }
 
         // delete button
-        if (allowlist.delete && onClickDelete)
+        if (data.allowlist.delete && onClickDelete)
             del = <Button danger={true} onClick={() => onClickDelete(data)} icon={"delete"}>削除する</Button>;
 
         // move button
-        if (allowlist.move && onClickMove)
+        if (data.allowlist.move && onClickMove)
             move = <Button onClick={(data) => onClickMove(data)} icon={"open_in_browser"}>移動する</Button>;
 
         if (onClickCleanTrash) {
@@ -112,11 +113,11 @@ const LibraryInspector = (props: Props) => {
             move = null;
         }
 
-        if (allowlist.copy && data && data.type == Constants.library.type.flow && onClickCopy) {
+        if (data.allowlist.copy && data && data.type == Constants.library.type.flow && onClickCopy) {
             copy = <Button onClick={(e) => onClickCopy(e, data)} icon={"content_copy"}>複製する</Button>;
         }
 
-        if (allowlist.export && data && (data.type == Constants.library.type.flow || Constants.library.type.folder || Constants.library.type.project)) {
+        if (data.allowlist.export && data && (data.type == Constants.library.type.flow || Constants.library.type.folder || Constants.library.type.project)) {
             const href = APIUtil.apiUrl("flow_files") + "/" + data.uuid;
             flowExport = <DownloadButton href={href} icon={"get_app"}>フローをダウンロードする</DownloadButton>;
         }
@@ -136,8 +137,7 @@ const LibraryInspector = (props: Props) => {
         </React.Fragment>;
     };
 
-    const renderDetail = (data?: DatumType) => {
-        const {selectedData} = props;
+    const renderDetail = (data: DatumType) => {
         let result: any = [];
         if (!data) return result;
 
@@ -207,7 +207,7 @@ const LibraryInspector = (props: Props) => {
         }
 
         if (data && data.type == "project") {
-            const projectInfo = renderProjectInfo(selectedData);
+            const projectInfo = renderProjectInfo(data);
             result.push(projectInfo);
         }
 
@@ -216,7 +216,7 @@ const LibraryInspector = (props: Props) => {
         </React.Fragment>;
     };
 
-    const renderSelect = (data?: DatumType) => {
+    const renderSelect = (data: DatumType) => {
         return <div className={style.inspector}>
             <div className={style.actions}>
                 {renderButtons(data)}
@@ -249,8 +249,8 @@ const LibraryInspector = (props: Props) => {
         return result;
     };
 
-    const renderProjectInfo = (project: any) => {
-        const {currentProject, allowlist, onClickMemberInfo} = props;
+    const renderProjectInfo = (project: DatumType) => {
+        const {currentProject, onClickMemberInfo} = props;
         if (!onClickMemberInfo) return null;
         const members = currentProject.members;
         const memberCount = members ? members.length : 0;
@@ -264,23 +264,20 @@ const LibraryInspector = (props: Props) => {
         return <React.Fragment key={"project-info"}>
             <div className={style.full_hr} />
             <label>{"このプロジェクトのメンバー(" + memberCount + ")"}</label>
-            {(allowlist && allowlist.updateMember && onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, project.uuid)} icon={"people"}>メンバーを編集する</Button> : null}
+            {(project.allowlist && project.allowlist.updateMember && onClickMemberInfo) ? <Button onClick={(e) => onClickMemberInfo(e, project.uuid)} icon={"people"}>メンバーを編集する</Button> : null}
             <div className={style.memberList}>
-                {allowlist && allowlist.findMember && members ? membersForm : null}
+                {project.allowlist && project.allowlist.findMember && members ? membersForm : null}
             </div>
         </React.Fragment>;
     };
 
-    const {allowlist, selectedData, onBlurTitle} = props;
+    const {selectedData, onBlurTitle} = props;
     if (!selectedData) return <></>;
-    let label = selectedData.label;
-    let content = renderSelect(selectedData);
 
-    const disabled = allowlist && allowlist.update ? false : true;
-
+    const disabled = selectedData.allowlist && selectedData.allowlist.update;
     return <Resizer>
-        <BaseInspector key={selectedData.uuid} label={label} onBlurTitle={(onBlurTitle) ? (e) => {onBlurTitle(e, selectedData)} : null} disabled={disabled}>
-            {content}
+        <BaseInspector key={selectedData.uuid} label={selectedData.label} onBlurTitle={(onBlurTitle) ? (e) => {onBlurTitle(e, selectedData)} : null} disabled={disabled}>
+            {renderSelect(selectedData)}
         </BaseInspector>
     </Resizer>;
 

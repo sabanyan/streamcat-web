@@ -15,7 +15,7 @@ import { useDispatch } from "react-redux";
 import { addNotification, removeNotification } from "reapop";
 import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import { DatumType, FrameType } from "Model/Library";
+import { DatumType, FolderType, FrameType } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
 import { ParentFolderType, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
 import { LibraryListDataType } from "Types/index";
@@ -41,25 +41,6 @@ export interface Database {
     database?: string;
     user_id?: string;
     password?: string;
-}
-
-export interface Allowlist {
-    copy: boolean;
-    createFile: boolean;
-    createFolder: boolean;
-    createProject: boolean;
-    delete: boolean;
-    download: boolean;
-    execute: boolean;
-    findMember: boolean;
-    lock: boolean;
-    move: boolean;
-    read: boolean;
-    update: boolean;
-    updateMember: boolean;
-    upload: boolean;
-    export: boolean;
-    import: boolean;
 }
 
 export const getDataBaseRules = () => {
@@ -204,16 +185,13 @@ const Library = (_: Props) => {
     const [lastSelectedCell, setLastSelectedCell] = useState<DatumType | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const clickedLibraryCell = useRef(false);
-    const [folderPath, setFolderPath] = useState<any>();
     const [isLoading, setIsLoading] = useState<boolean>();
     const [is_finished, setIsFinished] = useState<boolean>();
     const [isDialog] = useState<boolean>((HttpUtil.getURLParam("dialog") === "true"));
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
-    const [allowlists, setAllowlists] = useState
-        <{ parent: Allowlist, selected: Allowlist }>
-        ({ parent: defaultAllowlist, selected: defaultAllowlist })
+    const [parentFolder, setParentFolder] = useState<FolderType|null>(null);
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
@@ -343,9 +321,9 @@ const Library = (_: Props) => {
     }, [isDialog]);
 
     useEffect(() => {
-        if (!folderPath) return;
-        setLinks(makeBreadCrumbLinks(folderPath));
-    }, [folderPath]);
+        if (!parentFolder) return;
+        setLinks(makeBreadCrumbLinks(parentFolder.folderPath));
+    }, [parentFolder]);
 
     useEffect(() => {
         ModalUtil.registerModal({
@@ -394,7 +372,6 @@ const Library = (_: Props) => {
                             members: response.data.data.members,
                             projectModifiedAt: response.data.data.modifiedAt
                         })
-                        setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
                     }
                 })
             }
@@ -552,7 +529,7 @@ const Library = (_: Props) => {
     }, [addDatabase]);
 
     const getVisualizers = () => {
-        // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
+        // window.visualizersに保存していたはずのvisualizersがなくなる場合があるため、再取得
         APIUtil.get("visualizers").then((response) => {
             const json = response.data;
             const visualizers = json.data.map((visualize) => {
@@ -746,8 +723,7 @@ const Library = (_: Props) => {
                     const { children, folderPath } = json;
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
-                    setFolderPath(folderPath);
-                    setAllowlists({ ...allowlists, parent: json.allowlist });
+                    setParentFolder(json);
                 });
             }
             //該当フォルダを取得
@@ -757,8 +733,7 @@ const Library = (_: Props) => {
                     const { children, folderPath } = json;
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
-                    setFolderPath(folderPath);
-                    setAllowlists({ ...allowlists, parent: json.allowlist });
+                    setParentFolder(json);
                 } else {
                     APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
                         if (response.data.success) {
@@ -766,8 +741,7 @@ const Library = (_: Props) => {
                             const { children, folderPath } = json;
                             setInitialLibraryChildren(children);
                             setLibraryChildren(children);
-                            setFolderPath(folderPath);
-                            setAllowlists({ ...allowlists, parent: json.allowlist });
+                            setParentFolder(json);
                         }
                     });
                 }
@@ -781,8 +755,7 @@ const Library = (_: Props) => {
                             let model:ParentFolderType = response.data.data;
                             setInitialLibraryChildren(model.children);
                             setLibraryChildren(model.children);
-                            setFolderPath(model.folderPath);
-                            setAllowlists({ ...allowlists, parent: response.data.data.allowlist });
+                            setParentFolder(model);
                         } else {
                             throw response.data;
                         }
@@ -807,8 +780,7 @@ const Library = (_: Props) => {
                     const { children, folderPath } = json;
                     setInitialLibraryChildren(children);
                     setLibraryChildren(children);
-                    setFolderPath(folderPath);
-                    setAllowlists({ ...allowlists, parent: json.allowlist });
+                    setParentFolder(json);
                 }
             });
         }
@@ -961,12 +933,10 @@ const Library = (_: Props) => {
 
         const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
             let data: LibraryListDataType = cell;
-            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;// ライブラリ画面の単体表示時のみ複数選択を許可
+            // ライブラリ画面の単体表示時のみ複数選択を許可
+            let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;
             if (isLoading) return;
             if (event) event.stopPropagation();
-            if (data.allowlist) {
-                setAllowlists({ ...allowlists, selected: data.allowlist })
-            }
 
             if (event && (event.metaKey || event.ctrlKey) && enableMultiSelect) {
                 data.selected = true;
@@ -1035,7 +1005,7 @@ const Library = (_: Props) => {
             } else {
                 if (!inject_is_trash) {
                     menuList = <MenuList
-                        allowlist={allowlists.parent}
+                        allowlist={parentFolder!.allowlist}
                         onClickAddDatabase={onClickAddDatabase}
                         onClickCSVUpload={onClickCSVUpload}
                         onClickNewFlow={onClickNewFlow}
@@ -1379,7 +1349,6 @@ const Library = (_: Props) => {
         };
 
         return <TrashInspector data={data}
-            allowlist={allowlists.selected}
             onClickRecovery={(e, data) => onClickRecovery(e, data)}
             onClickMove={(e, data) => onClickMove(e, data)}
         />;
@@ -1570,7 +1539,6 @@ const Library = (_: Props) => {
                     _onClickMove = () => onClickMove();
             }
             return <LibraryMultiInspector
-                allowlist={allowlists.selected}
                 selectedDatas={selectedDatas}
                 onClickDelete={_onClickDelete}
                 onClickMove={_onClickMove}
@@ -1578,7 +1546,7 @@ const Library = (_: Props) => {
         }
 
         // 選択されているのが 1件 の場合の処理
-        const selectedData: LibraryListDataType = selectedDatas[0];
+        const selectedData = selectedDatas[0];
 
         console.assert(selectedData.uuid !== "d8d2fec5-066c-48ec-9ee4-314559aa7ae4", "起きた")
         if (selectedData.uuid === "d8d2fec5-066c-48ec-9ee4-314559aa7ae4") {
@@ -1900,6 +1868,21 @@ const Library = (_: Props) => {
 
 
         const onClickMemberInfo = (e, projectUUID) => {
+            if(!selectedData || selectedData.type !== 'project'){
+                return;
+            }
+
+            const getProjects = () => {
+                APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
+                    if (response.data.success && response.data.data.members) {
+                        setCurrentProject({
+                            members: response.data.data.members,
+                            projectModifiedAt: response.data.data.modifiedAt
+                        })
+                    }
+                })
+            };
+
             ModalUtil.registerModal({
                 id: Constants.modal.MEMBER_INFO, onClickDone: () => {
                     let putBody = {
@@ -1926,31 +1909,9 @@ const Library = (_: Props) => {
                         refresh();
                     })
                     ModalUtil.closeModal(Constants.modal.MEMBER_INFO);
-                }, onClickClose: () => {
-                    if (selectedData && selectedData.type === "project") {
-                        APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
-                            if (response.data.success && response.data.data.members) {
-                                setCurrentProject({
-                                    members: response.data.data.members,
-                                    projectModifiedAt: response.data.data.modifiedAt
-                                })
-                                setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
-                            }
-                        })
-                    }
-                }, onClickCancel: () => {
-                    if (selectedData && selectedData.type === "project") {
-                        APIUtil.get("projects/" + selectedData.uuid + "?members=on&allowlist=on").then((response) => {
-                            if (response.data.success && response.data.data.members) {
-                                setCurrentProject({
-                                    members: response.data.data.members,
-                                    projectModifiedAt: response.data.data.modifiedAt
-                                })
-                                setAllowlists({ ...allowlists, selected: response.data.data.allowlist });
-                            }
-                        })
-                    }
-                }
+                },
+                onClickClose : getProjects,
+                onClickCancel: getProjects
             });
 
             emitMemberForm(currentProject.members, [], onSearchTextInputed, onSearchedMemberClicked, onMemberRoleChanged)
@@ -2004,7 +1965,6 @@ const Library = (_: Props) => {
 
         return <LibraryInspector
             currentProject={currentProject}
-            allowlist={allowlists.selected}
             selectedData={selectedData}
             onClickCopy={_onClickCopy}
             onClickDelete={_onClickDelete}
