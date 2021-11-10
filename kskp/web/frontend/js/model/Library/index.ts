@@ -94,6 +94,13 @@ export type ProjectType = FolderType & {
 };
 
 /**
+ * 子Datumを持つProjectを格納するオブジェクト型
+ */
+ export type ParentProjectType = ProjectType & {
+  children: DatumType[];
+};
+
+/**
  * Flowを格納するオブジェクト型
  */
 export type FlowType = DatumType & {

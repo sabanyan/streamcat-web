@@ -1,16 +1,79 @@
 
 import {CommonResponse} from 'Modules/api/core/index';
-import {FlowType} from "Model/index";
+import {ParentProjectType, ParentFolderType, FlowType} from "Model/index";
 
 type ErrorResponse = {
     code: number;
     message: string;
 };
 
+ const unwrapJson = <TDatumType>(json: CommonResponse<TDatumType>):TDatumType => {
+    if (json.success) {
+        // データ取得が成功した場合
+        return json.data;
+    } else {
+        // 失敗した場合
+        // TODO: エラー発生時はHTTPのエラーコードを返すようにAPIを修正する予定
+        throw {code: json.code, message: json.message};
+    }
+}
+
 /**
  * Web APIを発行する関数を纏めるクラス
  */
 export class APIUtil2 {
+
+
+    /**
+     * GET /projectsを発行してプロジェクトを取得する
+     * @param uuid 取得するプロジェクトのUUID
+     */
+    static getProject = (uuid: string): Promise<ParentProjectType> => {
+        // uuidが指定されない場合はAPIを発行しない
+        if(!uuid){
+            return new Promise<ParentProjectType>(() => {});
+        }
+
+        return fetch('/api/v0/projects/' + uuid).then<CommonResponse<ParentProjectType>>(
+                res => res.json()
+            ).then(
+                json => unwrapJson(json)
+            );
+    };
+
+    /**
+     * GET /foldersを発行してフォルダを取得する
+     * @param uuid 取得するフォルダのUUID
+     */
+     static getFolder = (uuid: string): Promise<ParentFolderType> => {
+        // uuidが指定されない場合はAPIを発行しない
+        if(!uuid){
+            return new Promise<ParentFolderType>(() => {});
+        }
+
+        return fetch('/api/v0/projects/' + uuid).then<CommonResponse<ParentFolderType>>(
+                res => res.json()
+            ).then(
+                json => unwrapJson(json)
+            );
+    };
+    
+    /**
+     * GET /trashesを発行してゴミ箱を取得する
+     * @param uuid 取得するゴミ箱のUUID
+     */
+     static getTrash = (uuid: string): Promise<ParentFolderType> => {
+        // uuidが指定されない場合はAPIを発行しない
+        if(!uuid){
+            return new Promise<ParentFolderType>(() => {});
+        }
+
+        return fetch('/api/v0/trashes/' + uuid).then<CommonResponse<ParentFolderType>>(
+                res => res.json()
+            ).then(
+                json => unwrapJson(json)
+            );
+    };
 
     /**
      * GET /flowsを発行してフローを取得する
@@ -25,16 +88,7 @@ export class APIUtil2 {
         return fetch('/api/v0/flows/' + uuid).then<CommonResponse<FlowType>>(
                 res => res.json()
             ).then(
-                json => {
-                    if(json.success){
-                        // データ取得が成功した場合
-                        return json.data;
-                    }else{
-                        // 失敗した場合
-                        // TODO: エラー発生時はHTTPのエラーコードを返すようにAPIを修正する予定
-                        throw {code: json.code, message: json.message};
-                    }
-                }
+                json => unwrapJson(json)
             );
     };
 
@@ -60,15 +114,7 @@ export class APIUtil2 {
             ).then<CommonResponse<FlowType>>(
                 res => res.json()
             ).then(
-                json => {
-                    if(json.success){
-                        // データ取得が成功した場合
-                        return json.data;
-                    }else{
-                        // 失敗した場合
-                        throw {code: json.code, message: json.message};
-                    }
-                }
+                json => unwrapJson(json)
             );
     };
 

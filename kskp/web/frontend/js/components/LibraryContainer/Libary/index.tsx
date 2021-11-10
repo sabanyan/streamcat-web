@@ -8,17 +8,15 @@ import { BreadCrumb, IBreadCrumbsLink } from "Components/LibraryContainer/Libary
 import Constants from "Constants/index";
 import { APIUtil, APIUtil2, ErrorUtil, HttpUtil, ModalUtil, ReactDomUtil, StringUtil, WebUtil } from "Utils/index";
 import { EmptyState, Loader, Spacer } from "Shared/Base";
-import { ITableBody } from "Components/LibraryContainer/Libary/FileListTable/FileListBody";
 import { MenuList } from "Components/LibraryContainer/Libary/MenuList";
 import { Flex } from "Shared/Base/Layouts/Flex";
 import { useDispatch } from "react-redux";
 import { addNotification, removeNotification } from "reapop";
 import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import { DatumType, FolderType, FrameType } from "Model/Library";
+import { DatabaseType, DatumType, FolderType, FrameType } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
 import { ParentFolderType, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
-import { LibraryListDataType } from "Types/index";
 import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
 import { API } from "Modules/api";
@@ -33,11 +31,19 @@ import { reject } from "lodash";
 import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/LibraryContainer/Libary/RemoteFolder/model"
 import { RemoteFolderForm } from "Components/LibraryContainer/Libary/RemoteFolder/view"
 
+/**
+ * ライブラリ画面に表示するDatumの表示行
+ */
+export type DatumEntryType = DatumType & {
+    selected: boolean;
+    clickable: boolean;
+}
+
 export interface Database {
     label?: string;
     dbms?: any;
     hostname?: string;
-    port?: string;
+    port?: number;
     database?: string;
     user_id?: string;
     password?: string;
@@ -117,7 +123,7 @@ const getInitialDatabase = (): Database => {
         label: "",
         dbms: getDataBaseParams()[1].default,
         hostname: "",
-        port: "",
+        port: NaN,
         database: "",
         user_id: "",
         password: ""
@@ -159,8 +165,7 @@ const Library = (_: Props) => {
     const [addDatabase, setAddDatabase] = useState<Database | null>(null);
     const [editDatabase, setEditDatabase] = useState<Database | null>(null);
     const [, setStores] = useState();
-    const [libraryChildren, setLibraryChildren] = useState<LibraryListDataType[]>([]);
-    const [initialLibraryChildren, setInitialLibraryChildren] = useState<LibraryListDataType[]>([]);
+    const [sortedDatas, setSortedDatas] = useState<DatumType[]>([]);
     const [selectedDatas, setSelectedDatas] = useState<DatumType[]>([]);
     const [lastSelectedCell, setLastSelectedCell] = useState<DatumType | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
@@ -171,7 +176,7 @@ const Library = (_: Props) => {
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
     const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
-    const [parentFolder, setParentFolder] = useState<FolderType|null>(null);
+    const [parentFolder, setParentFolder] = useState<ParentFolderType|null>(null);
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
@@ -434,7 +439,7 @@ const Library = (_: Props) => {
             setSelectedDatas([]);
         };
 
-        const editLibraryChild = (data: LibraryListDataType) => {
+        const editLibraryChild = (data: DatumType) => {
             setIsLoading(true);
             APIUtil.put("databases/" + data.uuid, database).then((response) => {
                 completeEditDatabase(response);
@@ -687,11 +692,10 @@ const Library = (_: Props) => {
     };
 
     const clearSelected = () => {
+        parentFolder!.children.map((selectedData) => {
+            (selectedData as DatumEntryType).selected = false;
+        });
         setSelectedDatas([]);
-        setLibraryChildren(libraryChildren.map((libraryChildren: LibraryListDataType) => {
-            libraryChildren.selected = false;
-            return libraryChildren;
-        }));
     };
 
     const getFolderChildren = () => {
@@ -699,28 +703,22 @@ const Library = (_: Props) => {
             if (isProject) {
                 return APIUtil.get("projects/" + inject_folder_uuid).then((response) => {
                     const json = response.data.data;
-                    const { children, folderPath } = json;
-                    setInitialLibraryChildren(children);
-                    setLibraryChildren(children);
                     setParentFolder(json);
+                    setSortedDatas(json.children);
                 });
             }
             //該当フォルダを取得
             return APIUtil.get("folders/" + inject_folder_uuid).then((response) => {
                 if (response.data.success) {
                     const json = response.data.data;
-                    const { children, folderPath } = json;
-                    setInitialLibraryChildren(children);
-                    setLibraryChildren(children);
                     setParentFolder(json);
+                    setSortedDatas(json.children);
                 } else {
                     APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
                         if (response.data.success) {
                             const json = response.data.data;
-                            const { children, folderPath } = json;
-                            setInitialLibraryChildren(children);
-                            setLibraryChildren(children);
                             setParentFolder(json);
+                            setSortedDatas(json.children);
                         }
                     });
                 }
@@ -732,9 +730,8 @@ const Library = (_: Props) => {
                     .then((response) => {
                         if (response.data.data) {
                             let model:ParentFolderType = response.data.data;
-                            setInitialLibraryChildren(model.children);
-                            setLibraryChildren(model.children);
                             setParentFolder(model);
+                            setSortedDatas(model.children);
                         } else {
                             throw response.data;
                         }
@@ -756,10 +753,8 @@ const Library = (_: Props) => {
             return APIUtil.get("library").then((response) => {
                 const json = response.data.data;
                 if (response.data.success) {
-                    const { children, folderPath } = json;
-                    setInitialLibraryChildren(children);
-                    setLibraryChildren(children);
                     setParentFolder(json);
+                    setSortedDatas(json.children);
                 }
             });
         }
@@ -870,14 +865,14 @@ const Library = (_: Props) => {
         if (!is_finished) {
             return false;
         }
-        return !Array.isArray(libraryChildren) || libraryChildren.length === 0;
+        return !Array.isArray(parentFolder!.children) || parentFolder!.children.length === 0;
     };
 
     const renderAll = () => {
         if (!is_finished) return null;
         if (isEmptyLibraryList() && mode === Constants.library.mode.dialog) return renderEmptyState();
 
-        const onClickFileName = (body: ITableBody, event?: React.SyntheticEvent<any, Event>) => {
+        const onClickFileName = (body: DatumType, event?: React.SyntheticEvent<any, Event>) => {
             if (event) event.stopPropagation();
             const dialogOption = (isDialog) ? "?dialog=true" + ((mode) ? "&mode=" + mode : "") : "";
 
@@ -891,7 +886,7 @@ const Library = (_: Props) => {
                 WebUtil.navigateURL(WebUtil.webURL("/projects/" + body.uuid + dialogOption));
             }
             if (body.type === "database") {
-                onClickEditDatabase(body);
+                onClickEditDatabase(body as DatabaseType);
             }
             if (body.type === "frame") {
                 if (mode === Constants.library.mode.frame_select) {
@@ -910,8 +905,8 @@ const Library = (_: Props) => {
 
         };
 
-        const onClickCell = (cell: ITableBody, event?: React.MouseEvent<HTMLTableRowElement>): void => {
-            let data: LibraryListDataType = cell;
+        const onClickCell = (cell: DatumEntryType, event?: React.MouseEvent<HTMLTableRowElement>): void => {
+            let data = cell;
             // ライブラリ画面の単体表示時のみ複数選択を許可
             let enableMultiSelect = (!inject_is_trash && mode === Constants.library.mode.list) ? true : false;
             if (isLoading) return;
@@ -933,9 +928,10 @@ const Library = (_: Props) => {
             } else if (event && event.shiftKey && enableMultiSelect) {
                 // shift + click
                 clearSelected();// 選択状態を一旦解除
-                let current = libraryChildren.findIndex(libraryChild => data.uuid === libraryChild.uuid);
+                const children = parentFolder!.children;
+                let current = children.findIndex(libraryChild => data.uuid === libraryChild.uuid);
                 if (lastSelectedCell) {
-                    let last = libraryChildren.findIndex(libraryChild => lastSelectedCell.uuid === libraryChild.uuid);
+                    let last = children.findIndex(libraryChild => lastSelectedCell.uuid === libraryChild.uuid);
                     let min, max;
                     if (current >= last) {
                         min = last;
@@ -944,11 +940,11 @@ const Library = (_: Props) => {
                         min = current;
                         max = last;
                     }
-                    const selectedDatas: LibraryListDataType[] = libraryChildren.slice(min, max + 1).map((libraryChild) => {
-                        libraryChild.selected = true;
-                        return libraryChild;
+                    const selectedEntries = children.slice(min, max + 1).map((selectedData) => {
+                        (selectedData as DatumEntryType).selected = true;
+                        return selectedData;
                     });
-                    setSelectedDatas(selectedDatas);
+                    setSelectedDatas(selectedEntries);
                 }
             } else {
                 // 単一選択
@@ -1032,14 +1028,14 @@ const Library = (_: Props) => {
                         onClickHeader={(header: ITableHeader, event) => {
                             if (event) event.stopPropagation();
                             if (header.sort) {
-                                setLibraryChildren(lodash.orderBy(libraryChildren, header.key, header.sort));
+                                setSortedDatas(lodash.orderBy(parentFolder!.children, header.key, header.sort));
                             } else {
-                                setLibraryChildren(initialLibraryChildren);
+                                setSortedDatas(parentFolder!.children);
                             }
                         }}
                         bodies={
-                            libraryChildren.map((libraryChild) => {
-                                const body = libraryChild as ITableBody;
+                            sortedDatas.map((datum) => {
+                                const body = datum as DatumEntryType;
                                 if (mode === Constants.library.mode.folder_select) {
                                     switch (body.type) {
                                         case "folder":
@@ -1207,7 +1203,7 @@ const Library = (_: Props) => {
 
     const renderTrashInspector = (): React.ReactNode => {
         if (!selectedDatas.length) return null;
-        const data: LibraryListDataType = selectedDatas[0];
+        const data = selectedDatas[0];
 
         const doRecovery = (data) => {
             API.request.doPut.trash({ trashUUID: data.uuid })
@@ -1369,7 +1365,7 @@ const Library = (_: Props) => {
         });
     };
 
-    const onClickEditDatabase = (data: LibraryListDataType) => {
+    const onClickEditDatabase = (data: DatabaseType) => {
         if (data.type !== Constants.library.type.database) {
             return;
         }
@@ -1386,7 +1382,7 @@ const Library = (_: Props) => {
         setEditDatabase(database);
     };
 
-    const onClickApply = (selected_data: LibraryListDataType) => {
+    const onClickApply = (selected_data: DatumType) => {
         if (window.opener || !window.opener.closed) {
             window.opener.onCallbackApply(selected_data);
         }
@@ -1587,15 +1583,6 @@ const Library = (_: Props) => {
             }
 
             return endPoint;
-        };
-
-        const updateLibrary = (libraryChildren: any[], uuid: string, library): DatumType[] => {
-            return libraryChildren.map((child: any) => {
-                if (uuid === child.uuid) {
-                    return library;
-                }
-                return child;
-            });
         };
 
         const onBlurTitle = (
@@ -1956,12 +1943,6 @@ const Library = (_: Props) => {
             onChangeFlowLock={_onChangeFlowLock}
             onBlurTitle={_onBlurTitle}
         />;
-    };
-
-    const findLibrary = (libraryChildren: any[], uuid: string): DatumType => {
-        return libraryChildren.find((child: any) => {
-            return (child.uuid === uuid);
-        });
     };
 
 
