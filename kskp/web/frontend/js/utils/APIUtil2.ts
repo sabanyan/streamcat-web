@@ -23,6 +23,27 @@ type ErrorResponse = {
  */
 export class APIUtil2 {
 
+    /**
+     * GET /libraryを発行してルートフォルダを取得する
+     */
+     static getLibrary = (): Promise<ParentFolderType> => {
+        return fetch('/api/v0/libray').then<CommonResponse<ParentFolderType>>(
+                res => res.json()
+            ).then(
+                json => unwrapJson(json)
+            );
+    };
+
+    /**
+     * GET /trashesを発行してゴミ箱を取得する
+     */
+         static getTrash = (): Promise<ParentFolderType> => {
+            return fetch('/api/v0/trashes').then<CommonResponse<ParentFolderType>>(
+                    res => res.json()
+                ).then(
+                    json => unwrapJson(json)
+                );
+        };
 
     /**
      * GET /projectsを発行してプロジェクトを取得する
@@ -51,24 +72,7 @@ export class APIUtil2 {
             return new Promise<ParentFolderType>(() => {});
         }
 
-        return fetch('/api/v0/projects/' + uuid).then<CommonResponse<ParentFolderType>>(
-                res => res.json()
-            ).then(
-                json => unwrapJson(json)
-            );
-    };
-    
-    /**
-     * GET /trashesを発行してゴミ箱を取得する
-     * @param uuid 取得するゴミ箱のUUID
-     */
-     static getTrash = (uuid: string): Promise<ParentFolderType> => {
-        // uuidが指定されない場合はAPIを発行しない
-        if(!uuid){
-            return new Promise<ParentFolderType>(() => {});
-        }
-
-        return fetch('/api/v0/trashes/' + uuid).then<CommonResponse<ParentFolderType>>(
+        return fetch('/api/v0/folders/' + uuid).then<CommonResponse<ParentFolderType>>(
                 res => res.json()
             ).then(
                 json => unwrapJson(json)

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import {useAsyncResource} from 'use-async-resource';
 import { ModalManager } from "Shared/Modal";
 import { NotificationManager } from "Shared/Notification";
 import { FileUploader, TextField } from "Shared/Input";
@@ -14,7 +15,7 @@ import { useDispatch } from "react-redux";
 import { addNotification, removeNotification } from "reapop";
 import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import { DatabaseType, DatumType, FolderType, FrameType } from "Model/Library";
+import { DatumType, DatabaseType, FrameType } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
 import { ParentFolderType, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
 import * as lodash from "lodash";
@@ -149,7 +150,30 @@ interface Props {
     navigation?: NavigationModelProps
 }
 
+// useAsyncResourceに渡す関数はコンポーネントの外で定義しないと
+// useAsyncResourceのキャッシュが機能しない
+const getParentFolder = () => {
+    if(inject_folder_uuid){
+        if(inject_is_project){
+            // プロジェクトを表示する場合
+            return APIUtil2.getProject(inject_folder_uuid);
+        }else{
+            // フォルダを表示する場合
+            return APIUtil2.getFolder(inject_folder_uuid);
+        }
+    }else if(inject_is_trash) {
+        // ゴミ箱を表示する場合
+        return APIUtil2.getTrash();
+    }else{
+        // ルートフォルダを表示する場合
+        return APIUtil2.getLibrary();
+    }
+}
+
 const Library = (_: Props) => {
+
+     // ここでフォルダの取得を開始する
+    const [folderReader] = useAsyncResource(getParentFolder, []);
 
     const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));
@@ -164,19 +188,16 @@ const Library = (_: Props) => {
     const [formFolderName, setFormFolderName] = useState<string>("");
     const [addDatabase, setAddDatabase] = useState<Database | null>(null);
     const [editDatabase, setEditDatabase] = useState<Database | null>(null);
-    const [, setStores] = useState();
-    const [sortedDatas, setSortedDatas] = useState<DatumType[]>([]);
+    const [sortedDatas, setSortedDatas] = useState<DatumType[]>(folderReader().children);
     const [selectedDatas, setSelectedDatas] = useState<DatumType[]>([]);
     const [lastSelectedCell, setLastSelectedCell] = useState<DatumType | null>(null);
     const [visualizers, setVisualizers] = useState<VisualizeModel<VisualizeModelProps>[]>([]);
     const clickedLibraryCell = useRef(false);
-    const [isLoading, setIsLoading] = useState<boolean>();
-    const [is_finished, setIsFinished] = useState<boolean>();
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isDialog] = useState<boolean>((HttpUtil.getURLParam("dialog") === "true"));
     const [mode] = useState(HttpUtil.getURLParam("mode") ? HttpUtil.getURLParam("mode") : Constants.library.mode.list);
-    const isProject = inject_is_project;
     const [links, setLinks] = useState<IBreadCrumbsLink[]>([]);
-    const [parentFolder, setParentFolder] = useState<ParentFolderType|null>(null);
+    const [parentFolder, setParentFolder] = useState<ParentFolderType>(folderReader());
     const [currentProject, setCurrentProject] = useState<ProjectInfo>({})
     const [remountCount, setRemountCount] = useState(0);
     const refresh = () => setRemountCount(remountCount + 1);
@@ -317,7 +338,6 @@ const Library = (_: Props) => {
             id: Constants.modal.IMPORT_FLOW, onClickClose: onClickImportFlowDone
         });
         getVisualizers();
-        fetchFolder();
     }, []);
 
     useEffect(() => {
@@ -344,7 +364,6 @@ const Library = (_: Props) => {
 
       
     }, [formProjectName]);
-
 
     useEffect(() => {
         if (selectedDatas.length === 1) {
@@ -491,7 +510,6 @@ const Library = (_: Props) => {
         });
 
     }, [editDatabase]);
-
 
     useEffect(() => {
         // データベースの新規作成
@@ -678,16 +696,13 @@ const Library = (_: Props) => {
     };
 
     const fetchFolder = () => {
-        Promise.all([getStores(), getFolderChildren()]).then(() => {
+        return getParentFolder().then(response => {
+            // 取得したフォルダ等を状態変数に格納する
+            setParentFolder(response);
+            setSortedDatas(response.children);
+            // フォルダの取得が完了したらisLoading=falseにする
             setIsLoading(false);
-            setIsFinished(true);
-        });
-    };
-
-    const getStores = () => {
-        return APIUtil.get("stores").then((response) => {
-            const json = response.data.data;
-            setStores(json.stores);
+            return response;
         });
     };
 
@@ -696,68 +711,6 @@ const Library = (_: Props) => {
             (selectedData as DatumEntryType).selected = false;
         });
         setSelectedDatas([]);
-    };
-
-    const getFolderChildren = () => {
-        if (inject_folder_uuid) {
-            if (isProject) {
-                return APIUtil.get("projects/" + inject_folder_uuid).then((response) => {
-                    const json = response.data.data;
-                    setParentFolder(json);
-                    setSortedDatas(json.children);
-                });
-            }
-            //該当フォルダを取得
-            return APIUtil.get("folders/" + inject_folder_uuid).then((response) => {
-                if (response.data.success) {
-                    const json = response.data.data;
-                    setParentFolder(json);
-                    setSortedDatas(json.children);
-                } else {
-                    APIUtil.get("awss3s/" + inject_folder_uuid).then((response) => {
-                        if (response.data.success) {
-                            const json = response.data.data;
-                            setParentFolder(json);
-                            setSortedDatas(json.children);
-                        }
-                    });
-                }
-            });
-        } else if (inject_is_trash) {
-            // ゴミ箱の場合
-            return new Promise<void>(async (resolve) => {
-                await API.request.doGet.trashes({})
-                    .then((response) => {
-                        if (response.data.data) {
-                            let model:ParentFolderType = response.data.data;
-                            setParentFolder(model);
-                            setSortedDatas(model.children);
-                        } else {
-                            throw response.data;
-                        }
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        notify({
-                            title: "エラー",
-                            message: e.message,
-                            status: "error",
-                            dismissAfter: 0,
-                            closeButton: true
-                        });
-                    });
-                resolve(undefined);
-            });
-        } else {
-            //ルートを取得
-            return APIUtil.get("library").then((response) => {
-                const json = response.data.data;
-                if (response.data.success) {
-                    setParentFolder(json);
-                    setSortedDatas(json.children);
-                }
-            });
-        }
     };
 
     const onClickNewFlow = () => {
@@ -772,6 +725,7 @@ const Library = (_: Props) => {
             </div>
         });
     };
+
     const onClickNewProject = () => {
         ModalUtil.emitModal({
             id: Constants.modal.ADD_PROJECT,
@@ -804,6 +758,7 @@ const Library = (_: Props) => {
             </div>
         });
     };
+
     const onClickCSVUpload = () => {
         let url = location.protocol + "//" + location.host + "/api/v0/documents";
         ModalUtil.emitModal({
@@ -862,14 +817,10 @@ const Library = (_: Props) => {
     };
 
     const isEmptyLibraryList = () => {
-        if (!is_finished) {
-            return false;
-        }
         return !Array.isArray(parentFolder!.children) || parentFolder!.children.length === 0;
     };
 
     const renderAll = () => {
-        if (!is_finished) return null;
         if (isEmptyLibraryList() && mode === Constants.library.mode.dialog) return renderEmptyState();
 
         const onClickFileName = (body: DatumType, event?: React.SyntheticEvent<any, Event>) => {
@@ -1004,7 +955,6 @@ const Library = (_: Props) => {
                 </Flex>
             </>;
         };
-
 
         return <Flex justifyContent={"center"} fluid={true}>
             {
@@ -1944,7 +1894,6 @@ const Library = (_: Props) => {
             onBlurTitle={_onBlurTitle}
         />;
     };
-
 
     const renderEmptyState = () => {
         return <EmptyState
