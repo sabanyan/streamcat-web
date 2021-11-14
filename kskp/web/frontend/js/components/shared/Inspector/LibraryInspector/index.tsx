@@ -274,9 +274,9 @@ const LibraryInspector = (props: Props) => {
     const {selectedData, onBlurTitle} = props;
     if (!selectedData) return <></>;
 
-    const disabled = selectedData.allowlist && selectedData.allowlist.update;
+    const enabled = selectedData.allowlist && selectedData.allowlist.update;
     return <Resizer>
-        <BaseInspector key={selectedData.uuid} label={selectedData.label} onBlurTitle={(onBlurTitle) ? (e) => {onBlurTitle(e, selectedData)} : null} disabled={disabled}>
+        <BaseInspector key={selectedData.uuid} label={selectedData.label} onBlurTitle={(onBlurTitle) ? (e) => {onBlurTitle(e, selectedData)} : null} disabled={!enabled}>
             {renderSelect(selectedData)}
         </BaseInspector>
     </Resizer>;
