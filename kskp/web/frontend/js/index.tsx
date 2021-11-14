@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom";
 import {Provider} from "react-redux";
 import EventEmitter from "eventemitter3";
@@ -62,7 +62,9 @@ if (document.getElementById('admin_users')) {
 if (elementId) {
     ReactDOM.render(
         <Provider store={store}>
+        <Suspense fallback={<p>Loading...</p>}>
             <Kskp viewId={viewId} />
+        </Suspense>
         </Provider>,
         document.getElementById(elementId)
     );

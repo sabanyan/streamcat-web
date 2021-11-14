@@ -13,6 +13,9 @@ import {
     FrameType,
     DocumentType
 } from 'Model/Library';
+import {
+    NavigationType
+} from 'Model/Navigation/NavigationModel';
 
 type ErrorResponse = {
     code: number;
@@ -355,4 +358,18 @@ export class APIUtil2 {
         });
     };
 
+    /**
+     * GET /navigationを発行してNavigationを取得する
+     */
+    static findNavigation = () => {
+        return get<NavigationType>('/api/v0/navigation');
+    }
+
+    /**
+     * 何も取得しない
+     * 空のPromiseを返す
+     */
+    static findNone = <T>() => {
+        return new Promise<T>(() => {});
+    }
 }

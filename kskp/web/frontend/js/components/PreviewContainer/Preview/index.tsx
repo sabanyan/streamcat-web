@@ -8,18 +8,14 @@ import Loader from "Shared/Base/Loader";
 import {NotificationManager} from "Shared/Notification";
 import {useDispatch} from "react-redux";
 import {addNotification, removeNotification} from "reapop";
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
 
 /**
  * ======================================================
  *                      NOT USE REDUX
  * ======================================================
  */
-interface Props {
-    navigation?: NavigationModelProps
-}
 
-const Preview = (_: Props) => {
+const Preview = () => {
 
     const dispatch = useDispatch();
     const notify = (context) => dispatch(addNotification(context));

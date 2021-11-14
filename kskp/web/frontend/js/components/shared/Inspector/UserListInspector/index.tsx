@@ -7,7 +7,7 @@ import {Button} from 'Shared/Input'
 import {APIUtil, ModalUtil, ReactDomUtil} from 'Utils/index';
 import AdminUtil from 'Utils/AdminUtil';
 import ErrorUtil from 'Utils/ErrorUtil';
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
+import {NavigationType} from 'Model/Navigation/NavigationModel';
 import WebUtil from 'Utils/WebUtil';
 
 interface Props {
@@ -20,7 +20,7 @@ interface Props {
     onChangedUserSystemAdminRole?: Function;
     onChangedList?: Function;
     notify: Function;
-    navigation?: NavigationModelProps
+    navigation?: NavigationType
 }
 
 const display = {

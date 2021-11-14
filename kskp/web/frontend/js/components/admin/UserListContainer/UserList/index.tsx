@@ -11,11 +11,10 @@ import {ModalManager} from 'Shared/Modal';
 import {NotificationManager} from 'Shared/Notification';
 import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
-import {InputForm, TextField} from 'Shared/Input';
+import {TextField} from 'Shared/Input';
 import Constants from 'Constants/index';
 import Select from 'react-select';
 import {UserListInspector} from 'Shared/Inspector/UserListInspector';
-import {project} from 'Shared/IconRenderer/icon';
 import {FilterListLinkButton} from 'Shared/Input/FilterListLinkButton';
 import {FilterSelectedList} from "Shared/Input/FilterListLinkButton/FilterSelectedList";
 import {IFilterCategoryItem, IFilterListItem} from 'Types/index'
@@ -24,12 +23,11 @@ import error = Simulate.error;
 import {ITableHeader} from 'LibraryContainer/Libary/FileListTable/FileListHeader';
 import * as lodash from 'lodash';
 import Queue from "promise-queue-plus";
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
-import {LibraryMultiInspector} from 'Shared/Inspector/LibraryMultiInspector';
+import {NavigationType} from 'Model/Navigation/NavigationModel';
 import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
 
 interface Props {
-    navigation?: NavigationModelProps
+    navigation?: NavigationType
 }
 
 const UserList = (props: Props) => {

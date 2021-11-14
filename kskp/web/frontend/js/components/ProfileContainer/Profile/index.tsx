@@ -8,7 +8,7 @@ import {useDispatch} from 'react-redux';
 import {addNotification, removeNotification} from 'reapop';
 import {NotificationManager} from 'Shared/Notification';
 import {useForm} from 'react-hook-form';
-import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
+import {NavigationType} from 'Model/Navigation/NavigationModel';
 
 /**
  * ======================================================
@@ -16,7 +16,7 @@ import {Props as NavigationModelProps} from 'Model/Navigation/NavigationModel';
  * ======================================================
  */
 interface Props {
-    navigation?: NavigationModelProps
+    navigation?: NavigationType
 }
 
 interface Profile {

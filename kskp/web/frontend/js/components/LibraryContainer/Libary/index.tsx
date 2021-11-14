@@ -26,7 +26,6 @@ import axios from "axios";
 import TrashInspector from "Shared/Inspector/TrashInspector";
 import { ApplyMenuList } from "Components/LibraryContainer/Libary/ApplyMenuList";
 import LibraryUtil from "Utils/LibraryUtil";
-import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
 import {LibraryMultiInspector} from 'Shared/Inspector/LibraryMultiInspector';
 import { reject } from "lodash";
 import { useRemoteFolderHooks, Mode as RemoteFolderMode } from "Components/LibraryContainer/Libary/RemoteFolder/model"
@@ -146,10 +145,6 @@ export interface ProjectInfo {
     projectModifiedAt?: string;
 }
 
-interface Props {
-    navigation?: NavigationModelProps
-}
-
 // useAsyncResourceに渡す関数はコンポーネントの外で定義しないと
 // useAsyncResourceのキャッシュが機能しない
 const getParentFolder = () => {
@@ -170,7 +165,7 @@ const getParentFolder = () => {
     }
 }
 
-const Library = (_: Props) => {
+const Library = () => {
 
      // ここでフォルダの取得を開始する
     const [folderReader] = useAsyncResource(getParentFolder, []);

@@ -30,7 +30,7 @@ const getFlow = (uuid: string) => {
         return APIUtil2.findFlow(uuid);
     }else{
         // uuidが指定されない場合はAPIを発行しない
-        return new Promise<FlowType>(() => {});
+        return APIUtil2.findNone<FlowType>();
     }
 }
 

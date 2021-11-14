@@ -50,7 +50,6 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { Paper } from 'FlowEditorContainer/Paper';
 import { PaperZoom } from 'FlowEditorContainer/PaperZoom';
-import { Props as NavigationModelProps } from 'Model/Navigation/NavigationModel';
 import { FlowEditModeValue, FlowExecuteModeValue, NetworkStatusValue } from 'Model/Flow/FlowModel';
 import { NotAllowed } from 'Components/NotAllowedContainer';
 import { TextField } from 'Shared/Input';
@@ -58,11 +57,8 @@ import useInterval from 'use-interval';
 import WebUtil from "Utils/WebUtil";
 import _ from 'lodash';
 
-interface Props {
-    navigation?: NavigationModelProps
-}
 
-const FlowEditor = (props: Props) => {
+const FlowEditor = () => {
 
     const dispatch = useDispatch();
     const folderUuid = useSelector((state: any) => state.FlowEditorReducer.folderUuid);
