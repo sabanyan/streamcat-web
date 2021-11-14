@@ -93,9 +93,9 @@ export default class FlowModel {
         this.creator = props.creator;
         this.label = props.label;
         this.masked = props.masked;
-        this.nodes = this.toNodeModels(props.nodes);
-        this.params = props.params;
-        this.ports = props.ports;
+        this.nodes = this.toNodeModels(props.nodes || []);
+        this.params = props.params || [];
+        this.ports = props.ports || [[], []];
         this.projectId = props.projectId;
         this.description = props.description;
         this.folderPath = props.folderPath;
