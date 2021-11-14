@@ -4,7 +4,7 @@ import style from "../style.scss";
 
 import { BaseInspector, Resizer } from "Shared/Inspector";
 import { Button } from "Shared/Input";
-import { DatumType, FrameType } from "Model/index";
+import { DatumType, FrameType } from "Model/Library";
 
 
 type Props = {

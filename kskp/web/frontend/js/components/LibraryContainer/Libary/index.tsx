@@ -15,9 +15,9 @@ import { useDispatch } from "react-redux";
 import { addNotification, removeNotification } from "reapop";
 import {ParamsForm} from "Shared/Inspector/ParamsForm";
 import { ITableHeader } from "Components/LibraryContainer/Libary/FileListTable/FileListHeader";
-import { DatumType, DatabaseType, FrameType } from "Model/Library";
+import { DatumType, ParentFolderType, DatabaseType, FrameType } from "Model/Library";
 import { LibraryInspector, MemberForm } from "Shared/Inspector/index";
-import { ParentFolderType, LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
+import { LocksModel, MessageModel, VisualizeModel, VisualizeModelProps } from "Model/index";
 import * as lodash from "lodash";
 import Queue from "promise-queue-plus";
 import { API } from "Modules/api";
@@ -156,17 +156,17 @@ const getParentFolder = () => {
     if(inject_folder_uuid){
         if(inject_is_project){
             // プロジェクトを表示する場合
-            return APIUtil2.getProject(inject_folder_uuid);
+            return APIUtil2.findProject(inject_folder_uuid);
         }else{
             // フォルダを表示する場合
-            return APIUtil2.getFolder(inject_folder_uuid);
+            return APIUtil2.findFolder(inject_folder_uuid);
         }
     }else if(inject_is_trash) {
         // ゴミ箱を表示する場合
-        return APIUtil2.getTrash();
+        return APIUtil2.findTrash();
     }else{
         // ルートフォルダを表示する場合
-        return APIUtil2.getLibrary();
+        return APIUtil2.findLibrary();
     }
 }
 
@@ -416,12 +416,12 @@ const Library = (_: Props) => {
                 }
                 setIsLoading(true);
                 // POST /flowsを発行してフローを新規作成する
-                APIUtil2.postFlow(inject_folder_uuid, formFlowName).then(() => {
+                parentFolder.createFlow(formFlowName).then((flow) => {
                     ModalUtil.closeModal(Constants.modal.ADD_FLOW);
                     setFormFlowName("");
                     fetchFolder();
                     notify({
-                        title: "フローを作成しました", message: formFlowName + "を作成しました",
+                        title: "フローを作成しました", message: flow.label + "を作成しました",
                         status: "success"
                     });
                 });
@@ -1038,18 +1038,10 @@ const Library = (_: Props) => {
             }
 
             // Libraryを削除する
-            await API.request.doDelete.library({
-                libraryUUID: library.uuid,
-                libraryType: library.type,
-                lockUUID: lock.uuid
-            })
-                .then((res) => {
-                    if (res && !res.data.success) throw res.data;
-                })
-                .catch((e) => {
-                    console.log(e);
-                    reject(e);
-                });
+            await library.delete(lock.uuid as string).catch((e) => {
+                console.log(e);
+                reject(e);
+            });
 
             // Lockを取得した場合、Lockを解除する
             if (lock.uuid) {

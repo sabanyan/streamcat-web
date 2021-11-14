@@ -6,7 +6,7 @@ import moment from 'moment/moment';
 import Constants from 'Constants/index';
 import {Button, DownloadButton} from 'Shared/Input';
 import {APIUtil, ModalUtil, StringUtil} from "Utils/index";
-import {DatumType, FlowType, FrameType} from 'Model/index';
+import {DatumType, FlowType, FrameType} from 'Model/Library';
 import {ProjectInfo} from 'Components/LibraryContainer/Libary/index';
 
 type Props = {

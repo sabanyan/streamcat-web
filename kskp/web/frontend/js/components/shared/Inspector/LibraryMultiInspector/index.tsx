@@ -2,7 +2,7 @@ import React from 'react'
 import style from '../style.scss'
 import { BaseInspector, Resizer } from 'Shared/Inspector'
 import { Button} from 'Shared/Input'
-import { DatumType } from 'Model/index';
+import { DatumType } from 'Model/Library';
 
 type Props = {
   selectedDatas: DatumType[];

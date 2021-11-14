@@ -5,6 +5,7 @@ import {BaseInspector, InOutConnector, ParamsForm} from "Shared/Inspector";
 import style from "../style.scss";
 import {Button} from "Shared/Input";
 import {SubflowCommandModel} from "Model/index";
+import {FlowType} from "Model/Library";
 import Constants from "Constants/index";
 import {GraphUtil, ModalUtil, StateUtil} from "Utils/index";
 import {APIUtil2} from 'Utils/index';
@@ -24,6 +25,15 @@ type Props = {
     baseInspectorDisabled: boolean;
 }
 
+const getFlow = (uuid: string) => {
+    if(uuid){
+        return APIUtil2.findFlow(uuid);
+    }else{
+        // uuidが指定されない場合はAPIを発行しない
+        return new Promise<FlowType>(() => {});
+    }
+}
+
 const CommandInspector = (props: Props) => {
 
     const getSelectedStep = () => {
@@ -35,7 +45,7 @@ const CommandInspector = (props: Props) => {
     const selected_step: StepModelType = getSelectedStep();
 
     // ここでFlowの取得を開始する
-    const [flowReader] = useAsyncResource(APIUtil2.getFlow, (selected_step as any).uuid);
+    const [flowReader] = useAsyncResource(getFlow, (selected_step as any).uuid);
 
     const onHide = () => {
         //this.props.addHistory()

@@ -2,7 +2,7 @@ import * as React from "react";
 import * as style from "./style.scss";
 import { Spacer } from "Shared/Base";
 import { FlatButton } from "Shared/Input";
-import { FolderAllowlist } from 'Model/index'
+import { FolderAllowlist } from 'Model/Library'
 
 interface Props {
     allowlist: FolderAllowlist;
