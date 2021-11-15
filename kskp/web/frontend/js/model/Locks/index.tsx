@@ -79,3 +79,19 @@ export default class LocksModel {
         return result
     }
 }
+
+
+/**
+ * Lockを格納するオブジェクト型
+ */
+export type LockType = {
+    uuid: string;
+    target: string;
+    creator: string;
+    created_at: string;
+    modified_at: string;
+
+    delete: (lastModifiedAt?:string) => Promise<void>;
+    extend: () => Promise<void>;
+};
+

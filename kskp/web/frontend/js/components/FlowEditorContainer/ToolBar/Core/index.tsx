@@ -120,7 +120,6 @@ export default class ToolBar extends React.Component<ToolBarProps, ToolBarState>
     }
 
     onClickProjectRun() {
-        const { lockUUID } = this.props;
 
         this.loadingMessage = "";
 

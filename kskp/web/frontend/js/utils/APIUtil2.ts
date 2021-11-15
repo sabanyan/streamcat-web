@@ -13,15 +13,28 @@ import {
     FrameType,
     DocumentType
 } from 'Model/Library';
-import {
-    NavigationType
-} from 'Model/Navigation/NavigationModel';
+import {NavigationType} from 'Model/Navigation/NavigationModel';
+import {LockType} from 'Model/Locks';
 
-type ErrorResponse = {
-    code: number;
-    message: string;
-};
 
+// NOTE: JavaScriptではJavaのようにcatch構文で例外オブジェクトに型に応じて処理を振り分ける事はできない
+// その場合はcatch内で例外オブジェクトの型を判定する
+
+// NOTE: instanceof演算子はオブジェクトの型の判定に使用されるが
+// その右辺値にはtypeやinterfaceの型アノテーションは指定できない
+// 代わりにClass等のprotptypeプロパティを保持するオブジェクトを指定する
+// https://stackoverflow.com/questions/46703364
+export class ErrorResponse {
+    constructor(public code:number, public message:string) {
+        this.code = code;
+        this.message = message;
+    }
+}
+
+/**
+ * @throws {ErrorResponse}
+ * @param json 
+ */
 const unwrapJson = <TDatumType>(json: CommonResponse<TDatumType>):TDatumType => {
     if (json.success) {
         // データ取得が成功した場合
@@ -29,7 +42,7 @@ const unwrapJson = <TDatumType>(json: CommonResponse<TDatumType>):TDatumType => 
     } else {
         // 失敗した場合
         // TODO: エラー発生時はHTTPのエラーコードを返すようにAPIを修正する予定
-        throw {code: json.code, message: json.message};
+        throw new ErrorResponse(json.code || Number.NaN, json.message || '');
     }
 }
 
@@ -161,21 +174,21 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                 if(datum.type === 'project') {
                     const d = datum as ParentProjectType;
                     d.move = (parent) => 
-                        put<ProjectType>(`/api/v0/projects/${datum.uuid}`, {parent:parent});
+                        put<ProjectType>(`/api/v0/projects/${d.uuid}`, {parent:parent});
                     d.rename = (label) => 
-                        put<ProjectType>(`/api/v0/projects/${datum.uuid}`, {label:label});
+                        put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label});
                     d.delete = () =>
-                        del(`/api/v0/projects/${datum.uuid}`);
+                        del(`/api/v0/projects/${d.uuid}`);
                     d.initMembers = (members, lastModifiedAt) =>
-                        put<ParentProjectType>(`/api/v0/projects/${datum.uuid}`, {members:members, lastModifiedAt:lastModifiedAt});
+                        put<ParentProjectType>(`/api/v0/projects/${d.uuid}`, {members:members, lastModifiedAt:lastModifiedAt});
                 }else if(datum.type === 'folder') {
                     const d = datum as ParentFolderType;
                     d.move = (parent) => 
-                        put<FolderType>(`/api/v0/folders/${datum.uuid}`, {parent:parent});
+                        put<FolderType>(`/api/v0/folders/${d.uuid}`, {parent:parent});
                     d.rename = (label) => 
-                        put<FolderType>(`/api/v0/folders/${datum.uuid}`, {label:label});
+                        put<FolderType>(`/api/v0/folders/${d.uuid}`, {label:label});
                     d.delete = () =>
-                        del(`/api/v0/folders/${datum.uuid}`);
+                        del(`/api/v0/folders/${d.uuid}`);
                 }
                 // ProjectまたはFolderの直下にDatumを新規作成する関数群
                 const d = datum as FolderType;
@@ -228,55 +241,57 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
             }else if(datum.type === 'trash') {
                 const d = datum as ParentFolderType;
                 d.delete = () =>
-                    del(`/api/v0/trashes/${datum.uuid}`);
+                    del(`/api/v0/trashes/${d.uuid}`);
             }else if(datum.type === 'rfolder') {
                 const d = datum as RemoteFolderType;
                 d.move = (parent) => 
-                    put<RemoteFolderType>(`/api/v0/remote-folders/${datum.uuid}`, {parent:parent});
+                    put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`, {parent:parent});
                 d.rename = (label) => 
-                    put<RemoteFolderType>(`/api/v0/remote-folders/${datum.uuid}`, {label:label});
+                    put<RemoteFolderType>(`/api/v0/remote-folders/${d.uuid}`, {label:label});
                 d.delete = () =>
-                    del(`/api/v0/remote-folders/${datum.uuid}`);
+                    del(`/api/v0/remote-folders/${d.uuid}`);
             }else if(datum.type === 'database') {
                 const d = datum as DatabaseType;
                 d.move = (parent) => 
-                    put<DatabaseType>(`/api/v0/databases/${datum.uuid}`, {parent:parent});
+                    put<DatabaseType>(`/api/v0/databases/${d.uuid}`, {parent:parent});
                 d.rename = (label) => 
-                    put<DatabaseType>(`/api/v0/databases/${datum.uuid}`, {label:label});
+                    put<DatabaseType>(`/api/v0/databases/${d.uuid}`, {label:label});
                 d.delete = () =>
-                    del(`/api/v0/databases/${datum.uuid}`);
+                    del(`/api/v0/databases/${d.uuid}`);
             }else if(datum.type === 'flow') {
                 const d = datum as FlowType;
                 d.move = (parent) => 
-                    put<FlowType>(`/api/v0/flows/${datum.uuid}`, {parent:parent});
+                    put<FlowType>(`/api/v0/flows/${d.uuid}`, {parent:parent});
                 d.rename = (label) => 
-                    put<FlowType>(`/api/v0/flows/${datum.uuid}`, {label:label});
+                    put<FlowType>(`/api/v0/flows/${d.uuid}`, {label:label});
                 d.delete = (lockUUID) =>
-                    del(`/api/v0/flows/${datum.uuid}`, {lock:lockUUID});
+                    del(`/api/v0/flows/${d.uuid}`, {lock:lockUUID});
+                d.update = (flow, lockUUID) =>
+                    put(`/api/v0/flows/${d.uuid}`, {flow:flow, lock:lockUUID});
             }else if(datum.type === 'schedule') {
                 const d = datum as ScheduleType;
                 d.move = (parent) => 
-                    put<ScheduleType>(`/api/v0/schedules/${datum.uuid}`, {parent:parent});
+                    put<ScheduleType>(`/api/v0/schedules/${d.uuid}`, {parent:parent});
                 d.rename = (label) => 
-                    put<ScheduleType>(`/api/v0/schedules/${datum.uuid}`, {label:label});
+                    put<ScheduleType>(`/api/v0/schedules/${d.uuid}`, {label:label});
                 d.delete = () =>
-                    del(`/api/v0/schedules/${datum.uuid}`);
+                    del(`/api/v0/schedules/${d.uuid}`);
             }else if(datum.type === 'frame') {
                 const d = datum as FrameType;
                 d.move = (parent) => 
-                    put<FrameType>(`/api/v0/frames/${datum.uuid}`, {parent:parent});
+                    put<FrameType>(`/api/v0/frames/${d.uuid}`, {parent:parent});
                 d.rename = (label) => 
-                    put<FrameType>(`/api/v0/frames/${datum.uuid}`, {label:label});
+                    put<FrameType>(`/api/v0/frames/${d.uuid}`, {label:label});
                 d.delete = () =>
-                    del(`/api/v0/frames/${datum.uuid}`);
+                    del(`/api/v0/frames/${d.uuid}`);
             }else if(datum.type === 'document') {
                 const d = datum as DocumentType;
                 d.move = (parent) => 
-                    put<DocumentType>(`/api/v0/documents/${datum.uuid}`, {parent:parent});
+                    put<DocumentType>(`/api/v0/documents/${d.uuid}`, {parent:parent});
                 d.rename = (label) => 
-                    put<DocumentType>(`/api/v0/documents/${datum.uuid}`, {label:label});
+                    put<DocumentType>(`/api/v0/documents/${d.uuid}`, {label:label});
                 d.delete = () =>
-                    del(`/api/v0/documents/${datum.uuid}`);
+                    del(`/api/v0/documents/${d.uuid}`);
             }else if(datum.type === 'activity') {
                 // Activityの変更・削除はできない
             }
@@ -305,6 +320,17 @@ DatumArray.prototype.shift = function() {
  * Web APIを発行する関数を纏めるクラス
  */
 export class APIUtil2 {
+
+    /**
+     * Web APIを発行せず、nullを返すPromiseを返す
+     */
+     static findNull = () => {
+        return new Promise<null>(resolve => {
+            // Promiseオブジェクトをfullfilled状態にする
+            resolve(null);
+        });
+    }
+
     /**
      * GET /libraryを発行してルートフォルダを取得する
      */
@@ -366,12 +392,23 @@ export class APIUtil2 {
     }
 
     /**
-     * Web APIを発行せず、nullを返すPromiseを返す
+     * POST /locksを発行してロックを獲得する
+     * @param flowUUID 排他ロック対象Datumのuuid
      */
-    static findNull = () => {
-        return new Promise<null>(resolve => {
-            // Promiseオブジェクトをfullfilled状態にする
-            resolve(null);
+    static createLock = (flowUUID: string, lastModifiedAt?: string) => {
+        // lastModifiedAtが指定された場合はロックの再取得をする
+        let body: {target:string, lastModifiedAt?:string};
+        if(lastModifiedAt){
+            body = {target:flowUUID, lastModifiedAt:lastModifiedAt};
+        }else{
+            body = {target:flowUUID};
+        }
+        return post<LockType>('/api/v0/locks', body).then(lock => {
+            lock.delete = () =>
+                post(`/api/v0/delete-locks/${lock.uuid}`, {});
+            lock.extend = () =>
+                post(`/api/v0/extend-locks/${lock.uuid}`, {});
+            return lock;
         });
     }
 }
