@@ -15,7 +15,6 @@ import {NotAllowed} from 'Components/NotAllowedContainer';
 import {setNetworkStatusAction} from 'Modules/flowEditor';
 import {NetworkStatusValue} from 'Model/Flow/FlowModel';
 import { APIUtil2 } from 'Utils/APIUtil2';
-import { NavigationType } from 'Model/Navigation/NavigationModel';
 
 export type Props = {
     viewId: ViewId
@@ -38,7 +37,7 @@ const getNavigation = (viewId: ViewId) => {
         return APIUtil2.findNavigation();
     }else{
         // Login画面の場合はAPIを発行しない
-        return APIUtil2.findNone<NavigationType>();
+        return APIUtil2.findNull();
     }
 }
 
@@ -80,12 +79,7 @@ const Kskp = (props: Props) => {
 
 
     // Navigationを取得する
-    let nav: NavigationType | null;
-    if(viewId === ViewId.Undefined){
-        nav = null;
-    }else{
-        nav = readNavigation();
-    }
+    const nav = readNavigation();
 
     const renderNavigationBar = () => {
         return <div className={style.nav}>
@@ -105,17 +99,13 @@ const Kskp = (props: Props) => {
                 viewComponent = <Library/>;
                 break;
             case ViewId.Profile:
-                if(nav){
-                    viewComponent = <Profile navigation={nav}/>;
-                }
+                viewComponent = <Profile navigation={nav}/>;
                 break;
             case ViewId.Preview:
                 viewComponent = <Preview/>;
                 break;
             case ViewId.User_List:
-                if(nav){
-                    viewComponent = (nav.allowlist && nav.allowlist.findUsers)?<UserList navigation={nav}/>:<NotAllowed/>;
-                }
+                viewComponent = (nav && nav.allowlist && nav.allowlist.findUsers)?<UserList navigation={nav}/>:<NotAllowed/>;
                 break;
             default:
                 break;

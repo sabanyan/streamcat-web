@@ -16,7 +16,7 @@ import {NavigationType} from 'Model/Navigation/NavigationModel';
  * ======================================================
  */
 interface Props {
-    navigation?: NavigationType
+    navigation: NavigationType | null;
 }
 
 interface Profile {

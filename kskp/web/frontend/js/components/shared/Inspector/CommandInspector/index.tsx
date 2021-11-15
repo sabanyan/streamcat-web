@@ -30,7 +30,7 @@ const getFlow = (uuid: string) => {
         return APIUtil2.findFlow(uuid);
     }else{
         // uuidが指定されない場合はAPIを発行しない
-        return APIUtil2.findNone<FlowType>();
+        return APIUtil2.findNull();
     }
 }
 
@@ -149,8 +149,8 @@ const CommandInspector = (props: Props) => {
             subFlowLink = <Button onClick={(e) => onClickOpenSubFlow(e, selected_step.uuid)}>フローを開く</Button>;
 
             // サブフローがライブラリに存在する場合(リテラルでない場合)はそのサブフローの格納フォルダへのリンクを表示する
-            if(subflowCommand.uuid){
-                const flow = flowReader();
+            const flow = flowReader();
+            if(flow){
                 detail = <div>
                     <a href={'/folders/' + flow.folderUuid} target={'_blank'}>{flow.folderPath}</a>
                 </div>

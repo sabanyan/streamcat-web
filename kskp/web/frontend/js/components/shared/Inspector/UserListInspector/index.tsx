@@ -20,7 +20,7 @@ interface Props {
     onChangedUserSystemAdminRole?: Function;
     onChangedList?: Function;
     notify: Function;
-    navigation?: NavigationType
+    navigation: NavigationType | null;
 }
 
 const display = {

@@ -366,10 +366,12 @@ export class APIUtil2 {
     }
 
     /**
-     * 何も取得しない
-     * 空のPromiseを返す
+     * Web APIを発行せず、nullを返すPromiseを返す
      */
-    static findNone = <T>() => {
-        return new Promise<T>(() => {});
+    static findNull = () => {
+        return new Promise<null>(resolve => {
+            // Promiseオブジェクトをfullfilled状態にする
+            resolve(null);
+        });
     }
 }

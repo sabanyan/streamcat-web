@@ -27,7 +27,7 @@ import {NavigationType} from 'Model/Navigation/NavigationModel';
 import UserListMultiInspector from 'Shared/Inspector/UserListMultiInspector';
 
 interface Props {
-    navigation?: NavigationType
+    navigation: NavigationType | null;
 }
 
 const UserList = (props: Props) => {
