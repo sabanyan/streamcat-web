@@ -1,5 +1,6 @@
-import React, {Suspense} from 'react'
+import React from 'react'
 import {SortEndHandler} from "react-sortable-hoc";
+import {AsyncResourceContent} from 'use-async-resource';
 import {
   CommandInspector,
   DataFrameInspector,
@@ -10,13 +11,10 @@ import {
   NoteInspector,
   Resizer
 } from 'Shared/Inspector'
-import classnames from 'classnames'
-import style from '../style.scss'
 import { CommandStepModel, DataFrameStepModel, NoteStepModel } from 'Model/index'
 import { GraphUtil } from 'Utils/index'
 import { DataFrameDetailType, MastType } from "Types/index";
 import { FlowModelProps } from "Model/Flow/FlowModel";
-import { updateLastSavedFlowAction } from '../../../../modules/flowEditor';
 
 type InspectorProps = {
   inspector: { width: number };
@@ -192,9 +190,9 @@ class Inspector extends React.Component<InspectorProps> {
       <Resizer
         inspector={inspector}
         resizeInspector={resizeInspector}>
-        <Suspense fallback={<p>Loading...</p>}>
+        <AsyncResourceContent fallback={<p>'Loading...'</p>}>
           {property}
-        </Suspense>
+        </AsyncResourceContent>
       </Resizer>
     </React.Fragment>
   }

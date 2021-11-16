@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {Suspense, useEffect} from 'react';
-import {useAsyncResource} from 'use-async-resource';
+import {useEffect} from 'react';
+import {useAsyncResource, AsyncResourceContent} from 'use-async-resource';
 import {useDispatch} from 'react-redux';
 import style from './style.scss';
 import {ModalManager} from 'Shared/Modal';
@@ -112,11 +112,11 @@ const Kskp = (props: Props) => {
         }
 
         return (
-            <Suspense fallback={<p>Loading...</p>}>
+            <AsyncResourceContent fallback={<p>'Loading...'</p>}>
             <div className={style.view}>
                 {viewComponent}
             </div>
-            </Suspense>
+            </AsyncResourceContent>
         );
     };
 

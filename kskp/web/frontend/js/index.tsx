@@ -1,6 +1,7 @@
-import React, { Suspense } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
 import {Provider} from "react-redux";
+import {AsyncResourceContent} from 'use-async-resource';
 import EventEmitter from "eventemitter3";
 import store from "Modules/store/index";
 import {Kskp, ViewId} from "./Kskp";
@@ -62,9 +63,9 @@ if (document.getElementById('admin_users')) {
 if (elementId) {
     ReactDOM.render(
         <Provider store={store}>
-        <Suspense fallback={<p>Loading...</p>}>
+        <AsyncResourceContent fallback={<p>'Loading...'</p>}>
             <Kskp viewId={viewId} />
-        </Suspense>
+        </AsyncResourceContent>
         </Provider>,
         document.getElementById(elementId)
     );
