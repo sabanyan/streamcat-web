@@ -1017,125 +1017,82 @@ const Library = () => {
         </Flex>;
     };
 
-    const deleteLibrary = async (library: DatumType, lock: { uuid: string | null }) => {
-        return new Promise<void>(async (resolve, reject) => {
-            // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
-            if (library.type === Constants.library.type.flow) {
-                await API.request.doPost.locks({ flowUUID: library.uuid })
-                    .then((res) => {
-                        if (res && !res.data.success) throw res.data;
-                        lock.uuid = API.response.post.locks(res.data).uuid;
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        reject(e);
-                    });
-            }
-
-            // Libraryを削除する
-            await library.delete(lock.uuid as string).catch((e) => {
-                console.log(e);
-                reject(e);
+    const deleteLibrary = (datum: DatumType) => {
+        let promise: Promise<void>;
+        if (datum.type === Constants.library.type.flow) {
+            // Flowの場合は、Lockを取得してから削除する
+            promise = APIUtil2.createLock(datum.uuid).then(async lock => {
+                // Datumを削除する(削除の完了を待つ)
+                await datum.delete(lock.uuid);
+                return lock;
+            }).then(lock => {
+                // Datumのの削除が完了した後に、Lockを解除する
+                lock.delete();
             });
+        }else{
+            // Datumを削除する
+            promise = datum.delete(); 
+        }
 
-            // Lockを取得した場合、Lockを解除する
-            if (lock.uuid) {
-                await API.request.doDelete.locks({ lockUUID: lock.uuid })
-                    .then((res: any) => {
-                        lock.uuid = null;
-                        if (res && !res.data.success) throw res.data;
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        reject(e);
-                    });
-            }
-            resolve(undefined);
+        // 削除完了メッセージを表示する
+        return promise.then(() => {
+            // 成功
+            const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+            notify({
+                title: typeLabel + "を削除しました",
+                message: datum.label + "を削除しました",
+                status: "success"
+            });
         })
-            .then(() => {
-                // 成功
-                const typeLabel = LibraryUtil.getTypeLabel(library.type);
-                notify({
-                    title: typeLabel + "を削除しました",
-                    message: library.label + "を削除しました",
-                    status: "success"
-                });
-            })
-            .catch((e) => {
-                // エラー
-                notify({
-                    title: "ライブラリー削除エラー(" + library.label + ")",
-                    message: e.message,
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+        .catch((e) => {
+            // エラー
+            notify({
+                title: "ライブラリー削除エラー(" + datum.label + ")",
+                message: e.message,
+                status: "error",
+                dismissAfter: 0,
+                closeButton: true
             });
+        });
     };
 
-    const moveLibrary = async (library: DatumType, parentFolderUUID: string, lock: { uuid: string | null }) => {
-
-        return new Promise<void>(async (resolve, reject) => {
-            // Lockが必要なライブラリー(flow)の場合は、Lockを取得する
-            if (library.type === Constants.library.type.flow) {
-                await API.request.doPost.locks({ flowUUID: library.uuid })
-                    .then((res) => {
-                        if (res && !res.data.success) throw res.data;
-                        lock.uuid = API.response.post.locks(res.data).uuid;
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        reject(e);
-                    });
-            }
-
-            // Libraryを移動させる
-            await API.request.doPut.library({
-                parentUUID: parentFolderUUID,
-                libraryUUID: library.uuid,
-                libraryType: library.type,
-                lockUUID: lock.uuid
-            })
-                .then((res) => {
-                    if (res && !res.data.success) throw res.data;
-                })
-                .catch((e) => {
-                    console.log(e);
-                    reject(e);
-                });
-
-            // Lockを取得した場合、Lockを解除する
-            if (lock.uuid) {
-                await API.request.doDelete.locks({ lockUUID: lock.uuid })
-                    .then((res: any) => {
-                        lock.uuid = null;
-                        if (res && !res.data.success) throw res.data;
-                    })
-                    .catch((e) => {
-                        console.log(e);
-                        reject(e);
-                    });
-            }
-            resolve(undefined);
-        })
-            .then(() => {
-                // 成功
-                const typeLabel = LibraryUtil.getTypeLabel(library.type);
-                notify({
-                    title: typeLabel + "を移動しました", message: library.label + "を移動しました",
-                    status: "success"
-                });
-            })
-            .catch((e) => {
-                // 例外
-                notify({
-                    title: "ライブラリー移動エラー(" + library.label + ")",
-                    message: e.message,
-                    status: "error",
-                    dismissAfter: 0,
-                    closeButton: true
-                });
+    const moveLibrary = (datum:DatumType, parentFolderUUID:string) => {
+        let promise: Promise<DatumType>;
+        if (datum.type === Constants.library.type.flow) {
+            // Flowの場合は、Lockを取得してから移動する
+            promise = APIUtil2.createLock(datum.uuid).then(async lock => {
+                // Datumを移動する(移動の完了を待つ)
+                await datum.move(parentFolderUUID, lock.uuid);
+                return lock;
+            }).then(lock => {
+                // Datumのの移動が完了した後に、Lockを解除する
+                lock.delete();
+                return datum;
             });
+        }else{
+            // Datumを移動する
+            promise = datum.move(parentFolderUUID); 
+        }
+
+        // 移動完了メッセージを表示する
+        return promise.then(datum => {
+            // 成功
+            const typeLabel = LibraryUtil.getTypeLabel(datum.type);
+            notify({
+                title: typeLabel + "を移動しました", message: datum.label + "を移動しました",
+                status: "success"
+            });
+        })
+        .catch((e) => {
+            // 例外
+            notify({
+                title: "ライブラリー移動エラー(" + datum.label + ")",
+                message: e.message,
+                status: "error",
+                dismissAfter: 0,
+                closeButton: true
+            });
+        });
     };
 
     const renderTrashInspector = (): React.ReactNode => {
@@ -1409,10 +1366,9 @@ const Library = () => {
                             , "timeout": 0            //The timeout period
                         }
                     );
-                    let lock = { uuid: null };
                     setIsLoading(true);
                     selectedDatas.forEach((selectedData: DatumType) => {
-                        queue.push(deleteLibrary, [selectedData, lock]);
+                        queue.push(deleteLibrary, [selectedData]);
                     });
                     queue.push(setIsLoading, [false]);
                     queue.push(fetchFolder, []);

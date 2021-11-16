@@ -79,9 +79,9 @@ type DatumBaseType<TAllowlist> = {
   creator: string;
   createdAt: string;
 
-  move: (parent:string) => Promise<DatumBaseType<TAllowlist>>;
-  rename: (label:string) => Promise<DatumBaseType<TAllowlist>>;
-  delete: (lockUUID?: string) => Promise<void>;
+  move: (parent:string, lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
+  rename: (label:string, lockUUID?:string) => Promise<DatumBaseType<TAllowlist>>;
+  delete: (lockUUID?:string) => Promise<void>;
 }
 
 /**

@@ -171,25 +171,6 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
             // Datumオブジェクトに、種別に従ってWebAPIを発行する関数を付与する
             // 
             if(datum.type === 'project' || datum.type === 'folder') {
-                if(datum.type === 'project') {
-                    const d = datum as ParentProjectType;
-                    d.move = (parent) => 
-                        put<ProjectType>(`/api/v0/projects/${d.uuid}`, {parent:parent});
-                    d.rename = (label) => 
-                        put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label});
-                    d.delete = () =>
-                        del(`/api/v0/projects/${d.uuid}`);
-                    d.initMembers = (members, lastModifiedAt) =>
-                        put<ParentProjectType>(`/api/v0/projects/${d.uuid}`, {members:members, lastModifiedAt:lastModifiedAt});
-                }else if(datum.type === 'folder') {
-                    const d = datum as ParentFolderType;
-                    d.move = (parent) => 
-                        put<FolderType>(`/api/v0/folders/${d.uuid}`, {parent:parent});
-                    d.rename = (label) => 
-                        put<FolderType>(`/api/v0/folders/${d.uuid}`, {label:label});
-                    d.delete = () =>
-                        del(`/api/v0/folders/${d.uuid}`);
-                }
                 // ProjectまたはFolderの直下にDatumを新規作成する関数群
                 const d = datum as FolderType;
                 d.createFolder = (label) =>
@@ -238,6 +219,26 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                                         label : label,
                                         file  : file});
 
+                if(datum.type === 'project') {
+                    const d = datum as ParentProjectType;
+                    d.move = (parent) => 
+                        put<ProjectType>(`/api/v0/projects/${d.uuid}`, {parent:parent});
+                    d.rename = (label) => 
+                        put<ProjectType>(`/api/v0/projects/${d.uuid}`, {label:label});
+                    d.delete = () =>
+                        del(`/api/v0/projects/${d.uuid}`);
+                    d.initMembers = (members, lastModifiedAt) =>
+                        put<ParentProjectType>(`/api/v0/projects/${d.uuid}`, {members:members, lastModifiedAt:lastModifiedAt});
+                }else if(datum.type === 'folder') {
+                    const d = datum as ParentFolderType;
+                    d.move = (parent) => 
+                        put<FolderType>(`/api/v0/folders/${d.uuid}`, {parent:parent});
+                    d.rename = (label) => 
+                        put<FolderType>(`/api/v0/folders/${d.uuid}`, {label:label});
+                    d.delete = () =>
+                        del(`/api/v0/folders/${d.uuid}`);
+                }
+
             }else if(datum.type === 'trash') {
                 const d = datum as ParentFolderType;
                 d.delete = () =>
@@ -260,10 +261,10 @@ DatumArray.prototype.map = function<U>(callbackfn: (datum: DatumType, index: num
                     del(`/api/v0/databases/${d.uuid}`);
             }else if(datum.type === 'flow') {
                 const d = datum as FlowType;
-                d.move = (parent) => 
-                    put<FlowType>(`/api/v0/flows/${d.uuid}`, {parent:parent});
-                d.rename = (label) => 
-                    put<FlowType>(`/api/v0/flows/${d.uuid}`, {label:label});
+                d.move = (parent, lockUUID) => 
+                    put<FlowType>(`/api/v0/flows/${d.uuid}`, {parent:parent, lock:lockUUID});
+                d.rename = (label, lockUUID) => 
+                    put<FlowType>(`/api/v0/flows/${d.uuid}`, {label:label, lock:lockUUID});
                 d.delete = (lockUUID) =>
                     del(`/api/v0/flows/${d.uuid}`, {lock:lockUUID});
                 d.update = (flow, lockUUID) =>
